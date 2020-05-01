@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri May  1 08:12:32 2020 (serrano)                */
+#*    Last change :  Fri May  1 09:19:20 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -301,6 +301,7 @@ modfile=644
 # set $ldopt to `no-share' if you don't want shared library
 ldopt=
 ldbuildsharedopt=
+ldbuildopt=
 ldrpath=
 
 # set $ldsoname to `blank' if you want to force it empty
@@ -2565,6 +2566,7 @@ if [ "$regexp " = " " ]; then
       pcrelibs=yes
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
+      ldbuildopts="-L$bootdir/pcre$libdir/$fildir $ldbuildopts"
       #lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
       buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
       #cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
@@ -2615,6 +2617,7 @@ if [ "$unistring " != "no " ]; then
     featureflags="-srfi enable-unistring $featureflags";
     extraunistring=unistring
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
+    ldbuildopts="-L$bootdir/libunistring$libdir/$fildir $ldbuildopts"
     #lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
     buildlibdir="$bootdir/libunistring$libdir/$fildir:$buildlibdir"
     #cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
@@ -3860,6 +3863,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
   $echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
   $echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
+  $echo "LDBUILDOPTS=$ldbuildopts" >> $makefile_cfg
   
   # Close and extra libs
   $echo "EXTRALIBS=$extralibs" >> $makefile_cfg

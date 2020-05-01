@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri May  1 08:20:56 2020 (serrano)                */
+#*    Last change :  Fri May  1 09:20:52 2020 (serrano)                */
 #*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -492,6 +492,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS) $(
              LIBDEST=$@ \
              LIBPATH=$(BOOTLIBDIR) \
              LDLIBS="$(LDCOMPLIBS)" \
+	     LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
              SONAME=lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX)
 
 #*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Tue Mar 24 12:21:27 2020 (serrano)                */
+#*    Last change :  Fri May  1 09:28:58 2020 (serrano)                */
 #*    Copyright   :  2010-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -142,6 +142,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
            LIBDEST=$@ \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
@@ -152,6 +153,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
            LIBDEST=$@ \
            LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
            LDLIBS="-lbigloo$(API)_s-$(RELEASE) $(LDLIBS)" \
            CLOSELIBS="-lbigloo$(API)_s-$(RELEASE) -lbigloo_s-$(RELEASE)"
@@ -164,6 +166,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX): \
            LIBPATH=$(BOOTLIBDIR) \
            LIBSRC=$< \
            SONAME=libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
@@ -176,6 +179,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): \
            LIBPATH=$(BOOTLIBDIR) \
            LIBSRC=$< \
            SONAME=libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
            LDLIBS="-lbigloo$(API)_u-$(RELEASE) $(LDLIBS)" \
            CLOSELIBS="-lbigloo$(API)_u-$(RELEASE) -lbigloo_u-$(RELEASE)"
