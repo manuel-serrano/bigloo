@@ -9,12 +9,11 @@
                               ^   ^                                  
                                                                      
                Copyright (c) 1992 - 2020 Manuel Serrano
-                                                                     
+                http://www.inria.fr/indes/fp/Bigloo                                                                                               
      Bug descriptions, user reports, comments or suggestions are      
      welcome. Send them to                                           
-       bigloo@sophia.inria.fr                                        
-       http://www.inria.fr/indes/fp/Bigloo                                 
-                                                                     
+       https://github.com/manuel-serrano/bigloo
+       
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by 
    the Free Software Foundation; either version 2 of the License, or 

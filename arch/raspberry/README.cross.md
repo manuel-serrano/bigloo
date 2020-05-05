@@ -133,7 +133,7 @@ installed with:
 
   (host) sudo apt install gcc-arm-linux-gnueabihf
   
-If the versions differ, then you have to install your own curstom
+If the versions differ, then you have to install your own custom
 version. This can be done with
 
   (host) bigloo/arch/raspberry/build-toolchain.sh

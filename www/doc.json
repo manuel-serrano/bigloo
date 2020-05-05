@@ -1,0 +1,17 @@
+{
+   "title": "Bigloo",
+   "version": "4.3h",
+   "date": "May 2020",
+   "urlbase": "ftp://ftp-sop.inria.fr/indes/fp/Bigloo",
+   "github": "https://github.com/manuel-serrano/bigloo.git",
+   "bglurlbase": "ftp://ftp-sop.inria.fr/indes/fp/Bigloo",
+   "logo": "bigloo.svg",
+   "chapters": [ 
+      { "name": "Home", "icon": "glyphicon-home", "href": "index.html" },
+      { "name": "License", "icon": "glyphicon-copyright-mark", "href": "license.html" },
+      { "name": "Download", "icon": "glyphicon-download", "href": "download.html" },
+      { "name": "Debian/Ubuntu", "icon": "glyphicon-cloud-download", "href": "debian.html" },
+      { "name": "Homebrew", "icon": "glyphicon-cloud-download", "href": "homebrew.html" },
+      { "name": "Manual", "icon": "glyphicon-book", "href": "manual.html" }
+   ]
+}
