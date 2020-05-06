@@ -14,8 +14,7 @@ full connections between Scheme and C programs or between Scheme and
 Java programs, if you choose the JVM backend.
 
 
-Basic Example
--------------
+### Example 1: Scheme and C
 
 Bigloo makes it easy to share Scheme code and C code. In that example,
 the result of the `fib` Scheme function operating on Scheme fixnum numbers 
@@ -34,8 +33,7 @@ $ ./fib 30
 ```
 
 
-Multi-Threading
----------------
+### Example 2: Multi-Threading
 
 This second example illustrate the use of libraries, multi-threading, and
 objects. Pthreads are accessed via the Bigloo `pthread` library as declared
@@ -56,8 +54,7 @@ $ ./fib-mt 30
 ```
 
 
-Using Libraries
----------------
+### Example 3: Using Libraries
 
 The third example. hardly more complex, shows how to use builtin
 libraries to build an efficient music player decoding `.flac` on

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Tue May  5 15:51:15 2020 (serrano)                */
+#*    Last change :  Tue May  5 18:31:50 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
@@ -68,7 +68,7 @@ DEV_TARGETS=dev.html 00-command.html 01-rcfile.html 10-edit.html 20-cross.html \
 INTF_TARGETS=intf.html 01-nodejs.html 10-scheme.html 20-language.html
 
 ALL_TARGETS=index.html license.html download.html debian.html homebrew.html \
-  manual.html
+  manual.html bib.html contribs.html
 
 HTML="/usr/local/doc/html40/index/elements.html"
 
@@ -220,9 +220,12 @@ node-idx.json: node.js
 #*---------------------------------------------------------------------*/
 download.html: license.md ../INSTALL.md
 lang.html: _lang.md
-manual.html: ../manuals/bigloo.texi
+manual.html: manual-toc.js ../manuals/bigloo.texi
 
 hss/markdown.css: ../node_modules/markdown/hss/markdown.hss
+	cp $< $@
+
+hss/texinfo.css: ../node_modules/texinfo/hss/texinfo.hss
 	cp $< $@
 
 hss/fontifier.css: ../node_modules/fontifier/hss/fontifier.hss

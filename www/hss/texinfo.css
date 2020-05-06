@@ -1,0 +1,24 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/bigloo/www/hss/texinfo.css           */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Sat Jul 18 18:07:23 2015                          */
+/*    Last change :  Tue May  5 18:38:17 2020 (serrano)                */
+/*    Copyright   :  2015-20 Manuel Serrano                            */
+/*    -------------------------------------------------------------    */
+/*    Simple default style sheet for markdown rendering                */
+/*=====================================================================*/
+
+.texinfo .defn-name {
+    font-family: monospace;
+    padding-left: 0.5em;
+}
+
+.texinfo .defn-args {
+    font-style: italic;
+}
+
+.texinfo .defn-kind {
+    float: right;
+    padding-right: 0.5em;
+}

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Tue May  5 12:13:37 2020 (serrano)                */
+/*    Last change :  Tue May  5 18:30:56 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -16,6 +16,7 @@
 const path = require( "path" );
 const fs = require( "fs" );
 const markdown = require( hop.markdown );
+const texinfo = require( hop.texinfo );
 const fontifier = require( hop.fontifier );
 const hopdoc = require( "hopdoc" )
 const docxml = require( "./xml.js" );
@@ -41,6 +42,7 @@ function P( file ) {
    
 const css = [ P( "hss/doc.css" ),
 	      P( "hss/markdown.css" ),
+	      P( "hss/texinfo.css" ),
 	      P( "hss/fontifier.css" ),
 	      P( "lib/bootstrap/css/bootstrap.min.css" ) ];
 const jscript = [ P( "lib/jquery/js/jquery.min.js" ),
@@ -152,6 +154,82 @@ function makeToc( els, k, proc = false ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    compileXML ...                                                   */
+/*---------------------------------------------------------------------*/
+function compileXML( ast, title, clazz, target, tocfile = undefined ) {
+   var footer = path.join( PWD, "footer.md" );
+   var toc = hopdoc.toc( ast );
+   var affix = "normal";
+   
+   var document = <html>
+     <head css=${css}
+	   title=${doc.title + "/" + title}
+           jscript=${jscript}
+	   favicon=${favicon}
+           rts=${false}/>
+
+     <body data-spy="scroll" data-target="#navbar" class=${`${title} section ${clazz}`}
+           onscroll=~{
+	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      if( top > 180 ) {
+		 document.body.setAttribute( "scrolled", "yes" );
+	      } else {
+		 document.body.setAttribute( "scrolled", "no" );
+	      }
+	   } >
+       ~{ $('body').scrollspy( { target: '#navbar' }) }
+       <docxml.navbar title=${title}>
+         ${chapters}
+       </docxml.navbar>
+       
+       <docxml.title title=${doc.title}
+		     version=${doc.version}
+		     date=${doc.date}
+		     logo=${doc.logo}
+		     root=${ROOT}>
+          ${title}
+       </docxml.title>
+       <div class="container">
+	 <div class="filler">.keep</div>
+	 ${(toc.length > 0 )
+	      ? <div class="col-md-9" role="main"> ${ast} </div>
+	      : <div class="col-md-12" role="main"> ${ast} </div>}
+         <div class="row">
+           ${(toc.length > 0) ?
+           <div id="navbar" class="col-md-3" role="complementary">
+             <nav class="sidebar noaffix"
+		  data-spy=${affix}
+	          data-offset-top="215" data-offset-bottom="100">
+               <ul class="nav bs-docs-sidenav">
+                  ${makeToc( toc, 0, function( el ) {
+		     if( el.childNodes[ 0 ].data.charAt( 0 ) === "(" ) {
+			let m = el.childNodes[ 0 ].data.match( /[(](?:class |generic )?([^ )]*)/ );
+			return m[ 1 ];
+		     } else {
+			return el.childNodes[ 0 ].data.replace( /[(].*$/, "");
+		     }
+		  } )}
+	       </ul>
+	     </nav>
+             <nav class="sidebar noaffix toc-extra">
+	       ${tocfile && fs.existsSync( path.join( PWD, tocfile ) )
+		    ? require( path.join( PWD, tocfile ) )
+		    : "" }
+	     </nav> 
+	   </div>
+           : undefined}
+	 </div>
+	 ${fs.existsSync( footer )
+	   ? hopdoc.load( footer ).XML 
+	   : <docxml.footer root=${ROOT}/>}
+       </div>
+     </body>
+   </html>;
+
+   fs.writeFileSync( target, hop.compileXML( document ) );
+}
+
+/*---------------------------------------------------------------------*/
 /*    compileSection ...                                               */
 /*---------------------------------------------------------------------*/
 function compileSection( page ) {
@@ -198,14 +276,9 @@ function compileSection( page ) {
        </docxml.title>
        <div class="container">
 	 <div class="filler">.keep</div>
-	 ${(toc.length > 0 )?
-            <div class="col-md-9" role="main">
-              ${ast.XML}
-            </div>
-	    : 
-               <div class="col-md-12" role="main">
-	       	 ${ast.XML}
-	       </div>}
+	 ${(toc.length > 0 )
+	      ? <div class="col-md-9" role="main"> ${ast.XML} </div>
+	      : <div class="col-md-12" role="main"> ${ast.XML} </div>}
          <div class="row">
            ${(toc.length > 0) ?
            <div id="navbar" class="col-md-3" role="complementary">
@@ -222,6 +295,13 @@ function compileSection( page ) {
 		     }
 		  } )}
 	       </ul>
+	     </nav>
+             <nav class="sidebar noaffix toc-extra">
+	       ${fs.existsSync( path.join( PWD, title + "-toc.js" ) )
+		    ? require( path.join( PWD, title + "-toc.js" ) )
+	            : fs.existsSync( path.join( PWD, title + "-toc.md" ) )
+		        ? hopdoc.load( path.join( PWD, title + "-toc.md" ).xml )
+		        : "" }
 	     </nav> 
 	   </div>
            : undefined}
@@ -412,6 +492,11 @@ function compileIdx( json ) {
 
    console.log( hop.compileXML( document ) );
 }
+
+/*---------------------------------------------------------------------*/
+/*    exports                                                          */
+/*---------------------------------------------------------------------*/
+exports.compileXML = compileXML;
 
 /*---------------------------------------------------------------------*/
 /*    main ...                                                         */

@@ -1,14 +1,16 @@
-${ var doc = require( "hopdoc" ) }
+${ var hopdoc = require( "hopdoc" ) }
 ${ var config = require( hop.config ) }
 ${ var texinfo = require( hop.texinfo ) }
 ${ var xml = require( "./xml.js" ) }
-${ var cfg = require( "./doc.json" ) }
-${ var cfg = require( hop.texinfo ) }
+${ var fontifier = require( hop.fontifier ) }
+${ var doc = require( "./doc.js" ) }
 
+${ var manual = texinfo.load( "../manuals/bigloo.texi", hop.locale, fontifier ) }
+${ var chapters = manual.chapters() }
 
-Programming Manual
-------------------
+${ for( let i = 1; i < chapters.length; i++ ) {
+    const chap = manual.getChapterByIndex( i );
+	doc.compileXML( chap, chapters[ i ].innerHTML, "manual", "manual-chapter" + i + ".html", "manual-toc.js" ); }
+	}
 
-${ texinfo.load( "../manuals/bigloo.texi" ).XML }
-
-
+${ manual.getChapterByTitle( chapters[ 1 ].innerHTML ) }

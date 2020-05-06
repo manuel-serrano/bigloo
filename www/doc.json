@@ -5,6 +5,7 @@
    "urlbase": "ftp://ftp-sop.inria.fr/indes/fp/Bigloo",
    "github": "https://github.com/manuel-serrano/bigloo.git",
    "bglurlbase": "ftp://ftp-sop.inria.fr/indes/fp/Bigloo",
+   "homepage": "http://www-sop.inria.fr/indes/fp/Bigloo/",
    "logo": "bigloo.svg",
    "chapters": [ 
       { "name": "Home", "icon": "glyphicon-home", "href": "index.html" },
@@ -12,6 +13,8 @@
       { "name": "Download", "icon": "glyphicon-download", "href": "download.html" },
       { "name": "Debian/Ubuntu", "icon": "glyphicon-cloud-download", "href": "debian.html" },
       { "name": "Homebrew", "icon": "glyphicon-cloud-download", "href": "homebrew.html" },
-      { "name": "Manual", "icon": "glyphicon-book", "href": "manual.html" }
+      { "name": "Manual", "icon": "glyphicon-book", "href": "manual.html" },
+      { "name": "bibliography", "icon": "glyphicon-comment", "href": "bib.html" },
+      { "name": "Contribs", "icon": "glyphicon-asterisk", "href": "contribs.html" }
    ]
 }

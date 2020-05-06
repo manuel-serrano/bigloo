@@ -426,7 +426,6 @@ dynamic order in which @var{init-proc} is applied to these indices.
 @end deffn
 
 @deffn {bigloo procedure} list-split list n [filler]
-@deffnx {bigloo procedure} list-split list n [filler]
 Split a @var{list} into a list of lists of length @var{n}. Last smaller
 list is filled with @var{filler}.
 

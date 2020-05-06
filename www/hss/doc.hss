@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:20:48 2015                          */
-/*    Last change :  Tue May  5 13:27:50 2020 (serrano)                */
+/*    Last change :  Tue May  5 16:44:18 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    HSS for the Hop.js documentation                                 */
@@ -217,10 +217,19 @@ body.home h3:before,
 body.library h2:before,
 body.download h2:before,
 body.download h3:before,
+body.bib h3:before,
+body.bib h2:before,
 h1.nonumber:before,
 h2.nonumber:before,
 h3.nonumber:before {
   content: none;
+}
+
+h3.deffnx {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    margin-top: 0;
 }
 
 h2:before {
@@ -240,14 +249,15 @@ h1.toc, h1.markdown {
   font-size: 170%;
 }
 
-h2.markdown {
+h2.markdown,
+h2.texinfo {
   font-size: 160%;
 }
 
 h3.markdown {
   font-size: 130%;
 }
-
+ 
 h3.glyphicon,
 h4.glyphicon {
   color: #444;
@@ -287,22 +297,26 @@ h4.constructor:before {
 }
 
 h3.function:before,
-h4.function:before {
+h4.function:before,
+h3.procedure:before,
+h4.procedure:before {
   color: #1467e6;
 }
 
-h3.tag:before,
-h4.tag:before {
+h3.class:before,
+h4.class:before {
   color: #22ba5a;
+}
+
+h3.syntax:before,
+h4.syntax:before,
+h3.module:before,
+h4.module:before {
+  color: #720bc3;
 }
 
 h3.scheme:before,
 h4.scheme:before {
-  color: #720bc3;
-}
-
-h3.syntax:before,
-h4.syntax:before {
   color: #555555;
 }
 
@@ -444,6 +458,7 @@ body.home pre code,
 body.debian pre code,
 body.homebrew pre code,
 body.download pre code,
+body.manual pre code,
 body pre code {
   background-color: inherit;
   border: none;
@@ -467,6 +482,7 @@ body.home code {
 
 body.download code,
 body.homebrew code,
+body.manual code,
 body.debian code {
   background-color: #efefef;
   border: 1px solid #d2d2d2;
@@ -568,9 +584,11 @@ body pre {
   border-left: 2px solid #1467E6;
   border-radius: 0;
   color: #000;
-  margin-left: 1em;
+  margin-left: 0;
 }
 
+body.manual pre.lisp,
+body.manual pre.smalllisp,
 body.home pre.scheme {
   border-left-color: #f91a03;
 }
@@ -620,8 +638,69 @@ code .h1, code .h2, code .h3, code .h4 {
 /*    License                                                          */
 /*---------------------------------------------------------------------*/
 .license pre {
-    font-size: 100%;
+    font-size: 90%;
     border: 1px solid #ccc;
+}
+
+/*---------------------------------------------------------------------*/
+/*    manual                                                           */
+/*---------------------------------------------------------------------*/
+body.manual nav.sidebar {
+    position: static;
+}
+
+body.manual nav.toc-extra {
+    margin-top: 2ex;
+}
+
+body.manual nav.toc-extra div.title {
+    margin-bottom: 2ex;
+    margin-left: 1em;
+    font-weight: bold;
+}
+
+body.manual nav.toc-extra ol.chapter {
+    counter-reset: toc-chapter;
+}
+
+body.manual nav.toc-extra ol.chapter li {
+    counter-increment: toc-chapter;
+}
+
+body.manual nav.toc-extra ol.chapter li:before {
+    content: counter( toc-chapter ) ".  ";
+    margin-left: 0.4em;
+}
+
+body.manual nav.toc-extra ol.chapter li a {
+    padding: 0;
+    padding-left: 0.3em;
+    display: inline-block;
+}
+
+body.manual nav.toc-extra ol.chapter li a:hover {
+    text-decoration: underline;
+}
+
+/*---------------------------------------------------------------------*/
+/*    texinfo                                                          */
+/*---------------------------------------------------------------------*/
+h3.texinfo {
+  font-size: 110%;
+}
+
+h3.texinfo .defn-name {
+    font-weight: bold;
+}
+
+.deffnx-first {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.deffnx-last {
+    margin-top: 0;
+    padding-top: 0;
 }
 
 /*---------------------------------------------------------------------*/

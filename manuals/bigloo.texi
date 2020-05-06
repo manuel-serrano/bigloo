@@ -287,8 +287,8 @@ simple tail recursions are compiled without stack consumption.
 class files. These classes may use regular Java classes.
 
 @item Bigloo is a module compiler. It compiles
-modules into `.o', `.class', or `.obj' files that must be linked together to 
-produce stand alone executable programs, JVM jar files, or .NET programs.
+modules into `.o' or `.class' files that must be linked together to 
+produce stand alone executable programs or JVM jar files.
 @end itemize
 
 However, we designed Bigloo to be as close as possible to the
