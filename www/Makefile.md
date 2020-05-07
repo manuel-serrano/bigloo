@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Tue May  5 18:31:50 2020 (serrano)                */
+#*    Last change :  Thu May  7 11:09:05 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
@@ -91,20 +91,15 @@ VPATH=api lang dev widget intf \
 #*---------------------------------------------------------------------*/
 .PHONY: build clean install uninstall
 
-build: $(ALL_TARGETS) hss/doc.css
+build: $(ALL_TARGETS) hss/doc.css idx.html
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean:
-	$(RM) $(API_TARGETS) $(LANG_TARGETS) $(WIDGET_TARGETS) $(DEV_TARGETS)
-	$(RM) $(INTF_TARGETS)
-	$(RM) license.html index.html download.html dev.html
-	$(RM) 00-command.html 10-edit.html
+	rm -f $(ALL_TARGETS)
+	rm -f manual-chapter*.html
 	$(RM) idx.json idx.html
-	$(RM) -f hss/markdown.hss hss/fontifier.hss
-	$(RM) -f favicon.png
-	$(RM) -f LICENSE.academic
 
 devclean: clean
 
@@ -177,10 +172,9 @@ index.html: _index.md doc.js xml.js bigloo.svg doc.json
 #*---------------------------------------------------------------------*/
 #*    idx.json ...                                                     */
 #*---------------------------------------------------------------------*/
-idx.json: $(API_TARGETS) $(LANG_TARGETS) $(DEV_TARGETS) $(WIDGET_TARGETS) \
-  $(INTF_TARGETS)
+idx.json: manual.html
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
-          ./doc.js "html-to-idx" . $^ > $@ \
+          ./doc.js "html-to-idx" . $^ manual-chapter*.html > $@ \
           || ($(RM) $@; exit 1)
 
 #*---------------------------------------------------------------------*/

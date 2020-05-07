@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:20:48 2015                          */
-/*    Last change :  Tue May  5 16:44:18 2020 (serrano)                */
+/*    Last change :  Wed May  6 19:42:19 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    HSS for the Hop.js documentation                                 */
@@ -168,7 +168,7 @@ footer .copyright-middle {
 /*    sections                                                         */
 /*---------------------------------------------------------------------*/
 .jumbotron .row h1 {
-    color: #f91a03;
+  color: #f91a03;
   text-shadow: none;
   font-weight: bold;
   border: 0;
@@ -225,20 +225,9 @@ h3.nonumber:before {
   content: none;
 }
 
-h3.deffnx {
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 0;
-    margin-top: 0;
-}
-
 h2:before {
   counter-increment: subsection;
   content: counter( section ) "." counter( subsection ) ". ";
-}
-
-h3 {
-  text-shadow: none;
 }
 
 h3.glyphicon {
@@ -254,8 +243,10 @@ h2.texinfo {
   font-size: 160%;
 }
 
-h3.markdown {
-  font-size: 130%;
+h3.markdown,
+h3.texinfo {
+  font-size: 140%;
+  text-shadow: #ccc 1px 1px 1px;
 }
  
 h3.glyphicon,
@@ -404,6 +395,10 @@ nav.sidebar .active * {
 
 nav.sidebar li > a {
   padding: 4px 8px;
+}
+
+.manual nav.sidebar li > a {
+  padding: 0px 8px;
 }
 
 nav.navbar-inverse {
@@ -573,7 +568,7 @@ div.home-body {
 }
 
 body.home h1 {
-    color: #f91a03;
+  color: #f91a03;
   text-shadow: none;
   font-weight: bold;
 }
@@ -653,7 +648,7 @@ body.manual nav.toc-extra {
     margin-top: 2ex;
 }
 
-body.manual nav.toc-extra div.title {
+body.manual nav div.title {
     margin-bottom: 2ex;
     margin-left: 1em;
     font-weight: bold;
@@ -680,27 +675,6 @@ body.manual nav.toc-extra ol.chapter li a {
 
 body.manual nav.toc-extra ol.chapter li a:hover {
     text-decoration: underline;
-}
-
-/*---------------------------------------------------------------------*/
-/*    texinfo                                                          */
-/*---------------------------------------------------------------------*/
-h3.texinfo {
-  font-size: 110%;
-}
-
-h3.texinfo .defn-name {
-    font-weight: bold;
-}
-
-.deffnx-first {
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.deffnx-last {
-    margin-top: 0;
-    padding-top: 0;
 }
 
 /*---------------------------------------------------------------------*/

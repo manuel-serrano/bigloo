@@ -43,3 +43,4 @@ avoid the hassle of installing manually Bigloo by using pre-compiled
 versions.
 
 ${doc.include( "../INSTALL.md" )}
+

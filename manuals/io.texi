@@ -1081,7 +1081,7 @@ if the characters read (resp. writen) outbound the length of the memory mapped.
 @c ------------------------------------------------------------------- @c
 @node Zip, Tar, Memory mapped area, Input and Output
 @comment  node-name,  next,  previous,  up
-@subsection Zip
+@subsection zip
 @cindex gzip
 @cindex zip
 @cindex zlib
@@ -1130,7 +1130,7 @@ the port is not gzipped.
 @c ------------------------------------------------------------------- @c
 @node Tar, ,Zip, Input and Output
 @comment  node-name,  next,  previous,  up
-@subsection Tar
+@subsection tar
 @cindex tar
 
 @deffn {bigloo procedure} tar-read-header [input-port]

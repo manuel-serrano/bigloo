@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:22:56 2015                          */
-/*    Last change :  Tue May  5 07:58:03 2020 (serrano)                */
+/*    Last change :  Thu May  7 13:53:50 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hop.js XML extensions                                            */
@@ -168,13 +168,6 @@ function docfooter( attrs ) {
 	 <a href="http://www.inria.fr">Inria</a>
        </div>
        <div class="copyright col-md-8 copyright-middle">
-         <a class="iddn" href="http://app.legalis.net/">
-           IDDN.FR.001.310007.000.S.P.2018.000.31235
-	 </a>
-         - 
-         <a class="iddn" href="http://app.legalis.net/">
-	   IDDN.FR.001.310008.000.S.P.2018.000.31235
-	 </a>
        </div>
        <div class="copyright copyright-right col-md-2">
 	 <button type="button" class="inria btn btn-danger">
@@ -209,7 +202,8 @@ function downloadButton( attrs ) {
 /*    entryLetter ...                                                  */
 /*---------------------------------------------------------------------*/
 function entryLetter( en ) {
-   return en.key.charAt( 0 ).toUpperCase();
+   const l = en.key.charAt( 0 ).toUpperCase();
+   return ( (l >= "A" && l <= "Z") || l === "<" || l === ">" ) ? l : "*";
 }
 
 /*---------------------------------------------------------------------*/
@@ -265,39 +259,18 @@ function idxEntry( e, idx = undefined, arr = undefined ) {
    if( typeof( e ) === "string" ) {
       return <tr class="idx-letter"><td/><th>${e}</th></tr>;
    } else {
-      const { index, sep } = minIndexOf( e.proto, "[", "{", "(" );
       const title = e.proto + "..." + e.chapter;
-      let lbl = index ? e.proto.substring( 0, index ) : e.proto;
-      const i = lbl.lastIndexOf( "." );
-      const { index: cindex, sep: csep } = minIndexOf( e.proto, "(", "{" );
+      let lbl = e.proto;
 
-      switch( csep ) {
-	 case "{": lbl += "{}"; break;
-	 case "(": lbl += "()"; break;
-      }
-      
-      if( i > 0 ) {
-	 return <tr>
-	   <td class="idx-prefix">${lbl.substring( 0, i )}.</td>
-	   <td class="idx-entry" title=${title}>
-	     <a href=${e.url}>${lbl.substring( i+1 )}</a>
-	   </td>
-	 </tr>;
-      } else {
-	 if( lbl.indexOf( "&lt;" ) === 0 && lbl.lastIndexOf( "&gt;" ) === -1 ) {
-	    if( lbl.charAt( lbl.length - 1 ) === " " ) {
-	       lbl = lbl.substring( 0, lbl.length - 1 ) + "&gt;";
-	    } else {
-	       lbl += "&gt;";
-	    }
-	 }
-	 return <tr>
-	   <td/>
-	   <td class="idx-entry" title=${title}>
-	     <a href=${e.url}>${lbl}</a>
-	   </td>
-	 </tr>
-      }
+      return <tr>
+	<td/>
+	<td class="idx-entry" title=${title}>
+	  <a href=${e.url}>${lbl}</a>
+	</td>
+	<td>
+	  <a href=${e.chapter + ".html"}>${e.chapter.split( "-" )[ 1 ]}</a>
+	</td>
+      </tr>
    }
 }
 
@@ -309,22 +282,12 @@ function idx( attrs, entries ) {
    var collen = en.length / 3;
    
    return <div class="row">
-     <div class="col-md-4">
+     <div class="col-md-12">
        <table class="idx-col">
-         ${en.slice( 0, collen ).map( idxEntry )}
+         ${en.map( idxEntry )}
        </table>
      </div>
-     <div class="col-md-4">
-       <table class="idx-col">
-         ${en.slice( collen, collen * 2 ).map( idxEntry )}
-       </table>
-     </div>
-     <div class="col-md-4">
-       <table class="idx-col">
-         ${en.slice( collen * 2, en.length ).map( idxEntry )}
-       </table>
-     </div>
-   </div>;
+   </div>
 }
 
 /*---------------------------------------------------------------------*/

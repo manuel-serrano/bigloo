@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Tue May  5 18:30:56 2020 (serrano)                */
+/*    Last change :  Thu May  7 08:50:44 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -135,14 +135,15 @@ function makeToc( els, k, proc = false ) {
 	       var el = els[ i++ ];
 	       var n = proc ? proc( el ) : el.childNodes;
 	       acc.push( <li>
-		 <a href=${"#" + el.id} role="presentation">
-		${n}</a></li> );
+		 <a href=${"#" + el.id} role="presentation">${n}</a>
+               </li> );
 	    } else if( els[ i ].tagName > tag ) {
 	       var children = _makeToc( els, i, proc, indent + "  " );
 	       acc.push( <ul>${children}</ul> );
 	       i += childrenSize( children );
 	    } else {
 	       i++;
+	       return acc;
 	    }
 	 }
 
@@ -159,6 +160,80 @@ function makeToc( els, k, proc = false ) {
 function compileXML( ast, title, clazz, target, tocfile = undefined ) {
    var footer = path.join( PWD, "footer.md" );
    var toc = hopdoc.toc( ast );
+   var affix = "normal";
+   
+   toc.shift();
+   
+   var document = <html>
+     <head css=${css}
+	   title=${doc.title + "/" + title}
+           jscript=${jscript}
+	   favicon=${favicon}
+           rts=${false}/>
+
+     <body data-spy="scroll" data-target="#navbar" class=${`${title} section ${clazz}`}
+           onscroll=~{
+	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      if( top > 180 ) {
+		 document.body.setAttribute( "scrolled", "yes" );
+	      } else {
+		 document.body.setAttribute( "scrolled", "no" );
+	      }
+	   } >
+       ~{ $('body').scrollspy( { target: '#navbar' }) }
+       <docxml.navbar title=${title}>
+         ${chapters}
+       </docxml.navbar>
+       
+       <docxml.title title=${doc.title}
+		     version=${doc.version}
+		     date=${doc.date}
+		     logo=${doc.logo}
+		     root=${ROOT}>
+          ${title}
+       </docxml.title>
+       <div class="container">
+	 <div class="filler">.keep</div>
+            <div class="col-md-9" role="main"> ${ast} </div>
+         <div class="row">
+           <div id="navbar" class="col-md-3" role="complementary">
+             <nav class="sidebar noaffix"
+		  data-spy=${affix}
+	          data-offset-top="215" data-offset-bottom="100">
+	       <div class="title">${title}</div>
+               <ul class="nav bs-docs-sidenav">
+                  ${makeToc( toc, 0, function( el ) {
+		     if( el.childNodes[ 0 ].data.charAt( 0 ) === "(" ) {
+			let m = el.childNodes[ 0 ].data.match( /[(](?:class |generic )?([^ )]*)/ );
+			return m[ 1 ];
+		     } else {
+			return el.childNodes[ 0 ].data.replace( /[(].*$/, "");
+		     }
+		  } )}
+	       </ul>
+	     </nav>
+             <nav class="sidebar noaffix toc-extra">
+	       ${tocfile && fs.existsSync( path.join( PWD, tocfile ) )
+		    ? require( path.join( PWD, tocfile ) )
+		    : "" }
+	     </nav> 
+	   </div>
+	 </div>
+	 ${fs.existsSync( footer )
+	   ? hopdoc.load( footer ).XML 
+	   : <docxml.footer root=${ROOT}/>}
+       </div>
+     </body>
+   </html>;
+
+   fs.writeFileSync( target, hop.compileXML( document ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    compileNode ...                                                  */
+/*---------------------------------------------------------------------*/
+function compileNode( node, title, clazz, target, tocfile = undefined ) {
+   var footer = path.join( PWD, "footer.md" );
    var affix = "normal";
    
    var document = <html>
@@ -191,34 +266,7 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
        </docxml.title>
        <div class="container">
 	 <div class="filler">.keep</div>
-	 ${(toc.length > 0 )
-	      ? <div class="col-md-9" role="main"> ${ast} </div>
-	      : <div class="col-md-12" role="main"> ${ast} </div>}
-         <div class="row">
-           ${(toc.length > 0) ?
-           <div id="navbar" class="col-md-3" role="complementary">
-             <nav class="sidebar noaffix"
-		  data-spy=${affix}
-	          data-offset-top="215" data-offset-bottom="100">
-               <ul class="nav bs-docs-sidenav">
-                  ${makeToc( toc, 0, function( el ) {
-		     if( el.childNodes[ 0 ].data.charAt( 0 ) === "(" ) {
-			let m = el.childNodes[ 0 ].data.match( /[(](?:class |generic )?([^ )]*)/ );
-			return m[ 1 ];
-		     } else {
-			return el.childNodes[ 0 ].data.replace( /[(].*$/, "");
-		     }
-		  } )}
-	       </ul>
-	     </nav>
-             <nav class="sidebar noaffix toc-extra">
-	       ${tocfile && fs.existsSync( path.join( PWD, tocfile ) )
-		    ? require( path.join( PWD, tocfile ) )
-		    : "" }
-	     </nav> 
-	   </div>
-           : undefined}
-	 </div>
+	 <div class="col-md-12" role="main"> ${node} </div>
 	 ${fs.existsSync( footer )
 	   ? hopdoc.load( footer ).XML 
 	   : <docxml.footer root=${ROOT}/>}
@@ -497,6 +545,7 @@ function compileIdx( json ) {
 /*    exports                                                          */
 /*---------------------------------------------------------------------*/
 exports.compileXML = compileXML;
+exports.compileNode = compileNode;
 
 /*---------------------------------------------------------------------*/
 /*    main ...                                                         */
@@ -507,7 +556,8 @@ function main() {
 	 hopdoc.htmlToIdx( process.argv[ 3 ],
 			   process.argv.slice( 4 ).map( function( f, _, __ ) {
 			      return path.join( PWD, f );
-			   } ) );
+			   } ),
+ 			   [ "h1", "h3", "h4" ] );
 	 break;
 
       case "compile-idx":
