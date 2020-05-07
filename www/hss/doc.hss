@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:20:48 2015                          */
-/*    Last change :  Wed May  6 19:42:19 2020 (serrano)                */
+/*    Last change :  Thu May  7 19:31:07 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    HSS for the Hop.js documentation                                 */
@@ -675,6 +675,45 @@ body.manual nav.toc-extra ol.chapter li a {
 
 body.manual nav.toc-extra ol.chapter li a:hover {
     text-decoration: underline;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bibentry                                                         */
+/*---------------------------------------------------------------------*/
+.bibentry {
+    margin-top: 2ex;
+}
+
+.bibentry .title {
+    font-weight: bold;
+}
+
+.bibentry .title:before {
+    content: " -- ";
+    font-weight: normal;
+}
+
+.bibentry .booktitle:before {
+    content: " -- ";
+    font-weight: normal;
+}
+
+.bibentry .download {
+    margin-left: 2em;
+}
+
+.bibentry .download a:before {
+    content: "[ ";
+}
+
+.bibentry .download a:after {
+    content: " ]";
+}
+
+.bibentry .abstract {
+    margin-left: 4em;
+    font-size: 85%;
+    text-align: justify;
 }
 
 /*---------------------------------------------------------------------*/

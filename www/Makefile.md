@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Thu May  7 11:09:05 2020 (serrano)                */
+#*    Last change :  Thu May  7 19:07:24 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
@@ -215,6 +215,7 @@ node-idx.json: node.js
 download.html: license.md ../INSTALL.md
 lang.html: _lang.md
 manual.html: manual-toc.js ../manuals/bigloo.texi
+bib.html: _bibtex.hop bigloo.bib
 
 hss/markdown.css: ../node_modules/markdown/hss/markdown.hss
 	cp $< $@

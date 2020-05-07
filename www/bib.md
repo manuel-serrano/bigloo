@@ -4,6 +4,7 @@ ${ var texinfo = require( hop.texinfo ) }
 ${ var xml = require( "./xml.js" ) }
 ${ var cfg = require( "./doc.json" ) }
 ${ var fontifier = require( hop.fontifier ) }
+${ var bibtex = require( "./_bibtex.hop" ) }
 
 
 Citations
@@ -32,3 +33,25 @@ ${<pre class="bibtex">
   crossref = {bigloo}
 }
 </pre>}
+
+
+References
+----------
+
+${ bibtex.load( "./bigloo.bib" )
+  .sort( (x, y) => x.year < y.year ? true : x.year > y.year ? false : x.month < y.month )
+  .map( e => 
+<div class="bibentry">
+  <span class="author">${e.author}</span>
+  <span class="title">${e.title}</span>
+  <span class="booktitle">${e.booktitle}</span>
+  <span class="address">${e.address}</span>,
+  <span class="month">${e.month}</span>,
+  <span class="year">${e.year}</span>
+  <div class="download">
+     <a href=${e.download}>${e.download.match( /[^.]*$/ )[ 0 ]}</a>
+  </div>
+  <div class="abstract">
+    ${e.abstract}
+  </div>
+</div> ) }
