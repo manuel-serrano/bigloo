@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Fri May  8 10:29:41 2020 (serrano)                */
+/*    Last change :  Fri May  8 14:24:28 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -200,7 +200,6 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
              <nav class="sidebar noaffix"
 		  data-spy=${affix}
 	          data-offset-top="215" data-offset-bottom="100">
-	       <div class="title">${title}</div>
                <ul class="nav bs-docs-sidenav">
                   ${makeToc( toc, 0, function( el ) {
 		     if( el.childNodes[ 0 ].data.charAt( 0 ) === "(" ) {
@@ -506,7 +505,7 @@ function compileLibrary( content ) {
 /*---------------------------------------------------------------------*/
 function compileIdx( json ) {
    var idx = require( path.join( PWD, json ) );
-   var chapter = { title: "Index", key: "index" };
+   var chapter = { title: "Index", key: "manual" };
    var footer = path.join( PWD, "footer.md" );
 
    var document = <html>

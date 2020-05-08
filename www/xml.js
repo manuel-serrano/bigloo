@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:22:56 2015                          */
-/*    Last change :  Thu May  7 13:53:50 2020 (serrano)                */
+/*    Last change :  Fri May  8 14:25:25 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hop.js XML extensions                                            */
@@ -257,7 +257,7 @@ function minIndexOf( string, ...seps ) {
 /*---------------------------------------------------------------------*/
 function idxEntry( e, idx = undefined, arr = undefined ) {
    if( typeof( e ) === "string" ) {
-      return <tr class="idx-letter"><td/><th>${e}</th></tr>;
+      return <tr class="idx-letter" id=${"index-" + e }><td/><th>${e}</th></tr>;
    } else {
       const title = e.proto + "..." + e.chapter;
       let lbl = e.proto;
@@ -280,12 +280,31 @@ function idxEntry( e, idx = undefined, arr = undefined ) {
 function idx( attrs, entries ) {
    var en = idxLetters( entries.filter( x => x ) );
    var collen = en.length / 3;
+   var a = new Array( 27 );
+   const c0 = "A".charCodeAt( 0 );
    
+   for( let i = 0; i < 26; i++ ) {
+      const c = String.fromCharCode( i + c0 );
+      a[ i + 1 ] = <li> <a href=${"#index-" + c}>${c}</a></li>;
+   }
+   
+   a[ 0 ] =  <li> <a href="#index-*">*</a></li>;
+
    return <div class="row">
-     <div class="col-md-12">
+     <div class="col-md-9">
        <table class="idx-col">
          ${en.map( idxEntry )}
        </table>
+     </div>
+     <div class="col-md-3">
+       <nav class="sidebar noaffix"
+	    data-spy=normal
+	    data-offset-top="185" data-offset-bottom="100">
+	 <div class="title">Index</div>
+       	 <ul class="nav bs-docs-sidenav nav-index">
+	   ${a}
+       	 </ul>
+       </nav>
      </div>
    </div>
 }

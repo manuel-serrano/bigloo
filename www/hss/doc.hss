@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:20:48 2015                          */
-/*    Last change :  Thu May  7 19:31:07 2020 (serrano)                */
+/*    Last change :  Fri May  8 15:10:15 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    HSS for the Hop.js documentation                                 */
@@ -736,6 +736,10 @@ body.manual nav.toc-extra ol.chapter li a:hover {
 
 .idx-letter > * {
   border-bottom: 1px solid #ccc;
+}
+
+.nav-index {
+    font-size: 80%;
 }
 
 /*---------------------------------------------------------------------*/
