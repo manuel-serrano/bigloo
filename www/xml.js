@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:22:56 2015                          */
-/*    Last change :  Fri May  8 14:25:25 2020 (serrano)                */
+/*    Last change :  Fri May  8 15:12:44 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hop.js XML extensions                                            */
@@ -297,10 +297,9 @@ function idx( attrs, entries ) {
        </table>
      </div>
      <div class="col-md-3">
-       <nav class="sidebar noaffix"
+       <nav class="sidebar noaffix index"
 	    data-spy=normal
 	    data-offset-top="185" data-offset-bottom="100">
-	 <div class="title">Index</div>
        	 <ul class="nav bs-docs-sidenav nav-index">
 	   ${a}
        	 </ul>
