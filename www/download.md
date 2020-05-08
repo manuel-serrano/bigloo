@@ -3,7 +3,7 @@ ${ var config = require( hop.config ) }
 ${ var xml = require( "./xml.js" ) }
 ${ var cfg = require( "./doc.json" ) }
 
-Getting Bigloo
+Bigloo Sources
 --------------
 
 Current and older Bigloo source files are all available bundled in
@@ -38,9 +38,14 @@ ${<div class="row">
   </div>
 </div>}
 
-[Debian/Ubuntu](./debian.html) and [OS X](./homebrew.html) users might
-avoid the hassle of installing manually Bigloo by using pre-compiled
-versions.
+
+Bigloo Packages
+---------------
+
+${doc.include( "debian.md" ) }
+
+${doc.include( "homebrew.md" ) }
 
 ${doc.include( "../INSTALL.md" )}
+
 

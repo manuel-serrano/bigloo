@@ -22,7 +22,7 @@ ${<pre class="bibtex">
 }
 </pre>}
 
-For refering to the current release, please use :
+For referring to the current release, please use:
 
 ${<pre class="bibtex">
 @softwareversion{ bigloo-${cfg.version},
@@ -38,18 +38,29 @@ ${<pre class="bibtex">
 References
 ----------
 
+${ function suffix( path ) {
+    if( path.match( /[.]ps[.]gz$/ ) ) {
+       return "ps.gz";
+    } else if( path.lastIndexOf( "." ) > 0 ) {
+       return path.substring( path.lastIndexOf( "." ) + 1 );
+    } else {
+       return path;
+    }
+  }
+}
+
 ${ bibtex.load( "./bigloo.bib" )
   .sort( (x, y) => x.year < y.year ? true : x.year > y.year ? false : x.month < y.month )
   .map( e => 
 <div class="bibentry">
   <span class="author">${e.author}</span>
   <span class="title">${e.title}</span>
-  <span class="booktitle">${e.booktitle}</span>
+  <span class="booktitle">${e.booktitle || e.journal}</span>,
   <span class="address">${e.address}</span>,
   <span class="month">${e.month}</span>,
   <span class="year">${e.year}</span>
   <div class="download">
-     <a href=${e.download}>${e.download.match( /[^.]*$/ )[ 0 ]}</a>
+     <a href=${e.download}>${suffix( e.download )}</a>
   </div>
   <div class="abstract">
     ${e.abstract}

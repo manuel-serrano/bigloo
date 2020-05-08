@@ -9,8 +9,8 @@ the standard package managers of these distributions after
 the appropriate `hop.list` file has been created in the
 `/etc/apt/sources.list` directory.
 
-Debian
-------
+
+### Debian
 
 ${<span class="label label-success">Debian Buster/x86_64</span>} users can 
 installed pre-compiled versions with:
@@ -19,8 +19,7 @@ installed pre-compiled versions with:
 echo "deb [trusted=yes] http://hop.inria.fr/linux/Debian buster hop" > /etc/apt/sources.list.d/hop.list
 ```
 
-Raspberry
----------
+### Raspberry
 
 ${<span class="label label-primary">Raspberry Buster/Arm</span>} users can install pre-compiled packages for with:
 
@@ -28,8 +27,7 @@ ${<span class="label label-primary">Raspberry Buster/Arm</span>} users can insta
 echo "deb [trusted=yes] http://hop.inria.fr/linux/Raspbian buster hop" > /etc/apt/sources.list.d/hop.list
 ```
 
-Ubuntu
-------
+### Ubuntu
 
 ${<span class="label label-info">Ubuntu LTS 20.04/x86_64</span>} users and
 ${<span class="label label-info">Windows WSL</span>}

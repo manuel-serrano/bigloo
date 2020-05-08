@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jul 18 18:07:23 2015                          */
-/*    Last change :  Wed May  6 19:36:35 2020 (serrano)                */
+/*    Last change :  Fri May  8 09:40:40 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Simple default style sheet for markdown rendering                */
@@ -82,4 +82,7 @@ h4 .deffn-name {
     font-weight: bold;
 }
 
-
+.deffn-end {
+    margin-top: 1ex;
+    visibility: hidden;
+}

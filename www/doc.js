@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Thu May  7 08:50:44 2020 (serrano)                */
+/*    Last change :  Fri May  8 10:29:41 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -181,7 +181,7 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
-       <docxml.navbar title=${title}>
+       <docxml.navbar title=${title} key=${clazz}>
          ${chapters}
        </docxml.navbar>
        
@@ -361,7 +361,8 @@ function compileSection( page ) {
      </body>
    </html>;
 
-   console.log( hop.compileXML( document ) );
+   fs.writeSync( process.stdout.fd, hop.compileXML( document ) );
+   fs.writeSync( process.stdout.fd, "\n" );
 }
 
 /*---------------------------------------------------------------------*/

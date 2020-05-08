@@ -1,8 +1,5 @@
-Bigloo, installation notice
-===========================
-
-Installation
-------------
+Bigloo Installation Notice
+--------------------------
 
 Here is the procedure for compiling and installing BIGLOO on a Unix system.
 
@@ -10,8 +7,7 @@ Postscript and HTML version of the Bigloo documentation can be found at:
 [http://www.inria.fr/indes/fp/Bigloo](http://www.inria.fr/indes/fp/Bigloo)
 
 
-Requirements
-------------
+### Requirements
 
    - For all back-ends, Bigloo installation _requires_ GNU-make. 
 
@@ -35,8 +31,7 @@ Requirements
      named `libssl-dev`).
 
    
-Summary
--------
+### Summary
 
     $ ./configure
     $ make
@@ -53,8 +48,7 @@ On an Xeon E5-1650 running Linux 5.3, this whole procedure lasts about
 Here are detailed each of these steps.
 
 
-Configuring Bigloo
-------------------
+### Configuring Bigloo
 
 
   -  Edit the `./configure` file and set `bindir`, `libdir`, `mandir`,
@@ -79,8 +73,7 @@ Configuring Bigloo
   installed at the same location as the main Bigloo library.
 
 
-Compiling Bigloo
-----------------
+### Compiling Bigloo
 
 Type:
 
@@ -98,8 +91,7 @@ that step:
   - `BMACS`: the Bigloo Emacs environment.
 
 
-Testing Bigloo
---------------
+### Testing Bigloo
 
 Now Bigloo is ready to be used but if you want to make the
 initial test, type:
@@ -119,8 +111,7 @@ install. Once installed, the extra tests can be executed with:
     make c-api-test
 	  
 
-Compiling Bee
--------------
+### Compiling Bee
 
 Bee is the Bigloo Integrated Environment. To compile it:
 
@@ -151,8 +142,7 @@ __Note__: the emacs package requires GNU-EMACS21 or XEMACS20.4 or
    [http://www.xemacs.org/](http://www.xemacs.org/)
 
 
-Installing 
------------------
+### Installing 
 
 Type
 
@@ -176,8 +166,7 @@ This is _not_ required on Linux nor Digital Unix but it is _required_
 on SunOs and Solaris.
 
 
-Installing the Bee
-------------------
+### Installing the Bee
 
    - To install the BEE, type:
    
@@ -199,8 +188,7 @@ Installing the Bee
    `ESC-x: customize-group bee` and `ESC-x: customize-group ude`.
 
 
-Testing Cigloo
---------------
+### Testing Cigloo
 
    - To test Cigloo, go in the directory cigloo/Example and just type:
     make; ./ctest
@@ -212,23 +200,20 @@ Testing Cigloo
    - Once Cigloo is tested, return to the top level directory `cd ../..`
 
 
-Uninstalling Bigloo
--------------------
+### Uninstalling Bigloo
 
 In order to uninstall Bigloo and the Bee, type:
   `make uninstall`
 
 
-Cleaning Bigloo
----------------
+### Cleaning Bigloo
 
 Once, installed, you can type:
     make clean
 to remove all the useless files.
 
 
-Unconfiguring Bigloo
---------------------
+### Unconfiguring Bigloo
 
 If you plan to re-install Bigloo on a new platform. Before performing
 the all installation process (step 1 to 8) you must first remove the

@@ -4,8 +4,7 @@ ${ var xml = require( "./xml.js" ) }
 ${ var cfg = require( "./doc.json" ) }
 
 
-Homebrew Package
-----------------
+### Homebrew
 
 For ${<span class="label label-danger">OS X</span>} users, as well as Linux users,
 Bigloo can be installed via the `homebrew` package system. For that, issue
