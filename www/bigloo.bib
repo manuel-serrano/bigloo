@@ -1,0 +1,552 @@
+%*=====================================================================*/
+%*    serrano/prgm/project/bigloo/bigloo/www/bigloo.bib                */
+%*    -------------------------------------------------------------    */
+%*    Author      :  Manuel Serrano                                    */
+%*    Creation    :  Mon Aug 29 17:32:49 1994                          */
+%*    Last change :  Fri May  8 10:12:09 2020 (serrano)                */
+%*    -------------------------------------------------------------    */
+%*    Bigloo bibliography.                                             */
+%*=====================================================================*/
+@string{lncs	= "Lecture Notes on Computer Science"}
+@string{sas	= "Static Analysis Symposium ({SAS})"}
+@string{jfp	= "Journal of Functional Programming"}
+@string{icfp	= "{\sc ACM Sigplan} Int'l Conference on Functional Programming ({ICFP})"}
+@string{dls	= "Dynamic Language Symposium (DLS)"}
+@string{ppdp	= "{\sc ACM Sigplan} Int'l Conference on Principles and Practice of Declarative Programming ({PPDP})"}
+@string{plilp	= "{I}nt'l {S}ymposium on {P}rogramming {L}anguage
+                   {I}mplementation and {L}ogic {P}rogramming ({PLILP})"}
+@string{hosc    = "Higher Order and Symbolic Computation (HOSC)"}
+@string{toplas  = "ACM Transactions on Programming Languages and Systems (TOPLAS)"}
+@string{urlbase	= "http://www-sop.inria.fr/members/Manuel.Serrano/publi/"}
+
+@InProceedings{ serrano:wadler16,
+  author = {Serrano, M.},
+  title = {The {C}omputer {S}cientist {N}ightmare},
+  booktitle = {A {L}ist of {S}uccesses that {C}an {C}hange the {W}orld},
+  series = lncs,
+  year = 2016,
+  month = apr,
+  volume = 9600,
+  pages = {356--366},
+  category = {programming languages},
+  download = urlbase # "serrano-wadlerfest16.pdf",
+  address = {Edinburgh, Scotland},
+  isbn = {978-3319309354},
+  x-proceedings = {yes},
+  x-editorial-board = {no},
+  x-international-audience = {yes},
+  x-scientific-popularization = {no},
+  abstract = {
+  This text relates the story of particularly shocking bug that
+occurred during the development of a Web application. The bug is first
+described. The battle to understand and fix it is then presented. This
+experimental report concludes with some questionings about the way we
+conceive programming languages and programming environments.}
+}
+
+@InProceedings{ gbs:ppdp15,
+  author = {Grande, J. and Boudol, G. and Serrano, M.},
+  title = {{J}thread, a deadlock-free mutex library},
+  booktitle = {Proceedings of the 17th International Symposium on
+  Principles and Practice of Declarative Programming (PPDP'15)},
+  year = 2015,
+  month = Jul,
+  address = {Siena, Italy},
+  download = urlbase # "gbs-ppdp15.pdf",
+  abstract = {
+  This article presents several independent
+optimizations of operations on monitors. They do not involve the
+low-level mutual exclusion mechanisms but rather their integration
+with and usage within higher-level constructs of the language. The
+paper reports acceleration of Hop, the Web programming language for which
+these optimizations have been created. The paper shows that other
+languages such as C and Java would also benefit from these optimizations.},
+  x-editorial-board = {no},
+  x-international-audience = {yes},
+  x-scientific-popularization = {no},
+}
+
+@InProceedings{ sg:sac14,
+  author = {Serrano, M. and Grande, J.},
+  title = {{L}ocking {F}ast},
+  booktitle = {Proceedings of the ACM Symposium on Applied Computing (SAC'14)},
+  year = 2014,
+  month = mar,
+  address = {Gyeongju, Korea},
+  download = urlbase # "sg-sac14.pdf",
+  download2 = urlbase # "sg-sac14.html",
+  category = {compilation},
+  doi = {10.1145/2554850.2554858},
+  abstract = {
+This article presents several independent
+optimizations of operations on monitors. They do not involve the
+low-level mutual exclusion mechanisms but rather their integration
+with and usage within higher-level constructs of the language. The
+paper reports acceleration of Hop, the Web programming language for which
+these optimizations have been created. The paper shows that other
+languages such as C and Java would also benefit from these optimizations.
+},
+  x-editorial-board = {no},
+  x-international-audience = {yes},
+  x-scientific-popularization = {no},
+}
+
+@InProceedings{ ss:dls11,
+  author = {Serpette, B. and Serrano, M.},
+  title = {{A}n {I}nterpreter for {S}erver-{S}ide {H}op},
+  booktitle = {Proceedings of the Dynamic Language symposium (DLS)},
+  address = {Portland, USA},
+  year = 2011,
+  month = oct,
+  category = {compilation},
+  download = urlbase # "ss-dls11.pdf",
+  download2 = urlbase # "ss-dls11.html",
+  abstract = {
+HOP is a Scheme-based multi-tier programming language for the
+Web. The client-side of a program is compiled to JavaScript, while the
+server-side is executed by a mix of natively compiled code and
+interpreted code. At the time where HOP programs were basic
+scripts, the performance of the server-side interpreter was not a
+concern; an inefficient interpreter was acceptable. As HOP
+expanded, HOP programs got larger and more complex. A more
+efficient interpreter was necessary. This new interpreter is described
+in this paper. It is compact, its whole implementation counting no
+more than 2.5 KLOC. It is more than twice faster than the old
+interpreter and consumes less than a third of its memory. Although it
+cannot compete with static or JIT native compilers, our experimental
+results show that it is amongst the fastest interpreters for dynamic
+languages.},
+  x-editorial-board = {yes},
+  x-international-audience = {yes},
+  x-scientific-popularization = {no},
+  x-proceedings = {yes},
+}
+
+@InProceedings{ sg:dls07,
+  author = {Serrano, M. and Gallesio, E.},
+  title = {{A}n {A}daptive {P}ackage {M}anagement {S}ystem for {S}cheme},
+  year = 2007,
+  month = oct,
+  booktitle = {Proceedings of the Second Dynamic Languages Symposium (DLS)},
+  address = {Montr{\'e}al, Qu{\'e}bec, Canada},
+  download = urlbase # "dls07/article.html",
+  category = {programming languages},
+  abstract = {
+This paper presents a package management system for the Scheme
+programming language. It is inspired by the "Comprehensive Perl
+Archive Network" ("Cpan") and various GNU/Linux
+distributions. It downloads, installs, and prepares source codes for
+execution. It manages the dependencies between packages.  The main
+characteristic of this system is its neutrality with respect to the
+various Scheme implementations. It is neutral with respect to the
+language extensions that each Scheme implementation proposes and
+with respect to the execution environment of these
+implementations.  This allows the programmer to blend, within the same
+program, independent components which have been developed and tested
+within different Scheme implementations.  ScmPkg is available at:
+"http://hop.inria.fr/hop/scmpkg" }
+}
+
+@Article{ bss:jot04,
+  author = {Bres, Y. and Serpette, B. and Serrano, M.},
+  title = {{B}igloo.{NET}: compiling {S}cheme to {.NET} {CLR}},
+  year = 2004,
+  month = oct,
+  volume = 3,
+  number = 9,
+  journal = {Journal of Object Technology},
+  category = {compilation},
+  download = urlbase # "jot04/jot04.html",
+  download2 = "http://www.jot.fm/issues/issue_2004_09",
+  abstract = {
+This paper presents the compilation of the Scheme
+programming language to .NET. This platform provides a virtual
+machine, the Common Language Runtime (CLR), that executes bytecode,
+the Common Intermediate Language (CIL). Since CIL was designed with
+language agnosticism in mind, it provides a rich set of language
+constructs and functionalities. As such, the CLR is the first
+execution environment that offers type safety, managed memory, tail
+recursion support and several flavors of pointers to functions. Therefore, 
+the CLR presents an interesting ground for functional language
+implementations.
+          
+We discuss how to map Scheme constructs to CIL. We
+present performance analyses on a large set of real-life and standard
+Scheme benchmarks.  In particular, we compare the speed of these
+programs when compiled to C, JVM and .NET. We show that in term of
+speed performance of the Mono implementation of .NET, the best implementing
+running on both Windows and Linux, still lags behind C and fast JVMs such
+as the Sun's implementations.}
+}
+
+@InProceedings{ sbs:ppdp04,
+  author = {Serrano, M. and Boussinot, F. and Serpette, B.},
+  title = {{S}cheme {F}air {T}hreads},
+  year = 2004,
+  month = aug,
+  booktitle = "6th " # ppdp,
+  pages = {203--214},
+  address = {Verona, Italy},
+  download = urlbase # "sbs-ppdp04.html",
+  category = {programming languages},
+  abstract = {
+This paper presents "Fair Threads", a new model
+for concurrent programming. This multi-threading model combines
+preemptive and cooperative scheduling. User threads execute
+according to a cooperative strategy. Service threads 
+execute according to a preemptive strategy. User threads may ask
+services from service threads in order to improve performance by exploiting
+hardware parallelism and in order to execute non-blocking 
+operations.
+   
+Fair threads are experimented within the context of the
+functional programming language Scheme. This paper also presents the
+integration in this language. That is, it presents a semantics for
+Scheme augmented with Fair Threads and the main characteristics of the
+implementation.}
+}
+
+@InProceedings{ bss:dotnet04,
+  author = {Bres, Y. and Serpette, B. and Serrano, M.},
+  title = {{C}ompiling {S}cheme programs to {.NET} {C}ommon
+                   {I}ntermediate {L}anguage},
+  year = 2004,
+  month = may,
+  booktitle = {2nd {I}nternational {W}orkshop on {.NET} {T}echnologies},
+  address = {Plzen,  Czech Republic},
+  institution = {University of West Bohemia},
+  category = {compilation},
+  isbn = {80-903100-4-4},
+  download = urlbase # "bss-dotnet04.pdf",
+  abstract = {
+We present in this paper the compilation of the Scheme
+programming language to .Net platform. .Net provides a virtual machine, the 
+Common Language Runtime (CLR), that executes bytecode, the Common Intermediate
+Language (CIL). Since CIL was designed with language agnosticism in
+mind, it provides a rich set of language constructs and
+functionalities. Therefore, the CLR is the first execution
+environment that offers type safety, managed memory, tail recursion
+support and several flavors of pointers to functions.  As such, the
+CLR presents an interesting ground for functional language
+implementations.
+          
+We discuss how to map Scheme constructs to CIL. We present performance
+analyses on a large set of real-life and standard Scheme benchmarks.
+In particular, we compare the performances of Scheme programs when
+compiled to C, JVM and .Net.  We show that .Net still lags behind 
+C and JVM.}
+}
+
+@Article{ gs:jfp03,
+  author = {Gallesio, E. and Serrano, M.},
+  title = {{P}rogramming {G}raphical {U}ser {I}nterfaces with
+                   {S}cheme},
+  journal = jfp,
+  year = 2003,
+  month = sep,
+  pages = {839--886},
+  volume = 13,
+  number = 5,
+  category = {programming languages},
+  download = urlbase # "gs-jfp03.ps.gz",
+  abstract = {
+This paper presents Biglook, a widget library for an extended version
+of the Scheme programming language. It uses classes of a Clos-like
+object layer to represent widgets and Scheme closures to handle
+graphical events. Combining functional and object-oriented programming
+styles yields an original application programming interface that
+advocates a strict separation between the implementation of the
+graphical interfaces and the user-associated commands, enabling
+compact source code.
+
+The Biglook implementation separates the Scheme programming interface and
+the native back-end. This permits different ports for Biglook. The
+current version uses GTK and Swing graphical toolkits, while the
+previous release used Tk.}
+}
+
+@InProceedings{ gs:freenix02,
+  author = {Gallesio, E. and Serrano, M.},
+  title = {{B}iglook: a {W}idget {L}ibrary for the {S}cheme
+                   {P}rogramming {L}anguage},
+  year = 2002,
+  month = jun,
+  pages = {85--97},
+  booktitle = {2002 Usenix annual technical conference, Freenix track},
+  address = {Monterey, Californie, USA},
+  category = {programming languages},
+  download = urlbase # "gs-freenix02.ps.gz"
+}
+
+@InProceedings{ ss:icfp02,
+  author = {Serpette, B. and Serrano, M.},
+  title = {{C}ompiling {S}cheme to {JVM} bytecode: a performance
+                   study},
+  year = 2002,
+  month = oct,
+  booktitle ="7th " # icfp,
+  address = {Pittsburgh, Pensylvanie, USA},
+  category = {compilation},
+  download = urlbase # "ss-icfp02.ps.gz",
+  abstract = {
+We have added a Java virtual machine (henceforth JVM) bytecode
+generator to the optimizing Scheme-to-C compiler Bigloo. We named this
+new compiler BiglooJVM. We have used this new compiler to evaluate how
+suitable the JVM bytecode is as a target for compiling strict
+functional languages such as Scheme. In this paper, we focus on the
+performance issue. We have measured the execution time of many Scheme
+programs when compiled to C and when compiled to JVM.  We found that
+for each benchmark, at least one of our hardware platforms ran the
+BiglooJVM version in less than twice the time taken by the Bigloo
+version. In order to deliver fast programs the generated JVM bytecode
+must be carefully crafted in order to benefit from the speedup of
+just-in-time compilers.}
+}
+@Article{ serrano:jfp00,
+  author = {Serrano, M.},
+  title = {{B}ee: an {I}ntegrated {D}evelopment {E}nvironment
+                   for the {S}cheme {P}rogramming {L}anguage},
+  journal = jfp,
+  year = 2000,
+  month = may,
+  volume = 10,
+  number = 2,
+  pages = {1--43},
+  category = {programming environment},
+  download = urlbase # "serrano-jfp00.ps.gz",
+  abstract = {
+The Bee is an integrated development environment for the Scheme
+programming language. It provides the user with a connection between
+Scheme and the C programming language, a symbolic debugger, a
+profiler, an interpreter, an optimizing compiler that delivers stand
+alone executables, a source file browser, a project manager, user
+libraries and online documentation. This article details the
+facilities of the Bee, its user interface and presents an overview of
+the implementation of its main components.}
+}
+
+@InProceedings{ sb:icfp00,
+  author = {Serrano, M. and Boehm, H-J.},
+  title = {{U}nderstanding {M}emory {A}llocation of {S}cheme
+                   {P}rograms},
+  year = 2000,
+  month = sep,
+  booktitle = "5th " # icfp,
+  pages = {245--256},
+  address = {Montr{\'e}al, Qu{\'e}bec, Canada},
+  category = {programming environment},
+  download = urlbase # "sb-icfp00.ps.gz",
+  abstract = {
+[Memory is the performance bottleneck of modern architectures. Keeping
+memory consumption as low as possible enables fast and unobtrusive
+applications. But it is not easy to estimate the memory use of
+programs implemented in functional languages, due to both the complex
+translations of some high level constructs, and the use of automatic
+memory managers.,(linebreak 2)
+
+To help understand memory allocation behavior of Sche\-me programs, we
+have designed two complementary tools. The first one reports on
+frequency of allocation, heap configurations and on memory
+reclamation.  The second tracks down memory leaks. We have applied
+these tools to our Scheme compiler, the largest Scheme program we have
+been developing. This has allowed us to drastically reduce the amount
+of memory consumed during its bootstrap process, without requiring
+much development time.,(linebreak 2)
+
+Development tools will be neglected unless they are both conveniently
+accessible and easy to use. In order to avoid this pitfall, we have
+carefully designed the user interface of these two tools. Their
+integration into a real programming environment for Scheme is detailed
+in the paper.]}
+}
+
+@InProceedings{ serrano:plilp97,
+  author = {Serrano, M.},
+  title = {Inline expansion: {\em when} and {\em how}\/?},
+  year = 1997,
+  month = sep,
+  pages = {143--147},
+  booktitle = "9th " # plilp,
+  address = {Southampton, UK},
+  category = "compilation",
+  download = urlbase # "serrano-plilp97.ps.gz",
+  abstract = {
+Inline function expansion is an optimization that may improve
+program performance by removing calling sequences and enlarging
+the scope of other optimizations. Unfortunately it also has the
+drawback of enlarging programs. This might impair executable
+programs performance. In order to get rid of this annoying effect,
+we present, an easy to implement, inlining
+optimization that minimizes code size growth by combining a
+compile-time algorithm deciding {\em when} expansion should
+occur with different expansion frameworks describing {\em how}
+they should be performed. We present the experimental measures
+that have driven the design of inline function expansion. We
+conclude with measurements showing that our optimization
+succeeds in producing faster codes while avoiding code size
+increase.}
+}
+
+@Article{ pseudoknot,
+  author = {P. H. Hartel and M. Feeley and M. Alt and L. Augustsson and
+	P. Baumann and M. Beemster and E. Chailloux and C. H. Flood and W.
+	Grieskamp and J. H. G. van Groningen and K. Hammond and B. Hausman and
+	M. Y. Ivory and P. Lee and X. Leroy and S. Loosemore and N. R\"ojemo
+	and M. Serrano and J.-P. Talpin and J. Thackray and P. Weis and P.
+	Wentworth},
+  title = {{P}seudoknot: a {Float-Intensive} {B}enchmark for
+                   {F}unctional {C}ompilers},
+  journal = jfp,
+  volume = "Juillet",
+  year = {1996},
+  pages = {621--655},
+  category = {compilation},
+  download = urlbase # "pseudoknot-jfp96.ps.gz",
+  abstract = {
+[Over 25 implementations of different functional languages are
+benchmarked using the same program, a floating-point intensive
+application taken from molecular biology. The principal aspects
+studied are compile time and execution time for the various
+implementations that were benchmarked. An important consideration is
+how the program can be modified and tuned to obtain maximal
+performance on each language implementation.,(linebreak 2)
+
+With few exceptions, the compilers take a significant amount of
+time to compile this program, though most compilers were faster than
+the then current GNU C compiler (GCC version 2.5.8). Compilers that
+generate C or Lisp are often slower than those that generate native
+code directly: the cost of compiling the intermediate form is normally
+a large fraction of the total compilation time.,(linebreak 2)
+
+There is no clear distinction between the runtime performance of
+eager and lazy implementations when appropriate annotations are used:
+lazy implementations have clearly come of age when it comes to
+implementing largely strict applications, such as the Pseudoknot
+program. The speed of C can be approached by some implementations, but
+to achieve this performance, special measures such as strictness
+annotations are required by non-strict implementations.,(linebreak 2)
+
+The benchmark results have to be interpreted with care. Firstly, a
+benchmark based on a single program cannot cover a wide spectrum of
+`typical' applications. Secondly, the compilers vary in the kind and
+level of optimisations offered, so the effort required to obtain an
+optimal version of the program is similarly varied.]}
+}
+
+@InProceedings{ sf:icfp96,
+  author = {Serrano, M. and Feeley, M.},
+  title = {{S}torage {U}se {A}nalysis and its Applications},
+  year = 1996,
+  month = may,
+  pages = {50--61},
+  booktitle = "1fst " # icfp,
+  address = {Philadelphia, Penn, USA},
+  download = urlbase # "sf-icfp96.ps.gz",
+  category = {compilation},
+  abstract = {
+In this paper we present a new program analysis method which we
+call ,(emph "Storage Use Analysis"). This analysis deduces how
+objects are used by the program and allows the optimization of
+their allocation. This analysis can be applied to both
+statically typed languages (e.g. ML) and latently typed
+languages (e.g. Scheme). It handles side-effects, higher order
+functions, separate compilation and does not require
+CPS transformation.  We show the application of our analysis
+to two important optimizations: stack allocation and
+unboxing. The first optimization replaces some heap allocations
+by stack allocations for user and system data storage
+(e.g. lists, vectors, procedures). The second optimization
+avoids boxing some objects. This analysis and associated
+optimizations have been implemented in the Bigloo Scheme/ML
+compiler. Experimental results show that for many allocation
+intensive programs we get a significant speedup. In particular,
+numerically intensive programs are almost 20 times faster because
+floating point numbers are unboxed and no longer heap allocated.}
+}
+
+@InProceedings{ serrano:ics95,
+  author = {Serrano, M.},
+  title = {{A} {F}resh {L}ook to {I}nlining {D}ecision},
+  year = 1995,
+  month = nov,
+  booktitle = {4th International Computer Symposium {\em (invited paper)}},
+  pages = {40--52},
+  address = {Mexico city, Mexico},
+  category = {compilation},
+  download = urlbase # "serrano-ics95.ps.gz",
+  abstract = {
+Included in a compiler for functional or object oriented languages,
+inline function expansion has been reported as one of the most
+valuable optimizations. Unfortunately, it has an important
+counterpart: since it duplicates function body, it enlarges the code
+of the compiled programs as well as the resulting object code. The
+main contribution of this paper is to present a simple compile time
+inlining decision algorithm where the code length increasing factor is
+a constant that can be tuned by the compiler designer and where
+execution improvements are comparable with other previous
+sophisticated technics. Our major concern is about functional
+languages. With these languages, recursive functions are widely used:
+the second contribution of this paper is the presentation of an
+original ad hoc inlining framework for recursive functions which is
+more accurate than function unfolding. Experimental results
+demonstrate that our inlining technics succeed in producing small ,(emph "and")
+efficient compiled object codes.}
+}
+
+@InProceedings{ sw:sas95,
+  author = {Serrano, M. and Weis, P.},
+  title = {{B}igloo: a portable and optimizing compiler for
+                   strict functional languages},
+  year = 1995,
+  month = sep,
+  booktitle = {2nd Static Analysis Symposium ({SAS})},
+  pages = {366--381},
+  address = {Glasgow, Scotland},
+  series = lncs,
+  category = {compilation},
+  download = urlbase # "sw-sas95.ps.gz",
+  abstract = {
+We present Bigloo, a highly portable and optimizing compiler.
+Bigloo is the first compiler for strict functional languages
+that can efficiently compile "several languages": Bigloo is
+the first compiler for full Scheme "and" full ML, and for
+these two languages, Bigloo is one of the most efficient
+compiler now available (Bigloo is available by anonymous ftp at
+"http://www.inria.fr/mimosa/fp/Bigloo".
+
+This high level of performance is achieved by numerous
+high-level optimizations. Some of those are classical
+optimizations adapted to higher-order functional languages
+(e.g. inlining), other optimization schemes are specific to
+Bigloo (e.g. a new refined closure analysis, an original
+optimization of imperative variables, and intensive use of
+higher-order control flow analysis). All these optimizations
+share the same design guideline: the reduction of heap
+allocation.}
+}
+
+@InNatProceedings{ serrano:jfla92,
+  author = {Serrano, M.},
+  title = {{R}gc: un g{\'e}n{\'e}rateur d'analyseurs lexicaux
+                   efficaces en Scheme},
+  pages = {235--252},
+  booktitle = {{A}vanc{\'e}es applicatives, Actes des journ{\'e}es JFLA},
+  month = feb,
+  year = {1992},
+  editor = {Queinnec, C.},
+  series = {Bigre 76--77},
+  category = {compilation},
+  download = urlbase # "serrano-jfla92.ps.gz",
+  abstract = {
+Cet article pr{\'e}sente Rgc, un g{\'e}n{\'e}rateur d'analyseurs lexicaux rapides,
+d{\'e}velopp{\'e} pour Scheme. Nous ne d{\'e}crivons pas ici une maquette mais un
+produit final efficace. Par ses performances, il est en concurrence
+directe avec le logiciel Flex. Apr{\`e}s mesures, il appara{\^i}t que Rgc est
+entre 5 et 10\% plus rapide que Flex et entre 250 et 260\% plus rapide que Lex. Pour obtenir ce niveau de performance, nous avons 
+r{\'e}alis{\'e} un compilateur sp{\'e}cialis{\'e} restreint Scheme->C. De plus, puisque 
+Scheme ne poss{\`e}de pas de primitives rapides de lecture il s'est av{\'e}r{\'e}
+indispensable de programmer les requ{\^e}tes syst{\`e}mes et la gestion des
+tampons en C. Le code est donc compos{\'e} de 90\% de Scheme et 10\%
+de C.}
+}
+

@@ -13,6 +13,15 @@ delivers small and fast stand alone binary executables. Bigloo enables
 full connections between Scheme and C programs or between Scheme and
 Java programs, if you choose the JVM backend.
 
+Some projects implemented using Bigloo:
+
+  * [hop](http://hop.inria.fr)
+  * [php tools](http://savannah.nongnu.org/projects/phptools)
+  
+  
+${<div class="gallery-comment">It helps Bigloo to have projects listed here
+so if you are willing to have you project mentioned on that page
+please send a mail to manuel serrano at inria fr for inclusion.</div>}
 
 ### Example 1: Scheme and C
 

@@ -1,6 +1,7 @@
-${ var doc = require( "hopdoc" ) }
+${ var hopdoc = require( "hopdoc" ) }
 ${ var config = require( hop.config ) }
 ${ var xml = require( "./xml.js" ) }
+${ var doc = require( "./doc.js" ) }
 ${ var cfg = require( "./doc.json" ) }
 
 Bigloo Sources
@@ -38,14 +39,10 @@ ${<div class="row">
   </div>
 </div>}
 
+${ hopdoc.include( "debian.md" ) }
 
-Bigloo Packages
----------------
+${ hopdoc.include( "homebrew.md" ) }
 
-${doc.include( "debian.md" ) }
-
-${doc.include( "homebrew.md" ) }
-
-${doc.include( "../INSTALL.md" )}
+${ hopdoc.include( "../INSTALL.md" ) }
 
 

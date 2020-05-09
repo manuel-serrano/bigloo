@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jul 18 18:07:23 2015                          */
-/*    Last change :  Fri May  8 09:40:40 2020 (serrano)                */
+/*    Last change :  Sat May  9 06:39:14 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Simple default style sheet for markdown rendering                */
@@ -45,6 +45,7 @@ h3.texinfo:before {
 h4.deffn {
     display: block;
     padding-left: 0.2em;
+    background-color: #dfdfdf;
 }
 
 h4.deffnx-first {

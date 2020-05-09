@@ -1,7 +1,6 @@
-${ var doc = require( "hopdoc" ) }
-${ var config = require( hop.config ) }
-${ var xml = require( "./xml.js" ) }
-${ var cfg = require( "./doc.json" ) }
+
+Debian
+------
 
 Pre-compiled Bigloo version are available for Linux Debian
 and some of its variants. This version can be installed using

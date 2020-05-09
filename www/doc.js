@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Fri May  8 14:24:28 2020 (serrano)                */
+/*    Last change :  Sat May  9 06:32:06 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -171,7 +171,7 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
 	   favicon=${favicon}
            rts=${false}/>
 
-     <body data-spy="scroll" data-target="#navbar" class=${`${title} section ${clazz}`}
+     <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
 	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
@@ -242,7 +242,7 @@ function compileNode( node, title, clazz, target, tocfile = undefined ) {
 	   favicon=${favicon}
            rts=${false}/>
 
-     <body data-spy="scroll" data-target="#navbar" class=${`${title} section ${clazz}`}
+     <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
 	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
@@ -300,7 +300,7 @@ function compileSection( page ) {
 	   favicon=${favicon}
            rts=${false}/>
 
-     <body data-spy="scroll" data-target="#navbar" class=${`${title} section`}
+     <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section`}
            onscroll=~{
 	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
@@ -379,7 +379,7 @@ function compileChapter( json ) {
 	   favicon=${favicon}
            rts=${false}/>
 
-     <body data-spy="scroll" data-target="#navbar" class="chapter">
+     <body data-spy="scroll" data-target="#navbar" class="bigloo chapter">
        <docxml.navbar title=${chapter.title} key=${chapter.key}>
          ${chapters}
        </docxml.navbar>
@@ -432,7 +432,7 @@ function compileMain( content ) {
 	   favicon=${favicon}
            rts=${false}/>
 
-     <body class="home" data-spy="scroll" data-target="#navbar"
+     <body class="bigloo home" data-spy="scroll" data-target="#navbar"
            onscroll=~{
 	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
@@ -475,7 +475,7 @@ function compileLibrary( content ) {
 	   favicon=${favicon}
            rts=${false}/>
 
-     <body class="library" data-spy="scroll" data-target="#navbar">
+     <body class="bigloo library" data-spy="scroll" data-target="#navbar">
        <docxml.navbar title=${doc.title} key="home">
          ${chapters}
        </docxml.navbar>
@@ -515,7 +515,7 @@ function compileIdx( json ) {
 	   favicon=${favicon}
            rts=${false}/>
 
-     <body data-spy="scroll" data-target="#navbar">
+     <body data-spy="scroll" data-target="#navbar" class="bigloo">
        <docxml.navbar title=${chapter.title}
                       key=${chapter.key}>
          ${chapters}

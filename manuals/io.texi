@@ -301,6 +301,8 @@ the @var{pi} port.
       (close-input-port p)))
 @end smalllisp
 
+This can be decomposed as:
+
 @smalllisp
 (let* ((p1 (open-input-file "bigloo.tar.gz"))
        (p2 (open-input-gzip-port p1)))

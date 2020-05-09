@@ -1,0 +1,88 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/bigloo/www/_bibtex.hop               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Thu May  7 18:56:58 2020                          */
+;*    Last change :  Fri May  8 10:09:17 2020 (serrano)                */
+;*    Copyright   :  2020 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    bibtex parsing                                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
+(module _texinfo
+
+   (library hopscript hop hopwidget nodejs text)
+   
+   (export (hopscript ::JsGlobalObject ::JsObject ::JsObject ::JsObject)))
+
+
+;*---------------------------------------------------------------------*/
+;*    hopscript ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (hopscript %this this scope module)
+   (&with!
+      
+      (define exports (js-get module (& "exports") %this))
+      
+      ;; bind the module in the texinfo scope
+      (js-put! scope (& "module") module #f %this)
+      
+      ;; load
+      (js-bind! %this exports (& "load")
+	 :value (js-make-function %this
+		   (lambda (this file charset)
+		      (let* ((scope (nodejs-new-scope-object %this))
+			     (worker (js-current-worker))
+			     (path (js-tostring file %this))
+			     (module (nodejs-new-module path path worker %this))
+			     (bibs (bibtex-file path)))
+			 (js-vector->jsarray
+			    (list->vector
+			       (map (lambda (b) (bibentry->jsobject b %this))
+				  bibs))
+			    %this)))
+		   2 (& "load"))
+	 :writable #f
+	 :enumerable #f)))
+
+;*---------------------------------------------------------------------*/
+;*    bibentry->jsobject ...                                           */
+;*---------------------------------------------------------------------*/
+(define (bibentry->jsobject entry %this)
+   
+   (define (author->jsobject lst %this)
+      (match-case lst
+	 ((?name)
+	  (js-string->jsstring name))
+	 ((?name ?first)
+	  (js-stringlist->jsstring (list name " " first)))
+	 (else
+	  (error "author" "Illegal format" lst))))
+
+   (with-access::JsGlobalObject %this (js-object)
+      (let ((obj (js-new %this js-object (js-undefined))))
+	 (js-put! obj (& "key")
+	    (js-obj->jsobject (car entry) %this) #f %this)
+	 (js-put! obj (& "type")
+	    (js-obj->jsobject (cadr entry) %this) #f %this)
+	 (for-each (lambda (b)
+		      (js-put! obj
+			 (js-string->jsstring (symbol->string (car b)))
+			 (if (eq? (car b) 'author)
+			     (js-vector->jsarray
+				(list->vector
+				   (cons
+				      (author->jsobject (cadr b) %this)
+				      (append-map (lambda (a)
+						     (list
+							(& ", ")
+							(author->jsobject a %this)))
+					 (cddr b))))
+				%this)
+			     (js-obj->jsobject (cdr b) %this))
+			 #f %this))
+	    (cddr entry))
+	 obj)))

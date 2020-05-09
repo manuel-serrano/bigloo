@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:20:48 2015                          */
-/*    Last change :  Fri May  8 15:12:33 2020 (serrano)                */
+/*    Last change :  Sat May  9 06:18:40 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    HSS for the Hop.js documentation                                 */
@@ -26,9 +26,10 @@
 /*---------------------------------------------------------------------*/
 /*    body                                                             */
 /*---------------------------------------------------------------------*/
-body {
-  position: relative;
-  color: #222;
+body.bigloo {
+    position: relative;
+    background-color: #fafafa;
+    color: #222;
 }
 
 /*---------------------------------------------------------------------*/
@@ -48,7 +49,7 @@ p.danger {
 /*---------------------------------------------------------------------*/
 /*    title                                                            */
 /*---------------------------------------------------------------------*/
-.jumbotron {
+.bigloo .jumbotron {
   margin-top: 40px;
   position: fixed;
   top: 0px;
@@ -58,6 +59,7 @@ p.danger {
   transition: 0.5s all;
   border-bottom: 4px solid white;
   opacity: 0.90;
+  background-color: #33393f;
 }
 
 .jumbotron svg {
@@ -210,6 +212,8 @@ h2 {
   text-shadow: #ccc 1px 1px 1px;
 }
 
+body.cross h1:before,
+body.cross h3:before,
 body.home h2:before,
 body.debian h2:before,
 body.homebrew h2:before,
@@ -225,6 +229,22 @@ h3.nonumber:before {
   content: none;
 }
 
+body.cross h2 {
+    counter-reset: subsubsection;
+}
+
+body.cross h2:before {
+  content: counter( subsection ) ". ";
+}
+    
+body.cross h3 {
+    counter-increment: subsubsection;
+}
+
+body.cross h3:before {
+  content: counter( subsection ) "." counter( subsubsection ) ". ";
+}
+    
 h2:before {
   counter-increment: subsection;
   content: counter( section ) "." counter( subsection ) ". ";
@@ -333,7 +353,7 @@ h4.ext-function:before {
 }
 
 nav.sidebar {
-  background-color: #f7f7f7;
+  background-color: #ffffff;
   border-radius: 4px;
   border: 1px solid #ccc;
   width: 20em;
@@ -454,6 +474,7 @@ body.debian pre code,
 body.homebrew pre code,
 body.download pre code,
 body.manual pre code,
+body.cross pre code,
 body pre code {
   background-color: inherit;
   border: none;
@@ -461,6 +482,7 @@ body pre code {
 
 pre.fontifier-prog {
   background-color: #fafafa;
+  background-color: #ffffff;
 }
 
 pre.fontifier-prog span.ebnf-tag {
@@ -471,18 +493,17 @@ body.home code {
   background-color: #efefef;
   border: 1px solid #d2d2d2;
   border-radius: 1px;
-/*   color: #1a75f9;                                                   */
   color: #D85023;
 }
 
 body.download code,
 body.homebrew code,
 body.manual code,
+body.cross code,
 body.debian code {
   background-color: #efefef;
   border: 1px solid #d2d2d2;
   border-radius: 1px;
-/*   color: #1a75f9;                                                   */
   color: #1467E6;
 }
 
@@ -575,6 +596,7 @@ body.home h1 {
 
 body pre {
   background-color: #fafafa;
+  background-color: #ffffff;
   border: 1px solid #eee;
   border-left: 2px solid #1467E6;
   border-radius: 0;
@@ -588,7 +610,15 @@ body.home pre.scheme {
   border-left-color: #f91a03;
 }
 
-body.home pre.shell {
+body pre.shell {
+    border-left-color: #7b1ef7;
+}
+
+body pre.shell-guest {
+    border-left-color: #e6d029;
+}
+
+body pre.shell-host {
     border-left-color: #7b1ef7;
 }
 
@@ -635,6 +665,7 @@ code .h1, code .h2, code .h3, code .h4 {
 .license pre {
     font-size: 90%;
     border: 1px solid #ccc;
+    width: 60em;
 }
 
 /*---------------------------------------------------------------------*/
@@ -716,6 +747,10 @@ body.manual nav.toc-extra ol.chapter li a:hover {
     text-align: justify;
 }
 
+body.bib pre {
+    border-left-color: #999;
+}
+
 /*---------------------------------------------------------------------*/
 /*    index                                                            */
 /*---------------------------------------------------------------------*/
@@ -744,6 +779,14 @@ ul.nav-index {
 
 nav.index {
     top: 270px;
+}
+
+/*---------------------------------------------------------------------*/
+/*    misc                                                             */
+/*---------------------------------------------------------------------*/
+div.gallery-comment {
+    font-size: 80%;
+    font-style: italic;
 }
 
 /*---------------------------------------------------------------------*/

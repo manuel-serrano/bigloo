@@ -6,3 +6,5 @@ ${ var cfg = require( "./doc.json" ) }
 ${ var fontifier = require( hop.fontifier ) }
 
 
+This page is currently empty. If you have contributions you would like
+to be included here, please contact manuel serrano at inria fr.
