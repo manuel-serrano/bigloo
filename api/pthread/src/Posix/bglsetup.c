@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/pthread/src/Posix/bglsetup.c     */
+/*    .../project/bigloo/bigloo/api/pthread/src/Posix/bglsetup.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Fri Apr 22 16:46:37 2016 (serrano)                */
-/*    Copyright   :  2004-16 Manuel Serrano                            */
+/*    Last change :  Sun May 10 12:22:21 2020 (serrano)                */
+/*    Copyright   :  2004-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -32,6 +32,7 @@ static void
 bglpth_setup_signal() {
 #if HAVE_SIGPROCMASK
    extern void bgl_sigprocmask_register( int (*)(int, const sigset_t *, sigset_t *) );
+   extern int GC_pthread_sigmask();
    bgl_sigprocmask_register( &pthread_sigmask );
 #endif
 }

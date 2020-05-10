@@ -88,11 +88,11 @@ configuration, adjust the script below:
 
 
 ```shell[:@shell-host]
-(in host) echo $ANDROIDROOT/cc &lt;&lt;EOF
+(in host) cat &gt; $ANDROIDROOT/cc &lt;&lt;EOF
 #!/bin/bash
 
 android=$ANDROIDROOT/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64
-exec $android/bin/clang -target armv7a-linux-androideabi26 "$@"
+exec \$android/bin/clang -target armv7a-linux-androideabi26 "\$@"
 EOF
 ```
 
@@ -105,15 +105,14 @@ of this document, we will assume that Bigloo has been installed in the
 
 ### Configuring Bigloo
 
-```[:@shell-host]
-(in host) export ANDROIDPREFIX=/data/data/fr.inria.hop/assets
+```shell[:@shell-host]
 (in host) export ANDROIDPREFIX=/data/data/fr.inria.hop/assets
 (in host) export BGLPREFIX=/usr/local
 (n host) ./configure --os-android \
   --android-adb=adb \
   --cc=$ANDROIDROOT/cc \
-  --cpicflags=-pic \
-  --cflags="-target armv7a-linux-androideabi26 -pic -fPIC -DBGL_GC_ROOTS" \
+  --cpicflags=-fPIC \
+  --cflags="-target armv7a-linux-androideabi26 -fPIC -DBGL_GC_ROOTS" \
   --lflags=-fPIC \
   --libuvconfigureopt="--host=arm-linux-androideabi" \
   --stack-check=no \
@@ -130,6 +129,47 @@ in [build system][build-system] go into more details on how to compile
 and link. It might also help to check the [ndk-build][ndk-build] documentation as
 using `ndk-build V=1` shows the commands used to compile and link C
 files.
+
+### Compile Bigloo
+
+```shell[:@shell-host]
+(in host) make
+```
+
+This will compile Bigloo and the libraries suitable for the Android platform.
+
+
+### Example of compilation
+
+Cross compilation of the Android platform can be done as:
+
+```shell[:@shell-host]
+(in host) cat &gt; > example.scm &lt;&lt; EOF
+(module example
+  (main main))
+  
+(define (main argv)
+  (print "cmd-line=" argv))
+EOF
+(in host) /usr/local/bin/bigloo  -O3 -lib-dir ./lib/bigloo/4.3h -I Llib -copt -fPIC example.scm -static-all-bigloo
+```
+
+For simplicity the executable is linked against static libraries but
+provided the library are installed on the guest platform, executables
+can also be linked against dynamic library.
+
+To install the binary file on the guest, use:
+
+```shell[:@shell-host]
+(in host) adb push a.out /data/local/tmp
+```
+
+To run it
+
+```shell[:@shell-guest]
+(in guest) chmod 755 /data/local/tmp/a.out
+(in guest) /data/local/tmp/a.out this is a test
+```
 
 
 [other-systems]: https://developer.android.com/ndk/guides/other_build_systems
