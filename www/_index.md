@@ -13,9 +13,9 @@ delivers small and fast stand alone binary executables. Bigloo enables
 full connections between Scheme and C programs or between Scheme and
 Java programs, if you choose the JVM backend.
 
-The Bigloo C backend is know to work on:
+The Bigloo C backend is ported to:
 
-  * Linux
+  * Linux (x86, x86/64, and arm)
   * MacOS X
   * Android
   * Windows WSL

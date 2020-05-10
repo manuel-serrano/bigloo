@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Sat May  9 07:01:32 2020 (serrano)                */
+#*    Last change :  Sun May 10 14:11:42 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
@@ -15,6 +15,14 @@ do: build
 #*---------------------------------------------------------------------*/
 HOP=hop
 HOPFLAGS=-q --no-autoload --no-zeroconf --no-server --so-policy none
+
+#*---------------------------------------------------------------------*/
+#*    Destination                                                      */
+#*---------------------------------------------------------------------*/
+INDESHTTP	= www-sop.inria.fr/indes/fp
+HOSTHTTP	= $(INDESHTTP)
+HOSTHTTPDIR	= /users/serrano/public_html/bigloo
+HOSTURL		= http://$(HOSTHTTP)/Bigloo
 
 #*---------------------------------------------------------------------*/
 #*    Population                                                       */
@@ -30,61 +38,16 @@ BOOTSTRAP_POP=css/bootstrap.css css/bootstrap.min.css css/bootstrap.css.map \
 
 JQUERY_POP=js/jquery.min.js
 
-POPULATION=$(BOOTSTRAP_POP:%=lib/bootstrap/%) $(JQUERY_POP:%=lib/jquery/%) \
-  $(ICONS_POP:%/icons/%) \
-  Makefile doc.js xml.js html.js ecma-262-60.js \
-  doc.json.in \
-  api/api.json api/00-hop.md api/10-dom.md api/20-websocket.md api/01-html.md \
-  api/reqfilter.js \
-  widget/widget.json \
-  lang/lang.json _lang.md \
-  lang/html.bnf lang/service.bnf lang/iservice.bnf \
-  lang/tilde.bnf lang/syntax.bnf \
-  lang/00-syntax.md \
-  lang/01-es.md lang/01-service.md lang/02-worker.md \
-  lang/01-module.md lang/03-react.md lang/10-xml.md \
-  lang/app.js lang/stateful.js lang/ui.js \
-  dev/dev.json dev/00-command.md dev/01-rcfile.md dev/10-edit.md \
-  dev/30-https.md dev/90-hopc.md dev/selfsigned.sh self/redirect.js \
-  dev/js2json.js intf/intf.json intf/01-nodejs.md intf/10-scheme.md \
-  intf/scheme.bnf \
-  intf/20-language.md license.md _index.md \
-  nodejs.md download.md \
-  hss/doc.hss \
-  html-idx.json mdn-idx.json mdn.js node-idx.json node.js
-
-API_TARGETS=api.html 00-hop.html 10-dom.html 20-websocket.html \
-  hss.html config.html user.html 01-html.html syslog.html \
-  systime.html
-
-LANG_TARGETS=lang.html 00-syntax.html 01-service.html 02-worker.html \
-  01-es.html 03-react.html 01-module.html 10-xml.html markdown.html cpp.html
-
-WIDGET_TARGETS=widget.html tree.html spage.html
-
-DEV_TARGETS=dev.html 00-command.html 01-rcfile.html 10-edit.html 20-cross.html \
-  30-https.html 90-hopc.html
-
-INTF_TARGETS=intf.html 01-nodejs.html 10-scheme.html 20-language.html
+POP=bib.md cross.md documentation.md homebrew.md license.md manual.md \
+  contribs.md debian.md download.md _index.md \
+  doc.hss  fontifier.css  markdown.css  texinfo.css \
+  $(BOOTSTRAP_POP) $(JQUERY_POP) \
+  favicon.png bigloo.svg \
+  fib.scm fib-mt.scm flac.scm \
+  Makefile.md
 
 ALL_TARGETS=index.html license.html download.html debian.html homebrew.html \
   manual.html bib.html contribs.html cross.html
-
-HTML="/usr/local/doc/html40/index/elements.html"
-
-#*---------------------------------------------------------------------*/
-#*    Search path                                                      */
-#*---------------------------------------------------------------------*/
-VPATH=api lang dev widget intf \
-  ../node_modules/tree/doc \
-  ../node_modules/spage/doc \
-  ../node_modules/hss/doc \
-  ../node_modules/config/doc \
-  ../node_modules/user/doc \
-  ../node_modules/markdown/doc \
-  ../node_modules/syslog/doc \
-  ../node_modules/systime/doc \
-  ../node_modules/cpp/doc
 
 #*---------------------------------------------------------------------*/
 #*    The hop executable                                               */
@@ -106,39 +69,40 @@ devclean: clean
 distclean: clean
 
 #*---------------------------------------------------------------------*/
-#*    install                                                          */
+#*    Install                                                          */
 #*---------------------------------------------------------------------*/
-install:
-	$(MAKE) mkdir DIR=$(DESTDIR)$(HOPDOCDIR)
-	$(MAKE) mkdir DIR=$(DESTDIR)$(HOPDOCDIR)/lib
-	$(INSTALL) $(ALL_TARGETS) $(DESTDIR)$(HOPDOCDIR)
-	$(INSTALL) idx.json $(DESTDIR)$(HOPDOCDIR)
-	cp -r lib/bootstrap $(DESTDIR)$(HOPDOCDIR)/lib
-	cp -r lib/jquery $(DESTDIR)$(HOPDOCDIR)/lib
-	$(RM) -r -f $(DESTDIR)$(HOPDOCDIR)/hss
-	cp -r hss $(DESTDIR)$(HOPDOCDIR)/hss
-	$(INSTALL) doc.js $(DESTDIR)$(HOPDOCDIR)
-	$(INSTALL) xml.js $(DESTDIR)$(HOPDOCDIR)
-	$(INSTALL) favicon.png $(DESTDIR)$(HOPDOCDIR)
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/hss
-	chmod $(MODFILE) $(DESTDIR)$(HOPDOCDIR)/hss/*
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/lib
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/lib/bootstrap
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/lib/jquery
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/lib/bootstrap/css
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/lib/bootstrap/js
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/lib/bootstrap/fonts
-	chmod $(MODDIR) $(DESTDIR)$(HOPDOCDIR)/lib/jquery/js
-	chmod $(MODFILE) $(ALL_TARGETS:%=$(DESTDIR)$(HOPDOCDIR)/%)
-	chmod $(MODFILE) $(JQUERY_POP:%=$(DESTDIR)$(HOPDOCDIR)/lib/jquery/%)
-	chmod $(MODFILE) $(BOOTSTRAP_POP:%=$(DESTDIR)$(HOPDOCDIR)/lib/bootstrap/%)
-	chmod $(MODFILE) $(DESTDIR)$(HOPDOCDIR)/lib/bootstrap/css/*
-	$(INSTALL) html-idx.json $(DESTDIR)$(HOPDOCDIR)
-	$(INSTALL) mdn-idx.json $(DESTDIR)$(HOPDOCDIR)
-	$(INSTALL) node-idx.json $(DESTDIR)$(HOPDOCDIR)
+install: all $(DOC)
+	cleanup
+	$(MAKE) install.start
+	$(MAKE) install.html
+	$(MAKE) install.stop
 
-uninstall:
+#*--- install.start ---------------------------------------------------*/
+install.start:
+	ssh $(HOSTFTP) "cd $(HOSTFTPHOMEDIR)$(HOSTFTPDIR); chmod u+w -R ."
+	ssh $(HOSTHTTP) "mkdir -p $(HOSTHTTPHOMEDIR)$(HOSTHTTPDIR); cd $(HOSTHTTPHOMEDIR)$(HOSTHTTPDIR); chmod u+w -R ."
+
+#*--- install.stop ----------------------------------------------------*/
+install.stop:
+	ssh $(HOSTFTP) "cd $(HOSTFTPHOMEDIR)$(HOSTFTPDIR); chmod a-w -R ."
+	ssh $(HOSTHTTP) "cd $(HOSTHTTPHOMEDIR)$(HOSTHTTPDIR); chmod a-w -R ."
+
+#*--- install.html ----------------------------------------------------*/
+install.html:
+	for p in *.html; do \
+	  scp $$p $(HOSTHTTP):$(HOSTHTTPDIR)/$$p; \
+        done
+	scp -r hss $(HOSTHTTP):$(HOSTHTTPDIR)/hss
+	scp -r lib $(HOSTHTTP):$(HOSTHTTPDIR)/lib
+	ssh $(HOSTHTTP) "cd $(HOSTHTTPDIR); chmod a+r *.html"
+	ssh $(HOSTHTTP) "cd $(HOSTHTTPDIR); chmod -R a+r lib"
+	ssh $(HOSTHTTP) "cd $(HOSTHTTPDIR); chmod -R a+r hss"
+
+#*---------------------------------------------------------------------*/
+#*    pop ...                                                          */
+#*---------------------------------------------------------------------*/
+pop:
+	@ echo $(POPULATION:%=www/%)
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */

@@ -275,7 +275,7 @@ This is Bigloo documentation version @value{bigloovers}, @w{@value{update-date}}
 Bigloo is an implementation of an extended version of the Scheme
 programming language. Without its extensions Bigloo does not entirely
 conform to Scheme as defined in the Revised(5) Report on on the
-Algorithmic Language Scheme (henceforth R5RS) (see @ref{Top,,,r5rs.info}).
+Algorithmic Language Scheme (henceforth R5RS) (@value{R5RS}).
 The two reasons are:
 
 @itemize @bullet
