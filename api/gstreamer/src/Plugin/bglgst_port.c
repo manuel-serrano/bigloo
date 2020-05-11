@@ -56,29 +56,14 @@ plugin_init( GstPlugin * plugin ) {
 /*---------------------------------------------------------------------*/
 gboolean
 bgl_gst_plugin_port_init() {
-#if( defined( GST_PLUGIN_DEFINE_STATIC ) )
-   GST_PLUGIN_DEFINE( PLUGIN_VERSION_MAJOR,
-		      PLUGIN_VERSION_MINOR,
-		      PLUGIN_NAME,
-		      PLUGIN_DESC,
-		      plugin_init,
-		      PLUGIN_VERSION,
-		      PLUGIN_LICENSE,
-		      PLUGIN_PACKAGE,
-		      PLUGIN_URL );
-
-   _gst_plugin_register_static( &gst_plugin_desc );
-#else      
-   gst_plugin_register_static( PLUGIN_VERSION_MAJOR,
-                               PLUGIN_VERSION_MINOR,
-                               PLUGIN_NAME,
-                               PLUGIN_DESC,
-                               plugin_init,
-                               PLUGIN_VERSION,
-                               PLUGIN_LICENSE,
-                               PLUGIN_PACKAGE,
-                               PLUGIN_URL);
-#endif
-
-   return TRUE;
+   return gst_plugin_register_static( PLUGIN_VERSION_MAJOR,
+				      PLUGIN_VERSION_MINOR,
+				      PLUGIN_NAME,
+				      PLUGIN_DESC,
+				      plugin_init,
+				      PLUGIN_VERSION,
+				      PLUGIN_LICENSE,
+				      PACKAGE,
+				      PLUGIN_PACKAGE,
+				      PLUGIN_URL );
 }

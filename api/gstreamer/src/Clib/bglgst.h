@@ -73,10 +73,11 @@ extern obj_t bgl_gst_element_factory_get_static_pad_templates( GstElementFactory
 
 extern obj_t bgl_gst_caps_new_simple( obj_t, obj_t, obj_t );
 
+extern obj_t bgl_gst_buffer_get_string( GstBuffer * );
+extern void bgl_gst_buffer_set_string( GstBuffer *, obj_t );
 
-extern int bgl_gst_pad_add_buffer_probe( GstPad *, obj_t );
-/* extern obj_t bgl_gst_pad_add_data_probe( GstPad *, obj_t );         */
-/* extern obj_t bgl_gst_pad_add_event_probe( GstPad *, obj_t );        */
+extern int bgl_gst_pad_add_probe( GstPad *, GstPadProbeType, obj_t );
+extern gboolean bgl_gst_pad_set_caps( GstPad *pad, GstCaps *caps );
 
 extern obj_t bgl_gst_message_tag_list( GstMessage * );
 extern char *bgl_gst_message_error_string( GstMessage * );
@@ -86,6 +87,7 @@ extern GstState bgl_gst_message_new_state( GstMessage * );
 extern GstState bgl_gst_message_old_state( GstMessage * );
 extern GstState bgl_gst_message_pending_state( GstMessage * );
 extern obj_t bgl_gst_message_get_src( GstMessage * );
+extern int bgl_gst_message_stream_status_type( GstMessage * );
 
 extern obj_t bgl_gst_object_property_list( GstObject * );
 extern obj_t bgl_gst_object_get_property( GstObject *, char * );

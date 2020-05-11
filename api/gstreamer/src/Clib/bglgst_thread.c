@@ -14,6 +14,7 @@
 #endif
 #include <gst/gst.h>
 #include <string.h>
+#include <unistd.h>
 #include "bglgst_config.h"
 #include <pthread.h>
 #if( defined( BGL_GSTREAMER_USE_THREADS ) )
@@ -32,179 +33,30 @@ extern obj_t bglpth_thread_thunk();
 void *bglpth_thread_new();
 
 /*---------------------------------------------------------------------*/
-/*    static GMutex *                                                  */
-/*    bglgst_mutex_new ...                                             */
+/*    GRealThread                                                      */
 /*---------------------------------------------------------------------*/
-static GMutex *
-bglgst_mutex_new() {
-   GMutex *result = (GMutex *)g_new( pthread_mutex_t, 1 );
-   pthread_mutex_init( (pthread_mutex_t *)result, 0L );
-   
-   return result;
-}
+typedef struct _GRealThread GRealThread;
+struct  _GRealThread
+{
+  GThread thread;
+
+  gint ref_count;
+  gboolean ours;
+  gchar *name;
+  gpointer retval;
+};
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
-/*    bglgst_mutex_lock ...                                            */
+/*    GThreadPosix                                                     */
 /*---------------------------------------------------------------------*/
-static int
-bglgst_mutex_lock( pthread_mutex_t *mutex ) {
-   return pthread_mutex_lock( mutex );
-}
+typedef struct
+{
+  GRealThread thread;
 
-/*---------------------------------------------------------------------*/
-/*    static gboolean                                                  */
-/*    bglgst_mutex_trylock ...                                         */
-/*---------------------------------------------------------------------*/
-static gboolean
-bglgst_mutex_trylock( GMutex *mutex ) {
-  int result = pthread_mutex_trylock( (pthread_mutex_t *)mutex );
-
-  if (result == EBUSY)
-    return FALSE;
-
-  return TRUE;
-}
-   
-/*---------------------------------------------------------------------*/
-/*    int                                                              */
-/*    bglgst_mutex_unlock ...                                          */
-/*---------------------------------------------------------------------*/
-static int
-bglgst_mutex_unlock( pthread_mutex_t *mutex ) {
-   return pthread_mutex_unlock( mutex );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_mutex_free ...                                            */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_mutex_free( GMutex *mutex ) {
-   pthread_mutex_destroy( (pthread_mutex_t *)mutex );
-   g_free( mutex );
-}
-
-
-/*---------------------------------------------------------------------*/
-/*    static GCond *                                                   */
-/*    bglgst_cond_new ...                                              */
-/*---------------------------------------------------------------------*/
-static GCond *
-bglgst_cond_new() {
-   GCond *result = (GCond *)g_new( pthread_cond_t, 1 );
-   pthread_cond_init( (pthread_cond_t *)result, 0L );
-   
-   return result;
-}
-
-/*---------------------------------------------------------------------*/
-/*    static int                                                       */
-/*    bglgst_pthread_cond_signal ...                                   */
-/*---------------------------------------------------------------------*/
-static int
-bglgst_pthread_cond_signal( pthread_cond_t *cond ) {
-   return pthread_cond_signal( cond );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static int                                                       */
-/*    bglgst_pthread_cond_broadcast ...                                */
-/*---------------------------------------------------------------------*/
-static int
-bglgst_pthread_cond_broadcast( pthread_cond_t *cond ) {
-   return pthread_cond_broadcast( cond );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static int                                                       */
-/*    bglgst_pthread_cond_wait ...                                     */
-/*---------------------------------------------------------------------*/
-static int
-bglgst_pthread_cond_wait( pthread_cond_t *cond, pthread_mutex_t *mutex ) {
-   return pthread_cond_wait( cond, mutex );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static gboolean                                                  */
-/*    bglgst_cond_timed_wait ...                                       */
-/*---------------------------------------------------------------------*/
-static gboolean
-bglgst_cond_timed_wait( GCond *cond,
-			GMutex *entered_mutex,
-			GTimeVal *abs_time ) {
-#define G_NSEC_PER_SEC 1000000000
-   int result;
-   struct timespec end_time;
-   gboolean timed_out;
-
-   g_return_val_if_fail( cond != NULL, FALSE );
-   g_return_val_if_fail( entered_mutex != NULL, FALSE );
-
-   if( !abs_time ) {
-      result = pthread_cond_wait( (pthread_cond_t *)cond,
-                                  (pthread_mutex_t *)entered_mutex );
-      timed_out = FALSE;
-   } else {
-      end_time.tv_sec = abs_time->tv_sec;
-      end_time.tv_nsec = abs_time->tv_usec * (G_NSEC_PER_SEC / G_USEC_PER_SEC);
-
-      g_return_val_if_fail( end_time.tv_nsec < G_NSEC_PER_SEC, TRUE );
-
-      result = pthread_cond_timedwait( (pthread_cond_t *) cond,
-				       (pthread_mutex_t *) entered_mutex,
-				       &end_time );
-      timed_out = (result == ETIMEDOUT);
-   }
-  
-   return !timed_out;
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_cond_free ...                                             */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_cond_free( GCond *cond ) {
-   pthread_cond_destroy( (pthread_cond_t *)cond );
-   g_free( cond );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static GPrivate *                                                */
-/*    bglgst_private_new ...                                           */
-/*---------------------------------------------------------------------*/
-static GPrivate *
-bglgst_private_new( GDestroyNotify destructor ) {
-  GPrivate *result = (GPrivate *)g_new( pthread_key_t, 1 );
-  pthread_key_create( (pthread_key_t *) result, destructor );
-
-  return result;
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_private_set ...                                           */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_private_set( GPrivate *private_key, gpointer value ) {
-   if( !private_key )
-      return;
-   
-   pthread_setspecific( *(pthread_key_t *)private_key, value );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static gpointer                                                  */
-/*    bglgst_private_get ...                                           */
-/*---------------------------------------------------------------------*/
-static gpointer
-bglgst_private_get( GPrivate *private_key ) {
-   if( !private_key )
-      return NULL;
-   
-   return (gpointer)pthread_getspecific( *(pthread_key_t *)private_key );
-}
+  pthread_t system_thread;
+  gboolean  joined;
+  GMutex    lock;
+} GThreadPosix;
 
 /*---------------------------------------------------------------------*/
 /*    static void *                                                    */
@@ -230,144 +82,62 @@ bglgst_thread_run( void *self ) {
 }
 		      
 /*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_thread_create ...                                         */
+/*    GRealThread *                                                    */
+/*    g_system_thread_new ...                                          */
 /*---------------------------------------------------------------------*/
-static void
-bglgst_thread_create( GThreadFunc thread_func,
-		      gpointer arg,
-		      gulong stack_size,
-		      gboolean joinable,
-		      gboolean bound,
-		      GThreadPriority priority,
-		      gpointer thread,
-		      GError **error ) {
-  pthread_attr_t attr;
-  gint ret;
-  void *self = bglpth_thread_new( MAKE_PAIR( (obj_t)thread_func, (obj_t)arg ) );
+GRealThread *
+g_system_thread_new (GThreadFunc   proxy,
+		     gulong        stack_size,
+		     const char   *name,
+		     GThreadFunc   func,
+		     gpointer      data,
+		     GError      **error)
+{
+   void *self;
+   GThreadPosix *thread;
+   GRealThread *base_thread;
+   pthread_attr_t attr;
+   gint ret;
 
-  bglpth_thread_env_create( self, BFALSE );
+   thread = g_slice_new0( GThreadPosix );
+   base_thread = (GRealThread*)thread;
+   base_thread->ref_count = 2;
+   base_thread->ours = TRUE;
+   base_thread->thread.joinable = TRUE;
+   base_thread->thread.func = func;
+   base_thread->thread.data = data;
+   base_thread->name = g_strdup( name );
 
-  g_return_if_fail( thread_func );
-  g_return_if_fail( priority >= G_THREAD_PRIORITY_LOW );
-  g_return_if_fail( priority <= G_THREAD_PRIORITY_URGENT );
+   pthread_attr_init( &attr );
 
-  pthread_attr_init( &attr );
+#ifdef HAVE_PTHREAD_ATTR_SETSTACKSIZE
+   if ( stack_size ) {
+#ifdef _SC_THREAD_STACK_MIN
+      long min_stack_size = sysconf( _SC_THREAD_STACK_MIN );
+      if ( min_stack_size >= 0 )
+         stack_size = MAX( (gulong) min_stack_size, stack_size );
+#endif /* _SC_THREAD_STACK_MIN */
+      /* No error check here, because some systems can't do it and
+       * we simply don't want threads to fail because of that. */
+      pthread_attr_setstacksize( &attr, stack_size );
+   }
+#endif /* HAVE_PTHREAD_ATTR_SETSTACKSIZE */
 
-  if( stack_size ) {
-     /* No error check here, because some systems can't do it and
-      * we simply don't want threads to fail because of that. */
-     pthread_attr_setstacksize( &attr, stack_size );
-  }
+   self = bglpth_thread_new( MAKE_PAIR( (obj_t)proxy, (obj_t)thread ) );
+   bglpth_thread_env_create( self, BFALSE );
 
-  if( bound )
-    /* No error check here, because some systems can't do it and we
-     * simply don't want threads to fail because of that. */
-    pthread_attr_setscope( &attr, PTHREAD_SCOPE_SYSTEM );
+   ret = pthread_create( &thread->system_thread, &attr, bglgst_thread_run, self );
 
-  pthread_attr_setdetachstate( &attr,
-			       joinable ?
-			       PTHREAD_CREATE_JOINABLE
-			       : PTHREAD_CREATE_DETACHED );
+   pthread_attr_destroy( &attr );
 
-  ret = pthread_create( thread, &attr, bglgst_thread_run, self );
+   if ( ret == EAGAIN ) {
+      g_set_error( error, G_THREAD_ERROR, G_THREAD_ERROR_AGAIN,
+		   "Error creating thread: %s", g_strerror( ret ));
+      g_slice_free( GThreadPosix, thread );
+      return NULL;
+   }
 
-  pthread_attr_destroy( &attr );
+   g_mutex_init( &thread->lock );
 
-  if( ret == EAGAIN ) {
-     g_set_error (error, G_THREAD_ERROR, G_THREAD_ERROR_AGAIN, 
-		  "Error creating thread: %s", g_strerror( ret ) );
-      return;
-  }
-
-  return;
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_thread_yield ...                                          */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_thread_yield() {
-   sched_yield();
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_thread_join ...                                           */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_thread_join( gpointer thread ) {
-   gpointer ignore;
-   pthread_join( *(pthread_t*)thread, &ignore );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_thread_exit ...                                           */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_thread_exit() {
-  pthread_exit( NULL );
-}
-
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_thread_set_priority ...                                   */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_thread_set_priority( gpointer thread, GThreadPriority priority ) {
-   return;
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglgst_thread_self ...                                           */
-/*---------------------------------------------------------------------*/
-static void
-bglgst_thread_self( gpointer thread ) {
-   *(pthread_t *)thread = pthread_self();
-}
-
-/*---------------------------------------------------------------------*/
-/*    static gboolean                                                  */
-/*    bglgst_thread_equal ...                                          */
-/*---------------------------------------------------------------------*/
-static gboolean
-bglgst_thread_equal( gpointer thread1, gpointer thread2 ) {
-  return (pthread_equal( *(pthread_t *)thread1, *(pthread_t *)thread2 ) != 0);
-}
-
-/*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bglgst_thread_init ...                                           */
-/*---------------------------------------------------------------------*/
-void
-bglgst_thread_init() {
-   static GThreadFunctions g_thread_functions_for_bigloo = {
-      &bglgst_mutex_new,
-      (void (*)(GMutex *))&bglgst_mutex_lock,
-      &bglgst_mutex_trylock,
-      (void (*)(GMutex *))&bglgst_mutex_unlock,
-      &bglgst_mutex_free,
-      &bglgst_cond_new,
-      (void (*)(GCond *))&bglgst_pthread_cond_signal,
-      (void (*)(GCond *))&bglgst_pthread_cond_broadcast,
-      (void (*)(GCond *, GMutex *))&bglgst_pthread_cond_wait,
-      &bglgst_cond_timed_wait,
-      &bglgst_cond_free,
-      &bglgst_private_new,
-      &bglgst_private_get,
-      &bglgst_private_set,
-      &bglgst_thread_create,
-      &bglgst_thread_yield,
-      &bglgst_thread_join,
-      &bglgst_thread_exit,
-      &bglgst_thread_set_priority,
-      &bglgst_thread_self,
-      &bglgst_thread_equal
-   };
-
-   g_thread_init( &g_thread_functions_for_bigloo );
+   return (GRealThread *)thread;
 }

@@ -44,7 +44,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bgst-launch-version ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-parameter bgst-launch-version "0.10")
+(define-parameter bgst-launch-version "1.0")
 (define-parameter bgst-launch-verbose #f)
 (define-parameter bgst-launch-messages #f)
 

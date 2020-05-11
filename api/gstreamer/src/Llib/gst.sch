@@ -40,9 +40,9 @@
     (infix macro $gst-buffer-nil::$gst-buffer () "0L")
     (macro $gst-buffer-new::$gst-buffer
        () "gst_buffer_new")
-    (macro $gst-buffer-new-and-alloc::$gst-buffer
-       (::int) "gst_buffer_new_alloc")
-    (macro $gst-buffer-ref!::void
+    (macro $gst-buffer-new-allocate::$gst-buffer
+       (::void* ::int ::void*) "gst_buffer_new_allocate")
+    (macro $gst-buffer-ref!::$gst-buffer
        (::$gst-buffer) "gst_buffer_ref")
     (macro $gst-buffer-unref!::void
        (::$gst-buffer) "gst_buffer_unref")
@@ -50,18 +50,22 @@
        (::$gst-buffer) "(bool_t)!")
     (macro $gst-buffer->object::$gst-object
        (::$gst-buffer) "(GstObject *)")
-    (macro $gst-buffer-size::long
-       (::$gst-buffer) "GST_BUFFER_SIZE")
-    (macro $gst-buffer-data::string
-       (::$gst-buffer) "GST_BUFFER_DATA")
-    (macro $gst-buffer-set-data!::void
-       (::$gst-buffer ::string ::int) "gst_buffer_set_data")
-    (macro $gst-buffer-timestamp::$gst-clock-time
-       (::$gst-buffer) "GST_BUFFER_TIMESTAMP")
+    (macro $gst-buffer-get-size::long
+       (::$gst-buffer) "gst_buffer_get_size")
+    (macro $gst-buffer-set-size!::void
+       (::$gst-buffer ::long) "gst_buffer_set_size")
+    (macro $gst-buffer-get-string::obj
+       (::$gst-buffer) "bgl_gst_buffer_get_string")
+    (macro $gst-buffer-set-string!::void
+       (::$gst-buffer ::obj) "bgl_gst_buffer_set_string")
+    (macro $gst-buffer-dts::$gst-clock-time
+       (::$gst-buffer) "GST_BUFFER_DTS")
+    (macro $gst-buffer-pts::$gst-clock-time
+       (::$gst-buffer) "GST_BUFFER_PTS")
+    (macro $gst-buffer-dts-or-pts::$gst-clock-time
+       (::$gst-buffer) "GST_BUFFER_DTS_OR_PTS")
     (macro $gst-buffer-duration::$gst-clock-time
        (::$gst-buffer) "GST_BUFFER_DURATION")
-    (macro $gst-buffer-caps::$gst-caps
-       (::$gst-buffer) "GST_BUFFER_CAPS")
     
      ;; gst-bus
     (type $gst-bus void* "GstBus *")
@@ -92,7 +96,7 @@
     (macro $gst-bus-wait-playing::void
        (::$gst-bus ::obj) "bgl_gst_bus_wait_playing")
 
-    ;; gst-bus-fun
+    ;; gst-bus-func
     (type $gst-bus-func void* "GstBusFunc")
 
     ;; gst-caps
@@ -104,25 +108,25 @@
        (::$gst-caps) "(GstObject *)")
     (macro $gst-caps::$gst-caps
        (::$gst-object) "GST_CAPS")
-    (macro $gst-caps-ref!::void
+    (macro $gst-caps-ref!::$gst-caps
        (::$gst-caps) "gst_caps_ref")
     (macro $gst-caps-unref!::void
        (::$gst-caps) "gst_caps_unref")
-    (macro $gst-caps-get-size::long
+    (macro $gst-caps-get-size::uint
        (::$gst-caps) "gst_caps_get_size")
     (macro $gst-caps-get-structure::$gst-structure
-       (::$gst-caps ::long) "gst_caps_get_structure")
+       (::$gst-caps ::uint) "gst_caps_get_structure")
     (macro $gst-caps-is-always-compatible?::bool
        (::$gst-caps ::$gst-caps) "gst_caps_is_always_compatible")
     (macro $gst-caps-new-simple::obj
        (::bstring ::pair-nil ::procedure) "bgl_gst_caps_new_simple")
     (macro $gst-caps-append::void
        (::$gst-caps ::$gst-caps) "gst_caps_append")
-    (macro $gst-caps-merge::void
+    (macro $gst-caps-merge::$gst-caps
        (::$gst-caps ::$gst-caps) "gst_caps_merge")
     (macro $gst-caps-append-structure::void
        (::$gst-caps ::$gst-structure) "gst_caps_append_structure")
-    (macro $gst-caps-merge-structure::void
+    (macro $gst-caps-merge-structure::$gst-caps
        (::$gst-caps ::$gst-structure) "gst_caps_merge_structure")
     (macro $gst-caps-remove-structure::void
        (::$gst-caps ::uint) "gst_caps_remove_structure")
@@ -167,7 +171,7 @@
     (macro $gst-element-set-state!::$gst-state-change-return
        (::$gst-element ::$gst-state) "gst_element_set_state")
     (macro $gst-element-get-state::$gst-state-change-return
-       (::$gst-element ::long ::long ::llong) "gst_element_get_state")
+       (::$gst-element ::long ::long ::$gst-clock-time) "gst_element_get_state")
     (macro $gst-element-add-pad!::bool
        (::$gst-element ::$gst-pad) "gst_element_add_pad")
     (macro $gst-element-get-static-pad::$gst-pad
@@ -176,6 +180,8 @@
        (::$gst-element ::string) "gst_element_get_request_pad")
     (macro $gst-element-get-compatible-pad::$gst-pad
        (::$gst-element ::$gst-pad ::$gst-caps) "gst_element_get_compatible_pad")
+    (macro $gst-element-get-start-time::$gst-clock-time
+       (::$gst-element) "gst_element_get_start_time")
     (macro $gst-element-get-base-time::$gst-clock-time
        (::$gst-element) "gst_element_get_base_time")
     (macro $gst-element-get-clock::$gst-clock
@@ -210,22 +216,32 @@
     (macro $gst-element-factory-make::$gst-element
        (::string ::string) "gst_element_factory_make")
     (infix macro $gst-element-factory-name-nil::string () "(char *)0L")
-    (macro $gst-element-factory-get-longname::string
-       (::$gst-element-factory) "(char *)gst_element_factory_get_longname")
-    (macro $gst-element-factory-get-klass::string
-       (::$gst-element-factory) "(char *)gst_element_factory_get_klass")
-    (macro $gst-element-factory-get-description::string
-       (::$gst-element-factory) "(char *)gst_element_factory_get_description")
-    (macro $gst-element-factory-get-author::string
-       (::$gst-element-factory) "(char *)gst_element_factory_get_author")
+    (macro $gst-element-factory-get-metadata::string
+       (::$gst-element-factory ::string) "(char *)gst_element_factory_get_metadata")
     (macro $gst-element-factory-get-uri-protocols::pair-nil
        (::$gst-element-factory) "bgl_gst_element_factory_get_uri_protocols")
-    (macro $gst-element-factory-can-sink-caps?::bool
-       (::$gst-element-factory ::$gst-caps) "gst_element_factory_can_sink_caps")
-    (macro $gst-element-factory-can-src-caps?::bool
-       (::$gst-element-factory ::$gst-caps) "gst_element_factory_can_src_caps")
+    (macro $gst-element-factory-can-sink-all-caps?::bool
+       (::$gst-element-factory ::$gst-caps)
+       "gst_element_factory_can_sink_all_caps")
+    (macro $gst-element-factory-can-src-all-caps?::bool
+       (::$gst-element-factory ::$gst-caps)
+       "gst_element_factory_can_src_all_caps")
     (macro $gst-element-factory-get-static-pad-templates::pair-nil
        (::$gst-element-factory) "bgl_gst_element_factory_get_static_pad_templates")
+
+    ;; gst-element-metadata
+    (macro $gst-element-metadata-author::string
+       "GST_ELEMENT_METADATA_AUTHOR")
+    (macro $gst-element-metadata-doc-uri::string
+       "GST_ELEMENT_METADATA_DOC_URI")
+    (macro $gst-element-metadata-description::string
+       "GST_ELEMENT_METADATA_DESCRIPTION")
+    (macro $gst-element-metadata-icon-name::string
+       "GST_ELEMENT_METADATA_ICON_NAME")
+    (macro $gst-element-metadata-klass::string
+       "GST_ELEMENT_METADATA_KLASS")
+    (macro $gst-element-metadata-long-name::string
+       "GST_ELEMENT_METADATA_LONGNAME")
 
     ;; gst-format
     (type $gst-format long "GstFormat")
@@ -247,7 +263,7 @@
     (infix macro $gst-ghost-pad-nil::$gst-ghost-pad () "0L")
     (macro $gst-ghost-pad-null?::bool
        (::$gst-ghost-pad) "(bool_t)!")
-    (macro $gst-ghost-pad-new::$gst-element
+    (macro $gst-ghost-pad-new::$gst-pad
        (::string ::$gst-pad) "gst_ghost_pad_new")
     (macro $gst-ghost-pad->object::$gst-object
        (::$gst-ghost-pad) "(GstObject *)")
@@ -267,7 +283,7 @@
        (::$gst-message) "(GstObject *)")
     (macro $gst-message::$gst-message
        (::$gst-object) "GST_MESSAGE")
-    (macro $gst-message-ref!::void
+    (macro $gst-message-ref!::$gst-message
        (::$gst-message) "gst_message_ref")
     (macro $gst-message-unref!::void
        (::$gst-message) "gst_message_unref")
@@ -310,7 +326,7 @@
     (macro $gst-message-new-state-dirty::$gst-message
        (::$gst-object) "gst_message_new_state_dirty")
     (macro $gst-message-new-async-done::$gst-message
-       (::$gst-object) "gst_message_new_async_done")
+       (::$gst-object ::$gst-clock-time) "gst_message_new_async_done")
     (macro $gst-message-new-latency::$gst-message
        (::$gst-object) "gst_message_new_latency")
 
@@ -354,32 +370,66 @@
        "GST_MESSAGE_SEGMENT_START")
     (macro $gst-message-segment-done::$gst-message-type
        "GST_MESSAGE_SEGMENT_DONE")
-    (macro $gst-message-duration::$gst-message-type
-       "GST_MESSAGE_DURATION")
+    (macro $gst-message-duration-changed::$gst-message-type
+       "GST_MESSAGE_DURATION_CHANGED")
     (macro $gst-message-latency::$gst-message-type
        "GST_MESSAGE_LATENCY")
     (macro $gst-message-async-start::$gst-message-type
        "GST_MESSAGE_ASYNC_START")
     (macro $gst-message-async-done::$gst-message-type
        "GST_MESSAGE_ASYNC_DONE")
+    (macro $gst-message-request-state::$gst-message-type
+       "GST_MESSAGE_REQUEST_STATE")
+    (macro $gst-message-step-start::$gst-message-type
+       "GST_MESSAGE_STEP_START")
+    (macro $gst-message-qos::$gst-message-type
+       "GST_MESSAGE_QOS")
+    (macro $gst-message-progress::$gst-message-type
+       "GST_MESSAGE_PROGRESS")
+    (macro $gst-message-toc::$gst-message-type
+       "GST_MESSAGE_TOC")
+    (macro $gst-message-reset-time::$gst-message-type
+       "GST_MESSAGE_RESET_TIME")
+    (macro $gst-message-stream-start::$gst-message-type
+       "GST_MESSAGE_STREAM_START")
+    (macro $gst-message-need-context::$gst-message-type
+       "GST_MESSAGE_NEED_CONTEXT")
+    (macro $gst-message-have-context::$gst-message-type
+       "GST_MESSAGE_HAVE_CONTEXT")
+    (macro $gst-message-extended::$gst-message-type
+       "GST_MESSAGE_EXTENDED")
+    (macro $gst-message-device-added::$gst-message-type
+       "GST_MESSAGE_DEVICE_ADDED")
+    (macro $gst-message-device-removed::$gst-message-type
+       "GST_MESSAGE_DEVICE_REMOVED")
+    (macro $gst-message-property-notify::$gst-message-type
+       "GST_MESSAGE_PROPERTY_NOTIFY")
+    (macro $gst-message-stream-collection::$gst-message-type
+       "GST_MESSAGE_STREAM_COLLECTION")
+    (macro $gst-message-streams-selected::$gst-message-type
+       "GST_MESSAGE_STREAMS_SELECTED")
+    (macro $gst-message-redirect::$gst-message-type
+       "GST_MESSAGE_REDIRECT")
+    (macro $gst-message-device-changed::$gst-message-type
+       "GST_MESSAGE_DEVICE_CHANGED")
     (macro $gst-message-any::$gst-message-type
        "GST_MESSAGE_ANY")
 
     ;; gst-stream-status-type
     (type $gst-stream-status-type long "GstStreamStatusType")
-    (macro $gst-stream-status-type-create::$gst-message-type
+    (macro $gst-stream-status-type-create::$gst-stream-status-type
        "GST_STREAM_STATUS_TYPE_CREATE")
-    (macro $gst-stream-status-type-enter::$gst-message-type
+    (macro $gst-stream-status-type-enter::$gst-stream-status-type
        "GST_STREAM_STATUS_TYPE_ENTER")
-    (macro $gst-stream-status-type-leave::$gst-message-type
+    (macro $gst-stream-status-type-leave::$gst-stream-status-type
        "GST_STREAM_STATUS_TYPE_LEAVE")
-    (macro $gst-stream-status-type-destroy::$gst-message-type
+    (macro $gst-stream-status-type-destroy::$gst-stream-status-type
        "GST_STREAM_STATUS_TYPE_DESTROY")
-    (macro $gst-stream-status-type-start::$gst-message-type
+    (macro $gst-stream-status-type-start::$gst-stream-status-type
        "GST_STREAM_STATUS_TYPE_START")
-    (macro $gst-stream-status-type-pause::$gst-message-type
+    (macro $gst-stream-status-type-pause::$gst-stream-status-type
        "GST_STREAM_STATUS_TYPE_PAUSE")
-    (macro $gst-stream-status-type-stop::$gst-message-type
+    (macro $gst-stream-status-type-stop::$gst-stream-status-type
        "GST_STREAM_STATUS_TYPE_STOP")
 
 ;*     ;; gst-mixer                                                    */
@@ -454,7 +504,7 @@
     (infix macro $gst-object-nil::$gst-object () "0L")
     (macro $gst-object-null?::bool
 	   (::$gst-object) "(bool_t)!")
-    (macro $gst-object-ref!::void
+    (macro $gst-object-ref!::$gst-object
        (::$gst-object) "gst_object_ref")
     (macro $gst-object-unref!::void
        (::$gst-object) "gst_object_unref")
@@ -476,7 +526,7 @@
     (infix macro $gst-pad-nil::$gst-pad () "0L")
     (macro $gst-pad-null?::bool
        (::$gst-pad) "(bool_t)!")
-    (macro $gst-pad-new::$gst-element
+    (macro $gst-pad-new::$gst-pad
        (::string ::$gst-pad-direction) "gst_pad_new")
     (macro $gst-pad->object::$gst-object
        (::$gst-pad) "(GstObject *)")
@@ -496,47 +546,33 @@
        (::$gst-pad) "gst_pad_is_linked")
     (macro $gst-pad-unlink!::bool
        (::$gst-pad ::$gst-pad) "gst_pad_unlink")
-    (macro $gst-pad-get-caps::$gst-caps
-       (::$gst-pad) "gst_pad_get_caps")
+    (macro $gst-pad-query-caps::$gst-caps
+       (::$gst-pad ::$gst-caps) "gst_pad_query_caps")
     (macro $gst-pad-set-caps!::bool
-       (::$gst-pad ::$gst-caps) "gst_pad_set_caps")
+       (::$gst-pad ::$gst-caps) "bgl_gst_pad_set_caps")
     (macro $gst-pad-get-allowed-caps::$gst-caps
        (::$gst-pad) "gst_pad_get_allowed_caps")
-    (macro $gst-pad-get-negotiated-caps::$gst-caps
-       (::$gst-pad) "gst_pad_get_negotiated_caps")
+    (macro $gst-pad-get-current-caps::$gst-caps
+       (::$gst-pad) "gst_pad_get_current_caps")
     (macro $gst-pad-get-pad-template-caps::$gst-caps
-       (::$gst-pad) "(GstCaps *)gst_pad_get_pad_template_caps")
-    (macro $gst-pad-add-buffer-probe!::int
-       (::$gst-pad ::procedure) "bgl_gst_pad_add_buffer_probe")
-;*     (macro $gst-pad-add-data-probe!::int                            */
-;*        (::$gst-pad ::procedure) "bgl_gst_pad_add_data_probe")       */
-;*     (macro $gst-pad-add-event-probe!::int                           */
-;*        (::$gst-pad ::procedure) "bgl_gst_pad_add_event_probe")      */
-    (macro $gst-pad-remove-buffer-probe!::void
-       (::$gst-pad ::int) "gst_pad_remove_buffer_probe")
-;*     (macro $gst-remove-add-data-probe!::int                         */
-;*        (::$gst-pad ::int) "gst_pad_remove_data_probe")              */
-;*     (macro $gst-remove-add-event-probe!::int                        */
-;*        (::$gst-pad ::int) "gst_pad_remove_event_probe")             */
+       (::$gst-pad) "gst_pad_get_pad_template_caps")
+    (macro $gst-pad-add-probe!::ulong
+       (::$gst-pad ::$gst-pad-probe-type ::procedure) "bgl_gst_pad_add_probe")
+    (macro $gst-pad-remove-probe!::void
+       (::$gst-pad ::int) "gst_pad_remove_probe")
 
     ;; gst-pad-template
     (type $gst-pad-template void* "GstPadTemplate *")
     (infix macro $gst-pad-template-nil::$gst-pad-template () "0L")
     (macro $gst-pad-template-null?::bool
        (::$gst-pad-template) "(bool_t)!")
-    (macro $gst-pad-template-new::$gst-element
+    (macro $gst-pad-template-new::$gst-pad-template
        (::string ::$gst-pad-direction ::$gst-pad-presence ::$gst-caps)
        "gst_pad_template_new")
     (macro $gst-pad-template->object::$gst-object
        (::$gst-pad-template) "(GstObject *)")
     (macro $gst-pad-template::$gst-pad-template
        (::$gst-object) "GST_PAD_TEMPLATE")
-    
-    ;; gst-parse
-    (macro $gst-parse-launch::obj
-       (::string) "bgl_gst_parse_launch")
-    (macro $gst-parse-launchv::obj
-       (::pair-nil) "bgl_gst_parse_launchv")
     
     ;; gst-pad-link-return
     (type $gst-pad-link-return long "GstPadLinkReturn")
@@ -572,6 +608,59 @@
        "GST_PAD_SOMETIMES")
     (macro $gst-pad-request::$gst-pad-presence
        "GST_PAD_REQUEST")
+
+    ;; gst-pad-probe-type
+    (type $gst-pad-probe-type long "GstPadProbeType")
+    (macro $gst-pad-probe-type-invalid::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_INVALID")
+    (macro $gst-pad-probe-type-idle::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_IDLE")
+    (macro $gst-pad-probe-type-BLOCK::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_BLOCK")
+    (macro $gst-pad-probe-type-buffer::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_BUFFER")
+    (macro $gst-pad-probe-type-buffer-list::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_BUFFER_LIST")
+    (macro $gst-pad-probe-type-event-downstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM")
+    (macro $gst-pad-probe-type-event-upstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_EVENT_UPSTREAM")
+    (macro $gst-pad-probe-type-event-flush::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_EVENT_FLUSH")
+    (macro $gst-pad-probe-type-query-downstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM")
+    (macro $gst-pad-probe-type-query-upstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_QUERY_UPSTREAM")
+    (macro $gst-pad-probe-type-push::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_PUSH")
+    (macro $gst-pad-probe-type-pull::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_PULL")
+    (macro $gst-pad-probe-type-blocking::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_BLOCKING")
+    (macro $gst-pad-probe-type-data-downstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_DATA_DOWNSTREAM")
+    (macro $gst-pad-probe-type-data-upstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_DATA_UPSTREAM")
+    (macro $gst-pad-probe-type-data-both::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_DATA_BOTH")
+    (macro $gst-pad-probe-type-block-downstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM")
+    (macro $gst-pad-probe-type-block-upstream::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_BLOCK_UPSTREAM")
+    (macro $gst-pad-probe-type-event-both::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_EVENT_BOTH")
+    (macro $gst-pad-probe-type-query-both::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_QUERY_BOTH")
+    (macro $gst-pad-probe-type-all-both::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_ALL_BOTH")
+    (macro $gst-pad-probe-type-scheduling::$gst-pad-probe-type
+       "GST_PAD_PROBE_TYPE_SCHEDULING")
+
+    ;; gst-parse
+    (macro $gst-parse-launch::obj
+       (::string) "bgl_gst_parse_launch")
+    (macro $gst-parse-launchv::obj
+       (::pair-nil) "bgl_gst_parse_launchv")
     
     ;; gst-pipeline
     (type $gst-pipeline void* "GstPipeline *")
@@ -588,8 +677,6 @@
        (::$gst-pipeline) "gst_pipeline_get_clock")
     (macro $gst-pipeline-set-clock!::bool
        (::$gst-pipeline ::$gst-clock) "gst_pipeline_set_clock")
-    (macro $gst-pipeline-get-last-stream-time::$gst-clock-time
-       (::$gst-pipeline) "gst_pipeline_get_last_stream_time")
     
     ;; gst-plugin
     (type $gst-plugin void* "GstPlugin *")
@@ -628,13 +715,13 @@
        (::$gst-object) "GST_PLUGIN_FEATURE")
     (macro $gst-plugin-feature-name::string
        (::$gst-plugin-feature) "(char *)gst_plugin_feature_get_name")
-    (infix macro $gst-plugin-feature-plugin-name::string
-       (::$gst-plugin-feature) "->plugin_name")
+    (macro $gst-plugin-feature-get-plugin-name::string
+       (::$gst-plugin-feature) "(char *)gst_plugin_feature_get_plugin_name")
     (macro $gst-plugin-feature-set-name!::string
        (::$gst-plugin-feature ::string) "gst_plugin_feature_set_name")
     (macro $gst-plugin-feature-rank::uint
        (::$gst-plugin-feature) "gst_plugin_feature_get_rank")
-    (macro $gst-plugin-feature-set-rank!::string
+    (macro $gst-plugin-feature-set-rank!::void
        (::$gst-plugin-feature ::uint) "gst_plugin_feature_set_rank")
     
     ;; gst-state
@@ -659,8 +746,8 @@
        (::$gst-registry) "(GstObject *)")
     (macro $gst-registry::$gst-registry
        (::$gst-object) "GST_REGISTRY")
-    (macro $gst-registry-get-default::$gst-registry
-       () "gst_registry_get_default")
+    (macro $gst-registry-get::$gst-registry
+       () "gst_registry_get")
     (macro $gst-registry-get-element-factory-list::pair-nil
        (::$gst-registry) "bgl_gst_registry_get_element_factory_list")
     (macro $gst-registry-get-feature-list-by-plugin::pair-nil
@@ -684,6 +771,18 @@
        "GST_SEEK_FLAG_KEY_UNIT")
     (macro $gst-seek-flag-segment::$gst-seek-flags
        "GST_SEEK_FLAG_SEGMENT")
+    (macro $gst-seek-flag-trickmode::$gst-seek-flags
+       "GST_SEEK_FLAG_TRICKMODE")
+    (macro $gst-seek-flag-snap-before::$gst-seek-flags
+       "GST_SEEK_FLAG_SNAP_BEFORE")
+    (macro $gst-seek-flag-snap-after::$gst-seek-flags
+       "GST_SEEK_FLAG_SNAP_AFTER")
+    (macro $gst-seek-flag-snap-nearest::$gst-seek-flags
+       "GST_SEEK_FLAG_SNAP_NEAREST")
+    (macro $gst-seek-flag-trickmode-key-units::$gst-seek-flags
+       "GST_SEEK_FLAG_TRICKMODE_KEY_UNITS")
+    (macro $gst-seek-flag-trickmode-no-audio::$gst-seek-flags
+       "GST_SEEK_FLAG_TRICKMODE_NO_AUDIO")
     
     ;; gst-state-change-return
     (type $gst-state-change-return long "GstStateChangeReturn")
@@ -701,12 +800,8 @@
     (infix macro $gst-static-pad-template-nil::$gst-static-pad-template () "0L")
     (macro $gst-static-pad-template-null?::bool
        (::$gst-static-pad-template) "(bool_t)!")
-    (macro $gst-static-pad-template->object::$gst-object
-       (::$gst-static-pad-template) "(GstObject *)")
-    (macro $gst-static-pad-template::$gst-static-pad-template
-       (::$gst-object) "GST_STATIC_PAD_TEMPLATE")
-    (infix macro $gst-static-pad-template-name-template::string
-       (::$gst-static-pad-template) "->name_template")
+    (macro $gst-static-pad-template-name-template::string
+       (::$gst-static-pad-template) "(char *)GST_PAD_TEMPLATE_NAME_TEMPLATE")
     (infix macro $gst-static-pad-template-direction::$gst-pad-direction
        (::$gst-static-pad-template) "->direction")
     (infix macro $gst-static-pad-template-presence::$gst-pad-presence
@@ -719,8 +814,8 @@
        (::$gst-structure) "(bool_t)!")
     (macro $gst-structure->object::$gst-object
        (::$gst-structure) "(GstObject *)")
-    (macro $gst-structure-empty-new::$gst-structure
-       (::string) "gst_structure_empty_new")
+    (macro $gst-structure-new-empty::$gst-structure
+       (::string) "gst_structure_new_empty")
     (macro $gst-structure::$gst-structure
        (::$gst-object) "GST_STRUCTURE")
     (macro $gst-structure-free!::void
@@ -741,8 +836,6 @@
     (infix macro $gst-type-find-nil::$gst-type-find () "0L")
     (macro $gst-type-find-null?::bool
        (::$gst-type-find) "(bool_t)!")
-    (macro $gst-type-find::$gst-type-find
-       (::$gst-object) "GST_TYPE_FIND")
 
     ;; bgl-gst-ports-src
     (type $bgl-port-src void* "BglPortSrc *")

@@ -16,43 +16,44 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
+   (use	    __gstreamer_gsterror
 	    __gstreamer_gstobject
-	    __gstreamer_gstpluginfeature
-	    __gstreamer_gstelement
-	    __gstreamer_gstpad
 	    __gstreamer_gstcaps
 	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstpluginfeature
+	    __gstreamer_gstelement
+	    __gstreamer_gstpad)
    
    (export  (class gst-element-factory::gst-plugin-feature
 	       (longname::string
 		  read-only
 		  (get (lambda (o)
 			  (with-access::gst-element-factory o ($builtin)
-			     ($gst-element-factory-get-longname
-				($gst-element-factory
-				   $builtin))))))
+			     ($gst-element-factory-get-metadata
+				($gst-element-factory $builtin)
+				$gst-element-metadata-long-name)))))
 	       (klass::string
 		  read-only
 		  (get (lambda (o)
 			  (with-access::gst-element-factory o ($builtin)
-			     ($gst-element-factory-get-klass
-				($gst-element-factory
-				   $builtin))))))
+			     ($gst-element-factory-get-metadata
+				($gst-element-factory $builtin)
+				$gst-element-metadata-klass)))))
 	       (description::string
 		  read-only
 		  (get (lambda (o)
 			  (with-access::gst-element-factory o ($builtin)
-			     ($gst-element-factory-get-description
-				($gst-element-factory
-				   $builtin))))))
+			     ($gst-element-factory-get-metadata
+				($gst-element-factory $builtin)
+				$gst-element-metadata-description)))))
 	       (author::string
 		  read-only
 		  (get (lambda (o)
 			  (with-access::gst-element-factory o ($builtin)
-			     ($gst-element-factory-get-author
-				($gst-element-factory
-				   $builtin))))))
+			     ($gst-element-factory-get-metadata
+				($gst-element-factory $builtin)
+				$gst-element-metadata-author)))))
 	       (uri-protocols::pair-nil
 		  read-only
 		  (get (lambda (o)
@@ -74,8 +75,8 @@
 	    (gst-element-factory-create::gst-element ::gst-element-factory . a)
 	    (gst-element-factory-find::obj ::bstring)
 	    (gst-element-factory-has-interface?::bool ::gst-element-factory ::bstring)
-	    (gst-element-factory-can-sink-caps?::bool ::gst-element-factory ::gst-caps)
-	    (gst-element-factory-can-src-caps?::bool ::gst-element-factory ::gst-caps))
+	    (gst-element-factory-can-sink-all-caps?::bool ::gst-element-factory ::gst-caps)
+	    (gst-element-factory-can-src-all-caps?::bool ::gst-element-factory ::gst-caps))
    
    (extern  (export $make-gst-element-factory "bgl_gst_element_factory_new")))
 
@@ -175,21 +176,21 @@
 	 name)))
 
 ;*---------------------------------------------------------------------*/
-;*    gst-element-factory-can-sink-caps? ...                           */
+;*    gst-element-factory-can-sink-all-caps? ...                       */
 ;*---------------------------------------------------------------------*/
-(define (gst-element-factory-can-sink-caps? factory caps)
+(define (gst-element-factory-can-sink-all-caps? factory caps)
    (with-access::gst-element-factory factory ($builtin)
       (with-access::gst-caps caps ((caps-builtin $builtin))
-	 ($gst-element-factory-can-sink-caps?
+	 ($gst-element-factory-can-sink-all-caps?
 	    ($gst-element-factory $builtin)
 	    caps-builtin))))
 
 ;*---------------------------------------------------------------------*/
-;*    gst-element-factory-can-src-caps? ...                            */
+;*    gst-element-factory-can-src-all-caps? ...                        */
 ;*---------------------------------------------------------------------*/
-(define (gst-element-factory-can-src-caps? factory caps)
+(define (gst-element-factory-can-src-all-caps? factory caps)
    (with-access::gst-element-factory factory ($builtin)
       (with-access::gst-caps caps ((caps-builtin $builtin))
-	 ($gst-element-factory-can-src-caps?
+	 ($gst-element-factory-can-src-all-caps?
 	    ($gst-element-factory $builtin)
 	    caps-builtin))))

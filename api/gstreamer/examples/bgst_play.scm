@@ -148,7 +148,7 @@
 					  (error 'gstreamer
 					     "Message error"
 					     (gst-message-error-string msg)))
-				       (when (=fx type $gst-message-duration)
+				       (when (=fx type $gst-message-duration-changed)
 					  (verb 3 "duration: "
 					     (gst-element-query-duration
 						pipeline)))
