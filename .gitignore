@@ -47,6 +47,8 @@ www/bench/
 www/contribs/
 www/doc/
 www/libraries/
+www/idx.json
+www/hss/doc.css
 
 # Manual
 manuals/*.html
@@ -203,3 +205,5 @@ libuv/libuv-v1.20.3/
 
 # xlib
 xlib/include/
+
+# www
