@@ -16,17 +16,17 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gstreamer
-	    __gstreamer_gstobject
+   (use	    __gstreamer_gstobject
 	    __gstreamer_gstelement
 	    __gstreamer_gstelementfactory
 	    __gstreamer_gstpluginfeature
 	    __gstreamer_gstpad
-	    __gstreamer_gstbus
-	    __gstreamer_gstbin
 	    __gstreamer_gstcaps
 	    __gstreamer_gststructure
 	    __gstreamer_gstmessage)
+
+   (import  __gstreamer_gstbus
+	    __gstreamer_gstbin)
 
    (export  (class gst-pipeline::gst-bin
 	       (bus

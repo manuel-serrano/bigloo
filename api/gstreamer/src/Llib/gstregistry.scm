@@ -16,14 +16,14 @@
 
    (include "gst.sch")
 
-   (import  __gstreamer_gstreamer
-	    __gstreamer_gstobject
+   (use	    __gstreamer_gstobject
 	    __gstreamer_gstelement
-	    __gstreamer_gstpad
 	    __gstreamer_gstpluginfeature
 	    __gstreamer_gstelementfactory
 	    __gstreamer_gstcaps
-	    __gstreamer_gststructure
+	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstpad
 	    __gstreamer_gstplugin)
 
    (export  (class gst-registry::gst-object)
@@ -48,7 +48,7 @@
       (set! default-registry
 	    (instantiate::gst-registry
 	       ($builtin ($gst-registry->object
-			  ($gst-registry-get-default))))))
+			  ($gst-registry-get))))))
    default-registry)
 
 ;*---------------------------------------------------------------------*/
@@ -59,7 +59,7 @@
     (if (isa? registry gst-registry)
 	(with-access::gst-registry registry ($builtin)
 	   ($gst-registry $builtin))
-	($gst-registry-get-default))))
+	($gst-registry-get))))
 	    
 ;*---------------------------------------------------------------------*/
 ;*    gst-registry-plugin-list ...                                     */
@@ -69,7 +69,7 @@
     (if (isa? registry gst-registry)
 	(with-access::gst-registry registry ($builtin)
 	   ($gst-registry $builtin))
-	($gst-registry-get-default))))
+	($gst-registry-get))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-registry-feature-list-by-plugin ...                          */
@@ -79,7 +79,7 @@
     (if (isa? registry gst-registry)
 	(with-access::gst-registry registry ($builtin)
 	   ($gst-registry $builtin))
-	($gst-registry-get-default))
+	($gst-registry-get))
     (cond
        ((isa? plugin gst-plugin)
 	(with-access::gst-plugin plugin (name) name))
@@ -98,7 +98,7 @@
 		  (if (isa? registry gst-registry)
 		      (with-access::gst-registry registry ($builtin)
 			 ($gst-registry $builtin))
-		      ($gst-registry-get-default))
+		      ($gst-registry-get))
 		  name)))
       (unless ($gst-plugin-null? plugin)
 	 ($make-gst-plugin plugin %gst-object-finalize!))))
@@ -111,7 +111,7 @@
 		  (if (isa? registry gst-registry)
 		      (with-access::gst-registry registry ($builtin)
 			 ($gst-registry $builtin))
-		      ($gst-registry-get-default))
+		      ($gst-registry-get))
 		  name
 		  type)))
       (unless ($gst-plugin-feature-null? feature)

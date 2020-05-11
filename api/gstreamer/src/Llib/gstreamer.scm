@@ -20,35 +20,16 @@
    
    (include "gst.sch")
 
-   (import  __gstreamer_gsterror
-	    __gstreamer_gstobject
-	    __gstreamer_gststructure
-	    __gstreamer_gstcaps
-	    __gstreamer_gstbuffer
-	    __gstreamer_gsttypefind
-	    __gstreamer_gstpluginfeature
-	    __gstreamer_gstmessage
-	    __gstreamer_gstplugin
-	    __gstreamer_gstpluginfeature
-	    __gstreamer_gstpad
-	    __gstreamer_gstpadtemplate
-	    __gstreamer_gstghostpad
-	    __gstreamer_gstbus
-	    __gstreamer_plugin_bglports)
+   (use	    __gstreamer_gstobject
+	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstcaps
+	    __gstreamer_gstmessage)
    
    (with    __gstreamer_gstobject
 	    __gstreamer_gststructure
 	    __gstreamer_gstcaps
-	    __gstreamer_gstbuffer
-	    __gstreamer_gsttypefind
-	    __gstreamer_gstpluginfeature
-	    __gstreamer_gstmessage
-	    __gstreamer_gstplugin
-	    __gstreamer_gstpad
-	    __gstreamer_gstpadtemplate
-	    __gstreamer_gstghostpad
-	    __gstreamer_gstbus
-	    __gstreamer_plugin_bglports)
+	    __gstreamer_gstmessage)
 	   
    (extern (include "bglgst_config.h")
 	   (macro $configure-gstreamer-version::string "BGL_GSTREAMER_VERSION")

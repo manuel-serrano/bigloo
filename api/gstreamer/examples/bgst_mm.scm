@@ -44,8 +44,6 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main args)
-   (eval '(library-load 'multimedia))
-   (eval '(library-load 'gstreamer))
    (let ((files '())
 	 (backend 'gstreamer)
 	 (command #f)
