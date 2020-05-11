@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:41:50 2010                          */
-#*    Last change :  Tue Apr 21 16:48:40 2020 (serrano)                */
+#*    Last change :  Mon May 11 12:08:48 2020 (serrano)                */
 #*    Copyright   :  2010-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles homebrew specific files                */
@@ -18,7 +18,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Variables                                                        */
 #*---------------------------------------------------------------------*/
-POPULATION = Makefile makebrew.sh.in bigloo-latest.rb.in
+POPULATION = Makefile makebrew.sh.in bigloo-latest.rb.in bigloo-unstable.rb.in
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
