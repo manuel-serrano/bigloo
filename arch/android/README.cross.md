@@ -67,8 +67,8 @@ Download the `commandlinetools` from
 Now you need to download the sdk. 
 
 ```shell[:@shell-host]
-(in host) export ANDROID_HOME=$ANDROIDROOT/android-sdk-linux
-(in host) yes | tools/bin/sdkmanager --sdk_root=$ANDROID_HOME  "platform-tools" "platforms;android-29"
+(in host) export ANDROIDHOME=$ANDROIDROOT/android-sdk-linux
+(in host) yes | tools/bin/sdkmanager --sdk_root=$ANDROIDHOME  "platform-tools" "platforms;android-29"
 ```
 
 The `ANDROIDROOT` at this stage should look like:
