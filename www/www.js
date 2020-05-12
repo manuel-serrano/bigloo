@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/www/doc.js                    */
+/*    serrano/prgm/project/bigloo/bigloo/www/www.js                    */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Sat May  9 06:32:06 2020 (serrano)                */
+/*    Last change :  Mon May 11 13:42:57 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -19,19 +19,19 @@ const markdown = require( hop.markdown );
 const texinfo = require( hop.texinfo );
 const fontifier = require( hop.fontifier );
 const hopdoc = require( "hopdoc" )
-const docxml = require( "./xml.js" );
+const wwwxml = require( "./xml.js" );
 
 /*---------------------------------------------------------------------*/
 /*    global parameters                                                */
 /*---------------------------------------------------------------------*/
 const PWD = process.cwd();
 const ROOT = process.cwd();
-const DOC = path.join( ROOT, "doc.json" );
+const WWW = path.join( ROOT, "www.json" );
 
-const doc = fs.existsSync( DOC ) ? require( DOC ) : undefined;
+const www = fs.existsSync( WWW ) ? require( WWW ) : undefined;
 
-const chapters = doc ?
-      doc.chapters.map( function( c, idx = undefined, arr = undefined ) {
+const chapters = www ?
+      www.chapters.map( function( c, idx = undefined, arr = undefined ) {
 	 c.entries = chapterEntries( c );
 	 return c;
       } ) : [];
@@ -40,7 +40,7 @@ function P( file ) {
    return path.normalize( "./" + file );
 }
    
-const css = [ P( "hss/doc.css" ),
+const css = [ P( "hss/www.css" ),
 	      P( "hss/markdown.css" ),
 	      P( "hss/texinfo.css" ),
 	      P( "hss/fontifier.css" ),
@@ -166,32 +166,32 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
    
    var document = <html>
      <head css=${css}
-	   title=${doc.title + "/" + title}
+	   title=${www.title + "/" + title}
            jscript=${jscript}
 	   favicon=${favicon}
            rts=${false}/>
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      var top = (window.pageYOffset || document.scrollTop)-(wwwument.clientTop||0);
 	      if( top > 180 ) {
-		 document.body.setAttribute( "scrolled", "yes" );
+		 wwwument.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 document.body.setAttribute( "scrolled", "no" );
+		 wwwument.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
-       <docxml.navbar title=${title} key=${clazz}>
+       <wwwxml.navbar title=${title} key=${clazz}>
          ${chapters}
-       </docxml.navbar>
+       </wwwxml.navbar>
        
-       <docxml.title title=${doc.title}
-		     version=${doc.version}
-		     date=${doc.date}
-		     logo=${doc.logo}
+       <wwwxml.title title=${www.title}
+		     version=${www.version}
+		     date=${www.date}
+		     logo=${www.logo}
 		     root=${ROOT}>
           ${title}
-       </docxml.title>
+       </wwwxml.title>
        <div class="container">
 	 <div class="filler">.keep</div>
             <div class="col-md-9" role="main"> ${ast} </div>
@@ -200,7 +200,7 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
              <nav class="sidebar noaffix"
 		  data-spy=${affix}
 	          data-offset-top="215" data-offset-bottom="100">
-               <ul class="nav bs-docs-sidenav">
+               <ul class="nav bs-wwws-sidenav">
                   ${makeToc( toc, 0, function( el ) {
 		     if( el.childNodes[ 0 ].data.charAt( 0 ) === "(" ) {
 			let m = el.childNodes[ 0 ].data.match( /[(](?:class |generic )?([^ )]*)/ );
@@ -220,7 +220,7 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
 	 </div>
 	 ${fs.existsSync( footer )
 	   ? hopdoc.load( footer ).XML 
-	   : <docxml.footer root=${ROOT}/>}
+	   : <wwwxml.footer root=${ROOT}/>}
        </div>
      </body>
    </html>;
@@ -235,45 +235,45 @@ function compileNode( node, title, clazz, target, tocfile = undefined ) {
    var footer = path.join( PWD, "footer.md" );
    var affix = "normal";
    
-   var document = <html>
+   var wwwument = <html>
      <head css=${css}
-	   title=${doc.title + "/" + title}
+	   title=${www.title + "/" + title}
            jscript=${jscript}
 	   favicon=${favicon}
            rts=${false}/>
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      var top = (window.pageYOffset || wwwument.scrollTop)-(wwwument.clientTop||0);
 	      if( top > 180 ) {
-		 document.body.setAttribute( "scrolled", "yes" );
+		 wwwument.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 document.body.setAttribute( "scrolled", "no" );
+		 wwwument.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
-       <docxml.navbar title=${title}>
+       <wwwxml.navbar title=${title}>
          ${chapters}
-       </docxml.navbar>
+       </wwwxml.navbar>
        
-       <docxml.title title=${doc.title}
-		     version=${doc.version}
-		     date=${doc.date}
-		     logo=${doc.logo}
+       <wwwxml.title title=${www.title}
+		     version=${www.version}
+		     date=${www.date}
+		     logo=${www.logo}
 		     root=${ROOT}>
           ${title}
-       </docxml.title>
+       </wwwxml.title>
        <div class="container">
 	 <div class="filler">.keep</div>
 	 <div class="col-md-12" role="main"> ${node} </div>
 	 ${fs.existsSync( footer )
 	   ? hopdoc.load( footer ).XML 
-	   : <docxml.footer root=${ROOT}/>}
+	   : <wwwxml.footer root=${ROOT}/>}
        </div>
      </body>
    </html>;
 
-   fs.writeFileSync( target, hop.compileXML( document ) );
+   fs.writeFileSync( target, hop.compileXML( wwwument ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -287,40 +287,40 @@ function compileSection( page ) {
    var key = path.basename( path.dirname( page ) ).toLowerCase();
    var affix = "normal";
    
-   if( key == "doc" ) {
+   if( key == "www" ) {
       key = alias[ path.basename( page ) ];
    } else if( key == "." ) {
       key = title;
    }
    
-   var document = <html>
+   var wwwument = <html>
      <head css=${css}
-	   title=${doc.title + "/" + title}
+	   title=${www.title + "/" + title}
            jscript=${jscript}
 	   favicon=${favicon}
            rts=${false}/>
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section`}
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      var top = (window.pageYOffset || wwwument.scrollTop)-(wwwument.clientTop||0);
 	      if( top > 180 ) {
-		 document.body.setAttribute( "scrolled", "yes" );
+		 wwwument.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 document.body.setAttribute( "scrolled", "no" );
+		 wwwument.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
-       <docxml.navbar title=${title} key=${key}>
+       <wwwxml.navbar title=${title} key=${key}>
          ${chapters}
-       </docxml.navbar>
+       </wwwxml.navbar>
        
-       <docxml.title title=${doc.title}
-		     version=${doc.version}
-		     date=${doc.date}
-		     logo=${doc.logo}
+       <wwwxml.title title=${www.title}
+		     version=${www.version}
+		     date=${www.date}
+		     logo=${www.logo}
 		     root=${ROOT}>
           ${title}
-       </docxml.title>
+       </wwwxml.title>
        <div class="container">
 	 <div class="filler">.keep</div>
 	 ${(toc.length > 0 )
@@ -332,7 +332,7 @@ function compileSection( page ) {
              <nav class="sidebar noaffix"
 		  data-spy=${affix}
 	          data-offset-top="215" data-offset-bottom="100">
-               <ul class="nav bs-docs-sidenav">
+               <ul class="nav bs-wwws-sidenav">
                   ${makeToc( toc, 0, function( el ) {
 		     if( el.childNodes[ 0 ].data.charAt( 0 ) === "(" ) {
 			let m = el.childNodes[ 0 ].data.match( /[(](?:class |generic )?([^ )]*)/ );
@@ -355,12 +355,12 @@ function compileSection( page ) {
 	 </div>
 	 ${fs.existsSync( footer )
 	   ? hopdoc.load( footer ).XML 
-	   : <docxml.footer root=${ROOT}/>}
+	   : <wwwxml.footer root=${ROOT}/>}
        </div>
      </body>
    </html>;
 
-   fs.writeSync( process.stdout.fd, hop.compileXML( document ) );
+   fs.writeSync( process.stdout.fd, hop.compileXML( wwwument ) );
    fs.writeSync( process.stdout.fd, "\n" );
 }
 
@@ -372,24 +372,24 @@ function compileChapter( json ) {
    var chapter = require( path.join( PWD, json ) );
    var toc = chapterEntries( chapter ).filter( x => x );
 
-   var document = <html>
+   var wwwument = <html>
      <head css=${css}
-	   title=${doc.title + "/" + chapter.title}
+	   title=${www.title + "/" + chapter.title}
            jscript=${jscript}
 	   favicon=${favicon}
            rts=${false}/>
 
      <body data-spy="scroll" data-target="#navbar" class="bigloo chapter">
-       <docxml.navbar title=${chapter.title} key=${chapter.key}>
+       <wwwxml.navbar title=${chapter.title} key=${chapter.key}>
          ${chapters}
-       </docxml.navbar>
-       <docxml.title title=${doc.title}
-		     version=${doc.version}
-		     date=${doc.date}
-		     logo=${doc.logo}
+       </wwwxml.navbar>
+       <wwwxml.title title=${www.title}
+		     version=${www.version}
+		     date=${www.date}
+		     logo=${www.logo}
 		     root=${ROOT}>
           ${chapter.title}
-       </docxml.title>
+       </wwwxml.title>
 
        <div class="container">
 	 <div class="filler">.keep</div>
@@ -412,12 +412,12 @@ function compileChapter( json ) {
          </ul>
 	 ${fs.existsSync( footer ) 
 	   ? hopdoc.load( footer ).XML 
-	   : <docxml.footer root=${ROOT}/>}
+	   : <wwwxml.footer root=${ROOT}/>}
        </div>
      </body>
    </html>;
 
-   console.log( hop.compileXML( document ) );
+   console.log( hop.compileXML( wwwument ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -425,41 +425,41 @@ function compileChapter( json ) {
 /*---------------------------------------------------------------------*/
 function compileMain( content ) {
 
-   var document = <html>
+   var wwwument = <html>
      <head css=${css}
-	   title=${doc.title}
+	   title=${www.title}
            jscript=${jscript}
 	   favicon=${favicon}
            rts=${false}/>
 
      <body class="bigloo home" data-spy="scroll" data-target="#navbar"
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      var top = (window.pageYOffset || wwwument.scrollTop)-(wwwument.clientTop||0);
 	      if( top > 180 ) {
-		 document.body.setAttribute( "scrolled", "yes" );
+		 wwwument.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 document.body.setAttribute( "scrolled", "no" );
+		 wwwument.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
-       <docxml.navbar title=${doc.title} key="home">
+       <wwwxml.navbar title=${www.title} key="home">
          ${chapters}
-       </docxml.navbar>
-       <docxml.title title=${doc.title}
-		     version=${doc.version}
-		     date=${doc.date}
-		     logo=${doc.logo}
+       </wwwxml.navbar>
+       <wwwxml.title title=${www.title}
+		     version=${www.version}
+		     date=${www.date}
+		     logo=${www.logo}
 		     root=${ROOT}/>
 
        <div class="container home-body">
 	 <div class="filler">.keep</div>
          ${hopdoc.load( content ).XML}
-	 <docxml.footer root=${ROOT}/>
+	 <wwwxml.footer root=${ROOT}/>
        </div>
      </body>
    </html>;
 
-   console.log( hop.compileXML( document ) );
+   console.log( hop.compileXML( wwwument ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -468,21 +468,21 @@ function compileMain( content ) {
 function compileLibrary( content ) {
    var footer = path.join( PWD, "footer.md" );
    
-   var document = <html>
+   var wwwument = <html>
      <head css=${css}
-	   title=${doc.title}
+	   title=${www.title}
            jscript=${jscript}
 	   favicon=${favicon}
            rts=${false}/>
 
      <body class="bigloo library" data-spy="scroll" data-target="#navbar">
-       <docxml.navbar title=${doc.title} key="home">
+       <wwwxml.navbar title=${www.title} key="home">
          ${chapters}
-       </docxml.navbar>
-       <docxml.title title=${doc.title}
-		     version=${doc.version}
-		     date=${doc.date}
-		     logo=${doc.logo}
+       </wwwxml.navbar>
+       <wwwxml.title title=${www.title}
+		     version=${www.version}
+		     date=${www.date}
+		     logo=${www.logo}
 		     root=${ROOT}/>
 
        <div class="container home-body">
@@ -495,7 +495,7 @@ function compileLibrary( content ) {
      </body>
    </html>;
 
-   console.log( hop.compileXML( document ) );
+   console.log( hop.compileXML( wwwument ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -508,29 +508,29 @@ function compileIdx( json ) {
    var chapter = { title: "Index", key: "manual" };
    var footer = path.join( PWD, "footer.md" );
 
-   var document = <html>
+   var wwwument = <html>
      <head css=${css}
-	   title=${doc.title + "/" + chapter.title}
+	   title=${www.title + "/" + chapter.title}
            jscript=${jscript}
 	   favicon=${favicon}
            rts=${false}/>
 
      <body data-spy="scroll" data-target="#navbar" class="bigloo">
-       <docxml.navbar title=${chapter.title}
+       <wwwxml.navbar title=${chapter.title}
                       key=${chapter.key}>
          ${chapters}
-       </docxml.navbar>
-       <docxml.title title=${doc.title}
-		     version=${doc.version}
-		     date=${doc.date}
-		     logo=${doc.logo}
+       </wwwxml.navbar>
+       <wwwxml.title title=${www.title}
+		     version=${www.version}
+		     date=${www.date}
+		     logo=${www.logo}
 		     root=${ROOT}>
           ${chapter.title}
-       </docxml.title>
+       </wwwxml.title>
 
        <div class="container">
 	 <div class="filler">.keep</div>
-	 <docxml.idx>${idx}</docxml.idx>
+	 <wwwxml.idx>${idx}</wwwxml.idx>
 	 ${fs.existsSync( footer )
 	   ? hopdoc.load( footer ).XML
 	   : ""}
@@ -538,7 +538,7 @@ function compileIdx( json ) {
      </body>
    </html>;
 
-   console.log( hop.compileXML( document ) );
+   console.log( hop.compileXML( wwwument ) );
 }
 
 /*---------------------------------------------------------------------*/

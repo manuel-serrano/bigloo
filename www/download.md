@@ -1,8 +1,8 @@
 ${ var hopdoc = require( "hopdoc" ) }
 ${ var config = require( hop.config ) }
 ${ var xml = require( "./xml.js" ) }
-${ var doc = require( "./doc.js" ) }
-${ var cfg = require( "./doc.json" ) }
+${ var www = require( "./www.js" ) }
+${ var cfg = require( "./www.json" ) }
 
 Bigloo Sources
 --------------

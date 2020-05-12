@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Sun May 10 14:11:42 2020 (serrano)                */
+#*    Last change :  Mon May 11 13:39:04 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
@@ -40,7 +40,7 @@ JQUERY_POP=js/jquery.min.js
 
 POP=bib.md cross.md documentation.md homebrew.md license.md manual.md \
   contribs.md debian.md download.md _index.md \
-  doc.hss  fontifier.css  markdown.css  texinfo.css \
+  www.hss  fontifier.css  markdown.css  texinfo.css \
   $(BOOTSTRAP_POP) $(JQUERY_POP) \
   favicon.png bigloo.svg \
   fib.scm fib-mt.scm flac.scm \
@@ -54,7 +54,7 @@ ALL_TARGETS=index.html license.html download.html debian.html homebrew.html \
 #*---------------------------------------------------------------------*/
 .PHONY: build clean install uninstall
 
-build: $(ALL_TARGETS) hss/doc.css idx.html
+build: $(ALL_TARGETS) hss/www.css idx.html
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */
@@ -71,7 +71,7 @@ distclean: clean
 #*---------------------------------------------------------------------*/
 #*    Install                                                          */
 #*---------------------------------------------------------------------*/
-install: all $(DOC)
+install: build
 	cleanup
 	$(MAKE) install.start
 	$(MAKE) install.html
@@ -112,25 +112,25 @@ pop:
 #*---------------------------------------------------------------------*/
 #*    .md -> .html                                                     */
 #*---------------------------------------------------------------------*/
-%.html: %.md doc.js xml.js bigloo.svg doc.json
+%.html: %.md www.js xml.js bigloo.svg www.json
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
-          ./doc.js "compile-section" $< > $@ \
+          ./www.js "compile-section" $< > $@ \
           || ($(RM) $@; exit 1)
 
 #*---------------------------------------------------------------------*/
 #*    .json -> .html                                                   */
 #*---------------------------------------------------------------------*/
-%.html: %.json doc.js xml.js bigloo.svg doc.json
+%.html: %.json www.js xml.js bigloo.svg www.json
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
-          ./doc.js "compile-chapter" $< > $@ \
+          ./www.js "compile-chapter" $< > $@ \
           || ($(RM) $@; exit 1)
 
 #*---------------------------------------------------------------------*/
 #*    index.html ...                                                   */
 #*---------------------------------------------------------------------*/
-index.html: _index.md doc.js xml.js bigloo.svg doc.json
+index.html: _index.md www.js xml.js bigloo.svg www.json
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
-          ./doc.js "compile-main" $< > $@ \
+          ./www.js "compile-main" $< > $@ \
           || ($(RM) $@; exit 1)
 
 #*---------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ index.html: _index.md doc.js xml.js bigloo.svg doc.json
 #*---------------------------------------------------------------------*/
 idx.json: manual.html
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
-          ./doc.js "html-to-idx" . $^ manual-chapter*.html > $@ \
+          ./www.js "html-to-idx" . $^ manual-chapter*.html > $@ \
           || ($(RM) $@; exit 1)
 
 #*---------------------------------------------------------------------*/
@@ -146,7 +146,7 @@ idx.json: manual.html
 #*---------------------------------------------------------------------*/
 idx.html: idx.json
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
-          ./doc.js "compile-idx" $^ > $@ \
+          ./www.js "compile-idx" $^ > $@ \
           || ($(RM) $@; exit 1)
 
 #*---------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ hss/texinfo.css: ../node_modules/texinfo/hss/texinfo.hss
 hss/fontifier.css: ../node_modules/fontifier/hss/fontifier.hss
 	cp $< $@
 
-hss/doc.css: hss/doc.hss
+hss/www.css: hss/www.hss
 	cp $< $@
 
 favicon.png: ../share/icons/hop/favicon-16x16.png

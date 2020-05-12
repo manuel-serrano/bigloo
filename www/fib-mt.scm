@@ -1,5 +1,5 @@
 (module fib-mt
-   (extern (macro printf::int (::char* ::char* ::long) "printf"))
+   (extern (macro printf::int (::string ::string ::long) "printf"))
    (library pthread)
    (main main))
 

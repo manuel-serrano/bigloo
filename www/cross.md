@@ -1,8 +1,8 @@
 ${ var hopdoc = require( "hopdoc" ) }
-${ var doc = require( "./doc.js" ) }
+${ var www = require( "./www.js" ) }
 ${ var config = require( hop.config ) }
 ${ var xml = require( "./xml.js" ) }
-${ var cfg = require( "./doc.json" ) }
+${ var cfg = require( "./www.json" ) }
 
 Cross Compilation
 =================
