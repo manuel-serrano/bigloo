@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/flac/src/Llib/flac_alsadec.scm       */
+;*    .../project/bigloo/bigloo/api/flac/src/Llib/flac_alsadec.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Thu Jan 28 03:08:22 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Sat Apr 18 15:36:45 2020 (serrano)                */
+;*    Copyright   :  2011-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
 ;*=====================================================================*/
@@ -90,16 +90,6 @@
 	    (alsa-snd-pcm-sw-set-params! pcm
 	       :start-threshold 1
 	       :avail-min 1)))))
-
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-decoder-write ::flacalsadec ...                             *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (flac-decoder-write o::flacalsadec size rate channels bps) */
-;*    (with-access::flacdec o (outbuf %music %buffer)                  */
-;*       (with-access::alsamusic %music (pcm %status)                  */
-;* 	 (when (>fx size 0)                                            */
-;* 	    (alsa-snd-pcm-write pcm outbuf size)                       */
-;* 	    #t))))                                                     */
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-read ::flacalsadec ...                              */

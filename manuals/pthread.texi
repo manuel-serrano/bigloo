@@ -185,23 +185,23 @@ Posix thread condition variables follows the common thread API
 @node Semaphores API, Condition Variables API, Condition Variables API, Posix Threads
 @subsection Semaphores
 
-@deffn {Bigloo function} open-semaphore @var{name} [@var{create} @code{#t}] [@var{excl} @code{#t}] [@var{read} @code{#t}] [@var{write} @code{#t}] [@var{value} @code{1}]
-@deffnx {Bigloo function} close-semaphore @var{sem}
-@deffnx {Bigloo function} delete-semaphore @var{name}
+@deffn {bigloo function} open-semaphore @var{name} [@var{create} @code{#t}] [@var{excl} @code{#t}] [@var{read} @code{#t}] [@var{write} @code{#t}] [@var{value} @code{1}]
+@deffnx {bigloo function} close-semaphore @var{sem}
+@deffnx {bigloo function} delete-semaphore @var{name}
 Opens, closes, and deletes a named semaphore.
 @end deffn
 
-@deffn {Bigloo function} semaphore? @var{obj}
+@deffn {bigloo function} semaphore? @var{obj}
 Returns @code{#t} if @var{obj} is a semaphore, returns @code{#f} otherwise.
 @end deffn
 
-@deffn {Bigloo function} semaphore-post @var{sem}
-@deffnx {Bigloo function} semaphore-wait @var{sem}
-@deffnx {Bigloo function} semaphore-trywait @var{sem}
+@deffn {bigloo function} semaphore-post @var{sem}
+@deffnx {bigloo function} semaphore-wait @var{sem}
+@deffnx {bigloo function} semaphore-trywait @var{sem}
 Wait and post for a semaphore.
 @end deffn
 
-@deffn {Bigloo function} semaphore-value @var{sem}
+@deffn {bigloo function} semaphore-value @var{sem}
 Returns the current value of the semaphoe
 @end deffn
 
@@ -210,7 +210,7 @@ Returns the current value of the semaphoe
 @node SRFI-18, , Semaphores API, Posix Threads
 @subsection SRFI-18
 
-@deffn {SRFI-18 function} {mutex-state} mutex
+@deffn {SRFI-18 function} mutex-state mutex
 
 Returns information about the state of the mutex. The possible results are:
 

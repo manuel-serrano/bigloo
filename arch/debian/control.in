@@ -1,7 +1,7 @@
 Source: bigloo
 Section: user/programming
 Priority: optional
-Maintainer: unknown <Manuel.Serrano@inria.fr>
+Maintainer: Manuel Serrano <Manuel.Serrano@inria.fr>
 Build-Depends: debhelper (>= 4.0.0), @EXTRABUILDDEPEND@
 Standards-Version: 3.6.1
 

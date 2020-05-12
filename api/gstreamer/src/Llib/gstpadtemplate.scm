@@ -14,12 +14,12 @@
 ;*---------------------------------------------------------------------*/
 (module __gstreamer_gstpadtemplate
    
-   (import  __gstreamer_gsterror
+   (use	    __gstreamer_gsterror
 	    __gstreamer_gstobject
-	    __gstreamer_gstghostpad
-	    __gstreamer_gstpad
 	    __gstreamer_gstcaps
 	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstpad)
    
    (export  (class gst-pad-template::gst-object)
 	    

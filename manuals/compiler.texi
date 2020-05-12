@@ -88,19 +88,6 @@ In order to get maximum speed, compile with the @code{-Obench} option.
 This will enable all compiler optimization options and disable dynamic
 type checks. To improve arithmetic performance see next section.
 
-@c -- stack allocations ---------------------------------------------- @c
-@subsection Stack allocation
-@cindex Stack allocation
-
-When the @code{-fstack} flag is enabled, the compiler may automatically
-replace some heap allocations with stack allocations. This may improve
-performance because stack allocations are handled more efficiently than
-heap allocations. On some cases, @code{-fstack} may also cause slow down
-or memory extra retentions. In this last case, when compile 
-using @code{-fstack} the program will consume more memory. Unfortunately,
-this is nasty phenomenon is unpredictable (it depends on the nature of
-the source file).
-
 @c -- genericity ----------------------------------------------------- @c
 @subsection Genericity of arithmetic procedures
 @cindex Genericity of arithmetic procedures

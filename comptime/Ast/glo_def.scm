@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Tue Jan 23 19:10:45 2018 (serrano)                */
+;*    Last change :  Tue Apr  7 16:12:04 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -145,9 +145,12 @@
    (let ((old-value (global-value old)))
       (cond
 	 ((not (sfun? old-value))
-	  (mismatch-error old src-exp "(not declared as function)"))
+	  (mismatch-error old src-exp
+	     "(not declared as function)"))
 	 ((not (eq? (sfun-class old-value) class))
-	  (mismatch-error old src-exp "(declared as function of another class)"))
+	  (mismatch-error old src-exp
+	     (format "(declared as function of another class (~a/~a))"
+		(sfun-class old-value) class)))
 	 ((not (=fx (sfun-arity old-value) (global-arity args)))
 	  (mismatch-error old src-exp "(arity differs)"))
 	 ((not (compatible-type? (eq? 'sgfun class)

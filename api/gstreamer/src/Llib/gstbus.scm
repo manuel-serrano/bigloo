@@ -16,10 +16,10 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gstreamer
-	    __gstreamer_gstobject
-	    __gstreamer_gstmessage
+   (use	    __gstreamer_gstobject
 	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstmessage)
    
    (export  (class gst-bus::gst-object)
 
@@ -60,8 +60,8 @@
 (define (gst-bus-post o::gst-bus msg::gst-message)
    (with-access::gst-message msg ((mbuiltin $builtin))
       (with-access::gst-bus o ((obuiltin $builtin))
-	 ($gst-message-ref! ($gst-message mbuiltin))
-	 ($gst-bus-post ($gst-bus obuiltin) ($gst-message mbuiltin)))))
+	 ($gst-message-ref! mbuiltin)
+	 ($gst-bus-post ($gst-bus obuiltin) mbuiltin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-bus-peek ...                                                 */

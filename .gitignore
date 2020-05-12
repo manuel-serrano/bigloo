@@ -33,6 +33,7 @@ arch/maemo
 arch/debian/makedeb.sh
 arch/debian/makedebremote.sh
 arch/vm
+arch/homebrew/makebrew.sh
 bmacs/bmacs-config.el
 bmacs/bee/bee-jinsight.el
 tools/diff.scm
@@ -46,6 +47,8 @@ www/bench/
 www/contribs/
 www/doc/
 www/libraries/
+www/idx.json
+www/hss/doc.css
 
 # Manual
 manuals/*.html
@@ -202,3 +205,5 @@ libuv/libuv-v1.20.3/
 
 # xlib
 xlib/include/
+
+# www

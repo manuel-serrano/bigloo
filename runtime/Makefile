@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Mar 24 12:25:57 2020 (serrano)                */
+#*    Last change :  Fri May  1 09:20:52 2020 (serrano)                */
 #*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -61,7 +61,7 @@ BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) -rm -copt -w -lib-dir $(BOOTLIBDIR)
 BSAFEFLAGS	= -srfi bigloo-safe $(BCOMMONFLAGS) \
                   -O3 -mklib -cc $(CC) -fsharing \
                   -q -unsafev -eval '(set! *indent* 4)'
-CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
+CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS) $(CBUILDFLAGS)
 #*--- Bigloo JVM flags ------------------------------------------------*/
 BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile .jfile
 BJSAFEFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jvm-purify
@@ -72,7 +72,7 @@ BUNSAFEO0FLAGS	= $(BCOMMONFLAGS) \
                   -mklib -cc $(CC) -fsharing -q -no-hello \
                   -unsafe -safee
 BUNSAFEFLAGS	= -srfi bigloo-unsafe $(BUNSAFEO0FLAGS) -O4
-CUNSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
+CUNSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS) $(CBUILDFLAGS)
 #*--- Bigloo, unsafe, profiled ----------------------------------------*/
 BUNSAFEPFLAGS	= $(BCOMMONFLAGS) \
                   -O4 -mklib -unsafe -safee -cc $(CC) -fsharing -q -no-hello \
@@ -492,6 +492,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS) $(
              LIBDEST=$@ \
              LIBPATH=$(BOOTLIBDIR) \
              LDLIBS="$(LDCOMPLIBS)" \
+	     LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
              SONAME=lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX)
 
 #*---------------------------------------------------------------------*/

@@ -23,7 +23,6 @@
 	   __gstreamer_gstbin
 	   __gstreamer_gstbuffer
 	   __gstreamer_gstbus
-	   __gstreamer_gstghostpad
 	   __gstreamer_gstpipeline
 	   __gstreamer_gstplugin
 	   __gstreamer_gstpluginfeature
@@ -31,6 +30,7 @@
 	   __gstreamer_gstregistry
 	   __gstreamer_gstpad
 	   __gstreamer_gstpadtemplate
+	   __gstreamer_gstghostpad
 	   __gstreamer_gstmessage
 	   __gstreamer_gstcaps
 	   __gstreamer_gststructure

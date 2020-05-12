@@ -76,12 +76,12 @@ password by a @emph{:string->key} function. The result must then be of correct
 length.
  
 
-@deffn {Bigloo Cryptography procedure} encrypt::bstring cipher plain password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} encrypt-string::bstring cipher plaintext::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} encrypt-mmap::bstring cipher plaintext::mmap password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} encrypt-port::bstring cipher plaintext::input-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} encrypt-file::bstring cipher filename::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} encrypt-sendchars cipher in::input-port out::output-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffn {bigloo cryptography procedure} encrypt::bstring cipher plain password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} encrypt-string::bstring cipher plaintext::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} encrypt-mmap::bstring cipher plaintext::mmap password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} encrypt-port::bstring cipher plaintext::input-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} encrypt-file::bstring cipher filename::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} encrypt-sendchars cipher in::input-port out::output-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
 
 The procedure @code{encrypt} encrypts its input using the chosen @var{cipher}. The result is returned as string.
 @code{encrypt} dispatches depending on the type of @var{plain}. Strings are processed by @code{encrypt-string} (and
@@ -199,12 +199,12 @@ input string will have the length of the block-size. The unpadding function may
 modify the string and must return the number of characters that are valid.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} decrypt::bstring cipher ciphertext password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} decrypt-string::bstring cipher ciphertext::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} decrypt-mmap::bstring cipher ciphertext::mmap password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} decrypt-port::bstring cipher ciphertext::input-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} decrypt-file::bstring cipher filename::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
-@deffnx {Bigloo Cryptography procedure} decrypt-sendchars cipher in::input-port out::output-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffn {bigloo cryptography procedure} decrypt::bstring cipher ciphertext password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} decrypt-string::bstring cipher ciphertext::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} decrypt-mmap::bstring cipher ciphertext::mmap password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} decrypt-port::bstring cipher ciphertext::input-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} decrypt-file::bstring cipher filename::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {bigloo cryptography procedure} decrypt-sendchars cipher in::input-port out::output-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
 
 Counterpart to the encryption functions. With the same parameters the @code{decrypt} function will
 decrypt the result of an @code{encrypt} call. Without @var{:IV} (Initial Vector) the @code{decrypt} function
@@ -243,14 +243,14 @@ The following string->key algorithms take a password string and transform it to
 a key string of a given length. In all the functions the @var{len} is expressed in
 bytes.
 
-@deffn {Bigloo Cryptography procedure} string->key-zero str len
+@deffn {bigloo cryptography procedure} string->key-zero str len
 If the length of the input string @var{str} is greater or equal to @var{len}
 bytes then the first @var{str} characters are returned. Otherwise @var{str} is
 suffixed with '0' (@code{#a000}) characters.
 
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} string->key-hash str len hash-fun
+@deffn {bigloo cryptography procedure} string->key-hash str len hash-fun
 The input string @var{str} is run through the given hash function @var{hash-fun}.
 The result is then concatenated multiple times (with itself) until a string of the
 @var{len} bytes is obtained.
@@ -278,7 +278,7 @@ Note that the following example yields an identical result:
 
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} string->key-simple str len hash-fun
+@deffn {bigloo cryptography procedure} string->key-simple str len hash-fun
 
 This function implements the simple s2k algorithm of OpenPGP (RFC 2440). Basically
 @var{str} is run through the hash-fun several times until the concatenation of
@@ -287,14 +287,14 @@ the results is long enough. At each iteration the string is prefixed with
 
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} string->key-salted str len hash-fun salt
+@deffn {bigloo cryptography procedure} string->key-salted str len hash-fun salt
 This function implements the salted s2k algorithm of OpenPGP (RFC 2440).
 Similar to @code{string->key-simple} but the input string is first prefixed with
 @var{salt}.
 
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} string->key-iterated-salted str len hash-fun salt count
+@deffn {bigloo cryptography procedure} string->key-iterated-salted str len hash-fun salt count
 This function implements the iterated salted s2k algorithm of OpenPGP (RFC 2440).
 The variable @var{count} must be a long. This algorithm is an extension of
 @code{string->key-salted} where the hash function is applied
@@ -335,8 +335,8 @@ key (together with other information that could be reconstructed out of
 the private key). A partial key just contains the modulus and the private
 or public exponent.
 
-@deffn {Bigloo Cryptography class} RSA-Key
-@deffnx {Bigloo Cryptography class} Complete-RSA-Key
+@deffn {bigloo cryptography class} RSA-Key
+@deffnx {bigloo cryptography class} Complete-RSA-Key
 @smalllisp
 (class Rsa-Key modulus::bignum exponent::bignum)
 (final-class Complete-Rsa-Key::Rsa-Key
@@ -351,7 +351,7 @@ or public exponent.
 RSA keys can be read and written using @code{read-pem-key} and
 @code{write-pem-key} (@ref{PEM}).
 
-@deffn {Bigloo Cryptography procedure} generate-rsa-key [:key 1024] [:show-trace]
+@deffn {bigloo cryptography procedure} generate-rsa-key [:key 1024] [:show-trace]
 
 This function generates a new RSA key (with its public and private components).
 
@@ -361,7 +361,7 @@ weed out insecure keys.
 @end deffn
 
 Complete keys can be accessed using the following functions:
-@deffn {Bigloo Cryptography procedure} extract-public-rsa-key complete-key
+@deffn {bigloo cryptography procedure} extract-public-rsa-key complete-key
 Returns the public partial key of the given complete key.
 
 This procedure is implemented as follows:
@@ -372,16 +372,16 @@ This procedure is implemented as follows:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} extract-private-rsa-key complete-key
+@deffn {bigloo cryptography procedure} extract-private-rsa-key complete-key
 Returns the private partial key of the given complete key.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} rsa-key=? key1 key2
+@deffn {bigloo cryptography procedure} rsa-key=? key1 key2
 Returns true if the two keys have the same modulus and public exponent.
 The exponent of a partial key is considered to be public.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} rsa-key-length key
+@deffn {bigloo cryptography procedure} rsa-key-length key
 Returns the key length in bytes.
 @end deffn
 
@@ -390,26 +390,26 @@ RSA only works on bignums (up to the size of the modulus). The following
 procedures implement basic encryption, decryption, signing and
 signature verification.
 
-@deffn {Bigloo Cryptography procedure} rsa-encrypt key m
+@deffn {bigloo cryptography procedure} rsa-encrypt key m
 Encrypts the bignum @var{m} using the given key. If the key is a complete
 key then its public exponent is used. For partial keys only one
 exponent is available (which is assumed to be the public 'e' of the
 recipient). The result is again a bignum.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} rsa-decrypt key c
+@deffn {bigloo cryptography procedure} rsa-decrypt key c
 Decrypts the bignum @var{c} using the given key. If the key is a complete
 key then its private exponent is used. For partial keys only one exponent
 is available (which is assumed to be the private 'd').
 The result is again a bignum.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} rsa-sign k m
+@deffn {bigloo cryptography procedure} rsa-sign k m
 Signs the bignum @var{m} using key @var{k}. Uses the private exponent
 of complete keys. The result is a bignum.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} rsa-verify k m s
+@deffn {bigloo cryptography procedure} rsa-verify k m s
 Verifies the signature @var{s}. Returns true if @var{s} is the
 signature of @var{m}. The key @var{k} should be the public
 key of the signer.
@@ -518,10 +518,10 @@ We can now decrypt the previously received message:
 
 The following functions have been defined in RFC 3447.
 
-@deffn {Bigloo Cryptography procedure} RSAEP k m
-@deffnx {Bigloo Cryptography procedure} RSADP k c
-@deffnx {Bigloo Cryptography procedure} RSASP1 k m
-@deffnx {Bigloo Cryptography procedure} RSAVP1 k s
+@deffn {bigloo cryptography procedure} RSAEP k m
+@deffnx {bigloo cryptography procedure} RSADP k c
+@deffnx {bigloo cryptography procedure} RSASP1 k m
+@deffnx {bigloo cryptography procedure} RSAVP1 k s
 These are the RFC 3447 names for encryption, decryption, signature and
 signature verification. Note that the verification does not receive the
 original message as parameter.
@@ -533,18 +533,18 @@ In fact @code{rsa-verify} is implemented as follows:
 @end display
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} PKCS1-v1.5-pad m-str key-len mode
-@deffnx {Bigloo Cryptography procedure} PKCS1-v1.5-unpad em-str mode
+@deffn {bigloo cryptography procedure} PKCS1-v1.5-pad m-str key-len mode
+@deffnx {bigloo cryptography procedure} PKCS1-v1.5-unpad em-str mode
 Pads (resp. unpads) the given string using PKCS1-v1.5 specifications.
 Mode must be 0, 1 or 2.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure}  RSAES-PKCS1-v1.5-encrypt key m-str
-@deffnx {Bigloo Cryptography procedure} RSAES-PKCS1-v1.5-decrypt key c-str
-@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-sign key msg-str [:hash-algo 'sha-1]
-@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-verify key msg-str S-str
-@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-sign-bignum key msg-str [:hash-algo 'sha-1]
-@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-verify-bignum key msg-str S
+@deffn {bigloo cryptography procedure}  RSAES-PKCS1-v1.5-encrypt key m-str
+@deffnx {bigloo cryptography procedure} RSAES-PKCS1-v1.5-decrypt key c-str
+@deffnx {bigloo cryptography procedure} RSASSA-PKCS1-v1.5-sign key msg-str [:hash-algo 'sha-1]
+@deffnx {bigloo cryptography procedure} RSASSA-PKCS1-v1.5-verify key msg-str S-str
+@deffnx {bigloo cryptography procedure} RSASSA-PKCS1-v1.5-sign-bignum key msg-str [:hash-algo 'sha-1]
+@deffnx {bigloo cryptography procedure} RSASSA-PKCS1-v1.5-verify-bignum key msg-str S
 RSAES-PKCS1-v1.5 functions work on strings. However their length is
 limited by the size of the modulus (to be exact: by key-len - 11).
 The @code{-bignum} functions skip the last step of converting the
@@ -554,10 +554,10 @@ The optional @code{:hash-algo} must be either @code{sha-1} or @code{md5}
 (RFC 3447 allows other hash algorithms, but they are not yet implemented).
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} RSAES-OAEP-encrypt key m-str [:label ""]
-@deffnx {Bigloo Cryptography procedure} RSAES-OAEP-decrypt key cypher-str [:label ""]
-@deffnx {Bigloo Cryptography procedure} RSASSA-PSS-sign key msg-str
-@deffnx {Bigloo Cryptography procedure} RSASSA-PSS-verify key msg-str sig-str
+@deffn {bigloo cryptography procedure} RSAES-OAEP-encrypt key m-str [:label ""]
+@deffnx {bigloo cryptography procedure} RSAES-OAEP-decrypt key cypher-str [:label ""]
+@deffnx {bigloo cryptography procedure} RSASSA-PSS-sign key msg-str
+@deffnx {bigloo cryptography procedure} RSASSA-PSS-verify key msg-str sig-str
 These functions pad, mask, etc the input string before they perform their
 operation on them. See RFC 3447 for more information.
 @end deffn
@@ -577,8 +577,8 @@ the RSA keys. The public part of a DSA key can be found in the class
 @code{DSA-Key} while the private part is added in the
 @code{Complete-DSA-Key} subclass.
 
-@deffn {Bigloo Cryptography class} DSA-Key
-@deffnx {Bigloo Cryptography class} Complete-DSA-Key
+@deffn {bigloo cryptography class} DSA-Key
+@deffnx {bigloo cryptography class} Complete-DSA-Key
 @smalllisp
 (class Dsa-Key
    p::bignum q::bignum g::bignum y::bignum)
@@ -587,11 +587,11 @@ the RSA keys. The public part of a DSA key can be found in the class
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} extract-public-dsa-key complete-key
+@deffn {bigloo cryptography procedure} extract-public-dsa-key complete-key
 Returns a @code{DSA-Key} without the private @var{x}.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} dsa-sign m key
+@deffn {bigloo cryptography procedure} dsa-sign m key
 Signs the bignum @var{m} using the private dsa key @var{key}. The
 result are two values: @var{r} and @var{s}.
 
@@ -603,7 +603,7 @@ A typical call to @code{dsa-sign} is hence of the following form
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} dsa-verify m key r s
+@deffn {bigloo cryptography procedure} dsa-verify m key r s
 Verifies a signature (consisting of @var{r} and @var{s}).
 @end deffn
 
@@ -619,8 +619,8 @@ implementation is minimal.
 For consistency with RSA ElGamal keys are similarly named as their
 RSA counterparts.
 
-@deffn {Bigloo Cryptography class} ElGamal-Key
-@deffnx {Bigloo Cryptography class} Complete-ElGamal-Key
+@deffn {bigloo cryptography class} ElGamal-Key
+@deffnx {bigloo cryptography class} Complete-ElGamal-Key
 @smalllisp
 (class ElGamal-Key
   p::bignum
@@ -631,11 +631,11 @@ RSA counterparts.
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} extract-public-elgamal-key complete-key
+@deffn {bigloo cryptography procedure} extract-public-elgamal-key complete-key
 Returns a copy of the public part (as @code{ElGamal Key}).
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} elgamal-encrypt key m
+@deffn {bigloo cryptography procedure} elgamal-encrypt key m
 Encrypts the bignum @var{m} using the given public key. The result are two
 values @code{c1} and @code{c2}.
 
@@ -646,12 +646,12 @@ provides bad random numbers, or if Bigloo's random-number generation is buggy.
 For critical applications be sure to verify both requirements.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} elgamal-decrypt complete-key c1 c2
+@deffn {bigloo cryptography procedure} elgamal-decrypt complete-key c1 c2
 Decrypts an ElGamal encrypted message (consisting of the two bignums
 @var{c1} and @var{c2}) with the given private key.
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} elgamal-key-length key
+@deffn {bigloo cryptography procedure} elgamal-key-length key
 Returns the key length in bytes.
 @end deffn
 
@@ -671,10 +671,10 @@ $ openssl gendsa /tmp/dsaparam
 @end display
 
 
-@deffn {Bigloo Cryptography procedure} read-pem-key in
-@deffnx {Bigloo Cryptography procedure} read-pem-key-port input-port
-@deffnx {Bigloo Cryptography procedure} read-pem-key-file filename
-@deffnx {Bigloo Cryptography procedure} read-pem-key-string str
+@deffn {bigloo cryptography procedure} read-pem-key in
+@deffnx {bigloo cryptography procedure} read-pem-key-port input-port
+@deffnx {bigloo cryptography procedure} read-pem-key-file filename
+@deffnx {bigloo cryptography procedure} read-pem-key-string str
 These functions will read a PEM encoded key. The encoded file may contain
 a private or public RSA key, or a private or public DSA key.
 
@@ -683,10 +683,10 @@ of a string it will invoke @code{read-pem-key-file}
 (and not @code{read-pem-key-string}).
 @end deffn
 
-@deffn {Bigloo Cryptography procedure} write-pem-key key out [public-key-only?]
-@deffnx {Bigloo Cryptography procedure} write-pem-key-port key out [public-key-only?]
-@deffnx {Bigloo Cryptography procedure} write-pem-key-file key out [public-key-only?]
-@deffnx {Bigloo Cryptography procedure} write-pem-key-string key [public-key-only?]
+@deffn {bigloo cryptography procedure} write-pem-key key out [public-key-only?]
+@deffnx {bigloo cryptography procedure} write-pem-key-port key out [public-key-only?]
+@deffnx {bigloo cryptography procedure} write-pem-key-file key out [public-key-only?]
+@deffnx {bigloo cryptography procedure} write-pem-key-string key [public-key-only?]
 These functions write the given key. The key may be a private/public
 RSA/DSA key.
 
@@ -731,9 +731,9 @@ Here is an example of a module that uses this library:
                                      :passkey-provider (lambda () passwd))))))))
 @end smalllisp
 
-@deffn {Bigloo OpenPGP procedure} pgp-read-string str
-@deffnx {Bigloo OpenPGP procedure} pgp-read-port iport
-@deffnx {Bigloo OpenPGP procedure} pgp-read-file file-name
+@deffn {bigloo openpgp procedure} pgp-read-string str
+@deffnx {bigloo openpgp procedure} pgp-read-port iport
+@deffnx {bigloo openpgp procedure} pgp-read-file file-name
 These functions read and decode PGP data. OpenPGP allows several keys
 to be stored in the same message. Therefore @code{pgp-read} will
 return keys always in a list (even if the message only contains one
@@ -743,9 +743,9 @@ The return value is either a list of PGP-compositions (PGP-Keys), or a
 single PGP-composition.
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-write-string composition [:format 'armored]
-@deffnx {Bigloo OpenPGP procedure} pgp-write-port oport composition [:format 'armored]
-@deffnx {Bigloo OpenPGP procedure} pgp-write-file file-name composition [:format 'armored]
+@deffn {bigloo openpgp procedure} pgp-write-string composition [:format 'armored]
+@deffnx {bigloo openpgp procedure} pgp-write-port oport composition [:format 'armored]
+@deffnx {bigloo openpgp procedure} pgp-write-file file-name composition [:format 'armored]
 The counter-part of @code{pgp-read}. These functions encode
 PGP-compositions. By default the result is armored (i.e. encoded with
 ASCII characters). If the optional @code{:format} parameter is
@@ -755,7 +755,7 @@ encoded in binary.
 Note that there is no means to encode a list of PGP-keys.
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-encrypt msg-string keys passwords [:hash-algo 'sha-1] [:symmetric-algo 'cast5]
+@deffn {bigloo openpgp procedure} pgp-encrypt msg-string keys passwords [:hash-algo 'sha-1] [:symmetric-algo 'cast5]
 Encrypts the given string. The returned composition can be decrypted
 by the owners of the keys, or with one of the passwords.
 
@@ -782,7 +782,7 @@ for encryption, then this subkey is used.
 @end itemize
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-password-encrypt msg-string password [:hash-algo 'sha-1] [:symmetric-algo 'cast5] [:mdc #t]
+@deffn {bigloo openpgp procedure} pgp-password-encrypt msg-string password [:hash-algo 'sha-1] [:symmetric-algo 'cast5] [:mdc #t]
 Deprecated.
 Encrypts @code{msg-string} with the given password. The returned
 PGP-composition does not contain any information which hash-algorithm
@@ -799,7 +799,7 @@ detection code. It is more secure against tampering but requires more
 space and might not be recognized by old openpgp implementations.
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-decrypt encrypted [:passkey-provider (lambda () #f)] [:password-provider (lambda (key) #f)] [:key-manager (lambda (key-id) '())] [:hash-algo 'sha-1] [:symmetric-algo 'cast5]
+@deffn {bigloo openpgp procedure} pgp-decrypt encrypted [:passkey-provider (lambda () #f)] [:password-provider (lambda (key) #f)] [:key-manager (lambda (key-id) '())] [:hash-algo 'sha-1] [:symmetric-algo 'cast5]
 Decrypts a PGP-composition that has been generated by
 @code{pgp-encrypt} or by @code{pgp-password-encrypt}.
 The function returns the decrypted message (a string) or @code{#f} if
@@ -822,7 +822,7 @@ only used for messages that have been encrypted with
 
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-sign msg-string key password-provider [:detached-signature? #t] [:one-pass? #f] [:hash-algo 'sha-1]
+@deffn {bigloo openpgp procedure} pgp-sign msg-string key password-provider [:detached-signature? #t] [:one-pass? #f] [:hash-algo 'sha-1]
 Signs @code{msg-string} with the given key. Ideally the key should be
 a subkey, but if a complete PGP-Key is given, Bigloo will use the
 main-key instead. If the main-key is not suitable for signing, then an
@@ -852,7 +852,7 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-verify signature key-manager [:msg #f]
+@deffn {bigloo openpgp procedure} pgp-verify signature key-manager [:msg #f]
 Verifies a signature.
 
 The key-manager is a function that takes a substring identifier and
@@ -879,24 +879,24 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-signature-message signature
+@deffn {bigloo openpgp procedure} pgp-signature-message signature
 Returns the signature's message, or @code{#f} if the signature is a
 detached signature.
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-key? key
-@deffnx {Bigloo OpenPGP procedure} pgp-subkey? key
+@deffn {bigloo openpgp procedure} pgp-key? key
+@deffnx {bigloo openpgp procedure} pgp-subkey? key
 Predicates for PGP-Key and PGP-Subkey.
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-subkeys key
+@deffn {bigloo openpgp procedure} pgp-subkeys key
 Returns a list of PGP-Subkeys of the PGP-Key. The first key in the
 list is the @emph{main-key}. The main-key is used as default for
 signatures.
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-key->string key
-@deffnx {Bigloo OpenPGP procedure} pgp-subkey->string key
+@deffn {bigloo openpgp procedure} pgp-key->string key
+@deffnx {bigloo openpgp procedure} pgp-subkey->string key
 Returns a string representation of the key (resp. subkey).
 
 Example outputs:
@@ -912,8 +912,8 @@ Example outputs:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-key-id subkey
-@deffnx {Bigloo OpenPGP procedure} pgp-key-fingerprint subkey
+@deffn {bigloo openpgp procedure} pgp-key-id subkey
+@deffnx {bigloo openpgp procedure} pgp-key-fingerprint subkey
 Returns the id (resp. fingerprint) of a subkey.
 
 A subkey-id is a 8-character binary string.
@@ -921,11 +921,11 @@ A subkey-id is a 8-character binary string.
 A fingerprint is a 20-character binary string.
 @end deffn
 
-@deffn {Bigloo OpenPGP procedure} pgp-make-key-db
-@deffnx {Bigloo OpenPGP procedure} pgp-add-key-to-db db key
-@deffnx {Bigloo OpenPGP procedure} pgp-add-keys-to-db db keys
-@deffnx {Bigloo OpenPGP procedure} pgp-resolve-key db id
-@deffnx {Bigloo OpenPGP procedure} pgp-db-print-keys db
+@deffn {bigloo openpgp procedure} pgp-make-key-db
+@deffnx {bigloo openpgp procedure} pgp-add-key-to-db db key
+@deffnx {bigloo openpgp procedure} pgp-add-keys-to-db db keys
+@deffnx {bigloo openpgp procedure} pgp-resolve-key db id
+@deffnx {bigloo openpgp procedure} pgp-db-print-keys db
 A simple key-manager implementation based on lists.
 @end deffn
 

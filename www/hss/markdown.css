@@ -1,0 +1,18 @@
+/*=====================================================================*/
+/*    .../project/hop/3.0.x/node_modules/markdown/hss/markdown.hss     */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Sat Jul 18 18:07:23 2015                          */
+/*    Last change :  Sat Jul 18 18:13:45 2015 (serrano)                */
+/*    Copyright   :  2015 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    Simple default style sheet for markdown rendering                */
+/*=====================================================================*/
+
+code.markdown {
+  color: #00a;
+}
+
+pre.markdown code.markdown {
+  color: inherit;
+}

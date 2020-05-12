@@ -16,8 +16,7 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
-	    __gstreamer_gstobject)
+   (import  __gstreamer_gsterror)
    
    (export  (class gst-structure
 	       (%gst-structure-init)

@@ -48,8 +48,8 @@ This section described the functions offered by Bigloo to encode
 and decode some of the formats specified in the RFC 2045
 @url{http://tools.ietf.org/html/rfc2045}.
 
-@deffn {Bigloo Mail procedure} quoted-printable-encode string
-@deffnx {Bigloo Mail procedure} quoted-printable-decode string
+@deffn {bigloo mail procedure} quoted-printable-encode string
+@deffnx {bigloo mail procedure} quoted-printable-decode string
 These functions encode/decode a string into and from the 
 @code{quoted-printable} format.
 
@@ -62,8 +62,8 @@ Examples:
 @end deffn
 
 
-@deffn {Bigloo Mail procedure} quoted-printable-encode-port ip op
-@deffnx {Bigloo Mail procedure} quoted-printable-decode-port ip op [rfc2047]
+@deffn {bigloo mail procedure} quoted-printable-encode-port ip op
+@deffnx {bigloo mail procedure} quoted-printable-decode-port ip op [rfc2047]
 These functions are similar to @code{quoted-printable-encode} and 
 @code{quoted-printable-decode} except that they operate on
 @code{input-port}s and @code{output-port}s. 
@@ -75,8 +75,8 @@ as specified by the RFC 2047, (see @url{http://tools.ietf.org/html/rfc2047})
 is found.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mime-content-decode string 
-@deffnx {Bigloo Mail procedure} mime-content-decode-port input-port
+@deffn {bigloo mail procedure} mime-content-decode string 
+@deffnx {bigloo mail procedure} mime-content-decode-port input-port
 These two functions parse respectively a @code{string} and an 
 @code{input-port} and return a list of three elements:
 
@@ -95,8 +95,8 @@ Example:
 
 @end deffn
 
-@deffn {Bigloo Mail procedure} mime-content-disposition-decode string
-@deffnx {Bigloo Mail procedure} mime-content-disposition-decode-port input-port
+@deffn {bigloo mail procedure} mime-content-disposition-decode string
+@deffnx {bigloo mail procedure} mime-content-disposition-decode-port input-port
 These two functions parse respectively a @code{string} and an 
 @code{input-port} and return a list describing the content disposition.
 
@@ -108,8 +108,8 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail procedure} mime-multipart-decode string boundary [recursive]
-@deffnx {Bigloo Mail procedure} mime-multipart-decode-port input-port boundary [recursive]
+@deffn {bigloo mail procedure} mime-multipart-decode string boundary [recursive]
+@deffnx {bigloo mail procedure} mime-multipart-decode-port input-port boundary [recursive]
 These two functions parse respectively a @code{string} and an 
 @code{input-port} and return a list of mime sections.
 
@@ -132,8 +132,8 @@ This section described the function offered by Bigloo to decode
 the RFC 2047 encoding used in mail headers 
 (see @url{http://tools.ietf.org/html/rfc2047}).
 
-@deffn {Bigloo Mail procedure} rfc2047-decode-port ip op [:charset iso-latin-1]
-@deffnx {Bigloo Mail procedure} rfc2047-decode string [:charset iso-latin-1]
+@deffn {bigloo mail procedure} rfc2047-decode-port ip op [:charset iso-latin-1]
+@deffnx {bigloo mail procedure} rfc2047-decode string [:charset iso-latin-1]
 
 These functions decode mail header fields encoded using the RFC 2047 
 specification. The optional argument @var{charset} specified in which charset
@@ -168,7 +168,7 @@ Example:
 This section presents the facilities supported by Bigloo for dealing
 with @code{vcard}s.
 
-@deffn {Bigloo Mail class} vcard
+@deffn {bigloo mail class} vcard
 @smalllisp
 (class vcard
   (version::bstring (default "2.1"))
@@ -207,8 +207,8 @@ should be used to denote empty values.
 @end itemize
 @end deffn
 
-@deffn {Bigloo Mail function} port->vcard::vcard ip [:charset-encoder]
-@deffnx {Bigloo Mail function} string->vcard::vcard str [:charset-encoder]
+@deffn {bigloo mail function} port->vcard::vcard ip [:charset-encoder]
+@deffnx {bigloo mail function} string->vcard::vcard str [:charset-encoder]
 These two functions parse a @emph{vcard} to produce a @code{vcard}
 instance.  The optional argument @var{charset-encoder}, when provided,
 must be a function of argument: a string to be decoded. Vcard strings
@@ -230,7 +230,7 @@ and decode some of the formats specified in the RFC 2822
 (@url{http://tools.ietf.org/html/rfc2045}). It mainly supports functions
 for parsing email headers and for decoding email addresses.
 
-@deffn {Bigloo Mail procedure} mail-header->list obj
+@deffn {bigloo mail procedure} mail-header->list obj
 The function @code{mail-header->list} parses a mail header that can either
 be implemented as a string or an input port. It returns a list of fields.
 
@@ -244,7 +244,7 @@ Received: from eurus.inria.fr ([unix socket])")
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail procedure} email-normalize string
+@deffn {bigloo mail procedure} email-normalize string
 
 The function @code{email-normalize} extracts the actual email address
 from an email representation.
@@ -256,7 +256,7 @@ Example:
 
 @end deffn
 
-@deffn {Bigloo Mail procedure} rfc2822-address-display-name string
+@deffn {bigloo mail procedure} rfc2822-address-display-name string
 Extract the name component of an email.
 
 Example:
@@ -291,7 +291,7 @@ format. This section presents the API for manipulating them both.
 @node mailbox, , imap, Mail servers
 @subsection Mailboxes
 
-@deffn {Bigloo Mail class} mailbox
+@deffn {bigloo mail class} mailbox
 @smalllisp
 (abstract-class mailbox
   (label::bstring (default "")))
@@ -302,7 +302,7 @@ mailbox implementations. It allows the definitions of various generic
 functions that deal with mail messages and mail folders.
 @end deffn
 
-@deffn {Bigloo Mail class} &mailbox-error
+@deffn {bigloo mail class} &mailbox-error
 @smalllisp
 (abstract-class &mailbox-error::&error)
 @end smalllisp
@@ -313,7 +313,7 @@ that inherit from the @code{&parse-error} super class.
 @end deffn
 
 
-@deffn {Bigloo Mail procedure} mailbox-close mailbox
+@deffn {bigloo mail procedure} mailbox-close mailbox
 Close the mailbox connection.
 
 Example:
@@ -326,35 +326,35 @@ Example:
 
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-separator mailbox
+@deffn {bigloo mail procedure} mailbox-separator mailbox
 Returns a string denoting the separator (commonly @code{"} or @code{.})
 used by the @var{mailbox}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-prefix mailbox
+@deffn {bigloo mail procedure} mailbox-prefix mailbox
 Returns the prefix of the @var{mailbox}, a string or @code{#f}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-hostname mailbox
+@deffn {bigloo mail procedure} mailbox-hostname mailbox
 Returns the hostname of the @var{mailbox}, a string or @code{#f}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folders mailbox
+@deffn {bigloo mail procedure} mailbox-folders mailbox
 Returns a list of strings denoting the folder names of the @var{mailbox}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-select! mailbox string
+@deffn {bigloo mail procedure} mailbox-folder-select! mailbox string
 Selects one folder of the @var{mailbox}. This function is central to 
 mailboxes because all messages are referenced relatively to the 
 folder selection. All the functions that operates on @code{uid} 
 implicitly access the current folder selection.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-unselect! mailbox
+@deffn {bigloo mail procedure} mailbox-folder-unselect! mailbox
 Unselects the @var{mailbox} current selected folder.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-create! mailbox folder
+@deffn {bigloo mail procedure} mailbox-folder-create! mailbox folder
 Creates a new @var{folder} denotes by a fully qualified name.
 
 Example
@@ -363,94 +363,94 @@ Example
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-delete! mailbox folder
+@deffn {bigloo mail procedure} mailbox-folder-delete! mailbox folder
 Deletes an empty @var{folder}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-rename! mailbox old new
+@deffn {bigloo mail procedure} mailbox-folder-rename! mailbox old new
 Renames a folder.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-move! mailbox folder dest
+@deffn {bigloo mail procedure} mailbox-folder-move! mailbox folder dest
 Moves the @var{folder} into the destination folder @var{dest}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-subscribe! mailbox folder
-@deffnx {Bigloo Mail procedure} mailbox-unsubscribe! mailbox folder
+@deffn {bigloo mail procedure} mailbox-subscribe! mailbox folder
+@deffnx {bigloo mail procedure} mailbox-unsubscribe! mailbox folder
 Subscribe/unsubscribe to a folder. This allows @code{imap} servers not
 to present the entire list of folders. Only subscribed folders are returned
 by @code{mailbox-folders}. These functions have no effect on @code{maildir}
 servers.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-exists? mailbox folder
+@deffn {bigloo mail procedure} mailbox-folder-exists? mailbox folder
 Returns @code{#t} if and only if @var{folder} exists in @var{mailbox}. Returns
 @code{#f} otherwise.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-status mailbox folder
+@deffn {bigloo mail procedure} mailbox-folder-status mailbox folder
 Returns the status of the @var{folder}. A status is an alist made of
 the number of unseen mail, the uid validity information, the uid next
 value, the number of recent messages, and the overall number of messages.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-uids mailbox
+@deffn {bigloo mail procedure} mailbox-folder-uids mailbox
 Returns the list of UIDs (a list of integers) of the messages contained
 in the currently selected folder.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-dates mailbox
+@deffn {bigloo mail procedure} mailbox-folder-dates mailbox
 Returns the list of dates of the messages contained
 in the currently selected folder.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-delete-messages! mailbox
+@deffn {bigloo mail procedure} mailbox-folder-delete-messages! mailbox
 Deletes the messages marked as @emph{deleted} of the currently selected
 folder.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-folder-header-fields mailbox field
+@deffn {bigloo mail procedure} mailbox-folder-header-fields mailbox field
 Returns the list of headers @var{fields} of the message of the current
 folder.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message mailbox uid
+@deffn {bigloo mail procedure} mailbox-message mailbox uid
 Returns the message @var{uid} in the current folder.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-path mailbox uid
+@deffn {bigloo mail procedure} mailbox-message-path mailbox uid
 Returns the full path name of the message @var{uid}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-body mailbox uid [len]
+@deffn {bigloo mail procedure} mailbox-message-body mailbox uid [len]
 Returns the body of the message @var{uid}. If @var{len} is provided, only
 returns the first @var{len} characters of the body.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-header mailbox uid
+@deffn {bigloo mail procedure} mailbox-message-header mailbox uid
 Returns the header as a string of the message @var{uid}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-header-list mailbox uid
+@deffn {bigloo mail procedure} mailbox-message-header-list mailbox uid
 Returns the header as an alist of the message @var{uid}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-header-field mailbox uid field
+@deffn {bigloo mail procedure} mailbox-message-header-field mailbox uid field
 Extracts one field from the message header.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-size mailbox uid
+@deffn {bigloo mail procedure} mailbox-message-size mailbox uid
 Returns the size of the message.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-info mailbox uid
+@deffn {bigloo mail procedure} mailbox-message-info mailbox uid
 Returns the information relative to the message @var{uid}. This a list
 containing the message identifier, its uid, the message date, the message
 size, and the message flags.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-flags mailbox uid
-@deffnx {Bigloo Mail procedure} mailbox-message-flags-set! mailbox uid lst
+@deffn {bigloo mail procedure} mailbox-message-flags mailbox uid
+@deffnx {bigloo mail procedure} mailbox-message-flags-set! mailbox uid lst
 Sets/Gets the flags of the message @var{uid}. This is a list of strings.
 Typical flags are: 
 
@@ -462,16 +462,16 @@ Typical flags are:
 @end itemize
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-delete! mailbox uid
+@deffn {bigloo mail procedure} mailbox-message-delete! mailbox uid
 Deletes the message @var{uid}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-move! mailbox uid folder
+@deffn {bigloo mail procedure} mailbox-message-move! mailbox uid folder
 Moves the message @var{uid} into the new @var{folder} (denoted by 
 a string).
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-create! mailbox folder content
+@deffn {bigloo mail procedure} mailbox-message-create! mailbox folder content
 Creates a new message in the @var{folder} whose content is given the
 string @var{content}.
 @end deffn
@@ -481,13 +481,11 @@ string @var{content}.
 @node imap, mailbox, maildir, Mail servers
 @subsection IMAP (RFC 3501)
 
-@deffn {Bigloo Mail class} imap
+@deffn {bigloo mail class} imap
 @smalllisp
 (class imap::mailbox
   (socket::socket read-only))
-@end smalllisp
 
-@smalllisp
 (define mbox
   (instantiate::maildir
     (label "My Remote Mailbox")
@@ -496,19 +494,19 @@ string @var{content}.
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail class} &imap-parse-error
+@deffn {bigloo mail class} &imap-parse-error
 @smalllisp
 (class &imap-parse-error::&io-parse-error)
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail class} &imap-error
+@deffn {bigloo mail class} &imap-error
 @smalllisp
 (class &imap-error::&mailbox-error)
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail procedure} imap-login socket user password
+@deffn {bigloo mail procedure} imap-login socket user password
 Log a user into an imap server. The @var{socket} must have been created
 first. The argument @var{user} is a string and denotes the user name.
 The argument @var{password} is a string too and it contains the user
@@ -519,19 +517,19 @@ exception.
 Example:
 
 @smalllisp
-@end smalllisp
 (define mbox
    (imap-login (make-client-socket "imap.inria.fr" 993 :timeout 200000) 
                "serrano" "XXX"))
 
 (print (mailbox-folders mbox))
+@end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail procedure} imap-logout socket
+@deffn {bigloo mail procedure} imap-logout socket
 Closes an @code{imap} connection.
 @end deffn
 
-@deffn {Bigloo Mail procedure} imap-capability socket
+@deffn {bigloo mail procedure} imap-capability socket
 Returns the list of capabilities supported the @code{imap} server.
 @end deffn
 
@@ -541,7 +539,7 @@ Returns the list of capabilities supported the @code{imap} server.
 @node maildir, imap,  , Mail servers
 @subsection Maildir
 
-@deffn {Bigloo Mail class} maildir
+@deffn {bigloo mail class} maildir
 @smalllisp
 (class maildir::mailbox
   (prefix::bstring read-only (default "INBOX"))
@@ -560,7 +558,7 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail class} &maildir-error
+@deffn {bigloo mail class} &maildir-error
 @smalllisp
 (class &maildir-error::&mailbox-error)
 @end smalllisp

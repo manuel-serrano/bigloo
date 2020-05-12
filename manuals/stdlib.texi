@@ -17,14 +17,14 @@
 
 This chapter presents the Bigloo standard library. Bigloo is mostly
 R5RS compliant but it proposes many extensions to this standard.
-In a first section (@ref{Scheme Library})
+In a first section @ref{Scheme Library}
 the Bigloo R5RS support is presented. This section also contains various
 function that are not standard (for instance, various functions used
 to manage a file system). Then, in the following sections
-(@ref{Serialization}, @ref{Bit Manipulation}, and @ref{System Programming}
+@ref{Serialization}, @ref{Bit Manipulation}, and @ref{System Programming}
 Bigloo specific extensions are presented. Bigloo input and output facilities
 constitute a large superset of the standard Scheme definition. For this
-reason they are presented in a separate section (@ref{Input and Output}).
+reason they are presented in a separate section @ref{Input and Output}.
 
 @menu
 * Scheme Library::   
@@ -75,7 +75,8 @@ procedure''.
 @subsection Booleans
 @cindex Booleans
 The standard boolean objects are @code{#t} and @code{#f}.
-Note: the empty list is true.
+
+@emph{Note}: the empty list is true.
 
 @deffn {library procedure} not obj
 @code{not} returns @t{#t} if @var{obj} is false, and returns
@@ -361,8 +362,8 @@ pred. However, in cases where this ambiguity can arise, you should use
 find-tail instead of find -- find-tail has no such ambiguity:
 
 @smalllisp
-    (cond ((find-tail pred lis) => (lambda (pair) ...)) ; Handle (CAR PAIR)
-          (else ...)) ; Search failed.
+(cond ((find-tail pred lis) => (lambda (pair) ...)) ; Handle (CAR PAIR)
+      (else ...)) ; Search failed.
 @end smalllisp
 @end deffn
 
@@ -378,14 +379,14 @@ member function.
 Examples:
 
 @smalllisp
-    (find-tail even? '(3 1 37 -8 -5 0 0)) @result{} (-8 -5 0 0)
-    (find-tail even? '(3 1 37 -5)) @result{} #f
+(find-tail even? '(3 1 37 -8 -5 0 0)) @result{} (-8 -5 0 0)
+(find-tail even? '(3 1 37 -5)) @result{} #f
 
-    ;; MEMBER X LIS:
-    (find-tail (lambda (elt) (equal? x elt)) lis)
-
-    In the circular-list case, this procedure "rotates" the list.
+;; MEMBER X LIS:
+(find-tail (lambda (elt) (equal? x elt)) lis)
 @end smalllisp
+
+In the circular-list case, this procedure "rotates" the list.
 @end deffn
 
 @deffn {bigloo procedure} reduce f ridentity list
@@ -399,7 +400,7 @@ the list.
 Examples:
 
 @smalllisp
-    (reduce max 0 l) @equiv{} (apply max l)
+(reduce max 0 l) @equiv{} (apply max l)
 @end smalllisp
 @end deffn
 
@@ -426,14 +427,13 @@ dynamic order in which @var{init-proc} is applied to these indices.
 @end deffn
 
 @deffn {bigloo procedure} list-split list n [filler]
-@deffnx {bigloo procedure} list-split list n [filler]
 Split a @var{list} into a list of lists of length @var{n}. Last smaller
 list is filled with @var{filler}.
 
 @smalllisp
 (list-split '(1 2 3 4 5 6 7 8) 3 0) @result{} ((1 2 3) (4 5 6) (7 8 0))
 (list-split (iota 10) 3)            @result{} ((0 1 2) (3 4 5) (6 7 8) (9))
-(list-split (iota 10 3) '-1)      @result{} ((0 1 2) (3 4 5) (6 7 8) (9 -1 -1))
+(list-split (iota 10 3) '-1)        @result{} ((0 1 2) (3 4 5) (6 7 8) (9 -1 -1))
 @end smalllisp
 @end deffn
 
@@ -600,7 +600,7 @@ Keywords are autoquote and case sensitive. So
 (eq? toto: TOTO:) @result{} #f
 @end smalllisp
 
-The colon character (@code{:}) does not belong to they keyword. Hence
+The colon character ``@code{:}'' does not belong to they keyword. Hence
 @smalllisp
 (eq? toto: :toto) @result{} #t
 @end smalllisp
@@ -879,18 +879,18 @@ The function @code{randomfl} returns a double in the range [0..1].
 The function @code{integer->string/padding} converts its arguments into
 a string with a left padding filled of characters @code{0}.
 
-@example
+@smalllisp
 (integer->string/padding 3 5)       @result{} "00003"
-@end example
+@end smalllisp
 
 The function @code{unsigned->string} only accepts the following radixes:
 @code{2}, @code{8}, and @code{16}. It converts its argument into an
 @emph{unsigned} representation.
 
-@example
+@smalllisp
 (unsigned->string 123 16)           @result{} "7b"
 (unsigned->string -123 16)          @result{} "ffffff85"
-@end example
+@end smalllisp
 
 @end deffn
 
@@ -918,7 +918,7 @@ integer otherwise.
 Returns a binary big-endian representation of the given bignum @var{bignum}.
 
 @smalllisp
-  (string-hex-extern (bignum->octet-string #zx1234567)) @result{} "01234567"
+(string-hex-extern (bignum->octet-string #zx1234567)) @result{} "01234567"
 @end smalllisp
 @end deffn
 

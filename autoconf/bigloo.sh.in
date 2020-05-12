@@ -1,11 +1,11 @@
 #!@SHELL@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/bigloo.sh.in                */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/bigloo.sh.in         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Oct 13 14:06:20 2015                          */
-#*    Last change :  Wed Oct 14 09:07:02 2015 (serrano)                */
-#*    Copyright   :  2015 Manuel Serrano                               */
+#*    Last change :  Fri May  1 15:35:51 2020 (serrano)                */
+#*    Copyright   :  2015-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Bigloo wrapper                                                   */
 #*=====================================================================*/
@@ -16,4 +16,4 @@ DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
 export LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH
 
-exec @BIGLOO@ "$@"
+exec @BIGLOO@ @LDBIGLOOOPT@ "$@"

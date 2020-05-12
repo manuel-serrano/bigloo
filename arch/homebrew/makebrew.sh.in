@@ -1,0 +1,71 @@
+#*=====================================================================*/
+#*    .../prgm/project/bigloo/bigloo/arch/homebrew/makebrew.sh.in      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Apr 21 16:39:11 2020                          */
+#*    Last change :  Wed Apr 22 09:23:33 2020 (serrano)                */
+#*    Copyright   :  2020 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Script to build the homebrew formula                             */
+#*=====================================================================*/
+
+# configuration and variables
+unstable=@VERSION@
+latest=
+minor=
+
+repodir=$HOME/prgm/distrib
+basedir=`dirname $0`
+
+if [ "$basedir " = ". " ]; then
+  basedir=`pwd`
+fi
+
+bglconfigureopt=
+
+targetdir=$HOME/prgm/utils/hopbrew/Formula
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+    -h|--help)
+      echo "usage makebrew.sh [-O dir] --repodir [dir] --latest [release] opt1 opt2 ...";
+      exit 1;;
+    --latest)
+      shift;
+      latest=$1;;
+    --repodir)
+      shift;
+      repodir=$1;;
+    -O)
+      shift
+      targetdir=$1;;
+    *)
+      bglconfigureopt="$1 $bglconfigureopt";;
+
+  esac
+  shift
+done
+
+if [ "$REPODIR " != " " ]; then
+  repodir=$REPODIR;
+fi
+
+sha256=`sha256sum $repodir/bigloo-$unstable.tar.gz | awk '{ print $1 }'`
+cat bigloo.rb.in | \
+  sed -e "s/@RELEASE@/$unstable/" \
+      -e "s/@Release@/Unstable/" \
+      -e "s/@release@/unstable/" \
+      -e "s/@SHA256@/$sha256/" \
+      > $targetdir/bigloo-unstable.rb
+
+if [ "$latest " != " " ]; then
+  sha256=`sha256sum $repodir/bigloo-$latest.tar.gz | awk '{ print $1 }'`
+  cat bigloo.rb.in | \
+    sed -e "s/@RELEASE@/$latest/" \
+        -e "s/@Release@/Latest/" \
+        -e "s/@release@/latest/" \
+        -e "s/@SHA256@/$sha256/" \
+        > $targetdir/bigloo-latest.rb
+fi	

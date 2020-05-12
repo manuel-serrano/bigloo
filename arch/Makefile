@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:40:11 2010                          */
-#*    Last change :  Fri Dec 13 10:14:23 2019 (serrano)                */
-#*    Copyright   :  2010-19 Manuel Serrano                            */
+#*    Last change :  Tue Apr 21 16:47:53 2020 (serrano)                */
+#*    Copyright   :  2010-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles arch specific parts.                   */
 #*=====================================================================*/
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    DIRECTORIES                                                      */
 #*---------------------------------------------------------------------*/
-DIRECTORIES= macosx debian archlinux android raspberry
+DIRECTORIES= macosx debian archlinux android raspberry homebrew
 
 #*---------------------------------------------------------------------*/
 #*    Populating the ARCHs                                             */

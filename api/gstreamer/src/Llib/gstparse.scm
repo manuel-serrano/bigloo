@@ -16,14 +16,14 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gstreamer
-	    __gstreamer_gstobject
-	    __gstreamer_gstpad
+   (use	    __gstreamer_gstobject
 	    __gstreamer_gstcaps
 	    __gstreamer_gststructure
 	    __gstreamer_gstelementfactory
 	    __gstreamer_gstpluginfeature
 	    __gstreamer_gstelement)
+
+   (import  __gstreamer_gstpad)
 
    (export  (gst-parse-launch::obj ::bstring . ::obj)
 	    (gst-parse-launchv::obj ::pair-nil)))

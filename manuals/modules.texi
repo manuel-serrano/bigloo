@@ -98,7 +98,7 @@ these lines were stored in file @code{zz.scm}, invoking @samp{bigloo zz.scm}
 would create the executable @code{a.out} which, when obeyed, would
 display @samp{this is a module} on the terminal.
 
-@emph{Note:}
+@emph{Note}:
 Some special identifiers are reserved and can't be used to name modules.
 If such an identifier is used, the compiler will produce the message:
 
@@ -209,7 +209,7 @@ but without specifying the name of the file where the module is located.
 The third and the fourth form import all the exported variables of the module
 @var{module-name}.
 
-Note: The need for specifying in which files modules are located comes
+@emph{Note}: The need for specifying in which files modules are located comes
 from the fact that there is no automatic mapping between module names
 and files names. Such a mapping can be defined in a ``module access file''
 (@pxref{Module Access File}) or in the import clause itself, as

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Mar 24 12:20:40 2020 (serrano)                */
+#*    Last change :  Fri May  1 15:35:39 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -56,6 +56,8 @@ cc=$CC  # left blank for default automatic configuration
 cflags=$CFLAGS
 lflags=$LDFLAGS
 lcustomflags=
+
+cbuildflags=
 
 bigloo=$BIGLOO # used only for cross compiling
 if [ "$BFLAGS " != " " ]; then
@@ -299,6 +301,7 @@ modfile=644
 # set $ldopt to `no-share' if you don't want shared library
 ldopt=
 ldbuildsharedopt=
+ldbuildopt=
 ldrpath=
 
 # set $ldsoname to `blank' if you want to force it empty
@@ -2258,7 +2261,7 @@ if [ "$gmpversion " != "no " ]; then
     (cd gmp; . ./configure-gmp) || exit 1
   
     libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
-    lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
+    #lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
     buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
     gmplib=-lgmp
   fi
@@ -2563,9 +2566,11 @@ if [ "$regexp " = " " ]; then
       pcrelibs=yes
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
-      lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
+      ldbuildopts="-L$bootdir/pcre$libdir/$fildir $ldbuildopts"
+      #lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
       buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
-      cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
+      #cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
+      cbuildflags="-I$bootdir/pcre$libdir/$fildir $cbuildflags"
     else
       pcrelibs=no
     fi
@@ -2612,9 +2617,11 @@ if [ "$unistring " != "no " ]; then
     featureflags="-srfi enable-unistring $featureflags";
     extraunistring=unistring
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
-    lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
+    ldbuildopts="-L$bootdir/libunistring$libdir/$fildir $ldbuildopts"
+    #lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
     buildlibdir="$bootdir/libunistring$libdir/$fildir:$buildlibdir"
-    cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
+    #cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
+    cbuildflags="-I$bootdir/libunistring$libdir/$fildir $cbuildflags"
     unistringversion=`$echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
     buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
       
@@ -3533,6 +3540,18 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
   done
 
+  # bigloo.sh adjuments
+  if [ "$ldbuildopts " != " " ]; then
+    cat bigloo.sh | \
+      sed -e "s|@LDBIGLOOOPT@|-ldopt \"$ldbuildopts\"|" \
+	  > bigloo.sh.tmp
+  else
+    cat bigloo.sh | \
+      sed -e "s|@LDBIGLOOOPT@ ||" \
+	  > bigloo.sh.tmp
+  fi
+  mv bigloo.sh.tmp bigloo.sh
+
   # bigloo_h
   cp runtime/Include/`basename $bigloo_h` $bigloo_h
   cp runtime/Include/`basename $bigloo_saw_h` $bigloo_saw_h
@@ -3853,8 +3872,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
   $echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
+  $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
   $echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
   $echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
+  $echo "LDBUILDOPTS=$ldbuildopts" >> $makefile_cfg
   
   # Close and extra libs
   $echo "EXTRALIBS=$extralibs" >> $makefile_cfg
@@ -4681,6 +4702,22 @@ for file in makedeb.sh makedebremote.sh; do
            -e "s|@APIS@|$apis|" \
      >> $deb  
   chmod a+rx $deb
+done  
+
+#*---------------------------------------------------------------------*/
+#*    Homebrew scripting                                               */
+#*---------------------------------------------------------------------*/
+for file in makebrew.sh; do
+  brew=arch/homebrew/$file
+  rm -f $brew 2> /dev/null
+  $echo "#!/bin/sh" > $brew
+  $echo "#* Automatically generated file (don't edit) */" >> $brew
+
+  cat $brew.in \
+     | sed -e "s|#!/bin/sh||" \
+           -e "s|@VERSION@|$release|" \
+     >> $brew  
+  chmod a+rx $brew
 done  
 
 #*---------------------------------------------------------------------*/

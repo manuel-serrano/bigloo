@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Mar 26 18:14:29 2020 (serrano)                */
+#*    Last change :  Fri May  1 09:55:43 2020 (serrano)                */
 #*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -202,13 +202,13 @@ boot-jvm: checkgmake
 	$(MAKE) -C runtime boot-jvm
 
 boot-bde:
-	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)"
+	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) $(SHRD_BDE_OPT)"
 
 boot-api:
-	$(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)"
+	$(MAKE) -C api boot BFLAGS="$(BFLAGS)"
 
 boot-bglpkg:
-	$(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)"
+	$(MAKE) -C bglpkg BFLAGS="$(BFLAGS)"
 
 #*---------------------------------------------------------------------*/
 #*    cross-rts ...                                                    */

@@ -56,17 +56,46 @@ enum {
 /*---------------------------------------------------------------------*/
 /*    Boilerplate                                                      */
 /*---------------------------------------------------------------------*/
-#define _do_init( _ ) \
-  GST_DEBUG_CATEGORY_INIT( bgl_gst_port_sink_debug, \
-			   "bglportsink", \
-			   0, \
-			   "bglportsink element" );
 
-GST_BOILERPLATE_FULL( BglPortSink,
-		      bgl_gst_port_sink,
-		      GstBaseSink,
-		      GST_TYPE_BASE_SINK,
-		      _do_init );
+/* None of the boilerplate macros expand to a call to g_type_register_static,
+ * just g_type_register_static_simple, so we write this by hand.
+ */
+static void bgl_gst_port_sink_base_init( gpointer klass );
+static void bgl_gst_port_sink_class_init( gpointer klass, gpointer class_data );
+static void bgl_gst_port_sink_init( GTypeInstance *instance, gpointer klass );
+
+static gpointer bgl_gst_port_sink_parent_class = NULL;
+
+GType
+bgl_gst_port_sink_get_type( void )
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if ( g_once_init_enter( &g_define_type_id__volatile ) ) {
+      static const GTypeInfo BglPortSinkTypeInfo = {
+	 (guint16)sizeof( BglPortSinkClass ),
+	 bgl_gst_port_sink_base_init,
+	 NULL, /* base_finalize */
+	 bgl_gst_port_sink_class_init,
+	 NULL, /* class_finalize */
+	 NULL, /* class_data */
+	 (guint16)sizeof( BglPortSink ),
+	 0,    /* n_preallocs */
+	 bgl_gst_port_sink_init,
+	 NULL  /* value_table */
+      };
+
+      GType g_define_type_id =
+         g_type_register_static( GST_TYPE_BASE_SINK,
+				 g_intern_static_string( "BglPortSink" ),
+				 &BglPortSinkTypeInfo,
+				 (GTypeFlags) 0 );
+      GST_DEBUG_CATEGORY_INIT( bgl_gst_port_sink_debug, "bglportsink", 0,
+			       "bglportsink element" );
+      g_once_init_leave( &g_define_type_id__volatile, g_define_type_id );
+    }
+  return g_define_type_id__volatile;
+}
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -146,7 +175,8 @@ bgl_gst_port_sink_get_property( GObject *object,
 }
 
 
-static gboolean bgl_gst_port_sink_query (GstPad * pad, GstQuery * query);
+static gboolean bgl_gst_port_sink_query (GstPad * pad, GstObject *parent,
+    GstQuery * query);
 
 static GstFlowReturn bgl_gst_port_sink_render (GstBaseSink * sink,
     GstBuffer * buffer);
@@ -160,19 +190,17 @@ static gboolean bgl_gst_port_sink_stop (GstBaseSink * basesink);
 /*---------------------------------------------------------------------*/
 static void
 bgl_gst_port_sink_base_init( gpointer g_class ) {
-   static GstElementDetails element_details = {
-      "Bigloo output-port sink",
-      "Sink",
-      "Write stream to a bigloo port",
-      "Cyprien Nicolas <Cyprien.Nicolas@sophia.inria.fr>"
-   };
    GstElementClass *element_class = GST_ELEMENT_CLASS( g_class );
 
    gst_element_class_add_pad_template(
       element_class, gst_static_pad_template_get( &sinktemplate ) );
    
-   gst_element_class_set_details(
-      element_class, &element_details );
+   gst_element_class_set_static_metadata(
+      element_class,
+      "Bigloo output-port sink",
+      "Sink",
+      "Write stream to a bigloo port",
+      "Cyprien Nicolas <Cyprien.Nicolas@sophia.inria.fr>" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -180,9 +208,11 @@ bgl_gst_port_sink_base_init( gpointer g_class ) {
 /*    bgl_gst_port_sink_class_init ...                                 */
 /*---------------------------------------------------------------------*/
 static void
-bgl_gst_port_sink_class_init( BglPortSinkClass *klass ) {
+bgl_gst_port_sink_class_init( gpointer klass, gpointer class_data ) {
    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
    GstBaseSinkClass *gstbasesink_class = GST_BASE_SINK_CLASS (klass);
+
+   bgl_gst_port_sink_parent_class = g_type_class_peek_parent (klass);
 
    gobject_class->set_property =
       GST_DEBUG_FUNCPTR( bgl_gst_port_sink_set_property );
@@ -219,11 +249,11 @@ bgl_gst_port_sink_class_init( BglPortSinkClass *klass ) {
 /*    bgl_gst_port_sink_init ...                                       */
 /*---------------------------------------------------------------------*/
 static void
-bgl_gst_port_sink_init( BglPortSink *portsink, BglPortSinkClass *g_class ) {
-   GstPad *pad;
+bgl_gst_port_sink_init( GTypeInstance *instance, gpointer klass ) {
+   BglPortSink *portsink = (BglPortSink *)instance;
+   GstPad *pad = GST_BASE_SINK_PAD( portsink );
 
-   pad = GST_BASE_SINK_PAD( portsink );
-
+   GST_OBJECT_FLAG_SET (pad, GST_PAD_FLAG_NEED_PARENT);
    gst_pad_set_query_function( pad,
 			       GST_DEBUG_FUNCPTR( bgl_gst_port_sink_query ) );
 
@@ -241,11 +271,11 @@ bgl_gst_port_sink_init( BglPortSink *portsink, BglPortSinkClass *g_class ) {
 /*    bgl_gst_port_sink_query ...                                      */
 /*---------------------------------------------------------------------*/
 static gboolean
-bgl_gst_port_sink_query( GstPad * pad, GstQuery * query ) {
+bgl_gst_port_sink_query( GstPad * pad, GstObject *parent, GstQuery * query ) {
    BglPortSink *self;
    GstFormat format;
 
-   self = BGL_GST_PORT_SINK( GST_PAD_PARENT( pad ) );
+   self = BGL_GST_PORT_SINK( parent );
 
    switch( GST_QUERY_TYPE( query ) ) {
       case GST_QUERY_POSITION:
@@ -265,7 +295,7 @@ bgl_gst_port_sink_query( GstPad * pad, GstQuery * query ) {
 	 return TRUE;
 
       default:
-	 return gst_pad_query_default( pad, query );
+	 return gst_pad_query_default( pad, parent, query );
    }
 }
 
@@ -275,17 +305,20 @@ bgl_gst_port_sink_query( GstPad * pad, GstQuery * query ) {
 /*---------------------------------------------------------------------*/
 static GstFlowReturn
 bgl_gst_port_sink_render( GstBaseSink *sink, GstBuffer *buffer ) {
+   GstMapInfo info;
    BglPortSink *portsink;
-   guint size;
+   gsize size;
    guint8 *data;
    gint written;
   
    portsink = BGL_GST_PORT_SINK( sink );
 
-   size = GST_BUFFER_SIZE( buffer );
-   data = GST_BUFFER_DATA( buffer );
+   if ( !gst_buffer_map( buffer, &info, GST_MAP_WRITE ) )
+      return GST_FLOW_ERROR;
+   size = info.size;
+   data = info.data;
 
-   GST_DEBUG_OBJECT( portsink, "writing %u bytes", size );
+   GST_DEBUG_OBJECT( portsink, "writing %lu bytes", info.size );
 
 redo:
    if (size > 0 && data != NULL) {
@@ -296,6 +329,7 @@ redo:
 			    ("Error while writing to port <%p>.", portsink->port),
 			    ("%s", g_strerror( errno )) );
     
+	 gst_buffer_unmap( buffer, &info );
 	 return GST_FLOW_ERROR;
       }
     
@@ -303,15 +337,17 @@ redo:
       data += written;
       portsink->bytes_written += written;
 
-      GST_DEBUG_OBJECT( portsink, "wrote %d bytes, %d left", written, size );
+      GST_DEBUG_OBJECT( portsink, "wrote %d bytes, %ld left", written, size );
 
       if (size > 0)
 	 goto redo;
 
+      gst_buffer_unmap( buffer, &info );
       return GST_FLOW_OK;
    }
   
-   return GST_FLOW_UNEXPECTED;
+   gst_buffer_unmap( buffer, &info );
+   return GST_FLOW_EOS;
 }
 
 /*---------------------------------------------------------------------*/
