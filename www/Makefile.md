@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Mon May 11 13:39:04 2020 (serrano)                */
+#*    Last change :  Thu May 14 09:31:30 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
@@ -13,16 +13,16 @@ do: build
 #*---------------------------------------------------------------------*/
 #*    Configuration                                                    */
 #*---------------------------------------------------------------------*/
-HOP=hop
-HOPFLAGS=-q --no-autoload --no-zeroconf --no-server --so-policy none
+HOP = hop
+HOPFLAGS = -q --no-autoload --no-zeroconf --no-server --so-policy none
 
 #*---------------------------------------------------------------------*/
 #*    Destination                                                      */
 #*---------------------------------------------------------------------*/
-INDESHTTP	= www-sop.inria.fr/indes/fp
-HOSTHTTP	= $(INDESHTTP)
-HOSTHTTPDIR	= /users/serrano/public_html/bigloo
-HOSTURL		= http://$(HOSTHTTP)/Bigloo
+INDESHTTP = www-sop.inria.fr/indes/fp
+HOSTHTTP = $(INDESHTTP)
+HOSTHTTPDIR = /users/serrano/public_html/bigloo
+HOSTURL = http://$(HOSTHTTP)/Bigloo
 
 #*---------------------------------------------------------------------*/
 #*    Population                                                       */
