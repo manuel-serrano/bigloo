@@ -764,13 +764,14 @@ body.bib pre {
 }
 
 .idx-letter th {
+    margin-top: 0.5ex;
   text-align: left;
   color: #777;
   font-size: 220%;
 }
 
 .idx-letter > * {
-  border-bottom: 1px solid #ccc;
+    border-top: 1px solid #999;
 }
 
 ul.nav-index {

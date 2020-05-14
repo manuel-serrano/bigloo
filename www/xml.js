@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:22:56 2015                          */
-/*    Last change :  Fri May  8 15:12:44 2020 (serrano)                */
+/*    Last change :  Thu May 14 11:36:36 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hop.js XML extensions                                            */
@@ -257,7 +257,7 @@ function minIndexOf( string, ...seps ) {
 /*---------------------------------------------------------------------*/
 function idxEntry( e, idx = undefined, arr = undefined ) {
    if( typeof( e ) === "string" ) {
-      return <tr class="idx-letter" id=${"index-" + e }><td/><th>${e}</th></tr>;
+      return <tr class="idx-letter" id=${"index-" + e }><th colspan=3>${e}</th></tr>;
    } else {
       const title = e.proto + "..." + e.chapter;
       let lbl = e.proto;

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Mon May 11 13:42:57 2020 (serrano)                */
+/*    Last change :  Thu May 14 12:35:12 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -173,11 +173,11 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(wwwument.clientTop||0);
+	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
-		 wwwument.body.setAttribute( "scrolled", "yes" );
+		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 wwwument.body.setAttribute( "scrolled", "no" );
+		 document.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
@@ -235,7 +235,7 @@ function compileNode( node, title, clazz, target, tocfile = undefined ) {
    var footer = path.join( PWD, "footer.md" );
    var affix = "normal";
    
-   var wwwument = <html>
+   var document = <html>
      <head css=${css}
 	   title=${www.title + "/" + title}
            jscript=${jscript}
@@ -244,11 +244,11 @@ function compileNode( node, title, clazz, target, tocfile = undefined ) {
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
-	      var top = (window.pageYOffset || wwwument.scrollTop)-(wwwument.clientTop||0);
+	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
-		 wwwument.body.setAttribute( "scrolled", "yes" );
+		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 wwwument.body.setAttribute( "scrolled", "no" );
+		 document.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
@@ -273,7 +273,7 @@ function compileNode( node, title, clazz, target, tocfile = undefined ) {
      </body>
    </html>;
 
-   fs.writeFileSync( target, hop.compileXML( wwwument ) );
+   fs.writeFileSync( target, hop.compileXML( document ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -293,7 +293,7 @@ function compileSection( page ) {
       key = title;
    }
    
-   var wwwument = <html>
+   var document = <html>
      <head css=${css}
 	   title=${www.title + "/" + title}
            jscript=${jscript}
@@ -302,11 +302,11 @@ function compileSection( page ) {
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section`}
            onscroll=~{
-	      var top = (window.pageYOffset || wwwument.scrollTop)-(wwwument.clientTop||0);
+	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
-		 wwwument.body.setAttribute( "scrolled", "yes" );
+		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 wwwument.body.setAttribute( "scrolled", "no" );
+		 document.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
@@ -360,7 +360,7 @@ function compileSection( page ) {
      </body>
    </html>;
 
-   fs.writeSync( process.stdout.fd, hop.compileXML( wwwument ) );
+   fs.writeSync( process.stdout.fd, hop.compileXML( document ) );
    fs.writeSync( process.stdout.fd, "\n" );
 }
 
@@ -372,7 +372,7 @@ function compileChapter( json ) {
    var chapter = require( path.join( PWD, json ) );
    var toc = chapterEntries( chapter ).filter( x => x );
 
-   var wwwument = <html>
+   var document = <html>
      <head css=${css}
 	   title=${www.title + "/" + chapter.title}
            jscript=${jscript}
@@ -417,7 +417,7 @@ function compileChapter( json ) {
      </body>
    </html>;
 
-   console.log( hop.compileXML( wwwument ) );
+   console.log( hop.compileXML( document ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -425,7 +425,7 @@ function compileChapter( json ) {
 /*---------------------------------------------------------------------*/
 function compileMain( content ) {
 
-   var wwwument = <html>
+   var document = <html>
      <head css=${css}
 	   title=${www.title}
            jscript=${jscript}
@@ -434,11 +434,11 @@ function compileMain( content ) {
 
      <body class="bigloo home" data-spy="scroll" data-target="#navbar"
            onscroll=~{
-	      var top = (window.pageYOffset || wwwument.scrollTop)-(wwwument.clientTop||0);
+	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
-		 wwwument.body.setAttribute( "scrolled", "yes" );
+		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
-		 wwwument.body.setAttribute( "scrolled", "no" );
+		 document.body.setAttribute( "scrolled", "no" );
 	      }
 	   } >
        ~{ $('body').scrollspy( { target: '#navbar' }) }
@@ -459,7 +459,7 @@ function compileMain( content ) {
      </body>
    </html>;
 
-   console.log( hop.compileXML( wwwument ) );
+   console.log( hop.compileXML( document ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -468,7 +468,7 @@ function compileMain( content ) {
 function compileLibrary( content ) {
    var footer = path.join( PWD, "footer.md" );
    
-   var wwwument = <html>
+   var document = <html>
      <head css=${css}
 	   title=${www.title}
            jscript=${jscript}
@@ -495,7 +495,7 @@ function compileLibrary( content ) {
      </body>
    </html>;
 
-   console.log( hop.compileXML( wwwument ) );
+   console.log( hop.compileXML( document ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -508,7 +508,7 @@ function compileIdx( json ) {
    var chapter = { title: "Index", key: "manual" };
    var footer = path.join( PWD, "footer.md" );
 
-   var wwwument = <html>
+   var document = <html>
      <head css=${css}
 	   title=${www.title + "/" + chapter.title}
            jscript=${jscript}
@@ -538,7 +538,7 @@ function compileIdx( json ) {
      </body>
    </html>;
 
-   console.log( hop.compileXML( wwwument ) );
+   console.log( hop.compileXML( document ) );
 }
 
 /*---------------------------------------------------------------------*/
