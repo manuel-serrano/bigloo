@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bde/bmem/Makefile                    */
+#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Mon Oct 23 19:43:06 2017 (serrano)                */
-#*    Copyright   :  2003-19 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:51:57 2020 (serrano)                */
+#*    Copyright   :  2003-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -138,35 +138,35 @@ install:
 	  cp $(BOOTBINDIR)/$(BMEMRUN_EXE) $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE) || exit 1; \
           chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE); \
         fi
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  if [ ! -d $(LIBDIR)/$(FILDIR)/bmem ]; then \
-            mkdir -p $(LIBDIR)/$(FILDIR)/bmem && \
-              chmod $(MODDIR) $(LIBDIR)/$(FILDIR)/bmem; \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  if [ ! -d $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem ]; then \
+            mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem && \
+              chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem; \
           fi && \
 	  cp $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
-             $(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX); \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX); \
 	  cp $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
-             $(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX); \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX); \
 	  cp $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
-             $(LIBDIR)/$(FILDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX); \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX); \
 	  cp $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) \
-             $(LIBDIR)/$(FILDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX); \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX); \
         fi
-	cp etc/bmem.css $(LIBDIR)/$(FILDIR)/bmem/bmem.css
-	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/bmem.css
-	cp lib/bmem.h $(LIBDIR)/$(FILDIR)/bmem/bmem.h
-	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/bmem.h
-	cp lib/esymbol.h $(LIBDIR)/$(FILDIR)/bmem/esymbol.h
-	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/esymbol.h
+	cp etc/bmem.css $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.css
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.css
+	cp lib/bmem.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.h
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.h
+	cp lib/esymbol.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/esymbol.h
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/esymbol.h
 
 uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMEM_EXE)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE)
-	- $(RM) -rf $(LIBDIR)/$(FILDIR)/bmem
+	- $(RM) -rf $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */

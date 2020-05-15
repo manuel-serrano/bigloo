@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/mkruntest                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/mkruntest            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep  4 13:50:03 2009                          */
-#*    Last change :  Thu Sep 23 11:43:00 2010 (serrano)                */
-#*    Copyright   :  2009-10 Manuel Serrano                            */
+#*    Last change :  Fri Nov 29 14:50:16 2019 (serrano)                */
+#*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generate the runtest file                                        */
 #*=====================================================================*/
@@ -26,6 +26,8 @@ user=bigloo
 
 cc=gcc
 cflags=
+
+echo=echo
 
 #*---------------------------------------------------------------------*/
 #*    command line parsing                                             */
@@ -71,6 +73,9 @@ while : ; do
     --cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
+    --echo=*)
+      echo="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
     *)
       echo "*** ERROR: Illegal option \"$1\"";
       exit 1;;
@@ -92,6 +97,7 @@ cat $dest.in \
          -e "s|@TMP@|$tmp|" \
          -e "s|@CC@|$cc|" \
          -e "s|@CFLAGS@|$cflags|" \
+         -e "s|@ECHO@|$echo|" \
    > $dest
 
 chmod a+rx $dest

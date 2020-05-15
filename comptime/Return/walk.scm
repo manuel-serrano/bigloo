@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Return/walk.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Return/walk.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Dec 16 19:25:38 2016 (serrano)                */
-;*    Copyright   :  2010-16 Manuel Serrano                            */
+;*    Last change :  Mon Mar  9 07:46:48 2020 (serrano)                */
+;*    Copyright   :  2010-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
 ;*    is only executed when generating plain C code.                   */
@@ -113,7 +113,9 @@
 ;*    	          (let ((res1015 EXITNODE))           ;; step5         */
 ;*    	             (begin                           ;; step6         */
 ;*                      (pop-exit!)                   ;; step7         */
-;*                      (f res1015)))))))             ;; step8         */
+;*                      (f res1015)))))))             ;; step8 (*)     */
+;*                                                                     */
+;*    (*) the expression might also be (f (cast res1015 ...))          */
 ;*                                                                     */
 ;*    It returns <EXITVAR x EXITNODE> or #f                            */
 ;*---------------------------------------------------------------------*/
@@ -128,6 +130,10 @@
 	 ((isa? node app)
 	  (with-access::app node (args)
 	     (when (any (lambda (n) (step8 n res)) args)
+		node)))
+	 ((isa? node cast)
+	  (with-access::cast node (arg)
+	     (when (step8 arg res)
 		node)))
 	 (else
 	  #f)))

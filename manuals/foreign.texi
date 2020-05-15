@@ -823,7 +823,7 @@ not support it.
 
 @deffn {bigloo syntax} pragma::@var{ident} string [args]
 @deffnx {bigloo syntax} free-pragma::@var{ident} string [args]
-@deffnx {bigloo syntax} pragma::@var{ident} "" @var{ident}
+@deffnx {bigloo syntax} pragma::@var{ident} @var{ident}
 This force Bigloo to include @var{string} in the produced C code as a
 regular C fragment of code. This form must not be used without an in depth
 understanding of Bigloo C code production; with unskilled use, the
@@ -858,12 +858,12 @@ and that it writes into its parameters. This assumption no long holds
 with @code{free-pragma}. This is the only difference between the two
 forms.
 
-The last form @code{pragma "" @var{ident}} enables ``injecting'' a Scheme
+The last form @code{pragma @var{ident}} enables ``injecting'' a Scheme
 mangled identifier into the generated C code. Example:
 
 @smalllisp
 (let ((x/y 3))
-  (pragma "$1 = BINT( 24 )" (pragma "" x/y))
+  (pragma "$1 = BINT( 24 )" (pragma x/y))
   (print x/y))
 @end smalllisp
 

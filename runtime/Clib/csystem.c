@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/csystem.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csystem.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Thu Apr 20 11:15:05 2017 (serrano)                */
-/*    Copyright   :  2002-17 Manuel Serrano                            */
+/*    Last change :  Wed Sep 25 13:47:21 2019 (serrano)                */
+/*    Copyright   :  2002-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -48,6 +48,20 @@
 #   include <sys/ioctl.h>
 #endif
 
+#if BGL_HAVE_GETRLIMIT
+#include <sys/resource.h>
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    stack overflow constants                                         */
+/*---------------------------------------------------------------------*/
+#define BGL_STACKOVERFLOW_SIZE_THRESHOLD 4096
+
+/*---------------------------------------------------------------------*/
+/*    imports                                                          */
+/*---------------------------------------------------------------------*/
+extern obj_t bgl_stack_overflow_error();
+
 /*---------------------------------------------------------------------*/
 /*    Signal mutex                                                     */
 /*---------------------------------------------------------------------*/
@@ -85,7 +99,7 @@ signal_handler( int num ) {
 
    /* Re-install the signal handler because some OS (such as Solaris) */
    /* de-install it when the signal is raised.                        */
-#if !HAVE_SIGACTION
+#if !BGL_HAVE_SIGACTION
    signal( num, (void (*)(int))(signal_handler) );
 #endif
 
@@ -95,7 +109,78 @@ signal_handler( int num ) {
       return BUNSPEC;
    }
 }
-    
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    stackov_heuristic_getrlimitp ...                                 */
+/*    -------------------------------------------------------------    */
+/*    getrlimit heuristic for stack overflow detection.                */
+/*---------------------------------------------------------------------*/
+#if BGL_HAVE_GETRLIMIT
+static int
+stackov_heuristic_getrlimitp( siginfo_t *siginfo ) {
+   struct rlimit rlimit;
+   const obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+#if( defined( STACK_GROWS_DOWN ) )
+   long stksz = BGL_ENV_STACK_BOTTOM( env ) - (char *)siginfo->si_addr;
+#else
+   long stksz = (char *)siginfo->si_addr - BGL_ENV_STACK_BOTTOM( env );
+#endif   
+   long delta;
+
+   getrlimit( RLIMIT_STACK, &rlimit );
+
+   delta = rlimit.rlim_cur - stksz;
+   
+   return delta < BGL_STACKOVERFLOW_SIZE_THRESHOLD;
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    stackov_heuristic_sbrk ...                                       */
+/*---------------------------------------------------------------------*/
+static int
+stackov_heuristic_sbrk() {
+#if !defined( _BGL_WIN32_VER )
+   return ( (long)sbrk( 8192 ) == -1 );
+#else
+   return 0;
+#endif   
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    stackov_handler ...                                              */
+/*---------------------------------------------------------------------*/
+#if BGL_HAVE_SIGINFO
+static void
+stackov_handler( int sig, siginfo_t *siginfo, void *ucontext ) {
+#if BGL_HAVE_GETRLIMIT
+   if( stackov_heuristic_getrlimitp( siginfo ) ) {
+      bgl_stack_overflow_error();
+   } else
+#endif      
+   if( stackov_heuristic_sbrk() ) {
+      bgl_stack_overflow_error();
+   } else {
+      /* re-execute the instruction that caused the trap */
+      /* to raise the sigsegv normal error handling      */
+      signal( SIGSEGV , SIG_DFL) ;
+   }
+}
+#else
+stackov_handler( int sig ) {
+   if( stackov_heuristic_sbrk() ) {
+      bgl_stack_overflow_error();
+   } else {
+      /* re-execute the instruction that caused the trap */
+      /* to raise the sigsegv normal error handling      */
+      signal( SIGSEGV , SIG_DFL) ;
+   }
+}
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    bgl_signal ...                                                   */
 /*---------------------------------------------------------------------*/
@@ -104,23 +189,17 @@ bgl_signal( int sig, obj_t obj ) {
    BGL_MUTEX_LOCK( signal_mutex );
 
    /* store the obj in the signal table */
-   BGL_SIG_HANDLERS()[ sig ] = obj;
+   if( obj != BUNSPEC ) {
+      BGL_SIG_HANDLERS()[ sig ] = obj;
+   }
    
-   if( PROCEDUREP( obj ) ) {
-#if HAVE_SIGACTION
+   if( PROCEDUREP( obj ) || obj == BUNSPEC ) {
+#if BGL_HAVE_SIGACTION
       {
 	 struct sigaction sigact;
 	 sigemptyset( &(sigact.sa_mask) );
 	 sigact.sa_handler = (void (*)( int ))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
-	 
-/* #if HAVE_SIGPROCMASK                                                */
-/* 	 sigset_t mask;                                                */
-/*                                                                     */
-/* 	 sigemptyset( &mask );                                         */
-/* 	 sigaddset( &mask, sig );                                      */
-/* 	 bgl_sigprocmask( SIG_UNBLOCK, &mask, 0 );                     */
-/* #endif                                                              */
 	 
 	 if( sig == SIGSEGV ) {
 	    /* create an alternate stack for SEGV */
@@ -131,13 +210,26 @@ bgl_signal( int sig, obj_t obj ) {
 	    ss.ss_sp = malloc( SIGSTKSZ );
 	    ss.ss_size = SIGSTKSZ;
 
+	    if( obj == BUNSPEC ) {
+	       /* this is a fake stack overflow detection (see cmain.c) */
+#if BGL_HAVE_SIGINFO
+	       sigact.sa_flags |= SA_SIGINFO;
+	       sigact.sa_handler = NULL;
+	       sigact.sa_sigaction = stackov_handler;
+#else
+	       sigact.sa_handler = stackov_handler;
+#endif	    	    
+	    }
+	    
 	    sigaltstack( &ss, 0L );
 	 }
-	 
+
 	 sigaction( sig, &sigact, NULL );
       }
-#else      
-      signal( (int)sig, (void (*)( int ))signal_handler );
+#else
+      if( obj != BUNSPEC ) {
+	 signal( (int)sig, (void (*)( int ))signal_handler );
+      }
 #endif      
       
    } else {

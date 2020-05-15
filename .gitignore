@@ -30,6 +30,8 @@
 .hgtags
 ChangeLog
 arch/maemo
+arch/debian/makedeb.sh
+arch/debian/makedebremote.sh
 arch/vm
 bmacs/bmacs-config.el
 bmacs/bee/bee-jinsight.el

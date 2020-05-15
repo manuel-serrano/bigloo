@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Jul  8 11:36:35 2019 (serrano)                */
-/*    Copyright   :  2003-19 Manuel Serrano                            */
+/*    Last change :  Fri Jan 10 13:54:19 2020 (serrano)                */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -16,6 +16,7 @@
 #include <string.h>
 
 extern void gc_alloc_size_add( int size );
+extern int bmem_verbose;
 
 /*---------------------------------------------------------------------*/
 /*    static pa_pair_t *                                               */
@@ -33,11 +34,14 @@ unsigned long ante_bgl_init_dsz = 0;
    { long __idx = bmem_thread ?			 \
       (long)____pthread_getspecific( bmem_key3 ) \
       : alloc_index; \
-      ((__idx < 0 || __idx >= 5) ? (fprintf( stderr, "*** bmem: stack overflow/underflow \"%s\" [%d]\n", name, __idx ), exit( -2 )) : 0)
+      ((__idx < 0 || __idx >= 5) ? (fprintf( stderr, "*** bmem: stack overflow/underflow \"%s\" [%ld]\n", name, __idx ), exit( -2 )) : 0)
 
 #define DBG_INDEX_STOP( name ) \
    (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index) != (__idx -1) \
-      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%d/%d]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
+      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%ld/%ld]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
+
+#define DBG_INDEX_RESET() \
+   (alloc_index = __idx)
 
 /*---------------------------------------------------------------------*/
 /*    char *                                                           */
@@ -211,6 +215,19 @@ alloc_dump_type( pa_pair_t *i, FILE *f ) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
+/*    alloc_dump_type_json ...                                         */
+/*---------------------------------------------------------------------*/
+void
+alloc_dump_type_json( pa_pair_t *i, FILE *f ) {
+   type_alloc_info_t *tai = (type_alloc_info_t *)PA_CDR( i );
+   
+   fprintf( f, "            { \"type\": %ld, \"cnt\": %ld, \"size\": %ld }",
+	    (long)PA_CAR( i ),
+	    tai->num, BMEMSIZE( tai->size ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    alloc_dump ...                                                   */
 /*---------------------------------------------------------------------*/
 void
@@ -223,6 +240,23 @@ alloc_dump( fun_alloc_info_t *i, FILE *f ) {
    fprintf( f, "        (itype" );
    for_each( (void (*)(void *, void *))alloc_dump_type, i->itypes, f );
    fprintf( f, "))\n" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    alloc_dump_json ...                                              */
+/*---------------------------------------------------------------------*/
+void
+alloc_dump_json( fun_alloc_info_t *i, FILE *f ) {
+   fprintf( f, "      { \"gc\": %lu, \"dsize\": %lu, \"isize\": %lu,\n",
+	    i->gc_num,
+	    BMEMSIZE( i->dsize ), BMEMSIZE( i->isize ) );
+   fprintf( f, "        \"dtype\": " );
+   for_each_json( (void (*)(void *, void *))alloc_dump_type_json, i->dtypes, f );
+   fprintf( f, " ,\n" );
+   fprintf( f, "        \"itype\": " );
+   for_each_json( (void (*)(void *, void *))alloc_dump_type_json, i->itypes, f );
+   fprintf( f, " }" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -240,6 +274,19 @@ fun_dump( void *ident, FILE *f ) {
    
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
+/*    fun_dump ...                                                     */
+/*---------------------------------------------------------------------*/
+void
+fun_dump_json( void *ident, FILE *f ) {
+   esymbol_t *fun = (esymbol_t *)ident;
+
+   fprintf( f, "   { \"function\": %s, \"allocs\": ", bgl_debug_trace_symbol_name_json( (obj_t)fun ) );
+   for_each_json( (void (*)(void *, void *))alloc_dump_json, CESYMBOL( fun )->alloc_info, f );
+   fprintf( f, " }" );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    alloc_dump_statistics ...                                        */
 /*---------------------------------------------------------------------*/
 void
@@ -247,6 +294,17 @@ alloc_dump_statistics( FILE *f ) {
    fprintf( f, "  (function" );
    for_each( (void (*)(void *, void *))fun_dump, all_functions, (void *)f );
    fprintf( f, ")\n" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    alloc_dump_statistics_json ...                                   */
+/*---------------------------------------------------------------------*/
+void
+alloc_dump_statistics_json( FILE *f ) {
+   fprintf( f, "  \"function\": " );
+   for_each_json( (void (*)(void *, void *))fun_dump_json, all_functions, (void *)f );
+   fprintf( f, "\n" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -433,8 +491,13 @@ make_pair( obj_t car, obj_t cdr ) {
 
    pair = ____make_pair( car, cdr );
 
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      bmem_pop_type();
+      //bmem_set_alloc_type( -1, 0 );
+   }
    DBG_INDEX_STOP( "make_pair" );
-   // bmem_set_alloc_type( -1, 0 );
+   
    return pair;
 }
 
@@ -461,8 +524,13 @@ make_cell( obj_t val ) {
    cell = ____make_cell( val );
 
    // bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      bmem_pop_type();
+      // bmem_set_alloc_type( -1, 0 );
+   }
    DBG_INDEX_STOP( "make_cell" );
+   
    return cell;
 }
 
@@ -490,9 +558,13 @@ make_real( double d ) {
 
    a_real = ____make_real( d );
 
-   // bmem_pop_type();
-   // bmem_set_alloc_type( -1,0  );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      bmem_pop_type();
+      //bmem_set_alloc_type( -1,0  );
+   }
    DBG_INDEX_STOP( "make_real" );
+      
    return a_real;
 }
 #endif
@@ -523,8 +595,8 @@ make_belong( long l ) {
    a_elong->elong.val = l;
 
    bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
    DBG_INDEX_STOP( "make_belong" );
+   
    return BREF( a_elong );
 }
 
@@ -553,8 +625,8 @@ make_bllong( BGL_LONGLONG_T l ) {
    a_llong->llong.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
    a_llong->llong.val = l;
 
+
    bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
    DBG_INDEX_STOP( "make_bllong" );
    return BREF( a_llong );
 }
@@ -586,7 +658,6 @@ bgl_make_bint32( int32_t l ) {
    a_int32->sint32.val = l;
 
    bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
    DBG_INDEX_STOP( "bgl_make_bint32" );
    return BREF( a_int32 );
 }
@@ -619,7 +690,6 @@ bgl_make_buint32( uint32_t l ) {
    a_uint32->uint32.val = l;
 
    bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
    DBG_INDEX_STOP( "bgl_make_buint32" );
    return BREF( a_uint32 );
 }
@@ -651,7 +721,6 @@ bgl_make_bint64( int64_t l ) {
    a_int64->sint64.val = l;
 
    bmem_pop_type();
-   //bmem_set_alloc_type( -1, 0 );
    DBG_INDEX_STOP( "bgl_make_bint64" );
    return BREF( a_int64 );
 }
@@ -682,7 +751,11 @@ bgl_make_buint64( uint64_t l ) {
    a_uint64->uint64.val = l;
 
    bmem_pop_type();
-   //bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      //bmem_set_alloc_type( -1, 0 );
+   }
+   
    DBG_INDEX_STOP( "bgl_make_buint64" );
    return BREF( a_uint64 );
 }
@@ -899,14 +972,18 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t module, obj_t super,
    obj_t class;
 
    if( !init ) {
-      fprintf( stderr, "Defining classes...\n" );
+      if( bmem_verbose >= 1 ) {
+	 fprintf( stderr, "Defining classes...\n" );
+      }
       init = 1;
    }
 
-   fprintf( stderr, "  %s@%s (%d)...",
-	    cname,
-	    BSTRING_TO_STRING( SYMBOL_TO_STRING( module ) ),
-	    tnum );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "  %s@%s (%d)...",
+	       cname,
+	       BSTRING_TO_STRING( SYMBOL_TO_STRING( module ) ),
+	       tnum );
+   }
 	       
    fflush( stderr );
    declare_type( tnum, cname );
@@ -927,7 +1004,9 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t module, obj_t super,
 			       nil, shrink,
 			       plain, virtual );
 
-   fprintf( stderr, "ok\n" );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "ok\n" );
+   }
 
    return class;
 }

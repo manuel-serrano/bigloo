@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Aug  8 13:59:54 2019 (serrano)                */
+/*    Last change :  Thu Mar 19 07:43:17 2020 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -87,7 +87,7 @@ extern "C" {
 /*    This number is used to ensure the compatibility between the      */
 /*    compiler and the blib library.                                   */
 /*---------------------------------------------------------------------*/
-#define BDB_LIBRARY_MAGIC_NUMBER ((char *)0x1024)
+#define BDB_LIBRARY_MAGIC_NUMBER (0x1024)
        
 /*---------------------------------------------------------------------*/
 /*    BIGLOO_EXIT                                                      */
@@ -118,27 +118,27 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    32 bit tagging:                                                  */
 /*    -------------------------------------------------------------    */
-/*    allocated values:                                                */
+/*    - allocated values:                                              */
 /*    +--------+--------+--------+--------+                            */
 /*    |....signed fixed point value.....??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    30 bits immediate values (integers):                             */
+/*    - 30 bits immediate values (integers):                           */
 /*    +--------+--------+--------+--------+                            */
 /*    |....signed fixed point value.....??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    6 bits constants (booleans, nil, unspecified, ...):              */
+/*    - 6 bits constants (booleans, nil, unspecified, ...):            */
 /*    +--------+--------+--------+--------+                            */
 /*    |.................|..xxxxxx|mmmmmm??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    8 bits immediate values (chars, int8):                           */
+/*    - 8 bits immediate values (chars, int8):                         */
 /*    +--------+--------+--------+--------+                            */
 /*    |.................|xxxxxxxx|mmmmmm??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    16 bits immediate values (ucs2, int16):                          */
+/*    - 16 bits immediate values (ucs2, int16):                        */
 /*    +--------+--------+--------+--------+                            */
 /*    |xxxxxxxx|xxxxxxxx|........|mmmmmm??|                            */
 /*    +--------+--------+--------+--------+                            */
@@ -146,12 +146,12 @@ extern "C" {
 /*    -------------------------------------------------------------    */
 /*    64 bit tagging:                                                  */
 /*    -------------------------------------------------------------    */
-/*    pointers (vector, cell, real):                                   */
+/*    - pointers (vector, cell, real):                                 */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*    |...........................pointer....................... ???|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*                                                                     */
-/*    int32:                                                           */
+/*    - int61:                                                         */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|.......|...................... ???|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
@@ -159,10 +159,29 @@ extern "C" {
 /*    -------------------------------------------------------------    */
 /*    64 nan tagging:                                                  */
 /*    -------------------------------------------------------------    */
-/*    pointers (vector, cell, real):                                   */
+/*    - pointers (vector, cell, real):                                 */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*    |x1111111|1111????|.........pointer...........................|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*                                                                     */
+/*    - int32:                                                         */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*    |x1111111|1111????|.......|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*                                                                     */
+/*    -------------------------------------------------------------    */
+/*    64 smi tagging:                                                  */
+/*    -------------------------------------------------------------    */
+/*    - pointers (vector, cell, real):                                 */
+/*                                                                     */
+/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*    |...........................pointer....................... ???|  */
+/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*                                                                     */
+/*    - int32:                                                         */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|_ ... ________________???|  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
 /*                                                                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING ) /* BGL_NAN_TAGGING */
@@ -1071,8 +1090,13 @@ typedef obj_t (*function_t)();
 #define BREST BCNST( 28L )
 #define BKEY BCNST( 30L )
 
-#define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
-   (((long)(obj) & (long)BNIL) == (long)BNIL)
+#if( !BGL_NAN_TAGGING )
+#  define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
+   ((((long)(obj)) & ((TAG_MASK << 1) + 1)) == (long)BNIL)
+#else
+#  define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
+   ((obj) == BNIL || ((obj) == BUNSPEC))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */
@@ -2289,6 +2313,7 @@ BGL_RUNTIME_DECL obj_t opt_generic_entry( obj_t, ... );
 BGL_RUNTIME_DECL obj_t apply( obj_t, obj_t );
 
 BGL_RUNTIME_DECL void bgl_init_module_debug_start( char * );
+BGL_RUNTIME_DECL void bgl_init_module_debug_string( char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_library( char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_import( char *, char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_object( char * );

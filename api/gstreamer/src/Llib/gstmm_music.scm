@@ -19,10 +19,9 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gstreamer
+   (use	    __gstreamer_gstreamer
 	    __gstreamer_gstobject
 	    __gstreamer_gstelement
-	    __gstreamer_gstregistry
 	    __gstreamer_gstelementfactory
 	    __gstreamer_gstpluginfeature
 	    __gstreamer_gstpad
@@ -30,9 +29,10 @@
 	    __gstreamer_gstbin
 	    __gstreamer_gstcaps
 	    __gstreamer_gststructure
-	    __gstreamer_gstpipeline
-	    __gstreamer_gstelement
 	    __gstreamer_gstmessage)
+
+   (import  __gstreamer_gstregistry
+	    __gstreamer_gstpipeline)
    
    (export  (class gstmusic::music
 	       

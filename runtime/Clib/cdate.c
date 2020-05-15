@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Tue Apr 17 08:00:58 2018 (serrano)                */
-/*    Copyright   :  2003-18 Manuel Serrano                            */
+/*    Last change :  Thu Mar 26 14:26:00 2020 (serrano)                */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*=====================================================================*/
@@ -124,6 +124,22 @@ bgl_seconds_to_date( long s ) {
 
    BGL_MUTEX_LOCK( date_mutex );
    res = tm_to_date( localtime( &sec ) );
+   BGL_MUTEX_UNLOCK( date_mutex );
+   
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_seconds_to_gmtdate ...                                       */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_seconds_to_gmtdate( long s ) {
+   obj_t res;
+   time_t sec = (time_t)s;
+
+   BGL_MUTEX_LOCK( date_mutex );
+   res = tm_to_date( gmtime( &sec ) );
    BGL_MUTEX_UNLOCK( date_mutex );
    
    return res;

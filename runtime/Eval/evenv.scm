@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Sun Aug 25 09:14:52 2019 (serrano)                */
+;*    Last change :  Fri Mar 20 07:52:33 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -72,7 +72,8 @@
 	    (eval-lookup ::symbol)
 	    (unbind-primop! ::symbol)
 	    (define-primop! ::symbol ::obj)
-	    (define-primop-ref! ::symbol addr))
+	    (define-primop-ref! ::symbol addr)
+	    (define-primop-ref/loc! ::symbol addr fname location))
 
    (pragma  (__evmeaning_address args-safe)))
 
@@ -162,7 +163,24 @@
 		   (fname #f)
 		   (location #f)
 		   (stack #f)
-		   (args (list "Overriding compiled constant" var))))))))
+		   (args (list "overriding compiled constant" var))))))))
+
+;*---------------------------------------------------------------------*/
+;*    define-primop-ref/loc! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (define-primop-ref/loc! var addr fname location)
+   (let ((cell (eval-lookup var)))
+      (if (not (eval-global? cell))
+	  (bind-eval-global! var (vector 1 var addr #f #f))
+	  ;; MS 14 dec 2005
+	  (begin
+	     (set-eval-global-value! cell addr)
+	     (warning-notify
+		(instantiate::&eval-warning
+		   (fname fname)
+		   (location location)
+		   (stack #f)
+		   (args (list "overriding compiled constant" var))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-assert-primop-ref! ...                                    */

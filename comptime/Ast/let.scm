@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Jun 20 13:48:49 2018 (serrano)                */
+;*    Last change :  Sat Jan 11 10:10:36 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -536,13 +536,11 @@
 ;*    	          (v3 i3)                                              */
 ;*    	          ...)                                                 */
 ;*         body)                                                       */
-;*                                                                     */
-;*      ==>                                                            */
-;*                                                                     */
-;*      (let* ((v1 i1)                                                 */
+;*    ==>                                                              */
+;*      (LET* ((v1 i1)                                                 */
 ;*    	       (v2 i2)                                                 */
 ;*    	       (v3 i1))                                                */
-;*         (letrec ((f1 (lambda (x) ...))                              */
+;*         (LETREC ((f1 (lambda (x) ...))                              */
 ;*    	            (f2 (lambda (x) ...))                              */
 ;*    	            (f3 (lambda (x) ...)))                             */
 ;*    	body))                                                         */
@@ -550,18 +548,13 @@
 (define (letrec*->node sexp stack loc site)
 
    (define (binding->ebinding b v vars)
-      (let ((c (assq b *ebindings*)))
-	 (if (pair? c)
-	     (cdr c)
-	     (let ((eb (make-ebinding b v vars)))
-		(set! *ebindings* (cons (cons b eb) *ebindings*))
-		eb))))
+      (make-ebinding b v vars))
 
    (define (make-ebinding b v vars)
       ;; ebinding: < binding, variable, free vars, set vars >
       (list b v
-	 (free-vars (cadr b) v vars)
-	 (set-vars (cadr b) v vars)))
+	 (free-vars (cadr b) v vars '())
+	 (set-vars (cadr b) v vars '())))
 
    (define (ebinding-binding b) (car b))
    (define (ebinding-value b) (cadr (ebinding-binding b)))
@@ -596,6 +589,53 @@
 	  `(let (,(ebinding-binding (car ebindings)))
 	      ,(letstar (cdr ebindings) body)))))
 
+   (define (letstarcollapse expr)
+      (let loop ((expr expr)
+		 (bindings '()))
+	 (match-case expr
+	    ((let ((and ?binding (?- ?val))) ?subexpr)
+	     (cond
+		((or (constant? val) (function? val))
+		 (loop subexpr (cons binding bindings)))
+		((null? bindings)
+		 `(let (,binding) ,(letcollapse subexpr)))
+		(else
+		 `(let ,(reverse bindings)
+		     (let (,binding) ,(letcollapse subexpr))))))
+	    (else
+	     (if (pair? bindings)
+		 `(let ,(reverse bindings) ,expr)
+		 expr)))))
+
+   (define (letreccollapse expr)
+      (let loop ((expr expr)
+		 (bindings '()))
+	 (match-case expr
+	    ((letrec ((and ?binding (?- ?val))) ?subexpr)
+	     (cond
+		((function? val)
+		 (loop subexpr (cons binding bindings)))
+		((null? bindings)
+		 `(letrec (,binding) ,(letcollapse subexpr)))
+		(else
+		 `(letrec ,(reverse bindings)
+		     (letrec (,binding) ,(letcollapse subexpr))))))
+	    (else
+	     (if (pair? bindings)
+		 `(letrec ,(reverse bindings) ,expr)
+		 expr)))))
+   
+   (define (labelscollapse expr)
+      (tprint "labels collapse val=" expr)
+      expr)
+   
+   (define (letcollapse expr)
+      (match-case expr
+	 ((let . ?-) (letstarcollapse expr))
+	 ((letrec . ?-) (letreccollapse expr))
+	 ((labels . ?-) (labelscollapse expr))
+	 (else expr)))
+
    (define (letrecursive ebindings body)
       (cond
 	 ((null? ebindings)
@@ -620,9 +660,10 @@
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
 	     (if (pair? rec-bindings)
 		 (sexp->node
-		    (letrecursive rec-bindings
-			`(letrec* ,(map ebinding-binding rec*-bindings)
-			   ,body))
+		    (letcollapse
+		       (letrecursive rec-bindings
+			  `(letrec* ,(map ebinding-binding rec*-bindings)
+			      ,body)))
 		    stack loc site)
 		 (kont ebindings body))))))
 
@@ -639,9 +680,10 @@
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
 	     (if (pair? let-bindings)
 		 (sexp->node
-		    (letstar let-bindings
-		       `(letrec* ,(map ebinding-binding rec*-bindings)
-			   ,body))
+		    (letcollapse
+		       (letstar let-bindings
+			  `(letrec* ,(map ebinding-binding rec*-bindings)
+			      ,body)))
 		    stack loc site)
 		 (kont ebindings body))))))
 
@@ -709,46 +751,83 @@
 	     ((cell) `(make-cell #f))
 	     ((char) #a000)
 	     (else (error "type-undefined" "cannot undefined type" (type-id type))))))
+
+   (define (untyped-id id)
+      (fast-id-of-id id #f))
    
-   (define (free-vars sexp v vars)
+   (define (append* pair lst)
+      (cond
+	 ((null? pair)
+	  lst)
+	 ((pair? pair)
+	  (cons (untyped-id (car pair)) (append* (cdr pair) lst)))
+	 (else
+	  (cons (untyped-id pair) lst))))
+	  
+   (define (free-vars sexp v vars env)
       ;; compute an over-approximation of all the
       ;; free vars appearing in sexp
       (let loop ((sexp sexp)
-		 (res '()))
-	 (cond
-	    ((symbol? sexp)
+		 (res '())
+		 (env env))
+	 (match-case sexp
+	    ((? symbol?)
 	     (cond
 		((not (memq sexp vars)) res)
+		((memq sexp env) res)
 		((memq sexp res) res)
 		(else (cons sexp res))))
-	    ((not (pair? sexp))
+	    ((not (? pair?))
 	     res)
-	    ((eq? (car sexp) 'quote)
-	     res)
+	    (((kwote quote) ?-) res)
+	    ((let ((?v ?val)) ?body)
+	     (loop body (loop val res env) (cons (untyped-id v) env)))
+	    ((let* ((?v ?val)) ?body)
+	     (loop body (loop val res env) (cons (untyped-id v) env)))
+	    ((letrec ((?v ?val)) ?body)
+	     (let ((nenv (cons (untyped-id v) env)))
+		(loop body (loop val res nenv) nenv)))
+	    ((letrec* ((?v ?val)) ?body)
+	     (let ((nenv (cons (untyped-id v) env)))
+		(loop body (loop val res nenv) nenv)))
+	    ((labels ((?v ?vars ?fun)) ?body)
+	     (let ((fenv (cons* (untyped-id v) (append* vars env))))
+		(loop body (loop fun res fenv) (cons v env))))
 	    (else
-	     (loop (car sexp) (loop (cdr sexp) res))))))
+	     (loop (car sexp) (loop (cdr sexp) res env) env)))))
 
-   (define (set-vars sexp v vars)
+   (define (set-vars sexp v vars env)
       ;; compute an over-approximation of all the
-      ;; free vars set in sexp
+      ;; free vars assigned in sexp
       (let loop ((sexp sexp)
-		 (res '()))
-	 (cond
-	    ((not (pair? sexp))
+		 (res '())
+		 (env env))
+	 (match-case sexp
+	    ((not (? pair?))
 	     res)
-	    ((eq? (car sexp) 'quote)
-	     res)
-	    ((and (eq? (car sexp) 'set!)
-		  (symbol? (cadr sexp))
-		  (pair? (cddr sexp)))
+	    (((kwote quote) ?-) res)
+	    ((set! (and ?var (? symbol?)) ?val)
 	     (cond
-		((or (eq? sexp v) (not (memq (cadr sexp) vars))) res)
-		((memq (cadr sexp) res) (loop (caddr sexp) res))
-		(else (loop (caddr sexp) (cons (cadr sexp) res)))))
+		((or (eq? sexp v) (not (memq var vars))) (loop var res env))
+		((memq var res) (loop val res env))
+		((memq var env) (loop val res env))
+		(else (loop val (cons var res) env))))
+	    (((kwote quote) ?-) res)
+	    ((let ((?v ?val)) ?body)
+	     (loop body (loop val res env) (cons (untyped-id v) env)))
+	    ((let* ((?v ?val)) ?body)
+	     (loop body (loop val res env) (cons (untyped-id v) env)))
+	    ((letrec ((?v ?val)) ?body)
+	     (let ((nenv (cons (untyped-id v) env)))
+		(loop body (loop val res nenv) nenv)))
+	    ((letrec* ((?v ?val)) ?body)
+	     (let ((nenv (cons (untyped-id v) env)))
+		(loop body (loop val res nenv) nenv)))
+	    ((labels ((?v ?vars ?fun)) ?body)
+	     (let ((fenv (cons* (untyped-id v) (append* vars env))))
+		(loop body (loop fun res fenv) (cons v env))))
 	    (else
-	     (loop (car sexp) (loop (cdr sexp) res))))))
-   
-   
+	     (loop (car sexp) (loop (cdr sexp) res env) env)))))
    
    (define (stage8 ebindings body)
       ;; a true letrec*
@@ -983,7 +1062,7 @@
 				     (cdr ebindings)))
 			   (ebinding-frees (car ebindings)))
 			;; all the ebinding free variables are defined before
-			;; and it is never used in a previous binding
+			;; and the binding is never used in a previous binding
 			(not (used-in? (car ebindings) (cdr ebindings))))
 		   (loop (cdr ebindings) (cons (car ebindings) let*-bindings)))
 		  (else
@@ -1071,14 +1150,6 @@
 	 (else
 	  (error-sexp->node (string-append "Illegal 'letrec*' form")
 	     exp (find-location/loc exp loc))))))
-
-;*---------------------------------------------------------------------*/
-;*    *ebindings* ...                                                  */
-;*    -------------------------------------------------------------    */
-;*    A simple cache to avoid recomputing free vars and set vars       */
-;*    each time letrec*->node is called recursively                    */
-;*---------------------------------------------------------------------*/
-(define *ebindings* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    function? ...                                                    */

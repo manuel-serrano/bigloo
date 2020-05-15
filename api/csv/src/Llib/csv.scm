@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/csv/src/Llib/csv.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/api/csv/src/Llib/csv.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
-;*    Last change :  Mon Jul 17 07:57:53 2017 (serrano)                */
-;*    Copyright   :  2011-18 Joseph Donaldson                          */
+;*    Last change :  Thu Oct 17 14:25:42 2019 (serrano)                */
+;*    Copyright   :  2011-19 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
    (include "csv.sch")
    
    (export +csv-lexer+
+	   +ssv-lexer+
            +tsv-lexer+
            +psv-lexer+
            (read-csv-record in #!optional (lexer +csv-lexer+))
@@ -36,6 +37,8 @@
 ;*    default csv lexers                                               */
 ;*---------------------------------------------------------------------*/
 (define +csv-lexer+ (make-csv-lexer #\, #\"))
+
+(define +ssv-lexer+ (make-csv-lexer #\; #\"))
 
 (define +tsv-lexer+ (make-csv-lexer #\tab #\"))
 

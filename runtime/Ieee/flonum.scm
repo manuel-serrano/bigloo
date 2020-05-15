@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Sun Sep 23 17:34:21 2018 (serrano)                */
+;*    Last change :  Mon Jan 27 05:09:36 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -32,7 +32,8 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-flonum?::bool (::obj) "REALP")
+   (extern  (macro $modf::double (::double ::void*) "modf")
+	    (macro c-flonum?::bool (::obj) "REALP")
 	    (macro $flonum?::bool (::obj) "FLONUMP")
 	    (infix macro c-=fl::bool (::double ::double) "==")
 	    (infix macro c-<fl::bool (::double ::double) "<")
@@ -567,8 +568,13 @@
 ;*    integerfl? ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (integerfl? r)
-   (and (finitefl? r)
-	(=fl r (floorfl r))))
+   (cond-expand
+      (bigloo-c
+       (let ((intpart::double 0.0))
+	  (and (finitefl? r)
+	       (=fl ($modf r (pragma::void* "&($1)" (pragma intpart))) 0.0))))
+      (else
+       (and (finitefl? r) (=fl r (floorfl r))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evenfl? ...                                                      */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/comptime/Integrate/definition.scm        */
+;*    .../project/bigloo/bigloo/comptime/Integrate/definition.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 13 16:16:29 1995                          */
-;*    Last change :  Thu Nov 17 05:46:12 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 25 18:17:43 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The integration of one global definition.                        */
 ;*=====================================================================*/
@@ -39,7 +39,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    This pass is another globalization pass. This pass is            */
 ;*    mandatory for the C back-end because this language does not      */
-;*    possesses local [recursive] functions. The theoretical           */
+;*    possess local [recursive] functions. The theoretical             */
 ;*    fundations of this pass can be found in the Nitsan Seniak        */
 ;*    thesis about Sqil (page 100). Here are shortly described         */
 ;*    the  organization of this pass:                                  */

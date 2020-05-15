@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/Makefile.api-safe                */
+#*    serrano/prgm/project/bigloo/bigloo/api/Makefile.api-safe         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Oct 14 07:31:21 2015 (serrano)                */
-#*    Copyright   :  2010-15 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:21:37 2020 (serrano)                */
+#*    Copyright   :  2010-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
 #*=====================================================================*/
@@ -17,21 +17,21 @@
 
 # init files
 api-install-init:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/$(API).init $(LIBDIR)/$(FILDIR)/$(API).init && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(API).init; \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  cp $(BOOTLIBDIR)/$(API).init $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).init && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).init; \
         fi
 
 api-uninstall-init:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  $(RM) -f $(LIBDIR)/$(FILDIR)/$(API).init; \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  $(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).init; \
         fi
 
 # C installation
 api-install-c:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/$(API).heap $(LIBDIR)/$(FILDIR)/$(API).heap && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(API).heap; \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  cp $(BOOTLIBDIR)/$(API).heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap; \
         fi
 	$(MAKE) install-lib LIB=libbigloo$(API)_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo$(API)_u-$(RELEASE)
@@ -39,7 +39,7 @@ api-install-c:
 	$(MAKE) install-lib LIB=libbigloo$(API)_eu-$(RELEASE)
 
 api-uninstall-c:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/$(API).heap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap
 	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_s-$(RELEASE)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_u-$(RELEASE)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_eu-$(RELEASE)
@@ -47,59 +47,59 @@ api-uninstall-c:
 
 # JVM installation
 api-install-jvm:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/$(API).jheap $(LIBDIR)/$(FILDIR)/$(API).jheap && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(API).jheap && \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  cp $(BOOTLIBDIR)/$(API).jheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap && \
 	  cp $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip \
-             $(LIBDIR)/$(FILDIR) && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).zip && \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).zip && \
 	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip \
-             $(LIBDIR)/$(FILDIR) && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip; \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip; \
         fi
-	(cd $(LIBDIR)/$(FILDIR) && \
+	(cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
            $(RM) -f bigloo$(API)_u-$(RELEASE).zip && \
            $(LN_S) bigloo$(API)_s-$(RELEASE).zip \
                    bigloo$(API)_u-$(RELEASE).zip)
-	(cd $(LIBDIR)/$(FILDIR) && \
+	(cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
            $(RM) -f bigloo$(API)_eu-$(RELEASE).zip && \
            $(LN_S) bigloo$(API)_es-$(RELEASE).zip \
                    bigloo$(API)_eu-$(RELEASE).zip)
 
 # JVM uninstallation
 api-uninstall-jvm:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/$(API).jheap
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).zip
 
 # Dotnet install
 api-install-dotnet:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/$(API).jheap $(LIBDIR)/$(FILDIR)/$(API).jheap && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(API).jheap && \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  cp $(BOOTLIBDIR)/$(API).jheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap && \
 	  cp $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
 	  cp $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
 	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
 	  cp $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll; \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll; \
         fi
 
 # Dotnet uninstallation
 api-uninstall-dotnet:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/$(API).jheap
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll
 
 #*---------------------------------------------------------------------*/
 #*    Init build                                                       */

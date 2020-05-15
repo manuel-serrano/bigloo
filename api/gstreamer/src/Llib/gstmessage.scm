@@ -16,8 +16,9 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
-	    __gstreamer_gstobject
+   (use	    __gstreamer_gsterror)
+
+   (import  __gstreamer_gstobject
 	    __gstreamer_gststructure)
 
    (export  (class gst-message
@@ -371,7 +372,9 @@
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-async-done src::gst-object)
    (with-access::gst-object src ($builtin)
-      ($make-gst-message ($gst-message-new-async-done $builtin) #t)))
+      ($make-gst-message
+	 ($gst-message-new-async-done $builtin $gst-clock-time-none)
+	 #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-latency ...                                      */

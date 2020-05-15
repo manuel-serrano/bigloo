@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Thu Sep 12 14:08:23 2019 (serrano)                */
-#*    Copyright   :  1997-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 24 12:22:05 2020 (serrano)                */
+#*    Copyright   :  1997-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   ascpp getwd ranlib unix dirname \
                   bcopy indent setjmp setjmp.sparc winreg \
                   bigendian ldshare ldpreload ldsoname sigprocmask \
-                  sigchld sigaction \
+                  sigchld sigaction siginfo \
                   doubleprec xemacspath ldstaticopt ldsharedopt \
                   readline ldextraopt \
                   socket getaddrinfo getifaddrs gethwaddrs socklen setsockopt \
@@ -61,10 +61,11 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   alsa pulseaudio mpg123 flac pcre pcrefreestudy avahi \
                   dbus gmp resolv resolvsym unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \
-                  gcconfigureopt ccfortify environ setenv symlink \
+                  config.guess ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
                   gmtoff libuv getgroups ioctl pthreadkill syslog overflow \
-                  semaphore lockf patch likely gccattrs
+                  semaphore lockf likely gccattrs getrlimit \
+                  c99stackalloc
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
@@ -106,8 +107,8 @@ distrib:
 .PHONY: install uninstall
 
 install:
-	cp runtest $(LIBDIR)/$(FILDIR)/runtest && \
-          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/runtest; \
+	cp runtest $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest && \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest; \
 
 uninstall:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/runtest
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest

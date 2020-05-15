@@ -16,11 +16,12 @@
 
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
+   (use	    __gstreamer_gsterror
 	    __gstreamer_gstobject
 	    __gstreamer_gstcaps
-	    __gstreamer_gststructure
-	    __gstreamer_gstelement
+	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstelement
 	    __gstreamer_gstelementfactory
 	    __gstreamer_gstpluginfeature)
 
@@ -51,7 +52,9 @@
 		  (get (lambda (o)
 			  (with-access::gst-pad o ($builtin)
 			     ($make-gst-caps
-				($gst-pad-get-caps ($gst-pad $builtin))
+				($gst-pad-query-caps
+				   ($gst-pad $builtin)
+				   ($gst-caps-nil))
 				#t))))
 		  (set (lambda (o v)
 			  (with-access::gst-pad o ($builtin)
@@ -66,11 +69,11 @@
 					 ($gst-pad $builtin))))
 				(unless ($gst-caps-null? c)
 				   ($make-gst-caps c #t)))))))
-	       (negotiated-caps
+	       (current-caps
 		  read-only
 		  (get (lambda (o)
 			  (with-access::gst-pad o ($builtin)
-			     (let ((c ($gst-pad-get-negotiated-caps
+			     (let ((c ($gst-pad-get-current-caps
 					 ($gst-pad $builtin))))
 				(unless ($gst-caps-null? c)
 				   ($make-gst-caps c #t)))))))
@@ -81,7 +84,6 @@
 			     (let ((c ($gst-pad-get-pad-template-caps
 					 ($gst-pad $builtin))))
 				(unless ($gst-caps-null? c)
-				   ($gst-caps-ref! c)
 				   ($make-gst-caps c #t))))))))
 
 	    ($make-gst-pad::obj ::$gst-pad ::obj)
@@ -90,12 +92,8 @@
 	    (gst-pad-can-link?::bool ::gst-pad ::gst-pad)
 	    (gst-pad-is-linked?::bool ::gst-pad)
 	    (gst-pad-unlink! ::gst-pad ::gst-pad)
-	    (gst-pad-add-buffer-probe!::int ::gst-pad ::procedure)
-;* 	    (gst-pad-add-data-probe!::int ::gst-pad ::procedure)       */
-;* 	    (gst-pad-add-event-probe!::int ::gst-pad ::procedure)      */
-	    (gst-pad-remove-buffer-probe! ::gst-pad ::int)
-;* 	    (gst-pad-remove-data-probe! ::gst-pad ::int)               */
-;* 	    (gst-pad-remove-event-probe! ::gst-pad ::int)              */
+	    (gst-pad-add-probe!::int ::gst-pad ::$gst-pad-probe-type ::procedure)
+	    (gst-pad-remove-probe! ::gst-pad ::int)
 
 	    ($gst-pad-direction->obj::obj link::$gst-pad-direction)
 	    ($gst-pad-presence->obj::obj link::$gst-pad-presence))
@@ -200,47 +198,18 @@
 	 ($gst-pad-unlink! ($gst-pad src-builtin) ($gst-pad sink-builtin)))))
 
 ;*---------------------------------------------------------------------*/
-;*    gst-pad-add-buffer-probe! ...                                    */
+;*    gst-pad-add-probe! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (gst-pad-add-buffer-probe! pad proc)
+(define (gst-pad-add-probe! pad mask proc)
    (with-access::gst-pad pad ($builtin)
       (if (correct-arity? proc 0)
-	  ($gst-pad-add-buffer-probe! ($gst-pad $builtin) proc)
-	  (error 'gst-pad-add-buffer-probe! "Arity 0 procedure expected" proc))))
-
-;* {*---------------------------------------------------------------------*} */
-;* {*    gst-pad-add-data-probe! ...                                      *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (gst-pad-add-data-probe! pad proc)                          */
-;*    (if (not (correct-arity? proc) 0)                                */
-;*        (error 'gst-pad-add-data-probe! "Arity 0 procedure expected" proc) */
-;*        ($gst-pad-add-data-probe! ($gst-pad (gst-pad-$builtin src)) proc))) */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    gst-pad-add-event-probe! ...                                     *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (gst-pad-add-event-probe! pad proc)                         */
-;*    (if (not (correct-arity? proc) 0)                                */
-;*        (error 'gst-pad-add-event-probe! "Arity 0 procedure expected" proc) */
-;*        ($gst-pad-add-event-probe! ($gst-pad (gst-pad-$builtin src)) proc))) */
+	  ($gst-pad-add-probe! ($gst-pad $builtin) mask proc)
+	  (error 'gst-pad-add-probe! "Arity 0 procedure expected" proc))))
 
 ;*---------------------------------------------------------------------*/
-;*    gst-pad-remove-buffer-probe! ...                                 */
+;*    gst-pad-remove-probe! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (gst-pad-remove-buffer-probe! pad index)
+(define (gst-pad-remove-probe! pad index)
    (with-access::gst-pad pad ($builtin)
-      ($gst-pad-remove-buffer-probe! ($gst-pad $builtin) index))
+      ($gst-pad-remove-probe! ($gst-pad $builtin) index))
    index)
-
-;* {*---------------------------------------------------------------------*} */
-;* {*    gst-pad-remove-data-probe! ...                                   *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (gst-pad-remove-data-probe! pad index)                      */
-;*    ($gst-pad-remove-data-probe! ($gst-pad (gst-pad-$builtin src)) index))) */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    gst-pad-remove-event-probe! ...                                  *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (gst-pad-remove-event-probe! pad index)                     */
-;*    ($gst-pad-remove-event-probe! ($gst-pad (gst-pad-$builtin src)) index))) */
-

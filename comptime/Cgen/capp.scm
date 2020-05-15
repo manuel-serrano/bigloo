@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cgen/capp.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cgen/capp.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Thu Dec 22 18:28:14 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  8 20:00:53 2020 (serrano)                */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -121,7 +121,7 @@
 		 (exps         '()))
 	 (if (null? old-actuals)
 	     (let* ((type (get-type node #f))
-		    (aux (make-local-svar/name 'tmp type))
+		    (aux (make-local-svar/name 'tmpfun *procedure*))
 		    (cop (node->cop (node-setq aux fun) *id-kont* inpushexit)))
 		(if (and (csetq? cop)
 			 (var? fun)

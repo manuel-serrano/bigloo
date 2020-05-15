@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/c.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/BackEnd/c.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Thu Jun  1 18:43:30 2017 (serrano)                */
-;*    Copyright   :  2003-17 Manuel Serrano                            */
+;*    Last change :  Wed Dec 11 06:54:13 2019 (serrano)                */
+;*    Copyright   :  2003-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -54,8 +54,7 @@
 	    init_setrc
 	    read_reader
 	    ast_env
-	    ast_type-occur
-	    patch_patch)
+	    ast_type-occur)
 
    (with    cgen_compile
 	    saw_c_compile)
@@ -120,9 +119,6 @@
    
    ;; emit the GC selection
    (emit-garbage-collector-selection)
-
-   ;; self modifying code switch
-   (emit-patch-header *c-port*)
 
    ;; if we are in debugging mode, we generate a macro
    (if (or (>fx *compiler-debug* 0) *c-debug*)

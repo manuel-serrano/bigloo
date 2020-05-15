@@ -16,14 +16,15 @@
 
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
+   (use	    __gstreamer_gsterror
 	    __gstreamer_gstobject
 	    __gstreamer_gstelementfactory
 	    __gstreamer_gstpluginfeature
 	    __gstreamer_gstelement
-	    __gstreamer_gstpad
 	    __gstreamer_gstcaps
 	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstpad)
 
    (export  (class gst-bin::gst-element
 	       (elements::pair-nil (default '())))

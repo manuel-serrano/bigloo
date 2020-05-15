@@ -1,10 +1,10 @@
  /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/pthread/src/Posix/bglpthread.c       */
+/*    .../project/bigloo/bigloo/api/pthread/src/Posix/bglpthread.c     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Wed Jan  4 08:05:33 2017 (serrano)                */
-/*    Copyright   :  2002-17 Manuel Serrano                            */
+/*    Last change :  Wed Sep 25 13:49:57 2019 (serrano)                */
+/*    Copyright   :  2002-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -17,7 +17,7 @@
 #include <gc.h>
 #include <bglpthread.h>
 
-#if HAVE_SIGACTION
+#if BGL_HAVE_SIGACTION
 #include <signal.h>
 #endif
 
@@ -26,6 +26,7 @@
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void bgl_multithread_dynamic_denv_register( obj_t (*)() );
 BGL_RUNTIME_DECL obj_t bgl_remq_bang( obj_t, obj_t );
+BGL_RUNTIME_DECL obj_t bgl_signal( int, obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    pthread_key_t                                                    */
@@ -170,6 +171,9 @@ bglpth_thread_run( void *arg ) {
 #endif
    
    pthread_cleanup_push( bglpth_thread_cleanup, arg );
+
+   /* install sigsegv handler for stack overflow interception */
+   bgl_signal( SIGSEGV, BUNSPEC );
    
    /* mark the thread started */
    pthread_mutex_lock( &(self->mutex) );
@@ -329,7 +333,7 @@ bglpth_thread_terminate( bglpthread_t t ) {
 /*---------------------------------------------------------------------*/
 void
 bglpth_setup_thread() {
-#if HAVE_SIGACTION
+#if BGL_HAVE_SIGACTION
    struct sigaction sigact;
    sigemptyset( &(sigact.sa_mask) );
    sigact.sa_handler = SIG_IGN;

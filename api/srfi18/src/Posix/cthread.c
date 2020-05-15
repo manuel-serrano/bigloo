@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/srfi18/src/Posix/cthread.c       */
+/*    .../project/bigloo/bigloo/api/srfi18/src/Posix/cthread.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Wed Jan  4 08:05:57 2017 (serrano)                */
-/*    Copyright   :  2002-17 Manuel Serrano                            */
+/*    Last change :  Wed Sep 25 13:50:13 2019 (serrano)                */
+/*    Copyright   :  2002-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -18,7 +18,7 @@
 #include <bglpthread.h>
 #include <srfi18.h>
 
-#if HAVE_SIGACTION
+#if BGL_HAVE_SIGACTION
 #include <signal.h>
 #endif
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/pregexp.scm           */
+;*    /tmp/BUFOV/bigloo-4.3h/runtime/Unsafe/pregexp.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Tue Oct 10 08:27:59 2017 (serrano)                */
+;*    Last change :  Fri Mar 27 18:08:35 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -68,10 +68,12 @@
    (export (inline regexp?::bool ::obj)
 	   (inline regexp-pattern::bstring ::regexp)
 	   (pregexp ::bstring . opt-args)
-	   (pregexp-match-positions pat ::bstring . opt-args)
+	   (pregexp-match-positions pat str::bstring
+	      #!optional (beg 0) (end (string-length str)))
 	   (pregexp-match-n-positions!::long
 	      ::regexp ::bstring ::vector ::long ::long)
-	   (pregexp-match pat ::bstring . opt-args)
+	   (pregexp-match pat str::bstring
+	       #!optional (beg 0) (end (string-length str)))
 	   (pregexp-replace::bstring pat ::bstring ins::bstring)
 	   (pregexp-split::pair-nil pat ::bstring)
 	   (pregexp-replace*::bstring pat ::bstring ins::bstring)
@@ -749,7 +751,8 @@
     (list ':sub (car (pregexp-read-pattern s 0 (string-length s))))))
 
 (define pregexp-match-positions
-  (lambda (pat str . opt-args)
+   ;; bigloo prototype change
+  (lambda (pat str #!optional (beg 0) (end (string-length str)))
     (cond ((string? pat) (set! pat (%pregexp pat)))
 	  ((regexp? pat) (set! pat ($regexp-preg pat)))
           ((pair? pat) #t)
@@ -757,12 +760,13 @@
                                'pattern-must-be-compiled-or-string-regexp
                                pat)))
     (let* ((str-len (string-length str))
-           (start (if (null? opt-args) 0
-                      (let ((start (car opt-args)))
-                        (set! opt-args (cdr opt-args))
-                        start)))
-           (end (if (null? opt-args) str-len 
-                    (car opt-args))))
+	   (start beg))
+;*            (start (if (null? opt-args) 0                            */
+;*                       (let ((start (car opt-args)))                 */
+;*                         (set! opt-args (cdr opt-args))              */
+;*                         start)))                                    */
+;*            (end (if (null? opt-args) str-len                        */
+;*                     (car opt-args)))                                */
       (let loop ((i start))
         (and (<= i end)
              (or (pregexp-match-positions-aux 
@@ -772,25 +776,27 @@
 (define pregexp-match-n-positions!
    ;; bigloo addition
    (lambda (pat str res beg end)
-      (let ((pos (apply pregexp-match-positions pat str beg end))
+      (let ((pos (pregexp-match-positions pat str beg end))
 	    (len (bit-and (vector-length res) (bit-not 1))))
-	 (let loop ((i 0)
-		    (pos pos))
-	    (cond
-	       ((or (=fx i len) (null? pos))
-		i)
-	       ((pair? (car pos))
-		(vector-set! res i (caar pos))
-		(vector-set! res (+fx i 2) (cadr pos))
-		(loop (+fx i 2) (cdr pos)))
-	       (else
-		(vector-set! res i -1)
-		(vector-set! res (+fx i 2) -1)
-		(loop (+fx i 2) (cdr pos))))))))
+	 (if (not pos)
+	     -1
+	     (let loop ((i 0)
+			(pos pos))
+		(cond
+		   ((or (=fx i len) (null? pos))
+		    i)
+		   ((pair? (car pos))
+		    (vector-set! res i (caar pos))
+		    (vector-set! res (+fx i 1) (cdar pos))
+		    (loop (+fx i 2) (cdr pos)))
+		   (else
+		    (vector-set! res i -1)
+		    (vector-set! res (+fx i 1) -1)
+		    (loop (+fx i 2) (cdr pos)))))))))
 		
 (define pregexp-match
-  (lambda (pat str . opt-args)
-    (let ((ix-prs (apply pregexp-match-positions pat str opt-args)))
+  (lambda (pat str #!optional (beg 0) (end (string-length str)))
+    (let ((ix-prs (pregexp-match-positions pat str beg end)))
       (and ix-prs
            (map
              (lambda (ix-pr)

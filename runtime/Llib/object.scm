@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Aug 25 07:34:45 2019 (serrano)                */
+;*    Last change :  Fri Mar 27 12:01:07 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -240,6 +240,8 @@
 	    
 	    (class &process-exception::&error)
 	    
+	    (class &stack-overflow-error::&error)
+	    
 	    (class &security-exception::&exception
 	       (message::bstring read-only (default "")))
 	    (class &access-control-exception::&security-exception
@@ -447,7 +449,7 @@
 ;*---------------------------------------------------------------------*/
 (define (find-class cname)
    (or (class-exists cname) 
-       (error "find-class" "Can't find class" cname)))
+       (error "find-class" "Cannot find class" cname)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-class-by-hash ...                                           */
@@ -1155,8 +1157,6 @@
        (error name "Illegal class for method" class))
       ((and (not (=fx (procedure-arity generic) (procedure-arity method)))
 	    (>=fx (procedure-arity generic) 0))
-;* 	    (not (and (<fx (procedure-arity generic) 0)                */
-;* 		      (>fx (procedure-arity generic) (procedure-arity method))))) */
        (error name (format "method/generic arity mismatch, expecting ~a"
 		      (procedure-arity generic))
 	  (procedure-arity method)))
@@ -1306,7 +1306,7 @@
 (define (allocate-instance::object cname::symbol)
    (let loop ((i 0))
       (if (=fx i *nb-classes*)
-	  (error "allocate-instance" "Can't find class" cname)
+	  (error "allocate-instance" "Cannot find class" cname)
 	  (let ((class (vector-ref-ur *classes* i)))
 	     (if (eq? (class-name class) cname)
 		 (let ((alloc (class-allocator class)))

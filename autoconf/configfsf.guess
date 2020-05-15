@@ -1,0 +1,44 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/configfsf.guess      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Feb 16 17:39:56 2010                          */
+#*    Last change :  Fri Jan 17 14:46:33 2020 (serrano)                */
+#*    Copyright   :  2010-20 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Third party configure guessfs                                    */
+#*=====================================================================*/
+
+dir=""
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --dir=*|-dir=*)
+      dir="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+chmod u+x $dir/config.guess
+chmod u+x $dir/configfsf.guess
+build=`eval "$BUILDSH $dir/config.guess"`
+host=`eval "$HOSTSH $dir/config.guess"`
+
+opt=
+
+if [ "$host " != " " ]; then
+  opt="--host=$host"
+fi
+
+if [ "$build " != " " ]; then
+  opt="$opt --build=$build"
+fi
+
+echo $opt

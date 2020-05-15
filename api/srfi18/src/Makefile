@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/srfi18/src/Makefile              */
+#*    serrano/prgm/project/bigloo/bigloo/api/srfi18/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:17:32 2017 (serrano)                */
+#*    Last change :  Tue Jan 21 09:03:29 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -43,7 +43,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 # Additional pthread lib for C
-EXTRALIBS	= "$(PTHREADLIBS)"
+EXTRALIBS	= $(PTHREADLIBS) $(GCCLOSELIB_FTH)
 EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE)
 EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE)
 

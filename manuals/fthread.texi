@@ -53,7 +53,7 @@ suitable for a high level programming language such as Scheme:
 * SRFI-18 compatibility::
 @end menu
 
-This whole chapter has been written in collaboration with @b{Frédéric
+This whole chapter has been written in collaboration with @b{F.
 Boussinot}. It uses materials on Fair threads that can be found at
 @url{http://www-sop.inria.fr/indes/rp/FairThreads/html/FairThreads.html}.
 
@@ -331,7 +331,7 @@ It can be defined as:
 @end deffn
 
 @deffn {Bigloo function} thread-await*! @var{signals} [@var{timeout}]
-@cindex select (à la unix)
+@cindex select (unix-like)
 Wait for one of a list of signals. The function @code{thread-await*!}
 can be compared to the Unix @code{select} function. The argument 
 @var{signals} is a list of signal identifier. The function 

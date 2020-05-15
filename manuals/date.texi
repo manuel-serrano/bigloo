@@ -21,7 +21,8 @@
 
 @deffn {bigloo procedure} date? obj
 Returns @code{#t} if and only if @var{obj} is a @emph{date} as returned
-by @code{make-date}, @code{current-date}, or @code{seconds->date}. It
+by @code{make-date}, @code{current-date}, @code{seconds->date}, or
+@code{seconds->gmtdate}. It
 returns @code{#f} otherwise.
 @end deffn
 
@@ -66,6 +67,7 @@ in seconds (resp. in micro seconds).
 @deffn {bigloo procedure} date->seconds
 @deffnx {bigloo procedure} date->nanoseconds
 @deffnx {bigloo procedure} seconds->date
+@deffnx {bigloo procedure} seconds->gmtdate
 @deffnx {bigloo procedure} nanoeconds->date
 Convert from @code{date} and @code{elong}.
 @end deffn

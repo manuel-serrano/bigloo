@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/recette/Makefile                     */
+#*    serrano/prgm/project/bigloo/bigloo/recette/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Thu Dec 14 15:28:34 2017 (serrano)                */
-#*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Mar 11 05:28:28 2020 (serrano)                */
+#*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/

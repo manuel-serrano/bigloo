@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/copy.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/copy.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov  3 17:46:46 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 25 19:20:51 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -354,18 +354,32 @@
 ;*    node-copy! ::box-set! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (node-copy! node::box-set!)
-   (with-access::box-set! node (var value)
-      (set! var (node-copy! var))
+   (with-access::box-set! node (var value) 
       (set! value (node-copy! value))
-      node))
+      (let ((cp (node-copy! var)))
+	 (if (isa? cp cast)
+	     (with-access::cast cp (arg)
+		(set! var arg)
+		(set! arg node)
+		cp)
+	     (begin
+		(set! var cp)
+		node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-copy! ::box-ref ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node-copy! node::box-ref)
    (with-access::box-ref node (var)
-      (set! var (node-copy! var))
-      node))
+      (let ((cp (node-copy! var)))
+	 (if (isa? cp cast)
+	     (with-access::cast cp (arg)
+		(set! var arg)
+		(set! arg node)
+		cp)
+	     (begin
+		(set! var cp)
+		node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-copy! ::app ...                                             */

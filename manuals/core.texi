@@ -173,7 +173,7 @@ x                                      @result{} 28
 @end smalllisp
 @end deffn
 
-@deffn {syntax} lambda  formals body
+@deffn {syntax} lambda formals body
 @smalllisp
 (lambda (x) (+ x x))                   @result{} @emph{a procedure}
 ((lambda (x) (+ x x)) 4)               @result{} 8

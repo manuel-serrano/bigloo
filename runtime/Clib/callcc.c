@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Sun Mar 18 07:19:19 2018 (serrano)                */
+/*    Last change :  Sat Dec  7 18:55:45 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -239,7 +239,7 @@ callcc_restore_stack( obj_t env, obj_t value, char **_dummy ) {
       /* is optimized to a goto. This can happen when linktime        */
       /* optimization is used.                                        */
 
-#if( defined( HAVE_ALLOCA ) ) 
+#if( defined( BGL_HAVE_ALLOCA ) ) 
 #if( defined( STACK_GROWS_DOWN ) )
      unsigned long stack_incr = (unsigned long)actual_stack_top -
        (unsigned long)stack_top;

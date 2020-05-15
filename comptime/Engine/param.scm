@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Engine/param.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Engine/param.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Oct  2 08:10:36 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Dec 16 05:40:27 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -92,7 +92,6 @@
 	    *optim-return?*
 	    *optim-return-goto?*
 	    *optim-tagged-fxop?*
-	    *optim-patch?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -236,7 +235,6 @@
 	    *eval-options*
 	    *allow-type-redefinition*
 	    *pre-processor*
-	    *patch-support*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -958,9 +956,6 @@
 (param-define *optim-tagged-fxop?*
    "Optimize tagged fixnum operations"
    #f)
-(param-define *optim-patch?*
-   "Optimize self modifying code"
-   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *extend-entry* ...                                               */
@@ -1166,13 +1161,6 @@
 (param-define *pre-processor*
    "An optional function that pre-processes the source file"
    (lambda (x) x))
-
-;*---------------------------------------------------------------------*/
-;*    *patch-support* ...                                              */
-;*---------------------------------------------------------------------*/
-(param-define *patch-support*
-   "Enables/disables patch (runtime code modification) support"
-   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Other variables that are defined inside the interpreter...       */

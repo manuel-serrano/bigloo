@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri May 10 16:08:30 2019 (serrano)                */
+;*    Last change :  Sun Dec 22 18:23:24 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -100,9 +100,7 @@
 	 (global->c global)
 	 (let ((cop (block-kont (sfun/C-label sfun) loc)))
 	    ;; we define a local variable that acts as a temporary variable
-	    (display "{ BGL_FUNCTION_BEGIN;" *c-port*)
-	    (when (and *patch-support* *optim-patch?*)
-	       (display "PATCHABLE_FUNCTION_BEGIN;" *c-port*))
+	    (display "{" *c-port*)
 	    ;; when compiling for debugging, we have to insert a dummy
 	    ;; statement otherwise gdb get confused
 	    (if (and (> *bdb-debug* 0) (location? loc))
@@ -114,10 +112,7 @@
 	    (emit-cop cop)
 	    ;; emit the current location before the closing bracket
 	    (emit-bdb-loc (get-current-bdb-loc))
-	    ;; and then clause the function body
-	    (when (and *patch-support* *optim-patch?*)
-	       (display "PATCHABLE_FUNCTION_END;" *c-port*))
-	    (fprint *c-port* "BGL_FUNCTION_END;\n}"))
+	    (fprint *c-port* "\n}"))
 	 (no-bdb-newline)
 	 (leave-function))))
   
@@ -461,7 +456,7 @@
 	  "  loc: " (node-loc node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::conditional node (test true false loc)
-      (let* ((aux   (make-local-svar/name 'test *bool*))
+      (let* ((aux   (make-local-svar/name (gensym 'test) *bool*))
 	     (ctest (node->cop (node-setq aux test) *id-kont* inpushexit)))
 	 (if (and (csetq? ctest) (eq? (varc-variable (csetq-var ctest)) aux))
 	     (instantiate::cif

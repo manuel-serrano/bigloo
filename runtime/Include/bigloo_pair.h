@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Apr 19 11:45:03 2018 (serrano)                */
-/*    Copyright   :  2016-18 Manuel Serrano                            */
+/*    Last change :  Sat Dec  7 18:56:17 2019 (serrano)                */
+/*    Copyright   :  2016-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
 /*=====================================================================*/
@@ -158,7 +158,7 @@ struct bgl_epair {
 #endif
 
 /* stack allocation (see BGL_EXITD_PUSH_PROTECT) */
-#if( HAVE_ALLOCA && defined( __GNUC__ ) )
+#if( BGL_HAVE_ALLOCA && defined( __GNUC__ ) )
 #   define MAKE_STACK_PAIR( a, d ) \
         ({ obj_t an_object; \
            an_object = alloca( PAIR_SIZE ); \

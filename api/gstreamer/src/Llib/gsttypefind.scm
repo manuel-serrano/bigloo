@@ -16,11 +16,7 @@
 
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
-	    __gstreamer_gstobject
-	    __gstreamer_gstcaps
-	    __gstreamer_gststructure)
-	    
+   (import  __gstreamer_gsterror)
 
    (export  (class gst-type-find
 	       (%gst-type-find-init)

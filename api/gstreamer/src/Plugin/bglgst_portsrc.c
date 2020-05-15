@@ -93,47 +93,48 @@ enum {
 
 
 /*---------------------------------------------------------------------*/
-/*    Backward gstreamer compatibility                                 */
-/*---------------------------------------------------------------------*/
-#if( !BGL_GSTREAMER_HAVE_PARSE_INFO )
-#define gst_buffer_try_new_and_alloc( s ) __gst_buffer_try_new_and_alloc( s )
-
-static GstBuffer *__gst_buffer_try_new_and_alloc( guint size ) {
-   GstBuffer *newbuf;
-   guint8 *malloc_data;
-
-   malloc_data = g_try_malloc( size );
-
-   if( G_UNLIKELY (malloc_data == NULL && size != 0) ) {
-      return NULL;
-   }
-
-   /* FIXME: there's no g_type_try_create_instance() in GObject yet, so this
-    * will still abort if a new GstBuffer structure can't be allocated */
-   newbuf = gst_buffer_new();
-
-   GST_BUFFER_MALLOCDATA( newbuf ) = malloc_data;
-   GST_BUFFER_DATA( newbuf ) = malloc_data;
-   GST_BUFFER_SIZE( newbuf ) = size;
-
-   return newbuf;
-}
-#endif
-
-/*---------------------------------------------------------------------*/
 /*    Boilerplate                                                      */
 /*---------------------------------------------------------------------*/
-#define _do_init( _ ) \
-  GST_DEBUG_CATEGORY_INIT( bgl_gst_port_src_debug, \
-			   "bglportsrc", \
-			   0, \
-			   "bglportsrc element" );
 
-GST_BOILERPLATE_FULL( BglPortSrc,
-		      bgl_gst_port_src,
-		      GstBaseSrc,
-		      GST_TYPE_BASE_SRC,
-		      _do_init );
+/* None of the boilerplate macros expand to a call to g_type_register_static,
+ * just g_type_register_static_simple, so we write this by hand.
+ */
+static void bgl_gst_port_src_base_init( gpointer klass );
+static void bgl_gst_port_src_class_init( gpointer klass, gpointer class_data );
+static void bgl_gst_port_src_init( GTypeInstance *instance, gpointer klass );
+
+static gpointer bgl_gst_port_src_parent_class = NULL;
+
+GType
+bgl_gst_port_src_get_type( void )
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if ( g_once_init_enter( &g_define_type_id__volatile ) ) {
+      static const GTypeInfo BglPortSrcTypeInfo = {
+	 (guint16)sizeof( BglPortSrcClass ),
+	 bgl_gst_port_src_base_init,
+	 NULL, /* base_finalize */
+	 bgl_gst_port_src_class_init,
+	 NULL, /* class_finalize */
+	 NULL, /* class_data */
+	 (guint16)sizeof( BglPortSrc ),
+	 0, /* n_preallocs */
+	 bgl_gst_port_src_init,
+	 NULL  /* value_table */
+      };
+
+      GType g_define_type_id =
+	 g_type_register_static( GST_TYPE_BASE_SRC,
+				 g_intern_static_string ("BglPortSrc"),
+				 &BglPortSrcTypeInfo,
+				 (GTypeFlags) 0 );
+      GST_DEBUG_CATEGORY_INIT( bgl_gst_port_src_debug, "bglportsrc", 0,
+			       "bglportsrc element" );
+      g_once_init_leave( &g_define_type_id__volatile, g_define_type_id );
+    }
+  return g_define_type_id__volatile;
+}
 
 /*---------------------------------------------------------------------*/
 /*    Local functions                                                  */
@@ -309,7 +310,7 @@ bgl_gst_port_src_finalize( GObject * object ) {
       src->uri = 0;
    }
    
-   G_OBJECT_CLASS( parent_class )->finalize( object );
+   G_OBJECT_CLASS( bgl_gst_port_src_parent_class )->finalize( object );
 }
 
 /*---------------------------------------------------------------------*/
@@ -350,11 +351,11 @@ bgl_gst_port_src_set_property( GObject *object,
 	 src->dump = g_value_get_boolean( value );
 	 break;
       case PROP_CAN_ACTIVATE_PUSH:
-	 g_return_if_fail( !GST_OBJECT_FLAG_IS_SET( object, GST_BASE_SRC_STARTED) );
+	 g_return_if_fail( !GST_OBJECT_FLAG_IS_SET( object, GST_BASE_SRC_FLAG_STARTED) );
 	 GST_BASE_SRC( src )->can_activate_push = g_value_get_boolean( value );
 	 break;
       case PROP_CAN_ACTIVATE_PULL:
-	 g_return_if_fail( !GST_OBJECT_FLAG_IS_SET( object, GST_BASE_SRC_STARTED ) );
+	 g_return_if_fail( !GST_OBJECT_FLAG_IS_SET( object, GST_BASE_SRC_FLAG_STARTED ) );
 	 src->can_activate_pull = g_value_get_boolean( value );
 	 break;
       case PROP_IS_LIVE:
@@ -460,10 +461,10 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
 			 guint64 offset,
 			 guint length,
 			 GstBuffer **ret ) {
+   GstMapInfo info;
    BglPortSrc *src;
    GstBuffer *buf;
-   guint8 *readstr;
-   guint readlen;
+   gssize readlen;
   
    src = BGL_GST_PORT_SRC( basesrc );
    
@@ -485,7 +486,7 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
 
    /* Check the non emptyness of the buffer */
    if( length == 0 ) {
-      return GST_FLOW_UNEXPECTED;
+      return GST_FLOW_EOS;
    }
 
 /*    if( (src->parentsize == length) && src->parent ) {               */
@@ -503,47 +504,29 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
    /* The function rgc_blit_string adds and extra 0 after             */
    /* the read chars, so we have to allocate a buffer of size         */
    /* length + 1, the same thing apply in the g_malloc0 call.         */
-   if( !(buf = gst_buffer_try_new_and_alloc( length + 1 ) ) ) {
-      /* create a brand new buffer */
-      if( !(buf = gst_buffer_new()) ) {
-	 GST_ELEMENT_ERROR( src, CORE, FAILED,
-			    ("Could not allocate buffer.\n"),
-			    ("Could not allocate buffer for object %p\n", src));
+   if( !(buf = gst_buffer_new_allocate( NULL, length + 1, NULL ) ) ) {
+      GST_ELEMENT_ERROR( src, CORE, FAILED,
+			 ("Could not allocate buffer.\n"),
+			 ("Could not allocate buffer for object %p\n", src));
 	 
-	 return GST_FLOW_ERROR;
-      } else {
-	 /* allocate a char array */
-	 if( !(readstr = g_malloc0( length + 1 ) ) ) {;
-	    gst_buffer_unref( buf );
+      return GST_FLOW_ERROR;
+   }
 
-	    GST_ELEMENT_ERROR( src, CORE, FAILED,
-			       ("Could not allocate char array.\n"),
-			       ("Could not allocate buffer for object %p\n", src) );
-	    return GST_FLOW_ERROR;
-	 } else {
-	    GST_BUFFER_MALLOCDATA( buf ) = readstr;
-	 }
-      }
-   } else {
-      readstr = GST_BUFFER_MALLOCDATA( buf );
-      
-/*       if( src->parent != buf ) {                                    */
-/* 	 if( src->parent ) gst_buffer_unref( src->parent );            */
-/* 	                                                               */
-/* 	 src->parentsize = length;                                     */
-/* 	 src->parent = buf;                                            */
-/* 	 gst_buffer_ref( buf );                                        */
-/*       }                                                             */
+   /* Get access to the buffer data */
+   if ( !gst_buffer_map( buf, &info, GST_MAP_WRITE ) ) {
+      gst_buffer_unref (buf);
+      return GST_FLOW_ERROR;
    }
 
 #if( defined( BGL_DEBUG ) )
    fprintf( stderr, "bgl_rgc_blit_string( %p, %p, 0, %d )\n",
-	    src->port, readstr, length );
+	    src->port, info.data, length );
 #endif
-   if( !(readlen = bgl_rgc_blit_string( src->port, readstr, 0, length )) ) {
+   if( !(readlen = bgl_rgc_blit_string( src->port, (char *)info.data, 0, length )) ) {
       /* end of file */
+      gst_buffer_unmap( buf, &info );
       gst_buffer_unref( buf );
-      return GST_FLOW_UNEXPECTED;
+      return GST_FLOW_EOS;
    }
 #if( defined( BGL_DEBUG ) )      
    fprintf( stderr, "bgl_gst_port_src_create(%s:%d)\n  readlen=%d\n  length=%d\n  offset=%d\n",
@@ -554,13 +537,14 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
       fprintf( stderr, "  readstr=" );
       for( i = 0; i < readlen; i +=2 ) {
 	 if( (i % 16) == 0 ) fprintf( stderr, "\n    %08x ", i  );
-	 fprintf( stderr, "%02x%02x ", readstr[ i + 1 ], readstr[ i ] );
+	 fprintf( stderr, "%02x%02x ", info.data[ i + 1 ], info.data[ i ] );
       }
       fprintf( stderr, "\n" );
    }
 #endif
 
-   GST_BUFFER_SIZE( buf ) = readlen;
+   gst_buffer_unmap( buf, &info );
+   gst_buffer_set_size( buf, readlen );
    GST_BUFFER_OFFSET( buf ) = offset;
    GST_BUFFER_OFFSET_END( buf ) = offset + readlen;
 
@@ -575,7 +559,7 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
       GST_LOG_OBJECT( src, "post handoff emit" );
    }
   
-   src->bytes_sent += GST_BUFFER_SIZE( buf );
+   src->bytes_sent += gst_buffer_get_size( buf );
    src->buffer_count++;
     
    *ret = buf;
@@ -583,44 +567,6 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
    return GST_FLOW_OK;
 }
 
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    marshal_VOID__MINIOBJECT_OBJECT ...                              */
-/*---------------------------------------------------------------------*/
-static void
-marshal_VOID__MINIOBJECT_OBJECT( GClosure *closure,
-				 GValue *return_value,
-				 guint n_param_values,
-				 const GValue *param_values,
-				 gpointer invocation_hint,
-				 gpointer marshal_data ) {
-   typedef void (*marshalfunc_VOID__MINIOBJECT_OBJECT)
-      (gpointer obj, gpointer arg1, gpointer arg2, gpointer data2);
-   
-   marshalfunc_VOID__MINIOBJECT_OBJECT callback;
-   GCClosure *cc = (GCClosure *)closure;
-   gpointer data1, data2;
-
-   g_return_if_fail( n_param_values == 3 );
-
-   if( G_CCLOSURE_SWAP_DATA( closure ) ) {
-      data1 = closure->data;
-      data2 = g_value_peek_pointer( param_values + 0 );
-   } else {
-      data1 = g_value_peek_pointer( param_values + 0 );
-      data2 = closure->data;
-   }
-   
-   callback =
-      (marshalfunc_VOID__MINIOBJECT_OBJECT)
-      (marshal_data ? marshal_data : cc->callback);
-
-   callback( data1,
-	     gst_value_get_mini_object (param_values + 1),
-	     g_value_get_object( param_values + 2 ),
-	     data2);
-}
 
 /*---------------------------------------------------------------------*/
 /*    static gboolean                                                  */
@@ -690,19 +636,17 @@ bgl_gst_port_src_get_times( GstBaseSrc *basesrc,
 /*---------------------------------------------------------------------*/
 static void
 bgl_gst_port_src_base_init( gpointer g_class ) {
-   static GstElementDetails element_details = {
-      "Bigloo input-port source",
-      "Source",
-      "Get data from a Bigloo input port",
-      "Cyprien Nicolas <Cyprien.Nicolas@sophia.inria.fr>"
-   };
    GstElementClass *element_class = GST_ELEMENT_CLASS( g_class );
 
    gst_element_class_add_pad_template(
       element_class, gst_static_pad_template_get( &srctemplate ) );
    
-   gst_element_class_set_details(
-      element_class, &element_details );
+   gst_element_class_set_static_metadata(
+      element_class,
+      "Bigloo input-port source",
+      "Source",
+      "Get data from a Bigloo input port",
+      "Cyprien Nicolas <Cyprien.Nicolas@sophia.inria.fr>" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -710,10 +654,12 @@ bgl_gst_port_src_base_init( gpointer g_class ) {
 /*    bgl_gst_port_src_class_init ...                                  */
 /*---------------------------------------------------------------------*/
 static void
-bgl_gst_port_src_class_init( BglPortSrcClass * klass ) {
+bgl_gst_port_src_class_init( gpointer klass, gpointer class_data ) {
   GObjectClass *gobject_class = G_OBJECT_CLASS( klass );
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS( klass );
   GstBaseSrcClass *gstbase_src_class = GST_BASE_SRC_CLASS( klass );
+
+  bgl_gst_port_src_parent_class = g_type_class_peek_parent (klass);
 
   gobject_class->finalize =
      GST_DEBUG_FUNCPTR( bgl_gst_port_src_finalize );
@@ -793,7 +739,7 @@ bgl_gst_port_src_class_init( BglPortSrcClass * klass ) {
   bgl_gst_port_src_signals[ SIGNAL_HANDOFF ] =
       g_signal_new( "handoff", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (BglPortSrcClass, handoff), NULL, NULL,
-      marshal_VOID__MINIOBJECT_OBJECT, G_TYPE_NONE, 2, GST_TYPE_BUFFER,
+      g_cclosure_marshal_generic, G_TYPE_NONE, 2, GST_TYPE_BUFFER,
       GST_TYPE_PAD );
 
   
@@ -829,7 +775,8 @@ bgl_gst_port_src_class_init( BglPortSrcClass * klass ) {
 /*    bgl_gst_port_src_init ...                                        */
 /*---------------------------------------------------------------------*/
 static void
-bgl_gst_port_src_init( BglPortSrc *portsrc, BglPortSrcClass *g_class) {
+bgl_gst_port_src_init( GTypeInstance *instance, gpointer klass ) {
+   BglPortSrc *portsrc = (BglPortSrc *)instance;
    portsrc->buffer_count = 0;
    portsrc->silent = DEFAULT_SILENT;
    portsrc->signal_handoffs = DEFAULT_SIGNAL_HANDOFFS;
@@ -868,29 +815,14 @@ plugin_init( GstPlugin * plugin ) {
 /*---------------------------------------------------------------------*/
 gboolean
 bgl_gst_plugin_port_src_init() {
-#if( defined( GST_PLUGIN_DEFINE_STATIC ) )
-   GST_PLUGIN_DEFINE( GST_VERSION_MAJOR,
-		      GST_VERSION_MINOR,
-		      "bglportsrc",
-		      "Bigloo Port Plugin",
-		      plugin_init,
-		      PLUGIN_VERSION,
-		      PLUGIN_LICENSE,
-		      PLUGIN_PACKAGE,
-		      PLUGIN_URL );
-
-   _gst_plugin_register_static( &gst_plugin_desc );
-
-   return TRUE;
-#else      
-   gst_plugin_register_static( GST_VERSION_MAJOR,
-			       GST_VERSION_MINOR,
-			       "bglportsrc",
-			       "Bigloo Port Plugin",
-			       plugin_init,
-			       PLUGIN_VERSION,
-			       PLUGIN_LICENSE,
-			       PLUGIN_PACKAGE,
-			       PLUGIN_URL );
-#endif
+   return gst_plugin_register_static( GST_VERSION_MAJOR,
+				      GST_VERSION_MINOR,
+				      "bglportsrc",
+				      "Bigloo Port Plugin",
+				      plugin_init,
+				      PLUGIN_VERSION,
+				      PLUGIN_LICENSE,
+				      PACKAGE,
+				      PLUGIN_PACKAGE,
+				      PLUGIN_URL );
 }

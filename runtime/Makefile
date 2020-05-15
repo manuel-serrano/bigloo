@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Jan 15 06:56:53 2019 (serrano)                */
-#*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 24 12:25:57 2020 (serrano)                */
+#*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -650,33 +650,33 @@ install:
           fi
 
 install-c:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
            for i in $(INCLUDE_FILE:Include/%=%) bigloo_gc.h bigloo_config.h; do \
-	      cp $(BOOTLIBDIR)/$$i $(LIBDIR)/$(FILDIR)/$$i && \
-              chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$$i; \
+	      cp $(BOOTLIBDIR)/$$i $(DESTDIR)$(LIBDIR)/$(FILDIR)/$$i && \
+              chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$$i; \
            done; \
-	   cp $(BOOTLIBDIR)/bigloo.heap $(LIBDIR)/$(FILDIR)/bigloo.heap && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
+	   cp $(BOOTLIBDIR)/bigloo.heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.heap && \
+           chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.heap; \
 	fi
 	$(MAKE) install-lib LIB=libbigloo_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo_u-$(RELEASE)
 
 install-saw-c:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
            for i in $(INCLUDE_FILE:Include/%=%) bigloo_gc.h bigloo_config.h; do \
-	      cp $(BOOTLIBDIR)/$$i $(LIBDIR)/$(FILDIR)/$$i && \
-              chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$$i; \
+	      cp $(BOOTLIBDIR)/$$i $(DESTDIR)$(LIBDIR)/$(FILDIR)/$$i && \
+              chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$$i; \
            done; \
-	   cp $(BOOTLIBDIR)/bigloo.heap $(LIBDIR)/$(FILDIR)/bigloo.heap && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
+	   cp $(BOOTLIBDIR)/bigloo.heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.heap && \
+           chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.heap; \
 	fi
 	$(MAKE) install-lib LIB=libbigloo_saw_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo_saw_u-$(RELEASE)
 
 install-jvm:
 	if [ $(ZIPDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/bigloo.jheap $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
-             chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
+	  cp $(BOOTLIBDIR)/bigloo.jheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.jheap && \
+             chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.jheap && \
 	  cp $(BOOTLIBDIR)/bigloo_s.zip $(ZIPDIR)/bigloo_s.zip && \
              chmod $(MODFILE) $(ZIPDIR)/bigloo_s.zip && \
 	  cp $(BOOTLIBDIR)/bigloo_u.zip $(ZIPDIR)/bigloo_u.zip && \
@@ -687,19 +687,19 @@ install-bee:
 	$(MAKE) install-lib LIB=libbigloo_p-$(RELEASE)
 
 uninstall: uninstall-bee uninstall-jvm
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
           for i in $(INCLUDE_FILE:Include/%=%) bigloo_gc.h bigloo_config.h; do \
-             $(RM) -f $(LIBDIR)/$(FILDIR)/$$i; \
+             $(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$$i; \
           done; \
-          $(RM) -f $(LIBDIR)/$(FILDIR)/bigloo.heap && \
+          $(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.heap && \
 	  $(MAKE) uninstall-lib LIB=libbigloo_s-$(RELEASE) && \
 	  $(MAKE) uninstall-lib LIB=libbigloo_u-$(RELEASE) && \
 	  $(MAKE) uninstall-lib LIB=libbigloogc-$(RELEASE) && \
-          $(RM) -rf $(LIBDIR)/$(FILDIR); \
+          $(RM) -rf $(DESTDIR)$(LIBDIR)/$(FILDIR); \
         fi
 
 uninstall-jvm:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo.jheap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.jheap
 	-$(RM) -f $(ZIPDIR)/bigloo_s.zip
 	-$(RM) -f $(ZIPDIR)/bigloo_u.zip
 

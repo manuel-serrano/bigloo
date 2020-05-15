@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_int.h      */
+/*    /tmp/BGL/bigloo4.3g/runtime/Include/bigloo_int.h                 */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sun Apr 22 08:23:23 2018 (serrano)                */
-/*    Copyright   :  2017-18 Manuel Serrano                            */
+/*    Last change :  Thu Jan 16 08:59:29 2020 (serrano)                */
+/*    Copyright   :  2017-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
 /*=====================================================================*/
@@ -26,7 +26,8 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #define INTEGERP( o ) ((((long)o) & TAG_MASK) == TAG_INT)
 
-#if( !BGL_NAN_TAGGING )
+#if( !BGL_NAN_TAGGING && !BGL_SMI )
+/* normal tagging */
 #  define BGL_LONG_MIN (LONG_MIN >> TAG_SHIFT)
 #  define BGL_LONG_MAX (LONG_MAX >> TAG_SHIFT)
 
@@ -40,7 +41,23 @@ extern "C" {
 #  define GTFX( x, y ) ((long)(x) > (long)(y))
 #  define GEFX( x, y ) ((long)(x) >= (long)(y))
 #  define EGFX( x, y ) ((long)(x) == (long)(y))
+#elif( !BGL_NAN_TAGGING && BGL_SMI )
+/* smi (int32) tatting */
+#  define BGL_LONG_MIN (INT32_MIN)
+#  define BGL_LONG_MAX (INT32_MAX)
+
+#  define BINT( i ) ((obj_t)((((long)((int32_t)i)) << 32) + TAG_INT))
+#  define CINT( i ) ((long)((int32_t)((long)((long)i) >> 32)))
+#  define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
+#  define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
+
+#  define LTFX( x, y ) ((long)(x) < (long)(y))
+#  define LEFX( x, y ) ((long)(x) <= (long)(y))
+#  define GTFX( x, y ) ((long)(x) > (long)(y))
+#  define GEFX( x, y ) ((long)(x) >= (long)(y))
+#  define EGFX( x, y ) ((long)(x) == (long)(y))
 #else
+/* nan tagging */      
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 

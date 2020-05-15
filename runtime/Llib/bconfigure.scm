@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Sat Apr 13 12:59:11 2019 (serrano)                */
+;*    Last change :  Sat Dec  7 18:48:05 2019 (serrano)                */
 ;*    Copyright   :  2000-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -118,7 +118,10 @@
 	   (macro $configure-have-spinlock::bool "BGL_HAVE_SPINLOCK")
 	   (macro $cfg-no-gc::long "BGL_NO_GC")
 	   (macro $cfg-boehm-gc::long "BGL_BOEHM_GC")
-	   (macro $cfg-saw-gc::long "BGL_SAW_GC"))
+	   (macro $cfg-saw-gc::long "BGL_SAW_GC")
+	   (macro $configure-have-alloca::bool "BGL_HAVE_ALLOCA")
+	   (macro $configure-have-c99stackalloc::bool "BGL_HAVE_C99STACKALLOC")
+	   )
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
@@ -280,7 +283,9 @@
      (os-arch . ,$configure-os-arch)
      (os-version . ,$configure-os-version)
      (thread-local-storage . ,(cond-expand (bigloo-c $configure-thread-local-storage) (else #f)))
-     (have-spinlock . ,(cond-expand (bigloo-c $configure-have-spinlock) (else #f)))))
+     (have-spinlock . ,(cond-expand (bigloo-c $configure-have-spinlock) (else #f)))
+     (have-alloca . ,(cond-expand (bigloo-c $configure-have-alloca) (else #f)))
+     (have-c99-stack-alloc . ,(cond-expand (bigloo-c $configure-have-c99stackalloc) (else #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */
@@ -288,7 +293,7 @@
 (define (bigloo-config #!optional config)
    (if (not config)
        (bigloo-configuration)
-       (let ((c (assq config (bigloo-configuration))))
+       (let ((c (assq config *bigloo-configuration*)))
 	  (if (pair? c)
 	      (cdr c)
 	      #unspecified))))

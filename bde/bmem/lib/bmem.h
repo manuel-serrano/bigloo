@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Mon Jun 10 06:25:33 2019 (serrano)                */
-/*    Copyright   :  2003-19 Manuel Serrano                            */
+/*    Last change :  Fri Jan 10 08:45:51 2020 (serrano)                */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -17,7 +17,13 @@
 /*    Identity                                                         */
 /*---------------------------------------------------------------------*/
 #define IDENT "bmem"
-#define VERSION "0.0a"
+#define VERSION "0.0.3"
+
+/*---------------------------------------------------------------------*/
+/*    BMEMDUMPFORMAT                                                   */
+/*---------------------------------------------------------------------*/
+#define BMEMDUMPFORMAT_SEXP 0
+#define BMEMDUMPFORMAT_JSON 1
 
 /*---------------------------------------------------------------------*/
 /*    FAIL                                                             */
@@ -44,6 +50,8 @@ typedef struct gc_info {
    unsigned long alloc_size;
    unsigned long heap_size;
    unsigned long live_size;
+   void *lastfun;
+   BGL_LONGLONG_T time;
 } gc_info_t;
 
 typedef struct fun_alloc_info {
@@ -97,6 +105,7 @@ extern void *(*____GC_realloc)( void *, size_t );
 extern void *(*____GC_malloc_atomic)( size_t );
 extern void *(*____GC_malloc_uncollectable)( size_t );
 extern void *(*____GC_add_gc_hook)( void (*)() );
+extern BGL_LONGLONG_T (*____bgl_current_nanoseconds)();
 
 extern void (*____bgl_init_objects)();
 
@@ -212,6 +221,7 @@ typedef struct pa_pair {
 #define PA_CDR( l ) ((l)->cdr)
 
 extern void for_each( void (*)(void *, void *), pa_pair_t *, void * );
+extern void for_each_json( void (*)(void *, void *), pa_pair_t *, void * );
 extern pa_pair_t *pa_cons( void *, pa_pair_t * );
 extern pa_pair_t *pa_reverse( pa_pair_t * );
 extern pa_pair_t *pa_assq( void *, pa_pair_t * );
@@ -221,6 +231,8 @@ extern pa_pair_t *pa_assq( void *, pa_pair_t * );
 /*---------------------------------------------------------------------*/
 extern void *bgl_debug_trace_top( int );
 extern char *bgl_debug_trace_top_name( int );
+extern char *bgl_debug_trace_symbol_name( void * );
+extern char *bgl_debug_trace_symbol_name_json( void * );
 extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 
 /*---------------------------------------------------------------------*/

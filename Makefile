@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Sep 20 11:11:02 2018 (serrano)                */
-#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Mar 26 18:14:29 2020 (serrano)                */
+#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -73,10 +73,6 @@ DISTRIBTMPDIR	= /tmp
 DISTRIBDIR	= $$HOME/prgm/distrib
 # The Bigloo html page directory
 HTMLPAGEDIR	= $$HOME/public_html/bigloo
-# The ftp host and location where to store Bigloo
-FTPHOSTNAME	= tahoe
-FTPHOST		= $(FTPHOSTNAME).unice.fr
-FTPDIR		= $$HOME/public_ftp
 # The library to be installed on the ftp server
 FTP_LIBRARIES	= contrib/lib-example.tar.gz
 # the libc we are testing for version
@@ -449,20 +445,20 @@ include Makefile.$(REVISIONSYSTEM)
 #*---------------------------------------------------------------------*/
 #*    distrib ...                                                      */
 #*---------------------------------------------------------------------*/
-distrib:
+distrib: ChangeLog
 	@ (cd $(DISTRIBTMPDIR) && \
-	   $(RM) -rf bigloo$(RELEASE) && $(RM) -rf bigloo && \
+	   $(RM) -rf bigloo-$(RELEASE) && $(RM) -rf bigloo && \
            $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \
            cd bigloo && \
            cat $(BOOTDIR)/Makefile.config | sed 's/BFEATUREFLAGS=.*/BFEATUREFLAGS=-srfi enable-gmp/' | sed 's/BOOTFLAGS=.*/BOOTFLAGS=/' > Makefile.config \
            && cp $(BOOTDIR)/Makefile.buildconfig Makefile.buildconfig \
            && $(MAKE) true-distrib)
-	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo$(RELEASE)
+	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo-$(RELEASE)
 
-true-distrib: $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
+true-distrib: $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz
 
-$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
-	@ $(RM) -f $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
+$(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz:
+	@ $(RM) -f $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz
 	@ for p in $(NO_DIST_FILES); do \
              $(RM) -rf $$p; \
           done
@@ -476,8 +472,8 @@ $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	@ $(RM) -f Makefile.config;
 	@ $(RM) -f Makefile.buildconfig;
 	@ (cd .. && \
-           mv bigloo bigloo$(RELEASE)$(VERSION) && \
-           tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE)$(VERSION))
+           mv bigloo bigloo-$(RELEASE)$(VERSION) && \
+           tar cfz $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz bigloo-$(RELEASE)$(VERSION))
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -493,24 +489,24 @@ zip: distrib-jvm
 distrib-jvm: 
 	@ (cd $(DISTRIBTMPDIR) && \
 	   $(RM) -rf bigloo && \
-	   $(RM) -rf bigloo$(RELEASE) && \
+	   $(RM) -rf bigloo-$(RELEASE) && \
            $(RM) -rf bigloo && mkdir bigloo && cd bigloo && \
            $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \
            cd bigloo && \
            cp $(BOOTDIR)/Makefile.config Makefile.config && \
            $(MAKE) true-distrib-jvm)
 	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo
-	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo$(RELEASE)
+	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo-$(RELEASE)
 
-true-distrib-jvm: $(DISTRIBDIR)/bigloo$(RELEASE).zip
+true-distrib-jvm: $(DISTRIBDIR)/bigloo-$(RELEASE).zip
 
-$(DISTRIBDIR)/bigloo$(RELEASE).zip: manual-pdf
+$(DISTRIBDIR)/bigloo-$(RELEASE).zip: manual-pdf
 	@ mkdir -p bin
-	@ mkdir -p bigloo$(RELEASE)/lib/$(RELEASE)
-	@ mkdir -p bigloo$(RELEASE)/bin
-	@ (ver=`echo $(RELEASE) | sed -e 's/[.]//'` && \
-           cat win32/install.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo$(RELEASE)/install.bat && \
-           cat win32/uninstall.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo$(RELEASE)/uninstall.bat)
+	@ mkdir -p bigloo-$(RELEASE)/lib/-$(RELEASE)
+	@ mkdir -p bigloo-$(RELEASE)/bin
+	@ (ver=`echo -$(RELEASE) | sed -e 's/[.]//'` && \
+           cat win32/install.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo-$(RELEASE)/install.bat && \
+           cat win32/uninstall.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo-$(RELEASE)/uninstall.bat)
 	@ (cp $(BOOTBINDIR)/bigloo bin/bigloo)
 	@ (cp $(BOOTBINDIR)/bglafile bin/bglafile)
 	@ (cp $(BOOTBINDIR)/bgljfile bin/bgljfile)
@@ -530,32 +526,32 @@ $(DISTRIBDIR)/bigloo$(RELEASE).zip: manual-pdf
 	@ $(MAKE) -f $(BOOTDIR)/Makefile true-comptime-jvm
 	@ (cd bde && $(MAKE) jvm)
 	@ (cd jigloo && $(MAKE) jvm)
-	@ mkdir bigloo$(RELEASE)/lib/BGL-TMP
-	@ cp lib/$(RELEASE)/*.jheap bigloo$(RELEASE)/lib/BGL-TMP
-	@ cp lib/$(RELEASE)/*.zip bigloo$(RELEASE)/lib/BGL-TMP
-	@ mkdir bigloo$(RELEASE)/lib/bigloo
-	@ mv bigloo$(RELEASE)/lib/BGL-TMP bigloo$(RELEASE)/lib/bigloo/`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ cp bin/bigloo.jar bigloo$(RELEASE)/bin/bigloo.jar
-	@ cat bin/bigloo.jvm | sed -e "s/\/tmp\/bigloo\/bin\//$(JVMBASEDIR)\\\\bin\\\\/" > bigloo$(RELEASE)/bin/bigloo.bat
-	@ cp bde/afile.class bigloo$(RELEASE)/bin
-	@ cp bde/jfile.class bigloo$(RELEASE)/bin
-	@ cp jigloo/jigloo.class bigloo$(RELEASE)/bin
-	@ cp INSTALL.jvm bigloo$(RELEASE)/INSTALL
-	@ cp doc/README.jvm bigloo$(RELEASE)/README
-	@ cp manuals/bigloo.pdf bigloo$(RELEASE)/bigloo.pdf
-	@ (mkdir bigloo$(RELEASE)/demo; \
-           mkdir bigloo$(RELEASE)/demo/awt; \
-           mkdir bigloo$(RELEASE)/demo/maze; \
-           cp examples/Jawt/README.jvm bigloo$(RELEASE)/demo/awt/README; \
-           cp examples/Jawt/Utils.java bigloo$(RELEASE)/demo/awt/Utils.java; \
-           cp examples/Jawt/awt.scm bigloo$(RELEASE)/demo/awt/awt.scm; \
-           cp examples/Maze/README.jvm bigloo$(RELEASE)/demo/maze/README; \
-           cp examples/Maze/maze.scm bigloo$(RELEASE)/demo/maze/maze.scm)
-	@ $(RM) -r bigloo$(RELEASE)/lib/$(RELEASE)
-	@ mv bigloo$(RELEASE) bgl`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ $(RM) -f $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip
-	@ $(ZIP) -r $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip bgl`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ echo "$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).zip done..."
+	@ mkdir bigloo-$(RELEASE)/lib/BGL-TMP
+	@ cp lib/-$(RELEASE)/*.jheap bigloo-$(RELEASE)/lib/BGL-TMP
+	@ cp lib/-$(RELEASE)/*.zip bigloo-$(RELEASE)/lib/BGL-TMP
+	@ mkdir bigloo-$(RELEASE)/lib/bigloo
+	@ mv bigloo-$(RELEASE)/lib/BGL-TMP bigloo-$(RELEASE)/lib/bigloo/`echo -$(RELEASE) | sed -e 's/[.]//'`
+	@ cp bin/bigloo.jar bigloo-$(RELEASE)/bin/bigloo.jar
+	@ cat bin/bigloo.jvm | sed -e "s/\/tmp\/bigloo\/bin\//$(JVMBASEDIR)\\\\bin\\\\/" > bigloo-$(RELEASE)/bin/bigloo.bat
+	@ cp bde/afile.class bigloo-$(RELEASE)/bin
+	@ cp bde/jfile.class bigloo-$(RELEASE)/bin
+	@ cp jigloo/jigloo.class bigloo-$(RELEASE)/bin
+	@ cp INSTALL.jvm bigloo-$(RELEASE)/INSTALL
+	@ cp doc/README.jvm bigloo-$(RELEASE)/README
+	@ cp manuals/bigloo.pdf bigloo-$(RELEASE)/bigloo.pdf
+	@ (mkdir bigloo-$(RELEASE)/demo; \
+           mkdir bigloo-$(RELEASE)/demo/awt; \
+           mkdir bigloo-$(RELEASE)/demo/maze; \
+           cp examples/Jawt/README.jvm bigloo-$(RELEASE)/demo/awt/README; \
+           cp examples/Jawt/Utils.java bigloo-$(RELEASE)/demo/awt/Utils.java; \
+           cp examples/Jawt/awt.scm bigloo-$(RELEASE)/demo/awt/awt.scm; \
+           cp examples/Maze/README.jvm bigloo-$(RELEASE)/demo/maze/README; \
+           cp examples/Maze/maze.scm bigloo-$(RELEASE)/demo/maze/maze.scm)
+	@ $(RM) -r bigloo-$(RELEASE)/lib/-$(RELEASE)
+	@ mv bigloo-$(RELEASE) bgl`echo -$(RELEASE) | sed -e 's/[.]//'`
+	@ $(RM) -f $(DISTRIBDIR)/bigloo`echo -$(RELEASE) | sed -e 's/[.]//'`.zip
+	@ $(ZIP) -r $(DISTRIBDIR)/bigloo`echo -$(RELEASE) | sed -e 's/[.]//'`.zip bgl`echo -$(RELEASE) | sed -e 's/[.]//'`
+	@ echo "$(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).zip done..."
 	@ echo "-------------------------------"
 
 # This entry as to be isolated from the general bigloo_s.zip rule
@@ -566,7 +562,7 @@ true-comptime-jvm:
 	 (cd comptime && \
            $(MAKE) .afile .jfile jvm \
                    JARPATH=`echo '$(BINDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`\
-                   CLASSPATH=`echo '$(LIBDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`\
+                   CLASSPATH=`echo '$(DESTDIR)$(LIBDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`\
                    LIBDIR=`echo '$(BOOTLIBDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`)
 
 #*---------------------------------------------------------------------*/
@@ -613,18 +609,6 @@ ftplibrary:
           done
 	@ chmod a+r -R library
 	@ chmod a+x library
-
-#*---------------------------------------------------------------------*/
-#*    ftp                                                              */
-#*    -------------------------------------------------------------    */
-#*    Set up the ftp file for the Bigloo distribution                  */
-#*---------------------------------------------------------------------*/
-ftp:
-	@ rcp $(DISTRIBDIR)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm \
-              $(FTPHOSTNAME):$(FTPDIR)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm
-	@ rcp $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz         \
-              $(FTPHOSTNAME):$(FTPDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
-	@ (rsh $(FTPHOSTNAME) chmod a+rx -R $(FTPDIR))
 
 #*---------------------------------------------------------------------*/
 #*    test                                                             */
@@ -724,14 +708,14 @@ install-libs: install-dirs
 	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libuv install; \
         fi
-	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
-         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.config)
-	(if [ $(BOOTLIBDIR) != $(LIBDIR)/$(FILDIR) ]; then \
-           cp $(BOOTLIBDIR)/bigloo_config.sch $(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
+	(cp Makefile.config $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.config && \
+         chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.config)
+	(if [ $(BOOTLIBDIR) != $(DESTDIR)$(LIBDIR)/$(FILDIR) ]; then \
+           cp $(BOOTLIBDIR)/bigloo_config.sch $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
+           chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
          fi)
-	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
-         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.misc)
+	(cp Makefile.misc $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.misc && \
+         chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.misc)
 
 install-apis: install-dirs
 	$(MAKE) -C api install
@@ -768,10 +752,13 @@ install-dirs:
 	   mkdir -p $(DESTDIR)$(BINDIR) && \
              chmod $(MODDIR) $(DESTDIR)$(BINDIR) || exit 1; \
         fi;
-	(base=`echo $(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
+	(base=`echo $(DESTDIR)$(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
          bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
-         if [ ! -d $(LIBDIR) ]; then \
-            mkdir -p $(LIBDIR) && chmod $(MODDIR) $(LIBDIR); \
+         if [ ! -d $(DESTDIR)$(LIBDIR) ]; then \
+            mkdir -p $(DESTDIR)$(LIBDIR) && chmod $(MODDIR) $(DESTDIR)$(LIBDIR); \
+         fi && \
+         if [ ! -d $(DESTDIR)$(LIBDIR)/pkgconfig ]; then \
+            mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/pkgconfig; \
          fi && \
          if [ ! -d $$bbase ]; then \
             mkdir -p $$bbase && chmod $(MODDIR) $$bbase; \
@@ -779,8 +766,8 @@ install-dirs:
          if [ ! -d $$base ]; then \
             mkdir -p $$base && chmod $(MODDIR) $$base; \
          fi)
-	if [ ! -d $(LIBDIR)/$(FILDIR) ]; then \
-          mkdir -p $(LIBDIR)/$(FILDIR) && chmod $(MODDIR) $(LIBDIR)/$(FILDIR); \
+	if [ ! -d $(DESTDIR)$(LIBDIR)/$(FILDIR) ]; then \
+          mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR) && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR); \
         fi
 	if [ ! -d $(DOCDIR) ]; then \
 	  mkdir -p $(DOCDIR) && chmod $(MODDIR) $(DOCDIR); \
@@ -811,8 +798,8 @@ uninstall: uninstall-bee
 	$(MAKE) -C runtime uninstall
 	-$(MAKE) -C manuals uninstall
 	$(MAKE) -C api uninstall
-	$(RM) -f $(LIBDIR)/Makefile.config
-	$(RM) -f $(LIBDIR)/Makefile.misc
+	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.config
+	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.misc
 	$(MAKE) -C bglpkg uninstall
 	$(MAKE) -C api uninstall-devel
 

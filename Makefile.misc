@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/Makefile.misc                        */
+#*    serrano/prgm/project/bigloo/bigloo/Makefile.misc                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Mon Jul  3 17:24:48 2017 (serrano)                */
-#*    Copyright   :  2002-17 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:25:46 2020 (serrano)                */
+#*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
 #*=====================================================================*/
@@ -53,7 +53,7 @@ shared:
            fi; \
            if [ "$(LDINSTALLNAME) " != " " ]; then \
              if [ "$(LDINSTALLNAMEDIR) " = " " ]; then \
-               ldinstallnamedir=$(LIBDIR)/$(FILDIR); \
+               ldinstallnamedir=$(DESTDIR)$(LIBDIR)/$(FILDIR); \
              else \
                ldinstallnamedir=$(LDINSTALLNAMEDIR); \
              fi; \
@@ -145,30 +145,30 @@ install-lib:
 	fi
 
 install-static-lib:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	  $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).a \
-             $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
-          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
-          $(RANLIB) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a || exit 3; \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+          chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+          $(RANLIB) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a || exit 3; \
         fi
 
 install-shared-lib:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
           if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
             $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
-               $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
-            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
+               $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
+            chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
             if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a ]; then \
               $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a \
-               $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a && \
-            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
+               $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a && \
+            chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
             fi \
           fi \
         fi
 
 install-link-lib:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  (cd $(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  (cd $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
            $(RM) -f $(LIB).a && \
            $(LN_S) $(LN).a $(LIB).a && $(RANLIB) $(LIB).a) \
         fi
@@ -179,6 +179,6 @@ install-link-lib:
         fi
 
 uninstall-lib:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX)
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX)
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a

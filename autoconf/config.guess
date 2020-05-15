@@ -1,24 +1,24 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/gcconfigureopt              */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/config.guess         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Feb 16 17:39:56 2010                          */
-#*    Last change :  Thu Sep 23 13:41:09 2010 (serrano)                */
-#*    Copyright   :  2010 Manuel Serrano                               */
+#*    Last change :  Tue Dec 10 07:32:39 2019 (serrano)                */
+#*    Copyright   :  2010-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    gcconfigureopt                                                   */
+#*    Third party configure guess                                      */
 #*=====================================================================*/
 
-gcdir=""
+dir=""
 
 while : ; do
   case $1 in
     "")
       break;;
 
-    --gc-dir=*|-gc-dir=*)
-      gcdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
+    --dir=*|-dir=*)
+      dir="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -26,9 +26,9 @@ while : ; do
   shift
 done
 
-chmod u+x $gcdir/config.guess
-build=`eval "$BUILDSH $gcdir/config.guess"`
-host=`eval "$HOSTSH $gcdir/config.guess"`
+chmod u+x $dir/config.guess
+build=`eval "$BUILDSH $dir/config.guess"`
+host=`eval "$HOSTSH $dir/config.guess"`
 
 opt=
 

@@ -1,19 +1,19 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/libunistring/configure-unistring     */
+#*    .../project/bigloo/bigloo/libunistring/configure-unistring       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Mon Oct  2 08:28:36 2017 (serrano)                */
-#*    Copyright   :  2009-17 Manuel Serrano                            */
+#*    Last change :  Wed Dec 11 09:37:12 2019 (serrano)                */
+#*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the unistring library.                  */
 #*=====================================================================*/
 
-echo "configure unistring with \"CC=$cc ./configure --libdir=$libdir/$fildir --includedir=$libdir/fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP $libunistringconfigureopt\"" >> ../configure.log
+echo "configure unistring with \"CC=$cc ./configure --libdir=$libdir/$fildir --includedir=$libdir/fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$docdir --mandir=$mandir $unistringconfigureopt\"" >> ../configure.log
 
 (cd libunistring-$unistringversion && \
  export CC=$cc && \
- ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir  --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP $unistringconfigureopt 2>&1 >> ../../configure.log || \
+ ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir  --bindir=$bootdir/BGLINSTALLTMP --docdir=$docdir --mandir=$mandir --infodir=$infodir $unistringconfigureopt 2>&1 >> ../../configure.log || \
  (echo "configure unistring fail, see configure.log file." && exit 1)) || exit 1
 

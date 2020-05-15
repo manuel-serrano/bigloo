@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Tue Feb 26 13:56:22 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  8 13:04:14 2020 (serrano)                */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -16,8 +16,8 @@
    (include "Engine/pass.sch"
 	    "Ast/node.sch"
 	    "Tools/location.sch")
-   (import ast_let)
-   (import  tools_shape
+   (import  ast_let
+	    tools_shape
 	    tools_error
 	    tools_misc
 	    tools_location
@@ -28,6 +28,7 @@
 	    module_module
 	    engine_param
 	    (mark-symbol-non-user! ast_ident)
+	    trace_isloop
 	    (find-global ast_env)
 	    (find-location tools_location))
    (export  (trace-walk! tree)))
@@ -38,7 +39,7 @@
 (define (trace-walk! globals)
    (pass-prelude "Trace")
    ;; We make some extra tracing for top level set! expression. Top level
-   ;; set! expression that change a global variable are traced. This enables
+   ;; set! expressions that change global variables are traced. This enables
    ;; tracing of toplevel defined closures. This transformation is applied
    ;; before regular tracing because it only scans [begin] top level forms.
    ;; It stops before any nested expression.
@@ -47,7 +48,7 @@
       (if (global? glo)
 	  (with-access::sfun (global-value glo) (body)
 	     (set! body (toplevel-trace-node body)))))
-   ;; then, we trace all functions (including the toplevel one)
+   ;; then, trace all functions (including the toplevel one)
    (for-each (lambda (v) (trace-fun! v '() *compiler-debug-trace*)) globals)
    (pass-postlude globals))
 
@@ -380,10 +381,17 @@
 ;*    trace-node ::let-fun ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (trace-node node::let-fun stack level)
-   (with-access::let-fun node (body locals)
-      (for-each (lambda (v) (trace-fun! v stack level)) locals)
-      (set! body (trace-node body stack level))
-      node))
+   (if (isloop? node)
+       (with-access::let-fun node (body locals loc)
+	  (let* ((var (car locals))
+		 (t (strict-node-type (node-type body) (variable-type var)))
+		 (id (trace-id var)))
+	     (set! body (make-traced-node body t id loc '())))
+	  node)
+       (with-access::let-fun node (body locals)
+	  (for-each (lambda (v) (trace-fun! v stack level)) locals)
+	  (set! body (trace-node body stack level))
+	  node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::let-var ...                                         */
@@ -471,7 +479,7 @@
 ;*    This method instruments global variable affections provided      */
 ;*    those affections are:                                            */
 ;*      - top level                                                    */
-;*      - they set composed values (i.e. non trivial values).          */
+;*      - they assign non trivial values (i.e., non literal values).   */
 ;*---------------------------------------------------------------------*/
 (define-method (toplevel-trace-node node::setq)
    (with-access::setq node (var value loc)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Mar  7 17:57:28 2019 (serrano)                */
+#*    Last change :  Fri Mar 27 12:34:05 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -51,6 +51,8 @@ ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= 
 else
 EXTRALIBS	= $(ALSALIBS)
+EXTRALIBS_U	= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_S	= -lbigloomultimedia_s-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

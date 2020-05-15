@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/arch/Makefile                        */
+#*    serrano/prgm/project/bigloo/bigloo/arch/Makefile                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:40:11 2010                          */
-#*    Last change :  Sun Jul  9 10:19:14 2017 (serrano)                */
-#*    Copyright   :  2010-17 Manuel Serrano                            */
+#*    Last change :  Fri Dec 13 10:14:23 2019 (serrano)                */
+#*    Copyright   :  2010-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles arch specific parts.                   */
 #*=====================================================================*/
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    DIRECTORIES                                                      */
 #*---------------------------------------------------------------------*/
-DIRECTORIES= macosx debian archlinux android
+DIRECTORIES= macosx debian archlinux android raspberry
 
 #*---------------------------------------------------------------------*/
 #*    Populating the ARCHs                                             */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Jan 14 14:01:29 2019 (serrano)                */
+;*    Last change :  Wed Oct  9 13:00:21 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -22,6 +22,7 @@
 	    (export find-runtime-type "bgl_find_runtime_type")
 	    (export typeof "bgl_typeof")
 	    (export c-debugging-show-type "bgl_show_type")
+	    (export stack-overflow-error "bgl_stack_overflow_error")
 	    
 	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
 	    (macro $push-trace::obj (::obj ::obj) "BGL_PUSH_TRACE")
@@ -232,6 +233,7 @@
 
 	    (type-error fname loc proc type obj)
 	    (index-out-of-bounds-error fname loc proc obj i::int len::int)
+	    (stack-overflow-error)
 
 	    (module-init-error ::string ::string)
 
@@ -336,6 +338,36 @@
        (raise (index-out-of-bounds-error #f #f proc obj msg -1)))
       (else
        (error proc msg obj))))
+
+;*---------------------------------------------------------------------*/
+;*    stack-overflow-error ...                                         */
+;*---------------------------------------------------------------------*/
+(define (stack-overflow-error)
+   (let ((stk (get-trace-stack)))
+      (match-case stk
+	 (((?proc (at ?fname ?loc)) . ?-)
+	  (raise
+	     (instantiate::&stack-overflow-error
+		(fname fname)
+		(location loc)
+		(stack stk)
+		(proc proc)
+		(msg "stack overflow")
+		(obj (current-dynamic-env)))))
+	 ((?proc . ?-)
+	  (raise
+	     (instantiate::&stack-overflow-error
+		(stack stk)
+		(proc proc)
+		(msg "stack overflow")
+		(obj (current-dynamic-env)))))
+	 (else
+	  (raise
+	     (instantiate::&stack-overflow-error
+		(stack stk)
+		(proc #f)
+		(msg "stack overflow")
+		(obj (current-dynamic-env))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exit ...                                                         */
@@ -667,6 +699,8 @@
        (open-input-file fname))
       ((string=? fname "stdin")
        (open-input-string (input-port-buffer (current-input-port))))
+      ((string-prefix? "string://" fname)
+       (open-input-string (substring fname 9)))
       (else
        #f)))
 
@@ -677,6 +711,10 @@
    (cond
       ((file-exists? file)
        (relative-file-name file))
+      ((string-prefix? "string://" file)
+       (if (<=fx (string-length file) (+fx 9 sz))
+	   (substring file 9)
+	   (string-append (substring file 9 (+fx sz 6)) "...")))
       ((<=fx (string-length file) sz)
        file)
       (else

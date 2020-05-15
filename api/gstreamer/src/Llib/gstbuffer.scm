@@ -16,10 +16,9 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
-	    __gstreamer_gstobject
-	    __gstreamer_gststructure
-	    __gstreamer_gstcaps)
+   (use	    __gstreamer_gsterror)
+
+   (import  __gstreamer_gststructure)
 
    (extern  (macro $string-to-bstring-len::bstring
 	       (::string ::long) "string_to_bstring_len")
@@ -33,25 +32,30 @@
 		read-only
 		(get (lambda (o)
 			(with-access::gst-buffer o ($builtin)
-			   ($gst-buffer-size $builtin)))))
+			   ($gst-buffer-get-size $builtin)))))
 	       (data::string
 		(get (lambda (o)
 			(with-access::gst-buffer o ($builtin)
-			   ($gst-buffer-data $builtin))))
+			   ($gst-buffer-get-string $builtin))))
 		(set (lambda (o v)
 			(with-access::gst-buffer o ($builtin)
-			   ($gst-buffer-set-data! $builtin v (string-length v)))
+			   ($gst-buffer-set-string! $builtin v))
 			o)))
-	       (caps::gst-caps
+	       (dts::llong
 		read-only
 		(get (lambda (o)
 			(with-access::gst-buffer o ($builtin)
-			   ($make-gst-caps ($gst-buffer-caps $builtin) #f)))))
+			   ($gst-buffer-dts $builtin)))))
+	       (pts::llong
+		read-only
+		(get (lambda (o)
+			(with-access::gst-buffer o ($builtin)
+			   ($gst-buffer-pts $builtin)))))
 	       (timestamp::llong
 		read-only
 		(get (lambda (o)
 			(with-access::gst-buffer o ($builtin)
-			   ($gst-buffer-timestamp $builtin)))))
+			   ($gst-buffer-dts-or-pts $builtin)))))
 	       (duration::llong
 		read-only
 		(get (lambda (o)
@@ -74,7 +78,7 @@
 ;*---------------------------------------------------------------------*/
 (define (%gst-buffer-init o::gst-buffer)
    (with-access::gst-buffer o ($builtin $finalizer)
-      (when ($gst-element-null? $builtin)
+      (when ($gst-buffer-null? $builtin)
 	 (raise (instantiate::&gst-create-error
 		   (proc '%gst-buffer-init)
 		   (msg "Illegal gst-buffer")
