@@ -30,8 +30,11 @@ The three main steps of the cross compilation procedure are:
 In this section we will refer to `ANDROIDROOT` as the directory where we will
 install all the tools and libraries needed for Android.
 
+A. Activate the 
+[developper mode](https://developer.android.com/studio/debug/dev-options)
+on the device.
 
-A. Install `adb`
+B. Install `adb`
 
 On Debian this can be done with:
 
@@ -39,7 +42,7 @@ On Debian this can be done with:
 (in host) sudo apt install adb
 ```
 
-B. Download
+C. Download
 
 Create the `ANDROIDROOT` directory and download the essential components
 from Google.
@@ -78,7 +81,7 @@ The `ANDROIDROOT` at this stage should look like:
 android-ndk-r21b/  android-sdk-linux/  download/  licenses/  platforms/  platform-tools/  tools/
 ```
 
-C. Create a custom cc script
+D. Create a custom cc script
 
 Create a script that will be used to invoke the C compiler for
 compiling and linking Bigloo and its library:
@@ -96,7 +99,7 @@ exec \$android/bin/clang -target armv7a-linux-androideabi26 "\$@"
 EOF
 ```
 
-D. Bigloo host installation
+E. Bigloo host installation
 
 Install Bigloo for your host, as any regular Bigloo version. In the rest
 of this document, we will assume that Bigloo has been installed in the

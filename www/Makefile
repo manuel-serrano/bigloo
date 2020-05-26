@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/www/Makefile.md               */
+#*    serrano/prgm/project/bigloo/bigloo/www/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Thu May 14 12:35:54 2020 (serrano)                */
+#*    Last change :  Thu May 14 12:49:17 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
@@ -98,7 +98,8 @@ pop:
 #*---------------------------------------------------------------------*/
 #*    index.html ...                                                   */
 #*---------------------------------------------------------------------*/
-index.html: _index.md www.js xml.js bigloo.svg www.json
+index.html: _index.md www.js xml.js bigloo.svg www.json \
+  fib.scm fib-mt.scm flac.scm
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
           ./www.js "compile-main" $< > $@ \
           || ($(RM) $@; exit 1)
@@ -148,7 +149,7 @@ node-idx.json: node.js
 #*---------------------------------------------------------------------*/
 download.html: license.md ../INSTALL.md debian.md homebrew.md
 lang.html: _lang.md
-manual.html: manual-toc.js ../manuals/bigloo.texi
+manual.html: manual-toc.js ../manuals/bigloo.texi ../manuals/modules.texi
 bib.html: _bibtex.hop bigloo.bib
 cross.html: ../arch/raspberry/README.cross.md \
   ../arch/android/README.cross.md

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Sun Aug 25 09:16:04 2019 (serrano)                */
-;*    Copyright   :  2005-19 Manuel Serrano                            */
+;*    Last change :  Fri May 15 07:20:52 2020 (serrano)                */
+;*    Copyright   :  2005-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -301,8 +301,7 @@
 		 (init (find-file/path (library-init-file lib) path))
 		 (be (cond-expand
 			(bigloo-c 'bigloo-c)
-			(bigloo-jvm 'bigloo-jvm)
-			(bigloo-.net 'bigloo-.net))))
+			(bigloo-jvm 'bigloo-jvm))))
 	     (when init (loadq init))
 	     (let* ((info (library-info lib))
 		    (n (make-shared-lib-name
@@ -412,8 +411,7 @@
 				     (cons "." (unix-path->list venv))))))
 		    (be (cond-expand
 			   (bigloo-c 'bigloo-c)
-			   (bigloo-jvm 'bigloo-jvm)
-			   (bigloo-.net 'bigloo-.net))))
+			   (bigloo-jvm 'bigloo-jvm))))
 		(library-load-init lib path)
 		(let* ((info (library-info lib))
 		       (n (make-shared-lib-name
@@ -478,8 +476,7 @@
 			   (cons "." (unix-path->list venv))))))
 	  (suffix (cond-expand
 		     (bigloo-c ".heap")
-		     (bigloo-jvm ".jheap")
-		     (bigloo-.net ".jheap")))
+		     (bigloo-jvm ".jheap")))
 	  (heap (string-append (symbol->string lib) suffix))
 	  (init (string-append (symbol->string lib) ".init")))
       (string? (or (find-file/path heap path)

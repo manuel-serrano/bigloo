@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/www/hss/doc.hss               */
+/*    serrano/prgm/project/bigloo/bigloo/www/hss/www.hss               */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:20:48 2015                          */
-/*    Last change :  Sat May  9 06:18:40 2020 (serrano)                */
+/*    Last change :  Thu May 14 14:41:01 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    HSS for the Hop.js documentation                                 */
@@ -481,7 +481,6 @@ body pre code {
 }
 
 pre.fontifier-prog {
-  background-color: #fafafa;
   background-color: #ffffff;
 }
 

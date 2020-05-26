@@ -16,10 +16,10 @@ ${<div class="row">
   <div class="col-xs-4">
     <xml.downloadButton
        class="success"
-       title="Stable"
+       title="Latest"
        icon="glyphicon-download"
-	   label=${"bigloo-stable.tgz (" + cfg.version + ")"}
-       href=${cfg.bglurlbase + "/bigloo-stable.tar.gz"}/>
+	   label=${"bigloo-latest.tgz (" + cfg.version + ")"}
+       href=${cfg.bglurlbase + "/bigloo-latest.tar.gz"}/>
   </div>
   <div class="col-xs-4">
     <xml.downloadButton

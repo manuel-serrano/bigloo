@@ -29,7 +29,7 @@ Bigloo users, _i.e.,_ programmers willing to use Bigloo and compile and
 run their own applications, should use the stable pre-bundled or
 pre-compiled versions available at:
 
-   [ftp://ftp-sop.inria.fr/indes/fp/Bigloo](ftp://ftp-sop.inria.fr/indes/fp/Bigloo)
+   [http://www-sop.inria.fr/indes/fp/Bigloo/download.html](http://www-sop.inria.fr/indes/fp/Bigloo/download.html)
 
 
 Installation
