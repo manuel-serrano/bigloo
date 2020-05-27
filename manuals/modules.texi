@@ -263,42 +263,49 @@ have to be @emph{exported}. Export clauses are in charge of this task and an
 @var{export} is a list of the form:
 
 @smallexample
-<export>  @expansion{} <eclause> @dots{}
-<eclause> @expansion{} <ident>
-            | (inline <ident> <ident> @dots{})
-            | (generic <ident> <ident> <ident> @dots{})
-            | (<ident> <ident> @dots{})
-            | <class>
-            | (macro <ident> <ident> @dots{})
-            | (expander <ident>)
-            | (syntax <ident>)
+<export>      @expansion{} <eclause> @dots{}
+<eclause>     @expansion{} <varexport>
+                | <funexport>
+                | <macroexport>
+                | <classexport>
+<varexport>   @expansion{} <ident>
+<funexport>   @expansion{} | (<ident> <ident> @dots{})
+                | (inline <ident> <ident> @dots{})
+                | (generic <ident> <ident> <ident> @dots{})
+<classexport> @expansion{} <class>
+<macroexport> @expansion{} (macro <ident> <ident> @dots{})
+                | (expander <ident>)
+                | (syntax <ident>)
 @end smallexample
-
-The first form of @var{eclause} allows the variable @var{ident} be exported,
-the second allows the function @var{ident}, always regarded as immutable
-when exported this way, to be exported and the third exports an
-inline-procedure (@pxref{Inline Procedures}) whose name is extracted from
-the first @var{ident} after the word @var{inline}. The last two are both
-connected with Bigloo's object system.  The @var{generic} clause exports
-generic functions (@pxref{Generic functions}) and @var{class} clause exports
-classes (@pxref{Class declaration}).
 
 Note: Only bindings defined in module @code{m} can be @emph{exported} 
 by @code{m} (i.e. bindings @emph{imported} by @code{m} cannot be 
 @emph{exported} by @code{m}).
 
-Type information, specified in any @var{ident} in an export clause, is used
-by Bigloo. Where no type information is given, a default generic type named
-@code{obj} is used.
+The first form of @var{varexport} allows the variable @var{ident} be
+exported.  Exported variables are mutable. That is, modules importing
+a variable can change its value.
+
+The form @var{funexport} exports functions. An exported function is
+read-only. No module can modify its value. The prototype of exported
+functions must be explicitly specified.
+
+Type information, specified in any @var{ident} in an export clause, is
+used by Bigloo. Where no type information is given, a default generic
+type named @code{obj} is used.
 
 Note: The last formal argument of a multiple arity function can
 not be typed because this argument is bound to be a @code{pair}
 or @code{null}. This union cannot be denoted by any type.
 
-Here is an example of the module @code{foo} that exports bindings:
+Inline functions (@pxref{Inline Procedures}) prototypes are prefixed
+by the @code{inline} keyword. Pay attention that in order to export an
+inline function, all the variables used in that function body must be
+exported too.  It is an error to export a non-inline function using
+the @code{inline} keyword. Example:
 
 @smalllisp
-(module foo
+(module mod-exp
    (export 
       @r{;; export the @code{bar} mutable variable}
       bar
@@ -309,6 +316,50 @@ Here is an example of the module @code{foo} that exports bindings:
       @r{;; that takes at least one argument.}
       (inline gee x . z)))
 @end smalllisp
+
+Generic functions (@pxref{Generic functions}) are exported by using
+the @code{generic} keyword.  Note that methods are not exported. Only
+the generic function they are attached to are. It is an error to
+export a non-generic function using the @code{inline} keyword.
+Example:
+
+@smalllisp
+(module mod-exp-object
+   (export 
+      @r{;; define tow classes an export them}
+      (class point2d x y)
+      (class point3d::point2d z)
+      @r{;; export a generic function}
+      (generic show ::point2d ::output-port)))
+@end smalllisp
+
+It is an error to export an inline or a generic function without using
+the proper keyword. 
+
+The last form @var{macroexport} enables macro and expanders to be
+exported. The prototype of the macro should be specified on the export
+clause. Example:
+
+@smalllisp
+(module mod-exp-macros
+   (export 
+      @r{;; exports the ``add'' macro}
+      (macro add x y)
+      @r{;; exports the ``+'' expander}
+      (expander +)))
+
+(define-macro (add x y)
+   (if (and (number? x) (number? y))
+       (+ x y)
+       `(+ ,x ,y)))
+
+(define-expander +
+   (lambda (x e)
+      (match-case x
+         ((+ ?n ?m) (+ n m))
+         (else (map (lambda (z e) (e z e)) x)))))
+@end smalllisp
+
 
 @end deffn
 
@@ -791,7 +842,9 @@ Choosing an import clause where the file-names are specified or creating a
 ``module access file''. Such a file must contain only one @var{list}, each
 element of the list being of the form:
 
+@smalllisp
 (module-name "file-name" ... "file-name")
+@end smalllisp
 
 @noindent Use the @samp{-afile <file>} option to specify the ``module access
 file'' when compiling. By default Bigloo checks if a file named @code{.afile}

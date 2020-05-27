@@ -1,5 +1,5 @@
 (module fib
-   (extern (macro printf::int (::char* ::char* ::long) "printf"))
+   (extern (macro printf::int (::string ::string ::long) "printf"))
    (main main))
 
 (define (main x)
