@@ -1,0 +1,85 @@
+.contribs #contribs.container {
+  max-width: 960px;
+}
+
+#contribs .contrib-header {
+  max-width: 700px;
+}
+
+#contribs .card-deck {
+    display: flex;
+}
+
+#contribs .card-deck .card {
+  min-width: 220px;
+}
+
+#contribs .border-top {
+    border-top: 1px solid #e5e5e5;
+}
+
+#contribs .border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+#contribs .box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+#contribs .card-deck .card {
+    min-width: 220px;
+}
+
+#contribs .card-deck .card h4 {
+    font-weight: bold;
+}
+
+#contribs .mb-4 {
+    margin-bottom: 1.5rem!important;
+}
+
+#contribs .card {
+    display: flex;
+    flex: 1 0 0%;
+    flex-direction: column;
+    margin-left: 15px;
+    margin-right: 15px;
+    position: relative;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+    box-sizing: border-box;
+}
+
+#contribs .card .card-description {
+    margin: 1ex 1em 0 1em;
+}
+
+#contribs .card ul {
+    list-style: none;
+    display: block;
+    padding: 0;
+}
+
+#contribs .card li {
+    padding-bottom: 0.8ex;
+}
+#contribs .card h1.card-title {
+    font-size: 2.5rem;
+}
+
+#contribs .card-header {
+    padding: .75rem 1.25rem;
+    margin-bottom: 0;
+    background-color: rgba( 0,0,0,.03);
+    border-bottom: 1px solid rgba(0,0,0,0.125);
+}
+
+@media (min-width: 576px) {
+    #contribs .card-deck {
+	flex-flow: row wrap;
+	margin-right: -15px;
+	margin-left: -15px;
+    }
+}

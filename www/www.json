@@ -9,11 +9,11 @@
    "logo": "bigloo.svg",
    "chapters": [ 
       { "name": "Home", "icon": "glyphicon-home", "href": "index.html" },
-      { "name": "License", "icon": "glyphicon-copyright-mark", "href": "license.html" },
+      { "name": "License", "icon": "glyphicon-copyright-mark", "href": "license.html", "toc": false },
       { "name": "Download", "icon": "glyphicon-download", "href": "download.html" },
       { "name": "Cross", "icon": "glyphicon-wrench", "href": "cross.html" },
       { "name": "Manual", "icon": "glyphicon-book", "href": "manual.html" },
       { "name": "Bibliography", "icon": "glyphicon-comment", "href": "bib.html" },
-      { "name": "Contribs", "icon": "glyphicon-asterisk", "href": "contribs.html" }
+      { "name": "Contribs", "icon": "glyphicon-asterisk", "href": "contribs.html", "toc": false }
    ]
 }
