@@ -13,7 +13,7 @@
       { "name": "Download", "icon": "glyphicon-download", "href": "download.html" },
       { "name": "Cross", "icon": "glyphicon-wrench", "href": "cross.html" },
       { "name": "Manual", "icon": "glyphicon-book", "href": "manual.html" },
-      { "name": "Bibliography", "icon": "glyphicon-comment", "href": "bib.html" },
-      { "name": "Contribs", "icon": "glyphicon-asterisk", "href": "contribs.html", "toc": false }
+      { "name": "Contribs", "icon": "glyphicon-asterisk", "href": "contribs.html", "toc": false },
+      { "name": "Bib", "icon": "glyphicon-comment", "href": "bib.html", "toc": false }
    ]
 }
