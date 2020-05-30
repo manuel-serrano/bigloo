@@ -8,6 +8,7 @@ the standard package managers of these distributions after
 the appropriate `hop.list` file has been created in the
 `/etc/apt/sources.list` directory.
 
+The Debian packages are all installed in the `/opt/hop` directory.
 
 ### Debian
 
