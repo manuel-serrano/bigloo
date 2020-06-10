@@ -123,7 +123,7 @@ public class jthread extends Thread {
 
    // Yield the processor
    public static int sched_yield() {
-      yield();
+      Thread.yield();
       return 0;
    }
    

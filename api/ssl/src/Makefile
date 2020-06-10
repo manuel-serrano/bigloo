@@ -90,26 +90,48 @@ INCLUDES	= $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/root_certs.h \
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
+
+JAVA_GTE_10_LT_15 = $(shell [ $JAVA_VERSION -ge 10 -a $JAVA_VERSION -lt 15 ] && echo true) 
+
+ifeq ($(JAVA_VERSION), 14)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 13)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 12)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 11)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 10)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
 ifeq ($(JAVA_VERSION), 1.9)
   JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
 else 
-  ifeq ($(JAVA_VERSION), 1.8)
-    JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-  else
-    ifeq ($(JAVA_VERSION), 1.7)
-      JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-    else
-     ifeq ($(JAVA_VERSION), 1.6)
-      JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-     else
-      ifeq ($(JAVA_VERSION), 1.5)
-        JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-      endif
-     endif
-    endif
-  endif
+ifeq ($(JAVA_VERSION), 1.8)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 1.7)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 1.6)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 1.5)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
 endif
-
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/

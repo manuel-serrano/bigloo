@@ -108,30 +108,51 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
 JDK_LIBS	= JDK
+
+ifeq ($(JAVA_VERSION), 14)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 13)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 12)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 11)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 10)
+  JDK_LIBS += JDK16
+else
 ifeq ($(JAVA_VERSION), 1.9)
-    JDK_LIBS += JDK16
-  else
-    ifeq ($(JAVA_VERSION), 1.8)
-      JDK_LIBS += JDK16
-    else
-    ifeq ($(JAVA_VERSION), 1.7)
-      JDK_LIBS += JDK16
-    else
-      ifeq ($(JAVA_VERSION), 1.6)
-        JDK_LIBS += JDK16
-       else
-        ifeq ($(JAVA_VERSION), 1.5)
-          JDK_LIBS += JDK15
-        else
-         ifeq ($(JAVA_VERSION), 1.4)
-           JDK_LIBS += JDK14
-         else
-           JDK_LIBS += JDK13
-         endif
-       endif
-     endif
-    endif
-  endif
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.8)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.7)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.6)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.5)
+  JDK_LIBS += JDK15
+else
+ifeq ($(JAVA_VERSION), 1.4)
+  JDK_LIBS += JDK14
+else
+  JDK_LIBS += JDK13
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
 endif
 
 JLIB		= foreign buffer configure stackwriter\
