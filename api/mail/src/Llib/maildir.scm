@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
 ;*    Last change :  Fri Nov 17 08:47:15 2017 (serrano)                */
-;*    Copyright   :  2007-17 Manuel Serrano                            */
+;*    Copyright   :  2007-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -616,8 +616,12 @@
 		  (let* ((path (make-file-name path file))
 			 (lst (with-input-from-file path
 				 (lambda ()
-				    (mail-header->list
-				       (current-input-port)))))
+				    (with-handler
+				       (lambda (e)
+					  (exception-notify e)
+					  '())
+				       (mail-header->list
+					  (current-input-port))))))
 			 (key (assq k lst)))
 		     (cons uid (and (pair? key) (cdr key)))))
 	       (hashtable-map uids message-date))))))

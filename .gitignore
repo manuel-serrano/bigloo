@@ -208,3 +208,8 @@ xlib/include/
 
 # www
 www/hss/www.css
+
+# third parties
+gmp/gmp-6.1.2
+libunistring/libunistring-0.9.10
+pcre/pcre-8.43
