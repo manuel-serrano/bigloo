@@ -473,7 +473,7 @@ $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz:
 	@ $(RM) -f Makefile.buildconfig;
 	@ (cd .. && \
            mv bigloo bigloo-$(RELEASE)$(VERSION) && \
-           tar cfz $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz bigloo-$(RELEASE)$(VERSION))
+           tar cfz $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz --sort=name bigloo-$(RELEASE)$(VERSION))
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
