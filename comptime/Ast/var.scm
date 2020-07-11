@@ -99,7 +99,10 @@
 	      ;; the effect of this function
 	      (effect (default #unspecified))
 	      ;; is this function failsafe (#t=yes, #f=no, else=unknown)
-	      (failsafe (default #unspecified)))
+	      (failsafe (default #unspecified))
+	      ;; non-escaping arguments: #unspecified, *, or an index list
+	      ;; non-escaping arguments can be stack allocated
+	      (args-noescape (default #unspecified)))
 
 	   (final-class sfun::fun
 	      ;; a property list
