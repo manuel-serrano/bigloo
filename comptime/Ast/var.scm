@@ -130,7 +130,9 @@
 	      (the-closure-global (default #unspecified))
 	      ;; the strength (see funcall node) set by the CFA pass
 	      ;; should be ???, LIGHT, or ELIGHT
-	      (strength::symbol (default '???)))
+	      (strength::symbol (default '???))
+	      ;; can this closure be stack allocated?: #unspecifed, #t, #f
+	      (stackable::obj (default #unspecified)))
 
 	   (final-class cfun::fun
 	      ;; the formal parameters' type

@@ -68,6 +68,9 @@
 	    (macro make-va-procedure::procedure (::obj ::int ::int)
 		   "MAKE_VA_PROCEDURE")
 	    
+	    (macro make-stack-fx-procedure::procedure (::obj ::int ::int)
+		   "BGL_MAKE_STACK_FX_PROCEDURE")		 
+	    
 	    (macro make-el-procedure::procedure-el (::int)
 		   "MAKE_EL_PROCEDURE")	 
 	    
@@ -294,8 +297,9 @@
 	    (procedure-length nesting args-safe fail-safe)
 	    ($procedure-length nesting args-safe fail-safe)
 	    (correct-arity? nesting args-safe fail-safe)
-	    (make-fx-procedure no-cfa-top nesting args-safe fail-safe)
+	    (make-fx-procedure no-cfa-top nesting args-safe fail-safe (stack-allocator "char ~a[ BGL_PROCEDURE_BYTE_SIZE( $3 ) ]" "BGL_MAKE_FX_PROCEDURE_STACK"))
 	    (make-va-procedure no-cfa-top nesting args-safe fail-safe)
+	    (make-stack-fx-procedure no-cfa-top nesting args-safe fail-safe)
 	    (procedure-set! no-cfa-top nesting args-safe fail-safe)
 	    (procedure-ref no-cfa-top side-effect-free nesting args-safe fail-safe)
 	    (procedure-l-set! nesting args-safe fail-safe)

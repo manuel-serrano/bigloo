@@ -29,6 +29,30 @@ bgl_make_procedure( obj_t entry, int arity, int size ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    INIT_FX_PROCEDURE                                                */
+/*---------------------------------------------------------------------*/
+#define INIT_FX_PROCEDURE( proc, entry, arity, size ) \
+   (proc->procedure.header = MAKE_HEADER( PROCEDURE_TYPE, size ), \
+    proc->procedure.entry = entry, \
+    proc->procedure.va_entry = 0L, \
+    proc->procedure.attr = BUNSPEC, \
+    proc->procedure.arity = arity, \
+    BREF( proc ))
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_init_fx_procedure ...                                        */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_init_fx_procedure( obj_t proc, obj_t (*entry)(), int arity, int size ) {
+   if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
+      C_FAILURE( "make-fx-procedure", "Environment to large", BINT( size ) );
+   } else {
+      return INIT_FX_PROCEDURE( proc, entry, arity, size );
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    make_fx_procedure ...                                            */
 /*---------------------------------------------------------------------*/
@@ -38,17 +62,9 @@ make_fx_procedure( obj_t (*entry)(), int arity, int size ) {
    if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
       C_FAILURE( "make-fx-procedure", "Environment to large", BINT( size ) );
    } else {
-      int byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
-      obj_t a_tproc = GC_MALLOC( byte_size );
-      static long count = 0;
+      obj_t a_tproc = GC_MALLOC( BGL_PROCEDURE_BYTE_SIZE( size ) );
 	      
-      a_tproc->procedure.header = MAKE_HEADER( PROCEDURE_TYPE, size );
-      a_tproc->procedure.entry = entry; 
-      a_tproc->procedure.va_entry = 0L;
-      a_tproc->procedure.attr = BUNSPEC;
-      a_tproc->procedure.arity = arity;
-
-      return BREF( a_tproc );
+      return INIT_FX_PROCEDURE( a_tproc, entry, arity, size );
    }
 }
 

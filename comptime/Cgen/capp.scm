@@ -223,31 +223,26 @@
 ;*    node-sfun-non-tail-app->cop ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (node-sfun-non-tail-app->cop var::variable node kont inpushexit)
-   (let* ((args      (sfun-args (variable-value var)))
-	  (args-type (map (lambda (x)
-			     (if (local? x)
-				 (local-type x)
-				 x))
-			  args))
+   (let* ((args (sfun-args (variable-value var)))
+	  (args-type (map (lambda (x) (if (local? x) (local-type x) x)) args))
 	  (useless?  (lambda (cop aux)
 			(and (csetq? cop)
 			     (eq? (varc-variable (csetq-var cop)) aux)))))
-      (let loop ((old-actuals  (app-args node))
-		 (args-type    args-type)
-		 (new-actuals  '())
-		 (aux          (make-local-svar/name 'aux *obj*))
-		 (auxs         '())
-		 (exps         '()))
+      (let loop ((old-actuals (app-args node))
+		 (args-type args-type)
+		 (new-actuals '())
+		 (aux (make-local-svar/name 'aux *obj*))
+		 (auxs '())
+		 (exps '()))
 	 (if (null? old-actuals)
 	     (if (null? auxs)
 		 (kont (instantiate::capp
 			  (loc (node-loc node))
 			  (fun (node->cop (app-fun node) *id-kont* inpushexit))
 			  (args (reverse! new-actuals))))
-		 ;; when this function call uses arguments we have to take
-		 ;; care where to emit soruce line information. We have to
-		 ;; do it at the beginning of the lexical block that will bind
-		 ;; the actual parameter and that's it. nothing more.
+		 ;; when a function call uses arguments, the source line
+		 ;; information has do be included at the beginning of
+		 ;; the lexical block that binds the actual parameters.
 		 (let ((loc (app-loc node)))
 		    (instantiate::cblock
 		       (loc  loc)

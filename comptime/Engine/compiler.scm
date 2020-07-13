@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
 ;*    Last change :  Wed Dec 11 06:54:31 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -56,6 +56,7 @@
 	    beta_walk
 	    inline_walk
 	    effect_walk
+	    stackable_walk
 	    callcc_walk
 	    fail_walk
 	    abound_walk
@@ -309,6 +310,12 @@
 	    (check-sharing "effect" ast)
 	    (check-type "effect" ast #f #f)
 
+	    ;; the stackable property computation
+	    (set! ast (profile stackable (stackable-walk! ast)))
+	    (stop-on-pass 'stackable (lambda () (write-ast ast)))
+	    (check-sharing "stackable" ast)
+	    (check-type "stackable" ast #f #f)
+
 	    ;; we perform the inlining pass
 	    (set! ast (profile inline (inline-walk! ast 'all)))
 	    (stop-on-pass 'inline (lambda () (write-ast ast)))
@@ -360,10 +367,10 @@
 	    (check-type "dataflow" ast #f #f)
 
 	    ;; the globalization stage
-	    (set! ast (profile glo (globalize-walk! ast 'globalization)))
-	    (stop-on-pass 'globalize (lambda () (write-ast ast)))
-	    (check-sharing "globalize" ast)
-	    (check-type "globalize" ast #f #f)
+	    (set! ast (profile glo (globalize-walk! ast 'closure)))
+	    (stop-on-pass 'closure (lambda () (write-ast ast)))
+	    (check-sharing "closure" ast)
+	    (check-type "closure" ast #f #f)
  
 	    ;; the control flow analysis
 	    (set! ast (profile cfa (cfa-walk! ast)))

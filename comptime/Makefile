@@ -171,6 +171,11 @@ INITFLOW_FILE	= walk
 
 INITFLOW_OBJ	= $(INITFLOW_FILE:%=Initflow/%.o)
 
+#*--- stackable -------------------------------------------------------*/
+STACKABLE_FILE  = walk
+
+STACKABLE_OBJ   = $(STACKABLE_FILE:%=Stackable/%.o)
+
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
                   integration new_body loc2glo gloclo clocto globalize
@@ -336,7 +341,8 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ)
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
+                  $(STACKABLE_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

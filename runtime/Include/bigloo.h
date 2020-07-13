@@ -1199,6 +1199,15 @@ typedef obj_t (*function_t)();
 #define MAKE_VA_PROCEDURE( entry, arity, size ) \
    make_va_procedure( (function_t)entry, arity, size )
 
+#define BGL_MAKE_FX_PROCEDURE_STACK( tmp, entry, arity, size ) \
+   bgl_init_fx_procedure( (obj_t)(&tmp), entry, arity, size )
+
+#define BGL_PROCEDURE_BYTE_SIZE( size ) \
+   (PROCEDURE_SIZE + ((size-1) * OBJ_SIZE))
+	 
+#define BGL_ALLOC_STACK_FX_PROCEDURE( size ) \
+   char[ PROCEDURE_SIZE + ((size-1) * OBJ_SIZE) ]
+	 
 /*---------------------------------------------------------------------*/
 /*    Light procedures                                                 */
 /*---------------------------------------------------------------------*/
@@ -2326,6 +2335,8 @@ BGL_RUNTIME_DECL obj_t bgl_system_failure( int, obj_t, obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_make_procedure( obj_t, int, int );
 BGL_RUNTIME_DECL obj_t make_fx_procedure( function_t, int, int );
 BGL_RUNTIME_DECL obj_t make_va_procedure( function_t, int, int );
+BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure( obj_t, function_t, int, int );
+
 BGL_RUNTIME_DECL obj_t bgl_time( obj_t );
    
 BGL_RUNTIME_DECL obj_t bgl_procedure_entry_to_string( obj_t ); 

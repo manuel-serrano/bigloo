@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
 ;*    Last change :  Sun Dec 22 18:23:24 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -581,27 +581,121 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::let-var kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::let-var kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
+      "(node->cop node::let-var kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
+   
+   (define (alloca x)
+      (if (and (isa? (cdr x) app)
+	       (app-stackable (cdr x))
+	       (bigloo-config 'have-c99-stack-alloc))
+	  (with-access::app (cdr x) (fun args loc)
+	     (let* ((v (var-variable fun))
+		    (sa (fun-stack-allocator (global-value v))))
+		(tprint "stack=" loc)
+		;; declare the variable for the stack allocation
+		(let* ((id (gensym (variable-id v)))
+		       (decl (duplicate::local (car x)
+				(id id)
+				(name #f)
+				(type *obj*))))
+		   (set-variable-name! decl)
+		   ;; adjust the orignal function call
+		   (set! fun (duplicate::var fun
+				(variable (duplicate::global v
+					     (name (cadr sa))))))
+		   (set! args (cons (instantiate::var
+				       (loc loc)
+				       (type *obj*)
+				       (variable decl))
+				 args))
+		   (list
+		      (instantiate::cpragma 
+			 (loc loc)
+			 (format (format (car sa) (variable-name decl)))
+			 (args (map (lambda (a)
+				       (node->cop a *id-kont* inpushexit))
+				  args)))))))
+	  '()))
+   
    (with-access::let-var node (body bindings loc)
-      (let ((decls (instantiate::local-var
+      (for-each (lambda (x) (set-variable-name! (car x))) bindings)
+      (let ((alloca (append-map alloca bindings))
+	    (decls (instantiate::local-var
 		      (loc loc)
 		      (vars (map car bindings))))
 	    (sets  (map (lambda (x)
-			   (set-variable-name! (car x))
 			   (node->cop (node-setq (car x) (cdr x))
 			      *stop-kont* inpushexit))
-			bindings))
+		      bindings))
 	    (body  (let ((cop (node->cop body kont inpushexit)))
 		      (instantiate::stop
 			 (value cop)))))
 	 (block-kont
-	  (bdb-let-var
-	   (instantiate::csequence
-	      (loc loc)
-	      (cops (cons decls (append sets (list body)))))
-	   loc)
-	  loc))))
+	    (bdb-let-var
+	       (instantiate::csequence
+		  (loc loc)
+		  (cops (append alloca (cons decls (append sets (list body))))))
+	       loc)
+	    loc))))
+
+;* (define-method (node->cop node::let-var kont inpushexit)            */
+;*    (trace (cgen 3)                                                  */
+;*       "(node->cop node::let-var kont): " (shape node) #\Newline     */
+;*       "  kont: " kont #\Newline)                                    */
+;*                                                                     */
+;*    (define (stackable? expr)                                        */
+;*       (when (isa? expr app)                                         */
+;* 	 (with-access::app expr (stackable)                            */
+;* 	    stackable)))                                               */
+;*                                                                     */
+;*    (define (is-make-stack-fx-procedure? var)                        */
+;*       (with-access::global var (module id)                          */
+;* 	 (and (eq? id 'make-stack-fx-procedure) (eq? module 'foreign)))) */
+;*                                                                     */
+;*    (define (is-make-stack-fx-call? app)                             */
+;*       (with-access::app app (fun args)                              */
+;* 	 (and (global? (var-variable fun))                             */
+;* 	      (is-make-stack-fx-procedure? (var-variable fun))         */
+;* 	      (pair? args)                                             */
+;* 	      (var? (car args)))))                                     */
+;*                                                                     */
+;*    (define (allocas bindings)                                       */
+;*       (when (and (isa? (cdr bindings) app) (is-make-stack-fx-call? app)) */
+;* 	 (with-access::app (cdr bindings) (fun args)                   */
+;* 	    (with-access::variable (var-variable (car args)) (id name) */
+;* 	       (let ((t (duplicate::local (car bindings)               */
+;* 			   (id (symbol-append '__ id))                 */
+;* 			   (name (string-append "__" name)))))         */
+;* 		  (cons t                                              */
+;* 		     (node->cop                                        */
+;* 			(node-setq t                                   */
+;* 			   (instantiate::pragma                        */
+;* 			      (loc loc)                                */
+;* 			      (type *_*)                               */
+;* 			      (format (format "BGL_ALLOC_STACK_FX_PROCEDURE(~a)" */
+;* 					 (caddr args)))))              */
+;* 			*stop-kont* inpushexit)))))))                  */
+;*                                                                     */
+;*    (with-access::let-var node (body bindings loc)                   */
+;*       (for-each (lambda (b) (set-variable-name! (car b))) bindings) */
+;*       (let ((decls (instantiate::local-var                          */
+;* 		      (loc loc)                                        */
+;* 		      (vars (append (map car bindings)                 */
+;* 			       (append-map alloca bindings)))))        */
+;* 	    (sets  (map (lambda (x)                                    */
+;* 			   (node->cop (node-setq (car x) (cdr x))      */
+;* 			      *stop-kont* inpushexit))                 */
+;* 		      bindings))                                       */
+;* 	    (body  (let ((cop (node->cop body kont inpushexit)))       */
+;* 		      (instantiate::stop                               */
+;* 			 (value cop)))))                               */
+;* 	 (block-kont                                                   */
+;* 	    (bdb-let-var                                               */
+;* 	       (instantiate::csequence                                 */
+;* 		  (loc loc)                                            */
+;* 		  (cops (cons decls (append allocs sets (list body))))) */
+;* 	       loc)                                                    */
+;* 	    loc))))                                                    */
 
 ;*---------------------------------------------------------------------*/
 ;*    bdb-let-var ...                                                  */

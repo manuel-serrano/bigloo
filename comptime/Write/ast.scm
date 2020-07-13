@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:29:03 1994                          */
 ;*    Last change :  Fri Mar 18 11:43:48 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast pretty-printer                                           */
 ;*=====================================================================*/
@@ -33,7 +33,8 @@
 			      (if (and (pair? *src-files*)
 				       (string? (car *src-files*)))
 				  (string-append (prefix (car *src-files*))
-						 ".ast")
+				     "." (symbol->string *pass*)
+				     ".ast")
 				  #f)))
 	     (port (if (string? output-name)
 		       (open-output-file output-name)

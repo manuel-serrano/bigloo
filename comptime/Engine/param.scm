@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
 ;*    Last change :  Mon Dec 16 05:40:27 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -92,6 +92,7 @@
 	    *optim-return?*
 	    *optim-return-goto?*
 	    *optim-tagged-fxop?*
+	    *optim-stackable?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -955,6 +956,9 @@
    #f)
 (param-define *optim-tagged-fxop?*
    "Optimize tagged fixnum operations"
+   #f)
+(param-define *optim-stackable?*
+   "Optimize stackable allocation"
    #f)
 
 ;*---------------------------------------------------------------------*/

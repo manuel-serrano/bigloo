@@ -502,6 +502,8 @@
        (set! *optim-return-goto?* #t))
       (("-fno-return-goto" (help "Disable local set-exit replacement"))
        (set! *optim-return-goto?* #f))
+      (("-fstackable" (help "Enable stackable optimization"))
+       (set! *optim-stackable?* #t))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
@@ -919,8 +921,10 @@
        (set! *pass* 'assert))
       (("-cfa" (help "Stop after the cfa stage"))
        (set! *pass* 'cfa))
+      (("-stackable" (help "Stop after the stackable stage"))
+       (set! *pass* 'stackable))
       (("-closure" (help "Stop after the globalization stage"))
-       (set! *pass* 'globalize))
+       (set! *pass* 'closure))
       (("-recovery" (help "Stop after the type recovery stage"))
        (set! *pass* 'recovery))
       (("-bdb" (help "Stop after the Bdb code production"))
@@ -1265,6 +1269,7 @@
 			    (char->integer #\0))))
 	  ((#\6)
 	   (-O3!)
+	   (set! *optim-stackable?* #t)
 	   (set! *optim* (-fx (char->integer (string-ref string 0))
 			    (char->integer #\0))))
 	  (else
