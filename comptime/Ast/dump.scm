@@ -330,8 +330,10 @@
 	 `(,sym ,(map (lambda (fun)
 			 (let ((f (local-value fun)))
 			    `(,(shape fun)
-			      :stackable
-			      ,(with-access::sfun f (stackable) stackable)
+			      ,@(with-access::sfun f (stackable)
+				   (if (boolean? stackable)
+				       `(:stackable ,stackable)
+				       '()))
 			      ,(args-list->args*
 				  (map shape (sfun-args f))
 				  (sfun-arity f))
