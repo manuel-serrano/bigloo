@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
 ;*    Last change :  Wed Mar 13 06:52:06 2019 (serrano)                */
-;*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -572,7 +572,18 @@
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
 
-   ;;typed vectors
+   ;; vector-copy
+   (install-O-comptime-expander
+    'vector-copy
+    (lambda (x::obj e::procedure)
+       (match-case x
+	  ((?- ?vec ?start ?stop)
+	   (set-car! x 'vector-copy3)
+	   (e x e))
+	  (else
+	   (map (lambda (x) (e x e)) x)))))
+
+   ;; typed vectors
    (let ((evref (lambda (x::obj e::procedure)
 		   (match-case x
 		      ((?op ?vec ?k)
