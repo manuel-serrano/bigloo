@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:06:40 2003                          */
 ;*    Last change :  Tue Oct 24 16:02:49 2017 (serrano)                */
-;*    Copyright   :  2003-17 Manuel Serrano                            */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Display function allocations                                     */
 ;*=====================================================================*/
@@ -141,26 +141,23 @@
 ;*    make-function-gc-table ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-function-gc-table fun* allsize nbtypes)
-   (html-table
-    :width "100%"
-    `(,(html-tr
-	`(,(html-td
-	    :valign "top"
-	    (make-function-gc-chart allsize fun*
-	       (lambda (f) (with-access::funinfo f (dsize) dsize))
-	       cadr
-	       "function-gc-direct"
-	       "Direct allocations (gc)"))
-	  ,(html-td
-	    :valign "top"
-	    (make-function-gc-chart allsize fun*
-				    (lambda (f)
-				       (with-access::funinfo f (isize dsize)
-					  (+llong isize dsize)))
-				    (lambda (g)
-				       (+llong (cadr g) (caddr g)))
-				    "function-gc-cumulative"
-				    "Cumulative allocations (gc)")))))))
+   (html-table :width "100%"
+      `(,(html-tr
+	    `(,(html-td :valign "top"
+		  (make-function-gc-chart allsize fun*
+		     (lambda (f) (with-access::funinfo f (dsize) dsize))
+		     cadr
+		     "function-gc-direct"
+		     "Direct allocations (gc)"))
+	      ,(html-td :valign "top"
+		  (make-function-gc-chart allsize fun*
+		     (lambda (f)
+			(with-access::funinfo f (isize dsize)
+			   (+llong isize dsize)))
+		     (lambda (g)
+			(+llong (cadr g) (caddr g)))
+		     "function-gc-cumulative"
+		     "Cumulative allocations (gc)")))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-gc-chart ...                                       */
@@ -204,7 +201,7 @@
 				  (tdl (html-color-item
 					  id (function-ref ident)))
 				  (tds (html-td :class "size"
-					  :align "left"
+					  :align "right"
 					  (format "~a% (~a)"
 					     size%
 					     (word->size size))))
@@ -216,12 +213,13 @@
 							(- size% cell%)
 							(word->size size)))))))
 			      (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 "&nbsp;")))))))
+				 (html-tr (list (html-td) (html-td) (html-td) ))))))
 		   fun* cell*)))
       (html-profile (apply append row*)
 	 class caption
 	 '("functions" "20%")
-	 '("memory" "15%"))))
+	 '("memory" "15%")
+	 "65%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-type-mem-table ...                                 */
@@ -345,7 +343,7 @@
 				       id
 				       (function-ref ident)))
 			       (tds (html-td :class "size"
-				       :align "left"
+				       :align "right"
 				       (format "~a% (~a)"
 					  size%
 					  (word->size size))))
@@ -353,16 +351,17 @@
 			       (cells (append cells
 					 (list (list (- size% cell%)
 						  "type-1"
-						  (format "rest: ~a% of ~a"
+						  (format "XXXrest: ~a% of ~a"
 						     (- size% cell%)
 						     (word->size size)))))))
 			   (list (html-row-gauge cells tdl tds)
-			      (html-tr (list (html-td :colspan 102 "&nbsp;")))))))
+			      (html-tr (list (html-td :colspan 3 "")))))))
 		fun* cell*)))
       (html-profile (apply append r)
 	 class caption
 	 '("functions" "20%")
-	 '("memory" "15%"))))
+	 '("memory" "15%")
+	 "65%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-type-occ-chart ...                                 */
@@ -426,7 +425,7 @@
 					  id
 					  (function-ref ident)))
 				  (tds (html-td :class "size"
-					  :align "left"
+					  :align "right"
 					  (format "~a% (~a)"
 					     size%
 					     size))))
@@ -436,7 +435,8 @@
       (html-profile (apply append r)
 		    class caption
 		    '("functions" "20%")
-		    '("memory" "15%"))))
+		    '("memory" "15%")
+		    "65%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmem-function ...                                                */

@@ -159,29 +159,30 @@
    
 ;*---------------------------------------------------------------------*/
 ;*    html-row-gauge ...                                               */
-;*    -------------------------------------------------------------    */
-;*    This function constructs a list of html TDs that span over       */
-;*    100 cells.                                                       */
 ;*---------------------------------------------------------------------*/
 (define (html-row-gauge cell*::pair-nil tdl tdr)
    (let* ((cell* (filter (lambda (c) (> (car c) 0)) cell*))
 	  (cell* (sort (lambda (x y) (> (car x) (car y))) cell*))
 	  (total (apply + (map car cell*))))
       (if (=fx total 0)
-	  (html-tr (list tdl (html-td :class "empty" :colspan 100 " ") tdr))
+	  (html-tr (list tdl (html-td) tdr))
 	  (let loop ((cell* cell*)
-		     (td* '())
+		     (els '())
 		     (sum 0))
 	     (if (null? cell*)
 		 (html-tr
-		    (cons tdl
-		       (if (=fx total 100)
-			   (reverse! (cons tdr td*))
-			   (reverse! (cons* tdr
-					(html-td :class "empty"
-					   :colspan (-fx 100 total)
-					   " ")
-					td*)))))
+		    (list tdl
+		       (html-td
+			  (html-div :class "gauge"
+			     (if (=fx total 100)
+				 (reverse! els)
+				 (reverse!
+				    (cons (html-span :class "gauge-filler"
+					     :style (format (format "width: ~a%"
+							       (-fx 100 total)))
+					     "&nbsp;")
+				       els)))))
+		       tdr))
 		 (let* ((cell (car cell*))
 			(val (car cell))
 			(id (cadr cell))
@@ -191,8 +192,11 @@
 				  (if (=fx (+fx sum val) total)
 				      val
 				      (-fx total sum)))))
-		    (let ((td (html-td :class id :title help :colspan aval " ")))
-		       (loop (cdr cell*) (cons td td*) (+fx sum aval)))))))))
+		    (let ((el (html-span :class (format "~a gauge-cell" id)
+				 :title help
+				 :style (format "width: ~a%" aval)
+				 "&nbsp;")))
+		       (loop (cdr cell*) (cons el els) (+fx sum aval)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    html-profile ...                                                 */
@@ -200,12 +204,12 @@
 (define (html-profile row* class caption llegend rlegend . cwidth)
    (let* ((cwidth (if (pair? cwidth) (car cwidth) 6))
 	  (colgroup (list (html-colgroup :width (cadr llegend))
-			  (html-colgroup :span 100 :width cwidth)
+			  (html-colgroup :width cwidth)
 			  (html-colgroup :width (cadr rlegend))))
 	  (head (html-tr (list (html-th :align "center"
 					:valign "bottom"
 					(car llegend))
-			       (html-th :colspan 100)
+			       (html-th "")
 			       (html-th :align "center"
 					:valign "bottom"
 					(car rlegend)))))
