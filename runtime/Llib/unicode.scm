@@ -1242,7 +1242,7 @@
 	 (else
 	  (let loop ((r 0)
 		     (n 0)
-		     (i -1))
+		     (i 0))
 	     (if (=fx r len)
 		 (substring str i r)
 		 (let* ((c (string-ref str r))

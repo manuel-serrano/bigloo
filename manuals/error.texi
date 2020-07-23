@@ -212,19 +212,18 @@ system, if the current exception handler returns.
 @end deffn
 
 The standard Bigloo runtime system uses the following classes for
-signaling errors and warnings:
+signaling errors and warnings.
 
-@itemize @bullet
-
-@item @code{&exception} which is defined as:
+@deffn {class} &exception
 @cindex &exception
 @smalllisp
 (class &exception
    (fname read-only (default #f))
    (location read-only (default #f)))
 @end smalllisp
+@end deffn
 
-@item @code{&error} defined as:
+@deffn {class} &error::&exception
 @cindex &error
 @smalllisp
 (class &error::&exception
@@ -232,98 +231,114 @@ signaling errors and warnings:
    (msg read-only)
    (obj read-only))
 @end smalllisp
+@end deffn
 
-@item @code{&type-error} defined as:
+@deffn {class} &type-error::&error
 @cindex &type-error
 
 @smalllisp
 (class &type-error::&error
    (type read-only))
 @end smalllisp
+@end deffn
 
-@item @code{&io-error} defined as:
+@deffn {class} &io-error::&error
 @cindex &io-error
 
 @smalllisp
 (class &io-error::&error)
 @end smalllisp
+@end deffn
 
-@item @code{&io-port-error} defined as:
+@deffn {class} &io-port-error::&io-error
 @cindex &io-port-error
 
 @smalllisp
 (class &io-port-error::&io-error)
 @end smalllisp
-@item @code{&io-read-error} defined as:
+@end deffn
+
+@deffn {class} &io-read-error::&io-error
 @cindex &io-read-error
 
 @smalllisp
 (class &io-read-error::&io-port-error)
 @end smalllisp
-@item @code{&io-write-error} defined as:
+@end deffn
+
+@deffn {class} &io-write-error::&io-port-error
 @cindex &io-write-error
 
 @smalllisp
 (class &io-write-error::&io-port-error)
 @end smalllisp
+@end deffn
 
-@item @code{&io-closed-error} defined as:
+@deffn {class} &io-closed-error::&io-port-error
 @cindex &io-closed-error
 
 @smalllisp
 (class &io-closed-error::&io-port-error)
 @end smalllisp
+@end deffn
 
-@item @code{&io-file-not-found-error} defined as:
+@deffn {class} &io-file-not-found-error::&io-error
 @cindex &io-file-not-found-error
 
 @smalllisp
 (class &io-file-not-found-error::&io-error)
 @end smalllisp
-@item @code{&io-parse-error} defined as:
+@end deffn
 
+@deffn {class} &io-parse-error::&io-error
 @cindex &io-parse-error
 
 @smalllisp
 (class &io-parse-error::&io-error)
 @end smalllisp
+@end deffn
 
-@item @code{&io-unknown-host-error} defined as:
+@deffn {class} &io-unknown-host-error::&io-error
 @cindex &io-unknown-host-error
 
 @smalllisp
 (class &io-unknown-host-error::&io-error)
 @end smalllisp
+@end deffn
 
-@item @code{&io-malformed-url-error} defined as:
+@deffn {class} &io-malformed-url-error::&io-error
 @cindex &io-malformed-url-error
 
 @smalllisp
 (class &io-malformed-url-error::&io-error)
 @end smalllisp
+@end deffn
 
-@item @code{&http-error} defined as:
+@deffn {class} &http-error::&error
 @cindex &http-error
 
 @smalllisp
 (class &http-error::&error)
 @end smalllisp
+@end deffn
 
-@item @code{&http-redirection-error} defined as:
+@deffn {class} &http-redirection-error::&http-error
 @cindex &http-redirection-error
 
 @smalllisp
 (class &http-redirection-error::&http-error)
 @end smalllisp
+@end deffn
 
-@item @code{&http-status-error} defined as:
+@deffn {class} &http-status-error::&http-error
 @cindex &http-status-error
 
 @smalllisp
 (class &http-status-error::&http-error)
 @end smalllisp
+@end deffn
 
-@item @code{&http-redirection} defined as:
+@deffn {class} &http-redirection::&http-error
 @cindex &http-redirection
 
 @smalllisp
@@ -331,29 +346,32 @@ signaling errors and warnings:
   (port::input-port read-only)
   (url::bstring read-only))
 @end smalllisp
+@end deffn
 
-@item @code{&process-exception} defined as:
+@deffn {class} process-exception::&error
 @cindex &process-exception
 
 @smalllisp
 (class &process-exception::&error)
 @end smalllisp
+@end deffn
 
-@item @code{&warning} defined as:
+@deffn {class} &warning::&exception
 @cindex &warning
 
 @smalllisp  
 (class &warning::&exception
    (args read-only))
 @end smalllisp
+@end deffn
 
-@item @code{&eval-warning} defined as:
+@deffn {class} &eval-warning::&warning
 @cindex &eval-warning
 
 @smalllisp  
 (class &warning::&warning)
 @end smalllisp
-@end itemize
+@end deffn
 
 @c -- try ------------------------------------------------------------ @c
 @node Try, Assertions, Exceptions, Errors Assertions and Traces
