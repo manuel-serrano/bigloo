@@ -211,6 +211,7 @@ div.gauge {
     background: white;
     white-space: nowrap;
     font-size: 150%;
+    margin-bottom: 4px;
 }
 
 .gauge-cell, .gauge-filler {

@@ -143,13 +143,13 @@
 (define (make-function-gc-table fun* allsize nbtypes)
    (html-table :width "100%"
       `(,(html-tr
-	    `(,(html-td :valign "top"
+	    `(,(html-td :valign "top" :width "50%"
 		  (make-function-gc-chart allsize fun*
 		     (lambda (f) (with-access::funinfo f (dsize) dsize))
 		     cadr
 		     "function-gc-direct"
 		     "Direct allocations (gc)"))
-	      ,(html-td :valign "top"
+	      ,(html-td :valign "top" :width "50%"
 		  (make-function-gc-chart allsize fun*
 		     (lambda (f)
 			(with-access::funinfo f (isize dsize)
@@ -206,13 +206,12 @@
 					     size%
 					     (word->size size))))
 				  (cell% (apply + (map car cells)))
-				  (cells (append cells
-					    (list (list (- size% cell%)
-						     "gc-1"
-						     (format "rest: ~a% of ~a"
-							(- size% cell%)
-							(word->size size)))))))
-			      (list (html-row-gauge cells tdl tds)
+				  (rest (list (- size% cell%)
+					   "gc-1"
+					   (format "rest: ~a% of ~a"
+					      (- size% cell%)
+					      (word->size size)))))
+			      (list (html-row-gauge cells tdl tds rest)
 				 (html-tr (list (html-td) (html-td) (html-td) ))))))
 		   fun* cell*)))
       (html-profile (apply append row*)
@@ -256,7 +255,7 @@
 (define (make-function-type-occ-table fun* allsize nbtypes tvec)
    (html-table :width "100%"
       `(,(html-tr
-	    `(,(html-td :valign "top"
+	    `(,(html-td :valign "top"  :width "50%"
 		  (make-function-type-occ-chart allsize fun*
 		     (lambda (f) (with-access::funinfo f (dsize) dsize))
 		     (lambda (f) (with-access::funinfo f (dtype) dtype))
@@ -264,7 +263,7 @@
 		     "Direct allocations (occurrence)"
 		     nbtypes
 		     tvec))
-	      ,(html-td :valign "top"
+	      ,(html-td :valign "top" :width "50%"
 		  (make-function-type-occ-chart
 		     allsize fun*
 		     (lambda (f)
@@ -332,7 +331,7 @@
 	  (fun* (sort fun*
 		   (lambda (f1 f2)
 		      (>llong (funsize f1) (funsize f2)))))
-	  (cell* (map fun->cell fun*))
+	  (cell* (filter-map fun->cell fun*))
 	  (r (map (lambda (f cells)
 		     (with-access::funinfo f (num ident)
 			(let* ((size (funsize f))
@@ -348,14 +347,12 @@
 					  size%
 					  (word->size size))))
 			       (cell% (apply + (map car cells)))
-			       (cells (append cells
-					 (list (list (- size% cell%)
-						  "type-1"
-						  (format "XXXrest: ~a% of ~a"
-						     (- size% cell%)
-						     (word->size size)))))))
-			   (list (html-row-gauge cells tdl tds)
-			      (html-tr (list (html-td :colspan 3 "")))))))
+			       (rest (list (- size% cell%)
+					"type-1"
+					(format "rest: ~a% of ~a"
+					   (- size% cell%)
+					   (word->size size)))))
+			   (list (html-row-gauge cells tdl tds rest)))))
 		fun* cell*)))
       (html-profile (apply append r)
 	 class caption
@@ -367,9 +364,9 @@
 ;*    make-function-type-occ-chart ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (make-function-type-occ-chart allsize::llong fun*::pair-nil
-				      funsize::procedure funtypes::procedure
-				      class::bstring caption::bstring
-				      nb-types::int tvecnames::vector)
+	   funsize::procedure funtypes::procedure
+	   class::bstring caption::bstring
+	   nb-types::int tvecnames::vector)
    (define (fun->cell f)
       ;; mark the function used (for the legend)
       (with-access::funinfo f (use)
@@ -388,23 +385,23 @@
 	 (let ((size% (exact->inexact (% sum allsize))))
 	    ;; construct the cells
 	    (list f
-		  sum
-		  (mapv (if (=llong at #l0)
-			    (lambda (t i)
-			       (list 0 "type0" "0 (0%)"))
-			    (lambda (t i)
-			       (let ((per (% t allsize))
-				     (tp (if (>llong sum #l0)
-					     (%00 t sum)
-					     0)))
-				  (list per 
-					(string-append "type"
-						       (integer->string i))
-					(format "~a: ~a (~a%)" 
-						(vector-ref tvecnames i)
-						t
-						tp)))))
-			tvec)))))
+	       sum
+	       (mapv (if (=llong at #l0)
+			 (lambda (t i)
+			    (list 0 "type0" "0 (0%)"))
+			 (lambda (t i)
+			    (let ((per (% t allsize))
+				  (tp (if (>llong sum #l0)
+					  (%00 t sum)
+					  0)))
+			       (list per 
+				  (string-append "type"
+				     (integer->string i))
+				  (format "~a: ~a (~a%)" 
+				     (vector-ref tvecnames i)
+				     t
+				     tp)))))
+		  tvec)))))
    (let* ((cell* (map fun->cell fun*))
 	  (cell* (filter (lambda (c)
 			    (>fx (% (cadr c) allsize) 0))
@@ -428,15 +425,20 @@
 					  :align "right"
 					  (format "~a% (~a)"
 					     size%
-					     size))))
-			      (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))))
+					     size)))
+				  (cell% (apply + (map car cells)))
+				  (rest (list (- size% cell%)
+					   "type-1"
+					   (format "rest: ~a (~a%)"
+					      size
+					      (- size% cell%)))))
+			      (list (html-row-gauge cells tdl tds rest))))))
 		cell*)))
       (html-profile (apply append r)
-		    class caption
-		    '("functions" "20%")
-		    '("memory" "15%")
-		    "65%")))
+	 class caption
+	 '("functions" "20%")
+	 '("memory" "15%")
+	 "65%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmem-function ...                                                */

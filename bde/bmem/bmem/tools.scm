@@ -23,7 +23,7 @@
 	    (%::int ::llong ::llong)
 	    (%00::bstring ::llong ::llong)
 	    (css-color::bstring ::int ::int ::int ::int)
-	    (html-row-gauge ::pair-nil ::obj ::obj)
+	    (html-row-gauge ::pair-nil ::obj ::obj #!optional rest)
 	    (html-profile ::pair-nil ::bstring ::bstring ::pair ::pair . ::obj)
 	    (html-legend ::int ::obj ::pair-nil ::obj ::obj)
 	    (html-color-item ::bstring ::obj)))
@@ -160,9 +160,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    html-row-gauge ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (html-row-gauge cell*::pair-nil tdl tdr)
+(define (html-row-gauge cell*::pair-nil tdl tdr #!optional rest)
    (let* ((cell* (filter (lambda (c) (> (car c) 0)) cell*))
 	  (cell* (sort (lambda (x y) (> (car x) (car y))) cell*))
+	  (cell* (if rest (append cell* (list rest)) cell*))
 	  (total (apply + (map car cell*))))
       (if (=fx total 0)
 	  (html-tr (list tdl (html-td) tdr))

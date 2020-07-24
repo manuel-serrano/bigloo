@@ -37,10 +37,10 @@
        :width "100%"
        `(,(html-tr
 	   `(,(html-td
-	       :valign "top"
+	       :valign "top" :width "50%"
 	       (make-gc-function-table maxhsize gc* fun*))
 	     ,(html-td
-	       :valign "top"
+	       :valign "top" :width "50%"
 	       (make-gc-type-table maxhsize gc* fun* nbtypes tvec))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -68,21 +68,21 @@
 					(function-ident-pp ident)
 					(word->size size)
 					(% size asize))))))
-			 fun*)))
+		       fun*)))
 	 (when (>=llong (absllong (-llong asize sum)) #l1024)
 	    (warning "make-gc-function-table"
 	       "incorrect allocation size --"
 	       " GC=" n " sum=" sum " alloc=" asize
 	       " delta=" (-llong asize sum)))
 	 (append cell*
-		 (list (list (-fx (% hsize maxhsize) per)
-			     "gc0"
-			     (format "heap size: ~a"
-				(word->size (caddr gc))))))))
+	    (list (list (-fx (% hsize maxhsize) per)
+		     "gc0"
+		     (format "heap size: ~a"
+			(word->size (caddr gc))))))))
    
    (let* ((gc* (filter (lambda (gc)
 			  (>llong (cadr gc) 0))
-		       gc*))
+		  gc*))
 	  (allsize (apply + (map cadr gc*)))
 	  (cell* (map gc->cell gc*))
 	  (row* (map (lambda (gc cells)
@@ -93,26 +93,26 @@
 			       (id (string-append "gc" num))
 			       (tdl (html-color-item id num))
 			       (tds (html-td :class "size"
-					     :align "left"
-					     (format "~a% (~ak/~ak)"
-						     size%
-						     (word->kb size)
-						     (word->kb msize)))))
-			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
-		     gc* cell*))
+				       :align "left"
+				       (format "~a% (~ak/~ak)"
+					  size%
+					  (word->kb size)
+					  (word->kb msize)))))
+			   (list (html-row-gauge cells tdl tds))))
+		   gc* cell*))
 	  (srow (html-tr (list (html-td "")
-			       (html-td :colspan 100
-					:align "right"
-					:class "olegend"
-					"overall allocated memory:")
-			       (html-td :align "left"
-					:class "osize"
-					(word->size allsize))))))
+			    (html-td :colspan 100
+			       :align "right"
+			       :class "olegend"
+			       "overall allocated memory:")
+			    (html-td :align "left"
+			       :class "osize"
+			       (word->size allsize))))))
       (html-profile (append (apply append row*) (list srow))
-		    "gc-function" "Gc (functions)"
-		    '("gc" "8%")
-		    '("memory" "20%"))))
+	 "gc-function" "Gc (functions)"
+	 '("gc" "8%")
+	 '("memory" "20%")
+	 "72%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-gc-type-table ...                                           */
@@ -172,13 +172,13 @@
 						     size%
 						     (word->kb size)
 						     (word->kb msize)))))
-			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
+			   (list (html-row-gauge cells tdl tds))))
 		     gc* cell*)))
       (html-profile (apply append row*)
-		    "gc-function" "Gc (types)"
-		    '("gc" "8%")
-		    '("memory" "20%"))))
+	 "gc-function" "Gc (types)"
+	 '("gc" "8%")
+	 '("memory" "20%")
+	 "72%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-gc-summary ...                                              */

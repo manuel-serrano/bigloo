@@ -319,14 +319,6 @@
 			(html-h2 "Legends")
 			(html-legend
 			 1 "90%"
-			 (map (lambda (t)
-				 (list (format "gc~a" (+fx 1 (car t)))
-				       (format "gc #~a" (+fx 1 (car t)))))
-			      (cdr gcmon))
-			 "Gcs" "gc-legend")
-			(html-br)
-			(html-legend
-			 1 "90%"
 			 (map (lambda (f)
 				 (with-access::funinfo f (ident num)
 				    (list (format "function~a" num)
@@ -351,7 +343,15 @@
 			      (sort (cdr types)
 				    (lambda (t1 t2)
 				       (string<? (cadr t1) (cadr t2)))))
-			 "Types" "type-legend")))
+			 "Types" "type-legend")
+			(html-br)
+			(html-legend
+			 1 "90%"
+			 (map (lambda (t)
+				 (list (format "gc~a" (+fx 1 (car t)))
+				       (format "gc #~a" (+fx 1 (car t)))))
+			      (cdr gcmon))
+			 "Gcs" "gc-legend")))
 	  (title (if (pair? info)
 		     (let ((c (assq 'exec (cdr info))))
 			(if (pair? c)
