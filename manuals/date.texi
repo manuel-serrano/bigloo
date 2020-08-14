@@ -42,7 +42,7 @@ available, @code{0} when daylight saving is disabled, @code{1} when daylight
 saving is enabled.
 @end deffn
 
-@deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone
+@deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone isdst
 Creates a new date from the argument @var{date}. 
 
 Example:

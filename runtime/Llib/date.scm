@@ -120,7 +120,7 @@
 		       (nsec #l0) (sec 0) (min 0) (hour 0)
 		       (day 1) (month 1) (year 1970)
 		       timezone (dst -1))
-	    (date-copy date #!key nsec sec min hour day month year timezone)
+	    (date-copy date #!key nsec sec min hour day month year timezone isdst)
 	    
 	    (inline integer->second::elong ::long)
 	    
@@ -205,7 +205,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    date-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (date-copy date #!key nsec sec min hour day month year timezone)
+(define (date-copy date #!key nsec sec min hour day month year timezone isdst)
    ($date-new
       (or nsec (date-nanosecond date))
       (or sec (date-second date))
@@ -216,7 +216,7 @@
       (or year (date-year date))
       (or timezone (date-timezone date))
       (integer? timezone)
-      (date-is-dst date)))
+      (or isdst (date-is-dst date))))
       
 ;*---------------------------------------------------------------------*/
 ;*    integer->second ...                                              */
@@ -481,9 +481,9 @@
 ;*---------------------------------------------------------------------*/
 (define (rfc2822-date->date string)
    (let ((port (open-input-string string)))
-      (unwind-protect
-	 (rfc2822-parse-date port)
-	 (close-input-port port))))
+      (let ((d (rfc2822-parse-date port)))
+	 (close-input-port port)
+	 d)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rfc2822-parse-date ...                                           */
