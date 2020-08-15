@@ -81,16 +81,11 @@ bgl_timezone() {
 }
        
 /*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
-/*    tm_to_date ...                                                   */
+/*    static void                                                      */
+/*    tm_date ...                                                      */
 /*---------------------------------------------------------------------*/
-static obj_t
-tm_to_date( struct tm *tm ) {
-   obj_t date;
-
-   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
-   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
-
+static void
+tm_date( struct tm *tm, obj_t date ) {
 #if( BGL_HAVE_GMTOFF )
    date->date.timezone = tm->tm_gmtoff;
 #else
@@ -109,8 +104,6 @@ tm_to_date( struct tm *tm ) {
    date->date.yday = tm->tm_yday + 1;
 
    date->date.isdst = tm->tm_isdst;
-
-   return BREF( date );
 }
 
 /*---------------------------------------------------------------------*/
@@ -119,14 +112,17 @@ tm_to_date( struct tm *tm ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_seconds_to_date( long s ) {
-   obj_t res;
    time_t sec = (time_t)s;
+   obj_t date;
+
+   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
    BGL_MUTEX_LOCK( date_mutex );
-   res = tm_to_date( localtime( &sec ) );
+   tm_date( localtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );
    
-   return res;
+   return BREF( date );
 }
 
 /*---------------------------------------------------------------------*/
@@ -135,14 +131,17 @@ bgl_seconds_to_date( long s ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_seconds_to_gmtdate( long s ) {
-   obj_t res;
    time_t sec = (time_t)s;
+   obj_t date;
+
+   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
    BGL_MUTEX_LOCK( date_mutex );
-   res = tm_to_date( gmtime( &sec ) );
+   tm_date( gmtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );
    
-   return res;
+   return BREF( date );
 }
 
 /*---------------------------------------------------------------------*/
@@ -151,16 +150,19 @@ bgl_seconds_to_gmtdate( long s ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_nanoseconds_to_date( BGL_LONGLONG_T nsec ) {
-   obj_t res;
    time_t sec = nsec / NANOBASE;
+   obj_t date;
+
+   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
    BGL_MUTEX_LOCK( date_mutex );
-   res = tm_to_date( localtime( &sec ) );
+   tm_date( localtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );
 
-   BGL_DATE( res ).nsec = (nsec - ((BGL_LONGLONG_T) sec * NANOBASE));
+   date->date.nsec = (nsec - ((BGL_LONGLONG_T) sec * NANOBASE));
    
-   return res;
+   return BREF( date );
 }
 
 /*---------------------------------------------------------------------*/
@@ -185,6 +187,38 @@ bgl_make_date( BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int y
    t = mktime( &tm );
 
    date = bgl_seconds_to_date( t );
+   BGL_DATE( date ).nsec = nsec;
+
+   if( istz ) {
+      BGL_DATE( date ).timezone = tz;
+   }
+   return date;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_update_date ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_update_date( obj_t date, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
+   struct tm tm;
+   time_t t;
+   BGL_LONGLONG_T nsec = (ns % (BGL_LONGLONG_T)1000000000);
+      
+   tm.tm_sec = s + (long)(ns / (BGL_LONGLONG_T)1000000000);
+   tm.tm_min = m; 
+   tm.tm_hour = hr;
+   tm.tm_mday = mday;
+   tm.tm_mon = mon - 1;
+   tm.tm_year = year - 1900;
+   tm.tm_isdst = isdst;
+
+   t = mktime( &tm );
+
+   BGL_MUTEX_LOCK( date_mutex );
+   tm_date( localtime( &t ), date );
+   BGL_MUTEX_UNLOCK( date_mutex );
+
    BGL_DATE( date ).nsec = nsec;
 
    if( istz ) {

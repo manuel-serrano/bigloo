@@ -43,7 +43,8 @@ saving is enabled.
 @end deffn
 
 @deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone isdst
-Creates a new date from the argument @var{date}. 
+@deffnx {bigloo procedure} date-update! date #!key sec min hour day month year timezone isdst
+Creates a new date or update an existing from the argument @var{date}. 
 
 Example:
 @smalllisp

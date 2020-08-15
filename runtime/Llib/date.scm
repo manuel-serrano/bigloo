@@ -53,6 +53,7 @@
    
    (extern  (macro c-date?::bool (::obj) "BGL_DATEP")
 	    ($date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
+	    ($date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	    
 	    (macro $date-integer->second::elong (::long) "(long)")
 	    (macro $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
@@ -207,6 +208,22 @@
 ;*---------------------------------------------------------------------*/
 (define (date-copy date #!key nsec sec min hour day month year timezone isdst)
    ($date-new
+      (or nsec (date-nanosecond date))
+      (or sec (date-second date))
+      (or min (date-minute date))
+      (or hour (date-hour date))
+      (or day (date-day date))
+      (or month (date-month date))
+      (or year (date-year date))
+      (or timezone (date-timezone date))
+      (integer? timezone)
+      (or isdst (date-is-dst date))))
+
+;*---------------------------------------------------------------------*/
+;*    date-update! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (date-update! date #!key nsec sec min hour day month year timezone isdst)
+   ($date-update date
       (or nsec (date-nanosecond date))
       (or sec (date-second date))
       (or min (date-minute date))
@@ -383,9 +400,7 @@
 	     (date-minute date)
 	     (date-second date))
 	  (let* ((ctz (date-timezone (date-copy date)))
-		 (d (seconds->date
-		       (-fx (date->seconds date)
-			  ctz))))
+		 (d (seconds->date (-fx (date->seconds date) ctz))))
 	     (date->utc-string (date-copy d :timezone 0))))))
 
 ;*---------------------------------------------------------------------*/
