@@ -1707,6 +1707,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_DATE( f ) CREF( f )->date
 
 #define BGL_DATE_NANOSECOND( f ) (BGL_DATE( f ).nsec)
+#define BGL_DATE_MILLISECOND( f ) (BGL_DATE( f ).nsec / 1000000)
 #define BGL_DATE_SECOND( f ) (BGL_DATE( f ).sec)
 #define BGL_DATE_MINUTE( f ) (BGL_DATE( f ).min)
 #define BGL_DATE_HOUR( f ) (BGL_DATE( f ).hour)

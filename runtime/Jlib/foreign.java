@@ -3553,6 +3553,11 @@ public final class foreign
 	 return new bigloo.date(nsec, true);
       }
 
+   public static date bgl_milliseconds_to_date(long nsec)
+      {
+	 return new bigloo.date(nsec, false);
+      }
+
    public static date bgl_seconds_to_utc_date(long sec)
       {
 	 date d = new bigloo.date(sec);
@@ -3570,6 +3575,11 @@ public final class foreign
 	 return (new Date().getTime() * 1000);
       }
 
+   public static long bgl_current_milliseconds()
+      {
+	 return (new Date().getTime());
+      }
+
    public static long bgl_current_nanoseconds()
       {
 	 return (new Date().getTime() * 1000000);
@@ -3583,6 +3593,11 @@ public final class foreign
    public static long bgl_date_to_nanoseconds(date d)
       {
 	 return (d.calendar.getTime().getTime() * 1000000);
+      }
+
+   public static long bgl_date_to_milliseconds(date d)
+      {
+	 return (d.calendar.getTime().getTime() * 1000);
       }
 
    public static byte[] bgl_seconds_to_string(long sec)
@@ -3608,6 +3623,11 @@ public final class foreign
    public static long BGL_DATE_NANOSECOND(date d)
       {
 	 return d.nsec;
+      }
+
+   public static long BGL_DATEMILLISECOND(date d)
+      {
+	 return d.nsec / 1000000;
       }
 
    public static int BGL_DATE_MINUTE(date d)

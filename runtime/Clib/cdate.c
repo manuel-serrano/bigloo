@@ -167,6 +167,27 @@ bgl_nanoseconds_to_date( BGL_LONGLONG_T nsec ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
+/*    bgl_milliseconds_to_date ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_milliseconds_to_date( BGL_LONGLONG_T msec ) {
+   time_t sec = msec / MILLIBASE;
+   obj_t date;
+
+   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
+
+   BGL_MUTEX_LOCK( date_mutex );
+   tm_date( localtime( &sec ), date );
+   BGL_MUTEX_UNLOCK( date_mutex );
+
+   date->date.nsec = (msec - ((BGL_LONGLONG_T) sec * MILLIBASE)) * 1000000;
+
+   return BREF( date );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    bgl_make_date ...                                                */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
@@ -274,12 +295,44 @@ bgl_date_to_nanoseconds( obj_t date ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF BGL_LONGLONG_T                                   */
+/*    bgl_date_to_milliseconds ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BGL_LONGLONG_T
+bgl_date_to_milliseconds( obj_t date ) {
+   return (BGL_LONGLONG_T)bgl_date_to_seconds( date ) * MILLIBASE +
+      (BGL_DATE( date ).nsec ? BGL_DATE( date ).nsec / 1000000 : 0);
+}
+
+/*---------------------------------------------------------------------*/
 /*    long                                                             */
 /*    bgl_current_seconds ...                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_current_seconds() {
    return (long)( time( 0L ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_LONGLONG_T                                                   */
+/*    bgl_current_milliseconds ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BGL_LONGLONG_T
+bgl_current_milliseconds() {
+#if( BGL_HAVE_TIMEVAL )   
+   struct timeval tv;
+   if( gettimeofday( &tv, 0 ) == 0 ) {
+      return (BGL_LONGLONG_T)(tv.tv_sec) * MILLIBASE +
+	 (BGL_LONGLONG_T)(tv.tv_usec / 1000);
+   } else {
+      C_SYSTEM_FAILURE( BGL_ERROR,
+			"current-milliseconds",
+			strerror( errno ),
+			BUNSPEC );
+   }
+#else
+   return (BGL_LONGLONG_T)(time( 0L ) ) * MILLIBASE;
+#endif
 }
 
 /*---------------------------------------------------------------------*/

@@ -46,10 +46,10 @@ public class date extends obj {
       calendar = new GregorianCalendar();
       final Date d = new Date();
 	 
-      d.setTime( nseconds / 1000000 );
+      d.setTime( nseconds / _b ? 1000000 : 1000 );
       calendar.setTime( d );
       final TimeZone tmz = calendar.getTimeZone();
       timezone = -tmz.getRawOffset() / 1000;
-      nsec = (nseconds % 1000000);
+      nsec = _b ? (nseconds % 1000000) : (nseconds % 1000);
    }
 }

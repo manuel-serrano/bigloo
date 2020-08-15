@@ -57,6 +57,7 @@
 	    
 	    (macro $date-integer->second::elong (::long) "(long)")
 	    (macro $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
+	    (macro $date-millisecond::llong (::date) "BGL_DATE_MILLISECOND")
 	    (macro $date-second::int (::date) "BGL_DATE_SECOND")
 	    (macro $date-minute::int (::date) "BGL_DATE_MINUTE")
 	    (macro $date-hour::int (::date) "BGL_DATE_HOUR")
@@ -74,13 +75,16 @@
 	    ($date-month-aname::bstring (::int) "bgl_month_aname")
 	    
 	    ($date-current-seconds::elong () "bgl_current_seconds")
+	    ($date-current-milliseconds::llong () "bgl_current_milliseconds")
 	    ($date-current-microseconds::llong () "bgl_current_microseconds")
 	    ($date-current-nanoseconds::llong () "bgl_current_nanoseconds")
 	    ($date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	    ($date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
 	    ($date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
+	    ($date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	    ($date-to-seconds::elong (::date) "bgl_date_to_seconds")
 	    ($date-to-nanoseconds::llong (::date) "bgl_date_to_nanoseconds")
+	    ($date-to-milliseconds::llong (::date) "bgl_date_to_milliseconds")
 	    ($date-seconds-to-string::bstring (::elong) "bgl_seconds_to_string")
 	    ($date-seconds-to-utc-string::bstring (::elong) "bgl_seconds_to_utc_string"))
    
@@ -90,16 +94,20 @@
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	       (method static $date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
 	       (method static $date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
+	       (method static $date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	       (method static $date-current-seconds::elong () "bgl_current_seconds")
+	       (method static $date-current-milliseconds::llong () "bgl_current_milliseconds")
 	       (method static $date-current-microseconds::llong () "bgl_current_microseconds")
 	       (method static $date-current-nanoseconds::llong () "bgl_current_nanoseconds")
 	       (method static $date-to-seconds::elong (::date) "bgl_date_to_seconds")
 	       (method static $date-to-nanoseconds::llong (::date) "bgl_date_to_nanoseconds")
+	       (method static $date-to-milliseconds::llong (::date) "bgl_date_to_milliseconds")
 	       (method static $date-seconds-to-string::bstring (::elong) "bgl_seconds_to_string")
 	       (method static $date-seconds-to-utc-string::bstring (::elong) "bgl_seconds_to_utc_string")
 	       
 	       (method static $date-integer->second::elong (::long) "bgl_integer_to_seconds")
 	       (method static $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
+	       (method static $date-millisecond::llong (::date) "BGL_DATE_MILLISECOND")
 	       (method static $date-second::int (::date) "BGL_DATE_SECOND")
 	       (method static $date-minute::int (::date) "BGL_DATE_MINUTE")
 	       (method static $date-hour::int (::date) "BGL_DATE_HOUR")
@@ -126,6 +134,7 @@
 	    (inline integer->second::elong ::long)
 	    
 	    (inline date-nanosecond::llong ::date)
+	    (inline date-millisecond::llong ::date)
 	    (inline date-second::int ::date)
 	    (inline date-minute::int ::date)
 	    (inline date-hour::int ::date)
@@ -141,14 +150,17 @@
 	    (inline date-is-dst::int ::date)
 	    
 	    (inline current-seconds::elong)
+	    (inline current-milliseconds::llong)
 	    (inline current-microseconds::llong)
 	    (inline current-nanoseconds::llong)
 	    (inline current-date::date)
 	    (inline seconds->date::date ::elong)
 	    (inline seconds->gmtdate::date ::elong)
 	    (inline nanoseconds->date::date ::llong)
+	    (inline milliseconds->date::date ::llong)
 	    (inline date->seconds::elong ::date)
 	    (inline date->nanoseconds::llong ::date)
+	    (inline date->milliseconds::llong ::date)
 	    (date->string::bstring ::date)
 	    (date->utc-string::bstring ::date)
 	    (inline seconds->string::bstring ::elong)
@@ -248,6 +260,12 @@
    ($date-nanosecond d))
 
 ;*---------------------------------------------------------------------*/
+;*    date-millisecond ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (date-millisecond d::date)
+   ($date-millisecond d))
+
+;*---------------------------------------------------------------------*/
 ;*    date-second ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (date-second d::date)
@@ -332,6 +350,12 @@
    ($date-current-seconds))
 
 ;*---------------------------------------------------------------------*/
+;*    current-milliseconds ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (current-milliseconds)
+   ($date-current-milliseconds))
+
+;*---------------------------------------------------------------------*/
 ;*    current-microseconds ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (current-microseconds)
@@ -364,8 +388,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    nanoseconds->date ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (nanoseconds->date elong)
-   ($date-from-nanoseconds elong))
+(define-inline (nanoseconds->date llong)
+   ($date-from-nanoseconds llong))
+
+;*---------------------------------------------------------------------*/
+;*    milliseconds->date ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (milliseconds->date llong)
+   ($date-from-milliseconds llong))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->seconds ...                                                */
@@ -378,6 +408,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (date->nanoseconds date)
    ($date-to-nanoseconds date))
+
+;*---------------------------------------------------------------------*/
+;*    date->milliseconds ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (date->milliseconds date)
+   ($date-to-milliseconds date))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->string ...                                                 */
