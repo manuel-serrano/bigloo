@@ -54,7 +54,7 @@
    (extern  (macro c-date?::bool (::obj) "BGL_DATEP")
 	    ($date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
 	    ($date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
-	    
+
 	    (macro $date-integer->second::elong (::long) "(long)")
 	    (macro $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
 	    (macro $date-millisecond::llong (::date) "BGL_DATE_MILLISECOND")
@@ -614,6 +614,20 @@
 	 (close-input-port port))))
 
 ;*---------------------------------------------------------------------*/
+;*    ltz ...                                                          */
+;*---------------------------------------------------------------------*/
+(define ltz #f)
+
+;*---------------------------------------------------------------------*/
+;*    local-timezone ...                                               */
+;*---------------------------------------------------------------------*/
+(define (local-timezone)
+   (or ltz
+       (let ((tz (date-timezone (seconds->date 0))))
+	  (set! ltz tz)
+	  tz)))
+	      
+;*---------------------------------------------------------------------*/
 ;*    iso8601-parse-date ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (iso8601-parse-date ip::input-port)
@@ -652,7 +666,7 @@
 		YYYY MM DD HH mm ss sss (negfx (*fx 3600 (the-fix b1 b2))))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0
+	      (make-date :timezone (local-timezone)
 		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
@@ -668,7 +682,7 @@
 		(*llong #l1000000 (fixnum->llong (the-fix (the-fix b1 b2) b3))))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0
+	      (make-date :timezone (local-timezone)
 		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
@@ -684,7 +698,7 @@
 		YYYY MM DD HH mm (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0
+	      (make-date :timezone (local-timezone)
 		 :year YYYY :month MM :day DD :hour HH :min mm)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
@@ -700,7 +714,8 @@
 		YYYY MM DD HH (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY :month MM :day DD :hour HH)
+	      (make-date :timezone (local-timezone)
+		 :year YYYY :month MM :day DD :hour HH)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -714,7 +729,8 @@
 		YYYY MM DD (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY :month MM :day DD)
+	      (make-date :timezone (local-timezone)
+		 :year YYYY :month MM :day DD)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
 
@@ -727,7 +743,8 @@
 		YYYY MM (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY :month MM)
+	      (make-date :timezone (local-timezone)
+		 :year YYYY :month MM)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -740,7 +757,7 @@
 		YYYY (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY)
+	      (make-date :timezone (local-timezone) :year YYYY)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
 

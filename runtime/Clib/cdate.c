@@ -301,7 +301,7 @@ bgl_date_to_nanoseconds( obj_t date ) {
 BGL_RUNTIME_DEF BGL_LONGLONG_T
 bgl_date_to_milliseconds( obj_t date ) {
    return (BGL_LONGLONG_T)bgl_date_to_seconds( date ) * MILLIBASE +
-      (BGL_DATE( date ).nsec ? BGL_DATE( date ).nsec / 1000000 : 0);
+      BGL_DATE( date ).nsec / 1000000;
 }
 
 /*---------------------------------------------------------------------*/
