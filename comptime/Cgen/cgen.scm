@@ -594,11 +594,18 @@
 		(tprint "stack=" loc)
 		;; declare the variable for the stack allocation
 		(let* ((id (gensym (variable-id v)))
-		       (decl (duplicate::local (car x)
-				(id id)
-				(name #f)
-				(type *obj*))))
-		   (set-variable-name! decl)
+		       (decl (let ((d (duplicate::local (car x)
+					 (id id)
+					 (name #f)
+					 (type *obj*))))
+				(set-variable-name! d)
+				d))
+		       (alloc (instantiate::cpragma 
+				 (loc loc)
+				 (format (format (car sa) (variable-name decl)))
+				 (args (map (lambda (a)
+					       (node->cop a *id-kont* inpushexit))
+					  args)))))
 		   ;; adjust the orignal function call
 		   (set! fun (duplicate::var fun
 				(variable (duplicate::global v
@@ -608,13 +615,7 @@
 				       (type *obj*)
 				       (variable decl))
 				 args))
-		   (list
-		      (instantiate::cpragma 
-			 (loc loc)
-			 (format (format (car sa) (variable-name decl)))
-			 (args (map (lambda (a)
-				       (node->cop a *id-kont* inpushexit))
-				  args)))))))
+		   (list alloc))))
 	  '()))
    
    (with-access::let-var node (body bindings loc)
