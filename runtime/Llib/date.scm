@@ -91,6 +91,7 @@
    (java    (class foreign
 	       (method static c-date?::bool (::obj) "DATEP")
 	       (method static $date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
+	       (method static $date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	       (method static $date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
 	       (method static $date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")

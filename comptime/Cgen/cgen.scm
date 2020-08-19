@@ -591,7 +591,6 @@
 	  (with-access::app (cdr x) (fun args loc)
 	     (let* ((v (var-variable fun))
 		    (sa (fun-stack-allocator (global-value v))))
-		(tprint "stack=" loc)
 		;; declare the variable for the stack allocation
 		(let* ((id (gensym (variable-id v)))
 		       (decl (duplicate::local (car x)

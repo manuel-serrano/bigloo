@@ -3537,6 +3537,20 @@ public final class foreign
 	 return new bigloo.date(ns, s, min, h, d, mon - 1, y, tz, istz, dst);
       }
 
+   public static date bgl_update_date(date, long ns, int s,
+				      int min, int h, int d, int mon,
+				      int y, int tz, boolean istz, int dst)
+      {
+	 date tmp = bgl_make_date( ns, s, min, h, d, mon,
+				   y, tz, istz, dst);
+
+	 date.nsec = tmp.nsec;
+	 date.calendar = tmp.calendar;
+	 date.timezone = tmp.timezone;
+	 return date;
+      }
+   
+
    public static date bgl_seconds_to_date(long sec)
       {
 	 return new bigloo.date(sec);
