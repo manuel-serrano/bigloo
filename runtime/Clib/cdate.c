@@ -47,7 +47,12 @@ bgl_init_date() {
 /*---------------------------------------------------------------------*/
 static long
 bgl_get_timezone( time_t s ) {
+#if( BGL_HAVE_LOCALTIME_R )   
+   struct tm res;
+   struct tm *tm = localtime_r( &s, &res );
+#else
    struct tm *tm = localtime( &s );
+#endif
    long m1, h1, d1;
 
    m1 = tm->tm_min;
@@ -86,24 +91,21 @@ bgl_timezone() {
 /*---------------------------------------------------------------------*/
 static void
 tm_date( struct tm *tm, obj_t date ) {
-#if( BGL_HAVE_GMTOFF )
-   date->date.timezone = tm->tm_gmtoff;
+#if( !BGL_HAVE_GMTOFF )
+   date->date.timezone = bgl_timezone();
 #else
-   date->date.timezone = bgl_timezone();   
+   date->date.tm.tm_gmtoff = tm->tm_gmtoff;
 #endif
-
-   date->date.nsec = 0;
-   date->date.sec = tm->tm_sec;
-   date->date.min = tm->tm_min;
-   date->date.hour = tm->tm_hour;
-      
-   date->date.mday = tm->tm_mday;
-   date->date.mon = tm->tm_mon + 1;
-   date->date.year = tm->tm_year + 1900;
-   date->date.wday = tm->tm_wday + 1;
-   date->date.yday = tm->tm_yday + 1;
-
-   date->date.isdst = tm->tm_isdst;
+   
+   date->date.tm.tm_sec = tm->tm_sec;
+   date->date.tm.tm_min = tm->tm_min;
+   date->date.tm.tm_hour = tm->tm_hour;
+   date->date.tm.tm_mday = tm->tm_mday;
+   date->date.tm.tm_mon = tm->tm_mon;
+   date->date.tm.tm_year = tm->tm_year;
+   date->date.tm.tm_wday = tm->tm_wday;
+   date->date.tm.tm_yday = tm->tm_yday;
+   date->date.tm.tm_isdst = tm->tm_isdst;
 }
 
 /*---------------------------------------------------------------------*/
@@ -113,14 +115,23 @@ tm_date( struct tm *tm, obj_t date ) {
 BGL_RUNTIME_DEF obj_t
 bgl_seconds_to_date( long s ) {
    time_t sec = (time_t)s;
-   obj_t date;
-
-   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   obj_t date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   
    date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
+#if( BGL_HAVE_LOCALTIME_R )   
+   localtime_r( &sec, &(date->date.tm) );
+#else   
    BGL_MUTEX_LOCK( date_mutex );
    tm_date( localtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );
+#endif
+   
+   date->date.time = sec;
+   date->date.nsec = 0;
+#if( !BGL_HAVE_GMTOFF )
+   date->date.timezone = bgl_timezone();   
+#endif
    
    return BREF( date );
 }
@@ -132,14 +143,51 @@ bgl_seconds_to_date( long s ) {
 BGL_RUNTIME_DEF obj_t
 bgl_seconds_to_gmtdate( long s ) {
    time_t sec = (time_t)s;
-   obj_t date;
-
-   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   obj_t date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   
    date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
+#if( BGL_HAVE_GMTIME_R )
+   gmtime_r( &sec, &(date->date.tm) );
+#else
    BGL_MUTEX_LOCK( date_mutex );
    tm_date( gmtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );
+#endif
+   
+   date->date.time = sec;
+   date->date.nsec = 0;
+#if( !BGL_HAVE_GMTOFF )
+   date->date.timezone = bgl_timezone();   
+#endif
+   
+   return BREF( date );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_milliseconds_to_gmtdate ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_milliseconds_to_gmtdate( BGL_LONGLONG_T msec ) {
+   time_t sec = msec / MILLIBASE;
+   obj_t date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   
+   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
+
+#if( BGL_HAVE_GMTIME_R )
+   gmtime_r( &sec, &(date->date.tm) );
+#else
+   BGL_MUTEX_LOCK( date_mutex );
+   tm_date( gmtime( &sec ), date );
+   BGL_MUTEX_UNLOCK( date_mutex );
+#endif
+   
+   date->date.time = sec;
+   date->date.nsec = (msec - ((BGL_LONGLONG_T) sec * MILLIBASE)) * 1000000;
+#if( !BGL_HAVE_GMTOFF )
+   date->date.timezone = 0;
+#endif
    
    return BREF( date );
 }
@@ -151,16 +199,20 @@ bgl_seconds_to_gmtdate( long s ) {
 BGL_RUNTIME_DEF obj_t
 bgl_nanoseconds_to_date( BGL_LONGLONG_T nsec ) {
    time_t sec = nsec / NANOBASE;
-   obj_t date;
-
-   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   obj_t date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   
    date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
+#if( BGL_HAVE_LOCALTIME_R )
+   localtime_r( &sec, &(date->date.tm) );
+#else   
    BGL_MUTEX_LOCK( date_mutex );
    tm_date( localtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );
+#endif
 
    date->date.nsec = (nsec - ((BGL_LONGLONG_T) sec * NANOBASE));
+   date->date.time = nsec / NANOBASE;
    
    return BREF( date );
 }
@@ -172,18 +224,67 @@ bgl_nanoseconds_to_date( BGL_LONGLONG_T nsec ) {
 BGL_RUNTIME_DEF obj_t
 bgl_milliseconds_to_date( BGL_LONGLONG_T msec ) {
    time_t sec = msec / MILLIBASE;
-   obj_t date;
+   obj_t date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
 
-   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
    date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
+#if( BGL_HAVE_LOCALTIME_R )
+   localtime_r( &sec, &(date->date.tm) );
+#else   
    BGL_MUTEX_LOCK( date_mutex );
    tm_date( localtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );
+#endif
 
    date->date.nsec = (msec - ((BGL_LONGLONG_T) sec * MILLIBASE)) * 1000000;
+   date->date.time = msec / MILLIBASE;
 
    return BREF( date );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_update_date ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_update_date( obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
+   obj_t date = CREF( obj );
+#if( !BGL_HAVE_LOCALTIME_R )   
+   struct tm *tm;
+#endif
+      
+   date->date.tm.tm_sec = s + (long)(ns / (BGL_LONGLONG_T)1000000000);
+   date->date.tm.tm_min = m; 
+   date->date.tm.tm_hour = hr;
+   date->date.tm.tm_mday = mday;
+   date->date.tm.tm_mon = mon - 1;
+   date->date.tm.tm_year = year - 1900;
+   date->date.tm.tm_isdst = isdst;
+
+   date->date.time = mktime( &(date->date.tm) );
+   date->date.nsec = (ns % (BGL_LONGLONG_T)1000000000);
+
+#if( BGL_HAVE_GMTOFF )
+   if( istz ) {
+      date->date.time += date->date.tm.tm_gmtoff - tz;
+   }
+#else
+   date->date.timezone = bgl_get_timezone( date->date.time );
+   if( istz ) {
+      date->date.time += date->date.timezone - tz;
+   }
+#endif   
+
+#if( BGL_HAVE_LOCALTIME_R )
+   localtime_r( &(date->date.time), &(date->date.tm) );
+#else
+   BGL_MUTEX_LOCK( date_mutex );
+   tm = localtime( &(date->date.time) );
+   tm_date( tm, date );
+   BGL_MUTEX_UNLOCK( date_mutex );
+#endif
+
+   return obj;
 }
 
 /*---------------------------------------------------------------------*/
@@ -192,60 +293,14 @@ bgl_milliseconds_to_date( BGL_LONGLONG_T msec ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_make_date( BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
-   struct tm tm;
-   time_t t;
    obj_t date;
-   BGL_LONGLONG_T nsec = (ns % (BGL_LONGLONG_T)1000000000);
       
-   tm.tm_sec = s + (long)(ns / (BGL_LONGLONG_T)1000000000);
-   tm.tm_min = m; 
-   tm.tm_hour = hr;
-   tm.tm_mday = mday;
-   tm.tm_mon = mon - 1;
-   tm.tm_year = year - 1900;
-   tm.tm_isdst = isdst;
+   date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
+   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
-   t = mktime( &tm );
-
-   date = bgl_seconds_to_date( t );
-   BGL_DATE( date ).nsec = nsec;
-
-   if( istz ) {
-      BGL_DATE( date ).timezone = tz;
-   }
-   return date;
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_update_date ...                                              */
-/*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-bgl_update_date( obj_t date, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
-   struct tm tm;
-   time_t t;
-   BGL_LONGLONG_T nsec = (ns % (BGL_LONGLONG_T)1000000000);
-      
-   tm.tm_sec = s + (long)(ns / (BGL_LONGLONG_T)1000000000);
-   tm.tm_min = m; 
-   tm.tm_hour = hr;
-   tm.tm_mday = mday;
-   tm.tm_mon = mon - 1;
-   tm.tm_year = year - 1900;
-   tm.tm_isdst = isdst;
-
-   t = mktime( &tm );
-
-   BGL_MUTEX_LOCK( date_mutex );
-   tm_date( localtime( &t ), date );
-   BGL_MUTEX_UNLOCK( date_mutex );
-
-   BGL_DATE( date ).nsec = nsec;
-
-   if( istz ) {
-      BGL_DATE( date ).timezone = tz;
-   }
-   return date;
+/*    fprintf( stderr, "make_date ns=%lld s=%d m=%d hr=%d mday=%d mon=%d year=%d tz=%d istz=%d isdst=%d\n", */
+/* 	    ns,  s,  m,  hr,  mday,  mon,  year, tz, istz, isdst )   ; */
+   return bgl_update_date( BREF( date ), ns, s, m, hr, mday, mon, year, tz, istz, isdst );
 }
 
 /*---------------------------------------------------------------------*/
@@ -254,34 +309,7 @@ bgl_update_date( obj_t date, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, 
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_date_to_seconds( obj_t date ) {
-   struct tm t, *tl;
-   time_t n, m;
-   long tz;
-
-   t.tm_sec = BGL_DATE( date ).sec;
-   t.tm_min = BGL_DATE( date ).min;
-   t.tm_hour = BGL_DATE( date ).hour;
-   t.tm_mday = BGL_DATE( date ).mday;
-   t.tm_mon = BGL_DATE( date ).mon - 1;
-   t.tm_year = BGL_DATE( date ).year - 1900;
-   t.tm_isdst = BGL_DATE( date ).isdst;
-
-   n = mktime( &t );
-
-   BGL_MUTEX_LOCK( date_mutex );
-#if( BGL_HAVE_GMTOFF )
-   /* get the timezone at that date */
-   tl = localtime( &n );
-   tz = tl->tm_gmtoff;
-#else
-   /* mid-month to avoid day overflow */
-   t.tm_mday = 15;
-   m = mktime( &t );
-   tz = bgl_get_timezone( n );
-#endif
-
-   BGL_MUTEX_UNLOCK( date_mutex );
-   return (long)n + (tz - (BGL_DATE( date ).timezone));
+   return BGL_DATE( date ).time;
 }
 
 /*---------------------------------------------------------------------*/
@@ -422,12 +450,19 @@ bgl_seconds_format( long s, obj_t fmt ) {
    struct tm *p;
    int len = (int)STRING_LENGTH( fmt ) + 256;
    time_t sec = (time_t)s;
+#if( BGL_HAVE_LOCALTIME_R )   
+   struct tm res;
+#endif
 
    buffer = (char *)GC_MALLOC_ATOMIC( len + 1 );
    
+#if( BGL_HAVE_LOCALTIME_R )   
+   p = localtime_r( &sec, &res );
+#else
    BGL_MUTEX_LOCK( date_mutex );
    p = localtime( &sec );
    BGL_MUTEX_UNLOCK( date_mutex );
+#endif
    
    len = (int)strftime( buffer, len, BSTRING_TO_STRING( fmt ), p );
 

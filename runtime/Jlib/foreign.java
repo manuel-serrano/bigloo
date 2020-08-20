@@ -3565,6 +3565,13 @@ public final class foreign
 	 return d;
       }
 
+   public static date bgl_milliseconds_to_date(long sec)
+      {
+	 date d = new bigloo.date(sec * 1000000, true);
+	 d.calendar.setTimeZone(new SimpleTimeZone(0, "UTC"));
+	 return d;
+      }
+
    public static long bgl_current_seconds()
       {
 	 return (new Date().getTime() / 1000);

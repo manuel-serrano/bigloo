@@ -51,6 +51,7 @@ extern "C" {
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+#include <time.h>
 #if !defined( _MSC_VER ) && !defined( _MINGW_VER )
 #  include <unistd.h>
 #endif
@@ -829,28 +830,16 @@ union scmobj {
    /* dates */
    struct bgl_date {
       header_t header;
-      /* number of nanoRseconds */
+      /* the UTC date in seconds */
+      time_t time;
+      /* the tm structure */
+      struct tm tm;
+      /* number of nano seconds */
       BGL_LONGLONG_T nsec;
-      /* number of seconds [0..59] */
-      int sec;
-      /* number of minutes [0..59] */
-      int min;
-      /* number of hour [0..23] */
-      int hour;
-      /* day of month [0..30] */
-      int mday;
-      /* month number [0..11] */
-      int mon;
-      /* year number [0..20xx] */
-      int year;
-      /* day of week [0..6] */ 
-      int wday;
-      /* day of year [0..365] */
-      int yday;
       /* number of seconds of timezone */
+#if( !BGL_HAVE_GMTOFF )
       long timezone;
-      /* daylight savings? [-1/0/1] */   
-      int isdst;                 
+#endif
    } date;
 
    /* mutexes */
@@ -1708,16 +1697,21 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 
 #define BGL_DATE_NANOSECOND( f ) (BGL_DATE( f ).nsec)
 #define BGL_DATE_MILLISECOND( f ) (BGL_DATE( f ).nsec / 1000000)
-#define BGL_DATE_SECOND( f ) (BGL_DATE( f ).sec)
-#define BGL_DATE_MINUTE( f ) (BGL_DATE( f ).min)
-#define BGL_DATE_HOUR( f ) (BGL_DATE( f ).hour)
-#define BGL_DATE_DAY( f ) (BGL_DATE( f ).mday)
-#define BGL_DATE_WDAY( f ) (BGL_DATE( f ).wday)
-#define BGL_DATE_YDAY( f ) (BGL_DATE( f ).yday)
-#define BGL_DATE_MONTH( f ) (BGL_DATE( f ).mon)
-#define BGL_DATE_YEAR( f ) (BGL_DATE( f ).year)
-#define BGL_DATE_TIMEZONE( f ) (BGL_DATE( f ).timezone)
-#define BGL_DATE_ISDST( f ) (BGL_DATE( f ).isdst)		 
+#if( BGL_HAVE_GMTOFF )
+#  define BGL_DATE_TIMEZONE( f ) (BGL_DATE( f ).tm.tm_gmtoff)
+#else
+#  define BGL_DATE_TIMEZONE( f ) (BGL_DATE( f ).timezone)
+#endif
+   
+#define BGL_DATE_ISDST( f ) (BGL_DATE( f ).tm.tm_isdst)
+#define BGL_DATE_SECOND( f ) (BGL_DATE( f ).tm.tm_sec)
+#define BGL_DATE_MINUTE( f ) (BGL_DATE( f ).tm.tm_min)
+#define BGL_DATE_HOUR( f ) (BGL_DATE( f ).tm.tm_hour)
+#define BGL_DATE_DAY( f ) (BGL_DATE( f ).tm.tm_mday)
+#define BGL_DATE_WDAY( f ) (BGL_DATE( f ).tm.tm_wday + 1)
+#define BGL_DATE_YDAY( f ) (BGL_DATE( f ).tm.tm_yday + 1)
+#define BGL_DATE_MONTH( f ) (BGL_DATE( f ).tm.tm_mon + 1)
+#define BGL_DATE_YEAR( f ) (BGL_DATE( f ).tm.tm_year + 1900)
 
 /*---------------------------------------------------------------------*/
 /*    Mutexes and condition variables                                  */
