@@ -71,6 +71,7 @@ in seconds (resp. in micro seconds).
 @deffnx {bigloo procedure} date->milliseconds
 @deffnx {bigloo procedure} seconds->date
 @deffnx {bigloo procedure - 4.3h} seconds->gmtdate
+@deffnx {bigloo procedure - 4.3i} milliseconds->gmtdate
 @deffnx {bigloo procedure} nanoeconds->date
 @deffnx {bigloo procedure} milliseconds->date
 Convert from @code{date} and @code{elong}.

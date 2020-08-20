@@ -57,7 +57,7 @@
 
 	    (macro $date-integer->second::elong (::long) "(long)")
 	    (macro $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
-	    (macro $date-millisecond::llong (::date) "BGL_DATE_MILLISECOND")
+	    (macro $date-millisecond::long (::date) "BGL_DATE_MILLISECOND")
 	    (macro $date-second::int (::date) "BGL_DATE_SECOND")
 	    (macro $date-minute::int (::date) "BGL_DATE_MINUTE")
 	    (macro $date-hour::int (::date) "BGL_DATE_HOUR")
@@ -80,6 +80,7 @@
 	    ($date-current-nanoseconds::llong () "bgl_current_nanoseconds")
 	    ($date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	    ($date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
+	    ($date-from-milliseconds-gmt::date (::llong) "bgl_milliseconds_to_gmtdate")
 	    ($date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
 	    ($date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	    ($date-to-seconds::elong (::date) "bgl_date_to_seconds")
@@ -94,6 +95,7 @@
 	       (method static $date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	       (method static $date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
+	       (method static $date-from-milliseconds-gmt::date (::llong) "bgl_miliseconds_to_gmtdate")
 	       (method static $date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
 	       (method static $date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	       (method static $date-current-seconds::elong () "bgl_current_seconds")
@@ -130,7 +132,8 @@
 		       (nsec #l0) (sec 0) (min 0) (hour 0)
 		       (day 1) (month 1) (year 1970)
 		       timezone (dst -1))
-	    (date-copy date #!key nsec sec min hour day month year timezone isdst)
+	    (date-copy date::date #!key nsec sec min hour day month year timezone isdst)
+	    (date-update! date::date #!key nsec sec min hour day month year timezone isdst)
 	    
 	    (inline integer->second::elong ::long)
 	    
@@ -157,6 +160,7 @@
 	    (inline current-date::date)
 	    (inline seconds->date::date ::elong)
 	    (inline seconds->gmtdate::date ::elong)
+	    (inline milliseconds->gmtdate::date ::llong)
 	    (inline nanoseconds->date::date ::llong)
 	    (inline milliseconds->date::date ::llong)
 	    (inline date->seconds::elong ::date)
@@ -229,8 +233,8 @@
       (or month (date-month date))
       (or year (date-year date))
       (or timezone (date-timezone date))
-      (integer? timezone)
-      (or isdst (date-is-dst date))))
+      (or (integer? timezone) (not (=fx (date-timezone date) 0)))
+      (or isdst -1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    date-update! ...                                                 */
@@ -245,8 +249,8 @@
       (or month (date-month date))
       (or year (date-year date))
       (or timezone (date-timezone date))
-      (integer? timezone)
-      (or isdst (date-is-dst date))))
+      (or (integer? timezone) (not (=fx (date-timezone date) 0)))
+      (or isdst -1)))
       
 ;*---------------------------------------------------------------------*/
 ;*    integer->second ...                                              */
@@ -387,6 +391,12 @@
    ($date-from-seconds-gmt elong))
 
 ;*---------------------------------------------------------------------*/
+;*    milliseconds->gmtdate ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (milliseconds->gmtdate llong)
+   ($date-from-milliseconds-gmt llong))
+
+;*---------------------------------------------------------------------*/
 ;*    nanoseconds->date ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (nanoseconds->date llong)
@@ -426,19 +436,21 @@
 ;*    date->utc-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (date->utc-string date)
+   
+   (define (utc-string date)
+      (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
+	 (day-aname (date-wday date))
+	 (date-day date)
+	 (month-aname (date-month date))
+	 (date-year date)
+	 (date-hour date)
+	 (date-minute date)
+	 (date-second date)))
+   
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
-	     (day-aname (date-wday date))
-	     (date-day date)
-	     (month-aname (date-month date))
-	     (date-year date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date))
-	  (let* ((ctz (date-timezone (date-copy date)))
-		 (d (seconds->date (-fx (date->seconds date) ctz))))
-	     (date->utc-string (date-copy d :timezone 0))))))
+	  (utc-string date)
+	  (utc-string (seconds->gmtdate (date->seconds date))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->string ...                                              */
@@ -615,20 +627,6 @@
 	 (close-input-port port))))
 
 ;*---------------------------------------------------------------------*/
-;*    ltz ...                                                          */
-;*---------------------------------------------------------------------*/
-(define ltz #f)
-
-;*---------------------------------------------------------------------*/
-;*    local-timezone ...                                               */
-;*---------------------------------------------------------------------*/
-(define (local-timezone)
-   (or ltz
-       (let ((tz (date-timezone (seconds->date 0))))
-	  (set! ltz tz)
-	  tz)))
-	      
-;*---------------------------------------------------------------------*/
 ;*    iso8601-parse-date ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (iso8601-parse-date ip::input-port)
@@ -667,7 +665,7 @@
 		YYYY MM DD HH mm ss sss (negfx (*fx 3600 (the-fix b1 b2))))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone (local-timezone)
+	      (make-date
 		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
@@ -683,7 +681,7 @@
 		(*llong #l1000000 (fixnum->llong (the-fix (the-fix b1 b2) b3))))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone (local-timezone)
+	      (make-date
 		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
@@ -699,7 +697,7 @@
 		YYYY MM DD HH mm (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone (local-timezone)
+	      (make-date 
 		 :year YYYY :month MM :day DD :hour HH :min mm)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
@@ -715,7 +713,7 @@
 		YYYY MM DD HH (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone (local-timezone)
+	      (make-date 
 		 :year YYYY :month MM :day DD :hour HH)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
@@ -730,7 +728,7 @@
 		YYYY MM DD (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone (local-timezone)
+	      (make-date
 		 :year YYYY :month MM :day DD)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
@@ -744,7 +742,7 @@
 		YYYY MM (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone (local-timezone)
+	      (make-date
 		 :year YYYY :month MM)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
@@ -758,7 +756,7 @@
 		YYYY (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone (local-timezone) :year YYYY)
+	      (make-date :year YYYY)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
 
