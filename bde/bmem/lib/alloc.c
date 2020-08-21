@@ -38,7 +38,7 @@ unsigned long ante_bgl_init_dsz = 0;
 
 #define DBG_INDEX_STOP( name ) \
    (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index) != (__idx -1) \
-      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%ld/%ld]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
+      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%ld/%ld]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), -1 : 0; } 0
 
 #define DBG_INDEX_RESET() \
    (alloc_index = __idx)

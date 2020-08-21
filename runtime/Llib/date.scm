@@ -432,19 +432,102 @@
    (date->rfc2822-date date))
 
 ;*---------------------------------------------------------------------*/
+;*    blit-digit! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (blit-digit! buf w digit)
+   (string-set! buf w (integer->char (+fx (char->integer #\0) digit))))
+
+;*---------------------------------------------------------------------*/
+;*    blit-int2! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (blit-int2! buf w int)
+   (if (<fx int 10)
+       (begin
+	  (string-set! buf w #\0)
+	  (blit-digit! buf (+fx w 1) int))
+       (begin
+	  (blit-digit! buf w (/fx int 10))
+	  (blit-digit! buf (+fx w 1) (modulofx int 10))))
+   2)
+
+;*---------------------------------------------------------------------*/
+;*    blit-int! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (blit-int! buf w int)
+   (cond
+      ((<fx int 10)
+       (blit-digit! buf w int)
+       1)
+      ((<fx int 100)
+       (blit-digit! buf w (/fx int 10))
+       (blit-digit! buf (+fx w 1) (modulofx int 10))
+       2)
+      ((<fx int 1000)
+       (blit-digit! buf w (/fx int 100))
+       (let ((r (modulofx int 100)))
+	  (blit-digit! buf (+fx w 1) (/fx r 10))
+	  (blit-digit! buf (+fx w 2) (modulofx r 10))
+	  3))
+      (else
+       (blit-digit! buf w (/fx int 1000))
+       (let ((r (modulofx int 1000)))
+	  (blit-digit! buf (+fx w 1) (/fx r 100))
+	  (let ((r (modulofx int 100)))
+	     (blit-digit! buf (+fx w 2) (/fx r 10))
+	     (blit-digit! buf (+fx w 3) (modulofx r 10))
+	     4)))))
+
+;*---------------------------------------------------------------------*/
+;*    blit-buf! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (blit-buf! tgt w str)
+   (let ((l (string-length str)))
+      (blit-string! str 0 tgt w l)
+      l))
+
+;*---------------------------------------------------------------------*/
 ;*    date->utc-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (date->utc-string date)
-   
+
    (define (utc-string date)
-      (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
-	 (day-aname (date-wday date))
-	 (date-day date)
-	 (month-aname (date-month date))
-	 (date-year date)
-	 (date-hour date)
-	 (date-minute date)
-	 (date-second date)))
+      (let ((buf (make-string 29 #\space))
+	    (w 0))
+;*       (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"                  */
+;* 	 (day-aname (date-wday date))                                  */
+;* 	 (date-day date)                                               */
+;* 	 (month-aname (date-month date))                               */
+;* 	 (date-year date)                                              */
+;* 	 (date-hour date)                                              */
+;* 	 (date-minute date)                                            */
+;* 	 (date-second date))                                           */
+	 ;; date-aname
+	 (set! w (+fx w (blit-buf! buf w (day-aname (date-wday date)))))
+	 (string-set! buf w #\,)
+	 (set! w (+fx w 2))
+	 ;; date-day
+	 (set! w (+fx w (blit-int! buf w (date-day date))))
+	 (set! w (+fx w 1))
+	 ;; montn-aname
+	 (set! w (+fx w (blit-buf! buf w (month-aname (date-month date)))))
+	 (set! w (+fx w 1))
+	 ;; date-year
+	 (set! w (+fx w (blit-int! buf w (date-year date))))
+	 (set! w (+fx w 1))
+	 ;; date-hour
+	 (set! w (+fx w (blit-int2! buf w (date-hour date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-minute
+	 (set! w (+fx w (blit-int2! buf w (date-minute date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-second
+	 (set! w (+fx w (blit-int2! buf w (date-second date))))
+	 (set! w (+fx w 1))
+	 ;; GMT
+	 (set! w (+fx w (blit-buf! buf w "GMT")))
+	 (string-shrink! buf w)))
    
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
@@ -558,27 +641,58 @@
 ;*    date->rfc2822-date ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (date->rfc2822-date date)
+   
+   (define (rfc-string date tz)
+      (let ((buf (make-string 32 #\space))
+	    (w 0))
+;* 	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d ~a~2,0d~2,0d"        */
+;* 	     (day-aname (date-wday date))                              */
+;* 	     (date-day date)                                           */
+;* 	     (month-aname (date-month date))                           */
+;* 	     (date-year date)                                          */
+;* 	     (date-hour date)                                          */
+;* 	     (date-minute date)                                        */
+;* 	     (date-second date)                                        */
+;* 	     (if (<fx tz 0) "-" "+")                                   */
+;* 	     (absfx (/fx tz 3600))                                     */
+;* 	     (absfx (remainder tz 3600)))                              */
+	 ;; date-aname
+	 (set! w (+fx w (blit-buf! buf w (day-aname (date-wday date)))))
+	 (string-set! buf w #\,)
+	 (set! w (+fx w 2))
+	 ;; date-day
+	 (set! w (+fx w (blit-int! buf w (date-day date))))
+	 (set! w (+fx w 1))
+	 ;; montn-aname
+	 (set! w (+fx w (blit-buf! buf w (month-aname (date-month date)))))
+	 (set! w (+fx w 1))
+	 ;; date-year
+	 (set! w (+fx w (blit-int! buf w (date-year date))))
+	 (set! w (+fx w 1))
+	 ;; date-hour
+	 (set! w (+fx w (blit-int2! buf w (date-hour date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-minute
+	 (set! w (+fx w (blit-int2! buf w (date-minute date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-second
+	 (set! w (+fx w (blit-int2! buf w (date-second date))))
+	 (set! w (+fx w 1))
+	 ;; +/-
+	 (string-set! buf w (if (<fx tz 0) #\- #\+))
+	 (set! w (+fx w 1))
+	 ;; tz/3600
+	 (set! w (+fx w (blit-int2! buf w (/fx tz 3600))))
+	 ;; tz%3600
+	 (set! w (+fx w (blit-int2! buf w (remainderfx tz 3600))))
+	 (string-shrink! buf w)))
+   
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
-	     (day-aname (date-wday date))
-	     (date-day date)
-	     (month-aname (date-month date))
-	     (date-year date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date))
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d ~a~2,0d~2,0d"
-	     (day-aname (date-wday date))
-	     (date-day date)
-	     (month-aname (date-month date))
-	     (date-year date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date)
-	     (if (<fx tz 0) "-" "+")
-	     (absfx (/fx tz 3600))
-	     (absfx (remainder tz 3600))))))
+	  (date->utc-string date)
+	  (rfc-string date tz))))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->iso8601-date ...                                           */
