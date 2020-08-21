@@ -6084,6 +6084,10 @@ public final class foreign
       return o.pat;
    }
    
+   public static int BGL_REGEXP_CAPTURE_COUNT(regexp o) {
+      return -1;
+   }
+   
    public static Object BGL_REGEXP_PREG(regexp o) {
       return o.preg;
    }
