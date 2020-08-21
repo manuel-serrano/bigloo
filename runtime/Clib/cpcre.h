@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
 /*    Last change :  Thu Aug  8 13:35:02 2019 (serrano)                */
-/*    Copyright   :  2019 Manuel Serrano                               */
+/*    Copyright   :  2019-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
 /*=====================================================================*/
@@ -246,6 +246,15 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
     && !(options & PCRE_CASELESS))
 
 /*---------------------------------------------------------------------*/
+/*    CHAR_ESCAPE_REGEXP ...                                           */
+/*---------------------------------------------------------------------*/
+#define CHAR_ESCAPE_REGEXP( pat, options ) \
+   (STRING_LENGTH( pat ) == 2 \
+    && STRING_REF( pat, 0 ) == '\\' \
+    && !strchr( "\\-$[*+?.(", STRING_REF( pat, 0 ) ) \
+    && !(options & PCRE_CASELESS))
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_regcomp ...                                                  */
 /*---------------------------------------------------------------------*/
@@ -259,6 +268,14 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 
    if( CHAR_REGEXP( pat, options ) ) {
       BGL_REGEXP_PREG( re ) = (void *)char_compile( BSTRING_TO_STRING( pat ), options );
+	   
+      BGL_REGEXP( re ).match = bgl_charmatch;
+      BGL_REGEXP( re ).match_n = bgl_charmatch_n;
+      BGL_REGEXP( re ).free = bgl_charfree;
+      
+      return re;
+   } else if( CHAR_ESCAPE_REGEXP( pat, options ) ) {
+      BGL_REGEXP_PREG( re ) = (void *)char_compile( BSTRING_TO_STRING( pat ) + 1, options );
 	   
       BGL_REGEXP( re ).match = bgl_charmatch;
       BGL_REGEXP( re ).match_n = bgl_charmatch_n;
