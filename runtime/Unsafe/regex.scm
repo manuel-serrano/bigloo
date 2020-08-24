@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
 ;*    Last change :  Sun Aug 25 09:38:04 2019 (serrano)                */
-;*    Copyright   :  2011-19 Manuel Serrano                            */
+;*    Copyright   :  2011-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
 ;*=====================================================================*/
@@ -58,6 +58,7 @@
  
    (export (inline regexp?::bool ::obj)
            (inline regexp-pattern::bstring ::regexp)
+	   (inline regexp-capture-count::long ::regexp)
            (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat str::bstring
 	      #!optional (beg 0) (end (string-length str)))
@@ -84,6 +85,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (regexp-pattern re)
    ($regexp-pattern re))
+
+;*---------------------------------------------------------------------*/
+;*    regexp-capture-count ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (regexp-capture-count re)
+   ($regexp-capture-count re))
 
 ;*---------------------------------------------------------------------*/
 ;*    blit! ...                                                        */

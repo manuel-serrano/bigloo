@@ -806,8 +806,8 @@ union scmobj {
 #  if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
       /* pcre regular expression */
       void *study;
-      int capturecount;
 #  endif
+      int capturecount;
    } regexp;
 
    /* custom objects */
@@ -1649,6 +1649,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_REGEXP_PREG( o ) (BGL_REGEXP( o ).preg)   
 #define BGL_REGEXP_PREG_SET( o, v ) (BGL_REGEXP_PREG( o ) = (v))
 #define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)
+#define BGL_REGEXP_CAPTURE_COUNT( o ) (BGL_REGEXP( o ).capturecount)
 
 #define BGL_REGEXP_MATCH( o, string, stringp, beg, len ) \
    BGL_REGEXP( o ).match( o, string, stringp, beg, len )

@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:06:49 2019                          */
 /*    Last change :  Thu Aug  8 13:59:30 2019 (serrano)                */
-/*    Copyright   :  2019 Manuel Serrano                               */
+/*    Copyright   :  2019-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Basic C regex support.                                           */
 /*=====================================================================*/
@@ -99,6 +99,7 @@ bgl_regcomp( obj_t pat, obj_t _, bool_t finalize ) {
       BGL_REGEXP( re ).match = bgl_regmatch;
       BGL_REGEXP( re ).match_n = bgl_regmatch_n;
       BGL_REGEXP( re ).free = bgl_regfree;
+      BGL_REGEXP( re ).capturecount = -1;
       
       return re;
    } else {

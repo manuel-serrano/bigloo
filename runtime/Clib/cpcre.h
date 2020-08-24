@@ -272,6 +272,7 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
       BGL_REGEXP( re ).match = bgl_charmatch;
       BGL_REGEXP( re ).match_n = bgl_charmatch_n;
       BGL_REGEXP( re ).free = bgl_charfree;
+      BGL_REGEXP( re ).capturecount = 1;
       
       return re;
    } else if( CHAR_ESCAPE_REGEXP( pat, options ) ) {
@@ -280,6 +281,7 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
       BGL_REGEXP( re ).match = bgl_charmatch;
       BGL_REGEXP( re ).match_n = bgl_charmatch_n;
       BGL_REGEXP( re ).free = bgl_charfree;
+      BGL_REGEXP( re ).capturecount = 1;
       
       return re;
    } else {

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
 ;*    Last change :  Tue Oct  8 18:25:57 2019 (serrano)                */
-;*    Copyright   :  2011-19 Manuel Serrano                            */
+;*    Copyright   :  2011-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
 ;*=====================================================================*/
@@ -47,6 +47,7 @@
    (extern ($regcomp::regexp (::bstring ::obj ::bool) "bgl_regcomp")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
+           (macro $regexp-capture-count::long (::regexp) "BGL_REGEXP_CAPTURE_COUNT")
 	   (macro $regmatch::obj (::regexp ::string ::bool ::int ::int) "BGL_REGEXP_MATCH")
 	   (macro $regmatch-n::long (::regexp ::string ::vector ::int ::int) "BGL_REGEXP_MATCH_N")
            (macro $regfree::obj (::regexp) "BGL_REGEXP_FREE"))
@@ -56,6 +57,8 @@
                  "BGL_REGEXPP")
               (method static $regexp-pattern::bstring (::obj)
                  "BGL_REGEXP_PAT")
+              (method static $regexp-capture-count::int (::obj)
+                 "BGL_REGEXP_CAPTURE_COUNT")
 	      (method static $regcomp::regexp (::bstring ::obj ::bool)
 		 "bgl_regcomp")
 	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int)
@@ -67,6 +70,7 @@
  
    (export (inline regexp?::bool ::obj)
            (inline regexp-pattern::bstring ::regexp)
+	   (inline regexp-capture-count::long ::regexp)
            (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat str::bstring
 	      #!optional (beg 0) (end (string-length str)))
@@ -93,6 +97,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (regexp-pattern re)
    ($regexp-pattern re))
+
+;*---------------------------------------------------------------------*/
+;*    regexp-capture-count ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (regexp-capture-count re)
+   ($regexp-capture-count re))
 
 ;*---------------------------------------------------------------------*/
 ;*    blit! ...                                                        */
