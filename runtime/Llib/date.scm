@@ -283,9 +283,7 @@
        (if (and (>=fx sec 0) (<fx sec 60))
 	   (let ((osec (date-second date)))
 	      ($date-update-second date sec)
-	      ($date-update-time date
-		 (+fx ($date-time date)
-		    (if (>fx osec sec) (-fx sec osec) (-fx osec sec))))
+	      ($date-update-time date (+fx ($date-time date) (-fx sec osec)))
 	      date)
 	   (date-update! date :sec sec)))
       (else
@@ -301,8 +299,7 @@
 	   (let ((omin (date-minute date)))
 	      ($date-update-minute date min)
 	      ($date-update-time date
-		 (+fx ($date-time date)
-		    (*fx 60 (if (>fx omin min) (-fx min omin) (-fx omin min)))))
+		 (+fx ($date-time date) (*fx 60 (-fx min omin))))
 	      date)
 	   (date-update! date :min min)))
       (else
