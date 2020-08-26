@@ -1713,6 +1713,12 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_DATE_YDAY( f ) (BGL_DATE( f ).tm.tm_yday + 1)
 #define BGL_DATE_MONTH( f ) (BGL_DATE( f ).tm.tm_mon + 1)
 #define BGL_DATE_YEAR( f ) (BGL_DATE( f ).tm.tm_year + 1900)
+#define BGL_DATE_TIME( f ) (BGL_DATE( f ).time)
+
+#define BGL_DATE_UPDATE_MILLISECOND( f, ms ) (BGL_DATE( f ).nsec = ((BGL_LONGLONG_T)(ms * 1000000)))
+#define BGL_DATE_UPDATE_SECOND( f, sec ) (BGL_DATE( f ).tm.tm_sec = sec)
+#define BGL_DATE_UPDATE_MINUTE( f, min ) (BGL_DATE( f ).tm.tm_min = min)
+#define BGL_DATE_UPDATE_TIME( f, tm ) (BGL_DATE( f ).time = tm)
 
 /*---------------------------------------------------------------------*/
 /*    Mutexes and condition variables                                  */

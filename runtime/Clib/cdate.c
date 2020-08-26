@@ -271,7 +271,7 @@ bgl_update_date( obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, i
 #else
    date->date.timezone = bgl_get_timezone( date->date.time );
    if( istz ) {
-      date->date.time += date->date.timezone - tz;
+      date->date.time += date->date.timezone + tz;
    }
 #endif   
 
