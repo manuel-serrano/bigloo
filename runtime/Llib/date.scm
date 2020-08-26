@@ -68,6 +68,12 @@
 	    (macro $date-year::int (::date) "BGL_DATE_YEAR")
 	    (macro $date-timezone::long (::date) "BGL_DATE_TIMEZONE")
 	    (macro $date-is-dst::int (::date) "BGL_DATE_ISDST")
+	    (macro $date-time::long (::date) "BGL_DATE_TIME")
+
+	    (macro $date-update-millisecond::long (::date ::long) "BGL_DATE_UPDATE_MILLISECOND")
+	    (macro $date-update-second::long (::date ::long) "BGL_DATE_UPDATE_SECOND")
+	    (macro $date-update-minute::long (::date ::long) "BGL_DATE_UPDATE_MINUTE")
+	    (macro $date-update-time::long (::date ::long) "BGL_DATE_UPDATE_TIME")
 	    
 	    ($date-day-name::bstring (::int) "bgl_day_name")
 	    ($date-day-aname::bstring (::int) "bgl_day_aname")
@@ -133,6 +139,9 @@
 		       timezone (dst -1))
 	    (date-copy date::date #!key nsec sec min hour day month year timezone isdst)
 	    (date-update! date::date #!key nsec sec min hour day month year timezone isdst)
+	    (date-update-millisecond! ::date ::long)
+	    (date-update-second! ::date ::long)
+	    (date-update-minute! ::date ::long)
 	    
 	    (inline integer->second::elong ::long)
 	    
@@ -250,7 +259,55 @@
       (or timezone (date-timezone date))
       (or (integer? timezone) (not (=fx (date-timezone date) 0)))
       (or isdst -1)))
-      
+
+;*---------------------------------------------------------------------*/
+;*    date-update-millisecond! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (date-update-millisecond! date ms)
+   (cond-expand
+      (bigloo-c
+       (if (and (>=fx ms 0) (<fx ms 1000))
+	   (let ((osec (date-second date)))
+	      ($date-update-millisecond date ms)
+	      date)
+	   (date-update! date :sec (*llong #l1000000 (fixnum->llong ms)))))
+      (else
+       (date-update! date :nsec (*llong #l1000000 (fixnum->llong ms))))))
+   
+;*---------------------------------------------------------------------*/
+;*    date-update-second! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (date-update-second! date sec)
+   (cond-expand
+      (bigloo-c
+       (if (and (>=fx sec 0) (<fx sec 60))
+	   (let ((osec (date-second date)))
+	      ($date-update-second date sec)
+	      ($date-update-time date
+		 (+fx ($date-time date)
+		    (if (>fx osec sec) (-fx sec osec) (-fx osec sec))))
+	      date)
+	   (date-update! date :sec sec)))
+      (else
+       (date-update! date :sec sec))))
+   
+;*---------------------------------------------------------------------*/
+;*    date-update-minute! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (date-update-minute! date min)
+   (cond-expand
+      (bigloo-c
+       (if (and (>=fx min 0) (<fx min 60))
+	   (let ((omin (date-minute date)))
+	      ($date-update-minute date min)
+	      ($date-update-time date
+		 (+fx ($date-time date)
+		    (*fx 60 (if (>fx omin min) (-fx min omin) (-fx omin min)))))
+	      date)
+	   (date-update! date :min min)))
+      (else
+       (date-update! date :min min))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    integer->second ...                                              */
 ;*---------------------------------------------------------------------*/
