@@ -98,6 +98,12 @@
 (define-inline (regexp-pattern re)
    ($regexp-pattern re))
 
+;*---------------------------------------------------------------------*/
+;*    regexp-capture-count ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (regexp-capture-count re)
+   ($regexp-capture-count re))
+
 (define (pregexp-error msg . opt)
    (error "pregexp" msg (if (pair? opt) (car opt) #unspecified)))
 
