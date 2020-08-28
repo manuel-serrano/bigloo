@@ -271,9 +271,9 @@
 	   (let ((osec (date-second date)))
 	      ($date-update-millisecond date ms)
 	      date)
-	   (date-update! date :sec (*llong #l1000000 (fixnum->llong ms)))))
+	   (date-update! date :nsec (*llong #l1000000 (fixnum->llong ms)))))
       (else
-       (date-update! date :nsec (*llong #l1000000 (fixnum->llong ms))))))
+       (date-update! date :nnsec (*llong #l1000000 (fixnum->llong ms))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    date-update-second! ...                                          */

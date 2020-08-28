@@ -142,10 +142,16 @@ static long
 get_alloc_type() {
    if( bmem_thread ) {
       long *alloc_types = (long *)____pthread_getspecific( bmem_key );
-      long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
-      long alloc_index = (long)____pthread_getspecific( bmem_key3 );
 
-      return (alloc_index == -1) ? -1 : alloc_types[ alloc_index ];
+      if( !alloc_types ) {
+	 // something is wrong fall back
+	 return -1;
+      } else {
+	 long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
+	 long alloc_index = (long)____pthread_getspecific( bmem_key3 );
+
+	 return (alloc_index == -1) ? -1 : alloc_types[ alloc_index ];
+      }
    } else {
       return (alloc_index == -1) ? -1 : alloc_types[ alloc_index ];
    }
@@ -159,10 +165,16 @@ static long
 get_alloc_type_offset() {
    if( bmem_thread ) {
       long *alloc_types = (long *)____pthread_getspecific( bmem_key );
-      long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
-      long alloc_index = (long)____pthread_getspecific( bmem_key3 );
+      
+      if( !alloc_types ) {
+	 // something is wrong fall back
+	 return 0;
+      } else {
+	 long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
+	 long alloc_index = (long)____pthread_getspecific( bmem_key3 );
 
-      return alloc_type_offsets[ alloc_index ];
+	 return alloc_type_offsets[ alloc_index ];
+      }
    } else {
       return alloc_type_offsets[ alloc_index ];
    }
