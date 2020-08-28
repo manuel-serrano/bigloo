@@ -48,13 +48,16 @@
            ($regmatch::obj (::regexp ::string ::bool ::int ::int) "bgl_regmatch")
            ($regfree::obj (::regexp) "bgl_regfree")
 	   (macro $regexp?::bool (::obj) "BGL_REGEXPP")
-           (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT"))
+           (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
+           (macro $regexp-capture-count::long (::regexp) "BGL_REGEXP_CAPTURE_COUNT"))
    
    (java   (class foreign
               (method static $regexp?::bool (::obj)
                  "BGL_REGEXPP")
               (method static $regexp-pattern::bstring (::obj)
-                 "BGL_REGEXP_PAT")))
+                 "BGL_REGEXP_PAT")
+	      (method static $regexp-capture-count::int (::obj)
+                 "BGL_REGEXP_CAPTURE_COUNT")))
  
    (export (inline regexp?::bool ::obj)
            (inline regexp-pattern::bstring ::regexp)
