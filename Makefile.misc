@@ -7,6 +7,11 @@
 #*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
+#*    -------------------------------------------------------------    */
+#*    See Makefile.config (bottom) for the definition of the           */
+#*    variables used in this Makefile. The variables have to be        */
+#*    defined in Makefile.config in order to let client Makefiles      */
+#*    redefined them easily.                                           */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -22,6 +27,67 @@ INSTALL	= cp
 #*---------------------------------------------------------------------*/
 #*    Producing shared libraries                                       */
 #*---------------------------------------------------------------------*/
+bigloo-shared-lib:
+	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
+            if [ "$(LD)" = "true" ]; then \
+              if [ "$(FORCELD)" = "true" ]; then \
+                 echo > $(LIBDEST); \
+              fi; \
+            else \
+	      case $(HOSTOS) in \
+                mingw) \
+                  $(MAKE) LDEXTRA="-Wl,--out-implib,$(notdir $(LIBDEST).a) $(LDEXTRA)" bigloo-shared && \
+		  cp $(notdir $(LIBDEST).a) $(LIBDEST).a;; \
+                *) \
+                  $(MAKE) bigloo-shared || exit 1;; \
+              esac; \
+            fi; \
+          fi
+
+bigloo-shared:
+	@ $(RM) -f $(LIBDEST)
+	@ (close=""; \
+           if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
+             close="$(EXTRALIBS) $(BIGLOOLIB:%=-l%$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE)) $(BIGLOOEXTRALIBS:%=-l%$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE)) $(BIGLOOAPPLIBS:%=-l%$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(APPRELEASE)) $(BIGLOOGCLIB:%=-l%$(LIBSUFFIXTHREAD)-$(RELEASE))"; \
+           fi; \
+           rpathopt=""; \
+           if [ "$(LDRPATHOPT) " != " " ]; then \
+             for p in $(RPATH); do \
+               rpathopt="$(LDRPATHOPT)$$p $$rpathopt"; \
+             done \
+           fi; \
+           if [ "$(LDINSTALLNAME) " != " " ]; then \
+             if [ "$(LDINSTALLNAMEDIR) " = " " ]; then \
+               ldinstallnamedir=$(DESTDIR)$(LIBDIR)/$(FILDIR); \
+             else \
+               ldinstallnamedir=$(LDINSTALLNAMEDIR); \
+             fi; \
+	     $(MAKE) shared-install-name \
+                 LDRPATH="$$rpathopt" \
+                 LDINSTALLNAMEDIR=$$ldinstallnamedir \
+                 LDOPTS="-L$(LIBPATH) $(LDOPTS)" \
+                 CLOSELIBS="$$close" \
+                 RPATH= \
+                 || exit 1; \
+           else \
+             if [ "$(LDSONAME) " = " " ]; then \
+	       $(MAKE) shared-sans-soname \
+                   LDRPATH="$$rpathopt" \
+                   LDOPTS="-L$(LIBPATH) $(LDOPTS)" \
+                   CLOSELIBS="$$close" \
+                   RPATH= \
+                   || exit 1; \
+             else \
+	       $(MAKE) shared-soname \
+                   LDRPATH="$$rpathopt" \
+                   LDOPTS="-L$(LIBPATH) $(LDOPTS)" \
+                   CLOSELIBS="$$close" \
+                   RPATH= \
+                   || exit 1; \
+             fi \
+           fi)
+
+
 shared-lib:
 	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
             if [ "$(LD)" = "true" ]; then \
@@ -89,20 +155,7 @@ shared-install-name:
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) $(EXTRA_LD_OPT) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
-                 $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
-         if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
-           mv $(notdir $(LIBDEST)) $(LIBDEST); \
-         fi
-
-MS-CARE-shared-install-name:
-	$(LD) -o $(notdir $(LIBDEST)) \
-                 $(LDINSTALLNAME) @executable_path/../$(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
-                 $(LDRPATH) \
-                 $(OBJECTS) \
-                 $(GCSTDOBJECTS) \
-                 $(LDFLAGS) $(EXTRA_LD_OPT) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(CLOSELIBS) \
                  $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
            mv $(notdir $(LIBDEST)) $(LIBDEST); \
@@ -114,7 +167,7 @@ shared-sans-soname:
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(CLOSELIBS) \
                  $(LDLIBS) $(LDOPTS) $(EXTRA_LD_OPT) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
            mv $(notdir $(LIBDEST)) $(LIBDEST); \
@@ -127,7 +180,7 @@ shared-soname:
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDOPTS) $(EXTRA_LD_OPT) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(CLOSELIBS) \
                  $(LDLIBS) $(LDFLAGS) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
            mv $(notdir $(LIBDEST)) $(LIBDEST); \

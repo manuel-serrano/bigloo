@@ -50,9 +50,8 @@ CEFLAGS		= $(ALSACFLAGS)
 ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(ALSALIBS)
-EXTRALIBS_U	= -lbigloomultimedia_u-$(RELEASE)
-EXTRALIBS_S	= -lbigloomultimedia_s-$(RELEASE)
+EXTRALIBS	+= $(ALSALIBS)
+BIGLOOEXTRALIBS	+= bigloomultimedia
 endif
 
 #*---------------------------------------------------------------------*/

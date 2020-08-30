@@ -45,8 +45,7 @@ SPIFLAGS	=
 BMISCFLAGS	= -I Llib
 
 # Extra libs
-EXTRALIBS_S	= -lbigloosqlite_s-$(RELEASE)
-EXTRALIBS_U	= -lbigloosqlite_u-$(RELEASE)
+BIGLOOEXTRALIBS += bigloosqlite
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

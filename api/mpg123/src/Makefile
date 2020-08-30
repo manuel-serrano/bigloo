@@ -48,23 +48,20 @@ CEFLAGS		= $(MPG123CFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(MPG123LIBS) " " "
-EXTRALIBS	=
 else
-EXTRALIBS	= $(MPG123LIBS) -lm
+EXTRALIBS	+= $(MPG123LIBS) -lm
 endif
 
-EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE)
-EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE)
+BIGLOOEXTRALIBS	+= bigloomultimedia
+
 
 ifneq "$(ALSALIBS) " " "
 EXTRALIBS	+= $(ALSALIBS)
-EXTRALIBS_U	+= -lbiglooalsa_u-$(RELEASE)
-EXTRALIBS_S	+= -lbiglooalsa_s-$(RELEASE)
+BIGLOOEXTRALIBS	+= biglooalsa
 endif
 ifneq "$(PULSEAUDIOLIBS) " " "
 EXTRALIBS	+= $(PULSEAUDIOLIBS)
-EXTRALIBS_U	+= -lbigloopulseaudio_u-$(RELEASE)
-EXTRALIBS_S	+= -lbigloopulseaudio_s-$(RELEASE)
+BIGLOOEXTRALIBS	+= bigloopulseaudio
 endif
 
 #*---------------------------------------------------------------------*/

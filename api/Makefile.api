@@ -130,60 +130,56 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).a: $(BOOTLIBDIR)/libbigloo$(API)_es-
 
 api-c-shared:
 	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
-	  $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) && \
-	  $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX) && \
-          $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX) && \
-          $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX); \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_s LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_s LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_es LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_es LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD=_mt; \
         fi
 
-$(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
-	$(MAKE) shared-lib \
-           FORCELD=true \
-           LIBDEST=$@ \
-	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
-           CLOSELIBS="-lbigloo_s-$(RELEASE)"
+api-one-c-shared: $(BOOTLIBDIR)/libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
 
-$(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
-	$(MAKE) shared-lib \
-           OBJECTS=$(EOBJECTS) \
+$(BOOTLIBDIR)/libbigloo$(API)_s$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
+           OBJECTS="$(SAFE_OBJECTS) $(OBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
            LIBPATH=$(BOOTLIBDIR) \
-           SONAME=libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
-           LDLIBS="-lbigloo$(API)_s-$(RELEASE) $(LDLIBS)" \
-           CLOSELIBS="-lbigloo$(API)_s-$(RELEASE) -lbigloo_s-$(RELEASE)"
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)"
 
-$(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX): \
-  $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX)
-	$(MAKE) shared-lib \
+$(BOOTLIBDIR)/libbigloo$(API)_u$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
            FORCELD=true \
            LIBDEST=$@ \
            LIBPATH=$(BOOTLIBDIR) \
-           LIBSRC=$< \
-           SONAME=libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
-           CLOSELIBS="-lbigloo_u-$(RELEASE)"
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)"
 
-$(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): \
-  $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX)
-	$(MAKE) shared-lib \
-           OBJECTS=$(EOBJECTS) \
+$(BOOTLIBDIR)/libbigloo$(API)_es$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
+           OBJECTS="$(EOBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
            LIBPATH=$(BOOTLIBDIR) \
-           LIBSRC=$< \
-           SONAME=libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
-           LDLIBS="-lbigloo$(API)_u-$(RELEASE) $(LDLIBS)" \
-           CLOSELIBS="-lbigloo$(API)_u-$(RELEASE) -lbigloo_u-$(RELEASE)"
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
+           LIBSUFFIX=_s \
+           BIGLOOEXTRALIBS="$(BIGLOOEXTRALIBS) bigloo$(API)"
 
+$(BOOTLIBDIR)/libbigloo$(API)_eu$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
+           OBJECTS="$(EOBJECTS)" \
+           FORCELD=true \
+           LIBDEST=$@ \
+           LIBPATH=$(BOOTLIBDIR) \
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
+           LIBSUFFIX=_u \
+           BIGLOOEXTRALIBS="$(BIGLOOEXTRALIBS) bigloo$(API)"
 
 api-clean-c:
 	$(RM) -rf objs
@@ -192,6 +188,10 @@ api-clean-c:
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_s_mt-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u_mt-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es_mt-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_eu_mt-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).a
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).a
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).a

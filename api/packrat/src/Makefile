@@ -44,8 +44,7 @@ BHEAPFLAGS	= -unsafe -q \
                   -heap-library $(API)
 
 # Extra libs
-EXTRALIBS_S	= -lbigloosrfi1_s-$(RELEASE)
-EXTRALIBS_U	= -lbigloosrfi1_u-$(RELEASE)
+BIGLOOEXTRALIBS	+= bigloosrfi1
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

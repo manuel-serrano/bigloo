@@ -47,9 +47,8 @@ CEFLAGS		= $(CSVCFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(CSVLIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(CSVLIBS)
+EXTRALIBS	+= $(CSVLIBS)
 endif
 
 #*---------------------------------------------------------------------*/

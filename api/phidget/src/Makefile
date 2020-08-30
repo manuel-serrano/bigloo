@@ -50,13 +50,12 @@ CEFLAGS		=
 
 # Additional pthread lib for C
 ifeq "$(PHIDGETLIBS) " " "
-EXTRALIBS	= $(PTHREADLIBS)
+EXTRALIBS	+= $(PTHREADLIBS)
 else
-EXTRALIBS	= $(PTHREADLIBS) $(PHIDGETLIBS)
+EXTRALIBS	+= $(PTHREADLIBS) $(PHIDGETLIBS)
 endif
 
-EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE)
-EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE)
+BIGLOOEXTRALIBS += bigloopthread
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

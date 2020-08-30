@@ -46,9 +46,8 @@ CEFLAGS		=
 
 # Additional sqlite lib for C
 ifeq "$(SQLITELIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(SQLITELIBS)
+EXTRALIBS	+= $(SQLITELIBS)
 endif
 
 #*---------------------------------------------------------------------*/

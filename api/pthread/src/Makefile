@@ -43,7 +43,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 # Additional pthread lib for C
-EXTRALIBS	= $(PTHREADLIBS) $(GCCLOSELIB_FTH)
+EXTRALIBS	+= $(PTHREADLIBS)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

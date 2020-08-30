@@ -45,7 +45,7 @@ SCMCLASSSUFFIX	= %.class
 # The package association file
 PBASE		= bigloo.runtime
 # The qualifier of the build library
-LIBQ		=
+LIBSUFFIX	=
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
@@ -443,7 +443,7 @@ lib-c_s: includes
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
                 OBJDIR_USR=obj_s OBJDIR_SYS=obj_u \
-                LIBQ=_s
+                LIBSUFFIX=_s
 
 lib-saw: lib-saw_s
 lib-saw_s: includes
@@ -451,7 +451,7 @@ lib-saw_s: includes
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
                 OBJDIR_USR=saw_s OBJDIR_SYS=saw_u \
-                LIBQ=_saw_s
+                LIBSUFFIX=_saw_s
 
 lib_u: lib-c_u
 lib-c_u: includes
@@ -459,14 +459,14 @@ lib-c_u: includes
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 OBJDIR_USR=obj_u OBJDIR_SYS=obj_u \
-                LIBQ=_u
+                LIBSUFFIX=_u
 
 lib-saw_u: includes
 	$(MAKE) one-lib-c \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 OBJDIR_USR=saw_u OBJDIR_SYS=saw_u \
-                LIBQ=_saw_u
+                LIBSUFFIX=_saw_u
 
 lib_p: lib-c_p
 lib-c_p: includes
@@ -474,26 +474,29 @@ lib-c_p: includes
                 BFLAGS_SYS="$(BUNSAFEPFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEPFLAGS)" \
                 OBJDIR_USR=obj_p OBJDIR_SYS=obj_p \
-                LIBQ=_p
+                LIBSUFFIX=_p
 
-one-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).a \
-         $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX)
+one-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
+	$(MAKE) one-share-lib-c LIBTHREADSUFFIX=
+	$(MAKE) one-share-lib-c LIBTHREADSUFFIX=_mt
 
-$(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJECTS)
-	@ $(RM) -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).a
+$(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJECTS)
+	@ $(RM) -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
 	$(AR) $(ARFLAGS) \
-                $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).a $^
-	$(RANLIB) $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).a
+                $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a $^
+	$(RANLIB) $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
-$(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS) $(GCSTDOBJECTS)
-	  $(MAKE) shared-lib \
+one-share-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBTHREADSUFFIX)-$(RELEASE).$(SHAREDSUFFIX)
+
+$(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBTHREADSUFFIX)-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS) $(GCSTDOBJECTS)
+	$(MAKE) bigloo-shared-lib \
              LIBDEST=$@ \
              LIBPATH=$(BOOTLIBDIR) \
-             LDLIBS="$(LDCOMPLIBS)" \
-	     LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-             SONAME=lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX)
+             LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
+             BIGLOOLIB= \
+             SONAME=lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBTHREADSUFFIX)-$(RELEASE).$(SHAREDSUFFIX)
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JVM libraries compilation                                 */
@@ -510,7 +513,7 @@ lib-jvm_s: includes
                 BFLAGS_SYS="$(BUNSAFEFLAGS) $(BJSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS) $(BJSAFEFLAGS)" \
                 CLASSDIR_USR=class_s CLASSDIR_SYS=class_s \
-                LIBQ=_s
+                LIBSUFFIX=_s
 
 
 lib-jvm_u: includes
@@ -518,28 +521,28 @@ lib-jvm_u: includes
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 CLASSDIR_USR=class_u CLASSDIR_SYS=class_u \
-                LIBQ=_u
+                LIBSUFFIX=_u
 
 lib-jvm_p: includes
 	$(MAKE) one-lib-jvm \
                 BFLAGS_SYS="$(BUNSAFEPFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEPFLAGS)" \
                 CLASSDIR_USR=class_p CLASSDIR_SYS=class_p \
-                LIBQ=_p
+                LIBSUFFIX=_p
 
-one-lib-jvm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ).zip
+one-lib-jvm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
 
-$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ).zip: $(CLASSES) class$(LIBQ)/jlib Jlib/configure.java
-	@$(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ).zip
-	@(cd objs/class$(LIBQ) && \
-	 $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ).zip \
+$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib Jlib/configure.java
+	@$(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
+	@(cd objs/class$(LIBSUFFIX) && \
+	 $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip \
                  $(SCM_SYS_SRC:%.scm=bigloo/runtime/%.class) \
                  $(SCM_USR_SRC:%.scm=bigloo/runtime/%.class) \
 		 bigloo/runtime/Unsafe/regexp.class \
                  bigloo/runtime/*/_KBGl_*.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
-	@ echo "$(LIBRARYNAME)$(LIBQ).zip done..."
+	@ echo "$(LIBRARYNAME)$(LIBSUFFIX).zip done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/

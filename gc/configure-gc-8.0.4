@@ -5,7 +5,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
 #*    Last change :  Thu Jul  4 08:29:20 2019 (serrano)                */
-#*    Copyright   :  2009-19 Manuel Serrano                            */
+#*    Copyright   :  2009-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
@@ -25,6 +25,18 @@ fi
  export SHELL=$sh && \
  ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes --disable-threads --with-libatomic-ops=no >> configure.log || \
  (echo "configure gc fail, see configure.log file." && exit 1)) || exit 1
+
+# configure the collector for multi-threaded applications
+if [ "$threadsupport " != "no " ]; then
+  (cd "gc/$gccustom"_mt && \
+   export CC=$cc && \
+   export CFLAGS="$cgcflags $cgcfinalflags -DBGL_GC_THREADS -I$bootdir/lib/$release" && \
+   export LDFLAGS=$lflags && \
+   export SHELL=$sh && \
+   echo "Configuring custom multi-threaded GC..." && \
+   ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes $gcconfigurethreadsopt  --with-libatomic-ops=no >> configure.log || \
+   (echo "configure gc_mt fail, see configure.log file." && exit 1)) || exit 1
+fi
 
 # configure the collector for multi-threaded applications
 if [ "$threadsupport " != "no " ]; then

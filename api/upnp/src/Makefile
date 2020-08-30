@@ -41,8 +41,7 @@ BAPIFLAGS	= -safee $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
-EXTRALIBS_S	= -lbiglooweb_s-$(RELEASE)
-EXTRALIBS_U	= -lbiglooweb_u-$(RELEASE)
+BIGLOOEXTRALIBS += biglooweb
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

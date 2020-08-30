@@ -47,11 +47,9 @@ CEFLAGS		=
 
 # Additional pthread lib for C
 ifeq "$(AVAHILIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(AVAHILIBS) $(GCCLOSELIB)
-EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE)
-EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE)
+EXTRALIBS	+= $(AVAHILIBS) $(PTHREADLIBS)
+BIGLOOEXTRALIBS += bigloopthread
 endif
 
 DISTRIB_FILES	= $(C_SRC_DIR)/bglavahi.h

@@ -234,7 +234,7 @@ bgl_charfree( obj_t re ) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
-   bgl_regfree( re );
+   BGL_REGEXP( BREF( re ) ).free( BREF( re ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -309,7 +309,8 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 			&(BGL_REGEXP( re ).capturecount) );
 
 	 if( finalize ) {
-	    GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
+	    GC_register_finalizer( CREF( re ),
+				   (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
 				   0, 0L, 0L );
 	 }
 

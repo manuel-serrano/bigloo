@@ -48,9 +48,8 @@ CEFLAGS		=
 
 # Additional pthread lib for C
 ifeq "$(LIBUVLIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(LIBUVLIBS)
+EXTRALIBS	+= $(LIBUVLIBS)
 endif
 
 DISTRIB_FILES	= $(C_SRC_DIR)/bgluv.h

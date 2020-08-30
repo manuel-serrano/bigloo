@@ -47,7 +47,7 @@ BJVMFLAGS       := $(BJVMFLAGS)
 CEFLAGS		= $(CAPIFLAGS)
 
 # Additional SSL lib for C
-EXTRALIBS	= $(OPENSSLLIBS)
+EXTRALIBS	+= $(OPENSSLLIBS)
 # Additional SSL lib for java
 SSL_ZIP		= commons-ssl.zip
 JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(BOOTLIBDIR)/$(SSL_ZIP)

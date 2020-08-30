@@ -48,11 +48,9 @@ CEFLAGS		= $(PULSEAUDIOCFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(PULSEAUDIOLIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(PULSEAUDIOLIBS)
-EXTRALIBS_U	= -lbigloomultimedia_u-$(RELEASE)
-EXTRALIBS_S	= -lbigloomultimedia_s-$(RELEASE)
+EXTRALIBS	+= $(PULSEAUDIOLIBS)
+BIGLOOEXTRALIBS += bigloomultimedia
 endif
 
 #*---------------------------------------------------------------------*/

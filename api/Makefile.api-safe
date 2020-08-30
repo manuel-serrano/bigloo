@@ -12,8 +12,8 @@
 #*---------------------------------------------------------------------*/
 #*    Installation                                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: api-install-init api-install-c api-install-jvm api-install-dotnet \
-  api-uninstall-init api-uninstall-c api-uninstall-jvm api-uninstall-dotnet
+.PHONY: api-install-init api-install-c api-install-jvm \
+  api-uninstall-init api-uninstall-c api-uninstall-jvm 
 
 # init files
 api-install-init:
@@ -74,33 +74,6 @@ api-uninstall-jvm:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).zip
 
-# Dotnet install
-api-install-dotnet:
-	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/$(API).jheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap && \
-	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll; \
-        fi
-
-# Dotnet uninstallation
-api-uninstall-dotnet:
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).jheap
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll
-
 #*---------------------------------------------------------------------*/
 #*    Init build                                                       */
 #*---------------------------------------------------------------------*/
@@ -158,57 +131,57 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).a: .afile $(UNSAFE_EOBJECTS)
 
 api-c-shared:
 	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
-	  $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) && \
-          $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX) && \
-	  $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX) && \
-          $(MAKE) $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX); \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_s LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_s LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_es LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_es LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD=_mt; \
         fi
 
-$(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
-	$(MAKE) shared-lib \
-	   OBJECTS="$(SAFE_OBJECTS)" \
+api-one-c-shared: $(BOOTLIBDIR)/libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
+
+$(BOOTLIBDIR)/libbigloo$(API)_s$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
+           OBJECTS="$(SAFE_OBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
-	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
-           CLOSELIBS="-lbigloo_s-$(RELEASE)"
+           LIBPATH=$(BOOTLIBDIR) \
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)"
 
-$(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_EOBJECTS)
-	$(MAKE) shared-lib \
+$(BOOTLIBDIR)/libbigloo$(API)_u$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
+           OBJECTS="$(SAFE_OBJECTS)" \
+           FORCELD=true \
+           LIBDEST=$@ \
+           LIBPATH=$(BOOTLIBDIR) \
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)"
+
+$(BOOTLIBDIR)/libbigloo$(API)_es$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
            OBJECTS="$(SAFE_EOBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
-	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
-           LDLIBS="-lbigloo$(API)_s-$(RELEASE) $(LDLIBS)" \
-           CLOSELIBS="-lbigloo$(API)_s-$(RELEASE) -lbigloo_s-$(RELEASE)"
+           LIBPATH=$(BOOTLIBDIR) \
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
+           LIBSUFFIX=_s \
+           BIGLOOEXTRALIBS+=bigloo$(API)
 
-$(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX): .afile $(UNSAFE_OBJECTS)
-	$(MAKE) shared-lib \
-	   OBJECTS="$(UNSAFE_OBJECTS)" \
-           FORCELD=true \
-           LIBDEST=$@ \
-	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
-           CLOSELIBS="-lbigloo_u-$(RELEASE)"
-
-$(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): .afile $(UNSAFE_EOBJECTS)
-	$(MAKE) shared-lib \
+$(BOOTLIBDIR)/libbigloo$(API)_eu$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECTS)
+	$(MAKE) bigloo-shared-lib \
            OBJECTS="$(UNSAFE_EOBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
-	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
-           LDLIBS="-lbigloo$(API)_u-$(RELEASE) $(LDLIBS)" \
-           CLOSELIBS="-lbigloo$(API)_u-$(RELEASE) -lbigloo_u-$(RELEASE)"
+           LIBPATH=$(BOOTLIBDIR) \
+           SONAME=libbigloo$(API)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX) \
+           LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
+           LIBSUFFIX=_u \
+           BIGLOOEXTRALIBS+=bigloo$(API)
 
 api-clean-c:
 	$(RM) -rf objs
@@ -217,6 +190,10 @@ api-clean-c:
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_s_mt-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u_mt-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es_mt-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_eu_mt-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).a
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).a
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).a
@@ -266,72 +243,6 @@ api-clean-jvm:
 	$(RM) -rf $(CLASS_DIR)
 
 #*---------------------------------------------------------------------*/
-#*    Dotnet build                                                     */
-#*---------------------------------------------------------------------*/
-.PHONY: api-dotnet api.dll api-clean-dotnet
-
-api-dotnet: api-init $(TAGS) $(DOTNET_OBJ_DIR) $(DOTNET_OBJ_EDIR) 
-	$(MAKE) api.dll
-
-$(DOTNET_OBJ_DIR):
-	mkdir -p $(DOTNET_OBJ_DIR)
-
-$(DOTNET_OBJ_EDIR):
-	mkdir -p $(DOTNET_OBJ_EDIR)
-
-api.dll: $(TAGS) .jfile heap-jvm
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll
-
-$(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll: .afile $(BGL_DOTNET_OBJ) $(DOTNET_OBJ_SRC)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_DIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_S) \
-                -shared -o $@ \
-                $(DOTNET_OBJ_SRC:$(DOTNET_OBJ_DIR)/%=%) \
-		$(BGL_DOTNET_OBJ:$(DOTNET_OBJ_DIR)/%=%))
-
-$(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll: .afile $(BGL_DOTNET_OBJ) $(DOTNET_OBJ_SRC)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_DIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_U) \
-                -shared -o $@ \
-                $(DOTNET_OBJ_SRC:$(DOTNET_OBJ_DIR)/%=%) \
-		$(BGL_DOTNET_OBJ:$(DOTNET_OBJ_DIR)/%=%))
-
-$(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll: .afile $(BGL_DOTNET_EOBJ)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_EDIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_S) \
-                 -shared -o $@ $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll \
-		$(BGL_DOTNET_EOBJ:$(DOTNET_OBJ_EDIR)/%=%))
-
-$(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll: .afile $(BGL_DOTNET_EOBJ)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_EDIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_U) \
-                 -shared -o $@ $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll \
-		$(BGL_DOTNET_EOBJ:$(DOTNET_OBJ_EDIR)/%=%))
-
-api-clean-dotnet:
-	$(RM) -f $(BOOTLIBDIR)/$(API).jheap
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll
-	$(RM) -rf $(DOTNET_OBJ_DIR)
-
-#*---------------------------------------------------------------------*/
 #*    Compilation rules                                                */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
@@ -363,19 +274,6 @@ $(CLASS_DIR)/%.java: $(JAVA_SRC_DIR)/%.java
 
 $(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
-
-$(DOTNET_OBJ_DIR)/%.cs: $(DOTNET_SRC_DIR)/%.cs
-	cp $< $@
-
-$(DOTNET_OBJ_DIR)/%.obj: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
-
-$(DOTNET_OBJ_EDIR)/%.obj: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    ude                                                              */
@@ -419,7 +317,7 @@ dep:
 #*---------------------------------------------------------------------*/
 .PHONY: api-clean api-cleanall
 
-api-clean: api-clean-c api-clean-jvm api-clean-dotnet
+api-clean: api-clean-c api-clean-jvm
 	$(RM) -f *~
 	$(RM) -f *.mco
 	$(RM) -f *.ast

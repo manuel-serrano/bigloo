@@ -318,6 +318,7 @@ fi
 sharedsuffix=so
 sharedlibraryclosed=yes
 sharedlibrarygcclosed='-l$(GCLIB)-$(RELEASE)'
+sharedlibrarygcmtclosed='-l$(GCLIB)_mt-$(RELEASE)'
 sharedlibrarygcfthclosed='-l$(GCLIB)_fth-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
@@ -382,7 +383,7 @@ bglpkg=bglpkg
 libraryname=bigloo
 
 #--- additional user library used to link bigloo applications ---------*/
-extralibs="-lm"
+extralibs="-lm -lc"
 extragclibs="-lc"
 
 #*--- custom GC configuration -----------------------------------------*/
@@ -1588,7 +1589,7 @@ case $hostos in
     cflags="$cflags -DBGL_ANDROID"
     gcspecial=-DIGNORE_DYNAMIC_LOADING;
     # Use the multithreaded libbigloogc to close the other shared libraries
-    sharedlibrarygcclosed=$sharedlibrarygcfthclosed
+    sharedlibrarygcclosed=$sharedlibrarygcmtclosed
   
     ;;
 esac
@@ -1816,12 +1817,12 @@ case $hostos in
           pthreadlibs=no
           ldcomplibs="\$(GCCLOSELIB) -lc -lm"
         else
-          customgclib=bigloogc_fth
-	  sharedlibrarygcfthclosed='-l$(GCLIB)-$(RELEASE)'
+#*           customgclib=bigloogc_mt                                   */
+#* 	  sharedlibrarygcfthclosed='-l$(GCLIB)-$(RELEASE)'             */
           extralibs="$extralibs $pthreadlibs"
-	  if [ "$sharedcompiler " = "yes " ]; then
-            ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm"
-	  fi
+#* 	  if [ "$sharedcompiler " = "yes " ]; then                     */
+#*             ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm"        */
+#* 	  fi                                                           */
         fi
       fi
       if [ `dirname $bindir` != `dirname $libdir` ]; then
@@ -3538,6 +3539,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@EXTRALIBS@|$extralibs $extragclibs|" \
 	      -e "s|@GCLIBS@|$sharedlibrarygcclosed|" \
 	      -e "s|@GCLIBS_FTH@|$sharedlibrarygcfthclosed|" \
+	      -e "s|@GCLIBS_MT@|$sharedlibrarygcmtclosed|" \
 	      -e "s|@GCLIB@|$gclib|" \
 	      -e "s|@SHAREDSUFFIX@|$sharedsuffix|" \
 	      -e "s|@SONAME@|$ldsoname|" \
@@ -3900,12 +3902,15 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
      $echo "GCCLOSELIB=$sharedlibrarygcclosed" >> $makefile_cfg
      $echo "GCCLOSELIB_FTH=$sharedlibrarygcfthclosed" >> $makefile_cfg
      $echo "GCSTDOBJ=" >> $makefile_cfg
+     $echo "BIGLOOGCLIB=bigloogc" >> $makefile_cfg
   else
      $echo "GCCUSTOM=no" >> $makefile_cfg
      $echo "GCINCLUDE=-I$gcincdir" >> $makefile_cfg
      $echo 'GCCLOSELIB=-l$(GCLIB)' >> $makefile_cfg
      $echo "GCSTDOBJ=Clib/non_inline_alloc.o" >> $makefile_cfg
      $echo "GCLIBDIR=$gclibdir" >>  $makefile_cfg
+     $echo "EXTRALIBS+=-l$(GCLIB)" >> $makefile_cfg
+     $echo "BIGLOOGCLIB=" >> $makefile_cfg
   fi
   $echo >> $makefile_cfg
 
@@ -3985,7 +3990,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "LD=$ld $ldopt" >> $makefile_cfg
     $echo "LDRPATHOPT=$ldrpath" >> $makefile_cfg
     $echo "LDFLAGS=$ldflags" >> $makefile_cfg
-    $echo "LDLIBS=$ldlibs" >> $makefile_cfg
+    $echo "LDLIBS=  # used to be $ldlibs" >> $makefile_cfg
     $echo "LDPRELOADSUPPORT=$ldpreload" >> $makefile_cfg
 
     $echo "LDSONAME=$ldsoname" >> $makefile_cfg
@@ -4082,7 +4087,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       if [ "$hostos " = "mingw " ]; then
         gclibth=bigloogc
       else
-        gclibth=bigloogc_fth
+        gclibth=bigloogc_mt
       fi
     fi
 
@@ -4692,6 +4697,15 @@ if [ "$hostos " = "android " ]; then
   $echo "DROIDSDKROOT=$droidsdkroot" >> $makefile_cfg
   $echo >> $makefile_cfg
 fi
+
+# Makefile.misc variables
+$echo "# Makefile.misc variables (default values)" >> $makefile_cfg
+$echo "LIBSUFFIX=_s" >> $makefile_cfg
+$echo "LIBSUFFIXTHREAD=" >> $makefile_cfg
+$echo "BIGLOOLIB=bigloo" >> $makefile_cfg
+$echo "BIGLOOEXTRALIBS=" >> $makefile_cfg
+$echo "BIGLOOAPPLIBS=" >> $makefile_cfg
+$echo "APPRELEASE=" >> $makefile_cfg
 
 #*---------------------------------------------------------------------*/
 #*    Debian scripting                                                 */
