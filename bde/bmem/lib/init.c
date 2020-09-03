@@ -409,80 +409,6 @@ bmem_dump( int _ ) {
    
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    bglfth_setup_bmem ...                                            */
-/*---------------------------------------------------------------------*/
-void
-bglfth_setup_bmem() {
-   void *hdl;
-   char bigloothread_lib[ 1000 ];
-   static void (*____bglthread_setup_bmem)();
-   
-   bmem_thread = 1;
-   
-   /* Hello world */
-   if( getenv( "BMEMVERBOSE" ) ) {
-      bmem_verbose = atoi( getenv( "BMEMVERBOSE" ) );
-   }
-   
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "Bmem Fthread initialization...\n" );
-   }
-
-   if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
-      strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
-   } else {
-      sprintf( bigloothread_lib, "%s/libbigloofth_s-%s.%s",
-	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
-	       SHARED_LIB_SUFFIX );
-   }
-
-   if( bmem_verbose >= 2 ) {
-      fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
-   }
-
-   hdl = open_shared_library( bigloothread_lib );
-
-   ____bglthread_setup_bmem = (void (*)())get_function( hdl, "bglfth_setup_bmem" );
-   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglfth_thread_new" );
-
-   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglthread_new" );
-   ____bglthread_new_with_name = (void *(*)( void *, void * ))get_function( hdl, "bglthread_new_with_name" );
-   ____scheduler_start = get_function( hdl, "BGl_schedulerzd2startz12zc0zz__ft_schedulerz00" );
-   ____scheduler_react = get_function( hdl, "BGl_schedulerzd2reactz12zc0zz__ft_schedulerz00" );
-   ____bglthread_switch = (void (*)( void *, void * ))get_function( hdl, "bglthread_switch" );
-   ____bglasync_scheduler_notify = (void (*)( void * ))get_function( hdl, "bglasync_scheduler_notify" );
-   ____pthread_getspecific = get_function( hdl, "bglfth_pthread_getspecific" );
-   ____pthread_setspecific = (int (*)())get_function( hdl, "bglfth_pthread_setspecific" );
-   ____pthread_key_create = (int (*)())get_function( hdl, "bglfth_pthread_key_create" );
-   ____pthread_mutex_init = (int (*)())get_function( hdl, "bglfth_pthread_mutex_init" );
-
-   if( ____pthread_key_create( &bmem_key, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
-   }
-
-   if( ____pthread_key_create( &bmem_key2, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key2" );
-      exit( -2 );
-   }
-
-   if( ____pthread_key_create( &bmem_key3, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key3" );
-      exit( -2 );
-   }
-
-   if( ____pthread_mutex_init( &bmem_mutex, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
-   }
-
-   ____bglthread_setup_bmem();
-
-   bmem_init();
-}
-
-/*---------------------------------------------------------------------*/
-/*    void                                                             */
 /*    bglpth_setup_bmem ...                                            */
 /*---------------------------------------------------------------------*/
 void
@@ -498,10 +424,6 @@ bglpth_setup_bmem() {
       bmem_verbose = atoi( getenv( "BMEMVERBOSE" ) );
    }
    
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "Bmem Pthread initialization...\n" );
-   }
-
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
    } else {
@@ -561,7 +483,7 @@ bmem_init_inner() {
    void *hdl;
    char bigloo_lib[ 1000 ];
    char gc_lib[ 1000 ];
-   char *bglsafe = "_u";
+   char *bgllibsuffix, *bglgcsuffix = "_u";
 
    /* Hello world */
    if( getenv( "BMEMVERBOSE" ) ) {
@@ -572,33 +494,41 @@ bmem_init_inner() {
       if( bmem_verbose >= 1 ) {
 	 fprintf( stderr, "Bmem initialization...\n" );
       }
-   } else if( !strcmp( getenv( "BMEMTHREAD" ), "pth" ) ) {
-      bglpth_setup_bmem();
    } else {
-      bglfth_setup_bmem();
-   }
-   
-   if( getenv( "BMEMUNSAFE" ) ) {
-      bglsafe = getenv( "BMEMUNSAFE" );
+      if( bmem_verbose >= 1 ) {
+	 fprintf( stderr, "Bmem mt initialization...\n" );
+      }
+
+      bglpth_setup_bmem();
    }
    
    if( getenv( "BMEMLIBBIGLOO" ) ) {
       strcpy( bigloo_lib, getenv( "BMEMLIBBIGLOO" ) );
    } else {
+      if( getenv( "BMEMLIBSUFFIX" ) ) {
+	 bgllibsuffix = getenv( "BMEMLIBSUFFIX" );
+      } else {
+	 bgllibsuffix = "_s";
+      }
+   
       sprintf( bigloo_lib, "%s/libbigloo%s-%s.%s",
-	       LIBRARY_DIRECTORY, bglsafe, BGL_RELEASE_NUMBER,
+	       LIBRARY_DIRECTORY, bgllibsuffix, BGL_RELEASE_NUMBER,
 	       SHARED_LIB_SUFFIX );
    }
-
 
 #if( BGL_GC_CUSTOM == 1 )
    if( getenv( "BMEMLIBBIGLOOGC" ) ) {
       strcpy( gc_lib, getenv( "BMEMLIBBIGLOOGC" ) );
    } else {
+      if( getenv( "BMEMGCSUFFIX" ) ) {
+	 bglgcsuffix = getenv( "BMEMGCSUFFIX" );
+      } else {
+	 bglgcsuffix = "";
+      }
       sprintf( gc_lib, "%s/lib%s%s-%s.%s",
 	       LIBRARY_DIRECTORY,
 	       BGL_GC_LIBRARY,
-	       bmem_thread ? "_fth" : "",
+	       bglgcsuffix,
 	       BGL_RELEASE_NUMBER,
 	       SHARED_LIB_SUFFIX );
    }

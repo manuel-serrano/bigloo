@@ -5,7 +5,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
 #*    Last change :  Fri Jun 21 11:19:16 2019 (serrano)                */
-#*    Copyright   :  2003-19 Manuel Serrano                            */
+#*    Copyright   :  2003-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
 #*=====================================================================*/
@@ -47,21 +47,18 @@ while : ; do
       exit 0;;
 
     -s|-safe|--safe)
-      safety=s;
-      lib=<fildir>/bmem/bmem_$safety.so;;
+      safety=_s;;
     
     -u|-unsafe|--unsafe)
-      safety=u;
-      lib=<fildir>/bmem/bmem_$safety.so;;
+      safety=_u;;
 
+    -t|--thread)
+      thread=_mt;;
+    
     --lib-extra)
       shift;
       libextra="$libextra $1";;
 
-    -t|--thread)
-      thread=yes
-      lib=<fildir>/bmem/bmem_fth_$safety.so;;
-    
     *)
       exe=$1;
       shift;
@@ -84,28 +81,28 @@ if [ "$lib " = " " ]; then
   # safety
   g=`ldd $exe | grep libbigloo_u`
   if [ "$g " = " " ]; then
-    safety=s
+    safety=_s
   else
-    safety=u
+    safety=_u
   fi
 
   # gc
-  g=`ldd $exe | grep libbigloogc_fth`
+  g=`ldd $exe | grep libbigloogc_mt`
   if [ "$g " = " " ]; then
     gc=
   else
-    gc=_fth
-    thread=pth
+    thread=_mt
   fi
     
-  lib=<fildir>/bmem/bmem"$gc"_"$safety".so
+  lib=<fildir>/bmem/bmem"$safety""$thread".so
 fi
 
 
 #*---------------------------------------------------------------------*/
 #*    Run the program                                                  */
 #*---------------------------------------------------------------------*/
-export BMEMUNSAFE=_$safety
+export BMEMLIBSUFFIX=$safety$thread
+export BMEMGCSUFFIX=$thread
 
 if [ "$thread " != " " ]; then
   export BMEMTHREAD=$thread

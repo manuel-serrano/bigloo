@@ -78,8 +78,8 @@ $(BOOTBINDIR)/$(BMEM_EXE): $(OBJECT)
 #*--- lib -------------------------------------------------------------*/
 lib: $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
   $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
-  $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
-  $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX)
+  $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
+  $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX)
 
 $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) shared-lib \
@@ -101,25 +101,25 @@ $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
-$(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_fth_u.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_u-$(RELEASE)"
+           CLOSELIBS="-lbigloo_u_mt-$(RELEASE)"
 
-$(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_fth_s.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_s-$(RELEASE)"
+           CLOSELIBS="-lbigloo_s_mt-$(RELEASE)"
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:
