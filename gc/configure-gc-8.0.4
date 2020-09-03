@@ -38,18 +38,6 @@ if [ "$threadsupport " != "no " ]; then
    (echo "configure gc_mt fail, see configure.log file." && exit 1)) || exit 1
 fi
 
-# configure the collector for multi-threaded applications
-if [ "$threadsupport " != "no " ]; then
-  (cd "gc/$gccustom"_fth && \
-   export CC=$cc && \
-   export CFLAGS="$cgcflags $cgcfinalflags -DBGL_GC_THREADS -I$bootdir/lib/$release" && \
-   export LDFLAGS=$lflags && \
-   export SHELL=$sh && \
-   echo "Configuring custom multi-threaded GC..." && \
-   ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes $gcconfigurethreadsopt  --with-libatomic-ops=no >> configure.log || \
-   (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1
-fi
-
 # hostos Bigloo specific patch
 if [ "$hostos " != " " -a -x gc/configure-$gccustom-$hostos ]; then
   (cd gc && . ./configure-$gccustom-$hostos) || exit 1

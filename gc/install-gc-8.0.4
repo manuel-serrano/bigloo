@@ -40,8 +40,6 @@ $tar xfz $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 $tar xfz libatomic_ops-$libatomicversion.tar.gz -C ../gc/gc-$gcversion \
   || (echo "$tar xfz $src failed"; exit 1)
 mv ../gc/gc-$gcversion/libatomic_ops-$libatomicversion ../gc/gc-$gcversion/libatomic_ops
-/bin/rm -rf "../gc/$gc"_fth
-mv ../gc/$gc "../gc/$gc"_fth || (echo "mv $gc failed"; exit 1)
 
 $tar xfz $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 $tar xfz libatomic_ops-$libatomicversion.tar.gz -C ../gc/gc-$gcversion \
@@ -50,8 +48,6 @@ mv ../gc/gc-$gcversion/libatomic_ops-$libatomicversion ../gc/gc-$gcversion/libat
 
 # general Bigloo patch
 (cd "../gc/$gc"_mt && $patch -p1 < ../$gc.patch > /dev/null)
-if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
-(cd "../gc/$gc"_fth && $patch -p1 < ../$gc.patch > /dev/null)
 if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
 (cd ../gc/$gc && $patch -p1 < ../$gc.patch > /dev/null)
 if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
@@ -65,15 +61,11 @@ for p in configure configure.ac Makefile.direct Makefile.am Makefile.in; do
   sed 's|gc\.a|$(BOOTLIBDIR)/libbigloogc_mt-$(RELEASE).a|g' "$gc"_mt/$p > "$gc"_mt/$p.new
   mv "$gc"_mt/$p.new "$gc"_mt/$p
 
-  sed 's|gc\.a|$(BOOTLIBDIR)/libbigloogc_fth-$(RELEASE).a|g' "$gc"_fth/$p > "$gc"_fth/$p.new
-  mv "$gc"_fth/$p.new "$gc"_fth/$p
-
 done
 
 # Set the correct mode for configure (configure is not currently used by Bigloo)
 chmod a+rx $gc/configure
 chmod a+rx "$gc"_mt/configure
-chmod a+rx "$gc"_fth/configure
 
 # Copy the inline_alloc.c file
 cp ../runtime/Clib/inline_alloc.c $gc
@@ -84,14 +76,9 @@ cp ../runtime/Clib/inline_alloc.c "$gc"_mt
 cp ../runtime/Clib/inline_alloc_thread.h "$gc"_mt
 cp ../runtime/Clib/inline_alloc_bump.h "$gc"_mt
 
-cp ../runtime/Clib/inline_alloc.c "$gc"_fth
-cp ../runtime/Clib/inline_alloc_thread.h "$gc"_fth
-cp ../runtime/Clib/inline_alloc_bump.h "$gc"_fth
-
 # Copy the gc_intf.c file
 cp ../runtime/Clib/gc_intf.c $gc
 cp ../runtime/Clib/gc_intf.c "$gc"_mt
-cp ../runtime/Clib/gc_intf.c "$gc"_fth
 
 # hostos Bigloo specific patch
 if [ "$HOSTOS " != " " -a -x ./install-$gccustom-$HOSTOS ]; then

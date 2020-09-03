@@ -184,10 +184,10 @@ CCFLAGS = $(CFLAGS) $(CGCFLAGS) $(GCOFLAGS) $(CPICFLAGS) -I$(BOOTLIBDIR)
 #*---------------------------------------------------------------------*/
 #*    boot                                                             */
 #*---------------------------------------------------------------------*/
-.PHONY: boot-gc boot-gc_mt boot-gc_fth 
+.PHONY: boot-gc boot-gc_mt
 .NOTPARALLEL: boot
 
-boot: boot-gc boot-gc_mt boot-gc_fth
+boot: boot-gc boot-gc_mt
 
 include Makefile-$(CUSTOMGC)
 
@@ -208,14 +208,12 @@ pop:
 clean:
 	$(MAKE) -C $(CUSTOMGC) clean
 	$(MAKE) -C $(CUSTOMGC)_mt clean
-	$(MAKE) -C $(CUSTOMGC)_fth clean
 
 cleanall: clean
 
 distclean:
 	$(MAKE) -C $(CUSTOMGC) distclean
 	$(MAKE) -C $(CUSTOMGC)_mt distclean
-	$(MAKE) -C $(CUSTOMGC)_fth distclean
 	$(RM) -rf gc
 
 #*---------------------------------------------------------------------*/
@@ -236,9 +234,6 @@ install:
 	  if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
 	    $(MAKE) install-lib EXTRALIB=$(PTHREADLIBS) LIB=libbigloogc_mt-$(RELEASE); \
           fi; \
-	  if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
-	    $(MAKE) install-lib EXTRALIB=$(PTHREADLIBS) LIB=libbigloogc_fth-$(RELEASE); \
-          fi; \
 	fi
 
 #*---------------------------------------------------------------------*/
@@ -251,6 +246,3 @@ uninstall: uninstall-thread
 	$(MAKE) SHAREDSUFFIX=$(SHAREDSUFFIX).1 uninstall-lib LIB=libbigloogc-$(RELEASE)
 	$(MAKE) uninstall-lib LIB=libbigloogc_mt-$(RELEASE)
 	$(MAKE) SHAREDSUFFIX=$(SHAREDSUFFIX).1 uninstall-lib LIB=libbigloogc_mt-$(RELEASE)
-	$(MAKE) uninstall-lib LIB=libbigloogc_fth-$(RELEASE)
-	$(MAKE) SHAREDSUFFIX=$(SHAREDSUFFIX).1 uninstall-lib LIB=libbigloogc_fth-$(RELEASE)
-
