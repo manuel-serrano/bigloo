@@ -183,11 +183,13 @@ long
 bgl_string_hash_number( char *string ) {
    char c;
    long result = 5381;
+   char *string0 = string + 1;
 
-   while( c = *string++ )
+   while( c = *string++ ) {
       result += (result << 5) + c;
+   }
 
-   return result & ((1 << 29) - 1);
+   return (result + (string - string0)) & ((1 << 29) - 1);
 }
 
 /*---------------------------------------------------------------------*/
@@ -203,7 +205,7 @@ bgl_string_hash( char *string, int start, int len ) {
       result += (result << 5) + (long)string[ i ];
    }
 
-   return result & ((1 << 29) - 1);
+   return (result + (len - start)) & ((1 << 29) - 1);
 }
 
 /*---------------------------------------------------------------------*/
