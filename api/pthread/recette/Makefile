@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
 #*    Last change :  Wed Jan 31 07:02:14 2018 (serrano)                */
-#*    Copyright   :  2002-18 Manuel Serrano                            */
+#*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Fair threads tests                     */
 #*=====================================================================*/
@@ -80,8 +80,8 @@ test-jvm:
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class                                                */
 #*---------------------------------------------------------------------*/
-.scm.o: $*.scm
+.scm.o:
 	$(BIGLOO) -static-all-bigloo -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.o
 
-.scm.class: $*.scm
+.scm.class:
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
