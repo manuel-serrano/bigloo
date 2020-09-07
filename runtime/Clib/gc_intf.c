@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 10 11:15:20 2013                          */
 /*    Last change :  Mon Feb 17 10:33:57 2014 (serrano)                */
-/*    Copyright   :  2013-14 Manuel Serrano                            */
+/*    Copyright   :  2013-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The GC interface                                                 */
 /*=====================================================================*/
@@ -16,4 +16,5 @@
 /*---------------------------------------------------------------------*/
 GC_API void bgl_gc_init() {
    GC_INIT();
+   GC_set_finalize_on_demand( 1 );
 }
