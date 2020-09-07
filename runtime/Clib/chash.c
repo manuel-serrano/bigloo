@@ -189,6 +189,8 @@ bgl_string_hash_number( char *string ) {
       result += (result << 5) + c;
    }
 
+   // MS, 7sep2020: add string length to distinguish 0-filled strings
+   // such as "01" and "001"
    return (result + (string - string0)) & ((1 << 29) - 1);
 }
 
@@ -197,15 +199,16 @@ bgl_string_hash_number( char *string ) {
 /*    bgl_string_hash_number ...                                       */
 /*---------------------------------------------------------------------*/
 long
-bgl_string_hash( char *string, int start, int len ) {
+bgl_string_hash( char *string, int start, int end ) {
    int i;
    long result = 5381;
 
-   for( i = start; i < len; i++ ) {
+   for( i = start; i < end; i++ ) {
       result += (result << 5) + (long)string[ i ];
    }
 
-   return (result + (len - start)) & ((1 << 29) - 1);
+   // MS, 7sep2020, see bgl_string_hash_number
+   return (result + (end - start)) & ((1 << 29) - 1);
 }
 
 /*---------------------------------------------------------------------*/
