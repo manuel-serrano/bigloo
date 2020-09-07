@@ -62,12 +62,10 @@ bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
    timeout.tv_nsec = (usec % 1000000) * 1000;
    timeout.tv_sec = tb.time + (usec / 1000000);
 #else
-   struct timeval now;
-   gettimeofday( &now, 0 );
+   clock_gettime(CLOCK_REALTIME, &timeout);
 
-   usec = (now.tv_usec + ms * 1000);
-   timeout.tv_nsec = (usec % 1000000) * 1000;
-   timeout.tv_sec = now.tv_sec + (usec / 1000000);
+   timeout.tv_nsec += (ms % 1000) * 1000000;
+   timeout.tv_sec += (ms / 1000);
 #endif
 
    return !pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),

@@ -287,8 +287,10 @@ bglpth_thread_join( bglpthread_t t, obj_t tmt ) {
    if( INTEGERP( tmt ) ) {
       struct timespec tm;
       
-      tm.tv_sec = CINT( tmt ) / 1000;
-      tm.tv_nsec = CINT( tmt ) % 1000;
+      clock_gettime(CLOCK_REALTIME, &tm);
+
+      tm.tv_sec += CINT( tmt ) / 1000;
+      tm.tv_nsec += (CINT( tmt ) % 1000) * 1000000;
 
       joinret = pthread_timedjoin_np( t->pthread, 0L, &tm );
    } else 
