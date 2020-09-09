@@ -49,6 +49,7 @@
 	    (macro $memchr-diff::long (::string ::string) "BGL_MEMCHR_DIFF")
 	    
 	    ($string=?::bool (::bstring ::bstring) "bigloo_strcmp")
+	    (macro $memcmp::int (::string ::string ::long) "memcmp")
 	    ($substring=?::bool (::bstring ::bstring ::long) "bigloo_strncmp")
 	    ($substring-ci=?::bool (::bstring ::bstring ::long) "bigloo_strncmp_ci")
 	    ($prefix-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_at")
@@ -347,7 +348,13 @@
 ;*    @deffn string=?@ ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (string=? string1 string2)
-   ($string=? string1 string2))
+   (cond-expand
+      (bigloo-c
+       (let ((l1 (string-length string1)))
+	  (when (=fx l1 (string-length string2))
+	     (=fx ($memcmp string1 string2 l1) 0))))
+      (else
+       ($string=? string1 string2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring=?@ ...                                          */
