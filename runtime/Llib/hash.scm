@@ -531,6 +531,12 @@
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
 	  (bucket (vector-ref-ur buckets bucket-num))
 	  (max-bucket-len (%hashtable-max-bucket-len table)))
+      (cond-expand
+	 (bigloo-unsafe-type
+	  #f)
+	 (else
+	  (when (and (hashtable-string? table) (not (string? key)))
+	     (bigloo-type-error "hashtable-put!" "bstring" key))))
       (if (null? bucket)
 	  (begin
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
