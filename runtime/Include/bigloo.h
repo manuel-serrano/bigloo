@@ -272,7 +272,8 @@ error "Unknown garbage collector type"
 #  define TAG_VECTOR 4                /*  Vector tagging        ...100 */
 #  define TAG_CELL 5                  /*  Cells tagging         ...101 */
 #  define TAG_REAL 6                  /*  Reals tagging         ...110 */
-#  define TAG_SYMBOL 7                /*  Symbols tagging       ...111 */
+#  define TAG_STRING 7                /*  Strings tagging       ...111 */
+//#  define TAG_SYMBOL 7                /*  Symbols tagging       ...111 */
 #endif
 
 #if( PTR_ALIGNMENT == 2 && defined( BGL_TAG_CNST32 ) && !BGL_NAN_TAGGING)
