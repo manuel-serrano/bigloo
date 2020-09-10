@@ -807,7 +807,7 @@ GC_malloc_find_type( int lb, int unknown ) {
       }
 #endif
    } else {
-      bmem_set_alloc_type( unknown, 0 );
+      bmem_set_alloc_type( GC_malloc_unknown( -1, -1, unknown ), 0 );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
 	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): ???? type=%ld\n",

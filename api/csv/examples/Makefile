@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
 #*    Last change :  Tue Feb  6 08:47:27 2018 (serrano)                */
-#*    Copyright   :  2002-18 Manuel Serrano                            */
+#*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the CSV examples                           */
 #*=====================================================================*/
@@ -60,8 +60,8 @@ distclean: clean
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class/.obj                                           */
 #*---------------------------------------------------------------------*/
-.scm.o: $*.scm
+.scm.o:
 	$(BIGLOO) -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.o
 
-.scm.class: $*.scm
+.scm.class:
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class

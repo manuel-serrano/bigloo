@@ -36,7 +36,7 @@ get_trace_stack( int depth ) {
    obj_t r = l;
 
    while( ((depth < 0) || (level < depth)) && runner ) {
-      if( SYMBOLP( runner->name ) ) {
+      if( SYMBOLP( runner->name ) || STRINGP( runner->name ) ) {
 	 obj_t p = MAKE_PAIR( runner->name, MAKE_PAIR( runner->location, BNIL ) );
 	 SET_CDR( r, MAKE_PAIR( p, BNIL ) );
 	 r = CDR( r );
