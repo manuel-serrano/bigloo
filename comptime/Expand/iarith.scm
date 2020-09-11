@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
 ;*    Last change :  Fri Mar 23 19:11:17 2018 (serrano)                */
-;*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@
 	   (expand-/fx ::obj ::procedure)
 	   (expand-maxfx ::obj ::procedure)
 	   (expand-minfx ::obj ::procedure)
+	   (expand-*s32 ::obj ::procedure)
 	   (expand-bit-lsh ::obj ::procedure)
 	   (expand-bit-lshu32 ::obj ::procedure)
 	   (expand-bit-rsh ::obj ::procedure)
