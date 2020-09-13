@@ -411,7 +411,10 @@ bigloo:
 #*---------------------------------------------------------------------*/
 #*    jvm                                                              */
 #*---------------------------------------------------------------------*/
-jvm: $(CLASS_OBJECTS)
+jvm: .jfile
+	$(MAKE) jvm-sans-jfile
+
+jvm-sans-jfile: $(CLASS_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(EFLAGS) -jvm -jvm-jar -jvm-java $(JAVA) \
              -jvm-shell $(JSHELL) \
@@ -454,7 +457,7 @@ plain: bigloo.plain
 new: bigloo.new
 so: bigloo.$(SHAREDSUFFIX)
 
-bigloo.plain: Tools/license.scm .afile .jfile
+bigloo.plain: Tools/license.scm .afile
 	- $(RM) -f Tools/date.scm
 	$(MAKE) Tools/date.scm
 	$(MAKE) $(BIGLOO_DEST)$(EXE_SUFFIX)
@@ -477,7 +480,7 @@ bigloo.$(SHAREDSUFFIX):
 #*    during the linkg if BIGLOO and BIGLOO_DEST are the same          */
 #*    file.                                                            */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
+$(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
 	if [ "$(LDRPATHOPT) " != " " ]; then \
 	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
@@ -501,7 +504,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
 #*---------------------------------------------------------------------*/
 #*    bigloo.new                                                       */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST).$(NEW_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
+$(BIGLOO_DEST).$(NEW_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "$@ done..."
