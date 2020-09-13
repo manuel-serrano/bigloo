@@ -30,7 +30,6 @@
 	   (expand-/fx ::obj ::procedure)
 	   (expand-maxfx ::obj ::procedure)
 	   (expand-minfx ::obj ::procedure)
-	   (expand-*s32 ::obj ::procedure)
 	   (expand-bit-lsh ::obj ::procedure)
 	   (expand-bit-lshu32 ::obj ::procedure)
 	   (expand-bit-rsh ::obj ::procedure)
