@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen Globalize/ginfo.scm)
+;; Bigloo (4.4a)
+;; Inria -- Sophia Antipolis     Sun 20 Sep 2020 03:50:39 PM CEST 
+;; (bigloo -classgen Globalize/ginfo.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,7 +11,7 @@
 ;; sfun/Ginfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfun/Ginfo::sfun/Ginfo arity1262::long side-effect1263::obj predicate-of1264::obj stack-allocator1265::obj top?1266::bool the-closure1267::obj effect1268::obj failsafe1269::obj property1270::obj args1271::obj args-name1272::obj body1273::obj class1274::obj dsssl-keywords1275::obj loc1276::obj optionals1277::obj keys1278::obj the-closure-global1279::obj strength1280::symbol G?1281::bool cfrom1282::obj cfrom*1283::obj cto1284::obj cto*1285::obj efunctions1286::obj integrator1287::obj imark1288::obj owner1289::obj integrated1290::obj plugged-in1291::obj mark1292::long free-mark1293::obj the-global1294::obj kaptured1295::obj new-body1296::obj bmark1297::long umark1298::long free1299::obj bound1300::obj)
+    (inline make-sfun/Ginfo::sfun/Ginfo arity1271::long side-effect1272::obj predicate-of1273::obj stack-allocator1274::obj top?1275::bool the-closure1276::obj effect1277::obj failsafe1278::obj args-noescape1279::obj property1280::obj args1281::obj args-name1282::obj body1283::obj class1284::obj dsssl-keywords1285::obj loc1286::obj optionals1287::obj keys1288::obj the-closure-global1289::obj strength1290::symbol stackable1291::obj G?1292::bool cfrom1293::obj cfrom*1294::obj cto1295::obj cto*1296::obj efunctions1297::obj integrator1298::obj imark1299::obj owner1300::obj integrated1301::obj plugged-in1302::obj mark1303::long free-mark1304::obj the-global1305::obj kaptured1306::obj new-body1307::obj bmark1308::long umark1309::long free1310::obj bound1311::obj)
     (inline sfun/Ginfo?::bool ::obj)
     (sfun/Ginfo-nil::sfun/Ginfo)
     (inline sfun/Ginfo-bound::obj ::sfun/Ginfo)
@@ -54,6 +54,8 @@
     (inline sfun/Ginfo-cfrom-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-G?::bool ::sfun/Ginfo)
     (inline sfun/Ginfo-G?-set! ::sfun/Ginfo ::bool)
+    (inline sfun/Ginfo-stackable::obj ::sfun/Ginfo)
+    (inline sfun/Ginfo-stackable-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-strength::symbol ::sfun/Ginfo)
     (inline sfun/Ginfo-strength-set! ::sfun/Ginfo ::symbol)
     (inline sfun/Ginfo-the-closure-global::obj ::sfun/Ginfo)
@@ -73,6 +75,8 @@
     (inline sfun/Ginfo-args-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-property::obj ::sfun/Ginfo)
     (inline sfun/Ginfo-property-set! ::sfun/Ginfo ::obj)
+    (inline sfun/Ginfo-args-noescape::obj ::sfun/Ginfo)
+    (inline sfun/Ginfo-args-noescape-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-failsafe::obj ::sfun/Ginfo)
     (inline sfun/Ginfo-failsafe-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-effect::obj ::sfun/Ginfo)
@@ -92,9 +96,11 @@
 ;; svar/Ginfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-svar/Ginfo::svar/Ginfo loc1256::obj kaptured?1257::bool free-mark1258::long mark1259::long celled?1260::bool)
+    (inline make-svar/Ginfo::svar/Ginfo loc1264::obj kaptured?1265::bool free-mark1266::long mark1267::long celled?1268::bool stackable1269::bool)
     (inline svar/Ginfo?::bool ::obj)
     (svar/Ginfo-nil::svar/Ginfo)
+    (inline svar/Ginfo-stackable::bool ::svar/Ginfo)
+    (inline svar/Ginfo-stackable-set! ::svar/Ginfo ::bool)
     (inline svar/Ginfo-celled?::bool ::svar/Ginfo)
     (inline svar/Ginfo-celled?-set! ::svar/Ginfo ::bool)
     (inline svar/Ginfo-mark::long ::svar/Ginfo)
@@ -109,7 +115,7 @@
 ;; sexit/Ginfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sexit/Ginfo::sexit/Ginfo handler1249::obj detached?1250::bool G?1251::bool kaptured?1252::bool free-mark1253::long mark1254::long)
+    (inline make-sexit/Ginfo::sexit/Ginfo handler1257::obj detached?1258::bool G?1259::bool kaptured?1260::bool free-mark1261::long mark1262::long)
     (inline sexit/Ginfo?::bool ::obj)
     (sexit/Ginfo-nil::sexit/Ginfo)
     (inline sexit/Ginfo-mark::long ::sexit/Ginfo)
@@ -128,7 +134,7 @@
 ;; local/Ginfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-local/Ginfo::local/Ginfo id1235::symbol name1236::obj type1237::type value1238::value access1239::obj fast-alpha1240::obj removable1241::obj occurrence1242::long occurrencew1243::long user?1244::bool key1245::long escape?1246::bool globalized?1247::bool)
+    (inline make-local/Ginfo::local/Ginfo id1243::symbol name1244::obj type1245::type value1246::value access1247::obj fast-alpha1248::obj removable1249::obj occurrence1250::long occurrencew1251::long user?1252::bool key1253::long escape?1254::bool globalized?1255::bool)
     (inline local/Ginfo?::bool ::obj)
     (local/Ginfo-nil::local/Ginfo)
     (inline local/Ginfo-globalized?::bool ::local/Ginfo)
@@ -159,7 +165,7 @@
 ;; global/Ginfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-global/Ginfo::global/Ginfo id1211::symbol name1212::obj type1213::type value1214::value access1215::obj fast-alpha1216::obj removable1217::obj occurrence1218::long occurrencew1219::long user?1220::bool module1221::symbol import1222::obj evaluable?1223::bool eval?1224::bool library1225::obj pragma1226::obj src1227::obj jvm-type-name1228::bstring init1229::obj alias1230::obj escape?1231::bool global-closure1232::obj)
+    (inline make-global/Ginfo::global/Ginfo id1220::symbol name1221::obj type1222::type value1223::value access1224::obj fast-alpha1225::obj removable1226::obj occurrence1227::long occurrencew1228::long user?1229::bool module1230::symbol import1231::obj evaluable?1232::bool eval?1233::bool library1234::obj pragma1235::obj src1236::obj jvm-type-name1237::bstring init1238::obj alias1239::obj escape?1240::bool global-closure1241::obj)
     (inline global/Ginfo?::bool ::obj)
     (global/Ginfo-nil::global/Ginfo)
     (inline global/Ginfo-global-closure::obj ::global/Ginfo)
@@ -209,7 +215,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; sfun/Ginfo
-(define-inline (make-sfun/Ginfo::sfun/Ginfo arity1262::long side-effect1263::obj predicate-of1264::obj stack-allocator1265::obj top?1266::bool the-closure1267::obj effect1268::obj failsafe1269::obj property1270::obj args1271::obj args-name1272::obj body1273::obj class1274::obj dsssl-keywords1275::obj loc1276::obj optionals1277::obj keys1278::obj the-closure-global1279::obj strength1280::symbol G?1281::bool cfrom1282::obj cfrom*1283::obj cto1284::obj cto*1285::obj efunctions1286::obj integrator1287::obj imark1288::obj owner1289::obj integrated1290::obj plugged-in1291::obj mark1292::long free-mark1293::obj the-global1294::obj kaptured1295::obj new-body1296::obj bmark1297::long umark1298::long free1299::obj bound1300::obj) (instantiate::sfun/Ginfo (arity arity1262) (side-effect side-effect1263) (predicate-of predicate-of1264) (stack-allocator stack-allocator1265) (top? top?1266) (the-closure the-closure1267) (effect effect1268) (failsafe failsafe1269) (property property1270) (args args1271) (args-name args-name1272) (body body1273) (class class1274) (dsssl-keywords dsssl-keywords1275) (loc loc1276) (optionals optionals1277) (keys keys1278) (the-closure-global the-closure-global1279) (strength strength1280) (G? G?1281) (cfrom cfrom1282) (cfrom* cfrom*1283) (cto cto1284) (cto* cto*1285) (efunctions efunctions1286) (integrator integrator1287) (imark imark1288) (owner owner1289) (integrated integrated1290) (plugged-in plugged-in1291) (mark mark1292) (free-mark free-mark1293) (the-global the-global1294) (kaptured kaptured1295) (new-body new-body1296) (bmark bmark1297) (umark umark1298) (free free1299) (bound bound1300)))
+(define-inline (make-sfun/Ginfo::sfun/Ginfo arity1271::long side-effect1272::obj predicate-of1273::obj stack-allocator1274::obj top?1275::bool the-closure1276::obj effect1277::obj failsafe1278::obj args-noescape1279::obj property1280::obj args1281::obj args-name1282::obj body1283::obj class1284::obj dsssl-keywords1285::obj loc1286::obj optionals1287::obj keys1288::obj the-closure-global1289::obj strength1290::symbol stackable1291::obj G?1292::bool cfrom1293::obj cfrom*1294::obj cto1295::obj cto*1296::obj efunctions1297::obj integrator1298::obj imark1299::obj owner1300::obj integrated1301::obj plugged-in1302::obj mark1303::long free-mark1304::obj the-global1305::obj kaptured1306::obj new-body1307::obj bmark1308::long umark1309::long free1310::obj bound1311::obj) (instantiate::sfun/Ginfo (arity arity1271) (side-effect side-effect1272) (predicate-of predicate-of1273) (stack-allocator stack-allocator1274) (top? top?1275) (the-closure the-closure1276) (effect effect1277) (failsafe failsafe1278) (args-noescape args-noescape1279) (property property1280) (args args1281) (args-name args-name1282) (body body1283) (class class1284) (dsssl-keywords dsssl-keywords1285) (loc loc1286) (optionals optionals1287) (keys keys1288) (the-closure-global the-closure-global1289) (strength strength1290) (stackable stackable1291) (G? G?1292) (cfrom cfrom1293) (cfrom* cfrom*1294) (cto cto1295) (cto* cto*1296) (efunctions efunctions1297) (integrator integrator1298) (imark imark1299) (owner owner1300) (integrated integrated1301) (plugged-in plugged-in1302) (mark mark1303) (free-mark free-mark1304) (the-global the-global1305) (kaptured kaptured1306) (new-body new-body1307) (bmark bmark1308) (umark umark1309) (free free1310) (bound bound1311)))
 (define-inline (sfun/Ginfo?::bool obj::obj) ((@ isa? __object) obj (@ sfun/Ginfo globalize_ginfo)))
 (define (sfun/Ginfo-nil::sfun/Ginfo) (class-nil (@ sfun/Ginfo globalize_ginfo)))
 (define-inline (sfun/Ginfo-bound::obj o::sfun/Ginfo) (-> |#!bigloo_wallow| o bound))
@@ -252,6 +258,8 @@
 (define-inline (sfun/Ginfo-cfrom-set! o::sfun/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o cfrom) v))
 (define-inline (sfun/Ginfo-G?::bool o::sfun/Ginfo) (-> |#!bigloo_wallow| o G?))
 (define-inline (sfun/Ginfo-G?-set! o::sfun/Ginfo v::bool) (set! (-> |#!bigloo_wallow| o G?) v))
+(define-inline (sfun/Ginfo-stackable::obj o::sfun/Ginfo) (-> |#!bigloo_wallow| o stackable))
+(define-inline (sfun/Ginfo-stackable-set! o::sfun/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (sfun/Ginfo-strength::symbol o::sfun/Ginfo) (-> |#!bigloo_wallow| o strength))
 (define-inline (sfun/Ginfo-strength-set! o::sfun/Ginfo v::symbol) (set! (-> |#!bigloo_wallow| o strength) v))
 (define-inline (sfun/Ginfo-the-closure-global::obj o::sfun/Ginfo) (-> |#!bigloo_wallow| o the-closure-global))
@@ -274,6 +282,8 @@
 (define-inline (sfun/Ginfo-args-set! o::sfun/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (sfun/Ginfo-property::obj o::sfun/Ginfo) (-> |#!bigloo_wallow| o property))
 (define-inline (sfun/Ginfo-property-set! o::sfun/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o property) v))
+(define-inline (sfun/Ginfo-args-noescape::obj o::sfun/Ginfo) (-> |#!bigloo_wallow| o args-noescape))
+(define-inline (sfun/Ginfo-args-noescape-set! o::sfun/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o args-noescape) v))
 (define-inline (sfun/Ginfo-failsafe::obj o::sfun/Ginfo) (-> |#!bigloo_wallow| o failsafe))
 (define-inline (sfun/Ginfo-failsafe-set! o::sfun/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o failsafe) v))
 (define-inline (sfun/Ginfo-effect::obj o::sfun/Ginfo) (-> |#!bigloo_wallow| o effect))
@@ -292,9 +302,11 @@
 (define-inline (sfun/Ginfo-arity-set! o::sfun/Ginfo v::long) (set! (-> |#!bigloo_wallow| o arity) v))
 
 ;; svar/Ginfo
-(define-inline (make-svar/Ginfo::svar/Ginfo loc1256::obj kaptured?1257::bool free-mark1258::long mark1259::long celled?1260::bool) (instantiate::svar/Ginfo (loc loc1256) (kaptured? kaptured?1257) (free-mark free-mark1258) (mark mark1259) (celled? celled?1260)))
+(define-inline (make-svar/Ginfo::svar/Ginfo loc1264::obj kaptured?1265::bool free-mark1266::long mark1267::long celled?1268::bool stackable1269::bool) (instantiate::svar/Ginfo (loc loc1264) (kaptured? kaptured?1265) (free-mark free-mark1266) (mark mark1267) (celled? celled?1268) (stackable stackable1269)))
 (define-inline (svar/Ginfo?::bool obj::obj) ((@ isa? __object) obj (@ svar/Ginfo globalize_ginfo)))
 (define (svar/Ginfo-nil::svar/Ginfo) (class-nil (@ svar/Ginfo globalize_ginfo)))
+(define-inline (svar/Ginfo-stackable::bool o::svar/Ginfo) (-> |#!bigloo_wallow| o stackable))
+(define-inline (svar/Ginfo-stackable-set! o::svar/Ginfo v::bool) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (svar/Ginfo-celled?::bool o::svar/Ginfo) (-> |#!bigloo_wallow| o celled?))
 (define-inline (svar/Ginfo-celled?-set! o::svar/Ginfo v::bool) (set! (-> |#!bigloo_wallow| o celled?) v))
 (define-inline (svar/Ginfo-mark::long o::svar/Ginfo) (-> |#!bigloo_wallow| o mark))
@@ -307,7 +319,7 @@
 (define-inline (svar/Ginfo-loc-set! o::svar/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; sexit/Ginfo
-(define-inline (make-sexit/Ginfo::sexit/Ginfo handler1249::obj detached?1250::bool G?1251::bool kaptured?1252::bool free-mark1253::long mark1254::long) (instantiate::sexit/Ginfo (handler handler1249) (detached? detached?1250) (G? G?1251) (kaptured? kaptured?1252) (free-mark free-mark1253) (mark mark1254)))
+(define-inline (make-sexit/Ginfo::sexit/Ginfo handler1257::obj detached?1258::bool G?1259::bool kaptured?1260::bool free-mark1261::long mark1262::long) (instantiate::sexit/Ginfo (handler handler1257) (detached? detached?1258) (G? G?1259) (kaptured? kaptured?1260) (free-mark free-mark1261) (mark mark1262)))
 (define-inline (sexit/Ginfo?::bool obj::obj) ((@ isa? __object) obj (@ sexit/Ginfo globalize_ginfo)))
 (define (sexit/Ginfo-nil::sexit/Ginfo) (class-nil (@ sexit/Ginfo globalize_ginfo)))
 (define-inline (sexit/Ginfo-mark::long o::sexit/Ginfo) (-> |#!bigloo_wallow| o mark))
@@ -324,7 +336,7 @@
 (define-inline (sexit/Ginfo-handler-set! o::sexit/Ginfo v::obj) (set! (-> |#!bigloo_wallow| o handler) v))
 
 ;; local/Ginfo
-(define-inline (make-local/Ginfo::local/Ginfo id1235::symbol name1236::obj type1237::type value1238::value access1239::obj fast-alpha1240::obj removable1241::obj occurrence1242::long occurrencew1243::long user?1244::bool key1245::long escape?1246::bool globalized?1247::bool) (instantiate::local/Ginfo (id id1235) (name name1236) (type type1237) (value value1238) (access access1239) (fast-alpha fast-alpha1240) (removable removable1241) (occurrence occurrence1242) (occurrencew occurrencew1243) (user? user?1244) (key key1245) (escape? escape?1246) (globalized? globalized?1247)))
+(define-inline (make-local/Ginfo::local/Ginfo id1243::symbol name1244::obj type1245::type value1246::value access1247::obj fast-alpha1248::obj removable1249::obj occurrence1250::long occurrencew1251::long user?1252::bool key1253::long escape?1254::bool globalized?1255::bool) (instantiate::local/Ginfo (id id1243) (name name1244) (type type1245) (value value1246) (access access1247) (fast-alpha fast-alpha1248) (removable removable1249) (occurrence occurrence1250) (occurrencew occurrencew1251) (user? user?1252) (key key1253) (escape? escape?1254) (globalized? globalized?1255)))
 (define-inline (local/Ginfo?::bool obj::obj) ((@ isa? __object) obj (@ local/Ginfo globalize_ginfo)))
 (define (local/Ginfo-nil::local/Ginfo) (class-nil (@ local/Ginfo globalize_ginfo)))
 (define-inline (local/Ginfo-globalized?::bool o::local/Ginfo) (-> |#!bigloo_wallow| o globalized?))
@@ -355,7 +367,7 @@
 (define-inline (local/Ginfo-id-set! o::local/Ginfo v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; global/Ginfo
-(define-inline (make-global/Ginfo::global/Ginfo id1211::symbol name1212::obj type1213::type value1214::value access1215::obj fast-alpha1216::obj removable1217::obj occurrence1218::long occurrencew1219::long user?1220::bool module1221::symbol import1222::obj evaluable?1223::bool eval?1224::bool library1225::obj pragma1226::obj src1227::obj jvm-type-name1228::bstring init1229::obj alias1230::obj escape?1231::bool global-closure1232::obj) (instantiate::global/Ginfo (id id1211) (name name1212) (type type1213) (value value1214) (access access1215) (fast-alpha fast-alpha1216) (removable removable1217) (occurrence occurrence1218) (occurrencew occurrencew1219) (user? user?1220) (module module1221) (import import1222) (evaluable? evaluable?1223) (eval? eval?1224) (library library1225) (pragma pragma1226) (src src1227) (jvm-type-name jvm-type-name1228) (init init1229) (alias alias1230) (escape? escape?1231) (global-closure global-closure1232)))
+(define-inline (make-global/Ginfo::global/Ginfo id1220::symbol name1221::obj type1222::type value1223::value access1224::obj fast-alpha1225::obj removable1226::obj occurrence1227::long occurrencew1228::long user?1229::bool module1230::symbol import1231::obj evaluable?1232::bool eval?1233::bool library1234::obj pragma1235::obj src1236::obj jvm-type-name1237::bstring init1238::obj alias1239::obj escape?1240::bool global-closure1241::obj) (instantiate::global/Ginfo (id id1220) (name name1221) (type type1222) (value value1223) (access access1224) (fast-alpha fast-alpha1225) (removable removable1226) (occurrence occurrence1227) (occurrencew occurrencew1228) (user? user?1229) (module module1230) (import import1231) (evaluable? evaluable?1232) (eval? eval?1233) (library library1234) (pragma pragma1235) (src src1236) (jvm-type-name jvm-type-name1237) (init init1238) (alias alias1239) (escape? escape?1240) (global-closure global-closure1241)))
 (define-inline (global/Ginfo?::bool obj::obj) ((@ isa? __object) obj (@ global/Ginfo globalize_ginfo)))
 (define (global/Ginfo-nil::global/Ginfo) (class-nil (@ global/Ginfo globalize_ginfo)))
 (define-inline (global/Ginfo-global-closure::obj o::global/Ginfo) (-> |#!bigloo_wallow| o global-closure))

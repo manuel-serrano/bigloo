@@ -115,7 +115,8 @@
 	 (type *cell*)
 	 (vtype (get-bigloo-defined-type (variable-type variable)))
 	 (loc loc)
-	 (value node))))
+	 (value node)
+	 (stackable (svar/Ginfo-stackable (variable-value variable))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    celled? ...                                                      */
