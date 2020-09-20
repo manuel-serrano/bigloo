@@ -631,8 +631,7 @@
 					 (variable-name decl)))
 			      (args '()))))
 		(set! stackable decl)
-		(list alloc)
-		'())))
+		(list alloc))))
 	 (else
 	  '())))
    

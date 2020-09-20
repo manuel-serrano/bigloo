@@ -561,9 +561,17 @@
 (define-method (emit-cop cop::cmake-box)
    (with-access::cmake-box cop (value loc stackable)
       (emit-bdb-loc loc)
-      (display "MAKE_CELL(" *c-port*)
-      (emit-cop value)
-      (write-char #\) *c-port*)
+      (if (local? stackable)
+	  (begin
+	     (display "MAKE_CELL_STACK(" *c-port*)
+	     (emit-cop value)
+	     (write-char #\, *c-port*)
+	     (display (variable-name stackable) *c-port*)
+	     (write-char #\) *c-port*))
+	  (begin
+	     (display "MAKE_CELL(" *c-port*)
+	     (emit-cop value)
+	     (write-char #\) *c-port*)))
       #t))
 
 ;*---------------------------------------------------------------------*/
