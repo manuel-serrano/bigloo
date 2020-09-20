@@ -583,9 +583,10 @@
    (trace (cgen 3)
       "(node->cop node::let-var kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
-   
+
    (define (alloca x)
-      (if (and (isa? (cdr x) app)
+      (cond
+	 ((and (isa? (cdr x) app)
 	       (app-stackable (cdr x))
 	       (bigloo-config 'have-c99-stack-alloc))
 	  (with-access::app (cdr x) (fun args loc)
@@ -614,8 +615,26 @@
 				       (type *obj*)
 				       (variable decl))
 				 args))
-		   (list alloc))))
-	  '()))
+		   (list alloc)))))
+	 ((and (isa? (cdr x) make-box)
+	       (make-box-stackable (cdr x)))
+	  (with-access::make-box (cdr x) (loc stackable)
+	     (let* ((decl (let ((d (duplicate::local (car x)
+				      (id (gensym 'box))
+				      (name #f)
+				      (type *cell*))))
+			     (set-variable-name! d)
+			     d))
+		    (alloc (instantiate::cpragma 
+			      (loc loc)
+			      (format (format "struct bgl_cell ~a"
+					 (variable-name decl)))
+			      (args '()))))
+		(set! stackable decl)
+		(list alloc)
+		'())))
+	 (else
+	  '())))
    
    (with-access::let-var node (body bindings loc)
       (for-each (lambda (x) (set-variable-name! (car x))) bindings)
@@ -637,65 +656,6 @@
 		  (cops (append alloca (cons decls (append sets (list body))))))
 	       loc)
 	    loc))))
-
-;* (define-method (node->cop node::let-var kont inpushexit)            */
-;*    (trace (cgen 3)                                                  */
-;*       "(node->cop node::let-var kont): " (shape node) #\Newline     */
-;*       "  kont: " kont #\Newline)                                    */
-;*                                                                     */
-;*    (define (stackable? expr)                                        */
-;*       (when (isa? expr app)                                         */
-;* 	 (with-access::app expr (stackable)                            */
-;* 	    stackable)))                                               */
-;*                                                                     */
-;*    (define (is-make-stack-fx-procedure? var)                        */
-;*       (with-access::global var (module id)                          */
-;* 	 (and (eq? id 'make-stack-fx-procedure) (eq? module 'foreign)))) */
-;*                                                                     */
-;*    (define (is-make-stack-fx-call? app)                             */
-;*       (with-access::app app (fun args)                              */
-;* 	 (and (global? (var-variable fun))                             */
-;* 	      (is-make-stack-fx-procedure? (var-variable fun))         */
-;* 	      (pair? args)                                             */
-;* 	      (var? (car args)))))                                     */
-;*                                                                     */
-;*    (define (allocas bindings)                                       */
-;*       (when (and (isa? (cdr bindings) app) (is-make-stack-fx-call? app)) */
-;* 	 (with-access::app (cdr bindings) (fun args)                   */
-;* 	    (with-access::variable (var-variable (car args)) (id name) */
-;* 	       (let ((t (duplicate::local (car bindings)               */
-;* 			   (id (symbol-append '__ id))                 */
-;* 			   (name (string-append "__" name)))))         */
-;* 		  (cons t                                              */
-;* 		     (node->cop                                        */
-;* 			(node-setq t                                   */
-;* 			   (instantiate::pragma                        */
-;* 			      (loc loc)                                */
-;* 			      (type *_*)                               */
-;* 			      (format (format "BGL_ALLOC_STACK_FX_PROCEDURE(~a)" */
-;* 					 (caddr args)))))              */
-;* 			*stop-kont* inpushexit)))))))                  */
-;*                                                                     */
-;*    (with-access::let-var node (body bindings loc)                   */
-;*       (for-each (lambda (b) (set-variable-name! (car b))) bindings) */
-;*       (let ((decls (instantiate::local-var                          */
-;* 		      (loc loc)                                        */
-;* 		      (vars (append (map car bindings)                 */
-;* 			       (append-map alloca bindings)))))        */
-;* 	    (sets  (map (lambda (x)                                    */
-;* 			   (node->cop (node-setq (car x) (cdr x))      */
-;* 			      *stop-kont* inpushexit))                 */
-;* 		      bindings))                                       */
-;* 	    (body  (let ((cop (node->cop body kont inpushexit)))       */
-;* 		      (instantiate::stop                               */
-;* 			 (value cop)))))                               */
-;* 	 (block-kont                                                   */
-;* 	    (bdb-let-var                                               */
-;* 	       (instantiate::csequence                                 */
-;* 		  (loc loc)                                            */
-;* 		  (cops (cons decls (append allocs sets (list body))))) */
-;* 	       loc)                                                    */
-;* 	    loc))))                                                    */
 
 ;*---------------------------------------------------------------------*/
 ;*    bdb-let-var ...                                                  */
@@ -890,12 +850,25 @@
    (trace (cgen 3)
 	  "(node->cop node::make-box kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::make-box node (value loc)
-      (if (or (var? value) (atom? value) (kwote? value))
+   
+   (define (simple-app? value)
+      (when (app? value)
+	 (with-access::app value (fun args)
+	    (when (every simple-expr? args)
+	       (with-access::variable (var-variable fun) (value)
+		  (with-access::fun value (side-effect)
+		     (or (not side-effect))))))))
+
+   (define (simple-expr? value)
+      (or (var? value) (atom? value) (kwote? value) (simple-app? value)))
+   
+   (with-access::make-box node (value loc stackable)
+      (if (simple-expr? value)
 	  (node->cop value
 		     (lambda (v) (kont (instantiate::cmake-box
 					  (loc loc)
-					  (value v))))
+					  (value v)
+					  (stackable stackable))))
 		      inpushexit)
 	  (let* ((aux  (make-local-svar/name 'cellval *obj*))
 		 (cval (node->cop (node-setq aux value) *id-kont* inpushexit)))
@@ -913,7 +886,8 @@
 				    (loc loc)
 				    (value (instantiate::varc
 					      (loc loc)
-					      (variable aux))))))))))))))
+					      (variable aux)))
+				    (stackable stackable))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::box-ref ...                                          */

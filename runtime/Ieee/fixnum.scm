@@ -980,11 +980,11 @@
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
 	    (unsigned->string::bstring ::obj #!optional (radix::long 16))
-	    (string->integer::long ::bstring . pair)
+	    (string->integer::long ::bstring #!optional (radix::long 10))
 	    (elong->string::bstring ::elong . pair)
-	    (string->elong::elong ::bstring . pair)
+	    (string->elong::elong ::bstring #!optional (radix::long 10))
 	    (llong->string::bstring ::llong . pair)
-	    (string->llong::llong ::bstring . pair)
+	    (string->llong::llong ::bstring #!optional (radix::long 10))
 	    (bignum->string::bstring ::bignum #!optional (radix::long 10))
 	    (string->bignum::bignum ::bstring #!optional (radix::long 10))
 	    (bignum->octet-string::bstring ::bignum)
@@ -2463,31 +2463,28 @@
 ;*---------------------------------------------------------------------*/
 ;*    string->integer ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (string->integer string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  ;; strtol cannot be renamed as it is used by the compiler
-	  ;; to optmize the call
-	  (strtol string 0 r)
-	  (error "string->integer" "Illegal radix" r))))
+(define (string->integer string #!optional (radix::long 10))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       ;; strtol cannot be renamed as it is used by the compiler
+       ;; to optmize the call
+       (strtol string 0 radix)
+       (error "string->integer" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->elong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->elong string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  (strtoel string 0 r)
-	  (error "string->elong" "Illegal radix" r))))
+(define (string->elong string #!optional (radix::long 10))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       (strtoel string 0 radix)
+       (error "string->elong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->llong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->llong string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  (strtoll string 0 r)
-	  (error "string->llong" "Illegal radix" r))))
+(define (string->llong string #!optional (radix::long 10))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       (strtoll string 0 radix)
+       (error "string->llong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->bignum ...                                               */
