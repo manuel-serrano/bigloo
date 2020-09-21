@@ -707,7 +707,7 @@ uninstall: uninstall-bee uninstall-jvm
 	  if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
 	    $(MAKE) uninstall-lib LIB=libbigloo_s_mt-$(RELEASE); \
 	    $(MAKE) uninstall-lib LIB=libbigloo_u_mt-$(RELEASE); \
-          fi
+          fi; \
         fi
 
 uninstall-jvm:
