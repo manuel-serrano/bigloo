@@ -34,7 +34,7 @@ api-install-c:
 	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap; \
         fi
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
-	  $(MAKE) api-install-lib SUFFIX=_mt; 
+	  $(MAKE) api-install-lib SUFFIX=_mt; \
 	fi
 
 api-install-lib:
@@ -48,7 +48,7 @@ api-uninstall-c:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap
 	-$(MAKE) api-uninstall-lib SUFFIX=
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
-	  $(MAKE) api-uninstall-lib SUFFIX=_mt; 
+	  $(MAKE) api-uninstall-lib SUFFIX=_mt; \
 	fi
 
 api-uninstall-lib:
