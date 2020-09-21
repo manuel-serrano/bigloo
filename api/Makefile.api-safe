@@ -33,17 +33,29 @@ api-install-c:
 	  cp $(BOOTLIBDIR)/$(API).heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap && \
 	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap; \
         fi
-	$(MAKE) install-lib LIB=libbigloo$(API)_s-$(RELEASE)
-	$(MAKE) install-lib LIB=libbigloo$(API)_u-$(RELEASE)
-	$(MAKE) install-lib LIB=libbigloo$(API)_es-$(RELEASE)
-	$(MAKE) install-lib LIB=libbigloo$(API)_eu-$(RELEASE)
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	  $(MAKE) api-install-lib SUFFIX=_mt; 
+	fi
+
+api-install-lib:
+	$(MAKE) install-lib LIB=libbigloo$(API)_s$(SUFFIX)-$(RELEASE)
+	$(MAKE) install-lib LIB=libbigloo$(API)_u$(SUFFIX)-$(RELEASE) \
+             LN=libbigloo$(API)_s-$(RELEASE)
+	$(MAKE) install-lib LIB=libbigloo$(API)_es$(SUFFIX)-$(RELEASE)
+	$(MAKE) install-lib LIB=libbigloo$(API)_eu$(SUFFIX)-$(RELEASE)
 
 api-uninstall-c:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap
-	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_s-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_u-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_eu-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_es-$(RELEASE)
+	-$(MAKE) api-uninstall-lib SUFFIX=
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	  $(MAKE) api-uninstall-lib SUFFIX=_mt; 
+	fi
+
+api-uninstall-lib
+	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_s$(SUFFIX)-$(RELEASE)
+	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_u$(SUFFIX)-$(RELEASE)
+	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_eu$(SUFFIX)-$(RELEASE)
+	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_es$(SUFFIX)-$(RELEASE)
 
 # JVM installation
 api-install-jvm:
