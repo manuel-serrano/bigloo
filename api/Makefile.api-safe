@@ -33,6 +33,7 @@ api-install-c:
 	  cp $(BOOTLIBDIR)/$(API).heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap && \
 	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap; \
         fi
+	$(MAKE) api-install-lib SUFFIX=
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
 	  $(MAKE) api-install-lib SUFFIX=_mt; \
 	fi
