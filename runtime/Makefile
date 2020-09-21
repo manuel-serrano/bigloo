@@ -664,6 +664,10 @@ install-c:
 	fi
 	$(MAKE) install-lib LIB=libbigloo_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo_u-$(RELEASE)
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	  $(MAKE) install-lib LIB=libbigloo_s_mt-$(RELEASE); \
+	  $(MAKE) install-lib LIB=libbigloo_u_mt-$(RELEASE); \
+        fi
 
 install-saw-c:
 	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
@@ -700,6 +704,10 @@ uninstall: uninstall-bee uninstall-jvm
 	  $(MAKE) uninstall-lib LIB=libbigloo_u-$(RELEASE) && \
 	  $(MAKE) uninstall-lib LIB=libbigloogc-$(RELEASE) && \
           $(RM) -rf $(DESTDIR)$(LIBDIR)/$(FILDIR); \
+	  if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	    $(MAKE) uninstall-lib LIB=libbigloo_s_mt-$(RELEASE); \
+	    $(MAKE) uninstall-lib LIB=libbigloo_u_mt-$(RELEASE); \
+          fi
         fi
 
 uninstall-jvm:
