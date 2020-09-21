@@ -52,7 +52,7 @@ api-uninstall-c:
 	  $(MAKE) api-uninstall-lib SUFFIX=_mt; 
 	fi
 
-api-uninstall-lib
+api-uninstall-lib:
 	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_s$(SUFFIX)-$(RELEASE)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_u$(SUFFIX)-$(RELEASE)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(API)_eu$(SUFFIX)-$(RELEASE)
