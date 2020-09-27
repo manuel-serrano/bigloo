@@ -346,6 +346,113 @@ va_generic_entry( obj_t proc, ... ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    bgl_va_stack_entry ...                                           */
+/*    -------------------------------------------------------------    */
+/*    Entry point of stack allocated varargs functions.                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_va_stack_entry( obj_t proc, ... ) {
+   va_list argl;
+   int     arity;
+   int     require;
+   obj_t   arg[ 16 ];
+   obj_t   optional;
+   obj_t   runner;
+   long    i;
+
+   va_start( argl, proc );
+   
+   arity  = PROCEDURE_ARITY( proc );
+   require = -arity - 1;
+
+   for( i = 0; i < require; i++ )
+      arg[ i ] = va_arg( argl, obj_t );
+
+   if( (runner = va_arg( argl, obj_t )) != BEOA ) {
+      obj_t tail;
+      obj_t __tmp;
+      
+      optional = tail = MAKE_STACK_PAIR_TMP( runner, BNIL, __tmp );
+      
+      while( (runner = va_arg( argl, obj_t )) != BEOA ) {
+         SET_CDR( tail, MAKE_STACK_PAIR_TMP( runner, BNIL, __tmp ) );
+         tail = CDR( tail );
+      } 
+   } else {
+      optional = BNIL;
+   }
+   
+   va_end( argl );
+   
+#define CALL( proc ) ((obj_t (*)())PROCEDURE_VA_ENTRY( proc ))      
+   switch( arity ) {
+      case -1  : return CALL( proc )(proc, optional);
+      case -2  : return CALL( proc )(proc, arg[ 0 ], optional);
+      case -3  : return CALL( proc )(proc, arg[ 0 ], arg[ 1 ], optional);
+      case -4  : return CALL( proc )(proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                      optional);
+      case -5  : return CALL( proc )(proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], optional);
+      case -6  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], optional);
+      case -7  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     optional);
+      case -8  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], optional);
+      case -9  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], optional);
+      case -10 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     optional);
+      case -11 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], optional);
+      case -12 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], optional);
+      case -13 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     optional);
+      case -14 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], optional);
+      case -15 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], arg[ 13 ], optional);
+      case -16 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], arg[ 13 ], arg[ 14 ],
+                                     optional);
+      case -17 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], arg[ 13 ], arg[ 14 ],
+                                     arg[ 15 ], optional);
+      
+      default: C_FAILURE( "va_generic_entry",
+			  "too many argument expected",
+			  BINT( arity ) );
+   }
+   return BNIL;
+}
+
+/*---------------------------------------------------------------------*/
 /*    opt_generic_entry ...                                            */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF

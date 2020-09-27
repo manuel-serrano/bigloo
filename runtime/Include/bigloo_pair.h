@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
 /*    Last change :  Sat Dec  7 18:56:17 2019 (serrano)                */
-/*    Copyright   :  2016-19 Manuel Serrano                            */
+/*    Copyright   :  2016-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
 /*=====================================================================*/
@@ -116,18 +116,18 @@ struct bgl_epair {
 #endif   
 
 #define BGL_INIT_PAIR( an_object, a, d ) \
-   IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header = \
-		 MAKE_HEADER( PAIR_TYPE, PAIR_SIZE ) ); \
-   BGL_CPTR( an_object )->pair.car = a; \
-   BGL_CPTR( an_object )->pair.cdr = d;
+   (IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header =	\
+	 	  MAKE_HEADER( PAIR_TYPE, PAIR_SIZE ) ), \
+    BGL_CPTR( an_object )->pair.car = a, \
+    BGL_CPTR( an_object )->pair.cdr = d)
 
 #define BGL_INIT_EPAIR( an_object, a, d, e ) \
-   IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header = \
-		 MAKE_HEADER( PAIR_TYPE, EPAIR_SIZE ) ); \
-   BGL_CPTR( an_object )->pair.car = a; \
-   BGL_CPTR( an_object )->pair.cdr = d;	\
-   BGL_CPTR( an_object )->epair.cer = e; \
-   IF_EPAIR_TAG( BGL_CPTR( an_object )->epair.eheader = BINT( EPAIR_TYPE ) );
+   (IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header = \
+		  MAKE_HEADER( PAIR_TYPE, EPAIR_SIZE ) ), \
+    BGL_CPTR( an_object )->pair.car = a, \
+    BGL_CPTR( an_object )->pair.cdr = d, \
+    BGL_CPTR( an_object )->epair.cer = e, \
+    IF_EPAIR_TAG( BGL_CPTR( an_object )->epair.eheader = BINT( EPAIR_TYPE ) ))
 
 /* boehm allocation */
 #if( BGL_GC == BGL_BOEHM_GC )
@@ -158,16 +158,19 @@ struct bgl_epair {
 #endif
 
 /* stack allocation (see BGL_EXITD_PUSH_PROTECT) */
-#if( BGL_HAVE_ALLOCA && defined( __GNUC__ ) )
-#   define MAKE_STACK_PAIR( a, d ) \
-        ({ obj_t an_object; \
-           an_object = alloca( PAIR_SIZE ); \
-	   BGL_INIT_PAIR( an_object, a, d ); \
-           ( BPAIR( an_object ) ); })
+#if( BGL_HAVE_ALLOCA )
+#  define MAKE_STACK_PAIR_TMP( a, d, __t ) \
+     (__t = alloca( PAIR_SIZE ), BGL_INIT_PAIR( __t, a, d ), BPAIR( __t ))
+#  if( BGL_HAVE_ALLOCA && defined( __GNUC__ ) )
+#    define MAKE_STACK_PAIR( a, d ) \
+       ({ obj_t an_object; MAKE_STACK_PAIR_TMP( a, d, an_object); })
+#  else
+#    define MAKE_STACK_PAIR( a, d ) MAKE_PAIR( a, d )   
+#  endif
 #else
-#   define MAKE_STACK_PAIR( a, d ) MAKE_PAIR( a, d )   
+#  define MAKE_STACK_PAIR_TMP( a, d, __t ) __t = MAKE_PAIR( a, d )
+#  define MAKE_STACK_PAIR( a, d ) MAKE_PAIR( a, d )   
 #endif
-   
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */

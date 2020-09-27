@@ -118,7 +118,8 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
       return BFALSE;
    } else {
       int i;
-      obj_t res = MAKE_STACK_PAIR( BNIL, BNIL );
+      obj_t tmp;
+      obj_t res = MAKE_STACK_PAIR_TMP( BNIL, BNIL, tmp );
       obj_t tail = res;
 
       for( i = 0; i < oveccount * 2; i += 2 ) {
