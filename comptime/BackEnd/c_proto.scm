@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
 ;*    Last change :  Fri Apr 19 16:19:24 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -510,12 +510,28 @@
 		      vname
 		      ", "
 		      (id->name (gensym name))
-		      ", va_generic_entry"
+		      (if (and (var? entry)
+			       (fun-va-stackable? (var-variable entry)))
+			  ", bgl_va_stack_entry"
+			  ", va_generic_entry")
 		      ", "
 		      name
 		      ", BUNSPEC, "
 		      arity
 		      " );"))))))
+
+;*---------------------------------------------------------------------*/
+;*    fun-va-stackable? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (fun-va-stackable? var)
+   (let ((fun (variable-value var)))
+      (when (sfun? fun)
+	 (with-access::sfun fun (args-noescape args-name)
+	    (or (eq? args-noescape '*)
+		(and (pair? args-noescape)
+		     ;; add 1 the environment
+		     (memq (-fx (length args-name) (+fx 1 1))
+			args-noescape)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-selfun ...                                             */

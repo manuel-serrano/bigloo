@@ -3777,6 +3777,11 @@ public final class foreign
 	 // CARE where defined?
 	 return new pair(car, cdr);
       }
+   public static pair MAKE_STACK_PAIR(Object car, Object cdr)
+      {
+	 // CARE where defined?
+	 return new pair(car, cdr);
+      }
 
    public static Object CAR(pair c)
       {

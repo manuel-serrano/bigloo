@@ -2322,6 +2322,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 BGL_RUNTIME_DECL obj_t bigloo_exit( obj_t );
 
 BGL_RUNTIME_DECL obj_t va_generic_entry( obj_t, ... );
+BGL_RUNTIME_DECL obj_t bgl_va_stack_entry( obj_t, ... );
 BGL_RUNTIME_DECL obj_t opt_generic_entry( obj_t, ... );
 BGL_RUNTIME_DECL obj_t apply( obj_t, obj_t );
 

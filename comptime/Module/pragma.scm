@@ -229,6 +229,22 @@
 		     (cond
 			((null? val)
 			 (set! args-noescape '*))
+			((integer? (car val))
+			 (set! args-noescape (cons val args-noescape)))
+			((symbol? (car val))
+			 (if (not (sfun? value))
+			     (user-error "Parse error" "Illegal \"args-noescape\" on non-function value" prop)
+			     (let loop ((i 0)
+					(args (sfun-args-name value)))
+				(cond
+				   ((null? args)
+				    (user-error "Parse error"
+				       "Illegal \"args-noescape\", cannot find argument"
+				       prop))
+				   ((eq? (car args) (car val))
+				    (set! args-noescape (cons i args-noescape)))
+				   (else
+				    (loop (+fx i 1) (cdr args)))))))
 			((not (integer? (car val)))
 			 (user-error "Parse error" "Illegal \"args-noescape\" pragma" prop))
 			((eq? args-noescape #unspecified)
