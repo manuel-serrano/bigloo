@@ -2340,6 +2340,7 @@ BGL_RUNTIME_DECL obj_t bgl_make_procedure( obj_t, int, int );
 BGL_RUNTIME_DECL obj_t make_fx_procedure( function_t, int, int );
 BGL_RUNTIME_DECL obj_t make_va_procedure( function_t, int, int );
 BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure( obj_t, function_t, int, int );
+BGL_RUNTIME_DECL obj_t bgl_dup_procedure( obj_t );
 
 BGL_RUNTIME_DECL obj_t bgl_time( obj_t );
    

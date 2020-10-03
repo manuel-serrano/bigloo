@@ -29,6 +29,30 @@ bgl_make_procedure( obj_t entry, int arity, int size ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_dup_procedure ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_dup_procedure( obj_t proc ) {
+   int size = PROCEDURE_LENGTH( proc );
+   obj_t n_proc = GC_MALLOC( BGL_PROCEDURE_BYTE_SIZE( size ) );
+   obj_t o_proc = CREF( proc );
+			      
+   n_proc->procedure.header = o_proc->procedure.header;
+   n_proc->procedure.entry = o_proc->procedure.entry;
+   n_proc->procedure.va_entry = o_proc->procedure.va_entry;
+   n_proc->procedure.attr = o_proc->procedure.attr;
+   n_proc->procedure.arity = o_proc->procedure.arity;
+
+   while( size-- > 0 ) {
+      PROCEDURE_SET( BREF( n_proc ), size, PROCEDURE_REF( proc, size ) );
+   }
+
+   return BREF( n_proc );
+}
+
+/*---------------------------------------------------------------------*/
 /*    INIT_FX_PROCEDURE                                                */
 /*---------------------------------------------------------------------*/
 #define INIT_FX_PROCEDURE( proc, entry, arity, size ) \

@@ -273,7 +273,7 @@
 	      date)
 	   (date-update! date :nsec (*llong #l1000000 (fixnum->llong ms)))))
       (else
-       (date-update! date :nnsec (*llong #l1000000 (fixnum->llong ms))))))
+       (date-update! date :nsec (*llong #l1000000 (fixnum->llong ms))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    date-update-second! ...                                          */

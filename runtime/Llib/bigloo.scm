@@ -62,6 +62,8 @@
 
 	    (macro $make-procedure::procedure (::obj ::int ::int)
 		   "bgl_make_procedure")
+	    (macro $dup-procedure::procedure (::procedure)
+		   "bgl_dup_procedure")
 	    
 	    (macro make-fx-procedure::procedure (::obj ::int ::int)
 		   "MAKE_FX_PROCEDURE")		 
