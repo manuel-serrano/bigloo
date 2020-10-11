@@ -81,6 +81,7 @@
 	    bdb_walk
 	    prof_walk
 	    return_walk
+	    uncell_walk
 	    isa_walk
 	    cc_cc
 	    cc_ld
@@ -480,13 +481,6 @@
 	    (check-sharing "return" ast)
 	    (check-type "return" ast #t #f)
 
-	    ;; isa expansion
-	    (when *optim-isa?*
-	       (set! ast (profile isa (isa-walk! ast))))
-	    (stop-on-pass 'isa (lambda () (write-ast ast)))
-	    (check-sharing "isa" ast)
-	    (check-type "isa" ast #t #f)
-	    
 	    ;; we re-perform the inlining pass in high optimization mode
 	    ;; in order to inline all type checkers.
 	    (set! ast (profile inline (inline-walk! ast 'reducer)))
@@ -509,7 +503,14 @@
 	       (stop-on-pass 'reduce+ (lambda () (write-ast ast2)))
 	       (check-sharing "reduce+" ast2)
 	       (check-type "reduce+" ast2 #t #t)
-
+	       
+	       ;; useless cell removal
+	       (when *optim-uncell?*
+		  (set! ast (profile uncell (uncell-walk! ast)))
+		  (stop-on-pass 'uncell (lambda () (write-ast ast)))
+		  (check-sharing "uncell" ast)
+		  (check-type "uncell" ast #t #f))
+	    
 	       (backend-walk (remove-var 'now ast2)))
 	    
 	    0))))

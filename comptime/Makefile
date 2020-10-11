@@ -317,6 +317,11 @@ RETURN_FILE	= walk
 
 RETURN_OBJ	= $(RETURN_FILE:%=Return/%.o)
 
+#*--- uncell ----------------------------------------------------------*/
+UNCELL_FILE	= walk
+
+UNCELL_OBJ	= $(UNCELL_FILE:%=Uncell/%.o)
+
 #*--- user ------------------------------------------------------------*/
 USER_FILE	= user
 
@@ -342,7 +347,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
                   $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  $(STACKABLE_OBJ)
+                  $(STACKABLE_OBJ) $(UNCELL_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

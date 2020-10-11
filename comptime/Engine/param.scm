@@ -93,6 +93,7 @@
 	    *optim-return-goto?*
 	    *optim-tagged-fxop?*
 	    *optim-stackable?*
+	    *optim-uncell?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -959,6 +960,9 @@
    #f)
 (param-define *optim-stackable?*
    "Optimize stackable allocation"
+   #f)
+(param-define *optim-uncell?*
+   "Remove useless cells"
    #f)
 
 ;*---------------------------------------------------------------------*/
