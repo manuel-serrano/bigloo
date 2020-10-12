@@ -2694,9 +2694,9 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for phidget
 if [ "$phidget " = " " ]; then
-   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion` 2> /dev/null
+   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion`
 
-   if [ "$?" != "0" ]; then
+   if [ "$phidgetlibs " = " " ]; then
       phidget=no;
    else
       if [ "$phidgetlibdir " = " " ]; then

@@ -37,7 +37,7 @@ BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee \
-                  -srfi $(API) -copt "$(CSVCFLAGS)"
+                  -srfi $(API) -copt "$(CSVCFLAGS) -DBGL_DUMMY"
 CAPIFLAGS       = $(CSVCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \

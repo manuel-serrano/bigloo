@@ -38,7 +38,7 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPIUNSAFE	= -safee -unsafe 
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
-                  -srfi $(API) -copt "$(LIBUVCFLAGS)" $(BAPIUNSAFE)
+                  -srfi $(API) -copt "$(LIBUVCFLAGS) -DBGL_DUMMY" $(BAPIUNSAFE)
 CAPIFLAGS       = $(LIBUVCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \

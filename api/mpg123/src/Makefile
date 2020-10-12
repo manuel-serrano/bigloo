@@ -38,7 +38,7 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPISAFE	= -unsafe -safee
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
-                  -srfi $(API) -copt "$(MPG123CFLAGS)"
+                  -srfi $(API) -copt "$(MPG123CFLAGS) -DBGL_DUMMY"
 CAPIFLAGS       = $(MPG123CFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
