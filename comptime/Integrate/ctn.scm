@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 14:10:09 1995                          */
 ;*    Last change :  Thu Nov 17 08:35:44 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of `Cn' and `Ct'.                                */
 ;*       Cn(f,g) === exists k, A(f,g,k)                                */
@@ -60,7 +60,6 @@
 		     (sfun/Iinfo-kont-set! fi (cons g (sfun/Iinfo-kont fi))))
 		 (loop (cdr As) G/cn))
 		((eq? k 'escape)
-		 (tprint "!!!!! SHOULD NOT BE HERE.....")
 		 (error 'Cn&Ct! "SHould not be here" A))
 		((sfun/Iinfo-U gi)
 		 (sfun/Iinfo-Ct-set! fi (cons g (sfun/Iinfo-Ct fi)))

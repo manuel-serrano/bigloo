@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
 ;*    Last change :  Wed Dec 25 18:29:57 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
 ;*    -------------------------------------------------------------    */
@@ -385,8 +385,12 @@
    (define (mark-set-exit! node)
       (with-access::let-fun node (locals loc)
 	 (with-access::sfun/Iinfo (local-value (car locals)) (forceG? xhdl?)
+	    ;; MS 11oct2020: I'm not so sure that it is correct
+	    ;; not to force globalization if not tail
 	    (set! forceG?
 	       (or (not *optim-return-goto?*) (not (eq? (car k) 'tail))))
+	    (set! forceG?
+	       (not *optim-return-goto?*))
 	    (set! xhdl? #t))))
    
    (with-access::let-fun node (body)
