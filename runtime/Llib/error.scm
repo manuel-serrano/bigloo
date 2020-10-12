@@ -24,7 +24,7 @@
 	    (export c-debugging-show-type "bgl_show_type")
 	    (export stack-overflow-error "bgl_stack_overflow_error")
 	    
-	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
+	    ($get-trace-stack::pair-nil (::int) "bgl_get_trace_stack")
 	    (macro $push-trace::obj (::obj ::obj) "BGL_PUSH_TRACE")
 	    (macro $env-push-trace::obj (::dynamic-env ::obj ::obj) "BGL_ENV_PUSH_TRACE")
 	    (macro $env-set-trace-name::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE_NAME")
