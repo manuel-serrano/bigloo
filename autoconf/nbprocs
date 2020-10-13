@@ -61,7 +61,7 @@ cat > $file.c <<EOF
 #include <unistd.h>
 #include <stdio.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
 #if( defined( _SC_NPROCESSORS_ONLN ) )
 return (int)sysconf( _SC_NPROCESSORS_ONLN );
 #else 

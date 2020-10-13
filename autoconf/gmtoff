@@ -54,7 +54,7 @@ cat > $file.c <<EOF
 #include <ctype.h>
 #include <sys/time.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    long s = time( 0 );
    struct tm *tm = localtime( &s );
    

@@ -52,7 +52,7 @@ fi
 cat > $file.c <<EOF
 #include <netdb.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    struct protoent *pe;
    
    setprotoent( 1 );

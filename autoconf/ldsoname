@@ -112,6 +112,7 @@ int fun () { int x =0; x++; return x++; }
 EOF
 
 cat > $file.c <<EOF
+extern int fun();
 int main () { fun(); }
 EOF
 
@@ -130,7 +131,10 @@ fi
 #*---------------------------------------------------------------------*/
 #*    We build a library                                               */
 #*---------------------------------------------------------------------*/
-eval "$BUILDSH $ld $ldopt -o $file.so $obj-lib.o $soname=$file.so" > /dev/null
+if [ "$soname " != " " ]; then
+  eval "$BUILDSH $ld $ldopt -o $file.so $obj-lib.o $soname=$file.so" > /dev/null
+fi
+
 if [ ! -f $file.so ]; then
 
   if [ "$soname " != " " ]; then

@@ -56,10 +56,7 @@ cat > $file.c <<EOF
 #include <stdio.h>
 #include <fcntl.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    int val;
 
    val = fcntl( 0, F_GETFL, 0 );

@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
 /*    Last change :  Thu Sep 12 14:07:21 2019 (serrano)                */
-/*    Copyright   :  2005-19 Manuel Serrano                            */
+/*    Copyright   :  2005-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -47,6 +47,10 @@
 #include <bigloo.h>
 #include "bglssl.h"
 #include "ssl.h"
+
+#if( defined( BGLSSL_HAVE_RAND_POLL ) || defined( BGLSSL_HAVE_RAND_STATUS ) )
+#  include <openssl/rand.h>
+#endif
 
 #if( !defined( OPENSSL_NPN_UNSUPPORTED ) )
 #  define OPENSSL_NPN_UNSUPPORTED 0

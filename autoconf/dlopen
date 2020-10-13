@@ -54,11 +54,12 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
-{
-   int handle = dlopen( "/dev/null", 0 );
+extern void *dlopen();
+extern int dlclose();
+extern void *dlsym();
+
+int main( int argc, char *argv[] ) {
+   void *handle = dlopen( "/dev/null", 0 );
    dlsym( handle, "toto" );
    dlclose( handle );
    return 0;

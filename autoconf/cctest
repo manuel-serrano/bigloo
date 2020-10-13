@@ -63,8 +63,7 @@ cat > $file.c <<EOF
 #include <signal.h>
 #include <limits.h>
 
-direction( int new_addr )
-{
+void direction( int new_addr ) {
    static int *old_addr;
    static int flag = 0;
 
@@ -80,9 +79,9 @@ direction( int new_addr )
    }
 }
 
-main( int argc, char *argv[] )
-{
+int main( int argc, char *argv[] ) {
    direction( 1 );
+   return 0;
 }
 EOF
 

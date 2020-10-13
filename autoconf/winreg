@@ -50,10 +50,9 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+#include <stdio.h>
+
+int main( int argc, char *argv[] ) {
 #if( defined( sparc) )
    puts( "31" );
 #else

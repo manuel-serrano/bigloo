@@ -53,7 +53,7 @@ cat > $file.c <<EOF
 #include <unistd.h>
 #include <pwd.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    uid_t uid = getgid();
    struct passwd *pw = getpwuid( uid );
    struct passwd *pw2 = getpwnam( "root" );

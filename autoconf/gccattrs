@@ -5,7 +5,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Aug 18 06:43:10 2017                          */
 #*    Last change :  Fri Aug 18 06:59:44 2017 (serrano)                */
-#*    Copyright   :  2017 Manuel Serrano                               */
+#*    Copyright   :  2017-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Testing CC compiler attributes                                   */
 #*=====================================================================*/
@@ -51,6 +51,8 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
+#include <stdlib.h>
+
 # define inline         inline __attribute__ ((always_inline))
 # define __noinline     __attribute__ ((noinline))
 # define __pure         __attribute__ ((pure))
@@ -79,7 +81,7 @@ __noinline void* bar(void* dummy) {
   return dummy;    
 }
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    if( foo() != 0 ) {
      return 1;
    } else {

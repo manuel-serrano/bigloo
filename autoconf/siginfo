@@ -53,10 +53,10 @@ cat > $file.c <<EOF
 #include <signal.h>
 
 static void hdl( int sig, siginfo_t *si, void *ucontext ) {
-   return 0;
+   return;
 }
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    struct sigaction sigact;
    sigact.sa_sigaction = &hdl;
    sigact.sa_flags = SA_SIGINFO;

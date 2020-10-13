@@ -53,9 +53,9 @@ rm -f $aout.exe 2> /dev/null
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-void direction( new_addr )
-int new_addr;
-{
+#include <stdio.h> 
+
+void direction( int new_addr ) {
    static int *old_addr;
    static int flag = 0;
 
@@ -71,10 +71,7 @@ int new_addr;
    }
 }
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    direction( 1 );
 }
 EOF

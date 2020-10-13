@@ -56,10 +56,7 @@ cat > $file.c <<EOF
 #endif
 #include <strings.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    bcopy( argv, argv, 10 );
    return 0;
 }

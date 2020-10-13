@@ -67,10 +67,7 @@ cat > $file.c <<EOF
 EOF
 echo "#define BGL_LONGLONG_BITS (sizeof($type)*CHAR_BIT)" >> $file.c
 cat >> $file.c <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    unsigned int needed_limbs;
    if (BGL_LONGLONG_BITS % GMP_NUMB_BITS)
       needed_limbs = BGL_LONGLONG_BITS / GMP_NUMB_BITS + 1;

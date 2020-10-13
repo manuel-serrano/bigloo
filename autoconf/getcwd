@@ -50,10 +50,9 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+#include <unistd.h>
+
+int main( int argc, char *argv[] ) {
    getcwd( 0L, 0L );
    return 0;
 }

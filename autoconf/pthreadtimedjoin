@@ -59,10 +59,9 @@ cat > $file.c <<EOF
 #include <sched.h>
 #include <stdio.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+extern int pthread_timedjoin_np(pthread_t, void **, const struct timespec *);
+
+int main( int argc, char *argv[] ) {
    pthread_mutex_t mutex;
    pthread_cond_t cv;
    pthread_t thread;

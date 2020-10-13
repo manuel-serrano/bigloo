@@ -5,7 +5,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
 #*    Last change :  Sat Jan 23 12:48:24 2016 (serrano)                */
-#*    Copyright   :  2007-16 Manuel Serrano                            */
+#*    Copyright   :  2007-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if PCRE is available.                                      */
 #*=====================================================================*/
@@ -58,6 +58,7 @@ fi
 cat > $file.c <<EOF
 #include <stdio.h>
 #include <pcre.h>
+#include <string.h>
 #define OVECCOUNT 30    /* should be a multiple of 3 */
 
 int main(int argc, char **argv)

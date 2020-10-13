@@ -52,7 +52,7 @@ fi
 cat > $file.c <<EOF
 #include <setjmp.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    sigjmp_buf jb;
 
    if( sigsetjmp( jb, 1 ) )
@@ -82,10 +82,7 @@ fi
 cat > $file.c <<EOF
 #include <setjmp.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    jmp_buf jb;
 
    if( _setjmp( jb ) )

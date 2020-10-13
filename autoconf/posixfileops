@@ -53,10 +53,7 @@ cat > $file.c <<EOF
 #include <stdio.h>
 #include <unistd.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    char buffer [50];
    FILE *f;
    f = fopen( "/etc/passwd", "r" );
