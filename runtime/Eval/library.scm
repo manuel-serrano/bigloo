@@ -53,7 +53,9 @@
 	    __r4_output_6_10_3
 	    __r4_input_6_10_2)
 
-   (export  (declare-library! id
+   (export  (library-thread-suffix-set! ::bstring)
+	    (library-multithread-set! ::bool)
+	    (declare-library! id
 	       #!key
 	       (version (bigloo-config 'release-number))
 	       (basename (symbol->string id))
@@ -78,6 +80,23 @@
 ;*    *library-mutex* ...                                              */
 ;*---------------------------------------------------------------------*/
 (define *library-mutex* (make-mutex 'library))
+
+;*---------------------------------------------------------------------*/
+;*    library-thread-suffix ...                                        */
+;*---------------------------------------------------------------------*/
+(define library-thread-suffix "")
+
+;*---------------------------------------------------------------------*/
+;*    library-thread-suffix-set! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (library-thread-suffix-set! suf)
+   (set! library-thread-suffix suf))
+
+;*---------------------------------------------------------------------*/
+;*    library-multithread-set! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (library-multithread-set! val)
+   (library-thread-suffix-set! (if val "_mt" "")))
 
 ;*---------------------------------------------------------------------*/
 ;*    libinfo ...                                                      */
@@ -223,14 +242,16 @@
 ;*    library-file-name ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (library-file-name library suffix backend)
+
    (define (forge-name base suffix version)
       (cond
 	 ((not version)
-	  (string-append base suffix))
+	  (string-append base suffix library-thread-suffix))
 	 ((string? version)
-	  (string-append base suffix "-" version))
+	  (string-append base suffix library-thread-suffix "-" version))
 	 (else
 	  (error 'library-file-name "Illegal version" version))))
+   
    (multiple-value-bind (base version)
       (untranslate-library-name library)
       (case backend

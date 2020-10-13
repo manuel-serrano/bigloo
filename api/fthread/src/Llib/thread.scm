@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
 ;*    Last change :  Fri Dec 13 12:03:39 2013 (serrano)                */
-;*    Copyright   :  2002-13 Manuel Serrano                            */
+;*    Copyright   :  2002-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public FairThreads implementation.                           */
 ;*=====================================================================*/
@@ -38,6 +38,11 @@
 	    (thread-get-values*! ::pair)
 	    (thread-suspend! ::fthread)
             (thread-resume! ::fthread)))
+
+;*---------------------------------------------------------------------*/
+;*    Initialization for dynamic library loading                       */
+;*---------------------------------------------------------------------*/
+(library-multithread-set! #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    object-equal? ::%sigjoin ...                                     */

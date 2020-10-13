@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
 ;*    Last change :  Thu Aug  3 08:52:55 2017 (serrano)                */
-;*    Copyright   :  2002-17 Manuel Serrano                            */
+;*    Copyright   :  2002-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -44,6 +44,11 @@
 	   ($pthread-nil::$pthread))
 
    (pragma ($pthread-nil side-effect-free)))
+
+;*---------------------------------------------------------------------*/
+;*    Initialization for dynamic library loading                       */
+;*---------------------------------------------------------------------*/
+(library-multithread-set! #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    pthread-timedjoin property                                       */
