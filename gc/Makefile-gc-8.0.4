@@ -44,9 +44,10 @@ do-boot-gc: $(OUTDIR)/libgc.$(SHAREDSUFFIX)
 	$(MAKE) $(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a
 
 $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
-	$(MAKE) shared-lib \
+	$(MAKE) bigloo-shared-lib \
              LIBDEST=$@ \
 	     LIBPATH=$(BOOTLIBDIR) \
+             SHAREDLIBRARYCLOSED=no \
              SONAME=libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) \
              GCCLOSELIB= \
              CLOSELIBS=-ldl\
