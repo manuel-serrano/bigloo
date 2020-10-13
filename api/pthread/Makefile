@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
 #*    Last change :  Sun Jul  9 10:15:45 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Copyright   :  2001-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -96,14 +96,14 @@ cleanall: distclean
 
 install: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	    $(MAKE) api-install-c; \
+	    $(MAKE) api-install-c_mt; \
           fi
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
 
 uninstall: api-uninstall-init \
-           api-uninstall-c \
+           api-uninstall-c_mt \
            api-uninstall-jvm
 
 #*---------------------------------------------------------------------*/
