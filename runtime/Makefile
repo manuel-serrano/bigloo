@@ -477,8 +477,8 @@ lib-c_p: includes
                 LIBSUFFIX=_p
 
 one-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
-	$(MAKE) one-share-lib-c LIBTHREADSUFFIX=
-	$(MAKE) one-share-lib-c LIBTHREADSUFFIX=_mt
+	$(MAKE) one-share-lib-c LIBSUFFIXTHREAD=
+	$(MAKE) one-share-lib-c LIBSUFFIXTHREAD=_mt
 
 $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJECTS)
 	@ $(RM) -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
@@ -488,15 +488,15 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJE
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
-one-share-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBTHREADSUFFIX)-$(RELEASE).$(SHAREDSUFFIX)
+one-share-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
 
-$(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBTHREADSUFFIX)-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS) $(GCSTDOBJECTS)
+$(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS) $(GCSTDOBJECTS)
 	$(MAKE) bigloo-shared-lib \
              LIBDEST=$@ \
              LIBPATH=$(BOOTLIBDIR) \
              LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
              BIGLOOLIB= \
-             SONAME=lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBTHREADSUFFIX)-$(RELEASE).$(SHAREDSUFFIX)
+             SONAME=lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JVM libraries compilation                                 */

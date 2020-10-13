@@ -88,66 +88,6 @@ bigloo-shared:
            fi)
 
 
-#* shared-lib:                                                         */
-#* 	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \             */
-#*             if [ "$(LD)" = "true" ]; then \                         */
-#*               if [ "$(FORCELD)" = "true" ]; then \                  */
-#*                  echo > $(LIBDEST); \                               */
-#*               fi; \                                                 */
-#*             else \                                                  */
-#* 	      case $(HOSTOS) in \                                      */
-#*                 mingw) \                                            */
-#*                   $(MAKE) LDEXTRA="-Wl,--out-implib,$(notdir $(LIBDEST).a) $(LDEXTRA)" shared && \ */
-#* 		  cp $(notdir $(LIBDEST).a) $(LIBDEST).a;; \           */
-#*                 *) \                                                */
-#*                   $(MAKE) shared || exit 1;; \                      */
-#*               esac; \                                               */
-#*             fi; \                                                   */
-#*           fi                                                        */
-#*                                                                     */
-#* shared:                                                             */
-#* 	@ $(RM) -f $(LIBDEST)                                          */
-#* 	@ (close=""; \                                                 */
-#*            if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \          */
-#*              close="$(CLOSELIBS) $(GCCLOSELIB)"; \                  */
-#*            fi; \                                                    */
-#*            rpathopt=""; \                                           */
-#*            if [ "$(LDRPATHOPT) " != " " ]; then \                   */
-#*              for p in $(RPATH); do \                                */
-#*                rpathopt="$(LDRPATHOPT)$$p $$rpathopt"; \            */
-#*              done \                                                 */
-#*            fi; \                                                    */
-#*            if [ "$(LDINSTALLNAME) " != " " ]; then \                */
-#*              if [ "$(LDINSTALLNAMEDIR) " = " " ]; then \            */
-#*                ldinstallnamedir=$(DESTDIR)$(LIBDIR)/$(FILDIR); \    */
-#*              else \                                                 */
-#*                ldinstallnamedir=$(LDINSTALLNAMEDIR); \              */
-#*              fi; \                                                  */
-#* 	     $(MAKE) shared-install-name \                             */
-#*                  LDRPATH="$$rpathopt" \                             */
-#*                  LDINSTALLNAMEDIR=$$ldinstallnamedir \              */
-#*                  LDOPTS="-L$(LIBPATH) $(LDOPTS)" \                  */
-#*                  CLOSELIBS="$$close" \                              */
-#*                  RPATH= \                                           */
-#*                  || exit 1; \                                       */
-#*            else \                                                   */
-#*              if [ "$(LDSONAME) " = " " ]; then \                    */
-#* 	       $(MAKE) shared-sans-soname \                            */
-#*                    LDRPATH="$$rpathopt" \                           */
-#*                    LDOPTS="-L$(LIBPATH) $(LDOPTS)" \                */
-#*                    CLOSELIBS="$$close" \                            */
-#*                    RPATH= \                                         */
-#*                    || exit 1; \                                     */
-#*              else \                                                 */
-#* 	       $(MAKE) shared-soname \                                 */
-#*                    LDRPATH="$$rpathopt" \                           */
-#*                    LDOPTS="-L$(LIBPATH) $(LDOPTS)" \                */
-#*                    CLOSELIBS="$$close" \                            */
-#*                    RPATH= \                                         */
-#*                    || exit 1; \                                     */
-#*              fi \                                                   */
-#*            fi)                                                      */
-
 shared-install-name:
 	$(LD) -o $(notdir $(LIBDEST)) \
                  $(LDINSTALLNAME) $(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
