@@ -38,6 +38,15 @@ api-install-c:
 	  $(MAKE) api-install-lib SUFFIX=_mt; \
 	fi
 
+api-install-c_mt:
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  cp $(BOOTLIBDIR)/$(API).heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap; \
+        fi
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	  $(MAKE) api-install-lib SUFFIX=_mt; \
+	fi
+
 api-install-lib:
 	$(MAKE) install-lib LIB=libbigloo$(API)_s$(SUFFIX)-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo$(API)_u$(SUFFIX)-$(RELEASE) \
@@ -48,6 +57,12 @@ api-install-lib:
 api-uninstall-c:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap
 	-$(MAKE) api-uninstall-lib SUFFIX=
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	  $(MAKE) api-uninstall-lib SUFFIX=_mt; \
+	fi
+
+api-uninstall-c_mt:
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).heap
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
 	  $(MAKE) api-uninstall-lib SUFFIX=_mt; \
 	fi
@@ -109,6 +124,10 @@ api-c: api-init $(TAGS) .afile heap-c
 	mkdir -p objs
 	$(MAKE) api-c-static && $(MAKE) api-c-shared
 
+api-c_mt: api-init $(TAGS) .afile heap-c
+	mkdir -p objs
+	$(MAKE) api-c-static && $(MAKE) api-c-shared_mt
+
 heap-c: $(BOOTLIBDIR)/$(API).heap
 $(BOOTLIBDIR)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap
@@ -149,6 +168,14 @@ api-c-shared:
 	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD= && \
 	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD=_mt && \
 	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD= && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD=_mt; \
+        fi
+
+api-c-shared_mt:
+	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_s LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_es LIBSUFFIXTHREAD=_mt && \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD=_mt && \
 	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD=_mt; \
         fi
 
