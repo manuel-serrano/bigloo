@@ -82,7 +82,7 @@ lib: $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
   $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX)
 
 $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
@@ -92,7 +92,7 @@ $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
@@ -102,7 +102,7 @@ $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
@@ -112,7 +112,7 @@ $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            CLOSELIBS="-lbigloo_u_mt-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
