@@ -97,7 +97,7 @@ all:
 	  fi
 
 c: build-c
-build-c: api-c
+build-c: api-c_mt
 
 jvm: build-jvm
 build-jvm: api-jvm
