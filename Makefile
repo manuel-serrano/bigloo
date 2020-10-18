@@ -365,6 +365,10 @@ fullbootstrap-sans-log:
 	  $(MAKE) -C libunistring clean; \
 	  $(MAKE) -C libunistring boot; \
         fi
+	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libuv clean; \
+	  $(MAKE) -C libuv boot; \
+        fi
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime EFLAGS+=-gself
 	$(MAKE) -C runtime -i touchall; $(MAKE) -C runtime heap libs-c
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime

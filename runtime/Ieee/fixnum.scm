@@ -980,7 +980,7 @@
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
 	    (unsigned->string::bstring ::obj #!optional (radix::long 16))
-	    (string->integer::long ::bstring #!optional (radix::long 10))
+	    (string->integer::long ::bstring #!optional (radix::long 10) (start::long 0))
 	    (elong->string::bstring ::elong . pair)
 	    (string->elong::elong ::bstring #!optional (radix::long 10))
 	    (llong->string::bstring ::llong . pair)
@@ -2459,15 +2459,16 @@
 		(+bx (*bx res #z256)
 		     (fixnum->bignum (char->integer (string-ref str i))))))))
 
-
 ;*---------------------------------------------------------------------*/
 ;*    string->integer ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Not inlined because it is overriden by a macro.                  */
 ;*---------------------------------------------------------------------*/
-(define (string->integer string #!optional (radix::long 10))
+(define (string->integer string #!optional (radix::long 10) (start::long 0))
    (if (and (>=fx radix 2) (<=fx radix 36))
        ;; strtol cannot be renamed as it is used by the compiler
        ;; to optmize the call
-       (strtol string 0 radix)
+       (strtol string start radix)
        (error "string->integer" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/

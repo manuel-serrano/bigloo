@@ -167,7 +167,7 @@
 #define BGL_HAVE_LLABS @BGL_HAVE_LLABS@
 #define BGL_HAVE_LONGLONG @BGL_HAVE_LONGLONG@
 #define BGL_LLABS @BGL_LLABS@
-#define BGL_STRTOL(_1,_2,_3) (strtol(_1,(char **)_2,_3))
+#define BGL_STRTOL(_1,_2,_3) (strtol(_1+_2,0,_3))
 #define BGL_STRTOUL(_1,_2,_3) (strtoul(_1,(char **)_2,_3))
 #define BGL_HAVE_STRTOLL @BGL_HAVE_STRTOLL@
 #define BGL_STRTOLL(_1,_2,_3) (@BGL_STRTOLL@(_1,(char **)_2,_3))

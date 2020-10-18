@@ -427,7 +427,7 @@ bglpth_setup_bmem() {
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
    } else {
-      sprintf( bigloothread_lib, "%s/libbigloopthread_s-%s.%s",
+      sprintf( bigloothread_lib, "%s/libbigloopthread_s_mt-%s.%s",
 	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
 	       SHARED_LIB_SUFFIX );
    }

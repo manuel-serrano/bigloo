@@ -745,6 +745,10 @@
 	     (if (and (>=fx r 2) (<=fx r 36))
 		 (e `(strtol ,str 0 ,r) e)
 		 (error #f "Illegal `string->integer' radix" r)))
+	    ((?- ?str (and (? fixnum?) ?r) (and (? fixnum?) ?start))
+	     (if (and (>=fx r 2) (<=fx r 36))
+		 (e `(strtol ,str ,start ,r) e)
+		 (error #f "Illegal `string->integer' radix" r)))
 	    (else
 	     (map (lambda (x) (e x e)) x)))))
    
