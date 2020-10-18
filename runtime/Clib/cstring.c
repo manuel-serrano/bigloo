@@ -133,8 +133,8 @@ string_append( obj_t s1, obj_t s2 ) {
    string->string.length = l12;
 
    memcpy( &(string->string.char0), &STRING_REF( s1, 0 ), l1 );
-   memcpy( &((char *)(&(string->string.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
-   ((char *)(&(string->string.char0)))[ l12 ] = '\0';
+   memcpy( &((char *)(&(string->string.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 + 1 );
+   //((char *)(&(string->string.char0)))[ l12 ] = '\0';
 	
    return BSTRING( string );
 }
