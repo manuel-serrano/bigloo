@@ -63,7 +63,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   config.guess ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
-                  gmtoff localtime_r gmtime_r libuv getgroups ioctl \
+                  gmtoff localtime_r gmtime_r timegm libuv getgroups ioctl \
                   pthreadkill syslog overflow semaphore lockf likely \
                   gccattrs getrlimit c99stackalloc
 

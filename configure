@@ -3080,6 +3080,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   localtime_r=`$autoconf localtime_r --cflags="$coflags"` || exit 1
   # The gmtime_r function
   gmtime_r=`$autoconf gmtime_r --cflags="$coflags"` || exit 1
+  # The timegm function
+  timegm=`$autoconf timegm --cflags="$coflags"` || exit 1
 
   # The warning C compiler options
   if [ "$cwarningflags" != "no" ]; then
@@ -3420,6 +3422,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_GMTOFF@|$gmtoff|" \
               -e "s|@BGL_HAVE_LOCALTIME_R@|$localtime_r|" \
               -e "s|@BGL_HAVE_GMTIME_R@|$gmtime_r|" \
+              -e "s|@BGL_HAVE_TIMEGM@|$timegm|" \
               -e "s|@HAVE_SHARED_LIBRARY@|$haveshlib|" \
               -e "s|@HAVE_DLOPEN@|$havedlopen|" \
               -e "s|@DLOPEN_LD_OPT@|$dlopen|" \

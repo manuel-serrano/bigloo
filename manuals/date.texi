@@ -43,7 +43,7 @@ saving is enabled.
 @end deffn
 
 @deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone isdst
-@deffnx {bigloo procedure} date-update! date #!key sec min hour day month year timezone isdst
+@deffnx {bigloo procedure} date-update! date #!key sec min hour day month year
 Creates a new date or update an existing from the argument @var{date}. 
 
 Example:
@@ -52,6 +52,12 @@ Example:
 @end smalllisp
 
 @end deffn
+
+@deffn {bigloo procedure} date->gmtdate! date
+Update the date to switch to an UTC representation. Returns the modified
+date object.
+@end deffn
+
 
 @deffn {bigloo procedure} current-date
 Returns a @code{date} object representing the current date.

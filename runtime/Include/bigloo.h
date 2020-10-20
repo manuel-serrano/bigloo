@@ -1705,6 +1705,8 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #  define BGL_DATE_TIMEZONE( f ) (BGL_DATE( f ).timezone)
 #endif
    
+#define BGL_DATE_ISGMT( f ) (HEADER_SIZE( CREF( f )->header) > 0)
+
 #define BGL_DATE_ISDST( f ) (BGL_DATE( f ).tm.tm_isdst)
 #define BGL_DATE_SECOND( f ) (BGL_DATE( f ).tm.tm_sec)
 #define BGL_DATE_MINUTE( f ) (BGL_DATE( f ).tm.tm_min)

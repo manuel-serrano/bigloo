@@ -249,7 +249,7 @@ bgl_milliseconds_to_date( BGL_LONGLONG_T msec ) {
 BGL_RUNTIME_DEF obj_t
 bgl_update_date( obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
    obj_t date = CREF( obj );
-#if( !BGL_HAVE_LOCALTIME_R )   
+#if( !BGL_HAVE_GMTIME_R )   
    struct tm *tm;
 #endif
       
@@ -260,29 +260,31 @@ bgl_update_date( obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, i
    date->date.tm.tm_mon = mon - 1;
    date->date.tm.tm_year = year - 1900;
    date->date.tm.tm_isdst = isdst;
-
-   date->date.time = mktime( &(date->date.tm) );
    date->date.nsec = (ns % (BGL_LONGLONG_T)1000000000);
 
+   if( istz ) {
+      /* build a UTC time when a timezone is specified */
+#if( BGL_HAVE_TIMEGM )
+      date->date.time = timegm( &(date->date.tm) );
+#else
+      static char *tz = getenv( "TZ" );
+      setenv( "TZ", "UTC", 1 );
+      date->date.time = mktime( &(date->date.tm) );
+      setenv( "TZ", tz, 1 );
+#endif      
+      date->date.time -= tz;
 #if( BGL_HAVE_GMTOFF )
-   if( istz ) {
-      date->date.time += date->date.tm.tm_gmtoff - tz;
-   }
-#else
-   date->date.timezone = bgl_get_timezone( date->date.time );
-   if( istz ) {
-      date->date.time += date->date.timezone + tz;
-   }
-#endif   
+      date->date.tm.tm_gmtoff = tz;
+#else      
+      date->date.timezone = tz;
+#endif      
+   } else {
+      date->date.time = mktime( &(date->date.tm) );
 
-#if( BGL_HAVE_LOCALTIME_R )
-   localtime_r( &(date->date.time), &(date->date.tm) );
-#else
-   BGL_MUTEX_LOCK( date_mutex );
-   tm = localtime( &(date->date.time) );
-   tm_date( tm, date );
-   BGL_MUTEX_UNLOCK( date_mutex );
+#if( !BGL_HAVE_GMTOFF )
+      date->date.timezone = bgl_get_timezone( date->date.time );
 #endif
+   }
 
    return obj;
 }
@@ -296,11 +298,43 @@ bgl_make_date( BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int y
    obj_t date;
       
    date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
-   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
+   date->date.header = MAKE_HEADER( DATE_TYPE, istz );
 
 /*    fprintf( stderr, "make_date ns=%lld s=%d m=%d hr=%d mday=%d mon=%d year=%d tz=%d istz=%d isdst=%d\n", */
 /* 	    ns,  s,  m,  hr,  mday,  mon,  year, tz, istz, isdst )   ; */
    return bgl_update_date( BREF( date ), ns, s, m, hr, mday, mon, year, tz, istz, isdst );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_date_to_gmtdate ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_date_to_gmtdate( obj_t date ) {
+   if( BGL_DATE_ISGMT( date ) ) {
+      return date;
+   } else {
+      time_t sec = BGL_DATE_TIME( date );
+
+#if( BGL_HAVE_GMTIME_R )
+      gmtime_r( &sec, &(BGL_DATE( date ).tm) );
+#else
+      BGL_MUTEX_LOCK( date_mutex );
+      tm_date( gmtime( &sec ), CREF( date ) );
+      BGL_MUTEX_UNLOCK( date_mutex );
+#endif
+   
+#if( BGL_HAVE_GMTOFF )
+      BGL_DATE( date ).tm.tm_gmtoff = 0;
+#else   
+      BGL_DATE( date ).timezone = 0;
+#endif
+   
+      BGL_DATE( date ).time = sec;
+
+      CREF( date )->header = MAKE_HEADER( DATE_TYPE, 1 );
+      return date;
+   }
 }
 
 /*---------------------------------------------------------------------*/

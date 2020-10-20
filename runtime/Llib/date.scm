@@ -54,6 +54,7 @@
    (extern  (macro c-date?::bool (::obj) "BGL_DATEP")
 	    ($date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
 	    ($date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
+	    ($date->gmtdate!::date (::date) "bgl_date_to_gmtdate")
 
 	    (macro $date-integer->second::elong (::long) "(long)")
 	    (macro $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
@@ -68,6 +69,7 @@
 	    (macro $date-year::int (::date) "BGL_DATE_YEAR")
 	    (macro $date-timezone::long (::date) "BGL_DATE_TIMEZONE")
 	    (macro $date-is-dst::int (::date) "BGL_DATE_ISDST")
+	    (macro $date-is-gmt::bool (::date) "BGL_DATE_ISGMT")
 	    (macro $date-time::long (::date) "BGL_DATE_TIME")
 
 	    (macro $date-update-millisecond::long (::date ::long) "BGL_DATE_UPDATE_MILLISECOND")
@@ -139,7 +141,8 @@
 		       (day 1) (month 1) (year 1970)
 		       timezone (dst -1))
 	    (date-copy date::date #!key nsec sec min hour day month year timezone isdst)
-	    (date-update! date::date #!key nsec sec min hour day month year timezone isdst)
+	    (date-update! date::date #!key nsec sec min hour day month year)
+	    (inline date->gmtdate!::date ::date)
 	    (date-update-millisecond! ::date ::long)
 	    (date-update-second! ::date ::long)
 	    (date-update-minute! ::date ::long)
@@ -241,14 +244,14 @@
       (or day (date-day date))
       (or month (date-month date))
       (or year (date-year date))
-      (or timezone (date-timezone date))
-      (or (integer? timezone) (not (=fx (date-timezone date) 0)))
+      (date-timezone date)
+      ($date-is-gmt date)
       (or isdst -1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    date-update! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (date-update! date #!key nsec sec min hour day month year timezone isdst)
+(define (date-update! date #!key nsec sec min hour day month year)
    ($date-update date
       (or nsec (date-nanosecond date))
       (or sec (date-second date))
@@ -257,9 +260,20 @@
       (or day (date-day date))
       (or month (date-month date))
       (or year (date-year date))
-      (or timezone (date-timezone date))
-      (or (integer? timezone) (not (=fx (date-timezone date) 0)))
-      (or isdst -1)))
+      (date-timezone date)
+      ($date-is-gmt date)
+      -1))
+
+;*---------------------------------------------------------------------*/
+;*    date->gmtdate! ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (date->gmtdate! date)
+   (cond-expand
+      (bigloo-c
+       (let ((gmtdate ($date->gmtdate! date)))
+	  gmtdate))
+      (else
+       (error "date->gmtdate!" "not supported by this backend" date))))
 
 ;*---------------------------------------------------------------------*/
 ;*    date-update-millisecond! ...                                     */
@@ -834,7 +848,8 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date
-		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss)
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss
+		 :nsec sss :timezone 0)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -850,7 +865,8 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date
-		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss)
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss
+		 :timezone 0)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
 		 (read/rp iso8601-Z-grammar (the-port)
@@ -866,7 +882,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date 
-		 :year YYYY :month MM :day DD :hour HH :min mm)
+		 :year YYYY :month MM :day DD :hour HH :min mm :timezone 0)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
 		 (read/rp iso8601-Z-grammar (the-port)
@@ -882,7 +898,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date 
-		 :year YYYY :month MM :day DD :hour HH)
+		 :year YYYY :month MM :day DD :hour HH :timezone 0 :dst 0)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -897,7 +913,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date
-		 :year YYYY :month MM :day DD)
+		 :year YYYY :month MM :day DD :hour 1)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
 
@@ -911,7 +927,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date
-		 :year YYYY :month MM)
+		 :year YYYY :month MM :hour 1)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -924,7 +940,7 @@
 		YYYY (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :year YYYY)
+	      (make-date :year YYYY :hour 1)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
 
