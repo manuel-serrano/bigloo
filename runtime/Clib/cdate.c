@@ -280,7 +280,6 @@ bgl_update_date( obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, i
 #endif      
    } else {
       date->date.time = mktime( &(date->date.tm) );
-
 #if( !BGL_HAVE_GMTOFF )
       date->date.timezone = bgl_get_timezone( date->date.time );
 #endif

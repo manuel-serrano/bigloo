@@ -16,6 +16,7 @@ static obj_t utf8_symbol = BUNSPEC;
 static obj_t javascript_symbol = BUNSPEC;
 static obj_t caseless_symbol = BUNSPEC;
 static obj_t multiline_symbol = BUNSPEC;
+static obj_t noraise_symbol = BUNSPEC;
 
 #if( !defined( PCRE_JAVASCRIPT_COMPAT ) )
 #  define PCRE_JAVASCRIPT_COMPAT 0
@@ -28,6 +29,8 @@ static obj_t multiline_symbol = BUNSPEC;
 #define BGL_REGEXP_PCRE( o ) (pcre *)(BGL_REGEXP_PREG( o ))
 #define BGL_REGEXP_CHAR( o ) (char)(long)(BGL_REGEXP_PREG( o ))
 
+#define PCRE_BGLNORAISE PCRE_DUPNAMES
+
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_pcre_options_init ...                                        */
@@ -39,6 +42,7 @@ bgl_pcre_options_init() {
       javascript_symbol = string_to_symbol( "JAVASCRIPT_COMPAT" );
       caseless_symbol = string_to_symbol( "CASELESS" );
       multiline_symbol = string_to_symbol( "MULTILINE" );
+      noraise_symbol = string_to_symbol( "NORAISE" );
    }
 }
 
@@ -62,6 +66,8 @@ bgl_pcre_options( obj_t args ) {
 	    options |= PCRE_JAVASCRIPT_COMPAT;
 	 } else if( CAR( args ) == multiline_symbol ) {
 	    options |= PCRE_MULTILINE | PCRE_NEWLINE_ANY;
+	 } else if( CAR( args ) == noraise_symbol ) {
+	    options |= PCRE_BGLNORAISE;
 	 } else {
 	    if( CAR( args ) != BFALSE ) {
 	       C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp",
@@ -297,7 +303,7 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 #endif
    
       if( (BGL_REGEXP_PREG( re ) =
-	   pcre_compile( BSTRING_TO_STRING( pat ), options,
+	   pcre_compile( BSTRING_TO_STRING( pat ), options & ~PCRE_BGLNORAISE,
 			 &error, &erroffset, NULL )) ) {
 	 pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );
 	 BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),
@@ -326,9 +332,13 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 	 sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
 		  erroffset, error );
 
-	 C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
+	 if( !options & PCRE_BGLNORAISE ) {
+	    C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
 
-	 return re;
+	    return re;
+	 } else {
+	    return string_to_bstring( buf );
+	 }
       }
    }
 }
