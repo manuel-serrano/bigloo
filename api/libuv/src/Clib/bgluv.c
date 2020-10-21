@@ -31,7 +31,7 @@ typedef BgL_uvworkz00_bglt bgl_uv_work_t;
 typedef BgL_uvfspollz00_bglt bgl_uv_fs_poll_t;
 typedef BgL_uvpollz00_bglt bgl_uv_poll_t;
 
-extern obj_t bgl_uv_handle_type_symbol( long );
+extern obj_t bgl_uv_handle_type_symbol( int );
 extern obj_t bgl_uv_events_to_list( int );
 
 extern obj_t bgl_uv_pop_gcmark( bgl_uv_handle_t, obj_t );
@@ -138,14 +138,14 @@ bgl_uv_timer_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
 /*    bgl_uv_timer_cb ...                                              */
 /*---------------------------------------------------------------------*/
 void
-bgl_uv_timer_cb( uv_handle_t *handle, char *path, int events, int status ) {
+bgl_uv_timer_cb( uv_handle_t *handle ) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
    obj_t p = ((bgl_uv_watcher_t)COBJECT( o ))->BgL_cbz00;
    bgl_uv_loop_t l = ((BgL_uvwatcherz00_bglt)COBJECT( o ))->BgL_loopz00;
 
    bgl_uv_pop_gcmark( (bgl_uv_handle_t)l, (obj_t)o );
 
-   if( PROCEDUREP( p ) ) PROCEDURE_ENTRY( p )( p, o, BINT( status ), BEOA );
+   if( PROCEDUREP( p ) ) PROCEDURE_ENTRY( p )( p, o, BEOA );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1462,7 +1462,7 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    if( (stream->type == UV_NAMED_PIPE) ) {
       if( uv_pipe_pending_count( (uv_pipe_t*)stream ) > 0 ) {
 	uv_handle_type pending = uv_pipe_pending_type( (uv_pipe_t*)stream );
-	pendingsym = bgl_uv_handle_type_symbol( (long)pending );
+	pendingsym = bgl_uv_handle_type_symbol( (int)pending );
       }
    }
 

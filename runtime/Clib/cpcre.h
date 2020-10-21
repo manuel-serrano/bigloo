@@ -10,7 +10,7 @@
 /*=====================================================================*/
 #include <pcre.h>
 
-extern obj_t make_string( int, unsigned char );
+extern obj_t make_string( long, unsigned char );
 
 static obj_t utf8_symbol = BUNSPEC;
 static obj_t javascript_symbol = BUNSPEC;

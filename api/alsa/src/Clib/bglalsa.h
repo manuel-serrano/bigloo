@@ -50,4 +50,6 @@ extern void bgl_snd_ctl_rawmidi_info_init( obj_t );
 
 extern int bgl_snd_mixer_open( obj_t );
 
+extern bool_t bgl_snd_rawmidi_isdir( obj_t, int, int, int );
+
 #endif

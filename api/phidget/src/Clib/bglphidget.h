@@ -42,6 +42,10 @@
 
 extern void bgl_phidget_init();
 
+extern obj_t bgl_phidget_error( char *, int, obj_t );
+
+extern void bgl_phidget_invoke_callbacks( void );
+
 extern int bgl_phidget_manager_add_event_listener(
    CPhidgetManagerHandle, char *, obj_t, obj_t );
 
@@ -81,6 +85,25 @@ extern obj_t bgl_phidget_get_device_type( CPhidgetHandle );
 extern obj_t bgl_phidget_get_device_id( CPhidgetHandle );
 extern obj_t bgl_phidget_get_server_id( CPhidgetHandle );
 extern int bgl_phidget_get_serial_number( CPhidgetHandle );
+extern int bgl_phidget_get_device_version( CPhidgetHandle );
+
+extern int bgl_phidget_spatial_add_event_listener( CPhidgetSpatialHandle,
+						   char *, obj_t, obj_t );
+extern int bgl_phidget_spatial_get_datarate( CPhidgetSpatialHandle, obj_t );
+extern int bgl_phidget_spatial_get_datarate_min( CPhidgetSpatialHandle, obj_t );
+extern int bgl_phidget_spatial_get_datarate_max( CPhidgetSpatialHandle, obj_t );
+
+extern int bgl_phidget_servo_get_motor_count( CPhidgetServoHandle, obj_t );
+
+extern int bgl_phidget_motor_control_add_event_listener(
+   CPhidgetMotorControlHandle, char *, obj_t, obj_t );
+
+extern int bgl_phidget_encoder_add_event_listener( CPhidgetEncoderHandle,
+						   char *, obj_t, obj_t );
+extern void bgl_phidget_encoder_enable( CPhidgetEncoderHandle, int );
+extern void bgl_phidget_encoder_disable( CPhidgetEncoderHandle, int );
+extern int bgl_phidget_encoder_get_input_count( CPhidgetEncoderHandle, obj_t );
+extern int bgl_phidget_encoder_get_encoder_count( CPhidgetEncoderHandle, obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    Bigloo functions                                                 */

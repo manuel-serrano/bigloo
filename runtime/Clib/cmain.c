@@ -36,8 +36,8 @@ BGL_RUNTIME_DEF long heap_size = DEFAULT_HEAP_SIZE;
 /*---------------------------------------------------------------------*/
 /*    imports                                                          */
 /*---------------------------------------------------------------------*/
-extern void cref();
-extern void memshow();
+extern obj_t cref( obj_t );
+extern void memshow( char *, char *, long );
 extern void bgl_init_eval_cnst();
 extern obj_t c_constant_string_to_string( char * );
 extern void c_error( char *, char *, int );
@@ -49,7 +49,7 @@ extern void GC_set_all_interior_pointers( int );
 extern obj_t bgl_signal( int, obj_t );
 
 #ifndef _MSC_VER
-extern char *getenv();
+#include <stdlib.h>
 #endif
 
 /*---------------------------------------------------------------------*/

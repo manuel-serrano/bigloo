@@ -1655,7 +1655,7 @@ bgl_phidget_encoder_add_event_listener( CPhidgetEncoderHandle id, char *event, o
 /*    bgl_phidget_encoder_get_input_count ...                          */
 /*---------------------------------------------------------------------*/
 int
-bgl_phidget_encoder_get_input_count( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+bgl_phidget_encoder_get_input_count( CPhidgetEncoderHandle phid, obj_t o ) {
   int err, count;
 
   err = CPhidgetEncoder_getInputCount( phid, &count);
@@ -1669,7 +1669,7 @@ bgl_phidget_encoder_get_input_count( CPhidgetEncoderHandle phid, int i, obj_t o 
 /*    bgl_phidget_encoder_get_encoder_count ...                        */
 /*---------------------------------------------------------------------*/
 int
-bgl_phidget_encoder_get_encoder_count( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+bgl_phidget_encoder_get_encoder_count( CPhidgetEncoderHandle phid, obj_t o ) {
   int err, count;
 
   err = CPhidgetEncoder_getEncoderCount( phid, &count);
