@@ -267,10 +267,12 @@ bgl_update_date( obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, i
 #if( BGL_HAVE_TIMEGM )
       date->date.time = timegm( &(date->date.tm) );
 #else
-      static char *tz = getenv( "TZ" );
+      static char *tze = 0;
+
+      if( !tze ) tze = getenv( "TZ" );
       setenv( "TZ", "UTC", 1 );
       date->date.time = mktime( &(date->date.tm) );
-      setenv( "TZ", tz, 1 );
+      setenv( "TZ", tze, 1 );
 #endif      
       date->date.time -= tz;
 #if( BGL_HAVE_GMTOFF )
