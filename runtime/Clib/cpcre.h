@@ -219,7 +219,7 @@ bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
 	 VECTOR_SET( vres, 0, BINT( beg - 1 ) );
 	 VECTOR_SET( vres, 1, BINT( beg ) );
 
-	 return 1;
+	 return len;
       }
    }
 
