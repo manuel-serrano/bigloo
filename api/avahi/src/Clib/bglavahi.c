@@ -482,7 +482,7 @@ AvahiStringList *
 bgl_avahi_list_to_string_list( obj_t p ) {
    // MS: 28 feb 2017
    // AvahiStringList *l = avahi_string_list_new( "", NULL );
-   AvahiStringList *l = avahi_string_list_new( 0L );
+   AvahiStringList *l = NULL;
 
    while( PAIRP( p ) ) {
       l = avahi_string_list_add( l, BSTRING_TO_STRING( CAR( p ) ) );
