@@ -54,6 +54,7 @@
 	    (macro sigusr1::int "SIGUSR1")
 	    (macro sigusr2::int "SIGUSR2")
 	    (macro sigwinch::int "SIGWINCH")
+	    (macro sigtrap::int "SIGTRAP")
 	    
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
@@ -129,6 +130,7 @@
 	       (field static sigusr1::int "SIGUSR1")
 	       (field static sigusr2::int "SIGUSR2")
 	       (field static sigwinch::int "SIGWINCH")
+	       (field static sigtrap::int "SIGTRAP")
 	       
 	       (field static $errno-type-error::int
 		      "BGL_TYPE_ERROR")
@@ -1356,6 +1358,9 @@
 ;*    On installe le ratrappage des exceptions                         */
 ;*---------------------------------------------------------------------*/
 (signal sigfpe sigfpe-error-handler)
+;; sigfpe is not always enough as some C compilers are so
+;; smart that they can replace the sigfpe with a sigtrap
+(signal sigtrap sigfpe-error-handler)
 (signal sigill sigill-error-handler)
 (signal sigbus sigbus-error-handler)
 (signal sigsegv sigsegv-error-handler)

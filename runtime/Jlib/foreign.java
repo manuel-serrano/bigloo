@@ -5585,13 +5585,14 @@ public final class foreign
    public static final int SIGQUIT = 2;
    public static final int SIGINT = 3;
    public static final int SIGILL = 4;
-   public static final int SIGABRT = 5;
+   public static final int SIGTRAP = 5;
+   public static final int SIGABRT = 6;
    public static final int SIGKILL = 9;
    public static final int SIGFPE = 8;
    public static final int SIGBUS = 7;
    public static final int SIGSEGV = 11;
-   public static final int SIGALRM = 14;
    public static final int SIGPIPE = 13;
+   public static final int SIGALRM = 14;
    public static final int SIGTERM = 15;
    public static final int SIGUSR1 = 16;
    public static final int SIGUSR2 = 17;
