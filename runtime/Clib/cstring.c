@@ -47,7 +47,7 @@ BGL_RUNTIME_DEF
 char *
 bgl_bstring_to_gc_cstring( obj_t str ) {
    char *ostr = BSTRING_TO_STRING( str );
-   char *nstr =  (char *)GC_MALLOC_ATOMIC( STRING_LENGTH( ostr ) + 1);
+   char *nstr =  (char *)GC_MALLOC_ATOMIC( STRING_LENGTH( ostr ) + 1 );
 
    memcpy( nstr, ostr, STRING_LENGTH( ostr ) );
 
@@ -158,8 +158,8 @@ string_append_3( obj_t s1, obj_t s2, obj_t s3 ) {
 
    memcpy( &(string->string.char0), &STRING_REF( s1, 0 ), l1 );
    memcpy( &((char *)(&(string->string.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
-   memcpy( &((char *)(&(string->string.char0)))[ l1 + l2 ], &STRING_REF( s3, 0 ), l3 );
-   ((char *)(&(string->string.char0)))[ l123 ] = '\0';
+   memcpy( &((char *)(&(string->string.char0)))[ l1 + l2 ], &STRING_REF( s3, 0 ), l3 + 1 );
+   // ((char *)(&(string->string.char0)))[ l123 ] = '\0';
 	
    return BSTRING( string );
 }
@@ -178,10 +178,8 @@ c_substring( obj_t src_string, long min, long max ) {
 #endif	
    dst_string->string.length = len;
 
-   memcpy( &(dst_string->string.char0),
-	   &STRING_REF( src_string, min ),
-            len );
-   STRING_SET( BSTRING( dst_string ), len, '\0' );
+   memcpy( &(dst_string->string.char0), &STRING_REF( src_string, min ), len );
+   ((char *)(&(dst_string->string.char0)))[ len ] = '\0';
 
    return BSTRING( dst_string );
 }
