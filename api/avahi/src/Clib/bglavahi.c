@@ -22,6 +22,7 @@
 #include <avahi-common/timeval.h>
 
 #include "bglavahi.h"
+#include "bavahi.h"
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
