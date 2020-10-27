@@ -166,9 +166,10 @@ bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
       return -1;
    } else {
       long i;
-      long len = VECTOR_LENGTH( vres ) & ~1;
+      long vlen = VECTOR_LENGTH( vres ) & ~1;
+      long end = oveccount * 2 < vlen ? oveccount * 2 : vlen;
 
-      for( i = 0; i < oveccount * 2 && i < len; i += 2 ) {
+      for( i = 0; i < end; i += 2 ) {
 	 VECTOR_SET( vres, i, BINT( ovect[ i ] ) );
 	 VECTOR_SET( vres, i + 1, BINT( ovect[ i + 1 ] ) );
       }
@@ -219,7 +220,7 @@ bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
 	 VECTOR_SET( vres, 0, BINT( beg - 1 ) );
 	 VECTOR_SET( vres, 1, BINT( beg ) );
 
-	 return len;
+	 return 1;
       }
    }
 
