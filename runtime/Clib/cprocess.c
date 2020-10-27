@@ -57,7 +57,7 @@ extern obj_t bgl_close_input_port( obj_t );
 extern long  bgl_list_length( obj_t );
 extern char *bgl_string_to_gc_cstring( obj_t );
 extern obj_t string_to_bstring( char * );
-extern ssize_t bgl_syswrite( obj_t, char *, size_t );
+extern ssize_t bgl_syswrite( obj_t, const void *, size_t );
 extern obj_t make_string_sans_fill( long );
 
 /*---------------------------------------------------------------------*/

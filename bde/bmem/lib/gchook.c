@@ -62,7 +62,7 @@ GC_collect_hook( int heapsz, long livesz ) {
 		  gc_alloc_size / 1024,
 		  heapsz / 1024,
 		  livesz / 1024,
-		  lf );
+		  bgl_debug_trace_top_name( 0 ) );
       }
    }
       
@@ -104,7 +104,7 @@ GC_dump_gc_sexp( gc_info_t *i, FILE *f ) {
 /*---------------------------------------------------------------------*/
 static void
 GC_dump_gc_json( gc_info_t *i, FILE *f ) {
-   fprintf( f, "    { \"number\": %lu, \"alloc\": %lu, \"heap\": %lu, \"live\": %lu, \"lastfun\": %s, \"time\": %ld }",
+   fprintf( f, "    { \"number\": %lu, \"alloc\": %lu, \"heap\": %lu, \"live\": %lu, \"lastfun\": %s, \"time\": %lld }",
 	    i->number,
 	    BMEMSIZE( i->alloc_size ),
 	    i->heap_size,

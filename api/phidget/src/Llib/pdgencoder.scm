@@ -106,11 +106,13 @@
 
 (define (phidget-encoder-enable! e::phidget-encoder i::int)
    (with-access::phidget e ($builtin)
-      ($pdg-phidget-encoder-enable! ($pdg-phidget->encoder $builtin) i)))
+      ($pdg-phidget-encoder-enable! ($pdg-phidget->encoder $builtin) i))
+   #t)
 
 (define (phidget-encoder-disable! e::phidget-encoder i::int)
    (with-access::phidget e ($builtin)
-      ($pdg-phidget-encoder-disable! ($pdg-phidget->encoder $builtin) i)))
+      ($pdg-phidget-encoder-disable! ($pdg-phidget->encoder $builtin) i))
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-encoder-input-count ...                                  */
