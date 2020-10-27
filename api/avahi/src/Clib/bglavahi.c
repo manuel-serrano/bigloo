@@ -26,7 +26,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-extern int bgl_avahi_error( char *, char *, obj_t, int );
+extern obj_t bgl_avahi_error( char *, char *, obj_t, int );
 extern obj_t bgl_avahi_client_state_to_symbol( AvahiClientState );
 extern obj_t bgl_avahi_entry_group_state_to_symbol( AvahiEntryGroupState );
 extern obj_t bgl_avahi_protocol_to_symbol( AvahiProtocol );

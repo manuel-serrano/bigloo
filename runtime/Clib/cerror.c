@@ -23,9 +23,8 @@ extern int errno;
 /*    Les recuperations externes                                       */
 /*---------------------------------------------------------------------*/
 #ifndef _MSC_VER
-extern void perror();
-extern char *strerror( int );
-extern void exit( int );
+#include <stdio.h>
+#include <stdlib.h>
 #endif
 extern obj_t bgl_typeof( obj_t );
 

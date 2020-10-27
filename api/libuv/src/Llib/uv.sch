@@ -148,7 +148,7 @@
       (macro $uv_timer_start::void (::$uv_timer_t ::$uv_timer_cb ::uint64 ::uint64) "uv_timer_start")
       (macro $uv_timer_stop::void (::$uv_timer_t) "uv_timer_stop")
       
-      ($bgl_uv_timer_cb::$uv_timer_cb (::$uv_timer_t ::int) "bgl_uv_timer_cb")
+      ($bgl_uv_timer_cb::$uv_timer_cb (::$uv_timer_t) "bgl_uv_timer_cb")
       (macro $BGL_UV_TIMER_CB::$uv_timer_cb "(uv_timer_cb)&bgl_uv_timer_cb")
 
       (macro $uv-hrtime::uint64 () "uv_hrtime")

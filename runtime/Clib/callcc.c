@@ -27,7 +27,7 @@ extern long glob_dummy;
 extern obj_t make_fx_procedure( obj_t (*)(), int, int );
 extern obj_t c_constant_string_to_string( char * );
 
-static obj_t callcc_restore_stack();
+static obj_t callcc_restore_stack( obj_t, obj_t, char ** );
 extern obj_t unwind_stack_until( obj_t, obj_t, obj_t, obj_t );
 extern bool_t unwind_stack_value_p( obj_t );
 extern void *bgl_get_top_of_stack();

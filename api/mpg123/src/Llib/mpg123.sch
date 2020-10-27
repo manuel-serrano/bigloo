@@ -71,13 +71,13 @@
     ($bgl-mpg123-position::long
        (::$mpg123-handle) "bgl_mpg123_position")
     ($bgl-mpg123-info::long
-       (::$mpg123-handle) "bgl_mpg123_info")
+       (::obj) "bgl_mpg123_info")
     ($bgl-mpg123-getvolume::double
        (::$mpg123-handle) "bgl_mpg123_getvolume")
     ($bgl-mpg123-param::obj
        (::$mpg123-handle ::$mpg123-params ::long ::double) "bgl_mpg123_param")
     ($bgl-mpg123-getparam::obj
-       (::$mpg123-handle ::$mpg123-params) "bgl_mpg123_getparam")
+       (::obj ::$mpg123-params) "bgl_mpg123_getparam")
 
     (macro $mpg123-new-format::int "MPG123_NEW_FORMAT")
     (macro $mpg123-err::int "MPG123_ERR")

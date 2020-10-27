@@ -113,7 +113,7 @@
 /*---------------------------------------------------------------------*/
 #if( BGL_HAVE_SENDFILE )
 #  if( BGL_SENDFILE_BRAND == BGL_SENDFILE_LINUX )
-extern ssize_t sendfile( int, int, off_t *, size_t );
+#    include <sys/sendfile.h>
 #    define BGL_SENDFILE sendfile
 #  else
 #    if( BGL_SENDFILE_BRAND == BGL_SENDFILE_BSD )
