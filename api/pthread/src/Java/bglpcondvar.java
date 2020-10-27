@@ -72,6 +72,9 @@ public class bglpcondvar extends bigloo.condvar {
 	       wait();
 	    }
 	 } catch( Exception e ) {
+            // the semantics of condition-variable-wait! requires the mutex
+            // be locked regardless of whether or not the wait was successful
+             m.acquire_lock(); 
 	    return false;
 	 }
       }

@@ -165,11 +165,7 @@ bglpth_thread_run( void *arg ) {
    size_t stacksize;
 
    bglpth_thread_init( self, (char *)&arg );
-
-#if defined( PTHREAD_CANCEL_ASYNCHRONOUS )
-   pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, 0 );
-#endif
-   
+  
    pthread_cleanup_push( bglpth_thread_cleanup, arg );
 
    /* install sigsegv handler for stack overflow interception */
@@ -291,8 +287,10 @@ bglpth_thread_join( bglpthread_t t, obj_t tmt ) {
    if( INTEGERP( tmt ) ) {
       struct timespec tm;
       
-      tm.tv_sec = CINT( tmt ) / 1000;
-      tm.tv_nsec = CINT( tmt ) % 1000;
+      clock_gettime(CLOCK_REALTIME, &tm);
+
+      tm.tv_sec += CINT( tmt ) / 1000;
+      tm.tv_nsec += (CINT( tmt ) % 1000) * 1000000;
 
       joinret = pthread_timedjoin_np( t->pthread, 0L, &tm );
    } else 
@@ -312,19 +310,17 @@ bglpth_thread_join( bglpthread_t t, obj_t tmt ) {
 /*---------------------------------------------------------------------*/
 bool_t
 bglpth_thread_terminate( bglpthread_t t ) {
-   pthread_mutex_lock( &(t->mutex) );
-   if( t->status != 2 ) {
-#if( BGL_PTHREAD_TERM_SIG != 0 )
-      pthread_kill( t->pthread, BGL_PTHREAD_TERM_SIG );
-#else      
+
+  pthread_mutex_lock( &(t->mutex) );
+  if( t->status != 2 ) {
       pthread_cancel( t->pthread );
-#endif
       pthread_mutex_unlock( &(t->mutex) );
       return 1;
    } else {
       pthread_mutex_unlock( &(t->mutex) );
       return 0;
    }
+
 }
 
 /*---------------------------------------------------------------------*/

@@ -7434,6 +7434,9 @@ public final class foreign
 	 Thread.sleep( (long)(microsecs / 1000),
 		       (int)(1000*(microsecs % 1000)) );
       } catch( Exception e ) {
+          if ( e instanceof InterruptedException ) {
+              Thread.currentThread().interrupt();
+          }
       }
    }
 

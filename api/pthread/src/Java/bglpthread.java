@@ -96,7 +96,7 @@ public class bglpthread extends Thread {
 	    System.exit( 1 );
 	 }
       } finally {
-	 bglpmutex.mutexes_unlock( thread );
+          bglpmutex.mutexes_unlock( thread );
 
 	 if( cleanup instanceof procedure ) {
 	    ((procedure)cleanup).funcall1( thread );
