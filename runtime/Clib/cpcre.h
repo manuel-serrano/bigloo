@@ -217,10 +217,14 @@ bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
 
    while( beg < len ) {
       if( string[ beg++ ] == c ) {
-	 VECTOR_SET( vres, 0, BINT( beg - 1 ) );
-	 VECTOR_SET( vres, 1, BINT( beg ) );
+	 if( VECTOR_LENGTH( vres ) & ~1 > 0 ) {
+	    VECTOR_SET( vres, 0, BINT( beg - 1 ) );
+	    VECTOR_SET( vres, 1, BINT( beg ) );
 
-	 return 1;
+	    return 1;
+	 } else {
+	    return 0;
+	 }
       }
    }
 
