@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
 /*    Last change :  Wed Sep 25 13:49:57 2019 (serrano)                */
-/*    Copyright   :  2002-19 Manuel Serrano                            */
+/*    Copyright   :  2002-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -313,8 +313,14 @@ bglpth_thread_terminate( bglpthread_t t ) {
 
   pthread_mutex_lock( &(t->mutex) );
   if( t->status != 2 ) {
-      pthread_cancel( t->pthread );
-      pthread_mutex_unlock( &(t->mutex) );
+#if( BGL_HAVE_PTHREAD_CANCEL )
+     pthread_cancel( t->pthread );
+#elif( BGL_PTHREAD_TERM_SIG != 0 )
+     pthread_kill( t->pthread, BGL_PTHREAD_TERM_SIG );
+#else
+     // find something interesting to do
+#endif     
+     pthread_mutex_unlock( &(t->mutex) );
       return 1;
    } else {
       pthread_mutex_unlock( &(t->mutex) );

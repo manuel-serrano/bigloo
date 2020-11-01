@@ -179,6 +179,7 @@ socketlibs=
 threadsupport=
 pthreadlibs=
 pthreadtimedlock=1
+pthreadcancel=
 pthreadtermsig=15
 pthreadlocalstorage=
 
@@ -2024,6 +2025,7 @@ else
   # pthread_mutex_timedlock
   if [ "$pthreadlibs" != "no" ]; then
     pthreadtimedlock=`$autoconf pthreadlock --lib="$pthreadlibs"` || exit 1;
+    pthreadcancel=`$autoconf pthreadcancel --lib="$pthreadlibs"` || exit 1;
   fi
 
   # pthread_spinlock
@@ -3504,7 +3506,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@UCS2_DISPLAYABLE@|$ucs2displayable|" \
               -e "s|@GC_HAVE_BLOCKING@|$gchaveblocking|" \
               -e "s|@GC_HAVE_DO_BLOCKING@|$gchavedoblocking|" \
+              -e "s|@PTHREAD_HAVE_CANCEL@|$pthreadcancel|" \
               -e "s|@PTHREAD_HAVE_TIMEDLOCK@|$pthreadtimedlock|" \
+              -e "s|@PTHREAD_HAVE_CANCEL@|$pthreadcancel|" \
               -e "s|@PTHREAD_HAVE_SPINLOCK@|$pthreadspinlock|" \
               -e "s|@PTHREAD_HAVE_MUTEX_RECURSIVE@|$pthreadmutexrec|" \
               -e "s|@PTHREAD_POSIX_CONDV_TIMEDWAIT@|$pthreadcondvtimedwait|" \

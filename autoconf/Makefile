@@ -47,7 +47,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   ziptest javatest jartest \
                   oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \
-                  thread pthread pthreadlock pthreadspinlock \
+                  thread pthread pthreadlock pthreadspinlock pthreadcancel \
                   pthreadmutexrec pthreadtimedjoin pthreadlocalstorage \
                   pthreadcondvtimedwait processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
