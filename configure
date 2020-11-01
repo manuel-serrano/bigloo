@@ -247,6 +247,7 @@ libuvconfigureopt=
 #* libuvversion=1.x-24jan2015                                          */
 #* libuvversion=v1.19.1                                                */
 #* libuvversion=v1.19.2                                                */
+#* libuvversion=v1.20.3                                                */
 libuvversion=v1.40.0
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
@@ -996,6 +997,9 @@ while : ; do
 
     --customlibuv=no)
       customlibuv=no;;
+
+    --customlibuvversion=*)
+      libuvversion="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --libuvconfigureopt=*)
       libuvconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
