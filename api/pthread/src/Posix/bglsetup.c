@@ -33,7 +33,7 @@ bglpth_setup_signal() {
 #if HAVE_SIGPROCMASK
    extern void bgl_sigprocmask_register( int (*)(int, const sigset_t *, sigset_t *) );
    extern int GC_pthread_sigmask();
-#if GC_NO_PTHREAD_SIGMASK
+#if defined( GC_NO_PTHREAD_SIGMASK )
    bgl_sigprocmask_register( &pthread_sigmask );
 #else   
    bgl_sigprocmask_register( &GC_pthread_sigmask );
