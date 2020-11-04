@@ -65,7 +65,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
                   gmtoff localtime_r gmtime_r timegm libuv getgroups ioctl \
                   pthreadkill syslog overflow semaphore lockf likely \
-                  gccattrs getrlimit c99stackalloc
+                  gccattrs getrlimit c99stackalloc tools
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
