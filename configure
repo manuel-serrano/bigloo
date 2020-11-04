@@ -1692,6 +1692,11 @@ if [ "$buildosversion " = " " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    Check essential compilation tools                                */
+#*---------------------------------------------------------------------*/
+$autoconfdir/tools || exit 1
+
+#*---------------------------------------------------------------------*/
 #*    Pointer alignment                                                */
 #*---------------------------------------------------------------------*/
 alignment=`$autoconf alignment` || exit 1
@@ -1822,12 +1827,7 @@ case $hostos in
           pthreadlibs=no
           ldcomplibs="\$(GCCLOSELIB) -lc -lm"
         else
-#*           customgclib=bigloogc_mt                                   */
-#* 	  sharedlibrarygcfthclosed='-l$(GCLIB)-$(RELEASE)'             */
           extralibs="$extralibs $pthreadlibs"
-#* 	  if [ "$sharedcompiler " = "yes " ]; then                     */
-#*             ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm"        */
-#* 	  fi                                                           */
         fi
       fi
       if [ `dirname $bindir` != `dirname $libdir` ]; then

@@ -10,106 +10,67 @@
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
-#*    flags                                                            */
+#*    libtools                                                         */
 #*---------------------------------------------------------------------*/
-cflags=
+which libtoolize || which glibtoolize
 
-#*---------------------------------------------------------------------*/
-#*    We parse the arguments                                           */
-#*---------------------------------------------------------------------*/
-while : ; do
-  case $1 in
-    "")
-      break;;
-
-    --cflags=*|-cflags=*)
-      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    -*)
-      echo "Unknown option \"$1\", ignored" >&2;;
+if [ "$?" = "1" ]; then
+  case $HOSTOS in
+    darwin)
+      echo "*** ERROR: Cannot find libtoolize nor glibtoolize"
+      echo "On MacOS X, you can install it with"
+      echo "  brew install libtool"
+      echo "abort"
+      exit 1
+      ;;
+      
+    *)
+      echo "*** ERROR: Cannot find libtoolize"
+      echo "Generally it is released with the \"libtool\" suite"
+      echo "abort"
+      exit 1
+      ;;
   esac
-  shift
-done
-
-
-case $HOSTOS in
-  freebsd)
-    pthreadlibs="-lthr";;
-
-  solaris|sunos)
-    pthreadlibs="-lpthread -lposix4";;
-
-  mingw)
-    # THIS IS the RedHat pthread implementation
-    pthreadlibs="-lpthreadGC2";;
-
-  android)
-    pthreadlibs="";;
-
-  *)
-    pthreadlibs="-lpthread";;
-esac
- 
-file=$TMP/actest$USER
-aout=$TMP/Xactest$USER
-
-#*---------------------------------------------------------------------*/
-#*    compile                                                          */
-#*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
-
-#*---------------------------------------------------------------------*/
-#*    The test C file                                                  */
-#*---------------------------------------------------------------------*/
-if( test -f $file.c ); then
-   rm -f $file.c || exit $?
 fi
 
 #*---------------------------------------------------------------------*/
-#*    Test                                                             */
+#*    make                                                             */
 #*---------------------------------------------------------------------*/
-cat > $file.c <<EOF
-#include <pthread.h>
-#include <sched.h>
-#include <stdio.h>
+which make || which gmake
 
-int main( int argc, char *argv[] ) {
-   pthread_mutex_t mutex;
-   pthread_cond_t cv;
-   pthread_t thread;
-   pthread_key_t key;
-
-   pthread_key_create( &key, 0L );
-   pthread_mutex_init( &mutex, 0L );
-   pthread_cond_init( &cv, 0L );
-   pthread_create( &thread, 0L, 0L, 0L );
-   pthread_setspecific( key, (void *)1 );
-   printf( "%p\n", pthread_getspecific( key ) );
-
-   pthread_mutex_lock( &mutex );
-   pthread_cond_wait( &cv, &mutex );
-   pthread_mutex_unlock( &mutex );
-
-   pthread_mutex_lock( &mutex );
-   pthread_cond_signal( &cv );
-   pthread_mutex_unlock( &mutex );
-
-   sched_yield();
-   pthread_join( thread, 0L );
-}
-EOF
-
-#*---------------------------------------------------------------------*/
-#*    Compilation test                                                 */
-#*---------------------------------------------------------------------*/
-if eval "$BUILDSH $compile"; then
-   echo "$pthreadlibs"
-else
-   echo "no"
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"make\", abort."
+  exit 1
 fi
 
-\rm -f $file.*
-\rm -f $aout
-\rm -f $aout*
+#*---------------------------------------------------------------------*/
+#*    autoconf                                                         */
+#*---------------------------------------------------------------------*/
+which autoconf
 
-exit 0
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"autoconf\", abort."
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    sed                                                              */
+#*---------------------------------------------------------------------*/
+which sed
+
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"sed\", abort."
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    awk                                                              */
+#*---------------------------------------------------------------------*/
+which awk
+
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"awk\", abort."
+  exit 1
+fi
+
+
