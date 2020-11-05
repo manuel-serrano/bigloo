@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
 ;*    Last change :  Wed Mar 13 06:53:19 2019 (serrano)                */
-;*    Copyright   :  1992-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
 ;*=====================================================================*/
@@ -239,7 +239,8 @@
 	      (body (epairify-propagate loop x))
 	      (res (e body e)))
 	  (epairify! x res)))
-      ((?- (and ?fun (? inline-map-lambda?)) ?l1 ?l2)
+      ((and (?- (and ?fun (? inline-map-lambda?)) ?l1 ?l2)
+	    (? (lambda (_) *unsafe-type*)))
        (let ((ll1   (mark-symbol-non-user! (gensym 'll)))
 	     (ll2   (mark-symbol-non-user! (gensym 'll)))
 	     (head  (mark-symbol-non-user! (gensym 'head)))
@@ -292,7 +293,8 @@
 			x))
 		 (res (e body e)))
 	     (epairify! x res))))
-      ((?- ?fun ?l1 ?l2)
+      ((and (?- ?fun ?l1 ?l2)
+	    (? (lambda (_) *unsafe-type*)))
        (let ((ll1   (mark-symbol-non-user! (gensym 'll)))
 	     (ll2   (mark-symbol-non-user! (gensym 'll)))
 	     (head  (mark-symbol-non-user! (gensym 'head)))
@@ -409,7 +411,8 @@
 					,(list-expected "for-each" l loc))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
-      ((?- (and ?fun (? inline-map-lambda?)) ?l1 ?l2)
+      ((and (?- (and ?fun (? inline-map-lambda?)) ?l1 ?l2)
+	    (? (lambda (_) *unsafe-type*)))
        (let* ((ll1   (mark-symbol-non-user! (gensym 'll)))
 	      (ll2   (mark-symbol-non-user! (gensym 'll)))
 	      (lname (mark-symbol-non-user! (gensym 'for-each)))
@@ -422,7 +425,8 @@
 				  (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,ll1) ((@ cdr __r4_pairs_and_lists_6_3) ,ll2)))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
-      ((?- ?fun ?l1 ?l2)
+      ((and (?- ?fun ?l1 ?l2)
+	    (? (lambda (_) *unsafe-type*)))
        (let* ((ll1   (mark-symbol-non-user! (gensym 'll)))
 	      (ll2   (mark-symbol-non-user! (gensym 'll)))
 	      (lname (mark-symbol-non-user! (gensym 'for-each)))
