@@ -18,7 +18,7 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=4.4a
-version=2
+version=-2
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
@@ -479,8 +479,8 @@ while : ; do
       sharedcompiler=no;
       sharedbde=yes;
       infodir=$HOME/house/info;
-      java=java8;
-      javac=javac8;
+      java=java11;
+      javac=javac11;
       ld=gcc;
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
       coflags="$coflags";
@@ -3266,7 +3266,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     java_version=`$javac -version 2>&1 | head -n 1` || exit 1
-    if $echo "$java_version" | grep "1.9" > /dev/null
+    if $echo "$java_version" | grep "1.11" > /dev/null
+      then java_version=1.11
+    elif $echo "$java_version" | grep "1.9" > /dev/null
+      then java_version=1.10
+    elif $echo "$java_version" | grep "1.10" > /dev/null
       then java_version=1.9
     elif $echo "$java_version" | grep "1.8" > /dev/null
       then java_version=1.8
