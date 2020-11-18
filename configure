@@ -18,7 +18,7 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=4.4a
-version=
+version=2
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
@@ -148,7 +148,7 @@ gmpforce=no
 customgmp=
 gmpsrc=$GMPSRC
 gmpconfigureopt=
-gmpcustomversion=6.1.2
+gmpcustomversion=6.2.1
 
 if [ "$gmpsrc " = " " ]; then
   gmpsrc=gmp/gmp-$gmpcustomversion.tgz
@@ -2269,7 +2269,7 @@ if [ "$gmpversion " != "no " ]; then
     (cd gmp; . ./configure-gmp) || exit 1
   
     libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
-    #lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
+    ldbuildopts="-L$bootdir/gmp$libdir/$fildir $ldbuildopts"
     buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
     gmplib=-lgmp
   fi
