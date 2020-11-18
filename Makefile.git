@@ -21,6 +21,8 @@ VM-BRANCH	= git checkout
 VM-PUSH-BRANCH	= -r
 VM-LOG          = git log -n 100 --pretty=format:"bigloo ($(RELEASE)-1) unstable; urgency=low%n%n  * %s%n%n -- %an <%ae>  %cD%n"
 
+BUILDDIRNAME    = bigloo
+
 #*---------------------------------------------------------------------*/
 #*    push/pull                                                        */
 #*---------------------------------------------------------------------*/
@@ -63,8 +65,8 @@ revision: populate
 #*---------------------------------------------------------------------*/
 checkout:
 	@ $(VM-CLONE) $(BOOTDIR) \
-           && $(RM) -rf bigloo/.git \
-           && $(RM) -rf bigloo/.gitignore
+           && $(RM) -rf $(BUILDDIRNAME)/.git \
+           && $(RM) -rf $(BUILDDIRNAME)/.gitignore
 
 #*---------------------------------------------------------------------*/
 #*    push                                                             */

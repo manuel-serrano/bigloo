@@ -453,7 +453,7 @@ include Makefile.$(REVISIONSYSTEM)
 distrib: ChangeLog
 	@ (cd $(DISTRIBTMPDIR) && \
 	   $(RM) -rf bigloo-$(RELEASE) && $(RM) -rf bigloo && \
-           $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \
+           $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout BUILDDIRNAME=$(BUILDDIRNAME) && \
            cd $(BUILDDIRNAME) && \
            cat $(BOOTDIR)/Makefile.config | sed 's/BFEATUREFLAGS=.*/BFEATUREFLAGS=-srfi enable-gmp/' | sed 's/BOOTFLAGS=.*/BOOTFLAGS=/' > Makefile.config \
            && cp $(BOOTDIR)/Makefile.buildconfig Makefile.buildconfig \
