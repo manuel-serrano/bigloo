@@ -47,6 +47,7 @@
 	       (mode::symbol (default 'import))
 	       (vars (default '()))
 	       (aliases (default '()))
+               (prefix (default #f))
 	       (checksum (default #unspecified))
 	       (loc read-only)
 	       (src read-only)
@@ -123,15 +124,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    import-all-module ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (import-all-module module::symbol mode src)
+(define (import-all-module module::symbol prefix mode src)
    (let ((mi (hashtable-get *imports* module)))
       (if (import? mi)
-	  (import-vars-set! mi 'all)
+	  (begin
+             (import-vars-set! mi 'all)
+             (import-prefix-set! mi prefix))
 	  (let ((loc (find-location/loc src (find-location *module-clause*))))
 	     (register-import!
 	      (instantiate::import
 		 (module module)
 		 (mode mode)
+                 (prefix prefix)
 		 (vars 'all)
 		 (loc loc)
 		 (src src)))))))
@@ -144,7 +148,7 @@
 ;*    The CAR is the declared name of the binding and the CDR          */
 ;*    the aliased named, used in alias import clauses.                 */
 ;*---------------------------------------------------------------------*/
-(define (import-1-module module::symbol var alias mode src)
+(define (import-1-module module::symbol prefix var alias mode src)
    (let ((mi (hashtable-get *imports* module)))
       (if (import? mi)
 	  ;; patch the previous import
@@ -160,15 +164,21 @@
 		  'nothing)
 		 (else
 		  (import-vars-set! mi
-		     (cons (cons var #f) (import-vars mi))))))
+		     (cons (cons var (if prefix (symbol-append prefix var) #f))
+                        (import-vars mi))))))
 	  ;; register a new import
-	  (let ((loc (find-location/loc src (find-location *module-clause*))))
+	  (let ((loc (find-location/loc src (find-location *module-clause*)))
+                (aliases (if alias (list (cons var alias)) '()))
+                (prefixes (if (and var prefix)
+                              (list (cons var (symbol-append prefix var)))
+                              '())))
 	     (register-import!
 		(instantiate::import
 		   (module module)
 		   (mode mode)
-		   (aliases (if alias (list (cons var alias)) '()))
-		   (vars (if alias '() (list (cons var #f))))
+                   (prefix prefix)
+		   (aliases (if alias aliases prefixes))
+		   (vars (if (or prefix alias) '() (list (cons var #f))))
 		   (loc loc)
 		   (src src)))))))
 
@@ -196,6 +206,9 @@
 ;*            |  (variable module-name)                                */
 ;*            |  (variable module-name)                                */
 ;*            |  (variable module-name "file-name" *)                  */
+;*            |  (prefix: prefix-symbol module-name)
+;*            |  (prefix: prefix-symbol var-symbol module-name)
+;*            |  (prefix: prefix-symbol var-symbol module-name "file-name")
 ;*    variable ::= symbol                                              */
 ;*            | (symbol symbol)                                        */
 ;*---------------------------------------------------------------------*/
@@ -213,13 +226,25 @@
    
    (define (variable? v)
       (or (symbol? v) (alias? v)))
-   
+
+   (define (prefixed-import? prototype)
+      (and (list? prototype)
+           (eq? (car prototype) prefix:)
+           (>= (length prototype) 3)))
+
+   (define (prefix-name prototype)
+      (if (and (>= (length prototype) 3)
+               (symbol? (cadr prototype)))
+          (cadr prototype)
+          (err)))
    (cond
       ((symbol? prototype)
        ;; module-name
-       (import-all-module prototype mode import-src))
+       (import-all-module prototype #f mode import-src))
       ((list? prototype)
-       (let ((inv (reverse prototype)))
+       (let* ((prefixed? (prefixed-import? prototype))
+              (prefix (if prefixed? (prefix-name prototype) #f))
+              (inv (reverse (if prefixed? (cddr prototype) prototype))))
 	  (let loop ((lst inv)
 		     (files '()))
 	     (cond
@@ -234,15 +259,15 @@
 		       ((null? vars)
 			;; (module-name "file-name"+)
 			(if (pair? files) (module-add-access! mod files "."))
-			(import-all-module mod mode prototype))
+			(import-all-module mod prefix mode prototype))
 		       ((every variable? vars)
 			;; (var1 var2 ... varN module-name "file-name"*)
 			(when (pair? files)
 			   (module-add-access! mod files "."))
 			(for-each (lambda (v)
 				     (if (alias? v)
-					 (import-1-module mod (cadr v) (car v) mode prototype)
-					 (import-1-module mod v #f mode prototype)))
+					 (import-1-module mod prefix (cadr v) (car v) mode prototype)
+					 (import-1-module mod prefix v #f mode prototype)))
 			   vars))
 		       (else
 			(err)))))
@@ -459,7 +484,7 @@
 ;*    import-everything ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (import-everything import)
-   (with-access::import import (module provide src)
+   (with-access::import import (module prefix provide src)
       (let loop ((provided provide)
 		 (inline '())
 		 (macro '())
@@ -467,7 +492,13 @@
 		 (expd '()))
 	 (if (null? provided)
 	     (values inline macro syntax expd)
-	     (let ((p (import-parser module (car provided) #f src)))
+	     (let* ((proto (if prefix (parse-prototype (car provided)) #f))
+                    (alias-id (if (pair? proto)
+                                  (symbol-append prefix
+                                     (fast-id-of-id (cadr proto)
+                                        (find-location (car provided))))
+                                  #f))
+                    (p (import-parser module (car provided) alias-id src)))
 		(match-case p
 		   ((? global?)
 		    (let ((val (global-value p)))
@@ -495,7 +526,7 @@
 ;*    import-wanted ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (import-wanted import vars)
-   (with-access::import import (module provide src)
+   (with-access::import import (module prefix provide src)
       (let loop ((provided provide)
 		 (inline '())
 		 (macro '())

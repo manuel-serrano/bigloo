@@ -563,7 +563,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-import! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-import! mod ident path set abase loc)
+(define (evmodule-import! mod ident prefix path set abase loc)
+
+  (define (prefix-binding s)
+    (if prefix
+        (symbol-append prefix s)
+        s))
    
    (define (import-error msg obj)
       (evcompile-error loc "eval" msg obj))
@@ -574,6 +579,15 @@
 	 (hashtable-for-each (%evmodule-macros mod2)
 			     (lambda (k v)
 				(hashtable-put! t k v))))
+
+      ;; prefix exports when necessary
+      (when prefix
+         (for-each (lambda (b)
+                      (when (or (null? set) (memq (car b) set))
+                         (bind-alias! mod ident (prefix-binding (car b)) (car b)
+                            loc)))
+            (%evmodule-exports mod2)))
+      
       ;; bind variables
       (for-each (lambda (b)
 		   (when (or (null? set) (memq (car b) set))
@@ -616,6 +630,20 @@
    
    (define (import-error arg)
       (evcompile-error loc "eval" "Illegal `import' clause" arg))
+
+   (define (prefixed? clause)
+      (and (pair? clause) (eq? (car clause) :prefix)
+           (pair? (cdr clause)) (symbol? (cadr clause))))
+   
+   (define (find-module-prefix clause)
+      (if (prefixed? clause)
+          (cadr clause)
+          #f))
+   
+   (define (skip-prefix-if-present clause)
+      (if (prefixed? clause)
+          (cddr clause)
+          clause))
    
    (define (find-module-files clause)
       (cond
@@ -649,17 +677,20 @@
 	 (cond
 	    ((symbol? s)
 	     (let ((path ((bigloo-module-resolver) s '() abase)))
-		(evmodule-import! mod s path '() abase loc)))
+		(evmodule-import! mod s #f path '() abase loc)))
 	    ((or (not (pair? s))
 		 (not (list? s))
-		 (not (or (symbol? (car s)) (alias-pair? (car s)))))
+		 (not (or (symbol? (car s)) (alias-pair? (car s))
+                          (and (keyword? (car s)) (eq? (car s) :prefix)))))
 	     (import-error s))
 	    (else
-	     (let ((files (find-module-files s))
-		   (imod (find symbol? s))
-		   (imports (find-module-imports s))
-		   (aliases (find-module-aliases s))
-		   (dir (or (location-dir loc) (pwd))))
+	     (let* ((prefix (find-module-prefix s))
+                    (s-w/out-prefix (skip-prefix-if-present s))
+                    (files (find-module-files s-w/out-prefix))
+                    (imod (find symbol? s-w/out-prefix))
+                    (imports (find-module-imports s-w/out-prefix))
+                    (aliases (find-module-aliases s-w/out-prefix))
+                    (dir (or (location-dir loc) (pwd))))
 		(let ((path ((bigloo-module-resolver) imod files dir)))
 		   (for-each (lambda (ap)
 				(bind-alias! mod imod
@@ -667,7 +698,7 @@
 				   (cadr ap)
 				   (or (get-source-location ap) loc)))
 		      aliases)
-		   (evmodule-import! mod imod path imports abase loc)))))))
+		   (evmodule-import! mod imod prefix path imports abase loc)))))))
    
    (if (not (list? clause))
        (import-error clause)
