@@ -3696,6 +3696,11 @@ public final class foreign
 	 return ( d.calendar.get(Calendar.DST_OFFSET) > 0 ) ? 1 : -1;
       }
 
+   public static int BGL_DATE_ISGMT(date d)
+      {
+	 return (d.calendar.get(Calendar.ZONE_OFFSET) == 0);
+      }
+
    private static final byte[][] day_names = { "Sunday".getBytes(),
 					       "Monday".getBytes(),
 					       "Tuesday".getBytes(),
