@@ -184,7 +184,7 @@ with @code{vcard}s.
 @end smalllisp
 
 The class @code{vard} is used to reify in memory a vcard as parsed by
-the function @code{port->vcard} and @code{string->vcard}.
+the functions @code{port->vcard}, @code{read-vcard}, and @code{string->vcard}.
 
 Except @code{emails}, @code{phones}, and @code{addresses}, all fields
 are optional. They should be either @code{#f} or a string.
@@ -208,12 +208,16 @@ should be used to denote empty values.
 @end deffn
 
 @deffn {bigloo mail function} port->vcard::vcard ip [:charset-encoder]
+@deffn {bigloo mail function} read-vcard::vcard ip [:charset-encoder]
 @deffnx {bigloo mail function} string->vcard::vcard str [:charset-encoder]
 These two functions parse a @emph{vcard} to produce a @code{vcard}
 instance.  The optional argument @var{charset-encoder}, when provided,
 must be a function of argument: a string to be decoded. Vcard strings
 are UTF-8 encoded. The @var{charset-encoder} can be used to encode
 on-the-fly the strings found in the vcard in a difference encoding.
+
+@code{read-vcard} is similar to @code{port->vcard} but it returns
+the end-of-file object when the file is enterily parsed.
 @end deffn
 
 

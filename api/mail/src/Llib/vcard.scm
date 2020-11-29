@@ -30,6 +30,7 @@
 	      (notes::pair-nil (default '())))
 	   
 	   (port->vcard ::input-port #!key charset-encoder)
+	   (read-vcard ::input-port #!key charset-encoder)
 	   (string->vcard::vcard ::bstring #!key charset-encoder)))
    
 ;*---------------------------------------------------------------------*/
@@ -43,6 +44,18 @@
 		(read/rp vcard-line-grammar iport vcard charset-encoder)
 		vcard)
 	     (parse-error "Illegal BEGIN:VCARD" line iport)))))
+
+;*---------------------------------------------------------------------*/
+;*    read-vcard ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (read-vcard iport #!key charset-encoder)
+   (let ((line (read-line iport)))
+      (if (eof-object? line)
+	  line
+	  (if (and (string? line) (string-ci=? line "begin:vcard"))
+	      (let ((vcard (instantiate::vcard)))
+		 (read/rp vcard-line-grammar iport vcard charset-encoder))
+	      (parse-error "Illegal BEGIN:VCARD" line iport)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->vcard ...                                                */
