@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
 ;*    Last change :  Tue Nov 15 20:21:59 2011 (serrano)                */
-;*    Copyright   :  2008-11 Manuel Serrano                            */
+;*    Copyright   :  2008-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
 ;*=====================================================================*/
@@ -29,7 +29,7 @@
 	      (addresses::pair-nil (default '()))
 	      (notes::pair-nil (default '())))
 	   
-	   (port->vcard::vcard ::input-port #!key charset-encoder)
+	   (port->vcard ::input-port #!key charset-encoder)
 	   (string->vcard::vcard ::bstring #!key charset-encoder)))
    
 ;*---------------------------------------------------------------------*/
@@ -37,11 +37,12 @@
 ;*---------------------------------------------------------------------*/
 (define (port->vcard iport #!key charset-encoder)
    (let ((line (read-line iport)))
-      (if (and (string? line) (string-ci=? line "begin:vcard"))
-	  (let ((vcard (instantiate::vcard)))
-	     (read/rp vcard-line-grammar iport vcard charset-encoder)
-	     vcard)
-	  (parse-error "Illegal BEGIN:VCARD" line iport))))
+      (unless (eof-object? line)
+	 (if (and (string? line) (string-ci=? line "begin:vcard"))
+	     (let ((vcard (instantiate::vcard)))
+		(read/rp vcard-line-grammar iport vcard charset-encoder)
+		vcard)
+	     (parse-error "Illegal BEGIN:VCARD" line iport)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->vcard ...                                                */
@@ -63,6 +64,20 @@
        (obj obj)
        (fname (input-port-name port))
        (location (input-port-position port)))))
+
+;*---------------------------------------------------------------------*/
+;*    parse-error-port ...                                             */
+;*---------------------------------------------------------------------*/
+(define (parse-error-port msg port)
+   (let* ((fname (input-port-name port))
+	  (location (input-port-position port)))
+      (raise
+	 (instantiate::&io-parse-error
+	    (proc 'vcard)
+	    (msg msg)
+	    (obj (read-line port))
+	    (fname fname)
+	    (location location)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vcard-date->date ...                                             */
@@ -121,6 +136,9 @@
 	       ((: #\Newline (+ (or #\tab #\space)))
 		(let ((val (the-string)))
 		   (cons val (ignore))))
+	       ((: (: #\return #\Newline) (+ (or #\tab #\space)))
+		(let ((val (the-string)))
+		   (cons val (ignore))))
 	       ((: #\; (+ #\;))
 		(let ((len (-fx (the-length) 1)))
 		   (append (make-list len "") (ignore))))
@@ -128,12 +146,17 @@
 		(ignore))
 	       (else
 		(parse-error "Illegal values"
-			     (read-line (the-port))
-			     (the-port))))))
-      (if (or (memq 'quoted-printable options)
+		   (read-line (the-port))
+		   (the-port))))))
+      (cond
+	 ((or (memq 'quoted-printable options)
 	      (member '(encoding . "QUOTED-PRINTABLE") options))
-	  (read/rp g port cset quoted-printable-decode)
-	  (read/rp g port cset #f))))
+	  (read/rp g port cset quoted-printable-decode))
+	 ((or (memq 'base64 options)
+	      (member '(encoding . "BASE64") options))
+	  (read/rp g port cset base64-decode))
+	 (else
+	  (read/rp g port cset #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-options ...                                                 */
@@ -159,9 +182,8 @@
 			((+ (or (out #\return #\newline #\; #\: #\\) "\\n"))
 			 (the-string))
 			(else
-			 (parse-error "Illegal option value"
-				      (read-line (the-port))
-				      (the-port))))))
+			 (parse-error-port "Illegal option value"
+			    (the-port))))))
       (read/rp optgram port)))
 	       
 ;*---------------------------------------------------------------------*/
@@ -176,8 +198,8 @@
 	    ((end:)
 	     (let ((line (read-line (the-port))))
 		(if (string-ci=? line "vcard")
-		    vcard
-		    (parse-error "Illegal END:VCARD" line (the-port)))))
+		    'end
+		    (parse-error-port "Illegal END:VCARD" (the-port)))))
 	    ((fn:)
 	     (let ((vals (read-values (the-port) options cset)))
 		(with-access::vcard vcard (fn)
@@ -220,18 +242,26 @@
 	     (with-access::vcard vcard (emails)
 		(let ((vals (read-values (the-port) options cset)))
 		   (set! emails vals))))
+	    ((photo:)
+	     (with-access::vcard vcard (face)
+		(let ((vals (read-values (the-port) options cset)))
+		   (set! face vals))))
 	    (else
 	     (read-values (the-port) options cset))))
       
       ((: IDENT #\:)
-       (parse-content-line (the-downcase-keyword) '())
-       (ignore))
+       (let ((r (parse-content-line (the-downcase-keyword) '())))
+	  (if (eq? r 'end)
+	      vcard
+	      (ignore))))
       ((: IDENT #\;)
-       (parse-content-line (the-downcase-keyword) (read-options (the-port)))
+       (parse-content-line (string->keyword
+			      (string-downcase! (the-substring 0 -1)))
+	  (read-options (the-port)))
        (ignore))
       ((+ (in #\space #\newline #\return #\tab))
        (ignore))
       (else
        (unless (eof-object? (the-failure))
-	  (parse-error "parse error" (read-line (the-port)) (the-port))))))
+	  (parse-error-port "parse error" (the-port))))))
 	   
