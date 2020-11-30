@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
 ;*    Last change :  Fri Dec 13 12:12:47 2013 (serrano)                */
-;*    Copyright   :  2005-13 Manuel Serrano                            */
+;*    Copyright   :  2005-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic phone API                                                */
 ;*=====================================================================*/
@@ -22,6 +22,8 @@
 	   
 	   (generic phone-init ::phone)
 
+	   (generic phone-reboot ::phone)
+	   
 	   (generic phone-locales::pair-nil ::phone)
 	   (generic phone-current-locale ::phone)
 	   (generic phone-current-locale-set! ::phone ::obj)
@@ -48,6 +50,11 @@
 ;*    Generic functions                                                */
 ;*---------------------------------------------------------------------*/
 (define-generic (phone-init p::phone))
+
+;*---------------------------------------------------------------------*/
+;*    phone-reboot ::phone ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (phone-reboot p::phone))
 
 ;*---------------------------------------------------------------------*/
 ;*    phone-locales ...                                                */
