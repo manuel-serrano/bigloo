@@ -208,7 +208,7 @@ should be used to denote empty values.
 @end deffn
 
 @deffn {bigloo mail function} port->vcard::vcard ip [:charset-encoder]
-@deffn {bigloo mail function} read-vcard::vcard ip [:charset-encoder]
+@deffnx {bigloo mail function} read-vcard::vcard ip [:charset-encoder]
 @deffnx {bigloo mail function} string->vcard::vcard str [:charset-encoder]
 These two functions parse a @emph{vcard} to produce a @code{vcard}
 instance.  The optional argument @var{charset-encoder}, when provided,
