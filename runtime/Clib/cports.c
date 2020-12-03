@@ -2104,7 +2104,7 @@ pipe_name_p( char *name ) {
 static char *
 pipe_name( char *pipe_name ) {
   /* if | is used the offset is 1, otherwise, if pipe: is used, it is 5 */ 
-   int offset = (pipe_name[0] == '|') ? 1 : 5;
+   int offset = (pipe_name[ 0 ] == '|') ? 1 : 5;
    return (pipe_name + offset);
 }
 

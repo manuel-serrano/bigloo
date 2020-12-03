@@ -109,6 +109,7 @@
 	    (hashtable-size::long ::struct)
 	    (hashtable-contains?::bool ::struct ::obj)
 	    (hashtable-get::obj ::struct ::obj)
+	    (string-hashtable-get::obj ::struct ::bstring)
 	    (hashtable-put! ::struct ::obj ::obj)
 	    (hashtable-update! ::struct ::obj ::procedure ::obj)
 	    (hashtable-add! ::struct ::obj ::procedure ::obj ::obj)
@@ -476,8 +477,8 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-get table::struct key::obj)
    (cond
-      ((hashtable-weak? table) (weak-hashtable-get table key))
       ((hashtable-string? table) (string-hashtable-get table key))
+      ((hashtable-weak? table) (weak-hashtable-get table key))
       (else (plain-hashtable-get table key))))
 
 ;*---------------------------------------------------------------------*/
@@ -500,7 +501,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-get ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (string-hashtable-get table::struct key::obj)
+(define (string-hashtable-get table::struct key::bstring)
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx ($string-hash key 0 (string-length key)) bucket-len))
