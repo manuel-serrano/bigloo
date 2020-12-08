@@ -74,8 +74,8 @@
 (define-method (node->sexp node::closure)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(,(shape-typed-node 'closure (node-type node))
-		     ,(shape (closure-variable node)))))
+      `(,(shape-typed-node 'closure (node-type node))
+	,(shape (closure-variable node)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::kwote ...                                           */
@@ -328,11 +328,16 @@
    (let ((sym (shape-typed-node 'labels (node-type node))))
       (location-shape (node-loc node)
 	 `(,sym ,(map (lambda (fun)
-			 `(,(shape fun)
-			   ,(args-list->args*
-			       (map shape (sfun-args (local-value fun)))
-			       (sfun-arity (local-value fun)))
-			   ,(node->sexp (sfun-body (local-value fun)))))
+			 (let ((f (local-value fun)))
+			    `(,(shape fun)
+			      ,@(with-access::sfun f (stackable)
+				   (if (boolean? stackable)
+				       `(:stackable ,stackable)
+				       '()))
+			      ,(args-list->args*
+				  (map shape (sfun-args f))
+				  (sfun-arity f))
+			      ,(node->sexp (sfun-body f)))))
 		    (let-fun-locals node))
 	     ,(node->sexp (let-fun-body node))))))
 

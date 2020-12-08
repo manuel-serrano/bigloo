@@ -70,6 +70,7 @@ cat >> $file.c <<EOF
 #include <netinet/in.h>
 #include <resolv.h>
 #include <netdb.h>
+#include <string.h>
 
 #define N 4096
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/bignumber.scm         */
+;*    .../prgm/project/bigloo/bigloo/runtime/Unsafe/bignumber.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Jan 29 11:48:17 2015 (serrano)                */
-;*    Copyright   :  2006-15 Marc Feeley                               */
+;*    Last change :  Wed Dec 11 07:43:40 2019 (serrano)                */
+;*    Copyright   :  2006-19 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -73,95 +73,101 @@
 
 	    __evenv)
 
-   (option  (set! *c-user-header* '("#if( BGL_HAVE_GMP == 0 )"))
-	    (set! *c-user-foot* '("#endif")))
+   (option
+      (set! *c-user-header* '("#if( BGL_HAVE_GMP == 0 )"))
+      (set! *c-user-foot* '("#endif")))
    
-   (extern  (macro $fixnum->flonum::double (::long) "(double)")
-	    (macro $flonum->fixnum::long (::double) "(long)")
-	    (macro $srand::void (::int) "srand"))
+   (extern
+      (macro $fixnum->flonum::double (::long) "(double)")
+      (macro $flonum->fixnum::long (::double) "(long)")
+      (macro $srand::void (::int) "srand"))
 
-   (java    (class foreign
-	       (method static $srand::void (::int) "srand")))
+   (java
+      (class foreign
+	 (method static $srand::void (::int) "srand")))
 	    
    (cond-expand
       ((not enable-gmp)
-       (extern ($make-bignum::bignum (::u16vector) "bgl_make_bignum")
-	       (macro $bignum-u16vect::u16vector (::bignum) "BGL_BIGNUM_U16VECT")
-	       
-	       (export $fixnum->bignum "bgl_long_to_bignum")
-	       (export $bignum->fixnum "bgl_bignum_to_long")
-	       (export $bignum->elong "bgl_bignum_to_elong")
-	       (export $bignum->llong "bgl_bignum_to_llong")
-	       (export $elong->bignum "bgl_elong_to_bignum")
-	       (export $llong->bignum "bgl_llong_to_bignum")
-	       (export $uint64->bignum "bgl_uint64_to_bignum")
-	       (export $bignum-cmp "bgl_bignum_cmp")
-	       (export $zerobx? "BXZERO")
-	       (export $positivebx? "BXPOSITIVE")
-	       (export $negativebx? "BXNEGATIVE")
-	       (export $absbx "bgl_bignum_abs")
-	       (export $negbx "bgl_bignum_neg")
-	       (export $divrembx "bgl_bignum_div")
-	       (export $evenbx? "bgl_bignum_even")
-	       (export $oddbx? "bgl_bignum_odd")
-	       (export $+bx "bgl_bignum_add")
-	       (export $-bx "bgl_bignum_sub")
-	       (export $*bx "bgl_bignum_mul")
-	       (export $quotientbx "bgl_bignum_quotient")
-	       (export $remainderbx "bgl_bignum_remainder")
-	       (export $gcdbx "bgl_bignum_gcd")
-	       (export $lcmbx "bgl_bignum_lcm")
-	       (export $string->bignum "bgl_string_to_bignum")
-	       (export $string->integer-obj "bgl_string_to_integer_obj")
-	       (export c-bignum->string "bgl_bignum_to_string")
-	       (export $randbx "bgl_rand_bignum")
-	       (export $seed-rand "bgl_seed_rand")
-	       
-	       (export $bignum->flonum "bgl_bignum_to_flonum")
-	       (export $flonum->bignum "bgl_flonum_to_bignum"))))
+       (extern
+	  ($make-bignum::bignum (::u16vector) "bgl_make_bignum")
+	  (macro $bignum-u16vect::u16vector (::bignum) "BGL_BIGNUM_U16VECT")
+	  
+	  (export $$fixnum->bignum "bgl_long_to_bignum")
+	  (export $$bignum->fixnum "bgl_bignum_to_long")
+	  (export $$bignum->elong "bgl_bignum_to_elong")
+	  (export $$bignum->llong "bgl_bignum_to_llong")
+	  (export $$elong->bignum "bgl_elong_to_bignum")
+	  (export $$llong->bignum "bgl_llong_to_bignum")
+	  (export $$uint64->bignum "bgl_uint64_to_bignum")
+	  (export $$bignum-cmp "bgl_bignum_cmp")
+	  (export $$absbx "bgl_bignum_abs")
+	  (export $$negbx "bgl_bignum_neg")
+	  (export $$divrembx "bgl_bignum_div")
+	  (export $$evenbx? "bgl_bignum_even")
+	  (export $$oddbx? "bgl_bignum_odd")
+	  (export $$+bx "bgl_bignum_add")
+	  (export $$-bx "bgl_bignum_sub")
+	  (export $$*bx "bgl_bignum_mul")
+	  (export $$quotientbx "bgl_bignum_quotient")
+	  (export $$remainderbx "bgl_bignum_remainder")
+	  (export $$gcdbx "bgl_bignum_gcd")
+	  (export $$lcmbx "bgl_bignum_lcm")
+	  (export $$string->bignum "bgl_string_to_bignum")
+	  (export $$string->integer-obj "bgl_string_to_integer_obj")
+	  (export $$bignum->string "bgl_bignum_to_string")
+	  (export $$randbx "bgl_rand_bignum")
+	  (export $$seed-rand "bgl_seed_rand")
+	  
+	  (export $$zerobx? "BXZERO")
+	  (export $$positivebx? "BXPOSITIVE")
+	  (export $$negativebx? "BXNEGATIVE")
+	  
+	  (export $$bignum->flonum "bgl_bignum_to_flonum")
+	  (export $$flonum->bignum "bgl_flonum_to_bignum"))))
    
    (cond-expand
       ((not enable-gmp)
-       (export (inline $string->integer-obj::obj ::string ::long)
-	       ($fixnum->bignum::bignum ::long)
-	       ($bignum->fixnum::long ::bignum)
-	       ($bignum->elong::elong ::bignum)
-	       ($bignum->llong::llong ::bignum)
-	       ($elong->bignum::bignum ::elong)
-	       ($llong->bignum::bignum ::llong)
-	       ($uint64->bignum::bignum ::uint64)
-	       ($bignum-cmp::int ::bignum ::bignum)
-	       ($zerobx?::bool ::bignum)
-	       ($positivebx?::bool ::bignum)
-	       ($negativebx?::bool ::bignum)
-	       ($absbx::bignum ::bignum)
-	       ($negbx::bignum ::bignum)
-	       ($divrembx::obj ::bignum ::bignum)
-	       ($evenbx?::bool ::bignum)
-	       ($oddbx?::bool ::bignum)
-	       ($+bx::bignum ::bignum ::bignum)
-	       ($-bx::bignum ::bignum ::bignum)
-	       ($*bx::bignum ::bignum ::bignum)
-	       ($quotientbx::bignum ::bignum ::bignum)
-	       ($remainderbx::bignum ::bignum ::bignum)
-	       ($gcdbx::bignum ::bignum ::bignum)
-	       ($lcmbx::bignum ::bignum ::bignum)
-	       ($string->bignum::bignum ::string ::int)
-	       (c-bignum->string::bstring ::bignum ::long)
-	       ($randbx::bignum ::bignum)
-	       ($seed-rand ::long)
-
-	       ($flonum->bignum::bignum ::double)
-	       ($bignum->flonum::double ::bignum)))))
+       (export
+	  (inline $$string->integer-obj::obj ::string ::long)
+	  ($$fixnum->bignum::bignum ::long)
+	  ($$bignum->fixnum::long ::bignum)
+	  ($$bignum->elong::elong ::bignum)
+	  ($$bignum->llong::llong ::bignum)
+	  ($$elong->bignum::bignum ::elong)
+	  ($$llong->bignum::bignum ::llong)
+	  ($$uint64->bignum::bignum ::uint64)
+	  ($$bignum-cmp::int ::bignum ::bignum)
+	  ($$zerobx?::bool ::bignum)
+	  ($$positivebx?::bool ::bignum)
+	  ($$negativebx?::bool ::bignum)
+	  ($$absbx::bignum ::bignum)
+	  ($$negbx::bignum ::bignum)
+	  ($$divrembx::obj ::bignum ::bignum)
+	  ($$evenbx?::bool ::bignum)
+	  ($$oddbx?::bool ::bignum)
+	  ($$+bx::bignum ::bignum ::bignum)
+	  ($$-bx::bignum ::bignum ::bignum)
+	  ($$*bx::bignum ::bignum ::bignum)
+	  ($$quotientbx::bignum ::bignum ::bignum)
+	  ($$remainderbx::bignum ::bignum ::bignum)
+	  ($$gcdbx::bignum ::bignum ::bignum)
+	  ($$lcmbx::bignum ::bignum ::bignum)
+	  ($$string->bignum::bignum ::string ::int)
+	  ($$bignum->string::bstring ::bignum ::long)
+	  ($$randbx::bignum ::bignum)
+	  ($$seed-rand ::long)
+	  
+	  ($$flonum->bignum::bignum ::double)
+	  ($$bignum->flonum::double ::bignum)))))
 
 ;*---------------------------------------------------------------------*/
-;*    $string->integer-obj ...                                         */
+;*    $$string->integer-obj ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    When no native bignum implementation is available, standard      */
 ;*    aritmethic operations do not promote their result because        */
 ;*    this would be too expensive.                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline ($string->integer-obj str radix)
+(define-inline ($$string->integer-obj str radix)
    (string->integer str radix))
 
 (cond-expand
@@ -263,7 +269,7 @@
    ;; (or (bignum->fixnum x) x)
    x)
 
-(define ($fixnum->bignum-fresh n)
+(define ($$fixnum->bignum-fresh n)
    (let ((neg-n (if (<fx n 0) n (-fx 0 n))))
       ;; computing with negative n avoids overflow
       (let loop1 ((nb-digits 0) (x neg-n))
@@ -283,7 +289,7 @@
 			  (loop2 (+fx i 1) (quotientfx x (bignum-radix))))
 		       r)))))))
 
-(define ($elong->bignum n::elong)
+(define ($$elong->bignum n::elong)
    (let ((neg-n (if (<elong n #e0) n (-elong #e0 n))))
       ;; computing with negative n avoids overflow
       (let loop1 ((nb-digits 0) (x::elong neg-n))
@@ -303,7 +309,7 @@
 			  (loop2 (+fx i 1) (quotientelong x (bignum-radix))))
 		       r)))))))
 
-(define ($llong->bignum n)
+(define ($$llong->bignum n)
    (let ((neg-n (if (<llong n #l0) n (-llong #l0 n))))
       ;; computing with negative n avoids overflow
       (let loop1 ((nb-digits 0) (x::llong neg-n))
@@ -323,7 +329,7 @@
 			  (loop2 (+fx i 1) (quotientllong x (bignum-radix))))
 		       r)))))))
 
-(define ($uint64->bignum n)
+(define ($$uint64->bignum n)
    (let ((neg-n (if (<u64 n #u64:0) n (-u64 #u64:0 n))))
       ;; computing with negative n avoids overflow
       (let loop1 ((nb-digits 0) (x::uint64 neg-n))
@@ -349,16 +355,16 @@
 	 (if (<fx 16 n)
 	     v
 	     (begin
-		(vector-set! v i ($fixnum->bignum-fresh n))
+		(vector-set! v i ($$fixnum->bignum-fresh n))
 		(loop (+fx i 1) (+fx n 1)))))))
 
-(define ($fixnum->bignum n)
+(define ($$fixnum->bignum n)
    (if (or (<fx n -16) (<fx 16 n))
-       ($fixnum->bignum-fresh n)
+       ($$fixnum->bignum-fresh n)
        (vector-ref preallocated-bignums (+fx n 16))))
 
 (define bignum-zero
-   ($fixnum->bignum 0))
+   ($$fixnum->bignum 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    Bignum comparison                                                */
@@ -379,20 +385,20 @@
 
 (define ($<bx x::bignum y::bignum)
    (if (not (=fx (bignum-sign x) (bignum-sign y)))
-       ($negativebx? x)
+       ($$negativebx? x)
        (let ((lenx (bignum-length x))
 	     (leny (bignum-length y)))
 	  (cond ((<fx lenx leny)
-		 (not ($negativebx? x)))
+		 (not ($$negativebx? x)))
 		((<fx leny lenx)
-		 ($negativebx? x))
+		 ($$negativebx? x))
 		(else
 		 (let loop ((i (-fx lenx 1)))
 		    (if (<fx 0 i)
 			(let ((dx (bignum-digit-ref x i))
 			      (dy (bignum-digit-ref y i)))
-			   (cond ((<fx dx dy) (not ($negativebx? x)))
-				 ((<fx dy dx) ($negativebx? x))
+			   (cond ((<fx dx dy) (not ($$negativebx? x)))
+				 ((<fx dy dx) ($$negativebx? x))
 				 (else (loop (-fx i 1)))))
 			#f)))))))
 
@@ -405,22 +411,22 @@
 (define ($>=bx x y)
    (not ($<bx x y)))
 
-(define ($zerobx? x)
+(define ($$zerobx? x)
    (=fx (bignum-length x) 1))
 
-(define ($negativebx? x)
+(define ($$negativebx? x)
    (=fx (bignum-sign x) 0))
 
-(define ($positivebx? x)
-   (not (or ($zerobx? x) ($negativebx? x))))
+(define ($$positivebx? x)
+   (not (or ($$zerobx? x) ($$negativebx? x))))
 
-(define ($evenbx? x)
-   (or ($zerobx? x) (even? (bignum-digit-ref x 1))))
+(define ($$evenbx? x)
+   (or ($$zerobx? x) (even? (bignum-digit-ref x 1))))
 
-(define ($oddbx? x)
-   (not ($evenbx? x)))
+(define ($$oddbx? x)
+   (not ($$evenbx? x)))
 
-(define ($bignum-cmp n1 n2)
+(define ($$bignum-cmp n1 n2)
    (cond
       (($<bx n1 n2) -1)
       (($<bx n2 n1) 1)
@@ -544,20 +550,20 @@
 	 (else
 	  (adjust-sign (bignum-sub-nonneg x y) sign-x))))
 
-(define ($+bx x y)
+(define ($$+bx x y)
    (bignum-sum2 x y (bignum-sign x) (bignum-sign y)))
 
-(define ($-bx x y)
+(define ($$-bx x y)
    (bignum-sum2 x y (bignum-sign x) (-fx 1 (bignum-sign y))))
 
-(define ($negbx x)
-   ($-bx bignum-zero x))
+(define ($$negbx x)
+   ($$-bx bignum-zero x))
 
 (define (bignum+ . args)
    (if (pair? args)
        (let loop ((n (car args)) (lst (cdr args)))
 	  (if (pair? lst)
-	      (loop ($+bx n (car lst)) (cdr lst))
+	      (loop ($$+bx n (car lst)) (cdr lst))
 	      n))
        bignum-zero))
 
@@ -565,14 +571,14 @@
    (if (pair? args)
        (let loop ((n x) (lst args))
 	  (if (pair? lst)
-	      (loop ($-bx n (car lst)) (cdr lst))
+	      (loop ($$-bx n (car lst)) (cdr lst))
 	      n))
-       ($negbx x)))
+       ($$negbx x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Bignum multiplication                                            */
 ;*---------------------------------------------------------------------*/
-(define ($*bx x y)
+(define ($$*bx x y)
    
    (define (mul x y lenx leny)
       (let ((r (make-bignum (-fx (+fx lenx leny) 1))))
@@ -609,9 +615,9 @@
    (if (pair? args)
        (let loop ((n (car args)) (lst (cdr args)))
 	  (if (pair? lst)
-	      (loop ($*bx n (car lst)) (cdr lst))
+	      (loop ($$*bx n (car lst)) (cdr lst))
 	      n))
-       ($fixnum->bignum 1)))
+       ($$fixnum->bignum 1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Bignum division                                                  */
@@ -629,8 +635,8 @@
 		   (bignum-digit-set! r i (quotientfx w d))
 		   (loop1 (-fx i 1) (remainderfx w d)))
 		(cons (bignum-remove-leading-zeroes r)
-		      ($fixnum->bignum
-		       (if ($negativebx? x) (-fx 0 k) k)))))))
+		      ($$fixnum->bignum
+		       (if ($$negativebx? x) (-fx 0 k) k)))))))
    
    (define (multi-digit-divisor-div x y lenx leny r)
       
@@ -779,25 +785,25 @@
 		 (single-digit-divisor-div x y lenx leny r)
 		 (multi-digit-divisor-div x y lenx leny r)))))
    
-   (if ($zerobx? y)
+   (if ($$zerobx? y)
        (error '/bx "divide by zero" x)
        (div x y (bignum-length x) (bignum-length y))))
 
-(define ($divrembx x y)
+(define ($$divrembx x y)
    (let ((v (bignum-div x y)))
       (values (car v) (cdr v))))
 
-(define ($quotientbx x y)
+(define ($$quotientbx x y)
    (bignum-normalize (car (bignum-div x y))))
 
-(define ($remainderbx x y)
+(define ($$remainderbx x y)
    (bignum-normalize (cdr (bignum-div x y))))
 
 (define (bignum-modulo x y)
    (let ((r (cdr (bignum-div x y))))
-      (if (or ($zerobx? r)
-	      (eqv? ($negativebx? x)
-		    ($negativebx? y)))
+      (if (or ($$zerobx? r)
+	      (eqv? ($$negativebx? x)
+		    ($$negativebx? y)))
 	  (bignum-normalize r)
 	  (bignum+ r y))))
 
@@ -822,48 +828,48 @@
 	  (loop (bignum-min2 n (car lst)) (cdr lst))
 	  n)))
 
-(define ($absbx x)
-   (if ($negativebx? x)
-       ($negbx x)
+(define ($$absbx x)
+   (if ($$negativebx? x)
+       ($$negbx x)
        x))
 
-(define ($gcdbx x y)
-   (let loop ((x ($absbx x)) (y ($absbx y)))
-      (if ($zerobx? y)
+(define ($$gcdbx x y)
+   (let loop ((x ($$absbx x)) (y ($$absbx y)))
+      (if ($$zerobx? y)
 	  x
-	  (loop y ($remainderbx x y)))))
+	  (loop y ($$remainderbx x y)))))
 
-(define ($lcmbx x y)
-   (if (or ($zerobx? x) ($zerobx? y))
+(define ($$lcmbx x y)
+   (if (or ($$zerobx? x) ($$zerobx? y))
        bignum-zero
-       ($quotientbx
-	($absbx ($*bx x y))
-	($gcdbx x y))))
+       ($$quotientbx
+	($$absbx ($$*bx x y))
+	($$gcdbx x y))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Bignum exponentiation                                            */
 ;*---------------------------------------------------------------------*/
 (define (bignum-expt x y)
-   (cond (($zerobx? y)
-	  ($fixnum->bignum 1))
-	 (($evenbx? y)
+   (cond (($$zerobx? y)
+	  ($$fixnum->bignum 1))
+	 (($$evenbx? y)
 	  (bignum-expt
-	   ($*bx x x)
-	   ($quotientbx y ($fixnum->bignum 2))))
+	   ($$*bx x x)
+	   ($$quotientbx y ($$fixnum->bignum 2))))
 	 (else
-	  ($*bx x (bignum-expt x ($-bx y ($fixnum->bignum 1)))))))
+	  ($$*bx x (bignum-expt x ($$-bx y ($$fixnum->bignum 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bitwise operations                                               */
 ;*---------------------------------------------------------------------*/
 (define (bignum-bitwise-not x)
-   ($-bx ($fixnum->bignum -1) x))
+   ($$-bx ($$fixnum->bignum -1) x))
 
 ;*---------------------------------------------------------------------*/
 ;*    bignum-integer-length ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (bignum-integer-length x::bignum)
-   (let* ((n (if ($negativebx? x) (bignum-bitwise-not x) x))
+   (let* ((n (if ($$negativebx? x) (bignum-bitwise-not x) x))
 	  (nb-digits (-fx (bignum-length n) 1)))
       (if (=fx nb-digits 0)
 	  0
@@ -877,7 +883,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    Convertion to and from string                                    */
 ;*---------------------------------------------------------------------*/
-(define (c-bignum->string x radix) ;; 2 <= radix <= 36
+(define ($$bignum->string x radix) ;; 2 <= radix <= 36
    
    (define (digit->char d)
       (string-ref "0123456789abcdefghijklmnopqrstuvwxyz" d))
@@ -885,16 +891,16 @@
    (define (convert-non-neg sign n)
       (let ((digits
              (map digit->char
-                  (if ($zerobx? n)
+                  (if ($$zerobx? n)
                       '(0)
                       (reverse (bignum->fixnum-list n (-fx radix 1)))))))
 	 (list->string (if sign (cons sign digits) digits))))
    
-   (if ($negativebx? x)
-       (convert-non-neg #\- ($negbx x))
+   (if ($$negativebx? x)
+       (convert-non-neg #\- ($$negbx x))
        (convert-non-neg #f x)))
 
-(define ($string->bignum str radix) ;; 2 <= radix <= 36
+(define ($$string->bignum str radix) ;; 2 <= radix <= 36
    
    (define (char->digit c rad)
       
@@ -919,12 +925,12 @@
 		 (let ((d (char->digit (string-ref str i) rad)))
 		    (if d
 			(loop (+fx i 1) (cons d digits))
-			($fixnum->bignum-fresh 0)))
+			($$fixnum->bignum-fresh 0)))
 		 (let ((n (fixnum-list->bignum digits (-fx rad 1))))
 		    (if (and sign (char=? sign #\-))
-			($negbx n)
+			($$negbx n)
 			n))))
-	  ($fixnum->bignum-fresh 0)))
+	  ($$fixnum->bignum-fresh 0)))
    
    (define (sign-prefix rad i)
       (cond ((and (<=fx (+fx i 2) (string-length str)) ;; need at least two chars
@@ -954,14 +960,14 @@
 ;*---------------------------------------------------------------------*/
 (define (bignum->fixnum-list x radix-minus-1)
    (let* ((big-radix
-	   ($+bx
-	    ($fixnum->bignum radix-minus-1)
-	    ($fixnum->bignum 1)))
+	   ($$+bx
+	    ($$fixnum->bignum radix-minus-1)
+	    ($$fixnum->bignum 1)))
 	  (square-series
 	   (let loop ((square big-radix)
 		      (square-list (list big-radix)))
 	      (let ((new-square
-		     ($*bx square square)))
+		     ($$*bx square square)))
 		 (if ($<bx x new-square)
 		     square-list
 		     (loop new-square
@@ -991,17 +997,17 @@
    ;; Note: a divide-and-conquer algorithm would be faster for large numbers.
    
    (let ((big-radix
-	  ($+bx
-	   ($fixnum->bignum radix-minus-1)
-	   ($fixnum->bignum 1))))
+	  ($$+bx
+	   ($$fixnum->bignum radix-minus-1)
+	   ($$fixnum->bignum 1))))
       (let loop ((n bignum-zero) (lst (reverse digit-list)))
 	 (if (pair? lst)
-	     (loop ($+bx ($*bx n big-radix)
-			 ($fixnum->bignum (car lst)))
+	     (loop ($$+bx ($$*bx n big-radix)
+			 ($$fixnum->bignum (car lst)))
 		   (cdr lst))
 	     n))))
 
-(define ($bignum->fixnum x) ;; returns #f on fixnum overflow
+(define ($$bignum->fixnum x) ;; returns #f on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n 0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
@@ -1013,14 +1019,14 @@
 			   #f
 			   (loop (-fx m d)
 				 (-fx i 1))))))
-	       (($negativebx? x)
+	       (($$negativebx? x)
 		n)
 	       ((not (=fx n (bignum-min-fixnum)))
 		(-fx 0 n))
 	       (else
 		#f)))))
 
-(define ($bignum->elong x) ;; returns #f on fixnum overflow
+(define ($$bignum->elong x) ;; returns #f on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n::elong #e0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
@@ -1032,14 +1038,14 @@
 			   #f
 			   (loop (-elong m d)
 				 (-fx i 1))))))
-	       (($negativebx? x)
+	       (($$negativebx? x)
 		n)
 	       ((not (=elong n (bignum-min-elong)))
 		(-elong #e0 n))
 	       (else
 		#f)))))
 
-(define ($bignum->llong x) ;; returns #f on fixnum overflow
+(define ($$bignum->llong x) ;; returns #f on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n::llong #l0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
@@ -1051,7 +1057,7 @@
 			   #f
 			   (loop (-llong m d)
 				 (-fx i 1))))))
-	       (($negativebx? x)
+	       (($$negativebx? x)
 		n)
 	       ((not (=llong n (bignum-min-llong)))
 		(-llong #l0 n))
@@ -1059,9 +1065,9 @@
 		#f)))))
 
 ;*---------------------------------------------------------------------*/
-;*    $seed-rand ...                                                   */
+;*    $$seed-rand ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define ($seed-rand seed)
+(define ($$seed-rand seed)
    ($srand seed)
    seed)
 
@@ -1079,28 +1085,28 @@
    (random-fill-u8vector! (make-u8vector len)))
 
 ;*---------------------------------------------------------------------*/
-;*    $randbx ...                                                      */
+;*    $$randbx ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define ($randbx range::bignum)
+(define ($$randbx range::bignum)
    (let* ((range-bits (bignum-integer-length range))
 	  (len (quotient (+fx range-bits 20) 8))
 	  (n (bignum-expt (fixnum->bignum 256) (fixnum->bignum len)))
-	  (divisor ($quotientbx n range))
+	  (divisor ($$quotientbx n range))
 	  (limit (*bx divisor range)))
       (let loop ()
 	 (let* ((u8vect (make-random-u8vector len))
 		(x (fixnum-list->bignum (u8vector->list u8vect) 255)))
 	    (if ($>=bx x limit)
 		(loop)
-		($quotientbx x divisor))))))
+		($$quotientbx x divisor))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Float conversions                                                */
 ;*---------------------------------------------------------------------*/
-(define ($flonum->bignum n)
+(define ($$flonum->bignum n)
    (fixnum->bignum ($flonum->fixnum n)))
 
-(define ($bignum->flonum n)
-   ($fixnum->flonum ($bignum->fixnum n)))
+(define ($$bignum->flonum n)
+   ($fixnum->flonum ($$bignum->fixnum n)))
 
 ))

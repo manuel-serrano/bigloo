@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/flac/src/Makefile                */
+#*    serrano/prgm/project/bigloo/bigloo/api/flac/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:08:59 2017 (serrano)                */
+#*    Last change :  Thu Apr 30 08:15:32 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -38,7 +38,7 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPISAFE	= -unsafe -safee
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
-                  -srfi $(API) -copt "$(FLACCFLAGS)"
+                  -srfi $(API) -copt "$(FLACCFLAGS) -DBGL_DUMMY"
 CAPIFLAGS       = $(FLACCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -48,18 +48,19 @@ CEFLAGS		= $(FLACCFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(FLACLIBS) " " "
-EXTRALIBS	= 
 else
-ifeq "$(ALSALIBS) " " "
-EXTRALIBS	= $(FLACLIBS) -lbigloomultimedia_u-$(RELEASE)
-else
-EXTRALIBS	= $(FLACLIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(FLACLIBS) -lm
 endif
-ifeq "$(PULSEAUDIOLIBS) " " "
-EXTRALIBS	= $(FLACLIBS) -lbigloomultimedia_u-$(RELEASE)
-else
-EXTRALIBS	= $(FLACLIBS) $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
+
+BIGLOOEXTRALIBS	+= bigloomultimedia
+
+ifneq "$(ALSALIBS) " " "
+EXTRALIBS	+= $(ALSALIBS)
+BIGLOOEXTRALIBS	+= biglooalsa
 endif
+ifneq "$(PULSEAUDIOLIBS) " " "
+EXTRALIBS	+= $(PULSEAUDIOLIBS)
+BIGLOOEXTRALIBS	+= bigloopulseaudio
 endif
 
 #*---------------------------------------------------------------------*/

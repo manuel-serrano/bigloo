@@ -129,7 +129,7 @@ lib.a: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
 
 
 $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
-	@ $(MAKE) shared-lib \
+	@ $(MAKE) bigloo-shared-lib \
              LIBDEST=$@ \
 	     LIBPATH=$(BOOTLIBDIR) \
              SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \

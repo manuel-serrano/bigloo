@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Apr 15 10:37:40 2003                          */
 /*    Last change :  Fri Oct 27 18:40:44 2017 (serrano)                */
-/*    Copyright   :  2003-17 Manuel Serrano                            */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Profalloc css                                                    */
 /*=====================================================================*/
@@ -203,5 +203,17 @@ div.bglmem div.contents a {
   color: blue;
 }
 
+/*---------------------------------------------------------------------*/
+/*    Gauge                                                            */
+/*---------------------------------------------------------------------*/
+div.gauge {
+    width: 100%;
+    background: white;
+    white-space: nowrap;
+    font-size: 130%;
+    margin-bottom: 4px;
+}
 
-
+.gauge-cell, .gauge-filler {
+    display: inline-block;
+}

@@ -5,49 +5,44 @@ Bigloo, a practical Scheme compiler
 
 Bigloo is a Scheme development environment that includes a compiler
 generating C code and Java classes, and an interpreter. Bigloo is the
-tool of choice for building autonomous applications in Scheme. Bigloo
+tool of choice for building autonomous applications in Scheme. It
 is mostly conformant to the Revised5 Report on the Algorithmic
-Language Scheme with many extensions: Rgc, a lex facility.  Match, a
-pattern-matching compiler.  Foreign languages interface (connection to
-C and to Java).  Module language.  Extension package system.  An Lalr
-facility.  An Object sytem.  A thread library.  DSSSL support.
-Unicode characters and strings.  Process, Pipe and Socket
-support. Bigloo comes with an Integrated Development Environment (the
-Bee).
+Language Scheme with many extensions: 
+  * lexical and syntactic builtin parser generators;
+  * pattern-matching;
+  * foreign languages interface (connection to C and to Java);
+  * modules;
+  * object-oriented class-based programming;
+  * preemptive multi-threading;
+  * unicode characters and strings;
+  * posix programming (process, pipe, socket);
+  * openssl;
+  * multimedia libraries;
+  * event loops and event-based programming (libuv).
 
 
 Versions
 --------
 
 The Bigloo git version is intended for contributors and testers. Regular
-Bigloo users, _i.e.,_ programmers will to use Bigloo and compile and
-run their own applications, should use the stable pre-compiled
-version available at
+Bigloo users, _i.e.,_ programmers willing to use Bigloo and compile and
+run their own applications, should use the stable pre-bundled or
+pre-compiled versions available at:
 
-   [ftp://ftp-sop.inria.fr/indes/fp/Bigloo](ftp://ftp-sop.inria.fr/indes/fp/Bigloo)
+   [http://www-sop.inria.fr/indes/fp/Bigloo/download.html](http://www-sop.inria.fr/indes/fp/Bigloo/download.html)
 
 
 Installation
 ------------
 
-To install Bigloo, see the INSTALL file. An ANSI C compiler is required.
-The original version has been developped with GNU CC version 2.7.2
-(Copyright (C) 1988, 1989, 1992 Free Software Foundation, Inc). The
-Bigloo's boot requires around 300 MegaBytes of disk space. Once it is booted,
-the Bigloo system can be reduced to about 70 MegaBytes.
+In order to bootstrap the git Bigloo, you first need to install a
+pre-bundled version, whose installation procedure is described
+in [INSTALL.md](INSTALL.md) file. 
 
-To install Bigloo JVM (Java virtual machine byte code) back-end, the
-JDK 1.8 or an older version is required. The JVM machine must support
-the -noverify option in order to execute Bigloo produced code. You
-also need an operational zip utility to be installed. If either the
-JDK or the zip tool is missing, the Bigloo JVM back-end can't be
-configured.
+To bootstrap the git version, proceed as follows:
 
-The installation process for stable versions is described in the
-[INSTALL.md](INSTALL.md) file. To bootstrap the git version, proceed as follows:
-
-  1. Install the latest stable version. Let us assume that the installation
- directories are `<lib-path-dir>` and `<bin-path-dir>`
+  1. Install the latest stable or unstable version. Let us assume that the 
+ installation directories are `<lib-path-dir>` and `<bin-path-dir>`
   2. configure the git Bigloo version with:
  `./configure --prefix=<my-prefix>`
   3. bootstrap the compiler with: 

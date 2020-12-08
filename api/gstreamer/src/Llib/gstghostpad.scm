@@ -16,11 +16,12 @@
 
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
+   (use	    __gstreamer_gsterror
 	    __gstreamer_gstobject
 	    __gstreamer_gstcaps
-	    __gstreamer_gststructure
-	    __gstreamer_gstpad)
+	    __gstreamer_gststructure)
+
+   (import  __gstreamer_gstpad)
 	    
    (export  (class gst-ghost-pad::gst-pad
 	       (target::gst-pad

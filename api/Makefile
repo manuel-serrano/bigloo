@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Mon Jan 29 18:08:26 2018 (serrano)                */
-#*    Copyright   :  2005-18 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:21:18 2020 (serrano)                */
+#*    Copyright   :  2005-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
 #*=====================================================================*/
@@ -21,7 +21,7 @@ include ../Makefile.config
 DIRECTORIES= pthread srfi18 fthread mail ssl web multimedia sqlite calendar \
              srfi1 pkgcomp pkglib gstreamer text packrat srfi27 crypto \
              openpgp phone alsa mpg123 flac wav avahi csv phidget upnp libuv \
-             pulseaudio patch
+             pulseaudio
 
 #*---------------------------------------------------------------------*/
 #*    Booting on a bare system                                         */
@@ -124,10 +124,10 @@ install:
         fi
 
 install-devel:
-	(cp Makefile.api $(LIBDIR)/$(FILDIR)/Makefile.api && \
-         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.api)
-	(cp Makefile.api-safe $(LIBDIR)/$(FILDIR)/Makefile.api-safe && \
-         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.api-safe)
+	(cp Makefile.api $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.api && \
+         chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.api)
+	(cp Makefile.api-safe $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.api-safe && \
+         chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.api-safe)
 
 uninstall:
 	if [ "$(APIS) " != " " ]; then \
@@ -137,8 +137,8 @@ uninstall:
         fi
 
 uninstall-devel:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/Makefile.api
-	$(RM) -f $(LIBDIR)/$(FILDIR)/Makefile.api-safe
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.api
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.api-safe
 
 #*---------------------------------------------------------------------*/
 #*    Populating the APIs                                              */

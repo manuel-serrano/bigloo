@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Sun Aug 25 09:16:04 2019 (serrano)                */
-;*    Copyright   :  2005-19 Manuel Serrano                            */
+;*    Last change :  Fri May 15 07:20:52 2020 (serrano)                */
+;*    Copyright   :  2005-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -53,7 +53,9 @@
 	    __r4_output_6_10_3
 	    __r4_input_6_10_2)
 
-   (export  (declare-library! id
+   (export  (library-thread-suffix-set! ::bstring)
+	    (library-multithread-set! ::bool)
+	    (declare-library! id
 	       #!key
 	       (version (bigloo-config 'release-number))
 	       (basename (symbol->string id))
@@ -78,6 +80,23 @@
 ;*    *library-mutex* ...                                              */
 ;*---------------------------------------------------------------------*/
 (define *library-mutex* (make-mutex 'library))
+
+;*---------------------------------------------------------------------*/
+;*    library-thread-suffix ...                                        */
+;*---------------------------------------------------------------------*/
+(define library-thread-suffix "")
+
+;*---------------------------------------------------------------------*/
+;*    library-thread-suffix-set! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (library-thread-suffix-set! suf)
+   (set! library-thread-suffix suf))
+
+;*---------------------------------------------------------------------*/
+;*    library-multithread-set! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (library-multithread-set! val)
+   (library-thread-suffix-set! (if val "_mt" "")))
 
 ;*---------------------------------------------------------------------*/
 ;*    libinfo ...                                                      */
@@ -223,14 +242,16 @@
 ;*    library-file-name ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (library-file-name library suffix backend)
+
    (define (forge-name base suffix version)
       (cond
 	 ((not version)
-	  (string-append base suffix))
+	  (string-append base suffix library-thread-suffix))
 	 ((string? version)
-	  (string-append base suffix "-" version))
+	  (string-append base suffix library-thread-suffix "-" version))
 	 (else
 	  (error 'library-file-name "Illegal version" version))))
+   
    (multiple-value-bind (base version)
       (untranslate-library-name library)
       (case backend
@@ -301,8 +322,7 @@
 		 (init (find-file/path (library-init-file lib) path))
 		 (be (cond-expand
 			(bigloo-c 'bigloo-c)
-			(bigloo-jvm 'bigloo-jvm)
-			(bigloo-.net 'bigloo-.net))))
+			(bigloo-jvm 'bigloo-jvm))))
 	     (when init (loadq init))
 	     (let* ((info (library-info lib))
 		    (n (make-shared-lib-name
@@ -412,8 +432,7 @@
 				     (cons "." (unix-path->list venv))))))
 		    (be (cond-expand
 			   (bigloo-c 'bigloo-c)
-			   (bigloo-jvm 'bigloo-jvm)
-			   (bigloo-.net 'bigloo-.net))))
+			   (bigloo-jvm 'bigloo-jvm))))
 		(library-load-init lib path)
 		(let* ((info (library-info lib))
 		       (n (make-shared-lib-name
@@ -478,8 +497,7 @@
 			   (cons "." (unix-path->list venv))))))
 	  (suffix (cond-expand
 		     (bigloo-c ".heap")
-		     (bigloo-jvm ".jheap")
-		     (bigloo-.net ".jheap")))
+		     (bigloo-jvm ".jheap")))
 	  (heap (string-append (symbol->string lib) suffix))
 	  (init (string-append (symbol->string lib) ".init")))
       (string? (or (find-file/path heap path)

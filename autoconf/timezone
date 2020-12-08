@@ -52,7 +52,7 @@ fi
 cat > $file.c <<EOF
 #include <time.h>
 #include <stdio.h>
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    printf( "%d\n", -_timezone );
    return 0;
 }
@@ -73,7 +73,7 @@ fi
 cat > $file.c <<EOF
 #include <time.h>
 #include <stdio.h>
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    printf( "%d\n", -timezone );
    return 0;
 }

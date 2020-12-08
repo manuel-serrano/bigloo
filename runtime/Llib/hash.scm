@@ -92,13 +92,13 @@
 
    (export  (make-hashtable . args)
 	    (create-hashtable #!key
-			      (size 128)
-			      (max-bucket-length 10)
-			      (eqtest #f)
-			      (hash #f)
-			      (weak 'none)
-			      (max-length 16384)
-			      (bucket-expansion 1.2))
+	       (size 128)
+	       (max-bucket-length 10)
+	       (eqtest #f)
+	       (hash #f)
+	       (weak 'none)
+	       (max-length 16384)
+	       (bucket-expansion 1.2))
 	    (get-hashnumber::long ::obj)
 	    (get-hashnumber-persistent::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
@@ -206,22 +206,36 @@
 ;*    create-hashtable ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (create-hashtable #!key
-			  (size 128)
-			  (max-bucket-length 10)
-			  (eqtest #f)
-			  (hash #f)
-			  (weak 'none)
-			  (max-length 16384)
-			  (bucket-expansion 1.2))
+	   (size 128)
+	   (max-bucket-length 10)
+	   (eqtest #f)
+	   (hash #f)
+	   (weak 'none)
+	   (max-length 16384)
+	   (bucket-expansion 1.2))
    (let ((weak (case weak
 		  ((keys) (weak-keys))
 		  ((data) (weak-data))
 		  ((both) (weak-both))
 		  ((none) (weak-none))
+		  ((string) (weak-string))
 		  (else (if weak (weak-data) (weak-none))))))
-      (%hashtable 0 max-bucket-length (make-vector size '()) eqtest hash weak
-	 max-length
-	 bucket-expansion)))
+      (if (eq? weak (weak-string))
+	  (cond
+	     (eqtest
+	      (error "create-hashtable"
+		 "Cannot provide eqtest for string hashtable" eqtest))
+	     (hash
+	      (error "create-hashtable"
+		 "Cannot provide hash for string hashtable" hash))
+	     (else
+	      (%hashtable 0 max-bucket-length (make-vector size '())
+		 string=?
+		 (lambda (s) ($string-hash s 0 (string-length s)))
+		 weak max-length bucket-expansion)))
+	  (%hashtable 0 max-bucket-length (make-vector size '())
+	     eqtest hash
+	     weak max-length bucket-expansion))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable? ...                                                   */
@@ -233,7 +247,13 @@
 ;*    hashtable-weak? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (hashtable-weak?::bool table::struct)
-   (not (=fx 0 (%hashtable-weak table))))
+   (not (=fx 0 (bit-and (%hashtable-weak table) 3))))
+
+;*---------------------------------------------------------------------*/
+;*    hashtable-string? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (hashtable-string?::bool table::struct)
+   (=fx (%hashtable-weak table) (weak-string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-weak-keys? ...                                         */
@@ -455,9 +475,10 @@
 ;*    hashtable-get ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (hashtable-get table::struct key::obj)
-   (if (hashtable-weak? table)
-       (weak-hashtable-get table key)
-       (plain-hashtable-get table key)))
+   (cond
+      ((hashtable-weak? table) (weak-hashtable-get table key))
+      ((hashtable-string? table) (string-hashtable-get table key))
+      (else (plain-hashtable-get table key))))
 
 ;*---------------------------------------------------------------------*/
 ;*    plain-hashtable-get ...                                          */
@@ -472,6 +493,23 @@
 	    ((null? bucket)
 	     #f)
 	    ((hashtable-equal? table (caar bucket) key)
+	     (cdar bucket))
+	    (else
+	     (loop (cdr bucket)))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-hashtable-get ...                                         */
+;*---------------------------------------------------------------------*/
+(define (string-hashtable-get table::struct key::obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx ($string-hash key 0 (string-length key)) bucket-len))
+	  (bucket (vector-ref-ur buckets bucket-num)))
+      (let loop ((bucket bucket))
+	 (cond
+	    ((null? bucket)
+	     #f)
+	    ((string=? (caar bucket) key)
 	     (cdar bucket))
 	    (else
 	     (loop (cdr bucket)))))))
@@ -493,6 +531,12 @@
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
 	  (bucket (vector-ref-ur buckets bucket-num))
 	  (max-bucket-len (%hashtable-max-bucket-len table)))
+      (cond-expand
+	 (bigloo-unsafe-type
+	  #f)
+	 (else
+	  (when (and (hashtable-string? table) (not (string? key)))
+	     (bigloo-type-error "hashtable-put!" "bstring" key))))
       (if (null? bucket)
 	  (begin
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
 ;*    Last change :  Thu Apr 19 09:05:06 2018 (serrano)                */
-;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -559,11 +559,19 @@
 ;*    emit-cop ::cmake-box ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::cmake-box)
-   (with-access::cmake-box cop (value loc)
+   (with-access::cmake-box cop (value loc stackable)
       (emit-bdb-loc loc)
-      (display "MAKE_CELL(" *c-port*)
-      (emit-cop value)
-      (write-char #\) *c-port*)
+      (if (local? stackable)
+	  (begin
+	     (display "MAKE_CELL_STACK(" *c-port*)
+	     (emit-cop value)
+	     (write-char #\, *c-port*)
+	     (display (variable-name stackable) *c-port*)
+	     (write-char #\) *c-port*))
+	  (begin
+	     (display "MAKE_CELL(" *c-port*)
+	     (emit-cop value)
+	     (write-char #\) *c-port*)))
       #t))
 
 ;*---------------------------------------------------------------------*/

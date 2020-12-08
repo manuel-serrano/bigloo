@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Jan 24 08:14:48 2019 (serrano)                */
-;*    Copyright   :  1992-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 16 06:02:14 2020 (serrano)                */
+;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -147,10 +147,6 @@
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (register-srfi! 'bigloo-c)))
-      ;; runtime code patching
-      (when *patch-support*
-	 (use-library! 'patch)
-	 (register-srfi! 'runtime-code-patching))
       ;; and we are done for the arguments parsing
       pres))
  
@@ -393,11 +389,6 @@
       ;; type refefinition
       (("-fallow-type-redefinition" (help "allow type redifinition"))
        (set! *allow-type-redefinition* #t))
-      ;; patch support
-      (("-runtime-code-patching" (help "Enable runtime code patching"))
-       (set! *patch-support* #t))
-      (("-no-runtime-code-patching" (help "Disable runtime code patching"))
-       (set! *patch-support* #f))
 ;*--- Optimization ----------------------------------------------------*/
       (section "Optimization")
       ;; benchmarking
@@ -511,10 +502,14 @@
        (set! *optim-return-goto?* #t))
       (("-fno-return-goto" (help "Disable local set-exit replacement"))
        (set! *optim-return-goto?* #f))
-;*       (("-fruntime-code-patching" (help "Optimize self-modifying code")) */
-;*        (set! *optim-patch?* #t))                                    */
-;*       (("-fno-runtime-code-paching" (help "Disable self-modifying code optimization")) */
-;*        (set! *optim-patch?* #f))                                    */
+      (("-fstackable" (help "Enable stackable optimization"))
+       (set! *optim-stackable?* #t))
+      (("-fno-stackable" (help "Disable stackable optimization"))
+       (set! *optim-stackable?* #f))
+      (("-funcell" (help "Enable cell removal"))
+       (set! *optim-uncell?* #t))
+      (("-fno-uncell" (help "Disable cell removal"))
+       (set! *optim-uncell?* #f))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
@@ -577,9 +572,12 @@
        (set! *error-localization* #f))
       (("-gjvm" (help "Annote JVM classes for debug"))
        (set! *jvm-debug* #t))
-      (("-gtrace?opt" (help "-gtrace[12]" "Producing stack traces"))
+      (("-gtrace?opt" (help "-gtrace[12all]" "Instrument for stack tracing"))
        (set! *compiler-debug-trace*
-	     (if (=fx (string-length opt) 0) 1 (string->integer opt))))
+	  (cond
+	     ((=fx (string-length opt) 0) 1)
+	     ((string=? opt "all") 10000000)
+	     (else (string->integer opt)))))
       (("-g?opt" (help "-g[234]" "Produce Bigloo debug informations"))
        (parse-debug-args opt))
       (("-cg" (help "Compile C files with debug option"))
@@ -628,12 +626,6 @@
 	  (set! *jas-peephole* #f)
 	  (set! *bmem-profiling* #t)
 	  (bigloo-profile-set! l)))
-;*        ;;(bigloo-compiler-debug-set! 2)                             */
-;*        (set! *compiler-debug-trace* 20)                             */
-;*        ;; (set! *compiler-debug* 2)                                 */
-;*        (set! *jas-peephole* #f)                                     */
-;*        (set! *bmem-profiling* #t)                                   */
-;*        (bigloo-profile-set! 2))                                     */
       (("-psync" (help "Profile synchronize expr (see $exitd-mutex-profile)"))
        (set! *sync-profiling* #t))
       
@@ -690,6 +682,17 @@
        (load-extend name)
        (when (procedure? *extend-entry*)
 	  (set! the-remaining-args (*extend-entry* the-remaining-args))))
+      (("-extend-module" ?exp (help "Extend the module syntax"))
+       (call-with-input-string exp
+	  (lambda (in)
+	     (let ((proc (eval (read in))))
+		(cond
+		   ((not (procedure? proc))
+		    (error "-extend-module" "Extension not a procedure" exp))
+		   ((not (correct-arity? proc 1))
+		    (error "-extend-module" "Illegal extension procedure" exp))
+		   (else
+		    (bigloo-module-extension-handler-set! proc)))))))
       (("-fsharing" (help "Attempt to share constant data"))
        (set! *shared-cnst?* #t))
       (("-fno-sharing" (help "Do not attempt to share constant data"))
@@ -924,8 +927,10 @@
        (set! *pass* 'assert))
       (("-cfa" (help "Stop after the cfa stage"))
        (set! *pass* 'cfa))
+      (("-stackable" (help "Stop after the stackable stage"))
+       (set! *pass* 'stackable))
       (("-closure" (help "Stop after the globalization stage"))
-       (set! *pass* 'globalize))
+       (set! *pass* 'closure))
       (("-recovery" (help "Stop after the type recovery stage"))
        (set! *pass* 'recovery))
       (("-bdb" (help "Stop after the Bdb code production"))
@@ -938,6 +943,8 @@
        (set! *pass* 'tailc))
       (("-return" (help "Stop after the return stage"))
        (set! *pass* 'return))
+      (("-uncell" (help "Stop after the cell removal stage"))
+       (set! *pass* 'uncell))
       (("-isa" (help "Stop after the isa stage"))
        (set! *pass* 'isa))
       (("-init" (help "Stop after the initialization construction stage"))
@@ -1270,6 +1277,8 @@
 			    (char->integer #\0))))
 	  ((#\6)
 	   (-O3!)
+	   (set! *optim-stackable?* #t)
+	   (set! *optim-uncell?* #t)
 	   (set! *optim* (-fx (char->integer (string-ref string 0))
 			    (char->integer #\0))))
 	  (else

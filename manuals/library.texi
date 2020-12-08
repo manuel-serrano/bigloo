@@ -249,6 +249,13 @@ functions that make use of new foreign types.
 
 The function @code{library-load} loads a library in the interpreter.
 
+@deffn {library procedure} library-multithread-set!
+Multi-threaded and single-threaded cannot be mixed. An application must
+use exclusively one kind of library. This function forces
+the specie of library to load dynamically. Normally this is set automatically
+and this function should be used only on exceptional situations.
+@end deffn
+
 @deffn {library procedure} library-exists? ident . path
 Checks if the library @var{ident} exists for the current back-end.
 

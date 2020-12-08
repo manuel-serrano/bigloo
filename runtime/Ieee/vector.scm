@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Mar 13 07:24:23 2019 (serrano)                */
+;*    Last change :  Wed Feb 12 08:59:30 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -104,6 +104,7 @@
 	    (inline vector-tag::int ::vector)
 	    (inline vector-tag-set! ::vector ::int)
 	    (copy-vector::vector ::vector ::long)
+	    (vector-copy3::vector ::vector start stop)
 	    (vector-copy::vector ::vector . args)
 	    (vector-copy! ::vector ::long source
 	       #!optional (sstart 0) (send (vector-length source)))
@@ -248,6 +249,26 @@
 		(loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    vector-copy3 ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (vector-copy3::vector old-vec::vector start stop)
+   (let* ((old-len (vector-length old-vec))
+	  (new-len (-fx stop start))
+	  (new-vec (make-vector new-len))
+	  (min (if (<fx new-len old-len)
+		   new-len
+		   old-len)))
+      (if (or (<fx new-len 0) (>fx start old-len) (>fx stop old-len))
+	  (error "vector-copy" "Illegal indexes" (cons start stop))
+	  (let loop ((r start)
+		     (w 0))
+	     (if (=fx r stop)
+		 new-vec
+		 (begin
+		    (vector-set-ur! new-vec w (vector-ref-ur old-vec r))
+		    (loop (+fx r 1) (+fx w 1))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    vector-copy ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (vector-copy::vector old-vec::vector . args)
@@ -262,29 +283,14 @@
 			    (not (fixnum? (cadr args))))
 			(error "vector-copy" "Illegal argument" (cdr args))
 			(cadr args))
-		    old-len))
-	  (new-len (-fx stop start))
-	  (new-vec (make-vector new-len))
-	  (min (if (<fx new-len old-len)
-		   new-len
-		   old-len)))
-      (if (or (<fx new-len 0)
-	      (>fx start old-len)
-	      (>fx stop old-len))
-	  (error "vector-copy" "Illegal indexes" args)
-	  (let loop ((r start)
-		     (w 0))
-	     (if (=fx r stop)
-		 new-vec
-		 (begin
-		    (vector-set-ur! new-vec w (vector-ref-ur old-vec r))
-		    (loop (+fx r 1) (+fx w 1))))))))
+		    old-len)))
+      (vector-copy3 old-vec start stop)))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-copy! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (vector-copy! target tstart source
-		      #!optional (sstart 0) (send (vector-length source)))
+                      #!optional (sstart 0) (send (vector-length source)))
    (let* ((end (minfx send (vector-length source)))
           (count (-fx end sstart))
           (tend (minfx (+fx tstart count) (vector-length target))))
@@ -414,38 +420,34 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-for-each2 ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (vector-for-each2 proc vdest vsrc)
-   (let ((len (vector-length vdest)))
+(define (vector-for-each2 proc vsrc)
+   (let ((len (vector-length vsrc)))
       (let loop ((i 0))
-	 (if (<fx i len)
-	     (begin
-		(proc (vector-ref-ur vsrc i))
-		(loop (+fx i 1)))
-	     vdest))))
+	 (when (<fx i len)
+	    (proc (vector-ref-ur vsrc i))
+	    (loop (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-for-eachN ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (vector-for-eachN proc vdest vsrc vrest)
-   (let ((len (vector-length vdest)))
+(define (vector-for-eachN proc vsrc vrest)
+   (let ((len (vector-length vsrc)))
       (let loop ((i 0))
-	 (if (<fx i len)
-	     (let ((args (map (lambda (v) (vector-ref v i)) vrest)))
-		(apply proc (vector-ref vsrc i) args)
-		(loop (+fx i 1)))
-	     vdest))))
+	 (when (<fx i len)
+	    (let ((args (map (lambda (v) (vector-ref v i)) vrest)))
+	       (apply proc (vector-ref vsrc i) args)
+	       (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-for-each ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (vector-for-each proc v . rest)
-   (let* ((len (vector-length v))
-	  (nv ($create-vector len)))
+   (let ((len (vector-length v)))
       (cond
 	 ((null? rest)
-	  (vector-for-each2 proc nv v))
+	  (vector-for-each2 proc v))
 	 ((every (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
-	  (vector-for-eachN proc nv v rest))
+	  (vector-for-eachN proc v rest))
 	 (else
 	  (error "vector-for-each" "Illegal arguments" rest)))))
 

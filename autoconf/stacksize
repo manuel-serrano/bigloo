@@ -5,7 +5,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr  5 08:43:23 2002                          */
 #*    Last change :  Sat Sep  5 06:14:03 2009 (serrano)                */
-#*    Copyright   :  2002-09 Manuel Serrano                            */
+#*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if the stack is large enough for compiling Bigloo.         */
 #*=====================================================================*/
@@ -78,10 +78,7 @@ int ssize( int size ) {
       return fun( size, ssize( size - 1 ) );
 }
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    fun = argc > 2 ? &bar : &foo;
 
    if( ssize( $stacksize * 1024 * 32 ) >= 0 )

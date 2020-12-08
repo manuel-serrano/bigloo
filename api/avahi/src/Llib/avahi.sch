@@ -21,6 +21,7 @@
       (include "avahi-common/thread-watch.h")
       (include "avahi-common/error.h")
       (include "avahi-common/alternative.h")
+      (include "bavahi.h")
 
       ;; misc
       (macro $avahi-strerror::string

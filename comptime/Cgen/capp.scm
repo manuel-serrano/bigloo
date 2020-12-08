@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cgen/capp.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cgen/capp.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Thu Dec 22 18:28:14 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  8 20:00:53 2020 (serrano)                */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -121,7 +121,7 @@
 		 (exps         '()))
 	 (if (null? old-actuals)
 	     (let* ((type (get-type node #f))
-		    (aux (make-local-svar/name 'tmp type))
+		    (aux (make-local-svar/name 'tmpfun *procedure*))
 		    (cop (node->cop (node-setq aux fun) *id-kont* inpushexit)))
 		(if (and (csetq? cop)
 			 (var? fun)
@@ -223,31 +223,26 @@
 ;*    node-sfun-non-tail-app->cop ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (node-sfun-non-tail-app->cop var::variable node kont inpushexit)
-   (let* ((args      (sfun-args (variable-value var)))
-	  (args-type (map (lambda (x)
-			     (if (local? x)
-				 (local-type x)
-				 x))
-			  args))
+   (let* ((args (sfun-args (variable-value var)))
+	  (args-type (map (lambda (x) (if (local? x) (local-type x) x)) args))
 	  (useless?  (lambda (cop aux)
 			(and (csetq? cop)
 			     (eq? (varc-variable (csetq-var cop)) aux)))))
-      (let loop ((old-actuals  (app-args node))
-		 (args-type    args-type)
-		 (new-actuals  '())
-		 (aux          (make-local-svar/name 'aux *obj*))
-		 (auxs         '())
-		 (exps         '()))
+      (let loop ((old-actuals (app-args node))
+		 (args-type args-type)
+		 (new-actuals '())
+		 (aux (make-local-svar/name 'aux *obj*))
+		 (auxs '())
+		 (exps '()))
 	 (if (null? old-actuals)
 	     (if (null? auxs)
 		 (kont (instantiate::capp
 			  (loc (node-loc node))
 			  (fun (node->cop (app-fun node) *id-kont* inpushexit))
 			  (args (reverse! new-actuals))))
-		 ;; when this function call uses arguments we have to take
-		 ;; care where to emit soruce line information. We have to
-		 ;; do it at the beginning of the lexical block that will bind
-		 ;; the actual parameter and that's it. nothing more.
+		 ;; when a function call uses arguments, the source line
+		 ;; information has do be included at the beginning of
+		 ;; the lexical block that binds the actual parameters.
 		 (let ((loc (app-loc node)))
 		    (instantiate::cblock
 		       (loc  loc)

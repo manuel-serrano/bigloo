@@ -26,17 +26,17 @@ bgl_init_trace() {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    get_trace_stack ...                                              */
+/*    bgl_get_trace_stack ...                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-get_trace_stack( int depth ) {
+bgl_get_trace_stack( int depth ) {
    long level = 0L;
    struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() );
    obj_t l = MAKE_PAIR( BNIL, BNIL );
    obj_t r = l;
 
    while( ((depth < 0) || (level < depth)) && runner ) {
-      if( SYMBOLP( runner->name ) ) {
+      if( SYMBOLP( runner->name ) || STRINGP( runner->name ) ) {
 	 obj_t p = MAKE_PAIR( runner->name, MAKE_PAIR( runner->location, BNIL ) );
 	 SET_CDR( r, MAKE_PAIR( p, BNIL ) );
 	 r = CDR( r );

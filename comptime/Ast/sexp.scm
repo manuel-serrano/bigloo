@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Apr 12 11:00:21 2019 (serrano)                */
+;*    Last change :  Thu Jun 11 07:49:36 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -52,6 +52,7 @@
 	    (sexp->node::node ::obj <obj> ::obj ::symbol)
 	    (sexp*->node::pair-nil ::pair-nil <obj> ::obj ::symbol)
 	    (define-primop-ref->node::node ::global ::node)
+	    (define-primop-ref/src->node::node ::global ::node ::obj)
 	    (define-primop->node::node ::global)
 	    (location->node::node ::global)
 	    (error-sexp->node::node ::bstring ::obj ::obj)
@@ -133,7 +134,10 @@
        (cond
 	  ((or (local? atom) (global? atom))
 	   (variable->node atom loc site))
-	  ((or (struct? atom) (vector? atom) (object? atom) (procedure? atom))
+	  ((or (struct? atom)
+	       (vector? atom) (homogeneous-vector? atom)
+	       (object? atom)
+	       (procedure? atom))
 	   (error-sexp->node "Illegal atom in s-expression" exp loc))
 	  ((not (symbol? atom))
 	   (instantiate::literal
@@ -292,7 +296,12 @@
 		  (cdloc (find-location/loc (cdr exp) loc))
 		  (cddloc (find-location/loc (cddr exp) loc))
 		  (val-loc (find-location/loc val cddloc))
-		  (val (sexp->node val stack val-loc 'value)))
+		  (val (match-case val
+			  ((lambda . ?-)
+			   (lambda->node val stack val-loc 'value
+				(symbol->string var)))	    
+			  (else
+			   (sexp->node val stack val-loc 'value)))))
 	      (let ((ast (sexp->node var stack cdloc 'set!)))
 		 (if (var? ast)
 		     (with-access::var ast (variable)
@@ -341,12 +350,6 @@
 	      (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
 	  (sexp->node nexp stack loc site)))
 ;*--- let & letrec ----------------------------------------------------*/
-;*       (((or let (? let-sym?) letrec)                                */
-;* 	((and ?binding (?var ?expr)))                                  */
-;* 	(and ?body (if (and (? symbol?) ?id) ?then ?otherwise)))       */
-;*        (if (not (eq? (id-of-id var loc) id))                        */
-;* 	   (let->node exp stack loc 'value)                            */
-;* 		  (let->node exp stack loc 'value)))                   */
       (((or let (? let-sym?) letrec) ?bindings . ?expr)
        (when (and (pair? bindings) (null? (cdr bindings))
 		  (and (pair? expr) (null? (cdr expr))))
@@ -445,18 +448,7 @@
       
 ;*--- lambda ----------------------------------------------------------*/
       ((lambda . ?-)
-       (match-case exp
-          ((?- ?args . ?body) 
-           (let ((loc (find-location/loc exp loc))
-		 (fun (make-anonymous-name loc)))
-              (sexp->node `(,(labels-sym) ((,fun ,args ,(normalize-progn body))) ,fun)
-		 stack
-		 loc
-		 site)))
-          (else
-	   (error-sexp->node "Illegal `lambda' form"
-	      exp
-	      (find-location/loc exp loc)))))
+       (lambda->node exp stack loc site "anonymous"))
 ;*--- pragma ----------------------------------------------------------*/
       ((pragma . ?-)
        (pragma/type->node #f #f *unspec* exp stack loc site))
@@ -575,6 +567,23 @@
        ;; form (pragma::??? ...) (because we can't add a branch in the
        ;; match-case to check the node `pragma::???').
        (call->node exp stack loc site))))
+
+;*---------------------------------------------------------------------*/
+;*    lambda->node ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (lambda->node exp stack loc site prefname)
+   (match-case exp
+      ((?- ?args . ?body) 
+       (let ((loc (find-location/loc exp loc))
+	     (fun (make-anonymous-name loc prefname)))
+	  (sexp->node `(,(labels-sym) ((,fun ,args ,(normalize-progn body))) ,fun)
+	     stack
+	     loc
+	     site)))
+      (else
+       (error-sexp->node "Illegal `lambda' form"
+	  exp
+	  (find-location/loc exp loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    variable->node ...                                               */
@@ -732,6 +741,28 @@
 	  fun)))
 
 ;*---------------------------------------------------------------------*/
+;*    define-primop-ref/src->node ...                                  */
+;*---------------------------------------------------------------------*/
+(define (define-primop-ref/src->node global ref src)
+   (if (not (epair? src))
+       (define-primop-ref->node global ref)
+       (match-case (cer src)
+	  ((at ?fname ?loc)
+	   (let ((fun (sexp->node '(@ define-primop-ref/loc! __evenv) '() #f 'app)))
+	      (if (var? fun)
+		  (instantiate::app
+		     (type *_*)
+		     (fun fun)
+		     (args (list
+			      (sexp->node `',(global-id global) '() #f 'value)
+			      ref
+			      (sexp->node fname '() #f 'value)
+			      (sexp->node loc '() #f 'value))))
+		  fun)))
+	  (else
+	   (define-primop-ref->node global ref)))))
+
+;*---------------------------------------------------------------------*/
 ;*    define-primop->node ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (define-primop->node global)
@@ -771,8 +802,10 @@
       (if (location? loc)
 	  (let ((file (location-full-fname loc))
 		(line (location-lnum loc))
-		(base (symbol->string (gensym (string-append "<" pref ":")))))
+		(base (symbol->string (gensym (string-append "<@" pref ":")))))
 	     (cond
+		((string-contains pref "<@")
+		 (symbol-append (string->symbol pref) (gensym 'anonymous)))
 		((or (and (>=fx *bdb-debug* 1)
 			  (memq 'bdb (backend-debug-support (the-backend))))
 		     (>=fx *compiler-debug* 1))
@@ -783,10 +816,10 @@
 		     (string-append base ":"
 				    (string-replace file #\. #\,)
 				    ":" (number->string line)
-				    ">"))))
+				    "@>"))))
 		(else
 		 (string->symbol (string-replace (string-append base ">") #\. #\,)))))
-	  (symbol-append (gensym (string-append "<" pref "-")) '>))))
+	  (symbol-append (gensym (string-append "<@" pref "-")) '@>))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    synchronize->node ...                                            */

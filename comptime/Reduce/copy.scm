@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/copy.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/copy.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov  3 17:46:46 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 25 19:20:51 2019 (serrano)                */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -276,26 +276,26 @@
 		(set-cdr! binding val)
 		;; we test a bit more than exact copy propagation
 		;; because we check if val is also an atom.
-		(trace (reduce 3)
+		(trace (reduce reduce+ 3)
 		   "copy-propagation: var:" (shape var) " ["
 		   (variable-access var)
-		   "]  val: " (shape val) " "
+		   "] val=" (shape val) " "
 		   (if (var? val) (variable-access (var-variable val)) "?")
-		   "]" #\Newline)
+		   "] copyable=" (copyable? val var) " type="
+		   (cell-type-less-specific?
+		      (node-type val)
+		      (variable-type var))
+		   " tval=" (shape (node-type val))
+		   " tvar=" (shape (variable-type var))
+		   #\Newline)
 		(if (and (eq? (variable-access var) 'read)
 			 (copyable? val var)
-			 (type-less-specific?
+			 (cell-type-less-specific?
 			    (node-type val)
 			    (variable-type var)))
-;* 			     (and (var? val)                           */
-;* 				  (eq? (variable-access (var-variable val)) */
-;* 				     'read)                            */
-;* 				  (type-less-specific?                 */
-;* 				     (variable-type var)               */
-;* 				     (variable-type (var-variable val)))))) */
  		    (begin
 		       ;; we propagate the copy
-		       (trace (reduce 3) "copy: reducing: "
+		       (trace (reduce reduce+ 3) "copy: reducing: "
 			  (shape val) " -> " (shape var) #\Newline)
 		       (set! *copy-removed* (+fx *copy-removed* 1))
 		       (variable-fast-alpha-set! var
@@ -307,7 +307,14 @@
 				 (arg val))))
 		       (loop (cdr obindings) nbindings))
 		    (loop (cdr obindings) (cons binding nbindings))))))))
- 
+
+;*---------------------------------------------------------------------*/
+;*    cell-type-less-specific? ...                                     */
+;*---------------------------------------------------------------------*/
+(define (cell-type-less-specific? ty1 ty2)
+   (or (type-less-specific? ty1 ty2)
+       (and (eq? ty2 *obj*) (eq? ty1 *cell*))))
+
 ;*---------------------------------------------------------------------*/
 ;*    node-copy! ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
@@ -354,18 +361,32 @@
 ;*    node-copy! ::box-set! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (node-copy! node::box-set!)
-   (with-access::box-set! node (var value)
-      (set! var (node-copy! var))
+   (with-access::box-set! node (var value) 
       (set! value (node-copy! value))
-      node))
+      (let ((cp (node-copy! var)))
+	 (if (isa? cp cast)
+	     (with-access::cast cp (arg)
+		(set! var arg)
+		(set! arg node)
+		cp)
+	     (begin
+		(set! var cp)
+		node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-copy! ::box-ref ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node-copy! node::box-ref)
    (with-access::box-ref node (var)
-      (set! var (node-copy! var))
-      node))
+      (let ((cp (node-copy! var)))
+	 (if (isa? cp cast)
+	     (with-access::cast cp (arg)
+		(set! var arg)
+		(set! arg node)
+		cp)
+	     (begin
+		(set! var cp)
+		node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-copy! ::app ...                                             */

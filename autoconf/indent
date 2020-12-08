@@ -62,10 +62,7 @@ fi
 cat > $file.c <<EOF
 #include <stdlib.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    exit( 0 );
 }
 EOF

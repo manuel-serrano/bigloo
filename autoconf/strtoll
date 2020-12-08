@@ -67,10 +67,7 @@ fi
 cat > $file.c <<EOF
 #include <stdlib.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
 EOF
 echo "   return (strtoll( \"123\", 0, 10 ) == 123);" >> $file.c
 echo "}" >> $file.c

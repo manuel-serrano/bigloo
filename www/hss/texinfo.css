@@ -1,0 +1,89 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/bigloo/www/hss/texinfo.css           */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Sat Jul 18 18:07:23 2015                          */
+/*    Last change :  Sat May  9 06:39:14 2020 (serrano)                */
+/*    Copyright   :  2015-20 Manuel Serrano                            */
+/*    -------------------------------------------------------------    */
+/*    Simple default style sheet for markdown rendering                */
+/*=====================================================================*/
+
+/*---------------------------------------------------------------------*/
+/*    sectioning                                                       */
+/*---------------------------------------------------------------------*/
+h1.texinfo:before {
+    content: none;
+}
+
+h2.texinfo {
+    margin-top: 2ex;
+    counter-reset: subsubsection-texinfo;
+}
+
+h2.texinfo:before {
+    content: counter( subsection ) ".  ";
+}
+
+h3.texinfo {
+    margin-top: 2ex;
+    margin-bottom: 2ex;
+}
+
+h3.texinfo:nth-child( 1 ) {
+    margin-top: 1ex;
+}    
+
+h3.texinfo:before {
+    counter-increment: subsubsection-texinfo;
+    content: counter( subsection ) "." counter( subsubsection-texinfo ) ".  ";
+}
+
+/*---------------------------------------------------------------------*/
+/*    deffn                                                            */
+/*---------------------------------------------------------------------*/
+h4.deffn {
+    display: block;
+    padding-left: 0.2em;
+    background-color: #dfdfdf;
+}
+
+h4.deffnx-first {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+h4.deffnx {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    padding-top: 1ex;
+}
+
+h4.deffnx-last {
+    margin-top: 0;
+    padding-top: 1ex;
+}
+
+h4 .deffn-name {
+    font-family: monospace;
+    padding-left: 0.5em;
+}
+
+h4 .deffn-args {
+    font-style: italic;
+}
+
+h4 .deffn-kind {
+    float: right;
+    padding-right: 0.5em;
+}
+
+h4 .deffn-name {
+    font-weight: bold;
+}
+
+.deffn-end {
+    margin-top: 1ex;
+    visibility: hidden;
+}

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Tue May 28 07:22:42 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 07:50:46 2019 (serrano)                */
 #*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the libuv.                              */
@@ -15,7 +15,6 @@ echo "configure libuv with \"./configure --libdir=$bootdir/$fildir --includedir=
 src=libuv-$libuvversion
 
 (cd $src && \
- sh autogen.sh && \
  export CC="$cc" && \
  export CFLAGS="$cflags" && \
  export LDFLAGS="$lflags" && \

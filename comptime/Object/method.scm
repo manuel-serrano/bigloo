@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Sun Feb 11 18:23:35 2018 (serrano)                */
-;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 17 06:08:17 2020 (serrano)                */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
 ;*=====================================================================*/
@@ -133,7 +133,7 @@
 				   (make-typed-ident m-id (type-id (global-type generic)))
 				   m-id))
 			(bdg   `(,tm-id ,(if dsssl
-					     (dsssl-formals->scheme-typed-formals args error #f)
+					     (dsssl-formals->scheme-typed-formals args error #t)
 					     args)
 				   ,ebody))
 			(ebdg  (if (epair? src)

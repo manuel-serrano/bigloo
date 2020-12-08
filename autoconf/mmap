@@ -56,10 +56,7 @@ cat > $file.c <<EOF
 #include <fcntl.h>
 #include <string.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    return (int)mmap( 0, 100, PROT_READ | PROT_WRITE, MAP_PRIVATE, 0, 0 );
 }
 EOF

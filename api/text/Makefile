@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/text/Makefile                    */
+#*    serrano/prgm/project/bigloo/bigloo/api/text/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:18:09 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:21:54 2020 (serrano)                */
+#*    Copyright   :  2001-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -90,18 +90,18 @@ install: api-install-init text-install-data
           fi
 
 text-install-data:
-	if [ ! -d $(LIBDIR)/$(FILDIR)/text ]; then \
-	   mkdir -p $(LIBDIR)/$(FILDIR)/text \
-             && chmod $(MODDIR) $(LIBDIR)/$(FILDIR)/text \
-             && mkdir -p $(LIBDIR)/$(FILDIR)/text/data \
-             && chmod $(MODDIR) $(LIBDIR)/$(FILDIR)/text/data; \
-	elif [ ! -d $(LIBDIR)/text/data ]; then \
-          mkdir -p $(LIBDIR)/$(FILDIR)/text/data \
-             && chmod $(MODDIR) $(LIBDIR)/$(FILDIR)/text/data; \
+	if [ ! -d $(DESTDIR)$(LIBDIR)/$(FILDIR)/text ]; then \
+	   mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/text \
+             && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/text \
+             && mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/text/data \
+             && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/text/data; \
+	elif [ ! -d $(DESTDIR)$(LIBDIR)/text/data ]; then \
+          mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/text/data \
+             && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/text/data; \
         fi
 	for p in data/*; do \
-          cp $$p $(LIBDIR)/$(FILDIR)/text/data \
-            && chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/text/$$p; \
+          cp $$p $(DESTDIR)$(LIBDIR)/$(FILDIR)/text/data \
+            && chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/text/$$p; \
         done
 
 uninstall: api-uninstall-init \
@@ -110,7 +110,7 @@ uninstall: api-uninstall-init \
            text-uninstall-data
 
 text-uninstall-data:
-	-$(RM) -rf $(LIBDIR)/$(FILDIR)/text
+	-$(RM) -rf $(DESTDIR)$(LIBDIR)/$(FILDIR)/text
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

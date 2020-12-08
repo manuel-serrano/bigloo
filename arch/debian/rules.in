@@ -18,13 +18,15 @@ DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 CFLAGS = 
 LDFLAGS =
 
-LDLIBPATH = $(CURDIR)/debian/bigloo-libs@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libsqlite-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpkglib-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libssl-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libalsa-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpulseaudio-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libflac-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libwav-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmpg123-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libavahi-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libgstreamer-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libphidget-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$$LD_LIBRARY_PATH
+LDLIBPATH = $(CURDIR)/debian/bigloo-libs@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libsqlite-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpkglib-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libssl-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libalsa-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpulseaudio-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmultimedia-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libflac-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libwav-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmpg123-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libavahi-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libgstreamer-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libphidget-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$$LD_LIBRARY_PATH
 
 config.status: configure
 	dh_testdir
 	# Add here commands to configure the package.
 	# CFLAGS="$(CFLAGS) -g" ./configure --prefix=/usr --stack-check=no --debug2
-	CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" ./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --disable-thread-local-storage --abort-missing @BGLCONFIGUREOPT@
+	#CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" ./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --disable-thread-local-storage --abort-missing @BGLCONFIGUREOPT@
+#* 	./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --disable-thread-local-storage --abort-missing @BGLCONFIGUREOPT@ */
+	./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --abort-missing @BGLCONFIGUREOPT@
 
 
 build: build-stamp
@@ -65,10 +67,11 @@ install: build
 	$(MAKE) install-libs DESTDIR=$(CURDIR)/debian/bigloo-libs
 	$(MAKE) install-devel DESTDIR=$(CURDIR)/debian/bigloo
 	$(MAKE) install-docs DESTDIR=$(CURDIR)/debian/bigloo-doc
-	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl alsa pulseaudio flac wav mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
+	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl multimedia alsa pulseaudio flac wav mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
 	@IFSQLITE@ $(MAKE) install-api API=sqlite DESTDIR=$(CURDIR)/debian/libsqlite-bigloo
 	@IFPKGLIB@ $(MAKE) install-api API=pkglib DESTDIR=$(CURDIR)/debian/libpkglib-bigloo
 	@IFSSL@ $(MAKE) install-api API=ssl DESTDIR=$(CURDIR)/debian/libssl-bigloo
+	@IFMULTIMEDIA@ $(MAKE) install-api API=multimedia DESTDIR=$(CURDIR)/debian/libmultimedia-bigloo
 	@IFALSA@ $(MAKE) install-api API=alsa DESTDIR=$(CURDIR)/debian/libalsa-bigloo
 	@IFPULSEAUDIO@ $(MAKE) install-api API=pulseaudio DESTDIR=$(CURDIR)/debian/libpulseaudio-bigloo
 	@IFFLAC@ $(MAKE) install-api API=flac DESTDIR=$(CURDIR)/debian/libflac-bigloo
@@ -109,7 +112,8 @@ binary-arch: build install
 #	dh_python
 	LD_LIBRARY_PATH=$(LDLIBPATH) dh_makeshlibs
 	dh_installdeb
-	LD_LIBRARY_PATH=$(LDLIBPATH) dh_shlibdeps -X bmem.so
+#	LD_LIBRARY_PATH=$(LDLIBPATH) dh_shlibdeps -X bmem.so
+	dh_shlibdeps -l$(LDLIBPATH) -X bmem.so
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

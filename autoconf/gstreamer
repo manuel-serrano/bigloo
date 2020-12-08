@@ -14,7 +14,7 @@
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
 cflags=
-gstversion=0.10
+gstversion=1.0
 pkgconfig=pkg-config
 pkg=
 
@@ -122,7 +122,7 @@ new_pad (GstElement *element, GstPad *pad, gpointer data) {
   GstPad *sinkpad;
   g_print ("Dynamic pad created, linking parser/decoder\n");
 
-  sinkpad = gst_element_get_pad (decoder, "sink");
+  sinkpad = gst_element_get_static_pad (decoder, "sink");
   gst_pad_link (pad, sinkpad);
 
   gst_object_unref (sinkpad);
@@ -136,7 +136,7 @@ int main (int argc, char *argv[]) {
   loop = g_main_loop_new (NULL, FALSE);
 
   {
-     GstRegistry* gregistry = gst_registry_get_default ();
+     GstRegistry* gregistry = gst_registry_get ();
      GList *glist = gst_registry_get_feature_list( gregistry, GST_TYPE_ELEMENT_FACTORY );
      while( glist ) {
 	GstElementFactory *factory;

@@ -21,7 +21,8 @@
 
 @deffn {bigloo procedure} date? obj
 Returns @code{#t} if and only if @var{obj} is a @emph{date} as returned
-by @code{make-date}, @code{current-date}, or @code{seconds->date}. It
+by @code{make-date}, @code{current-date}, @code{seconds->date}, or
+@code{seconds->gmtdate}. It
 returns @code{#f} otherwise.
 @end deffn
 
@@ -41,8 +42,9 @@ available, @code{0} when daylight saving is disabled, @code{1} when daylight
 saving is enabled.
 @end deffn
 
-@deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone
-Creates a new date from the argument @var{date}. 
+@deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone isdst
+@deffnx {bigloo procedure} date-update! date #!key sec min hour day month year
+Creates a new date or update an existing from the argument @var{date}. 
 
 Example:
 @smalllisp
@@ -51,12 +53,19 @@ Example:
 
 @end deffn
 
+@deffn {bigloo procedure} date->gmtdate! date
+Update the date to switch to an UTC representation. Returns the modified
+date object.
+@end deffn
+
+
 @deffn {bigloo procedure} current-date
 Returns a @code{date} object representing the current date.
 @end deffn
 
 @deffn {bigloo procedure} current-seconds
 @deffnx {bigloo procedure} current-microseconds
+@deffnx {bigloo procedure} current-milliseconds
 @deffnx {bigloo procedure} current-nanoseconds
 Returns an @code{elong} integer representing the current epoch (i.e., the
 date since 0:00:00 UTC on the morning of 1 January 1970, expressed
@@ -65,8 +74,12 @@ in seconds (resp. in micro seconds).
 
 @deffn {bigloo procedure} date->seconds
 @deffnx {bigloo procedure} date->nanoseconds
+@deffnx {bigloo procedure} date->milliseconds
 @deffnx {bigloo procedure} seconds->date
+@deffnx {bigloo procedure - 4.3h} seconds->gmtdate
+@deffnx {bigloo procedure - 4.3i} milliseconds->gmtdate
 @deffnx {bigloo procedure} nanoeconds->date
+@deffnx {bigloo procedure} milliseconds->date
 Convert from @code{date} and @code{elong}.
 @end deffn
 
@@ -82,7 +95,8 @@ Returns the number of seconds of a date, in the range @code{0...59}.
 @end deffn
 
 @deffn {bigloo procedure} date-nanosecond date
-Returns the number of nano seconds of a date (to be added to 
+@deffnx {bigloo procedure} date-millisecond date
+Returns the number of nano/milli seconds of a date (to be added to 
 @code{date-second}).
 @end deffn
 

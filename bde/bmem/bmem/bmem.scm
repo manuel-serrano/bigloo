@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
 ;*    Last change :  Sun Jun  9 09:06:30 2019 (serrano)                */
-;*    Copyright   :  2003-19 Manuel Serrano                            */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
 ;*    from a monitor file.                                             */
@@ -243,29 +243,29 @@
 	  (id (pregexp-case i
                  ;;;		    
 		 ("<anonymous:[^:]+:([^:]+):([0-9]+)>"
-		  (list "&#955;"
-			(html-span :class "function-index"
-				   (list (match 0) ":" (match 1)))))
+		    (list "&#955;"
+		       (html-span :class "function-index"
+			  (list (match 0) ":" (match 1)))))
 		 ("<anonymous:([^>]+)>"
-		  (list "&#955;"
-			(html-span :class "function-index" (match 0))))
+		    (list "&#955;"
+		       (html-span :class "function-index" (match 0))))
 		 ("<exit:[^:]+:([^:]+):([0-9]+)>"
-		  (list "&#923;"
-			(html-span :class "function-index"
-				   (list (match 0) ":" (match 1)))))
+		    (list "&#923;"
+		       (html-span :class "function-index"
+			  (list (match 0) ":" (match 1)))))
 		 ("<exit:([^>]+)>"
-		  (list "&#923;"
-			(html-span :class "function-index" (match 0))))
+		    (list "&#923;"
+		       (html-span :class "function-index" (match 0))))
 		 (else
 		  (html-string i))))
-	  (hid (html-div :class "XX function-ident" :title i id)))
+	  (hid (html-div :class "function-ident" :title i id)))
       (if (not (http-request?))
 	  hid
 	  (let ((url (format "http://~a:~a/~a?fun=~a"
-			     *hostname*
-			     *port*
-			     *file*
-			     ident)))
+			*hostname*
+			*port*
+			*file*
+			ident)))
 	     (html-a :class "function-ref" :href url hid)))))
 
 ;*---------------------------------------------------------------------*/
@@ -319,14 +319,6 @@
 			(html-h2 "Legends")
 			(html-legend
 			 1 "90%"
-			 (map (lambda (t)
-				 (list (format "gc~a" (+fx 1 (car t)))
-				       (format "gc #~a" (+fx 1 (car t)))))
-			      (cdr gcmon))
-			 "Gcs" "gc-legend")
-			(html-br)
-			(html-legend
-			 1 "90%"
 			 (map (lambda (f)
 				 (with-access::funinfo f (ident num)
 				    (list (format "function~a" num)
@@ -351,7 +343,15 @@
 			      (sort (cdr types)
 				    (lambda (t1 t2)
 				       (string<? (cadr t1) (cadr t2)))))
-			 "Types" "type-legend")))
+			 "Types" "type-legend")
+			(html-br)
+			(html-legend
+			 1 "90%"
+			 (map (lambda (t)
+				 (list (format "gc~a" (+fx 1 (car t)))
+				       (format "gc #~a" (+fx 1 (car t)))))
+			      (cdr gcmon))
+			 "Gcs" "gc-legend")))
 	  (title (if (pair? info)
 		     (let ((c (assq 'exec (cdr info))))
 			(if (pair? c)
@@ -390,7 +390,7 @@
       (let loop ((i (length gcmon))
 		 (res '()))
 	 (if (>=fx i -1)
-	     (let* ((selector (format "div.profile td.gc~a" i))
+	     (let* ((selector (format "div.profile .gc~a" i))
 		    (color (case i
 			      ((-1) "#ccc")
 			      ((0) "#ddf")
@@ -399,18 +399,18 @@
 		(loop (-fx i 1) (cons entry res)))
 	     (reverse! res))))
    (define (function-css fun)
-      (cons `("div.profile td.function-1" background: "#ccc" cursor: help)
+      (cons `("div.profile .function-1" background: "#ccc" cursor: help)
 	 (map (lambda (f)
 		 (with-access::funinfo f (num)
-		    (let* ((selector (format "div.profile td.function~a" num))
+		    (let* ((selector (format "div.profile .function~a" num))
 			   (color (css-color num 143 255 128)))
 		       `(,selector background: ,color cursor: help))))
 	    fun)))
    (define (type-css types)
-      (cons `("div.profile td.type-1" background: "#ccc" cursor: help)
+      (cons `("div.profile .type-1" background: "#ccc" cursor: help)
 	 (map (lambda (t)
 		 (let* ((i (car t))
-			(selector (format "div.profile td.type~a" i))
+			(selector (format "div.profile .type~a" i))
 			(color (if (string=? (cadr t) "byte")
 				   "rgb( 60, 60, 60 )"
 				   (css-color i 200 40 80))))

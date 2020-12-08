@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Fri Jan 18 12:29:27 2019 (serrano)                */
+;*    Last change :  Sun Jan  5 18:36:39 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -980,11 +980,11 @@
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
 	    (unsigned->string::bstring ::obj #!optional (radix::long 16))
-	    (string->integer::long ::bstring . pair)
+	    (string->integer::long ::bstring #!optional (radix::long 10) (start::long 0))
 	    (elong->string::bstring ::elong . pair)
-	    (string->elong::elong ::bstring . pair)
+	    (string->elong::elong ::bstring #!optional (radix::long 10))
 	    (llong->string::bstring ::llong . pair)
-	    (string->llong::llong ::bstring . pair)
+	    (string->llong::llong ::bstring #!optional (radix::long 10))
 	    (bignum->string::bstring ::bignum #!optional (radix::long 10))
 	    (string->bignum::bignum ::bstring #!optional (radix::long 10))
 	    (bignum->octet-string::bstring ::bignum)
@@ -1393,7 +1393,7 @@
        ($int64? obj)
        ($uint64? obj)
        ($bignum? obj)
-       (and (c-flonum? obj) (=fl obj (roundfl obj)))))
+       (and (c-flonum? obj) (integerfl? obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    predicates ...                                                   */
@@ -2319,7 +2319,9 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (integer->string-op op x radix)
    (let* ((op->string (symbol-append op '->string))
-	  (c-op->string (symbol-append 'c- op->string))
+	  (c-op->string (if (eq? op 'bignum)
+			    '$bignum->string
+			    (symbol-append 'c- op->string)))
 	  (radixv (gensym 'radix)))
       `(let ((,radixv ,radix))
 	  (cond
@@ -2457,35 +2459,33 @@
 		(+bx (*bx res #z256)
 		     (fixnum->bignum (char->integer (string-ref str i))))))))
 
-
 ;*---------------------------------------------------------------------*/
 ;*    string->integer ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Not inlined because it is overriden by a macro.                  */
 ;*---------------------------------------------------------------------*/
-(define (string->integer string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  ;; strtol cannot be renamed as it is used by the compiler
-	  ;; to optmize the call
-	  (strtol string 0 r)
-	  (error "string->integer" "Illegal radix" r))))
+(define (string->integer string #!optional (radix::long 10) (start::long 0))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       ;; strtol cannot be renamed as it is used by the compiler
+       ;; to optmize the call
+       (strtol string start radix)
+       (error "string->integer" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->elong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->elong string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  (strtoel string 0 r)
-	  (error "string->elong" "Illegal radix" r))))
+(define (string->elong string #!optional (radix::long 10))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       (strtoel string 0 radix)
+       (error "string->elong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->llong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->llong string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  (strtoll string 0 r)
-	  (error "string->llong" "Illegal radix" r))))
+(define (string->llong string #!optional (radix::long 10))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       (strtoll string 0 radix)
+       (error "string->llong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->bignum ...                                               */

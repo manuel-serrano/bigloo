@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Feb  6 11:38:12 2018 (serrano)                */
+#*    Last change :  Tue Jan 21 08:24:49 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -47,9 +47,9 @@ CEFLAGS		=
 
 # Additional pthread lib for C
 ifeq "$(AVAHILIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(AVAHILIBS)
+EXTRALIBS	+= $(AVAHILIBS) $(PTHREADLIBS)
+BIGLOOEXTRALIBS += bigloopthread
 endif
 
 DISTRIB_FILES	= $(C_SRC_DIR)/bglavahi.h

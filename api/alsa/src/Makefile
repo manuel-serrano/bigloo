@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Mar  7 17:57:28 2019 (serrano)                */
+#*    Last change :  Fri Mar 27 12:34:05 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -38,7 +38,7 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPISAFE	= -unsafe -safee
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
-                  -srfi $(API) -copt "$(ALSACFLAGS)"
+                  -srfi $(API) -copt "$(ALSACFLAGS) -DBGL_DUMMY"
 CAPIFLAGS       = $(ALSACFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -50,7 +50,8 @@ CEFLAGS		= $(ALSACFLAGS)
 ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(ALSALIBS)
+EXTRALIBS	+= $(ALSALIBS)
+BIGLOOEXTRALIBS	+= bigloomultimedia
 endif
 
 #*---------------------------------------------------------------------*/

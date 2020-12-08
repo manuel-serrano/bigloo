@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
+/*    /tmp/OFAOT/nan/lib/bigloo/4.3h/bigloo.h                          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Aug  8 13:59:54 2019 (serrano)                */
+/*    Last change :  Tue Apr 28 10:36:27 2020 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -51,6 +51,7 @@ extern "C" {
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+#include <time.h>
 #if !defined( _MSC_VER ) && !defined( _MINGW_VER )
 #  include <unistd.h>
 #endif
@@ -87,7 +88,7 @@ extern "C" {
 /*    This number is used to ensure the compatibility between the      */
 /*    compiler and the blib library.                                   */
 /*---------------------------------------------------------------------*/
-#define BDB_LIBRARY_MAGIC_NUMBER ((char *)0x1024)
+#define BDB_LIBRARY_MAGIC_NUMBER (0x1024)
        
 /*---------------------------------------------------------------------*/
 /*    BIGLOO_EXIT                                                      */
@@ -118,27 +119,27 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    32 bit tagging:                                                  */
 /*    -------------------------------------------------------------    */
-/*    allocated values:                                                */
+/*    - allocated values:                                              */
 /*    +--------+--------+--------+--------+                            */
 /*    |....signed fixed point value.....??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    30 bits immediate values (integers):                             */
+/*    - 30 bits immediate values (integers):                           */
 /*    +--------+--------+--------+--------+                            */
 /*    |....signed fixed point value.....??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    6 bits constants (booleans, nil, unspecified, ...):              */
+/*    - 6 bits constants (booleans, nil, unspecified, ...):            */
 /*    +--------+--------+--------+--------+                            */
 /*    |.................|..xxxxxx|mmmmmm??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    8 bits immediate values (chars, int8):                           */
+/*    - 8 bits immediate values (chars, int8):                         */
 /*    +--------+--------+--------+--------+                            */
 /*    |.................|xxxxxxxx|mmmmmm??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
-/*    16 bits immediate values (ucs2, int16):                          */
+/*    - 16 bits immediate values (ucs2, int16):                        */
 /*    +--------+--------+--------+--------+                            */
 /*    |xxxxxxxx|xxxxxxxx|........|mmmmmm??|                            */
 /*    +--------+--------+--------+--------+                            */
@@ -146,12 +147,12 @@ extern "C" {
 /*    -------------------------------------------------------------    */
 /*    64 bit tagging:                                                  */
 /*    -------------------------------------------------------------    */
-/*    pointers (vector, cell, real):                                   */
+/*    - pointers (vector, cell, real):                                 */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*    |...........................pointer....................... ???|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*                                                                     */
-/*    int32:                                                           */
+/*    - int61:                                                         */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|.......|...................... ???|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
@@ -159,10 +160,29 @@ extern "C" {
 /*    -------------------------------------------------------------    */
 /*    64 nan tagging:                                                  */
 /*    -------------------------------------------------------------    */
-/*    pointers (vector, cell, real):                                   */
+/*    - pointers (vector, cell, real):                                 */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*    |x1111111|1111????|.........pointer...........................|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*                                                                     */
+/*    - int32:                                                         */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*    |x1111111|1111????|.......|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*                                                                     */
+/*    -------------------------------------------------------------    */
+/*    64 smi tagging:                                                  */
+/*    -------------------------------------------------------------    */
+/*    - pointers (vector, cell, real):                                 */
+/*                                                                     */
+/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*    |...........................pointer....................... ???|  */
+/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*                                                                     */
+/*    - int32:                                                         */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|_ ... ________________???|  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
 /*                                                                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING ) /* BGL_NAN_TAGGING */
@@ -215,6 +235,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
 #  define TAG_QNAN (0x7ff8UL<<48)
+#  define TAG_SNAN (0xfff8UL<<48)
 #  define TAG_INT (0x7ff9L<<48)       /*  Int tagging       011...1000 */
 #  define TAG_STRUCT (0x7ffaUL<<48)   /*  Pointers tagging  011...1001 */
 #  define TAG_CNST (0x7ffbUL<<48)     /*  Constants tagging 011...1010 */
@@ -251,7 +272,8 @@ error "Unknown garbage collector type"
 #  define TAG_VECTOR 4                /*  Vector tagging        ...100 */
 #  define TAG_CELL 5                  /*  Cells tagging         ...101 */
 #  define TAG_REAL 6                  /*  Reals tagging         ...110 */
-#  define TAG_SYMBOL 7                /*  Symbols tagging       ...111 */
+#  define TAG_STRING 7                /*  Strings tagging       ...111 */
+//#  define TAG_SYMBOL 7                /*  Symbols tagging       ...111 */
 #endif
 
 #if( PTR_ALIGNMENT == 2 && defined( BGL_TAG_CNST32 ) && !BGL_NAN_TAGGING)
@@ -785,8 +807,8 @@ union scmobj {
 #  if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
       /* pcre regular expression */
       void *study;
-      int capturecount;
 #  endif
+      int capturecount;
    } regexp;
 
    /* custom objects */
@@ -809,28 +831,16 @@ union scmobj {
    /* dates */
    struct bgl_date {
       header_t header;
-      /* number of nanoRseconds */
+      /* the UTC date in seconds */
+      time_t time;
+      /* the tm structure */
+      struct tm tm;
+      /* number of nano seconds */
       BGL_LONGLONG_T nsec;
-      /* number of seconds [0..59] */
-      int sec;
-      /* number of minutes [0..59] */
-      int min;
-      /* number of hour [0..23] */
-      int hour;
-      /* day of month [0..30] */
-      int mday;
-      /* month number [0..11] */
-      int mon;
-      /* year number [0..20xx] */
-      int year;
-      /* day of week [0..6] */ 
-      int wday;
-      /* day of year [0..365] */
-      int yday;
       /* number of seconds of timezone */
+#if( !BGL_HAVE_GMTOFF )
       long timezone;
-      /* daylight savings? [-1/0/1] */   
-      int isdst;                 
+#endif
    } date;
 
    /* mutexes */
@@ -1071,8 +1081,13 @@ typedef obj_t (*function_t)();
 #define BREST BCNST( 28L )
 #define BKEY BCNST( 30L )
 
-#define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
-   (((long)(obj) & (long)BNIL) == (long)BNIL)
+#if( !BGL_NAN_TAGGING )
+#  define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
+   ((((long)(obj)) & ((TAG_MASK << 1) + 1)) == (long)BNIL)
+#else
+#  define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
+   ((obj) == BNIL || ((obj) == BUNSPEC))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */
@@ -1174,6 +1189,15 @@ typedef obj_t (*function_t)();
 #define MAKE_VA_PROCEDURE( entry, arity, size ) \
    make_va_procedure( (function_t)entry, arity, size )
 
+#define BGL_MAKE_FX_PROCEDURE_STACK( tmp, entry, arity, size ) \
+   bgl_init_fx_procedure( (obj_t)(&tmp), entry, arity, size )
+
+#define BGL_PROCEDURE_BYTE_SIZE( size ) \
+   (PROCEDURE_SIZE + ((size-1) * OBJ_SIZE))
+	 
+#define BGL_ALLOC_STACK_FX_PROCEDURE( size ) \
+   char[ PROCEDURE_SIZE + ((size-1) * OBJ_SIZE) ]
+	 
 /*---------------------------------------------------------------------*/
 /*    Light procedures                                                 */
 /*---------------------------------------------------------------------*/
@@ -1626,6 +1650,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_REGEXP_PREG( o ) (BGL_REGEXP( o ).preg)   
 #define BGL_REGEXP_PREG_SET( o, v ) (BGL_REGEXP_PREG( o ) = (v))
 #define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)
+#define BGL_REGEXP_CAPTURE_COUNT( o ) (BGL_REGEXP( o ).capturecount)
 
 #define BGL_REGEXP_MATCH( o, string, stringp, beg, len ) \
    BGL_REGEXP( o ).match( o, string, stringp, beg, len )
@@ -1673,16 +1698,30 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_DATE( f ) CREF( f )->date
 
 #define BGL_DATE_NANOSECOND( f ) (BGL_DATE( f ).nsec)
-#define BGL_DATE_SECOND( f ) (BGL_DATE( f ).sec)
-#define BGL_DATE_MINUTE( f ) (BGL_DATE( f ).min)
-#define BGL_DATE_HOUR( f ) (BGL_DATE( f ).hour)
-#define BGL_DATE_DAY( f ) (BGL_DATE( f ).mday)
-#define BGL_DATE_WDAY( f ) (BGL_DATE( f ).wday)
-#define BGL_DATE_YDAY( f ) (BGL_DATE( f ).yday)
-#define BGL_DATE_MONTH( f ) (BGL_DATE( f ).mon)
-#define BGL_DATE_YEAR( f ) (BGL_DATE( f ).year)
-#define BGL_DATE_TIMEZONE( f ) (BGL_DATE( f ).timezone)
-#define BGL_DATE_ISDST( f ) (BGL_DATE( f ).isdst)		 
+#define BGL_DATE_MILLISECOND( f ) (BGL_DATE( f ).nsec / 1000000)
+#if( BGL_HAVE_GMTOFF )
+#  define BGL_DATE_TIMEZONE( f ) (BGL_DATE( f ).tm.tm_gmtoff)
+#else
+#  define BGL_DATE_TIMEZONE( f ) (BGL_DATE( f ).timezone)
+#endif
+   
+#define BGL_DATE_ISGMT( f ) (HEADER_SIZE( CREF( f )->header) > 0)
+
+#define BGL_DATE_ISDST( f ) (BGL_DATE( f ).tm.tm_isdst)
+#define BGL_DATE_SECOND( f ) (BGL_DATE( f ).tm.tm_sec)
+#define BGL_DATE_MINUTE( f ) (BGL_DATE( f ).tm.tm_min)
+#define BGL_DATE_HOUR( f ) (BGL_DATE( f ).tm.tm_hour)
+#define BGL_DATE_DAY( f ) (BGL_DATE( f ).tm.tm_mday)
+#define BGL_DATE_WDAY( f ) (BGL_DATE( f ).tm.tm_wday + 1)
+#define BGL_DATE_YDAY( f ) (BGL_DATE( f ).tm.tm_yday + 1)
+#define BGL_DATE_MONTH( f ) (BGL_DATE( f ).tm.tm_mon + 1)
+#define BGL_DATE_YEAR( f ) (BGL_DATE( f ).tm.tm_year + 1900)
+#define BGL_DATE_TIME( f ) (BGL_DATE( f ).time)
+
+#define BGL_DATE_UPDATE_MILLISECOND( f, ms ) (BGL_DATE( f ).nsec = ((BGL_LONGLONG_T)(ms * 1000000)))
+#define BGL_DATE_UPDATE_SECOND( f, sec ) (BGL_DATE( f ).tm.tm_sec = sec)
+#define BGL_DATE_UPDATE_MINUTE( f, min ) (BGL_DATE( f ).tm.tm_min = min)
+#define BGL_DATE_UPDATE_TIME( f, tm ) (BGL_DATE( f ).time = tm)
 
 /*---------------------------------------------------------------------*/
 /*    Mutexes and condition variables                                  */
@@ -2285,10 +2324,12 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 BGL_RUNTIME_DECL obj_t bigloo_exit( obj_t );
 
 BGL_RUNTIME_DECL obj_t va_generic_entry( obj_t, ... );
+BGL_RUNTIME_DECL obj_t bgl_va_stack_entry( obj_t, ... );
 BGL_RUNTIME_DECL obj_t opt_generic_entry( obj_t, ... );
 BGL_RUNTIME_DECL obj_t apply( obj_t, obj_t );
 
 BGL_RUNTIME_DECL void bgl_init_module_debug_start( char * );
+BGL_RUNTIME_DECL void bgl_init_module_debug_string( char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_library( char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_import( char *, char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_object( char * );
@@ -2300,6 +2341,9 @@ BGL_RUNTIME_DECL obj_t bgl_system_failure( int, obj_t, obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_make_procedure( obj_t, int, int );
 BGL_RUNTIME_DECL obj_t make_fx_procedure( function_t, int, int );
 BGL_RUNTIME_DECL obj_t make_va_procedure( function_t, int, int );
+BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure( obj_t, function_t, int, int );
+BGL_RUNTIME_DECL obj_t bgl_dup_procedure( obj_t );
+
 BGL_RUNTIME_DECL obj_t bgl_time( obj_t );
    
 BGL_RUNTIME_DECL obj_t bgl_procedure_entry_to_string( obj_t ); 

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
 ;*    Last change :  Thu May  9 09:38:02 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -215,6 +215,42 @@
 	      (if (not (fun? value))
 		  (sfun-error "effect" global)
 		  (fun-effect-set! value (parse-effect prop)))))
+	  ((stack-allocator)
+	   (let ((value (global-value global)))
+	      (if (not (fun? value))
+		  (sfun-error "stack-allocator" global)
+		  (fun-stack-allocator-set! value val))))
+	  ((args-noescape)
+	   ;; the nth argument does not escape
+	   (let ((value (global-value global)))
+	      (if (not (fun? value))
+		  (sfun-error "args-noescape" global)
+		  (with-access::fun value (args-noescape)
+		     (cond
+			((null? val)
+			 (set! args-noescape '*))
+			((integer? (car val))
+			 (set! args-noescape (cons val args-noescape)))
+			((symbol? (car val))
+			 (if (not (sfun? value))
+			     (user-error "Parse error" "Illegal \"args-noescape\" on non-function value" prop)
+			     (let loop ((i 0)
+					(args (sfun-args-name value)))
+				(cond
+				   ((null? args)
+				    (user-error "Parse error"
+				       "Illegal \"args-noescape\", cannot find argument"
+				       prop))
+				   ((eq? (car args) (car val))
+				    (set! args-noescape (cons i args-noescape)))
+				   (else
+				    (loop (+fx i 1) (cdr args)))))))
+			((not (integer? (car val)))
+			 (user-error "Parse error" "Illegal \"args-noescape\" pragma" prop))
+			((eq? args-noescape #unspecified)
+			 (set! args-noescape (list val)))
+			(else
+			 (set! args-noescape (cons val args-noescape))))))))
 	  (else
 	   (user-error "Parse error" "Illegal \"pragma\" form" prop '()))))
       (else

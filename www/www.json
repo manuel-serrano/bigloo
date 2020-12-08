@@ -1,0 +1,19 @@
+{
+   "title": "Bigloo",
+   "version": "4.4a",
+   "date": "Nov 2020",
+   "urlbase": "ftp://ftp-sop.inria.fr/indes/fp/Bigloo",
+   "github": "https://github.com/manuel-serrano/bigloo.git",
+   "bglurlbase": "ftp://ftp-sop.inria.fr/indes/fp/Bigloo",
+   "homepage": "http://www-sop.inria.fr/indes/fp/Bigloo/",
+   "logo": "bigloo.svg",
+   "chapters": [ 
+      { "name": "Home", "icon": "glyphicon-home", "href": "index.html" },
+      { "name": "License", "icon": "glyphicon-copyright-mark", "href": "license.html", "toc": false },
+      { "name": "Download", "icon": "glyphicon-download", "href": "download.html" },
+      { "name": "Cross", "icon": "glyphicon-wrench", "href": "cross.html" },
+      { "name": "Manual", "icon": "glyphicon-book", "href": "manual.html" },
+      { "name": "Contribs", "icon": "glyphicon-asterisk", "href": "contribs.html", "toc": false },
+      { "name": "Bib", "icon": "glyphicon-comment", "href": "bib.html", "toc": false }
+   ]
+}

@@ -61,10 +61,7 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
 EOF
 echo "   $longlong x;" >> $file.c
 cat >> $file.c <<EOF

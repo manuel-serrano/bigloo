@@ -1,0 +1,115 @@
+/*=====================================================================*/
+/*    .../hop/3.2.x/node_modules/fontifier/hss/fontifier.hss           */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Thu Aug 30 09:46:42 2012                          */
+/*    Last change :  Wed Jan 30 08:07:41 2019 (serrano)                */
+/*    Copyright   :  2012-19 Manuel Serrano                            */
+/*    -------------------------------------------------------------    */
+/*    HSS for fontifier slides                                         */
+/*=====================================================================*/
+
+/*---------------------------------------------------------------------*/
+/*    prog                                                             */
+/*---------------------------------------------------------------------*/
+.fontifier-prog {
+  margin: 0;
+  text-align: left;
+  font-family: Bitstream Vera Sans Mono, Andale Mono, Monospace, DejaVu Sans Mono, monospace;
+  width: auto;
+  font-weight: normal;
+}
+
+.fontifier-prog {
+  overflow: hidden;
+}
+
+.fontifier-prog .fontifier-prog-comment {
+  color: #ffa600;
+  font-weight: bold;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-line-comment {
+  color: #ffa600;
+  font-style: italic;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-tag {
+  color: #328E00;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-keyword {
+  color: #1919af;
+}
+
+.fontifier-prog .fontifier-prog-string {
+  color: red;
+}
+
+.fontifier-prog .fontifier-prog-type {
+  color: #00cf00;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-define {
+  color: #6959cf;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-special {
+  color: #ee0000;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-client {
+  color: #ee0000;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-server {
+  color: #0000ee;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-important {
+  color: #ee0000;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-thread {
+  color: #B6007B;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-reserved {
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-class {
+  color: #ee5c42;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-register {
+  color: #ee5c42;
+  font-weight: bold;
+}
+
+.fontifier-prog .fontifier-prog-label {
+  color: #6959cf;
+  font-weight: bold;
+}
+
+.fontifier-prog-line-number:after {
+  content: ":";
+  margin-right: 1em;
+}
+
+.fontifier-prog-line-number {
+  color: #777;
+  font-size: 90%;
+}
+

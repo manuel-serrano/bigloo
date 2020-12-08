@@ -275,7 +275,7 @@ This is Bigloo documentation version @value{bigloovers}, @w{@value{update-date}}
 Bigloo is an implementation of an extended version of the Scheme
 programming language. Without its extensions Bigloo does not entirely
 conform to Scheme as defined in the Revised(5) Report on on the
-Algorithmic Language Scheme (henceforth R5RS) (see @ref{Top,,,r5rs.info}).
+Algorithmic Language Scheme (henceforth R5RS) (@value{R5RS}).
 The two reasons are:
 
 @itemize @bullet
@@ -286,9 +286,9 @@ simple tail recursions are compiled without stack consumption.
 @item Alternatively, Bigloo may produce JVM (Java Virtual Machine byte code)
 class files. These classes may use regular Java classes.
 
-@item Bigloo is a module compiler. It compiles
-modules into `.o', `.class', or `.obj' files that must be linked together to 
-produce stand alone executable programs, JVM jar files, or .NET programs.
+@item Bigloo is a module compiler. It compiles modules into `.o' or `.class'
+files that must be linked together to produce stand alone executable programs
+or JVM jar files.
 @end itemize
 
 However, we designed Bigloo to be as close as possible to the

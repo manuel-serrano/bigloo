@@ -61,10 +61,7 @@ cat > $file.c <<EOF
 extern int alloca();
 #endif
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    return (int)((int *)alloca(10))[ 0 ];
 }
 EOF

@@ -43,7 +43,7 @@ BGL_RUNTIME_DEF union nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
 /*---------------------------------------------------------------------*/
 /*    Importations                                                     */
 /*---------------------------------------------------------------------*/
-extern obj_t string_to_obj();
+extern obj_t string_to_obj( obj_t, obj_t, obj_t );
 extern void bgl_init_dynamic_env();
 extern void bgl_init_symbol_table();
 extern void bgl_init_socket();

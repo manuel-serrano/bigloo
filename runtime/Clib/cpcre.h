@@ -4,18 +4,19 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
 /*    Last change :  Thu Aug  8 13:35:02 2019 (serrano)                */
-/*    Copyright   :  2019 Manuel Serrano                               */
+/*    Copyright   :  2019-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
 /*=====================================================================*/
 #include <pcre.h>
 
-extern obj_t make_string( int, unsigned char );
+extern obj_t make_string( long, unsigned char );
 
 static obj_t utf8_symbol = BUNSPEC;
 static obj_t javascript_symbol = BUNSPEC;
 static obj_t caseless_symbol = BUNSPEC;
 static obj_t multiline_symbol = BUNSPEC;
+static obj_t noraise_symbol = BUNSPEC;
 
 #if( !defined( PCRE_JAVASCRIPT_COMPAT ) )
 #  define PCRE_JAVASCRIPT_COMPAT 0
@@ -28,6 +29,8 @@ static obj_t multiline_symbol = BUNSPEC;
 #define BGL_REGEXP_PCRE( o ) (pcre *)(BGL_REGEXP_PREG( o ))
 #define BGL_REGEXP_CHAR( o ) (char)(long)(BGL_REGEXP_PREG( o ))
 
+#define PCRE_BGLNORAISE PCRE_DUPNAMES
+
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_pcre_options_init ...                                        */
@@ -39,6 +42,7 @@ bgl_pcre_options_init() {
       javascript_symbol = string_to_symbol( "JAVASCRIPT_COMPAT" );
       caseless_symbol = string_to_symbol( "CASELESS" );
       multiline_symbol = string_to_symbol( "MULTILINE" );
+      noraise_symbol = string_to_symbol( "NORAISE" );
    }
 }
 
@@ -62,6 +66,8 @@ bgl_pcre_options( obj_t args ) {
 	    options |= PCRE_JAVASCRIPT_COMPAT;
 	 } else if( CAR( args ) == multiline_symbol ) {
 	    options |= PCRE_MULTILINE | PCRE_NEWLINE_ANY;
+	 } else if( CAR( args ) == noraise_symbol ) {
+	    options |= PCRE_BGLNORAISE;
 	 } else {
 	    if( CAR( args ) != BFALSE ) {
 	       C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp",
@@ -118,7 +124,8 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
       return BFALSE;
    } else {
       int i;
-      obj_t res = MAKE_STACK_PAIR( BNIL, BNIL );
+      obj_t tmp;
+      obj_t res = MAKE_STACK_PAIR_TMP( BNIL, BNIL, tmp );
       obj_t tail = res;
 
       for( i = 0; i < oveccount * 2; i += 2 ) {
@@ -159,9 +166,10 @@ bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
       return -1;
    } else {
       long i;
-      long len = VECTOR_LENGTH( vres ) & ~1;
+      long vlen = VECTOR_LENGTH( vres ) & ~1;
+      long end = oveccount * 2 < vlen ? oveccount * 2 : vlen;
 
-      for( i = 0; i < oveccount * 2 && i < len; i += 2 ) {
+      for( i = 0; i < end; i += 2 ) {
 	 VECTOR_SET( vres, i, BINT( ovect[ i ] ) );
 	 VECTOR_SET( vres, i + 1, BINT( ovect[ i + 1 ] ) );
       }
@@ -209,10 +217,14 @@ bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
 
    while( beg < len ) {
       if( string[ beg++ ] == c ) {
-	 VECTOR_SET( vres, 0, BINT( beg - 1 ) );
-	 VECTOR_SET( vres, 1, BINT( beg ) );
+	 if( (VECTOR_LENGTH( vres ) & ~1) > 0 ) {
+	    VECTOR_SET( vres, 0, BINT( beg - 1 ) );
+	    VECTOR_SET( vres, 1, BINT( beg ) );
 
-	 return 1;
+	    return 1;
+	 } else {
+	    return 0;
+	 }
       }
    }
 
@@ -234,7 +246,7 @@ bgl_charfree( obj_t re ) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
-   bgl_regfree( re );
+   BGL_REGEXP( BREF( re ) ).free( BREF( re ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -243,6 +255,15 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
 #define CHAR_REGEXP( pat, options ) \
    (STRING_LENGTH( pat ) == 1 \
     && !strchr( "$[*+?.(", STRING_REF( pat, 0 ) ) \
+    && !(options & PCRE_CASELESS))
+
+/*---------------------------------------------------------------------*/
+/*    CHAR_ESCAPE_REGEXP ...                                           */
+/*---------------------------------------------------------------------*/
+#define CHAR_ESCAPE_REGEXP( pat, options ) \
+   (STRING_LENGTH( pat ) == 2 \
+    && STRING_REF( pat, 0 ) == '\\' \
+    && !strchr( "\\-$[*+?.(", STRING_REF( pat, 0 ) ) \
     && !(options & PCRE_CASELESS))
 
 /*---------------------------------------------------------------------*/
@@ -263,6 +284,16 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
       BGL_REGEXP( re ).match = bgl_charmatch;
       BGL_REGEXP( re ).match_n = bgl_charmatch_n;
       BGL_REGEXP( re ).free = bgl_charfree;
+      BGL_REGEXP( re ).capturecount = 1;
+      
+      return re;
+   } else if( CHAR_ESCAPE_REGEXP( pat, options ) ) {
+      BGL_REGEXP_PREG( re ) = (void *)char_compile( BSTRING_TO_STRING( pat ) + 1, options );
+	   
+      BGL_REGEXP( re ).match = bgl_charmatch;
+      BGL_REGEXP( re ).match_n = bgl_charmatch_n;
+      BGL_REGEXP( re ).free = bgl_charfree;
+      BGL_REGEXP( re ).capturecount = 1;
       
       return re;
    } else {
@@ -277,7 +308,7 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 #endif
    
       if( (BGL_REGEXP_PREG( re ) =
-	   pcre_compile( BSTRING_TO_STRING( pat ), options,
+	   pcre_compile( BSTRING_TO_STRING( pat ), options & ~PCRE_BGLNORAISE,
 			 &error, &erroffset, NULL )) ) {
 	 pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );
 	 BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),
@@ -290,7 +321,8 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 			&(BGL_REGEXP( re ).capturecount) );
 
 	 if( finalize ) {
-	    GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
+	    GC_register_finalizer( CREF( re ),
+				   (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
 				   0, 0L, 0L );
 	 }
 
@@ -305,9 +337,13 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 	 sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
 		  erroffset, error );
 
-	 C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
+	 if( !options & PCRE_BGLNORAISE ) {
+	    C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
 
-	 return re;
+	    return re;
+	 } else {
+	    return string_to_bstring( buf );
+	 }
       }
    }
 }

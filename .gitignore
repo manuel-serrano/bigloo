@@ -30,7 +30,10 @@
 .hgtags
 ChangeLog
 arch/maemo
+arch/debian/makedeb.sh
+arch/debian/makedebremote.sh
 arch/vm
+arch/homebrew/makebrew.sh
 bmacs/bmacs-config.el
 bmacs/bee/bee-jinsight.el
 tools/diff.scm
@@ -44,6 +47,8 @@ www/bench/
 www/contribs/
 www/doc/
 www/libraries/
+www/idx.json
+www/hss/doc.css
 
 # Manual
 manuals/*.html
@@ -191,12 +196,23 @@ gc/gc-8.0.2
 gc/gc-8.0.2_fth
 gc/gc-8.0.4
 gc/gc-8.0.4_fth
+gc/gc-8.0.4_mt
+gc/preinst
 
 # libuv
 libuv/libuv-1.x-24jan2015/
 libuv/libuv-master-18jul2014/
 libuv/libuv-v1.19.2/
 libuv/libuv-v1.20.3/
+libuv/libuv-v1.40.0/
 
 # xlib
 xlib/include/
+
+# www
+www/hss/www.css
+
+# third parties
+gmp/gmp-6.1.2
+libunistring/libunistring-0.9.10
+pcre/pcre-8.43

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Apr 14 06:43:01 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 11 06:54:31 2019 (serrano)                */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -56,6 +56,7 @@
 	    beta_walk
 	    inline_walk
 	    effect_walk
+	    stackable_walk
 	    callcc_walk
 	    fail_walk
 	    abound_walk
@@ -80,13 +81,13 @@
 	    bdb_walk
 	    prof_walk
 	    return_walk
+	    uncell_walk
 	    isa_walk
 	    cc_cc
 	    cc_ld
 	    cc_roots
 	    backend_backend
-	    backend_walk
-	    patch_patch)
+	    backend_walk)
 
    (with    backend_c
 	    backend_jvm)
@@ -261,10 +262,6 @@
 	 (when *gc-force-register-roots?*
 	    (set! units (cons (make-gc-roots-unit) units)))
 
-	 ;; patch support
-;* 	 (when *patch-support*                                         */
-;* 	    (set! units (cons (make-patch-unit) units)))               */
-
 	 ;; ok, now we build the ast
 	 (let ((ast (profile ast (build-ast units))))
 	    (stop-on-pass 'ast (lambda () (write-ast ast)))
@@ -313,6 +310,12 @@
 	    (stop-on-pass 'effect (lambda () (write-ast ast)))
 	    (check-sharing "effect" ast)
 	    (check-type "effect" ast #f #f)
+
+	    ;; the stackable property computation
+	    (set! ast (profile stackable (stackable-walk! ast)))
+	    (stop-on-pass 'stackable (lambda () (write-ast ast)))
+	    (check-sharing "stackable" ast)
+	    (check-type "stackable" ast #f #f)
 
 	    ;; we perform the inlining pass
 	    (set! ast (profile inline (inline-walk! ast 'all)))
@@ -365,10 +368,10 @@
 	    (check-type "dataflow" ast #f #f)
 
 	    ;; the globalization stage
-	    (set! ast (profile glo (globalize-walk! ast 'globalization)))
-	    (stop-on-pass 'globalize (lambda () (write-ast ast)))
-	    (check-sharing "globalize" ast)
-	    (check-type "globalize" ast #f #f)
+	    (set! ast (profile glo (globalize-walk! ast 'closure)))
+	    (stop-on-pass 'closure (lambda () (write-ast ast)))
+	    (check-sharing "closure" ast)
+	    (check-type "closure" ast #f #f)
  
 	    ;; the control flow analysis
 	    (set! ast (profile cfa (cfa-walk! ast)))
@@ -478,13 +481,6 @@
 	    (check-sharing "return" ast)
 	    (check-type "return" ast #t #f)
 
-	    ;; isa expansion
-	    (when *optim-isa?*
-	       (set! ast (profile isa (isa-walk! ast))))
-	    (stop-on-pass 'isa (lambda () (write-ast ast)))
-	    (check-sharing "isa" ast)
-	    (check-type "isa" ast #t #f)
-	    
 	    ;; we re-perform the inlining pass in high optimization mode
 	    ;; in order to inline all type checkers.
 	    (set! ast (profile inline (inline-walk! ast 'reducer)))
@@ -507,10 +503,14 @@
 	       (stop-on-pass 'reduce+ (lambda () (write-ast ast2)))
 	       (check-sharing "reduce+" ast2)
 	       (check-type "reduce+" ast2 #t #t)
-
-	       ;; patches initialization
-;* 	       (patch-initialization! ast2 (the-backend))              */
 	       
+	       ;; useless cell removal
+	       (when *optim-uncell?*
+		  (set! ast (profile uncell (uncell-walk! ast)))
+		  (stop-on-pass 'uncell (lambda () (write-ast ast)))
+		  (check-sharing "uncell" ast)
+		  (check-type "uncell" ast #t #f))
+	    
 	       (backend-walk (remove-var 'now ast2)))
 	    
 	    0))))

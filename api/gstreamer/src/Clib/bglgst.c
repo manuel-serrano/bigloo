@@ -22,7 +22,6 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t void_star_to_obj();
-extern void bglgst_thread_init();
 extern obj_t bgl_gst_bin_elements_set( obj_t, obj_t );
 
 /*---------------------------------------------------------------------*/
@@ -43,7 +42,6 @@ extern obj_t bgl_gst_bin_elements_set( obj_t, obj_t );
 /*    counting is a bad-idea).                                         */
 /*---------------------------------------------------------------------*/
 static int bglgst_use_threads = BGL_GSTREAMER_USE_THREADS;
-static obj_t bgl_gst_denv;
 
 /*---------------------------------------------------------------------*/
 /*    CHECK_PROCEDURE                                                  */
@@ -109,31 +107,6 @@ static void bgl_gst_free( gpointer ptr ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bgl_gobject_alloc_init ...                                       */
-/*    -------------------------------------------------------------    */
-/*    Install the Bigloo allocation routines in replacement of the     */
-/*    default Glib ones.                                               */
-/*---------------------------------------------------------------------*/
-static void
-bgl_gobject_alloc_init() {
-   GMemVTable *vtable = alloca( sizeof( GMemVTable ) );
-
-   memset( vtable, 0, sizeof( GMemVTable ) );
-   
-#if( 0 && BGL_GC == BGL_BOEHM_GC )
-   vtable->malloc = (gpointer (*)(gsize))&GC_malloc;
-   vtable->realloc = (gpointer (*)(gpointer, gsize))&GC_realloc;
-   vtable->free = (void (*)(gpointer))&GC_free;
-#else
-   vtable->malloc = &bgl_gst_alloc;
-   vtable->realloc = &bgl_gst_realloc;
-   vtable->free = &bgl_gst_free;
-#endif
-   g_mem_set_vtable( vtable );
-}
-
-/*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_gst_init ...                                                 */
 /*---------------------------------------------------------------------*/
@@ -159,23 +132,13 @@ bgl_gst_init( obj_t args ) {
 	 args = CDR( args );
       }
 
-      /* start the Bigloo thread in charge of dealing with callbacks */
-      if( !bglgst_use_threadsp() ) {
-	 /* Use the GC for allocating glib objects */
-/* 	 bgl_gobject_alloc_init();                                     */
-      } else {
-	 /* otherwise, create the dummy gstreamer dynamic env */
-	 bglgst_thread_init();
-	 bgl_gst_denv = bgl_dup_dynamic_env( BGL_CURRENT_DYNAMIC_ENV() );
-      }
-
       /* initialize GStreamer */
       gst_init( &argc, &argv );
 
       /* WARNING: restore the previous locale that is changed by gst_init! */
       setlocale( LC_ALL, locale );
 
-      /* allocated the callback array */
+      /* allocate the callback array */
       callbacks = g_malloc( sizeof( callback_t ) * callback_length );
 
       /* bind the bigloo plugins */
@@ -307,7 +270,7 @@ bgl_g_value_to_obj( const GValue *gval, int doref, int doobj ) {
 	 if( GST_VALUE_HOLDS_CAPS( gval ) ) {
 	    GstCaps *caps = GST_CAPS( gst_value_get_caps( gval ) );
 
-	    if( doref ) gst_object_ref( caps );
+	    if( doref ) gst_caps_ref( caps );
 	    return doobj ? bgl_gst_caps_new( caps, BTRUE ) : BUNSPEC;
 	 }
 	 
@@ -358,7 +321,7 @@ bgl_g_value_to_obj( const GValue *gval, int doref, int doobj ) {
 	    return BUNSPEC;
 	 }
 	 
-	 if( GST_VALUE_HOLDS_DATE( gval ) ) {
+	 if( G_VALUE_HOLDS( gval, G_TYPE_DATE ) ) {
 	    fprintf( stderr, "GST_VALUE_HOLDS_DATE not implemented yet %s:%d\n",
 		     __FILE__, __LINE__ );
 	    return BUNSPEC;
@@ -370,8 +333,8 @@ bgl_g_value_to_obj( const GValue *gval, int doref, int doobj ) {
 	    return BUNSPEC;
 	 }
 
-	 if( GST_VALUE_HOLDS_MINI_OBJECT( gval ) ) {
-	    fprintf( stderr, "GST_VALUE_HOLDS_MINI_OBJECT not implemented yet %s:%d\n",
+	 if( G_VALUE_HOLDS_BOXED( gval ) ) {
+	    fprintf( stderr, "G_VALUE_HOLDS_BOXED not implemented yet %s:%d\n",
 		     __FILE__, __LINE__ );
 	    return BUNSPEC;
 	 }
@@ -595,7 +558,7 @@ bgl_gst_registry_get_plugin_list( GstRegistry *reg ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_gst_element_factory_get_uri_protocols( GstElementFactory *factory ) {
-   gchar **array = gst_element_factory_get_uri_protocols( factory );
+   const gchar * const *array = gst_element_factory_get_uri_protocols( factory );
 
    if( !array ) {
       return BNIL;
@@ -991,9 +954,9 @@ bgl_gsttag_value_to_obj( const GstTagList *list, const gchar *tag ) {
 	 
 
       case G_TYPE_CHAR: {
-	 gchar c;
+	 gint c;
 
-	 gst_tag_list_get_char( list, tag, &c );
+	 gst_tag_list_get_int( list, tag, &c );
 	 
 	 return BCHAR( c );
       }
@@ -1007,14 +970,6 @@ bgl_gsttag_value_to_obj( const GstTagList *list, const gchar *tag ) {
 	 return BINT( i );
       }
 
-      case G_TYPE_LONG: {
-	 glong i;
-
-	 gst_tag_list_get_long( list, tag, &i );
-	 
-	 return make_belong( i );
-      }
-
       case G_TYPE_UINT: {
 	 guint i;
 
@@ -1023,14 +978,7 @@ bgl_gsttag_value_to_obj( const GstTagList *list, const gchar *tag ) {
 	 return make_belong( i );
       }
 
-      case G_TYPE_ULONG: {
-	 gulong i;
-
-	 gst_tag_list_get_ulong( list, tag, &i );
-	 
-	 return make_bllong( (BGL_LONGLONG_T)i );
-      }
-
+      case G_TYPE_LONG:
       case G_TYPE_INT64: {
 	 gint64 i;
 
@@ -1039,6 +987,7 @@ bgl_gsttag_value_to_obj( const GstTagList *list, const gchar *tag ) {
 	 return make_bllong( (BGL_LONGLONG_T)i );
       }
 
+      case G_TYPE_ULONG:
       case G_TYPE_UINT64: {
 	 guint64 i;
 
@@ -1088,6 +1037,43 @@ gst_tag_fun( const GstTagList *list, const gchar *tag, gpointer data ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_gst_buffer_get_string ...                                    */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_gst_buffer_get_string( GstBuffer *buf )
+{
+   GstMapInfo info;
+   obj_t str;
+
+   if ( !gst_buffer_map( buf, &info, GST_MAP_READ ))
+      str = BNIL;
+   else {
+      str = string_to_bstring_len( (char *)info.data, (int)info.size );
+      gst_buffer_unmap( buf, &info );
+   }
+   return str;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_gst_buffer_set_string ...                                    */
+/*---------------------------------------------------------------------*/
+void
+bgl_gst_buffer_set_string( GstBuffer *buf, obj_t str )
+{
+   GstMapInfo info;
+   long len = STRING_LENGTH (str);
+
+   gst_buffer_set_size( buf, (gssize)len );
+   if ( gst_buffer_map( buf, &info, GST_MAP_WRITE ))
+   {
+      memcpy( info.data, BSTRING_TO_STRING( str ), (size_t)len );
+      gst_buffer_unmap( buf, &info );
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    static char *                                                    */
 /*    bgl_gst_message_error_parser ...                                 */
 /*---------------------------------------------------------------------*/
@@ -1130,13 +1116,7 @@ bgl_gst_message_error_string( GstMessage *msg ) {
 /*---------------------------------------------------------------------*/
 char *
 bgl_gst_message_info_string( GstMessage *msg ) {
-#if( BGL_GSTREAMER_HAVE_PARSE_INFO )
-   /* gstreamer is recent enought, gst_message_parse_info is bound */
    return bgl_gst_message_error_parser( msg, &gst_message_parse_info );
-#else
-   /* gstreamer is too old, return a fake info string */
-   return "no info available (gstreamer too old)";
-#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -1219,15 +1199,11 @@ bgl_gst_message_get_src( GstMessage *msg ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_gst_message_stream_status_type( GstMessage *msg ) {
-#if( defined( GST_MESSAGE_STREAM_STATUS ) )
    GstStreamStatusType type;
    GstElement *el;
    gst_message_parse_stream_status( msg, &type, &el );
    
    return (int)type;
-#else
-   return -1;
-#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -1267,10 +1243,9 @@ bgl_gst_element_interface_list( GstElement *el ) {
 /*---------------------------------------------------------------------*/
 BGL_LONGLONG_T
 bgl_gst_element_query_position( GstElement *el ) {
-   GstFormat format = GST_FORMAT_TIME;
    gint64 res;
    
-   if( gst_element_query_position( el, &format, &res ) )
+   if( gst_element_query_position( el, GST_FORMAT_TIME, &res ) )
       return (BGL_LONGLONG_T)res;
    else
       return (BGL_LONGLONG_T)-1;
@@ -1282,10 +1257,9 @@ bgl_gst_element_query_position( GstElement *el ) {
 /*---------------------------------------------------------------------*/
 BGL_LONGLONG_T
 bgl_gst_element_query_duration( GstElement *el ) {
-   GstFormat format = GST_FORMAT_TIME;
    gint64 res;
    
-   if( gst_element_query_duration( el, &format, &res ) ) 
+   if( gst_element_query_duration( el, GST_FORMAT_TIME, &res ) )
       return (BGL_LONGLONG_T)res;
    else
       return (BGL_LONGLONG_T)-1;
@@ -1349,7 +1323,7 @@ bgl_gst_structure_property_list( GstStructure *obj ) {
 obj_t
 bgl_gst_caps_new_simple( obj_t media_type, obj_t pair, obj_t finalizer ) {
    GstCaps *caps = gst_caps_new_empty();
-   GstStructure *s = gst_structure_empty_new( BSTRING_TO_STRING( media_type ) );
+   GstStructure *s = gst_structure_new_empty( BSTRING_TO_STRING( media_type ) );
    
    while( PAIRP( pair ) ) {
       char *fid = BSTRING_TO_STRING( KEYWORD_TO_STRING( CAR( pair ) ) );
@@ -1466,27 +1440,54 @@ bgl_gst_parse_launchv( obj_t args ) {
 /*    static gboolean                                                  */
 /*    buffer_probe_call ...                                            */
 /*---------------------------------------------------------------------*/
-static gboolean
-buffer_probe_call( GstElement *el, GstBuffer *buffer, gpointer *data ) {
+static GstPadProbeReturn
+buffer_probe_call( GstPad *pad, GstPadProbeInfo *info, gpointer data ) {
    obj_t proc = (obj_t)data;
-
-   return CBOOL( PROCEDURE_ENTRY( proc )( proc,
-					  bgl_gst_buffer_new( buffer, BFALSE ),
-					  BEOA ) );
+   GstBuffer *buffer = (GstBuffer *)info->data;
+   return (CBOOL (PROCEDURE_ENTRY( proc )( proc,
+					   bgl_gst_buffer_new( buffer, BFALSE ),
+					   BEOA )))
+      ? GST_PAD_PROBE_OK
+      : GST_PAD_PROBE_DROP;
 }
    
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
-/*    bgl_gst_pad_add_buffer_probe ...                                 */
+/*    bgl_gst_pad_add_probe ...                                        */
 /*---------------------------------------------------------------------*/
 int
-bgl_gst_pad_add_buffer_probe( GstPad *pad, obj_t proc ) {
+bgl_gst_pad_add_probe( GstPad *pad, GstPadProbeType mask, obj_t proc ) {
    /* protect the closure from GC reclaim */
    /* CARE: when should it be freed? */
    bgl_closure_gcmark( proc );
-   return gst_pad_add_buffer_probe( pad,
-				    G_CALLBACK( &buffer_probe_call ),
-				    (gpointer)proc );
+   return gst_pad_add_probe( pad,
+			     mask,
+			     buffer_probe_call,
+			     (gpointer)proc,
+			     NULL );
+}
+
+/*---------------------------------------------------------------------*/
+/*    gboolean                                                         */
+/*    bgl_gst_pad_set_caps ...                                         */
+/*---------------------------------------------------------------------*/
+gboolean
+bgl_gst_pad_set_caps( GstPad *pad, GstCaps *caps ) {
+   gboolean res;
+
+   if (caps != NULL && gst_caps_is_fixed (caps))
+   {
+      res = FALSE;
+   }
+   else
+   {
+      GstEvent *event = gst_event_new_caps (caps);
+      if (GST_PAD_IS_SRC (pad))
+	 res = gst_pad_push_event (pad, event);
+      else
+	 res = gst_pad_send_event (pad, event);
+   }
+   return res;
 }
 
 /*---------------------------------------------------------------------*/
@@ -1494,7 +1495,7 @@ bgl_gst_pad_add_buffer_probe( GstPad *pad, obj_t proc ) {
 /*    bus_sync_handler ...                                             */
 /*---------------------------------------------------------------------*/
 static GstBusSyncReply
-bus_sync_handler( GstBus *bus, GstMessage *msg, gpointer *data ) {
+bus_sync_handler( GstBus *bus, GstMessage *msg, gpointer data ) {
    obj_t proc = (obj_t)data;
    callback_t cb = g_malloc( sizeof( struct callback ) );
 
@@ -1518,6 +1519,7 @@ bgl_gst_bus_set_sync_handler( GstBus *bus, obj_t proc ) {
    bgl_closure_gcmark( proc );
 
    return gst_bus_set_sync_handler( bus,
-				    (GstBusSyncHandler)&bus_sync_handler,
-				    (gpointer)proc );
+				    &bus_sync_handler,
+				    (gpointer)proc,
+				    NULL );
 }

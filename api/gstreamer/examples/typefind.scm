@@ -24,6 +24,7 @@
 	  (bus (with-access::gst-pipeline pipeline (bus) bus))
 	  (filesrc (gst-element-factory-make "filesrc" "source"))
 	  (typefind (gst-element-factory-make "typefind" "typefinder"))
+	  (fakesink (gst-element-factory-make "fakesink" "sink"))
 	  (file (if (null? (cdr argv))
 		    "/usr/local/lib/hop/1.9.0/weblets/doc/etc/sound1.mp3"
 		    (cadr argv))))
@@ -31,18 +32,20 @@
       (gst-object-connect! typefind
 	 "have-type"
 	 (lambda (_ probability caps)
-	    (print
+	    (tprint
 	       (format "~a, probabilty=~a"
 		  (gst-caps-to-string caps)
 		  probability))
 	    (exit 0)))
       (tprint "1")
-      (gst-bin-add! pipeline filesrc typefind)
+      (gst-bin-add! pipeline filesrc typefind fakesink)
       (tprint "2")
-      (gst-element-link! filesrc typefind)
+      (gst-element-link! filesrc typefind fakesink)
       (gst-element-state-set! pipeline 'playing)
       (let loop ()
-	 (let ((msg (gst-bus-poll bus $gst-message-any #l1000000000)))
+	 (let ((msg (gst-bus-poll bus
+				  :types $gst-message-any
+				  :timeout #l1000000000)))
 	    (when (isa? msg gst-message)
 	       (tprint "msg=" msg)
 	       (with-access::gst-message msg (type)

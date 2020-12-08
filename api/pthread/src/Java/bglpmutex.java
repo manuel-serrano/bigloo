@@ -14,6 +14,10 @@
 /*---------------------------------------------------------------------*/
 package bigloo.pthread;
 import java.lang.*;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit; 
+
+
 import bigloo.*;
 
 /*---------------------------------------------------------------------*/
@@ -21,7 +25,9 @@ import bigloo.*;
 /*---------------------------------------------------------------------*/
 public class bglpmutex extends bigloo.mutex {
    private static Object mutexes = bigloo.foreign.BNIL;
-   
+
+   private final ReentrantLock mutex;
+    
    protected static void setup() {
       bigloo.mutex.amutex = new bglpmutex( bigloo.foreign.BUNSPEC );
    }
@@ -33,6 +39,7 @@ public class bglpmutex extends bigloo.mutex {
 
    public bglpmutex( Object n ) {
       super( n );
+      mutex = new ReentrantLock();
    }
 
    protected mutex create( Object name ) {
@@ -47,68 +54,62 @@ public class bglpmutex extends bigloo.mutex {
       Object w = mutexes;
 
       while( w instanceof pair ) {
-	 bglpmutex m = (bglpmutex)(foreign.CAR( (pair)w ));
+         bglpmutex m = (bglpmutex)(foreign.CAR( (pair)w ));
 	 
-	 if( m.thread == thread ) {
-	    m.release_lock();
-	    m.state = "abandoned";
-	 }
-	 w = foreign.CDR( (pair)w );
+         if( m.thread == thread ) {
+            m.release_lock();
+            m.state = "abandoned";
+         }
+         w = foreign.CDR( (pair)w );
       }
    }
 
    public int acquire_lock( int ms ) {
-      synchronized( this ) {
-	 Object th = bglpthread.current_thread();
-      
-	 while( thread != null && thread != th ) {
-	    try {
-	       if( ms > 0 ) {
-		  wait( ms );
-		  if( thread != null && thread != th ) return 1;
-	       } else {
-		  wait();
-	       }
-	    } catch( Exception e ) {
-	       foreign.fail( "mutex-lock!", 
-			     e.getClass() + ": " + e.getMessage(),
-			     this );
-	    }
-	 }
-
-	 /* mark mutex owned */
-	 thread = th;
-	 state = null;
-	 
-	 return 0;
-      }
+       int res = 1;
+       try {
+           if( mutex.tryLock(ms, TimeUnit.MILLISECONDS) ) {
+               /* mark mutex owned */
+               thread = bglpthread.current_thread();
+               System.out.printf("thread %s is locking%n", thread); 
+               state = null;
+               res = 0;
+           }
+           
+       } catch( Exception e ) {
+           foreign.fail( "mutex-lock!", 
+                         e.getClass() + ": " + e.getMessage(),
+                         this );
+       }
+       return res;
    }
 
    public int acquire_lock() {
-      return acquire_lock( 0 );
+       int res = 1;
+       try {
+           mutex.lock();
+           /* mark mutex owned */
+           thread = bglpthread.current_thread();
+           state = null;
+           res = 0;
+       } catch( Exception e ) {
+           foreign.fail( "mutex-lock!", 
+                         e.getClass() + ": " + e.getMessage(),
+                         this );
+       }
+       
+       return res;
    }
    
-   public int acquire_timed_lock( int ms ) {
+    public int acquire_timed_lock( int ms ) {
       return acquire_lock( ms );
    }
 
    public int release_lock() {
-      synchronized( this ) {
-	 Object th = bglpthread.current_thread();
-	 
-	 if( thread == th ) {
-	    /* mark mutex no longer owned */
-	    thread = null;
-	    state = "not-abandoned";
-	 
-	    notifyAll();
-	 } else {
-	   foreign.fail( "mutex-unlock!",
-			 "mutex not owned by thread",
-			 this );
-	 }
-      }
-      return 0;
+       mutex.unlock();
+       /* mark mutex no longer owned */
+       thread = null;
+       state = "not-abandoned";
+       return 0;
    }
 
    public static Object SPECIFIC( Object m ) {

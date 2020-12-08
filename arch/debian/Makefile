@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/arch/debian/Makefile                 */
+#*    serrano/prgm/project/bigloo/bigloo/arch/debian/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:41:50 2010                          */
-#*    Last change :  Sun Jul  9 10:19:28 2017 (serrano)                */
-#*    Copyright   :  2010-17 Manuel Serrano                            */
+#*    Last change :  Wed Feb 12 09:20:17 2020 (serrano)                */
+#*    Copyright   :  2010-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles debian specific files                  */
 #*=====================================================================*/
@@ -18,8 +18,8 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Variables                                                        */
 #*---------------------------------------------------------------------*/
-POPULATION = Makefile makedeb.sh.in makedeb.sh changelog \
-  control.in postinst.in rules.in README
+POPULATION = Makefile makedeb.sh.in makedebremote.sh.in \
+  changelog.in control.in postinst.in rules.in README README.md
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

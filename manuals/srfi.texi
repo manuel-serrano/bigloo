@@ -207,6 +207,20 @@ values of a particular setting can be obtained with:
 (bigloo-config 'int-size)
 (bigloo-config 'elong-size)
 @end smalllisp
+
+A configuration can be tested with:
+
+@itemize @bullet
+@item @code{config key value}
+@end itemize
+
+For instance:
+
+@smalllisp
+(cond-expand
+  ((and bigloo-c (config have-c99-stack-alloc #t)) ...)
+  ...)
+@end smalllisp
 @end deffn
 
 @deffn {bigloo procedure} register-srfi! srfi-name

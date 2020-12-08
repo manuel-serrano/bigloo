@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
 ;*    Last change :  Wed May 31 10:38:06 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -115,7 +115,8 @@
 	 (type *cell*)
 	 (vtype (get-bigloo-defined-type (variable-type variable)))
 	 (loc loc)
-	 (value node))))
+	 (value node)
+	 (stackable (svar/Ginfo-stackable (variable-value variable))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    celled? ...                                                      */
@@ -558,17 +559,19 @@
 ;*    a-make-procedure ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (a-make-procedure local::local)
-   (let* ((fun      (local-value local))
-	  (arity    (sfun-arity fun))
+   (let* ((fun (local-value local))
+	  (arity (sfun-arity fun))
 	  (kaptured (sfun/Ginfo-kaptured (local-value local)))
-	  (loc      #unspecified)
-	  (make-p   (cond
-		       ((<fx arity 0) 'make-va-procedure)
-		       (else 'make-fx-procedure)))
-	  (v        (find-global/module make-p 'foreign)))
+	  (loc #unspecified)
+	  (make-p (if (<fx arity 0) 'make-va-procedure 'make-fx-procedure))
+	  (v (find-global/module make-p 'foreign)))
       (instantiate::app
 	 (loc loc)
 	 (type (variable-type v))
+	 (stackable (when (eq? (sfun-stackable fun) #t)
+		       (let ((gv (global-value v)))
+			  (when (fun? gv)
+			     (fun-stack-allocator gv)))))
 	 (fun (instantiate::var
 		 (loc loc)
 		 (type (variable-type v))
@@ -577,14 +580,14 @@
 			(loc loc)
 			(type (variable-type (the-global local)))
 			(variable (the-global local)))
-		     (instantiate::literal
-			(loc loc)
-			(type (get-type-atom arity))
-			(value arity))
-		     (instantiate::literal
-			(loc loc)
-			(type (get-type-atom 1))
-			(value (length kaptured))))))))
+		  (instantiate::literal
+		     (loc loc)
+		     (type (get-type-atom arity))
+		     (value arity))
+		  (instantiate::literal
+		     (loc loc)
+		     (type (get-type-atom 1))
+		     (value (length kaptured))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-sets ...                                                    */

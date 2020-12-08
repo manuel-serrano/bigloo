@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Wed Sep 25 13:44:17 2019 (serrano)                */
-#*    Copyright   :  1997-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 24 12:22:05 2020 (serrano)                */
+#*    Copyright   :  1997-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -47,7 +47,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   ziptest javatest jartest \
                   oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \
-                  thread pthread pthreadlock pthreadspinlock \
+                  thread pthread pthreadlock pthreadspinlock pthreadcancel \
                   pthreadmutexrec pthreadtimedjoin pthreadlocalstorage \
                   pthreadcondvtimedwait processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
@@ -61,10 +61,11 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   alsa pulseaudio mpg123 flac pcre pcrefreestudy avahi \
                   dbus gmp resolv resolvsym unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \
-                  gcconfigureopt ccfortify environ setenv symlink \
+                  config.guess ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
-                  gmtoff libuv getgroups ioctl pthreadkill syslog overflow \
-                  semaphore lockf patch likely gccattrs getrlimit
+                  gmtoff localtime_r gmtime_r timegm libuv getgroups ioctl \
+                  pthreadkill syslog overflow semaphore lockf likely \
+                  gccattrs getrlimit c99stackalloc tools
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
@@ -106,8 +107,8 @@ distrib:
 .PHONY: install uninstall
 
 install:
-	cp runtest $(LIBDIR)/$(FILDIR)/runtest && \
-          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/runtest; \
+	cp runtest $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest && \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest; \
 
 uninstall:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/runtest
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest

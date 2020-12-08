@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
 /*    Last change :  Sat Apr 21 11:12:45 2018 (serrano)                */
-/*    Copyright   :  2016-18 Manuel Serrano                            */
+/*    Copyright   :  2016-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -70,7 +70,12 @@ struct bgl_ucs2_string {
 #define STRING( o ) (CSTRING( o )->string)
 #define UCS2_STRING( o )  (CUCS2STRING( o )->ucs2_string)
 
-#define STRING_SIZE (sizeof( struct bgl_string ))
+#if( !defined( TAG_STRING ) )
+#  define STRING_SIZE (sizeof( struct { header_t header; long length; } ) + 1)
+#else
+#  define STRING_SIZE (sizeof( struct { long length; } ) + 1)
+#endif
+
 #define UCS2_STRING_SIZE (sizeof( struct bgl_ucs2_string ))
 
 /*---------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
 /*    Last change :  Wed Sep 25 13:47:21 2019 (serrano)                */
-/*    Copyright   :  2002-19 Manuel Serrano                            */
+/*    Copyright   :  2002-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -55,7 +55,7 @@
 /*---------------------------------------------------------------------*/
 /*    stack overflow constants                                         */
 /*---------------------------------------------------------------------*/
-#define BGL_STACKOVERFLOW_SIZE_THRESHOLD 4096
+#define BGL_STACKOVERFLOW_SIZE_THRESHOLD 8192;
 
 /*---------------------------------------------------------------------*/
 /*    imports                                                          */
@@ -131,7 +131,7 @@ stackov_heuristic_getrlimitp( siginfo_t *siginfo ) {
    getrlimit( RLIMIT_STACK, &rlimit );
 
    delta = rlimit.rlim_cur - stksz;
-   
+
    return delta < BGL_STACKOVERFLOW_SIZE_THRESHOLD;
 }
 #endif
@@ -200,7 +200,7 @@ bgl_signal( int sig, obj_t obj ) {
 	 sigemptyset( &(sigact.sa_mask) );
 	 sigact.sa_handler = (void (*)( int ))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
-	 
+
 	 if( sig == SIGSEGV ) {
 	    /* create an alternate stack for SEGV */
 	    sigact.sa_flags |= SA_ONSTACK;

@@ -50,8 +50,10 @@ name of each function is built in the following way:
 @item Assigner: @code{@var{name}-@var{field}-set!}
 @end itemize
 
-Function @code{make-@var{name}} accepts an optional argument. If
-provided, all the slots of the created structures are filled with it. The
+Function @code{make-@var{name}} accepts optional arguments. If a
+single argument is provided, all the slots of the created structures
+are filled with it. If more than one argument is passed, the various
+values are used to initialize the corresponding structure slots. The
 creator named @code{name} accepts as many arguments as the number of
 slots of the structure. This function allocates a structure and fills
 each of its slots with its corresponding argument.

@@ -16,9 +16,9 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gsterror
-	    __gstreamer_gstobject
-	    __gstreamer_gststructure)
+   (use	    __gstreamer_gsterror)
+
+   (import  __gstreamer_gststructure)
    
    (export  (class gst-caps
 	       (%gst-caps-init)
@@ -107,7 +107,7 @@
 	 ((not (keyword? (car a)))
 	  (bigloo-type-error 'gst-caps-new-simple 'keyword (car a)))
 	 ((null? (cdr a))
-	  (error 'gst-caps-new-simple "Miising value for attribute" (car a)))
+	  (error 'gst-caps-new-simple "Missing value for attribute" (car a)))
 	 (else
 	  (loop (cddr a))))))
 ;
@@ -142,8 +142,7 @@
 (define (gst-caps-merge! caps1 caps2)
    (with-access::gst-caps caps1 ((builtin1 $builtin))
       (with-access::gst-caps caps2 ((builtin2 $builtin))
-	 ($gst-caps-merge builtin1 builtin2)))
-   caps1)
+	 ($make-gst-caps ($gst-caps-merge builtin1 builtin2) #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-append-structure! ...                                   */
@@ -160,8 +159,7 @@
 (define (gst-caps-merge-structure! caps1 s)
    (with-access::gst-caps caps1 ((builtin1 $builtin))
       (with-access::gst-structure s ((builtin2 $builtin))
-	 ($gst-caps-merge-structure builtin1 builtin2)))
-   caps1)
+	 ($make-gst-caps ($gst-caps-merge-structure builtin1 builtin2) #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-remove-structure! ...                                   */

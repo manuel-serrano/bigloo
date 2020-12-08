@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bdb/Makefile                         */
+#*    serrano/prgm/project/bigloo/bigloo/bdb/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  4 20:11:07 1999                          */
-#*    Last change :  Sun Jul  9 10:19:55 2017 (serrano)                */
-#*    Copyright   :  1999-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 24 12:22:41 2020 (serrano)                */
+#*    Copyright   :  1999-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The bdb Makefile                                                 */
 #*=====================================================================*/
@@ -86,15 +86,15 @@ install:
 	   cp $(BOOTBINDIR)/bdb $(DESTDIR)$(BINDIR) && \
 	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bdb; \
         fi
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	   cp $(BOOTLIBDIR)/bdb.heap $(LIBDIR)/$(FILDIR)/bdb.heap && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	   cp $(BOOTLIBDIR)/bdb.heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bdb.heap && \
+           chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
         fi
 	$(MAKE) install-lib LIB=libbigloobdb_s-$(RELEASE)
 
 
 uninstall:
 	-$(RM) -f $(DESTDIR)$(BINDIR)/bdb
-	-$(RM) -f $(LIBDIR)/bdb.heap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/bdb.heap
 	-$(MAKE) uninstall-lib LIB=libbigloobdb_s-$(RELEASE)
 

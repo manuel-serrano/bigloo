@@ -20,6 +20,9 @@
 ;*---------------------------------------------------------------------*/
 (defvar bmacs-emacs-version
   (cond
+   ((string-match "GNU Emacs 27" (emacs-version)) 27)
+   ((string-match "GNU Emacs 26" (emacs-version)) 26)
+   ((string-match "GNU Emacs 25" (emacs-version)) 25)
    ((string-match "GNU Emacs 24" (emacs-version)) 24)
    ((string-match "GNU Emacs 23" (emacs-version)) 23)
    ((string-match "GNU Emacs 22" (emacs-version)) 22)
@@ -213,7 +216,7 @@
 	       (img (car l))
 	       (cmd (car (cdr l)))
 	       (help (car (cdr (cdr l))))
-	       (key (format "%s" cmd)))
+               (key (format "%s" cmd)))
 	  (define-key map (vector 'tool-bar (intern key))
 	    `(menu-item ,key ,(if (consp cmd)
 				  `(lambda () (interactive) ,cmd)

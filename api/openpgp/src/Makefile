@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 11 15:36:25 2010                          */
 #*    Last change :  Sun Jul  9 10:14:19 2017 (serrano)                */
-#*    Copyright   :  2010-17 Manuel Serrano                            */
+#*    Copyright   :  2010-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the OpenPGP Bigloo library.                */
 #*=====================================================================*/
@@ -43,8 +43,7 @@ BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 # Additional crypto
-EXTRALIBS_S	= -lbigloocrypto_s-$(RELEASE)
-EXTRALIBS_U	= -lbigloocrypto_u-$(RELEASE)
+BIGLOOEXTRALIBS += bigloocrypto
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

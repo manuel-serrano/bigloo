@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/wav/src/Makefile                 */
+#*    serrano/prgm/project/bigloo/bigloo/api/wav/src/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:18:58 2017 (serrano)                */
+#*    Last change :  Thu Apr 30 08:16:49 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,9 +36,9 @@ DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
-BAPISAFE	= -safee #-unsafe
+BAPISAFE	= -safee -unsafe
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
-                  -srfi $(API) -copt "$(WAVCFLAGS)"
+                  -srfi $(API) -copt "$(WAVCFLAGS) -DBGL_DUMMY"
 CAPIFLAGS       = $(WAVCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -47,12 +47,16 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 CEFLAGS		= $(WAVCFLAGS)
 
 # Additional libraries
-EXTRALIBS	= $(WAVLIBS) -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS	+= $(WAVLIBS)
+BIGLOOEXTRALIBS += bigloomultimedia
+
 ifneq "$(ALSALIBS) " " "
-EXTRALIBS	+= $(ALSALIBS) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(ALSALIBS)
+BIGLOOEXTRALIBS += biglooalsa
 endif
 ifneq "$(PULSEAUDIOLIBS) " " "
-EXTRALIBS	+= $(PULSEAUDIOLIBS) -lbigloopulseaudio_u-$(RELEASE)
+EXTRALIBS	+= $(PULSEAUDIOLIBS)
+BIGLOOEXTRALIBS += bigloopulseaudio
 endif
 
 #*---------------------------------------------------------------------*/

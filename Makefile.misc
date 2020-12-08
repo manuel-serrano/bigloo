@@ -1,12 +1,17 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/Makefile.misc                        */
+#*    serrano/prgm/project/bigloo/bigloo/Makefile.misc                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Mon Jul  3 17:24:48 2017 (serrano)                */
-#*    Copyright   :  2002-17 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:25:46 2020 (serrano)                */
+#*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
+#*    -------------------------------------------------------------    */
+#*    See Makefile.config (bottom) for the definition of the           */
+#*    variables used in this Makefile. The variables have to be        */
+#*    defined in Makefile.config in order to let client Makefiles      */
+#*    redefined them easily.                                           */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -22,7 +27,7 @@ INSTALL	= cp
 #*---------------------------------------------------------------------*/
 #*    Producing shared libraries                                       */
 #*---------------------------------------------------------------------*/
-shared-lib:
+bigloo-shared-lib:
 	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
             if [ "$(LD)" = "true" ]; then \
               if [ "$(FORCELD)" = "true" ]; then \
@@ -31,19 +36,19 @@ shared-lib:
             else \
 	      case $(HOSTOS) in \
                 mingw) \
-                  $(MAKE) LDEXTRA="-Wl,--out-implib,$(notdir $(LIBDEST).a) $(LDEXTRA)" shared && \
+                  $(MAKE) LDEXTRA="-Wl,--out-implib,$(notdir $(LIBDEST).a) $(LDEXTRA)" bigloo-shared && \
 		  cp $(notdir $(LIBDEST).a) $(LIBDEST).a;; \
                 *) \
-                  $(MAKE) shared || exit 1;; \
+                  $(MAKE) bigloo-shared || exit 1;; \
               esac; \
             fi; \
           fi
 
-shared:
+bigloo-shared:
 	@ $(RM) -f $(LIBDEST)
 	@ (close=""; \
            if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
-             close="$(CLOSELIBS) $(GCCLOSELIB)"; \
+             close="$(EXTRALIBS) $(BIGLOOLIB:%=-l%$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE)) $(BIGLOOEXTRALIBS:%=-l%$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE)) $(BIGLOOAPPLIBS:%=-l%$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(APPRELEASE)) $(BIGLOOGCLIB:%=-l%$(LIBSUFFIXTHREAD)-$(RELEASE))"; \
            fi; \
            rpathopt=""; \
            if [ "$(LDRPATHOPT) " != " " ]; then \
@@ -53,7 +58,7 @@ shared:
            fi; \
            if [ "$(LDINSTALLNAME) " != " " ]; then \
              if [ "$(LDINSTALLNAMEDIR) " = " " ]; then \
-               ldinstallnamedir=$(LIBDIR)/$(FILDIR); \
+               ldinstallnamedir=$(DESTDIR)$(LIBDIR)/$(FILDIR); \
              else \
                ldinstallnamedir=$(LDINSTALLNAMEDIR); \
              fi; \
@@ -82,6 +87,7 @@ shared:
              fi \
            fi)
 
+
 shared-install-name:
 	$(LD) -o $(notdir $(LIBDEST)) \
                  $(LDINSTALLNAME) $(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
@@ -89,20 +95,7 @@ shared-install-name:
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) $(EXTRA_LD_OPT) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
-                 $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
-         if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
-           mv $(notdir $(LIBDEST)) $(LIBDEST); \
-         fi
-
-MS-CARE-shared-install-name:
-	$(LD) -o $(notdir $(LIBDEST)) \
-                 $(LDINSTALLNAME) @executable_path/../$(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
-                 $(LDRPATH) \
-                 $(OBJECTS) \
-                 $(GCSTDOBJECTS) \
-                 $(LDFLAGS) $(EXTRA_LD_OPT) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(CLOSELIBS) \
                  $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
            mv $(notdir $(LIBDEST)) $(LIBDEST); \
@@ -114,7 +107,7 @@ shared-sans-soname:
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(CLOSELIBS) \
                  $(LDLIBS) $(LDOPTS) $(EXTRA_LD_OPT) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
            mv $(notdir $(LIBDEST)) $(LIBDEST); \
@@ -127,7 +120,7 @@ shared-soname:
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDOPTS) $(EXTRA_LD_OPT) \
-                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(CLOSELIBS) \
                  $(LDLIBS) $(LDFLAGS) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
            mv $(notdir $(LIBDEST)) $(LIBDEST); \
@@ -145,30 +138,30 @@ install-lib:
 	fi
 
 install-static-lib:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	  $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).a \
-             $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
-          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
-          $(RANLIB) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a || exit 3; \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+          chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+          $(RANLIB) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a || exit 3; \
         fi
 
 install-shared-lib:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
           if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
             $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
-               $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
-            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
+               $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
+            chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
             if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a ]; then \
               $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a \
-               $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a && \
-            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
+               $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a && \
+            chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
             fi \
           fi \
         fi
 
 install-link-lib:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  (cd $(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  (cd $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
            $(RM) -f $(LIB).a && \
            $(LN_S) $(LN).a $(LIB).a && $(RANLIB) $(LIB).a) \
         fi
@@ -179,6 +172,6 @@ install-link-lib:
         fi
 
 uninstall-lib:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX)
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX)
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a

@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/libunistring/Makefile                */
+#*    serrano/prgm/project/bigloo/bigloo/libunistring/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Sun Jul  9 10:26:33 2017 (serrano)                */
-#*    Copyright   :  2014-17 Manuel Serrano                            */
+#*    Last change :  Wed Dec 11 09:32:21 2019 (serrano)                */
+#*    Copyright   :  2014-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom UNISTRING library.             */
 #*=====================================================================*/
@@ -68,8 +68,8 @@ distrib:
 .PHONY: install
 
 install:
-	$(MAKE) -C $(UNISTRING) install
-	rm -rf $bootdir/BGLINSTALLTMP
+	$(MAKE) -C $(UNISTRING) install exec_prefix=$(BOOTDIR)/BGLINSTALLTMP
+	rm -rf $(BOOTDIR)/BGLINSTALLTMP
 
 #*---------------------------------------------------------------------*/
 #*    uninstall                                                        */

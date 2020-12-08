@@ -31,10 +31,10 @@ This chapter describes the Bigloo API for processing texts.
 @node BibTeX, Character strings, ,Text
 @section BibTeX
 
-@deffn {Bigloo Text function} bibtex obj
-@deffnx {Bigloo Text function} bibtex-port input-port
-@deffnx {Bigloo Text function} bibtex-file file-name
-@deffnx {Bigloo Text function} bibtex-string string
+@deffn {bigloo text function} bibtex obj
+@deffnx {bigloo text function} bibtex-port input-port
+@deffnx {bigloo text function} bibtex-file file-name
+@deffnx {bigloo text function} bibtex-string string
 These function parse BibTeX sources. The variable @var{obj} can either
 be an input-port or a string which denotes a file name. It returns a
 list of BibTeX entries.
@@ -59,7 +59,7 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Text function} bibtex-parse-authors string
+@deffn {bigloo text function} bibtex-parse-authors string
 This function parses the author field of a bibtex entry.
 
 Example:
@@ -75,7 +75,7 @@ Example:
 @node Character strings, Character encodings, BibTeX, Text
 @section Character strings
 
-@deffn {Bigloo Text function} hyphenate word hyphens
+@deffn {bigloo text function} hyphenate word hyphens
 The function @code{hyphenate} accepts as input a single word and
 returns as output a list of subwords. The argument @var{hyphens} is
 an opaque data structure obtained by calling the function @code{load-hyphens}
@@ -87,7 +87,7 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Text function} load-hyphens obj
+@deffn {bigloo text function} load-hyphens obj
 Loads an hyphens table and returns a data structure suitable for
 @code{hyphenate}. The variable @var{obj} can either be a file name
 containing an hyphens table or a symbol denoting a pre-defined hyphens
@@ -115,7 +115,7 @@ The procedure @code{hyphenate-text} hyphenates the words of the
 its code @code{lang} if there is a file @var{lang}@code{-hyphens.sch}.
 If there is no such file, the text remains un-hyphenated.
 
-@deffn {Bigloo Text function} make-hyphens [:language] [:exceptions] [:patterns]
+@deffn {bigloo text function} make-hyphens [:language] [:exceptions] [:patterns]
 Creates an hyphens table out of the arguments @var{exceptions} and 
 @var{patterns}.
 
@@ -157,6 +157,6 @@ algorithm created for Donald Knuth's TeX typographic system.
 @node Character encodings, , Character strings, Text
 @section Character encodings
 
-@deffn {Bigloo Text function} gb2312->ucs2 string
+@deffn {bigloo text function} gb2312->ucs2 string
 Converts a GB2312 (aka cp936) encoded 8bits string into an UCS2 string.
 @end deffn

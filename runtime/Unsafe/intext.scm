@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/intext.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/intext.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Mon Nov 27 10:58:08 2017 (serrano)                */
+;*    Last change :  Sat Mar 21 11:52:36 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -276,7 +276,7 @@
 	     (str2 (read-string s)) 
 	     (unserializer (find-custom-unserializer str)))
 	 (if (not (procedure? unserializer))
-	     (error "string->obj" "Can't unserialize custom object" str)
+	     (error "string->obj" "Cannot unserialize custom object" str)
 	     (unserializer str2))))
    
    ;; read-extension
@@ -440,14 +440,18 @@
    
    ;; read-special
    (define (read-special s converter)
-      ;; unserialize a process or an opaque
-      (let* ((sz (read-size/unsafe s))
-	     (res (substring s *pointer* (+fx *pointer* sz))))
-	 (when (fixnum? *defining*)
-	    (vector-set! *definitions* *defining* res)
-	    (set! *defining* #f))
-	 (set! *pointer* (+fx *pointer* sz))
-	 (converter res)))
+      ;; unserialize a procedure, a process, or an opaque
+      ;; fix 22 mars 2020
+      (let ((s (read-item)))
+	 (converter s)))
+;*       (let ((sz::long (read-size/unsafe s)))                        */
+;* 	 (string-guard! sz)                                            */
+;* 	 (let ((res (substring s *pointer* (+fx *pointer* sz))))       */
+;* 	    (when (fixnum? *defining*)                                 */
+;* 	       (vector-set! *definitions* *defining* res)              */
+;* 	       (set! *defining* #f))                                   */
+;* 	    (set! *pointer* (+fx *pointer* sz))                        */
+;* 	    (converter res))))                                         */
    
    ;; read-structure
    (define (read-structure)
@@ -597,7 +601,7 @@
 	    ((#\k) (read-class))
 	    ((#\r) (pregexp (read-string s)))
 	    ((#\u) (read-ucs2))
-	    ((#\p) (read-special s *string->process*))
+	    ((#\p) (read-special s *string->procedure*))
 	    ((#\e) (read-special s *string->process*))
 	    ((#\o) (read-special s *string->opaque*))
 	    ((#\X) (read-extension))
@@ -1399,14 +1403,14 @@
 ;*---------------------------------------------------------------------*/
 (define *procedure->string*
    (lambda (item)
-      (error "obj->string" "can't extern procedure" (excerpt item))))
+      (error "obj->string" "Cannot extern procedure" (excerpt item))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *string->procedure* ...                                          */
 ;*---------------------------------------------------------------------*/
 (define *string->procedure*
    (lambda (string)
-      (error "string->obj" "Can't intern procedure item" (excerpt string))))
+      (error "string->obj" "Cannott intern procedure item" (excerpt string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn register-procedure-serialization!@ ...                    */
@@ -1426,14 +1430,14 @@
 ;*---------------------------------------------------------------------*/
 (define *process->string*
    (lambda (item)
-      (error "obj->string" "can't extern process" (excerpt item))))
+      (error "obj->string" "cannot extern process" (excerpt item))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *string->process* ...                                            */
 ;*---------------------------------------------------------------------*/
 (define *string->process*
    (lambda (string)
-      (error "string->obj" "Can't intern process item" (excerpt string))))
+      (error "string->obj" "Cannot intern process item" (excerpt string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn register-process-serialization!@ ...                      */
@@ -1453,14 +1457,14 @@
 ;*---------------------------------------------------------------------*/
 (define *opaque->string*
    (lambda (item)
-      (error "obj->string" "can't extern opaque" (excerpt item))))
+      (error "obj->string" "Cannot extern opaque" (excerpt item))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *string->opaque* ...                                             */
 ;*---------------------------------------------------------------------*/
 (define *string->opaque*
    (lambda (string)
-      (error "string->obj" "Can't intern opaque item" string)))
+      (error "string->obj" "Cannot intern opaque item" string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn register-opaque-serialization!@ ...                       */
@@ -1490,7 +1494,7 @@
 ;*    register-class-serialization! ...                                */
 ;*---------------------------------------------------------------------*/
 (define (register-class-serialization! class serializer unserializer)
-
+   
    (define (make-serializer hash serializer)
       (case (procedure-arity serializer)
 	 ((1)
@@ -1503,7 +1507,7 @@
 		(if (eq? so o) so (cons hash so)))))
 	 (else
 	  (error "register-class-serialization!" "bad arity" serializer))))
-
+   
    (define (make-unserializer unserializer)
       (case (procedure-arity unserializer)
 	 ((1)

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb  2 05:57:51 2003                          */
 ;*    Last change :  Fri Oct 27 18:40:56 2017 (serrano)                */
-;*    Copyright   :  2003-17 Manuel Serrano                            */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Html generation                                                  */
 ;*=====================================================================*/
@@ -20,15 +20,15 @@
    (export  (abstract-class %html-element
 	       (id read-only (default #f))
 	       (class read-only (default #f))
-	       (title read-only (default #f)))
+	       (title read-only (default #f))
+	       (style read-only (default #f)))
 	    
 	    ;; document
 	    (class %html-document::%html-element
 	       (attr*::pair-nil read-only (default '()))
 	       (dtd read-only (default (html-dtd)))
 	       (body read-only)
-	       (css read-only (default (getenv "HTTP_HOP_CSS")))
-	       (style read-only (default #f)))
+	       (css read-only (default (getenv "HTTP_HOP_CSS"))))
 	    
 	    ;; style
 	    (class %html-style)
@@ -821,16 +821,14 @@
 ;*    out ::%html-box ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (out v::%html-box m::int)
-   (with-access::%html-box v (kind id class title inline* align)
+   (with-access::%html-box v (kind id class title inline* align style)
       (let ((attr (make-attributes ("class" (string? class) class)
-				   ("align" (string? align) align)
-				   ("id" (string? id) id)
-				   ("title" (string? title) title))))
+		     ("style" (string? style) style)
+		     ("align" (string? align) align)
+		     ("id" (string? id) id)
+		     ("title" (string? title) title))))
 	 (if (eq? kind 'span)
-	     (with-online-markup "span"
-				 attr
-				 m
-				 (out* inline* (+fx m 1)))
+	     (with-online-markup "span" attr m (out* inline* (+fx m 1)))
 	     (with-oneline-markup (case kind
 				     ((div) "div")
 				     ((p) "p")
@@ -838,9 +836,7 @@
 				     ((blockquote) "blockquote")
 				     ((hr) "hr")
 				     (else (error 'html "Illegal box" v)))
-				  attr
-				  m
-				  (out* inline* (+fx m 1)))))))
+		attr m (out* inline* (+fx m 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    out ::%html-a ...                                                */

@@ -69,7 +69,7 @@ cat > $file.c <<EOF
 
 static SSL_CTX *ctx;
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
     DH *dh;
     const BIGNUM *key;
     DH_get0_key( dh, &key, 0 );

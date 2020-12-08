@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
 ;*    Last change :  Tue Aug  9 08:57:35 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -202,6 +202,8 @@
 		     'sfun
 		     'now
 		     #unspecified)))
+      (fun-args-noescape-set! (variable-value gloclo)
+	 (fun-args-noescape (variable-value global)))
       (fill-gloclo! global gloclo)))
 
 ;*---------------------------------------------------------------------*/

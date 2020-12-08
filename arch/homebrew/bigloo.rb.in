@@ -1,0 +1,50 @@
+class Bigloo@Release@ < Formula
+  desc "Scheme implementation with object system, C, and Java interfaces"
+  homepage "https://www-sop.inria.fr/indes/fp/Bigloo/"
+  url "ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-@release@.tar.gz"
+  version "@RELEASE@"
+  sha256 "@SHA256@"
+  revision 1
+
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "openssl@1.1" => :build
+
+  depends_on "gmp"
+  depends_on "pcre"
+  depends_on "libunistring"
+  depends_on "sqlite"
+  depends_on "flac"
+  depends_on "mpg123"
+  depends_on "openssl@1.1"
+
+  def install
+    args = %W[
+      --prefix=#{prefix}
+      --mandir=#{man1}
+      --infodir=#{info}
+      --customgc=yes
+    ]
+
+    ENV['PKG_CONFIG_PATH'] = "/usr/local/opt/openssl@1.1/lib/pkgconfig"
+    system "./configure", *args
+
+    system "make"
+    system "make", "install"
+
+    # Install the other manpages too
+    manpages = %w[bgldepend bglmake bglpp bgltags bglafile bgljfile bglmco bglprof]
+    manpages.each { |m| man1.install "manuals/#{m}.man" => "#{m}.1" }
+  end
+
+  test do
+    program = <<~EOS
+      (display "Hello World!")
+      (newline)
+      (exit)
+    EOS
+    assert_match "Hello World!\n", pipe_output("#{bin}/bigloo -i -", program)
+  end
+end

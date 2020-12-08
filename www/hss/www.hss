@@ -1,0 +1,800 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/bigloo/www/hss/www.hss               */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Sat Aug  1 10:20:48 2015                          */
+/*    Last change :  Wed May 27 08:51:59 2020 (serrano)                */
+/*    Copyright   :  2015-20 Manuel Serrano                            */
+/*    -------------------------------------------------------------    */
+/*    HSS for the Hop.js documentation                                 */
+/*=====================================================================*/
+
+/*---------------------------------------------------------------------*/
+/*    grey effect                                                      */
+/*---------------------------------------------------------------------*/
+.hopdoc-grey {
+  -webkit-filter: grayscale(1) sepia(0.2);
+  filter: grayscale(1);
+  transition: 0.5s all;
+}
+
+.hopdoc-grey:hover {
+  -webkit-filter: none;
+  filter: none;
+}  
+
+/*---------------------------------------------------------------------*/
+/*    body                                                             */
+/*---------------------------------------------------------------------*/
+body.bigloo {
+    position: relative;
+    background-color: #fafafa;
+    color: #222;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bootstrap                                                        */
+/*---------------------------------------------------------------------*/
+p.danger {
+  margin-top: 3ex;
+  border-left: 4px solid #d00;
+  padding-left: 4px;
+  margin-top: 1ex;
+}
+
+.btn-group .btn-primary a {
+  color: white;
+}
+
+/*---------------------------------------------------------------------*/
+/*    title                                                            */
+/*---------------------------------------------------------------------*/
+.bigloo .jumbotron {
+  margin-top: 40px;
+  position: fixed;
+  top: 0px;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  transition: 0.5s all;
+  border-bottom: 4px solid white;
+  opacity: 0.90;
+  background-color: #33393f;
+}
+
+.jumbotron svg {
+  transition: 0.5s all;
+}  
+
+.jumbotron h1, .jumbotron p {
+  transition: 0.2s all;
+}
+
+[scrolled="yes"] .jumbotron {
+  margin-top: 0;
+  padding-top: 38px;
+  padding-bottom: 0px;
+  opacity: 0.85;
+}
+
+[scrolled="yes"] .jumbotron h1 {
+  margin-bottom: 4px;
+  margin-top: 20px;
+  font-size: 230%;
+}
+
+[scrolled="yes"] .jumbotron svg {
+  transform: scale(0.4);
+  filter: grayscale(30%);
+}
+
+[scrolled="yes"] .jumbotron .svg-container {
+  height: 10px;
+  font-size: 10px;
+}
+
+[scrolled="yes"] .jumbotron p {
+  margin-top: 2px;
+  font-size: 110%;
+}
+
+.jumbotron .version {
+  text-align: left;
+  padding-top: 60px;
+}
+
+.jumbotron p .date {
+    font-size: 70%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    color: #777;
+}
+
+[scrolled="yes"] .jumbotron .version {
+  text-align: left;
+  padding-top: 24px;
+  margin-top: 6px;
+  font-size: 100%;
+}
+
+[scrolled="yes"] div.col-md-2 {
+  height: 8ex;
+}
+
+/*---------------------------------------------------------------------*/
+/*    filler                                                           */
+/*---------------------------------------------------------------------*/
+.filler {
+  height: 290px;
+  visibility: hidden;
+}
+
+/*---------------------------------------------------------------------*/
+/*    footer                                                           */
+/*---------------------------------------------------------------------*/
+footer {
+  border-top: 1px solid #ddd;
+  padding-top: 4ex;
+  padding-bottom: 2ex;
+  margin-top: 4ex;
+  text-align: left;
+  color: #777;
+  font-size: 12px;
+}
+
+footer button.inria {
+  line-height: 10px;
+  font-size: 16px;
+  border: none;
+}
+
+footer button.inria svg * {
+  fill: white;
+  stroke: white;
+}
+
+footer .copyright-right {
+  text-align: right;
+}
+
+footer .copyright-left {
+  text-align: left;
+}
+
+footer .copyright-middle {
+  text-align: center;
+}
+
+/*---------------------------------------------------------------------*/
+/*    sections                                                         */
+/*---------------------------------------------------------------------*/
+.jumbotron .row h1 {
+  color: #f91a03;
+  text-shadow: none;
+  font-weight: bold;
+  border: 0;
+}
+
+.jumbotron h1:before {
+  content: none;
+}
+
+h1.toc {
+  font-weight: bold;
+}
+
+h1 {
+  padding-bottom: 4px;
+  padding-top: 4px;
+  border-bottom: 1px solid #777;
+  border-top: 1px solid #777;
+  counter-reset: subsection;
+  counter-increment: section;
+}
+
+h1:before {
+  content: counter( section ) ". ";
+}
+
+h1#toc {
+  counter-reset: section;
+  counter-increment: none;
+}
+
+h1#toc:before {
+  content: none;
+}
+
+h2 {
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #777;
+  text-shadow: #ccc 1px 1px 1px;
+}
+
+body.cross h1:before,
+body.cross h3:before,
+body.home h2:before,
+body.debian h2:before,
+body.homebrew h2:before,
+body.home h3:before,
+body.library h2:before,
+body.download h2:before,
+body.download h3:before,
+body.bib h3:before,
+body.bib h2:before,
+body.contribs h2:before,
+h1.nonumber:before,
+h2.nonumber:before,
+h3.nonumber:before {
+  content: none;
+}
+
+body.cross h2 {
+    counter-reset: subsubsection;
+}
+
+body.cross h2:before {
+  content: counter( subsection ) ". ";
+}
+    
+body.cross h3 {
+    counter-increment: subsubsection;
+}
+
+body.cross h3:before {
+  content: counter( subsection ) "." counter( subsubsection ) ". ";
+}
+    
+h2:before {
+  counter-increment: subsection;
+  content: counter( section ) "." counter( subsection ) ". ";
+}
+
+h3.glyphicon {
+  display: block;
+}
+
+h1.toc, h1.markdown {
+  font-size: 170%;
+}
+
+h2.markdown,
+h2.texinfo {
+  font-size: 160%;
+}
+
+h3.markdown,
+h3.texinfo {
+  font-size: 140%;
+  text-shadow: #ccc 1px 1px 1px;
+}
+ 
+h3.glyphicon,
+h4.glyphicon {
+  color: #444;
+}
+
+h3.glyphicon,
+h4.glyphicon {
+  font-family: monospace;
+  font-weight: 500;
+  line-height: 1.1;
+  font-size: 110%;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  background-color: #f0f0f0;
+}
+
+h3.glyphicon:before,
+h4.glyphicon:before {
+  font-size: 65%;
+  margin-right: 0.4em;
+  margin-left: 2px;
+  font-family: 'Glyphicons Halflings';
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+h3.parameter:before,
+h4.parameter:before {
+  color: #d85023;
+}
+
+h3.constructor:before,
+h4.constructor:before {
+  color: #eeb930;
+}
+
+h3.function:before,
+h4.function:before,
+h3.procedure:before,
+h4.procedure:before {
+  color: #1467e6;
+}
+
+h3.class:before,
+h4.class:before {
+  color: #22ba5a;
+}
+
+h3.syntax:before,
+h4.syntax:before,
+h3.module:before,
+h4.module:before {
+  color: #720bc3;
+}
+
+h3.scheme:before,
+h4.scheme:before {
+  color: #555555;
+}
+
+h3.ext-function:before,
+h4.ext-function:before {
+  color: #f63646;
+}
+
+/*---------------------------------------------------------------------*/
+/*    navigation                                                       */
+/*---------------------------------------------------------------------*/
+.navbut .btn-primary a {
+  color: white;
+}
+
+.navbar-brand {
+  transition: 2s all;
+  opacity: 0;
+}
+
+[scrolled="yes"] .navbar-brand {
+  opacity: 1;
+}
+
+nav.sidebar {
+  background-color: #ffffff;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 20em;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 95%;
+  opacity: 0.9;
+}
+
+nav.noaffix {
+  position: fixed;
+  top: 310px
+}
+
+nav.sidebar a {
+  color: #777;
+}
+  
+.affix-top {
+  position: absolute;
+  top: 20px;
+}
+
+.affix {
+  position: absolute;
+  top: 310px;
+}
+
+.affix-bottom {
+  position: absolute;
+  top: 80px;
+}
+
+nav.sidebar li {
+  border-left: 4px solid;
+  border-left-color: transparent;
+  text-overflow: ellipsis;
+}
+
+nav.sidebar .active {
+  font-weight: bold;
+  border-left-color: #900;
+  background-color: #d0d0d0;
+}
+
+nav.sidebar ul ul .active {
+  border: none;
+}
+
+nav.sidebar ul ul .active:after {
+  content: "\25c2";
+  color: #900;
+  font-size: 90%;
+}
+
+nav.sidebar .active * {
+  color: #222;
+}
+
+nav.sidebar li > a {
+  padding: 4px 8px;
+}
+
+.manual nav.sidebar li > a {
+  padding: 0px 8px;
+}
+
+nav.navbar-inverse {
+  border-bottom: 0;
+}
+
+nav.navbar-inverse .navbar-nav li.active > a {
+  background-color: #444;
+}
+
+nav.navbar-inverse .navbar-nav li {
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+}
+
+nav.navbar-inverse .navbar-nav li.active {
+  border-bottom-color: #f91a03;
+}
+
+/*---------------------------------------------------------------------*/
+/*    description                                                      */
+/*---------------------------------------------------------------------*/
+div.page-header {
+/*   font-size: 130%;                                                  */
+}
+  
+/*---------------------------------------------------------------------*/
+/*    toc                                                              */
+/*---------------------------------------------------------------------*/
+.toc li {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.toc li .toc-description {
+  margin-left: 1em;
+  font-size: 95%;
+}
+
+.toc-description {
+  color: #555;
+}
+
+/*---------------------------------------------------------------------*/
+/*    code                                                             */
+/*---------------------------------------------------------------------*/
+pre code {
+  font-family: monospace;
+}
+
+body.home pre code,
+body.debian pre code,
+body.homebrew pre code,
+body.download pre code,
+body.manual pre code,
+body.cross pre code,
+body pre code {
+  background-color: inherit;
+  border: none;
+}
+
+pre.fontifier-prog {
+  background-color: #ffffff;
+}
+
+pre.fontifier-prog span.ebnf-tag {
+  color: #338;
+}
+
+body.home code {
+  background-color: #efefef;
+  border: 1px solid #d2d2d2;
+  border-radius: 1px;
+  color: #D85023;
+}
+
+body.download code,
+body.homebrew code,
+body.manual code,
+body.cross code,
+body.debian code {
+  background-color: #efefef;
+  border: 1px solid #d2d2d2;
+  border-radius: 1px;
+  color: #1467E6;
+}
+
+/*---------------------------------------------------------------------*/
+/*    blockquote                                                       */
+/*---------------------------------------------------------------------*/
+p.warning {
+  margin-top: 3ex;
+  border-left: 4px solid #f0ad4e;
+  padding-left: 4px;
+  margin-top: 1ex;
+}
+
+p.info {
+}
+
+/*---------------------------------------------------------------------*/
+/*    label                                                            */
+/*---------------------------------------------------------------------*/
+span.lbl-lg {
+  padding: 8px;
+}
+
+pre + p {
+  margin-top: 1ex;
+}
+
+/*---------------------------------------------------------------------*/
+/*    download                                                         */
+/*---------------------------------------------------------------------*/
+body.download pre {
+  font-size: 80%;
+  font-family: monospace;
+}
+
+button.download {
+  border-radius: 3px;
+  border: 1px solid #aaa;
+  padding: 1ex 1em;
+  width: 16em;
+  text-align: center;
+}
+
+button.download table {
+  width: 100%;
+}
+
+button.download table td {
+  text-align: right;
+}
+
+button.download table td.content {
+  font-weight: bold;
+  text-align: left;
+  padding-left: 1em;
+}
+
+div.download + div.download {
+  margin-top: 2ex;
+}
+
+button.download * {
+  color: white;
+}
+
+button.download a span {
+  font-size: 140%;
+}
+
+/*---------------------------------------------------------------------*/
+/*    Specific page configuration                                      */
+/*---------------------------------------------------------------------*/
+body.lang ul.toc,
+body.lang h1.toc,
+body.download ul.toc,
+body.download h1.toc {
+  display: none;
+}
+
+div.home-body {
+  color: #444;
+  font-size: 16px;
+}
+
+body.home h1 {
+  color: #f91a03;
+  text-shadow: none;
+  font-weight: bold;
+}
+
+body pre {
+  background-color: #fafafa;
+  background-color: #ffffff;
+  border: 1px solid #eee;
+  border-left: 2px solid #1467E6;
+  border-radius: 0;
+  color: #000;
+  margin-left: 0;
+}
+
+body.manual pre.lisp,
+body.manual pre.smalllisp,
+body.home pre.scheme {
+  border-left-color: #f91a03;
+}
+
+body pre.shell {
+    border-left-color: #7b1ef7;
+}
+
+body pre.shell-guest {
+    border-left-color: #e6d029;
+}
+
+body pre.shell-host {
+    border-left-color: #7b1ef7;
+}
+
+body.home pre.homeprog .fontifier-prog-string,
+body.home pre.homeprog .fontifier-prog-define,
+body.home pre.homeprog .fontifier-prog-keyword,
+body.home pre.homeprog .fontifier-prog-tag,
+body.home pre.homeprog .fontifier-prog-reserved,
+body.home pre.homeprog .fontifier-prog-client,
+body.home pre.homeprog .fontifier-prog-server {
+  font-weight: normal;
+  color: inherit;
+}
+
+body.home pre.fontifier-prog .fontifier-prog-type {
+    color: #399839;
+}
+
+body.home pre#prog1 span.service,
+body.home pre#prog2 .fontifier-prog-tag,
+body.home pre#prog3 .fontifier-prog-client,
+body.home pre#prog4 .fontifier-prog-server {
+  font-weight: bold;
+  color: #D85023;
+  background-color: #efefef;
+  border: 1px solid #d2d2d2;
+  border-radius: 1px;
+  padding-left: 1px;
+  padding-right: 1px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+/*---------------------------------------------------------------------*/
+/*    prog                                                             */
+/*---------------------------------------------------------------------*/
+code .h1, code .h2, code .h3, code .h4 {
+  font-size: inherit;
+}
+
+/*---------------------------------------------------------------------*/
+/*    License                                                          */
+/*---------------------------------------------------------------------*/
+.license pre {
+    font-size: 90%;
+    border: 1px solid #ccc;
+    width: 60em;
+}
+
+/*---------------------------------------------------------------------*/
+/*    manual                                                           */
+/*---------------------------------------------------------------------*/
+body.manual nav.sidebar {
+    position: static;
+}
+
+body.manual nav.toc-extra {
+    margin-top: 2ex;
+}
+
+body.manual nav div.title {
+    margin-bottom: 2ex;
+    margin-left: 1em;
+    font-weight: bold;
+}
+
+body.manual nav.toc-extra ol.chapter {
+    counter-reset: toc-chapter;
+}
+
+body.manual nav.toc-extra ol.chapter li {
+    counter-increment: toc-chapter;
+}
+
+body.manual nav.toc-extra ol.chapter li:before {
+    content: counter( toc-chapter ) ".  ";
+    margin-left: 0.4em;
+}
+
+body.manual nav.toc-extra ol.chapter li a {
+    padding: 0;
+    padding-left: 0.3em;
+    display: inline-block;
+}
+
+body.manual nav.toc-extra ol.chapter li a:hover {
+    text-decoration: underline;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bibentry                                                         */
+/*---------------------------------------------------------------------*/
+.bibentry {
+    margin-top: 2ex;
+}
+
+.bibentry .title {
+    font-weight: bold;
+}
+
+.bibentry .title:before {
+    content: " -- ";
+    font-weight: normal;
+}
+
+.bibentry .booktitle:before {
+    content: " -- ";
+    font-weight: normal;
+}
+
+.bibentry .download {
+    margin-left: 2em;
+}
+
+.bibentry .download a:before {
+    content: "[ ";
+}
+
+.bibentry .download a:after {
+    content: " ]";
+}
+
+.bibentry .abstract {
+    margin-left: 4em;
+    font-size: 85%;
+    text-align: justify;
+}
+
+body.bib pre {
+    border-left-color: #999;
+}
+
+/*---------------------------------------------------------------------*/
+/*    index                                                            */
+/*---------------------------------------------------------------------*/
+.idx-col {
+  width: 100%;
+}
+
+.idx-prefix {
+  color: #777;
+  text-align: right;
+}
+
+.idx-letter th {
+    margin-top: 0.5ex;
+  text-align: left;
+  color: #777;
+  font-size: 220%;
+}
+
+.idx-letter > * {
+    border-top: 1px solid #999;
+}
+
+ul.nav-index {
+    font-size: 80%;
+}
+
+nav.index {
+    top: 270px;
+}
+
+/*---------------------------------------------------------------------*/
+/*    misc                                                             */
+/*---------------------------------------------------------------------*/
+div.gallery-comment {
+    font-size: 80%;
+    font-style: italic;
+}
+
+/*---------------------------------------------------------------------*/
+/*    media                                                            */
+/*---------------------------------------------------------------------*/
+@media screen and (max-width:1024px) {
+  #navbar, .idx-chapter {
+     display: none;
+  }
+}

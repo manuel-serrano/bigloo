@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
 ;*    Last change :  Tue Jul 19 08:37:40 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
 ;*=====================================================================*/
@@ -30,7 +30,7 @@
 ;*    expand-g-number? ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (expand-g-number? x)
-   (or (fixnum? x) (flonum? x)))
+   (or (fixnum? x) (flonum? x) (uint32? x) (int32? x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-g2 ...                                                    */

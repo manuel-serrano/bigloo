@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/avahi/src/Clib/bglavahi.c        */
+/*    .../prgm/project/bigloo/bigloo/api/avahi/src/Clib/bglavahi.c     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Jul 26 17:01:52 2017 (serrano)                */
-/*    Copyright   :  2011-17 Manuel Serrano                            */
+/*    Last change :  Wed Apr  1 19:29:25 2020 (serrano)                */
+/*    Copyright   :  2011-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
 /*    avahi documentation available at:                                */
@@ -22,11 +22,12 @@
 #include <avahi-common/timeval.h>
 
 #include "bglavahi.h"
+#include "bavahi.h"
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-extern int bgl_avahi_error( char *, char *, obj_t, int );
+extern obj_t bgl_avahi_error( char *, char *, obj_t, int );
 extern obj_t bgl_avahi_client_state_to_symbol( AvahiClientState );
 extern obj_t bgl_avahi_entry_group_state_to_symbol( AvahiEntryGroupState );
 extern obj_t bgl_avahi_protocol_to_symbol( AvahiProtocol );
@@ -252,7 +253,7 @@ enlarge_callback_array() {
    callback_length *= 2;
    ncallbacks = malloc( osize * 2 );
    memcpy( ncallbacks, callbacks, osize );
-   
+
    free( callbacks );
    callbacks = ncallbacks;
 }
@@ -482,7 +483,7 @@ AvahiStringList *
 bgl_avahi_list_to_string_list( obj_t p ) {
    // MS: 28 feb 2017
    // AvahiStringList *l = avahi_string_list_new( "", NULL );
-   AvahiStringList *l = avahi_string_list_new( 0L );
+   AvahiStringList *l = NULL;
 
    while( PAIRP( p ) ) {
       l = avahi_string_list_add( l, BSTRING_TO_STRING( CAR( p ) ) );
@@ -1008,10 +1009,9 @@ bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
    } else {
       a[ 0 ] = 0;
    }
-      
    if( !BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) )
       BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
-      
+
    cb->args[ 0 ].convert = &bgl_avahi_identity;
    cb->args[ 0 ].value = o;
    
@@ -1019,7 +1019,7 @@ bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
    cb->args[ 1 ].value = (void *)interface;
 
    cb->args[ 2 ].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
-   cb->args[ 2 ].value = (void *)protocol;
+   cb->args[ 2 ].value = address ? (void *)address->proto : AVAHI_PROTO_UNSPEC;
 
    cb->args[ 3 ].convert = (obj_t (*)(void*))bgl_avahi_resolver_event_to_symbol;
    cb->args[ 3 ].value = (void *)event;
@@ -1069,7 +1069,7 @@ bgl_avahi_service_resolver_new( bgl_avahi_service_resolver_t o ) {
 	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_NAME( o ) ),
 	 (const char*)BSTRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) ),
 	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_DOMAIN( o ) ),
-	 AVAHI_PROTO_UNSPEC,
+	 bgl_avahi_symbol_to_protocol( BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) ),
 	 0,
 	 bgl_avahi_service_resolver_callback,
 	 o );

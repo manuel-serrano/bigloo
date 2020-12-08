@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sun May 12 09:27:13 2019 (serrano)                */
+/*    Last change :  Mon Apr 20 15:59:37 2020 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -149,12 +149,11 @@ extern unsigned char bgl_get_hash_number_len( char *, int, int );
 extern bool_t bigloo_strcmp( obj_t o1, obj_t o2 );
 extern bool_t bgl_dns_enable_cache();
 extern long bgl_dns_cache_validity_timeout();
-extern ssize_t bgl_syswrite( obj_t, char *, size_t );
+extern ssize_t bgl_syswrite( obj_t, const void *, size_t );
 extern obj_t make_string_sans_fill( long );
 
 #ifndef _BGL_WIN32_VER
-extern int dup( int );
-extern int close( int );
+#include <unistd.h>
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -1056,8 +1055,10 @@ bgl_gethostinterfaces() {
 
    for( ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next ) {
       obj_t tmp;
-       
-      if( ifa->ifa_addr->sa_family == AF_INET ) {
+
+      if( !ifa->ifa_addr ) {
+	 ;
+      } else if( ifa->ifa_addr->sa_family == AF_INET ) {
 	 /* a valid IPv4 addr */
 	 char addressBuffer[ INET_ADDRSTRLEN ];
 	 

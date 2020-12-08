@@ -85,6 +85,9 @@
 #undef BGL_NAN_TAGGING
 #define BGL_NAN_TAGGING @BGL_NAN_TAGGING@
 
+#undef BGL_SMI
+#define BGL_SMI @BGL_SMI@
+
 #undef HAVE_BCOPY
 #define HAVE_BCOPY @HAVE_BCOPY@
 
@@ -115,11 +118,14 @@
 #undef HAVE_SIGPROCMASK
 #define HAVE_SIGPROCMASK @HAVE_SIGPROCMASK@
 
-#undef HAVE_ALLOCA
-#define HAVE_ALLOCA @HAVE_ALLOCA@
+#undef BGL_HAVE_ALLOCA
+#define BGL_HAVE_ALLOCA @HAVE_ALLOCA@
 
-#undef HAVE_ALLOCAH
-#define HAVE_ALLOCAH @HAVE_ALLOCAH@
+#undef BGL_HAVE_ALLOCAH
+#define BGL_HAVE_ALLOCAH @HAVE_ALLOCAH@
+
+#undef BGL_HAVE_C99STACKALLOC
+#define BGL_HAVE_C99STACKALLOC @HAVE_C99STACKALLOC@
 
 #undef HAVE_MMAP
 #define HAVE_MMAP @HAVE_MMAP@
@@ -161,7 +167,7 @@
 #define BGL_HAVE_LLABS @BGL_HAVE_LLABS@
 #define BGL_HAVE_LONGLONG @BGL_HAVE_LONGLONG@
 #define BGL_LLABS @BGL_LLABS@
-#define BGL_STRTOL(_1,_2,_3) (strtol(_1,(char **)_2,_3))
+#define BGL_STRTOL(_1,_2,_3) (strtol(_1+_2,0,_3))
 #define BGL_STRTOUL(_1,_2,_3) (strtoul(_1,(char **)_2,_3))
 #define BGL_HAVE_STRTOLL @BGL_HAVE_STRTOLL@
 #define BGL_STRTOLL(_1,_2,_3) (@BGL_STRTOLL@(_1,(char **)_2,_3))
@@ -246,6 +252,15 @@
 
 #undef BGL_HAVE_GMTOFF
 #define BGL_HAVE_GMTOFF @BGL_HAVE_GMTOFF@
+
+#undef BGL_HAVE_LOCALTIME_R
+#define BGL_HAVE_LOCALTIME_R @BGL_HAVE_LOCALTIME_R@
+
+#undef BGL_HAVE_GMTIME_R
+#define BGL_HAVE_GMTIME_R @BGL_HAVE_GMTIME_R@
+
+#undef BGL_HAVE_TIMEGM
+#define BGL_HAVE_TIMEGM @BGL_HAVE_TIMEGM@
 
 #undef HAVE_SHARED_LIBRARY
 #define HAVE_SHARED_LIBRARY @HAVE_SHARED_LIBRARY@
@@ -456,6 +471,7 @@
 #define BGL_INLINE_MUTEX 1
 
 #define BGL_HAVE_MUTEX_TIMEDLOCK @PTHREAD_HAVE_TIMEDLOCK@
+#define BGL_HAVE_PTHREAD_CANCEL @PTHREAD_HAVE_CANCEL@
 #define BGL_HAVE_SPINLOCK @PTHREAD_HAVE_SPINLOCK@
 #define BGL_HAVE_MUTEX_RECURSIVE @PTHREAD_HAVE_MUTEX_RECURSIVE@
 #define BGL_POSIX_CONDV_TIMEDWAIT @PTHREAD_POSIX_CONDV_TIMEDWAIT@
@@ -604,10 +620,10 @@ BGL_RUNTIME_DECL int bgl_sigsetmask( int );
 /*---------------------------------------------------------------------*/
 /*    The allocations.                                                 */
 /*---------------------------------------------------------------------*/
-#if( !HAVE_ALLOCA )
+#if( !BGL_HAVE_ALLOCA )
 #  define alloca( sz ) GC_MALLOC( sz )
 #else
-#  if HAVE_ALLOCAH
+#  if BGL_HAVE_ALLOCAH
 #    include <alloca.h>
 #  endif
 #endif

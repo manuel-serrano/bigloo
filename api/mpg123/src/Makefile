@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/mpg123/src/Makefile              */
+#*    serrano/prgm/project/bigloo/bigloo/api/mpg123/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:13:45 2017 (serrano)                */
+#*    Last change :  Thu Apr 30 08:15:05 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -38,7 +38,7 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPISAFE	= -unsafe -safee
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
-                  -srfi $(API) -copt "$(MPG123CFLAGS)"
+                  -srfi $(API) -copt "$(MPG123CFLAGS) -DBGL_DUMMY"
 CAPIFLAGS       = $(MPG123CFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -48,16 +48,20 @@ CEFLAGS		= $(MPG123CFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(MPG123LIBS) " " "
-EXTRALIBS	= 
 else
-ifeq "$(ALSALIBS) " " "
-else
-EXTRALIBS	+= $(MPG123LIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(MPG123LIBS) -lm
 endif
-ifeq "$(PULSEAUDIOLIBS) " " "
-else
-EXTRALIBS	+= $(MPG123LIBS) $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
+
+BIGLOOEXTRALIBS	+= bigloomultimedia
+
+
+ifneq "$(ALSALIBS) " " "
+EXTRALIBS	+= $(ALSALIBS)
+BIGLOOEXTRALIBS	+= biglooalsa
 endif
+ifneq "$(PULSEAUDIOLIBS) " " "
+EXTRALIBS	+= $(PULSEAUDIOLIBS)
+BIGLOOEXTRALIBS	+= bigloopulseaudio
 endif
 
 #*---------------------------------------------------------------------*/

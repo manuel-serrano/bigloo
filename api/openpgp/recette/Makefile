@@ -2,7 +2,7 @@
 #*    serrano/prgm/project/bigloo/api/crypto/recette/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Copyright   :  2002-17 Manuel Serrano                            */
+#*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the tests                                  */
 #*=====================================================================*/
@@ -83,8 +83,8 @@ test-jvm:
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class/.obj                                           */
 #*---------------------------------------------------------------------*/
-.scm.o: $*.scm
+.scm.o:
 	$(BIGLOO) -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.o
 
-.scm.class: $*.scm
+.scm.class:
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class

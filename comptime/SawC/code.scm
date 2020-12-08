@@ -94,7 +94,7 @@
 	       (gen-type type)
 	       (display* " " (gname v))
 	       (gen-type-regs params)
-	       (display " {\n BGL_FUNCTION_BEGIN;\n")
+	       (display " {\n")
 	       (if *hasprotect* (display " jmp_buf_t jmpbuf;\n"))
 	       (if *haspushexit* (display " struct exitd exitd;\n"))
 	       (if *haspushbefore* (display " struct befored befored;\n"))
@@ -102,7 +102,7 @@
 	       (if *trace* (display* "printf(\"" id "=" name "\\n\");\n")) ))))
    (genbody l)
    (display (make-string *pushtraceemmited* #\}))
-   (display " BGL_FUNCTION_END;\n}\n\n") )
+   (display "\n}\n\n") )
 
 (define (get-locals params l) ;()
    ;; update all reg to ireg and  return all regs not in params.

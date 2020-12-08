@@ -76,10 +76,7 @@ fi
 cat > $file.c <<EOF
 #include <stdio.h>
 #include <limits.h>
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    int n;
    unsigned long long x = 1;
    for (n = 8 * sizeof($type) - 1 - ($alignment); n > 0; n--)

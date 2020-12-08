@@ -1,0 +1,76 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    .../project/bigloo/bigloo/arch/debian/makedebremote.sh.in        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed May 23 05:45:55 2012                          */
+#*    Last change :  Thu Jan 23 07:29:28 2020 (serrano)                */
+#*    Copyright   :  2012-20 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Script to build the debian Bigloo packages on a remote machine   */
+#*=====================================================================*/
+
+# configuration and variables
+version=@VERSION@
+minor=
+
+user=$USER
+host=
+port=
+tmp=/tmp
+
+repodir=$HOME/prgm/distrib
+targetdir=
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+    -h|--help)
+      echo "usage makedebremote.sh [-p port] [-O dir] --repodir [dir] --tmp [dir] host[:port] [user]"
+      exit 1;;
+    -O)
+      shift
+      targetdir=$1;;
+    -p)
+      shift
+      port=$1;;
+    --repodir)
+      shift;
+      repodir=$1;;
+    --tmp)
+      tmp=$1;;
+    *)
+      if [ "$host " = " " ]; then
+	host="$1"
+      else
+	user=$1
+      fi
+      ;;
+  esac
+  shift
+done
+
+if [ "$port " = " " ]; then
+  port=`echo $host | awk -F: '{print $2}'`
+  host=`echo $host | awk -F: '{print $1}'`
+fi  
+
+if [ "$port " != " " ]; then
+  scpport="-P $port"
+  sshport="-p $port"
+fi  
+
+if [ "$targetdir " = " " ]; then
+  targetdir=$tmp/debbigloo/$host
+fi
+
+ssh $sshport $host -l $user "mkdir -p $tmp/debbigloo.remote"
+scp $scpport * $user@$host:$tmp/debbigloo.remote
+
+scp $scpport $repodir/bigloo$version$minor.tar.gz $user@$host:$tmp/debbigloo.remote
+
+ssh $sshport $host -l $user "bash -c \"cd $tmp/debbigloo.remote; ./makedeb.sh --repodir $tmp/debbigloo.remote\""
+
+mkdir -p $targetdir
+scp $scpport "$user@$host:$tmp/debbigloo.remote/build.bigloo/*.{deb,buildinfo,changes,dsc}" $targetdir

@@ -30,7 +30,7 @@ that uses this library.
   ...)
 @end smalllisp
 
-@deffn {Bigloo Sqlite class} sqlite
+@deffn {bigloo sqlite class} sqlite
 @smalllisp
 (class sqlite
    (path::bstring read-only (default ":memory:")))
@@ -53,7 +53,7 @@ system at location @code{/tmp/foo.db}. This example also binds the global
 variable @var{db2} to an in-memory SQLite database.
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-close @var{sqlite}
+@deffn {bigloo sqlite function} sqlite-close @var{sqlite}
 This function closes a database previously opened by creating an instance
 of the class @code{sqlite}.
 
@@ -66,7 +66,7 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-format @var{string} @var{arg} @dots{}
+@deffn {bigloo sqlite function} sqlite-format @var{string} @var{arg} @dots{}
 Constructs a string of characters representing an SQLite
 commands. This function acts as @code{format} (see @ref{Input and
 Output}). It is augmented with three additional escape sequence:
@@ -103,7 +103,7 @@ Examples:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-exec @var{sqlite} @var{string} @var{arg} @dots{}
+@deffn {bigloo sqlite function} sqlite-exec @var{sqlite} @var{string} @var{arg} @dots{}
 The function @code{sqlite-exec} @emph{executes} an SQLite command. The command
 is the built by implicitly invoking @code{sqlite-format} on @var{string} and
 the optional @var{arg} arguments. This function returns a single element,
@@ -126,7 +126,7 @@ Example:
 
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-eval @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
+@deffn {bigloo sqlite function} sqlite-eval @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
 The function @code{sqlite-eval} invokes a SQLite command built by
 implicitly invoking @code{sqlite-format} on @var{string} and the optional
 @var{arg} arguments. The result of the function is built by applying 
@@ -138,7 +138,7 @@ leave the database in a inconsistent state that prevent transactions to
 be rolled back.
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-map @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
+@deffn {bigloo sqlite function} sqlite-map @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
 The function @code{sqlite-map} invokes a SQLite command built by
 implicitly invoking @code{sqlite-format} on @var{string} and the optional
 @var{arg} arguments. The result is a list whose elements are built by applying 
@@ -191,7 +191,7 @@ Example2:
 	#("9" "81"))
 @end smalllisp
 
-@deffn {Bigloo Sqlite function} sqlite-name-of-tables @var{sqlite}
+@deffn {bigloo sqlite function} sqlite-name-of-tables @var{sqlite}
 Returns the name of tables in the database. This list can also be
 obtained with
 
@@ -202,11 +202,11 @@ obtained with
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-table-name-of-columns @var{sqlite} @var{table}
+@deffn {bigloo sqlite function} sqlite-table-name-of-columns @var{sqlite} @var{table}
 Returns the name of columns in the table.
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-last-insert-rowid @var{sqlite}
+@deffn {bigloo sqlite function} sqlite-last-insert-rowid @var{sqlite}
 Returns the SQLite @emph{rowid} of the last inserted row.
 @end deffn
 

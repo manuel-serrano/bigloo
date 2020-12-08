@@ -1037,7 +1037,7 @@
 ;*    utf8-char-size ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-char-size c)
-   (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 3 3 4)
+   (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 2 3 4)
       (bit-rsh (char->integer c) 4)))
 
 ;*---------------------------------------------------------------------*/
@@ -1242,7 +1242,7 @@
 	 (else
 	  (let loop ((r 0)
 		     (n 0)
-		     (i -1))
+		     (i 0))
 	     (if (=fx r len)
 		 (substring str i r)
 		 (let* ((c (string-ref str r))

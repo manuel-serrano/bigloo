@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Apr 17 08:05:08 2018 (serrano)                */
-/*    Copyright   :  2016-18 Manuel Serrano                            */
+/*    Last change :  Sat Dec  7 18:56:05 2019 (serrano)                */
+/*    Copyright   :  2016-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
 /*=====================================================================*/
@@ -92,6 +92,20 @@ struct bgl_cell {
 #  define MAKE_YOUNG_CELL( v ) bgl_saw_make_cell( v )
 #  define MAKE_CELL( v ) bgl_saw_make_old_cell( v )
 #endif
+
+/* stack allocation */
+#if( BGL_HAVE_ALLOCA && defined( __GNUC__ ) )
+#   define MAKE_STACK_CELL( v ) \
+        ({ obj_t an_object; \
+           an_object = alloca( CELL_SIZE ); \
+	   BGL_INIT_CELL( an_object, v ); \
+           ( BCELL( an_object ) ); })
+#else
+#   define MAKE_STACK_CELL( v ) MAKE_CELL( v )   
+#endif
+
+#define MAKE_CELL_STACK( v, b ) \
+   (b.val = v, BCELL( &b ))
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */

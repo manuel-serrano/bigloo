@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:03:24 1996                          */
 ;*    Last change :  Tue Feb  9 07:20:18 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The definition of the info structures for the globalization      */
 ;*=====================================================================*/
@@ -66,8 +66,10 @@
 	       (free-mark::long (default -10))
 	       ;; a mark
 	       (mark::long (default -10))
-	       ;; celled ?
-	       (celled?::bool (default #f)))
+	       ;; celled?
+	       (celled?::bool (default #f))
+	       ;; if a box is to be created, can it be stack allocated?
+	       (stackable::bool (default #t)))
 
 	    (wide-class sexit/Ginfo::sexit
 	       ;; is a function globalized

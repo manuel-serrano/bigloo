@@ -44,7 +44,6 @@
       ;; the indent button
       (,ude-indent-icon bee-external-indent "Indent whole buffer")
       --
-
       ;; the import button
       (,ude-import-icon bee-import-binding "Import definition")
       ;; the export button

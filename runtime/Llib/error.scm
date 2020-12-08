@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sun Sep 29 08:32:57 2019 (serrano)                */
+;*    Last change :  Wed Apr  8 15:51:59 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -24,7 +24,7 @@
 	    (export c-debugging-show-type "bgl_show_type")
 	    (export stack-overflow-error "bgl_stack_overflow_error")
 	    
-	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
+	    ($get-trace-stack::pair-nil (::int) "bgl_get_trace_stack")
 	    (macro $push-trace::obj (::obj ::obj) "BGL_PUSH_TRACE")
 	    (macro $env-push-trace::obj (::dynamic-env ::obj ::obj) "BGL_ENV_PUSH_TRACE")
 	    (macro $env-set-trace-name::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE_NAME")
@@ -54,6 +54,7 @@
 	    (macro sigusr1::int "SIGUSR1")
 	    (macro sigusr2::int "SIGUSR2")
 	    (macro sigwinch::int "SIGWINCH")
+	    (macro sigtrap::int "SIGTRAP")
 	    
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
@@ -129,6 +130,7 @@
 	       (field static sigusr1::int "SIGUSR1")
 	       (field static sigusr2::int "SIGUSR2")
 	       (field static sigwinch::int "SIGWINCH")
+	       (field static sigtrap::int "SIGTRAP")
 	       
 	       (field static $errno-type-error::int
 		      "BGL_TYPE_ERROR")
@@ -570,16 +572,10 @@
 		  ((fixnum? len) len)
 		  ((string? len) (string->integer len))
 		  (else 0)))
-	  (msg (if (>=fx i 0)
-		   ;; we have a significant info about the wrong index
-		   (string-append
-		      "index " (integer->string i) " out of range [0.."
-		      (integer->string (-fx len 1))
-		      "]")
-		   ;; no real info about the index
-		   (string-append "index out of range [0.."
-		      (integer->string (-fx len 1))
-		      "]"))))
+	  (msg (string-append
+		  "index " (integer->string i) " out of range [0.."
+		  (integer->string (-fx len 1))
+		  "]")))
       (instantiate::&index-out-of-bounds-error
 	 (fname fname)
 	 (location loc)
@@ -699,6 +695,8 @@
        (open-input-file fname))
       ((string=? fname "stdin")
        (open-input-string (input-port-buffer (current-input-port))))
+      ((string-prefix? "string://" fname)
+       (open-input-string (substring fname 9)))
       (else
        #f)))
 
@@ -709,6 +707,10 @@
    (cond
       ((file-exists? file)
        (relative-file-name file))
+      ((string-prefix? "string://" file)
+       (if (<=fx (string-length file) (+fx 9 sz))
+	   (substring file 9)
+	   (string-append (substring file 9 (+fx sz 6)) "...")))
       ((<=fx (string-length file) sz)
        file)
       (else
@@ -1356,6 +1358,9 @@
 ;*    On installe le ratrappage des exceptions                         */
 ;*---------------------------------------------------------------------*/
 (signal sigfpe sigfpe-error-handler)
+;; sigfpe is not always enough as some C compilers are so
+;; smart that they can replace the sigfpe with a sigtrap
+(signal sigtrap sigfpe-error-handler)
 (signal sigill sigill-error-handler)
 (signal sigbus sigbus-error-handler)
 (signal sigsegv sigsegv-error-handler)

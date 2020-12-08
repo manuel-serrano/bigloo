@@ -1,12 +1,12 @@
 #!/bin/sh
 # Generated file, don't edit, @DATE@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/runtest.in                  */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/runtest.in           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep  4 11:48:49 2009                          */
-#*    Last change :  Mon May  2 09:56:51 2011 (serrano)                */
-#*    Copyright   :  2009-11 Manuel Serrano                            */
+#*    Last change :  Thu Nov  7 15:18:37 2019 (serrano)                */
+#*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This file is in charge of spawning actual tests.                 */
 #*=====================================================================*/
@@ -171,7 +171,7 @@ fi
  export CFLAGS;
 
  if [ $verbose = 1 ]; then
-   echo -n "executing $AUTOCONFDIR/$test -> " >&2
+   @ECHO@ -n "executing $AUTOCONFDIR/$test -> " >&2
  elif [ $verbose = 2 ]; then
    echo "executing $AUTOCONFDIR/$test$opts" >&2
  elif [ $verbose = 3 ]; then

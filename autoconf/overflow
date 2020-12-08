@@ -50,7 +50,7 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    long a = 34, b = 65, res;
    if( __builtin_saddl_overflow( a, b, &res ) ) {
       return 0;

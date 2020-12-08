@@ -47,14 +47,11 @@ CEFLAGS		= $(GSTREAMERCFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(GSTREAMERLIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(GSTREAMERLIBS)
+EXTRALIBS	+= $(GSTREAMERLIBS) $(PTHREADLIBS)
 endif
 
-#GCCLOSELIB	= -l$(GCLIB)-$(RELEASE)
-EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE) -lbigloomultimedia_s-$(RELEASE)
-EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE) -lbigloomultimedia_u-$(RELEASE)
+BIGLOOEXTRALIBS +=  bigloopthread bigloomultimedia
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

@@ -20,7 +20,7 @@
 Bigloo supports command line argument parsing. That is, when an
 application is spawn from an Unix shell, the @code{main} function
  is called and its argument is bound to the list of the command line
-arguments, @xref{Modules, ,Module declaration}. The
+arguments, @xref{Modules, ,Module Declaration}. The
 @code{args-parse} form may be used to parse these.
 
 @deffn {bigloo syntax} args-parse list rules [null-rule] [else-rule] @dots{}

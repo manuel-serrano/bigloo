@@ -80,7 +80,9 @@
 	      ;; the called function
 	      fun::var
 	      ;; the actuals of the call
-	      args)
+	      args
+	      ;; can this call be replaced with an equiv. stack allocation
+	      (stackable (default #f)))
 
 	   ;; the apply construction node
 	   (final-class app-ly::node
@@ -271,7 +273,9 @@
 	   ;; the make-box construction
 	   (final-class make-box::node/effect
 	      value::node
-	      vtype::type)
+	      vtype::type
+	      ;; can this box allocated on the stack
+	      (stackable (default #f)))
 
 	   ;; the box-ref
 	   (final-class box-ref::node/effect

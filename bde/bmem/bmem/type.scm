@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 10:48:45 2003                          */
 ;*    Last change :  Wed Oct 24 12:08:57 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualizing allocation classified by types                       */
 ;*=====================================================================*/
@@ -75,10 +75,10 @@
 	       :width "100%"
 	       `(,(html-tr
 		     `(,(html-td
-			   :valign "top"
+			   :valign "top" :width "50%"
 			   (make-type-function-chart allsize type* gc* fun*))
 		       ,(html-td
-			   :valign "top"
+			   :valign "top" :width "50%"
 			   (make-type-gc-chart allsize type* gc* fun*))))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -124,19 +124,18 @@
 					  size%
 					  (word->size size))))
 			       (cell% (apply + (map car cells)))
-			       (cells (append cells
-					 (list (list (- size% cell%)
-						  "function-1"
-						  (format "rest: ~a% of ~a"
-						     (- size% cell%)
-						     (word->size size)))))))
-			   (list (html-row-gauge cells tdl tds)
-			      (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
+			       (rest (list (- size% cell%)
+					"function-1"
+					(format "rest: ~a% of ~a"
+					   (- size% cell%)
+					   (word->size size)))))
+			   (list (html-row-gauge cells tdl tds rest))))
 		   type* cell*)))
       (html-profile (apply append row*)
 	 "type-function" "Type (functions)"
 	 '("type" "15%")
-	 '("memory" "20%"))))
+	 '("memory" "20%")
+	 "65%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-type-gc-chart ...                                           */
@@ -185,6 +184,7 @@
 	  (row* (map (lambda (ty cells)
 			(let* ((size (cadr ty))
 			       (size% (% size allsize))
+			       (cell% (apply + (map car cells)))
 			       (tnum (integer->string (car ty)))
 			       (id (string-append "type" tnum))
 			       (tdl (html-color-item
@@ -194,14 +194,19 @@
 					     :align "left"
 					     (format "~a% (~a)"
 						     size%
-						     (word->size size)))))
-			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
+						     (word->size size))))
+			       (rest (list (- size% cell%)
+					"gc-1"
+					(format "rest: ~a% of a"
+					   (- size% cell%)
+					   size))))
+			   (list (html-row-gauge cells tdl tds rest))))
 		     type* cell*)))
       (html-profile (apply append row*)
-		    "type-function" "Type (gcs)"
-		    '("type" "10%")
-		    '("memory" "20%"))))
+	 "type-function" "Type (gcs)"
+	 '("type" "10%")
+	 '("memory" "20%")
+	 "65%")))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-type ...                                                    */

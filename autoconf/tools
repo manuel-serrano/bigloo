@@ -1,0 +1,76 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/pthread                     */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Dec 10 09:28:47 2010 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for essential tools.                                       */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    libtools                                                         */
+#*---------------------------------------------------------------------*/
+which libtoolize || which glibtoolize
+
+if [ "$?" = "1" ]; then
+  case $HOSTOS in
+    darwin)
+      echo "*** ERROR: Cannot find libtoolize nor glibtoolize"
+      echo "On MacOS X, you can install it with"
+      echo "  brew install libtool"
+      echo "abort"
+      exit 1
+      ;;
+      
+    *)
+      echo "*** ERROR: Cannot find libtoolize"
+      echo "Generally it is released with the \"libtool\" suite"
+      echo "abort"
+      exit 1
+      ;;
+  esac
+fi
+
+#*---------------------------------------------------------------------*/
+#*    make                                                             */
+#*---------------------------------------------------------------------*/
+which make || which gmake
+
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"make\", abort."
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    autoconf                                                         */
+#*---------------------------------------------------------------------*/
+which autoconf
+
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"autoconf\", abort."
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    sed                                                              */
+#*---------------------------------------------------------------------*/
+which sed
+
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"sed\", abort."
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    awk                                                              */
+#*---------------------------------------------------------------------*/
+which awk
+
+if [ "$?" = "1" ]; then
+  echo "*** ERROR: Cannot find \"awk\", abort."
+  exit 1
+fi
+
+
