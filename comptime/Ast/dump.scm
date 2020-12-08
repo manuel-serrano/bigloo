@@ -125,7 +125,14 @@
 			       (list
 				(list "side-effect:" (side-effect? node)))
 			       '())
-			 ,(list "type:" (shape (node-type node)))
+			 ,(list type: (shape (node-type node)))
+			 ,@(if (cfun? (variable-value
+					 (var-variable (app-fun node))))
+			       (let ((cf (variable-value
+					    (var-variable (app-fun node)))))
+				  `((args-type:
+				       ,(map type-id (cfun-args-type cf)))))
+			       '())
 			 ,@(map node->sexp (app-args node))))
 		      (*access-shape?*
 		       `(,(node->sexp (app-fun node))

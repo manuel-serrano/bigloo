@@ -4832,6 +4832,11 @@ public final class foreign
 	 bgldynamic.abgldynamic.get().error_handler = hdl;
       }
 
+   public static void BGL_ERROR_HANDLER_PUSH(Object h, Object hdl)
+      {
+	 bgldynamic.abgldynamic.get().error_handler = MAKE_PAIR( h, hdl );
+      }
+
    public static Object BGL_UNCAUGHT_EXCEPTION_HANDLER_GET()
       {
 	 return bgldynamic.abgldynamic.get().uncaught_exception_handler;

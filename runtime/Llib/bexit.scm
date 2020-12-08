@@ -119,13 +119,15 @@
 	    (unwind-until! exitd ::obj)
 	    (unwind-stack-until! exitd ::obj ::obj ::obj)
 	    (default-uncaught-exception-handler ::obj)
-	    (exitd-push-protect! ::obj ::obj)
+	    (exitd-push-protect! ::obj m::obj)
 	    (exitd-pop-protect! ::obj))
 
    (cond-expand (bigloo-c
 		 (pragma
 		    ($failsafe-mutex-profile fail-safe)
-		    ($exitd-mutex-profile fail-safe)))))
+		    ($exitd-mutex-profile fail-safe))))
+
+   (pragma (exitd-push-protect! (args-noescape m)))) 
 
 ;*---------------------------------------------------------------------*/
 ;*    val-from-exit? ...                                               */

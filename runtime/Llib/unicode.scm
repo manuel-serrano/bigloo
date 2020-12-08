@@ -1018,25 +1018,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-char-size ...                                               */
 ;*---------------------------------------------------------------------*/
-;* (define (utf8-char-size c)                                          */
-;*    (let ((n (char->integer c)))                                     */
-;*       (cond                                                         */
-;* 	 ((<=fx n #x7f) 1)                                             */
-;* 	 ((<=fx n #xc0) 2)                                             */
-;* 	 ((<fx n #xc2) (error "utf8-char-size" "Badly formed UTF8 string" c)) */
-;* 	 ((<=fx n #xdf) 2)                                             */
-;* 	 ((<=fx n #xef) 3)                                             */
-;* 	 ((or (=fx n #xf0) (=fx n #xf4) (<=fx n #xf7)) 4)              */
-;* 	 ((=fx n #xf8) 4) ;; see utf8-string-append                    */
-;* 	 ((<=fx n #xfb) 5)                                             */
-;* 	 ((=fx n #xfc) 4) ;; see utf8-string-append                    */
-;* 	 ((<=fx n #xfd) 6)                                             */
-;* 	 (else (error "utf8-char-size" "Badly formed UTF8 string" c))))) */
+(define-inline (utf8-char-size c)
+   (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 2 3 4)
+      (bit-rsh (char->integer c) 4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-char-size ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (utf8-char-size c)
+(define (utf8-char-size-right c)
    (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 2 3 4)
       (bit-rsh (char->integer c) 4)))
 

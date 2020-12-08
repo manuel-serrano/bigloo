@@ -606,7 +606,7 @@
       (emit-bdb-loc loc)
       (display "if( SET_EXIT(" *c-port*)
       (emit-cop exit)
-      (display ") ) { " *c-port*)
+      (display " ) ) { " *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
       (when (emit-cop jump-value) (display ";" *c-port*))
       (emit-bdb-loc loc)
@@ -616,7 +616,7 @@
       (display "#endif\n" *c-port*)
       (emit-cop body)
       (emit-bdb-loc loc)
-      (display "} " *c-port*)
+      (display "}" *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
       #f))
 

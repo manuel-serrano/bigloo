@@ -119,7 +119,7 @@
       ;; we restore type result
       (global-type-set! new (find-type typeid))
       ;; the parameters type
-      (restore-value-types! value)
+      (restore-value-types! value id)
       ;; we restore the jvm qualified type name
       (when (and (backend-qualified-types (the-backend))
 		 (not (eq? (global-module new) 'foreign)))
@@ -150,13 +150,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-generic (restore-value-types! value::value)
+(define-generic (restore-value-types! value::value id)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::fun ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::fun)
+(define-method (restore-value-types! value::fun id)
    (with-access::fun value (predicate-of)
       (when (type? predicate-of)
          (set! predicate-of (find-type (type-id predicate-of))))))
@@ -164,7 +164,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::sfun ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::sfun)
+(define-method (restore-value-types! value::sfun id)
    (call-next-method)
    (with-access::sfun value (args)
       (let loop ((args args))
@@ -198,20 +198,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::isfun ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::isfun)
+(define-method (restore-value-types! value::isfun id)
    (call-next-method)
    (hrtype-node! (isfun-original-body value)))
 
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::cfun ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::cfun)
+(define-method (restore-value-types! value::cfun id)
    (call-next-method)
    (with-access::cfun value (args-type)
       (let loop ((args args-type))
 	 (if (pair? args)
 	     (begin
-		(set-car! args (find-type (type-id (car args))))
+		(if (eq? (type-id (car args)) '_)
+		    (begin
+		       (user-warning "head-restore"
+			  "Illegal restored type for foreign function"
+			  id)
+		       (set-car! args *obj*))
+		    (set-car! args (find-type (type-id (car args)))))
 		(loop (cdr args)))))))
    
 ;*---------------------------------------------------------------------*/

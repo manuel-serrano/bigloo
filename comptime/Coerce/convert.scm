@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
 ;*    Last change :  Wed May 31 10:39:42 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -228,6 +228,7 @@
 			   (coerce! node #unspecified from #f)
 			   (instantiate::literal (type to) (value "")))))))
 	  (else
+	   (tprint "e.1 " (shape node))
 	   (type-error/location loc (current-function) from to))))
       (else
        (type-error/location loc (current-function) from to))))

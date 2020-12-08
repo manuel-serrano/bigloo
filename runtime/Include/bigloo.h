@@ -1957,6 +1957,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
   (BGL_DYNAMIC_ENV( env ).error_handler)
 #define BGL_ENV_ERROR_HANDLER_SET( env, _hdl ) \
   (BGL_DYNAMIC_ENV( env ).error_handler = (_hdl))
+#define BGL_ENV_ERROR_HANDLER_PUSH( env, _h, _hdl ) \
+   (BGL_DYNAMIC_ENV( env ).error_handler = (MAKE_STACK_PAIR( _h, _hdl)))
    
 #define BGL_ENV_UNCAUGHT_EXCEPTION_HANDLER_GET( env ) \
   (BGL_DYNAMIC_ENV( env ).uncaught_exception_handler)
@@ -2065,6 +2067,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    BGL_ENV_ERROR_HANDLER_GET( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_ERROR_HANDLER_SET( _hdl ) \
    BGL_ENV_ERROR_HANDLER_SET( BGL_CURRENT_DYNAMIC_ENV(), _hdl )
+#define BGL_ERROR_HANDLER_PUSH( _h, _hdl ) \
+   BGL_ENV_ERROR_HANDLER_PUSH( BGL_CURRENT_DYNAMIC_ENV(), _h, _hdl )
    
 #define BGL_UNCAUGHT_EXCEPTION_HANDLER_GET() \
    BGL_ENV_UNCAUGHT_EXCEPTION_HANDLER_GET( BGL_CURRENT_DYNAMIC_ENV() )
