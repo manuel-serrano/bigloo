@@ -1186,9 +1186,9 @@
    (let* ((llen (string-length left))
 	  (rlen (string-length right))
 	  (buffer ($make-string/wo-fill (+fx llen rlen))))
-      (let ((nindex (utf8-string-append-fill! buffer 0 left)))
-	 (let ((nindex (utf8-string-append-fill! buffer nindex right)))
-	    (string-shrink! buffer nindex)))))
+      (blit-string! left 0 buffer 0 llen)
+      (let ((nindex (utf8-string-append-fill! buffer llen right)))
+	 (string-shrink! buffer nindex))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append* ...                                          */
