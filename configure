@@ -1531,10 +1531,10 @@ case $hostos in
       droidadb=$droidsdkroot/platform-tools/adb
     fi
     
-    $echo -n "executing $droidadb shell ls /mnt -> " >&2
+    $echo -n "executing $droidadb shell echo hello -> " >&2
   
-    $droidadb shell ls /mnt 2> /dev/null > /dev/null
-
+    $droidadb shell echo yes 2> /dev/null > /dev/null
+    
     if [ $? = 0 ]; then
       $echo "ok" >&2
     else
@@ -1548,12 +1548,14 @@ case $hostos in
 
     # Find a proper tmp on the phone
     if [ "$droidtmp " = " " ]; then
+      echo -n "droidtmp -> " >&2
       for dir in /tmp /sdcard/tmp /mnt/sdcard/tmp /data/local/tmp; do
         if $autoconfdir/androidmkdir $droidadb $dir >&2; then
           droidtmp=$dir
           break
         fi
       done
+      echo "$droidtmp" >&2
     fi
 
     if [ "$droidtmp " = " " ]; then

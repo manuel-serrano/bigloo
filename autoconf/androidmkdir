@@ -5,9 +5,9 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep 23 14:28:53 2010                          */
 #*    Last change :  Fri Dec 29 06:20:38 2017 (serrano)                */
-#*    Copyright   :  2010-17 Manuel Serrano                            */
+#*    Copyright   :  2010-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    Create a directory on the Android emulator                       */
+#*    Create a directory on the Android device/emulator                */
 #*=====================================================================*/
 
 adb=$1
@@ -27,23 +27,29 @@ fi
 if [ $ok -eq 0 ]; then
    # the directory exists
    # try to create an exec
-   if $adb shell "echo 'echo yes' > $dir/foo" 2>&1 | grep -iq 'read-only'; then
+   if $adb shell "echo 'echo yep' > $dir/foo" 2>&1 | grep -iq 'read-only'; then
       # read only
       ok=1
    else
+      $adb shell chmod 755 $dir/foo 2> /dev/null > /dev/null
       # set it executable and run it
-      if $adb shell chmod 755 $dir/foo 2>&1 | grep -iq "Operation not permitted"; then
+      if [ "$?" != "0" ]; then
         # can't chmod
         ok=1;
-      else 
-        if $adb shell $dir/foo 2>&1 | grep -iq 'permission denied'; then
+      else
+        $adb shell $dir/foo 2>&1 | grep "yep" 2> /dev/null > /dev/null
+	
+	if [ "$?" != "0" ]; then
           # can't execute
           ok=1
         fi
       fi
 
       # cleanup
-      $adb shell rm -r $dir/foo
+      $adb shell rm -r $dir/foo 2> /dev/null > /dev/null
+      if [ "$?" != "0" ]; then
+        ok=1
+      fi
    fi
 fi
 
