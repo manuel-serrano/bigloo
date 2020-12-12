@@ -179,6 +179,8 @@
 	    (utf8-string-append*::bstring . strings)
 	    (utf8-string-append-fill!::long ::bstring ::long ::bstring #!optional (offset 0))
 	    (utf8-substring::bstring str::bstring ::long #!optional (end::long (utf8-string-length str)))
+	    (inline utf8-string-left-replacement?::bool ::bstring ::long ::long)
+	    (inline utf8-string-right-replacement?::bool ::bstring ::long ::long)
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
 	    (utf8->iso-latin::bstring ::bstring)

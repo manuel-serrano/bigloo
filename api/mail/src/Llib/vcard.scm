@@ -140,36 +140,55 @@
 ;*    read-values ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (read-values port options cset)
-   (let ((g (regular-grammar (cset decode)
-	       ((+ (or (out #\return #\newline #\; #\\) "\\n"))
-		(let ((val (unescape (the-string) cset decode)))
-		   (cons val (ignore))))
-	       ((or (: #\return #\Newline) #\Newline)
-		'())
-	       ((: #\Newline (+ (or #\tab #\space)))
-		(let ((val (the-string)))
-		   (cons val (ignore))))
-	       ((: (: #\return #\Newline) (+ (or #\tab #\space)))
-		(let ((val (the-string)))
-		   (cons val (ignore))))
-	       ((: #\; (+ #\;))
-		(let ((len (-fx (the-length) 1)))
-		   (append (make-list len "") (ignore))))
-	       (#\;
-		(ignore))
-	       (else
-		(parse-error "Illegal values"
-		   (read-line (the-port))
-		   (the-port))))))
-      (cond
-	 ((or (memq 'quoted-printable options)
-	      (member '(encoding . "QUOTED-PRINTABLE") options))
-	  (read/rp g port cset quoted-printable-decode))
-	 ((or (memq 'base64 options)
-	      (member '(encoding . "BASE64") options))
-	  (read/rp g port cset base64-decode))
+   
+   (define base64-grammar
+      (regular-grammar ()
+	 ((: (or "=" "==" "===" "====") #\Return #\Newline)
+	  (list (the-substring 0 -2)))
+	 ((: (or "=" "==" "===" "====") #\Newline)
+	  (list (the-substring 0 -1)))
+	 ((+ (out #\Newline #\Return #\space #\=))
+	  (let ((str (the-string)))
+	     (cons str (ignore))))
+	 ((+ (or #\Newline #\Return #\space))
+	  (ignore))
 	 (else
-	  (read/rp g port cset #f)))))
+	  (parse-error "Illegval value"
+	     (read-line (the-port))
+	     (the-port)))))
+   
+   (define g
+      (regular-grammar (cset decode)
+	 ((+ (or (out #\return #\newline #\; #\\) "\\n"))
+	  (let ((val (unescape (the-string) cset decode)))
+	     (cons val (ignore))))
+	 ((or (: #\return #\Newline) #\Newline)
+	  '())
+	 ((: #\Newline (+ (or #\tab #\space)))
+	  (let ((val (the-string)))
+	     (cons val (ignore))))
+	 ((: (: #\return #\Newline) (+ (or #\tab #\space)))
+	  (let ((val (the-string)))
+	     (cons val (ignore))))
+	 ((: #\; (+ #\;))
+	  (let ((len (-fx (the-length) 1)))
+	     (append (make-list len "") (ignore))))
+	 (#\;
+	  (ignore))
+	 (else
+	  (parse-error "Illegal values"
+	     (read-line (the-port))
+	     (the-port)))))
+   
+   (cond
+      ((or (memq 'quoted-printable options)
+	   (member '(encoding . "QUOTED-PRINTABLE") options))
+       (read/rp g port cset quoted-printable-decode))
+      ((or (memq 'base64 options)
+	   (member '(encoding . "BASE64") options))
+       (apply string-append (read/rp base64-grammar port)))
+      (else
+       (read/rp g port cset #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-options ...                                                 */
@@ -258,7 +277,7 @@
 	  ((photo:)
 	   (with-access::vcard vcard (face)
 	      (let ((vals (read-values (the-port) options cset)))
-		 (set! face vals))))
+		 (set! face (cons options vals)))))
 	  (else
 	   (with-access::vcard vcard (notes)
 	      (let ((vals (read-values (the-port) options cset)))
