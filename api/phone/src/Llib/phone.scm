@@ -32,7 +32,7 @@
 	   (generic phone-vibrate-stop ::phone)
 
 	   (generic phone-sensor-list ::phone)
-	   (generic phone-sensor ::phone ::symbol #!optional delay)
+	   (generic phone-sensor ::phone ::symbol #!optional (delay 0))
 
 	   (generic phone-sms-send ::phone ::bstring ::bstring)
 
@@ -75,7 +75,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (phone-sensor-list p::phone)
    '())
-(define-generic (phone-sensor p::phone t::symbol #!optional delay))
+(define-generic (phone-sensor p::phone t::symbol #!optional (delay 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    sms                                                              */
