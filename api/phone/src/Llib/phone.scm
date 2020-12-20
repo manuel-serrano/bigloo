@@ -43,6 +43,7 @@
 	   
 	   (generic phone-call-log::pair-nil ::phone . num)
 	   (generic phone-call-info::pair-nil ::phone)
+	   (generic phone-call-dial ::phone ::bstring)
 	   (generic phone-call-start ::phone ::bstring . optional)
 	   (generic phone-call-stop ::phone)))
 
@@ -94,6 +95,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (phone-call-log p::phone . num))
 (define-generic (phone-call-info p::phone))
+(define-generic (phone-call-dial p::phone num))
 (define-generic (phone-call-start p::phone num . optional))
 (define-generic (phone-call-stop p::phone))
    
