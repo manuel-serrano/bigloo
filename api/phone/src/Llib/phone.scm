@@ -32,11 +32,11 @@
 	   (generic phone-vibrate-stop ::phone)
 
 	   (generic phone-sensor-list ::phone)
-	   (generic phone-sensor ::phone ::symbol . delay)
+	   (generic phone-sensor ::phone ::symbol #!optional delay)
 
 	   (generic phone-sms-send ::phone ::bstring ::bstring)
 
-	   (generic phone-contact::pair-nil ::phone)
+	   (generic phone-contact::pair-nil ::phone #!optional filter)
 	   (generic phone-contact-add! ::phone ::obj)
 	   (generic phone-contact-update! ::phone ::obj)
 	   (generic phone-contact-remove! ::phone ::obj)
@@ -44,7 +44,7 @@
 	   (generic phone-call-log::pair-nil ::phone . num)
 	   (generic phone-call-info::pair-nil ::phone)
 	   (generic phone-call-dial ::phone ::bstring)
-	   (generic phone-call-start ::phone ::bstring . optional)
+	   (generic phone-call-start ::phone ::bstring #!optional inwindowp)
 	   (generic phone-call-stop ::phone)))
 
 ;*---------------------------------------------------------------------*/
@@ -75,7 +75,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (phone-sensor-list p::phone)
    '())
-(define-generic (phone-sensor p::phone t::symbol . delay))
+(define-generic (phone-sensor p::phone t::symbol #!optional delay))
 
 ;*---------------------------------------------------------------------*/
 ;*    sms                                                              */
@@ -85,7 +85,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    phone-contact ::phone ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-generic (phone-contact p::phone))
+(define-generic (phone-contact p::phone #!optional filter))
 (define-generic (phone-contact-add! p::phone o::obj))
 (define-generic (phone-contact-update! p::phone o::obj))
 (define-generic (phone-contact-remove! p::phone o::obj))
@@ -96,6 +96,6 @@
 (define-generic (phone-call-log p::phone . num))
 (define-generic (phone-call-info p::phone))
 (define-generic (phone-call-dial p::phone num))
-(define-generic (phone-call-start p::phone num . optional))
+(define-generic (phone-call-start p::phone num #!optional inwindowp))
 (define-generic (phone-call-stop p::phone))
    
