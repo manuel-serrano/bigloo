@@ -21,7 +21,7 @@ fi
 (cd gc/$gccustom && \
  export CC=$cc && \
  export CFLAGS="$cgcflags $cgcfinalflags -I$bootdir/lib/$release" && \
- export LDFLAGS=$lflags && \
+ export LDFLAGS="$lflags" && \
  export SHELL=$sh && \
  ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes --disable-threads --with-libatomic-ops=no >> configure.log || \
  (echo "configure gc fail, see configure.log file." && exit 1)) || exit 1
@@ -31,7 +31,7 @@ if [ "$threadsupport " != "no " ]; then
   (cd "gc/$gccustom"_mt && \
    export CC=$cc && \
    export CFLAGS="$cgcflags $cgcfinalflags -DBGL_GC_THREADS -I$bootdir/lib/$release" && \
-   export LDFLAGS=$lflags && \
+   export LDFLAGS="$lflags" && \
    export SHELL=$sh && \
    echo "Configuring custom multi-threaded GC..." && \
    ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes $gcconfigurethreadsopt  --with-libatomic-ops=no >> configure.log || \
