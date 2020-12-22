@@ -2577,10 +2577,9 @@ if [ "$regexp " = " " ]; then
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
       ldbuildopts="-L$bootdir/pcre$libdir/$fildir $ldbuildopts"
-      #lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
       buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
-      #cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
       cbuildflags="-I$bootdir/pcre$libdir/$fildir $cbuildflags"
+      lflags="$lflags $ldbuildopts"
     else
       pcrelibs=no
     fi
