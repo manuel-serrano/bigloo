@@ -36,7 +36,8 @@
 
 	   (generic phone-sms-send ::phone ::bstring ::bstring)
 
-	   (generic phone-contact::pair-nil ::phone #!optional filter)
+	   (generic phone-contact-list::pair-nil ::phone #!optional filter)
+	   (generic phone-contact::pair-nil ::phone ::obj #!optional opts)
 	   (generic phone-contact-add! ::phone ::obj)
 	   (generic phone-contact-update! ::phone ::obj)
 	   (generic phone-contact-remove! ::phone ::obj)
@@ -85,7 +86,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    phone-contact ::phone ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-generic (phone-contact p::phone #!optional filter))
+(define-generic (phone-contact-list::pair-nil p::phone #!optional filter))
+(define-generic (phone-contact p::phone id::obj #!optional opts))
 (define-generic (phone-contact-add! p::phone o::obj))
 (define-generic (phone-contact-update! p::phone o::obj))
 (define-generic (phone-contact-remove! p::phone o::obj))
