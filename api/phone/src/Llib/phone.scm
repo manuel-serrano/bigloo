@@ -37,7 +37,7 @@
 	   (generic phone-sms-send ::phone ::bstring ::bstring)
 
 	   (generic phone-contact-list::pair-nil ::phone #!optional projection filter)
-	   (generic phone-contact::pair-nil ::phone ::obj)
+	   (generic phone-contact::obj ::phone ::obj)
 	   (generic phone-contact-add! ::phone ::obj)
 	   (generic phone-contact-update! ::phone ::obj)
 	   (generic phone-contact-remove! ::phone ::obj)
