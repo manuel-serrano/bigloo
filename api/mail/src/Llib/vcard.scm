@@ -18,9 +18,12 @@
    
    (export (class vcard
 	      (version::bstring (default "2.1"))
+	      (id (default #f))
 	      (fn (default #f))
 	      (familyname (default #f))
 	      (firstname (default #f))
+	      (color (default #f))
+	      (thumbnail (default #f))
 	      (face (default #f))
 	      (url (default #f))
 	      (org (default #f))
