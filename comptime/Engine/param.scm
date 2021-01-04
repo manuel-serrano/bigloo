@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
 ;*    Last change :  Mon Dec 16 05:40:27 2019 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -93,6 +93,7 @@
 	    *optim-return-goto?*
 	    *optim-tagged-fxop?*
 	    *optim-stackable?*
+	    *optim-noescape?*
 	    *optim-uncell?*
 	    *purify*
 	    *jvm-env*
@@ -960,6 +961,9 @@
    #f)
 (param-define *optim-stackable?*
    "Optimize stackable allocation"
+   #f)
+(param-define *optim-noescape?*
+   "Optimize escape variables"
    #f)
 (param-define *optim-uncell?*
    "Remove useless cells"

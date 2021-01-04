@@ -23,6 +23,7 @@
 	    ast_local
 	    ast_dump)
    (export  (occur-var globals)
+	    (occur-node-sfun! ::sfun ::global)
 	    (occur-node-in! ::node ::global)
 	    (generic occur-node! ::node)))
 
@@ -36,9 +37,17 @@
 			(global-occurrencew-set! global 0)))
    ;; then we recompute the global occurrences.
    (for-each (lambda (global)
-		(occur-node-in! (sfun-body (global-value global)) global))
+		(occur-node-sfun! (global-value global) global))
 	     globals)
    globals)
+
+;*---------------------------------------------------------------------*/
+;*    occur-node-sfun! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (occur-node-sfun! f global)
+   (with-access::sfun f (args body)
+      (for-each (lambda (a) (local-occurrence-set! a 0)) args)
+      (occur-node-in! body global)))
 
 ;*---------------------------------------------------------------------*/
 ;*    occur-node-in! ...                                               */
@@ -46,7 +55,7 @@
 (define (occur-node-in! node global)
    (set! *global* global)
    (occur-node! node))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    *global* ...                                                     */
 ;*---------------------------------------------------------------------*/
@@ -199,7 +208,7 @@
 		      (set! occurrencew 0)
 		      ;; re-compute the access property of written locals
 		      (when (eq? access 'write) (set! access 'read)))
-		   (for-each (lambda (a) (local-occurrence-set! a 1))
+		   (for-each (lambda (a) (local-occurrence-set! a 0))
 		      (sfun-args (local-value local))))
 	 locals)
       (for-each (lambda (local)

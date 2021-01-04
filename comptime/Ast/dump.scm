@@ -61,11 +61,7 @@
 			       (not (sfun? (variable-value variable)))
 			       (not (eq? type (variable-type variable))))
 			  (string->symbol (format "~a[::~a]" vshape (shape type)))
-			  vshape))
-	     (tvshape (if *access-shape?*
-			  (string->symbol
-			     (format "~a{~a}" tvshape (variable-access variable)))
-			  tvshape)))
+			  vshape)))
 	 (location-shape (node-loc node) tvshape))))
 		     
 ;*---------------------------------------------------------------------*/

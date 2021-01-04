@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
 #*    Last change :  Thu May 14 12:49:17 2020 (serrano)                */
-#*    Copyright   :  2020 Manuel Serrano                               */
+#*    Copyright   :  2020-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
 #*=====================================================================*/
@@ -40,7 +40,7 @@ JQUERY_POP=js/jquery.min.js
 
 POP=bib.md cross.md documentation.md homebrew.md license.md manual.md \
   contribs.md debian.md download.md _index.md \
-  www.hss  fontifier.css  markdown.css  texinfo.css \
+  www.hss fontifier.css markdown.css texinfo.css \
   $(BOOTSTRAP_POP) $(JQUERY_POP) \
   favicon.png bigloo.svg \
   fib.scm fib-mt.scm flac.scm \

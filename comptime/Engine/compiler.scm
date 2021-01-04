@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
 ;*    Last change :  Wed Dec 11 06:54:31 2019 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -56,6 +56,7 @@
 	    beta_walk
 	    inline_walk
 	    effect_walk
+	    noescape_walk
 	    stackable_walk
 	    callcc_walk
 	    fail_walk
@@ -310,6 +311,12 @@
 	    (stop-on-pass 'effect (lambda () (write-ast ast)))
 	    (check-sharing "effect" ast)
 	    (check-type "effect" ast #f #f)
+
+	    ;; the noescape property computation
+	    (set! ast (profile noescape (noescape-walk! ast)))
+	    (stop-on-pass 'noescape (lambda () (write-ast ast)))
+	    (check-sharing "noescape" ast)
+	    (check-type "noescape" ast #f #f)
 
 	    ;; the stackable property computation
 	    (set! ast (profile stackable (stackable-walk! ast)))

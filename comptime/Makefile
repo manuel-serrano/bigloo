@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
 #*    Last change :  Tue Mar 24 15:47:57 2020 (serrano)                */
-#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -175,6 +175,11 @@ INITFLOW_OBJ	= $(INITFLOW_FILE:%=Initflow/%.o)
 STACKABLE_FILE  = walk
 
 STACKABLE_OBJ   = $(STACKABLE_FILE:%=Stackable/%.o)
+
+#*--- noescape =-------------------------------------------------------*/
+NOESCAPE_FILE  = walk
+
+NOESCAPE_OBJ   = $(NOESCAPE_FILE:%=Noescape/%.o)
 
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
@@ -347,7 +352,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
                   $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  $(STACKABLE_OBJ) $(UNCELL_OBJ)
+                  $(STACKABLE_OBJ) $(NOESCAPE_OBJ) $(UNCELL_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

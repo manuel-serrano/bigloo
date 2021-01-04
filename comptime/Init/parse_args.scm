@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
 ;*    Last change :  Mon Mar 16 06:02:14 2020 (serrano)                */
-;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -506,6 +506,10 @@
        (set! *optim-stackable?* #t))
       (("-fno-stackable" (help "Disable stackable optimization"))
        (set! *optim-stackable?* #f))
+      (("-fnoescape" (help "Enable noescape optimization"))
+       (set! *optim-noescape?* #t))
+      (("-fno-noescape" (help "Disable noescape optimization"))
+       (set! *optim-noescape?* #f))
       (("-funcell" (help "Enable cell removal"))
        (set! *optim-uncell?* #t))
       (("-fno-uncell" (help "Disable cell removal"))
@@ -927,6 +931,8 @@
        (set! *pass* 'assert))
       (("-cfa" (help "Stop after the cfa stage"))
        (set! *pass* 'cfa))
+      (("-noescape" (help "Stop after the noescape stage"))
+       (set! *pass* 'noescape))
       (("-stackable" (help "Stop after the stackable stage"))
        (set! *pass* 'stackable))
       (("-closure" (help "Stop after the globalization stage"))
@@ -1278,6 +1284,7 @@
 	  ((#\6)
 	   (-O3!)
 	   (set! *optim-stackable?* #t)
+	   (set! *optim-noescape?* #t)
 	   (set! *optim-uncell?* #t)
 	   (set! *optim* (-fx (char->integer (string-ref string 0))
 			    (char->integer #\0))))

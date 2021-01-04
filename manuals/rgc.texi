@@ -177,7 +177,6 @@ blank  @equiv{} (in #" \t\n")
 space  @equiv{} #\Space
 @end smallexample
 
-
 It is a error to reference a variable that it is not bound by a <binding>.
 Defining a variable that already exists is acceptable and causes the former
 variable definition to be erased. Here is an example of a grammar that binds

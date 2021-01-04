@@ -74,7 +74,9 @@
 
 	   (final-class local::variable
 	      ;; the local's identification key
-	      (key::long read-only))
+	      (key::long read-only)
+	      ;; true iff the variable value cannot escape
+	      (val-noescape::obj (default #t)))
 
 	   (class fun::value
 	      ;; the function arity, for non DSSSL optional functions,
@@ -102,7 +104,11 @@
 	      (failsafe (default #unspecified))
 	      ;; non-escaping arguments: #unspecified, *, or an index list
 	      ;; non-escaping arguments can be stack allocated
-	      (args-noescape (default #unspecified)))
+	      (args-noescape (default #unspecified))
+	      ;; arguments escape as the function result value
+	      ;; for instance, values stored in a cons escape if the cons
+	      ;; escapes
+	      (args-retescape (default #unspecified)))
 
 	   (final-class sfun::fun
 	      ;; a property list

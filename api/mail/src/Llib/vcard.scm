@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
 ;*    Last change :  Tue Nov 15 20:21:59 2011 (serrano)                */
-;*    Copyright   :  2008-20 Manuel Serrano                            */
+;*    Copyright   :  2008-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
 ;*=====================================================================*/
@@ -18,20 +18,26 @@
    
    (export (class vcard
 	      (version::bstring (default "2.1"))
-	      (id (default #f))
+	      (uid (default #f))
 	      (fn (default #f))
 	      (familyname (default #f))
 	      (firstname (default #f))
+	      (nickname (default #f))
 	      (photo (default #f))
 	      (sound (default #f))
 	      (url (default #f))
 	      (org (default #f))
 	      (emails::pair-nil (default '()))
 	      (phones::pair-nil (default '()))
+	      (birthday (default #f))
 	      (addresses::pair-nil (default '()))
+	      (lang (default #f))
+	      (related (default #f))
+	      (key (default #f))
 	      (notes::pair-nil (default '()))
 	      (x-thumbnail (default #f))
-	      (x-color (default #f)))
+	      (x-color (default #f))
+	      (xx-extras::pair-nil (default '())))
 	   
 	   (port->vcard ::input-port #!key charset-encoder)
 	   (read-vcard ::input-port #!key charset-encoder)
@@ -236,6 +242,10 @@
 	      (if (string-ci=? line "vcard")
 		  'end
 		  (parse-error-port "Illegal END:VCARD" (the-port)))))
+	  ((uid:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (with-access::vcard vcard (uid)
+		 (set! uid (if (pair? vals) (uid vals) #f)))))
 	  ((fn:)
 	   (let ((vals (read-values (the-port) options cset)))
 	      (with-access::vcard vcard (fn)
@@ -248,6 +258,11 @@
 		 (when (pair? (cdr vals))
 		    (with-access::vcard vcard (firstname)
 		       (set! firstname (cadr vals)))))))
+	  ((nickname:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (nickname)
+		    (set! nickname (car vals))))))
 	  ((version:)
 	   (with-access::vcard vcard (version)
 	      (set! version (read-line (the-port)))))
@@ -260,20 +275,44 @@
 	  ((tel:)
 	   (with-access::vcard vcard (phones)
 	      (let ((num (read-values (the-port) options cset))
-		    (loc (if (pair? options)
+		    (lbl (if (pair? options)
 			     (string-downcase (symbol->string (car options)))
 			     "default")))
 		 (when (pair? num)
-		    (set! phones (cons (list loc (car num)) phones))))))
+		    (set! phones (cons (list lbl (car num)) phones))))))
 	  ((adr:)
 	   (with-access::vcard vcard (addresses)
-	      (let ((vals (read-values (the-port) options cset)))
+	      (let ((vals (read-values (the-port) options cset))
+		    (lbl (if (pair? options)
+			     (string-downcase (symbol->string (car options)))
+			     "home")))
 		 (match-case vals
-		    ((?po ?eadr ?street ?city ?region ?zip ?country)
+		    ((?po ?ext ?street ?city ?region ?zip ?country)
 		     (set! addresses
-			(list (list po
-				 (list street)
-				 city region zip country))))))))
+			(cons `(:label, lbl
+				  :pobox ,po :ext ,ext :street ,street
+				  :city ,city :region ,region
+				  :zip ,zip :country ,country)
+			   addresses)))
+		    ((?ext ?street ?city ?region ?zip ?country)
+		     (set! addresses
+			(cons `(:label ,lbl
+				  :ext ,ext
+				  :street ,street
+				  :city ,city :region ,region
+				  :zip ,zip
+				  :country ,country)
+			   addresses)))
+		    ((?po ?street ?city ?region ?country)
+		     (set! addresses
+			(cons `(:label ,lbl
+				  :pobox ,po :street ,street
+				  :city ,city :region ,region
+				  :country ,country)
+			   addresses)))
+		    
+		    (else
+		     (tprint (format "ADDRE PAS BON: ~s" vals)))))))
 	  ((email:)
 	   (with-access::vcard vcard (emails)
 	      (let ((vals (read-values (the-port) options cset)))
@@ -282,11 +321,51 @@
 	   (with-access::vcard vcard (photo)
 	      (let ((vals (read-values (the-port) options cset)))
 		 (set! photo (cons options vals)))))
-	  (else
-	   (with-access::vcard vcard (notes)
+	  ((bday:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (birthday)
+		    (set! birthday (car vals))))))
+	  ((sound:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (sound)
+		    (set! sound (car vals))))))
+	  ((related:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (related)
+		    (set! related (car vals))))))
+	  ((lang:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (lang)
+		    (set! lang (car vals))))))
+	  ((key:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (key)
+		    (set! key (car vals))))))
+	  ((note:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (notes)
+		    (set! notes (car notes))))))
+	  ((x-color:)
+	   (let ((vals (read-values (the-port) options cset)))
+	      (when (pair? vals)
+		 (with-access::vcard vcard (x-color)
+		    (set! x-color (car vals))))))
+	  ((x-thumbnail:)
+	   (with-access::vcard vcard (x-thumbnail)
 	      (let ((vals (read-values (the-port) options cset)))
-		 (set! notes
-		    (cons (cons keyword (cons options vals)) notes)))))))
+		 (set! x-thumbnail (cons options vals)))))
+	  (else
+	   (with-access::vcard vcard (xx-extras)
+	      (let ((vals (read-values (the-port) options cset)))
+		 (when (pair? vals)
+		    (set! xx-extras
+		       (cons (cons keyword vals) xx-extras))))))))
       
       ((: IDENT #\:)
        (let ((r (parse-content-line (the-downcase-keyword) '())))

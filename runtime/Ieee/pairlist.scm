@@ -168,26 +168,32 @@
 	    (delete-duplicates::pair-nil ::pair-nil #!optional (eq equal?))
 	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq equal?)))
    
-   (pragma  ($cons args-safe fail-safe)
-	    ($null? no-alloc (predicate-of nil) no-cfa-top nesting args-safe fail-safe (effect))
-	    (null? no-alloc (predicate-of nil) no-cfa-top nesting fail-safe)
-	    (pair-or-null? no-alloc (predicate-of pair-nil) no-cfa-top nesting (effect) fail-safe)
-	    ($pair? no-alloc (predicate-of pair) no-cfa-top nesting fail-safe (effect))
-	    (pair? no-alloc (predicate-of pair) no-cfa-top nesting fail-safe)
-	    ($car no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe
-		   (effect (read (car))))
+   (pragma  ($cons args-safe fail-safe (args-retescape))
+	    ($null? no-alloc (predicate-of nil) no-cfa-top nesting
+	       args-safe fail-safe (effect) (args-noescape))
+	    (null? no-alloc (predicate-of nil) no-cfa-top nesting
+	       fail-safe (args-noescape))
+	    (pair-or-null? no-alloc (predicate-of pair-nil) no-cfa-top
+	       nesting (effect) fail-safe (args-noescape))
+	    ($pair? no-alloc (predicate-of pair) no-cfa-top nesting
+	       fail-safe (effect) (args-noescape))
+	    (pair? no-alloc (predicate-of pair) no-cfa-top nesting
+	       fail-safe (args-noescape))
+	    ($car no-alloc side-effect-free no-cfa-top nesting args-safe
+	       fail-safe (effect (read (car))) (args-noescape))
 	    ($set-car! no-alloc fail-safe (effect (write (car))))
-	    (car no-alloc side-effect-free no-cfa-top nesting)
-	    ($cdr no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe
-		   (effect (read (cdr))))
+	    (car no-alloc side-effect-free no-cfa-top nesting (args-noescape))
+	    ($cdr no-alloc side-effect-free no-cfa-top nesting
+	       args-safe fail-safe (effect (read (cdr))) (args-noescape))
 	    ($set-cdr! no-alloc fail-safe (effect (write (cdr))))
-	    (cdr no-alloc side-effect-free no-cfa-top nesting)
-	    ($cer no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe
-		   (effect (read (cer))))
+	    (cdr no-alloc side-effect-free no-cfa-top nesting (args-noescape))
+	    ($cer no-alloc side-effect-free no-cfa-top nesting
+	       args-safe fail-safe (effect (read (cer))) (args-noescape))
 	    ($set-cer! no-alloc fail-safe (effect (write (cer))))
-	    (cer no-alloc side-effect-free no-cfa-top nesting fail-safe)
+	    (cer no-alloc side-effect-free no-cfa-top nesting
+	       fail-safe (args-noescape))
 	    (length no-alloc side-effect-free no-cfa-top nesting
-		    (effect (read (car cdr))))
+	       (effect (read (car cdr))) (args-noescape))
 	    (append-2 side-effect-free nesting fail-safe)
 	    (eappend-2 side-effect-free nesting fail-safe)
 	    (append side-effect-free nesting fail-safe)
