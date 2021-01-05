@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:53:24 1996                          */
 ;*    Last change :  Wed Dec 23 13:45:44 2015 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The intermediate structure to emit c code.                       */
 ;*=====================================================================*/
@@ -88,7 +88,8 @@
 
 	   (class capp::cop
 	      (fun::cop read-only)
-	      (args read-only))
+	      (args read-only)
+	      (stackable read-only))
 
 	   (class cfail::cop
 	      (proc::cop read-only)

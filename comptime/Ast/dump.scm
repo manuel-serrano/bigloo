@@ -118,8 +118,8 @@
 		      (*type-shape?*
 		       `(,(node->sexp (app-fun node))
 			 ,@(if *access-shape?*
-			       (list
-				(list "side-effect:" (side-effect? node)))
+			       `(side-effect: (side-effect? node)
+				   stackable: (app-stackable node))
 			       '())
 			 ,(list type: (shape (node-type node)))
 			 ,@(if (cfun? (variable-value
@@ -132,7 +132,8 @@
 			 ,@(map node->sexp (app-args node))))
 		      (*access-shape?*
 		       `(,(node->sexp (app-fun node))
-			 ,(list "side-effect:" (side-effect? node))
+			 side-effect: ,(side-effect? node)
+			 stackable: ,(app-stackable node)
 			 ,@(map node->sexp (app-args node))))
 		      (else
 		       `(,(node->sexp (app-fun node))
@@ -353,8 +354,7 @@
       (location-shape (node-loc node)
 	 `(,sym
 	     ,@(if *access-shape?*
-		   (list
-		      (list "side-effect:" (side-effect? node)))
+		   `(side-effect: ,(side-effect? node))
 		   '())
 	     ,(map (lambda (b)
 			 `(,(shape (car b)) ,(node->sexp (cdr b))))
@@ -401,6 +401,9 @@
 (define-method (node->sexp node::make-box)
    (node->sexp-hook node)
    `(,(shape-typed-node 'make-box (node-type node))
+     ,@(if *access-shape?*
+	   (list " stackable: " (make-box-stackable node))
+	   '())
      ,(node->sexp (make-box-value node))))
 
 ;*---------------------------------------------------------------------*/

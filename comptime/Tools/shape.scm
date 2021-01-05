@@ -137,12 +137,16 @@
 			 "}"))))
 	  (xshape (if *access-shape?*
 		      (with-access::local var (val-noescape)
-			    (cond
-			       ((eq? val-noescape #t) "<noescape>")
-			       ((eq? val-noescape #f) "<escape>")
-			       (else "<?>")))
+			 (cond
+			    ((eq? val-noescape #t) "<noescape>")
+			    ((eq? val-noescape #f) "<escape>")
+			    (else "<?>")))
+		      ""))
+	  (dshape (if *access-shape?*
+		      (with-access::local var (depth)
+			 (format "[~a]" depth))
 		      "")))
-      (string->symbol (string-append sym tshape ushape ashape xshape))))
+      (string->symbol (string-append dshape sym tshape ushape ashape xshape))))
    
 ;*---------------------------------------------------------------------*/
 ;*    shape ::type ...                                                 */

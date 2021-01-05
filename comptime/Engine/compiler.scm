@@ -56,7 +56,6 @@
 	    beta_walk
 	    inline_walk
 	    effect_walk
-	    noescape_walk
 	    stackable_walk
 	    callcc_walk
 	    fail_walk
@@ -311,12 +310,6 @@
 	    (stop-on-pass 'effect (lambda () (write-ast ast)))
 	    (check-sharing "effect" ast)
 	    (check-type "effect" ast #f #f)
-
-	    ;; the noescape property computation
-	    (set! ast (profile noescape (noescape-walk! ast)))
-	    (stop-on-pass 'noescape (lambda () (write-ast ast)))
-	    (check-sharing "noescape" ast)
-	    (check-type "noescape" ast #f #f)
 
 	    ;; the stackable property computation
 	    (set! ast (profile stackable (stackable-walk! ast)))

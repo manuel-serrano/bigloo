@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
 /*    Last change :  Sun May 10 12:22:21 2020 (serrano)                */
-/*    Copyright   :  2004-20 Manuel Serrano                            */
+/*    Copyright   :  2004-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -41,7 +41,6 @@ bglpth_setup_signal() {
 #endif
 }
 
-   
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bglpth_setup_gc ...                                              */

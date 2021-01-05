@@ -32,8 +32,19 @@
 	    ast_dump
 	    ast_walk
 	    ast_occur
+	    module_module
 	    engine_param)
+   (static  (wide-class app/depth::app (depth::long read-only)))
    (export  (stackable-walk! globals)))
+
+;*---------------------------------------------------------------------*/
+;*    node->sexp ::app ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node->sexp node::app/depth)
+   (with-access::app/depth node (depth)
+      (let ((n (call-next-method)))
+	 (cons (symbol-append (string->symbol (format "[~a]" depth)) (car n))
+	    (cdr n)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stackable-walk! ...                                              */
@@ -42,86 +53,370 @@
    (if *optim-stackable?*
        (begin
 	  (pass-prelude "Stackable")
-	  (for-each (lambda (g)
-		       (let ((sfun (variable-value g)))
-			  (stackable (sfun-body sfun) '())))
-	     globals)
+	  (for-each global-lift-let! globals)
+	  (for-each global-depth-let! globals)
+	  (for-each global-init-stackable! globals)
+	  (let loop ((ctx (cons #f '())))
+	     (unless (car ctx)
+		(set-car! ctx #t)
+		(set-cdr! ctx '())
+		(for-each (lambda (g) (var-stackable g ctx)) globals)
+		(loop ctx)))
 	  (pass-postlude globals))
        globals))
 
 ;*---------------------------------------------------------------------*/
+;*    import? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (import? var::variable)
+   (and (global? var) (not (eq? (global-module var) *module*))))
+
+;*---------------------------------------------------------------------*/
+;*    var-stackable ...                                                */
+;*---------------------------------------------------------------------*/
+(define (var-stackable var::variable ctx::pair)
+   (when (and (not (import? var)) (not (memq var (cdr ctx))))
+      ;; a local function not scanned during this iteration yet
+      (set-cdr! ctx (cons var (cdr ctx)))
+      (with-access::variable var (value)
+	 (with-access::sfun value (body)
+	    (if (isa? var global)
+		(stackable body #t 0 ctx)
+		(with-access::local var (depth)
+		   (stackable body #t depth ctx)))))))
+
+;*---------------------------------------------------------------------*/
+;*    max-depth ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (max-depth) 100000)
+
+;*---------------------------------------------------------------------*/
 ;*    stackable ::node ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (stackable node::node env)
+(define-walk-method (stackable node::node escp::bool depth::long ctx::pair)
+   (set! escp #t)
    (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
-;*    stackable ::app ...                                              */
+;*    stackable ::var ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (stackable node::app env)
-   (let ((f (variable-value (var-variable (app-fun node))))
-	 (args (app-args node)))
-      (if (isa? f fun)
-	  (with-access::fun f (args-noescape)
-	     (cond
-		((eq? args-noescape '*)
-		 (for-each (lambda (a) (mark-stackable! a #t env)) args))
-		((pair? args-noescape)
-		 (let loop ((i 0)
-			    (args args))
-		    (when (pair? args)
-		       (mark-stackable! (car args) (memq i args-noescape) env)
-		       (loop (+fx i 1) (cdr args)))))
-		(else
-		 (for-each (lambda (a) (mark-stackable! a #f env)) args))))
-	  (for-each (lambda (a) (mark-stackable! a #f env)) args))))
+(define-walk-method (stackable node::var escp depth ctx::pair)
+   (with-access::var node (variable)
+      (when (isa? variable local)
+	 (with-access::local variable (val-stackable (vdepth depth))
+	    (when (or escp (<fx depth vdepth))
+	       (escape! variable ctx))))))
 
 ;*---------------------------------------------------------------------*/
-;*    stackable ::closure ...                                          */
+;*    stackable ::setq ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (stackable node::closure env)
-   (mark-stackable! node #f env))
+(define-walk-method (stackable node::setq escp depth ctx::pair)
+   (with-access::setq node (var value)
+      (with-access::var var (variable)
+	 (if (isa? variable global)
+	     (stackable value #t -1 ctx)
+	     (with-access::local variable ((vdepth depth))
+		(stackable value escp vdepth ctx))))))
+
+;*---------------------------------------------------------------------*/
+;*    stackable ::conditional ...                                      */
+;*---------------------------------------------------------------------*/
+(define-walk-method (stackable node::conditional escp depth ctx::pair)
+   (with-access::conditional node (test true false)
+      (stackable test #f depth ctx)
+      (stackable true escp depth ctx)
+      (stackable false escp depth ctx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    stackable ::let-var ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (stackable node::let-var env)
-   
-   (define (read-only-and-unique? binding)
-      (with-access::local (car binding) (access occurrence)
-	 (and (eq? access 'read) (=fx occurrence 1))))
-      
+(define-walk-method (stackable node::let-var escp depth ctx::pair)
    (with-access::let-var node (bindings body)
-      (stackable body (append (filter read-only-and-unique? bindings) env))))
+      (for-each (lambda (bind)
+		   (let ((var (car bind))
+			 (val (cdr bind)))
+		      (with-access::local var (val-noescape depth)
+			 (stackable val (not val-noescape) depth ctx))))
+	 bindings)
+      (stackable body escp depth ctx)))
 
 ;*---------------------------------------------------------------------*/
-;*    mark-stackable! ::node ...                                       */
+;*    stackable ::let-fun ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-generic (mark-stackable! node::node stackablep::bool env)
+(define-walk-method (stackable node::let-fun escp depth ctx::pair)
+   (with-access::let-fun node (locals body)
+      (for-each (lambda (local)
+		   (with-access::local local (depth value)
+		      (with-access::sfun value (body)
+			 (stackable body #f depth ctx))))
+	 locals)
+      (stackable body escp depth ctx)))
+
+;*---------------------------------------------------------------------*/
+;*    stackable ::app ...                                              */
+;*---------------------------------------------------------------------*/
+(define-walk-method (stackable node::app escp depth ctx::pair)
+   (with-access::app node ((callee fun) args (stkp stackable))
+      (with-access::app/depth node ((adepth depth))
+	 (when (or escp (<fx depth adepth))
+	    (escape! node ctx)))
+      (let* ((v (var-variable callee))
+	     (f (variable-value v)))
+	 (cond
+	    ((and (isa? f sfun) (not (import? v)))
+	     (var-stackable v ctx)
+	     (with-access::sfun f ((parameters args))
+		(for-each (lambda (p a)
+			     (with-access::local p (val-noescape depth)
+				(stackable a (not val-noescape) (max-depth) ctx)))
+		   parameters args)))
+	    ((isa? f fun)
+	     ;; args-retescape is currently not used because it needs more
+	     ;; than purely local reasoning. Let's consider the following:
+	     ;;  (define x 0)
+             ;;  (define (gee a b c)
+             ;;     (let ((lll (cons b (cons 222 '())))
+             ;;           (o (cons 111 333)))
+             ;;        (set-car! o lll) [1]
+             ;;        (set! x o)       [2]
+             ;;        (bar a lll)))
+             ;; in line [1] lll must be declared as escaping and the
+	     ;; call unstackable because at line [2] o is found escaping.
+	     ;; The current implementation cannot know is an expression
+	     ;; is escaping
+	     (with-access::fun f (args-noescape args-retescape)
+		(cond
+		   ((eq? args-noescape '*)
+		    (for-each (lambda (a) (stackable a #f (max-depth) ctx)) args))
+;* 		   ((eq? args-retescape '*)                            */
+;* 		    (for-each (lambda (a) (stackable a (not stkp) depth ctx)) args)) */
+;* 		   ((or (pair? args-noescape) (pair? args-retescape))  */
+		   ((pair? args-noescape)
+		    (let loop ((i 0)
+			       (args args))
+		       (when (pair? args)
+			  (cond
+			     ((memq i args-noescape)
+			      (stackable (car args) #f (max-depth) ctx))
+			     ((memq i args-retescape)
+			      (stackable (car args) (not stkp) depth ctx))
+			     (else
+			      (stackable (car args) #t depth ctx)))
+			  (loop (+fx i 1) (cdr args)))))
+		   (else
+		    (for-each (lambda (a) (stackable a #t (max-depth) ctx)) args)))))
+	    (else
+	     (for-each (lambda (a) (stackable a #t (max-depth) ctx)) args))))))
+
+;*---------------------------------------------------------------------*/
+;*    stackable ::funcall ...                                          */
+;*---------------------------------------------------------------------*/
+(define-walk-method (stackable node::funcall escp depth ctx::pair)
+   (set! escp #t)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    stackable ::sequence ...                                         */
+;*---------------------------------------------------------------------*/
+(define-walk-method (stackable node::sequence escp depth ctx::pair)
+   (with-access::sequence node (nodes)
+      (when (pair? nodes)
+	 (let loop ((nodes nodes))
+	    (if (null? (cdr nodes))
+		(stackable (car nodes) escp depth ctx)
+		(begin
+		   (stackable (car nodes) #f (max-depth) ctx)
+		   (loop (cdr nodes))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    escape! ...                                                      */
+;*    -------------------------------------------------------------    */
+;*    mark that an expression escapes, i.e., the variables escape      */
+;*    and the function calls are unstackable.                          */
+;*---------------------------------------------------------------------*/
+(define-generic (escape! node ctx::pair)
+   (tprint "ESCAPE! should not be here " (shape node))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    mark-stackable! ::closure ...                                    */
+;*    escape! ::global ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (mark-stackable! node::closure stackablep env)
-   (let* ((v (var-variable node))
-	  (f (variable-value v)))
-      (with-access::sfun f (stackable)
-	 (if stackablep
-	     (set! stackable (and stackable stackablep))
-	     (set! stackable #f)))))
+(define-method (escape! var::global ctx)
+   #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    mark-stackable! ::var ...                                        */
+;*    escape! ::local ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (mark-stackable! node::var stackablep env)
-   (with-access::var node (variable)
-      (when (and stackablep (isa? variable local))
-;* 	 (with-access::variable variable (occurrence access)           */
-;* 	    (when (and (eq? access 'read) (=fx occurrence 1))          */
-;* 	       (let ((bind (assq variable env)))                       */
-;* 		  (tprint "v=" (shape variable) " occ=" occurrence " ax=" access */
-;* 		     " b=" (typeof bind))                              */
-;* 		  (when (pair? bind)                                   */
-;* 		     (tprint (node->sexp (cdr bind)))))))              */
-	 #unspecified)))
+(define-method (escape! var::local ctx)
+   (with-access::local var (val-noescape)
+      (when (eq? val-noescape #t)
+	 (set-car! ctx #f)
+	 (set! val-noescape #f))))
+
+;*---------------------------------------------------------------------*/
+;*    escape! ::node ...                                               */
+;*---------------------------------------------------------------------*/
+(define-method (escape! node::node ctx)
+   (node-escape node ctx))
+
+;*---------------------------------------------------------------------*/
+;*    escape! ::app ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (escape! node::app ctx)
+   (with-access::app node (args stackable)
+      (when stackable
+	 (set-car! ctx #f)
+	 (set! stackable #f))))
+   
+;*---------------------------------------------------------------------*/
+;*    escape! ::make-box ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (escape! node::make-box ctx)
+   (with-access::make-box node (value stackable)
+      (when stackable
+	 (set-car! ctx #f)
+	 (set! stackable #f)
+	 (escape! value ctx))))
+
+;*---------------------------------------------------------------------*/
+;*    node-escape ::node ...                                           */
+;*---------------------------------------------------------------------*/
+(define-walk-method (node-escape node::node ctx)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    node-escape ::app ...                                            */
+;*---------------------------------------------------------------------*/
+(define-walk-method (node-escape node::app ctx)
+   (escape! node ctx))
+
+;*---------------------------------------------------------------------*/
+;*    node-escape ::make-box ...                                       */
+;*---------------------------------------------------------------------*/
+(define-walk-method (node-escape node::make-box ctx)
+   (escape! node ctx))
+
+;*---------------------------------------------------------------------*/
+;*    global-lift-let! ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Apply the following transformation:                              */
+;*                                                                     */
+;*      (let (... (l (let ((x ...)) body)) ...)                        */
+;*    =>                                                               */
+;*      (let ((x ...)) (let (... (l body) ...) ...)                    */
+;*---------------------------------------------------------------------*/
+(define (global-lift-let! var::variable)
+   (with-access::variable var (value)
+      (with-access::sfun value (body)
+	 (set! body (lift-let! body)))))
+
+;*---------------------------------------------------------------------*/
+;*    lift-let! ::node ...                                             */
+;*---------------------------------------------------------------------*/
+(define-walk-method (lift-let! node::node)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    lift-let! ::let-var ...                                          */
+;*---------------------------------------------------------------------*/
+(define-walk-method (lift-let! node::let-var)
+
+   (define (lift-binding! binding)
+      (if (isa? (cdr binding) let-var)
+	  (with-access::let-var (cdr binding) (bindings body)
+	     (set-cdr! binding body)
+	     bindings)
+	  '()))
+   
+   (with-access::let-var node (bindings body)
+      (let ((lbindings (append-map lift-binding! bindings)))
+	 (if (pair? lbindings)
+	     (lift-let!
+		(duplicate::let-var node
+		   (bindings lbindings)
+		   (body node)))
+	     (call-default-walker)))))
+	     
+;*---------------------------------------------------------------------*/
+;*    global-depth-let! ...                                            */
+;*    -------------------------------------------------------------    */
+;*    Compute let local-depth property.                                */
+;*---------------------------------------------------------------------*/
+(define (global-depth-let! var::variable)
+   (with-access::variable var (value)
+      (with-access::sfun value (body)
+	 (depth-let body 0))))
+   
+;*---------------------------------------------------------------------*/
+;*    depth-let ::node ...                                             */
+;*---------------------------------------------------------------------*/
+(define-walk-method (depth-let node::node depth)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    depth-let ::let-var ...                                          */
+;*---------------------------------------------------------------------*/
+(define-walk-method (depth-let node::let-var depth)
+   (let ((depth (+fx depth 1)))
+      (with-access::let-var node (bindings body)
+	 (for-each (lambda (binding)
+		      (with-access::local (car binding) ((vdepth depth))
+			 (set! vdepth depth)
+			 (depth-let (cdr binding) depth)))
+	    bindings)
+	 (depth-let body depth))))
+
+;*---------------------------------------------------------------------*/
+;*    depth-let ::let-fun ...                                          */
+;*---------------------------------------------------------------------*/
+(define-walk-method (depth-let node::let-fun depth)
+   (let ((depth (+fx depth 1)))
+      (with-access::let-fun node (locals body)
+	 (for-each (lambda (local)
+		      (with-access::local local ((vdepth depth) value)
+			 (set! vdepth depth)
+			 (with-access::sfun value (body args)
+			    (for-each (lambda (a)
+					 (with-access::local a ((vdepth depth))
+					    (set! vdepth (+fx depth 1))))
+			       args)
+			    (depth-let body (+fx depth 1)))))
+	    locals)
+	 (depth-let body 1))))
+
+;*---------------------------------------------------------------------*/
+;*    depth-let ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-walk-method (depth-let node::app depth)
+   (call-default-walker)
+   (widen!::app/depth node (depth depth)))
+
+;*---------------------------------------------------------------------*/
+;*    global-init-stackable! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (global-init-stackable! var::variable)
+   (with-access::variable var (value)
+      (with-access::sfun value (body)
+	 (init-stackable body))))
+   
+;*---------------------------------------------------------------------*/
+;*    init-stackable ::node ...                                        */
+;*---------------------------------------------------------------------*/
+(define-walk-method (init-stackable node::node)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    init-stackable ::app ...                                         */
+;*---------------------------------------------------------------------*/
+(define-walk-method (init-stackable node::app)
+   (call-default-walker)
+   (with-access::app node (stackable)
+      (set! stackable #t)))
+
+;*---------------------------------------------------------------------*/
+;*    init-stackable ::make-box ...                                    */
+;*---------------------------------------------------------------------*/
+(define-walk-method (init-stackable node::make-box)
+   (call-default-walker)
+   (with-access::make-box node (stackable)
+      (set! stackable #t)))

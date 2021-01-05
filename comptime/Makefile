@@ -176,11 +176,6 @@ STACKABLE_FILE  = walk
 
 STACKABLE_OBJ   = $(STACKABLE_FILE:%=Stackable/%.o)
 
-#*--- noescape =-------------------------------------------------------*/
-NOESCAPE_FILE  = walk
-
-NOESCAPE_OBJ   = $(NOESCAPE_FILE:%=Noescape/%.o)
-
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
                   integration new_body loc2glo gloclo clocto globalize

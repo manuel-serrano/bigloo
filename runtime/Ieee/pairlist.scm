@@ -168,7 +168,9 @@
 	    (delete-duplicates::pair-nil ::pair-nil #!optional (eq equal?))
 	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq equal?)))
    
-   (pragma  ($cons args-safe fail-safe (args-retescape))
+   (pragma  ($cons args-safe fail-safe (args-retescape)
+	       (stack-allocator "char ~a[ PAIR_SIZE ]"
+		  "BGL_MAKE_PAIR_STACK"))
 	    ($null? no-alloc (predicate-of nil) no-cfa-top nesting
 	       args-safe fail-safe (effect) (args-noescape))
 	    (null? no-alloc (predicate-of nil) no-cfa-top nesting
@@ -181,37 +183,47 @@
 	       fail-safe (args-noescape))
 	    ($car no-alloc side-effect-free no-cfa-top nesting args-safe
 	       fail-safe (effect (read (car))) (args-noescape))
-	    ($set-car! no-alloc fail-safe (effect (write (car))))
 	    (car no-alloc side-effect-free no-cfa-top nesting (args-noescape))
+	    ($set-car! no-alloc fail-safe (effect (write (car)))
+	       (args-retescape))
+	    (set-car! no-alloc fail-safe (effect (write (car)))
+	       (args-retescape))
 	    ($cdr no-alloc side-effect-free no-cfa-top nesting
 	       args-safe fail-safe (effect (read (cdr))) (args-noescape))
-	    ($set-cdr! no-alloc fail-safe (effect (write (cdr))))
-	    (cdr no-alloc side-effect-free no-cfa-top nesting (args-noescape))
+	    (cdr no-alloc side-effect-free no-cfa-top nesting
+	       args-safe fail-safe (effect (read (cdr))) (args-noescape))
+	    ($set-cdr! no-alloc fail-safe (effect (write (cdr)))
+	       (args-noescape 0) (args-retescape 1))
+	    (set-cdr! no-alloc fail-safe (effect (write (cdr)))
+	       (args-noescape 0) (args-retescape 1))
 	    ($cer no-alloc side-effect-free no-cfa-top nesting
 	       args-safe fail-safe (effect (read (cer))) (args-noescape))
-	    ($set-cer! no-alloc fail-safe (effect (write (cer))))
 	    (cer no-alloc side-effect-free no-cfa-top nesting
-	       fail-safe (args-noescape))
+	       args-safe fail-safe (effect (read (cer))) (args-noescape))
+	    ($set-cer! no-alloc fail-safe (effect (write (cer)))
+	       (args-noescape 0) (args-retescape 1))
+	    (set-cer! no-alloc fail-safe (effect (write (cer)))
+	       (args-noescape 0) (args-retescape 1))
 	    (length no-alloc side-effect-free no-cfa-top nesting
 	       (effect (read (car cdr))) (args-noescape))
-	    (append-2 side-effect-free nesting fail-safe)
-	    (eappend-2 side-effect-free nesting fail-safe)
-	    (append side-effect-free nesting fail-safe)
-	    (eappend side-effect-free nesting fail-safe)
-	    (reverse side-effect-free nesting)
-	    (ereverse side-effect-free nesting)
+	    (append-2 side-effect-free nesting fail-safe (args-noescape 0))
+	    (eappend-2 side-effect-free nesting fail-safe (args-noescape 0))
+	    (append side-effect-free nesting fail-safe (args-noescape 0))
+	    (eappend side-effect-free nesting fail-safe (args-noescape 0))
+	    (reverse side-effect-free nesting (args-noescape))
+	    (ereverse side-effect-free nesting (args-noescape))
 	    (take side-effect-free nesting)
 	    (drop side-effect-free nesting)
 	    (list-tail side-effect-free nesting)
 	    (list-ref side-effect-free nesting)
 	    (last-pair side-effect-free nesting)
-	    (memq side-effect-free nesting)
-	    (memv side-effect-free nesting)
-	    (member side-effect-free nesting)
-	    (assq side-effect-free nesting)
-	    (assv side-effect-free nesting)
-	    (assoc side-effect-free nesting)
-	    (remq side-effect-free nesting)))
+	    (memq side-effect-free nesting (args-retescape))
+	    (memv side-effect-free nesting (args-retescape))
+	    (member side-effect-free nesting (args-retescape))
+	    (assq side-effect-free nesting (args-retescape))
+	    (assv side-effect-free nesting (args-retescape))
+	    (assoc side-effect-free nesting (args-retescape))
+	    (remq side-effect-free nesting (args-retescape))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pair? ...                                                        */

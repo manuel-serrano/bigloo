@@ -248,7 +248,7 @@
 	     ((null? val)
 	      (pset value '*))
 	     ((integer? (car val))
-	      (pset value (cons val (pget value))))
+	      (pset value (append val (pget value))))
 	     ((symbol? (car val))
 	      (if (not (sfun? value))
 		  (user-error "Parse error" "Illegal \"args-noescape\" on non-function value"
@@ -267,8 +267,6 @@
 			    (pset value (cons i (pget value))))
 			   (else
 			    (loop (+fx i 1) (cdr args))))))))
-	     ((not (integer? (car val)))
-	      (user-error "Parse error" "Illegal \"args-noescape\" pragma" val))
 	     ((eq? (pget value) #unspecified)
 	      (pset value (list val)))
 	     (else
