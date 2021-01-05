@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
 ;*    Last change :  Sat Jan 19 11:44:56 2019 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -227,7 +227,9 @@
 			       (set! ,res (begin ,@body))
 			       #f)
 			    ($set-error-handler! ,ohs))))
-		   (,hdl ,res)
+		   (begin
+		      (sigsetmask 0)
+		      (,hdl ,res))
 		   ,res))
 	   e)))
 

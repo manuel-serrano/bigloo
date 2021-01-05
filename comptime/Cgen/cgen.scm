@@ -584,22 +584,30 @@
       "(node->cop node::let-var kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
 
+   (define (stackable? node::app)
+      (with-access::app node (stackable fun)
+	 (when stackable
+	    (let ((v (var-variable fun)))
+	       (when (isa? v global)
+		  (pair? (fun-stack-allocator (global-value v))))))))
+	    
    (define (alloca-let-var n::node)
       (and (isa? n let-var)
 	   (isa? (let-var-body n) app)
-	   (app-stackable (let-var-body n))))
+	   (stackable? (let-var-body n))))
    
    (define (alloca x)
       ;; check wether the "x" binding can be tranformed into
       ;; a stack allocation
       (cond
 	 ((and (isa? (cdr x) app)
-	       (app-stackable (cdr x))
+	       (stackable? (cdr x))
 	       (bigloo-config 'have-c99-stack-alloc))
 	  ;; (let-var (... (var <app-alloc>) ...) ...)
 	  (with-access::app (cdr x) (fun args loc)
 	     (let* ((v (var-variable fun))
 		    (sa (fun-stack-allocator (global-value v))))
+		(tprint "app=" (node->sexp (cdr x)))
 		;; declare the variable for the stack allocation
 		(let* ((id (gensym (variable-id v)))
 		       (decl (let ((d (duplicate::local (car x)
