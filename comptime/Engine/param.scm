@@ -131,6 +131,7 @@
 	    *location-shape?*
 	    *user-shape?*
 	    *name-shape?*
+	    *alloc-shape?*
 	    *tmp-dest*         
 	    *dest*
 	    *shell*
@@ -804,6 +805,7 @@
 (define *location-shape?* #f)
 (define *user-shape?* #f)
 (define *name-shape?* #f)
+(define *alloc-shape?* #f)
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
 (param-define *shared-cnst?*

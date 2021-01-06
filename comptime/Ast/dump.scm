@@ -118,8 +118,10 @@
 		      (*type-shape?*
 		       `(,(node->sexp (app-fun node))
 			 ,@(if *access-shape?*
-			       `(side-effect: (side-effect? node)
-				   stackable: (app-stackable node))
+			       `(side-effect: (side-effect? node))
+			       '())
+			 ,@(if *alloc-shape?*
+			       `(stackable: (app-stackable node))
 			       '())
 			 ,(list type: (shape (node-type node)))
 			 ,@(if (cfun? (variable-value
@@ -133,6 +135,10 @@
 		      (*access-shape?*
 		       `(,(node->sexp (app-fun node))
 			 side-effect: ,(side-effect? node)
+			 stackable: ,(app-stackable node)
+			 ,@(map node->sexp (app-args node))))
+		      (*alloc-shape?*
+		       `(,(node->sexp (app-fun node))
 			 stackable: ,(app-stackable node)
 			 ,@(map node->sexp (app-args node))))
 		      (else
@@ -401,7 +407,7 @@
 (define-method (node->sexp node::make-box)
    (node->sexp-hook node)
    `(,(shape-typed-node 'make-box (node-type node))
-     ,@(if *access-shape?*
+     ,@(if *alloc-shape?*
 	   (list " stackable: " (make-box-stackable node))
 	   '())
      ,(node->sexp (make-box-value node))))

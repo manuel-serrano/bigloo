@@ -19,6 +19,7 @@
    
    (import  tools_error
 	    tools_shape
+	    tools_speek
 	    engine_param
 	    type_type
 	    type_tools
@@ -607,7 +608,8 @@
 	  (with-access::app (cdr x) (fun args loc)
 	     (let* ((v (var-variable fun))
 		    (sa (fun-stack-allocator (global-value v))))
-		(tprint "app=" (node->sexp (cdr x)))
+		(verbose 3 "      stack allocation \"" (global-name v)
+		   " " loc "\n")
 		;; declare the variable for the stack allocation
 		(let* ((id (gensym (variable-id v)))
 		       (decl (let ((d (duplicate::local (car x)
@@ -639,6 +641,8 @@
 	     (with-access::app body (fun args loc)
 		(let* ((v (var-variable fun))
 		       (sa (fun-stack-allocator (global-value v))))
+		   (verbose 3 "      stack allocation \"" (global-name v)
+		      " " loc "\n")
 		   ;; declare the variable for the stack allocation
 		   (let* ((id (gensym (variable-id v)))
 			  (decl (let ((d (duplicate::local (car x)
@@ -667,6 +671,7 @@
 	       (make-box-stackable (cdr x)))
 	  ;; (let-var (... (var make-stack-box) ...) ...)
 	  (with-access::make-box (cdr x) (loc stackable)
+	     (verbose 3 "      stack allocation \"make-cell\" " loc "\n")
 	     (let* ((decl (let ((d (duplicate::local (car x)
 				      (id (gensym 'box))
 				      (name #f)

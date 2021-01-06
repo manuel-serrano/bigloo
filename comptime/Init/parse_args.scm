@@ -857,7 +857,7 @@
       (("+t?pass" (help "Force pass to be traced"))
        (set! *additional-traces* (cons pass *additional-traces*)))
       ;; shape
-      (("-shape?opt" (help "-shape[mktTalun]" "Some debugging tools (private)"))
+      (("-shape?opt" (help "-shape[mktTalunx]" "Some debugging tools (private)"))
        (parse-shape-args opt))
       
 ;*--- Compiler stages -------------------------------------------------*/
@@ -1073,6 +1073,7 @@
 	     (set! *type-shape?*     #t)
 	     (set! *typename-shape?* #t)
 	     (set! *access-shape?*   #t)
+	     (set! *alloc-shape?*    #t)
 	     (set! *location-shape?* #t)
 	     (set! *user-shape?*     #t)
 	     (set! *name-shape?*     #t))
@@ -1092,6 +1093,8 @@
 			(set! *typenode-shape?* #t))
 		       ((#\a)
 			(set! *access-shape?* #t))
+		       ((#\x)
+			(set! *alloc-shape?* #t))
 		       ((#\l)
 			(set! *location-shape?* #t))
 		       ((#\u)

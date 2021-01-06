@@ -20,6 +20,7 @@
 	    "Tools/location.sch")
    (import  tools_error
 	    tools_shape
+	    tools_speek
 	    type_type
 	    type_typeof
 	    type_cache
@@ -43,8 +44,10 @@
 (define-method (node->sexp node::app/depth)
    (with-access::app/depth node (depth)
       (let ((n (call-next-method)))
-	 (cons (symbol-append (string->symbol (format "[~a]" depth)) (car n))
-	    (cdr n)))))
+	 (if (symbol? (car n))
+	     (cons (symbol-append (string->symbol (format "[~a]" depth)) (car n))
+		(cdr n))
+	     n))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stackable-walk! ...                                              */
@@ -156,9 +159,46 @@
 ;*    stackable ::app ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (stackable node::app escp depth ctx::pair)
+   
+   (define (all-stackable? args)
+      ;; Compute an over approximation of the stackable property of all
+      ;; the call arguments. This is needed for args-retescape annotations.
+      ;; args-retescape is currently not used because it needs more
+      ;; than purely local reasoning. Let's consider the following:
+      ;;  (define x 0)
+      ;;  (define (gee a b c)
+      ;;     (let ((lll (cons b (cons 222 '())))
+      ;;           (o (cons 111 333)))
+      ;;        (set-car! o lll) [1]
+      ;;        (set! x o)       [2]
+      ;;        (bar a lll)))
+      ;; in line [1] lll must be declared as escaping and the
+      ;; call unstackable because at line [2] o is found escaping.
+      ;; The current implementation cannot know is an expression
+      ;; is escaping
+      (every (lambda (a)
+		(cond
+		   ((isa? a app)
+		    (with-access::app a (stackable) stackable))
+		   ((isa? a make-box)
+		    (with-access::make-box a (stackable) stackable))
+		   ((isa? a var)
+		    (with-access::var a (variable)
+		       (when (isa? variable local)
+			  (with-access::local variable (val-noescape)
+			     val-noescape))))
+		   ((or (isa? a atom) (isa? a kwote))
+		    #t)
+		   (else
+		    #f)))
+	 args))
+      
    (with-access::app node ((callee fun) args (stkp stackable))
       (with-access::app/depth node ((adepth depth))
 	 (when (or escp (<fx depth adepth))
+	    (when (and #f stkp)
+	       (tprint "! " (node->sexp node)
+		  " escp=" escp " D=" depth " AD=" adepth))
 	    (escape! node ctx)))
       (let* ((v (var-variable callee))
 	     (f (variable-value v)))
@@ -171,34 +211,20 @@
 				(stackable a (not val-noescape) (max-depth) ctx)))
 		   parameters args)))
 	    ((isa? f fun)
-	     ;; args-retescape is currently not used because it needs more
-	     ;; than purely local reasoning. Let's consider the following:
-	     ;;  (define x 0)
-             ;;  (define (gee a b c)
-             ;;     (let ((lll (cons b (cons 222 '())))
-             ;;           (o (cons 111 333)))
-             ;;        (set-car! o lll) [1]
-             ;;        (set! x o)       [2]
-             ;;        (bar a lll)))
-             ;; in line [1] lll must be declared as escaping and the
-	     ;; call unstackable because at line [2] o is found escaping.
-	     ;; The current implementation cannot know is an expression
-	     ;; is escaping
 	     (with-access::fun f (args-noescape args-retescape)
 		(cond
 		   ((eq? args-noescape '*)
 		    (for-each (lambda (a) (stackable a #f (max-depth) ctx)) args))
-;* 		   ((eq? args-retescape '*)                            */
-;* 		    (for-each (lambda (a) (stackable a (not stkp) depth ctx)) args)) */
-;* 		   ((or (pair? args-noescape) (pair? args-retescape))  */
-		   ((pair? args-noescape)
+		   ((and (eq? args-retescape '*) stkp (all-stackable? args))
+		    (for-each (lambda (a) (stackable a #f depth ctx)) args))
+		   ((or (pair? args-noescape) (pair? args-retescape))
 		    (let loop ((i 0)
 			       (args args))
 		       (when (pair? args)
 			  (cond
 			     ((memq i args-noescape)
 			      (stackable (car args) #f (max-depth) ctx))
-			     ((memq i args-retescape)
+			     ((and (memq i args-retescape) stkp)
 			      (stackable (car args) (not stkp) depth ctx))
 			     (else
 			      (stackable (car args) #t depth ctx)))
@@ -321,9 +347,35 @@
 ;*---------------------------------------------------------------------*/
 (define-walk-method (lift-let! node::let-var)
 
+   (define (liftable? node)
+      ;; as the purpose of the lift is simply to move stackable
+      ;; variables in compatible lexical blocks, only those let-var
+      ;; blocks that might potentially lift stack variables are
+      ;; considered
+      (cond
+	 ((isa? node let-var)
+	  (with-access::let-var node (bindings body)
+	     (and (pair? bindings)
+		  (null? (cdr bindings))
+		  (liftable? (cdar bindings))
+		  (liftable? body))))
+	 ((isa? node var)
+	  (local? (var-variable node)))
+	 ((isa? node app)
+	  (with-access::app node (fun)
+	     (let ((v (var-variable fun)))
+		(when (isa? v global)
+		   (pair? (fun-stack-allocator (global-value v)))))))
+	 (else
+	  (isa? node make-box))))
+      
    (define (lift-binding! binding)
-      (if (isa? (cdr binding) let-var)
-	  (with-access::let-var (cdr binding) (bindings body)
+      (if (and (isa? (cdr binding) let-var) (liftable? (cdr binding)))
+	  (with-access::let-var (cdr binding) (bindings body loc)
+	     (verbose 3 "      lifting binding "
+		(variable-id (car binding)) "<-"
+		(map (lambda (b) (variable-id (car b))) bindings)
+		" " loc "\n")
 	     (set-cdr! binding body)
 	     bindings)
 	  '()))
