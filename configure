@@ -6,7 +6,7 @@
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
 #*    Last change :  Mon May 18 08:43:06 2020 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
-#*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -482,7 +482,7 @@ while : ; do
       java=java11;
       javac=javac11;
       ld=gcc;
-      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
       bootflags="$bootflags -cg";
       jvmbackend="no";
