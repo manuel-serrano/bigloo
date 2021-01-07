@@ -103,7 +103,7 @@
 		       "BGL_ERROR_HANDLER_GET")
 	       (method static $set-error-handler!::void (::obj)
 		       "BGL_ERROR_HANDLER_SET")
-	       (method static $push-error-handler!::void (::obj)
+	       (method static $push-error-handler!::void (::obj ::obj)
 		       "BGL_ERROR_HANDLER_PUSH")
 	       (method static $get-uncaught-exception-handler::obj ()
 		       "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET")

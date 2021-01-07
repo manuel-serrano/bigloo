@@ -206,8 +206,8 @@ bgl_string_hash( char *string, int start, int end ) {
 	 result += (result << 5) + (long)string[ i ];
       }
 
-      return (result + (end - start)) & ((1 << 29) - 1);
-      return result;
+      //return (result + (end - start)) & ((1 << 29) - 1);
+      return result & ((1 << 29) - 1);
    }
 }
 
