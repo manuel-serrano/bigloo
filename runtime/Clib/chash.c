@@ -207,7 +207,7 @@ bgl_string_hash( char *string, int start, int end ) {
       }
 
       //return (result + (end - start)) & ((1 << 29) - 1);
-      return result;
+      return result & ((1 << 29) - 1);
    }
 }
 
