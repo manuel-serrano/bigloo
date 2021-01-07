@@ -78,7 +78,7 @@
 	      ;; true iff the variable value cannot escape
 	      (val-noescape::obj (default #t))
 	      ;; the binding depth level of the variable
-	      (depth::long (default 0)))
+	      (depth3::long (default 0)))
 
 	   (class fun::value
 	      ;; the function arity, for non DSSSL optional functions,

@@ -35,8 +35,19 @@
 	    ast_occur
 	    module_module
 	    engine_param)
-   (static  (wide-class app/depth::app (depth::long read-only)))
+   (static  (wide-class app/depth::app
+	       (depth::long read-only))
+	    (wide-class local/depth::local
+	       (depth::long read-only)
+	       (owner::obj read-only)))
    (export  (stackable-walk! globals)))
+
+;*---------------------------------------------------------------------*/
+;*    shape ::local/depth ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (shape var::local/depth)
+   (with-access::local/depth var (depth)
+      (string->symbol (format "[~a]~a" depth (call-next-method)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::app ...                                             */
@@ -85,7 +96,7 @@
 	 (with-access::sfun value (body)
 	    (if (isa? var global)
 		(stackable body #t 0 ctx)
-		(with-access::local var (depth)
+		(with-access::local/depth var (depth)
 		   (stackable body #t depth ctx)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -104,9 +115,11 @@
 ;*    stackable ::var ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (stackable node::var escp depth ctx::pair)
-   (with-access::var node (variable)
+   (with-access::var node (variable loc)
       (when (isa? variable local)
-	 (with-access::local variable (val-stackable (vdepth depth))
+	 (unless (isa? variable local/depth)
+	    (tprint "PAS BON: " (shape node) " " loc))
+	 (with-access::local/depth variable (val-stackable (vdepth depth))
 	    (when (or escp (<fx depth vdepth))
 	       (escape! variable ctx))))))
 
@@ -118,7 +131,7 @@
       (with-access::var var (variable)
 	 (if (isa? variable global)
 	     (stackable value #t -1 ctx)
-	     (with-access::local variable ((vdepth depth))
+	     (with-access::local/depth variable ((vdepth depth))
 		(stackable value escp vdepth ctx))))))
 
 ;*---------------------------------------------------------------------*/
@@ -138,7 +151,7 @@
       (for-each (lambda (bind)
 		   (let ((var (car bind))
 			 (val (cdr bind)))
-		      (with-access::local var (val-noescape depth)
+		      (with-access::local/depth var (val-noescape depth)
 			 (stackable val (not val-noescape) depth ctx))))
 	 bindings)
       (stackable body escp depth ctx)))
@@ -149,7 +162,7 @@
 (define-walk-method (stackable node::let-fun escp depth ctx::pair)
    (with-access::let-fun node (locals body)
       (for-each (lambda (local)
-		   (with-access::local local (depth value)
+		   (with-access::local/depth local (depth value)
 		      (with-access::sfun value (body)
 			 (stackable body #f depth ctx))))
 	 locals)
@@ -396,50 +409,69 @@
 ;*---------------------------------------------------------------------*/
 (define (global-depth-let! var::variable)
    (with-access::variable var (value)
-      (with-access::sfun value (body)
-	 (depth-let body 0))))
+      (with-access::sfun value (body args)
+	 (for-each (lambda (a)
+		      (widen!::local/depth a
+			 (owner var)
+			 (depth 0)))
+	    args)
+	 (depth-let body 0 var))))
    
 ;*---------------------------------------------------------------------*/
 ;*    depth-let ::node ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (depth-let node::node depth)
+(define-walk-method (depth-let node::node depth fun)
    (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    depth-let ::var ...                                              */
+;*---------------------------------------------------------------------*/
+(define-walk-method (depth-let node::var depth fun)
+   (with-access::var node (variable loc)
+      (when (isa? variable local/depth)
+	 (with-access::local/depth variable (owner val-noescape)
+	    (unless (eq? owner fun)
+	       (set! val-noescape #f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    depth-let ::let-var ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (depth-let node::let-var depth)
+(define-walk-method (depth-let node::let-var depth fun)
    (let ((depth (+fx depth 1)))
       (with-access::let-var node (bindings body)
 	 (for-each (lambda (binding)
-		      (with-access::local (car binding) ((vdepth depth))
-			 (set! vdepth depth)
-			 (depth-let (cdr binding) depth)))
+		      (widen!::local/depth (car binding)
+			 (owner fun)
+			 (depth depth))
+		      (depth-let (cdr binding) depth fun))
 	    bindings)
-	 (depth-let body depth))))
+	 (depth-let body depth fun))))
 
 ;*---------------------------------------------------------------------*/
 ;*    depth-let ::let-fun ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (depth-let node::let-fun depth)
+(define-walk-method (depth-let node::let-fun depth fun)
    (let ((depth (+fx depth 1)))
       (with-access::let-fun node (locals body)
 	 (for-each (lambda (local)
-		      (with-access::local local ((vdepth depth) value)
-			 (set! vdepth depth)
+		      (with-access::local local (value)
+			 (widen!::local/depth local
+			    (owner fun)
+			    (depth depth))
 			 (with-access::sfun value (body args)
 			    (for-each (lambda (a)
-					 (with-access::local a ((vdepth depth))
-					    (set! vdepth (+fx depth 1))))
+					 (widen!::local/depth a
+					    (owner local)
+					    (depth (+fx depth 1))))
 			       args)
-			    (depth-let body (+fx depth 1)))))
+			    (depth-let body (+fx depth 1) local))))
 	    locals)
-	 (depth-let body 1))))
+	 (depth-let body 1 fun))))
 
 ;*---------------------------------------------------------------------*/
 ;*    depth-let ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (depth-let node::app depth)
+(define-walk-method (depth-let node::app depth fun)
    (call-default-walker)
    (widen!::app/depth node (depth depth)))
 
