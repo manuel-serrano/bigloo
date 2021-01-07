@@ -76,9 +76,7 @@
 	      ;; the local's identification key
 	      (key::long read-only)
 	      ;; true iff the variable value cannot escape
-	      (val-noescape::obj (default #t))
-	      ;; the binding depth level of the variable
-	      (depth3::long (default 0)))
+	      (val-noescape::obj (default #t)))
 
 	   (class fun::value
 	      ;; the function arity, for non DSSSL optional functions,
