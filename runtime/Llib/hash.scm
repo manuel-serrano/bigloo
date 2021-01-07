@@ -60,7 +60,7 @@
 
    (include "Llib/hash.sch")
    
-   (extern  (string-hash-number::long (::string) "bgl_string_hash_number")
+   (extern  ;(string-hash-number::long (::string) "bgl_string_hash_number")
 	    ($string-hash::long (::string ::int ::int) "bgl_string_hash")
 	    (symbol-hash-number::long (::symbol) "bgl_symbol_hash_number")
 	    (keyword-hash-number::long (::keyword) "bgl_keyword_hash_number")
@@ -71,8 +71,8 @@
 	    (macro llong-hash-number::long (::llong) "(long)"))
    
    (java    (class foreign
-	       (method static string-hash-number::long (::string)
-		       "bgl_string_hash_number")
+;* 	       (method static string-hash-number::long (::string)      */
+;* 		       "bgl_string_hash_number")                       */
 	       (method static $string-hash::long (::string ::int ::int)
 		       "bgl_string_hash")
 	       (method static symbol-hash-number::long (::symbol)
@@ -103,6 +103,7 @@
 	    (get-hashnumber-persistent::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
 	    (string-hash::long ::bstring #!optional (start 0) len)
+	    (inline string-hash-number::long ::bstring)
 	    (hashtable?::bool ::obj)
 	    (hashtable-weak-data?::bool ::struct)
 	    (hashtable-weak-keys?::bool ::struct)
@@ -822,3 +823,9 @@
 ;*---------------------------------------------------------------------*/
 (define (string-hash string #!optional (start 0) len)
    ($string-hash string start (or len (string-length string))))
+
+;*---------------------------------------------------------------------*/
+;*    string-hash-number ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (string-hash-number string)
+   ($string-hash string 0 (string-length string)))

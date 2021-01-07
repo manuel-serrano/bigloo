@@ -265,7 +265,7 @@ bgl_restore_signal_handlers() {
 // MS: CARE 5 jan 2021: I don't understand why and when signal should
 // be restored. Until I understand, the code below is disabled as it
 // impacts severly the performance   
-#if 0& HAVE_SIGPROCMASK
+#if 0 && HAVE_SIGPROCMASK
    sigset_t set;
 
    sigemptyset( &set );
