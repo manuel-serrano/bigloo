@@ -145,7 +145,7 @@
 		  "executable_name")
 	       (method static $signal::obj (::int ::obj)
 		  "bgl_signal")
-	       (method static sigsetmask::int (::int)
+	       (method static $sigsetmask::int (::int)
 		  "sigsetmask")
 	       (method static $get-signal-handler::obj (::int)
 		  "bgl_get_signal_handler")
