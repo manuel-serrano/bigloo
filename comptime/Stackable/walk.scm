@@ -476,6 +476,20 @@
    (widen!::app/depth node (depth depth)))
 
 ;*---------------------------------------------------------------------*/
+;*    set-ex-it ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-walk-method (depth-let node::set-ex-it depth fun)
+   (call-default-walker)
+   (with-access::set-ex-it node (var body)
+      (with-access::var var (variable)
+	 (with-access::local variable (val-noescape)
+	    (set! val-noescape #f))
+	 (widen!::local/depth variable
+	    (owner fun)
+	    (depth (+fx depth 1))))
+      (depth-let body (+fx depth 1) fun)))
+
+;*---------------------------------------------------------------------*/
 ;*    global-init-stackable! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (global-init-stackable! var::variable)
