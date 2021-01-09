@@ -286,7 +286,7 @@
    (display "{BGL_STORE_TRACE();")
    (display "if(SETJMP(jmpbuf)) {BGL_RESTORE_TRACE(); return(BGL_EXIT_VALUE());}}\n")
    (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)
-   (display "  bgl_restore_signal_handlers();\n" *c-port*)
+   (display "  // bgl_restore_signal_handlers();\n" *c-port*)
    (display "#endif\n" *c-port*) )
 
 ;;

@@ -817,7 +817,7 @@
 (define (warning-notify e)
    (define (simple-warning e)
       (flush-output-port (current-output-port))
-      (display "*** WARNING:bigloo:" (current-error-port))
+      (display "*** WARNING: " (current-error-port))
       (with-access::&warning e (args)
 	 (if (not (null? args))
 	     (begin
@@ -886,7 +886,7 @@
       ;; we now print the warning message
       (print-cursor fname line char string space-string)
       ;; we display the warning message
-      (display "*** WARNING:bigloo:" (current-error-port))
+      (display "*** WARNING: " (current-error-port))
       (if (not (null? args))
 	  (let ((port (current-error-port)))
 	     (display-circle (car args) port)

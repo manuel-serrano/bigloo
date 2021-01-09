@@ -216,6 +216,9 @@
       (let* ((v (var-variable callee))
 	     (f (variable-value v)))
 	 (cond
+	    ((isa? v local)
+	     ;; local loops cannot stack allocate
+	     (for-each (lambda (a) (stackable a #t (max-depth) ctx)) args))
 	    ((and (isa? f sfun) (not (import? v)))
 	     (var-stackable v ctx)
 	     (with-access::sfun f ((parameters args))

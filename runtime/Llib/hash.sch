@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 15 07:24:23 2007                          */
 ;*    Last change :  Wed Nov 20 13:20:14 2013 (serrano)                */
-;*    Copyright   :  2007-20 Manuel Serrano                            */
+;*    Copyright   :  2007-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Hastable structure                                               */
 ;*=====================================================================*/
@@ -49,3 +49,4 @@
 (define-macro (weak-data) 2)
 (define-macro (weak-both) 3)
 (define-macro (weak-string) 4)
+(define-macro (weak-open-string) 8)

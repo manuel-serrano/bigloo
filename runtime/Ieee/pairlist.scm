@@ -184,26 +184,20 @@
 	    ($car no-alloc side-effect-free no-cfa-top nesting args-safe
 	       fail-safe (effect (read (car))) (args-noescape))
 	    (car no-alloc side-effect-free no-cfa-top nesting (args-noescape))
-	    ($set-car! no-alloc fail-safe (effect (write (car)))
-	       (args-retescape))
-	    (set-car! no-alloc fail-safe (effect (write (car)))
-	       (args-retescape))
+	    ($set-car! no-alloc fail-safe (effect (write (car))))
+	    (set-car! no-alloc fail-safe (effect (write (car))))
 	    ($cdr no-alloc side-effect-free no-cfa-top nesting
 	       args-safe fail-safe (effect (read (cdr))) (args-noescape))
 	    (cdr no-alloc side-effect-free no-cfa-top nesting
 	       args-safe fail-safe (effect (read (cdr))) (args-noescape))
-	    ($set-cdr! no-alloc fail-safe (effect (write (cdr)))
-	       (args-noescape 0) (args-retescape 1))
-	    (set-cdr! no-alloc fail-safe (effect (write (cdr)))
-	       (args-noescape 0) (args-retescape 1))
+	    ($set-cdr! no-alloc fail-safe (effect (write (cdr))))
+	    (set-cdr! no-alloc fail-safe (effect (write (cdr))))
 	    ($cer no-alloc side-effect-free no-cfa-top nesting
 	       args-safe fail-safe (effect (read (cer))) (args-noescape))
 	    (cer no-alloc side-effect-free no-cfa-top nesting
 	       args-safe fail-safe (effect (read (cer))) (args-noescape))
-	    ($set-cer! no-alloc fail-safe (effect (write (cer)))
-	       (args-noescape 0) (args-retescape 1))
-	    (set-cer! no-alloc fail-safe (effect (write (cer)))
-	       (args-noescape 0) (args-retescape 1))
+	    ($set-cer! no-alloc fail-safe (effect (write (cer))))
+	    (set-cer! no-alloc fail-safe (effect (write (cer))))
 	    (length no-alloc side-effect-free no-cfa-top nesting
 	       (effect (read (car cdr))) (args-noescape))
 	    (append-2 side-effect-free nesting fail-safe (args-noescape 0))
