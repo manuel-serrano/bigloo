@@ -117,7 +117,7 @@
 (define-walk-method (stackable node::var escp depth ctx::pair)
    (with-access::var node (variable loc)
       (when (isa? variable local)
-	 (with-access::local/depth variable (val-stackable (vdepth depth))
+	 (with-access::local/depth variable ((vdepth depth))
 	    (when (or escp (<fx depth vdepth))
 	       (escape! variable ctx))))))
 
@@ -126,12 +126,14 @@
 ;*---------------------------------------------------------------------*/
 (define-walk-method (stackable node::closure escp depth ctx::pair)
    (call-next-method)
-   (let* ((v (var-variable node))
-	  (f (variable-value v)))
-      (with-access::sfun f (stackable)
-	 (when (and stackable escp)
-	    (set-car! ctx #f)
-	    (set! stackable #f)))))
+   (let ((v (var-variable node)))
+      (when (isa? v local)
+	 (let ((f (variable-value v)))
+	    (with-access::sfun f (stackable)
+	       (with-access::local/depth v (val-noescape)
+		  (when (and stackable (or escp (not val-noescape)))
+		     (set-car! ctx #f)
+		     (set! stackable #f))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stackable ::setq ...                                             */
