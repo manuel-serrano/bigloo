@@ -107,7 +107,11 @@
 	    (hashtable-size::long ::struct)
 	    (hashtable-contains?::bool ::struct ::obj)
 	    (hashtable-get::obj ::struct ::obj)
+	    (string-hashtable-get::obj ::struct ::bstring)
+	    (open-string-hashtable-get::obj ::struct ::bstring)
 	    (hashtable-put! ::struct ::obj ::obj)
+	    (string-hashtable-put!::obj ::struct ::bstring ::obj)
+	    (open-string-hashtable-put!::obj ::struct ::bstring ::obj)
 	    (hashtable-update! ::struct ::obj ::procedure ::obj)
 	    (hashtable-add! ::struct ::obj ::procedure ::obj ::obj)
 	    (hashtable-remove!::bool ::struct ::obj)
@@ -118,10 +122,7 @@
 	    (hashtable-for-each ::struct ::procedure)
 	    (hashtable-filter! ::struct ::procedure)
 	    (hashtable-clear! ::struct)
-	    (string-hashtable-get::obj ::struct ::bstring)
-	    (open-string-hashtable-get::obj ::struct ::bstring)
 	    (open-string-hashtable-contains?::obj ::struct ::bstring)
-	    (open-string-hashtable-put!::obj ::struct ::bstring ::obj)
 	    (open-string-hashtable-update!::obj ::struct ::bstring ::procedure ::obj)
 	    (open-string-hashtable-add! ::struct ::bstring ::procedure obj init)
 	    (open-string-hashtable-remove! ::struct ::bstring)
@@ -699,7 +700,6 @@
    (let* ((size (%hashtable-max-bucket-len t))
 	  (buckets (%hashtable-buckets t))
 	  (hash ($string-hash key 0 (string-length key))))
-      ;; empty bucket
       (let loop ((off (remainderfx hash size))
 		 (i 1))
 	 (let ((off3 (*fx off 3)))
@@ -762,6 +762,42 @@
 		       (loop (remainderfx noff size) (+fx i 1))
 		       (loop noff (+fx i 1))))))))))
   
+;*---------------------------------------------------------------------*/
+;*    string-hashtable-put! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (string-hashtable-put! table::struct key obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx ($string-hash key 0 (string-length key)) bucket-len))
+	  (bucket (vector-ref-ur buckets bucket-num))
+	  (max-bucket-len (%hashtable-max-bucket-len table)))
+      (cond-expand
+	 (bigloo-unsafe-type
+	  #f)
+	 (else
+	  (when (and (hashtable-string? table) (not (string? key)))
+	     (bigloo-type-error "hashtable-put!" "bstring" key))))
+      (if (null? bucket)
+	  (begin
+	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+	     (vector-set-ur! buckets bucket-num (list (cons key obj)))
+	     obj)
+	  (let loop ((buck bucket)
+		     (count 0))
+	     (cond
+		((null? buck)
+		 (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+		 (vector-set-ur! buckets bucket-num (cons (cons key obj) bucket))
+		 (when (>fx count max-bucket-len)
+		    (plain-hashtable-expand! table))
+		 obj)
+		((string=? (caar buck) key)
+		 (let ((old-obj (cdar buck)))
+		    (set-cdr! (car buck) obj)
+		    old-obj))
+		(else
+		 (loop (cdr buck) (+fx count 1))))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    plain-hashtable-put! ...                                         */
 ;*---------------------------------------------------------------------*/

@@ -69,9 +69,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::closure)
    (node->sexp-hook node)
-   (location-shape (node-loc node)
-      `(,(shape-typed-node 'closure (node-type node))
-	,(shape (closure-variable node)))))
+   (with-access::closure node (var)
+      (let* ((v (var-variable node))
+	     (f (variable-value v)))
+	 (location-shape (node-loc node)
+	    `(,(shape-typed-node 'closure (node-type node))
+	      ,@(if *alloc-shape?* `(stackable: ,(sfun-stackable f)) '())
+	      ,(shape (closure-variable node)))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::kwote ...                                           */
