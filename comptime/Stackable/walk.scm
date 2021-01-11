@@ -493,7 +493,7 @@
 			       args)
 			    (depth-let body (+fx depth 1) local))))
 	    locals)
-	 (depth-let body 1 fun))))
+	 (depth-let body depth fun))))
 
 ;*---------------------------------------------------------------------*/
 ;*    depth-let ::app ...                                              */
