@@ -117,11 +117,23 @@
 (define-walk-method (stackable node::var escp depth ctx::pair)
    (with-access::var node (variable loc)
       (when (isa? variable local)
-	 (unless (isa? variable local/depth)
-	    (tprint "PAS BON: " (shape node) " " loc))
-	 (with-access::local/depth variable (val-stackable (vdepth depth))
+	 (with-access::local/depth variable ((vdepth depth))
 	    (when (or escp (<fx depth vdepth))
 	       (escape! variable ctx))))))
+
+;*---------------------------------------------------------------------*/
+;*    stackable ::closure ...                                          */
+;*---------------------------------------------------------------------*/
+(define-walk-method (stackable node::closure escp depth ctx::pair)
+   (call-next-method)
+   (let ((v (var-variable node)))
+      (when (isa? v local)
+	 (let ((f (variable-value v)))
+	    (with-access::sfun f (stackable)
+	       (with-access::local/depth v (val-noescape)
+		  (when (and stackable (or escp (not val-noescape)))
+		     (set-car! ctx #f)
+		     (set! stackable #f))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stackable ::setq ...                                             */
@@ -321,6 +333,18 @@
 	 (escape! value ctx))))
 
 ;*---------------------------------------------------------------------*/
+;*    escape! ::closure ...                                            */
+;*---------------------------------------------------------------------*/
+(define-walk-method (escape! node::closure ctx)
+   (call-default-walker)
+   (let* ((v (var-variable node))
+	  (f (variable-value v)))
+      (with-access::sfun f (stackable)
+	 (when stackable
+	    (set-car! ctx #f)
+	    (set! stackable #f)))))
+
+;*---------------------------------------------------------------------*/
 ;*    node-escape ::node ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (node-escape node::node ctx)
@@ -469,17 +493,17 @@
 			       args)
 			    (depth-let body (+fx depth 1) local))))
 	    locals)
-	 (depth-let body 1 fun))))
+	 (depth-let body depth fun))))
 
 ;*---------------------------------------------------------------------*/
-;*    depth-let ...                                                    */
+;*    depth-let ::app ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (depth-let node::app depth fun)
    (call-default-walker)
    (widen!::app/depth node (depth depth)))
 
 ;*---------------------------------------------------------------------*/
-;*    set-ex-it ...                                                    */
+;*    depth-let :: set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (depth-let node::set-ex-it depth fun)
    (call-default-walker)
@@ -521,3 +545,13 @@
    (call-default-walker)
    (with-access::make-box node (stackable)
       (set! stackable #t)))
+
+;*---------------------------------------------------------------------*/
+;*    init-stackable ::closure ...                                     */
+;*---------------------------------------------------------------------*/
+(define-walk-method (init-stackable node::closure)
+   (call-default-walker)
+   (let* ((v (var-variable node))
+	  (f (variable-value v)))
+      (with-access::sfun f (stackable)
+	 (set! stackable #t))))

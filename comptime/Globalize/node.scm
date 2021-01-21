@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
 ;*    Last change :  Wed May 31 10:38:06 2017 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
