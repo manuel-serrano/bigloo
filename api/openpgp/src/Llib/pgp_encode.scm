@@ -127,7 +127,7 @@
       (display str p)))
 	 
 (define-generic (encode-content packet::PGP-Packet p::output-port)
-   (with-trace 3 "encode-content (generic)"
+   (with-trace 'pgp "encode-content (generic)"
       (error 'encode-content
 	     "not yet implemented"
 	     (class-name (object-class packet)))))
@@ -135,7 +135,7 @@
 (define-method (encode-content
 		packet::PGP-Public-Key-Encrypted-Session-Key-Packet
 		p::output-port)
-   (with-trace 3 "encode-content ::PGP-Public-Key-Encrypted-Session-Key-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Public-Key-Encrypted-Session-Key-Packet"
       (with-access::PGP-Public-Key-Encrypted-Session-Key-Packet packet
 	    (version id algo encrypted-session-key)
 	 (encode-octet version p)
@@ -300,7 +300,7 @@
 					hash-algo::symbol
 					creation-date
 					signed-sub-packets::pair-nil)
-   (with-trace 4 "create-signed-packet-prefix-v4"
+   (with-trace 'pgp "create-signed-packet-prefix-v4"
       (let ((str-p (open-output-string))
 	    (version 4)
 	    (creation-time-packet
@@ -373,7 +373,7 @@
 (define-method (encode-content
 		packet::PGP-Signature-v4-Packet
 		p::output-port)
-   (with-trace 3 "encode-content ::PGP-Signature-v4-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Signature-v4-Packet"
       (with-access::PGP-Signature-v4-Packet packet
 	    (version issuer public-key-algo signature signed-packet-prefix
 		     left-hash secure-sub-packets insecure-sub-packets)
@@ -407,7 +407,7 @@
 			  (public-key-algo->human-readable public-key-algo))))))))
 
 (define (encode-s2k s2k p::output-port)
-   (with-trace 5 "encode-s2k"
+   (with-trace 'pgp "encode-s2k"
       (let* ((algo (s2k-algo s2k))
 	     (algo-byte (s2k-algo->byte algo))
 	     (hash (s2k-hash s2k))
@@ -451,7 +451,7 @@
 (define-method (encode-content
 		packet::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
 		p::output-port)
-   (with-trace 3 "encode-content ::PGP-Symmetric-Key-Encrypted-Session-Key-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Symmetric-Key-Encrypted-Session-Key-Packet"
       (with-access::PGP-Symmetric-Key-Encrypted-Session-Key-Packet packet
 	    (version algo s2k encrypted-session-key)
 	 (when (not (=fx version 4))
@@ -474,7 +474,7 @@
 (define-method (encode-content
 		packet::PGP-One-Pass-Signature-Packet
 		p::output-port)
-   (with-trace 3 "encode-content ::PGP-One-Pass-Signature-Packet"
+   (with-trace 'pgp "encode-content ::PGP-One-Pass-Signature-Packet"
       (with-access::PGP-One-Pass-Signature-Packet packet
 	    (version signature-type issuer public-key-algo hash-algo
 		     contains-nested-sig?)
@@ -497,7 +497,7 @@
 ;; part.
 ;; This function is meant to be used for fingerprint calculation.
 (define (encode-public-key-content packet::PGP-Key-Packet p::output-port)
-   (with-trace 4 "encode-public-key-content"
+   (with-trace 'pgp "encode-public-key-content"
       (with-access::PGP-Key-Packet packet (version algo creation-date valid-days
 						   key)
 	 (encode-octet version p)
@@ -553,28 +553,28 @@
 			  (public-key-algo->human-readable algo))))))))
 
 (define-method (encode-content packet::PGP-Secret-Key-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-Secret-Key-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Secret-Key-Packet"
       (with-access::PGP-Secret-Key-Packet packet
 	    (password-protected-secret-key-data)
 	 (encode-public-key-content packet p)
 	 (display password-protected-secret-key-data p))))
 
 (define-method (encode-content packet::PGP-Public-Key-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-Public-Key-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Public-Key-Packet"
       (encode-public-key-content packet p)))
 
 (define-method (encode-content packet::PGP-Symmetrically-Encrypted-Packet
 			       p::output-port)
-   (with-trace 3 "encode-content ::PGP-Symmetrically-Encrypted-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Symmetrically-Encrypted-Packet"
       (with-access::PGP-Symmetrically-Encrypted-Packet packet (data)
 	 (display data p))))
 
 (define-method (encode-content packet::PGP-Marker-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-Marker-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Marker-Packet"
       'do-nothing))
 
 (define-method (encode-content packet::PGP-Literal-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-Literal-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Literal-Packet"
       (with-access::PGP-Literal-Packet packet
 	    (format for-your-eyes-only? file-name creation-date data)
 	 (when (and for-your-eyes-only? file-name)
@@ -603,23 +603,23 @@
 	    (display data p)))))
 
 (define-method (encode-content packet::PGP-Trust-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-Trust-Packet"
+   (with-trace 'pgp "encode-content ::PGP-Trust-Packet"
       (error 'encode-content-trust
 	     "Trust Packet encoding not yet implemented"
 	     #f)))
 
 (define-method (encode-content packet::PGP-ID-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-ID-Packet"
+   (with-trace 'pgp "encode-content ::PGP-ID-Packet"
       (with-access::PGP-ID-Packet packet (data)
 	 (display data p))))
 
 (define-method (encode-content packet::PGP-MDC-Symmetrically-Encrypted-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-MDC-Symmetrically-Encrypted-Packet"
+   (with-trace 'pgp "encode-content ::PGP-MDC-Symmetrically-Encrypted-Packet"
       (with-access::PGP-MDC-Symmetrically-Encrypted-Packet packet (version data)
 	 (encode-octet version p)
 	 (display data p))))
 
 (define-method (encode-content packet::PGP-MDC-Packet p::output-port)
-   (with-trace 3 "encode-content ::PGP-MDC-Packet"
+   (with-trace 'pgp "encode-content ::PGP-MDC-Packet"
       (with-access::PGP-MDC-Packet packet (hash)
 	 (display hash p))))

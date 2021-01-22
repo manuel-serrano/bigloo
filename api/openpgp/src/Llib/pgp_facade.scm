@@ -36,26 +36,39 @@
 		 (hash-algo 'sha-1)
 		 (symmetric-algo 'cast5))))
 
+;*---------------------------------------------------------------------*/
+;*    *bigloo-version* ...                                             */
+;*---------------------------------------------------------------------*/
 (define *bigloo-version* (bigloo-config 'release-number))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-read-string ...                                              */
+;*---------------------------------------------------------------------*/
 (define (pgp-read-string str::bstring)
    (pgp-read-port (open-input-string str)))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-read-port ...                                                */
+;*---------------------------------------------------------------------*/
 (define (pgp-read-port iport::input-port)
    (decode-pgp iport))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-read-file ...                                                */
+;*---------------------------------------------------------------------*/
 (define (pgp-read-file file::bstring)
-   (with-trace 1 "pgp-read-file"
+   (with-trace 'pgp "pgp-read-file"
       (trace-item "file=" file)
       (let ((p (open-input-file file)))
 	 (when (not p)
-	    (error "pgp-read-file"
-		   "Couldn't open file"
-		   file))
+	    (error "pgp-read-file" "Couldn't open file" file))
 	 (unwind-protect
 	    (decode-pgp p)
 	    (close-input-port p)))))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-write-string ...                                             */
+;*---------------------------------------------------------------------*/
 (define (pgp-write-string composition #!key (format 'armored))
    (let ((p (open-output-string)))
       (pgp-write-port p composition :format format)
@@ -156,7 +169,7 @@
 		  #!key (detached-signature? #t)
 		  (one-pass? #t)
 		  (hash-algo 'sha-1))
-   (with-trace 2 "pgp-sign"
+   (with-trace 'pgp "pgp-sign"
       (trace-item (if detached-signature? "Detached Signature" "Attached Signature"))
       (cond
 	 ((isa? key PGP-Key)
@@ -242,7 +255,7 @@
 		  (string-length data)))
 	    (symmetric-decrypt encrypted key-string algo))))
 
-   (with-trace 2 "pubkey-decrypt"
+   (with-trace 'pgp "pubkey-decrypt"
       (if (and (procedure? key-manager) (correct-arity? key-manager 1))
 	  (unless (null? pubkey-session-packets)
 	     (let* ((pack (car pubkey-session-packets))
@@ -268,7 +281,7 @@
 	    (trace-item "symmetric-key-session-key decription succeeded")
 	    (symmetric-decrypt encrypted key-string algo))))
 
-   (with-trace 2 "pwd-decrypt"
+   (with-trace 'pgp "pwd-decrypt"
       (if (and (procedure? passkey-provider) (correct-arity? passkey-provider 0))
 	  (unless (null? password-session-packets)
 	     (let ((passkey (passkey-provider)))
@@ -290,7 +303,7 @@
    (when (not (isa? encrypted PGP-Encrypted))
       (error "pgp-decrypt" "Expected PGP-composition." encrypted))
 
-   (with-trace 2 "pgp-decrypt"
+   (with-trace 'pgp "pgp-decrypt"
       (with-access::PGP-Encrypted encrypted (session-keys encrypted-data)
 	 (with-access::PGP-Symmetrically-Encrypted-Packet encrypted-data (data)
 	    (trace-item "encrypted length=" (string-length data)))
@@ -385,7 +398,7 @@
 	    (session-keys session-key-packets)
 	    (encrypted-data encrypted-packet))))
 
-   (with-trace 2 "pgp-encrypt"
+   (with-trace 'pgp "pgp-encrypt"
       (when (not (symbol? hash-algo))
 	 (error "pgp-encrypt"
 		"Expected symbol as hash algorithm"

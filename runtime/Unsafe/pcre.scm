@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
 ;*    Last change :  Tue Oct  8 18:25:57 2019 (serrano)                */
-;*    Copyright   :  2011-20 Manuel Serrano                            */
+;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
 ;*=====================================================================*/
