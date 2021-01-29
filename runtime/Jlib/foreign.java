@@ -680,6 +680,10 @@ public final class foreign
       {
 	 return (long)n;
       }
+   public static long INT64_TO_INT32(long n)
+      {
+	 return (int)n;
+      }
    public static long ELONG_TO_INT64(long n)
       {
 	 return (long)n;

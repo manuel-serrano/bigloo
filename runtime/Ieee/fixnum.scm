@@ -75,6 +75,7 @@
 	   
 	   (macro $int64->elong::elong (::int64)  "(long)")
 	   (macro $uint64->elong::elong (::uint64)  "(long)")
+	   (macro $uint64->uint32::uint32 (::uint64)  "(uint32_t)")
 	   (macro $elong->int64::int64 (::elong) "(int64_t)")
 	   (macro $int64->llong::llong (::int64)  "(BGL_LONGLONG_T)")
 	   (macro $llong->int64::int64 (::llong) "(int64_t)")
@@ -309,6 +310,8 @@
 		  "INT64_TO_ELONG")
 	       (method static $uint64->elong::elong (::uint64)
 		  "INT64_TO_ELONG")
+	       (method static $uint64->uint32::uint32 (::uint64)
+		  "INT64_TO_INT32")
 	       (method static $elong->sing64::int64 (::elong)
 		  "ELONG_TO_INT64")
 	       (method static $int64->llong::llong (::int64)
@@ -641,6 +644,7 @@
 	    (inline uint64->llong::llong ::uint64)
 	    (inline int64->elong::elong ::int64)
 	    (inline uint64->elong::elong ::uint64)
+	    (inline uint64->uint32::uint32 ::uint64)
 
 	    (inline fixnum->int8::int8 ::long)
 	    (inline fixnum->uint8::uint8 ::long)
@@ -1446,6 +1450,7 @@
 
 (define-inline (int64->elong n) ($int64->elong n))
 (define-inline (uint64->elong n) ($uint64->elong n))
+(define-inline (uint64->uint32 n) ($uint64->uint32 n))
 
 (define-inline (uint8->int8 n) ($uint8->int8 n))
 (define-inline (int8->uint8 n) ($int8->uint8 n))
