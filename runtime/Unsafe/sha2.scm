@@ -83,6 +83,22 @@
 	   __hmac
 	   __tvector)
 
+   (import              __r4_output_6_10_3
+            
+            __r4_numbers_6_5_fixnum
+            __r4_numbers_6_5_flonum
+            __r4_numbers_6_5
+            __r4_equivalence_6_2
+            __r4_vectors_6_8
+            __r4_booleans_6_1
+            __r4_characters_6_6
+            __r4_symbols_6_4
+            __r4_pairs_and_lists_6_3
+            __r4_strings_6_7
+            __r4_ports_6_10_1
+            __r4_control_features_6_9
+
+)
    (from   __srfi4)
    
    (export (sha256sum::bstring ::obj)
@@ -961,7 +977,7 @@
 	     ;; a full buffer
 	     (sha512-internal-transform state buffer)
 	     (loop (+fx i 64) (+fx l 64)))
-	    ((>=fx (-fx 80 bytes) 8)
+	    ((>=fx (-fx 128 bytes) 8)
 	     ;; we have room for the length of the message. The length is
 	     ;; a 64 bits integer but we are using here 64bits values
 	     (let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))

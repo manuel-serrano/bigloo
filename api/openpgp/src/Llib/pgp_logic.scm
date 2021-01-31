@@ -213,6 +213,7 @@
 	    (trace-item "signature-version: " version)
 	    (trace-item "hash-prefix: " (str->hex-string left-hash))
 	    (trace-item "hash:        " (str->hex-string hash))
+	    (trace-item "hash-fun:    " hash-algo)
 	    (if (not hash-prefix-ok?)
 		(begin
 		   (trace-item "left-hash failed.")
