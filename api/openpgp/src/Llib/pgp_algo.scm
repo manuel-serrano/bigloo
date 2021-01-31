@@ -12,11 +12,12 @@
 (define (hash-algo->procedure algo)
    (case algo
       ((md5) md5sum-bin)
-      ((sha-1) sha1sum-bin)
-      ((sha-256) sha256sum-bin)
-      (else (error "hash-algo->procedure"
-		   "algorithm not implemented"
-		   (hash-algo->human-readable algo)))))
+      ((sha1 sha-1) sha1sum-bin)
+      ((sha256 sha-256) sha256sum-bin)
+      ((sha512 sha-512) sha512sum-bin)
+      (else
+       (error "hash-algo->procedure" "algorithm not implemented"
+	       (hash-algo->human-readable algo)))))
 
 (define (symmetric-key-algo-key-byte-len::long algo)
    (/fx (symmetric-key-algo-key-bit-len algo) 8))

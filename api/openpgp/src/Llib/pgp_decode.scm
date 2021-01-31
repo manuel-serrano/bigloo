@@ -4,7 +4,7 @@
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
 ;*    Last change :  Fri Jun  1 11:50:22 2012 (serrano)                */
-;*    Copyright   :  2010-12 Florian Loitsch, Manuel Serrano.          */
+;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano.          */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
 ;*    -------------------------------------------------------------    */
@@ -28,8 +28,30 @@
 	   (decode-s2k p::input-port)
 	   (decode-mpi::bignum p::input-port)))
 
-;; returns <length, partial-length?>
+;*---------------------------------------------------------------------*/
+;*    decode-packet-length-v3 ...                                      */
+;*    -------------------------------------------------------------    */
+;*    https://tools.ietf.org/html/rfc4880#page-21                      */
+;*---------------------------------------------------------------------*/
+(define (decode-packet-length-v3 p packet-tag)
+   (let ((length-type (bit-and packet-tag #x03)))
+      (case length-type
+	 ((0) ;; one octet length.
+	  (values (safe-read-octet p) #f))
+	 ((1) ;; two octet length.
+	  (values (decode-scalar p 2) #f))
+	 ((2) ;; four-octet length.
+	  (values (decode-scalar p 4) #f))
+	 ((3) ;; indeterminate length.
+	  (values #f #t)))))
+
+;*---------------------------------------------------------------------*/
+;*    decode-package-length-v4 ...                                     */
+;*    -------------------------------------------------------------    */
+;*    https://tools.ietf.org/html/rfc4880#page-24                      */
+;*---------------------------------------------------------------------*/
 (define (decode-packet-length-v4 p)
+   ;; returns <length, partial-length?>
    (let ((length-octet (safe-read-octet p)))
       ;; the length type is encoded in the two most significant bits of the
       ;; length octet. However, the spec uses integer-values (and not
@@ -48,18 +70,6 @@
 	 (else ;; 5-octet length.
 	  (let ((len (decode-scalar p 4)))
 	     (values len #f))))))
-
-(define (decode-packet-length-v3 p packet-tag)
-   (let ((length-type (bit-and packet-tag #x03)))
-      (case length-type
-	 ((0) ;; one octet length.
-	  (values (safe-read-octet p) #f))
-	 ((1) ;; two octet length.
-	  (values (decode-scalar p 2) #f))
-	 ((2) ;; four-octet length.
-	  (values (decode-scalar p 4) #f))
-	 ((3) ;; indeterminate length.
-	  (values #f #t)))))
 
 ;; for v3: partial? is always #f. len might me #f
 ;; for v4: len is always given. if 'partial?' then the message is chunked.
@@ -86,80 +96,101 @@
 		    ((eof-object? str) #f)
 		    (else str)))))))))
 
+;*---------------------------------------------------------------------*/
+;*    decode-package ...                                               */
+;*    -------------------------------------------------------------    */
+;*    https://tools.ietf.org/html/rfc4880#page-17                      */
+;*---------------------------------------------------------------------*/
 (define (decode-packet p::input-port)
+   
    (define (decode-packet-v3 packet-tag p)
-      (trace-item "old format")
+      (trace-item "old package format")
       (let ((content-tag-byte (bit-and #x0F (bit-rsh packet-tag 2))))
 	 (when (zerofx? content-tag-byte)
 	    (error "decode-content-tag" "invalid tag" 0))
-	 (receive (len partial?)
+	 (multiple-value-bind (len partial?)
 	    (decode-packet-length-v3 p packet-tag)
 	    (values (byte->content-tag content-tag-byte) len partial?))))
    
    (define (decode-packet-v4 packet-tag p)
-      (trace-item "new format")
+      (trace-item "new package format")
       (let ((content-tag-byte (bit-and packet-tag #x3F)))
-	 (receive (len partial?)
+	 (multiple-value-bind (len partial?)
 	    (decode-packet-length-v4 p)
 	    (values (byte->content-tag content-tag-byte) len partial?))))
    
-   (with-trace 2 "decode-packet"
+   (with-trace 'pgp "decode-packet"
       (let ((packet-tag (safe-read-octet p)))
 	 (when (zerofx? (bit-and #x80 packet-tag))
 	    (error "decode-packet" "bad packet" packet-tag))
-	 
-	 (trace-item "Packet-tag=" packet-tag)
-	 (trace-item "port=" p)
-	 (receive (content-tag len partial?)
+	 (trace-item "offset=" (-fx (input-port-position p) 1)
+	    "/" (input-port-length p))
+	 (trace-item "packet-tag=" packet-tag " (0x"
+	    (integer->string packet-tag 16) ")")
+	 (multiple-value-bind (content-tag len partial?)
 	    (if (zerofx? (bit-and #x40 packet-tag))
 		;; old packet format
 		(decode-packet-v3 packet-tag p)
 		(decode-packet-v4 packet-tag p))
-	    (trace-item "Content-tag=" content-tag " "
-			(content-tag->human-readable content-tag))
-	    (trace-item "Len=" len " partial=" partial?)
+	    (trace-item "content-tag=" content-tag " ["
+	       (content-tag->human-readable content-tag) "]")
+	    (trace-item "len=" len " partial=" partial?)
 	    (let ((cpp (content-pipe-port p len partial?)))
 	       (case content-tag
 		  ((public-key-encrypted-session-key)
 		   (decode-public-key-encrypted-session-key cpp))
-		  ((signature) (decode-signature cpp))
+		  ((signature)
+		   (decode-signature cpp))
 		  ((symmetric-key-encrypted-session-key)
 		   (decode-symmetric-key-encrypted-session-key cpp))
 		  ((one-pass-signature)
 		   (decode-one-pass-signature cpp))
-		  ((secret-key) (decode-secret-key cpp))
-		  ((public-key) (decode-public-key cpp))
-		  ((secret-subkey) (decode-secret-subkey cpp))
-		  ((compressed) (decode-compressed-data cpp))
+		  ((secret-key)
+		   (decode-secret-key cpp))
+		  ((public-key)
+		   (decode-public-key cpp))
+		  ((secret-subkey)
+		   (decode-secret-subkey cpp))
+		  ((compressed)
+		   (decode-compressed-data cpp))
 		  ((symmetrically-encrypted)
 		   (decode-symmetrically-encrypted-data cpp))
-		  ((marker) (decode-marker cpp)) ;; should be ignored
-		  ((literal) (decode-literal-data cpp))
-		  ((trust) (decode-trust cpp))
-		  ((ID) (decode-user-id cpp))
-		  ((public-subkey) (decode-public-subkey cpp))
-		  ((user-attribute) (decode-user-attribute cpp))
-		  ((mdc-symmetrically-encrypted) (decode-mdc-sym-encrypted cpp))
-		  ((mdc) (decode-mdc cpp))
+		  ((marker)
+		   (decode-marker cpp)) ;; should be ignored
+		  ((literal)
+		   (decode-literal-data cpp))
+		  ((trust)
+		   (decode-trust cpp))
+		  ((ID)
+		   (decode-user-id cpp))
+		  ((public-subkey)
+		   (decode-public-subkey cpp))
+		  ((user-attribute)
+		   (decode-user-attribute cpp))
+		  ((mdc-symmetrically-encrypted)
+		   (decode-mdc-sym-encrypted cpp))
+		  ((mdc)
+		   (decode-mdc cpp))
 		  (else
 		   (let* ((tmp (read-string p))
 			  (len (string-length tmp)))
 		      (trace-item "remaining length=" len)
 		      (trace-item "str=" (str->hex-string (substring tmp 0 (min 10 len)))))
-		   (error 'decode-packet
-			  "Unknown content-tag"
-			  content-tag))))))))
+		   (error "decode-packet" "Unknown content-tag"
+		      content-tag))))))))
 
+;*---------------------------------------------------------------------*/
+;*    decode-packets ...                                               */
+;*---------------------------------------------------------------------*/
 (define (decode-packets p::input-port)
    (let ((c (peek-char p)))
       (if (eof-object? c)
 	  '()
 	  (let ((packet (decode-packet p)))
-	     (cons packet
-		   (decode-packets p))))))
+	     (cons packet (decode-packets p))))))
 
 (define (decode-s2k p::input-port)
-   (with-trace 5 "decode-s2k"
+   (with-trace 'pgp "decode-s2k"
       (let* ((s2k-algo-byte (safe-read-octet p))
 	     (s2k-algo (byte->s2k-algo s2k-algo-byte))
 	     (hash-algo-byte (safe-read-octet p))
@@ -194,7 +225,7 @@
 	  (seconds->date n))))
 
 (define (decode-mpi::bignum p::input-port)
-   (with-trace 3 "decode-mpi"
+   (with-trace 'pgp "decode-mpi"
       (let* ((nb-bits (decode-scalar p 2))
 	     (nb-octets (/fx (+fx nb-bits 7) 8)))
 	 (trace-item "reading mpi of " nb-bits " bits (" nb-octets " octets)")
@@ -208,7 +239,7 @@
 				(fixnum->bignum (safe-read-octet p))))))))))
 
 (define (decode-scalar::long p::input-port len::long)
-   (with-trace 4 "decode-scalar"
+   (with-trace 'pgp "decode-scalar"
       (trace-item "len=" len)
       (let loop ((i 0)
 		 (n 0))
@@ -224,7 +255,7 @@
 ;; 5.1 Public-Key Encrypted Session Key Packets (Tag 1)
 ;; ----------------------------------------------------------------------------
 (define (decode-public-key-encrypted-session-key cpp)
-   (with-trace 4 "decode-public-key-encrypted-session-key"
+   (with-trace 'pgp "decode-public-key-encrypted-session-key"
       (let* ((version (safe-read-octet cpp))
 	     (id (safe-read-octets 8 cpp))
 	     (algo-byte (safe-read-octet cpp))
@@ -269,7 +300,7 @@
 ;; 5.2 Signature Packet (Tag 2)
 ;; ----------------------------------------------------------------------------
 (define (decode-signature p::input-port)
-   (with-trace 4 "decode-signature"
+   (with-trace 'pgp "decode-signature"
       (let ((version (safe-read-octet p)))
 	 (trace-item "Signature version: " version)
 	 (case version
@@ -283,7 +314,7 @@
 ;; 5.2.2 Version 3 Signature Packet Format
 ;; ----------------------------------------------------------------------------
 (define (decode-signature-v3 p::input-port)
-   (with-trace 3 "decode-signature-v3"
+   (with-trace 'pgp "decode-signature-v3"
       (let* ((hashed-len (safe-read-octet p)) ;; must be 5
 	     (hashed-str (safe-read-octets hashed-len p))
 	     (hashed-str-p (open-input-string hashed-str))
@@ -353,7 +384,7 @@
 		   (cons (converter (char->integer (string-ref str i)))
 			 rev-res)))))
 
-   (with-trace 4 "decode-sub-packet"
+   (with-trace 'pgp "decode-sub-packet"
       (receive (len partial?)
 	 (decode-packet-length-v4 p)
 	 (when partial? (error "decode-sub-package"
@@ -368,6 +399,7 @@
 		   " " (subpacket-type->human-readable type))
 	    (trace-item "sub-packet is critical?: " critical?)
 	    (trace-item "type=" type)
+	    (trace-item "len=" len)
 	    
 	    ;; currently the following
 	    (case type
@@ -478,8 +510,13 @@
 		(let ((prefs (preferences->list
 				(safe-read-octets (-fx len 1) p)
 				byte->compression-algo)))
-		   (trace-item "Preferred Compression algo: "
-		      (map compression-algo->human-readable prefs))
+		   (trace-item "Preferred Compression algo id: "
+		      (map compression-algo->byte prefs))
+		   (trace-item "Preferred Compression algo name: "
+		      (map (lambda (p)
+			      (format "~s [~s]" p
+				 (compression-algo->human-readable p)))
+			 prefs))
 		   (instantiate::PGP-Signature-Sub-Preferred-Compression
 		      (critical? critical?)
 		      (algos prefs))))
@@ -520,6 +557,12 @@
 		      (critical? critical?)
 		      (code code)
 		      (reason reason))))
+	       ((issuer-fpr)
+		(trace-item "Issuer fingerprint")
+		(instantiate::PGP-Signature-Sub-Generic
+		   (critical? critical?)
+		   (type type)
+		   (data (safe-read-octets (-fx len 1) p))))
 	       (else
 		(trace-item "Generic")
 		(instantiate::PGP-Signature-Sub-Generic
@@ -528,14 +571,14 @@
 		   (data (safe-read-octets (-fx len 1) p)))))))))
 
 (define (decode-sub-packets p::input-port)
-   (with-trace 3 "decode-sub-packets"
-      (let ((c (peek-char p)))
-	 (trace-item "c=" (char->integer c))
-	 (if (eof-object? c)
-	     '()
-	     (let ((sub-packet (decode-sub-packet p)))
-		(trace-item "sub-patch=" (typeof sub-packet))
-		(cons sub-packet (decode-sub-packets p)))))))
+   (with-trace 'pgp "decode-sub-packets"
+      (let loop ((packets '()))
+	 (let ((c (peek-char p)))
+	    (trace-item "i=" (input-port-position p) "/" (input-port-length p))
+	    (if (eof-object? c)
+		(reverse! packets)
+		(let ((sub-packet (decode-sub-packet p)))
+		   (loop (cons sub-packet packets))))))))
 
 ;; -------- 5.2.3
 (define (decode-signature-v4 p::input-port version)
@@ -563,7 +606,7 @@
 	       #f))
 	 (with-access::PGP-Signature-Sub-ID pkt (key-id) key-id)))
 
-   (with-trace 3 "decode-signature-v4"
+   (with-trace 'pgp "decode-signature-v4"
       (let* ((signature-type-byte (safe-read-octet p))
 	     (signature-type (byte->signature-type signature-type-byte))
 	     (public-key-algo-byte (safe-read-octet p))
@@ -680,7 +723,7 @@
 ;; 5.4 One-Pass Signature Packets (Tag 4)
 ;; ----------------------------------------------------------------------------
 (define (decode-one-pass-signature p::input-port)
-   (with-trace 4 "decode-one-pass-signature"
+   (with-trace 'pgp "decode-one-pass-signature"
       (let* ((version (safe-read-octet p))
 	     (signature-type-byte (safe-read-octet p))
 	     (signature-type (byte->signature-type signature-type-byte))
@@ -748,7 +791,7 @@
       kp))
 
 (define (decode/fill-key kp::PGP-Key-Packet version p::input-port)
-   (with-trace 2 "decode/fill-key"
+   (with-trace 'pgp "decode/fill-key"
       (let ((cd (decode-time p)))
 	 (trace-item "creation-date: " cd)
 	 (with-access::PGP-Key-Packet kp (creation-date)
@@ -817,7 +860,7 @@
 ;; 5.5.1.3 Secret Key Packet
 ;; ----------------------------------------------------------------------------
 (define (decode-secret-key cpp::input-port)
-   (with-trace 2 "decode-secreate-key"
+   (with-trace 'pgp "decode-secreate-key"
       (let* ((version (safe-read-octet cpp))
 	     (kp (instantiate::PGP-Secret-Key-Packet
 		    (version version)
@@ -853,7 +896,7 @@
    ;; note: we discard the compression-packet and return the uncompressed
    ;; packet. Maybe this is not intended in which case we could insert a new
    ;; 'Compression-Packet'.
-   (with-trace 2 "decode-compressed-data"
+   (with-trace 'pgp "decode-compressed-data"
       (let* ((algo-byte (safe-read-octet  cpp))
 	     (algo (byte->compression-algo algo-byte)))
 	 (trace-item "Compression Algorithm: " algo " "
@@ -902,7 +945,7 @@
 ;; 5.9 Literal Data Packet (Tag 11)
 ;; ----------------------------------------------------------------------------
 (define (decode-literal-data p::input-port)
-   (with-trace 5 "decode-literal-data"
+   (with-trace 'pgp "decode-literal-data"
       (let* ((format-byte (safe-read-octet p))
 	     (format (byte->literal-format format-byte))
 	     (file-len (safe-read-octet p))
@@ -934,7 +977,7 @@
 ;; 5.11 User ID Packet (Tag 13)
 ;; ----------------------------------------------------------------------------
 (define (decode-user-id cpp)
-   (with-trace 3 "decode-user-id"
+   (with-trace 'pgp "decode-user-id"
       (let ((user-id (read-string cpp)))
 	 (trace-item "User ID: " user-id)
 	 (instantiate::PGP-ID-Packet
@@ -944,7 +987,7 @@
 ;; 5.12 User ID Packet (Tag 17)
 ;; ----------------------------------------------------------------------------
 (define (decode-user-attribute cpp)
-   (with-trace 3 "decode-user-attribute"
+   (with-trace 'pgp "decode-user-attribute"
       (let ((user-attr (read-string cpp)))
 	 (trace-item "User ATTR: " (string-for-read user-attr))
 	 (instantiate::PGP-Attribute-Packet
@@ -954,7 +997,7 @@
 ;; 5.13 Sym. Encrypted Integrity Protected Data Packet (Tag 18)
 ;; ----------------------------------------------------------------------------
 (define (decode-mdc-sym-encrypted cpp)
-   (with-trace 4 "decode-mdc-sym-encrypted"
+   (with-trace 'pgp "decode-mdc-sym-encrypted"
       (trace-item "cpp=" cpp)
       (let* ((version (safe-read-octet cpp))
 	     (data (read-string cpp)))
@@ -968,7 +1011,7 @@
 ;; 5.14 Modification Detection Code Packet (Tag 19)
 ;; ----------------------------------------------------------------------------
 (define (decode-mdc cpp)
-   (with-trace 4 "decode-mdc"
+   (with-trace 'pgp "decode-mdc"
       (let ((str (read-string cpp)))
 	 (when (not (=fx (string-length str) 20))
 	    (error 'decode-mdc

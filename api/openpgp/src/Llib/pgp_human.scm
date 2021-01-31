@@ -135,6 +135,7 @@
       ((features) "Features")
       ((signature-target) "Signature Target")
       ((embedded-signature) "Embedded Signature")
+      ((issuer-fpr) "Issuer Fingerprint")
       ((private-0 private-1 private-2 private-3 private-4 private-5 private-6
 		  private-7 private-8 private-9 private-10)
        "internal or user-defined")

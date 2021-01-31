@@ -188,7 +188,8 @@
 ;*---------------------------------------------------------------------*/
 (define (check-id id src)
    (if (empty-string? (symbol->string (car id)))
-       (user-error "Illegal identifier" "`'" src)
+       (user-error "Illegal empty identifier"
+	  (format "`' (~a)" (type-id (cdr id))) src)
        id))
 
 ;*---------------------------------------------------------------------*/
