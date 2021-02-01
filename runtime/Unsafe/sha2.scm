@@ -83,7 +83,8 @@
 	   __hmac
 	   __tvector)
 
-   (import              __r4_output_6_10_3
+   ;; >>> TBR when debug done
+   (import __r4_output_6_10_3
             
             __r4_numbers_6_5_fixnum
             __r4_numbers_6_5_flonum
@@ -96,9 +97,9 @@
             __r4_pairs_and_lists_6_3
             __r4_strings_6_7
             __r4_ports_6_10_1
-            __r4_control_features_6_9
+            __r4_control_features_6_9)
+   ;; <<< TBR when debug done
 
-)
    (from   __srfi4)
    
    (export (sha256sum::bstring ::obj)
@@ -976,7 +977,7 @@
 	    ((=fx bytes 128)
 	     ;; a full buffer
 	     (sha512-internal-transform state buffer)
-	     (loop (+fx i 64) (+fx l 64)))
+	     (loop (+fx i 128) (+fx l 128)))
 	    ((>=fx (-fx 128 bytes) 8)
 	     ;; we have room for the length of the message. The length is
 	     ;; a 64 bits integer but we are using here 64bits values
@@ -994,29 +995,29 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha512sum-mmap ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha512sum-mmap str)
+(define (sha512sum-mmap mm)
    
    (define (u32mmap-ref::uint32 mm:mmap i)
-      (char->integer ($mmap-ref str i)))
+      (char->integer ($mmap-ref mm i)))
 
-   (define (fill-word64-mmap! v64::u64vector i::long str::bstring n::long)
-      (let ((l (string-length str)))
+   (define (fill-word64-mmap! v64::u64vector i::long mm::mmap n::long)
+      (let ((l (mmap-length mm)))
 	 (cond
 	    ((<=fx (+fx n 8) l)
-	     (let* ((v0::uint32 (u32mmap-ref str n))
-		    (v1::uint32 (u32mmap-ref str (+fx n 1)))
-		    (v2::uint32 (u32mmap-ref str (+fx n 2)))
-		    (v3::uint32 (u32mmap-ref str (+fx n 3)))
-		    (v4::uint32 (u32mmap-ref str (+fx n 4)))
-		    (v5::uint32 (u32mmap-ref str (+fx n 5)))
-		    (v6::uint32 (u32mmap-ref str (+fx n 6)))
-		    (v7::uint32 (u32mmap-ref str (+fx n 7)))
+	     (let* ((v0::uint32 (u32mmap-ref mm n))
+		    (v1::uint32 (u32mmap-ref mm (+fx n 1)))
+		    (v2::uint32 (u32mmap-ref mm (+fx n 2)))
+		    (v3::uint32 (u32mmap-ref mm (+fx n 3)))
+		    (v4::uint32 (u32mmap-ref mm (+fx n 4)))
+		    (v5::uint32 (u32mmap-ref mm (+fx n 5)))
+		    (v6::uint32 (u32mmap-ref mm (+fx n 6)))
+		    (v7::uint32 (u32mmap-ref mm (+fx n 7)))
 		    (v::uint64 (u64 (u16 v0 v1) (u16 v2 v3)
 				  (u16 v4 v5) (u16 v6 v7))))
 		(u64vector-set! v64 i v)
 		8))
 	    ((>=fx n (+fx 1 l))
-	     (u64vector-set! v64 i 0)
+	     (u64vector-set! v64 i #u64:0)
 	     0)
 	    (else
 	     (let ((v (make-u32vector 8 0))
@@ -1038,12 +1039,12 @@
 			     (u64vector-set! v64 i v)
 			     (+fx j 1)))
 		       (begin
-			  (u32vector-set! v j (u32mmap-ref str (+ n j)))
+			  (u32vector-set! v j (u32mmap-ref mm (+ n j)))
 			  (loop (+fx j 1))))))))))
    
    (let ((state (sha512-initial-hash-value))
 	 (buffer (make-u64vector 16)))
-      (sha512-update state buffer str fill-word64-mmap!)
+      (sha512-update state buffer mm fill-word64-mmap!)
       (state64->string state)))
 
 ;*---------------------------------------------------------------------*/
