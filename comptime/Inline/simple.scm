@@ -23,6 +23,7 @@
 	    ast_node
 	    ast_local
 	    ast_remove
+	    ast_occur
 	    tools_shape
 	    tools_speek
 	    tools_error
@@ -146,7 +147,7 @@
 			    (local-user?-set! reductor (local-user? formal))))
 	       reductors
 	       formals)
-	    ;; if the result type of the inlined function is not *_* or
+	    ;; if the result type of the inlined function is not *_* nor
 	    ;; *obj* we use a local variable in order to ensure that the
 	    ;; type checking of the result will be implemented even after
 	    ;; inlining. This fixes a bug of the version 1.9b
@@ -175,11 +176,12 @@
 ;*    Propagate stackable property.                                    */
 ;*---------------------------------------------------------------------*/
 (define (stackable! old::app new::node)
+   (occur-node! new)
    (let ((rnew (node-remove! new)))
       (if (isa? rnew app)
 	  (with-access::app rnew (stackable)
 	     (set! stackable #t)
 	     rnew)
-	  new)
-      new))
+	  new) 
+     new))
 

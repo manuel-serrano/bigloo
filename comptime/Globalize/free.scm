@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
 ;*    Last change :  Wed May 31 10:38:56 2017 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -74,8 +74,8 @@
 	     (not (eq? (sexit/Ginfo-free-mark info) *round*)))
 	    (else
 	     (error "free-variable?"
-		"Unknown variable type"
-		(cons local (shape local))))))))
+		(format "Unknown variable type (~a)" (shape local))
+		local))))))
        
 ;*---------------------------------------------------------------------*/
 ;*    get-free-vars ...                                                */

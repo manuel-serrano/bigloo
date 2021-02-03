@@ -47,7 +47,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (shape var::local/depth)
    (with-access::local/depth var (depth)
-      (string->symbol (format "[~a]~a" depth (call-next-method)))))
+      (if *key-shape?*
+	  (string->symbol (format "[~a]~a" depth (call-next-method)))
+	  (call-next-method))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::app ...                                             */
@@ -55,7 +57,7 @@
 (define-method (node->sexp node::app/depth)
    (with-access::app/depth node (depth)
       (let ((n (call-next-method)))
-	 (if (symbol? (car n))
+	 (if (and (symbol? (car n)) *key-shape?*)
 	     (cons (symbol-append (string->symbol (format "[~a]" depth)) (car n))
 		(cdr n))
 	     n))))
