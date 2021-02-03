@@ -8,38 +8,44 @@
 	   __openpgp-s2k
 	   __openpgp-algo
 	   __openpgp-human)
-   (export
-    (pgp-read-string str::bstring)
-    (pgp-read-port iport::input-port)
-    (pgp-read-file file::bstring)
-    (pgp-write-string composition #!key (format 'armored))
-    (pgp-write-port oport::output-port composition #!key (format 'armored))
-    (pgp-write-file file::bstring composition #!key (format 'armored))
-    (pgp-sign msg::bstring key password-provider
+   (export (pgp-composition?::bool obj)
+	   (pgp-read-string str::bstring)
+	   (pgp-read-port iport::input-port)
+	   (pgp-read-file file::bstring)
+	   (pgp-write-string composition #!key (format 'armored))
+	   (pgp-write-port oport::output-port composition #!key (format 'armored))
+	   (pgp-write-file file::bstring composition #!key (format 'armored))
+	   (pgp-sign msg::bstring key password-provider
 	      #!key (detached-signature? #t) (one-pass? #t) (hash-algo 'sha-1))
-    (pgp-verify::pair-nil signature key-manager::procedure
-			  #!optional (msg #f))
-    (pgp-signature-message signature)
-    (pgp-password-encrypt msg::bstring password::bstring
-			  #!key (hash-algo 'sha-1)
-			  (symmetric-algo 'cast5)
-			  (mdc #t))
-    (pgp-decrypt encrypted #!key
-		 (passkey-provider (lambda () #f))
-		 (password-provider (lambda (key) #f))
-		 (key-manager (lambda (key) '()))
-		 (hash-algo 'sha-1)
-		 (symmetric-algo 'cast5))
-    (pgp-encrypt msg::bstring keys::pair-nil
-		 passwords::pair-nil
-		 #!key
-		 (hash-algo 'sha-1)
-		 (symmetric-algo 'cast5))))
+	   (pgp-verify::pair-nil signature key-manager::procedure
+	      #!optional (msg #f))
+	   (pgp-signature-message signature)
+	   (pgp-password-encrypt msg::bstring password::bstring
+	      #!key (hash-algo 'sha-1)
+	      (symmetric-algo 'cast5)
+	      (mdc #t))
+	   (pgp-decrypt encrypted #!key
+	      (passkey-provider (lambda () #f))
+	      (password-provider (lambda (key) #f))
+	      (key-manager (lambda (key) '()))
+	      (hash-algo 'sha-1)
+	      (symmetric-algo 'cast5))
+	   (pgp-encrypt msg::bstring keys::pair-nil
+	      passwords::pair-nil
+	      #!key
+	      (hash-algo 'sha-1)
+	      (symmetric-algo 'cast5))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bigloo-version* ...                                             */
 ;*---------------------------------------------------------------------*/
 (define *bigloo-version* (bigloo-config 'release-number))
+
+;*---------------------------------------------------------------------*/
+;*    pgp-composition? ...                                             */
+;*---------------------------------------------------------------------*/
+(define (pgp-composition? obj)
+   (isa? obj PGP-Composition))
 
 ;*---------------------------------------------------------------------*/
 ;*    pgp-read-string ...                                              */

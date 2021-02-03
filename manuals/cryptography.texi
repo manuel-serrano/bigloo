@@ -731,6 +731,11 @@ Here is an example of a module that uses this library:
                                      :passkey-provider (lambda () passwd))))))))
 @end smalllisp
 
+@deffn {bigloo openpgp procedure} pgp-composition? composition
+Returns @code{true} if and only if @var{composition} is a PGP-Composition.
+Returns @code{false} otherwise.
+@end deffn
+
 @deffn {bigloo openpgp procedure} pgp-read-string str
 @deffnx {bigloo openpgp procedure} pgp-read-port iport
 @deffnx {bigloo openpgp procedure} pgp-read-file file-name
