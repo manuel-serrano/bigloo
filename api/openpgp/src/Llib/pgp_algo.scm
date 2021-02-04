@@ -77,6 +77,10 @@
 (define (cast5-decrypt str IV pwd)
    (decrypt-string 'cast-128 str pwd :IV IV :mode 'cfb :string->key id))
 (define (aes-decrypt str IV pwd)
+   (debug "calling AES")
+   (debug "str: " (str->hex-string str) " " (string-length str))
+   (debug "IV: " (str->hex-string IV) " " (string-length IV))
+   (debug "pwd: " (str->hex-string pwd) " " (string-length pwd))
    (decrypt-string 'aes str pwd :IV IV :mode 'cfb :string->key id))
 
 (define (symmetric-key-algo->procedure algo encrypt?)

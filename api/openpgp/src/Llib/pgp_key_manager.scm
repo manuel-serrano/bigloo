@@ -14,6 +14,7 @@
 	   (pgp-key-id::bstring subkey)
 	   (pgp-key-fingerprint::bstring subkey)
 
+	   (pgp-key-db?::bool ::obj)
 	   (pgp-make-key-db)
 	   (pgp-add-key-to-db db key)
 	   (pgp-add-keys-to-db db keys::pair-nil)
@@ -51,7 +52,16 @@
    (with-access::PGP-Subkey subkey (key-packet)
       (fingerprint key-packet)))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-make-key-db ...                                              */
+;*---------------------------------------------------------------------*/
 (define (pgp-make-key-db) (list '*pgp-keys*))
+
+;*---------------------------------------------------------------------*/
+;*    pgp-key-db? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (pgp-key-db? obj)
+   (and (pair? obj) (eq? (car obj) '*pgp-keys*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pgp-add-keys-to-db ...                                           */

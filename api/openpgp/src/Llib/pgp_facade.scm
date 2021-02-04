@@ -18,7 +18,7 @@
 	   (pgp-sign msg::bstring key password-provider
 	      #!key (detached-signature? #t) (one-pass? #t) (hash-algo 'sha-1))
 	   (pgp-verify::pair-nil signature key-manager::procedure
-	      #!optional (msg #f))
+	      #!key (msg #f))
 	   (pgp-signature-message signature)
 	   (pgp-password-encrypt msg::bstring password::bstring
 	      #!key (hash-algo 'sha-1)
@@ -131,6 +131,10 @@
 		   "Couldn't find suitable key for signature."
 		   #f))
 	     main-key)))
+      ((not (isa? key PGP-Key))
+       (error "extract-subkey"
+	  (format "PGP-key expected (got a ~a)" (typeof key))
+	  key))
       (else
        (with-access::PGP-Key key (subkeys)
 	  (cond
@@ -208,7 +212,7 @@
 ;; the optional msg parameter will only be used for detached signatures.
 ;; the result contains a list of keys which matched the signature.
 (define (pgp-verify::pair-nil signature key-manager::procedure
-			      #!optional (msg #f))
+			      #!key (msg #f))
    (when (not (isa? signature PGP-Signature))
       (error "pgp-verify" "not a signature" signature))
    (verify-pgp-signature signature key-manager msg))

@@ -351,6 +351,12 @@
 	     (trace-item "checksum failed")
 	     #f)))
 
+   (define (decrypt-algo-buffer-size algo)
+      ;; ms addition 3 feb 2021
+      (case algo
+	 ((aes-128 aes-192 aes-256) 16)
+	 (else 8)))
+
    (with-trace 'pgp "decrypt-password-protected"
       (when (string-null? secret)
 	 (error 'decode-secret-key-password-protected
@@ -376,6 +382,7 @@
 		       #f))
 	     ;; 254 seems to be gnupg extension, where the checksum is actually
 	     ;; a SHA1 hash.
+	     (trace-item "secret-len=" (string-length secret))
 	     (let* ((p (open-input-string secret))
 		    (protection (safe-read-octet p)) ;; again.
 		    (symmetric-algo-byte (safe-read-octet p))
@@ -384,7 +391,7 @@
 		    (key-len (symmetric-key-algo-key-byte-len symmetric-algo))
 		    (s2k (decode-s2k p))
 		    (symmetric-key (apply-s2k s2k password key-len))
-		    (IV (safe-read-octets 8 p))
+		    (IV (safe-read-octets (decrypt-algo-buffer-size symmetric-algo) p))
 		    (secret-data (read-string p))
 		    (decrypter (symmetric-key-algo->procedure symmetric-algo #f))
 		    (decoded (decrypter secret-data IV symmetric-key))
@@ -395,7 +402,7 @@
 				     "not enough bytes for checksum"
 				     dec-len)))
 		    (chksum-str (substring decoded (-fx dec-len chksum-len)
-					   dec-len)))
+				   dec-len)))
 		(trace-item "password-protection: " symmetric-algo-byte " "
 		       (symmetric-key-algo->human-readable symmetric-algo))
 		(trace-item "symmetric-key: " (str->hex-string symmetric-key))
