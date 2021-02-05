@@ -125,7 +125,8 @@
 	    ($vector-ref-ur side-effect-free no-cfa-top nesting args-safe)
 	    (vector-ref side-effect-free nesting)
 	    (vector-ref-ur side-effect-free nesting)
-	    (vector-tag side-effect-free no-cfa-top)))
+	    (vector-tag side-effect-free no-cfa-top)
+	    ($sort-vector (args-noescape 1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector? ...                                                      */
