@@ -139,7 +139,7 @@
 		 (pgp-add-key-to-db db pgp-key)
 		 (not (null? (pgp-verify (pgp-read-string str-sig)
 					 (db-resolver db)
-					 "abcd")))))
+					 :msg "abcd")))))
 	   #t)
 
 (test-add! 'signature-attached
@@ -402,7 +402,7 @@
 		 (pgp-add-key-to-db db pgp-key)
 		 (not (null? (pgp-verify sig
 					 (db-resolver db)
-					 "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\n")))))
+					 :msg "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\n")))))
 	   #t)
 
 (test-add! 'abcd
@@ -413,7 +413,7 @@
 		 (pgp-add-key-to-db db pgp-key)
 		 (not (null? (pgp-verify sig
 					 (db-resolver db)
-					 "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\n")))))
+					 :msg "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\n")))))
 	   #t)
 
 (test-add! 'rsa_abcd_efgh
@@ -424,7 +424,7 @@
 		 (pgp-add-key-to-db db pgp-key)
 		 (not (null? (pgp-verify sig
 					 (db-resolver db)
-					 "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\nefgh\r\n")))))
+					 :msg "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\nefgh\r\n")))))
 	   #t)
 
 (test-add! 'abcd_efgh
@@ -435,7 +435,7 @@
 		 (pgp-add-key-to-db db pgp-key)
 		 (not (null? (pgp-verify sig
 					 (db-resolver db)
-					 "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\nefgh\r\n")))))
+					 :msg "Content-Type: Text/Plain;\r\n  charset=\"us-ascii\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nabcd\r\nefgh\r\n")))))
 	   #t)
 
 ;*---------------------------------------------------------------------*/
