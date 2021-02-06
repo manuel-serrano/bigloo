@@ -22,11 +22,12 @@
 #include <avahi-common/timeval.h>
 
 #include "bglavahi.h"
+#include "bavahi.h"
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-extern int bgl_avahi_error( char *, char *, obj_t, int );
+extern obj_t bgl_avahi_error( char *, char *, obj_t, int );
 extern obj_t bgl_avahi_client_state_to_symbol( AvahiClientState );
 extern obj_t bgl_avahi_entry_group_state_to_symbol( AvahiEntryGroupState );
 extern obj_t bgl_avahi_protocol_to_symbol( AvahiProtocol );
@@ -482,7 +483,7 @@ AvahiStringList *
 bgl_avahi_list_to_string_list( obj_t p ) {
    // MS: 28 feb 2017
    // AvahiStringList *l = avahi_string_list_new( "", NULL );
-   AvahiStringList *l = avahi_string_list_new( 0L );
+   AvahiStringList *l = NULL;
 
    while( PAIRP( p ) ) {
       l = avahi_string_list_add( l, BSTRING_TO_STRING( CAR( p ) ) );

@@ -607,6 +607,7 @@
     ;; elong
     (coerce belong elong () ($belong->elong))
     (coerce belong uelong () ($belong->elong))
+    (coerce elong bool () ((lambda (x::ulong) #t)))
     (coerce elong long () ($elong->long))
     (coerce elong belong () ($elong->belong))
     (coerce uelong long () ($elong->long))
@@ -625,6 +626,7 @@
     ;; llong
     (coerce bllong ullong () ($bllong->ullong))
     (coerce bllong llong () ($bllong->llong))
+    (coerce llong bool () ((lambda (x::ulong) #t)))
     (coerce llong long () ($llong->long))
     (coerce llong bllong () ($llong->bllong))
     (coerce int64 llong () ($int64->llong))

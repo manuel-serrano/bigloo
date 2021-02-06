@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
 ;*    Last change :  Sat Jun 23 07:37:27 2018 (serrano)                */
-;*    Copyright   :  2007-18 Manuel Serrano                            */
+;*    Copyright   :  2007-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -246,12 +246,18 @@
 	  (cons (cons (string->symbol name) val) (ignore))))
       (else
        (let ((c (the-failure)))
-	  (if (eof-object? c)
-	      '()
-	      (parse-error "mime-content-type-decode"
-		 "Illegal parameter name"
-		 (the-failure)
-		 (the-port)))))))
+	  (cond
+	     ((eof-object? c)
+	      '())
+	     ((>fx (bigloo-warning) 0)
+	      (display "*** WARNING:multipart:mime-content-type-decode: " (current-error-port))
+	      (display "Illegal parameter value -- \"" (current-error-port))
+	      (display c (current-error-port))
+	      (display (read-string (the-port)) (current-error-port))
+	      (display "\"\n" (current-error-port))
+	      '())
+	     (else
+	      '()))))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    content-type-grammar ...                                         */
@@ -425,6 +431,7 @@
 					(lambda (e)
 					   (if (isa? e &io-parse-error)
 					       (begin
+
 						  (when (and (>fx (bigloo-warning) 0) (not quiet))
 						     (display "*** WARNING:multipart"
 							(current-error-port))

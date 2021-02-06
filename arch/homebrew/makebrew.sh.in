@@ -11,7 +11,7 @@
 
 # configuration and variables
 unstable=@VERSION@
-latest=
+latest=4.4a
 minor=
 
 repodir=$HOME/prgm/distrib

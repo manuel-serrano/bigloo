@@ -1,0 +1,92 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/pthreadcancel        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Sun Nov  1 18:44:16 2020 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host pthread cancel library.                       */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+pthreadlibs="-lpthread"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      pthreadlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <pthread.h>
+#include <sched.h>
+#include <stdio.h>
+
+int main( int argc, char *argv[] ) {
+   pthread_mutex_t mutex;
+   pthread_cond_t cv;
+   pthread_t thread;
+   pthread_key_t key;
+
+   pthread_key_create( &key, 0L );
+   pthread_mutex_init( &mutex, 0L );
+   pthread_cond_init( &cv, 0L );
+   pthread_create( &thread, 0L, 0L, 0L );
+   pthread_cancel( thread );
+
+   sched_yield();
+   pthread_join( thread, 0L );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "1"
+else
+   echo "0"
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0

@@ -14,6 +14,7 @@
 	   (pgp-key-id::bstring subkey)
 	   (pgp-key-fingerprint::bstring subkey)
 
+	   (pgp-key-db?::bool ::obj)
 	   (pgp-make-key-db)
 	   (pgp-add-key-to-db db key)
 	   (pgp-add-keys-to-db db keys::pair-nil)
@@ -51,41 +52,53 @@
    (with-access::PGP-Subkey subkey (key-packet)
       (fingerprint key-packet)))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-make-key-db ...                                              */
+;*---------------------------------------------------------------------*/
 (define (pgp-make-key-db) (list '*pgp-keys*))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-key-db? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (pgp-key-db? obj)
+   (and (pair? obj) (eq? (car obj) '*pgp-keys*)))
+
+;*---------------------------------------------------------------------*/
+;*    pgp-add-keys-to-db ...                                           */
+;*---------------------------------------------------------------------*/
 (define (pgp-add-keys-to-db db keys::pair-nil)
    (for-each (lambda (key) (pgp-add-key-to-db db key)) keys))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-add-key-to-db ...                                            */
+;*---------------------------------------------------------------------*/
 (define (pgp-add-key-to-db db key)
    ;; TODO verify key (or do that before)
    ;; TODO merge if the key is already in there.
    (when (not (isa? key PGP-Key))
-      (error 'add-key-to-db
-	     "Expected PGP Key"
-	     key))
-   (when (not (and (pair? db)
-		   (eq? (car db) '*pgp-keys*)))
-      (error 'add-key-to-db
-	     "Expected pgp-key db"
-	     db))
+      (error "add-key-to-db" "Expected PGP Key" key))
+   (when (not (and (pair? db) (eq? (car db) '*pgp-keys*)))
+      (error "add-key-to-db" "Expected pgp-key db" db))
    (set-cdr! db (cons key (cdr db))))
 
+;*---------------------------------------------------------------------*/
+;*    valid-subkey ...                                                 */
+;*---------------------------------------------------------------------*/
 (define (valid-subkey k)
    (with-access::PGP-Subkey k (revocation-sigs)
       (null? revocation-sigs)))
 
-;; simply extract all main/subkeys that match the id.
-;; the returned list will contain (k::PGP-Key . k::PGP-Key-Packet)
-;; However the only guarantee is that the cdr resolves to the given id.
-;;
-;; If the id is 0 ("00000000") then all keys should be returned.
+;*---------------------------------------------------------------------*/
+;*    pgp-resolve-key ...                                              */
+;*---------------------------------------------------------------------*/
 (define (pgp-resolve-key db id::bstring)
-   (when (not (and (pair? db)
-		   (eq? (car db) '*pgp-keys*)))
-      (error 'add-key-to-db
-	     "Expected pgp-key db"
-	     db))
-
+   ;; simply extract all main/subkeys that match the id.
+   ;; the returned list will contain (k::PGP-Key . k::PGP-Key-Packet)
+   ;; However the only guarantee is that the cdr resolves to the given id.
+   ;;
+   ;; If the id is 0 ("00000000") then all keys should be returned.
+   (when (not (and (pair? db) (eq? (car db) '*pgp-keys*)))
+      (error "add-key-to-db" "Expected pgp-key db" db))
    (let loop ((keys (cdr db))
 	      (matching '()))
       (if (null? keys)
@@ -99,22 +112,21 @@
 					   ;; 00000000 is wild-card key.
 					   (or (string=? id "00000000")
 					       (string=? (key-id key-packet) id))))
-				     valid-subkeys)))
-	     (loop (cdr keys)
-		   (append k-matching matching))))))
+				valid-subkeys)))
+	     (loop (cdr keys) (append k-matching matching))))))
 
+;*---------------------------------------------------------------------*/
+;*    pgp-db-print-keys ...                                            */
+;*---------------------------------------------------------------------*/
 (define (pgp-db-print-keys db)
-   (when (not (and (pair? db)
-		   (eq? (car db) '*pgp-keys*)))
-      (error 'add-key-to-db
-	     "Expected pgp-key db"
-	     db))
-
+   (when (not (and (pair? db) (eq? (car db) '*pgp-keys*)))
+      (error "add-key-to-db" "Expected pgp-key db" db))
+   
    (define (print-key k::PGP-Key)
       (print (pgp-key->human-readable k)))
-
+   
    (for-each (lambda (k)
 		(print-key k)
 		(print)
 		(print))
-	     (cdr db)))
+      (cdr db)))

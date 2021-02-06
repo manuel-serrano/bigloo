@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  4 10:54:57 1995                          */
 ;*    Last change :  Wed Mar 30 08:32:18 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define-struct' expansion                                    */
 ;*=====================================================================*/
@@ -58,17 +58,13 @@
 		    ,(if slots-val?
 			 `(if (pair? init)
 			      (if (not (null? (cdr init)))
-				  (error ',(symbol-append 'make- name)
-					 "Too many argument provided"
-					 init)
+				  (apply ,name init)
 				  ((@ make-struct __structure)
 				   ',name ,len (car init)))
 			      (,name ,@slots-val))
 			 `(if (pair? init)
 			      (if (not (null? (cdr init)))
-				  (error ',(symbol-append 'make- name)
-					 "Too many argument provided"
-					 init)
+				  (apply ,name init)
 				  ((@ make-struct __structure)
 				   ',name ,len (car init)))
 			      ((@ make-struct __structure)

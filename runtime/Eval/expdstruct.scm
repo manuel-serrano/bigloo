@@ -95,16 +95,12 @@
 		    ,(if slots-val?
 			 `(if (pair? init)
 			      (if (not (null? (cdr init)))
-				  (expand-error ',(symbol-append 'make- name)
-				     "Too many argument provided"
-				     init)
+				  (apply ,name init)
 				  (make-struct ',name ,len (car init)))
 			      (,name ,@slots-val))
 			 `(if (pair? init)
 			      (if (not (null? (cdr init)))
-				  (expand-error ',(symbol-append 'make- name)
-				     "Too many argument provided"
-				     init)
+				  (apply ,name init)
 				  (make-struct ',name ,len (car init)))
 			      (make-struct ',name ,len '()))))
 		x)

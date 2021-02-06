@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
 ;*    Last change :  Thu Jul 27 13:08:26 2017 (serrano)                */
-;*    Copyright   :  2010-17 Manuel Serrano                            */
+;*    Copyright   :  2010-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize tagged binary operators by avoid useless tagging        */
 ;*    untagging operations. Typically, replaces:                       */
@@ -151,7 +151,8 @@
       ;;   - there are two arguments
       ;;   - both are conversions bint->long
       ;;   - the operator is known
-      (and (=fx (length bindings) 2)
+      (and (app? body)
+	   (=fx (length bindings) 2)
 	   (and (bint->long? (cdar bindings))
 		(bint->long? (cdadr bindings)))
 	   (find-fxop (car (app-args body)))))

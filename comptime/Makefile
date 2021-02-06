@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
 #*    Last change :  Tue Mar 24 15:47:57 2020 (serrano)                */
-#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -171,6 +171,11 @@ INITFLOW_FILE	= walk
 
 INITFLOW_OBJ	= $(INITFLOW_FILE:%=Initflow/%.o)
 
+#*--- stackable -------------------------------------------------------*/
+STACKABLE_FILE  = walk
+
+STACKABLE_OBJ   = $(STACKABLE_FILE:%=Stackable/%.o)
+
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
                   integration new_body loc2glo gloclo clocto globalize
@@ -312,6 +317,11 @@ RETURN_FILE	= walk
 
 RETURN_OBJ	= $(RETURN_FILE:%=Return/%.o)
 
+#*--- uncell ----------------------------------------------------------*/
+UNCELL_FILE	= walk
+
+UNCELL_OBJ	= $(UNCELL_FILE:%=Uncell/%.o)
+
 #*--- user ------------------------------------------------------------*/
 USER_FILE	= user
 
@@ -336,7 +346,8 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ)
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
+                  $(STACKABLE_OBJ) $(UNCELL_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
@@ -405,7 +416,10 @@ bigloo:
 #*---------------------------------------------------------------------*/
 #*    jvm                                                              */
 #*---------------------------------------------------------------------*/
-jvm: $(CLASS_OBJECTS)
+jvm: .jfile
+	$(MAKE) jvm-sans-jfile
+
+jvm-sans-jfile: $(CLASS_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(EFLAGS) -jvm -jvm-jar -jvm-java $(JAVA) \
              -jvm-shell $(JSHELL) \
@@ -448,7 +462,7 @@ plain: bigloo.plain
 new: bigloo.new
 so: bigloo.$(SHAREDSUFFIX)
 
-bigloo.plain: Tools/license.scm .afile .jfile
+bigloo.plain: Tools/license.scm .afile
 	- $(RM) -f Tools/date.scm
 	$(MAKE) Tools/date.scm
 	$(MAKE) $(BIGLOO_DEST)$(EXE_SUFFIX)
@@ -471,7 +485,7 @@ bigloo.$(SHAREDSUFFIX):
 #*    during the linkg if BIGLOO and BIGLOO_DEST are the same          */
 #*    file.                                                            */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
+$(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
 	if [ "$(LDRPATHOPT) " != " " ]; then \
 	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
@@ -495,7 +509,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
 #*---------------------------------------------------------------------*/
 #*    bigloo.new                                                       */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST).$(NEW_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
+$(BIGLOO_DEST).$(NEW_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "$@ done..."

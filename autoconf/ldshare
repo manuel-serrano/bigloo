@@ -79,6 +79,8 @@ fi
 
 if [ "$ldopt " = " " ]; then
   cat > $file-guess.c <<EOF
+#include <stdio.h>
+
 int main () 
 {
 #if( defined( sparc ) && !defined( linux ) )
@@ -121,6 +123,7 @@ int fun () { int x =0; x++; return x++; }
 EOF
 
 cat > $file.c <<EOF
+extern int fun();
 int main () { fun(); }
 EOF
 

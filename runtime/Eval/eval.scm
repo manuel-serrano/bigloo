@@ -20,12 +20,10 @@
    (extern  (export c-debug-repl "bgl_debug_repl")
 
 	    (reset-console!::obj (::obj) "reset_console")
-	    (macro sigsetmask::int (::int) "BGL_SIGSETMASK")
 	    (macro sigint::int "SIGINT"))
    
    (java    (class foreign
 	       (method static reset-console!::obj (::obj) "reset_console")
-	       (method static sigsetmask::int (::int) "sigsetmask")
 	       (field static sigint::int "SIGINT")))
  
    (import  __type

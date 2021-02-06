@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
 ;*    Last change :  Mon Mar 16 06:02:14 2020 (serrano)                */
-;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -502,6 +502,14 @@
        (set! *optim-return-goto?* #t))
       (("-fno-return-goto" (help "Disable local set-exit replacement"))
        (set! *optim-return-goto?* #f))
+      (("-fstackable" (help "Enable stackable optimization"))
+       (set! *optim-stackable?* #t))
+      (("-fno-stackable" (help "Disable stackable optimization"))
+       (set! *optim-stackable?* #f))
+      (("-funcell" (help "Enable cell removal"))
+       (set! *optim-uncell?* #t))
+      (("-fno-uncell" (help "Disable cell removal"))
+       (set! *optim-uncell?* #f))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
@@ -849,7 +857,7 @@
       (("+t?pass" (help "Force pass to be traced"))
        (set! *additional-traces* (cons pass *additional-traces*)))
       ;; shape
-      (("-shape?opt" (help "-shape[mktTalun]" "Some debugging tools (private)"))
+      (("-shape?opt" (help "-shape[mktTalunx]" "Some debugging tools (private)"))
        (parse-shape-args opt))
       
 ;*--- Compiler stages -------------------------------------------------*/
@@ -919,8 +927,10 @@
        (set! *pass* 'assert))
       (("-cfa" (help "Stop after the cfa stage"))
        (set! *pass* 'cfa))
+      (("-stackable" (help "Stop after the stackable stage"))
+       (set! *pass* 'stackable))
       (("-closure" (help "Stop after the globalization stage"))
-       (set! *pass* 'globalize))
+       (set! *pass* 'closure))
       (("-recovery" (help "Stop after the type recovery stage"))
        (set! *pass* 'recovery))
       (("-bdb" (help "Stop after the Bdb code production"))
@@ -933,6 +943,8 @@
        (set! *pass* 'tailc))
       (("-return" (help "Stop after the return stage"))
        (set! *pass* 'return))
+      (("-uncell" (help "Stop after the cell removal stage"))
+       (set! *pass* 'uncell))
       (("-isa" (help "Stop after the isa stage"))
        (set! *pass* 'isa))
       (("-init" (help "Stop after the initialization construction stage"))
@@ -1061,6 +1073,7 @@
 	     (set! *type-shape?*     #t)
 	     (set! *typename-shape?* #t)
 	     (set! *access-shape?*   #t)
+	     (set! *alloc-shape?*    #t)
 	     (set! *location-shape?* #t)
 	     (set! *user-shape?*     #t)
 	     (set! *name-shape?*     #t))
@@ -1080,6 +1093,8 @@
 			(set! *typenode-shape?* #t))
 		       ((#\a)
 			(set! *access-shape?* #t))
+		       ((#\x)
+			(set! *alloc-shape?* #t))
 		       ((#\l)
 			(set! *location-shape?* #t))
 		       ((#\u)
@@ -1265,6 +1280,8 @@
 			    (char->integer #\0))))
 	  ((#\6)
 	   (-O3!)
+	   (set! *optim-stackable?* #t)
+	   (set! *optim-uncell?* #t)
 	   (set! *optim* (-fx (char->integer (string-ref string 0))
 			    (char->integer #\0))))
 	  (else

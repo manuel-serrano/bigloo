@@ -4,8 +4,9 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
+#*    Last change :  Mon May 18 08:43:06 2020 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
-#*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -16,7 +17,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.3i
+release=4.4b
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
@@ -147,7 +148,7 @@ gmpforce=no
 customgmp=
 gmpsrc=$GMPSRC
 gmpconfigureopt=
-gmpcustomversion=6.1.2
+gmpcustomversion=6.2.1
 
 if [ "$gmpsrc " = " " ]; then
   gmpsrc=gmp/gmp-$gmpcustomversion.tgz
@@ -178,6 +179,7 @@ socketlibs=
 threadsupport=
 pthreadlibs=
 pthreadtimedlock=1
+pthreadcancel=
 pthreadtermsig=15
 pthreadlocalstorage=
 
@@ -246,7 +248,8 @@ libuvconfigureopt=
 #* libuvversion=1.x-24jan2015                                          */
 #* libuvversion=v1.19.1                                                */
 #* libuvversion=v1.19.2                                                */
-libuvversion=v1.20.3
+#* libuvversion=v1.20.3                                                */
+libuvversion=v1.40.0
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
@@ -317,6 +320,7 @@ fi
 sharedsuffix=so
 sharedlibraryclosed=yes
 sharedlibrarygcclosed='-l$(GCLIB)-$(RELEASE)'
+sharedlibrarygcmtclosed='-l$(GCLIB)_mt-$(RELEASE)'
 sharedlibrarygcfthclosed='-l$(GCLIB)_fth-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
@@ -381,7 +385,7 @@ bglpkg=bglpkg
 libraryname=bigloo
 
 #--- additional user library used to link bigloo applications ---------*/
-extralibs="-lm"
+extralibs="-lm -lc"
 extragclibs="-lc"
 
 #*--- custom GC configuration -----------------------------------------*/
@@ -475,10 +479,10 @@ while : ; do
       sharedcompiler=no;
       sharedbde=yes;
       infodir=$HOME/house/info;
-      java=java8;
-      javac=javac8;
+      java=java11;
+      javac=javac11;
       ld=gcc;
-      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
       bootflags="$bootflags -cg";
       jvmbackend="no";
@@ -994,6 +998,9 @@ while : ; do
 
     --customlibuv=no)
       customlibuv=no;;
+
+    --customlibuvversion=*)
+      libuvversion="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --libuvconfigureopt=*)
       libuvconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -1524,10 +1531,10 @@ case $hostos in
       droidadb=$droidsdkroot/platform-tools/adb
     fi
     
-    $echo -n "executing $droidadb shell ls /mnt/sdcard -> " >&2
+    $echo -n "executing $droidadb shell echo hello -> " >&2
   
-    $droidadb shell ls /mnt/sdcard 2> /dev/null > /dev/null
-
+    $droidadb shell echo yes 2> /dev/null > /dev/null
+    
     if [ $? = 0 ]; then
       $echo "ok" >&2
     else
@@ -1541,12 +1548,14 @@ case $hostos in
 
     # Find a proper tmp on the phone
     if [ "$droidtmp " = " " ]; then
+      echo -n "droidtmp -> " >&2
       for dir in /tmp /sdcard/tmp /mnt/sdcard/tmp /data/local/tmp; do
         if $autoconfdir/androidmkdir $droidadb $dir >&2; then
           droidtmp=$dir
           break
         fi
       done
+      echo "$droidtmp" >&2
     fi
 
     if [ "$droidtmp " = " " ]; then
@@ -1587,7 +1596,7 @@ case $hostos in
     cflags="$cflags -DBGL_ANDROID"
     gcspecial=-DIGNORE_DYNAMIC_LOADING;
     # Use the multithreaded libbigloogc to close the other shared libraries
-    sharedlibrarygcclosed=$sharedlibrarygcfthclosed
+    sharedlibrarygcclosed=$sharedlibrarygcmtclosed
   
     ;;
 esac
@@ -1683,6 +1692,11 @@ fi
 if [ "$buildosversion " = " " ]; then
   buildosversion=`$autoconfdir/osversion --sh=""` || exit 1
 fi
+
+#*---------------------------------------------------------------------*/
+#*    Check essential compilation tools                                */
+#*---------------------------------------------------------------------*/
+$autoconfdir/tools || exit 1
 
 #*---------------------------------------------------------------------*/
 #*    Pointer alignment                                                */
@@ -1815,12 +1829,7 @@ case $hostos in
           pthreadlibs=no
           ldcomplibs="\$(GCCLOSELIB) -lc -lm"
         else
-          customgclib=bigloogc_fth
-	  sharedlibrarygcfthclosed='-l$(GCLIB)-$(RELEASE)'
           extralibs="$extralibs $pthreadlibs"
-	  if [ "$sharedcompiler " = "yes " ]; then
-            ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm"
-	  fi
         fi
       fi
       if [ `dirname $bindir` != `dirname $libdir` ]; then
@@ -2018,6 +2027,7 @@ else
   # pthread_mutex_timedlock
   if [ "$pthreadlibs" != "no" ]; then
     pthreadtimedlock=`$autoconf pthreadlock --lib="$pthreadlibs"` || exit 1;
+    pthreadcancel=`$autoconf pthreadcancel --lib="$pthreadlibs"` || exit 1;
   fi
 
   # pthread_spinlock
@@ -2261,7 +2271,7 @@ if [ "$gmpversion " != "no " ]; then
     (cd gmp; . ./configure-gmp) || exit 1
   
     libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
-    #lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
+    ldbuildopts="-L$bootdir/gmp$libdir/$fildir $ldbuildopts"
     buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
     gmplib=-lgmp
   fi
@@ -2567,10 +2577,9 @@ if [ "$regexp " = " " ]; then
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
       ldbuildopts="-L$bootdir/pcre$libdir/$fildir $ldbuildopts"
-      #lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
       buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
-      #cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
       cbuildflags="-I$bootdir/pcre$libdir/$fildir $cbuildflags"
+      lflags="$lflags $ldbuildopts"
     else
       pcrelibs=no
     fi
@@ -2692,9 +2701,9 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for phidget
 if [ "$phidget " = " " ]; then
-   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion` 2> /dev/null
+   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion`
 
-   if [ "$?" != "0" ]; then
+   if [ "$phidgetlibs " = " " ]; then
       phidget=no;
    else
       if [ "$phidgetlibdir " = " " ]; then
@@ -3074,6 +3083,12 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   timeval=`$autoconf timeval --cflags="$coflags"` || exit 1
   # The gmtoff field
   gmtoff=`$autoconf gmtoff --cflags="$coflags"` || exit 1
+  # The localtime_r function
+  localtime_r=`$autoconf localtime_r --cflags="$coflags"` || exit 1
+  # The gmtime_r function
+  gmtime_r=`$autoconf gmtime_r --cflags="$coflags"` || exit 1
+  # The timegm function
+  timegm=`$autoconf timegm --cflags="$coflags"` || exit 1
 
   # The warning C compiler options
   if [ "$cwarningflags" != "no" ]; then
@@ -3252,6 +3267,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     java_version=`$javac -version 2>&1 | head -n 1` || exit 1
+
     if $echo "$java_version" | grep "14." > /dev/null
       then java_version=14
     elif $echo "$java_version" | grep "13." > /dev/null
@@ -3422,6 +3438,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_TIMEZONE@|$timezone|" \
               -e "s|@BGL_HAVE_TIMEVAL@|$timeval|" \
               -e "s|@BGL_HAVE_GMTOFF@|$gmtoff|" \
+              -e "s|@BGL_HAVE_LOCALTIME_R@|$localtime_r|" \
+              -e "s|@BGL_HAVE_GMTIME_R@|$gmtime_r|" \
+              -e "s|@BGL_HAVE_TIMEGM@|$timegm|" \
               -e "s|@HAVE_SHARED_LIBRARY@|$haveshlib|" \
               -e "s|@HAVE_DLOPEN@|$havedlopen|" \
               -e "s|@DLOPEN_LD_OPT@|$dlopen|" \
@@ -3500,6 +3519,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@GC_HAVE_BLOCKING@|$gchaveblocking|" \
               -e "s|@GC_HAVE_DO_BLOCKING@|$gchavedoblocking|" \
               -e "s|@PTHREAD_HAVE_TIMEDLOCK@|$pthreadtimedlock|" \
+              -e "s|@PTHREAD_HAVE_CANCEL@|$pthreadcancel|" \
               -e "s|@PTHREAD_HAVE_SPINLOCK@|$pthreadspinlock|" \
               -e "s|@PTHREAD_HAVE_MUTEX_RECURSIVE@|$pthreadmutexrec|" \
               -e "s|@PTHREAD_POSIX_CONDV_TIMEDWAIT@|$pthreadcondvtimedwait|" \
@@ -3541,6 +3561,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@EXTRALIBS@|$extralibs $extragclibs|" \
 	      -e "s|@GCLIBS@|$sharedlibrarygcclosed|" \
 	      -e "s|@GCLIBS_FTH@|$sharedlibrarygcfthclosed|" \
+	      -e "s|@GCLIBS_MT@|$sharedlibrarygcmtclosed|" \
 	      -e "s|@GCLIB@|$gclib|" \
 	      -e "s|@SHAREDSUFFIX@|$sharedsuffix|" \
 	      -e "s|@SONAME@|$ldsoname|" \
@@ -3893,7 +3914,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo >> $makefile_cfg
 
   # The GC library
-  $echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BOOTLIBDIR) $""(CPICFLAGS) $""(CPICFLAGS)" >> $makefile_cfg
+  $echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BOOTLIBDIR) $""(CPICFLAGS)" >> $makefile_cfg
   $echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   $echo "CUSTOMGC=$gccustom" >> $makefile_cfg
   $echo "GCLIB=$gclib" >> $makefile_cfg
@@ -3903,12 +3924,15 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
      $echo "GCCLOSELIB=$sharedlibrarygcclosed" >> $makefile_cfg
      $echo "GCCLOSELIB_FTH=$sharedlibrarygcfthclosed" >> $makefile_cfg
      $echo "GCSTDOBJ=" >> $makefile_cfg
+     $echo "BIGLOOGCLIB=bigloogc" >> $makefile_cfg
   else
      $echo "GCCUSTOM=no" >> $makefile_cfg
      $echo "GCINCLUDE=-I$gcincdir" >> $makefile_cfg
      $echo 'GCCLOSELIB=-l$(GCLIB)' >> $makefile_cfg
      $echo "GCSTDOBJ=Clib/non_inline_alloc.o" >> $makefile_cfg
      $echo "GCLIBDIR=$gclibdir" >>  $makefile_cfg
+     $echo "EXTRALIBS+=-l$(GCLIB)" >> $makefile_cfg
+     $echo "BIGLOOGCLIB=" >> $makefile_cfg
   fi
   $echo >> $makefile_cfg
 
@@ -3988,7 +4012,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "LD=$ld $ldopt" >> $makefile_cfg
     $echo "LDRPATHOPT=$ldrpath" >> $makefile_cfg
     $echo "LDFLAGS=$ldflags" >> $makefile_cfg
-    $echo "LDLIBS=$ldlibs" >> $makefile_cfg
+    $echo "LDLIBS=  # used to be $ldlibs" >> $makefile_cfg
     $echo "LDPRELOADSUPPORT=$ldpreload" >> $makefile_cfg
 
     $echo "LDSONAME=$ldsoname" >> $makefile_cfg
@@ -4085,7 +4109,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       if [ "$hostos " = "mingw " ]; then
         gclibth=bigloogc
       else
-        gclibth=bigloogc_fth
+        gclibth=bigloogc_mt
       fi
     fi
 
@@ -4695,6 +4719,15 @@ if [ "$hostos " = "android " ]; then
   $echo "DROIDSDKROOT=$droidsdkroot" >> $makefile_cfg
   $echo >> $makefile_cfg
 fi
+
+# Makefile.misc variables
+$echo "# Makefile.misc variables (default values)" >> $makefile_cfg
+$echo "LIBSUFFIX=_s" >> $makefile_cfg
+$echo "LIBSUFFIXTHREAD=" >> $makefile_cfg
+$echo "BIGLOOLIB=bigloo" >> $makefile_cfg
+$echo "BIGLOOEXTRALIBS=" >> $makefile_cfg
+$echo "BIGLOOAPPLIBS=" >> $makefile_cfg
+$echo "APPRELEASE=" >> $makefile_cfg
 
 #*---------------------------------------------------------------------*/
 #*    Debian scripting                                                 */

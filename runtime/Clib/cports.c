@@ -113,7 +113,7 @@
 /*---------------------------------------------------------------------*/
 #if( BGL_HAVE_SENDFILE )
 #  if( BGL_SENDFILE_BRAND == BGL_SENDFILE_LINUX )
-extern ssize_t sendfile( int, int, off_t *, size_t );
+#    include <sys/sendfile.h>
 #    define BGL_SENDFILE sendfile
 #  else
 #    if( BGL_SENDFILE_BRAND == BGL_SENDFILE_BSD )
@@ -2104,7 +2104,7 @@ pipe_name_p( char *name ) {
 static char *
 pipe_name( char *pipe_name ) {
   /* if | is used the offset is 1, otherwise, if pipe: is used, it is 5 */ 
-   int offset = (pipe_name[0] == '|') ? 1 : 5;
+   int offset = (pipe_name[ 0 ] == '|') ? 1 : 5;
    return (pipe_name + offset);
 }
 

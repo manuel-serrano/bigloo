@@ -1,7 +1,7 @@
 Android Cross Compilation
 -------------------------
 
-_9 May 2020_
+_4 December 2020_
 
 This note describes how to cross compile and install Bigloo on a
 Android platform, in orde to compile *native* applications on that
@@ -66,19 +66,29 @@ Unzip it in `ANDROIDROOT`
 Download the `commandlinetools` from
 [https://developer.android.com/studio](https://developer.android.com/studio)
 
+Unzip it in `ANDROIDROOT` and rename it:
+
+```shell[:@shell-host]
+(in host) cd $ANDROIDROOT
+(in host) unzip download/commandlinetools-linux-6858069_latest.zip
+(in host) mv cmdline-tools tools
+```
 
 Now you need to download the sdk. 
 
 ```shell[:@shell-host]
 (in host) export ANDROIDHOME=$ANDROIDROOT/android-sdk-linux
-(in host) yes | tools/bin/sdkmanager --sdk_root=$ANDROIDHOME  "platform-tools" "platforms;android-29"
+(in host) yes | tools/bin/sdkmanager --sdk_root=$ANDROIDHOME "platform-tools" "platforms;android-29" "build-tools;30.0.2"
 ```
 
 The `ANDROIDROOT` at this stage should look like:
 
 ```shell[:@shell-host]
 (in host) ls 
-android-ndk-r21b/  android-sdk-linux/  download/  licenses/  platforms/  platform-tools/  tools/
+android-ndk-r21b/  android-sdk-linux/  download/  tools/
+(in host) ls android-sdk-linux/
+build-tools/  licenses/  platforms/       tools/
+emulator/     patcher/   platform-tools/
 ```
 
 D. Create a custom cc script
@@ -97,6 +107,7 @@ configuration, adjust the script below:
 android=$ANDROIDROOT/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64
 exec \$android/bin/clang -target armv7a-linux-androideabi26 "\$@"
 EOF
+chmod a+rx $ANDROIDROOT/cc
 ```
 
 E. Bigloo host installation

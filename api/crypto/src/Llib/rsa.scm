@@ -1,6 +1,6 @@
 ;*=====================================================================*/
 ;*    Author      :  Florian Loitsch                                   */
-;*    Copyright   :  2009-11 Florian Loitsch                           */
+;*    Copyright   :  2009-21 Florian Loitsch                           */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the RSA asymmetric    */
 ;*    cipher.                                                          */
@@ -330,9 +330,7 @@
 		     ((0) (make-string PS+pad-len #a000))
 		     ((1) (make-string PS+pad-len #a255))
 		     ((2) (make-random-string PS+pad-len))
-		     (else (error 'PKCS1-v1.5-pad
-				  "unknown padding mode"
-				  mode))))
+		     (else (error "PKCS1-v1.5-pad" "unknown padding mode" mode))))
 	  (em (string-append PS+pad m)))
 	 ;; PS must have non-zero octets in mode 2.
       (when (=fx mode 2)
@@ -393,9 +391,7 @@
 (define (RSAES-PKCS1-v1.5-decrypt::bstring key::Rsa-Key c::bstring)
    (with-handler
       (lambda (e)
-	 (error 'rsa-decrypt
-		"Decryption failed"
-		#f))
+	 (error "rsa-decrypt" "Decryption failed"		#f))
       (let ((k (rsa-key-length key))
 	    (c-len (string-length c)))
 	 (when (not (=fx k c-len))
@@ -432,9 +428,7 @@
 
    (with-handler
       (lambda (e)
-	 (error 'rsaes-oaep-decrypt
-		"Decryption failed"
-		#f))
+	 (error "rsaes-oaep-decrypt" "Decryption failed" #f))
       (let ((k (rsa-key-length key)))
 	 ;; TODO: no check against length of hash-fun.
 	 (when (not (=fx k (string-length cypher)))
@@ -491,6 +485,8 @@
    (case algo
       ((md5 MD5 md5sum) md5sum-bin)
       ((sha1 sha-1 SHA-1 sha1sum) sha1sum-bin)
+      ((sha256 sha-256 SHA-256 sha256sum) sha256sum-bin)
+      ((sha512 sha-512 SHA-512 sha512sum) sha512sum-bin)
       (else (error "RSA hash-algo->DER-prefix"
 		   "unknown hash algorithm (or not implemented)"
 		   algo))))

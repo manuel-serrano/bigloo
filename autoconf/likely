@@ -5,7 +5,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Aug 18 06:43:10 2017                          */
 #*    Last change :  Fri Aug 18 06:44:56 2017 (serrano)                */
-#*    Copyright   :  2017 Manuel Serrano                               */
+#*    Copyright   :  2017-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Testing C likely annotations                                     */
 #*=====================================================================*/
@@ -54,7 +54,7 @@ cat > $file.c <<EOF
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
   if( likely( argc > 1 ) ) {
      return 1;
   } else {

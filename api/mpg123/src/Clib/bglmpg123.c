@@ -121,13 +121,14 @@ bgl_mpg123_position( mpg123_handle *m ) {
 /*    bgl_mpg123_info ...                                              */
 /*---------------------------------------------------------------------*/
 long
-bgl_mpg123_info( mpg123_handle *m ) {
+bgl_mpg123_info( obj_t o ) {
    struct mpg123_frameinfo mi;
+   mpg123_handle *m = BGL_HANDLE_BUILTIN( o );
    int err = mpg123_info( m, &mi );
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
 
    if( err < 0 ) {
-      bgl_mpg123_error( "mpg123-info", mpg123_plain_strerror( err ), m );
+      bgl_mpg123_error( "mpg123-info", mpg123_plain_strerror( err ), o );
    }
 
    BGL_ENV_MVALUES_NUMBER_SET( env, 1 );
@@ -159,14 +160,15 @@ bgl_mpg123_getvolume( mpg123_handle *m ) {
 /*    bgl_mpg123_getparam ...                                          */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_mpg123_getparam( mpg123_handle *m, enum mpg123_parms type ) {
+bgl_mpg123_getparam( obj_t o, enum mpg123_parms type ) {
    long val;
    double fval;
+   mpg123_handle *m = BGL_HANDLE_BUILTIN( o );
    int err = mpg123_getparam( m, type, &val, &fval );
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
 
    if( err < 0 ) {
-      bgl_mpg123_error( "mpg123-getparam", mpg123_plain_strerror( err ), m );
+      bgl_mpg123_error( "mpg123-getparam", mpg123_plain_strerror( err ), o );
    }
 
    BGL_ENV_MVALUES_NUMBER_SET( env, 1 );

@@ -25,6 +25,11 @@
    
    (static (class flacpadec::flacdec))
    
+   ;;; Get pa_strerror prototype for inline function pulseaudio-simple-flush
+   (cond-expand
+     ((library pulseaudio)
+      (extern (include "pulse/error.h"))))
+   
    (cond-expand
       ((library pulseaudio)
        (export (class flac-pulseaudiodecoder::flacmusicdecoder)))))

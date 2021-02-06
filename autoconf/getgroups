@@ -53,7 +53,7 @@ cat > $file.c <<EOF
 #include <sys/types.h>
 #include <unistd.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    return getgroups( 0, 0L );
 }
 EOF

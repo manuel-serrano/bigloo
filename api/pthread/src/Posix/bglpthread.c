@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
 /*    Last change :  Wed Sep 25 13:49:57 2019 (serrano)                */
-/*    Copyright   :  2002-19 Manuel Serrano                            */
+/*    Copyright   :  2002-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -165,11 +165,7 @@ bglpth_thread_run( void *arg ) {
    size_t stacksize;
 
    bglpth_thread_init( self, (char *)&arg );
-
-#if defined( PTHREAD_CANCEL_ASYNCHRONOUS )
-   pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, 0 );
-#endif
-   
+  
    pthread_cleanup_push( bglpth_thread_cleanup, arg );
 
    /* install sigsegv handler for stack overflow interception */
@@ -291,8 +287,10 @@ bglpth_thread_join( bglpthread_t t, obj_t tmt ) {
    if( INTEGERP( tmt ) ) {
       struct timespec tm;
       
-      tm.tv_sec = CINT( tmt ) / 1000;
-      tm.tv_nsec = CINT( tmt ) % 1000;
+      clock_gettime(CLOCK_REALTIME, &tm);
+
+      tm.tv_sec += CINT( tmt ) / 1000;
+      tm.tv_nsec += (CINT( tmt ) % 1000) * 1000000;
 
       joinret = pthread_timedjoin_np( t->pthread, 0L, &tm );
    } else 
@@ -312,19 +310,23 @@ bglpth_thread_join( bglpthread_t t, obj_t tmt ) {
 /*---------------------------------------------------------------------*/
 bool_t
 bglpth_thread_terminate( bglpthread_t t ) {
-   pthread_mutex_lock( &(t->mutex) );
-   if( t->status != 2 ) {
-#if( BGL_PTHREAD_TERM_SIG != 0 )
-      pthread_kill( t->pthread, BGL_PTHREAD_TERM_SIG );
-#else      
-      pthread_cancel( t->pthread );
-#endif
-      pthread_mutex_unlock( &(t->mutex) );
+
+  pthread_mutex_lock( &(t->mutex) );
+  if( t->status != 2 ) {
+#if( BGL_HAVE_PTHREAD_CANCEL )
+     pthread_cancel( t->pthread );
+#elif( BGL_PTHREAD_TERM_SIG != 0 )
+     pthread_kill( t->pthread, BGL_PTHREAD_TERM_SIG );
+#else
+     // find something interesting to do
+#endif     
+     pthread_mutex_unlock( &(t->mutex) );
       return 1;
    } else {
       pthread_mutex_unlock( &(t->mutex) );
       return 0;
    }
+
 }
 
 /*---------------------------------------------------------------------*/

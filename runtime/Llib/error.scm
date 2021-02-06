@@ -24,7 +24,7 @@
 	    (export c-debugging-show-type "bgl_show_type")
 	    (export stack-overflow-error "bgl_stack_overflow_error")
 	    
-	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
+	    ($get-trace-stack::pair-nil (::int) "bgl_get_trace_stack")
 	    (macro $push-trace::obj (::obj ::obj) "BGL_PUSH_TRACE")
 	    (macro $env-push-trace::obj (::dynamic-env ::obj ::obj) "BGL_ENV_PUSH_TRACE")
 	    (macro $env-set-trace-name::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE_NAME")
@@ -33,6 +33,7 @@
 	    (macro $pop-trace::obj () "BGL_POP_TRACE")
 	    (macro $get-error-handler::obj () "BGL_ERROR_HANDLER_GET")
 	    (macro $set-error-handler!::void (::obj) "BGL_ERROR_HANDLER_SET")
+	    (macro $push-error-handler!::void (::obj ::obj) "BGL_ERROR_HANDLER_PUSH")
 	    (macro $get-uncaught-exception-handler::obj () "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET")
 	    (macro $set-uncaught-exception-handler!::void (::obj) "BGL_UNCAUGHT_EXCEPTION_HANDLER_SET")
 	    (macro $get-error-notifiers::obj () "BGL_ERROR_NOTIFIERS_GET")
@@ -54,6 +55,7 @@
 	    (macro sigusr1::int "SIGUSR1")
 	    (macro sigusr2::int "SIGUSR2")
 	    (macro sigwinch::int "SIGWINCH")
+	    (macro sigtrap::int "SIGTRAP")
 	    
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
@@ -101,6 +103,8 @@
 		       "BGL_ERROR_HANDLER_GET")
 	       (method static $set-error-handler!::void (::obj)
 		       "BGL_ERROR_HANDLER_SET")
+	       (method static $push-error-handler!::void (::obj ::obj)
+		       "BGL_ERROR_HANDLER_PUSH")
 	       (method static $get-uncaught-exception-handler::obj ()
 		       "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET")
 	       (method static $set-uncaught-exception-handler!::void (::obj)
@@ -129,6 +133,7 @@
 	       (field static sigusr1::int "SIGUSR1")
 	       (field static sigusr2::int "SIGUSR2")
 	       (field static sigwinch::int "SIGWINCH")
+	       (field static sigtrap::int "SIGTRAP")
 	       
 	       (field static $errno-type-error::int
 		      "BGL_TYPE_ERROR")
@@ -268,7 +273,8 @@
 	    (set! *unsafe-arity*   #t)
 	    (set! *unsafe-range*   #t))
 
-   (pragma  (typeof no-cfa-top args-safe)))
+   (pragma  (typeof no-cfa-top args-safe)
+	    ($push-error-handler! (args-noescape))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */
@@ -811,7 +817,7 @@
 (define (warning-notify e)
    (define (simple-warning e)
       (flush-output-port (current-output-port))
-      (display "*** WARNING:bigloo:" (current-error-port))
+      (display "*** WARNING: " (current-error-port))
       (with-access::&warning e (args)
 	 (if (not (null? args))
 	     (begin
@@ -880,7 +886,7 @@
       ;; we now print the warning message
       (print-cursor fname line char string space-string)
       ;; we display the warning message
-      (display "*** WARNING:bigloo:" (current-error-port))
+      (display "*** WARNING: " (current-error-port))
       (if (not (null? args))
 	  (let ((port (current-error-port)))
 	     (display-circle (car args) port)
@@ -1356,6 +1362,9 @@
 ;*    On installe le ratrappage des exceptions                         */
 ;*---------------------------------------------------------------------*/
 (signal sigfpe sigfpe-error-handler)
+;; sigfpe is not always enough as some C compilers are so
+;; smart that they can replace the sigfpe with a sigtrap
+(signal sigtrap sigfpe-error-handler)
 (signal sigill sigill-error-handler)
 (signal sigbus sigbus-error-handler)
 (signal sigsegv sigsegv-error-handler)

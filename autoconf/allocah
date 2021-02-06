@@ -54,7 +54,7 @@ cat > $file.c <<EOF
 #include <stdlib.h>
 #include <alloca.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    return (int)((int *)alloca(10))[ 0 ];
 }
 EOF

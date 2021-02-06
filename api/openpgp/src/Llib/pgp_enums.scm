@@ -22,25 +22,21 @@
 
 (define-macro (declare-enum name entries)
    (let ((input (gensym 'input)))
-   `(begin
-       (define (,(symbol-append name '->byte) ,input)
-	  (case ,input
-	     ,@(map (lambda (entry)
-		       `((,(car entry)) ,(cadr entry)))
-		    entries)
-	     (else
-	      (error ',name
-		     "Invalid entry"
-		     ,input))))
-       (define (,(symbol-append 'byte-> name) ,input)
-	  (case ,input
-	     ,@(map (lambda (entry)
-		       `((,(cadr entry)) ',(car entry)))
-		    entries)
-	     (else
-	      (error ',name
-		     "Invalid entry"
-		     ,input)))))))
+      `(begin
+	  (define (,(symbol-append name '->byte) ,input)
+	     (case ,input
+		,@(map (lambda (entry)
+			  `((,(car entry)) ,(cadr entry)))
+		   entries)
+		(else
+		 (error ,(symbol->string name) "Invalid entry" ,input))))
+	  (define (,(symbol-append 'byte-> name) ,input)
+	     (case ,input
+		,@(map (lambda (entry)
+			  `((,(cadr entry)) ',(car entry)))
+		   entries)
+		(else
+		 (error ,(symbol->string name) "Invalid entry" ,input)))))))
 	     
 (declare-enum content-tag
 	      ((reserved 0)
@@ -184,6 +180,7 @@
 	       (features 30) ;; rfc4880
 	       (signature-target 31) ;; rfc4880
 	       (embedded-signature 32) ;; rfc4880
+	       (issuer-fpr 33) ;; experimental feature added in GnuPG 2.1.16
 	       (private-0 100)
 	       (private-1 101)
 	       (private-2 102)

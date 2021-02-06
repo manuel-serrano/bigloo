@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
 ;*    Last change :  Wed Feb 17 09:13:06 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
 ;*=====================================================================*/
@@ -18,9 +18,12 @@
    (import  engine_param
 	    type_type
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_node
 	    ast_local
+	    ast_remove
+	    ast_occur
 	    tools_shape
 	    tools_speek
 	    tools_error
@@ -144,14 +147,18 @@
 			    (local-user?-set! reductor (local-user? formal))))
 	       reductors
 	       formals)
-	    ;; if the result type of the inlined function is not *_* or
+	    ;; if the result type of the inlined function is not *_* nor
 	    ;; *obj* we use a local variable in order to ensure that the
 	    ;; type checking of the result will be implemented even after
 	    ;; inlining. This fixes a bug of the version 1.9b
  	    (if (or (eq? type *_*)
 		    (eq? type *obj*)
-		    (eq? type (node-type alpha-body)))
-		ibody
+		    (eq? type (node-type alpha-body))
+		    (eq? type (get-type alpha-body #t)))
+		(with-access::app node (stackable)
+		   (if stackable
+		       (stackable! node ibody)
+		       ibody))
 		(let ((var (make-local-svar (gensym 'res) type)))
 		   (instantiate::let-var
 		      (loc loc)
@@ -162,4 +169,19 @@
 			       (loc loc)
 			       (type type)
 			       (variable var))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    stackable! ...                                                   */
+;*    -------------------------------------------------------------    */
+;*    Propagate stackable property.                                    */
+;*---------------------------------------------------------------------*/
+(define (stackable! old::app new::node)
+   (occur-node! new)
+   (let ((rnew (node-remove! new)))
+      (if (isa? rnew app)
+	  (with-access::app rnew (stackable)
+	     (set! stackable #t)
+	     rnew)
+	  new) 
+     new))
 

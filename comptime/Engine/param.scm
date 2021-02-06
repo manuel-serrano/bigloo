@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
 ;*    Last change :  Mon Dec 16 05:40:27 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -92,6 +92,8 @@
 	    *optim-return?*
 	    *optim-return-goto?*
 	    *optim-tagged-fxop?*
+	    *optim-stackable?*
+	    *optim-uncell?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -129,6 +131,7 @@
 	    *location-shape?*
 	    *user-shape?*
 	    *name-shape?*
+	    *alloc-shape?*
 	    *tmp-dest*         
 	    *dest*
 	    *shell*
@@ -802,6 +805,7 @@
 (define *location-shape?* #f)
 (define *user-shape?* #f)
 (define *name-shape?* #f)
+(define *alloc-shape?* #f)
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
 (param-define *shared-cnst?*
@@ -955,6 +959,12 @@
    #f)
 (param-define *optim-tagged-fxop?*
    "Optimize tagged fixnum operations"
+   #f)
+(param-define *optim-stackable?*
+   "Optimize stackable allocation"
+   #f)
+(param-define *optim-uncell?*
+   "Remove useless cells"
    #f)
 
 ;*---------------------------------------------------------------------*/

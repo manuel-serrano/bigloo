@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Thu May 14 12:35:12 2020 (serrano)                */
+/*    Last change :  Wed May 27 07:17:48 2020 (serrano)                */
 /*    Copyright   :  2015-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -44,6 +44,7 @@ const css = [ P( "hss/www.css" ),
 	      P( "hss/markdown.css" ),
 	      P( "hss/texinfo.css" ),
 	      P( "hss/fontifier.css" ),
+	      P( "hss/contribs.css" ),
 	      P( "lib/bootstrap/css/bootstrap.min.css" ) ];
 const jscript = [ P( "lib/jquery/js/jquery.min.js" ),
 		  P( "lib/bootstrap/js/bootstrap.min.js" ) ];
@@ -56,6 +57,14 @@ const alias = {
    "markdown.md": "api",
    "tree.md": "widget",
    "spage.md": "widget"
+}
+
+/*---------------------------------------------------------------------*/
+/*    findChapter ...                                                  */
+/*---------------------------------------------------------------------*/
+function findChapter( key ) {
+   const keyhtml = key + ".html";
+   return chapters.find( e => e.href === keyhtml );
 }
 
 /*---------------------------------------------------------------------*/
@@ -286,13 +295,14 @@ function compileSection( page ) {
    var title = path.basename( page ).replace( /[0-9]+[-]|[.][^.]*$/g, "" );
    var key = path.basename( path.dirname( page ) ).toLowerCase();
    var affix = "normal";
+   var chap = findChapter( title );
    
    if( key == "www" ) {
       key = alias[ path.basename( page ) ];
    } else if( key == "." ) {
       key = title;
    }
-   
+
    var document = <html>
      <head css=${css}
 	   title=${www.title + "/" + title}
@@ -327,8 +337,9 @@ function compileSection( page ) {
 	      ? <div class="col-md-9" role="main"> ${ast.XML} </div>
 	      : <div class="col-md-12" role="main"> ${ast.XML} </div>}
          <div class="row">
-           ${(toc.length > 0) ?
+           ${(toc.length > 0 && (!chap || !("toc" in chap) || chap.toc)) ?
            <div id="navbar" class="col-md-3" role="complementary">
+	     
              <nav class="sidebar noaffix"
 		  data-spy=${affix}
 	          data-offset-top="215" data-offset-bottom="100">

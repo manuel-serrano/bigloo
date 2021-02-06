@@ -4,7 +4,7 @@
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
 ;*    Last change :  Fri Apr 27 11:21:28 2012 (serrano)                */
-;*    Copyright   :  2010-12 Florian Loitsch, Manuel Serrano           */
+;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP logic                                                    */
 ;*=====================================================================*/
@@ -213,6 +213,7 @@
 	    (trace-item "signature-version: " version)
 	    (trace-item "hash-prefix: " (str->hex-string left-hash))
 	    (trace-item "hash:        " (str->hex-string hash))
+	    (trace-item "hash-fun:    " hash-algo)
 	    (if (not hash-prefix-ok?)
 		(begin
 		   (trace-item "left-hash failed.")
@@ -245,7 +246,7 @@
 			      public-key-algo))
 		    #f))))))
 
-   (with-trace 4 "verify-signature"
+   (with-trace 'pgp "verify-signature"
       (with-access::PGP-Signature-Packet sig (issuer)
 	 (let ((possible-keys (key-resolver issuer)))
 	    (verify-signature-for-keys msg sig possible-keys)))))
@@ -350,7 +351,13 @@
 	     (trace-item "checksum failed")
 	     #f)))
 
-   (with-trace 4 "decrypt-password-protected"
+   (define (decrypt-algo-buffer-size algo)
+      ;; ms addition 3 feb 2021
+      (case algo
+	 ((aes-128 aes-192 aes-256) 16)
+	 (else 8)))
+
+   (with-trace 'pgp "decrypt-password-protected"
       (when (string-null? secret)
 	 (error 'decode-secret-key-password-protected
 		"secret must not be empty"
@@ -375,6 +382,7 @@
 		       #f))
 	     ;; 254 seems to be gnupg extension, where the checksum is actually
 	     ;; a SHA1 hash.
+	     (trace-item "secret-len=" (string-length secret))
 	     (let* ((p (open-input-string secret))
 		    (protection (safe-read-octet p)) ;; again.
 		    (symmetric-algo-byte (safe-read-octet p))
@@ -383,7 +391,7 @@
 		    (key-len (symmetric-key-algo-key-byte-len symmetric-algo))
 		    (s2k (decode-s2k p))
 		    (symmetric-key (apply-s2k s2k password key-len))
-		    (IV (safe-read-octets 8 p))
+		    (IV (safe-read-octets (decrypt-algo-buffer-size symmetric-algo) p))
 		    (secret-data (read-string p))
 		    (decrypter (symmetric-key-algo->procedure symmetric-algo #f))
 		    (decoded (decrypter secret-data IV symmetric-key))
@@ -394,7 +402,7 @@
 				     "not enough bytes for checksum"
 				     dec-len)))
 		    (chksum-str (substring decoded (-fx dec-len chksum-len)
-					   dec-len)))
+				   dec-len)))
 		(trace-item "password-protection: " symmetric-algo-byte " "
 		       (symmetric-key-algo->human-readable symmetric-algo))
 		(trace-item "symmetric-key: " (str->hex-string symmetric-key))
@@ -627,7 +635,7 @@
 		      revocation-sigs))))
 
 
-   (with-trace 4 "verify-key"
+   (with-trace 'pgp "verify-key"
       (with-access::PGP-Key pgp-key (subkeys user-ids)
 	 (for-each (lambda (user-id) (verify-user-id user-id))
 		   user-ids)
@@ -684,7 +692,7 @@
 	    (insecure-sub-packets '())))))
 
 (define (decoded-key-packet key::PGP-Subkey password-provider)
-   (with-trace 4 "decoded-key-packet"
+   (with-trace 'pgp "decoded-key-packet"
       (with-access::PGP-Subkey key (key-packet)
 	 (cond
 	    ((isa? key-packet PGP-Secret-Key-Decoded-Packet)
@@ -970,7 +978,7 @@
 (define (symmetric-encrypt::PGP-Symmetrically-Encrypted-Packet
 	 data::PGP-Packet key-string::bstring algo::symbol
 	 #!key (mdc #t))
-   (with-trace 4 "symmetric-encrypt"
+   (with-trace 'pgp "symmetric-encrypt"
       (trace-item "Key-string: " (str->hex-string key-string))
       (trace-item "Algo: " (symmetric-key-algo->human-readable algo))
       (trace-item "Use Modification Detection Code: " mdc)
@@ -979,7 +987,7 @@
 	  (non-mdc-symmetric-encrypt data key-string algo))))
 
 (define (non-mdc-symmetric-encrypt data key-string algo)
-   (with-trace 5 "non-mdc-symmetric-encrypt"
+   (with-trace 'pgp "non-mdc-symmetric-encrypt"
       ;; RFC 5.7
       (let* ((algo-block-len (symmetric-key-algo-block-byte-len algo))
 	     (encrypter (symmetric-key-algo->procedure algo #t))
@@ -1016,7 +1024,7 @@
 		   (data encrypted)))))))
 
 (define (mdc-symmetric-encrypt data key-string algo)
-   (with-trace 5 "mdc-symmetric-encrypt"
+   (with-trace 'pgp "mdc-symmetric-encrypt"
       (trace-item "algo: " algo " "
 	     (symmetric-key-algo->human-readable algo))
       
@@ -1057,7 +1065,7 @@
 (define (symmetric-decrypt
 	 encrypted::PGP-Symmetrically-Encrypted-Packet
 	 key-string::bstring algo::symbol)
-   (with-trace 5 "symmetric-decrypt"
+   (with-trace 'pgp "symmetric-decrypt"
       (trace-item "Key-string: " (str->hex-string key-string))
       (trace-item "Algo: " (symmetric-key-algo->human-readable algo))
       (trace-item (with-access::PGP-Symmetrically-Encrypted-Packet encrypted
@@ -1075,7 +1083,7 @@
 (define (non-mdc-symmetric-decrypt
 	 encrypted::PGP-Symmetrically-Encrypted-Packet
 	 key-string::bstring algo::symbol)
-   (with-trace 5 "non-mdc-symmetric-decrypt"
+   (with-trace 'pgp "non-mdc-symmetric-decrypt"
       ;; RFC 5.7
       (with-access::PGP-Symmetrically-Encrypted-Packet encrypted (data)
 	 (let* ((algo-block-len (symmetric-key-algo-block-byte-len algo))
@@ -1130,7 +1138,7 @@
 (define (mdc-symmetric-decrypt
 	 encrypted::PGP-MDC-Symmetrically-Encrypted-Packet
 	 key-string::bstring algo::symbol)
-   (with-trace 5 "mdc-symmetric-decrypt"
+   (with-trace 'pgp "mdc-symmetric-decrypt"
       ;; RFC 4880, 5.13
       (with-access::PGP-MDC-Symmetrically-Encrypted-Packet encrypted
 	    (version data)
@@ -1201,7 +1209,7 @@
 (define (decrypt-symmetric-key-session-key
 	 session-packet::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
 	 key-string::bstring)
-   (with-trace 5 "decrypt-symmetric-key-session-key"
+   (with-trace 'pgp "decrypt-symmetric-key-session-key"
       (with-access::PGP-Symmetric-Key-Encrypted-Session-Key-Packet session-packet
 	    (algo s2k encrypted-session-key)
 	 (let* ((block-len (symmetric-key-algo-block-byte-len algo))
@@ -1289,7 +1297,7 @@
 		       (symmetric-key-algo->human-readable algo))
 		(values algo session-key-str)))))
 
-   (with-trace 3 "decrypt-public-key-session-key"
+   (with-trace 'pgp "decrypt-public-key-session-key"
       (let ((secret-key-packet (decoded-key-packet subkey password-provider)))
 	 (with-access::PGP-Secret-Key-Decoded-Packet secret-key-packet (secret-key)
 	    (with-access::PGP-Public-Key-Encrypted-Session-Key-Packet session-packet
@@ -1335,7 +1343,7 @@
 	 ;; The symmetric algo is used to encrypt the password (if any).
 	 (symmetric-algo 'cast5)
 	 (s2k-algo 'iterated))
-   (with-trace 4 "create-password-session-key-packet"
+   (with-trace 'pgp "create-password-session-key-packet"
       (trace-item "Password session key packet")
       (trace-item "Symmetric algo: "
 	     (symmetric-key-algo->human-readable symmetric-algo))
@@ -1430,7 +1438,7 @@
 		 "Bad public key algo"
 		 (public-key-algo->human-readable algo)))))
 
-   (with-trace 4 "create-public-key-sessions-key-packet"
+   (with-trace 'pgp "create-public-key-sessions-key-packet"
       (with-access::PGP-Subkey public-subkey (key-packet)
 	 (with-access::PGP-Key-Packet key-packet (algo key)
 	    (let* ((chksum (chksum-16-bit session-key))

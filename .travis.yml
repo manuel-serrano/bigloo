@@ -41,9 +41,9 @@ before_install:
   - sudo apt-get install -y openjdk-8-jdk
   
 before_script:
-  - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo4.3f.tar.gz -O /tmp/bigloo4.3f.tar.gz
-  - pushd /tmp && tar xvfz /tmp/bigloo4.3f.tar.gz && popd
-  - pushd /tmp/bigloo4.3f && ./configure --prefix=/usr && make && sudo make install && popd
+  - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz -O /tmp/bigloo-unstable.tar.gz
+  - pushd /tmp && tar xvfz /tmp/bigloo-unstable.tar.gz && popd
+  - pushd /tmp/bigloo-unstable && ./configure --prefix=/usr && make && sudo make install && popd
 
 script:
   - set -e

@@ -56,10 +56,7 @@ fi
 cat > $file.c <<EOF
 #include <stdlib.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
 EOF
 echo "   long x;" >> $file.c
 echo "   return (long)labs( x );" >> $file.c

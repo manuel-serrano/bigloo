@@ -7,11 +7,6 @@ ${ var cfg = require( "./www.json" ) }
 Bigloo Sources
 --------------
 
-Current and older Bigloo source files are all available bundled in
-tarball files at:
-[ftp://ftp-sop.inria.fr/indes/fp/Bigloo](ftp://ftp-sop.inria.fr/indes/fp/Bigloo)
-
-
 ${<div class="row">
   <div class="col-xs-4">
     <xml.downloadButton
@@ -38,6 +33,11 @@ ${<div class="row">
        href=${cfg.github}/>
   </div>
 </div>}
+
+Older Bigloo source files are all available bundled in
+tarball files at:
+[ftp://ftp-sop.inria.fr/indes/fp/Bigloo](ftp://ftp-sop.inria.fr/indes/fp/Bigloo)
+
 
 ${ hopdoc.include( "debian.md" ) }
 

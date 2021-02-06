@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 17:02:04 1994                          */
 ;*    Last change :  Thu Jun  1 19:01:11 2017 (serrano)                */
-;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    In order to print human readable messages, we designed this      */
 ;*    tool.                                                            */
@@ -89,8 +89,8 @@
 		     ((not *access-shape?*)
 		      "")
 		     (else
-		      (string-append "{" (symbol->string (global-access var))
-				     "}")))))
+		      (string-append
+			 "{" (symbol->string (global-access var)) "}")))))
       (cond
 	 (*module-shape?*
 	  (string->symbol
@@ -115,9 +115,9 @@
 (define-method (shape var::local)
    (let* ((sym    (if *key-shape?*
 		      (symbol-append (local-id var)
-				     '_
-				     (string->symbol
-				      (integer->string (local-key var))))
+			 '_
+			 (string->symbol
+			    (integer->string (local-key var))))
 		      (local-id var)))
 	  (sym    (symbol->string sym))
 	  (type   (local-type var))
@@ -134,8 +134,15 @@
 		      "")
 		     (else
 		      (string-append "{" (symbol->string (local-access var))
-				     "}")))))
-      (string->symbol (string-append sym tshape ushape ashape))))
+			 "}"))))
+	  (xshape (if *access-shape?*
+		      (with-access::local var (val-noescape)
+			 (cond
+			    ((eq? val-noescape #t) "<noescape>")
+			    ((eq? val-noescape #f) "<escape>")
+			    (else "<?>")))
+		      "")))
+      (string->symbol (string-append sym tshape ushape ashape xshape))))
    
 ;*---------------------------------------------------------------------*/
 ;*    shape ::type ...                                                 */

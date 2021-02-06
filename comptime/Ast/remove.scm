@@ -113,7 +113,7 @@
       (if (and (>=fx *optim* 2) (>fx *removed-count* 0))
 	  ;; execute the fix point iteration for optmized mode only
 	  (begin
-	     (occur-node-in! (sfun-body (global-value global)) global)
+	     (occur-node-sfun! (global-value global) global)
 	     (global-remove-sfun! global))
 	  global)))
    

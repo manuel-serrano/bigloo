@@ -47,7 +47,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   ziptest javatest jartest \
                   oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \
-                  thread pthread pthreadlock pthreadspinlock \
+                  thread pthread pthreadlock pthreadspinlock pthreadcancel \
                   pthreadmutexrec pthreadtimedjoin pthreadlocalstorage \
                   pthreadcondvtimedwait processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
@@ -63,9 +63,9 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   config.guess ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
-                  gmtoff libuv getgroups ioctl pthreadkill syslog overflow \
-                  semaphore lockf likely gccattrs getrlimit \
-                  c99stackalloc
+                  gmtoff localtime_r gmtime_r timegm libuv getgroups ioctl \
+                  pthreadkill syslog overflow semaphore lockf likely \
+                  gccattrs getrlimit c99stackalloc tools
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
 /*    Last change :  Sun May 10 12:22:21 2020 (serrano)                */
-/*    Copyright   :  2004-20 Manuel Serrano                            */
+/*    Copyright   :  2004-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -33,11 +33,14 @@ bglpth_setup_signal() {
 #if HAVE_SIGPROCMASK
    extern void bgl_sigprocmask_register( int (*)(int, const sigset_t *, sigset_t *) );
    extern int GC_pthread_sigmask();
+#if defined( GC_NO_PTHREAD_SIGMASK )
    bgl_sigprocmask_register( &pthread_sigmask );
+#else   
+   bgl_sigprocmask_register( &GC_pthread_sigmask );
+#endif   
 #endif
 }
 
-   
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bglpth_setup_gc ...                                              */

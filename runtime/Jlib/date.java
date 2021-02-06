@@ -44,6 +44,7 @@ public class date extends obj {
    public date( final long nseconds, boolean _b ) {
       calendar = new GregorianCalendar();
       final Date d = new Date();
+
       final long milliseconds = nseconds / 1000000;
       d.setTime( milliseconds );
       calendar.setTime( d );

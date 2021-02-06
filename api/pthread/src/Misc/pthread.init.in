@@ -5,7 +5,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
 ;*    Last change :  Mon Jul 28 09:37:10 2014 (serrano)                */
-;*    Copyright   :  2001-14 Manuel Serrano                            */
+;*    Copyright   :  2001-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Pthread init file.                                           */
 ;*=====================================================================*/

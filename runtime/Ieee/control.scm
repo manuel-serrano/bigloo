@@ -170,10 +170,17 @@
 ;*    append-map2! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (append-map2! f l)
-   (let loop ((l l))
-      (if (null? l)
-	  '()
-	  (append! (f (car l)) (loop (cdr l))))))
+   (if (null? l)
+       '()
+       (let* ((result (list #f))
+	      (lpair result))
+	  (for-each (lambda (x)
+		       (let ((result2 (f x)))
+			  (when (pair? result2)
+			     (set-cdr! lpair result2)
+			     (set! lpair (last-pair result2)))))
+	     l)
+	  (cdr result))))
 
 ;*---------------------------------------------------------------------*/
 ;*    append-map! ...                                                  */
@@ -185,10 +192,17 @@
       ((null? (cdr l))
        (append-map2! f (car l)))
       (else
-       (let loop ((l l))
-	  (if (null? (car l))
-	      '()
-	      (append! (apply f (map-2 car l)) (loop (map-2 cdr l))))))))
+       (if (null? (car l))
+	   '()
+	   (let* ((result (list #f))
+		  (lpair result))
+              (apply for-each (lambda xs
+				 (let ((result2 (apply f xs)))
+				    (when (pair? result2)
+				       (set-cdr! lpair result2)
+				       (set! lpair (last-pair result2)))))
+		 l)
+              (cdr result))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    filter-map-2 ...                                                 */

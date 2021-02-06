@@ -28,7 +28,7 @@
 ;*    globalize-walk! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (globalize-walk! globals remove)
-   (pass-prelude "Globalization")
+   (pass-prelude "Closure (globalize)")
    ;; compute the escape! property for all functions (locals and globals)
    (for-each escape-fun! globals)
    ;; we perform the globalization

@@ -75,6 +75,7 @@
 	   
 	   (macro $int64->elong::elong (::int64)  "(long)")
 	   (macro $uint64->elong::elong (::uint64)  "(long)")
+	   (macro $uint64->uint32::uint32 (::uint64)  "(uint32_t)")
 	   (macro $elong->int64::int64 (::elong) "(int64_t)")
 	   (macro $int64->llong::llong (::int64)  "(BGL_LONGLONG_T)")
 	   (macro $llong->int64::int64 (::llong) "(int64_t)")
@@ -309,6 +310,8 @@
 		  "INT64_TO_ELONG")
 	       (method static $uint64->elong::elong (::uint64)
 		  "INT64_TO_ELONG")
+	       (method static $uint64->uint32::uint32 (::uint64)
+		  "INT64_TO_INT32")
 	       (method static $elong->sing64::int64 (::elong)
 		  "ELONG_TO_INT64")
 	       (method static $int64->llong::llong (::int64)
@@ -641,6 +644,7 @@
 	    (inline uint64->llong::llong ::uint64)
 	    (inline int64->elong::elong ::int64)
 	    (inline uint64->elong::elong ::uint64)
+	    (inline uint64->uint32::uint32 ::uint64)
 
 	    (inline fixnum->int8::int8 ::long)
 	    (inline fixnum->uint8::uint8 ::long)
@@ -980,11 +984,11 @@
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
 	    (unsigned->string::bstring ::obj #!optional (radix::long 16))
-	    (string->integer::long ::bstring . pair)
+	    (string->integer::long ::bstring #!optional (radix::long 10) (start::long 0))
 	    (elong->string::bstring ::elong . pair)
-	    (string->elong::elong ::bstring . pair)
+	    (string->elong::elong ::bstring #!optional (radix::long 10))
 	    (llong->string::bstring ::llong . pair)
-	    (string->llong::llong ::bstring . pair)
+	    (string->llong::llong ::bstring #!optional (radix::long 10))
 	    (bignum->string::bstring ::bignum #!optional (radix::long 10))
 	    (string->bignum::bignum ::bstring #!optional (radix::long 10))
 	    (bignum->octet-string::bstring ::bignum)
@@ -1446,6 +1450,7 @@
 
 (define-inline (int64->elong n) ($int64->elong n))
 (define-inline (uint64->elong n) ($uint64->elong n))
+(define-inline (uint64->uint32 n) ($uint64->uint32 n))
 
 (define-inline (uint8->int8 n) ($uint8->int8 n))
 (define-inline (int8->uint8 n) ($int8->uint8 n))
@@ -2459,35 +2464,33 @@
 		(+bx (*bx res #z256)
 		     (fixnum->bignum (char->integer (string-ref str i))))))))
 
-
 ;*---------------------------------------------------------------------*/
 ;*    string->integer ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Not inlined because it is overriden by a macro.                  */
 ;*---------------------------------------------------------------------*/
-(define (string->integer string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  ;; strtol cannot be renamed as it is used by the compiler
-	  ;; to optmize the call
-	  (strtol string 0 r)
-	  (error "string->integer" "Illegal radix" r))))
+(define (string->integer string #!optional (radix::long 10) (start::long 0))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       ;; strtol cannot be renamed as it is used by the compiler
+       ;; to optmize the call
+       (strtol string start radix)
+       (error "string->integer" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->elong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->elong string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  (strtoel string 0 r)
-	  (error "string->elong" "Illegal radix" r))))
+(define (string->elong string #!optional (radix::long 10))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       (strtoel string 0 radix)
+       (error "string->elong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->llong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->llong string . radix)
-   (let ((r (if (null? radix) 10 (car radix))))
-      (if (and (>=fx r 2) (<=fx r 36))
-	  (strtoll string 0 r)
-	  (error "string->llong" "Illegal radix" r))))
+(define (string->llong string #!optional (radix::long 10))
+   (if (and (>=fx radix 2) (<=fx radix 36))
+       (strtoll string 0 radix)
+       (error "string->llong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->bignum ...                                               */

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
 ;*    Last change :  Thu May  9 09:38:02 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -106,17 +106,21 @@
    (for-each (lambda (prop)
 		(set-pragma-property! global prop clause))
 	     prop*))
- 
+
+;*---------------------------------------------------------------------*/
+;*    sfun-error ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (sfun-error p::bstring g::global)
+   (if (not *all-export-mutable?*)
+       (user-error (string-append "pragma(" p ")")
+	  "property is not concerning a function"
+	  (shape g)
+	  '())))
+
 ;*---------------------------------------------------------------------*/
 ;*    set-pragma-property! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (set-pragma-property! global prop clause)
-   (define (sfun-error p::bstring g::global)
-      (if (not *all-export-mutable?*)
-	  (user-error (string-append "pragma(" p ")")
-	     "property is not concerning a function"
-	     (shape g)
-	     '())))
    (match-case prop
       ((? symbol?)
        (case prop
@@ -215,11 +219,55 @@
 	      (if (not (fun? value))
 		  (sfun-error "effect" global)
 		  (fun-effect-set! value (parse-effect prop)))))
+	  ((stack-allocator)
+	   (let ((value (global-value global)))
+	      (if (not (fun? value))
+		  (sfun-error "stack-allocator" global)
+		  (fun-stack-allocator-set! value val))))
+	  ((args-noescape)
+	   (args-noescape global val fun-args-noescape fun-args-noescape-set!))
+	  ((args-retescape)
+	   (args-noescape global val fun-args-retescape fun-args-retescape-set!))
 	  (else
 	   (user-error "Parse error" "Illegal \"pragma\" form" prop '()))))
       (else
        (user-error "Parse error"
-	  "Illegal \"pragma\" form"
-	  (if (pair? prop) prop clause)
+	  (format "Illegal \"pragma\" form (~a)" prop)
+	  clause
 	  '()))))
-	 
+
+;*---------------------------------------------------------------------*/
+;*    args-noescape ...                                                */
+;*---------------------------------------------------------------------*/
+(define (args-noescape global val pget pset)
+   ;; the nth argument does not escape
+   (let ((value (global-value global)))
+      (if (not (fun? value))
+	  (sfun-error "args-noescape" global)
+	  (cond
+	     ((null? val)
+	      (pset value '*))
+	     ((integer? (car val))
+	      (pset value (append val (pget value))))
+	     ((symbol? (car val))
+	      (if (not (sfun? value))
+		  (user-error "Parse error" "Illegal \"args-noescape\" on non-function value"
+		     val)
+		  (begin
+		     (when (eq? (pget value) #unspecified)
+			(pset value '()))
+		     (let loop ((i 0)
+				(args (sfun-args-name value)))
+			(cond
+			   ((null? args)
+			    (user-error "Parse error"
+			       "Illegal \"args-noescape\", cannot find argument"
+			       val))
+			   ((eq? (car args) (car val))
+			    (pset value (cons i (pget value))))
+			   (else
+			    (loop (+fx i 1) (cdr args))))))))
+	     ((eq? (pget value) #unspecified)
+	      (pset value (list val)))
+	     (else
+	      (pset value (cons val (pget value))))))))

@@ -57,10 +57,9 @@ cat > $file.c <<EOF
 #include <errno.h>
 #include <signal.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+extern ssize_t sendfile();
+
+int main( int argc, char *argv[] ) {
    char buffer [50];
    FILE *fd = fopen( "/etc/hosts", "r" );
    int s = socket( AF_INET, SOCK_STREAM, 0 );

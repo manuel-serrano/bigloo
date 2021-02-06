@@ -74,7 +74,9 @@
 
 	   (final-class local::variable
 	      ;; the local's identification key
-	      (key::long read-only))
+	      (key::long read-only)
+	      ;; true iff the variable value cannot escape
+	      (val-noescape::obj (default #t)))
 
 	   (class fun::value
 	      ;; the function arity, for non DSSSL optional functions,
@@ -99,7 +101,14 @@
 	      ;; the effect of this function
 	      (effect (default #unspecified))
 	      ;; is this function failsafe (#t=yes, #f=no, else=unknown)
-	      (failsafe (default #unspecified)))
+	      (failsafe (default #unspecified))
+	      ;; non-escaping arguments: '(), *, or an index list
+	      ;; non-escaping arguments can be stack allocated
+	      (args-noescape (default '()))
+	      ;; arguments escape as the function result value
+	      ;; for instance, values stored in a cons escape if the cons
+	      ;; escapes
+	      (args-retescape (default '())))
 
 	   (final-class sfun::fun
 	      ;; a property list
@@ -127,7 +136,9 @@
 	      (the-closure-global (default #unspecified))
 	      ;; the strength (see funcall node) set by the CFA pass
 	      ;; should be ???, LIGHT, or ELIGHT
-	      (strength::symbol (default '???)))
+	      (strength::symbol (default '???))
+	      ;; can this closure be stack allocated?: #unspecifed, #t, #f
+	      (stackable::obj (default #unspecified)))
 
 	   (final-class cfun::fun
 	      ;; the formal parameters' type

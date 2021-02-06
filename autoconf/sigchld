@@ -57,6 +57,8 @@ cat > $file.c <<EOF
 #include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdio.h>
+
 int main () { 
 #if( defined( SIGCHLD ) && !defined( HPUX ) )
    puts( "1" );

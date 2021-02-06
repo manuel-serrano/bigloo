@@ -680,6 +680,10 @@ public final class foreign
       {
 	 return (long)n;
       }
+   public static long INT64_TO_INT32(long n)
+      {
+	 return (int)n;
+      }
    public static long ELONG_TO_INT64(long n)
       {
 	 return (long)n;
@@ -3537,6 +3541,20 @@ public final class foreign
 	 return new bigloo.date(ns, s, min, h, d, mon - 1, y, tz, istz, dst);
       }
 
+   public static date bgl_update_date(date, long ns, int s,
+				      int min, int h, int d, int mon,
+				      int y, int tz, boolean istz, int dst)
+      {
+	 date tmp = bgl_make_date( ns, s, min, h, d, mon,
+				   y, tz, istz, dst);
+
+	 date.nsec = tmp.nsec;
+	 date.calendar = tmp.calendar;
+	 date.timezone = tmp.timezone;
+	 return date;
+      }
+   
+
    public static date bgl_seconds_to_date(long sec)
       {
 	 return new bigloo.date(sec);
@@ -3553,9 +3571,21 @@ public final class foreign
 	 return new bigloo.date(nsec, true);
       }
 
+   public static date bgl_milliseconds_to_date(long nsec)
+      {
+	 return new bigloo.date(nsec, false);
+      }
+
    public static date bgl_seconds_to_utc_date(long sec)
       {
 	 date d = new bigloo.date(sec);
+	 d.calendar.setTimeZone(new SimpleTimeZone(0, "UTC"));
+	 return d;
+      }
+
+   public static date bgl_milliseconds_to_date(long sec)
+      {
+	 date d = new bigloo.date(sec * 1000000, true);
 	 d.calendar.setTimeZone(new SimpleTimeZone(0, "UTC"));
 	 return d;
       }
@@ -3568,6 +3598,11 @@ public final class foreign
    public static long bgl_current_microseconds()
       {
 	 return (new Date().getTime() * 1000);
+      }
+
+   public static long bgl_current_milliseconds()
+      {
+	 return (new Date().getTime());
       }
 
    public static long bgl_current_nanoseconds()
@@ -3583,6 +3618,11 @@ public final class foreign
    public static long bgl_date_to_nanoseconds(date d)
       {
 	 return (d.calendar.getTime().getTime() * 1000000);
+      }
+
+   public static long bgl_date_to_milliseconds(date d)
+      {
+	 return (d.calendar.getTime().getTime() * 1000);
       }
 
    public static byte[] bgl_seconds_to_string(long sec)
@@ -3608,6 +3648,11 @@ public final class foreign
    public static long BGL_DATE_NANOSECOND(date d)
       {
 	 return d.nsec;
+      }
+
+   public static long BGL_DATEMILLISECOND(date d)
+      {
+	 return d.nsec / 1000000;
       }
 
    public static int BGL_DATE_MINUTE(date d)
@@ -3653,6 +3698,11 @@ public final class foreign
    public static int BGL_DATE_ISDST(date d)
       {
 	 return ( d.calendar.get(Calendar.DST_OFFSET) > 0 ) ? 1 : -1;
+      }
+
+   public static int BGL_DATE_ISGMT(date d)
+      {
+	 return (d.calendar.get(Calendar.ZONE_OFFSET) == 0);
       }
 
    private static final byte[][] day_names = { "Sunday".getBytes(),
@@ -3732,6 +3782,11 @@ public final class foreign
 
    // Open functions
    public static pair MAKE_PAIR(Object car, Object cdr)
+      {
+	 // CARE where defined?
+	 return new pair(car, cdr);
+      }
+   public static pair MAKE_STACK_PAIR(Object car, Object cdr)
       {
 	 // CARE where defined?
 	 return new pair(car, cdr);
@@ -4781,6 +4836,11 @@ public final class foreign
 	 bgldynamic.abgldynamic.get().error_handler = hdl;
       }
 
+   public static void BGL_ERROR_HANDLER_PUSH(Object h, Object hdl)
+      {
+	 bgldynamic.abgldynamic.get().error_handler = MAKE_PAIR( h, hdl );
+      }
+
    public static Object BGL_UNCAUGHT_EXCEPTION_HANDLER_GET()
       {
 	 return bgldynamic.abgldynamic.get().uncaught_exception_handler;
@@ -5536,16 +5596,17 @@ public final class foreign
    //////
    public static final int PTR_ALIGNMENT = 2;
    public static final int SIGHUP = 1;
-   public static final int SIGQUIT = 2;
-   public static final int SIGINT = 3;
+   public static final int SIGINT = 2;
+   public static final int SIGQUIT = 3;
    public static final int SIGILL = 4;
-   public static final int SIGABRT = 5;
-   public static final int SIGKILL = 9;
-   public static final int SIGFPE = 8;
+   public static final int SIGTRAP = 5;
+   public static final int SIGABRT = 6;
    public static final int SIGBUS = 7;
+   public static final int SIGFPE = 8;
+   public static final int SIGKILL = 9;
    public static final int SIGSEGV = 11;
-   public static final int SIGALRM = 14;
    public static final int SIGPIPE = 13;
+   public static final int SIGALRM = 14;
    public static final int SIGTERM = 15;
    public static final int SIGUSR1 = 16;
    public static final int SIGUSR2 = 17;
@@ -6055,6 +6116,10 @@ public final class foreign
    
    public static byte[] BGL_REGEXP_PAT(regexp o) {
       return o.pat;
+   }
+   
+   public static int BGL_REGEXP_CAPTURE_COUNT(regexp o) {
+      return -1;
    }
    
    public static Object BGL_REGEXP_PREG(regexp o) {
@@ -7383,6 +7448,9 @@ public final class foreign
 	 Thread.sleep( (long)(microsecs / 1000),
 		       (int)(1000*(microsecs % 1000)) );
       } catch( Exception e ) {
+          if ( e instanceof InterruptedException ) {
+              Thread.currentThread().interrupt();
+          }
       }
    }
 

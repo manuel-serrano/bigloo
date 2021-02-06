@@ -4,7 +4,7 @@
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
 ;*    Last change :  Thu Jan 24 08:52:59 2019 (serrano)                */
-;*    Copyright   :  2010-19 Manuel Serrano                            */
+;*    Copyright   :  2010-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -593,6 +593,8 @@
 	  (body (conv-begin body locals globals #f where loc #f)) ))
       ((lambda ?formals ?body)
        (conv-lambda formals body (symbol-append '\@ where) #f) )
+      ((free-pragma::obj . ?-)
+       (error "free-pragma" "not supported in eval" e))
       ((?f . ?args)
        (let ( (fun (uconv f)) (args (uconv* args)) )
 	  (instantiate::ev_app

@@ -196,14 +196,24 @@ gc/gc-8.0.2
 gc/gc-8.0.2_fth
 gc/gc-8.0.4
 gc/gc-8.0.4_fth
+gc/gc-8.0.4_mt
+gc/preinst
 
 # libuv
 libuv/libuv-1.x-24jan2015/
 libuv/libuv-master-18jul2014/
 libuv/libuv-v1.19.2/
 libuv/libuv-v1.20.3/
+libuv/libuv-v1.40.0/
 
 # xlib
 xlib/include/
 
 # www
+www/hss/www.css
+
+# third parties
+gmp/gmp-6.1.2
+gmp/gmp-6.2.1
+libunistring/libunistring-0.9.10
+pcre/pcre-8.43

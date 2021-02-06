@@ -52,10 +52,7 @@ fi
 cat > $file.c <<EOF
 #include <unistd.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    return symlink( "/etc/passwd", "/tmp/foo" );
 }
 EOF

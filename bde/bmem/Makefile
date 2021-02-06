@@ -78,11 +78,11 @@ $(BOOTBINDIR)/$(BMEM_EXE): $(OBJECT)
 #*--- lib -------------------------------------------------------------*/
 lib: $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
   $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
-  $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
-  $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX)
+  $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
+  $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX)
 
 $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
@@ -92,7 +92,7 @@ $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
@@ -101,25 +101,25 @@ $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
-$(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_fth_u.$(SHAREDSUFFIX) \
+           SONAME=bmem_u_mt.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_u-$(RELEASE)"
+           CLOSELIBS="-lbigloo_u_mt-$(RELEASE)"
 
-$(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	$(MAKE) shared-lib \
+$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+	$(MAKE) bigloo-shared-lib \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_fth_s.$(SHAREDSUFFIX) \
+           SONAME=bmem_s_mt.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_s-$(RELEASE)"
+           CLOSELIBS="-lbigloo_s_mt-$(RELEASE)"
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:
@@ -153,12 +153,12 @@ install:
 	  cp $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
              $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX) || exit 1; \
           chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX); \
-	  cp $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX); \
-	  cp $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX); \
+	  cp $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX); \
+	  cp $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX); \
         fi
 	cp etc/bmem.css $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.css
 	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.css

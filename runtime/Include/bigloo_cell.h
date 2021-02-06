@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
 /*    Last change :  Sat Dec  7 18:56:05 2019 (serrano)                */
-/*    Copyright   :  2016-19 Manuel Serrano                            */
+/*    Copyright   :  2016-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
 /*=====================================================================*/
@@ -103,6 +103,12 @@ struct bgl_cell {
 #else
 #   define MAKE_STACK_CELL( v ) MAKE_CELL( v )   
 #endif
+
+#define MAKE_CELL_STACK( v, b ) \
+   (b.val = v, BCELL( &b ))
+
+#define BGL_MAKE_CELL_STACK( c, v ) \
+   (c.val = v, BCELL( &c ))
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */

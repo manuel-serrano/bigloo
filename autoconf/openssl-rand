@@ -68,6 +68,7 @@ cat > $file.c <<EOF
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/crypto.h>
+#include <openssl/rand.h>
 
 int main( int argc, char *argv[] ) {
   return RAND_status() + RAND_poll();

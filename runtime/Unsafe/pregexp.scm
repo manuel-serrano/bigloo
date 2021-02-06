@@ -50,6 +50,7 @@
    (extern ($make-regexp::regexp (::bstring) "bgl_make_regexp")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
+           (macro $regexp-capture-count::long (::regexp) "BGL_REGEXP_CAPTURE_COUNT")
 	   (macro $regexp-preg::obj (::regexp) "BGL_REGEXP_PREG")
 	   (macro $regexp-preg-set!::obj (::regexp ::obj) "BGL_REGEXP_PREG_SET"))
    
@@ -63,10 +64,13 @@
 	      (method static $regexp?::bool (::obj)
 		 "BGL_REGEXPP")
 	      (method static $regexp-pattern::bstring (::obj)
-		 "BGL_REGEXP_PAT")))
+		 "BGL_REGEXP_PAT")
+              (method static $regexp-capture-count::int (::obj)
+                 "BGL_REGEXP_CAPTURE_COUNT")))
  
    (export (inline regexp?::bool ::obj)
 	   (inline regexp-pattern::bstring ::regexp)
+	   (inline regexp-capture-count::long ::regexp)
 	   (pregexp ::bstring . opt-args)
 	   (pregexp-match-positions pat str::bstring
 	      #!optional (beg 0) (end (string-length str)))
@@ -93,6 +97,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (regexp-pattern re)
    ($regexp-pattern re))
+
+;*---------------------------------------------------------------------*/
+;*    regexp-capture-count ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (regexp-capture-count re)
+   ($regexp-capture-count re))
 
 (define (pregexp-error msg . opt)
    (error "pregexp" msg (if (pair? opt) (car opt) #unspecified)))

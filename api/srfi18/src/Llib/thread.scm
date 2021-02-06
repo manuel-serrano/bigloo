@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
 ;*    Last change :  Fri Dec 13 12:49:07 2013 (serrano)                */
-;*    Copyright   :  2002-13 Manuel Serrano                            */
+;*    Copyright   :  2002-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public srfi18 Thread implementation.                         */
 ;*=====================================================================*/
@@ -23,6 +23,11 @@
    (include "srfi18.sch")
 
    (export (class srfi18thread::pthread)))
+
+;*---------------------------------------------------------------------*/
+;*    Initialization for dynamic library loading                       */
+;*---------------------------------------------------------------------*/
+(library-multithread-set! #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    srfi18read-timedjoin property                                    */

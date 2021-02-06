@@ -597,7 +597,7 @@ bgl_snd_devices_list( char *iface ) {
 /*    bgl_snd_rawmidi_isdir ...                                        */
 /*---------------------------------------------------------------------*/
 bool_t
-bgl_snd_rawmidi_isdir( obj_t o, int card, int device, int sub, int dir ) {
+bgl_snd_rawmidi_isdir( obj_t o, int device, int sub, int dir ) {
    snd_rawmidi_info_t *info;
    int status;
 

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:44:08 1995                          */
 ;*    Last change :  Sun Feb 14 07:00:01 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of a library heap                                   */
 ;*=====================================================================*/

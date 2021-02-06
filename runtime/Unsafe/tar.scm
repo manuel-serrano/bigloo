@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
 ;*    Last change :  Mon Jun 23 12:54:47 2014 (serrano)                */
-;*    Copyright   :  2006-14 Manuel Serrano                            */
+;*    Copyright   :  2006-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
 ;*    -------------------------------------------------------------    */
@@ -68,7 +68,7 @@
 	      (devmajor::long read-only)
 	      (devminor::long read-only))
 	   
-	   (tar-read-header #!optional (port (current-input-port)))
+	   (tar-read-header #!optional (port (current-input-port)) longname)
 	   (tar-read-block ::obj #!optional (p (current-input-port)))
 	   (tar-round-up-to-record-size::long ::obj)
 	   (untar ::obj #!key (directory (pwd)) file (files '()))))
@@ -107,6 +107,7 @@
       ((#\5) 'dir)
       ((#\6) 'fifo)
       ((#\7) 'contig)
+      ((#\L) 'longname)
       (else (tar-error "invalid file type" c))))
 
 ;*---------------------------------------------------------------------*/
@@ -134,9 +135,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    tar-read-header ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (tar-read-header #!optional (port (current-input-port)))
+(define (tar-read-header #!optional (port (current-input-port)) longname)
    (unless (input-port? port)
-      (bigloo-type-error 'tar-read-header "input-port" port))
+      (bigloo-type-error "tar-read-header" "input-port" port))
    (let* ((ptr 0)
 	  (data (read-chars (tar-record-size) port))
 	  (len (string-length data)))
@@ -144,9 +145,14 @@
 	 (let loop ((i 0))
 	    (cond
 	       ((>=fx i size)
-		(tar-error
-		 (format "no terminator for zero-terminated `~a' found" what)
-		 size))
+		(if longname
+		    (begin
+		       (set! ptr (+fx ptr size))
+		       (string-shrink! longname
+			  (-fx (string-length longname) 1))) 
+		    (tar-error
+		       (format "no terminator for zero-terminated `~a' found" what)
+		       size)))
 	       ((>=fx i len)
 		(tar-error "corrupted tar file" port))
 	       (else
@@ -212,7 +218,7 @@
    (if (fixnum? n)
        (*fx (tar-record-size)
 	    (/fx (+fx n (-fx (tar-record-size) 1)) (tar-record-size)))
-       (bigloo-type-error 'tar-round-up-to-record-size "long" n)))
+       (bigloo-type-error "tar-round-up-to-record-size" "long" n)))
 
 ;*---------------------------------------------------------------------*/
 ;*    tar-read-block ...                                               */
@@ -220,7 +226,7 @@
 (define (tar-read-block h #!optional (p (current-input-port)))
    (cond
       ((not (input-port? p))
-       (bigloo-type-error 'tar-read-header "input-port" p))
+       (bigloo-type-error "tar-read-header" "input-port" p))
       ((isa? h tar-header)
        (with-access::tar-header h (size name)
 	  (let ((n (elong->fixnum size)))
@@ -228,13 +234,11 @@
 		 #f
 		 (let ((s (read-chars n p)))
 		    (if (<fx (string-length s) n)
-			(error 'tar-read-block
-			   "Illegal block"
-			   name)
+			(error "tar-read-block" "Illegal block" name)
 			(read-chars (-fx (tar-round-up-to-record-size n) n) p))
 		    s)))))
       (else
-       (bigloo-type-error 'tar-read-block "tar-header" h))))
+       (bigloo-type-error "tar-read-block" "tar-header" h))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rm-rf ...                                                        */
@@ -253,7 +257,7 @@
 (define (untar ip #!key (directory (pwd)) file (files '()))
    (cond
       ((not (input-port? ip))
-       (bigloo-type-error 'untar "input-port" ip))
+       (bigloo-type-error "untar" "input-port" ip))
       ((string? file)
        (untar-files ip (list file)))
       ((and (pair? files) (list? files) (every string? files))
@@ -267,8 +271,9 @@
 (define (untar-directory ip::input-port base::bstring)
    (unless (directory? base)
       (make-directories base))
-   (let loop ((lst '()))
-      (let ((h (tar-read-header ip)))
+   (let loop ((lst '())
+	      (longname #f))
+      (let ((h (tar-read-header ip longname)))
 	 (if (not h)
 	     (reverse! lst)
 	     (with-access::tar-header h (type name)
@@ -277,7 +282,7 @@
 		    (let ((path (make-file-name base name)))
 		       (rm-rf path)
 		       (if (make-directories path)
-			   (loop (cons path lst))
+			   (loop (cons path lst) #f)
 			   (raise
 			      (instantiate::&io-error
 				 (proc 'untar)
@@ -294,14 +299,23 @@
 		       (with-output-to-file path
 			  (lambda ()
 			     (display (tar-read-block h ip))))
-		       (loop (cons path lst))))
+		       (loop (cons path lst) #f)))
 		   ((symlink)
 		    (with-access::tar-header h (linkname)
 		       (let ((path (make-file-name base name)))
 			  (when (file-exists? path)
 			     (delete-file path))
 			  (make-symlink linkname path)
-			  (loop (cons path lst)))))
+			  (loop (cons path lst) #f))))
+		   ((longname)
+		    (with-access::tar-header h (name size)
+		       (let* ((n (modulofx size (tar-record-size)))
+			      (s (+fx size (tar-record-size)))
+			      (s (if (>fx n 0)
+				     (+fx s (-fx (tar-record-size) n))
+				     s))
+			      (nlnb (/fx s (tar-record-size))))
+			  (loop lst (tar-read-block h ip)))))
 		   (else
 		    (raise
 		       (instantiate::&io-parse-error

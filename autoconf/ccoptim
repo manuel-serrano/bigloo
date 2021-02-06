@@ -123,8 +123,7 @@ int direction( int new_addr )
    }
 }
 
-main( int argc, char *argv[] )
-{
+int main( int argc, char *argv[] ) {
    if( gcc3xxx_bug( 5 ) != 5 )
       return 1;
 

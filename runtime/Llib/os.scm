@@ -51,6 +51,7 @@
 	    __r4_input_6_10_2)
    
    (extern  ($signal::obj (::int ::obj) "bgl_signal")
+	    (macro $sigsetmask::int (::int) "BGL_SIGSETMASK")
 	    ($get-signal-handler::obj (::int) "bgl_get_signal_handler")
 	    ($restore-signal-handlers::void () "bgl_restore_signal_handlers")
 	    (*the-command-line*::obj "command_line")
@@ -144,6 +145,8 @@
 		  "executable_name")
 	       (method static $signal::obj (::int ::obj)
 		  "bgl_signal")
+	       (method static $sigsetmask::int (::int)
+		  "sigsetmask")
 	       (method static $get-signal-handler::obj (::int)
 		  "bgl_get_signal_handler")
 	       (method static $restore-signal-handlers::void ()
@@ -216,6 +219,7 @@
    
    (export  (signal num::int ::obj)
 	    (get-signal-handler::obj ::int)
+	    (inline sigsetmask::int ::int)
 	    
 	    (getenv #!optional name)
 	    (putenv ::string ::string)
@@ -351,6 +355,12 @@
 	 ((eq? v #t) 'ignore)
 	 ((eq? v #f) 'default)
 	 (else v))))
+
+;*---------------------------------------------------------------------*/
+;*    sigsetmask ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-inline (sigsetmask n)
+   ($sigsetmask n))
 
 ;*---------------------------------------------------------------------*/
 ;*    getenv ...                                                       */

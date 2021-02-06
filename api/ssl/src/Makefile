@@ -47,7 +47,7 @@ BJVMFLAGS       := $(BJVMFLAGS)
 CEFLAGS		= $(CAPIFLAGS)
 
 # Additional SSL lib for C
-EXTRALIBS	= $(OPENSSLLIBS)
+EXTRALIBS	+= $(OPENSSLLIBS)
 # Additional SSL lib for java
 SSL_ZIP		= commons-ssl.zip
 JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(BOOTLIBDIR)/$(SSL_ZIP)
@@ -90,7 +90,6 @@ INCLUDES	= $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/root_certs.h \
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
-
 ifeq ($(JAVA_VERSION), 14)
   JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
 else
@@ -130,6 +129,7 @@ endif
 endif
 endif
 endif
+
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/

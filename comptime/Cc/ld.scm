@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
 ;*    Last change :  Mon Dec 18 07:59:44 2017 (serrano)                */
-;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
 ;*=====================================================================*/
@@ -39,37 +39,49 @@
        (user-error "ld" "Unknown os" (os-class)))))
 
 ;*---------------------------------------------------------------------*/
+;*    library-thread-suffix ...                                        */
+;*---------------------------------------------------------------------*/
+(define (library-thread-suffix suffixes)
+   (if *multi-threaded-gc?* 
+       (append-map (lambda (s)
+		      (list (string-append s "_mt") s))
+	  suffixes)
+       suffixes))
+
+;*---------------------------------------------------------------------*/
 ;*    library-suffix ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (library-suffixes)
-   (cond
-      (*profile-library*
-       (if *saw*
-	   (if (string=? (bigloo-config 'gc) "saw")
-	       '("_saw_p" "_saw_s")
-	       '("_saw_p" "_p" "_saw_s" "_s"))
-	   '("_p" "_s")))
-      (*unsafe-library*
-       (if *saw*
-	   (if (string=? (bigloo-config 'gc) "saw")
-	       '("_saw_u" "_saw_s")
-	       '("_saw_u" "_u" "_saw_s"))
-	   '("_u" "_s")))
-      (*saw*
-       (if (string=? (bigloo-config 'gc) "saw")
-	   '("_saw_s")
-	   '("_saw_s" "_s")))
-      (else
-       '("_s"))))
+   (library-thread-suffix
+      (cond
+	 (*profile-library*
+	  (if *saw*
+	      (if (string=? (bigloo-config 'gc) "saw")
+		  '("_saw_p" "_saw_s")
+		  '("_saw_p" "_p" "_saw_s" "_s"))
+	      '("_p" "_s")))
+	 (*unsafe-library*
+	  (if *saw*
+	      (if (string=? (bigloo-config 'gc) "saw")
+		  '("_saw_u" "_saw_s")
+		  '("_saw_u" "_u" "_saw_s"))
+	      '("_u" "_s")))
+	 (*saw*
+	  (if (string=? (bigloo-config 'gc) "saw")
+	      '("_saw_s")
+	      '("_saw_s" "_s")))
+	 (else
+	  '("_s")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-eval-suffix ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (library-eval-suffixes)
-   (cond
-      (*profile-library* '("_ep" "_es"))
-      (*unsafe-library* '("_eu" "_es"))
-      (else '("_es"))))
+   (library-thread-suffix
+      (cond
+	 (*profile-library* '("_ep" "_es"))
+	 (*unsafe-library* '("_eu" "_es"))
+	 (else '("_es")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secondary-library-suffix ...                                     */
@@ -163,10 +175,8 @@
    ;; we add additional, machine specific, link options.
    (let ((staticp (or (not (bigloo-config 'have-shared-library))
 		      (string-case *ld-options*
-			 ((: (* all) "-static")
-			  #t)
-			 (else
-			  #f)))))
+			 ((: (* all) "-static") #t)
+			 (else #f)))))
 
       (if staticp
 	  (set! *ld-options* (string-append (bigloo-config 'static-link-option)

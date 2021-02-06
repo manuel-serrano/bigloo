@@ -53,9 +53,12 @@
    
    (extern  (macro c-date?::bool (::obj) "BGL_DATEP")
 	    ($date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
-	    
+	    ($date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
+	    ($date->gmtdate!::date (::date) "bgl_date_to_gmtdate")
+
 	    (macro $date-integer->second::elong (::long) "(long)")
 	    (macro $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
+	    (macro $date-millisecond::long (::date) "BGL_DATE_MILLISECOND")
 	    (macro $date-second::int (::date) "BGL_DATE_SECOND")
 	    (macro $date-minute::int (::date) "BGL_DATE_MINUTE")
 	    (macro $date-hour::int (::date) "BGL_DATE_HOUR")
@@ -66,6 +69,13 @@
 	    (macro $date-year::int (::date) "BGL_DATE_YEAR")
 	    (macro $date-timezone::long (::date) "BGL_DATE_TIMEZONE")
 	    (macro $date-is-dst::int (::date) "BGL_DATE_ISDST")
+	    (macro $date-is-gmt::bool (::date) "BGL_DATE_ISGMT")
+	    (macro $date-time::long (::date) "BGL_DATE_TIME")
+
+	    (macro $date-update-millisecond::long (::date ::long) "BGL_DATE_UPDATE_MILLISECOND")
+	    (macro $date-update-second::long (::date ::long) "BGL_DATE_UPDATE_SECOND")
+	    (macro $date-update-minute::long (::date ::long) "BGL_DATE_UPDATE_MINUTE")
+	    (macro $date-update-time::long (::date ::long) "BGL_DATE_UPDATE_TIME")
 	    
 	    ($date-day-name::bstring (::int) "bgl_day_name")
 	    ($date-day-aname::bstring (::int) "bgl_day_aname")
@@ -73,32 +83,42 @@
 	    ($date-month-aname::bstring (::int) "bgl_month_aname")
 	    
 	    ($date-current-seconds::elong () "bgl_current_seconds")
+	    ($date-current-milliseconds::llong () "bgl_current_milliseconds")
 	    ($date-current-microseconds::llong () "bgl_current_microseconds")
 	    ($date-current-nanoseconds::llong () "bgl_current_nanoseconds")
 	    ($date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	    ($date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
+	    ($date-from-milliseconds-gmt::date (::llong) "bgl_milliseconds_to_gmtdate")
 	    ($date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
+	    ($date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	    ($date-to-seconds::elong (::date) "bgl_date_to_seconds")
 	    ($date-to-nanoseconds::llong (::date) "bgl_date_to_nanoseconds")
+	    ($date-to-milliseconds::llong (::date) "bgl_date_to_milliseconds")
 	    ($date-seconds-to-string::bstring (::elong) "bgl_seconds_to_string")
 	    ($date-seconds-to-utc-string::bstring (::elong) "bgl_seconds_to_utc_string"))
    
    (java    (class foreign
 	       (method static c-date?::bool (::obj) "DATEP")
 	       (method static $date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
+	       (method static $date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	       (method static $date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
+	       (method static $date-from-milliseconds-gmt::date (::llong) "bgl_miliseconds_to_gmtdate")
 	       (method static $date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
+	       (method static $date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	       (method static $date-current-seconds::elong () "bgl_current_seconds")
+	       (method static $date-current-milliseconds::llong () "bgl_current_milliseconds")
 	       (method static $date-current-microseconds::llong () "bgl_current_microseconds")
 	       (method static $date-current-nanoseconds::llong () "bgl_current_nanoseconds")
 	       (method static $date-to-seconds::elong (::date) "bgl_date_to_seconds")
 	       (method static $date-to-nanoseconds::llong (::date) "bgl_date_to_nanoseconds")
+	       (method static $date-to-milliseconds::llong (::date) "bgl_date_to_milliseconds")
 	       (method static $date-seconds-to-string::bstring (::elong) "bgl_seconds_to_string")
 	       (method static $date-seconds-to-utc-string::bstring (::elong) "bgl_seconds_to_utc_string")
 	       
 	       (method static $date-integer->second::elong (::long) "bgl_integer_to_seconds")
 	       (method static $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
+	       (method static $date-millisecond::llong (::date) "BGL_DATE_MILLISECOND")
 	       (method static $date-second::int (::date) "BGL_DATE_SECOND")
 	       (method static $date-minute::int (::date) "BGL_DATE_MINUTE")
 	       (method static $date-hour::int (::date) "BGL_DATE_HOUR")
@@ -109,6 +129,7 @@
 	       (method static $date-year::int (::date) "BGL_DATE_YEAR")
 	       (method static $date-timezone::long (::date) "BGL_DATE_TIMEZONE")
 	       (method static $date-is-dst::int (::date) "BGL_DATE_ISDST")
+	       (method static $date-is-gmt::bool (::date) "BGL_DATE_ISGMT")
 	       
 	       (method static $date-day-name::bstring (::int) "bgl_day_name")
 	       (method static $date-day-aname::bstring (::int) "bgl_day_aname")
@@ -120,11 +141,17 @@
 		       (nsec #l0) (sec 0) (min 0) (hour 0)
 		       (day 1) (month 1) (year 1970)
 		       timezone (dst -1))
-	    (date-copy date #!key nsec sec min hour day month year timezone)
+	    (date-copy date::date #!key nsec sec min hour day month year timezone isdst)
+	    (date-update! date::date #!key nsec sec min hour day month year)
+	    (inline date->gmtdate!::date ::date)
+	    (date-update-millisecond! ::date ::long)
+	    (date-update-second! ::date ::long)
+	    (date-update-minute! ::date ::long)
 	    
 	    (inline integer->second::elong ::long)
 	    
 	    (inline date-nanosecond::llong ::date)
+	    (inline date-millisecond::llong ::date)
 	    (inline date-second::int ::date)
 	    (inline date-minute::int ::date)
 	    (inline date-hour::int ::date)
@@ -140,14 +167,18 @@
 	    (inline date-is-dst::int ::date)
 	    
 	    (inline current-seconds::elong)
+	    (inline current-milliseconds::llong)
 	    (inline current-microseconds::llong)
 	    (inline current-nanoseconds::llong)
 	    (inline current-date::date)
 	    (inline seconds->date::date ::elong)
 	    (inline seconds->gmtdate::date ::elong)
+	    (inline milliseconds->gmtdate::date ::llong)
 	    (inline nanoseconds->date::date ::llong)
+	    (inline milliseconds->date::date ::llong)
 	    (inline date->seconds::elong ::date)
 	    (inline date->nanoseconds::llong ::date)
+	    (inline date->milliseconds::llong ::date)
 	    (date->string::bstring ::date)
 	    (date->utc-string::bstring ::date)
 	    (inline seconds->string::bstring ::elong)
@@ -205,7 +236,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    date-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (date-copy date #!key nsec sec min hour day month year timezone)
+(define (date-copy date #!key nsec sec min hour day month year timezone isdst)
    ($date-new
       (or nsec (date-nanosecond date))
       (or sec (date-second date))
@@ -214,10 +245,82 @@
       (or day (date-day date))
       (or month (date-month date))
       (or year (date-year date))
-      (or timezone (date-timezone date))
-      (integer? timezone)
-      (date-is-dst date)))
-      
+      (date-timezone date)
+      ($date-is-gmt date)
+      (or isdst -1)))
+
+;*---------------------------------------------------------------------*/
+;*    date-update! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (date-update! date #!key nsec sec min hour day month year)
+   ($date-update date
+      (or nsec (date-nanosecond date))
+      (or sec (date-second date))
+      (or min (date-minute date))
+      (or hour (date-hour date))
+      (or day (date-day date))
+      (or month (date-month date))
+      (or year (date-year date))
+      (date-timezone date)
+      ($date-is-gmt date)
+      -1))
+
+;*---------------------------------------------------------------------*/
+;*    date->gmtdate! ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (date->gmtdate! date)
+   (cond-expand
+      (bigloo-c
+       (let ((gmtdate ($date->gmtdate! date)))
+	  gmtdate))
+      (else
+       (error "date->gmtdate!" "not supported by this backend" date))))
+
+;*---------------------------------------------------------------------*/
+;*    date-update-millisecond! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (date-update-millisecond! date ms)
+   (cond-expand
+      (bigloo-c
+       (if (and (>=fx ms 0) (<fx ms 1000))
+	   (let ((osec (date-second date)))
+	      ($date-update-millisecond date ms)
+	      date)
+	   (date-update! date :nsec (*llong #l1000000 (fixnum->llong ms)))))
+      (else
+       (date-update! date :nsec (*llong #l1000000 (fixnum->llong ms))))))
+   
+;*---------------------------------------------------------------------*/
+;*    date-update-second! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (date-update-second! date sec)
+   (cond-expand
+      (bigloo-c
+       (if (and (>=fx sec 0) (<fx sec 60))
+	   (let ((osec (date-second date)))
+	      ($date-update-second date sec)
+	      ($date-update-time date (+fx ($date-time date) (-fx sec osec)))
+	      date)
+	   (date-update! date :sec sec)))
+      (else
+       (date-update! date :sec sec))))
+   
+;*---------------------------------------------------------------------*/
+;*    date-update-minute! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (date-update-minute! date min)
+   (cond-expand
+      (bigloo-c
+       (if (and (>=fx min 0) (<fx min 60))
+	   (let ((omin (date-minute date)))
+	      ($date-update-minute date min)
+	      ($date-update-time date
+		 (+fx ($date-time date) (*fx 60 (-fx min omin))))
+	      date)
+	   (date-update! date :min min)))
+      (else
+       (date-update! date :min min))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    integer->second ...                                              */
 ;*---------------------------------------------------------------------*/
@@ -229,6 +332,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (date-nanosecond d::date)
    ($date-nanosecond d))
+
+;*---------------------------------------------------------------------*/
+;*    date-millisecond ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (date-millisecond d::date)
+   ($date-millisecond d))
 
 ;*---------------------------------------------------------------------*/
 ;*    date-second ...                                                  */
@@ -315,6 +424,12 @@
    ($date-current-seconds))
 
 ;*---------------------------------------------------------------------*/
+;*    current-milliseconds ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (current-milliseconds)
+   ($date-current-milliseconds))
+
+;*---------------------------------------------------------------------*/
 ;*    current-microseconds ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (current-microseconds)
@@ -345,10 +460,22 @@
    ($date-from-seconds-gmt elong))
 
 ;*---------------------------------------------------------------------*/
+;*    milliseconds->gmtdate ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (milliseconds->gmtdate llong)
+   ($date-from-milliseconds-gmt llong))
+
+;*---------------------------------------------------------------------*/
 ;*    nanoseconds->date ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (nanoseconds->date elong)
-   ($date-from-nanoseconds elong))
+(define-inline (nanoseconds->date llong)
+   ($date-from-nanoseconds llong))
+
+;*---------------------------------------------------------------------*/
+;*    milliseconds->date ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (milliseconds->date llong)
+   ($date-from-milliseconds llong))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->seconds ...                                                */
@@ -363,30 +490,119 @@
    ($date-to-nanoseconds date))
 
 ;*---------------------------------------------------------------------*/
+;*    date->milliseconds ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (date->milliseconds date)
+   ($date-to-milliseconds date))
+
+;*---------------------------------------------------------------------*/
 ;*    date->string ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (date->string date)
    (date->rfc2822-date date))
 
 ;*---------------------------------------------------------------------*/
+;*    blit-digit! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (blit-digit! buf w digit)
+   (string-set! buf w (integer->char (+fx (char->integer #\0) digit))))
+
+;*---------------------------------------------------------------------*/
+;*    blit-int2! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (blit-int2! buf w int)
+   (if (<fx int 10)
+       (begin
+	  (string-set! buf w #\0)
+	  (blit-digit! buf (+fx w 1) int))
+       (begin
+	  (blit-digit! buf w (/fx int 10))
+	  (blit-digit! buf (+fx w 1) (modulofx int 10))))
+   2)
+
+;*---------------------------------------------------------------------*/
+;*    blit-int! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (blit-int! buf w int)
+   (cond
+      ((<fx int 10)
+       (blit-digit! buf w int)
+       1)
+      ((<fx int 100)
+       (blit-digit! buf w (/fx int 10))
+       (blit-digit! buf (+fx w 1) (modulofx int 10))
+       2)
+      ((<fx int 1000)
+       (blit-digit! buf w (/fx int 100))
+       (let ((r (modulofx int 100)))
+	  (blit-digit! buf (+fx w 1) (/fx r 10))
+	  (blit-digit! buf (+fx w 2) (modulofx r 10))
+	  3))
+      (else
+       (blit-digit! buf w (/fx int 1000))
+       (let ((r (modulofx int 1000)))
+	  (blit-digit! buf (+fx w 1) (/fx r 100))
+	  (let ((r (modulofx int 100)))
+	     (blit-digit! buf (+fx w 2) (/fx r 10))
+	     (blit-digit! buf (+fx w 3) (modulofx r 10))
+	     4)))))
+
+;*---------------------------------------------------------------------*/
+;*    blit-buf! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (blit-buf! tgt w str)
+   (let ((l (string-length str)))
+      (blit-string! str 0 tgt w l)
+      l))
+
+;*---------------------------------------------------------------------*/
 ;*    date->utc-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (date->utc-string date)
+
+   (define (utc-string date)
+      (let ((buf (make-string 29 #\space))
+	    (w 0))
+;*       (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"                  */
+;* 	 (day-aname (date-wday date))                                  */
+;* 	 (date-day date)                                               */
+;* 	 (month-aname (date-month date))                               */
+;* 	 (date-year date)                                              */
+;* 	 (date-hour date)                                              */
+;* 	 (date-minute date)                                            */
+;* 	 (date-second date))                                           */
+	 ;; date-aname
+	 (set! w (+fx w (blit-buf! buf w (day-aname (date-wday date)))))
+	 (string-set! buf w #\,)
+	 (set! w (+fx w 2))
+	 ;; date-day
+	 (set! w (+fx w (blit-int! buf w (date-day date))))
+	 (set! w (+fx w 1))
+	 ;; montn-aname
+	 (set! w (+fx w (blit-buf! buf w (month-aname (date-month date)))))
+	 (set! w (+fx w 1))
+	 ;; date-year
+	 (set! w (+fx w (blit-int! buf w (date-year date))))
+	 (set! w (+fx w 1))
+	 ;; date-hour
+	 (set! w (+fx w (blit-int2! buf w (date-hour date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-minute
+	 (set! w (+fx w (blit-int2! buf w (date-minute date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-second
+	 (set! w (+fx w (blit-int2! buf w (date-second date))))
+	 (set! w (+fx w 1))
+	 ;; GMT
+	 (set! w (+fx w (blit-buf! buf w "GMT")))
+	 (string-shrink! buf w)))
+   
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
-	     (day-aname (date-wday date))
-	     (date-day date)
-	     (month-aname (date-month date))
-	     (date-year date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date))
-	  (let* ((ctz (date-timezone (date-copy date)))
-		 (d (seconds->date
-		       (-fx (date->seconds date)
-			  ctz))))
-	     (date->utc-string (date-copy d :timezone 0))))))
+	  (utc-string date)
+	  (utc-string (seconds->gmtdate (date->seconds date))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->string ...                                              */
@@ -481,9 +697,9 @@
 ;*---------------------------------------------------------------------*/
 (define (rfc2822-date->date string)
    (let ((port (open-input-string string)))
-      (unwind-protect
-	 (rfc2822-parse-date port)
-	 (close-input-port port))))
+      (let ((d (rfc2822-parse-date port)))
+	 (close-input-port port)
+	 d)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rfc2822-parse-date ...                                           */
@@ -495,27 +711,58 @@
 ;*    date->rfc2822-date ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (date->rfc2822-date date)
+   
+   (define (rfc-string date tz)
+      (let ((buf (make-string 32 #\space))
+	    (w 0))
+;* 	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d ~a~2,0d~2,0d"        */
+;* 	     (day-aname (date-wday date))                              */
+;* 	     (date-day date)                                           */
+;* 	     (month-aname (date-month date))                           */
+;* 	     (date-year date)                                          */
+;* 	     (date-hour date)                                          */
+;* 	     (date-minute date)                                        */
+;* 	     (date-second date)                                        */
+;* 	     (if (<fx tz 0) "-" "+")                                   */
+;* 	     (absfx (/fx tz 3600))                                     */
+;* 	     (absfx (remainder tz 3600)))                              */
+	 ;; date-aname
+	 (set! w (+fx w (blit-buf! buf w (day-aname (date-wday date)))))
+	 (string-set! buf w #\,)
+	 (set! w (+fx w 2))
+	 ;; date-day
+	 (set! w (+fx w (blit-int! buf w (date-day date))))
+	 (set! w (+fx w 1))
+	 ;; montn-aname
+	 (set! w (+fx w (blit-buf! buf w (month-aname (date-month date)))))
+	 (set! w (+fx w 1))
+	 ;; date-year
+	 (set! w (+fx w (blit-int! buf w (date-year date))))
+	 (set! w (+fx w 1))
+	 ;; date-hour
+	 (set! w (+fx w (blit-int2! buf w (date-hour date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-minute
+	 (set! w (+fx w (blit-int2! buf w (date-minute date))))
+	 (string-set! buf w #\:)
+	 (set! w (+fx w 1))
+	 ;; date-second
+	 (set! w (+fx w (blit-int2! buf w (date-second date))))
+	 (set! w (+fx w 1))
+	 ;; +/-
+	 (string-set! buf w (if (<fx tz 0) #\- #\+))
+	 (set! w (+fx w 1))
+	 ;; tz/3600
+	 (set! w (+fx w (blit-int2! buf w (/fx tz 3600))))
+	 ;; tz%3600
+	 (set! w (+fx w (blit-int2! buf w (remainderfx tz 3600))))
+	 (string-shrink! buf w)))
+   
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
-	     (day-aname (date-wday date))
-	     (date-day date)
-	     (month-aname (date-month date))
-	     (date-year date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date))
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d ~a~2,0d~2,0d"
-	     (day-aname (date-wday date))
-	     (date-day date)
-	     (month-aname (date-month date))
-	     (date-year date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date)
-	     (if (<fx tz 0) "-" "+")
-	     (absfx (/fx tz 3600))
-	     (absfx (remainder tz 3600))))))
+	  (date->utc-string date)
+	  (rfc-string date tz))))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->iso8601-date ...                                           */
@@ -601,8 +848,9 @@
 		YYYY MM DD HH mm ss sss (negfx (*fx 3600 (the-fix b1 b2))))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0
-		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss)
+	      (make-date
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss
+		 :nsec sss :timezone 0)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -617,8 +865,9 @@
 		(*llong #l1000000 (fixnum->llong (the-fix (the-fix b1 b2) b3))))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0
-		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss)
+	      (make-date
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss
+		 :timezone 0)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
 		 (read/rp iso8601-Z-grammar (the-port)
@@ -633,8 +882,8 @@
 		YYYY MM DD HH mm (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0
-		 :year YYYY :month MM :day DD :hour HH :min mm)
+	      (make-date 
+		 :year YYYY :month MM :day DD :hour HH :min mm :timezone 0)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
 		 (read/rp iso8601-Z-grammar (the-port)
@@ -649,7 +898,8 @@
 		YYYY MM DD HH (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY :month MM :day DD :hour HH)
+	      (make-date 
+		 :year YYYY :month MM :day DD :hour HH :timezone 0 :dst 0)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -663,7 +913,8 @@
 		YYYY MM DD (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY :month MM :day DD)
+	      (make-date
+		 :year YYYY :month MM :day DD :hour 1)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
 
@@ -676,7 +927,8 @@
 		YYYY MM (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY :month MM)
+	      (make-date
+		 :year YYYY :month MM :hour 1)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -689,7 +941,7 @@
 		YYYY (the-fix b1 b2))))
 	 (else
 	  (if (eof-object? (the-failure))
-	      (make-date :timezone 0 :year YYYY)
+	      (make-date :year YYYY :hour 1)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
 

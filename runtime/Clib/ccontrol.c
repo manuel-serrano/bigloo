@@ -30,6 +30,54 @@ bgl_make_procedure( obj_t entry, int arity, int size ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
+/*    bgl_dup_procedure ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_dup_procedure( obj_t proc ) {
+   int size = PROCEDURE_LENGTH( proc );
+   obj_t n_proc = GC_MALLOC( BGL_PROCEDURE_BYTE_SIZE( size ) );
+   obj_t o_proc = CREF( proc );
+			      
+   n_proc->procedure.header = o_proc->procedure.header;
+   n_proc->procedure.entry = o_proc->procedure.entry;
+   n_proc->procedure.va_entry = o_proc->procedure.va_entry;
+   n_proc->procedure.attr = o_proc->procedure.attr;
+   n_proc->procedure.arity = o_proc->procedure.arity;
+
+   while( size-- > 0 ) {
+      PROCEDURE_SET( BREF( n_proc ), size, PROCEDURE_REF( proc, size ) );
+   }
+
+   return BREF( n_proc );
+}
+
+/*---------------------------------------------------------------------*/
+/*    INIT_FX_PROCEDURE                                                */
+/*---------------------------------------------------------------------*/
+#define INIT_FX_PROCEDURE( proc, entry, arity, size ) \
+   (proc->procedure.header = MAKE_HEADER( PROCEDURE_TYPE, size ), \
+    proc->procedure.entry = entry, \
+    proc->procedure.va_entry = 0L, \
+    proc->procedure.attr = BUNSPEC, \
+    proc->procedure.arity = arity, \
+    BREF( proc ))
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_init_fx_procedure ...                                        */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_init_fx_procedure( obj_t proc, obj_t (*entry)(), int arity, int size ) {
+   if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
+      C_FAILURE( "make-fx-procedure", "Environment to large", BINT( size ) );
+   } else {
+      return INIT_FX_PROCEDURE( proc, entry, arity, size );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    make_fx_procedure ...                                            */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
@@ -38,17 +86,9 @@ make_fx_procedure( obj_t (*entry)(), int arity, int size ) {
    if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
       C_FAILURE( "make-fx-procedure", "Environment to large", BINT( size ) );
    } else {
-      int byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
-      obj_t a_tproc = GC_MALLOC( byte_size );
-      static long count = 0;
+      obj_t a_tproc = GC_MALLOC( BGL_PROCEDURE_BYTE_SIZE( size ) );
 	      
-      a_tproc->procedure.header = MAKE_HEADER( PROCEDURE_TYPE, size );
-      a_tproc->procedure.entry = entry; 
-      a_tproc->procedure.va_entry = 0L;
-      a_tproc->procedure.attr = BUNSPEC;
-      a_tproc->procedure.arity = arity;
-
-      return BREF( a_tproc );
+      return INIT_FX_PROCEDURE( a_tproc, entry, arity, size );
    }
 }
 
@@ -260,6 +300,113 @@ va_generic_entry( obj_t proc, ... ) {
    else
       optional = BNIL;
 
+   va_end( argl );
+   
+#define CALL( proc ) ((obj_t (*)())PROCEDURE_VA_ENTRY( proc ))      
+   switch( arity ) {
+      case -1  : return CALL( proc )(proc, optional);
+      case -2  : return CALL( proc )(proc, arg[ 0 ], optional);
+      case -3  : return CALL( proc )(proc, arg[ 0 ], arg[ 1 ], optional);
+      case -4  : return CALL( proc )(proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                      optional);
+      case -5  : return CALL( proc )(proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], optional);
+      case -6  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], optional);
+      case -7  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     optional);
+      case -8  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], optional);
+      case -9  : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], optional);
+      case -10 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     optional);
+      case -11 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], optional);
+      case -12 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], optional);
+      case -13 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     optional);
+      case -14 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], optional);
+      case -15 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], arg[ 13 ], optional);
+      case -16 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], arg[ 13 ], arg[ 14 ],
+                                     optional);
+      case -17 : return CALL( proc )( proc, arg[ 0 ], arg[ 1 ], arg[ 2 ],
+                                     arg[ 3 ], arg[ 4 ], arg[ 5 ],
+                                     arg[ 6 ], arg[ 7 ], arg[ 8 ],
+                                     arg[ 9 ], arg[ 10 ], arg[ 11 ],
+                                     arg[ 12 ], arg[ 13 ], arg[ 14 ],
+                                     arg[ 15 ], optional);
+      
+      default: C_FAILURE( "va_generic_entry",
+			  "too many argument expected",
+			  BINT( arity ) );
+   }
+   return BNIL;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_va_stack_entry ...                                           */
+/*    -------------------------------------------------------------    */
+/*    Entry point of stack allocated varargs functions.                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_va_stack_entry( obj_t proc, ... ) {
+   va_list argl;
+   int     arity;
+   int     require;
+   obj_t   arg[ 16 ];
+   obj_t   optional;
+   obj_t   runner;
+   long    i;
+
+   va_start( argl, proc );
+   
+   arity  = PROCEDURE_ARITY( proc );
+   require = -arity - 1;
+
+   for( i = 0; i < require; i++ )
+      arg[ i ] = va_arg( argl, obj_t );
+
+   if( (runner = va_arg( argl, obj_t )) != BEOA ) {
+      obj_t tail;
+      obj_t __tmp;
+      
+      optional = tail = MAKE_STACK_PAIR_TMP( runner, BNIL, __tmp );
+      
+      while( (runner = va_arg( argl, obj_t )) != BEOA ) {
+         SET_CDR( tail, MAKE_STACK_PAIR_TMP( runner, BNIL, __tmp ) );
+         tail = CDR( tail );
+      } 
+   } else {
+      optional = BNIL;
+   }
+   
    va_end( argl );
    
 #define CALL( proc ) ((obj_t (*)())PROCEDURE_VA_ENTRY( proc ))      

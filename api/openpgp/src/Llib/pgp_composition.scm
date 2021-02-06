@@ -4,7 +4,7 @@
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
 ;*    Last change :  Fri Apr 27 11:11:40 2012 (serrano)                */
-;*    Copyright   :  2010-12 Florian Loitsch, Manuel Serrano           */
+;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    RFC2440 encoding/decoding                                        */
 ;*=====================================================================*/
@@ -60,7 +60,7 @@
 (define (decode-pgp-content p::input-port)
    ;; TODO: we only handle Compressed packets at the "toplevel", as a message
    ;; inside signatures and inside Literals.
-   (with-trace 1 "decode-pgp-content"
+   (with-trace 'pgp "decode-pgp-content"
       (trace-item "p=" p)
       (let ((packets (decode-packets p)))
 	 (parse-packets packets))))
@@ -69,7 +69,7 @@
 ;*    parse-packets ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (parse-packets packets)
-   (with-trace 2 "parse-packets"
+   (with-trace 'pgp "parse-packets"
       (cond
 	 ((null? packets)
 	  (error 'parse-packets
@@ -105,7 +105,7 @@
 ;*    rfc 2440 allows several keys to be concatenated                  */
 ;*---------------------------------------------------------------------*/
 (define (parse-keys packets)
-   (with-trace 3 "parse-keys"
+   (with-trace 'pgp "parse-keys"
       (let loop ((packets packets)
 		 (keys '())
 		 (user-ids '()))
@@ -159,7 +159,7 @@
 	     (values (reverse! sigs) packets)))))
    
    (define (parse-user-ids packets)
-      (with-trace 3 "parse-user-ids"
+      (with-trace 'pgp "parse-user-ids"
 	 (let loop ((packets packets)
 		    (user-ids '()))
 	    (cond
@@ -215,7 +215,7 @@
 	    (else
 	     (values (reverse! subkeys) packets)))))
    
-   (with-trace 2 "parse-key"
+   (with-trace 'pgp "parse-key"
       (trace-item "packets=" (map find-runtime-type packets))
       (let ((main-key-packet (car packets)))
 	 (receive (revocation-sigs remaining-packets)
@@ -249,7 +249,7 @@
 ;*    parse-encrypted-message ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (parse-encrypted-message packets)
-   (with-trace 2 "parse-encrypted-message"
+   (with-trace 'pgp "parse-encrypted-message"
       (let loop ((packets packets)
 		 (session-keys '()))
 	 (cond
@@ -281,7 +281,7 @@
 ;*    parse-signature ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (parse-signature packets)
-   (with-trace 2 "parse-signature"
+   (with-trace 'pgp "parse-signature"
       (let loop ((packets packets)
 		 (sigs '()))
 	 (cond
@@ -325,7 +325,7 @@
 		 (eq? ohash hash-algo)
 		 (eq? osig signature-type)))))
    
-   (with-trace 2 "parse-one-pass-signature"
+   (with-trace 'pgp "parse-one-pass-signature"
       (let loop ((packets packets)
 		 (expect-one-pass? #t)
 		 (one-pass-sigs '())
@@ -455,7 +455,7 @@
 	    (when (eof-object? line) (chksum-error))
 	    (when (not (string=? line expected)) (chksum-error)))))
    
-   (with-trace 1 "armored-pipe-port"
+   (with-trace 'pgp "armored-pipe-port"
       (trace-item "p=" p)
       (let ((l (safe-read-line p)))
 	 (when (not (and (string-prefix? "-----BEGIN" l)
@@ -481,17 +481,16 @@
 ;*    decode-pgp ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (decode-pgp p::input-port)
-   (with-trace 1 "decode-pgp"
+   (with-trace 'pgp "decode-pgp"
       (trace-item "p=" p)
       (let ((first-chars (read-chars 10 p)))
 	 ;; push-back the read-chars.
 	 (unread-string! first-chars p)
-	 
 	 (if (string=? "-----BEGIN" first-chars)
 	     (receive (main-header-info headers composition)
 		(decode-armored-pgp p)
-		;; discard the headers. If the user wants them he has to call the
-		;; armored function directly.
+		;; discard the headers. If the user wants them he has to
+		;; call the armored function directly.
 		composition)
 	     (decode-native-pgp p)))))
 
@@ -499,7 +498,7 @@
 ;*    decode-armored-pgp ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (decode-armored-pgp p::input-port)
-   (with-trace 2 "decode-armored-pgp"
+   (with-trace 'pgp "decode-armored-pgp"
       (receive (main-header-info headers pp)
 	 (armored-pipe-port p)
 	 (unwind-protect
@@ -510,7 +509,7 @@
 ;*    decode-native-pgp ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (decode-native-pgp p::input-port)
-   (with-trace 2 "decode-native-pgp"
+   (with-trace 'pgp "decode-native-pgp"
       (decode-pgp-content p)))
 
 ;*---------------------------------------------------------------------*/

@@ -55,10 +55,7 @@ cat > $file.c <<EOF
 #include <unistd.h>
 #include <stdio.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    fd_set readfds;
    struct timeval timeout;
    int fno = fileno( stdin ) + 1;

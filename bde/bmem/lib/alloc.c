@@ -38,7 +38,7 @@ unsigned long ante_bgl_init_dsz = 0;
 
 #define DBG_INDEX_STOP( name ) \
    (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index) != (__idx -1) \
-      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%ld/%ld]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
+      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%ld/%ld]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), -1 : 0; } 0
 
 #define DBG_INDEX_RESET() \
    (alloc_index = __idx)
@@ -142,10 +142,16 @@ static long
 get_alloc_type() {
    if( bmem_thread ) {
       long *alloc_types = (long *)____pthread_getspecific( bmem_key );
-      long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
-      long alloc_index = (long)____pthread_getspecific( bmem_key3 );
 
-      return (alloc_index == -1) ? -1 : alloc_types[ alloc_index ];
+      if( !alloc_types ) {
+	 // something is wrong fall back
+	 return -1;
+      } else {
+	 long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
+	 long alloc_index = (long)____pthread_getspecific( bmem_key3 );
+
+	 return (alloc_index == -1) ? -1 : alloc_types[ alloc_index ];
+      }
    } else {
       return (alloc_index == -1) ? -1 : alloc_types[ alloc_index ];
    }
@@ -159,10 +165,16 @@ static long
 get_alloc_type_offset() {
    if( bmem_thread ) {
       long *alloc_types = (long *)____pthread_getspecific( bmem_key );
-      long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
-      long alloc_index = (long)____pthread_getspecific( bmem_key3 );
+      
+      if( !alloc_types ) {
+	 // something is wrong fall back
+	 return 0;
+      } else {
+	 long *alloc_type_offsets = (long *)____pthread_getspecific( bmem_key2 );
+	 long alloc_index = (long)____pthread_getspecific( bmem_key3 );
 
-      return alloc_type_offsets[ alloc_index ];
+	 return alloc_type_offsets[ alloc_index ];
+      }
    } else {
       return alloc_type_offsets[ alloc_index ];
    }
@@ -795,7 +807,7 @@ GC_malloc_find_type( int lb, int unknown ) {
       }
 #endif
    } else {
-      bmem_set_alloc_type( unknown, 0 );
+      bmem_set_alloc_type( GC_malloc_unknown( -1, -1, unknown ), 0 );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
 	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): ???? type=%ld\n",

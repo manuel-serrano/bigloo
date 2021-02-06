@@ -928,7 +928,6 @@ Returns a big-endian representation of the given number.
 @end deffn
 
 @deffn {procedure} string->number string [radix 10]
-@deffnx {bigloo procedure} string->real string
 @deffnx {bigloo procedure} string->elong string radix
 @deffnx {bigloo procedure} string->llong string radix
 @deffnx {bigloo procedure} string->bignum string radix
@@ -944,12 +943,19 @@ Bigloo implements a restricted version of @code{string->number}. If
 (string->elong "234456353")         @result{} #e234456353
 @end smalllisp
 
-In addition, @code{string->number} does not support radix encoded inside 
-@var{string}. That is:
-
 @smalllisp
 (string->number "#x1243")          @result{} #f
 @end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} string->integer string [radix 10] [startpos 0]
+@deffnx {bigloo procedure} string->real string
+In addition, @code{string->number} does not support radix encoded inside 
+@var{string}. That is:
+
+For efficiency, @code{string->real} and @code{string->integer} do not
+test whether the string can be read as a number.  Therefore the result
+might be wrong if the string cannot be read as a number.
 @end deffn
 
 @deffn {bigloo procedure} octet-string->bignum string
@@ -979,9 +985,6 @@ Convert the big-endian representations to their numeric values.
 @deffnx {bigloo procedure} flonum->elong r
 @deffnx {bigloo procedure} llong->flonum i
 @deffnx {bigloo procedure} flonum->llong r
-For efficiency, @code{string->real} and @code{string->integer} do not
-test whether the string can be read as a number.  Therefore the result
-might be wrong if the string cannot be read as a number.
 
 These last procedures implement the natural translation
 from and to fixnum, flonum, elong, and llong.

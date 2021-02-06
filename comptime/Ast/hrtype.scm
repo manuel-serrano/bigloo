@@ -39,7 +39,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (hrtype-node! node::var)
    (with-access::var node (variable)
-      ;; MS 15 apr 2010. It might be that a body contains a reference
+      ;; MS 15 apr 2010. It might be that a body contain a reference
       ;; to an unbound global variable. For instance, the camloo raise
       ;; function is defined as:
       ;; 
@@ -99,7 +99,19 @@
 	    (let ((value (variable-value variable)))
 	       (cond
 		  ((cfun? value)
-		   (restore-global! variable))
+		   (let ((g (find-global (global-id variable)
+			       (global-module variable))))
+		      ;; MS 8dec2020: This correct a bug observed in
+		      ;; Hop hopscript library. An inlined hopscript function
+		      ;; was using $VECTOR?. The type of the parameter not
+		      ;; not properly restored and left as "_". This was
+		      ;; responsible for coerce to fail to convert something
+		      ;; into a "_" type. As foreign variable are supposed
+		      ;; to be globally unique, I think it's safer to
+		      ;; changer the restored foreign for the one pre-existing.
+		      (if g
+			  (set! variable g)
+			  (restore-global! variable))))
 		  ((sfun? value)
 		   (if (and (eq? (sfun-class value) 'sifun)
 			    ;; @label already-restored@

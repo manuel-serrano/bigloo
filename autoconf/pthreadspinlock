@@ -59,10 +59,7 @@ cat > $file.c <<EOF
 #include <sched.h>
 #include <stdio.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
+int main( int argc, char *argv[] ) {
    pthread_spinlock_t mutex;
    pthread_t thread;
    pthread_key_t key;

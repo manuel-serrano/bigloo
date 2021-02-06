@@ -375,7 +375,7 @@
 		  (set! x (cons 2 x))))
 	    x)
 	 '(1 2))
-   (test "with-handler/unwind-protect.1"
+   (test "with-handler/unwind-protect.2"
 	 (let ((x '()))
 	    (with-handler
 	       (lambda (e)
@@ -388,7 +388,7 @@
 		     (raise 'foo)
 		     (set! x (cons 2 x))))))
 	 '(1 2))
-   (test "with-handler/unwind-protect.2"
+   (test "with-handler/unwind-protect.3"
 	 (let ((x '()))
 	    (with-handler
 	       (lambda (e)
@@ -405,7 +405,7 @@
 		  (set! x (cons 4 x))))
 	    x)
 	 '(1 4 2 3))
-   (test "with-handler/unwind-protect.3"
+   (test "with-handler/unwind-protect.4"
 	 (let ((x '()))
 	    (unwind-protect
 	       (with-handler
@@ -424,7 +424,7 @@
 	       (set! x (cons 5 x)))
 	    x)
 	 '(5 1 4 2 3))
-   (test "with-handler/unwind-protect.4"
+   (test "with-handler/unwind-protect.5"
       (with-handler
 	 (lambda (e) e)
 	 (unwind-protect

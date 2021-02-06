@@ -61,7 +61,7 @@ cat > $file.c <<EOF
 
 static TLS int tls;
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
 #if defined( __GNUC__ )
    pthread_mutex_t mutex;
    pthread_cond_t cv;

@@ -41,7 +41,7 @@
       ;; store in the loop for the GC
       (uv-push-gcmark! loop o)
       ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
-      (when (uv-gcmarks-empty? loop) ($bgl_uv_timer_cb $uv_timer_nil 0))
+      (when (uv-gcmarks-empty? loop) ($bgl_uv_timer_cb $uv_timer_nil))
       ($uv_timer_start ($uv-timer-t $builtin) $BGL_UV_TIMER_CB t r)))
 
 ;*---------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 class Bigloo@Release@ < Formula
   desc "Scheme implementation with object system, C, and Java interfaces"
   homepage "https://www-sop.inria.fr/indes/fp/Bigloo/"
-  url "ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-@release@.tar.gz"
+  url "ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-@RELEASE@.tar.gz"
   version "@RELEASE@"
   sha256 "@SHA256@"
   revision 1

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 11:03:12 1995                          */
 ;*    Last change :  Wed Jan 22 08:46:01 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute the list of the kaptured variables for each           */
 ;*    globalized function. The used method is very close to            */
@@ -29,9 +29,6 @@
 ;*    set-kaptured! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (set-kaptured! local*)
-;*    (for-each (lambda (local)                                        */
-;* 		(set-one-kaptured-old! local local))                   */
-;*       local*))                                                      */
    (for-each set-one-kaptured! local*))
 
 ;*---------------------------------------------------------------------*/

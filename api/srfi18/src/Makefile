@@ -43,9 +43,8 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 # Additional pthread lib for C
-EXTRALIBS	= $(PTHREADLIBS) $(GCCLOSELIB_FTH)
-EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE)
-EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE)
+EXTRALIBS	+= $(PTHREADLIBS)
+BIGLOOEXTRALIBS += bigloopthread
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -98,7 +97,7 @@ all:
 	  fi
 
 c: build-c
-build-c: api-c
+build-c: api-c_mt
 
 jvm: build-jvm
 build-jvm: api-jvm

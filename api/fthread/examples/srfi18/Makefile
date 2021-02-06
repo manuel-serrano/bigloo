@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
 #*    Last change :  Sun Jul  9 10:11:30 2017 (serrano)                */
-#*    Copyright   :  2002-17 Manuel Serrano                            */
+#*    Copyright   :  2002-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Fair threads tests                     */
 #*=====================================================================*/
@@ -89,11 +89,11 @@ test-dotnet:
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class/.obj                                           */
 #*---------------------------------------------------------------------*/
-.scm.o: $*.scm
+.scm.o:
 	$(BIGLOO) -c $(BFLAGS) -call/cc $*.scm -o $*.o
 
-.scm.class: $*.scm
+.scm.class:
 	$(BIGLOO) -c -jvm $(BFLAGS) $*.scm -o $*.class
 
-.scm.obj: $*.scm
+.scm.obj:
 	$(BIGLOO) -c -dotnet $(BFLAGS) $*.scm -o $*.obj

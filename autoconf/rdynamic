@@ -64,7 +64,7 @@ fi
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
 #include <stdio.h>
-char *char *foo() {
+char *foo() {
   return "GLOP";
 }
 

@@ -38,7 +38,7 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPISAFE	= -unsafe -safee
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
-                  -srfi $(API) -copt "$(FLACCFLAGS)"
+                  -srfi $(API) -copt "$(FLACCFLAGS) -DBGL_DUMMY"
 CAPIFLAGS       = $(FLACCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -48,23 +48,19 @@ CEFLAGS		= $(FLACCFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(FLACLIBS) " " "
-EXTRALIBS	= 
 else
-EXTRALIBS	= $(FLACLIBS) -lm
+EXTRALIBS	+= $(FLACLIBS) -lm
 endif
 
-EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE)
-EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE)
+BIGLOOEXTRALIBS	+= bigloomultimedia
 
 ifneq "$(ALSALIBS) " " "
 EXTRALIBS	+= $(ALSALIBS)
-EXTRALIBS_U	+= -lbiglooalsa_u-$(RELEASE)
-EXTRALIBS_S	+= -lbiglooalsa_s-$(RELEASE)
+BIGLOOEXTRALIBS	+= biglooalsa
 endif
 ifneq "$(PULSEAUDIOLIBS) " " "
 EXTRALIBS	+= $(PULSEAUDIOLIBS)
-EXTRALIBS_U	+= -lbigloopulseaudio_u-$(RELEASE)
-EXTRALIBS_S	+= -lbigloopulseaudio_s-$(RELEASE)
+BIGLOOEXTRALIBS	+= bigloopulseaudio
 endif
 
 #*---------------------------------------------------------------------*/

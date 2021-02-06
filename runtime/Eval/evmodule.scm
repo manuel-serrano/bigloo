@@ -857,7 +857,7 @@
 	     (let ((loc (or (get-source-location c) loc)))
 		(evcompile-error loc "eval" "Illegal module clause" c0)))
 	    ((eq? (car c) 'cond-expand)
-	     (let ((nc (expand c)))
+	     (let ((nc (expand-once c)))
 		(cond
 		   ((pair? nc)
 		    (if (eq? (car nc) 'begin)

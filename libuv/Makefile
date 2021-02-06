@@ -72,6 +72,9 @@ install:
 	  $(MAKE) install-lib LIB=libbigloouv-$(RELEASE); \
           cp $(LIBUV)/include/uv.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/uv.h && \
           chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/uv.h; \
+          if [ -d $(DESTDIR)$(LIBDIR)/$(FILDIR)/uv ]; then \
+            chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/uv; \
+          fi; \
 	fi
 
 #*---------------------------------------------------------------------*/

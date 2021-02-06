@@ -52,7 +52,7 @@ fi
 cat > $file.c <<EOF
 #include <stdint.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
   int8_t x8 = -1;
   uint8_t u8 = 1;
   int16_t x16 = -1;

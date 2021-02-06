@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
 ;*    Last change :  Wed Jul 26 10:18:56 2017 (serrano)                */
-;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
