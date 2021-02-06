@@ -473,7 +473,7 @@
 (define (localvar me::jvm r b e id);
    (with-access::rtl_reg r (type var)
       (when (and (local? var) (local-user? var))
-	 (let ( (user-name (symbol->string (local-id var)))
+	 (let ( (user-name (bigloo-mangle (symbol->string (local-id var))))
 		(type (compile-type me type)) )
 	    (code! me `(localvar ,b ,e ,user-name ,type ,id)) ))))
 

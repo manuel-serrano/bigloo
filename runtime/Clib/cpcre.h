@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
 /*    Last change :  Thu Aug  8 13:35:02 2019 (serrano)                */
-/*    Copyright   :  2019-20 Manuel Serrano                            */
+/*    Copyright   :  2019-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
 /*=====================================================================*/
@@ -337,7 +337,7 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 	 sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
 		  erroffset, error );
 
-	 if( !options & PCRE_BGLNORAISE ) {
+	 if( !(options & PCRE_BGLNORAISE) ) {
 	    C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
 
 	    return re;

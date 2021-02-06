@@ -3541,7 +3541,7 @@ public final class foreign
 	 return new bigloo.date(ns, s, min, h, d, mon - 1, y, tz, istz, dst);
       }
 
-   public static date bgl_update_date(date, long ns, int s,
+   public static date bgl_update_date(date date, long ns, int s,
 				      int min, int h, int d, int mon,
 				      int y, int tz, boolean istz, int dst)
       {
@@ -3579,13 +3579,6 @@ public final class foreign
    public static date bgl_seconds_to_utc_date(long sec)
       {
 	 date d = new bigloo.date(sec);
-	 d.calendar.setTimeZone(new SimpleTimeZone(0, "UTC"));
-	 return d;
-      }
-
-   public static date bgl_milliseconds_to_date(long sec)
-      {
-	 date d = new bigloo.date(sec * 1000000, true);
 	 d.calendar.setTimeZone(new SimpleTimeZone(0, "UTC"));
 	 return d;
       }
@@ -3700,7 +3693,7 @@ public final class foreign
 	 return ( d.calendar.get(Calendar.DST_OFFSET) > 0 ) ? 1 : -1;
       }
 
-   public static int BGL_DATE_ISGMT(date d)
+   public static boolean BGL_DATE_ISGMT(date d)
       {
 	 return (d.calendar.get(Calendar.ZONE_OFFSET) == 0);
       }
