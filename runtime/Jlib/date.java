@@ -21,11 +21,10 @@ public class date extends obj {
       if( !istz ) {
 	 calendar = new GregorianCalendar( y, mon, d, h, min, s );
 	 final TimeZone tmz = calendar.getTimeZone();
-	 timezone = -tmz.getRawOffset() / 1000;
+	 timezone = tmz.getOffset(calendar.getTimeInMillis()) / 1000;
       } else {
 	 final TimeZone tmz = new SimpleTimeZone( 0, "UTC" );
 	 calendar = new GregorianCalendar( tmz );
-
 	 calendar.set( y, mon, d, h, min, s );
 	 calendar.add( Calendar.MILLISECOND, (int)tz * 1000 );
 	 timezone = 0;
@@ -35,21 +34,22 @@ public class date extends obj {
    public date( final long seconds ) {
       calendar = new GregorianCalendar();
       final Date d = new Date();
-	 
-      d.setTime( seconds * 1000 );
+      final long milliseconds = seconds * 1000;	 
+      d.setTime( milliseconds );
       calendar.setTime( d );
-      final TimeZone tmz = calendar.getTimeZone();
-      timezone = -tmz.getRawOffset() / 1000;
+      final TimeZone tmz = calendar.getTimeZone();   
+      timezone = tmz.getOffset( milliseconds ) / 1000;
    }
    
    public date( final long nseconds, boolean _b ) {
       calendar = new GregorianCalendar();
       final Date d = new Date();
-	 
-      d.setTime( nseconds / _b ? 1000000 : 1000 );
+
+      final long milliseconds = nseconds / 1000000;
+      d.setTime( milliseconds );
       calendar.setTime( d );
       final TimeZone tmz = calendar.getTimeZone();
-      timezone = -tmz.getRawOffset() / 1000;
-      nsec = _b ? (nseconds % 1000000) : (nseconds % 1000);
+      timezone = tmz.getOffset( milliseconds ) / 1000;
+      nsec = (nseconds % 1000000);
    }
 }
