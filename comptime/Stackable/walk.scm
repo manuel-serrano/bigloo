@@ -94,12 +94,13 @@
    (when (and (not (import? var)) (not (memq var (cdr ctx))))
       ;; a local function not scanned during this iteration yet
       (set-cdr! ctx (cons var (cdr ctx)))
-      (with-access::variable var (value)
+      (with-access::variable var (value id)
 	 (with-access::sfun value (body)
-	    (if (isa? var global)
-		(stackable body #t 0 ctx)
-		(with-access::local/depth var (depth)
-		   (stackable body #t depth ctx)))))))
+	    (when (isa? body node)
+	       (if (isa? var global)
+		   (stackable body #t 0 ctx)
+		   (with-access::local/depth var (depth)
+		      (stackable body #t depth ctx))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    max-depth ...                                                    */
@@ -237,8 +238,9 @@
 	     (var-stackable v ctx)
 	     (with-access::sfun f ((parameters args))
 		(for-each (lambda (p a)
-			     (with-access::local p (val-noescape depth)
-				(stackable a (not val-noescape) (max-depth) ctx)))
+			     (when (local? p)
+				(with-access::local p (val-noescape depth)
+				   (stackable a (not val-noescape) (max-depth) ctx))))
 		   parameters args)))
 	    ((isa? f fun)
 	     (with-access::fun f (args-noescape args-retescape)
