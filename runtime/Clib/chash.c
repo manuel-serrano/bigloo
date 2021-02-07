@@ -218,12 +218,6 @@ bgl_string_hash( char *string, int start, int end ) {
    bgl_string_hash( BSTRING_TO_STRING( str ), 0, STRING_LENGTH( str ) )
 
 /*---------------------------------------------------------------------*/
-/*    BGL_STRING_HASH_NUMBER_PERSISTENT ...                            */
-/*---------------------------------------------------------------------*/
-#define BGL_STRING_HASH_NUMBER_PERSISTENT( str ) \
-   bgl_string_hash_persistent( BSTRING_TO_STRING( str ), 0, STRING_LENGTH( str ) )
-
-/*---------------------------------------------------------------------*/
 /*    long                                                             */
 /*    bgl_string_hash_persistent ...                                   */
 /*---------------------------------------------------------------------*/
@@ -238,6 +232,12 @@ bgl_string_hash_persistent( char *string, int start, int end ) {
 
    return (long)(result & ((1 << 29) - 1));
 }
+
+/*---------------------------------------------------------------------*/
+/*    BGL_STRING_HASH_NUMBER_PERSISTENT ...                            */
+/*---------------------------------------------------------------------*/
+#define BGL_STRING_HASH_NUMBER_PERSISTENT( str ) \
+   bgl_string_hash_persistent( BSTRING_TO_STRING( str ), 0, STRING_LENGTH( str ) )
 
 /*---------------------------------------------------------------------*/
 /*    long                                                             */
