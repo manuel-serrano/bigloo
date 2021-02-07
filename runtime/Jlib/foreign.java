@@ -7339,25 +7339,20 @@ public final class foreign
 	 return (hash_code & ((1 << power) - 1));
       }
 
-   public static int bgl_string_hash_number(byte[]s)
-      {
-	 int result = 5381;
-
-	 for (int i = 0; i < s.length; ++i)
-	    result += (result << 5) + s[i];
-
-	 return result & ((1 << 29) - 1);
-      }
-
    public static int bgl_string_hash(byte[]s, int start, int len)
       {
 	 int result = 5381;
 
-	 for (int i = start; i < len; ++i, i++)
+	 for (int i = start; i < len; i++)
 	    result += (result << 5) + s[i];
 	 return result & ((1 << 29) - 1);
       }
 
+   public static int bgl_string_hash_number(byte[]s)
+      {
+	 return bgl_string_hash( s, 0, s.length );
+      }
+   
    public static int bgl_symbol_hash_number(symbol obj)
       {
 	 return (1 + bgl_string_hash_number(SYMBOL_TO_STRING(obj)));

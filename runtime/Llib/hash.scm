@@ -75,7 +75,7 @@
    (java    (class foreign
 	       (method static $string-hash::long (::string ::int ::int)
 		       "bgl_string_hash")
-	       (method static $string-hash-persistent::long (::string ::int ::int)
+	       (method static $string-hash-persistent::int (::string ::int ::int)
 		       "bgl_string_hash")
 	       (method static symbol-hash-number::long (::symbol)
 		       "bgl_symbol_hash_number")
