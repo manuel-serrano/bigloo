@@ -61,8 +61,11 @@
    (include "Llib/hash.sch")
    
    (extern  ($string-hash::long (::string ::int ::int) "bgl_string_hash")
+	    ($string-hash-persistent::long (::string ::int ::int) "bgl_string_hash_persistent")
 	    (symbol-hash-number::long (::symbol) "bgl_symbol_hash_number")
+	    (symbol-hash-number-persistent::long (::symbol) "bgl_symbol_hash_number_persistent")
 	    (keyword-hash-number::long (::keyword) "bgl_keyword_hash_number")
+	    (keyword-hash-number-persistent::long (::keyword) "bgl_keyword_hash_number_persistent")
 	    (obj-hash-number::long (::obj) "bgl_obj_hash_number")
 	    (c-pointer-hashnumber::long (::obj ::long) "bgl_pointer_hashnumber")
 	    (foreign-hash-number::long (::foreign) "bgl_foreign_hash_number")
@@ -72,9 +75,15 @@
    (java    (class foreign
 	       (method static $string-hash::long (::string ::int ::int)
 		       "bgl_string_hash")
+	       (method static $string-hash-persistent::long (::string ::int ::int)
+		       "bgl_string_hash")
 	       (method static symbol-hash-number::long (::symbol)
 		       "bgl_symbol_hash_number")
+	       (method static symbol-hash-number-persistent::long (::symbol)
+		       "bgl_symbol_hash_number")
 	       (method static keyword-hash-number::long (::keyword)
+		       "bgl_keyword_hash_number")
+	       (method static keyword-hash-number-persistent::long (::keyword)
 		       "bgl_keyword_hash_number")
 	       (method static obj-hash-number::long (::obj)
 		       "bgl_obj_hash_number")
@@ -95,7 +104,8 @@
 	       (hash #f)
 	       (weak 'none)
 	       (max-length 16384)
-	       (bucket-expansion 1.2))
+	       (bucket-expansion 1.2)
+	       (persistent #f))
 	    (get-hashnumber::long ::obj)
 	    (get-hashnumber-persistent::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
@@ -211,10 +221,8 @@
 		   (weak-none)))
 	  (wk (bit-or wkk wkd)))
       (if (eq? wk (weak-open-string))
-	  (begin
-	     (tprint "LA...")
-	     (%hashtable 0 size (make-vector (*fx 3 size) #f) eq? list wk 0 0))
-	  (%hashtable 0 mblen (make-vector size '()) eqtest hashn wk -1 1))))
+	  (%hashtable 0 size (make-vector (*fx 3 size) #f) eq? list wk 0 0)
+	  (%hashtable 0 mblen (make-vector size '()) eqtest hashn wk -1 1.2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    create-hashtable ...                                             */
@@ -226,7 +234,8 @@
 	   (hash #f)
 	   (weak 'none)
 	   (max-length 16384)
-	   (bucket-expansion 1.2))
+	   (bucket-expansion 1.2)
+	   (persistent #f))
    (let ((weak (case weak
 		  ((keys) (weak-keys))
 		  ((data) (weak-data))
@@ -235,6 +244,12 @@
 		  ((open-string) (weak-open-string))
 		  ((string) (weak-string))
 		  (else (if weak (weak-data) (weak-none))))))
+      (when persistent
+	 (if hash
+	    (error "create-hashtable"
+	       "Persistent hashtable cannot use custom hash function"
+	       hash)
+	    (set! hash 'persistent)))
       (if (or (eq? weak (weak-open-string)) (eq? weak (weak-string)))
 	  (cond
 	     (eqtest
@@ -1120,6 +1135,7 @@
 		   (let ((o (get key i)))
 		      (loop (-fx i 1)
 			 (hash (bit-xor acc (obj-hash o))))))))))
+   
    (define (ucs2-string-hashnumber key)
       (let ((len (ucs2-string-length key)))
 	 (let loop ((i (-fx len 1))
@@ -1141,13 +1157,13 @@
 	     ((eq? key '()) 453343)
 	     (else 21354)))
 	 ((string? key)
-	  (hash (string-hash-number key)))
+	  (hash ($string-hash-persistent key 0 (string-length key))))
 	 ((symbol? key)
-	  (hash (symbol-hash-number key)))
+	  (hash (symbol-hash-number-persistent key)))
 	 ((keyword? key)
-	  (hash (keyword-hash-number key)))
+	  (hash (keyword-hash-number-persistent key)))
 	 ((char? key)
-	  (hash (char->integer key)))
+	  (char->integer key))
 	 ((fixnum? key)
 	  (hash key))
 	 ((elong? key)
@@ -1159,7 +1175,10 @@
 	 ((date? key)
 	  (hash (bit-xor 908 (obj-hash (date->seconds key)))))
 	 ((real? key)
-	  (obj-hash (flonum->fixnum (*fl key 1000.))))
+	  (obj-hash
+	     (int64->fixnum
+		(bit-ands64 (flonum->int64 (*fl key 1000.))
+		   (bit-lshs64 #s64:1 29)))))
 	 ((ucs2-string? key)
 	  (hash (ucs2-string-hashnumber key)))
 	 ((homogeneous-vector? key)

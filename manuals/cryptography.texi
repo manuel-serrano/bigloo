@@ -927,7 +927,7 @@ A fingerprint is a 20-character binary string.
 @end deffn
 
 @deffn {bigloo openpgp procedure} pgp-make-key-db
-@deffn {bigloo openpgp procedure} pgp-key-db?
+@deffnx {bigloo openpgp procedure} pgp-key-db?
 @deffnx {bigloo openpgp procedure} pgp-add-key-to-db db key
 @deffnx {bigloo openpgp procedure} pgp-add-keys-to-db db keys
 @deffnx {bigloo openpgp procedure} pgp-resolve-key db id

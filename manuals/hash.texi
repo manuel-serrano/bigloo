@@ -19,7 +19,7 @@ Bigloo offers hash tables with support for weak pointers. Here are described
 functions which define and use them.
 
 @deffn {bigloo procedure} make-hashtable [bucket-len] [max-bucket-len] [eqtest] [hash] [weak-keys] [weak-data]
-@deffnx {bigloo procedure} create-hashtable [:size] [:max-bucket-len] [:eqtest] [:hash] [:weak] [:max-length] [:bucket-expansion]
+@deffnx {bigloo procedure} create-hashtable [:size] [:max-bucket-len] [:eqtest] [:hash] [:weak] [:max-length] [:bucket-expansion] [:persistent #f]
 Defines an hash table for which the number of buckets is @var{size}.
 The variable @var{max-bucket-len} specify when the table should be
 resized. If provided, these two values have to be exact integers greater or
@@ -29,6 +29,9 @@ arguments and call @code{make-hashtable} with no argument at all. The argument
 argument of this function is the keys contained in the table. The second
 argument is the searched key. By default
 hash tables rely on @code{hashtable-equal?}, which is defined as:
+
+Persistent hashtables are serializable. Non persisent hashtables are
+not.
 
 @smalllisp
 (define (hashtable-equal? obj1 obj2)
@@ -191,6 +194,14 @@ Here is an example of hash table.
       (foo . foo)
 @end smalllisp
 
+@deffn {bigloo procedure} get-hashnumber obj
+@deffnx {bigloo procedure} get-hashnumber-persistent obj
+
+Computes a hash number of the value @var{obj}, which can be of any type.
+The function @code{get-hashnumber-persistent} returns a hash number
+that is persistent accross program executions and execution platforms.
+@end deffn
+
 @deffn {bigloo generic} object-hashnumber object
 This generic function computes a hash number of the instance @var{object}.
 
@@ -206,5 +217,4 @@ Example:
 Compute a hash value for @var{string}, starting at index @var{start}, ending
 at length @var{len}.
 @end deffn
-
 
