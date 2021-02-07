@@ -316,7 +316,7 @@
 	    (generic object-print ::object ::output-port ::procedure)
 	    (generic object-display ::object . port)
 	    (generic object-write ::object . port)
-	    (generic object-hashnumber::int ::object)
+	    (generic object-hashnumber::long ::object)
 	    (generic object-equal?::bool ::object ::object)
 	    
 	    (generic exception-notify exc)
@@ -1297,7 +1297,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    object-hashnumber ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-generic (object-hashnumber::int object::object)
+(define-generic (object-hashnumber::long object::object)
    (%object-hashnumber object))
 
 ;*---------------------------------------------------------------------*/

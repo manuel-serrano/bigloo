@@ -20,9 +20,13 @@
 ;*---------------------------------------------------------------------*/
 (define (table-get-hashnumber::long table key)
    (let ((hashn (%hashtable-hashn table)))
-      (if (procedure? hashn)
-	  (absfx (hashn key))
-	  (get-hashnumber key))))
+      (cond
+	 ((procedure? hashn)
+	  (absfx (hashn key)))
+	 ((eq? hashn 'persistent)
+	  (get-hashnumber-persistent key))
+	 (else
+	  (get-hashnumber key)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-equal? ...                                             */

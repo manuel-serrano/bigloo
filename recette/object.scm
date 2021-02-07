@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/object.scm            */
+;*    /tmp/BGL/bigloo-4.4b/recette/object.scm                          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Sun Feb 11 18:38:13 2018 (serrano)                */
+;*    Last change :  Sun Feb  7 11:09:30 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -292,26 +292,26 @@
 ;*---------------------------------------------------------------------*/
 (define *dump-object*
    (list (instantiate::foo (x 1))
-	 (instantiate::gee (x 1) (y 2))
-	 (instantiate::foo/l (x 1))
-	 (vector 5 (instantiate::titi))
-	 'runtime-os-version
-	 (get-hashnumber 'runtime-os-version)
-	 "runtime-os-version"
-	 (get-hashnumber "runtime-os-version")
-	 'OS_VERSION
-	 (get-hashnumber "OS_VERSION")
-	 'OS_VERSION
-	 (get-hashnumber "OS_VERSION")
-	 (instantiate::toto
-	    (y #\a)
-	    (yy #\b)
-	    (z (list "toto" '(1 . 2) '#(1 2 3 tutu)))
-	    (t (list 1 ':foo)))
-	 (let ((table (make-hashtable)))
-	    (hashtable-put! table 'toto (instantiate::foo (x 2)))
-	    (hashtable-put! table 'tutu (instantiate::foo (x 3)))
-	    table)))
+      (instantiate::gee (x 1) (y 2))
+      (instantiate::foo/l (x 1))
+      (vector 5 (instantiate::titi))
+      'runtime-os-version
+      (get-hashnumber-persistent 'runtime-os-version)
+      "runtime-os-version"
+      (get-hashnumber-persistent "runtime-os-version")
+      'OS_VERSION
+      (get-hashnumber-persistent "OS_VERSION")
+      'OS_VERSION
+      (get-hashnumber-persistent "OS_VERSION")
+      (instantiate::toto
+	 (y #\a)
+	 (yy #\b)
+	 (z (list "toto" '(1 . 2) '#(1 2 3 tutu)))
+	 (t (list 1 ':foo)))
+      (let ((table (create-hashtable :persistent #t)))
+	 (hashtable-put! table 'toto (instantiate::foo (x 2)))
+	 (hashtable-put! table 'tutu (instantiate::foo (x 3)))
+	 table)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-obj ...                                                     */
@@ -445,8 +445,7 @@
 					   (y 2))))
 	 #t)
    (test "widening import" (wxws) 9)
-   (test "dump.c" (restore-obj "misc/dump.c") *dump-object*)
-   (test "dump.jvm" (restore-obj "misc/dump.jvm") *dump-object*)
+   (test "dump" (restore-obj "misc/dump") *dump-object*)
    (test "introspection" (let ((f (find-class-field foo 'x)))
 			    (class-field-name f))
 	 'x)
