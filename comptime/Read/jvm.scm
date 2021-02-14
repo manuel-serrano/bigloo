@@ -154,7 +154,10 @@
 	      ;; there is no specified destination so the JVM package is
 	      ;; just bigloo
 	      (let ((qt (if (string? (car *src-files*))
-			    (prefix (basename (car *src-files*)))
+			    (let ((uqtype (prefix (basename (car *src-files*)))))
+                               (if (bigloo-need-mangling? uqtype)
+                                   (bigloo-mangle uqtype)
+                                   uqtype))
 			    ".")))
 		 (add-qualified-type! *module* qt)
 		 qt))
