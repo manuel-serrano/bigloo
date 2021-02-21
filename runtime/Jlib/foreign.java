@@ -6128,12 +6128,12 @@ public final class foreign
       return new regexp(pat,true);
    }
 
-   public static Object bgl_regmatch(regexp o, byte[] string, boolean stringp, int beg, int end) {
-      return o.match(new String(string, beg, end-beg), stringp, beg);
+   public static Object bgl_regmatch(regexp o, byte[] string, boolean stringp, int beg, int end, offset) {
+      return o.match(new String(string, beg + offset, end-beg), stringp, beg);
    }
    
-   public static int bgl_regmatch_n(regexp o, byte[] string, Object[] v, int beg, int end) {
-      return o.match_n(new String(string, beg, end-beg), v, beg);
+   public static int bgl_regmatch_n(regexp o, byte[] string, Object[] v, int beg, int end, int offset) {
+      return o.match_n(new String(string, beg + offset, end-beg), v, beg);
    }
    
    public static Object bgl_regfree(regexp o) {

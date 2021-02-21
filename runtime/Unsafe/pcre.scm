@@ -48,8 +48,8 @@
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
            (macro $regexp-capture-count::long (::regexp) "BGL_REGEXP_CAPTURE_COUNT")
-	   (macro $regmatch::obj (::regexp ::string ::bool ::int ::int) "BGL_REGEXP_MATCH")
-	   (macro $regmatch-n::long (::regexp ::string ::vector ::int ::int) "BGL_REGEXP_MATCH_N")
+	   (macro $regmatch::obj (::regexp ::string ::bool ::int ::int ::int) "BGL_REGEXP_MATCH")
+	   (macro $regmatch-n::long (::regexp ::string ::vector ::int ::int ::int) "BGL_REGEXP_MATCH_N")
            (macro $regfree::obj (::regexp) "BGL_REGEXP_FREE"))
    
    (java   (class foreign
@@ -63,7 +63,7 @@
 		 "bgl_regcomp")
 	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int)
 		 "bgl_regmatch")
-	      (method static $regmatch-n::long (::regexp ::string ::vector ::int ::int)
+	      (method static $regmatch-n::long (::regexp ::string ::vector ::int ::int ::int)
 		 "bgl_regmatch_n")
 	      (method static $regfree::obj (::regexp)
 		 "bgl_regfree")))
@@ -73,9 +73,9 @@
 	   (inline regexp-capture-count::long ::regexp)
            (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat str::bstring
-	      #!optional (beg 0) (end (string-length str)))
+	      #!optional (beg 0) (end (string-length str)) (offset 0))
 	   (inline pregexp-match-n-positions!::long
-	      ::regexp ::bstring ::vector ::long ::long)
+	      ::regexp ::bstring ::vector ::long ::long #!optional (offset 0))
            (pregexp-match pat str::bstring 
 	      #!optional (beg 0) (end (string-length str)))
            (pregexp-replace::bstring pat ::bstring ins::bstring)
@@ -122,25 +122,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    match ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (match pat str stringp beg end)
+(define (match pat str stringp beg end #!optional (position 0))
    (if (regexp? pat)
-       ($regmatch pat str stringp beg end)
+       ($regmatch pat str stringp beg end position)
        (let* ((rx ($regcomp pat '() #f))
-	      (val ($regmatch rx str stringp beg end)))
+	      (val ($regmatch rx str stringp beg end position)))
 	  ($regfree rx)
 	  val)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-positions ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match-positions pat str #!optional (beg 0) (end (string-length str)))
-   (match pat str #f beg end))
+(define (pregexp-match-positions pat str #!optional (beg 0) (end (string-length str)) (offset 0))
+   (match pat str #f beg end offset))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-n-positions! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (pregexp-match-n-positions! pat::regexp str vres beg end)
-   ($regmatch-n pat str vres beg end))
+(define-inline (pregexp-match-n-positions! pat::regexp str vres beg end #!optional (offset 0))
+   ($regmatch-n pat str vres beg end offset))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match ...                                                */

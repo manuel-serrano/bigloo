@@ -112,11 +112,17 @@ bgl_regfree( obj_t re ) {
 /*    bgl_regmatch ...                                                 */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
+bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len, int offset ) {
    int oveccount = BGL_REGEXP( re ).capturecount + 1;
+#if BGL_HAVE_C99STACKALLOC 
+   int ovect[ oveccount * 3 ];
+#else   
    int *ovect = alloca( sizeof( int ) * oveccount * 3 );
+#endif   
    int r;
 
+   string += offset;
+   
    r = pcre_exec( BGL_REGEXP_PCRE( re ), BGL_REGEXP( re ).study,
 		  string, len, beg, 0, ovect, oveccount * 3 );
 
@@ -154,11 +160,18 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
 /*    bgl_regmatch_n ...                                               */
 /*---------------------------------------------------------------------*/
 static long
-bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
+bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len, int offset ) {
    int oveccount = BGL_REGEXP( re ).capturecount + 1;
+#if BGL_HAVE_C99STACKALLOC 
+   int ovect[ oveccount * 3 ];
+#else
    int *ovect = alloca( sizeof( int ) * oveccount * 3 );
+#endif      
    int r;
 
+   string += offset;
+//   fprintf( stderr, "BGL_REGMATCH_N beg=%d len=%d offset=%d {%c%c%c}\n", beg, len, offset, string[ 0 ], string [1], string[2] );
+   
    r = pcre_exec( BGL_REGEXP_PCRE( re ), BGL_REGEXP( re ).study,
 		  string, len, beg, 0, ovect, oveccount * 3 );
 
@@ -212,11 +225,11 @@ bgl_charmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
 /*    bgl_charmatch_n ...                                              */
 /*---------------------------------------------------------------------*/
 static long
-bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
+bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len, int offset ) {
    char c = BGL_REGEXP_CHAR( re );
 
    while( beg < len ) {
-      if( string[ beg++ ] == c ) {
+      if( string[ offset + beg++ ] == c ) {
 	 if( (VECTOR_LENGTH( vres ) & ~1) > 0 ) {
 	    VECTOR_SET( vres, 0, BINT( beg - 1 ) );
 	    VECTOR_SET( vres, 1, BINT( beg ) );
