@@ -175,41 +175,69 @@ bgl_pointer_hashnumber( void * i, unsigned long power ) {
 
 /*---------------------------------------------------------------------*/
 /*    long                                                             */
-/*    bgl_string_hash_number ...                                       */
-/*    -------------------------------------------------------------    */
-/*    New setting has been provided by Joseph Donaldson on March 2011. */
-/*---------------------------------------------------------------------*/
-long
-bgl_string_hash_number( char *string ) {
-   char c;
-   long result = 5381;
-   char *string0 = string + 1;
-
-   while( c = *string++ ) {
-      result += (result << 5) + c;
-   }
-
-   // MS, 7sep2020: add string length to distinguish 0-filled strings
-   // such as "01" and "001"
-   return (result + (string - string0)) & ((1 << 29) - 1);
-}
-
-/*---------------------------------------------------------------------*/
-/*    long                                                             */
-/*    bgl_string_hash_number ...                                       */
+/*    bgl_string_hash ...                                              */
 /*---------------------------------------------------------------------*/
 long
 bgl_string_hash( char *string, int start, int end ) {
    int i;
    long result = 5381;
 
+#define LONG_HALF_SIZE 16 // (must be a multiple of 8)
+   
+   if( end - start > (LONG_HALF_SIZE * 4) ) {
+      long *buf = (long *)string;
+      long bufstart = LONG_HALF_SIZE >> PTR_ALIGNMENT;
+      long bufend = (end - LONG_HALF_SIZE) >> PTR_ALIGNMENT;
+      
+      for( i = start; i < start + LONG_HALF_SIZE; i++ ) {
+	 result += (result << 5) + (long)string[ i ];
+      }
+      for( i = bufstart; i < bufend; i++ ) {
+	 result += (result << 5) + buf[ i ];
+      }
+      for( i = end - LONG_HALF_SIZE; i < end; i++ ) {
+	 result += (result << 5) + (long)string[ i ];
+      }
+      // add string length to distinguish 0-filled strings
+      // such as "\01" and "\0\01"
+      return (result + (end - start)) & ((1 << 29) - 1);
+   } else {
+      for( i = start; i < end; i++ ) {
+	 result += (result << 5) + (long)string[ i ];
+      }
+
+      //return (result + (end - start)) & ((1 << 29) - 1);
+      return result & ((1 << 29) - 1);
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_STRING_HASH_NUMBER ...                                       */
+/*---------------------------------------------------------------------*/
+#define BGL_STRING_HASH_NUMBER( str ) \
+   bgl_string_hash( BSTRING_TO_STRING( str ), 0, STRING_LENGTH( str ) )
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_string_hash_persistent ...                                   */
+/*---------------------------------------------------------------------*/
+long
+bgl_string_hash_persistent( char *string, int start, int end ) {
+   int i;
+   int32_t result = 5381;
+
    for( i = start; i < end; i++ ) {
       result += (result << 5) + (long)string[ i ];
    }
 
-   // MS, 7sep2020, see bgl_string_hash_number
-   return (result + (end - start)) & ((1 << 29) - 1);
+   return (long)(result & ((1 << 29) - 1));
 }
+
+/*---------------------------------------------------------------------*/
+/*    BGL_STRING_HASH_NUMBER_PERSISTENT ...                            */
+/*---------------------------------------------------------------------*/
+#define BGL_STRING_HASH_NUMBER_PERSISTENT( str ) \
+   bgl_string_hash_persistent( BSTRING_TO_STRING( str ), 0, STRING_LENGTH( str ) )
 
 /*---------------------------------------------------------------------*/
 /*    long                                                             */
@@ -217,7 +245,18 @@ bgl_string_hash( char *string, int start, int end ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_symbol_hash_number( obj_t s ) {
-   return 1 + bgl_string_hash_number(BSTRING_TO_STRING(SYMBOL_TO_STRING(s)));
+   return 1 + BGL_STRING_HASH_NUMBER( SYMBOL_TO_STRING( s ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_symbol_hash_number_persistent ...                            */
+/*---------------------------------------------------------------------*/
+long
+bgl_symbol_hash_number_persistent( obj_t s ) {
+   int32_t res = 1 + BGL_STRING_HASH_NUMBER_PERSISTENT( SYMBOL_TO_STRING( s ) );
+   
+   return (long)res;
 }
 
 /*---------------------------------------------------------------------*/
@@ -226,7 +265,18 @@ bgl_symbol_hash_number( obj_t s ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_keyword_hash_number( obj_t s ) {
-   return 2 + bgl_string_hash_number(BSTRING_TO_STRING(KEYWORD_TO_STRING(s)));
+   return 2 + BGL_STRING_HASH_NUMBER( KEYWORD_TO_STRING( s ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_keyword_hash_number_persistent ...                           */
+/*---------------------------------------------------------------------*/
+long
+bgl_keyword_hash_number_persistent( obj_t s ) {
+   int32_t res = 2 + BGL_STRING_HASH_NUMBER_PERSISTENT( KEYWORD_TO_STRING( s ) );
+
+   return (long)res;
 }
 
 /*---------------------------------------------------------------------*/

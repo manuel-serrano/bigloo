@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
 ;*    Last change :  Thu Apr 19 09:05:06 2018 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -606,17 +606,18 @@
       (emit-bdb-loc loc)
       (display "if( SET_EXIT(" *c-port*)
       (emit-cop exit)
-      (display ") ) { " *c-port*)
+      (display " ) ) { " *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
       (when (emit-cop jump-value) (display ";" *c-port*))
       (emit-bdb-loc loc)
       (display "} else {\n" *c-port*)
       (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)
-      (display "  bgl_restore_signal_handlers();\n" *c-port*)
+      (display "  // MS: CARE 5 jan 2021: see runtime/Clib/csystem.c" *c-port*)
+      (display "  // bgl_restore_signal_handlers();\n" *c-port*)
       (display "#endif\n" *c-port*)
       (emit-cop body)
       (emit-bdb-loc loc)
-      (display "} " *c-port*)
+      (display "}" *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
       #f))
 

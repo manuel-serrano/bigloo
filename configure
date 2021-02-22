@@ -6,7 +6,7 @@
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
 #*    Last change :  Mon May 18 08:43:06 2020 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
-#*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -17,7 +17,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.4a
+release=4.4b
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
@@ -148,7 +148,7 @@ gmpforce=no
 customgmp=
 gmpsrc=$GMPSRC
 gmpconfigureopt=
-gmpcustomversion=6.1.2
+gmpcustomversion=6.2.1
 
 if [ "$gmpsrc " = " " ]; then
   gmpsrc=gmp/gmp-$gmpcustomversion.tgz
@@ -479,10 +479,10 @@ while : ; do
       sharedcompiler=no;
       sharedbde=yes;
       infodir=$HOME/house/info;
-      java=java8;
-      javac=javac8;
+      java=java11;
+      javac=javac11;
       ld=gcc;
-      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
       bootflags="$bootflags -cg";
       jvmbackend="no";
@@ -1531,10 +1531,10 @@ case $hostos in
       droidadb=$droidsdkroot/platform-tools/adb
     fi
     
-    $echo -n "executing $droidadb shell ls /mnt/sdcard -> " >&2
+    $echo -n "executing $droidadb shell echo hello -> " >&2
   
-    $droidadb shell ls /mnt/sdcard 2> /dev/null > /dev/null
-
+    $droidadb shell echo yes 2> /dev/null > /dev/null
+    
     if [ $? = 0 ]; then
       $echo "ok" >&2
     else
@@ -1548,12 +1548,14 @@ case $hostos in
 
     # Find a proper tmp on the phone
     if [ "$droidtmp " = " " ]; then
+      echo -n "droidtmp -> " >&2
       for dir in /tmp /sdcard/tmp /mnt/sdcard/tmp /data/local/tmp; do
         if $autoconfdir/androidmkdir $droidadb $dir >&2; then
           droidtmp=$dir
           break
         fi
       done
+      echo "$droidtmp" >&2
     fi
 
     if [ "$droidtmp " = " " ]; then
@@ -2269,7 +2271,7 @@ if [ "$gmpversion " != "no " ]; then
     (cd gmp; . ./configure-gmp) || exit 1
   
     libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
-    #lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
+    ldbuildopts="-L$bootdir/gmp$libdir/$fildir $ldbuildopts"
     buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
     gmplib=-lgmp
   fi
@@ -2575,10 +2577,9 @@ if [ "$regexp " = " " ]; then
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
       ldbuildopts="-L$bootdir/pcre$libdir/$fildir $ldbuildopts"
-      #lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
       buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
-      #cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
       cbuildflags="-I$bootdir/pcre$libdir/$fildir $cbuildflags"
+      lflags="$lflags $ldbuildopts"
     else
       pcrelibs=no
     fi
@@ -3266,7 +3267,18 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     java_version=`$javac -version 2>&1 | head -n 1` || exit 1
-    if $echo "$java_version" | grep "1.9" > /dev/null
+
+    if $echo "$java_version" | grep "14." > /dev/null
+      then java_version=14
+    elif $echo "$java_version" | grep "13." > /dev/null
+      then java_version=13
+    elif $echo "$java_version" | grep "12." > /dev/null
+      then java_version=12
+    elif $echo "$java_version" | grep "11." > /dev/null
+      then java_version=11
+    elif $echo "$java_version" | grep "10." > /dev/null
+      then java_version=10
+    elif $echo "$java_version" | grep "1.9" > /dev/null
       then java_version=1.9
     elif $echo "$java_version" | grep "1.8" > /dev/null
       then java_version=1.8

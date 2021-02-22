@@ -478,10 +478,14 @@ bgl_write_output_port( obj_t o, obj_t op ) {
    
    BGL_MUTEX_LOCK( mutex );
    
-   PRINTF1( op, 20 + STRING_LENGTH( PORT( o ).name ),
-	    "#<output_port:%s>",
-	    BSTRING_TO_STRING( PORT( o ).name ) );
-
+   PUTS( op, "#<output_port:" );
+   
+   BGL_MUTEX_UNLOCK( mutex );
+   bgl_display_obj( PORT( o ).name, op );
+   BGL_MUTEX_LOCK( mutex );
+   
+   PUTS( op, ">" );
+   
    BGL_MUTEX_UNLOCK( mutex );
    
    return op;

@@ -129,6 +129,7 @@
 	       (method static $date-year::int (::date) "BGL_DATE_YEAR")
 	       (method static $date-timezone::long (::date) "BGL_DATE_TIMEZONE")
 	       (method static $date-is-dst::int (::date) "BGL_DATE_ISDST")
+	       (method static $date-is-gmt::bool (::date) "BGL_DATE_ISGMT")
 	       
 	       (method static $date-day-name::bstring (::int) "bgl_day_name")
 	       (method static $date-day-aname::bstring (::int) "bgl_day_aname")

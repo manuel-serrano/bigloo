@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
 ;*    Last change :  Wed Jan  8 20:00:53 2020 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -44,10 +44,11 @@
 	 (cond
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux)
 		  (csetq? fcop) (eq? (varc-variable (csetq-var fcop)) faux))
-	     (kont (instantiate::capply
-		      (loc loc)
-		      (fun (csetq-value fcop))
-		      (arg (csetq-value vcop)))))
+	     (kont
+		(instantiate::capply
+		   (loc loc)
+		   (fun (csetq-value fcop))
+		   (arg (csetq-value vcop)))))
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux))
 	     (instantiate::cblock
 		(loc  loc)
@@ -61,12 +62,13 @@
 			   (instantiate::csequence
 			      (loc loc)
 			      (cops (list fcop)))
-			   (kont (instantiate::capply
-				    (loc loc)
-				    (fun (instantiate::varc
-					    (loc loc)
-					    (variable faux)))
-				    (arg (csetq-value vcop))))))))))
+			   (kont
+			      (instantiate::capply
+				 (loc loc)
+				 (fun (instantiate::varc
+					 (loc loc)
+					 (variable faux)))
+				 (arg (csetq-value vcop))))))))))
 	    ((and (csetq? fcop) (eq? (varc-variable (csetq-var fcop)) faux))
 	     (instantiate::cblock
 		(loc loc)
@@ -80,12 +82,13 @@
 			   (instantiate::csequence
 			      (loc loc)
 			      (cops (list vcop)))
-			   (kont (instantiate::capply
-				    (loc loc)
-				    (fun (csetq-value fcop))
-				    (arg (instantiate::varc
-					    (loc loc)
-					    (variable vaux)))))))))))
+			   (kont
+			      (instantiate::capply
+				 (loc loc)
+				 (fun (csetq-value fcop))
+				 (arg (instantiate::varc
+					 (loc loc)
+					 (variable vaux)))))))))))
 	    (else
 	     (instantiate::cblock
 		(loc loc)
@@ -99,14 +102,15 @@
 			   (instantiate::csequence
 			      (loc loc)
 			      (cops (list fcop vcop)))
-			   (kont (instantiate::capply
-				    (loc loc)
-				    (fun (instantiate::varc
-					    (loc loc)
-					    (variable faux)))
-				    (arg (instantiate::varc
-					    (loc loc)
-					    (variable vaux)))))))))))))))
+			   (kont
+			      (instantiate::capply
+				 (loc loc)
+				 (fun (instantiate::varc
+					 (loc loc)
+					 (variable faux)))
+				 (arg (instantiate::varc
+					 (loc loc)
+					 (variable vaux)))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::funcall ...                                          */
@@ -236,10 +240,12 @@
 		 (exps '()))
 	 (if (null? old-actuals)
 	     (if (null? auxs)
-		 (kont (instantiate::capp
-			  (loc (node-loc node))
-			  (fun (node->cop (app-fun node) *id-kont* inpushexit))
-			  (args (reverse! new-actuals))))
+		 (kont
+		    (instantiate::capp
+		       (loc (node-loc node))
+		       (fun (node->cop (app-fun node) *id-kont* inpushexit))
+		       (args (reverse! new-actuals))
+		       (stackable (app-stackable node))))
 		 ;; when a function call uses arguments, the source line
 		 ;; information has do be included at the beginning of
 		 ;; the lexical block that binds the actual parameters.
@@ -256,11 +262,13 @@
 				  (instantiate::csequence
 				     (loc loc)
 				     (cops exps))
-				  (kont (instantiate::capp
-					   (loc loc)
-					   (fun (node->cop (app-fun node)
-						   *id-kont* inpushexit))
-					   (args (reverse! new-actuals)))))))))))
+				  (kont
+				     (instantiate::capp
+					(loc loc)
+					(fun (node->cop (app-fun node)
+						*id-kont* inpushexit))
+					(args (reverse! new-actuals))
+					(stackable (app-stackable node)))))))))))
 	     (let ((cop (node->cop (node-setq aux (car old-actuals))
 			   *id-kont* inpushexit)))
 		(if (useless? cop aux)
@@ -317,10 +325,12 @@
 		     (exps         '()))
 	     (if (null? old-actuals)
 		 (if (null? auxs)
-		     (kont (instantiate::capp
-			      (loc (node-loc node))
-			      (fun (node->cop (app-fun node) *id-kont* inpushexit))
-			      (args (reverse! new-actuals))))
+		     (kont
+			(instantiate::capp
+			   (loc (node-loc node))
+			   (fun (node->cop (app-fun node) *id-kont* inpushexit))
+			   (args (reverse! new-actuals))
+			   (stackable (app-stackable node))))
 		     ;; when this function call uses arguments we have to pay
 		     ;; attention to where to emit source line information. We
 		     ;; have to do it at the beginning of the lexical block
@@ -339,12 +349,14 @@
 					  (instantiate::csequence
 					     (loc loc)
 					     (cops exps))
-					  (kont (instantiate::capp
-						   (loc loc)
-						   (fun (node->cop (app-fun node)
-							   *id-kont*
-							   inpushexit))
-						   (args (reverse! new-actuals)))))))))))
+					  (kont
+					     (instantiate::capp
+						(loc loc)
+						(fun (node->cop (app-fun node)
+							*id-kont*
+							inpushexit))
+						(args (reverse! new-actuals))
+						(stackable (app-stackable node)))))))))))
 		 (let ((cop (node->cop (node-setq aux (car old-actuals))
 			       *id-kont* inpushexit)))
 		    (if (useless? cop aux)

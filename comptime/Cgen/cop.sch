@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.4a)
-;; Inria -- Sophia Antipolis     Sun 20 Sep 2020 02:36:10 PM CEST 
-;; (bigloo.new -classgen Cgen/cop.scm)
+;; Bigloo (4.4b)
+;; Inria -- Sophia Antipolis     Mon 04 Jan 2021 07:00:09 PM CET 
+;; (bigloo -classgen Cgen/cop.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,7 +11,7 @@
 ;; cop
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cop::cop loc1432::obj)
+    (inline make-cop::cop loc1426::obj)
     (inline cop?::bool ::obj)
     (cop-nil::cop)
     (inline cop-loc::obj ::cop)
@@ -20,7 +20,7 @@
 ;; clabel
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-clabel::clabel loc1427::obj name1428::bstring used?1429::bool body1430::obj)
+    (inline make-clabel::clabel loc1421::obj name1422::bstring used?1423::bool body1424::obj)
     (inline clabel?::bool ::obj)
     (clabel-nil::clabel)
     (inline clabel-body::obj ::clabel)
@@ -34,7 +34,7 @@
 ;; cgoto
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cgoto::cgoto loc1424::obj label1425::clabel)
+    (inline make-cgoto::cgoto loc1418::obj label1419::clabel)
     (inline cgoto?::bool ::obj)
     (cgoto-nil::cgoto)
     (inline cgoto-label::clabel ::cgoto)
@@ -44,7 +44,7 @@
 ;; cblock
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cblock::cblock loc1421::obj body1422::cop)
+    (inline make-cblock::cblock loc1415::obj body1416::cop)
     (inline cblock?::bool ::obj)
     (cblock-nil::cblock)
     (inline cblock-body::cop ::cblock)
@@ -54,7 +54,7 @@
 ;; creturn
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-creturn::creturn loc1418::obj value1419::cop)
+    (inline make-creturn::creturn loc1412::obj value1413::cop)
     (inline creturn?::bool ::obj)
     (creturn-nil::creturn)
     (inline creturn-value::cop ::creturn)
@@ -64,7 +64,7 @@
 ;; cvoid
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cvoid::cvoid loc1415::obj value1416::cop)
+    (inline make-cvoid::cvoid loc1409::obj value1410::cop)
     (inline cvoid?::bool ::obj)
     (cvoid-nil::cvoid)
     (inline cvoid-value::cop ::cvoid)
@@ -74,7 +74,7 @@
 ;; catom
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-catom::catom loc1412::obj value1413::obj)
+    (inline make-catom::catom loc1406::obj value1407::obj)
     (inline catom?::bool ::obj)
     (catom-nil::catom)
     (inline catom-value::obj ::catom)
@@ -84,7 +84,7 @@
 ;; varc
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-varc::varc loc1409::obj variable1410::variable)
+    (inline make-varc::varc loc1403::obj variable1404::variable)
     (inline varc?::bool ::obj)
     (varc-nil::varc)
     (inline varc-variable::variable ::varc)
@@ -94,7 +94,7 @@
 ;; cpragma
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cpragma::cpragma loc1405::obj format1406::bstring args1407::obj)
+    (inline make-cpragma::cpragma loc1399::obj format1400::bstring args1401::obj)
     (inline cpragma?::bool ::obj)
     (cpragma-nil::cpragma)
     (inline cpragma-args::obj ::cpragma)
@@ -105,7 +105,7 @@
 ;; ccast
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-ccast::ccast loc1389::obj type1390::type arg1403::cop)
+    (inline make-ccast::ccast loc1386::obj type1387::type arg1397::cop)
     (inline ccast?::bool ::obj)
     (ccast-nil::ccast)
     (inline ccast-arg::cop ::ccast)
@@ -116,7 +116,7 @@
 ;; csequence
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-csequence::csequence loc1385::obj c-exp?1386::bool cops1387::obj)
+    (inline make-csequence::csequence loc1382::obj c-exp?1383::bool cops1384::obj)
     (inline csequence?::bool ::obj)
     (csequence-nil::csequence)
     (inline csequence-cops::obj ::csequence)
@@ -127,7 +127,7 @@
 ;; nop
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-nop::nop loc1383::obj)
+    (inline make-nop::nop loc1380::obj)
     (inline nop?::bool ::obj)
     (nop-nil::nop)
     (inline nop-loc::obj ::nop)
@@ -136,7 +136,7 @@
 ;; stop
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-stop::stop loc1380::obj value1381::cop)
+    (inline make-stop::stop loc1377::obj value1378::cop)
     (inline stop?::bool ::obj)
     (stop-nil::stop)
     (inline stop-value::cop ::stop)
@@ -146,7 +146,7 @@
 ;; csetq
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-csetq::csetq loc1376::obj var1377::varc value1378::cop)
+    (inline make-csetq::csetq loc1373::obj var1374::varc value1375::cop)
     (inline csetq?::bool ::obj)
     (csetq-nil::csetq)
     (inline csetq-value::cop ::csetq)
@@ -157,7 +157,7 @@
 ;; cif
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cif::cif loc1368::obj test1372::cop true1373::cop false1374::cop)
+    (inline make-cif::cif loc1368::obj test1369::cop true1370::cop false1371::cop)
     (inline cif?::bool ::obj)
     (cif-nil::cif)
     (inline cif-false::cop ::cif)
@@ -192,7 +192,7 @@
 ;; capply
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-capply::capply loc1353::obj fun1354::cop arg1357::cop)
+    (inline make-capply::capply loc1354::obj fun1355::cop arg1357::cop)
     (inline capply?::bool ::obj)
     (capply-nil::capply)
     (inline capply-arg::cop ::capply)
@@ -203,9 +203,10 @@
 ;; capp
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-capp::capp loc1349::obj fun1350::cop args1351::obj)
+    (inline make-capp::capp loc1348::obj fun1350::cop args1351::obj stackable1352::obj)
     (inline capp?::bool ::obj)
     (capp-nil::capp)
+    (inline capp-stackable::obj ::capp)
     (inline capp-args::obj ::capp)
     (inline capp-fun::cop ::capp)
     (inline capp-loc::obj ::capp)
@@ -214,7 +215,7 @@
 ;; cfail
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cfail::cfail loc1344::obj proc1345::cop msg1346::cop obj1347::cop)
+    (inline make-cfail::cfail loc1343::obj proc1344::cop msg1345::cop obj1346::cop)
     (inline cfail?::bool ::obj)
     (cfail-nil::cfail)
     (inline cfail-obj::cop ::cfail)
@@ -226,7 +227,7 @@
 ;; cswitch
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cswitch::cswitch loc1338::obj test1341::cop clauses1342::obj)
+    (inline make-cswitch::cswitch loc1339::obj test1340::cop clauses1341::obj)
     (inline cswitch?::bool ::obj)
     (cswitch-nil::cswitch)
     (inline cswitch-clauses::obj ::cswitch)
@@ -237,7 +238,7 @@
 ;; cmake-box
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cmake-box::cmake-box loc1334::obj value1335::cop stackable1336::obj)
+    (inline make-cmake-box::cmake-box loc1335::obj value1336::cop stackable1337::obj)
     (inline cmake-box?::bool ::obj)
     (cmake-box-nil::cmake-box)
     (inline cmake-box-stackable::obj ::cmake-box)
@@ -248,7 +249,7 @@
 ;; cbox-ref
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cbox-ref::cbox-ref loc1331::obj var1332::cop)
+    (inline make-cbox-ref::cbox-ref loc1332::obj var1333::cop)
     (inline cbox-ref?::bool ::obj)
     (cbox-ref-nil::cbox-ref)
     (inline cbox-ref-var::cop ::cbox-ref)
@@ -258,7 +259,7 @@
 ;; cbox-set!
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cbox-set!::cbox-set! loc1327::obj var1328::cop value1329::cop)
+    (inline make-cbox-set!::cbox-set! loc1328::obj var1329::cop value1330::cop)
     (inline cbox-set!?::bool ::obj)
     (cbox-set!-nil::cbox-set!)
     (inline cbox-set!-value::cop ::cbox-set!)
@@ -269,7 +270,7 @@
 ;; cset-ex-it
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cset-ex-it::cset-ex-it loc1322::obj exit1323::cop jump-value1324::cop body1325::cop)
+    (inline make-cset-ex-it::cset-ex-it loc1323::obj exit1324::cop jump-value1325::cop body1326::cop)
     (inline cset-ex-it?::bool ::obj)
     (cset-ex-it-nil::cset-ex-it)
     (inline cset-ex-it-body::cop ::cset-ex-it)
@@ -281,7 +282,7 @@
 ;; cjump-ex-it
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cjump-ex-it::cjump-ex-it loc1318::obj exit1319::cop value1320::cop)
+    (inline make-cjump-ex-it::cjump-ex-it loc1319::obj exit1320::cop value1321::cop)
     (inline cjump-ex-it?::bool ::obj)
     (cjump-ex-it-nil::cjump-ex-it)
     (inline cjump-ex-it-value::cop ::cjump-ex-it)
@@ -292,7 +293,7 @@
 ;; sfun/C
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfun/C::sfun/C arity1294::long side-effect1295::obj predicate-of1296::obj stack-allocator1297::obj top?1298::bool the-closure1299::obj effect1300::obj failsafe1301::obj args-noescape1302::obj property1303::obj args1304::obj args-name1305::obj body1306::obj class1307::obj dsssl-keywords1308::obj loc1309::obj optionals1310::obj keys1311::obj the-closure-global1312::obj strength1313::symbol stackable1314::obj label1315::clabel integrated1316::bool)
+    (inline make-sfun/C::sfun/C arity1294::long side-effect1295::obj predicate-of1296::obj stack-allocator1297::obj top?1298::bool the-closure1299::obj effect1300::obj failsafe1301::obj args-noescape1302::obj args-retescape1303::obj property1304::obj args1305::obj args-name1306::obj body1307::obj class1308::obj dsssl-keywords1309::obj loc1310::obj optionals1311::obj keys1312::obj the-closure-global1313::obj strength1314::symbol stackable1315::obj label1316::clabel integrated1317::bool)
     (inline sfun/C?::bool ::obj)
     (sfun/C-nil::sfun/C)
     (inline sfun/C-integrated::bool ::sfun/C)
@@ -319,6 +320,8 @@
     (inline sfun/C-args-set! ::sfun/C ::obj)
     (inline sfun/C-property::obj ::sfun/C)
     (inline sfun/C-property-set! ::sfun/C ::obj)
+    (inline sfun/C-args-retescape::obj ::sfun/C)
+    (inline sfun/C-args-retescape-set! ::sfun/C ::obj)
     (inline sfun/C-args-noescape::obj ::sfun/C)
     (inline sfun/C-args-noescape-set! ::sfun/C ::obj)
     (inline sfun/C-failsafe::obj ::sfun/C)
@@ -350,14 +353,14 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; cop
-(define-inline (make-cop::cop loc1432::obj) (instantiate::cop (loc loc1432)))
+(define-inline (make-cop::cop loc1426::obj) (instantiate::cop (loc loc1426)))
 (define-inline (cop?::bool obj::obj) ((@ isa? __object) obj (@ cop cgen_cop)))
 (define (cop-nil::cop) (class-nil (@ cop cgen_cop)))
 (define-inline (cop-loc::obj o::cop) (-> |#!bigloo_wallow| o loc))
 (define-inline (cop-loc-set! o::cop v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; clabel
-(define-inline (make-clabel::clabel loc1427::obj name1428::bstring used?1429::bool body1430::obj) (instantiate::clabel (loc loc1427) (name name1428) (used? used?1429) (body body1430)))
+(define-inline (make-clabel::clabel loc1421::obj name1422::bstring used?1423::bool body1424::obj) (instantiate::clabel (loc loc1421) (name name1422) (used? used?1423) (body body1424)))
 (define-inline (clabel?::bool obj::obj) ((@ isa? __object) obj (@ clabel cgen_cop)))
 (define (clabel-nil::clabel) (class-nil (@ clabel cgen_cop)))
 (define-inline (clabel-body::obj o::clabel) (-> |#!bigloo_wallow| o body))
@@ -370,7 +373,7 @@
 (define-inline (clabel-loc-set! o::clabel v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cgoto
-(define-inline (make-cgoto::cgoto loc1424::obj label1425::clabel) (instantiate::cgoto (loc loc1424) (label label1425)))
+(define-inline (make-cgoto::cgoto loc1418::obj label1419::clabel) (instantiate::cgoto (loc loc1418) (label label1419)))
 (define-inline (cgoto?::bool obj::obj) ((@ isa? __object) obj (@ cgoto cgen_cop)))
 (define (cgoto-nil::cgoto) (class-nil (@ cgoto cgen_cop)))
 (define-inline (cgoto-label::clabel o::cgoto) (-> |#!bigloo_wallow| o label))
@@ -379,7 +382,7 @@
 (define-inline (cgoto-loc-set! o::cgoto v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cblock
-(define-inline (make-cblock::cblock loc1421::obj body1422::cop) (instantiate::cblock (loc loc1421) (body body1422)))
+(define-inline (make-cblock::cblock loc1415::obj body1416::cop) (instantiate::cblock (loc loc1415) (body body1416)))
 (define-inline (cblock?::bool obj::obj) ((@ isa? __object) obj (@ cblock cgen_cop)))
 (define (cblock-nil::cblock) (class-nil (@ cblock cgen_cop)))
 (define-inline (cblock-body::cop o::cblock) (-> |#!bigloo_wallow| o body))
@@ -388,7 +391,7 @@
 (define-inline (cblock-loc-set! o::cblock v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; creturn
-(define-inline (make-creturn::creturn loc1418::obj value1419::cop) (instantiate::creturn (loc loc1418) (value value1419)))
+(define-inline (make-creturn::creturn loc1412::obj value1413::cop) (instantiate::creturn (loc loc1412) (value value1413)))
 (define-inline (creturn?::bool obj::obj) ((@ isa? __object) obj (@ creturn cgen_cop)))
 (define (creturn-nil::creturn) (class-nil (@ creturn cgen_cop)))
 (define-inline (creturn-value::cop o::creturn) (-> |#!bigloo_wallow| o value))
@@ -397,7 +400,7 @@
 (define-inline (creturn-loc-set! o::creturn v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cvoid
-(define-inline (make-cvoid::cvoid loc1415::obj value1416::cop) (instantiate::cvoid (loc loc1415) (value value1416)))
+(define-inline (make-cvoid::cvoid loc1409::obj value1410::cop) (instantiate::cvoid (loc loc1409) (value value1410)))
 (define-inline (cvoid?::bool obj::obj) ((@ isa? __object) obj (@ cvoid cgen_cop)))
 (define (cvoid-nil::cvoid) (class-nil (@ cvoid cgen_cop)))
 (define-inline (cvoid-value::cop o::cvoid) (-> |#!bigloo_wallow| o value))
@@ -406,7 +409,7 @@
 (define-inline (cvoid-loc-set! o::cvoid v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; catom
-(define-inline (make-catom::catom loc1412::obj value1413::obj) (instantiate::catom (loc loc1412) (value value1413)))
+(define-inline (make-catom::catom loc1406::obj value1407::obj) (instantiate::catom (loc loc1406) (value value1407)))
 (define-inline (catom?::bool obj::obj) ((@ isa? __object) obj (@ catom cgen_cop)))
 (define (catom-nil::catom) (class-nil (@ catom cgen_cop)))
 (define-inline (catom-value::obj o::catom) (-> |#!bigloo_wallow| o value))
@@ -415,7 +418,7 @@
 (define-inline (catom-loc-set! o::catom v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; varc
-(define-inline (make-varc::varc loc1409::obj variable1410::variable) (instantiate::varc (loc loc1409) (variable variable1410)))
+(define-inline (make-varc::varc loc1403::obj variable1404::variable) (instantiate::varc (loc loc1403) (variable variable1404)))
 (define-inline (varc?::bool obj::obj) ((@ isa? __object) obj (@ varc cgen_cop)))
 (define (varc-nil::varc) (class-nil (@ varc cgen_cop)))
 (define-inline (varc-variable::variable o::varc) (-> |#!bigloo_wallow| o variable))
@@ -424,7 +427,7 @@
 (define-inline (varc-loc-set! o::varc v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cpragma
-(define-inline (make-cpragma::cpragma loc1405::obj format1406::bstring args1407::obj) (instantiate::cpragma (loc loc1405) (format format1406) (args args1407)))
+(define-inline (make-cpragma::cpragma loc1399::obj format1400::bstring args1401::obj) (instantiate::cpragma (loc loc1399) (format format1400) (args args1401)))
 (define-inline (cpragma?::bool obj::obj) ((@ isa? __object) obj (@ cpragma cgen_cop)))
 (define (cpragma-nil::cpragma) (class-nil (@ cpragma cgen_cop)))
 (define-inline (cpragma-args::obj o::cpragma) (-> |#!bigloo_wallow| o args))
@@ -435,7 +438,7 @@
 (define-inline (cpragma-loc-set! o::cpragma v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; ccast
-(define-inline (make-ccast::ccast loc1389::obj type1390::type arg1403::cop) (instantiate::ccast (loc loc1389) (type type1390) (arg arg1403)))
+(define-inline (make-ccast::ccast loc1386::obj type1387::type arg1397::cop) (instantiate::ccast (loc loc1386) (type type1387) (arg arg1397)))
 (define-inline (ccast?::bool obj::obj) ((@ isa? __object) obj (@ ccast cgen_cop)))
 (define (ccast-nil::ccast) (class-nil (@ ccast cgen_cop)))
 (define-inline (ccast-arg::cop o::ccast) (-> |#!bigloo_wallow| o arg))
@@ -446,7 +449,7 @@
 (define-inline (ccast-loc-set! o::ccast v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; csequence
-(define-inline (make-csequence::csequence loc1385::obj c-exp?1386::bool cops1387::obj) (instantiate::csequence (loc loc1385) (c-exp? c-exp?1386) (cops cops1387)))
+(define-inline (make-csequence::csequence loc1382::obj c-exp?1383::bool cops1384::obj) (instantiate::csequence (loc loc1382) (c-exp? c-exp?1383) (cops cops1384)))
 (define-inline (csequence?::bool obj::obj) ((@ isa? __object) obj (@ csequence cgen_cop)))
 (define (csequence-nil::csequence) (class-nil (@ csequence cgen_cop)))
 (define-inline (csequence-cops::obj o::csequence) (-> |#!bigloo_wallow| o cops))
@@ -457,14 +460,14 @@
 (define-inline (csequence-loc-set! o::csequence v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; nop
-(define-inline (make-nop::nop loc1383::obj) (instantiate::nop (loc loc1383)))
+(define-inline (make-nop::nop loc1380::obj) (instantiate::nop (loc loc1380)))
 (define-inline (nop?::bool obj::obj) ((@ isa? __object) obj (@ nop cgen_cop)))
 (define (nop-nil::nop) (class-nil (@ nop cgen_cop)))
 (define-inline (nop-loc::obj o::nop) (-> |#!bigloo_wallow| o loc))
 (define-inline (nop-loc-set! o::nop v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; stop
-(define-inline (make-stop::stop loc1380::obj value1381::cop) (instantiate::stop (loc loc1380) (value value1381)))
+(define-inline (make-stop::stop loc1377::obj value1378::cop) (instantiate::stop (loc loc1377) (value value1378)))
 (define-inline (stop?::bool obj::obj) ((@ isa? __object) obj (@ stop cgen_cop)))
 (define (stop-nil::stop) (class-nil (@ stop cgen_cop)))
 (define-inline (stop-value::cop o::stop) (-> |#!bigloo_wallow| o value))
@@ -473,7 +476,7 @@
 (define-inline (stop-loc-set! o::stop v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; csetq
-(define-inline (make-csetq::csetq loc1376::obj var1377::varc value1378::cop) (instantiate::csetq (loc loc1376) (var var1377) (value value1378)))
+(define-inline (make-csetq::csetq loc1373::obj var1374::varc value1375::cop) (instantiate::csetq (loc loc1373) (var var1374) (value value1375)))
 (define-inline (csetq?::bool obj::obj) ((@ isa? __object) obj (@ csetq cgen_cop)))
 (define (csetq-nil::csetq) (class-nil (@ csetq cgen_cop)))
 (define-inline (csetq-value::cop o::csetq) (-> |#!bigloo_wallow| o value))
@@ -484,7 +487,7 @@
 (define-inline (csetq-loc-set! o::csetq v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cif
-(define-inline (make-cif::cif loc1368::obj test1372::cop true1373::cop false1374::cop) (instantiate::cif (loc loc1368) (test test1372) (true true1373) (false false1374)))
+(define-inline (make-cif::cif loc1368::obj test1369::cop true1370::cop false1371::cop) (instantiate::cif (loc loc1368) (test test1369) (true true1370) (false false1371)))
 (define-inline (cif?::bool obj::obj) ((@ isa? __object) obj (@ cif cgen_cop)))
 (define (cif-nil::cif) (class-nil (@ cif cgen_cop)))
 (define-inline (cif-false::cop o::cif) (-> |#!bigloo_wallow| o false))
@@ -521,7 +524,7 @@
 (define-inline (cfuncall-loc-set! o::cfuncall v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; capply
-(define-inline (make-capply::capply loc1353::obj fun1354::cop arg1357::cop) (instantiate::capply (loc loc1353) (fun fun1354) (arg arg1357)))
+(define-inline (make-capply::capply loc1354::obj fun1355::cop arg1357::cop) (instantiate::capply (loc loc1354) (fun fun1355) (arg arg1357)))
 (define-inline (capply?::bool obj::obj) ((@ isa? __object) obj (@ capply cgen_cop)))
 (define (capply-nil::capply) (class-nil (@ capply cgen_cop)))
 (define-inline (capply-arg::cop o::capply) (-> |#!bigloo_wallow| o arg))
@@ -532,9 +535,11 @@
 (define-inline (capply-loc-set! o::capply v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; capp
-(define-inline (make-capp::capp loc1349::obj fun1350::cop args1351::obj) (instantiate::capp (loc loc1349) (fun fun1350) (args args1351)))
+(define-inline (make-capp::capp loc1348::obj fun1350::cop args1351::obj stackable1352::obj) (instantiate::capp (loc loc1348) (fun fun1350) (args args1351) (stackable stackable1352)))
 (define-inline (capp?::bool obj::obj) ((@ isa? __object) obj (@ capp cgen_cop)))
 (define (capp-nil::capp) (class-nil (@ capp cgen_cop)))
+(define-inline (capp-stackable::obj o::capp) (-> |#!bigloo_wallow| o stackable))
+(define-inline (capp-stackable-set! o::capp v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (capp-args::obj o::capp) (-> |#!bigloo_wallow| o args))
 (define-inline (capp-args-set! o::capp v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (capp-fun::cop o::capp) (-> |#!bigloo_wallow| o fun))
@@ -543,7 +548,7 @@
 (define-inline (capp-loc-set! o::capp v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cfail
-(define-inline (make-cfail::cfail loc1344::obj proc1345::cop msg1346::cop obj1347::cop) (instantiate::cfail (loc loc1344) (proc proc1345) (msg msg1346) (obj obj1347)))
+(define-inline (make-cfail::cfail loc1343::obj proc1344::cop msg1345::cop obj1346::cop) (instantiate::cfail (loc loc1343) (proc proc1344) (msg msg1345) (obj obj1346)))
 (define-inline (cfail?::bool obj::obj) ((@ isa? __object) obj (@ cfail cgen_cop)))
 (define (cfail-nil::cfail) (class-nil (@ cfail cgen_cop)))
 (define-inline (cfail-obj::cop o::cfail) (-> |#!bigloo_wallow| o obj))
@@ -556,7 +561,7 @@
 (define-inline (cfail-loc-set! o::cfail v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cswitch
-(define-inline (make-cswitch::cswitch loc1338::obj test1341::cop clauses1342::obj) (instantiate::cswitch (loc loc1338) (test test1341) (clauses clauses1342)))
+(define-inline (make-cswitch::cswitch loc1339::obj test1340::cop clauses1341::obj) (instantiate::cswitch (loc loc1339) (test test1340) (clauses clauses1341)))
 (define-inline (cswitch?::bool obj::obj) ((@ isa? __object) obj (@ cswitch cgen_cop)))
 (define (cswitch-nil::cswitch) (class-nil (@ cswitch cgen_cop)))
 (define-inline (cswitch-clauses::obj o::cswitch) (-> |#!bigloo_wallow| o clauses))
@@ -567,7 +572,7 @@
 (define-inline (cswitch-loc-set! o::cswitch v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cmake-box
-(define-inline (make-cmake-box::cmake-box loc1334::obj value1335::cop stackable1336::obj) (instantiate::cmake-box (loc loc1334) (value value1335) (stackable stackable1336)))
+(define-inline (make-cmake-box::cmake-box loc1335::obj value1336::cop stackable1337::obj) (instantiate::cmake-box (loc loc1335) (value value1336) (stackable stackable1337)))
 (define-inline (cmake-box?::bool obj::obj) ((@ isa? __object) obj (@ cmake-box cgen_cop)))
 (define (cmake-box-nil::cmake-box) (class-nil (@ cmake-box cgen_cop)))
 (define-inline (cmake-box-stackable::obj o::cmake-box) (-> |#!bigloo_wallow| o stackable))
@@ -578,7 +583,7 @@
 (define-inline (cmake-box-loc-set! o::cmake-box v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cbox-ref
-(define-inline (make-cbox-ref::cbox-ref loc1331::obj var1332::cop) (instantiate::cbox-ref (loc loc1331) (var var1332)))
+(define-inline (make-cbox-ref::cbox-ref loc1332::obj var1333::cop) (instantiate::cbox-ref (loc loc1332) (var var1333)))
 (define-inline (cbox-ref?::bool obj::obj) ((@ isa? __object) obj (@ cbox-ref cgen_cop)))
 (define (cbox-ref-nil::cbox-ref) (class-nil (@ cbox-ref cgen_cop)))
 (define-inline (cbox-ref-var::cop o::cbox-ref) (-> |#!bigloo_wallow| o var))
@@ -587,7 +592,7 @@
 (define-inline (cbox-ref-loc-set! o::cbox-ref v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cbox-set!
-(define-inline (make-cbox-set!::cbox-set! loc1327::obj var1328::cop value1329::cop) (instantiate::cbox-set! (loc loc1327) (var var1328) (value value1329)))
+(define-inline (make-cbox-set!::cbox-set! loc1328::obj var1329::cop value1330::cop) (instantiate::cbox-set! (loc loc1328) (var var1329) (value value1330)))
 (define-inline (cbox-set!?::bool obj::obj) ((@ isa? __object) obj (@ cbox-set! cgen_cop)))
 (define (cbox-set!-nil::cbox-set!) (class-nil (@ cbox-set! cgen_cop)))
 (define-inline (cbox-set!-value::cop o::cbox-set!) (-> |#!bigloo_wallow| o value))
@@ -598,7 +603,7 @@
 (define-inline (cbox-set!-loc-set! o::cbox-set! v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cset-ex-it
-(define-inline (make-cset-ex-it::cset-ex-it loc1322::obj exit1323::cop jump-value1324::cop body1325::cop) (instantiate::cset-ex-it (loc loc1322) (exit exit1323) (jump-value jump-value1324) (body body1325)))
+(define-inline (make-cset-ex-it::cset-ex-it loc1323::obj exit1324::cop jump-value1325::cop body1326::cop) (instantiate::cset-ex-it (loc loc1323) (exit exit1324) (jump-value jump-value1325) (body body1326)))
 (define-inline (cset-ex-it?::bool obj::obj) ((@ isa? __object) obj (@ cset-ex-it cgen_cop)))
 (define (cset-ex-it-nil::cset-ex-it) (class-nil (@ cset-ex-it cgen_cop)))
 (define-inline (cset-ex-it-body::cop o::cset-ex-it) (-> |#!bigloo_wallow| o body))
@@ -611,7 +616,7 @@
 (define-inline (cset-ex-it-loc-set! o::cset-ex-it v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cjump-ex-it
-(define-inline (make-cjump-ex-it::cjump-ex-it loc1318::obj exit1319::cop value1320::cop) (instantiate::cjump-ex-it (loc loc1318) (exit exit1319) (value value1320)))
+(define-inline (make-cjump-ex-it::cjump-ex-it loc1319::obj exit1320::cop value1321::cop) (instantiate::cjump-ex-it (loc loc1319) (exit exit1320) (value value1321)))
 (define-inline (cjump-ex-it?::bool obj::obj) ((@ isa? __object) obj (@ cjump-ex-it cgen_cop)))
 (define (cjump-ex-it-nil::cjump-ex-it) (class-nil (@ cjump-ex-it cgen_cop)))
 (define-inline (cjump-ex-it-value::cop o::cjump-ex-it) (-> |#!bigloo_wallow| o value))
@@ -622,7 +627,7 @@
 (define-inline (cjump-ex-it-loc-set! o::cjump-ex-it v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; sfun/C
-(define-inline (make-sfun/C::sfun/C arity1294::long side-effect1295::obj predicate-of1296::obj stack-allocator1297::obj top?1298::bool the-closure1299::obj effect1300::obj failsafe1301::obj args-noescape1302::obj property1303::obj args1304::obj args-name1305::obj body1306::obj class1307::obj dsssl-keywords1308::obj loc1309::obj optionals1310::obj keys1311::obj the-closure-global1312::obj strength1313::symbol stackable1314::obj label1315::clabel integrated1316::bool) (instantiate::sfun/C (arity arity1294) (side-effect side-effect1295) (predicate-of predicate-of1296) (stack-allocator stack-allocator1297) (top? top?1298) (the-closure the-closure1299) (effect effect1300) (failsafe failsafe1301) (args-noescape args-noescape1302) (property property1303) (args args1304) (args-name args-name1305) (body body1306) (class class1307) (dsssl-keywords dsssl-keywords1308) (loc loc1309) (optionals optionals1310) (keys keys1311) (the-closure-global the-closure-global1312) (strength strength1313) (stackable stackable1314) (label label1315) (integrated integrated1316)))
+(define-inline (make-sfun/C::sfun/C arity1294::long side-effect1295::obj predicate-of1296::obj stack-allocator1297::obj top?1298::bool the-closure1299::obj effect1300::obj failsafe1301::obj args-noescape1302::obj args-retescape1303::obj property1304::obj args1305::obj args-name1306::obj body1307::obj class1308::obj dsssl-keywords1309::obj loc1310::obj optionals1311::obj keys1312::obj the-closure-global1313::obj strength1314::symbol stackable1315::obj label1316::clabel integrated1317::bool) (instantiate::sfun/C (arity arity1294) (side-effect side-effect1295) (predicate-of predicate-of1296) (stack-allocator stack-allocator1297) (top? top?1298) (the-closure the-closure1299) (effect effect1300) (failsafe failsafe1301) (args-noescape args-noescape1302) (args-retescape args-retescape1303) (property property1304) (args args1305) (args-name args-name1306) (body body1307) (class class1308) (dsssl-keywords dsssl-keywords1309) (loc loc1310) (optionals optionals1311) (keys keys1312) (the-closure-global the-closure-global1313) (strength strength1314) (stackable stackable1315) (label label1316) (integrated integrated1317)))
 (define-inline (sfun/C?::bool obj::obj) ((@ isa? __object) obj (@ sfun/C cgen_cop)))
 (define (sfun/C-nil::sfun/C) (class-nil (@ sfun/C cgen_cop)))
 (define-inline (sfun/C-integrated::bool o::sfun/C) (-> |#!bigloo_wallow| o integrated))
@@ -653,6 +658,8 @@
 (define-inline (sfun/C-args-set! o::sfun/C v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (sfun/C-property::obj o::sfun/C) (-> |#!bigloo_wallow| o property))
 (define-inline (sfun/C-property-set! o::sfun/C v::obj) (set! (-> |#!bigloo_wallow| o property) v))
+(define-inline (sfun/C-args-retescape::obj o::sfun/C) (-> |#!bigloo_wallow| o args-retescape))
+(define-inline (sfun/C-args-retescape-set! o::sfun/C v::obj) (set! (-> |#!bigloo_wallow| o args-retescape) v))
 (define-inline (sfun/C-args-noescape::obj o::sfun/C) (-> |#!bigloo_wallow| o args-noescape))
 (define-inline (sfun/C-args-noescape-set! o::sfun/C v::obj) (set! (-> |#!bigloo_wallow| o args-noescape) v))
 (define-inline (sfun/C-failsafe::obj o::sfun/C) (-> |#!bigloo_wallow| o failsafe))

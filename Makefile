@@ -71,6 +71,7 @@ SHELL           = /bin/sh
 # The directory where to build and install a distribution
 DISTRIBTMPDIR	= /tmp
 DISTRIBDIR	= $$HOME/prgm/distrib
+BUILDDIRNAME 	= bigloo
 # The Bigloo html page directory
 HTMLPAGEDIR	= $$HOME/public_html/bigloo
 # The library to be installed on the ftp server
@@ -452,8 +453,8 @@ include Makefile.$(REVISIONSYSTEM)
 distrib: ChangeLog
 	@ (cd $(DISTRIBTMPDIR) && \
 	   $(RM) -rf bigloo-$(RELEASE) && $(RM) -rf bigloo && \
-           $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \
-           cd bigloo && \
+           $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout BUILDDIRNAME=$(BUILDDIRNAME) && \
+           cd $(BUILDDIRNAME) && \
            cat $(BOOTDIR)/Makefile.config | sed 's/BFEATUREFLAGS=.*/BFEATUREFLAGS=-srfi enable-gmp/' | sed 's/BOOTFLAGS=.*/BOOTFLAGS=/' > Makefile.config \
            && cp $(BOOTDIR)/Makefile.buildconfig Makefile.buildconfig \
            && $(MAKE) true-distrib)
@@ -476,7 +477,7 @@ $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz:
 	@ $(RM) -f Makefile.config;
 	@ $(RM) -f Makefile.buildconfig;
 	@ (cd .. && \
-           mv bigloo bigloo-$(RELEASE)$(VERSION) && \
+           mv $(BUILDDIRNAME) bigloo-$(RELEASE)$(VERSION) && \
            tar cfz $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz --sort=name bigloo-$(RELEASE)$(VERSION))
 	@ echo "$@ done..."
 	@ echo "-------------------------------"

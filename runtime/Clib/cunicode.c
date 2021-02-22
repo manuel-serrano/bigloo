@@ -670,22 +670,13 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
 
 	 ucs2 &= (1<<bits) - 1;
 
-/* 	 if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||                      */
-/* 	     !(ucs2 & (~(unsigned long)0<<(bits - 5))) ) {             */
-/* 	    // characters fffe and ffff are accepted, see:             */
-/* 	    // http://www.unicode.org/versions/Unicode5.2.0/ch16.pdf#G19635 */
-/* 	    C_FAILURE( "utf8-string->ucs2-string",                     */
-/* 		       "Illegal utf8 character encoding",              */
-/* 		       BINT( ucs2 ) );                                 */
-/* 	 } else {                                                      */
-	    if( ucs2 >= 0x10000 ) {
-	       ucs2 -= 0x10000;
-	       aux[ write++ ] = (ucs2_t)((ucs2 >> 10) + 0xd800);
-	       aux[ write ] = (ucs2_t)((ucs2 & 0x3FF) + 0xdc00);
-	    } else {
-	       aux[ write ] = (ucs2_t)ucs2;
-	    }
-/* 	 }                                                             */
+	 if( ucs2 >= 0x10000 ) {
+	    ucs2 -= 0x10000;
+	    aux[ write++ ] = (ucs2_t)((ucs2 >> 10) + 0xd800);
+	    aux[ write ] = (ucs2_t)((ucs2 & 0x3FF) + 0xdc00);
+	 } else {
+	    aux[ write ] = (ucs2_t)ucs2;
+	 }
       }
    }
          

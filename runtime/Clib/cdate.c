@@ -272,7 +272,11 @@ bgl_update_date( obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, i
       if( !tze ) tze = getenv( "TZ" );
       setenv( "TZ", "UTC", 1 );
       date->date.time = mktime( &(date->date.tm) );
-      setenv( "TZ", tze, 1 );
+      if( tze) {
+	 setenv( "TZ", tze, 1 ) ;
+      } else {
+	 unsetenv( "TZ" );
+      }
 #endif      
       date->date.time -= tz;
 #if( BGL_HAVE_GMTOFF )

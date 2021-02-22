@@ -20,6 +20,7 @@
 @cindex md5
 @cindex sha1
 @cindex sha256
+@cindex sha512
 
 @deffn {bigloo procedure} base64-encode string [padding 64]
 @deffnx {bigloo procedure} base64-decode string [no-eof-padding]
@@ -100,16 +101,23 @@ Computes the Hmac SHA1 authentication:
 @deffnx {bigloo procedure} sha256sum-mmap mmap
 @deffnx {bigloo procedure} sha256sum-file string
 @deffnx {bigloo procedure} sha256sum-port input-port
-Computes SHA256 message digest.
+@deffnx {bigloo procedure} sha512sum obj
+@deffnx {bigloo procedure} sha512sum-string string
+@deffnx {bigloo procedure} sha512sum-mmap mmap
+@deffnx {bigloo procedure} sha512sum-file string
+@deffnx {bigloo procedure} sha512sum-port input-port
+Computes SHA256 and SHA512 message digest.
 
-The function @code{sha256sum} dispatches over its argument and invokes the
-ad-hoc function. That is, it invokes @code{sha256sum-string} if its 
-argument is a string, @code{sha256sum-mmap} if it is a mmap, 
-@code{sha256sum-port} if its argument is an input port.
+The function @code{sha256sum} (respec. @code{sha512sum}) dispatches over
+its argument and invokes the ad-hoc function. That is, it invokes
+@code{sha256sum-string} if its argument is a string,
+@code{sha256sum-mmap} if it is a mmap, @code{sha256sum-port} if its
+argument is an input port.
 @end deffn
 
 @deffn {bigloo procedure} hmac-sha256sum-string key string
-Computes the Hmac SHA256 authentication:
+@deffnx {bigloo procedure} hmac-sha512sum-string key string
+Computes the Hmac SHA256 and SHA512 authentication.
 @end deffn
 
 

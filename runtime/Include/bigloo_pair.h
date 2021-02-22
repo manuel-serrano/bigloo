@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
 /*    Last change :  Sat Dec  7 18:56:17 2019 (serrano)                */
-/*    Copyright   :  2016-20 Manuel Serrano                            */
+/*    Copyright   :  2016-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
 /*=====================================================================*/
@@ -171,6 +171,10 @@ struct bgl_epair {
 #  define MAKE_STACK_PAIR_TMP( a, d, __t ) __t = MAKE_PAIR( a, d )
 #  define MAKE_STACK_PAIR( a, d ) MAKE_PAIR( a, d )   
 #endif
+
+/* pair stack allocation for -fstackable optimization */
+#define BGL_MAKE_PAIR_STACK( tmp, a, d ) \
+   (BGL_INIT_PAIR( &tmp, a, d ), BPAIR( &tmp ))
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */

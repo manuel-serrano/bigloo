@@ -132,19 +132,9 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 ;; bee fontification
 (defcustom bee-font-lock-keywords
   (list
-;*    (list (concat "^\(\\(\\(?:define[*]?\\|define-inline"            */
-;* 		 "\\|define-struct\\|define-record-type\\|define-record" */
-;* 		 "\\|define-macro\\|define-generic\\|define-method"    */
-;* 		 "\\|define-syntax\\|define-expander"                  */
-;* 		 "\\|define-class\\|define-abstract-class\\|define-final-class" */
-;* 		 "\\|define-service\\|define-parameter\\|define-preferences" */
-;* 		 "\\|define-tag"                                       */
-;* 		 "\\|define-command\\)[ ]+[^ ]+\\)[ \n]")              */
-;* 	 1                                                             */
-;* 	 'font-lock-function-name-face)                                */
    (cons (concat "\\(?:define\\|define-inline"
 		 "\\|define-struct\\|define-record-type\\|define-record"
-		 "\\|define-macro\\|define-generic\\|define-method"
+		 "\\|define-macro\\|define-generic\\|define-method\\|define-walk-method"
 		 "\\|define-syntax\\|define-expander"
 		 "\\|define-class\\|define-abstract-class\\|define-final-class"
 		 "\\|define-service\\|define-parameter\\|define-preferences"
@@ -153,7 +143,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'font-lock-function-name-face)
    (list (concat "^\(\\(?:define\\|define-inline"
 		 "\\|define-struct\\|define-record-type\\|define-record"
-		 "\\|define-macro\\|define-generic\\|define-method"
+		 "\\|define-macro\\|define-generic\\|define-method\\|define-walk-method"
 		 "\\|define-syntax\\|define-expander"
 		 "\\|define-class\\|define-abstract-class\\|define-final-class"
 		 "\\|define-service\\|define-parameter\\|define-preferences"

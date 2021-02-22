@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
 #*    Last change :  Fri May  1 09:20:52 2020 (serrano)                */
-#*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -108,30 +108,51 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
 JDK_LIBS	= JDK
+
+ifeq ($(JAVA_VERSION), 14)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 13)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 12)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 11)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 10)
+  JDK_LIBS += JDK16
+else
 ifeq ($(JAVA_VERSION), 1.9)
-    JDK_LIBS += JDK16
-  else
-    ifeq ($(JAVA_VERSION), 1.8)
-      JDK_LIBS += JDK16
-    else
-    ifeq ($(JAVA_VERSION), 1.7)
-      JDK_LIBS += JDK16
-    else
-      ifeq ($(JAVA_VERSION), 1.6)
-        JDK_LIBS += JDK16
-       else
-        ifeq ($(JAVA_VERSION), 1.5)
-          JDK_LIBS += JDK15
-        else
-         ifeq ($(JAVA_VERSION), 1.4)
-           JDK_LIBS += JDK14
-         else
-           JDK_LIBS += JDK13
-         endif
-       endif
-     endif
-    endif
-  endif
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.8)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.7)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.6)
+  JDK_LIBS += JDK16
+else
+ifeq ($(JAVA_VERSION), 1.5)
+  JDK_LIBS += JDK15
+else
+ifeq ($(JAVA_VERSION), 1.4)
+  JDK_LIBS += JDK14
+else
+  JDK_LIBS += JDK13
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
 endif
 
 JLIB		= foreign buffer configure stackwriter\
@@ -1000,14 +1021,10 @@ jfile: .jfile
 #*---------------------------------------------------------------------*/
 objs/obj_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/obj_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
-objs/obj_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
-objs/obj_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/obj_s/Llib/evobject.o: Llib/object.sch
 objs/obj_u/Llib/evobject.o: Llib/object.sch
 objs/saw_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/saw_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
-objs/saw_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
-objs/saw_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/saw_s/Llib/evobject.o: Llib/object.sch
 objs/saw_u/Llib/evobject.o: Llib/object.sch
 objs/obj_s/Clib/cregexp.o: Clib/cpcre.h Clib/cregex.h

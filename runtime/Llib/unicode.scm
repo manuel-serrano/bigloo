@@ -179,6 +179,8 @@
 	    (utf8-string-append*::bstring . strings)
 	    (utf8-string-append-fill!::long ::bstring ::long ::bstring #!optional (offset 0))
 	    (utf8-substring::bstring str::bstring ::long #!optional (end::long (utf8-string-length str)))
+	    (inline utf8-string-left-replacement?::bool ::bstring ::long ::long)
+	    (inline utf8-string-right-replacement?::bool ::bstring ::long ::long)
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
 	    (utf8->iso-latin::bstring ::bstring)
@@ -1018,25 +1020,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-char-size ...                                               */
 ;*---------------------------------------------------------------------*/
-;* (define (utf8-char-size c)                                          */
-;*    (let ((n (char->integer c)))                                     */
-;*       (cond                                                         */
-;* 	 ((<=fx n #x7f) 1)                                             */
-;* 	 ((<=fx n #xc0) 2)                                             */
-;* 	 ((<fx n #xc2) (error "utf8-char-size" "Badly formed UTF8 string" c)) */
-;* 	 ((<=fx n #xdf) 2)                                             */
-;* 	 ((<=fx n #xef) 3)                                             */
-;* 	 ((or (=fx n #xf0) (=fx n #xf4) (<=fx n #xf7)) 4)              */
-;* 	 ((=fx n #xf8) 4) ;; see utf8-string-append                    */
-;* 	 ((<=fx n #xfb) 5)                                             */
-;* 	 ((=fx n #xfc) 4) ;; see utf8-string-append                    */
-;* 	 ((<=fx n #xfd) 6)                                             */
-;* 	 (else (error "utf8-char-size" "Badly formed UTF8 string" c))))) */
+(define-inline (utf8-char-size c)
+   (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 2 3 4)
+      (bit-rsh (char->integer c) 4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-char-size ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (utf8-char-size c)
+(define (utf8-char-size-right c)
    (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 2 3 4)
       (bit-rsh (char->integer c) 4)))
 
@@ -1197,9 +1188,9 @@
    (let* ((llen (string-length left))
 	  (rlen (string-length right))
 	  (buffer ($make-string/wo-fill (+fx llen rlen))))
-      (let ((nindex (utf8-string-append-fill! buffer 0 left)))
-	 (let ((nindex (utf8-string-append-fill! buffer nindex right)))
-	    (string-shrink! buffer nindex)))))
+      (blit-string! left 0 buffer 0 llen)
+      (let ((nindex (utf8-string-append-fill! buffer llen right)))
+	 (string-shrink! buffer nindex))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append* ...                                          */

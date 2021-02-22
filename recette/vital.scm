@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
 ;*    Last change :  Mon Oct  8 08:18:26 2018 (serrano)                */
-;*    Copyright   :  2002-18 Manuel Serrano                            */
+;*    Copyright   :  2002-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -384,7 +384,7 @@
    (test "symbol.1" '|foo\|bar| (string->symbol "foo\|bar"))
    (test "symbol.2"
       (string=? (call-with-output-string (lambda (p) (write '|foo\|bar| p)))
-	 "foo\|bar")
+	 "|foo\\|bar|")
       #t)
    (test "eq? integer.1" (eq? 1 2) #f)
    (test "eq? integer.2" (eq? 1 1) #t)
@@ -411,7 +411,7 @@
    (test "set!" (let ((v (integer? var))) (set! var 4) (set! var 'toto) v) #f)
    (test "if.1" (if #t #t #f) #t)
    (test "if.2" (let ((if (lambda (x y z) z))) (if #t #t #f)) #f)
-   (test "symbol.1" 'étè (string->symbol "étè"))
+   (test "symbol.1" 'Ã©tÃ¨ (string->symbol "Ã©tÃ¨"))
    (test "symbol.2" (symbol? (with-input-from-string "||" read)) #t)
    (test "symbol.3" (with-input-from-string "||" read) (string->symbol ""))
    (test "symbol.4" (symbol? (with-input-from-string "|'|" read)) #t)

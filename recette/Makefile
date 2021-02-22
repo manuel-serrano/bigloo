@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
 #*    Last change :  Wed Mar 11 05:28:28 2020 (serrano)                */
-#*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -95,8 +95,7 @@ POPULATION	= $(SOURCE_FILES) \
                   c-file.h \
 		  include.sch \
 		  include2.sch \
-		  misc/dump.c \
-		  misc/dump.jvm \
+		  misc/dump \
 		  misc/input.txt \
 		  misc/jm.txt \
 		  misc/trap.txt
@@ -351,7 +350,5 @@ objs_jvm:
 #*---------------------------------------------------------------------*/
 #*    misc/dump.XXX                                                    */
 #*---------------------------------------------------------------------*/
-misc/dump.jvm:
-	($(MAKE) clean; $(MAKE) jvm; recette-jvm --dump misc/dump.jvm)
-misc/dump.c:
-	($(MAKE) clean; $(MAKE); recette --dump misc/dump.c)
+misc/dump:
+	($(MAKE) clean; $(MAKE); recette --dump misc/dump)

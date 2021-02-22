@@ -33,6 +33,7 @@
 	    (macro $pop-trace::obj () "BGL_POP_TRACE")
 	    (macro $get-error-handler::obj () "BGL_ERROR_HANDLER_GET")
 	    (macro $set-error-handler!::void (::obj) "BGL_ERROR_HANDLER_SET")
+	    (macro $push-error-handler!::void (::obj ::obj) "BGL_ERROR_HANDLER_PUSH")
 	    (macro $get-uncaught-exception-handler::obj () "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET")
 	    (macro $set-uncaught-exception-handler!::void (::obj) "BGL_UNCAUGHT_EXCEPTION_HANDLER_SET")
 	    (macro $get-error-notifiers::obj () "BGL_ERROR_NOTIFIERS_GET")
@@ -102,6 +103,8 @@
 		       "BGL_ERROR_HANDLER_GET")
 	       (method static $set-error-handler!::void (::obj)
 		       "BGL_ERROR_HANDLER_SET")
+	       (method static $push-error-handler!::void (::obj ::obj)
+		       "BGL_ERROR_HANDLER_PUSH")
 	       (method static $get-uncaught-exception-handler::obj ()
 		       "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET")
 	       (method static $set-uncaught-exception-handler!::void (::obj)
@@ -270,7 +273,8 @@
 	    (set! *unsafe-arity*   #t)
 	    (set! *unsafe-range*   #t))
 
-   (pragma  (typeof no-cfa-top args-safe)))
+   (pragma  (typeof no-cfa-top args-safe)
+	    ($push-error-handler! (args-noescape))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */
@@ -813,7 +817,7 @@
 (define (warning-notify e)
    (define (simple-warning e)
       (flush-output-port (current-output-port))
-      (display "*** WARNING:bigloo:" (current-error-port))
+      (display "*** WARNING: " (current-error-port))
       (with-access::&warning e (args)
 	 (if (not (null? args))
 	     (begin
@@ -882,7 +886,7 @@
       ;; we now print the warning message
       (print-cursor fname line char string space-string)
       ;; we display the warning message
-      (display "*** WARNING:bigloo:" (current-error-port))
+      (display "*** WARNING: " (current-error-port))
       (if (not (null? args))
 	  (let ((port (current-error-port)))
 	     (display-circle (car args) port)

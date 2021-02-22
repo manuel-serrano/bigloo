@@ -248,7 +248,10 @@
    (pragma  (display-2 no-init-flow no-cfa-top)
 	    (write-2 no-init-flow no-cfa-top)
 	    ($display-char nesting)
-	    ($write-char nesting)))
+	    ($write-char nesting)
+	    (display (args-noescape))
+	    (write (args-noescape))
+	    (print (args-noescape))))
    
 ;*---------------------------------------------------------------------*/
 ;*    newline ...                                                      */
@@ -792,7 +795,7 @@
 	     (let ((c (string-ref str i)))
 		(case c
 		   ((#\Newline #\Tab #\Return #\` #\' #\"
-		       #\# #\\ #\; #\( #\) #\[ #\] #\{ #\} #\,)
+		       #\# #\\ #\; #\( #\) #\[ #\] #\{ #\} #\, #\|)
 		    (wrt str))
 		   ((#\:)
 		    (cond

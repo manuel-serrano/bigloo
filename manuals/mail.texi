@@ -172,25 +172,41 @@ with @code{vcard}s.
 @smalllisp
 (class vcard
   (version::bstring (default "2.1"))
+  (uid (default #f))
   (fn (default #f))
   (familyname (default #f))
   (firstname (default #f))
-  (face (default #f))
+  (nickname (default #f))
+  (photo (default #f))
+  (sound (default #f))
   (url (default #f))
   (org (default #f))
   (emails::pair-nil (default '()))
   (phones::pair-nil (default '()))
-  (addresses::pair-nil (default '())))
+  (birthday (default #f))
+  (addresses::pair-nil (default '()))
+  (lang (default #f))
+  (related (default #f))
+  (key (default #f))
+  (notes::pair-nil (default '()))
+  (x-thumbnail (default #f))
+  (x-color (default #f))
+  (xx-extras::pair-nil (default '())))
 @end smalllisp
 
 The class @code{vard} is used to reify in memory a vcard as parsed by
-the function @code{port->vcard} and @code{string->vcard}.
+the functions @code{port->vcard}, @code{read-vcard}, and @code{string->vcard}.
 
 Except @code{emails}, @code{phones}, and @code{addresses}, all fields
-are optional. They should be either @code{#f} or a string.
+are optional. They should be either @code{#f} or a string. Field meanings
+are given by the RFC 2426 specification, apart the @code{x-thumbnail},
+@code{x-color}, and @code{xx-extras} that are Bigloo specific.
 
 @itemize @bullet
-@item @code{face} is a flat list of strings.
+@item @code{photo} is a flat list of strings.
+@item @code{x-thumbnail} an optional thumbnail image.
+@item @code{x-color} an optional color.
+@item @code{xx-extras} a list of non standard properties.
 @item @code{phones} is an alist whose elements are pairs of two strings.
 @item @code{addresses} is a list composed of:
   @itemize @bullet
@@ -207,13 +223,18 @@ should be used to denote empty values.
 @end itemize
 @end deffn
 
-@deffn {bigloo mail function} port->vcard::vcard ip [:charset-encoder]
+@deffn {bigloo mail function} read-vcard::vcard ip [:charset-encoder]
+@deffnx {bigloo mail function} port->vcard::vcard ip [:charset-encoder]
 @deffnx {bigloo mail function} string->vcard::vcard str [:charset-encoder]
-These two functions parse a @emph{vcard} to produce a @code{vcard}
+These three functions parse a @emph{vcard} to produce a @code{vcard}
 instance.  The optional argument @var{charset-encoder}, when provided,
 must be a function of argument: a string to be decoded. Vcard strings
 are UTF-8 encoded. The @var{charset-encoder} can be used to encode
 on-the-fly the strings found in the vcard in a difference encoding.
+
+@code{port->vcard} is similar to @code{read-vcard} but it returns
+@code{#f} on end-of-file, while @code{read-vcard} returns the
+eof-object.
 @end deffn
 
 

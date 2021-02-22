@@ -68,7 +68,7 @@ fi
 ssh $sshport $host -l $user "mkdir -p $tmp/debbigloo.remote"
 scp $scpport * $user@$host:$tmp/debbigloo.remote
 
-scp $scpport $repodir/bigloo$version$minor.tar.gz $user@$host:$tmp/debbigloo.remote
+scp $scpport $repodir/bigloo-$version$minor.tar.gz $user@$host:$tmp/debbigloo.remote
 
 ssh $sshport $host -l $user "bash -c \"cd $tmp/debbigloo.remote; ./makedeb.sh --repodir $tmp/debbigloo.remote\""
 

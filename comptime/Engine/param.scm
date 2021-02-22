@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
 ;*    Last change :  Mon Dec 16 05:40:27 2019 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -131,6 +131,7 @@
 	    *location-shape?*
 	    *user-shape?*
 	    *name-shape?*
+	    *alloc-shape?*
 	    *tmp-dest*         
 	    *dest*
 	    *shell*
@@ -804,6 +805,7 @@
 (define *location-shape?* #f)
 (define *user-shape?* #f)
 (define *name-shape?* #f)
+(define *alloc-shape?* #f)
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
 (param-define *shared-cnst?*

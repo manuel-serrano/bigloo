@@ -4,7 +4,7 @@ Bigloo Debian Package - 19 jan 2020
 This document explains how to use the `makedeb.sh' script to
 build the Bigloo Debian packages.
 
-This script install the Bigloo version out of a tarball stored in:
+This script installs the Bigloo version out of a tarball stored in:
 
    `$HOME/prgm/distrib`
 

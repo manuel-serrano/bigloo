@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
 ;*    Last change :  Sun Aug 25 09:13:12 2019 (serrano)                */
-;*    Copyright   :  2002-19 Manuel Serrano                            */
+;*    Copyright   :  2002-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -334,12 +334,16 @@
       (lambda (x e)
 	 (match-case x
 	    ((?- ?handler . ?body)
-	     (evepairify
-		`(with-handler
-		    ,(e handler e)
-		    ,@(map (lambda (x) (e x e))
-			 body))
-		x))
+	     (let ((exn (gensym 'exn)))
+		(evepairify
+		   `(with-handler
+		       ,(e `(lambda (,exn)
+			       (sigsetmask 0)
+			       (,handler ,exn))
+			   e)
+		       ,@(map (lambda (x) (e x e))
+			    body))
+		   x)))
 	    (else
 	     (expand-error "with-handler" "Illegal form" x)))))
    

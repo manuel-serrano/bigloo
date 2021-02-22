@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
 ;*    Last change :  Sun Dec 22 18:23:24 2019 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
    
    (import  tools_error
 	    tools_shape
+	    tools_speek
 	    engine_param
 	    type_type
 	    type_tools
@@ -584,14 +585,31 @@
       "(node->cop node::let-var kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
 
+   (define (stackable? node::app)
+      (with-access::app node (stackable fun)
+	 (when stackable
+	    (let ((v (var-variable fun)))
+	       (when (isa? v global)
+		  (pair? (fun-stack-allocator (global-value v))))))))
+	    
+   (define (alloca-let-var n::node)
+      (and (isa? n let-var)
+	   (isa? (let-var-body n) app)
+	   (stackable? (let-var-body n))))
+   
    (define (alloca x)
+      ;; check wether the "x" binding can be tranformed into
+      ;; a stack allocation
       (cond
 	 ((and (isa? (cdr x) app)
-	       (app-stackable (cdr x))
+	       (stackable? (cdr x))
 	       (bigloo-config 'have-c99-stack-alloc))
+	  ;; (let-var (... (var <app-alloc>) ...) ...)
 	  (with-access::app (cdr x) (fun args loc)
 	     (let* ((v (var-variable fun))
 		    (sa (fun-stack-allocator (global-value v))))
+		(verbose 3 "      stack allocation \"" (global-name v)
+		   " " loc "\n")
 		;; declare the variable for the stack allocation
 		(let* ((id (gensym (variable-id v)))
 		       (decl (let ((d (duplicate::local (car x)
@@ -606,7 +624,7 @@
 				 (args (map (lambda (a)
 					       (node->cop a *id-kont* inpushexit))
 					  args)))))
-		   ;; adjust the orignal function call
+		   ;; adjust the original function call
 		   (set! fun (duplicate::var fun
 				(variable (duplicate::global v
 					     (name (cadr sa))))))
@@ -616,9 +634,44 @@
 				       (variable decl))
 				 args))
 		   (list alloc)))))
+	 ((and (alloca-let-var (cdr x))
+	       (bigloo-config 'have-c99-stack-alloc))
+	  ;; (let-var (... (var (let-var (....) <app-alloc>)) ...) ...)
+	  (with-access::let-var (cdr x) (body)
+	     (with-access::app body (fun args loc)
+		(let* ((v (var-variable fun))
+		       (sa (fun-stack-allocator (global-value v))))
+		   (verbose 3 "      stack allocation \"" (global-name v)
+		      " " loc "\n")
+		   ;; declare the variable for the stack allocation
+		   (let* ((id (gensym (variable-id v)))
+			  (decl (let ((d (duplicate::local (car x)
+					    (id id)
+					    (name #f)
+					    (type *obj*))))
+				   (set-variable-name! d)
+				   d))
+			  (alloc (instantiate::cpragma 
+				    (loc loc)
+				    (format (format (car sa) (variable-name decl)))
+				    (args (map (lambda (a)
+						  (node->cop a *id-kont* inpushexit))
+					     args)))))
+		      ;; adjust the orignal function call
+		      (set! fun (duplicate::var fun
+				   (variable (duplicate::global v
+						(name (cadr sa))))))
+		      (set! args (cons (instantiate::var
+					  (loc loc)
+					  (type *obj*)
+					  (variable decl))
+				    args))
+		      (list alloc))))))
 	 ((and (isa? (cdr x) make-box)
 	       (make-box-stackable (cdr x)))
+	  ;; (let-var (... (var make-stack-box) ...) ...)
 	  (with-access::make-box (cdr x) (loc stackable)
+	     (verbose 3 "      stack allocation \"make-cell\" " loc "\n")
 	     (let* ((decl (let ((d (duplicate::local (car x)
 				      (id (gensym 'box))
 				      (name #f)

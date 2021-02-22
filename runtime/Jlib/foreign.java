@@ -680,6 +680,10 @@ public final class foreign
       {
 	 return (long)n;
       }
+   public static long INT64_TO_INT32(long n)
+      {
+	 return (int)n;
+      }
    public static long ELONG_TO_INT64(long n)
       {
 	 return (long)n;
@@ -3537,7 +3541,7 @@ public final class foreign
 	 return new bigloo.date(ns, s, min, h, d, mon - 1, y, tz, istz, dst);
       }
 
-   public static date bgl_update_date(date, long ns, int s,
+   public static date bgl_update_date(date date, long ns, int s,
 				      int min, int h, int d, int mon,
 				      int y, int tz, boolean istz, int dst)
       {
@@ -3575,13 +3579,6 @@ public final class foreign
    public static date bgl_seconds_to_utc_date(long sec)
       {
 	 date d = new bigloo.date(sec);
-	 d.calendar.setTimeZone(new SimpleTimeZone(0, "UTC"));
-	 return d;
-      }
-
-   public static date bgl_milliseconds_to_date(long sec)
-      {
-	 date d = new bigloo.date(sec * 1000000, true);
 	 d.calendar.setTimeZone(new SimpleTimeZone(0, "UTC"));
 	 return d;
       }
@@ -3694,6 +3691,11 @@ public final class foreign
    public static int BGL_DATE_ISDST(date d)
       {
 	 return ( d.calendar.get(Calendar.DST_OFFSET) > 0 ) ? 1 : -1;
+      }
+
+   public static boolean BGL_DATE_ISGMT(date d)
+      {
+	 return (d.calendar.get(Calendar.ZONE_OFFSET) == 0);
       }
 
    private static final byte[][] day_names = { "Sunday".getBytes(),
@@ -4827,6 +4829,11 @@ public final class foreign
 	 bgldynamic.abgldynamic.get().error_handler = hdl;
       }
 
+   public static void BGL_ERROR_HANDLER_PUSH(Object h, Object hdl)
+      {
+	 bgldynamic.abgldynamic.get().error_handler = MAKE_PAIR( h, hdl );
+      }
+
    public static Object BGL_UNCAUGHT_EXCEPTION_HANDLER_GET()
       {
 	 return bgldynamic.abgldynamic.get().uncaught_exception_handler;
@@ -5582,14 +5589,14 @@ public final class foreign
    //////
    public static final int PTR_ALIGNMENT = 2;
    public static final int SIGHUP = 1;
-   public static final int SIGQUIT = 2;
-   public static final int SIGINT = 3;
+   public static final int SIGINT = 2;
+   public static final int SIGQUIT = 3;
    public static final int SIGILL = 4;
    public static final int SIGTRAP = 5;
    public static final int SIGABRT = 6;
-   public static final int SIGKILL = 9;
-   public static final int SIGFPE = 8;
    public static final int SIGBUS = 7;
+   public static final int SIGFPE = 8;
+   public static final int SIGKILL = 9;
    public static final int SIGSEGV = 11;
    public static final int SIGPIPE = 13;
    public static final int SIGALRM = 14;
@@ -7332,25 +7339,20 @@ public final class foreign
 	 return (hash_code & ((1 << power) - 1));
       }
 
-   public static int bgl_string_hash_number(byte[]s)
-      {
-	 int result = 5381;
-
-	 for (int i = 0; i < s.length; ++i)
-	    result += (result << 5) + s[i];
-
-	 return result & ((1 << 29) - 1);
-      }
-
    public static int bgl_string_hash(byte[]s, int start, int len)
       {
 	 int result = 5381;
 
-	 for (int i = start; i < len; ++i, i++)
+	 for (int i = start; i < len; i++)
 	    result += (result << 5) + s[i];
 	 return result & ((1 << 29) - 1);
       }
 
+   public static int bgl_string_hash_number(byte[]s)
+      {
+	 return bgl_string_hash( s, 0, s.length );
+      }
+   
    public static int bgl_symbol_hash_number(symbol obj)
       {
 	 return (1 + bgl_string_hash_number(SYMBOL_TO_STRING(obj)));

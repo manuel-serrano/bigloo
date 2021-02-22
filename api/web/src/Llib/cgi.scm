@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
 ;*    Last change :  Fri Nov 27 08:15:54 2015 (serrano)                */
-;*    Copyright   :  2003-15 Manuel Serrano                            */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
 ;*=====================================================================*/
@@ -300,21 +300,21 @@
 ;*---------------------------------------------------------------------*/
 (define cgi-multipart-boundary-grammar
    (regular-grammar (boundary)
-      ((: "--" (* #\-) (+ (out "-\n\r")) #\Newline)
+      ((: "--" (* #\-) (+ (out "-\r\n")) #\Newline)
        (if (string=? (the-substring 2 -1) boundary)
 	   'start
 	   (raise
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
-		 (msg "Illegal start boundary character")
+		 (msg (format "Illegal start boundary character (~a)" boundary))
 		 (obj (the-string))))))
-      ((: "--" (* #\-) (+ (out "\n\r-")) #\Return #\Newline)
+      ((: "--" (* #\-) (+ (out "\r\n-")) #\Return #\Newline)
        (if (string=? (the-substring 2 -2) boundary)
 	   'start
 	   (raise
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
-		 (msg "Illegal start boundary character")
+		 (msg (format "Illegal start boundary character (~a)" boundary))
 		 (obj (the-string))))))
       ((: "--" (* #\-) (+ (out "\r\n-")) "--" #\Newline)
        (if (string=? (the-substring 2 -3) boundary)
@@ -322,7 +322,7 @@
 	   (raise
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
-		 (msg "Illegal end boundary character")
+		 (msg (format "Illegal end boundary character (~a)" boundary))
 		 (obj (the-string))))))
       ((: "--" (* #\-) (+ (out "\n-")) "--" #\return #\Newline)
        (if (string=? (the-substring 2 -4) boundary)
@@ -330,7 +330,7 @@
 	   (raise
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
-		 (msg "Illegal end boundary character")
+		 (msg (format "Illegal end boundary character (~a)" boundary))
 		 (obj (the-string))))))
       (else
        (or (eof-object? (the-failure))

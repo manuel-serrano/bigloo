@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
 /*    Last change :  Wed Sep 25 13:47:21 2019 (serrano)                */
-/*    Copyright   :  2002-20 Manuel Serrano                            */
+/*    Copyright   :  2002-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -262,7 +262,10 @@ bgl_get_signal_handler( int sig ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
 bgl_restore_signal_handlers() {
-#if HAVE_SIGPROCMASK
+// MS: CARE 5 jan 2021: I don't understand why and when signal should
+// be restored. Until I understand, the code below is disabled as it
+// impacts severly the performance   
+#if 0 && HAVE_SIGPROCMASK
    sigset_t set;
 
    sigemptyset( &set );

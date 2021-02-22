@@ -200,13 +200,13 @@
 		(string-set! str i (integer->char-ur (+fx c 1))))))))
 
 (define-generic (do-cipher-IV-init! state::Cipher-State IV)
-   (error 'cipher-IV-init
+   (error "cipher-IV-init"
 	  "Internal Error: Could not find method for state"
 	  state))
 (define-generic (do-cipher-block! state::Cipher-State
 				  from::bstring from-pos::long
 				  to::bstring to-pos::long)
-   (error 'en/decrypt-block
+   (error "en/decrypt-block"
 	  "Internal Error: Could not find method for state"
 	  state))
 (define-generic (do-cipher-partial-block! state::Cipher-State
@@ -215,7 +215,7 @@
 					  to::bstring to-block-pos::long
 					  ;; at and len are inside the block
 					  at::long len::long)
-   (error 'en/decrypt-partial-block
+   (error "en/decrypt-partial-block"
 	  "Internal Error: Could not find method for state"
 	  state))
 
@@ -443,7 +443,7 @@
 	  (write-at! IV 0 to to-pos block-size)
 	  (set! to-pos (+fx to-pos block-size)))
 	 ((done) 'do-nothing)
-	 (else (error 'encrypt-input!
+	 (else (error "encrypt-input!"
 		      "Internal Error. Unexpected IV-action"
 		      IV-action)))
 
@@ -487,13 +487,13 @@
 	 ((read) ;; temporarily use the loop-buffer to get the IV
 	  (let ((nb-read (read-at! from from-pos loop-buffer 0 block-size)))
 	     (when (not (=fx nb-read block-size))
-		(error 'IV
+		(error "IV"
 		       "Could not read IV"
 		       nb-read))
 	     (do-cipher-IV-init! cipher-state loop-buffer)
 	     (set! from-pos (+fx from-pos block-size))))
 	 ((done) 'do-nothing)
-	 (else (error 'decrypt-input!
+	 (else (error "decrypt-input!"
 		      "Internal Error. Unexpected IV-action"
 		      IV-action)))
 
@@ -531,7 +531,7 @@
 				     plain-chars)
 			  (+fx+ (-fx i block-size) to-pos plain-chars)))
 		      (else
-		       (error 'decrypt
+		       (error "decrypt"
 			      "Message size must be a multiple of block-size"
 			      nb-copied))))
 		  (else
@@ -608,7 +608,7 @@
 				      (or nonce-init! default-nonce-init!)
 				      (or nonce-update! default-nonce-update!)
 				      bs))
-	    (else (error 'encrypt
+	    (else (error "encrypt"
 			 "Unknown cipher mode"
 			 mode))))
 
@@ -627,7 +627,7 @@
 			      ((zero) zero-pad)
 			      (else (if (procedure? pad)
 					pad
-					(error 'encrypt
+					(error "encrypt"
 					       "Invalid padding mode"
 					       pad)))))
 			  (else #f)))
@@ -644,7 +644,7 @@
 	    (else
 	     (when (or (not (string? encryption-IV))
 		       (not (>=fx (string-length encryption-IV) block-size)))
-		(error 'encryption
+		(error "encryption"
 		       "IV vector is too small"
 		       (if (string? IV)
 			   (string-length IV)
@@ -679,7 +679,7 @@
 				      (or nonce-init! default-nonce-init!)
 				      (or nonce-update! default-nonce-update!)
 				      bs))
-	    (else (error 'decrypt
+	    (else (error "decrypt"
 			 "Unknown cipher mode"
 			 mode))))
       
@@ -697,7 +697,7 @@
 				(else
 				 (if (procedure? pad)
 				     pad
-				     (error 'decrypt
+				     (error "decrypt"
 					    "Invalid padding mode"
 					    pad)))))
 			    (else #f)))
@@ -712,7 +712,7 @@
 	    (else
 	     (when (or (not (string? IV))
 		       (not (>=fx (string-length IV) block-size)))
-		(error 'encryption
+		(error "encryption"
 		       "IV vector is too small"
 		       (if (string? IV)
 			   (string-length IV)
@@ -824,7 +824,7 @@
 			       (string->key #f))
    (let ((p (open-input-file filename)))
       (when (not p)
-	 (error 'encrypt-file
+	 (error "encrypt-file"
 		"Could not open file"
 		filename))
       (unwind-protect
@@ -925,7 +925,7 @@
 			       (string->key #f))
    (let ((p (open-input-file filename)))
       (when (not p)
-	 (error 'decrypt-file
+	 (error "decrypt-file"
 		"Could not open file"
 		filename))
       (unwind-protect
@@ -955,7 +955,7 @@
 (define (block-cipher-description::Block-Cipher lookup-name::symbol)
    (let ((desc-p (assq lookup-name *ciphers*)))
       (when (not desc-p)
-	 (error 'block-cipher-description
+	 (error "block-cipher-description"
 		"Could not find cipher"
 		lookup-name))
       (cdr desc-p)))

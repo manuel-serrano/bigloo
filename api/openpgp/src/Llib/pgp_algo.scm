@@ -12,11 +12,12 @@
 (define (hash-algo->procedure algo)
    (case algo
       ((md5) md5sum-bin)
-      ((sha-1) sha1sum-bin)
-      ((sha-256) sha256sum-bin)
-      (else (error "hash-algo->procedure"
-		   "algorithm not implemented"
-		   (hash-algo->human-readable algo)))))
+      ((sha1 sha-1) sha1sum-bin)
+      ((sha256 sha-256) sha256sum-bin)
+      ((sha512 sha-512) sha512sum-bin)
+      (else
+       (error "hash-algo->procedure" "algorithm not implemented"
+	       (hash-algo->human-readable algo)))))
 
 (define (symmetric-key-algo-key-byte-len::long algo)
    (/fx (symmetric-key-algo-key-bit-len algo) 8))
@@ -76,6 +77,10 @@
 (define (cast5-decrypt str IV pwd)
    (decrypt-string 'cast-128 str pwd :IV IV :mode 'cfb :string->key id))
 (define (aes-decrypt str IV pwd)
+   (debug "calling AES")
+   (debug "str: " (str->hex-string str) " " (string-length str))
+   (debug "IV: " (str->hex-string IV) " " (string-length IV))
+   (debug "pwd: " (str->hex-string pwd) " " (string-length pwd))
    (decrypt-string 'aes str pwd :IV IV :mode 'cfb :string->key id))
 
 (define (symmetric-key-algo->procedure algo encrypt?)

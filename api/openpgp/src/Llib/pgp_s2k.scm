@@ -101,7 +101,7 @@
 (define-struct S2K algo hash salt count)
 
 (define (apply-s2k s2k pwd::bstring len::long)
-   (with-trace 5 "apply-s2k"
+   (with-trace 'pgp "apply-s2k"
       (when (not (S2K? s2k))
 	 (error "apply-s2k"
 		"S2K-struct expected"

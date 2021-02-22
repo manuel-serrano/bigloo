@@ -339,7 +339,7 @@ function compileSection( page ) {
          <div class="row">
            ${(toc.length > 0 && (!chap || !("toc" in chap) || chap.toc)) ?
            <div id="navbar" class="col-md-3" role="complementary">
-	     pas glop ${page}
+	     
              <nav class="sidebar noaffix"
 		  data-spy=${affix}
 	          data-offset-top="215" data-offset-bottom="100">
