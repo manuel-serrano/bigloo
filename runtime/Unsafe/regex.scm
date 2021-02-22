@@ -45,7 +45,7 @@
             __evenv)
 
    (extern ($regcomp::regexp (::bstring ::obj ::bool) "bgl_regcomp")
-           ($regmatch::obj (::regexp ::string ::bool ::int ::int) "bgl_regmatch")
+           ($regmatch::obj (::regexp ::string ::bool ::int ::int ::int) "bgl_regmatch")
            ($regfree::obj (::regexp) "bgl_regfree")
 	   (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
