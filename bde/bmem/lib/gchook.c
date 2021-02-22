@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
 /*    Last change :  Fri May  1 16:06:28 2020 (serrano)                */
-/*    Copyright   :  2003-20 Manuel Serrano                            */
+/*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
 /*=====================================================================*/
@@ -120,6 +120,7 @@ GC_dump_gc_json( gc_info_t *i, FILE *f ) {
 void
 GC_dump_statistics( FILE *f ) {
    fprintf( f, "  (gc\n" );
+   fprintf( f, "    ;; (gc-num alloc-sz heap-sz live-sz lastfunid time)\n" );
    for_each( (void (*)(void *, void *))GC_dump_gc_sexp,
 	     pa_reverse( gcs_info ),
 	     (void *)f );

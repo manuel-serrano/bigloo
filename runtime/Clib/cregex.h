@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:06:49 2019                          */
 /*    Last change :  Thu Aug  8 13:59:30 2019 (serrano)                */
-/*    Copyright   :  2019-20 Manuel Serrano                            */
+/*    Copyright   :  2019-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Basic C regex support.                                           */
 /*=====================================================================*/
@@ -27,11 +27,13 @@ bgl_regfree( obj_t o ) {
 /*    bgl_regmatch ...                                                 */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int end ) {
+bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int end, int offset ) {
    int nmatch = BGL_REGEXP_REGEX( re )->re_nsub + 1;
    regmatch_t *pmatch = alloca( sizeof( *pmatch ) * nmatch );
    int r;
 
+   string += offset;
+   
    if( end > 0 ) {
       char *tmp = alloca( end - beg + 1 );
       memcpy( tmp, &string[ beg ], (end - beg) );
@@ -77,7 +79,7 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int end ) {
 /*    bgl_regmatch_n ...                                               */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int end ) {
+bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int end, int offset ) {
    C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "match_d", "not implemented" );
 }
 

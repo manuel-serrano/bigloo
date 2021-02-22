@@ -73,9 +73,9 @@
 	   (inline regexp-capture-count::long ::regexp)
 	   (pregexp ::bstring . opt-args)
 	   (pregexp-match-positions pat str::bstring
-	      #!optional (beg 0) (end (string-length str)))
+	      #!optional (beg 0) (end (string-length str)) (offset 0))
 	   (pregexp-match-n-positions!::long
-	      ::regexp ::bstring ::vector ::long ::long)
+	      ::regexp ::bstring ::vector ::long ::long #!optional (offset 0))
 	   (pregexp-match pat str::bstring
 	       #!optional (beg 0) (end (string-length str)))
 	   (pregexp-replace::bstring pat ::bstring ins::bstring)
@@ -762,31 +762,27 @@
 
 (define pregexp-match-positions
    ;; bigloo prototype change
-  (lambda (pat str #!optional (beg 0) (end (string-length str)))
+  (lambda (pat str #!optional (beg 0) (end (string-length str)) (offset 0))
     (cond ((string? pat) (set! pat (%pregexp pat)))
 	  ((regexp? pat) (set! pat ($regexp-preg pat)))
           ((pair? pat) #t)
           (else (pregexp-error 'pregexp-match-positions 
                                'pattern-must-be-compiled-or-string-regexp
                                pat)))
-    (let* ((str-len (string-length str))
-	   (start beg))
-;*            (start (if (null? opt-args) 0                            */
-;*                       (let ((start (car opt-args)))                 */
-;*                         (set! opt-args (cdr opt-args))              */
-;*                         start)))                                    */
-;*            (end (if (null? opt-args) str-len                        */
-;*                     (car opt-args)))                                */
-      (let loop ((i start))
-        (and (<= i end)
-             (or (pregexp-match-positions-aux 
-                   pat str str-len start end i)
-                 (loop (+ i 1))))))))
+    (let* ((str (if (>fx offset 0)
+		    (substring str offset (+fx offset end))
+		    str))
+	   (str-len (string-length str))
+		    (start beg))
+       (let loop ((i start))
+	  (and (<= i end)
+	       (or (pregexp-match-positions-aux pat str str-len start end i)
+		   (loop (+ i 1))))))))
 
 (define pregexp-match-n-positions!
    ;; bigloo addition
-   (lambda (pat str res beg end)
-      (let ((pos (pregexp-match-positions pat str beg end))
+   (lambda (pat str res beg end #!optional (offset 0))
+      (let ((pos (pregexp-match-positions pat str beg end offset))
 	    (len (bit-and (vector-length res) (bit-not 1))))
 	 (if (not pos)
 	     -1
