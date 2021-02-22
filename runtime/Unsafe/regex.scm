@@ -186,7 +186,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-positions ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match-positions pat str #!optional (beg 0) (end (string-length str) (offset 0)))
+(define (pregexp-match-positions pat str #!optional (beg 0) (end (string-length str)) (offset 0))
    (match pat str #f beg end offset))
 
 ;*---------------------------------------------------------------------*/
