@@ -273,8 +273,7 @@
 	    (set! *unsafe-arity*   #t)
 	    (set! *unsafe-range*   #t))
 
-   (pragma  (typeof no-cfa-top args-safe)
-	    ($push-error-handler! (args-noescape))))
+   (pragma  (typeof no-cfa-top args-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */
