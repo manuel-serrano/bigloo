@@ -1489,26 +1489,23 @@
 ;*---------------------------------------------------------------------*/
 (define (copy-file string1 string2)
    (let ((pi (open-input-binary-file string1)))
-      (cond
-	 ((not (binary-port? pi))
-	  #f)
-         (else
-	   (let ((po (open-output-binary-file string2)))
-	     (cond ((not (binary-port? po))
-	            (close-binary-port pi)
-  	             #f)
-	           (else
-	             (let ((s (make-string 1024)))
-	               (let loop ((l (input-fill-string! pi s)))
-		         (if (=fx l 1024)
-		           (begin
-		             (output-string po s)
-		             (loop (input-fill-string! pi s)))
-		           (begin
-		             (output-string po (string-shrink! s l))
-		             (close-binary-port pi)
-		             (close-binary-port po)
-		             #t)))))))))))
+      (when (binary-port? pi)
+	 (let ((po (open-output-binary-file string2)))
+	    (if (not (binary-port? po))
+		(begin
+		   (close-binary-port pi)
+		   #f)
+		(let ((s (make-string 1024)))
+		   (let loop ((l (input-fill-string! pi s)))
+		      (if (=fx l 1024)
+			  (begin
+			     (output-string po s)
+			     (loop (input-fill-string! pi s)))
+			  (begin
+			     (output-string po (string-shrink! s l))
+			     (close-binary-port pi)
+			     (close-binary-port po)
+			     #t)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    port? ...                                                        */
