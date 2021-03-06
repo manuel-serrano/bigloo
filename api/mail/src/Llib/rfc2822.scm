@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
 ;*    Last change :  Fri Nov 17 08:44:31 2017 (serrano)                */
-;*    Copyright   :  2007-17 Manuel Serrano                            */
+;*    Copyright   :  2007-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
 ;*    (Internet Message Format) specification.                         */

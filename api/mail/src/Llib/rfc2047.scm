@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
 ;*    Last change :  Thu Dec  1 09:11:29 2016 (serrano)                */
-;*    Copyright   :  2007-16 Manuel Serrano                            */
+;*    Copyright   :  2007-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC 2047             */
 ;*    MIME (Multipurpose Internet Mail Extensions) Part Three:         */
@@ -145,6 +145,7 @@
        (display " " out)
        (ignore))
       ((: (+ (: (? #\Return) #\Newline)) (* #\Space))
+       (display " " out)
        (ignore))
       (#\?
        (write-char #\? out)
