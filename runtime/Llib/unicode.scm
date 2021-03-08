@@ -1085,16 +1085,17 @@
       (else
        (let ((len (string-length str)))
 	  (let loop ((m 0)
+		     (j i)
 		     (i i))
 	     (cond
 		((<=fx i 0)
-		 m)
+		 j)
 		((>=fx m len)
 		 -1)
 		(else
 		 (let* ((c (string-ref str m))
 			(s (utf8-char-size c)))
-		    (loop (+fx m 1) (-fx i s))))))))))
+		    (loop (+fx m s) (-fx j (-fx s 1)) (-fx i 1))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-left-replacement? ...                                */

@@ -144,8 +144,12 @@
       (#\space
        (display " " out)
        (ignore))
-      ((: (+ (: (? #\Return) #\Newline)) (* #\Space))
-       (display " " out)
+      ((: (+ (: (? #\Return) #\Newline)) (+ #\Space))
+       (let* ((s (the-string))
+	      (i (string-skip s "\r\n")))
+	  (display (substring s i (string-length s)) out))
+       (ignore))
+      ((: (+ (: (? #\Return) #\Newline)))
        (ignore))
       (#\?
        (write-char #\? out)
