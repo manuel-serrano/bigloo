@@ -61,7 +61,7 @@
                  "BGL_REGEXP_CAPTURE_COUNT")
 	      (method static $regcomp::regexp (::bstring ::obj ::bool)
 		 "bgl_regcomp")
-	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int)
+	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int ::int)
 		 "bgl_regmatch")
 	      (method static $regmatch-n::long (::regexp ::string ::vector ::int ::int ::int)
 		 "bgl_regmatch_n")

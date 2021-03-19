@@ -144,12 +144,12 @@
       (#\space
        (display " " out)
        (ignore))
-      ((: (+ (: (? #\Return) #\Newline)) (+ #\Space))
+      ((: (+ (: (? #\Return) #\Newline)) (>= 2 #\Space))
        (let* ((s (the-string))
 	      (i (string-skip s "\r\n")))
-	  (display (substring s i (string-length s)) out))
+	  (display (substring s (+fx i 1) (string-length s)) out))
        (ignore))
-      ((: (+ (: (? #\Return) #\Newline)))
+      ((: (+ (: (? #\Return) #\Newline (? #\Space))))
        (ignore))
       (#\?
        (write-char #\? out)

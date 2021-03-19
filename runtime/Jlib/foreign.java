@@ -6128,7 +6128,7 @@ public final class foreign
       return new regexp(pat,true);
    }
 
-   public static Object bgl_regmatch(regexp o, byte[] string, boolean stringp, int beg, int end, offset) {
+   public static Object bgl_regmatch(regexp o, byte[] string, boolean stringp, int beg, int end, int offset) {
       return o.match(new String(string, beg + offset, end-beg), stringp, beg);
    }
    

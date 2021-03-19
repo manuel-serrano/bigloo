@@ -311,9 +311,9 @@
 	 (cons
 	  (bind-exit (exit)
 	     (with-handler (lambda (e) (exit 'a))
-			   (/ 1 0)))
+			   (/fx 1 0)))
 	  (with-handler (lambda (e) 'b)
-			(/ 1 0)))
+			(/fx 1 0)))
 	 '(a . b))
    (test "with-handler.1-eval"
 	 (eval '(with-handler
