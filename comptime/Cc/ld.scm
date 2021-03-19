@@ -158,11 +158,14 @@
 		   (delete-duplicates *cflags-rpath*))))))
 
    (define (default-soname files)
-      (let ((name (if (pair? files) (car files) "out")))
+      (let ((name (cond
+                     ((string? *dest*) *dest*)
+                     ((pair? files) (car files))
+                     (else "out"))))
 	 (string-append (prefix
-			   (if (string? (car files))
-			       (car files)
-			       (symbol->string (car files))))
+			   (if (string? name)
+			       name
+			       (symbol->string name)))
 	    "."
 	    (bigloo-config 'shared-lib-suffix))))
 
