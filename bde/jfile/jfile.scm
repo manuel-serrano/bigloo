@@ -129,7 +129,18 @@
 ;*    make-package-name ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (make-package-name name)
-   (let ((name (prefix name)))
+   (let* ((base-name-sans-ext (prefix (basename name)))
+          ;; we are assuming that the directory portion does not contain
+          ;; components requiring name mangling. If this is not so, the
+          ;; jvm will complain about invalid class names. Should we
+          ;; name mangle directory components?
+          (dir-name  (dirname name))
+          (name (string-append (if (string=? dir-name ".")
+                                   ""
+                                   (string-append dir-name "/")) 
+                   (if (bigloo-need-mangling? base-name-sans-ext)
+                       (bigloo-mangle base-name-sans-ext)
+                       base-name-sans-ext))))
       (let loop ((i (-fx (string-length name) 1)))
 	 (cond
 	    ((=fx i -1)

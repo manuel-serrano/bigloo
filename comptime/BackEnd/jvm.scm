@@ -102,12 +102,12 @@
    (let ((l* (saw_jvm-compile me))
 	 (bname (cond
 		   ((eq? *pass* 'ld)
-		    (if (pair? *src-files*)
-			(addsuffix (prefix (basename (car *src-files*))))
+		    (if (symbol? (jvm-qname me))
+			(addsuffix (prefix (basename (symbol->string (jvm-qname me)))))
 			"a.class"))
 		   ((not (string? *dest*))
-		    (if (pair? *src-files*)
-			(addsuffix (prefix (basename (car *src-files*))))
+		    (if (symbol? (jvm-qname me))
+			(addsuffix (prefix (basename (symbol->string (jvm-qname me)))))
 			#f))
 		   (else
 		    (addsuffix (prefix (basename *dest*)))))))
