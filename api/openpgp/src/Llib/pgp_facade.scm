@@ -29,7 +29,8 @@
 	      (password-provider (lambda (key) #f))
 	      (key-manager (lambda (key) '()))
 	      (hash-algo 'sha-1)
-	      (symmetric-algo 'cast5))
+	      (symmetric-algo 'cast5)
+	      (ignore-bad-packets #f))
 	   (pgp-encrypt msg::bstring keys::pair-nil
 	      passwords::pair-nil
 	      #!key
@@ -251,8 +252,12 @@
 	 (session-keys '())
 	 (encrypted-data packet))))
 
+;*---------------------------------------------------------------------*/
+;*    pubkey-decrypt ...                                               */
+;*---------------------------------------------------------------------*/
 (define (pubkey-decrypt encrypted::PGP-Symmetrically-Encrypted-Packet
-			pubkey-session-packets key-manager password-provider)
+	   pubkey-session-packets key-manager password-provider
+	   ignore-bad-packets)
    (define (try-decrypt session-packet subkey)
       (with-handler
 	 (lambda (e)
@@ -263,8 +268,8 @@
 	    (trace-item "public-key-session-key decription succeeded, len="
 	       (with-access::PGP-Symmetrically-Encrypted-Packet encrypted (data)
 		  (string-length data)))
-	    (symmetric-decrypt encrypted key-string algo))))
-
+	    (symmetric-decrypt encrypted key-string algo ignore-bad-packets))))
+   
    (with-trace 'pgp "pubkey-decrypt"
       (if (and (procedure? key-manager) (correct-arity? key-manager 1))
 	  (unless (null? pubkey-session-packets)
@@ -273,14 +278,19 @@
 		    (subkeys (or (key-manager key-id) '())))
 		(for-each (lambda (k)
 			     (trace-item "key=" (pgp-subkey->human-readable k)))
-			  subkeys)
+		   subkeys)
 		(or (any (lambda (subkey) (try-decrypt pack subkey)) subkeys)
 		    (pubkey-decrypt encrypted (cdr pubkey-session-packets)
-				    key-manager password-provider))))
+		       key-manager password-provider
+		       ignore-bad-packets))))
 	  (error "decrypt" "Illegal key-manager" key-manager))))
 
+;*---------------------------------------------------------------------*/
+;*    pwd-decrypt ...                                                  */
+;*---------------------------------------------------------------------*/
 (define (pwd-decrypt encrypted::PGP-Symmetrically-Encrypted-Packet
-		     password-session-packets passkey-provider)
+	   password-session-packets passkey-provider
+	   ignore-bad-packets)
    (define (try-decrypt session-packet passkey)
       (with-handler
 	 (lambda (e)
@@ -289,30 +299,31 @@
 	 (receive (algo key-string)
 	    (decrypt-symmetric-key-session-key session-packet passkey)
 	    (trace-item "symmetric-key-session-key decription succeeded")
-	    (symmetric-decrypt encrypted key-string algo))))
-
+	    (symmetric-decrypt encrypted key-string algo ignore-bad-packets))))
+   
    (with-trace 'pgp "pwd-decrypt"
       (if (and (procedure? passkey-provider) (correct-arity? passkey-provider 0))
 	  (unless (null? password-session-packets)
 	     (let ((passkey (passkey-provider)))
 		(any (lambda (packet) (try-decrypt packet passkey))
-		     password-session-packets)))
+		   password-session-packets)))
 	  (error "decrypt" "Illegal passkey-provider" passkey-provider))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pgp-decrypt ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (pgp-decrypt encrypted
-		     #!key
-		     (passkey-provider (lambda () #f))
-		     (password-provider (lambda (key) #f))
-		     (key-manager (lambda (key) '()))
-		     (hash-algo 'sha-1)
-		     (symmetric-algo 'cast5))
-
+	   #!key
+	   (passkey-provider (lambda () #f))
+	   (password-provider (lambda (key) #f))
+	   (key-manager (lambda (key) '()))
+	   (hash-algo 'sha-1)
+	   (symmetric-algo 'cast5)
+	   (ignore-bad-packets #f))
+   
    (when (not (isa? encrypted PGP-Encrypted))
       (error "pgp-decrypt" "Expected PGP-composition." encrypted))
-
+   
    (with-trace 'pgp "pgp-decrypt"
       (with-access::PGP-Encrypted encrypted (session-keys encrypted-data)
 	 (with-access::PGP-Symmetrically-Encrypted-Packet encrypted-data (data)
@@ -328,28 +339,31 @@
 	 (let* ((skeys (if (pair? session-keys)
 			   session-keys
 			   (list
-			    (instantiate::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
-			       (version 4)
-			       (algo symmetric-algo)
-			       (s2k (make-s2k 'simple
-					      hash-algo
-					      #f #f))
-			       (encrypted-session-key #f)))))
+			      (instantiate::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
+				 (version 4)
+				 (algo symmetric-algo)
+				 (s2k (make-s2k 'simple
+					 hash-algo
+					 #f #f))
+				 (encrypted-session-key #f)))))
 		(pubkey-session-packets
-		 (filter (lambda (x)
-			    (isa? x PGP-Public-Key-Encrypted-Session-Key-Packet))
-			 skeys))
+		   (filter (lambda (x)
+			      (isa? x PGP-Public-Key-Encrypted-Session-Key-Packet))
+		      skeys))
 		(password-session-packets
-		 (filter (lambda (x)
-			    (isa? x PGP-Symmetric-Key-Encrypted-Session-Key-Packet))
-			 skeys)))
+		   (filter (lambda (x)
+			      (isa? x PGP-Symmetric-Key-Encrypted-Session-Key-Packet))
+		      skeys)))
 	    ;; first try the public keys, then only the password.
 	    (let* ((decrypted (or (pubkey-decrypt encrypted-data
-						  pubkey-session-packets
-						  key-manager password-provider)
+				     pubkey-session-packets
+				     key-manager
+				     password-provider
+				     ignore-bad-packets)
 				  (pwd-decrypt encrypted-data
-					       password-session-packets
-					       passkey-provider))))
+				     password-session-packets
+				     passkey-provider
+				     ignore-bad-packets))))
 	       (when (and (pair? decrypted)
 			  (isa? (car decrypted) PGP-Compressed-Packet))
 		  (with-access::PGP-Compressed-Packet (car decrypted) (packets)
@@ -384,8 +398,8 @@
 		      data))
 		  (else
 		   (error "pgp-decrypt"
-			  "Don't know what to do with decrypted data"
-			  #f))))))))
+		      "Don't know what to do with decrypted data"
+		      #f))))))))
 
 ;; for simplicity we use the symmetric-algo for both the password encryption
 ;; and the data encryption. Should be fairly easy to change.

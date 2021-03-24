@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/openpgp/src/Llib/pgp_composition.scm      */
+;*    .../bigloo/bigloo/api/openpgp/src/Llib/pgp_composition.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
-;*    Last change :  Fri Apr 27 11:11:40 2012 (serrano)                */
+;*    Last change :  Wed Mar 24 10:24:05 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    RFC2440 encoding/decoding                                        */
@@ -19,7 +19,7 @@
 	   __openpgp-encode
 	   __openpgp-port-util)
    (export
-    (decode-pgp p::input-port)
+    (decode-pgp p::input-port #!key ignore-bad-packet)
     (parse-packets packets::pair-nil)
     (encode-native-pgp pgp-composition::PGP-Composition p::output-port)
     (encode-armored-pgp pgp-composition::PGP-Composition
@@ -57,12 +57,12 @@
 ;*    -------------------------------------------------------------    */
 ;*    either returns a PGP-Composition, or a list of PGP-Keys.         */
 ;*---------------------------------------------------------------------*/
-(define (decode-pgp-content p::input-port)
+(define (decode-pgp-content p::input-port ignore-bad-packet)
    ;; TODO: we only handle Compressed packets at the "toplevel", as a message
    ;; inside signatures and inside Literals.
    (with-trace 'pgp "decode-pgp-content"
       (trace-item "p=" p)
-      (let ((packets (decode-packets p)))
+      (let ((packets (decode-packets p ignore-bad-packet)))
 	 (parse-packets packets))))
 
 ;*---------------------------------------------------------------------*/
@@ -480,7 +480,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    decode-pgp ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (decode-pgp p::input-port)
+(define (decode-pgp p::input-port #!key ignore-bad-packet)
    (with-trace 'pgp "decode-pgp"
       (trace-item "p=" p)
       (let ((first-chars (read-chars 10 p)))
@@ -488,29 +488,30 @@
 	 (unread-string! first-chars p)
 	 (if (string=? "-----BEGIN" first-chars)
 	     (receive (main-header-info headers composition)
-		(decode-armored-pgp p)
+		(decode-armored-pgp p ignore-bad-packet)
 		;; discard the headers. If the user wants them he has to
 		;; call the armored function directly.
 		composition)
-	     (decode-native-pgp p)))))
+	     (decode-native-pgp p ignore-bad-packet)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    decode-armored-pgp ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (decode-armored-pgp p::input-port)
+(define (decode-armored-pgp p::input-port ignore-bad-packet)
    (with-trace 'pgp "decode-armored-pgp"
       (receive (main-header-info headers pp)
 	 (armored-pipe-port p)
 	 (unwind-protect
-	    (values main-header-info headers (decode-pgp-content pp))
+	    (values main-header-info headers
+	       (decode-pgp-content pp ignore-bad-packet))
 	    (close-input-port pp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    decode-native-pgp ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (decode-native-pgp p::input-port)
+(define (decode-native-pgp p::input-port ignore-bad-packet)
    (with-trace 'pgp "decode-native-pgp"
-      (decode-pgp-content p)))
+      (decode-pgp-content p ignore-bad-packet)))
 
 ;*---------------------------------------------------------------------*/
 ;*    encode-pgp ::PGP-Composition ...                                 */

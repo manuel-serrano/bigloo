@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/openpgp/src/Llib/pgp_decode.scm      */
+;*    .../bigloo/bigloo/api/openpgp/src/Llib/pgp_decode.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Fri Jun  1 11:50:22 2012 (serrano)                */
+;*    Last change :  Wed Mar 24 10:08:30 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano.          */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
@@ -24,7 +24,7 @@
 	   __openpgp-s2k
 	   __openpgp-conversion
 	   __openpgp-enums)
-   (export (decode-packets::pair-nil p::input-port)
+   (export (decode-packets::pair-nil p::input-port ignore-bad-packets::bool)
 	   (decode-s2k p::input-port)
 	   (decode-mpi::bignum p::input-port)))
 
@@ -97,11 +97,11 @@
 		    (else str)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    decode-package ...                                               */
+;*    decode-packet ...                                                */
 ;*    -------------------------------------------------------------    */
 ;*    https://tools.ietf.org/html/rfc4880#page-17                      */
 ;*---------------------------------------------------------------------*/
-(define (decode-packet p::input-port)
+(define (decode-packet p::input-port ignore-bad-packets::bool)
    
    (define (decode-packet-v3 packet-tag p)
       (trace-item "old package format")
@@ -121,74 +121,84 @@
    
    (with-trace 'pgp "decode-packet"
       (let ((packet-tag (safe-read-octet p)))
-	 (when (zerofx? (bit-and #x80 packet-tag))
-	    (error "decode-packet" "bad packet" packet-tag))
-	 (trace-item "offset=" (-fx (input-port-position p) 1)
-	    "/" (input-port-length p))
-	 (trace-item "packet-tag=" packet-tag " (0x"
-	    (integer->string packet-tag 16) ")")
-	 (multiple-value-bind (content-tag len partial?)
-	    (if (zerofx? (bit-and #x40 packet-tag))
-		;; old packet format
-		(decode-packet-v3 packet-tag p)
-		(decode-packet-v4 packet-tag p))
-	    (trace-item "content-tag=" content-tag " ["
-	       (content-tag->human-readable content-tag) "]")
-	    (trace-item "len=" len " partial=" partial?)
-	    (let ((cpp (content-pipe-port p len partial?)))
-	       (case content-tag
-		  ((public-key-encrypted-session-key)
-		   (decode-public-key-encrypted-session-key cpp))
-		  ((signature)
-		   (decode-signature cpp))
-		  ((symmetric-key-encrypted-session-key)
-		   (decode-symmetric-key-encrypted-session-key cpp))
-		  ((one-pass-signature)
-		   (decode-one-pass-signature cpp))
-		  ((secret-key)
-		   (decode-secret-key cpp))
-		  ((public-key)
-		   (decode-public-key cpp))
-		  ((secret-subkey)
-		   (decode-secret-subkey cpp))
-		  ((compressed)
-		   (decode-compressed-data cpp))
-		  ((symmetrically-encrypted)
-		   (decode-symmetrically-encrypted-data cpp))
-		  ((marker)
-		   (decode-marker cpp)) ;; should be ignored
-		  ((literal)
-		   (decode-literal-data cpp))
-		  ((trust)
-		   (decode-trust cpp))
-		  ((ID)
-		   (decode-user-id cpp))
-		  ((public-subkey)
-		   (decode-public-subkey cpp))
-		  ((user-attribute)
-		   (decode-user-attribute cpp))
-		  ((mdc-symmetrically-encrypted)
-		   (decode-mdc-sym-encrypted cpp))
-		  ((mdc)
-		   (decode-mdc cpp))
-		  (else
-		   (let* ((tmp (read-string p))
-			  (len (string-length tmp)))
-		      (trace-item "remaining length=" len)
-		      (trace-item "str=" (str->hex-string (substring tmp 0 (min 10 len)))))
-		   (error "decode-packet" "Unknown content-tag"
-		      content-tag))))))))
+	 (if (zerofx? (bit-and #x80 packet-tag))
+	     (unless ignore-bad-packets
+		(error "decode-packet" "bad packet" packet-tag))
+	     (begin
+		(trace-item "offset=" (-fx (input-port-position p) 1)
+		   "/" (input-port-length p))
+		(trace-item "packet-tag=" packet-tag " (0x"
+		   (integer->string packet-tag 16) ")")
+		(multiple-value-bind (content-tag len partial?)
+		   (if (zerofx? (bit-and #x40 packet-tag))
+		       ;; old packet format
+		       (decode-packet-v3 packet-tag p)
+		       (decode-packet-v4 packet-tag p))
+		   (trace-item "content-tag=" content-tag " ["
+		      (content-tag->human-readable content-tag) "]")
+		   (trace-item "len=" len " partial=" partial?)
+		   (let ((cpp (content-pipe-port p len partial?)))
+		      (case content-tag
+			 ((public-key-encrypted-session-key)
+			  (decode-public-key-encrypted-session-key cpp))
+			 ((signature)
+			  (decode-signature cpp))
+			 ((symmetric-key-encrypted-session-key)
+			  (decode-symmetric-key-encrypted-session-key cpp))
+			 ((one-pass-signature)
+			  (decode-one-pass-signature cpp))
+			 ((secret-key)
+			  (decode-secret-key cpp))
+			 ((public-key)
+			  (decode-public-key cpp))
+			 ((secret-subkey)
+			  (decode-secret-subkey cpp))
+			 ((compressed)
+			  (decode-compressed-data cpp ignore-bad-packets))
+			 ((symmetrically-encrypted)
+			  (decode-symmetrically-encrypted-data cpp))
+			 ((marker)
+			  (decode-marker cpp)) ;; should be ignored
+			 ((literal)
+			  (decode-literal-data cpp))
+			 ((trust)
+			  (decode-trust cpp))
+			 ((ID)
+			  (decode-user-id cpp))
+			 ((public-subkey)
+			  (decode-public-subkey cpp))
+			 ((user-attribute)
+			  (decode-user-attribute cpp))
+			 ((mdc-symmetrically-encrypted)
+			  (decode-mdc-sym-encrypted cpp))
+			 ((mdc)
+			  (decode-mdc cpp))
+			 (else
+			  (let* ((tmp (read-string p))
+				 (len (string-length tmp)))
+			     (trace-item "remaining length=" len)
+			     (trace-item "str=" (str->hex-string (substring tmp 0 (min 10 len)))))
+			  (error "decode-packet" "Unknown content-tag"
+			     content-tag))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    decode-packets ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (decode-packets p::input-port)
-   (let ((c (peek-char p)))
-      (if (eof-object? c)
-	  '()
-	  (let ((packet (decode-packet p)))
-	     (cons packet (decode-packets p))))))
+(define (decode-packets p::input-port ignore-bad-packets)
+   (with-trace 'pgp "decode-packets"
+      (let loop ()
+	 (let ((c (peek-char p)))
+	    (if (eof-object? c)
+		'()
+		(let ((packet (decode-packet p ignore-bad-packets)))
+		   (trace-item "packet=" (typeof packet))
+		   (if packet
+		       (cons packet (loop))
+		       '())))))))
 
+;*---------------------------------------------------------------------*/
+;*    decode-s2k ...                                                   */
+;*---------------------------------------------------------------------*/
 (define (decode-s2k p::input-port)
    (with-trace 'pgp "decode-s2k"
       (let* ((s2k-algo-byte (safe-read-octet p))
@@ -196,9 +206,9 @@
 	     (hash-algo-byte (safe-read-octet p))
 	     (hash-algo (byte->hash-algo hash-algo-byte)))
 	 (trace-item "s2k-algo: " s2k-algo-byte " "
-		     (s2k-algo->human-readable s2k-algo))
+	    (s2k-algo->human-readable s2k-algo))
 	 (trace-item "hash-algo: " hash-algo-byte " "
-		     (hash-algo->human-readable hash-algo))
+	    (hash-algo->human-readable hash-algo))
 	 (case s2k-algo
 	    ((simple)
 	     (make-s2k s2k-algo hash-algo #f #f))
@@ -215,8 +225,8 @@
 		(make-s2k s2k-algo hash-algo salt count)))
 	    (else
 	     (error "decode-s2k"
-		    "unknown s2k algorithm"
-		    s2k-algo))))))
+		"unknown s2k algorithm"
+		s2k-algo))))))
 
 (define (decode-time::date p::input-port #!optional (treat-0-as-present? #f))
    (let ((n (decode-scalar p 4)))
@@ -892,7 +902,7 @@
 ;; ----------------------------------------------------------------------------
 ;; 5.6 Compressed Data Packet
 ;; ----------------------------------------------------------------------------
-(define (decode-compressed-data cpp)
+(define (decode-compressed-data cpp ignore-bad-packets::bool)
    ;; note: we discard the compression-packet and return the uncompressed
    ;; packet. Maybe this is not intended in which case we could insert a new
    ;; 'Compression-Packet'.
@@ -902,19 +912,19 @@
 	 (trace-item "Compression Algorithm: " algo " "
 		     (compression-algo->human-readable algo))
 	 (case algo
-	    ((uncompressed) (decode-packet cpp))
+	    ((uncompressed) (decode-packet cpp ignore-bad-packets))
 	    ((ZIP)
 	     (let ((pz (port->inflate-port cpp)))
 		(unwind-protect
 		   (instantiate::PGP-Compressed-Packet
-		      (packets (decode-packets pz)))
+		      (packets (decode-packets pz ignore-bad-packets)))
 		   (close-input-port pz))))
 	    ;; TODO: fix compression
 	    ((ZLIB)
 	     (let ((pz (port->zlib-port cpp)))
 		(unwind-protect
 		   (instantiate::PGP-Compressed-Packet
-		      (packets (decode-packets pz)))
+		      (packets (decode-packets pz ignore-bad-packets)))
 		   (close-input-port pz))))
 	    (else (error "decode compressed" "Can't decompresse data" algo))))))
 

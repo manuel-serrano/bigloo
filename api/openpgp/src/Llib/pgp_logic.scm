@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/openpgp/src/Llib/pgp_logic.scm       */
+;*    .../project/bigloo/bigloo/api/openpgp/src/Llib/pgp_logic.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
-;*    Last change :  Fri Apr 27 11:21:28 2012 (serrano)                */
+;*    Last change :  Wed Mar 24 10:26:05 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP logic                                                    */
@@ -47,7 +47,7 @@
     (symmetric-encrypt::PGP-Symmetrically-Encrypted-Packet data::PGP-Packet
 							   key-string::bstring algo::symbol
 							   #!key (mdc #t))
-    (symmetric-decrypt cipher::PGP-Symmetrically-Encrypted-Packet key-string::bstring algo::symbol)
+    (symmetric-decrypt cipher::PGP-Symmetrically-Encrypted-Packet key-string::bstring algo::symbol ignore-bad-packets::bool)
     (decrypt-symmetric-key-session-key session-packet::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
 				       passkey::bstring)
     (decrypt-public-key-session-key session-packet::PGP-Public-Key-Encrypted-Session-Key-Packet
@@ -1062,9 +1062,13 @@
 		  (version 1)
 		  (data encrypted)))))))
 
+;*---------------------------------------------------------------------*/
+;*    symmetric-decrypt ...                                            */
+;*---------------------------------------------------------------------*/
 (define (symmetric-decrypt
 	 encrypted::PGP-Symmetrically-Encrypted-Packet
-	 key-string::bstring algo::symbol)
+	 key-string::bstring algo::symbol
+	 ignore-bad-packets::bool)
    (with-trace 'pgp "symmetric-decrypt"
       (trace-item "Key-string: " (str->hex-string key-string))
       (trace-item "Algo: " (symmetric-key-algo->human-readable algo))
@@ -1077,12 +1081,16 @@
 			      0
 			      (min 50 (string-length encrypted-str)))))))
       (if (isa? encrypted PGP-MDC-Symmetrically-Encrypted-Packet)
-	  (mdc-symmetric-decrypt encrypted key-string algo)
-	  (non-mdc-symmetric-decrypt encrypted key-string algo))))
+	  (mdc-symmetric-decrypt encrypted key-string algo ignore-bad-packets)
+	  (non-mdc-symmetric-decrypt encrypted key-string algo ignore-bad-packets))))
 
+;*---------------------------------------------------------------------*/
+;*    non-mdc-symmetric-decrypt ...                                    */
+;*---------------------------------------------------------------------*/
 (define (non-mdc-symmetric-decrypt
-	 encrypted::PGP-Symmetrically-Encrypted-Packet
-	 key-string::bstring algo::symbol)
+	   encrypted::PGP-Symmetrically-Encrypted-Packet
+	   key-string::bstring algo::symbol
+	   ignore-bad-packets::bool)
    (with-trace 'pgp "non-mdc-symmetric-decrypt"
       ;; RFC 5.7
       (with-access::PGP-Symmetrically-Encrypted-Packet encrypted (data)
@@ -1110,7 +1118,7 @@
 			      (packet-p (open-input-string d-rest)))
 			  (trace-item "Password seemed to be fine")
 			  (trace-item "Resynched IV: " (str->hex-string resync-iv))
-			  (decode-packets packet-p))
+			  (decode-packets packet-p ignore-bad-packets))
 		       (begin
 			  (trace-item "Password failed")
 			  #f))))
@@ -1129,15 +1137,20 @@
 			      (d-rest (substring d-all 10 (string-length d-all)))
 			      (packet-p (open-input-string d-rest)))
 			  (trace-item "Password seemed to be fine")
-			  (decode-packets packet-p))
+			  (decode-packets packet-p ignore-bad-packets))
 		       (begin
 			  (trace-item "Password failed")
 			  #f)))))))))
 
-;; strips the decoded output from its MDC packet.
+;*---------------------------------------------------------------------*/
+;*    mdc-symmetric-decrypt ...                                        */
+;*    -------------------------------------------------------------    */
+;*    strips the decoded output from its MDC packet.                   */
+;*---------------------------------------------------------------------*/
 (define (mdc-symmetric-decrypt
-	 encrypted::PGP-MDC-Symmetrically-Encrypted-Packet
-	 key-string::bstring algo::symbol)
+	   encrypted::PGP-MDC-Symmetrically-Encrypted-Packet
+	   key-string::bstring algo::symbol
+	   ignore-bad-packets::bool)
    (with-trace 'pgp "mdc-symmetric-decrypt"
       ;; RFC 4880, 5.13
       (with-access::PGP-MDC-Symmetrically-Encrypted-Packet encrypted
@@ -1170,11 +1183,15 @@
 				     (string-length d-rest) ") "
 				     (str->hex-string d-rest)))
 			  (packet-p (open-input-string d-rest))
-			  (packets (decode-packets packet-p))
+			  (packets (decode-packets packet-p ignore-bad-packets))
 			  (dummy-l (cons 'dummy packets)))
 		      (let loop ((ps packets)
 				 (previous dummy-l))
 			 (cond
+			    ((and (null? (cdr ps))
+				  (not (isa? (car ps) PGP-MDC-Packet))
+				  ignore-bad-packets)
+			     ps)
 			    ((or (null? ps)
 				 (and (null? (cdr ps))
 				      (not (isa? (car ps) PGP-MDC-Packet))))

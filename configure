@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May 18 08:43:06 2020 (serrano)                */
+#*    Last change :  Wed Mar 24 07:05:25 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -17,7 +17,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.4b
+release=4.4c
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 

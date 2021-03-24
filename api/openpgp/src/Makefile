@@ -1,5 +1,5 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/openpgp/src/Makefile             */
+#*    serrano/prgm/project/bigloo/bigloo/api/openpgp/src/Makefile      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 11 15:36:25 2010                          */
