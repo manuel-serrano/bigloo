@@ -80,6 +80,9 @@
 	  (loop (cdr args) res))
 	 ((member (car args) *src-files*)
 	  (loop (cdr args) res))
+         ;; filter out the end bigloo option marker
+         ((string=? (car args) "--")
+          (loop (cdr args) res))
 	 (else
 	  (loop (cdr args) (cons (car args) res))))))
 			   
