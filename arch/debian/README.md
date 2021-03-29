@@ -67,3 +67,12 @@ The file bigloo/arch/raspian/README.cross.md contains informations on
 how to prepare an ARM image suitable for the Qemu emulator and how to
 spawn the emulator so that it can be used to build a Debian package
 on the emulated architecture.
+
+
+5. Installing the Debian packages
+---------------------------------
+
+```shell[:@shell-guest]
+sudo dpkg -i /tmp/debbigloo.remote/build.bigloo/*.deb
+export PATH=/opt/hop/bin:$PATH
+```

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/multimedia/src/Llib/musicbuf.scm     */
+;*    .../bigloo/bigloo/api/multimedia/src/Llib/musicbuf.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Sep 28 04:43:47 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Fri Mar 26 10:16:56 2021 (serrano)                */
+;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
 ;*=====================================================================*/
@@ -25,9 +25,8 @@
 	       (%decoder (default #f))
 	       (%buffer (default #f))
 	       (%nextbuffer (default #f))
-	       
 	       (%playlist::pair-nil (default '()))
-	       (%aready::bool (default #t))
+	       (%usecnt::int (default 0))
 	       (%amutex::mutex read-only (default (make-mutex)))
 	       (%!pid::int (default -1))
 	       (%acondv::condvar read-only (default (make-condition-variable))))
@@ -355,18 +354,24 @@
 	 (unwind-protect
 	    (begin
 	       (musicdecoder-reset! d)
-	       (with-access::musicbuf o (%amutex %!pid %buffer %decoder)
+	       (with-access::musicbuf o (%amutex %!pid %buffer %decoder %usecnt)
 		  (synchronize %amutex
 		     (set! %buffer buffer)
 		     (set! %decoder d)
 		     (set! %!pid pid)
+		     (set! %usecnt (+fx 1 %usecnt))
 		     (update-song-status! o n pid (car urls)))
 		  (when notify
 		     (with-access::musicbuf o (%status onevent)
 			(with-access::musicstatus %status (playlistid)
 			   (onevent o 'playlist playlistid)))))
 	       (musicdecoder-decode d o buffer))
-	    (musicbuffer-close buffer))))
+	    (begin
+	       (musicbuffer-close buffer)
+	       (with-access::musicbuf o (%amutex %acondv %usecnt)
+		  (synchronize %amutex
+		     (set! %usecnt (-fx %usecnt 1))
+		     (condition-variable-broadcast! %acondv)))))))
    
    (define (play-urls urls n)
       (with-access::musicbuf o (%amutex %!pid %decoder %status)
@@ -420,7 +425,7 @@
 			       (obj action)))))))))))
 
    (define (wait-playlist n)
-      (with-access::musicbuf o (%amutex %playlist %aready %!pid)
+      (with-access::musicbuf o (%amutex %playlist %!pid)
 	 (synchronize %amutex
 	    (let ((playlist %playlist))
 	       (when (and (>=fx n 0) (<fx n (length playlist)))
@@ -432,7 +437,6 @@
 		  (let ((playid %!pid))
 		     (musicbuf-wait-ready! o)
 		     (when (=fx %!pid playid)
-			(set! %aready #f)
 			;; play the list of urls
 			(list-tail playlist n))))))))
    
@@ -443,10 +447,9 @@
 	    ;; we got a playlist let's play it
 	    (unwind-protect
 	       (play-urls pl n)
-	       (with-access::musicbuf o (%buffer %decoder %aready %amutex %acondv)
+	       (with-access::musicbuf o (%buffer %decoder %amutex %acondv)
 		  (synchronize %amutex
 		     ;; reset the player state
-		     (set! %aready #t)
 		     (set! %buffer #f)
 		     (set! %decoder #f)
 		     ;;(pcm-reset! o)
@@ -528,14 +531,13 @@
 	 (musicbuffer-abort! %buffer))
       (when (isa? %nextbuffer musicbuffer)
 	 (musicbuffer-abort! %nextbuffer))
-      (with-access::musicbuf o (%aready %acondv %amutex)
-	 (unless %aready
+      (with-access::musicbuf o (%usecnt %acondv %amutex)
+	 (unless (=fx %usecnt 0)
 	    (let loop ()
-	       (unless %aready
+	       (unless (=fx %usecnt 0)
 		  ;; keep waiting
 		  (condition-variable-wait! %acondv %amutex)
-		  (loop))))
-	 (set! %aready #t))))
+		  (loop)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    musicbuffer-abort! ...                                           */
@@ -548,7 +550,7 @@
 	 (condition-variable-broadcast! %bcondv))))
 
 ;*---------------------------------------------------------------------*/
-;*    musicdecoder-abort! ...                                         */
+;*    musicdecoder-abort! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (musicdecoder-abort! d::musicdecoder)
    (with-access::musicdecoder d (%!dabort %!dpause %dmutex %dcondv)
@@ -567,7 +569,7 @@
 	    (musicdecoder-pause %decoder)))))
 
 ;*---------------------------------------------------------------------*/
-;*    musicdecoder-pause ...                                          */
+;*    musicdecoder-pause ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (musicdecoder-pause d::musicdecoder)
    (with-access::musicdecoder d (%dmutex %dcondv %!dpause)

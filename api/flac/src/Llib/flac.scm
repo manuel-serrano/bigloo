@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/flac/src/Llib/flac.scm           */
+;*    .../prgm/project/bigloo/bigloo/api/flac/src/Llib/flac.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sat Oct 29 21:17:16 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Fri Mar 26 08:05:08 2021 (serrano)                */
+;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
 ;*=====================================================================*/
@@ -105,7 +105,7 @@
 ;*    flac-decoder-decode ::flac-decoder ...                           */
 ;*---------------------------------------------------------------------*/
 (define-generic (flac-decoder-decode o::flac-decoder)
-   (with-access::flac-decoder o ($builtin %eof)
+   (with-access::flac-decoder o ($builtin)
       (unwind-protect
 	 (begin
 	    ($bgl-flac-decoder-init-stream $builtin o)
@@ -116,7 +116,7 @@
 ;*    flac-decoder-decode16 ::flac-decoder ...                         */
 ;*---------------------------------------------------------------------*/
 (define-generic (flac-decoder-decode16 o::flac-decoder)
-   (with-access::flac-decoder o ($builtin %eof)
+   (with-access::flac-decoder o ($builtin)
       (unwind-protect
 	 (begin
 	    ($bgl-flac-decoder-init-stream16 $builtin o)

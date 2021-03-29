@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/flac/src/Llib/flac_decoder.scm       */
+;*    .../project/bigloo/bigloo/api/flac/src/Llib/flac_decoder.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Jan 27 17:30:18 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Fri Mar 26 07:53:09 2021 (serrano)                */
+;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC decoder                                                     */
 ;*=====================================================================*/
@@ -131,7 +131,7 @@
    (with-access::flacmusicdecoder o (%flac %inseek)
       (unless %inseek
 	 (set! %inseek #t)
-	 (with-access::flacdec %flac ($builtin %eof)
+	 (with-access::flacdec %flac ($builtin)
 	    (let* ((bps ($flac-decoder-get-bits-per-sample $builtin))
 		   (srate ($flac-decoder-get-sample-rate $builtin))
 		   (off (*llong (fixnum->llong srate) (fixnum->llong sec))))
@@ -165,10 +165,6 @@
 	       (and (not %empty)
 		    (>fx (*fx 4 (musicbuffer-available %buffer)) inlen)))
 	    
-	    (define (broadcast-not-full p)
-	       (synchronize %bmutex
-		  (condition-variable-broadcast! %bcondv)))
-	    
 	    (define (inc-tail! size)
 	       ;; increment the tail
 	       (let ((ntail (+fx %tail size)))
@@ -187,7 +183,9 @@
 			 (p (/fx (*fx avail 100) inlen)))
 		     (cond
 			((<fx p %rate)
-			 (broadcast-not-full p)
+			 ;; not full
+			 (synchronize %bmutex
+			    (condition-variable-broadcast! %bcondv))
 			 (when (and (<=fx p %last-percentage) (<fx %rate %rate-max))
 			    (set! %rate (+fx %rate 10))))
 			((>fx p %rate-min)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Apr 18 15:36:45 2020 (serrano)                */
-;*    Copyright   :  2011-20 Manuel Serrano                            */
+;*    Last change :  Fri Mar 26 07:51:11 2021 (serrano)                */
+;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
 ;*=====================================================================*/
@@ -55,7 +55,7 @@
 	 (set! %buffer buffer)
 	 (set! %music am)
 	 (set! %decoder dec)
-	 (with-access::alsamusic am (%amutex %status pcm)
+	 (with-access::alsamusic am (%status pcm)
 	    (with-access::musicbuffer buffer (url)
 	       (unwind-protect
 		  (with-access::alsa-snd-pcm pcm (hwbps)

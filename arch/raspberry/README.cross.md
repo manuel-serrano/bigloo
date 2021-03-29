@@ -1,7 +1,5 @@
-Raspberry Cross Compilation
----------------------------
-
-_9 Dec 2019_
+Raspberry Cross Compilation - 27 mar 2021
+=========================================
 
 This note describes how to cross compile and install Bigloo on a
 Raspberry PI. The procedure is complex because of the different ARM
@@ -23,7 +21,8 @@ The three main steps of the cross compilation procedure are:
   3. cross compiling Bigloo.
   
   
-### Prerequisite
+1. Prerequisite
+---------------
 
 The procedure described in these documents has been tested only under
 Debian platforms. However, it should not depend on that specific Linux
@@ -66,6 +65,24 @@ From the directory containing the img file:
    
 ```
 
+The default user is, which owns sudo priviliges:
+
+```
+usename: pi
+password: raspberry
+```
+
+Depending on the qemu version, the command above might not configure
+the network interface properly. In that case, use the alternative
+command to run qemu:
+
+
+Run qemu (alt)
+
+```shell[:@shell-host]
+(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -net tap,ifname=vnet0,script=no,downscript=no
+```
+   
 The port forwarding 2022:22 can be changed, but if you do so, you will
 have to adapt the Bigloo `ssh-copy.sh` script used for the cross-compiation
 (see below section 3).
@@ -113,7 +130,7 @@ J. Expand the image size
 (in host) cp 2019-09-26-raspbian-buster-lite.qcow 2019-09-26-raspbian-buster-lite16GB.qcow
 ```
 
-Boot qemy with a second disk
+Boot qemu with a second disk
    
 ```shell[:@shell-host]
 (in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -hdb 2019-09-26-raspbian-buster-lite16GB.qcow
@@ -141,7 +158,7 @@ guest is challenging. Arm processors have different characteristics
 (arm <= 6 that supports soft floats and arm >= 7 that supports hard floats)
 and the Raspbian distribution probably uses different versions of the
 glibc and gcc compiler than the host. Before proceeding to the Bigloo
-cross compilation a compatible toochain must be build. The following
+cross compilation a compatible toochain must be built. The following
 will show the different versions of the tools and libraries that are
 involved.
 
@@ -228,5 +245,5 @@ Before installing Bigloo, the following packages should be installed:
 
 ```shell[:@shell-guest]
 (in guest) sudo apt update
-(in guest) sudo apt install -y dh-make libssl1.0.2 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring2 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10
+(in guest) sudo apt install -y dh-make libssl1.1 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring2 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10
 ```
