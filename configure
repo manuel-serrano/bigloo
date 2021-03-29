@@ -3931,7 +3931,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
      $echo 'GCCLOSELIB=-l$(GCLIB)' >> $makefile_cfg
      $echo "GCSTDOBJ=Clib/non_inline_alloc.o" >> $makefile_cfg
      $echo "GCLIBDIR=$gclibdir" >>  $makefile_cfg
-     $echo "EXTRALIBS+=-l$(GCLIB)" >> $makefile_cfg
+     $echo 'EXTRALIBS+=-l$(GCLIB)' >> $makefile_cfg
      $echo "BIGLOOGCLIB=" >> $makefile_cfg
   fi
   $echo >> $makefile_cfg
