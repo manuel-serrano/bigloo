@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jan 20 14:43:37 2006                          */
-#*    Last change :  Thu Mar 26 18:44:06 2020 (serrano)                */
-#*    Copyright   :  2006-20 Manuel Serrano                            */
+#*    Last change :  Wed Mar 24 06:59:55 2021 (serrano)                */
+#*    Copyright   :  2006-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Git config                                                       */
 #*=====================================================================*/
@@ -53,11 +53,11 @@ revision: populate
           release=`cat .bigloorelease`; \
           if [ "$(RELEASE) " != "$$release " ]; then \
             echo $(RELEASE) > .bigloorelease; \
-            $(VM-TAG) $(RELEASE); \
+            $(VM-TAG) "v$(RELEASE)"; \
           fi \
         else \
           echo $(RELEASE) > .bigloorelease; \
-          $(VM-TAG) v$(RELEASE); \
+          $(VM-TAG) "v$(RELEASE)"; \
         fi
 
 #*---------------------------------------------------------------------*/

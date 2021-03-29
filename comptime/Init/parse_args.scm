@@ -1033,11 +1033,19 @@
 	   (set! *target-language* '.net))
 	  (else
 	   (error "parse-args" "Unknown target" lang))))
+
+;*--- end bigloo arg parsing  --------------------------------------*/
+      ((("--")
+        (help "--" "end bigloo arg parsing"))
+       (set! *rest-args*  (append *rest-args* (reverse! the-remaining-args)))
+       (set! the-remaining-args '()))
+
       
 ;*--- Unknown arguments -----------------------------------------------*/
       (("-?dummy")
        (set! *rest-args* (cons (string-append "-" dummy) *rest-args*)))
       
+     
 ;*--- The source file -------------------------------------------------*/
       (else
        (let ((suf (suffix else)))
