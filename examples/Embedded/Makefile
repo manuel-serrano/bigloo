@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Tue Mar 24 12:24:45 2020 (serrano)                */
-#*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Mar 29 09:45:53 2021 (serrano)                */
+#*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    An example of embedded bigloo program.                           */
 #*=====================================================================*/
@@ -26,7 +26,7 @@ BGLFLAGS	= $(BGLOPTFLAGS)                                        \
 CFLAGS 		= -g
 LNFLAGS		= 
 LBIGLOO		= `$(BIGLOO) -eval '(begin (print *default-lib-dir*) (exit 0))'`
-LIBFLAGS	= -L$(DESTDIR)$(LIBDIR) -lbigloogc-$(RELEASE) -lbigloo_s-$(RELEASE) -lbigloogc-$(RELEASE) $(EXTRALIBS) -lm 
+LIBFLAGS    	= -L$(LIBPATH) -lbigloogc-$(RELEASE) -lbigloo_s-$(RELEASE) -lbigloogc-$(RELEASE) $(EXTRALIBS) -lm
 
 DEST		= embedded
 

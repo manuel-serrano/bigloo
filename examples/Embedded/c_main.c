@@ -1,13 +1,13 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/examples/Embedded/c-main.c           */
+/*    .../prgm/project/bigloo/bigloo/examples/Embedded/c_main.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 14 09:04:53 1996                          */
-/*    Last change :  Fri Nov 28 09:25:40 2003 (serrano)                */
+/*    Last change :  Mon Mar 29 09:46:13 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The C main.                                                      */
 /*=====================================================================*/
-
+#include <stdio.h>
 extern int bigloo_initialize( int, char **, char ** );
 
 /*---------------------------------------------------------------------*/
