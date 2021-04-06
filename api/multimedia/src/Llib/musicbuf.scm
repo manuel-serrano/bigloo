@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Mar 26 10:16:56 2021 (serrano)                */
+;*    Last change :  Tue Apr  6 07:57:40 2021 (serrano)                */
 ;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
@@ -919,19 +919,22 @@
 	 ((string-suffix? ".wav" path) "audio/x-wav")
 	 ((string-suffix? ".swf" path) "application/x-shockwave-flash")
 	 ((string-suffix? ".swfl" path) "application/x-shockwave-flash")
-	 (else "audio/mpeg")))
+	 (else #f)))
    
-   (if (and (string-prefix? "http" path)
-	    (or (string-prefix? "http://" path)
-		(string-prefix? "https://" path)))
-       (let ((i (string-index-right path #\?)))
-	  (if i
-	      (let ((base (substring path 6 i)))
-		 (if (string-index base #\.)
-		     ;; there is something that looks like a suffix in base url
-		     (mime-type base)
-		     ;; there is suffix, try in the arguments
-		     (mime-type-file (substring path (+fx i 1)))))
-	      (mime-type-file path)))
-       (mime-type-file path)))
+   (or (if (and (string-prefix? "http" path)
+		(or (string-prefix? "http://" path)
+		    (string-prefix? "https://" path)))
+	   (let ((i (string-index-right path #\?)))
+	      (if i
+		  (let ((base (substring path 6 i)))
+		     (if (string-index base #\.)
+			 ;; there is something that looks like a suffix in base url
+			 (or (mime-type-file base)
+			     (mime-type-file (substring path (+fx i 1))))
+			 ;; there is suffix, try in the arguments
+			 (mime-type-file (substring path (+fx i 1)))))
+		  (mime-type-file path)))
+	   (mime-type-file path))
+       "audio/mpeg"))
+       
 

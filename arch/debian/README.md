@@ -45,6 +45,7 @@ example:
 ./makedeb.sh -O /tmp/debbigloo
 ```
 
+
 3. To build the debian packages on a remote machine via ssh
 -----------------------------------------------------------
 
@@ -59,6 +60,7 @@ example:
 ```shell
 ./makedebremote.sh -O /tmp/debraspbian raspbian hop
 ```
+
 
 4. Building Debian packages with Qemu
 -------------------------------------

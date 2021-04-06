@@ -11,7 +11,8 @@ Install qemu for arm on the host:
 
 ```shell[:@shell-host]
 (in host) sudo apt install qemu-system-arm
-```  
+```
+
 
 2. Preparing the qemu image 
 ---------------------------
