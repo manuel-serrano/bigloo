@@ -1,0 +1,121 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/pcre2                */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Dec 27 06:26:38 2007                          */
+#*    Last change :  Thu Apr  8 10:42:31 2021 (serrano)                */
+#*    Copyright   :  2007-21 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Check if PCRE2 is available.                                     */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+pcrelib=-lpcre2-8
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --pcrelib=*)
+      pcrelib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $pcrelib >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdio.h>
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+#include <string.h>
+
+void match(char *data, char *pattern) {
+  int count = 0;
+  double elapsed;
+  struct timespec start, end;
+  pcre2_code *re;
+  int errorcode;
+  PCRE2_SIZE erroroffset;
+  pcre2_match_context *match_ctx;
+  pcre2_jit_stack *stack;
+  pcre2_match_data *match_data;
+  int length;
+  PCRE2_SIZE offset = 0;
+  PCRE2_SIZE *ovector;
+
+  re = pcre2_compile((PCRE2_SPTR) pattern, PCRE2_ZERO_TERMINATED, 0, &errorcode, &erroroffset, NULL);
+
+  match_ctx = pcre2_match_context_create(NULL);
+  pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+  stack = pcre2_jit_stack_create(0, 16384, NULL);
+  pcre2_jit_stack_assign(match_ctx, NULL, stack);
+
+  match_data = pcre2_match_data_create(1, NULL);
+  length = strlen(data);
+
+  while (pcre2_jit_match(re, (PCRE2_SPTR8) data, length, offset, 0, match_data, match_ctx) == 1) {
+    count++;
+
+    ovector = pcre2_get_ovector_pointer(match_data);
+    offset = ovector[1];
+  }
+
+  pcre2_jit_stack_free(stack);
+  pcre2_match_context_free(match_ctx);
+  pcre2_match_data_free(match_data);
+  pcre2_code_free(re);
+}
+
+int main(int argc, char **argv) {
+  char *data = "foo bar@gee.fr\nhux@toto.com\nmee@mee";
+  match(data, "[\\w\\.+-]+@[\\w\\.-]+\\.[\\w\\.-]+");
+  match(data, "[\\w]+://[^/\\s?#]+[^\\s?#]+(?:\\?[^\\s#]*)?(?:#[^\\s]*)?");
+  match(data, "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])");
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "$pcrelib"
+else
+   echo "no"
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0

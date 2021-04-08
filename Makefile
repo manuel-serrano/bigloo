@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri May  1 09:55:43 2020 (serrano)                */
-#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Apr  8 09:51:40 2021 (serrano)                */
+#*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -133,6 +133,7 @@ DIRECTORIES	= cigloo \
                   gc \
                   gmp \
                   pcre \
+                  pcre2 \
                   libunistring \
                   libuv
 
@@ -170,6 +171,9 @@ boot-c: checkgmake
         fi
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc boot; \
+        fi
+	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre2 boot; \
         fi
 	if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre boot; \
@@ -272,6 +276,10 @@ dobigboot:
 	  $(MAKE) -C gmp clean; \
 	  $(MAKE) -C gmp boot; \
         fi
+	@ if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre2 clean; \
+	  $(MAKE) -C pcre2 boot; \
+        fi
 	@ if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre clean; \
 	  $(MAKE) -C pcre boot; \
@@ -357,6 +365,10 @@ fullbootstrap-sans-log:
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp clean; \
 	  $(MAKE) -C gmp boot; \
+        fi
+	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre2 clean; \
+	  $(MAKE) -C pcre2 boot; \
         fi
 	if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre clean; \
@@ -704,6 +716,9 @@ install-libs: install-dirs
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp install; \
         fi
+	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre2 install; \
+        fi
 	if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre install; \
         fi
@@ -794,6 +809,9 @@ uninstall: uninstall-bee
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp uninstall; \
         fi
+	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre2 uninstall; \
+        fi
 	if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre uninstall; \
         fi
@@ -848,6 +866,7 @@ clean:
 	$(MAKE) -C gc clean
 	$(MAKE) -C gmp clean
 	$(MAKE) -C pcre clean
+	$(MAKE) -C pcre2 clean
 	$(MAKE) -C libunistring clean
 	(cd comptime && $(MAKE) clean)
 	(cd runtime && $(MAKE) clean)
@@ -874,6 +893,7 @@ cleanall:
 	$(MAKE) -C gc cleanall
 	$(MAKE) -C gmp cleanall
 	$(MAKE) -C pcre cleanall
+	$(MAKE) -C pcre2 cleanall
 	$(MAKE) -C libunistring cleanall
 	(cd comptime && $(MAKE) cleanall)
 	(cd runtime && $(MAKE) cleanall)

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Mon Jan 14 15:03:02 2019 (serrano)                */
-/*    Copyright   :  2011-20 Manuel Serrano                            */
+/*    Last change :  Thu Apr  8 10:16:04 2021 (serrano)                */
+/*    Copyright   :  2011-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
 /*=====================================================================*/
@@ -12,6 +12,8 @@
 
 #if( BGL_REGEXP_TYPE == BGL_REGEXP_regex )
 #  include "cregex.h"
+#elif( BGL_REGEXP_TYPE == BGL_REGEXP_pcre2 )
+#  include "cpcre2.h"
 #elif( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
 #  include "cpcre.h"
 #endif

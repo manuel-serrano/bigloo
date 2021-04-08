@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pthread                     */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/tools                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Dec 10 09:28:47 2010 (serrano)                */
+#*    Last change :  Thu Apr  8 10:39:47 2021 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for essential tools.                                       */
 #*=====================================================================*/
@@ -12,7 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    libtools                                                         */
 #*---------------------------------------------------------------------*/
-which libtoolize || which glibtoolize
+which libtoolize > /dev/null || which glibtoolize > /dev/null
 
 if [ "$?" = "1" ]; then
   case $HOSTOS in
@@ -36,7 +36,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    make                                                             */
 #*---------------------------------------------------------------------*/
-which make || which gmake
+which make > /dev/null || which gmake > /dev/null
 
 if [ "$?" = "1" ]; then
   echo "*** ERROR: Cannot find \"make\", abort."
@@ -46,7 +46,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    autoconf                                                         */
 #*---------------------------------------------------------------------*/
-which autoconf
+which autoconf > /dev/null
 
 if [ "$?" = "1" ]; then
   echo "*** ERROR: Cannot find \"autoconf\", abort."
@@ -56,7 +56,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    sed                                                              */
 #*---------------------------------------------------------------------*/
-which sed
+which sed > /dev/null
 
 if [ "$?" = "1" ]; then
   echo "*** ERROR: Cannot find \"sed\", abort."
@@ -66,7 +66,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    awk                                                              */
 #*---------------------------------------------------------------------*/
-which awk
+which awk > /dev/null
 
 if [ "$?" = "1" ]; then
   echo "*** ERROR: Cannot find \"awk\", abort."

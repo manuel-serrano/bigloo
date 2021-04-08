@@ -1,14 +1,15 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cpcre.h          */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cpcre2.h         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
-/*    Creation    :  Mon Jan 14 15:13:55 2019                          */
-/*    Last change :  Wed Apr  7 12:39:47 2021 (serrano)                */
-/*    Copyright   :  2019-21 Manuel Serrano                            */
+/*    Creation    :  Wed Apr  7 13:48:10 2021                          */
+/*    Last change :  Thu Apr  8 14:16:52 2021 (serrano)                */
+/*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
-/*    Bigloo PCRE binding.                                             */
+/*    Bigloo PCRE2 binding                                             */
 /*=====================================================================*/
-#include <pcre.h>
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 
 extern obj_t make_string( long, unsigned char );
 
@@ -18,6 +19,8 @@ static obj_t caseless_symbol = BUNSPEC;
 static obj_t multiline_symbol = BUNSPEC;
 static obj_t noraise_symbol = BUNSPEC;
 
+static pcre2_general_context *pcre2_context = 0L;
+
 #if( !defined( PCRE_JAVASCRIPT_COMPAT ) )
 #  define PCRE_JAVASCRIPT_COMPAT 0
 #endif	    
@@ -26,17 +29,17 @@ static obj_t noraise_symbol = BUNSPEC;
 #  define PCRE_NEWLINE_ANY 0
 #endif	    
 
-#define BGL_REGEXP_PCRE( o ) (pcre *)(BGL_REGEXP_PREG( o ))
+#define BGL_REGEXP_PCRE2( o ) (pcre2_code *)(BGL_REGEXP_PREG( o ))
 #define BGL_REGEXP_CHAR( o ) (char)(long)(BGL_REGEXP_PREG( o ))
 
-#define PCRE_BGLNORAISE PCRE_DUPNAMES
+#define PCRE_BGLNORAISE PCRE2_DUPNAMES
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_pcre_options_init ...                                        */
+/*    bgl_pcre2_options_init ...                                       */
 /*---------------------------------------------------------------------*/
 static void
-bgl_pcre_options_init() {
+bgl_pcre2_options_init() {
    if( utf8_symbol == BUNSPEC ) {
       utf8_symbol = string_to_symbol( "UTF8");
       javascript_symbol = string_to_symbol( "JAVASCRIPT_COMPAT" );
@@ -48,24 +51,24 @@ bgl_pcre_options_init() {
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
-/*    bgl_pcre_options ...                                             */
+/*    bgl_pcre2_options ...                                            */
 /*---------------------------------------------------------------------*/
 static int
-bgl_pcre_options( obj_t args ) {
+bgl_pcre2_options( obj_t args ) {
    int options = 0;
 
    if( PAIRP( args ) ) {
-      bgl_pcre_options_init();
+      bgl_pcre2_options_init();
    
       while( PAIRP( args ) ) {
 	 if( CAR( args ) == utf8_symbol ) {
-	    options |= PCRE_UTF8;
+	    options |= PCRE2_UTF;
 	 } else if( CAR( args ) == caseless_symbol ) {
-	    options |= PCRE_CASELESS;
+	    options |= PCRE2_CASELESS;
 	 } else if( CAR( args ) == javascript_symbol ) {
-	    options |= PCRE_JAVASCRIPT_COMPAT;
+	    // options |= PCRE_JAVASCRIPT_COMPAT;
 	 } else if( CAR( args ) == multiline_symbol ) {
-	    options |= PCRE_MULTILINE | PCRE_NEWLINE_ANY;
+	    options |= PCRE2_MULTILINE | PCRE_NEWLINE_ANY;
 	 } else if( CAR( args ) == noraise_symbol ) {
 	    options |= PCRE_BGLNORAISE;
 	 } else {
@@ -89,19 +92,16 @@ bgl_pcre_options( obj_t args ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 bgl_regfree( obj_t re ) {
-   pcre *rx = BGL_REGEXP_PCRE( re );
+   pcre2_code *rx = BGL_REGEXP_PCRE2( re );
 
-   if( rx ) {
-      if( !pcre_refcount( rx, -1 ) ) {
-
-#if( BGL_REGEXP_HAS_FREE_STUDY )      
-	 if( BGL_REGEXP( ( re ) ).study ) {
-	    pcre_free_study( BGL_REGEXP( ( re ) ).study );
-	 }
-#endif      
-	 pcre_free( rx );
-      }
+   if( BGL_REGEXP_PCRE2( re ) ) {
+      pcre2_code_free( BGL_REGEXP_PCRE2( re ) );
       BGL_REGEXP_PREG( re ) = 0L;
+   }
+
+   if( BGL_REGEXP( re ).match_data ) {
+      pcre2_match_data_free( BGL_REGEXP( re ).match_data );
+      BGL_REGEXP( re ).match_data = 0;
    }
    
    return BUNSPEC;
@@ -114,17 +114,17 @@ bgl_regfree( obj_t re ) {
 static obj_t
 bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len, int offset ) {
    int oveccount = BGL_REGEXP( re ).capturecount + 1;
-#if BGL_HAVE_C99STACKALLOC 
-   int ovect[ oveccount * 3 ];
-#else   
-   int *ovect = alloca( sizeof( int ) * oveccount * 3 );
-#endif   
    int r;
 
-   string += offset;
+   if( !BGL_REGEXP( re ).match_data ) {
+      BGL_REGEXP( re ).match_data =
+	 pcre2_match_data_create_from_pattern( BGL_REGEXP_PCRE2( re ), pcre2_context );
+   }
    
-   r = pcre_exec( BGL_REGEXP_PCRE( re ), BGL_REGEXP( re ).study,
-		  string, len, beg, 0, ovect, oveccount * 3 );
+   string += offset;
+
+   r = pcre2_jit_match( BGL_REGEXP_PCRE2( re ), 
+			string, len, beg, 0, BGL_REGEXP( re ).match_data, 0L );
 
    if( r < 0 ) {
       return BFALSE;
@@ -133,9 +133,10 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len, int offs
       obj_t tmp;
       obj_t res = MAKE_STACK_PAIR_TMP( BNIL, BNIL, tmp );
       obj_t tail = res;
+      PCRE2_SIZE *ovect = pcre2_get_ovector_pointer( BGL_REGEXP( re ).match_data );
 
       for( i = 0; i < oveccount * 2; i += 2 ) {
-	 if( ovect[ i ] < 0 ) {
+	 if( (long)(ovect[ i ]) < 0 ) {
 	    SET_CDR( tail, MAKE_PAIR( BFALSE, BNIL ) );
 	 } else {
 	    obj_t s = stringp
@@ -162,18 +163,17 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len, int offs
 static long
 bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len, int offset ) {
    int oveccount = BGL_REGEXP( re ).capturecount + 1;
-#if BGL_HAVE_C99STACKALLOC 
-   int ovect[ oveccount * 3 ];
-#else
-   int *ovect = alloca( sizeof( int ) * oveccount * 3 );
-#endif      
    int r;
 
+   if( !BGL_REGEXP( re ).match_data ) {
+      BGL_REGEXP( re ).match_data =
+	 pcre2_match_data_create_from_pattern( BGL_REGEXP_PCRE2( re ), pcre2_context );
+   }
+   
    string += offset;
-//   fprintf( stderr, "BGL_REGMATCH_N beg=%d len=%d offset=%d {%c%c%c}\n", beg, len, offset, string[ 0 ], string [1], string[2] );
 
-   r = pcre_exec( BGL_REGEXP_PCRE( re ), BGL_REGEXP( re ).study,
-		  string, len, beg, 0, ovect, oveccount * 3 );
+   r = pcre2_jit_match( BGL_REGEXP_PCRE2( re ), 
+			string, len, beg, 0, BGL_REGEXP( re ).match_data, 0L );
 
    if( r < 0 ) {
       return -1;
@@ -181,10 +181,11 @@ bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len, int offset
       long i;
       long vlen = VECTOR_LENGTH( vres ) & ~1;
       long end = oveccount * 2 < vlen ? oveccount * 2 : vlen;
+      PCRE2_SIZE *ovect = pcre2_get_ovector_pointer( BGL_REGEXP( re ).match_data );
 
       for( i = 0; i < end; i += 2 ) {
-	 VECTOR_SET( vres, i, BINT( ovect[ i ] ) );
-	 VECTOR_SET( vres, i + 1, BINT( ovect[ i + 1 ] ) );
+	 VECTOR_SET( vres, i, BINT( (long)(ovect[ i ]) ) );
+	 VECTOR_SET( vres, i + 1, BINT( (long)(ovect[ i + 1 ]) ) );
       }
       
       return i >> 1;
@@ -255,10 +256,10 @@ bgl_charfree( obj_t re ) {
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_pcre_regcomp_finalize ...                                    */
+/*    bgl_pcre2_regcomp_finalize ...                                   */
 /*---------------------------------------------------------------------*/
 static void
-bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
+bgl_pcre2_regcomp_finalize( obj_t re, obj_t _ ) {
    BGL_REGEXP( BREF( re ) ).free( BREF( re ) );
 }
 
@@ -268,7 +269,7 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
 #define CHAR_REGEXP( pat, options ) \
    (STRING_LENGTH( pat ) == 1 \
     && !strchr( "$[*+?.(", STRING_REF( pat, 0 ) ) \
-    && !(options & PCRE_CASELESS))
+    && !(options & PCRE2_CASELESS))
 
 /*---------------------------------------------------------------------*/
 /*    CHAR_ESCAPE_REGEXP ...                                           */
@@ -277,7 +278,7 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
    (STRING_LENGTH( pat ) == 2 \
     && STRING_REF( pat, 0 ) == '\\' \
     && !strchr( "\\-$[*+?.(", STRING_REF( pat, 0 ) ) \
-    && !(options & PCRE_CASELESS))
+    && !(options & PCRE2_CASELESS))
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -286,11 +287,11 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
 obj_t
 bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
    obj_t re = bgl_make_regexp( pat );
-   const char *error;
-   int erroffset;
-   int options = bgl_pcre_options( optargs );
+   int errorcode;
+   PCRE2_SIZE erroffset;
+   int options = bgl_pcre2_options( optargs );
    static int init = 1000;
-   
+
    if( CHAR_REGEXP( pat, options ) ) {
       BGL_REGEXP_PREG( re ) = (void *)char_compile( BSTRING_TO_STRING( pat ), options );
 	   
@@ -310,6 +311,10 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
       
       return re;
    } else {
+      if( !pcre2_context ) {
+	 pcre2_context = pcre2_general_context_create( 0L, 0L, 0L );
+      }
+
       if( finalize && !init-- ) { 
 	 init = 1000;
 	 /* force finalizers to free unused regexp */
@@ -321,34 +326,51 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 #endif
    
       if( (BGL_REGEXP_PREG( re ) =
-	   pcre_compile( BSTRING_TO_STRING( pat ), options & ~PCRE_BGLNORAISE,
-			 &error, &erroffset, NULL )) ) {
-	 pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );
-	 BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),
-					      PCRE_STUDY_JIT_COMPILE,
-					      &error );
-
-	 pcre_fullinfo( BGL_REGEXP_PCRE( re ),
-			BGL_REGEXP( re ).study,
-			PCRE_INFO_CAPTURECOUNT,
-			&(BGL_REGEXP( re ).capturecount) );
-
+	   pcre2_compile( (PCRE2_SPTR)(BSTRING_TO_STRING( pat )),
+			  PCRE2_ZERO_TERMINATED,
+			  options & ~PCRE_BGLNORAISE,
+			  &errorcode,
+			  &erroffset,
+			  NULL )) ) {
+/* 	 pcre2_match_context *match_ctx;                               */
+/* 	 pcre2_jit_stack *stack;                                       */
+/*                                                                     */
+/* 	 match_ctx = pcre2_match_context_create( NULL );               */
+	 pcre2_jit_compile( BGL_REGEXP_PCRE2( re ), PCRE2_JIT_COMPLETE );
+	 pcre2_pattern_info( BGL_REGEXP_PCRE2( re ),
+			     PCRE2_INFO_CAPTURECOUNT,
+			     &(BGL_REGEXP( re ).capturecount ) );
+	 BGL_REGEXP( re ).match_data = 0;
+/* 	 stack = pcre2_jit_stack_create( 0, 16384, NULL );             */
+/* 	 pcre2_jit_stack_assign( match_ctx, NULL, stack );             */
+/* 	                                                               */
+/* 	 pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );                    */
+/* 	 BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),   */
+/* 					      PCRE_STUDY_JIT_COMPILE,  */
+/* 					      &error );                */
+/*                                                                     */
+/* 	 pcre_fullinfo( BGL_REGEXP_PCRE( re ),                         */
+/* 			BGL_REGEXP( re ).study,                        */
+/* 			PCRE_INFO_CAPTURECOUNT,                        */
+/* 			&(BGL_REGEXP( re ).capturecount) );            */
+/*                                                                     */
 	 if( finalize ) {
 	    GC_register_finalizer( CREF( re ),
-				   (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
+				   (GC_finalization_proc)&bgl_pcre2_regcomp_finalize,
 				   0, 0L, 0L );
 	 }
-
 	 BGL_REGEXP( re ).match = bgl_regmatch;
 	 BGL_REGEXP( re ).match_n = bgl_regmatch_n;
 	 BGL_REGEXP( re ).free = bgl_regfree;
       
 	 return re;
       } else {
-	 char *buf = alloca( 50 + strlen( error ) );
+	 PCRE2_UCHAR *errbuf = alloca( 256 );
+	 PCRE2_UCHAR *buf = alloca( 256 + 80 );
 
-	 sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
-		  erroffset, error );
+	 pcre2_get_error_message( errorcode, errbuf, 256 );
+	 sprintf( buf, "PCRE2 compilation failed at offset %d: %s\n",
+		  erroffset, errbuf );
 
 	 if( !(options & PCRE_BGLNORAISE) ) {
 	    C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );

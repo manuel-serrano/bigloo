@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    /tmp/OFAOT/nan/lib/bigloo/4.3h/bigloo.h                          */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Apr 28 10:36:27 2020 (serrano)                */
+/*    Last change :  Thu Apr  8 12:13:24 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -807,6 +807,9 @@ union scmobj {
 #  if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
       /* pcre regular expression */
       void *study;
+#  endif
+#  if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre2 )
+      void *match_data;
 #  endif
       int capturecount;
    } regexp;

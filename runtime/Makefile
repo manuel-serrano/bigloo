@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri May  1 09:20:52 2020 (serrano)                */
+#*    Last change :  Thu Apr  8 09:18:40 2021 (serrano)                */
 #*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -345,6 +345,7 @@ C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
                   $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.c) \
 		  objs/$(OBJDIR_SYS)/Unsafe/pregexp.c \
 		  objs/$(OBJDIR_SYS)/Unsafe/pcre.c \
+		  objs/$(OBJDIR_SYS)/Unsafe/pcre2.c \
 		  objs/$(OBJDIR_SYS)/Unsafe/regex.c
 
 #*---------------------------------------------------------------------*/
@@ -366,7 +367,8 @@ POPULATION_SI	= $(SRC_FILES) \
                   Clib/inline_alloc_bump.h \
                   Clib/inline_alloc.h \
                   Clib/inline_alloc_thread.h \
-                  Clib/cregex.h Clib/cpcre.h
+                  Clib/cregex.h Clib/cpcre.h \
+                  Clib/cregex.h Clib/cpcre2.h
 POPULATION	= $(POPULATION_SI) $(INCLUDE_FILE) \
                   Jlib/JDK13.java \
                   Jlib/JDK14.java \
@@ -1027,5 +1029,5 @@ objs/saw_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/saw_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/saw_s/Llib/evobject.o: Llib/object.sch
 objs/saw_u/Llib/evobject.o: Llib/object.sch
-objs/obj_s/Clib/cregexp.o: Clib/cpcre.h Clib/cregex.h
-objs/obj_u/Clib/cregexp.o: Clib/cpcre.h Clib/cregex.h
+objs/obj_s/Clib/cregexp.o: Clib/cpcre.h Clib/cpcre2.h Clib/cregex.h
+objs/obj_u/Clib/cregexp.o: Clib/cpcre.h Clib/cpcre2.h Clib/cregex.h
