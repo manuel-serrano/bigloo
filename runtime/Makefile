@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Apr  8 09:18:40 2021 (serrano)                */
+#*    Last change :  Sun Apr 11 18:20:42 2021 (serrano)                */
 #*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -345,7 +345,6 @@ C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
                   $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.c) \
 		  objs/$(OBJDIR_SYS)/Unsafe/pregexp.c \
 		  objs/$(OBJDIR_SYS)/Unsafe/pcre.c \
-		  objs/$(OBJDIR_SYS)/Unsafe/pcre2.c \
 		  objs/$(OBJDIR_SYS)/Unsafe/regex.c
 
 #*---------------------------------------------------------------------*/

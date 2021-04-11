@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Thu Apr  8 14:16:52 2021 (serrano)                */
+/*    Last change :  Thu Apr  8 14:20:55 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
@@ -321,10 +321,6 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 	 GC_invoke_finalizers();
       }
    
-#ifndef PCRE_STUDY_JIT_COMPILE
-#define PCRE_STUDY_JIT_COMPILE 0
-#endif
-   
       if( (BGL_REGEXP_PREG( re ) =
 	   pcre2_compile( (PCRE2_SPTR)(BSTRING_TO_STRING( pat )),
 			  PCRE2_ZERO_TERMINATED,
@@ -332,37 +328,22 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 			  &errorcode,
 			  &erroffset,
 			  NULL )) ) {
-/* 	 pcre2_match_context *match_ctx;                               */
-/* 	 pcre2_jit_stack *stack;                                       */
-/*                                                                     */
-/* 	 match_ctx = pcre2_match_context_create( NULL );               */
 	 pcre2_jit_compile( BGL_REGEXP_PCRE2( re ), PCRE2_JIT_COMPLETE );
 	 pcre2_pattern_info( BGL_REGEXP_PCRE2( re ),
 			     PCRE2_INFO_CAPTURECOUNT,
 			     &(BGL_REGEXP( re ).capturecount ) );
+	 
 	 BGL_REGEXP( re ).match_data = 0;
-/* 	 stack = pcre2_jit_stack_create( 0, 16384, NULL );             */
-/* 	 pcre2_jit_stack_assign( match_ctx, NULL, stack );             */
-/* 	                                                               */
-/* 	 pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );                    */
-/* 	 BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),   */
-/* 					      PCRE_STUDY_JIT_COMPILE,  */
-/* 					      &error );                */
-/*                                                                     */
-/* 	 pcre_fullinfo( BGL_REGEXP_PCRE( re ),                         */
-/* 			BGL_REGEXP( re ).study,                        */
-/* 			PCRE_INFO_CAPTURECOUNT,                        */
-/* 			&(BGL_REGEXP( re ).capturecount) );            */
-/*                                                                     */
+	 BGL_REGEXP( re ).match = bgl_regmatch;
+	 BGL_REGEXP( re ).match_n = bgl_regmatch_n;
+	 BGL_REGEXP( re ).free = bgl_regfree;
+      
 	 if( finalize ) {
 	    GC_register_finalizer( CREF( re ),
 				   (GC_finalization_proc)&bgl_pcre2_regcomp_finalize,
 				   0, 0L, 0L );
 	 }
-	 BGL_REGEXP( re ).match = bgl_regmatch;
-	 BGL_REGEXP( re ).match_n = bgl_regmatch_n;
-	 BGL_REGEXP( re ).free = bgl_regfree;
-      
+	 
 	 return re;
       } else {
 	 PCRE2_UCHAR *errbuf = alloca( 256 );
