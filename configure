@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr  8 09:27:51 2021 (serrano)                */
+#*    Last change :  Mon Apr 12 14:25:00 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -2662,7 +2662,7 @@ if [ "$regexp " = " " ]; then
     extralibs="-l$extrapcre2 $extralibs"
     regexp=pcre2
     regexpscm=pcre.scm
-    regexpc=pcre2.c
+    regexpc=pcre.c
   elif [ "$pcrelibs " != "no " ]; then
     extralibs="-l$extrapcre $extralibs"
     regexp=pcre
@@ -2684,7 +2684,9 @@ cat runtime/Unsafe/$regexpscm >>  runtime/Unsafe/regexp.scm
 
 if [ -f runtime/objs/obj_u/Unsafe/$regexpc ]; then
   $echo "/* generated file (from $regexpc), don't edit (`date`) */" > runtime/objs/obj_u/Unsafe/regexp.c
-  cat runtime/objs/obj_u/Unsafe/$regexpc >> runtime/objs/obj_u/Unsafe/regexp.c;
+  cat runtime/objs/obj_u/Unsafe/$regexpc >> runtime/objs/obj_u/Unsafe/regexp.c
+else
+  touch runtime/objs/obj_u/Unsafe/regexp.c
 fi
 
 featureflags="-srfi enable-$regexp $featureflags"
@@ -5001,6 +5003,7 @@ $echo "  gmp version........................... $gmpversion" >> $configurelog
 $echo "  unistring library..................... $extraunistring" >> $configurelog
 $echo "  pthread libraries..................... $pthreadlibs" >> $configurelog
 $echo "  openssl libraries..................... $openssllibs" >> $configurelog
+$echo "  regexp................................ $regexp" >> $configurelog
 $echo "  sqlite libraries...................... $sqlitelibs" >> $configurelog
 if [ "$ldopt" != "no-share" ]; then
   $echo "  suffix of shared libraries............ $sharedsuffix" >> $configurelog
