@@ -90,6 +90,9 @@ comptime/Tools/license.scm
 runtime/Unsafe/regexp.scm
 runtime/Jlib/configure.java
 
+# recette
+recette/objs_c
+
 # jas
 bde/jas/as.scm
 bde/jas/classfile.scm 
@@ -217,3 +220,4 @@ gmp/gmp-6.1.2
 gmp/gmp-6.2.1
 libunistring/libunistring-0.9.10
 pcre/pcre-8.43
+pcre2/pcre2-10.36
