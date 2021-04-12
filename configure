@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Apr 12 14:25:00 2021 (serrano)                */
+#*    Last change :  Mon Apr 12 14:59:00 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -4160,7 +4160,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$pcre2libs " != "no " ]; then
     if [ "$custompcre2 " = "yes " ]; then
       ldcompshared="-l$extrapcre2 $ldcompshared" >> $makefile_cfg
-      ldcompstatic="$libpcre2buildpath/libpcre2.a $ldcompstatic" >> $makefile_cfg
+      ldcompstatic="$libpcre2buildpath/libpcre2-8.a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-l$extrapcre2 $ldcompshared" >> $makefile_cfg
       ldcompstatic="-l$extrapcre2 $ldcompstatic" >> $makefile_cfg
