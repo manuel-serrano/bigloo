@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Thu Apr  8 14:20:55 2021 (serrano)                */
+/*    Last change :  Fri Apr 16 18:49:26 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
@@ -66,7 +66,7 @@ bgl_pcre2_options( obj_t args ) {
 	 } else if( CAR( args ) == caseless_symbol ) {
 	    options |= PCRE2_CASELESS;
 	 } else if( CAR( args ) == javascript_symbol ) {
-	    // options |= PCRE_JAVASCRIPT_COMPAT;
+	    options |= PCRE2_MATCH_UNSET_BACKREF;
 	 } else if( CAR( args ) == multiline_symbol ) {
 	    options |= PCRE2_MULTILINE | PCRE_NEWLINE_ANY;
 	 } else if( CAR( args ) == noraise_symbol ) {
