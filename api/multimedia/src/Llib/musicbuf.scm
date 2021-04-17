@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Apr  6 07:57:40 2021 (serrano)                */
+;*    Last change :  Sat Apr 17 10:11:32 2021 (serrano)                */
 ;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
@@ -249,28 +249,27 @@
    (define (prepare-next-buffer o buffer url::bstring)
       (with-handler
 	 (lambda (e)
-	    ;; ignore that error becase if we cannot open
-	    ;; the URL this will be detected again in the
-	    ;; next open-file that will occur in the main
-	    ;; play-url function
-	    #f))
-      (with-access::musicportbuffer buffer (%head %tail %inlen %inbuf %inbufp)
-	 (with-access::musicbuf o (%amutex %nextbuffer %status)
-	    (synchronize %amutex
-	       (unless %nextbuffer
-		  (let ((ip (open-file url o)))
-		     (when (input-port? ip)
-			(let ((buf (instantiate::musicportbuffer
-				      (url url)
-				      (port ip)
-				      (%inlen %inlen)
-				      (%inbuf %inbuf)
-				      (%inbufp %inbufp)
-				      (%head %head)
-				      (%tail %tail)
-				      (%nexttail %head))))
-			   (set! %nextbuffer buf)
-			   buf))))))))
+	    ;; ignore this error because if the URL cannot be opened
+	    ;; this will be detected again in the next open-file that
+	    ;; will occur in the main play-url function
+	    #f)
+	 (with-access::musicportbuffer buffer (%head %tail %inlen %inbuf %inbufp)
+	    (with-access::musicbuf o (%amutex %nextbuffer %status)
+	       (synchronize %amutex
+		  (unless %nextbuffer
+		     (let ((ip (open-file url o)))
+			(when (input-port? ip)
+			   (let ((buf (instantiate::musicportbuffer
+					 (url url)
+					 (port ip)
+					 (%inlen %inlen)
+					 (%inbuf %inbuf)
+					 (%inbufp %inbufp)
+					 (%head %head)
+					 (%tail %tail)
+					 (%nexttail %head))))
+			      (set! %nextbuffer buf)
+			      buf)))))))))
    
    (define (open-port-buffer o::musicbuf d::musicdecoder url::bstring next::pair-nil)
       (let ((ip (open-file url o)))
@@ -365,6 +364,11 @@
 		     (with-access::musicbuf o (%status onevent)
 			(with-access::musicstatus %status (playlistid)
 			   (onevent o 'playlist playlistid)))))
+	       ;; wait for the buffer to be full before playing
+	       (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %empty)
+		  (synchronize %bmutex
+		      (unless (and (=fx %head %tail) (not %empty))
+			 (condition-variable-wait! %bcondv %bmutex))))
 	       (musicdecoder-decode d o buffer))
 	    (begin
 	       (musicbuffer-close buffer)
