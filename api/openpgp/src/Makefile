@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 11 15:36:25 2010                          */
-#*    Last change :  Sun Jul  9 10:14:19 2017 (serrano)                */
+#*    Last change :  Sun Apr 18 18:23:14 2021 (serrano)                */
 #*    Copyright   :  2010-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the OpenPGP Bigloo library.                */
@@ -51,7 +51,7 @@ BIGLOOEXTRALIBS += bigloocrypto
 _BGL_OBJECTS	= pgp_algo pgp_composition pgp_conversion \
                   pgp_decode pgp_encode pgp_enums pgp_facade \
                   pgp_human pgp_key_manager pgp_logic pgp_packets \
-                  pgp_s2k port_util util
+                  pgp_s2k port_util util error
 
 _OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)

@@ -1,4 +1,5 @@
 (module __openpgp-enums
+   (import __openpgp-error)
    (export (content-tag->byte::byte content-tag::symbol)
 	   (byte->content-tag::symbol i::byte)
 	   (literal-format->byte::byte literal-format::symbol)
@@ -29,14 +30,14 @@
 			  `((,(car entry)) ,(cadr entry)))
 		   entries)
 		(else
-		 (error ,(symbol->string name) "Invalid entry" ,input))))
+		 (openpgp-error ,(symbol->string name) "Invalid entry" ,input))))
 	  (define (,(symbol-append 'byte-> name) ,input)
 	     (case ,input
 		,@(map (lambda (entry)
 			  `((,(cadr entry)) ',(car entry)))
 		   entries)
 		(else
-		 (error ,(symbol->string name) "Invalid entry" ,input)))))))
+		 (openpgp-error ,(symbol->string name) "Invalid entry" ,input)))))))
 	     
 (declare-enum content-tag
 	      ((reserved 0)

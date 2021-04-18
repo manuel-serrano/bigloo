@@ -7,7 +7,8 @@
 	   __openpgp-util
 	   __openpgp-s2k
 	   __openpgp-algo
-	   __openpgp-human)
+	   __openpgp-human
+	   __openpgp-error)
    (export (pgp-composition?::bool obj)
 	   (pgp-read-string str::bstring)
 	   (pgp-read-port iport::input-port)
@@ -68,7 +69,7 @@
       (trace-item "file=" file)
       (let ((p (open-input-file file)))
 	 (when (not p)
-	    (error "pgp-read-file" "Couldn't open file" file))
+	    (openpgp-error "pgp-read-file" "Couldn't open file" file))
 	 (unwind-protect
 	    (decode-pgp p)
 	    (close-input-port p)))))
@@ -85,7 +86,7 @@
 
 (define (pgp-write-port oport::output-port composition #!key (format 'armored))
    (when (not (isa? composition PGP-Composition))
-      (error "pgp-write-port"
+      (openpgp-error "pgp-write-port"
 	     "Expected PGP Composition"
 	     composition))
    (if (eq? format 'armored)
@@ -128,12 +129,12 @@
        (with-access::PGP-Key key (subkeys)
 	  (let ((main-key (car subkeys)))
 	     (when (not (good-for-signature? main-key))
-		(error "extract-subkey"
+		(openpgp-error "extract-subkey"
 		   "Couldn't find suitable key for signature."
 		   #f))
 	     main-key)))
       ((not (isa? key PGP-Key))
-       (error "extract-subkey"
+       (openpgp-error "extract-subkey"
 	  (format "PGP-key expected (got a ~a)" (typeof key))
 	  key))
       (else
@@ -141,12 +142,12 @@
 	  (cond
 	     ((null? subkeys)
 	      ;; can this happen?
-	      (error "extract-subkey"
+	      (openpgp-error "extract-subkey"
 		     "Couldn't find subkey"
 		     #f))
 	     ((null? (cdr subkeys))
 	      (when (not (good-for-encryption? (car subkeys)))
-		 (error "extract-subkey"
+		 (openpgp-error "extract-subkey"
 			"Couldn't find subkey for encryption"
 			#f))
 	      (car subkeys))
@@ -159,11 +160,11 @@
 					      subkeys)))
 		 (cond
 		    ((null? possible-subkeys)
-		     (error "extract-subkey"
+		     (openpgp-error "extract-subkey"
 			    "Couldn't find suitable subkey"
 			    key))
 		    ((not (null? (cdr possible-subkeys)))
-		     (error "extract-subkey"
+		     (openpgp-error "extract-subkey"
 			    "Found more than one suitable subkey."
 			    (map (lambda (subkey)
 				    (with-access::PGP-Subkey subkey (key-packet)
@@ -207,7 +208,7 @@
 				    :hash-algo hash-algo
 				    :detached-signature? #f))))
 	 (else
-	  (error "pgp-sign" "Bad Key" key)))))
+	  (openpgp-error "pgp-sign" "Bad Key" key)))))
 
 ;; key-manager must return a list of all subkeys that match a given key-id.
 ;; the optional msg parameter will only be used for detached signatures.
@@ -215,14 +216,14 @@
 (define (pgp-verify::pair-nil signature key-manager::procedure
 			      #!key (msg #f))
    (when (not (isa? signature PGP-Signature))
-      (error "pgp-verify" "not a signature" signature))
+      (openpgp-error "pgp-verify" "not a signature" signature))
    (verify-pgp-signature signature key-manager msg))
 
 
 ;; returns the signature's message, or #f if there is non in the composition.
 (define (pgp-signature-message signature)
    (when (not (isa? signature PGP-Signature))
-      (error "pgp-verify" "not a signature" signature))
+      (openpgp-error "pgp-verify" "not a signature" signature))
    (let ((sig-msg (with-access::PGP-Signature signature (msg) msg)))
       (and sig-msg
 	   (with-access::PGP-Literal-Packet sig-msg (data)
@@ -283,7 +284,7 @@
 		    (pubkey-decrypt encrypted (cdr pubkey-session-packets)
 		       key-manager password-provider
 		       ignore-bad-packets))))
-	  (error "decrypt" "Illegal key-manager" key-manager))))
+	  (openpgp-error "decrypt" "Illegal key-manager" key-manager))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pwd-decrypt ...                                                  */
@@ -307,7 +308,7 @@
 	     (let ((passkey (passkey-provider)))
 		(any (lambda (packet) (try-decrypt packet passkey))
 		   password-session-packets)))
-	  (error "decrypt" "Illegal passkey-provider" passkey-provider))))
+	  (openpgp-error "decrypt" "Illegal passkey-provider" passkey-provider))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pgp-decrypt ...                                                  */
@@ -322,7 +323,7 @@
 	   (ignore-bad-packets #f))
    
    (when (not (isa? encrypted PGP-Encrypted))
-      (error "pgp-decrypt" "Expected PGP-composition." encrypted))
+      (openpgp-error "pgp-decrypt" "Expected PGP-composition." encrypted))
    
    (with-trace 'pgp "pgp-decrypt"
       (with-access::PGP-Encrypted encrypted (session-keys encrypted-data)
@@ -375,7 +376,7 @@
 		   #f)
 		  ((and (null? decrypted) (not (pair? decrypted)))
 		   (trace-item "no encrypted data.")
-		   (error "pgp-decrypt" "No or bad encrypted data" #f))
+		   (openpgp-error "pgp-decrypt" "No or bad encrypted data" #f))
 		  ((isa? (car decrypted) PGP-Literal-Packet)
 		   (when (not (null? (cdr decrypted)))
 		      (warning "ignoring trailing packet(s)"))
@@ -397,7 +398,7 @@
 		      (trace-item "creation-date: " creation-date)
 		      data))
 		  (else
-		   (error "pgp-decrypt"
+		   (openpgp-error "pgp-decrypt"
 		      "Don't know what to do with decrypted data"
 		      #f))))))))
 
@@ -424,11 +425,11 @@
 
    (with-trace 'pgp "pgp-encrypt"
       (when (not (symbol? hash-algo))
-	 (error "pgp-encrypt"
+	 (openpgp-error "pgp-encrypt"
 		"Expected symbol as hash algorithm"
 		hash-algo))
       (when (not (symbol? symmetric-algo))
-	 (error "pgp-encrypt"
+	 (openpgp-error "pgp-encrypt"
 		"Expected symbol as symmetric key algorithm"
 		symmetric-algo))
    

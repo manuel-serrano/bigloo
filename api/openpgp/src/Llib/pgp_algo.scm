@@ -1,7 +1,8 @@
 (module __openpgp-algo
    (library crypto)
    (import __openpgp-util
-	   __openpgp-human)
+	   __openpgp-human
+	   __openpgp-error)
    (export (hash-algo->procedure::procedure algo::symbol)
 	   (symmetric-key-algo-key-bit-len::long algo::symbol)
 	   (symmetric-key-algo-key-byte-len::long algo::symbol)
@@ -16,7 +17,7 @@
       ((sha256 sha-256) sha256sum-bin)
       ((sha512 sha-512) sha512sum-bin)
       (else
-       (error "hash-algo->procedure" "algorithm not implemented"
+       (openpgp-error "hash-algo->procedure" "algorithm not implemented"
 	       (hash-algo->human-readable algo)))))
 
 (define (symmetric-key-algo-key-byte-len::long algo)
@@ -34,7 +35,7 @@
       ((aes-192) 192)
       ((aes-256) 256)
       (else
-       (error "symmetric-key-algo-key-bit-len"
+       (openpgp-error "symmetric-key-algo-key-bit-len"
 	      "don't know ke size"
 	      (symmetric-key-algo->human-readable algo)))))
 
@@ -53,7 +54,7 @@
       ((aes-192) 128)
       ((aes-256) 128)
       (else
-       (error "symmetric-key-algo-block-bit-len"
+       (openpgp-error "symmetric-key-algo-block-bit-len"
 	      "don't know ke size"
 	      (symmetric-key-algo->human-readable algo)))))
 
@@ -97,7 +98,7 @@
 	  ;((twofish) "Twofish GPG-extension?")
 	  ;((100 101 102 103 104 105 106 107 108 109 110)
 	  ;    "Private/Experimental algorithm")
-	  (else (error "symmetric-key-algo->procedure"
+	  (else (openpgp-error "symmetric-key-algo->procedure"
 		       "Algorithm not yet implemented"
 		       (symmetric-key-algo->human-readable algo))))
        (case algo
@@ -111,6 +112,6 @@
 	  ((aes-128 aes-192 aes-256) aes-decrypt)
 	  ;((100 101 102 103 104 105 106 107 108 109 110)
 	  ;    "Private/Experimental algorithm")
-	  (else (error "symmetric-key-algo->procedure"
+	  (else (openpgp-error "symmetric-key-algo->procedure"
 		       "Algorithm not yet implemented"
 		       (symmetric-key-algo->human-readable algo))))))

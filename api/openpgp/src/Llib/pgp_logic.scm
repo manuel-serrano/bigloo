@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
-;*    Last change :  Wed Mar 24 10:26:05 2021 (serrano)                */
+;*    Last change :  Sun Apr 18 18:29:39 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP logic                                                    */
@@ -24,7 +24,8 @@
 	   __openpgp-algo
 	   __openpgp-packets
 	   __openpgp-enums
-	   __openpgp-composition)
+	   __openpgp-composition
+	   __openpgp-error)
    (export
     (key-id::bstring kp::PGP-Key-Packet)
     (generic fingerprint::bstring kp::PGP-Key-Packet)
@@ -82,11 +83,11 @@
     ((canonical) (canonical-string str))
     ((standalone)
      (when (not (string-null? str))
-	(error 'construct-data-signature-msg
+	(openpgp-error "construct-data-signature-msg"
 	       "Standalone signatures must have empty strings as messages"
 	       str)))
     (else
-     (error 'construct-data-signature-msg
+     (openpgp-error "construct-data-signature-msg"
 	    "Signature type not yet implemented (or not a string-signature)"
 	    (cons sig-type (signature-type->human-readable sig-type))))))
 
@@ -145,11 +146,11 @@
 			   (string (integer->char-ur #xb4)) ;; 5.2.4
 			   (fixnum->scalar (string-length id) 4)
 			   id))
-	   (else (error 'construct-certification-signature-str
+	   (else (openpgp-error "construct-certification-signature-str"
 			"Unsupported version"
 			version)))))
     (else
-     (error 'construct-certification-signature-str
+     (openpgp-error "construct-certification-signature-str"
 	    "Signature type not yet implemented (or not a certification-signature)"
 	    (cons sig-type (signature-type->human-readable sig-type))))))
 
@@ -165,7 +166,7 @@
 			 (fixnum->scalar (string-length content) 2)
 			 content)))
       (else
-       (error 'construct-key-signature-msg
+       (openpgp-error "construct-key-signature-msg"
 	      "Signature type not yet implemented (or not a key-signature)"
 	      (cons sig-type (signature-type->human-readable sig-type))))))
 
@@ -177,7 +178,7 @@
        (string-append (construct-key-signature-str main-key 'key)
 		      (construct-key-signature-str subkey 'key)))
       (else
-       (error 'construct-subkey-signature-str
+       (openpgp-error "construct-subkey-signature-str"
 	      "Signature type not yet implemented (or not a subkey-signature)"
 	      (cons sig-type (signature-type->human-readable sig-type))))))
 
@@ -257,7 +258,7 @@
 	 (case version
 	    ((3)
 	     (unless (isa? key Rsa-Key)
-		(error "key-id" "v3 key must contain RSA key" key))
+		(openpgp-error "key-id" "v3 key must contain RSA key" key))
 	     (with-access::Rsa-Key key (modulus)
 		(let* ((str (bignum->bin-str modulus))
 		       (len (string-length str)))
@@ -269,7 +270,7 @@
 		    (len (string-length fp)))
 		(set! id (substring fp (-fx len 8) len))))
 	    (else
-	     (error "key-id" "Unsupported version" version))))
+	     (openpgp-error "key-id" "Unsupported version" version))))
       id))
 
 (define-generic (fingerprint k::PGP-Key-Packet)
@@ -277,7 +278,7 @@
       (case version
 	 ((3)
 	  (unless (isa? key Rsa-Key)
-	     (error "key-id" "v3 key must contain RSA key" key))
+	     (openpgp-error "key-id" "v3 key must contain RSA key" key))
 	  (with-access::Rsa-Key key (modulus exponent)
 	     (let ((modulus-str (bignum->bin-str modulus))
 		   (exp-str (bignum->bin-str exponent)))
@@ -296,7 +297,7 @@
 		(blit-string! str 0 hashed-str 3 len)
 		(sha1sum-bin hashed-str))))
 	 (else
-	  (error "fingerprint" "Unsupported version" version)))))
+	  (openpgp-error "fingerprint" "Unsupported version" version)))))
 
 (define (sign-msg msg::bstring hash::bstring hash-algo::symbol
 		  key::PGP-Secret-Key-Decoded-Packet)
@@ -314,7 +315,7 @@
 	     (cons r s)))
 	 ;((elgamal-encrypt/sign) 'TODO)
 	 (else
-	  (error "Signing algorithm not yet implemented"
+	  (openpgp-error "Signing algorithm not yet implemented"
 		 algo
 		 (cons algo (public-key-algo->human-readable algo)))))))
 
@@ -359,7 +360,7 @@
 
    (with-trace 'pgp "decrypt-password-protected"
       (when (string-null? secret)
-	 (error 'decode-secret-key-password-protected
+	 (openpgp-error "decode-secret-key-password-protected"
 		"secret must not be empty"
 		""))
       (let ((protection (char->integer (string-ref secret 0))))
@@ -371,13 +372,13 @@
 							 (-fx sdata-len 2)
 							 sdata-len))))
 		(when (not (verify-checksum secret checksum (-fx sdata-len 2)))
-		   (error "verify checksum"
+		   (openpgp-error "verify checksum"
 			  "Checksum verification failed on non-encrypted content"
 			  #f))
 		(substring secret 1 (-fx sdata-len 2))))
 	    ((254 255) ;; password protected
 	     (when (=fx version 3)
-		(error "decode-secret-key-password"
+		(openpgp-error "decode-secret-key-password"
 		       "version 3 decoding is not yet implemented."
 		       #f))
 	     ;; 254 seems to be gnupg extension, where the checksum is actually
@@ -398,7 +399,7 @@
 		    (dec-len (string-length decoded))
 		    (chksum-len (if (=fx protection 254) 20 2))
 		    (dummy (when (not (>=fx dec-len chksum-len))
-			      (error "decode password-protected secret key"
+			      (openpgp-error "decode password-protected secret key"
 				     "not enough bytes for checksum"
 				     dec-len)))
 		    (chksum-str (substring decoded (-fx dec-len chksum-len)
@@ -421,7 +422,7 @@
 					  (-fx dec-len chksum-len))
 			 decoded))))
 	    (else
-	     (error "decode-password-protected-secret-key"
+	     (openpgp-error "decode-password-protected-secret-key"
 		    "bad magic byte"
 		    protection))))))
 
@@ -459,7 +460,7 @@
 	  (let ((x (decode-mpi (open-input-string decrypted))))
 	     (create-secret-dsa-key key x)))
 	 (else
-	  (error "decrypt-secret-key"
+	  (openpgp-error "decrypt-secret-key"
 		 "Algorithm not yet implemented"
 		 (cons algo (public-key-algo->human-readable algo))))))
 
@@ -483,13 +484,13 @@
 					#!optional (msg #f))
    (when (and (not msg)
 	      (not (with-access::PGP-Signature sig (msg) msg)))
-      (error "verify-pgp-signature" "Missing message" #f))
+      (openpgp-error "verify-pgp-signature" "Missing message" #f))
    (let ((sig-msg (with-access::PGP-Signature sig (msg) msg)))
       (when (and msg sig-msg)
 	 (let ((literal (with-access::PGP-Literal-Packet sig-msg (data) data)))
 	    (when (or (not (string? msg))
 		      (not (string=? msg literal)))
-	       (error "verify-pgp-signature"
+	       (openpgp-error "verify-pgp-signature"
 		      "Given messages are not the same or not strings"
 		      (cons msg literal)))))
       (let ((str (or msg (with-access::PGP-Literal-Packet sig-msg (data) data))))
@@ -586,7 +587,7 @@
    (define (verify-revocation-sig revoc-sig key-packet)
       (with-access::PGP-Signature-Packet revoc-sig (issuer signature-type)
 	 (when (not (eq? signature-type 'key-revocation))
-	    (error 'verify-key
+	    (openpgp-error "verify-key"
 		   "Revocation signature is not of revocation-type"
 		   (cons signature-type
 			 (signature-type->human-readable signature-type))))
@@ -607,7 +608,7 @@
    (define (verify-subkey-binding-sig sig subkey-pkt::PGP-Key-Packet)
       (with-access::PGP-Signature-Packet sig (signature-type)
 	 (when (not (eq? signature-type 'subkey-binding))
-	    (error 'verify-subkey-binding
+	    (openpgp-error "verify-subkey-binding"
 		   "Subkey-binding signature expected"
 		   (cons signature-type
 			 (signature-type->human-readable signature-type))))
@@ -699,20 +700,20 @@
 	     key-packet)
 	    ((not password-provider)
 	     (trace-item "No password provider")
-	     (error "decode-key"
+	     (openpgp-error "decode-key"
 		"no password-provider has been given"
 		#f))
 	    ((not (and (procedure? password-provider)
 		       (correct-arity? password-provider 1)))
 	     (trace-item "Illegal password provider")
-	     (error "decode-key"
+	     (openpgp-error "decode-key"
 		"Illegal password provider"
 		password-provider))
 	    ((isa? key-packet PGP-Key-Packet)
 	     (let loop ((count 3))
 		(when (=fx count 0)
 		   (trace-item "No password attempt left")
-		   (error "decode-key"
+		   (openpgp-error "decode-key"
 		      "no password attempt left"
 		      #f))
 		(let ((pass (password-provider key)))
@@ -722,7 +723,7 @@
 		       (loop (-fx count 1)))
 		      ((not (string? pass))
 		       (trace-item "password-provider returned no string")
-		       (error 'decode-key
+		       (openpgp-error "decode-key"
 			  "bad password (not a string)"
 			  pass))
 		      (else
@@ -731,7 +732,7 @@
 			  (loop (-fx count 1)))))))
 	     key-packet)
 	    (else
-	     (error "decode-key" "Invalid key" key))))))
+	     (openpgp-error "decode-key" "Invalid key" key))))))
    
 ;; key must a secret Subkey.
 ;; password-provider will be called with the key as parameter and must return
@@ -814,11 +815,11 @@
 		    (<bx (car bns1) (car bns2))
 		    (if (bignum? (cdr bns1))
 			(<bx (cdr bns1) (cdr bns2))
-			(error "signature-less"
+			(openpgp-error "signature-less"
 			   "could not compare signatures"
 			   #f))))
 	       (else
-		(error "signature-less"
+		(openpgp-error "signature-less"
 		   "could not compare signatures"
 		   #f)))))))
 
@@ -928,7 +929,7 @@
 	    (with-access::PGP-Subkey main-key1 ((kp1 key-packet))
 	       (with-access::PGP-Subkey main-key2 ((kp2 key-packet))
 		  (unless (string=? (fingerprint kp1) (fingerprint kp2))
-		     (error "merge-keys" "Keys are not the same" #f))))
+		     (openpgp-error "merge-keys" "Keys are not the same" #f))))
 	    (let* ((merged-main-key (merge-subkeys main-key1 main-key2))
 		   (other-keys (merge-subkeys (cdr subkeys1) (cdr subkeys2)))
 		   (all-keys (cons merged-main-key other-keys))
@@ -1195,12 +1196,12 @@
 			    ((or (null? ps)
 				 (and (null? (cdr ps))
 				      (not (isa? (car ps) PGP-MDC-Packet))))
-			     (error "mdc-symmetric-decrypt"
+			     (openpgp-error "mdc-symmetric-decrypt"
 				"No MDC packet found. (tampered data?)"
 				#f))
 			    ((and (not (null? (cdr ps)))
 				  (isa? (car ps) PGP-MDC-Packet))
-			     (error "mdc-symmetric-decrypt"
+			     (openpgp-error "mdc-symmetric-decrypt"
 				"MDC packet found at bad position. (tampered data?)"
 				#f))
 			    ((not (null? (cdr ps)))
@@ -1214,7 +1215,7 @@
 				    (hashed-str (substring d-all 0 hashed-len))
 				    (decrypted-hash (sha1sum-bin hashed-str)))
 				(when (not (string=? decrypted-hash mdc-hash))
-				   (error "mdc-symmetric-decrypt"
+				   (openpgp-error "mdc-symmetric-decrypt"
 				      "Modification Detection detected invalid hash. (tampered data?)"
 				      #f))
 				(set-cdr! previous '())
@@ -1246,7 +1247,7 @@
 					     symmetric-key)))
 		   ;key-string)))
 		   (when (not (> (string-length decrypted) 1))
-		      (error 'decrypt-symmetric-key-session-key
+		      (openpgp-error "decrypt-symmetric-key-session-key"
 			     "bad decrypted session key (length <= 1)"
 			     (str->hex-string decrypted)))
 		   (trace-item "encrypted secret-data: "
@@ -1293,7 +1294,7 @@
 	  (let* ((unpadded (PKCS1-v1.5-unpad decrypted 2))
 		 (len (string-length unpadded)))
 	     (when (not (> len 3))
-		(error 'decrypt-public-key-session-key
+		(openpgp-error "decrypt-public-key-session-key"
 		       "Bad decrypted session-key"
 		       (str->hex-string unpadded)))
 	     (trace-item "Unpadded data: " (str->hex-string unpadded))
@@ -1307,7 +1308,7 @@
 		;; check chksum.
 		(when (not (=fx actual-chksum expected-chksum))
 		   (trace-item "bad checksum." actual-chksum " != " expected-chksum)
-		   (error 'decrypt-public-key-session-key
+		   (openpgp-error "decrypt-public-key-session-key"
 			  "Bad checksum"
 			  actual-chksum))
 		(trace-item "Decomposed symmetric algo: " algo-byte " "
@@ -1378,7 +1379,7 @@
 	 (trace-item "S2k salt: " (and salt (str->hex-string salt)))
 	 (trace-item "S2k count: " count)
 	 (when (and (not session-key) (eq? s2k-algo 'simple))
-	    (error
+	    (openpgp-error
 	     'create-password-session-key-packet
 	     "Without a session-key the S2k for a session-key must be salted."
 	     (s2k-algo->human-readable s2k-algo)))
@@ -1451,7 +1452,7 @@
 		(values 'elgamal-encrypt
 			(cons r s)))))
 	 (else
-	  (error "create-public-key-session-key-packet"
+	  (openpgp-error "create-public-key-session-key-packet"
 		 "Bad public key algo"
 		 (public-key-algo->human-readable algo)))))
 

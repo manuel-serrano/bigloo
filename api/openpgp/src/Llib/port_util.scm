@@ -1,4 +1,5 @@
 (module __openpgp-port-util
+   (import __openpgp-error)
    (export (inline safe-read-char::char p)
 	   (inline safe-read-octet::long p)
 	   (inline safe-read-octets::bstring len p)
@@ -10,14 +11,14 @@
 (define-inline (safe-read-char::char p)
    (let ((t (read-char p)))
       (when (eof-object? t)
-	 (error "safe-read-char" "unexpected end of file" #f))
+	 (openpgp-error "safe-read-char" "unexpected end of file" #f))
       t))
 (define-inline (safe-read-octet::long p)
    (char->integer (safe-read-char p)))
 (define-inline (safe-read-octets::bstring len p)
    (let ((str (read-chars len p)))
       (when (not (=fx (string-length str) len))
-	 (error "safe-read-octets" "unexpected end of file" #f))
+	 (openpgp-error "safe-read-octets" "unexpected end of file" #f))
       str))
 
 (define (length-limited-pipe-port p len)
@@ -29,7 +30,7 @@
 		  (str (read-chars len-to-read p)))
 	      (set! len (-fx len len-to-read))
 	      (when (not (=fx len-to-read (string-length str)))
-		 (error "length-limited-pipe-port"
+		 (openpgp-error "length-limited-pipe-port"
 			"unexpected end of file"
 			#f))
 	      str)))))

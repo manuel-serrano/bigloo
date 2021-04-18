@@ -4,7 +4,8 @@
    (import __openpgp-util
 	   __openpgp-packets
 	   __openpgp-composition
-	   __openpgp-logic)
+	   __openpgp-logic
+	   __openpgp-error)
    (export (pgp-key?::bool key)
 	   (pgp-subkeys::pair-nil key)
 	   (pgp-subkey?::bool subkey)
@@ -26,29 +27,29 @@
 ;; returns a list of (id . subkey) for a given key.
 (define (pgp-subkeys key)
    (unless (isa? key PGP-Key)
-      (error "pgp-subkeys" "Expected PGP Key" key))
+      (openpgp-error "pgp-subkeys" "Expected PGP Key" key))
    (with-access::PGP-Key key (subkeys) subkeys))
 
 (define (pgp-key->string key)
    (unless (isa? key PGP-Key)
-      (error "pgp-key->string" "Expected PGP Key" key))
+      (openpgp-error "pgp-key->string" "Expected PGP Key" key))
    (pgp-key->human-readable key))
 
 (define (pgp-subkey->string subkey)
    (unless (isa? subkey PGP-Subkey)
-      (error "pgp-subkey->string" "Expected PGP Subkey" subkey))
+      (openpgp-error "pgp-subkey->string" "Expected PGP Subkey" subkey))
    (pgp-subkey->human-readable subkey))
 
 
 (define (pgp-key-id::bstring subkey)
    (unless (isa? subkey PGP-Subkey)
-      (error "pgp-key-id" "Expected PGP-Subkey" subkey))
+      (openpgp-error "pgp-key-id" "Expected PGP-Subkey" subkey))
    (with-access::PGP-Subkey subkey (key-packet)
       (key-id key-packet)))
 
 (define (pgp-key-fingerprint::bstring subkey)
    (unless (isa? subkey PGP-Subkey)
-      (error "pgp-key-id" "Expected PGP-Subkey" subkey))
+      (openpgp-error "pgp-key-id" "Expected PGP-Subkey" subkey))
    (with-access::PGP-Subkey subkey (key-packet)
       (fingerprint key-packet)))
 
@@ -76,9 +77,9 @@
    ;; TODO verify key (or do that before)
    ;; TODO merge if the key is already in there.
    (when (not (isa? key PGP-Key))
-      (error "add-key-to-db" "Expected PGP Key" key))
+      (openpgp-error "add-key-to-db" "Expected PGP Key" key))
    (when (not (and (pair? db) (eq? (car db) '*pgp-keys*)))
-      (error "add-key-to-db" "Expected pgp-key db" db))
+      (openpgp-error "add-key-to-db" "Expected pgp-key db" db))
    (set-cdr! db (cons key (cdr db))))
 
 ;*---------------------------------------------------------------------*/
@@ -98,7 +99,7 @@
    ;;
    ;; If the id is 0 ("00000000") then all keys should be returned.
    (when (not (and (pair? db) (eq? (car db) '*pgp-keys*)))
-      (error "add-key-to-db" "Expected pgp-key db" db))
+      (openpgp-error "add-key-to-db" "Expected pgp-key db" db))
    (let loop ((keys (cdr db))
 	      (matching '()))
       (if (null? keys)
@@ -120,7 +121,7 @@
 ;*---------------------------------------------------------------------*/
 (define (pgp-db-print-keys db)
    (when (not (and (pair? db) (eq? (car db) '*pgp-keys*)))
-      (error "add-key-to-db" "Expected pgp-key db" db))
+      (openpgp-error "add-key-to-db" "Expected pgp-key db" db))
    
    (define (print-key k::PGP-Key)
       (print (pgp-key->human-readable k)))

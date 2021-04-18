@@ -5,7 +5,8 @@
 	   __openpgp-packets
 	   __openpgp-human
 	   __openpgp-enums
-	   __openpgp-s2k)
+	   __openpgp-s2k
+	   __openpgp-error)
    (export (create-signed-packet-prefix-v4 signature-type::symbol
 					public-key-algo::symbol
 					hash-algo::symbol
@@ -20,13 +21,13 @@
 
 (define (encode-octet n::long p::output-port)
    (when (>=fx n 256)
-      (error 'encode-octet
+      (openpgp-error "encode-octet"
 	     "given number is too big"
 	     n))
    (display (integer->char-ur n) p))
 (define (encode-octets str::bstring len::long p::output-port)
    (when (not (=fx (string-length str) len))
-      (error 'encode-octets
+      (openpgp-error "encode-octets"
 	     "given string has bad size"
 	     (cons len str)))
    (display str p))
@@ -62,13 +63,13 @@
 (define (encode-prefs prefs::pair-nil converter::procedure p::output-port)
    (for-each (lambda (pref)
 		(when (not (fixnum? pref))
-		   (error 'encode-pref
+		   (openpgp-error "encode-pref"
 			  "Preferences must be integers"
 			  pref))
 		(encode-octet (converter pref) p))
 	     prefs))
 (define-generic (packet->content-tag p::PGP-Packet)
-   (error 'packet->content-tag
+   (openpgp-error "packet->content-tag"
 	  "internal error. forgot PGP-Packet type"
 	  (class-name (object-class p))))
 (define-method (packet->content-tag
@@ -117,7 +118,7 @@
 	  (str (close-output-port str-p))
 	  (len (string-length str)))
       (when (>fx content-tag-byte #x1F)
-	 (error "encode-packet" "content-tag too big" content-tag))
+	 (openpgp-error "encode-packet" "content-tag too big" content-tag))
       ;; we use new-packet-type.
       (debug (format "content-tag-byte: ~x" content-tag-byte))
       (debug (format "encoded-octet: ~x" (+fx+ #x80 #x40 content-tag-byte)))
@@ -128,7 +129,7 @@
 	 
 (define-generic (encode-content packet::PGP-Packet p::output-port)
    (with-trace 'pgp "encode-content (generic)"
-      (error 'encode-content
+      (openpgp-error "encode-content"
 	     "not yet implemented"
 	     (class-name (object-class packet)))))
 
@@ -146,13 +147,13 @@
 	     (encode-mpi encrypted-session-key p))
 	    ((elgamal-encrypt elgamal-encrypt/sign)
 	     (when (not (pair? encrypted-session-key))
-		(error 'encode-Public-key-encrypted-session-key-packet
+		(openpgp-error "encode-Public-key-encrypted-session-key-packet"
 		       "bad encrypted-session-key. ElGamal requires a pair"
 		       encrypted-session-key))
 	     (encode-mpi (car encrypted-session-key) p)
 	     (encode-mpi (cdr encrypted-session-key) p))
 	    (else
-	     (error 'encode-Public-key-encrypted-session-key-packet
+	     (openpgp-error "encode-Public-key-encrypted-session-key-packet"
 		    "Not yet implemented"
 		    (public-key-algo->human-readable algo)))))))
 
@@ -168,7 +169,7 @@
 
 (define-generic (encode-sub-packet-content sp::PGP-Signature-Sub-Packet
 					   p::output-port)
-   (error 'encode-signature-sub-packet-content
+   (openpgp-error "encode-signature-sub-packet-content"
 	  "not yet implemented"
 	  (class-name (object-class sp))))
 
@@ -325,7 +326,7 @@
 	 (cond
 	    ((and (not (date? creation-date))
 		  (not creation-time-packet))
-	     (error 'create-signed-packet-prefix-v4
+	     (openpgp-error "create-signed-packet-prefix-v4"
 		    "creation-date ist mandatory"
 		    #f))
 	    ((or (not (date? creation-date))
@@ -338,7 +339,7 @@
 	     (encode-sub-packets signed-sub-packets str-p))
 	    ((and (date? creation-date)
 		  creation-time-packet)
-	     (error 'create-signed-packet-prefix-v4
+	     (openpgp-error "create-signed-packet-prefix-v4"
 		    "Conflicting creation-dates"
 		    creation-date))
 	    (else
@@ -364,7 +365,7 @@
 	 ((not (string=? issuer
 		  (with-access::PGP-Signature-Sub-ID issuer-packet (key-id)
 		     key-id)))
-	  (error 'encode-insecure-sub-packets
+	  (openpgp-error "encode-insecure-sub-packets"
 		 "Conflicting issuers"
 		 issuer))
 	 (else
@@ -378,7 +379,7 @@
 	    (version issuer public-key-algo signature signed-packet-prefix
 		     left-hash secure-sub-packets insecure-sub-packets)
 	 (when (not signed-packet-prefix)
-	    (error 'encode-PGP-Signature-v4-Packet
+	    (openpgp-error "encode-PGP-Signature-v4-Packet"
 		   "Signature Packet has not been preprocessed correctly"
 		   #f))
 	 ;; signed-packet-prefix contains (for v4 packets):
@@ -395,13 +396,13 @@
 	     (encode-mpi signature p))
 	    ((dsa) ;; DSA
 	     (when (not (pair? signature))
-		(error 'encode-PGP-Signature-v4-Packet
+		(openpgp-error "encode-PGP-Signature-v4-Packet"
 		       "signature-data in DSA-mode must be a pair"
 		       signature))
 	     (encode-mpi (car signature) p)  ;; r
 	     (encode-mpi (cdr signature) p)) ;; s
 	    (else
-	     (error 'encode-PGP-Signature-v4-Packet
+	     (openpgp-error "encode-PGP-Signature-v4-Packet"
 		    "signature-encoding not yet implemented"
 		    (cons public-key-algo
 			  (public-key-algo->human-readable public-key-algo))))))))
@@ -424,18 +425,18 @@
 	     'nothing-to-do)
 	    ((salted)
 	     (when (not (string? salt))
-		(error 'encode-s2k
+		(openpgp-error "encode-s2k"
 		       "expected string as salt"
 		       salt))
 	     (trace-item "salt: " (str->hex-string salt))
 	     (encode-octets salt (s2k-salt-length) p))
 	    ((iterated) ;; iterated and salted s2k
 	     (when (not (string? salt))
-		(error 'encode-s2k
+		(openpgp-error "encode-s2k"
 		       "expected string as salt"
 		       salt))
 	     (when (not (fixnum? count))
-		(error 'encode-s2k
+		(openpgp-error "encode-s2k"
 		       "expected fixnum as count"
 		       count))
 	     (let ((encoded-count (iterated-salted-s2k-count->octet count)))
@@ -444,7 +445,7 @@
 		(encode-octets salt (s2k-salt-length) p)
 		(encode-octet encoded-count p)))
 	    (else
-	     (error "encode-s2k"
+	     (openpgp-error "encode-s2k"
 		    "unknown s2k algorithm"
 		    algo))))))
 
@@ -455,7 +456,7 @@
       (with-access::PGP-Symmetric-Key-Encrypted-Session-Key-Packet packet
 	    (version algo s2k encrypted-session-key)
 	 (when (not (=fx version 4))
-	    (error 'encode-Symmetric-Key-Encrypted-Session
+	    (openpgp-error "encode-Symmetric-Key-Encrypted-Session"
 		   "Only encoding packets of version 4"
 		   version))
 	 (trace-item "version: " version)
@@ -506,7 +507,7 @@
 	 (trace-item "Creation-date: " creation-date)
 	 (when (or (=fx version 2) (=fx version 3))
 	    (when (not (fixnum? valid-days))
-	       (error 'encode-public-key
+	       (openpgp-error "encode-public-key"
 		      "v3 keys must have valid-days (as fixnum)"
 		      valid-days))
 	    (encode-scalar valid-days 2 p))
@@ -514,14 +515,14 @@
 	 (when (or (=fx version 2) (=fx version 3))
 	    (case algo
 	       ((rsa-encrypt/sign rsa-encrypt rsa-sign) 'ok)
-	       (else (error 'encode-public-key
+	       (else (openpgp-error "encode-public-key"
 			    "v3 keys must be RSA"
 			    (cons algo
 				  (public-key-algo->human-readable algo))))) )
 	 (case algo
 	    ((rsa-encrypt/sign rsa-encrypt rsa-sign)
 	     (unless (isa? key Rsa-Key)
-		(error 'encode-key
+		(openpgp-error "encode-key"
 		   "invalid Rsa-Key"
 		   key))
 	     (with-access::Rsa-Key key (modulus exponent)
@@ -529,7 +530,7 @@
 		(encode-mpi exponent p)))
 	    ((dsa) ;; DSA
 	     (unless (isa? key Dsa-Key)
-		(error 'encode-key
+		(openpgp-error "encode-key"
 		       "invalid Dsa-Key"
 		       key))
 	     (with-access::Dsa-Key key (q g y (keyp p))
@@ -539,7 +540,7 @@
 		(encode-mpi y p)))
 	    ((elgamal-encrypt elgamal-encrypt/sign)
 	     (unless (isa? key ElGamal-Key)
-		(error 'encode-key
+		(openpgp-error "encode-key"
 		   "invalid ElGamal-key"
 		   key))
 	     (with-access::ElGamal-Key key ((elp p) g y)
@@ -547,7 +548,7 @@
 		(encode-mpi g p)
 		(encode-mpi y p)))
 	    (else
-	     (error 'encode-key
+	     (openpgp-error "encode-key"
 		    "unsupported public key algorithm"
 		    (cons algo
 			  (public-key-algo->human-readable algo))))))))
@@ -578,7 +579,7 @@
       (with-access::PGP-Literal-Packet packet
 	    (format for-your-eyes-only? file-name creation-date data)
 	 (when (and for-your-eyes-only? file-name)
-	    (error 'encode-content-literal
+	    (openpgp-error "encode-content-literal"
 		   "'for-your-eyes-only' excludes filename"
 		   file-name))
 	 (let ((file (cond
@@ -589,7 +590,7 @@
 			(else
 			 ""))))
 	    (when (>fx (string-length file) 255)
-	       (error 'encode-content-literal
+	       (openpgp-error "encode-content-literal"
 		      "Filename too long (>255)"
 		      file))
 	    (trace-item "format: " format " " (literal-format->human-readable format))
@@ -604,7 +605,7 @@
 
 (define-method (encode-content packet::PGP-Trust-Packet p::output-port)
    (with-trace 'pgp "encode-content ::PGP-Trust-Packet"
-      (error 'encode-content-trust
+      (openpgp-error "encode-content-trust"
 	     "Trust Packet encoding not yet implemented"
 	     #f)))
 

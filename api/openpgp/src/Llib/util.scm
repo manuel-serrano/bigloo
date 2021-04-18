@@ -1,4 +1,5 @@
 (module __openpgp-util
+   (import __openpgp-error)
    (export (macro +fx+)
 	   (macro -fx-)
 	   (macro debug)
@@ -70,7 +71,7 @@
 
 (define-inline (bignum->char::char b::bignum)
    (when (not (<bx b #z256))
-      (error "bignum->char" "bignum must be < 256" b))
+      (openpgp-error "bignum->char" "bignum must be < 256" b))
    (integer->char-ur (bignum->fixnum b)))
 (define-inline (char->bignum::bignum c::char)
    (fixnum->bignum (char->integer c)))
@@ -104,7 +105,7 @@
 		  (zerobx? x))
 	     buffer)
 	    ((<fx i 0)
-	     (error "bignum->bin-str!" "integer too large" x))
+	     (openpgp-error "bignum->bin-str!" "integer too large" x))
 	    (else
 	     (string-set! buffer (+fx at i) (last-char-digit x))
 	     (loop (/bx x #z256) (-fx i 1)))))))
@@ -168,7 +169,7 @@
 (define (string-xor::bstring str1::bstring str2::bstring)
    (let ((len (string-length str1)))
       (when (not (=fx len (string-length str2)))
-	 (error "string-xor" "strings don't have same length" str2))
+	 (openpgp-error "string-xor" "strings don't have same length" str2))
       (let ((res (make-string len)))
 	 (let loop ((i 0))
 	    (cond
@@ -227,7 +228,7 @@
    (let* ((x1 (modulobx x b))
 	  (g (gcd-ext x1 b)))
       (if (not (=bx (car g) #z1))
-	  (error 'mod-inverse
+	  (openpgp-error "mod-inverse"
 		 "internal error, numbers are not relatively prime"
 		 (cons x b))
 	  (modulobx (cadr g) b))))

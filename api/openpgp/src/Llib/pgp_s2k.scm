@@ -2,7 +2,8 @@
    (library crypto)
    (import __openpgp-human
 	   __openpgp-algo
-	   __openpgp-util)
+	   __openpgp-util
+	   __openpgp-error)
    (export (simple-s2k::bstring str::bstring len::long hash-fun::procedure)
 	   (salted-s2k::bstring str::bstring len::long hash-fun::procedure
 				salt::bstring)
@@ -103,7 +104,7 @@
 (define (apply-s2k s2k pwd::bstring len::long)
    (with-trace 'pgp "apply-s2k"
       (when (not (S2K? s2k))
-	 (error "apply-s2k"
+	 (openpgp-error "apply-s2k"
 		"S2K-struct expected"
 		s2k))
       (trace-item "Applying s2k " pwd " (" len ")")
@@ -125,6 +126,6 @@
 		(trace-item "Salted iterated S2K: " count " " (str->hex-string salt))
 		(iterated-salted-s2k pwd len (hash-algo->procedure hash-algo) salt
 				     count)))
-	    (else (error "apply-s2k"
+	    (else (openpgp-error "apply-s2k"
 			 "bad S2K struct"
 			 s2k))))))

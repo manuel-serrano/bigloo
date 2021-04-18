@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
-;*    Last change :  Wed Mar 24 10:24:05 2021 (serrano)                */
+;*    Last change :  Sun Apr 18 18:24:38 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    RFC2440 encoding/decoding                                        */
@@ -17,7 +17,8 @@
 	   __openpgp-packets
 	   __openpgp-decode
 	   __openpgp-encode
-	   __openpgp-port-util)
+	   __openpgp-port-util
+	   __openpgp-error)
    (export
     (decode-pgp p::input-port #!key ignore-bad-packet)
     (parse-packets packets::pair-nil)
@@ -72,9 +73,9 @@
    (with-trace 'pgp "parse-packets"
       (cond
 	 ((null? packets)
-	  (error 'parse-packets
-		 "no packet decoded"
-		 #f))
+	  (openpgp-error "parse-packets"
+	     "no packet decoded"
+	     #f))
 	 ((and (isa? (car packets) PGP-Key-Packet)
 	       (with-access::PGP-Key-Packet (car packets) (subkey?)
 		  (not subkey?)))
@@ -95,9 +96,9 @@
 	  (with-access::PGP-Compressed-Packet (car packets) (packets)
 	     (parse-packets packets)))
 	 (else
-	  (error 'parse-packets
-		 "could not parse pgp-message"
-		 packets)))))
+	  (openpgp-error "parse-packets"
+	     "could not parse pgp-message"
+	     packets)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-keys ...                                                   */
@@ -197,9 +198,9 @@
 			(and (not (subkey-sig? (car pkts)))
 			     (not (revocation-signature? (car pkts)))))
 		    (when (null? subkey-sigs)
-		       (error 'parse-subkey
-			      "Subkey not followed by subkey-binding Signature"
-			      #f))
+		       (openpgp-error "parse-subkey"
+			  "Subkey not followed by subkey-binding Signature"
+			  #f))
 		    (loop pkts
 			  (cons (instantiate::PGP-Subkey
 				   (key-packet (car packets))
@@ -223,9 +224,9 @@
 	    (receive (nuser-ids remaining-packets)
 	       (parse-user-ids remaining-packets)
 	       (when (and (null? nuser-ids) (null? user-ids))
-		  (error 'parse-key
-			 "At least one user ID is required"
-			 #f))
+		  (openpgp-error "parse-key"
+		     "At least one user ID is required"
+		     #f))
 	       (receive (subkeys remaining-packets)
 		  (parse-subkeys remaining-packets)
 		  (if (isa? main-key-packet PGP-Key-Packet)
@@ -254,9 +255,9 @@
 		 (session-keys '()))
 	 (cond
 	    ((null? packets)
-	     (error 'parse-encrypted-message
-		    "missing encrypted data packet"
-		    #f))
+	     (openpgp-error "parse-encrypted-message"
+		"missing encrypted data packet"
+		#f))
 	    ((isa? (car packets) PGP-Symmetrically-Encrypted-Packet)
 	     (when (not (null? (cdr packets)))
 		(warning "Packet after encrypted data discarded"))
@@ -336,14 +337,14 @@
 	     (let ((one-pass-sigs (reverse! one-pass-sigs)))
 		(when (not (=fx (length one-pass-sigs)
 				(length sigs)))
-		   (error 'parse-signature
-			  "bad one-pass signature"
-			  #f))
+		   (openpgp-error "parse-signature"
+		      "bad one-pass signature"
+		      #f))
 		(for-each (lambda (op-pkt sig-pkt)
 			     (when (not (same-sig? op-pkt sig-pkt))
-				(error 'parse-signature
-				       "bad one-pass-signature"
-				       #f)))
+				(openpgp-error "parse-signature"
+				   "bad one-pass-signature"
+				   #f)))
 			  one-pass-sigs
 			  sigs)
 		(instantiate::PGP-One-Pass-Signature
@@ -364,22 +365,22 @@
 		   msg
 		   sigs)))
 	    (expect-one-pass?
-	     (error 'parse-signature
-		    "bad one-pass signature"
-		    #f))
+	     (openpgp-error "parse-signature"
+		"bad one-pass signature"
+		#f))
 	    ((and (not msg) (isa? (car packets) PGP-Literal-Packet))
 	     (loop (cdr packets) #f one-pass-sigs (car packets) sigs))
 	    ((not msg)
-	     (error 'parse-signature
-		    "bad one-pass signature"
-		    #f))
+	     (openpgp-error "parse-signature"
+		"bad one-pass signature"
+		#f))
 	    ((isa? (car packets) PGP-Signature-Packet)
 	     (loop (cdr packets) #f one-pass-sigs msg
 		(cons (car packets) sigs)))
 	    (else
-	     (error 'parse-signature
-		    "bad one-pass signature"
-		    #f))))))
+	     (openpgp-error "parse-signature"
+		"bad one-pass signature"
+		#f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-literal ...                                                */
@@ -389,9 +390,9 @@
       (warning "discarding packets"))
    (when (or (null? packets)
 	     (not (isa? (car packets) PGP-Literal-Packet)))
-      (error 'parse-literal
-	     "bad Literal"
-	     #f))
+      (openpgp-error "parse-literal"
+	 "bad Literal"
+	 #f))
    (instantiate::PGP-Literal
       (literal (car packets))))
 
@@ -432,7 +433,7 @@
    (define (safe-read-line p)
       (let ((l (read-line p)))
 	 (when (eof-object? l)
-	    (error "read-armored" "unexpected end of file" #f))
+	    (openpgp-error "read-armored" "unexpected end of file" #f))
 	 l))
    
    (define (decode-header l)
@@ -443,7 +444,7 @@
    
    (define (verify-checksum data p)
       (define (chksum-error)
-	 (error "read-armored" "bad checksum" #f))
+	 (openpgp-error "read-armored" "bad checksum" #f))
       (let ((c (read-char p)))
 	 (when (or (not (char? c))
 		   (not (char=? c #\=)))
@@ -460,7 +461,7 @@
       (let ((l (safe-read-line p)))
 	 (when (not (and (string-prefix? "-----BEGIN" l)
 			 (string-suffix? "-----" l)))
-	    (error "read-armored" "not an armored file" l))
+	    (openpgp-error "read-armored" "not an armored file" l))
 	 (trace-item "l=\"" l "\"")
 	 (let ((main-header-info (substring l 11 (-fx (string-length l) 5))))
 	    (let loop ((headers '()))
@@ -517,7 +518,7 @@
 ;*    encode-pgp ::PGP-Composition ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-generic (encode-pgp this::PGP-Composition p::output-port)
-   (error 'encode-pgp
+   (openpgp-error 'encode-pgp
 	  "Not yet implemented"
 	  this))
 

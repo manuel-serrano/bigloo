@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Wed Mar 24 10:08:30 2021 (serrano)                */
+;*    Last change :  Sun Apr 18 18:26:11 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano.          */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
@@ -23,7 +23,8 @@
 	   __openpgp-human
 	   __openpgp-s2k
 	   __openpgp-conversion
-	   __openpgp-enums)
+	   __openpgp-enums
+	   __openpgp-error)
    (export (decode-packets::pair-nil p::input-port ignore-bad-packets::bool)
 	   (decode-s2k p::input-port)
 	   (decode-mpi::bignum p::input-port)))
@@ -107,7 +108,7 @@
       (trace-item "old package format")
       (let ((content-tag-byte (bit-and #x0F (bit-rsh packet-tag 2))))
 	 (when (zerofx? content-tag-byte)
-	    (error "decode-content-tag" "invalid tag" 0))
+	    (openpgp-error "decode-content-tag" "invalid tag" 0))
 	 (multiple-value-bind (len partial?)
 	    (decode-packet-length-v3 p packet-tag)
 	    (values (byte->content-tag content-tag-byte) len partial?))))
@@ -123,7 +124,7 @@
       (let ((packet-tag (safe-read-octet p)))
 	 (if (zerofx? (bit-and #x80 packet-tag))
 	     (unless ignore-bad-packets
-		(error "decode-packet" "bad packet" packet-tag))
+		(openpgp-error "decode-packet" "bad packet" packet-tag))
 	     (begin
 		(trace-item "offset=" (-fx (input-port-position p) 1)
 		   "/" (input-port-length p))
@@ -178,7 +179,7 @@
 				 (len (string-length tmp)))
 			     (trace-item "remaining length=" len)
 			     (trace-item "str=" (str->hex-string (substring tmp 0 (min 10 len)))))
-			  (error "decode-packet" "Unknown content-tag"
+			  (openpgp-error "decode-packet" "Unknown content-tag"
 			     content-tag))))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -224,7 +225,7 @@
 		(trace-item "count: " count " (" (char->integer encoded-count) ")")
 		(make-s2k s2k-algo hash-algo salt count)))
 	    (else
-	     (error "decode-s2k"
+	     (openpgp-error "decode-s2k"
 		"unknown s2k algorithm"
 		s2k-algo))))))
 
@@ -274,7 +275,7 @@
 	     (kp (open-input-string secret-data)))
 	 (when (not (or (=fx version 2)
 			(=fx version 3)))
-	    (error "public key encrypted session key"
+	    (openpgp-error "public key encrypted session key"
 		   "don't know how to decode a packet of this version"
 		   version))
 	 (trace-item "version: " version)
@@ -302,7 +303,7 @@
 		   (algo algo)
 		   (encrypted-session-key (cons g**k m*y**k)))))
 	    (else
-	     (error "encrypted session key"
+	     (openpgp-error "encrypted session key"
 		    "Can't read encrypted-session key with this public algo."
 		    (cons algo-byte (public-key-algo->human-readable algo))))))))
 
@@ -316,7 +317,7 @@
 	 (case version
 	    ((3) (decode-signature-v3 p))
 	    ((4) (decode-signature-v4 p version))
-	    (else (error "decode-signature"
+	    (else (openpgp-error "decode-signature"
 			 "Can't decode signatures of this version"
 			 version))))))
 
@@ -338,7 +339,7 @@
 	     (hash-algo (byte->hash-algo hash-algo-byte))
 	     (left-hash (safe-read-octets 2 p)))
 	 (when (not (=fx hashed-len 5))
-	    (error "decode-signature-v3"
+	    (openpgp-error "decode-signature-v3"
 		   "hashed len must be = 5"
 		   hashed-len))
 	 (trace-item "signature type: " signature-type-byte " "
@@ -364,7 +365,7 @@
 		       (trace-item "DSA s: " s)
 		       (cons r s)))
 		   (else
-		    (error "decode-signature"
+		    (openpgp-error "decode-signature"
 			   "public key algorithm not implemented for signature"
 			   (public-key-algo->human-readable public-key-algo))))))
 	    (instantiate::PGP-Signature-v3-Packet
@@ -397,7 +398,7 @@
    (with-trace 'pgp "decode-sub-packet"
       (receive (len partial?)
 	 (decode-packet-length-v4 p)
-	 (when partial? (error "decode-sub-package"
+	 (when partial? (openpgp-error "decode-sub-package"
 			       "sub-packages must not have partial lengths"
 			       #f))
 	 ;(trace-item "sub-packet of length: " len)
@@ -477,7 +478,7 @@
 		   (trace-item "algid: " algid)
 		   (trace-item "finger-print: " (str->hex-string fingerprint))
 		   (when (zerofx? (bit-and #x80 class))
-		      (error
+		      (openpgp-error
 			 "decode-signature-sub-packet"
 			 "revocation-key signature must have bit 0x80 set"
 			 (format "0x~x" class)))
@@ -599,7 +600,7 @@
 		      sps)))
 	 
 	 (when (not pkt)
-	    (error
+	    (openpgp-error
 	     "decode-signature-v4"
 	     "invalid signature. Can't find obligatory creation-time sub-packet"
 	     #f))
@@ -610,7 +611,7 @@
 			 (and (isa? pkt PGP-Signature-Sub-ID) pkt))
 		    sps)))
 	 (when (not pkt)
-	    (error
+	    (openpgp-error
 	       "decode-signature-v4"
 	       "invalid signature. Can't find obligatory issuer id sub-packet"
 	       #f))
@@ -693,7 +694,7 @@
 			  (trace-item "DSA s: " s)
 			  (cons r s)))
 		      (else
-		       (error "decode-signature"
+		       (openpgp-error "decode-signature"
 			      "public key algorithm not implemented"
 			      (list public-key-algo-byte
 				    (public-key-algo->human-readable
@@ -794,7 +795,7 @@
 		 (key #f))))
       (case version
 	 ((2 3 4) 'ok)
-	 (else (error "decode-public-key"
+	 (else (openpgp-error "decode-public-key"
 		      "version of public key file not supported"
 		      version)))
       (decode/fill-key kp version p)
@@ -817,7 +818,7 @@
 		    (not (or (eq? algo 'rsa-encrypt/sign)
 			     (eq? algo 'rsa-encrypt)
 			     (eq? algo 'rsa-sign))))
-	    (error "decode key v3"
+	    (openpgp-error "decode key v3"
 		   "only RSA is supported for version 3 keys"
 		   (public-key-algo->human-readable algo)))
 	 (trace-item "algo: " algo " " (public-key-algo->human-readable algo))
@@ -853,7 +854,7 @@
 		(trace-item "g: " g)
 		(trace-item "y: " y)
 		(with-access::PGP-Key-Packet kp (key) (set! key k))))
-	    (else (error "decode-key"
+	    (else (openpgp-error "decode-key"
 			 "public key algorithm must be RSA, DSA or ElGamal"
 			 (public-key-algo->human-readable algo)))))))
 
@@ -881,7 +882,7 @@
 		    (password-protected-secret-key-data ""))))
 	 (case version
 	    ((3 4) (decode/fill-key kp version cpp))
-	    (else (error "decode-secret-key"
+	    (else (openpgp-error "decode-secret-key"
 			 "version incompatible with this implementation"
 			 version)))
 	 (let ((secret-data (read-string cpp)))
@@ -926,7 +927,7 @@
 		   (instantiate::PGP-Compressed-Packet
 		      (packets (decode-packets pz ignore-bad-packets)))
 		   (close-input-port pz))))
-	    (else (error "decode compressed" "Can't decompresse data" algo))))))
+	    (else (openpgp-error "decode compressed" "Can't decompresse data" algo))))))
 
 ;; ----------------------------------------------------------------------------
 ;; 5.7 Symmetrically Encrypted Data Packet (Tag 9)
@@ -946,7 +947,7 @@
 		   (=fx g #x47)
 		   (=fx p2 #x50)
 		   (eof-object? (peek-char cpp)))
-	 (error "decode-marker"
+	 (openpgp-error "decode-marker"
 		"bad marker packet"
 		#f))
       (instantiate::PGP-Marker-Packet)))
@@ -1024,7 +1025,7 @@
    (with-trace 'pgp "decode-mdc"
       (let ((str (read-string cpp)))
 	 (when (not (=fx (string-length str) 20))
-	    (error 'decode-mdc
+	    (openpgp-error 'decode-mdc
 		   "Bad Modification Detection Code Packet"
 		   #f))
 	 (trace-item "sha1 mdc: " (str->hex-string str))

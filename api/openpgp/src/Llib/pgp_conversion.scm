@@ -1,4 +1,5 @@
 (module __openpgp-conversion
+   (import __openpgp-error)
    (export (fixnum->scalar::bstring nn::long len::long)
 	   (scalar->fixnum::long scalar::bstring)))
 
@@ -14,7 +15,8 @@
 		  (<fx i 0))
 	     str)
 	    ((<fx i 0)
-	     (error "fixnum->scalar" "number too big for requested size" nn))
+	     (openpgp-error "fixnum->scalar"
+		"number too big for requested size" nn))
 	    (else
 	     (string-set! str i (integer->char-ur (remainderfx n 256)))
 	     (loop (-fx i 1) (/fx n 256)))))))
