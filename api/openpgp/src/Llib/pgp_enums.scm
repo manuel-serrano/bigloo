@@ -67,7 +67,8 @@
 
 (declare-enum literal-format
 	      ((binary 98)     ;; #\b
-	       (text   116)))  ;; #\t
+	       (text   116)    ;; #\t
+	       (utf8   117)))  ;; #\u
 
 (declare-enum compression-algo
 	      ((uncompressed 0)

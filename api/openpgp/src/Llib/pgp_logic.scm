@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
-;*    Last change :  Sun Apr 18 18:29:39 2021 (serrano)                */
+;*    Last change :  Tue Apr 20 07:58:56 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP logic                                                    */
@@ -1180,7 +1180,7 @@
 			  (d-rest (substring d-all
 				     (+fx algo-block-len 2)
 				     (string-length d-all)))
-			  (dummyR (trace-item "encoded package (len="
+			  (dummyR (trace-item "encoded packet (len="
 				     (string-length d-rest) ") "
 				     (str->hex-string d-rest)))
 			  (packet-p (open-input-string d-rest))

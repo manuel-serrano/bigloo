@@ -259,17 +259,14 @@
 (define (pubkey-decrypt encrypted::PGP-Symmetrically-Encrypted-Packet
 	   pubkey-session-packets key-manager password-provider
 	   ignore-bad-packets)
+   
    (define (try-decrypt session-packet subkey)
-      (with-handler
-	 (lambda (e)
-	    (trace-item "Exception: " e)
-	    #f)
-	 (receive (algo key-string)
-	    (decrypt-public-key-session-key session-packet subkey password-provider)
-	    (trace-item "public-key-session-key decription succeeded, len="
-	       (with-access::PGP-Symmetrically-Encrypted-Packet encrypted (data)
-		  (string-length data)))
-	    (symmetric-decrypt encrypted key-string algo ignore-bad-packets))))
+      (receive (algo key-string)
+	 (decrypt-public-key-session-key session-packet subkey password-provider)
+	 (trace-item "public-key-session-key decription succeeded, len="
+	    (with-access::PGP-Symmetrically-Encrypted-Packet encrypted (data)
+	       (string-length data)))
+	 (symmetric-decrypt encrypted key-string algo ignore-bad-packets)))
    
    (with-trace 'pgp "pubkey-decrypt"
       (if (and (procedure? key-manager) (correct-arity? key-manager 1))
