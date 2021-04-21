@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Fri Apr 16 18:49:26 2021 (serrano)                */
+/*    Last change :  Wed Apr 21 07:25:32 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
@@ -55,7 +55,7 @@ bgl_pcre2_options_init() {
 /*---------------------------------------------------------------------*/
 static int
 bgl_pcre2_options( obj_t args ) {
-   int options = 0;
+   int options = PCRE2_ALLOW_EMPTY_CLASS;
 
    if( PAIRP( args ) ) {
       bgl_pcre2_options_init();

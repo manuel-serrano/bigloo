@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/mail/src/Llib/maildir.scm        */
+;*    .../prgm/project/bigloo/bigloo/api/mail/src/Llib/maildir.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Fri Nov 17 08:47:15 2017 (serrano)                */
-;*    Copyright   :  2007-20 Manuel Serrano                            */
+;*    Last change :  Tue Apr 20 15:33:25 2021 (serrano)                */
+;*    Copyright   :  2007-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -782,6 +782,10 @@
 		 (loop (+fx i 1) (cons "\\Deleted" flags)))
 		((#\F)
 		 (loop (+fx i 1) (cons "\\Flagged" flags)))
+		((#\a)
+		 (loop (+fx i 1) (cons "$HasAttachment" flags)))
+		((#\n)
+		 (loop (+fx i 1) (cons "$HasNoAttachment" flags)))
 		(else
 		 (loop (+fx i 1) flags)))))))
 
@@ -805,6 +809,12 @@
 	 (set! i (+fx i 1)))
       (when (member "\\Flagged" flags)
 	 (string-set! name i #\F)
+	 (set! i (+fx i 1)))
+      (when (member "$HasNoAttachment" flags)
+	 (string-set! name i #\n)
+	 (set! i (+fx i 1)))
+      (when (member "$HasAttachment" flags)
+	 (string-set! name i #\a)
 	 (set! i (+fx i 1)))
       (when (<fx i n)
 	 (set! name (string-shrink! name i)))
