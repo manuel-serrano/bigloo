@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Wed Apr 21 07:25:32 2021 (serrano)                */
+/*    Last change :  Sat Apr 24 16:26:38 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
@@ -277,7 +277,7 @@ bgl_pcre2_regcomp_finalize( obj_t re, obj_t _ ) {
 #define CHAR_ESCAPE_REGEXP( pat, options ) \
    (STRING_LENGTH( pat ) == 2 \
     && STRING_REF( pat, 0 ) == '\\' \
-    && !strchr( "\\-$[*+?.(", STRING_REF( pat, 0 ) ) \
+    && strchr( "\\-$[*+?.(", STRING_REF( pat, 1 ) ) \
     && !(options & PCRE2_CASELESS))
 
 /*---------------------------------------------------------------------*/
@@ -303,7 +303,7 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
       return re;
    } else if( CHAR_ESCAPE_REGEXP( pat, options ) ) {
       BGL_REGEXP_PREG( re ) = (void *)char_compile( BSTRING_TO_STRING( pat ) + 1, options );
-	   
+
       BGL_REGEXP( re ).match = bgl_charmatch;
       BGL_REGEXP( re ).match_n = bgl_charmatch_n;
       BGL_REGEXP( re ).free = bgl_charfree;

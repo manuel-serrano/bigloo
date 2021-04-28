@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
-/*    Last change :  Wed Apr  7 12:39:47 2021 (serrano)                */
+/*    Last change :  Sat Apr 24 16:31:28 2021 (serrano)                */
 /*    Copyright   :  2019-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
@@ -276,7 +276,7 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
 #define CHAR_ESCAPE_REGEXP( pat, options ) \
    (STRING_LENGTH( pat ) == 2 \
     && STRING_REF( pat, 0 ) == '\\' \
-    && !strchr( "\\-$[*+?.(", STRING_REF( pat, 0 ) ) \
+    && strchr( "\\-$[*+?.(", STRING_REF( pat, 1 ) ) \
     && !(options & PCRE_CASELESS))
 
 /*---------------------------------------------------------------------*/

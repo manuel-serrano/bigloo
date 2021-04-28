@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/checksum.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/Module/checksum.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Thu Aug 21 08:38:45 1997                          */
-;*    Last change :  Sat Jun 14 06:50:12 2014 (serrano)                */
-;*    Copyright   :  1997-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Apr 28 09:37:22 2021 (serrano)                */
+;*    Copyright   :  1997-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute checksum for modules in order to be able to check,    */
 ;*    at module initialization time, that modules are coherent. Only   */
@@ -120,6 +120,8 @@
        (bit-xor checksum (+fx 151 (keyword->number clause))))
       ((pair? clause)
        (list->number checksum clause))
+      ((vector? clause)
+       (vector->number checksum clause))
       ((elong? clause)
        (bit-xor checksum (elong->fixnum clause)))
       ((llong? clause)
@@ -162,6 +164,12 @@
        (if (pair? clause)
 	   (list->number (atom->number checksum (car clause)) (cdr clause))
 	   (atom->number checksum clause)))))
+	 
+;*---------------------------------------------------------------------*/
+;*    vector->number ...                                               */
+;*---------------------------------------------------------------------*/
+(define (vector->number checksum clause)
+   (list->number (bit-xor 73854 checksum) (vector->list clause)))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    extern-clause-checksum ...                                       */
