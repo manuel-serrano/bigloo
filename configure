@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Apr 12 14:59:00 2021 (serrano)                */
+#*    Last change :  Sat May  1 07:07:02 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -18,8 +18,10 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=4.4c
+buildversion=4.4b
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
+biglooftp=ftp://ftp-sop.inria.fr/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
 
@@ -1370,11 +1372,11 @@ if [ $action = "all" ]; then
   fi
 fi
 
-$echo "Checking local configuration..."
-
 #*---------------------------------------------------------------------*/
 #*    Weeding out bad configurations                                   */
 #*---------------------------------------------------------------------*/
+$echo "checking local configuration..."
+
 if [ "$action" != "bigloo_config_el" ]; then
   # checking the correctness of selected apis
   err=
@@ -1647,6 +1649,11 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --hostos=$hostos \
    --echo=$echo \
    --user=""
+
+# Check if configuring a prebootstrap version
+_bootmethod=`$autoconf bootmethod --version $version --buildversion $buildversion --ftp $biglooftp` || exit 1
+bootmethod="`echo $_bootmethod | sed 's/:[.]*$//'`"
+bootbigloo="`echo $_bootmethod | sed 's/^[.]*://'`"
 
 # Grab the hostos info
 if [ "$hostos " = " " ]; then
@@ -2210,7 +2217,7 @@ if [ "$action" != "bigloo_config_el" ]; then
         autoopts=`$autoconf config.guess --dir="$pwd/gc/$gccustom"`
         gcconfigureopt="$autoopts $gcconfigureopt"
         gcconfigurethreadsopt="$gcconfigurethreadsopt"
-        $echo "+ Configuring custom GC ($gccustom)..." && \
+        $echo "+ configuring custom GC ($gccustom)..." && \
         (. ./gc/configure-$gccustom $configuregcextraopt) || exit 1
       fi
     fi
@@ -2328,7 +2335,7 @@ if [ "$libuv_is_enabled " = "yes " -a "$customlibuv " = "yes " ]; then
   $echo "+ Installing custom libuv ($libuvversion) source code."
   (cd libuv; . ./install-libuv) || exit 1
   
-  $echo "+ Configuring custom libuv..."
+  $echo "+ configuring custom libuv..."
   (cd libuv/libuv-$libuvversion; ./autogen.sh)
   autoopts=`$autoconf config.guess --dir="$pwd/libuv/libuv-$libuvversion"`
   libuvconfigureopt="$autoopts $libuvconfigureopt"
@@ -2615,7 +2622,7 @@ if [ "$regexp " = " " ]; then
       $echo "+ Installing custom pcre2 source code."
       (cd pcre2 && PCRE2=$pcre2src && export PCRE2 && ./install-pcre2) || exit 1
 
-      $echo "+ Configuring custom pcre2..."
+      $echo "+ configuring custom pcre2..."
       autoopts=`$autoconf config.guess --dir="$pwd/pcre2/pcre2-$pcre2version"`
       pcre2configureopt="$autoopts $pcre2configureopt"
       (cd pcre2; . ./configure-pcre2) || exit 1
@@ -2641,7 +2648,7 @@ if [ "$regexp " = " " ]; then
       $echo "+ Installing custom pcre source code."
       (cd pcre && PCRE=$pcresrc && export PCRE && ./install-pcre) || exit 1
 
-      $echo "+ Configuring custom pcre..."
+      $echo "+ configuring custom pcre..."
       autoopts=`$autoconf config.guess --dir="$pwd/pcre/pcre-$pcreversion"`
       pcreconfigureopt="$autoopts $pcreconfigureopt"
       (cd pcre; . ./configure-pcre) || exit 1
@@ -2725,7 +2732,7 @@ if [ "$unistring " != "no " ]; then
     autoopts=`$autoconf config.guess --dir="$pwd/libunistring"`
     unistringconfigureopt="$autoopts $unistringconfigureopt"
     
-    $echo "+ Configuring custom unistring..."
+    $echo "+ configuring custom unistring..."
     (cd libunistring; . ./configure-unistring) || exit 1
   fi
     
@@ -2809,7 +2816,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Tell what we are doing
   $echo ""
-  $echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch:"
+  $echo "configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch:"
 
   # The C compiler options
   cbraflags=`$autoconf ccbracket` || exit 1
@@ -3751,7 +3758,7 @@ fi
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "bigloo_config_el" ]; then
   $echo ""
-  $echo "Configuring $bigloo_config_el:"
+  $echo "configuring $bigloo_config_el:"
 
   if [ "$emacs " = " " ]; then
     emacs=emacs
@@ -3793,7 +3800,7 @@ fi
 #*---------------------------------------------------------------------*/
 if [ "$configureinfo" = "yes" ]; then
   $echo ""
-  $echo "Configuring texinfo:"
+  $echo "configuring texinfo:"
 
   infoinfo=`$autoconf info --makeinfo="$makeinfo" \
                            --texi2dvi="$texi2dvi" \
@@ -3864,6 +3871,14 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "# automatically generated, don't edit" > $makefile_build
   $echo "# `date`" >> $makefile_build
   $echo "" >> $makefile_build
+
+  # The boot mode (see autoconf/prebuild)
+  $echo "BOOTMETHOD=$bootmethod" >> $makefile_build
+  $echo "BOOTBIGLOO=$bootbigloo" >> $makefile_build
+  $echo "BOOTBINDIR=`dirname $bootbigloo`" >> $makefile_build
+  
+  $echo >> $makefile_build
+
   # The Buildbin directory
   $echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_build
   $echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_build

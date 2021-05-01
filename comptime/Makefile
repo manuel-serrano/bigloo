@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Mar 24 15:47:57 2020 (serrano)                */
+#*    Last change :  Sat May  1 09:10:00 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -642,15 +642,15 @@ doboot.static: $(O_OBJECTS) $(G_OBJECTS)
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
-#*    bigboot                                                          */
+#*    hostboot                                                         */
 #*    -------------------------------------------------------------    */
 #*    This is the regular entry point for a standard Bigloo boot       */
 #*    procedure from the Scheme files, using an already (compatible)   */
 #*    installed compiler.                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: bigboot
+.PHONY: hostboot
 
-bigboot: 
+hostboot: 
 	$(MAKE) SCMOBJSUFFIX="%.o" LDBOOTFLAGS="-lib-version $(RELEASE) -libgc-version $(RELEASE) -static-bigloo -ldopt $(CSTRIPFLAGS)"
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 

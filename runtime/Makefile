@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Apr 11 18:20:42 2021 (serrano)                */
+#*    Last change :  Sat May  1 09:09:47 2021 (serrano)                */
 #*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -646,12 +646,12 @@ boot-jvm:
 	@ $(MAKE) lib-jvm_u
 
 #*---------------------------------------------------------------------*/
-#*    bigboot                                                          */
+#*    hostboot                                                         */
 #*    -------------------------------------------------------------    */
 #*    Boot a new Bigloo using the Scheme files (instead of the C       */
 #*    pre-compiled files).                                             */
 #*---------------------------------------------------------------------*/
-bigboot:
+hostboot:
 	$(RM) -rf objs
 	@ $(MAKE) .afile
 	@ $(MAKE) objs includes dirs

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Apr  8 09:51:40 2021 (serrano)                */
+#*    Last change :  Sat May  1 08:56:50 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -33,7 +33,7 @@
 #*    Private entries:                                                 */
 #*      fullbootstrap.. Bootstrap a development compiler (private)     */
 #*      c-fullbootstrap Bootstrap a development compiler (private)     */
-#*      bigboot........ Compile Bigloo on already provided plateform.  */
+#*      hostboot....... Compile Bigloo on already provided plateform.  */
 #*                      This is not guarantee to work because it       */
 #*                      requires a compatible installed Bigloo         */
 #*                      compiler (public)                              */
@@ -152,7 +152,23 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*---------------------------------------------------------------------*/
 .PHONY: checkconf boot boot-jvm boot-bde boot-api boot-bglpkg
 
-build: checkconf boot
+build: checkconf $(BOOTMETHOD)
+
+# boot from pre-bootstrapped version
+bootstrap: boot
+
+# boot from a pre-compiled version
+c: boot
+
+# boot from the source using a pre-install bigloo version
+cross:
+	$(MAKE) hostboot BGLBUILDBINDIR=$(BOOTBINDIR) BIGLOO=$(BOOTBIGLOO)
+
+# boot from a bare platform
+source:
+	(cd download; tar xvfz $(BOOTBIGLOO).tar.gz)
+	(pwd=`pwd`; cd download/$(BOOTBIGLOO); ./configure --prefix=$pwd/download && make && make install)
+	$(MAKE) cross BOOTBINDIR=download/bin BOOTBIGLOO=bigloo
 
 checkconf:
 	@ if ! [ -f "lib/bigloo/$(RELEASE)/bigloo.h" ]; then \
@@ -247,7 +263,7 @@ manual-pdf:
 	@ (cd manuals && $(MAKE) bigloo.pdf)
 
 #*---------------------------------------------------------------------*/
-#*    bigboot ...                                                      */
+#*    hostboot ...                                                      */
 #*    -------------------------------------------------------------    */
 #*    Boot a new Bigloo system on a an host. This boot uses an already */
 #*    installed Bigloo on that host. That is, it recompiles, all the   */
@@ -257,18 +273,18 @@ manual-pdf:
 #*      1- configure the system:                                       */
 #*          ./configure --bootconfig                                   */
 #*      2- type something like:                                        */
-#*          make bigboot BGLBUILDBINDIR=/usr/local/bin                 */
+#*          make hostboot BGLBUILDBINDIR=/usr/local/bin                 */
 #*---------------------------------------------------------------------*/
-bigboot: 
+hostboot: 
 	@ if [ "$(BGLBUILDBINDIR) " = " " ]; then \
             echo "*** Error, the variable BGLBUILDBINDIR is unbound"; \
-            echo "Use \"$(MAKE) dobigboot\" if you know what you are doing!"; \
+            echo "Use \"$(MAKE) dohostboot\" if you know what you are doing!"; \
             exit 0; \
           else \
-            $(MAKE) dobigboot; \
+            $(MAKE) dohostboot; \
           fi
 
-dobigboot:
+dohostboot:
 	@ $(MAKE) -C gc clean
 	@ $(MAKE) -C gc uninstall
 	@ $(MAKE) -C gc boot
@@ -289,16 +305,16 @@ dobigboot:
 	  $(MAKE) -C libunistring boot; \
         fi
 	@ mkdir -p bin
-	@ $(MAKE) -C runtime bigboot BBFLAGS="-w"
+	@ $(MAKE) -C runtime hostboot BBFLAGS="-w"
 	@ $(MAKE) -C comptime -i touchall
-	@ $(MAKE) -C comptime bigboot BBFLAGS="-w -unsafeh"
+	@ $(MAKE) -C comptime hostboot BBFLAGS="-w -unsafeh"
 	@ $(MAKE) -C runtime heap-c BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C comptime BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C runtime clean-quick
 	@ $(MAKE) -C runtime heap libs BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C bde clean boot BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C api clean-quick BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ echo "Big boot done..."
+	@ echo "hostboot done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
