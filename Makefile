@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat May  1 15:53:30 2021 (serrano)                */
+#*    Last change :  Sat May  1 18:11:01 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -315,7 +315,7 @@ dohostboot:
 	@ $(MAKE) boot-bde BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C api clean-quick BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) boot-api BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) fullbootstrap-sans-LOG 
+	@ $(MAKE) fullbootstrap-sans-log 
 	@ echo "hostboot done..."
 	@ echo "-------------------------------"
 
