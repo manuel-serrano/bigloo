@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sat May  1 09:32:22 2021 (serrano)                */
+#*    Last change :  Sat May  1 12:24:03 2021 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Select the build method for bootstrapping Bigloo. Echo one of:   */
 #*      - bootstrap: this is an already bootstrapped version;          */
@@ -40,9 +40,6 @@ while : ; do
     --buildrelease=*|-buildrelease=*)
       buildrelease="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
-    --ftp=*|-ftp=*)
-      ftp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --bigloo=*|-bigloo=*)
       bigloo="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
@@ -65,29 +62,8 @@ else
     echo "cross:$bigloo"
     exit 0
   else
-    if [ "$bglrelease " = " " ]; then
-      echo "no Bigloo release!"
-    else
-      echo "found bigloo release ($buildrelease) too old!"
-    fi
-    echo "downloading bigloo $buildrelease from $ftp"
-    
-    mkdir download
-    wget $ftp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
-
-    if [ $? != 0 ]; then
-      echo "command failed \"wget $ftp/bigloo-$buildrelease -o $TMPDIR/bigloo-$buildrelease.tar.gz\""
-      wget --help > /dev/null 2> /dev/null
-
-      if [ $? != 0 ]; then
-	echo "probably because \"wget\" is missing."
-      fi
-
-      exit 1
-    else
-      echo "source:bigloo-$buildrelease"
-      exit 0
-    fi
+    echo "source"
+    exit 0
   fi
 fi
 

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat May  1 09:53:47 2021 (serrano)                */
+#*    Last change :  Sat May  1 12:23:58 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1651,11 +1651,32 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --user=""
 
 # Check if configuring a prebootstrap version
-_bootmethod=`$autoconf bootmethod --release=$release --buildrelease=$buildrelease --ftp=$biglooftp` || exit 1
+_bootmethod=`$autoconf bootmethod --release=$release --buildrelease=$buildrelease` || exit 1
 bootmethod="`echo $_bootmethod | awk -F: '{print $1}'`"
 bootbigloo="`echo $_bootmethod | awk -F: '{print $2}'`"
 bootbindir=`dirname $bootbigloo`
 
+if [ $bootmethod = "source" ]; then
+  echo "downloading bigloo $buildrelease from $ftp"
+    
+  mkdir download
+  wget $ftp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
+
+  if [ $? != 0 ]; then
+    echo "command failed \"wget $ftp/bigloo-$buildrelease -o $TMPDIR/bigloo-$buildrelease.tar.gz\""
+    wget --help > /dev/null 2> /dev/null
+    
+    if [ $? != 0 ]; then
+      echo "probably because \"wget\" is missing."
+    fi
+    
+    exit 1
+  else
+    bootbindir=$PWD/download/bin
+    bootbigloo=$bootbindir/bigloo
+  fi
+fi
+  
 if [ $bootbindir = "." ]; then
   path=`which $bootbigloo`
   bootbindir=`dirname $path`
