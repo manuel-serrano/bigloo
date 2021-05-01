@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat May  1 09:23:11 2021 (serrano)                */
+#*    Last change :  Sat May  1 09:26:43 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -18,7 +18,7 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=4.4c
-buildversion=4.4b
+buildrelease=4.4b
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 biglooftp=ftp://ftp-sop.inria.fr/indes/fp/Bigloo
@@ -1651,7 +1651,7 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --user=""
 
 # Check if configuring a prebootstrap version
-_bootmethod=`$autoconf bootmethod --version=$version --buildversion=$buildversion --ftp=$biglooftp` || exit 1
+_bootmethod=`$autoconf bootmethod --release=$release --buildrelease=$buildrelease --ftp=$biglooftp` || exit 1
 bootmethod="`echo $_bootmethod | sed 's/:[.]*$//'`"
 bootbigloo="`echo $_bootmethod | sed 's/^[.]*://'`"
 

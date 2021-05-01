@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sat May  1 09:15:48 2021 (serrano)                */
+#*    Last change :  Sat May  1 09:25:35 2021 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Select the build method for bootstrapping Bigloo. Echo one of:   */
 #*      - bootstrap: this is an already bootstrapped version;          */
@@ -19,8 +19,8 @@
 #*---------------------------------------------------------------------*/
 bigloo=$BUILDBIGLOO
 # the two following variables must always be overriden by arguments
-version=4.4c
-buildversion=4.4b
+release=4.4c
+buildrelease=4.4b
 
 if [ "$bigloo " = " " ]; then
   bigloo=bigloo
@@ -34,11 +34,11 @@ while : ; do
     "")
       break;;
 
-    --version=*|-version=*)
-      version="`echo $1 | sed 's/^[-a-z]*=//'`";;
+    --release=*|-release=*)
+      release="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
-    --buildversion=*|-buildversion=*)
-      buildversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
+    --buildrelease=*|-buildrelease=*)
+      buildrelease="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --ftp=*|-ftp=*)
       ftp="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -59,24 +59,27 @@ elif [ -f comptime/Cc/cc.c ]; then
   echo "c"
   exit 0
 else
-  bglversion=`$bigloo -q -eval "(exit (print (bigloo-config 'release-number)))" 2> /null`
+  echo "bigloo=$bigloo"
+  bglrelease=`$bigloo -q -eval "(exit (print (bigloo-config 'release-number)))" 2> /dev/null`
 
-  if [ $bglversion = $version -o $bglversion = $buildversion ]; then
+  echo "bglrelease=$bglrelease"
+  
+  if [ $bglrelease = $release -o $bglrelease = $buildrelease ]; then
     echo "cross:$bigloo"
     exit 0
   else
-    if [ "$bglversion " = " " ]; then
-      echo "no Bigloo version!"
+    if [ "$bglrelease " = " " ]; then
+      echo "no Bigloo release!"
     else
-      echo "found bigloo version ($buildversion) too old!"
+      echo "found bigloo release ($buildrelease) too old!"
     fi
-    echo "downloading bigloo $buildversion from $ftp"
+    echo "downloading bigloo $buildrelease from $ftp"
     
     mkdir download
-    wget $ftp/bigloo-$buildversion.tar.gz -O download/bigloo-$buildversion.tar.gz
+    wget $ftp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
 
     if [ $? != 0 ]; then
-      echo "command failed \"wget $ftp/bigloo-$buildversion -o $TMPDIR/bigloo-$buildversion.tar.gz\""
+      echo "command failed \"wget $ftp/bigloo-$buildrelease -o $TMPDIR/bigloo-$buildrelease.tar.gz\""
       wget --help > /dev/null 2> /dev/null
 
       if [ $? != 0 ]; then
@@ -85,7 +88,7 @@ else
 
       exit 1
     else
-      echo "source:bigloo-$buildversion"
+      echo "source:bigloo-$buildrelease"
       exit 0
     fi
   fi
