@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat May  1 18:11:01 2021 (serrano)                */
+#*    Last change :  Sat May  1 18:44:00 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -168,7 +168,7 @@ cross:
 source:
 	(cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz)
 	(pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download && make && make install)
-	$(MAKE) cross BOOTBIGLOOBINDIR=$$PWD/download/bin BOOTBIGLOO=bigloo
+	$(MAKE) cross BOOTBIGLOOBINDIR=$$PWD/download/bin
 
 checkconf:
 	@ if ! [ -f "lib/bigloo/$(RELEASE)/bigloo.h" ]; then \
@@ -285,37 +285,37 @@ hostboot:
           fi
 
 dohostboot:
-	@ $(MAKE) -C gc clean
-	@ $(MAKE) -C gc boot
-	@ if [ "$(GMPCUSTOM)" = "yes" ]; then \
+	$(MAKE) -C gc clean
+	$(MAKE) -C gc boot
+	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp clean; \
 	  $(MAKE) -C gmp boot; \
         fi
-	@ if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
+	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre2 clean; \
 	  $(MAKE) -C pcre2 boot; \
         fi
-	@ if [ "$(PCRECUSTOM)" = "yes" ]; then \
+	if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre clean; \
 	  $(MAKE) -C pcre boot; \
         fi
-	@ if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
+	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libunistring clean; \
 	  $(MAKE) -C libunistring boot; \
         fi
 	@ mkdir -p bin
-	@ $(MAKE) -C runtime hostboot BBFLAGS="-w"
-	@ $(MAKE) -C comptime -i touchall
-	@ $(MAKE) -C comptime hostboot BBFLAGS="-w -unsafeh"
-	@ $(MAKE) -C runtime heap-c BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) -C comptime BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) -C runtime clean-quick
-	@ $(MAKE) -C runtime heap libs BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) -C bde clean boot BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) boot-bde BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) -C api clean-quick BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) boot-api BIGLOO=$(BOOTDIR)/bin/bigloo
-	@ $(MAKE) fullbootstrap-sans-log 
+	$(MAKE) -C runtime hostboot BBFLAGS="-w"
+	$(MAKE) -C comptime -i touchall
+	$(MAKE) -C comptime hostboot BBFLAGS="-w -unsafeh"
+	$(MAKE) -C runtime heap-c BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) -C comptime BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) -C runtime clean-quick
+	$(MAKE) -C runtime heap libs BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) -C bde clean boot BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) boot-bde BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) -C api clean-quick BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) boot-api BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) fullbootstrap-sans-log 
 	@ echo "hostboot done..."
 	@ echo "-------------------------------"
 
