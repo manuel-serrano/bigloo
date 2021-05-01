@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat May  1 09:55:15 2021 (serrano)                */
+#*    Last change :  Sat May  1 12:27:29 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -312,7 +312,9 @@ dohostboot:
 	@ $(MAKE) -C runtime clean-quick
 	@ $(MAKE) -C runtime heap libs BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C bde clean boot BIGLOO=$(BOOTDIR)/bin/bigloo
+	@ $(MAKE) -C boot-bde BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C api clean-quick BIGLOO=$(BOOTDIR)/bin/bigloo
+	@ $(MAKE) -C boot-api BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ echo "hostboot done..."
 	@ echo "-------------------------------"
 
