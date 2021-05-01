@@ -1,0 +1,93 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/bootmethod           */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Sat May  1 09:15:48 2021 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Select the build method for bootstrapping Bigloo. Echo one of:   */
+#*      - bootstrap: this is an already bootstrapped version;          */
+#*      - c: this is a pre-bootstrapped C version;                     */
+#*      - cross: this is a source version that need cross compilation; */
+#*      - source: as cross but Bigloo needs to be installed first.     */
+#     The script exit with 0 on success, 1 on failure.                 */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Global parameters                                                */
+#*---------------------------------------------------------------------*/
+bigloo=$BUILDBIGLOO
+# the two following variables must always be overriden by arguments
+version=4.4c
+buildversion=4.4b
+
+if [ "$bigloo " = " " ]; then
+  bigloo=bigloo
+fi
+
+#*---------------------------------------------------------------------*/
+#*    arguments parsing                                                */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --version=*|-version=*)
+      version="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --buildversion=*|-buildversion=*)
+      buildversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ftp=*|-ftp=*)
+      ftp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --bigloo=*|-bigloo=*)
+      bigloo="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+if [ -f comptime/Cc/cc.o ]; then
+  echo "bootstrap"
+  exit 0
+elif [ -f comptime/Cc/cc.c ]; then
+  echo "c"
+  exit 0
+else
+  bglversion=`$bigloo -q -eval "(exit (print (bigloo-config 'release-number)))" 2> /null`
+
+  if [ $bglversion = $version -o $bglversion = $buildversion ]; then
+    echo "cross:$bigloo"
+    exit 0
+  else
+    if [ "$bglversion " = " " ]; then
+      echo "no Bigloo version!"
+    else
+      echo "found bigloo version ($buildversion) too old!"
+    fi
+    echo "downloading bigloo $buildversion from $ftp"
+    
+    mkdir download
+    wget $ftp/bigloo-$buildversion.tar.gz -O download/bigloo-$buildversion.tar.gz
+
+    if [ $? != 0 ]; then
+      echo "command failed \"wget $ftp/bigloo-$buildversion -o $TMPDIR/bigloo-$buildversion.tar.gz\""
+      wget --help > /dev/null 2> /dev/null
+
+      if [ $? != 0 ]; then
+	echo "probably because \"wget\" is missing."
+      fi
+
+      exit 1
+    else
+      echo "source:bigloo-$buildversion"
+      exit 0
+    fi
+  fi
+fi
+
