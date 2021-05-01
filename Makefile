@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat May  1 13:02:31 2021 (serrano)                */
+#*    Last change :  Sat May  1 14:27:51 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -710,7 +710,15 @@ jvm-test:
 
 .PHONY: uninstall
 
-install: install-sans-docs install-docs
+install: install-sans-docs install-doc-$(BOOTMETHOD)
+
+install-doc-bootstrap: install-docs
+
+install-doc-c: install-docs
+
+install-doc-cross:
+
+install-doc-source:
 
 install-sans-docs: install-progs install-apis
 
