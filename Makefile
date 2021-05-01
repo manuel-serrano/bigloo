@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat May  1 14:27:51 2021 (serrano)                */
+#*    Last change :  Sat May  1 14:42:25 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -166,9 +166,9 @@ cross:
 
 # boot from a bare platform
 source:
-	(cd download; tar xvfz $(BOOTBIGLOO).tar.gz)
-	(pwd=`pwd`; cd download/$(BOOTBIGLOO); ./configure --prefix=$pwd/download && make && make install)
-	$(MAKE) cross BOOTBINDIR=download/bin BOOTBIGLOO=bigloo
+	(cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz)
+	(pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download && make && make install)
+	$(MAKE) cross BOOTBIGLOOBINDIR=$$PWD/download/bin BOOTBIGLOO=bigloo
 
 checkconf:
 	@ if ! [ -f "lib/bigloo/$(RELEASE)/bigloo.h" ]; then \
