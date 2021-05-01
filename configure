@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat May  1 09:48:05 2021 (serrano)                */
+#*    Last change :  Sat May  1 09:53:47 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1658,7 +1658,7 @@ bootbindir=`dirname $bootbigloo`
 
 if [ $bootbindir = "." ]; then
   path=`which $bootbigloo`
-  bootbindir=`dirname $bootbindir`
+  bootbindir=`dirname $path`
 fi  
 
 # Grab the hostos info
@@ -3881,7 +3881,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The boot mode (see autoconf/prebuild)
   $echo "BOOTMETHOD=$bootmethod" >> $makefile_build
   $echo "BOOTBIGLOO=$bootbigloo" >> $makefile_build
-  $echo "BOOTBINDIR=$bootbindir" >> $makefile_build
+  $echo "BOOTBIGLOOBINDIR=$bootbindir" >> $makefile_build
   
   $echo >> $makefile_build
 

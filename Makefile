@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat May  1 08:56:50 2021 (serrano)                */
+#*    Last change :  Sat May  1 09:55:15 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -162,7 +162,7 @@ c: boot
 
 # boot from the source using a pre-install bigloo version
 cross:
-	$(MAKE) hostboot BGLBUILDBINDIR=$(BOOTBINDIR) BIGLOO=$(BOOTBIGLOO)
+	$(MAKE) hostboot BGLBUILDBINDIR=$(BOOTBIGLOOBINDIR) BIGLOO=$(BOOTBIGLOO)
 
 # boot from a bare platform
 source:
@@ -263,7 +263,7 @@ manual-pdf:
 	@ (cd manuals && $(MAKE) bigloo.pdf)
 
 #*---------------------------------------------------------------------*/
-#*    hostboot ...                                                      */
+#*    hostboot ...                                                     */
 #*    -------------------------------------------------------------    */
 #*    Boot a new Bigloo system on a an host. This boot uses an already */
 #*    installed Bigloo on that host. That is, it recompiles, all the   */
@@ -273,7 +273,7 @@ manual-pdf:
 #*      1- configure the system:                                       */
 #*          ./configure --bootconfig                                   */
 #*      2- type something like:                                        */
-#*          make hostboot BGLBUILDBINDIR=/usr/local/bin                 */
+#*          make hostboot BGLBUILDBINDIR=/usr/local/bin                */
 #*---------------------------------------------------------------------*/
 hostboot: 
 	@ if [ "$(BGLBUILDBINDIR) " = " " ]; then \
@@ -286,7 +286,6 @@ hostboot:
 
 dohostboot:
 	@ $(MAKE) -C gc clean
-	@ $(MAKE) -C gc uninstall
 	@ $(MAKE) -C gc boot
 	@ if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp clean; \
