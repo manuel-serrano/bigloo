@@ -48,7 +48,6 @@ As compiling the git version requires a pre-installed Bigloo version,
 it will download and the first step of the `make` will compile and install
 that version locally so that it can proceed to the normal bootstrap.
 
-
 If for any reason the regular compilation procedure fails, it can be
 decomposed as follows:
 
