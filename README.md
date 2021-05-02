@@ -35,18 +35,29 @@ pre-compiled versions available at:
 Installation
 ------------
 
-In order to bootstrap the git Bigloo, you first need to install a
-pre-bundled version, whose installation procedure is described
-in [INSTALL.md](INSTALL.md) file. 
+The regular installation from a pre-bundled version is described in
+[INSTALL.md](INSTALL.md) file. This section only covers the installation
+from a git clone.
 
 To bootstrap the git version, proceed as follows:
+
+  ./configure && make && make install
+  
+As compiling the git version requires a pre-installed Bigloo version, 
+`configure` will check if such a compiler is available on the host. If not
+it will download and the first step of the `make` will compile and install
+that version locally so that it can proceed to the normal bootstrap.
+
+
+If for any reason the regular compilation procedure fails, it can be
+decomposed as follows:
 
   1. Install the latest stable or unstable version. Let us assume that the 
  installation directories are `<lib-path-dir>` and `<bin-path-dir>`
   2. configure the git Bigloo version with:
  `./configure --prefix=<my-prefix>`
   3. bootstrap the compiler with: 
- `LD_LIBRARY_PATH=<lib-path-dir> make bigboot BGLBUILDBINDIR=<bin-path-dir>`
+ `LD_LIBRARY_PATH=<lib-path-dir> make hostboot BGLBUILDBINDIR=<bin-path-dir>`
   4. install that bootstrapped version:
  `make install-progs`
   5. compile all the libraries and complete the bootstrap:
