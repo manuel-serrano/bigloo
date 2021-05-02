@@ -46,7 +46,6 @@ before_script:
   - pushd /tmp/bigloo-unstable && ./configure --prefix=/usr && make && sudo make install && popd
 
 script:
-  - set -e
   - echo -en 'travis_fold:start:bigloo.config\\r'
   - ./configure --prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no
   - echo -en 'travis_fold:end:bigloo.config\\r'
@@ -61,5 +60,3 @@ script:
   - echo -en 'travis_fold:start:bigloo.test\\r'
   - make fulltest
   - echo -en 'travis_fold:end:bigloo.test\\r'
-
-  - set +e
