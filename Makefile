@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun May  2 09:19:11 2021 (serrano)                */
+#*    Last change :  Sun May  2 10:00:42 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -379,6 +379,14 @@ fullbootstrap-sans-log:
            $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
 	./configure --bootconfig $(CONFIGUREOPTS)
 	$(MAKE) fullbootstrap-sans-configure
+	$(MAKE) -C recette -i touchall
+	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
+	if [ "$(JVMBACKEND)" = "yes" ]; then \
+	  $(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION)); \
+        fi
+	$(MAKE) -C recette clean
+	@ echo "Bigloo full bootstrap done..."
+	@ echo "-------------------------------"
 
 fullbootstrap-sans-configure:
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
@@ -419,14 +427,6 @@ fullbootstrap-sans-configure:
 	  $(MAKE) -C bglpkg -i clean; \
 	  $(MAKE) -C bglpkg; \
 	fi
-	$(MAKE) -C recette -i touchall
-	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
-	if [ "$(JVMBACKEND)" = "yes" ]; then \
-	  $(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION)); \
-        fi
-	$(MAKE) -C recette clean
-	@ echo "Bigloo full bootstrap done..."
-	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
 #*    c-fullbootstrap ...                                              */
