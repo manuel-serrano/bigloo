@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sun Aug 25 09:12:45 2019 (serrano)                */
+;*    Last change :  Sun May  2 14:47:51 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -714,7 +714,7 @@
 		     ,(err "Missing value for argument" (car pat)))
 		(loop (cdr pat) `(cdr ,arg) bindings)))
 	 (else
-	  (evexpand-error ',id "Illegal macro parameter" pat)))))
+	  (evexpand-error id "Illegal macro parameter" pat)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-define-pattern ...                                        */
