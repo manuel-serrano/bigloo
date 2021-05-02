@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat May  1 14:36:37 2021 (serrano)                */
+#*    Last change :  Sun May  2 06:27:41 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -859,6 +859,7 @@ while : ; do
       customgmp=yes;
       customunistring=yes;
       customlibuv=yes;
+      custompcre=no;
       custompcre2=yes;;
       
     --finalization=yes)
@@ -1887,6 +1888,7 @@ case $hostos in
       customunistring=yes
       customlibuv=yes
       customgc=yes
+      custompcre=no
       custompcre2=yes
       
       if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
@@ -2627,7 +2629,7 @@ if [ "$regexp " = " " ]; then
     custompcre2=no
   fi
 
-  if [ "$enable_configure_pcre " = "yes " ]; then
+  if [ "$enable_configure_pcre " = "yes " -a "$custompcre2 " != "yes " ]; then
     if [ "$custompcre " != "yes " ]; then
       pcrelibs=`$autoconf pcre` || exit 1;
       extrapcre=pcre
@@ -2670,7 +2672,7 @@ if [ "$regexp " = " " ]; then
   fi
 
   if [ "$pcre2libs " = "no " -a "$pcrelibs " = "no " ]; then
-    if [ "$custompcre " != "no " ]; then
+    if [ "$custompcre " != "no " -a "$custompcre2 " != "yes " ]; then
       custompcre=yes
       pcreversion=`$echo $pcresrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
       buildpcrelibdir=$bootdir/pcre/pcre-$pcreversion/.libs

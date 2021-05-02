@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat May  1 18:44:00 2021 (serrano)                */
+#*    Last change :  Sun May  2 06:30:39 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -315,7 +315,7 @@ dohostboot:
 	$(MAKE) boot-bde BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C api clean-quick BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) boot-api BIGLOO=$(BOOTBINDIR)/bigloo
-	$(MAKE) fullbootstrap-sans-log 
+	$(MAKE) fullbootstrap-sans-log BIGLOO=$(BINDIR)/bigloo.sh
 	@ echo "hostboot done..."
 	@ echo "-------------------------------"
 
@@ -375,7 +375,7 @@ fullbootstrap-sans-log:
            $(RM) -f $(BOOTBINDIR)/bigloo.?????????.gz > /dev/null 2>&1; \
            cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
            $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
-	@ ./configure --bootconfig $(CONFIGUREOPTS)
+	./configure --bootconfig $(CONFIGUREOPTS)
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc clean; \
 	  $(MAKE) -C gc boot; \
