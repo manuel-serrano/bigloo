@@ -52,8 +52,12 @@ that version locally so that it can proceed to the normal bootstrap.
 If for any reason the regular compilation procedure fails, it can be
 decomposed as follows:
 
-  1. Install the latest stable or unstable version. Let us assume that the 
- installation directories are `<lib-path-dir>` and `<bin-path-dir>`
+  1. Install the stable or unstable version (*). Let us assume that the 
+ installation directories are `<lib-path-dir>` and `<bin-path-dir>`. The
+ last stable version is available at:
+   [ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-latest.tar.gz](stable)
+ The last unstable version is available at:
+   [ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz](unstable).
   2. configure the git Bigloo version with:
  `./configure --prefix=<my-prefix>`
   3. bootstrap the compiler with: 
@@ -67,6 +71,13 @@ decomposed as follows:
  
 See the `doc` directory for extra hints and information about the Bigloo
 installation process.
+
+(*) If you intent to install and older version, instead of installating the
+last stable version, you must install the stable version that has been
+released immediately before the version you plan to compile. For instance,
+if you want to re-compile Bigloo version 4.1b, you must install the
+4.1a stable version first. All stable versions are available at:
+  [ [ftp://ftp-sop.inria.fr/indes/fp/Bigloo](ftp)
 
  
 Overview
