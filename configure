@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun May  2 06:27:41 2021 (serrano)                */
+#*    Last change :  Sun May  2 07:04:26 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1655,7 +1655,7 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
 _bootmethod=`$autoconf bootmethod --release=$release --buildrelease=$buildrelease` || exit 1
 bootmethod="`echo $_bootmethod | awk -F: '{print $1}'`"
 bootbigloo="`echo $_bootmethod | awk -F: '{print $2}'`"
-bootbindir=`dirname $bootbigloo 2> /dev/null`
+bootbigloobindir=`dirname $bootbigloo 2> /dev/null`
 
 if [ $bootmethod = "source" ]; then
   mkdir -p download
@@ -1680,10 +1680,12 @@ if [ $bootmethod = "source" ]; then
     bootbigloo=$bootbindir/bigloo
   fi
 fi
-  
-if [ $bootbindir = "." ]; then
+
+if [ "$bootbigloobindir " = " " ]; then
+  bootbigloobindir=$PWD
+elif [ $bootbigloobindir = "." ]; then
   path=`which $bootbigloo`
-  bootbindir=`dirname $path`
+  bootbigloobindir=`dirname $path`
 fi  
 
 # Grab the hostos info
@@ -3907,7 +3909,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The boot mode (see autoconf/prebuild)
   $echo "BOOTMETHOD=$bootmethod" >> $makefile_build
   $echo "BOOTBIGLOO=$bootbigloo" >> $makefile_build
-  $echo "BOOTBIGLOOBINDIR=$bootbindir" >> $makefile_build
+  $echo "BOOTBIGLOOBINDIR=$bootbigloobindir" >> $makefile_build
   $echo "BOOTBUILDRELEASE=$buildrelease" >> $makefile_build
   
   $echo >> $makefile_build
