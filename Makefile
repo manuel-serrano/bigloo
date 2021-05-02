@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun May  2 07:26:56 2021 (serrano)                */
+#*    Last change :  Sun May  2 09:19:11 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -166,8 +166,10 @@ cross:
 
 # boot from a bare platform
 source:
-	(cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz)
-	(pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download && make && make install)
+	if [ ! -x download/bin/bigloo ]; then \
+	  (cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz); \
+	  (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download && make && make install); \
+        fi
 	$(MAKE) cross BOOTBIGLOOBINDIR=$$PWD/download/bin
 
 checkconf:
@@ -315,7 +317,7 @@ dohostboot:
 	$(MAKE) boot-bde BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C api clean-quick BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) boot-api BIGLOO=$(BOOTBINDIR)/bigloo
-	$(MAKE) fullbootstrap-sans-log BGLBUILDBINDIR=$(BOOTBINDIR)
+	$(MAKE) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR)
 	@ echo "hostboot done..."
 	@ echo "-------------------------------"
 
@@ -376,6 +378,9 @@ fullbootstrap-sans-log:
            cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
            $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
 	./configure --bootconfig $(CONFIGUREOPTS)
+	$(MAKE) fullbootstrap-sans-configure
+
+fullbootstrap-sans-configure:
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc clean; \
 	  $(MAKE) -C gc boot; \
