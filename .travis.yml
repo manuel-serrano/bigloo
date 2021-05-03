@@ -42,8 +42,8 @@ before_install:
   
 before_script:
   - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz -O /tmp/bigloo-unstable.tar.gz
-  - pushd /tmp && tar xvfz /tmp/bigloo-unstable.tar.gz && popd
-  - pushd /tmp/bigloo-unstable && ./configure --prefix=/usr && make && sudo make install && popd
+  - pushd /tmp && tar xfz /tmp/bigloo-unstable.tar.gz && popd
+  - pushd /tmp/bigloo-unstable && ./configure --prefix=/usr && make && sudo make install > /dev/null && popd
 
 script:
   - echo -en 'travis_fold:start:bigloo.config\\r'
@@ -52,9 +52,9 @@ script:
 
   - echo -en 'travis_fold:start:bigloo.build\\r'
   - make hostboot BGLBUILDBINDIR=/usr/bin
-  - make install-progs
+  - make install-progs > /dev/null
   - make -j fullbootstrap-sans-log CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
-  - make install-sans-docs
+  - make install-sans-docs > /dev/null
   - echo -en 'travis_fold:end:bigloo.build\\r'
 
   - echo -en 'travis_fold:start:bigloo.test\\r'
