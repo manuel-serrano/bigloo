@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Sat Apr 24 16:26:38 2021 (serrano)                */
+/*    Last change :  Mon May  3 13:02:54 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
@@ -350,7 +350,7 @@ bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
 	 PCRE2_UCHAR *buf = alloca( 256 + 80 );
 
 	 pcre2_get_error_message( errorcode, errbuf, 256 );
-	 sprintf( buf, "PCRE2 compilation failed at offset %d: %s\n",
+	 sprintf( buf, "PCRE2 compilation failed at offset %ld: %s\n",
 		  erroffset, errbuf );
 
 	 if( !(options & PCRE_BGLNORAISE) ) {
