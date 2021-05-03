@@ -53,7 +53,7 @@ script:
   - echo -en 'travis_fold:start:bigloo.build\\r'
   - make hostboot BGLBUILDBINDIR=/usr/bin
   - make install-progs
-  - make -j fullbootstrap-sans-log CONFIGUREOPTS="--jvm=no"
+  - make -j fullbootstrap-sans-log CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
   - make install-sans-docs
   - echo -en 'travis_fold:end:bigloo.build\\r'
 
