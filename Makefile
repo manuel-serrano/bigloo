@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun May  2 10:00:42 2021 (serrano)                */
+#*    Last change :  Mon May  3 19:53:32 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -292,6 +292,10 @@ dohostboot:
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp clean; \
 	  $(MAKE) -C gmp boot; \
+        fi
+	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libuv clean; \
+	  $(MAKE) -C libuv boot; \
         fi
 	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre2 clean; \

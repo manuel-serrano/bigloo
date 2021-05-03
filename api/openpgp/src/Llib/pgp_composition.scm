@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
-;*    Last change :  Sun Apr 18 18:24:38 2021 (serrano)                */
+;*    Last change :  Mon May  3 18:01:28 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    RFC2440 encoding/decoding                                        */
@@ -443,18 +443,19 @@
 		    (substring l (+fx pos 1) (string-length l))))))
    
    (define (verify-checksum data p)
-      (define (chksum-error)
-	 (openpgp-error "read-armored" "bad checksum" #f))
+      
+      (define (chksum-error msg)
+	 (openpgp-error "read-armored" "bad checksum" msg))
+      
       (let ((c (read-char p)))
-	 (when (or (not (char? c))
-		   (not (char=? c #\=)))
-	    (chksum-error))
+	 (when (or (not (char? c)) (not (char=? c #\=)))
+	    (chksum-error (format "bad character `~s'" c)))
 	 (let ((line (read-line p))
 	       (expected (create-chksum64 data)))
 	    (trace-item "checksum line=" line)
 	    (trace-item "expected chksum=" expected)
-	    (when (eof-object? line) (chksum-error))
-	    (when (not (string=? line expected)) (chksum-error)))))
+	    (when (eof-object? line) (chksum-error "premature eof"))
+	    (unless (string=? line expected) (chksum-error line)))))
    
    (with-trace 'pgp "armored-pipe-port"
       (trace-item "p=" p)
