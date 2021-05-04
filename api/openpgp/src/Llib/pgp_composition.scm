@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
-;*    Last change :  Mon May  3 18:01:28 2021 (serrano)                */
+;*    Last change :  Tue May  4 07:01:14 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    RFC2440 encoding/decoding                                        */
@@ -448,14 +448,15 @@
 	 (openpgp-error "read-armored" "bad checksum" msg))
       
       (let ((c (read-char p)))
-	 (when (or (not (char? c)) (not (char=? c #\=)))
-	    (chksum-error (format "bad character `~s'" c)))
-	 (let ((line (read-line p))
-	       (expected (create-chksum64 data)))
-	    (trace-item "checksum line=" line)
-	    (trace-item "expected chksum=" expected)
-	    (when (eof-object? line) (chksum-error "premature eof"))
-	    (unless (string=? line expected) (chksum-error line)))))
+	 (unless (eof-object? c)
+	    (when (or (not (char? c)) (not (char=? c #\=)))
+	       (chksum-error (format "bad character `~s'" c)))
+	    (let ((line (read-line p))
+		  (expected (create-chksum64 data)))
+	       (trace-item "checksum line=" line)
+	       (trace-item "expected chksum=" expected)
+	       (when (eof-object? line) (chksum-error "premature eof"))
+	       (unless (string=? line expected) (chksum-error line))))))
    
    (with-trace 'pgp "armored-pipe-port"
       (trace-item "p=" p)

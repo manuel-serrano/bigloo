@@ -36,9 +36,6 @@ before_install:
   - sudo apt-get install -y libgmp-dev
   - sudo apt-get install -y libgmp3-dev
   - sudo apt-get install -y libgmp10
-  - sudo apt-get install -y openjdk-8-jre-headless
-  - sudo apt-get install -y openjdk-8-jre
-  - sudo apt-get install -y openjdk-8-jdk
   
 before_script:
   - wget -nv ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz -O /tmp/bigloo-unstable.tar.gz > /dev/null
@@ -54,7 +51,7 @@ script:
   - echo -en 'travis_fold:start:bigloo.build\\r'
   - make hostboot BGLBUILDBINDIR=/usr/bin
   - make install-progs > /dev/null
-  - make -j fullbootstrap-sans-test CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
+  - make -j cibootstrap CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
   - make install-sans-docs > /dev/null
   - echo -en 'travis_fold:end:bigloo.build\\r'
 

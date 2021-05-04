@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue May  4 06:57:32 2021 (serrano)                */
+#*    Last change :  Tue May  4 08:40:16 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -32,7 +32,6 @@
 #*                                                                     */
 #*    Private entries:                                                 */
 #*      fullbootstrap.. Bootstrap a development compiler (private)     */
-#*      c-fullbootstrap Bootstrap a development compiler (private)     */
 #*      hostboot....... Compile Bigloo on already provided plateform.  */
 #*                      This is not guarantee to work because it       */
 #*                      requires a compatible installed Bigloo         */
@@ -375,13 +374,7 @@ fullbootstrap-edit-log:
 	@ $(MAKE) -s revision
 
 fullbootstrap-sans-log:
-	(dt=`date '+%d%b%y'`; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.???????.gz > /dev/null 2>&1; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.????????.gz > /dev/null 2>&1; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.?????????.gz > /dev/null 2>&1; \
-           cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
-           $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
-	./configure --bootconfig $(CONFIGUREOPTS)
+	(./configure --bootconfig $(CONFIGUREOPTS)
 	$(MAKE) fullbootstrap-sans-configure
 	$(MAKE) -C recette -i touchall
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
@@ -391,18 +384,6 @@ fullbootstrap-sans-log:
 	$(MAKE) -C recette clean
 	@ echo "Bigloo full bootstrap done..."
 	@ echo "-------------------------------"
-
-fullbootstrap-sans-test:
-	(dt=`date '+%d%b%y'`; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.???????.gz > /dev/null 2>&1; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.????????.gz > /dev/null 2>&1; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.?????????.gz > /dev/null 2>&1; \
-           cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
-           $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
-	./configure --bootconfig $(CONFIGUREOPTS)
-	$(MAKE) fullbootstrap-sans-configure
-	@ echo "Bigloo full bootstrap-sans-recette done..."
-	@ echo "------------------------------------------"
 
 fullbootstrap-sans-configure:
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
@@ -444,35 +425,14 @@ fullbootstrap-sans-configure:
 	  $(MAKE) -C bglpkg; \
 	fi
 
-#*---------------------------------------------------------------------*/
-#*    c-fullbootstrap ...                                              */
-#*    -------------------------------------------------------------    */
-#*    Bootstrap the compiler using the C backend. This is a            */
-#*    development entry point. It should be used only when testing a   */
-#*    new unstable compiler.                                           */
-#*---------------------------------------------------------------------*/
-c-fullbootstrap:
-	(dt=`date '+%d%b%y'`; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.???????.gz > /dev/null 2>&1; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.????????.gz > /dev/null 2>&1; \
-           $(RM) -f $(BOOTBINDIR)/bigloo.?????????.gz > /dev/null 2>&1; \
-           cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
-           $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
-	@ ./configure --bootconfig $(CONFIGUREOPTS)
-	@ (cd comptime && $(MAKE) -i touchall; $(MAKE))
-	@ (cd runtime && $(MAKE) -i touchall; $(MAKE) heap libs-c gcs)
-	@ (cd comptime && $(MAKE) -i touchall; $(MAKE))
-	@ (cd comptime && $(MAKE) -i touchall; $(MAKE))
-	@ if [ "$(BOOTCAPI)" = "yes" ]; then \
-            (cd api && $(MAKE) -i clean && $(MAKE) boot-c); \
-          fi
-	@ (cd cigloo && $(MAKE) -i clean; $(MAKE))
-	@ (cd bglpkg && $(MAKE) -i clean; $(MAKE))
-	@ (cd recette && $(MAKE) -i touchall; \
-           $(MAKE) recette && ./recette$(EXE_SUFFIX))
-	@ $(MAKE) -s revision LOGMSG="C Full Bootstrap succeeded at `date '+%d%b%y'`"
-	@ echo "Bigloo C full bootstrap done..."
-	@ echo "-------------------------------"
+cibootstrap:
+	(cd comptime && $(MAKE) -i touchall; $(MAKE))
+	(cd runtime && $(MAKE) -i touchall; $(MAKE) heap libs-c gcs)
+	(cd comptime && $(MAKE) -i touchall; $(MAKE))
+        (cd api && $(MAKE) -i clean && $(MAKE) boot-c)
+	@ echo "Bigloo CI bootstrap done..."
+	@ echo "---------------------------"
+
 
 #*---------------------------------------------------------------------*/
 #*    newrevision ...                                                  */
