@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue May  4 17:51:57 2021 (serrano)                */
+#*    Last change :  Tue May  4 18:59:21 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -431,7 +431,7 @@ cibootstrap:
 	(cd comptime && $(MAKE) -i touchall; $(MAKE))
 	(cd runtime && $(MAKE) -i touchall; $(MAKE) heap libs-c)
 	(cd comptime && $(MAKE) -i touchall; $(MAKE))
-	(cd api && $(MAKE) -i clean && $(MAKE) boot-c)
+	$(MAKE) -C api fullbootstrap
 	@ echo "Bigloo CI bootstrap done..."
 	@ echo "---------------------------"
 
