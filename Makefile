@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon May  3 19:53:32 2021 (serrano)                */
+#*    Last change :  Tue May  4 06:57:32 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -391,6 +391,18 @@ fullbootstrap-sans-log:
 	$(MAKE) -C recette clean
 	@ echo "Bigloo full bootstrap done..."
 	@ echo "-------------------------------"
+
+fullbootstrap-sans-test:
+	(dt=`date '+%d%b%y'`; \
+           $(RM) -f $(BOOTBINDIR)/bigloo.???????.gz > /dev/null 2>&1; \
+           $(RM) -f $(BOOTBINDIR)/bigloo.????????.gz > /dev/null 2>&1; \
+           $(RM) -f $(BOOTBINDIR)/bigloo.?????????.gz > /dev/null 2>&1; \
+           cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
+           $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
+	./configure --bootconfig $(CONFIGUREOPTS)
+	$(MAKE) fullbootstrap-sans-configure
+	@ echo "Bigloo full bootstrap-sans-recette done..."
+	@ echo "------------------------------------------"
 
 fullbootstrap-sans-configure:
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
