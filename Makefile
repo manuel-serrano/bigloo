@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue May  4 18:59:21 2021 (serrano)                */
+#*    Last change :  Thu May  6 10:44:33 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -374,7 +374,7 @@ fullbootstrap-edit-log:
 	@ $(MAKE) -s revision
 
 fullbootstrap-sans-log:
-	(./configure --bootconfig $(CONFIGUREOPTS)
+	./configure --bootconfig $(CONFIGUREOPTS)
 	$(MAKE) fullbootstrap-sans-configure
 	$(MAKE) -C recette -i touchall
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
