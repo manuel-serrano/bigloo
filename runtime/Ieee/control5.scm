@@ -116,8 +116,19 @@
 ;*---------------------------------------------------------------------*/
 (define (call-with-values producer consumer)
    (%set-mvalues-number! 1)
-   (let ((res0 (producer)))
-      (case (%get-mvalues-number)
+   (let* ((res0 (producer))
+          (num-values (%get-mvalues-number)))
+      ;; To properly handle nested call-with-values invocations where the
+      ;; outer call-with-values generator does not return multiple values
+      ;; via values, we reset the default number of return values here.
+      ;; For example, we want
+      ;;
+      ;; (call-with-values (lambda ()
+      ;;                     (call-with-values (lambda () (values 1 2 3)) +)) list)
+      ;;
+      ;; to return (6) not (6 2 3)
+      (%set-mvalues-number! 1)
+      (case num-values
 	 ((-1)
 	  (apply consumer res0))
 	 ((0)
