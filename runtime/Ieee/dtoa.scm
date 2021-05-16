@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Sun Sep 23 17:34:34 2018 (serrano)                */
-;*    Copyright   :  2011-18 Manuel Serrano                            */
+;*    Last change :  Sun May 16 10:05:09 2021 (serrano)                */
+;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
 ;*=====================================================================*/
@@ -376,7 +376,33 @@
 ;*---------------------------------------------------------------------*/
 ;*    fast-divider ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (fast-divider k-est n e_n m+ even?)
+;*    -------------------------------------------------------------    */
+;*    MS 16may2021, to avoid boxing llong, fast-divider now returns    */
+;*    a llong and returns its two other arguments in two dedicated     */
+;*    globals. This is correct, because there are only two             */
+;*    fast-divider calls. One is tailrec and internal, and only        */
+;*    one is external and non-tailrec.                                 */
+;*---------------------------------------------------------------------*/
+(define fast-divider-res-k 0)
+(define fast-divider-res-exact? #t)
+
+(define-macro (values-fast-divider v k exact?)
+   `(begin
+       (set! fast-divider-res-k ,k)
+       (set! fast-divider-res-exact? ,exact?)
+       ,v))
+
+(define-macro (receive-fast-divider bindings call body)
+   (match-case bindings
+      ((?divider ?k ?exact)
+       `(let* ((,(symbol-append divider '::long) ,call)
+	       (,k fast-divider-res-k)
+	       (,exact fast-divider-res-exact?))
+	   ,body))
+      (else
+       (error "receive-fast-diver" "bad bindings" bindings))))
+
+(define (fast-divider::llong k-est n e_n m+ even?)
    ;; we want the "last" k such that 10^(k-1)=v*2^e_n smaller than
    ;; the unshifted n*2^e_n
    ;; 'k-est' might be one off. (i.e. too small)
@@ -385,12 +411,13 @@
    ;; is v*2^e-v comp-< n*2^e-n
    ;; if not exact? then v*2^e-v + 1 comp-< n*2^e-n
    (define (less? v e_v exact?)
-      (let ((comp-< (if even? <=llong <llong))
-	    (comp-v (if exact? v (+llong v 1))))
+      (let ((comp-v::llong (if exact? v (+llong v 1))))
 	 (cond
 	    ((>fx e_v e_n) #f)
 	    ((<fx e_v e_n) #t)
-	    ((comp-< comp-v (+llong n m+))
+	    ((if even?
+		 (<=llong comp-v (+llong n m+))
+		 (<llong comp-v (+llong n m+)))
 	     #t)
 	    (else #f))))
    
@@ -400,12 +427,12 @@
 	 (if (less? v e_v exact?)
 	     ;; e-v might be too small now.
 	     ;; shift 'v' so that the 'e's are equal.
-	     (let loop ((v v)
+	     (let loop ((v::llong v)
 			(e_v e_v)
 			(exact? exact?))
 		(cond
 		   ((=fx e_v e_n)
-		    (values (+fx k-est 1) v exact?))
+		    (values-fast-divider v (+fx k-est 1) exact?))
 		   ((=llong (remainderllong v #l2) #l0)
 		    ;; the last digit is a 0
 		    ;; if we shift and we were exact, we are still exact.
@@ -528,7 +555,7 @@
 	     ;; 'high' the limit between d and v+ (the next higher double)
 	     (m- (bit-lshllong #l1 (if ^p-1? 8 9)))
 	     (m+ (bit-lshllong #l1 9)))
-	 (receive (k divider exact?)
+	 (receive-fast-divider (divider k exact?)
 	    (fast-divider k-est shifted e m+ even?)
 	    (let ((end-pos (generate-digits
 			    buffer pos
