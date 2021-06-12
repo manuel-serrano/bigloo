@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Wed Dec 25 18:29:57 2019 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 12 07:23:44 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
 ;*    -------------------------------------------------------------    */
@@ -404,7 +404,8 @@
 		 (A A))
 	 (if (null? locals)
 	     (begin
-		(when (set-exit? node) (mark-set-exit! node))
+		(unless *local-exit?*
+		   (when (set-exit? node) (mark-set-exit! node)))
 		(node-A body host k A))
 	     (liip (cdr locals)
 		(node-A (sfun-body (local-value (car locals)))
@@ -448,7 +449,8 @@
       (let* ((exit (var-variable var))
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
-	 (when (and (not *optim-return-goto?*)
+	 (when (and (not *local-exit?*)
+		    (not *optim-return-goto?*)
 		    (not (sexit-detached? (local-value exit))))
 	    (with-access::sfun/Iinfo (local-value hdlg) (forceG?)
 	       (set! forceG? #t))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Thu Apr 19 09:05:06 2018 (serrano)                */
+;*    Last change :  Sat Jun 12 08:43:02 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -271,19 +271,18 @@
    (with-access::local-var cop (vars loc)
       (emit-bdb-loc loc)
       (for-each (lambda (local)
-		   (fprin *c-port*
-			  (make-typed-declaration (local-type local)
-						  (local-name local))
-			  (if (and (>fx *bdb-debug* 0)
-				   (eq? (type-class (local-type local))
-					'bigloo))
-			      (string-append " = (("
-					     (make-typed-declaration
-					      (local-type local)
-					      "")
-					     ")BUNSPEC)")
-			      "")
-			  #\;))
+		   (with-access::local local (volatile type name)
+		      ;; volatile is used only the *local-exit?* is true
+		      (fprin *c-port*
+			 (if volatile "volatile " " ")
+			 (make-typed-declaration type name)
+			 (if (and (>fx *bdb-debug* 0)
+				  (eq? (type-class type) 'bigloo))
+			     (string-append " = (("
+				(make-typed-declaration type "")
+				")BUNSPEC)")
+			     "")
+			 #\;)))
 		vars)
       #f))
 

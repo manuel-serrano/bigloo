@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/var.scm                 */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/var.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Thu Feb 18 08:30:07 2016 (serrano)                */
+;*    Last change :  Sat Jun 12 08:40:44 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -76,7 +76,10 @@
 	      ;; the local's identification key
 	      (key::long read-only)
 	      ;; true iff the variable value cannot escape
-	      (val-noescape::obj (default #t)))
+	      (val-noescape::obj (default #t))
+	      ;; true iff the variable is declared before
+	      ;; a set-exit and used after it
+	      (volatile::bool (default #f)))
 
 	   (class fun::value
 	      ;; the function arity, for non DSSSL optional functions,

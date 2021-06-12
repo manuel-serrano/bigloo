@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Dec 16 05:40:27 2019 (serrano)                */
+;*    Last change :  Sat Jun 12 07:18:12 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -237,6 +237,7 @@
 	    *builtin-allocators*
 	    *eval-options*
 	    *allow-type-redefinition*
+	    *local-exit?*
 	    *pre-processor*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
@@ -1163,6 +1164,13 @@
 ;*---------------------------------------------------------------------*/
 (param-define *allow-type-redefinition*
    "If true, allow type redefinitions"
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    *local-exit?* ...                                                */
+;*---------------------------------------------------------------------*/
+(param-define *local-exit?*
+   "If false, set-ex-it nodes force the creation of a globalized function"
    #f)
 
 ;*---------------------------------------------------------------------*/
