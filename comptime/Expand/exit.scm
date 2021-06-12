@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Sat Jan 19 11:44:56 2019 (serrano)                */
+;*    Last change :  Sat Jun 12 16:39:12 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -196,7 +196,20 @@
 			   ,tmp))))
 	    (replace! x (e new e)))))
 
+   (define (error-handler-expander exp ohs)
+      (let ((exitd (mark-symbol-non-user! (gensym 'exitd)))
+	    (tmp (mark-symbol-non-user! (gensym 'tmp))))
+	 (let ((new `(let ((,exitd ($get-exitd-top)))
+			((@ exitd-push-protect! __bexit) ,exitd ,ohs)
+			(let ((,tmp ,exp))
+			   ((@ exitd-pop-protect! __bexit) ,exitd)
+			   ($set-error-handler! ,ohs)
+			   ,tmp))))
+	       (replace! x (e new e)))))
+
    (match-case x
+      ((?- ?exp ($set-error-handler! (and (? symbol?) ?ohs)))
+       (error-handler-expander exp ohs))
       ((?- ?exp . (and (? pair?) ?cleanup))
        (new-expander exp cleanup))
       (else
@@ -213,7 +226,7 @@
 	   (res (gensym 'res))
 	   (escape (gensym 'escape))
 	   (hdl (gensym 'handler)))
-	(e `(let ((,res #unspecified)
+	(e `(let ((,res ($make-stack-cell #unspecified))
                   (,hdl ,handler))
                (if (bind-exit (,escape)
 		      (let ((,ohs ($get-error-handler)))
@@ -221,16 +234,16 @@
 			    (begin
 			       ($push-error-handler!
 				  (lambda (e)
-				     (set! ,res e)
+				     (cell-set! ,res e)
 				     (,escape #t))
 				  ,ohs)
-			       (set! ,res (begin ,@body))
+			       (cell-set! ,res (begin ,@body))
 			       #f)
 			    ($set-error-handler! ,ohs))))
 		   (begin
 		      (sigsetmask 0)
-		      (,hdl ,res))
-		   ,res))
+		      (,hdl (cell-ref ,res)))
+		   (cell-ref ,res)))
 	   e)))
 
    (define (add-trace body)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sat Jun 15 08:43:30 2019 (serrano)                */
+;*    Last change :  Sat Jun 12 17:37:02 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -101,6 +101,8 @@
 	    
 	    (macro $make-cell::cell (::obj)
 		   "MAKE_YOUNG_CELL")
+	    (macro $make-stack-cell::cell (::obj)
+		   "MAKE_STACK_CELL")
 	    (macro $cell-set!::obj (::cell ::obj)
 		   "CELL_SET")
 	    (macro $cell-ref::obj (::cell)

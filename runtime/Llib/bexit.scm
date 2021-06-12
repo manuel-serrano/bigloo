@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Sat Jun 12 15:31:18 2021 (serrano)                */
+;*    Last change :  Sat Jun 12 16:33:21 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -127,7 +127,8 @@
 		    ($failsafe-mutex-profile fail-safe)
 		    ($exitd-mutex-profile fail-safe))))
 
-   (pragma (exitd-push-protect! (args-noescape m)))) 
+   (pragma (exitd-push-protect! (args-noescape m))
+	   ($exitd-push-protect! (args-noescape 1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    val-from-exit? ...                                               */
@@ -212,6 +213,7 @@
    (cond
       ((mutex? p) (mutex-unlock! p))
       ((procedure? p) (p))
+      ((pair? p) ($set-error-handler! p))
       ((integer? p) (evaluate2-restore-bp! p))
       ((vector? p) (evaluate2-restore-state! p))))
       

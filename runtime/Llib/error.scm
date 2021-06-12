@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Apr  8 15:51:59 2020 (serrano)                */
+;*    Last change :  Sat Jun 12 16:59:42 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -273,7 +273,8 @@
 	    (set! *unsafe-arity*   #t)
 	    (set! *unsafe-range*   #t))
 
-   (pragma  (typeof no-cfa-top args-safe)))
+   (pragma  (typeof no-cfa-top args-safe)
+	    ($push-error-handler! (args-noescape 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Wed Sep 25 13:47:21 2019 (serrano)                */
+/*    Last change :  Sat Jun 12 18:03:37 2021 (serrano)                */
 /*    Copyright   :  2002-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -283,7 +283,7 @@ bgl_sigsetmask( int set ) {
    if( !set ) {
       sigset_t mask;
       bgl_sigprocmask( SIG_SETMASK, 0, &mask );
-
+      
       return bgl_sigprocmask( SIG_UNBLOCK, &mask, 0 );
    } else {
       return bgl_sigprocmask( SIG_SETMASK, (const sigset_t *)&set, 0 );
