@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sat May  1 09:10:00 2021 (serrano)                */
+#*    Last change :  Sat Jun 12 09:02:53 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -197,7 +197,7 @@ CFA_OBJ		= $(CFA_FILE:%=Cfa/%.o)
 
 #*--- Integrate -------------------------------------------------------*/
 INTEGRATE_FILE	= walk definition iinfo a kk u g ctn cto kaptured \
-                  let_fun loc2glo node free
+                  let_fun loc2glo node free volatile
 
 INTEGRATE_OBJ	= $(INTEGRATE_FILE:%=Integrate/%.o)
 
