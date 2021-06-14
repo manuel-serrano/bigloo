@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Jun 12 15:10:59 2021 (serrano)                */
+;*    Last change :  Sun Jun 13 08:37:25 2021 (serrano)                */
 ;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1256,7 +1256,7 @@
       (set! *optim-dataflow-types?* #t)
       (set! *optim-initflow?* #t)
       (set! *optim-tagged-fxop?* #t)
-      (set! *local-exit?* #t)
+;*       (set! *local-exit?* #t)                                       */
       ;; (set! *optim-narrow?* #t)
       ;; (set! *optim-return?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)

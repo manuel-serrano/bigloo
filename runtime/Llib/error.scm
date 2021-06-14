@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sat Jun 12 16:59:42 2021 (serrano)                */
+;*    Last change :  Mon Jun 14 07:00:17 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -17,6 +17,13 @@
 ;*---------------------------------------------------------------------*/
 (module __error
    
+   (option  (bigloo-compiler-debug-set! 0)
+            (set! *compiler-debug* 0)
+            (set! *optim-O-macro?* #f)
+            (set! *unsafe-type*    #t)
+            (set! *unsafe-arity*   #t)
+            (set! *unsafe-range*   #t))
+
    (extern  (export the_failure "the_failure")
 	    (export error/errno "bgl_system_failure")
 	    (export find-runtime-type "bgl_find_runtime_type")
@@ -264,17 +271,15 @@
 
 	    (&try ::procedure ::procedure)
 	    
-	    (notify-interrupt ::int))
+	    (notify-interrupt ::int)
 	    
-   (option  (bigloo-compiler-debug-set! 0)
-	    (set! *compiler-debug* 0)
-	    (set! *optim-O-macro?* #f)
-	    (set! *unsafe-type*    #t)
-	    (set! *unsafe-arity*   #t)
-	    (set! *unsafe-range*   #t))
-
+	    (inline push-error-handler! ::procedure ::procedure)
+	    (inline get-error-handler::obj)
+	    (inline set-error-handler! ::obj))
+	    
    (pragma  (typeof no-cfa-top args-safe)
-	    ($push-error-handler! (args-noescape 0))))
+	    ($push-error-handler! (args-noescape))
+            (push-error-handler! (args-noescape))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */
@@ -1314,7 +1319,25 @@
 		   (exit 4))
 		(raise e)))
 	 thunk)))
-       
+
+;*---------------------------------------------------------------------*/
+;*    push-error-handler! ...                                          */
+;*---------------------------------------------------------------------*/
+(define-inline (push-error-handler! hdl exit)
+   ($push-error-handler! hdl exit))
+
+;*---------------------------------------------------------------------*/
+;*    set-error-handler! ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (set-error-handler! ehdl)
+   ($set-error-handler! ehdl))
+
+;*---------------------------------------------------------------------*/
+;*    get-error-handler ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (get-error-handler)
+   (get-error-handler))
+
 ;*---------------------------------------------------------------------*/
 ;*    notify-interrupt ...                                             */
 ;*---------------------------------------------------------------------*/
