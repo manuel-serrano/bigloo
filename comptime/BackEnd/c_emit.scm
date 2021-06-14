@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Mon Mar 11 14:25:38 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun 14 10:34:08 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@
 	    (emit-garbage-collector-selection)
 	    (emit-include)
 	    (emit-debug-activation)
+	    (emit-unsafe-activation)
 	    (emit-main)
 	    *c-port*
 	    (emit-dlopen-init ::global ::bstring)
@@ -164,6 +165,7 @@
 ;*    emit-include ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (emit-include)
+   (fprint *c-port* "/* standard Bigloo include */")
    ;; the regular include files
    (for-each (lambda (i) (fprint *c-port* "#include <" i ">"))
 	     (reverse! *include-foreign*))
@@ -178,6 +180,14 @@
 (define (emit-debug-activation)
    (fprint *c-port* "/* debug mode */")
    (fprint *c-port* "#define BIGLOO_DEBUG 1")
+   (newline *c-port*))
+
+;*---------------------------------------------------------------------*/
+;*    emit-unsafe-activation ...                                       */
+;*---------------------------------------------------------------------*/
+(define (emit-unsafe-activation)
+   (fprint *c-port* "/* unsafe mode */")
+   (fprint *c-port* "#define BIGLOO_UNSAFE 1")
    (newline *c-port*))
 
 ;*---------------------------------------------------------------------*/

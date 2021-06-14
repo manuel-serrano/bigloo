@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/kk.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Integrate/kk.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Fri Dec 16 08:46:58 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun 14 09:44:07 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -43,10 +43,8 @@
 ;*---------------------------------------------------------------------*/
 (define (K! A var)
    (trace (integrate 4) "K!..." (shape var) #\Newline)
-;*---------------------------------------------------------------------*/
-;*    1.  on sait qu'une seule fonction est E car toutes les autres    */
-;*    ont deja ete globalisees (par la globaliation).                  */
-;*---------------------------------------------------------------------*/
+   ;; 1.  on sait qu'une seule fonction est E car toutes les autres 
+   ;; ont deja ete globalisees.
    (let ((ifun (global-value var)))
       (sfun/Iinfo-K-set!  ifun (list 'bottom))
       (sfun/Iinfo-K*-set! ifun (list 'bottom))

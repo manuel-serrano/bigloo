@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Wed Nov 20 10:55:13 2019 (serrano)                */
+/*    Last change :  Mon Jun 14 10:38:09 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -53,17 +53,6 @@ bgl_dup_procedure( obj_t proc ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    INIT_FX_PROCEDURE                                                */
-/*---------------------------------------------------------------------*/
-#define INIT_FX_PROCEDURE( proc, entry, arity, size ) \
-   (proc->procedure.header = MAKE_HEADER( PROCEDURE_TYPE, size ), \
-    proc->procedure.entry = entry, \
-    proc->procedure.va_entry = 0L, \
-    proc->procedure.attr = BUNSPEC, \
-    proc->procedure.arity = arity, \
-    BREF( proc ))
-   
-/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_init_fx_procedure ...                                        */
 /*---------------------------------------------------------------------*/
@@ -72,7 +61,7 @@ bgl_init_fx_procedure( obj_t proc, obj_t (*entry)(), int arity, int size ) {
    if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
       C_FAILURE( "make-fx-procedure", "Environment to large", BINT( size ) );
    } else {
-      return INIT_FX_PROCEDURE( proc, entry, arity, size );
+      return BGL_INIT_FX_PROCEDURE( proc, entry, arity, size );
    }
 }
 
@@ -88,7 +77,7 @@ make_fx_procedure( obj_t (*entry)(), int arity, int size ) {
    } else {
       obj_t a_tproc = GC_MALLOC( BGL_PROCEDURE_BYTE_SIZE( size ) );
 	      
-      return INIT_FX_PROCEDURE( a_tproc, entry, arity, size );
+      return BGL_INIT_FX_PROCEDURE( a_tproc, entry, arity, size );
    }
 }
 

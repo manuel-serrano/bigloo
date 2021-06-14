@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 13 16:16:29 1995                          */
-;*    Last change :  Wed Dec 25 18:17:43 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun 14 09:24:17 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The integration of one global definition.                        */
 ;*=====================================================================*/
@@ -41,13 +41,13 @@
 ;*    mandatory for the C back-end because this language does not      */
 ;*    possess local [recursive] functions. The theoretical             */
 ;*    fundations of this pass can be found in the Nitsan Seniak        */
-;*    thesis about Sqil (page 100). Here are shortly described         */
-;*    the  organization of this pass:                                  */
-;*        i) we compute the Phi set (the set of used functions).       */
-;*           The Phi we are computing is a subset of the real          */
+;*    thesis about Sqil (page 100). Here is briefly described          */
+;*    the organization of this pass:                                   */
+;*        i) compute the Phi set (the set of used functions).          */
+;*           The computed Phi is a subset of the real                  */
 ;*           Phi. Here its formal definition:                          */
 ;*                  Phi = { f in PHI ^ !G( f ) }                       */
-;*           ie. Phi = PHI minus all the Globalized function           */
+;*           ie. Phi = PHI minus all the Globalized functions          */
 ;*           by the `Globalize' pass.                                  */
 ;*       ii) Compute A                                                 */
 ;*      iii) Compute K                                                 */
@@ -57,9 +57,9 @@
 ;*---------------------------------------------------------------------*/
 (define (integrate-definition! global)
    (trace integrate
-	  "========================================" #\newline
-	  (shape global) #\Newline
-	  "----------------------------------------" #\newline)
+      "========================================" #\newline
+      (shape global) #\Newline
+      "----------------------------------------" #\newline)
    (let* ((fun (global-value global))
 	  (body (sfun-body fun))
 	  (A (A global body)))
@@ -76,14 +76,14 @@
 		;; we print the globalization result
 		(verb-globalization global G)
 		(for-each
-		 (lambda (f)
-		    (when (and (local? f) (not (sfun/Iinfo-G? (local-value f))))
-		       (let* ((g   (sfun/Iinfo-L (local-value f)))
-			      (ifu (variable-value g)))
-			  (sfun/Iinfo-Led-set! ifu
-					       (cons f
-						     (sfun/Iinfo-Led ifu))))))
-		 *phi*)
+		   (lambda (f)
+		      (when (and (local? f) (not (sfun/Iinfo-G? (local-value f))))
+			 (let* ((g (sfun/Iinfo-L (local-value f)))
+				(ifu (variable-value g)))
+			    (sfun/Iinfo-Led-set! ifu
+			       (cons f
+				  (sfun/Iinfo-Led ifu))))))
+		   *phi*)
 		;; for each function (local and global), we add/remove
 		;; the integrated local functions.
 		(for-each displace-let-fun! G)

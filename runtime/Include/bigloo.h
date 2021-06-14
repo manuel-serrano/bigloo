@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr  8 12:13:24 2021 (serrano)                */
+/*    Last change :  Mon Jun 14 10:37:28 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1195,6 +1195,21 @@ typedef obj_t (*function_t)();
 #define BGL_MAKE_FX_PROCEDURE_STACK( tmp, entry, arity, size ) \
    bgl_init_fx_procedure( (obj_t)(&tmp), entry, arity, size )
 
+#if BIGLOO_UNSAFE
+#  define bgl_init_fx_procedure(proc, entry, arity, size) \
+   BGL_INIT_FX_PROCEDURE((proc), entry, arity, size)
+#else
+BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
+#endif
+   
+#define BGL_INIT_FX_PROCEDURE(_proc, _entry, _arity, _size) \
+   (_proc->procedure.header = MAKE_HEADER(PROCEDURE_TYPE, _size), \
+    _proc->procedure.entry = _entry, \
+    _proc->procedure.va_entry = 0L, \
+    _proc->procedure.attr = BUNSPEC, \
+    _proc->procedure.arity = _arity, \
+    BREF(_proc))
+   
 #define BGL_PROCEDURE_BYTE_SIZE( size ) \
    (PROCEDURE_SIZE + ((size-1) * OBJ_SIZE))
 	 
@@ -2348,7 +2363,6 @@ BGL_RUNTIME_DECL obj_t bgl_system_failure( int, obj_t, obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_make_procedure( obj_t, int, int );
 BGL_RUNTIME_DECL obj_t make_fx_procedure( function_t, int, int );
 BGL_RUNTIME_DECL obj_t make_va_procedure( function_t, int, int );
-BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure( obj_t, function_t, int, int );
 BGL_RUNTIME_DECL obj_t bgl_dup_procedure( obj_t );
 
 BGL_RUNTIME_DECL obj_t bgl_time( obj_t );

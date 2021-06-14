@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Sat Jun 12 07:23:44 2021 (serrano)                */
+;*    Last change :  Mon Jun 14 08:51:52 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -49,7 +49,8 @@
    (set! *kont* 0)
    (initialize-fun! global global)
    ;; we start the A computation
-   (let ((A (node-A node global (cons 'tail (global-type global)) '())))
+   (let ((A (node-A node global
+	       (cons 'tail (normalize-type (global-type global))) '())))
       (trace-A A "Before tail-coercion")
       (let ((A' (tail-coercion A global)))
 	 (trace-A A' "After tail-coercion")
@@ -96,6 +97,21 @@
 	 p
 	 "- - - - - - - - - - - - - - - - "
 	 #\Newline)))
+
+;*---------------------------------------------------------------------*/
+;*    get-normalized-type ...                                          */
+;*---------------------------------------------------------------------*/
+(define (get-normalized-type node strict)
+   (normalize-type (get-type node strict)))
+
+;*---------------------------------------------------------------------*/
+;*    normalize-type ...                                               */
+;*---------------------------------------------------------------------*/
+(define (normalize-type ty)
+   (cond
+      ((bigloo-type? ty) *obj*)
+      ((eq? ty *int*) *long*)
+      (else ty)))
 
 ;*---------------------------------------------------------------------*/
 ;*    tail-type-compatible? ...                                        */
@@ -189,12 +205,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::var host k A)
    (if *optim-return-goto?*
-       (with-access::var node (variable)
+       (with-access::var node (variable loc)
 	  (let ((val (variable-value variable)))
 	     (if (isa? val svar/Iinfo)
 		 (with-access::svar/Iinfo val (xhdl)
 		    (if xhdl
-			(let ((nk (cons (get-new-kont) (get-type node #f))))
+			(let ((nk (cons (get-new-kont) (get-normalized-type node #f))))
 			   (cons `(,host ,xhdl ,nk) A))
 			A))
 		 A)))
@@ -220,7 +236,7 @@
 		 (liip (cdr nds)
 		    (node-A (car nds)
 		       host
-		       (cons (get-new-kont) (get-type (car nds) #f))
+		       (cons (get-new-kont) (get-normalized-type (car nds) #f))
 		       A)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -237,7 +253,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::app host k A)
    
-   (define (set-exit-call node::node)
+   (define (unwind-until-call node::node)
       (when *optim-return-goto?*
 	 (with-access::app node (fun args)
 	    (with-access::var fun (variable)
@@ -249,16 +265,10 @@
 			      (with-access::svar/Iinfo val (xhdl)
 				 xhdl))))))))))
    
-   (define (is-exit-handler? callee)
-      (when *optim-return-goto?*
-	 (when (isa? (variable-value callee) sfun/Iinfo)
-	    (with-access::sfun/Iinfo (variable-value callee) (xhdl?)
-	       xhdl?))))
-   
-   (with-access::app node (fun)
+   (with-access::app node (fun loc)
       (let ((callee (var-variable fun)))
 	 (cond
-	    ((set-exit-call node)
+	    ((unwind-until-call node)
 	     =>
 	     (lambda (callee) A))
 	    (else
@@ -275,7 +285,7 @@
 		    (liip (cdr args)
 		       (node-A (car args)
 			  host
-			  (cons (get-new-kont) (get-type (car args) #f))
+			  (cons (get-new-kont) (get-normalized-type (car args) #f))
 			  A))))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -285,8 +295,8 @@
    (with-access::app-ly node (fun arg)
       (node-A fun
 	 host
-	 (cons (get-new-kont) (get-type fun #f))
-	 (node-A arg host (cons (get-new-kont) (get-type arg #f)) A))))
+	 (cons (get-new-kont) (get-normalized-type fun #f))
+	 (node-A arg host (cons (get-new-kont) (get-normalized-type arg #f)) A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::funcall ...                                             */
@@ -295,14 +305,14 @@
    (with-access::funcall node (fun args)
       (node-A fun
 	 host
-	 (cons (get-new-kont) (get-type fun #f))
+	 (cons (get-new-kont) (get-normalized-type fun #f))
 	 (let liip ((args args)
 		    (A A))
 	    (if (null? args)
 		A
 		(liip (cdr args)
 		   (node-A (car args)
-		      host (cons (get-new-kont) (get-type (car args) #f)) A)))))))
+		      host (cons (get-new-kont) (get-normalized-type (car args) #f)) A)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::extern ...                                              */
@@ -315,21 +325,21 @@
 	     A
 	     (liip (cdr asts)
 		(node-A (car asts)
-		   host (cons (get-new-kont) (get-type (car asts) #f)) A))))))
+		   host (cons (get-new-kont) (get-normalized-type (car asts) #f)) A))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::cast ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::cast host k A)
    (with-access::cast node (arg)
-      (node-A arg host (cons (get-new-kont) (get-type arg #f)) A)))
+      (node-A arg host (cons (get-new-kont) (get-normalized-type arg #f)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::setq ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::setq host k A)
    (with-access::setq node (value)
-      (node-A value host (cons (get-new-kont) (get-type value #f)) A)))
+      (node-A value host (cons (get-new-kont) (get-normalized-type value #f)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::conditional ...                                         */
@@ -349,9 +359,9 @@
 	 (cons (get-new-kont) proc)
 	 (node-A msg
 	    host
-	    (cons (get-new-kont) (get-type msg #f))
+	    (cons (get-new-kont) (get-normalized-type msg #f))
 	    (node-A obj
-	       host (cons (get-new-kont) (get-type obj #f)) A)))))
+	       host (cons (get-new-kont) (get-normalized-type obj #f)) A)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::switch ...                                              */
@@ -410,7 +420,7 @@
 	     (liip (cdr locals)
 		(node-A (sfun-body (local-value (car locals)))
 		   (car locals)
-		   (cons 'tail (local-type (car locals)))
+		   (cons 'tail (normalize-type (local-type (car locals))))
 		   A))))))
 
 ;*---------------------------------------------------------------------*/
@@ -419,11 +429,12 @@
 (define-method (node-A node::let-var host k A)
    
    (define (is-get-exitd-top-app? node)
-      (when *optim-return-goto?*
-	 (when (isa? node app)
-	    (with-access::app node (fun args)
-	       (with-access::var fun (variable)
-		  (is-get-exitd-top? variable))))))
+      (unless *local-exit?*
+	 (when *optim-return-goto?*
+	    (when (isa? node app)
+	       (with-access::app node (fun args)
+		  (with-access::var fun (variable)
+		     (is-get-exitd-top? variable)))))))
       
    (with-access::let-var node (body)
       (let liip ((bindings (let-var-bindings node))
@@ -463,22 +474,22 @@
    (with-access::jump-ex-it node (exit value)
       (node-A exit
 	 host
-	 (cons (get-new-kont) (get-type exit #f))
-	 (node-A value host (cons (get-new-kont) (get-type value #f)) A))))
+	 (cons (get-new-kont) (get-normalized-type exit #f))
+	 (node-A value host (cons (get-new-kont) (get-normalized-type value #f)) A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::make-box ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::make-box host k A)
    (with-access::make-box node (value)
-      (node-A value host (cons (get-new-kont) (get-type value #f)) A)))
+      (node-A value host (cons (get-new-kont) (get-normalized-type value #f)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::box-set! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::box-set! host k A)
    (with-access::box-set! node (var value)
-      (node-A value host (cons (get-new-kont) (get-type value #f)) A)))
+      (node-A value host (cons (get-new-kont) (get-normalized-type value #f)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::box-ref ...                                             */
