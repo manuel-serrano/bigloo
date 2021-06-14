@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/pairlist.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/pairlist.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Sat Mar 12 14:58:45 2016 (serrano)                */
+;*    Last change :  Mon Jun 14 15:34:11 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -169,6 +169,9 @@
 	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq equal?)))
    
    (pragma  ($cons args-safe fail-safe (args-retescape)
+	       (stack-allocator "char ~a[ PAIR_SIZE ]"
+		  "BGL_MAKE_PAIR_STACK"))
+	    ($acons args-safe fail-safe (args-retescape) (args-noescape)
 	       (stack-allocator "char ~a[ PAIR_SIZE ]"
 		  "BGL_MAKE_PAIR_STACK"))
 	    ($null? no-alloc (predicate-of nil) no-cfa-top nesting

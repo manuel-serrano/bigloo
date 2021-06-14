@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Mon Jun 14 12:24:38 2021 (serrano)                */
+;*    Last change :  Mon Jun 14 15:57:15 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -121,23 +121,37 @@
 	  body)))
       
    (define (default-expansion exit body)
-      (let ((an-exit  (mark-symbol-non-user! (gensym 'an_exit)))
+      (let ((an-exit (mark-symbol-non-user! (gensym 'an_exit)))
 	    (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
-	    (val      (mark-symbol-non-user! (gensym 'val)))
-	    (res      (mark-symbol-non-user! (gensym 'res))))
+	    (val (mark-symbol-non-user! (gensym 'val)))
+	    (res (mark-symbol-non-user! (gensym 'res)))
+	    (env (mark-symbol-non-user! (gensym 'env))))
 	 (let ((new `(set-exit (,an-exit)
-			(let ()
-			   (push-exit! ,an-exit 1)
-			   (let ((,an-exitd ($get-exitd-top)))
+			(let ((,env (current-dynamic-env)))
+			   ($env-push-exit! ,env ,an-exit 1)
+			   (let ((,an-exitd ($env-get-exitd-top ,env)))
 			      (labels ((,exit (,val)
 					  ((@ unwind-until! __bexit)
 					   ,an-exitd
 					   ,val)))
 				 (let ((,res (begin ,@body)))
-				    (pop-exit!)
+				    ($env-pop-exit! ,env)
 				    ,res)))))))
 	    (replace! x new))))
 
+   (define (env-expansion env exit body)
+      (let ((an-exit (mark-symbol-non-user! (gensym 'an_exit)))
+	    (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
+	    (val (mark-symbol-non-user! (gensym 'val)))
+	    (res (mark-symbol-non-user! (gensym 'res))))
+	 (let ((new `(set-exit (,an-exit)
+			(let ((,env (current-dynamic-env)))
+			   ($env-push-exit! ,env ,an-exit 1)
+			   (let ((,exit ($env-get-exitd-top ,env)))
+			      (let ((,res ,body))
+				 ($env-pop-exit! ,env)
+				 ,res))))))
+	    (replace! x new))))
    
    (match-case x
       ((?- (?exit) (?exit ?expr))
@@ -146,7 +160,6 @@
        ;; force the macro expansion before optimizing bind-exit
        (let ((old-internal internal-definition?))
 	  (set! internal-definition? #t)
-
 	  (let* ((e (internal-begin-expander e))
 		 (nexprs (e `(begin ,@exprs) e)))
 	     (set-car! (cddr x) nexprs)
@@ -175,6 +188,14 @@
 		      (default-expansion exit body)))))
 	  (else
 	   (error #f "Illegal `bind-exit' form" x))))
+      ((?- :env ?env (?exit) ?body)
+       ;; only used by with-handler
+       (let ((old-internal internal-definition?))
+	  (set! internal-definition? #t)
+	  (let* ((e (internal-begin-expander e))
+		 (ebody (e body e)))
+	     (set! internal-definition? old-internal)
+	     (env-expansion env exit ebody))))
       (else
        (error #f "Illegal `bind-exit' form" x))))
 
@@ -223,21 +244,25 @@
   (define (expand handler body)
      (let ((ohs (gensym 'ohs))
 	   (nhs (gensym 'nhs))
+	   (hds (gensym 'hds))
 	   (err (gensym 'err))
 	   (cell (gensym 'cell))
 	   (escape (gensym 'escape))
 	   (hdl (gensym 'handler))
 	   (ehdl (gensym 'errhandler))
-	   (val (gensym 'val)))
+	   (val (gensym 'val))
+	   (env (gensym 'env)))
 	(e `(let ((,cell ($make-stack-cell #unspecified))
-                  (,hdl ,handler))
-	       (let ((,val (bind-exit (,escape)
-			      (let* ((,ohs ($get-error-handler))
-				     (,nhs (cons (cons ,escape ,cell) ,ohs)))
-				 ($set-error-handler! ,nhs)
+                  (,hdl ,handler)
+		  (,env (current-dynamic-env)))
+	       (let ((,val (bind-exit :env ,env (,escape)
+			      (let* ((,ohs ($env-get-error-handler ,env))
+				     (,hds ($acons ,escape ,cell))
+				     (,nhs (cons ,hds ,ohs)))
+				 ($env-set-error-handler! ,env ,nhs)
 				 (unwind-protect
 				    (begin ,@body)
-				    ($set-error-handler! ,ohs))))))
+				    ($env-set-error-handler! ,env ,ohs))))))
 		  (if (eq? ,val ,cell)
 		      (begin
 			 (sigsetmask 0)

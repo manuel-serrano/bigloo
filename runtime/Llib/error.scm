@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Jun 14 14:05:11 2021 (serrano)                */
+;*    Last change :  Mon Jun 14 15:30:23 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -39,7 +39,9 @@
 	    (macro $env-pop-trace::obj (::dynamic-env) "BGL_ENV_POP_TRACE")
 	    (macro $pop-trace::obj () "BGL_POP_TRACE")
 	    (macro $get-error-handler::obj () "BGL_ERROR_HANDLER_GET")
+	    (macro $env-get-error-handler::obj (::dynamic-env) "BGL_ENV_ERROR_HANDLER_GET")
 	    (macro $set-error-handler!::void (::obj) "BGL_ERROR_HANDLER_SET")
+	    (macro $env-set-error-handler!::void (::dynamic-env ::obj) "BGL_ENV_ERROR_HANDLER_SET")
 	    (macro $push-error-handler!::void (::obj ::obj) "BGL_ERROR_HANDLER_PUSH")
 	    (macro $get-uncaught-exception-handler::obj () "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET")
 	    (macro $set-uncaught-exception-handler!::void (::obj) "BGL_UNCAUGHT_EXCEPTION_HANDLER_SET")
@@ -275,13 +277,17 @@
 	    
 	    (inline push-error-handler! ::procedure ::obj)
 	    (inline get-error-handler::obj)
-	    (inline set-error-handler! ::obj))
+	    (inline env-get-error-handler ::dynamic-env)
+	    (inline set-error-handler! ::obj)
+	    (inline env-set-error-handler! ::dynamic-env ::obj))
 	    
    (pragma  (typeof no-cfa-top args-safe)
 	    ($push-error-handler! (args-noescape))
             (push-error-handler! (args-noescape))
 	    ($set-error-handler! (args-noescape))
-            (set-error-handler! (args-noescape))))
+            (set-error-handler! (args-noescape))
+	    ($env-set-error-handler! (args-noescape))
+            (env-set-error-handler! (args-noescape))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */
@@ -435,8 +441,10 @@
 			  ;; with-handler forms (see comptime/Expand/exit.scm)
 			  (let ((cell (cdr hdl)))
 			     (cell-set! cell val)
-			     ((car hdl) cell))
-			  ;; old form for backward compatibility
+			     (if (procedure? (car hdl))
+				 ((car hdl) cell)
+				 (unwind-until! (car hdl) cell)))
+			  ;; old form for backward compa
 			  (hdl val))))
 		;; ($set-error-handler! hdls)
 		(when (isa? val &error)
@@ -1345,10 +1353,22 @@
    ($set-error-handler! ehdl))
 
 ;*---------------------------------------------------------------------*/
+;*    env-set-error-handler! ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (env-set-error-handler! env ehdl)
+   ($env-set-error-handler! env ehdl))
+
+;*---------------------------------------------------------------------*/
 ;*    get-error-handler ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (get-error-handler)
    (get-error-handler))
+
+;*---------------------------------------------------------------------*/
+;*    env-get-error-handler ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (env-get-error-handler env)
+   (env-get-error-handler env))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-interrupt ...                                             */

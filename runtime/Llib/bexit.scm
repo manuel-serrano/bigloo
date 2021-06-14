@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Sat Jun 12 16:33:21 2021 (serrano)                */
+;*    Last change :  Mon Jun 14 15:55:09 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -45,13 +45,16 @@
 	    __evenv)
 
    (extern  (macro push-exit!::obj (::exit ::long) "PUSH_EXIT")
+	    (macro $env-push-exit!::obj (::dynamic-env ::exit ::long) "PUSH_ENV_EXIT")
 	    (macro pop-exit!::obj () "POP_EXIT")
+	    (macro $env-pop-exit!::obj (::dynamic-env) "POP_ENV_EXIT")
 	    (macro call/cc-jump-exit::obj (::exit ::obj) "CALLCC_JUMP_EXIT")
 	    (macro $exitd->exit::exit (::obj) "EXITD_TO_EXIT")
 	    (macro exitd-user?::bool (::obj) "EXITD_USERP")
 	    (macro exitd-call/cc?::bool (::obj) "EXITD_CALLCCP")
 	    (macro exitd-stamp::bint (::obj) "EXITD_STAMP")
 	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP_AS_OBJ")
+	    (macro $env-get-exitd-top::obj (::dynamic-env) "BGL_ENV_EXITD_TOP_AS_OBJ")
 	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
 	    (macro $set-exitd-top!::obj (::obj) "BGL_EXITD_TOP_SET")
 	    (macro $get-exitd-val::obj () "BGL_EXITD_VAL")

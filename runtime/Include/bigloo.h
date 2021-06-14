@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jun 14 10:37:28 2021 (serrano)                */
+/*    Last change :  Mon Jun 14 16:00:30 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2057,6 +2057,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define BGL_EXITD_TOP_AS_OBJ() \
    ((obj_t)BGL_EXITD_TOP())
+#define BGL_ENV_EXITD_TOP_AS_OBJ(env) \
+   ((obj_t)BGL_ENV_EXITD_TOP(env))
 
 #define BGL_EXITD_VAL() \
    BGL_ENV_EXITD_VAL( BGL_CURRENT_DYNAMIC_ENV() )
