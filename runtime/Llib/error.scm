@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Jun 14 07:00:17 2021 (serrano)                */
+;*    Last change :  Mon Jun 14 14:05:11 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -273,13 +273,15 @@
 	    
 	    (notify-interrupt ::int)
 	    
-	    (inline push-error-handler! ::procedure ::procedure)
+	    (inline push-error-handler! ::procedure ::obj)
 	    (inline get-error-handler::obj)
 	    (inline set-error-handler! ::obj))
 	    
    (pragma  (typeof no-cfa-top args-safe)
 	    ($push-error-handler! (args-noescape))
-            (push-error-handler! (args-noescape))))
+            (push-error-handler! (args-noescape))
+	    ($set-error-handler! (args-noescape))
+            (set-error-handler! (args-noescape))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */
@@ -423,9 +425,19 @@
 (define (raise val)
    (let ((handlers ($get-error-handler)))
       (if (pair? handlers)
-	  (let ((hdls (cdr handlers)))
+	  (let* ((hdls (cdr handlers))
+		 (hdl (car handlers)))
 	     ;; ($set-error-handler! hdls)
-	     (let ((r ((car handlers) val)))
+	     (let ((r (if (pair? hdl)
+			  ;; since 14 jun 2021, error handlers are pushed
+			  ;; along a cell where to store the exection value
+			  ;; this removes one closure allocation of 
+			  ;; with-handler forms (see comptime/Expand/exit.scm)
+			  (let ((cell (cdr hdl)))
+			     (cell-set! cell val)
+			     ((car hdl) cell))
+			  ;; old form for backward compatibility
+			  (hdl val))))
 		;; ($set-error-handler! hdls)
 		(when (isa? val &error)
 		   (with-access::&error val (fname location)

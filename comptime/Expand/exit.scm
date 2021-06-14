@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Sat Jun 12 16:39:12 2021 (serrano)                */
+;*    Last change :  Mon Jun 14 12:24:38 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -222,28 +222,27 @@
    
   (define (expand handler body)
      (let ((ohs (gensym 'ohs))
+	   (nhs (gensym 'nhs))
 	   (err (gensym 'err))
-	   (res (gensym 'res))
+	   (cell (gensym 'cell))
 	   (escape (gensym 'escape))
-	   (hdl (gensym 'handler)))
-	(e `(let ((,res ($make-stack-cell #unspecified))
+	   (hdl (gensym 'handler))
+	   (ehdl (gensym 'errhandler))
+	   (val (gensym 'val)))
+	(e `(let ((,cell ($make-stack-cell #unspecified))
                   (,hdl ,handler))
-               (if (bind-exit (,escape)
-		      (let ((,ohs ($get-error-handler)))
-			 (unwind-protect
-			    (begin
-			       ($push-error-handler!
-				  (lambda (e)
-				     (cell-set! ,res e)
-				     (,escape #t))
-				  ,ohs)
-			       (cell-set! ,res (begin ,@body))
-			       #f)
-			    ($set-error-handler! ,ohs))))
-		   (begin
-		      (sigsetmask 0)
-		      (,hdl (cell-ref ,res)))
-		   (cell-ref ,res)))
+	       (let ((,val (bind-exit (,escape)
+			      (let* ((,ohs ($get-error-handler))
+				     (,nhs (cons (cons ,escape ,cell) ,ohs)))
+				 ($set-error-handler! ,nhs)
+				 (unwind-protect
+				    (begin ,@body)
+				    ($set-error-handler! ,ohs))))))
+		  (if (eq? ,val ,cell)
+		      (begin
+			 (sigsetmask 0)
+			 (,hdl (cell-ref ,val)))
+		      ,val)))
 	   e)))
 
    (define (add-trace body)
