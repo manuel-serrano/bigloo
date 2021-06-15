@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Mon Jun 14 15:57:15 2021 (serrano)                */
+;*    Last change :  Tue Jun 15 08:58:08 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -243,7 +243,6 @@
    
   (define (expand handler body)
      (let ((ohs (gensym 'ohs))
-	   (nhs (gensym 'nhs))
 	   (hds (gensym 'hds))
 	   (err (gensym 'err))
 	   (cell (gensym 'cell))
@@ -257,9 +256,8 @@
 		  (,env (current-dynamic-env)))
 	       (let ((,val (bind-exit :env ,env (,escape)
 			      (let* ((,ohs ($env-get-error-handler ,env))
-				     (,hds ($acons ,escape ,cell))
-				     (,nhs (cons ,hds ,ohs)))
-				 ($env-set-error-handler! ,env ,nhs)
+				     (,hds (cons ,escape ,cell)))
+				 ($env-set-error-handler! ,env ,hds)
 				 (unwind-protect
 				    (begin ,@body)
 				    ($env-set-error-handler! ,env ,ohs))))))

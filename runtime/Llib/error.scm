@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Jun 14 15:30:23 2021 (serrano)                */
+;*    Last change :  Tue Jun 15 08:53:11 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -404,11 +404,13 @@
 ;*---------------------------------------------------------------------*/
 (define (with-exception-handler handler thunk)
    (if (correct-arity? handler 1)
-       (let ((old-handlers ($get-error-handler)))
+       (let ((old-handlers ($get-error-handler))
+	     (cell ($make-stack-cell #unspecified)))
 	  ($set-error-handler!
-	     (cons (lambda (e)
-		      ($set-error-handler! old-handlers)
-		      (handler e))
+	     (cons ($acons (lambda (c)
+			      ($set-error-handler! old-handlers)
+			      (handler (cell-ref c)))
+		      cell)
 		old-handlers))
 	  (unwind-protect
 	     (if (correct-arity? thunk 0)
@@ -429,30 +431,37 @@
 ;*    raise ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (raise val)
+   
+   (define (raise/cell hdl)
+      ;; since 14 jun 2021, error handlers are pushed
+      ;; along a cell where to store the exection value
+      ;; this removes one closure allocation of 
+      ;; with-handler forms (see comptime/Expand/exit.scm)
+      (let ((cell (cdr hdl))
+	    (h (car hdl)))
+	 (cell-set! cell val)
+	 (if (procedure? h)
+	     (h cell)
+	     (unwind-until! h cell))))
+   
    (let ((handlers ($get-error-handler)))
       (if (pair? handlers)
-	  (let* ((hdls (cdr handlers))
-		 (hdl (car handlers)))
-	     ;; ($set-error-handler! hdls)
-	     (let ((r (if (pair? hdl)
-			  ;; since 14 jun 2021, error handlers are pushed
-			  ;; along a cell where to store the exection value
-			  ;; this removes one closure allocation of 
-			  ;; with-handler forms (see comptime/Expand/exit.scm)
-			  (let ((cell (cdr hdl)))
-			     (cell-set! cell val)
-			     (if (procedure? (car hdl))
-				 ((car hdl) cell)
-				 (unwind-until! (car hdl) cell)))
-			  ;; old form for backward compa
-			  (hdl val))))
-		;; ($set-error-handler! hdls)
-		(when (isa? val &error)
-		   (with-access::&error val (fname location)
-			 (error/location "raise"
-			    "Handler return from error"
-			    val fname location)))
-		r))
+	  (if (cell? (cdr handlers))
+	      (raise/cell handlers)
+	      (let* ((hdls (cdr handlers))
+		     (hdl (car handlers)))
+		 ;; ($set-error-handler! hdls)
+		 (let ((r (if (pair? hdl)
+			      (raise/cell hdl)
+			      ;; old form for backward compa
+			      (hdl val))))
+		    ;; ($set-error-handler! hdls)
+		    (when (isa? val &error)
+		       (with-access::&error val (fname location)
+			  (error/location "raise"
+			     "Handler return from error"
+			     val fname location)))
+		    r)))
 	  (begin
 	     (default-exception-handler val)
 	     (the_failure "raise" "uncaught exception" val)))))
@@ -1368,7 +1377,7 @@
 ;*    env-get-error-handler ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (env-get-error-handler env)
-   (env-get-error-handler env))
+   ($env-get-error-handler env))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-interrupt ...                                             */

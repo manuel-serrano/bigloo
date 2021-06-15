@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sun Aug 25 09:13:12 2019 (serrano)                */
+;*    Last change :  Tue Jun 15 09:08:31 2021 (serrano)                */
 ;*    Copyright   :  2002-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -307,6 +307,13 @@
 	 
 	 (match-case x
 	    ((?- (?exit) . (and ?body (not ())))
+	     (evepairify
+		(if (find-in-body exit body)
+		    `(bind-exit (,exit)
+			,(e (expand-progn body) e))
+		    (e `(begin ,@body) e))
+		x))
+	    ((?- :env ?env (?exit) . (and ?body (not ())))
 	     (evepairify
 		(if (find-in-body exit body)
 		    `(bind-exit (,exit)

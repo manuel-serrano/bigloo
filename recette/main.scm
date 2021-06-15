@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/main.scm                     */
+;*    serrano/prgm/project/bigloo/bigloo/recette/main.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Sun Jul  9 09:35:03 2017 (serrano)                */
+;*    Last change :  Tue Jun 15 08:45:09 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -157,15 +157,10 @@
 	 (display "wanted [")
 	 (write-circle wanted)
 	 (print "]"))
-      ;; reset error notifiers
-      (cond-expand
-	 (bigloo2.7
-	  #f)
-	 (else
-	  '(set! *error-notifier* #f)))
       (bind-exit (esc)
 	 (with-exception-handler
 	    (lambda (e)
+	       (tprint "e=" e)
 	       (newline (current-error-port))
 	       (test-fail err)
 	       (flush-output-port (current-output-port))
