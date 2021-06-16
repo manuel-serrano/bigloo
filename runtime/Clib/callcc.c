@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Sat Dec  7 18:55:45 2019 (serrano)                */
+/*    Last change :  Wed Jun 16 07:38:26 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -78,7 +78,7 @@ wind_stack( struct befored *bfl ) {
 /*    apply_continuation ...                                           */
 /*    -------------------------------------------------------------    */
 /*    When applying a continuation, we first unwind the stack.         */
-/*    Either we reached the stack bottom and we have to restore        */
+/*    Either we reach the stack bottom and we have to restore          */
 /*    the whole stack. Either, we find the escape procedure            */
 /*    and we stop.                                                     */
 /*---------------------------------------------------------------------*/

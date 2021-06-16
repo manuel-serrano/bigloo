@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jun 14 16:00:30 2021 (serrano)                */
+/*    Last change :  Wed Jun 16 07:41:54 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2133,20 +2133,31 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_SET_TOP_OF_FRAME( env, _top ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env ) = (_top))
 
+/* #define BGL_ENV_PUSH_TRACE( env, nm, loc ) \                        */
+/*    struct bgl_dframe bgl_dframe; \                                  */
+/*    struct bgl_dframe *bgl_link; \                                   */
+/*     \                                                               */
+/*    bgl_dframe.name = nm; \                                          */
+/*    bgl_dframe.location = loc; \                                     */
+/*    bgl_link = bgl_dframe.link = BGL_ENV_GET_TOP_OF_FRAME( env ); \  */
+/*    BGL_ENV_SET_TOP_OF_FRAME( env, &bgl_dframe );                    */
+   
 #define BGL_ENV_PUSH_TRACE( env, nm, loc ) \
    struct bgl_dframe bgl_dframe; \
-   struct bgl_dframe *bgl_link; \
     \
    bgl_dframe.name = nm; \
    bgl_dframe.location = loc; \
-   bgl_link = bgl_dframe.link = BGL_ENV_GET_TOP_OF_FRAME( env ); \
+   bgl_dframe.link = BGL_ENV_GET_TOP_OF_FRAME( env ); \
    BGL_ENV_SET_TOP_OF_FRAME( env, &bgl_dframe );      
    
 #define BGL_ENV_PUSH_TRACE_NAME( env, name ) \
    BGL_ENV_PUSH_TRACE( env, name, BUNSPEC )
    
+/* #define BGL_ENV_POP_TRACE( env ) \                                  */
+/*    BGL_ENV_SET_TOP_OF_FRAME( env, bgl_link );                       */
+/*                                                                     */
 #define BGL_ENV_POP_TRACE( env ) \
-   BGL_ENV_SET_TOP_OF_FRAME( env, bgl_link );
+   BGL_ENV_SET_TOP_OF_FRAME( env, bgl_dframe.link );
 
 #define BGL_ENV_SET_TRACE_NAME( env, nm ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env )->name = nm)

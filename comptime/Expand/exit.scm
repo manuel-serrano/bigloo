@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Jun 15 08:58:08 2021 (serrano)                */
+;*    Last change :  Wed Jun 16 14:38:37 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -145,12 +145,27 @@
 	    (val (mark-symbol-non-user! (gensym 'val)))
 	    (res (mark-symbol-non-user! (gensym 'res))))
 	 (let ((new `(set-exit (,an-exit)
-			(let ((,env (current-dynamic-env)))
+			(begin
 			   ($env-push-exit! ,env ,an-exit 1)
 			   (let ((,exit ($env-get-exitd-top ,env)))
 			      (let ((,res ,body))
 				 ($env-pop-exit! ,env)
 				 ,res))))))
+	    (replace! x new))))
+
+   (define (env-exit-expansion env exit body onexit)
+      (let ((an-exit (mark-symbol-non-user! (gensym 'an_exit)))
+	    (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
+	    (val (mark-symbol-non-user! (gensym 'val)))
+	    (res (mark-symbol-non-user! (gensym 'res))))
+	 (let ((new `(set-exit (,an-exit)
+			(begin
+			   ($env-push-exit! ,env ,an-exit 1)
+			   (let ((,exit ($env-get-exitd-top ,env)))
+			      (let ((,res ,body))
+				 ($env-pop-exit! ,env)
+				 ,res)))
+			,onexit)))
 	    (replace! x new))))
    
    (match-case x
@@ -196,6 +211,15 @@
 		 (ebody (e body e)))
 	     (set! internal-definition? old-internal)
 	     (env-expansion env exit ebody))))
+      ((?- :env ?env (?exit) ?body ?onexit)
+       ;; only used by with-handler
+       (let ((old-internal internal-definition?))
+	  (set! internal-definition? #t)
+	  (let* ((e (internal-begin-expander e))
+		 (ebody (e body e))
+		 (eonexit (e onexit e)))
+	     (set! internal-definition? old-internal)
+	     (env-exit-expansion env exit ebody eonexit))))
       (else
        (error #f "Illegal `bind-exit' form" x))))
 

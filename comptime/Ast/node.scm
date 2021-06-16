@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/node.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/node.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Tue Jun 27 09:10:26 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 14:59:48 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -251,7 +251,9 @@
 	      ;; the variable of the set-exit
 	      var::var
 	      ;; and the body
-	      body::node)
+	      body::node
+	      ;; onexit
+	      onexit::node)
 
 	   ;; the jump-exit construction
 	   (final-class jump-ex-it::node

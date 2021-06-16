@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/exit.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/exit.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 14:19:17 1995                          */
-;*    Last change :  Wed Apr 20 08:18:50 2016 (serrano)                */
+;*    Last change :  Wed Jun 16 14:44:42 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `set-exit' and `jmp-exit' management.                        */
 ;*=====================================================================*/
@@ -37,7 +37,7 @@
    
    (let ((loc (find-location/loc exp loc)))
       (match-case exp
-         ((?- (?exit) . ?body)
+         ((?- (?exit) ?body)
           (let* ((hdlg-name  (mark-symbol-non-user!
 				(make-anonymous-name loc "exit")))
                  (hdlg-sexp `(labels ((,hdlg-name () #unspecified))
@@ -45,8 +45,12 @@
                  (hdlg-node  (sexp->node hdlg-sexp stack loc site))
                  (hdlg-fun   (car (let-fun-locals hdlg-node)))
                  (exit       (make-local-exit exit hdlg-fun))
-                 (body       (sexp->node (normalize-progn body)
-				(cons exit stack) loc 'value))
+                 (body       (sexp->node body (cons exit stack) loc 'value))
+		 (onexit     (instantiate::pragma
+				(loc loc)
+				(type *_*)
+				(format "BGL_EXIT_VALUE()")
+				(expr* '())))
                  (exit-body  (instantiate::set-ex-it
 				(loc loc)
 				(type (strict-node-type *obj* *_*))
@@ -54,7 +58,37 @@
 					(type (strict-node-type *_* *exit*))
 					(loc loc)
 					(variable exit)))
-				(body body))))
+				(body body)
+				(onexit onexit))))
+	     ;; we have to mark that the local is a user function other
+	     ;; bdb will get confused and will consider the handling function
+	     ;; as a C function
+	     (local-user?-set! hdlg-fun #t)
+             ;; hdlg-name can't be inlined otherwise the `set-exit'
+	     ;; is not correct (due to C setjmp/longjmp semantic)
+	     (sfun-class-set! (local-value hdlg-fun) 'snifun)
+	     (sfun-body-set!  (local-value hdlg-fun) exit-body)
+             hdlg-node))
+	 ((?- (?exit) ?body ?onexit)
+	  ;; new form introduced Jun 2021
+          (let* ((hdlg-name  (mark-symbol-non-user!
+				(make-anonymous-name loc "exit")))
+                 (hdlg-sexp `(labels ((,hdlg-name () #unspecified))
+                                (,hdlg-name)))
+                 (hdlg-node  (sexp->node hdlg-sexp stack loc site))
+                 (hdlg-fun   (car (let-fun-locals hdlg-node)))
+                 (exit       (make-local-exit exit hdlg-fun))
+                 (body       (sexp->node body (cons exit stack) loc 'value))
+                 (onexit     (sexp->node onexit stack loc 'value))
+                 (exit-body  (instantiate::set-ex-it
+				(loc loc)
+				(type (strict-node-type *obj* *_*))
+				(var (instantiate::var
+					(type (strict-node-type *_* *exit*))
+					(loc loc)
+					(variable exit)))
+				(body body)
+				(onexit onexit))))
 	     ;; we have to mark that the local is a user function other
 	     ;; bdb will get confused and will consider the handling function
 	     ;; as a C function

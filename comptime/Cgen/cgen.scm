@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Sun Dec 22 18:23:24 2019 (serrano)                */
+;*    Last change :  Wed Jun 16 15:08:35 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -726,7 +726,7 @@
    (trace (cgen 3)
 	  "(node->cop node::set-ex-it kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::set-ex-it node (var body loc)
+   (with-access::set-ex-it node (var body onexit loc)
       (let ((exit (var-variable var)))
 	 (set-variable-name! exit)
 	 (instantiate::csequence
@@ -744,13 +744,7 @@
 		      (exit (instantiate::varc
 			       (loc loc)
 			       (variable exit)))
-		      (jump-value (node->cop
-				     (instantiate::pragma
-					(loc loc)
-					(type *_*)
-					(format "BGL_EXIT_VALUE()")
-					(expr* '()))
-				     kont inpushexit))
+		      (jump-value (node->cop onexit kont inpushexit))
 		      (body (instantiate::csequence
 			       (loc loc)
 			       (cops
