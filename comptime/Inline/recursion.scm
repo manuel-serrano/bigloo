@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Tue Feb 26 10:59:18 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:04:27 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -374,7 +374,8 @@
 ;*    find-recursive-calls ::set-ex-it ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (find-recursive-calls node::set-ex-it var tail tres)
-   (find-recursive-calls (set-ex-it-body node) var #f tres))
+   (find-recursive-calls (set-ex-it-body node) var #f
+      (find-recursive-calls (set-ex-it-onexit node) var #f tres)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::jump-ex-it ...                            */

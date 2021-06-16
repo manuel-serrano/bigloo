@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Tue Feb 26 13:54:27 2019 (serrano)                */
+;*    Last change :  Wed Jun 16 15:53:59 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -236,6 +236,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (do-substitute! node::set-ex-it site)
    (set-ex-it-body-set! node (do-substitute! (set-ex-it-body node) site))
+   (set-ex-it-onexit-set! node (do-substitute! (set-ex-it-onexit node) site))
    node)
 
 ;*---------------------------------------------------------------------*/

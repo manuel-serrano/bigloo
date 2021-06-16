@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Wed Mar 14 19:22:42 2018 (serrano)                */
-;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:57:11 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
 ;*=====================================================================*/
@@ -461,8 +461,9 @@
 ;*    node-setup! ::set-ex-it ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (node-setup! body)
+      (node-setup! onexit)
       (node-setup! var)
       (widen!::reshaped-local (var-variable var))
       (widen!::set-ex-it/Cinfo node

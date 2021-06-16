@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/node.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Globalize/node.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Wed May 31 10:38:06 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 16:02:49 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -444,7 +444,7 @@
 ;*    glo! ::set-ex-it ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::set-ex-it integrator)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (let ((hdlg (sexit-handler (local-value (var-variable var)))))
 	 (trace (globalize 2)
 		"# glo!   :" (shape node) #\Newline
@@ -453,6 +453,7 @@
 	 (when (sfun/Ginfo-G? (local-value hdlg))
 	    (sexit-detached?-set! (local-value (var-variable var)) #t))
 	 (set! body (glo! body integrator))
+	 (set! onexit (glo! onexit integrator))
 	 node)))
 
 ;*---------------------------------------------------------------------*/

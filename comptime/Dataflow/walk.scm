@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Dataflow/walk.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Dataflow/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Fri Apr 21 18:43:50 2017 (serrano)                */
-;*    Copyright   :  2010-17 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 15:59:33 2021 (serrano)                */
+;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
 ;*    For instance, for an expression such as (if (pair? x) then else),*/
@@ -270,6 +270,7 @@
 (define-method (dataflow-node! node::set-ex-it env)
    (with-access::set-ex-it node (var)
       (dataflow-node! (set-ex-it-body node) env)
+      (dataflow-node! (set-ex-it-onexit node) env)
       '()))
 
 ;*---------------------------------------------------------------------*/

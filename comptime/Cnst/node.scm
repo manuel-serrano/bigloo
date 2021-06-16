@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cnst/node.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/node.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Wed Jun  7 15:36:12 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:58:46 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -226,8 +226,9 @@
 ;*    cnst! ::set-ex-it ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (cnst! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (set! body (cnst! body))
+      (set! onexit (cnst! onexit))
       node))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Tue Feb 26 13:42:21 2019 (serrano)                */
+;*    Last change :  Wed Jun 16 15:53:32 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
 ;*    global variables and remove all globals which are not            */
@@ -318,6 +318,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-remove! node::set-ex-it)
    (set-ex-it-body-set! node (node-remove! (set-ex-it-body node)))
+   (set-ex-it-onexit-set! node (node-remove! (set-ex-it-onexit node)))
    (if (<=fx (local-occurrence (var-variable (set-ex-it-var node))) 0)
        (set-ex-it-body node)
        node))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/occur.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/occur.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Jun  7 18:15:37 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 15:53:11 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -243,6 +243,7 @@
 	 (set! occurrence 0)
 	 (set! occurrencew 0)
 	 (when (eq? access 'write) (set! access 'read)))
+      (occur-node! (set-ex-it-onexit node))
       (occur-node! (set-ex-it-body node))))
 
 ;*---------------------------------------------------------------------*/

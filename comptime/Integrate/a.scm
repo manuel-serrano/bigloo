@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Mon Jun 14 08:51:52 2021 (serrano)                */
+;*    Last change :  Wed Jun 16 16:05:53 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -456,7 +456,7 @@
 ;*    node-A ::set-ex-it ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::set-ex-it host k A)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (let* ((exit (var-variable var))
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
@@ -465,7 +465,7 @@
 		    (not (sexit-detached? (local-value exit))))
 	    (with-access::sfun/Iinfo (local-value hdlg) (forceG?)
 	       (set! forceG? #t))))
-      (node-A body host k A)))
+      (node-A body host k (node-A onexit host k A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::jump-ex-it ...                                          */

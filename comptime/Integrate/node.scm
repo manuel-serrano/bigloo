@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/node.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Integrate/node.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Fri Apr 21 18:44:42 2017 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:07:15 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -387,7 +387,8 @@
 ;*    glo! ::set-ex-it ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::set-ex-it integrator)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
+      (set! onexit (glo! onexit integrator))
       (set! body (glo! body integrator))
       node))
 

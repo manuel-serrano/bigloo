@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Tue Feb 26 13:54:42 2019 (serrano)                */
+;*    Last change :  Wed Jun 16 15:55:31 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atom (e.g., bool, number)     */
@@ -217,6 +217,7 @@
 ;*    node-beta! ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::set-ex-it stack)
+   (set-ex-it-onexit-set! node (node-beta! (set-ex-it-onexit node) stack))
    (set-ex-it-body-set! node (node-beta! (set-ex-it-body node) stack))
    node)
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Effect/cgraph.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Effect/cgraph.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 15 10:55:41 1995                          */
-;*    Last change :  Fri Apr 21 18:47:13 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:59:55 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the call-graph                                */
 ;*=====================================================================*/
@@ -165,6 +165,7 @@
 (define-method (call-graph! node::set-ex-it owner)
    (with-access::set-ex-it node (var)
       (mark-side-effect! owner)
+      (call-graph! (set-ex-it-onexit node) owner)
       (call-graph! (set-ex-it-body node) owner)))
 
 ;*---------------------------------------------------------------------*/

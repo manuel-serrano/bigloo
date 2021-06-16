@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/gn.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Globalize/gn.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:54:22 1995                          */
-;*    Last change :  Fri Apr 21 18:47:39 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:02:00 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute the G0 and G1 properties which is defined as follow:  */
 ;*                                                                     */
@@ -200,8 +200,8 @@
 ;*    E ::set-ex-it ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (E node::set-ex-it caller g)
-   (with-access::set-ex-it node (body)
-      (E body caller g)))
+   (with-access::set-ex-it node (body onexit)
+      (E body caller (E onexit caller g))))
 
 ;*---------------------------------------------------------------------*/
 ;*    E ::jump-ex-it ...                                               */

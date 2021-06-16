@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Coerce/coerce.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Coerce/coerce.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Fri Apr 21 18:46:24 2017 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:59:06 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -469,10 +469,11 @@
 ;*    coerce! ::set-ex-it ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::set-ex-it caller to safe)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (set! var (coerce! var caller *exit* safe))
       (pvariable-proto 3 (var-variable var))
       (set! body (coerce! body caller to safe))
+      (set! onexit (coerce! onexit caller to safe))
       node))
 
 ;*---------------------------------------------------------------------*/

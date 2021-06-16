@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/toccur.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/toccur.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Apr 21 18:48:38 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 15:54:21 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -284,8 +284,8 @@
 ;*    occur-node! ::set-ex-it ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::set-ex-it)
-   (with-access::set-ex-it node (var)
-      (occur-node! (set-ex-it-body node))))
+   (occur-node! (set-ex-it-onexit node))
+   (occur-node! (set-ex-it-body node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    occur-node! ::jump-ex-it ...                                     */

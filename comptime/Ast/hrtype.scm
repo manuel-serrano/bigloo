@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/hrtype.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/hrtype.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Fri Apr 21 18:37:11 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 15:52:04 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -338,9 +338,10 @@
 ;*    hrtype-node! ::set-ex-it ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (hrtype-node! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (restore-variable-type! (var-variable var))
       (hrtype-node! body)
+      (hrtype-node! onexit)
       (hrtype-node! var))
    (call-next-method))
 

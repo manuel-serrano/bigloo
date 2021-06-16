@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sun Apr 29 19:18:56 2018 (serrano)                */
-;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 17:11:23 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Common sub-expression elimination.                               */
 ;*=====================================================================*/
@@ -227,11 +227,14 @@
 ;*    node-cse! ::set-ex-it ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cse! node::set-ex-it stack)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (multiple-value-bind (reset nbody)
 	 (node-cse! body '())
 	 (set! body nbody)
-	 (values reset node))))
+	 (multiple-value-bind (reset' nonexit)
+	    (node-cse! onexit '())
+	    (set! onexit nonexit)
+	    (values (or reset reset') node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cse! ::jump-ex-it ...                                       */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/sbeta.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/sbeta.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Fri Jun  9 10:19:08 2017 (serrano)                */
-;*    Copyright   :  2000-17 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 17:11:59 2021 (serrano)                */
+;*    Copyright   :  2000-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -403,8 +403,9 @@
 ;*    node-beta! ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (set! body (node-beta! body))
+      (set! onexit (node-beta! onexit))
       node))
 
 ;*---------------------------------------------------------------------*/

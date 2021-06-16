@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/walk.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/walk.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  6 17:48:38 2013                          */
-;*    Last change :  Fri Apr 21 18:47:51 2017 (serrano)                */
-;*    Copyright   :  2013-17 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 15:54:45 2021 (serrano)                */
+;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Ast walkers                                                      */
 ;*=====================================================================*/
@@ -301,7 +301,7 @@
 (gen-walks setq var value)
 (gen-walks conditional test true false)
 (gen-walks fail proc msg obj)
-(gen-walks set-ex-it body)
+(gen-walks set-ex-it body onexit)
 (gen-walks jump-ex-it exit value)
 (gen-walks retblock body)
 (gen-walks return value)

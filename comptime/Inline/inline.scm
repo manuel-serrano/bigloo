@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Tue Feb 26 10:50:34 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:03:27 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -233,6 +233,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::set-ex-it kfactor stack)
    (set-ex-it-body-set! node (inline-node (set-ex-it-body node) kfactor stack))
+   (set-ex-it-onexit-set! node (inline-node (set-ex-it-onexit node) kfactor stack))
    node)
 
 ;*---------------------------------------------------------------------*/

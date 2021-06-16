@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Initflow/walk.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Initflow/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Fri Apr 21 18:45:46 2017 (serrano)                */
-;*    Copyright   :  2011-17 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 16:03:09 2021 (serrano)                */
+;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
 ;*    init property of a global can be one of:                         */
@@ -296,7 +296,8 @@
 ;*    initflow-node ::set-ex-it ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (initflow-node node::set-ex-it e)
-   (with-access::set-ex-it node (body)
+   (with-access::set-ex-it node (body onexit)
+      (initflow-node onexit e)
       (initflow-node body e)))
 
 ;*---------------------------------------------------------------------*/

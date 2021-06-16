@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/1occ.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/1occ.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sun Jul 23 08:46:11 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 17:10:01 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -342,11 +342,14 @@
 ;*    node-1occ! ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (node-1occ! node::set-ex-it 1-exp*)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (multiple-value-bind (reset nbody)
 	 (node-1occ! body 1-exp*)
 	 (set! body nbody)
-	 (values reset node))))
+	 (multiple-value-bind (reset' nonexit)
+	    (node-1occ! onexit 1-exp*)
+	    (set! onexit nonexit)
+	    (values (or reset reset') node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-1occ! ::jump-ex-it ...                                      */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/escape.scm        */
+;*    .../prgm/project/bigloo/bigloo/comptime/Globalize/escape.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:02:16 1996                          */
-;*    Last change :  Fri Apr 21 18:45:55 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:01:09 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The escape property computation                                  */
 ;*=====================================================================*/
@@ -228,8 +228,9 @@
 ;*    escape! ::set-ex-it ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (escape! node::set-ex-it o)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (widen!::sexit/Ginfo (local-value (var-variable var)))
+      (escape! onexit o)
       (escape! body o)))
 
 ;*---------------------------------------------------------------------*/

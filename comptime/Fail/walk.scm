@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Fail/walk.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Fail/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Apr 21 18:44:36 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:00:49 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of fail in debugging mode.                      */
 ;*    -------------------------------------------------------------    */
@@ -217,6 +217,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (fail-node! node::set-ex-it)
    (set-ex-it-body-set! node (fail-node! (set-ex-it-body node)))
+   (set-ex-it-onexit-set! node (fail-node! (set-ex-it-onexit node)))
    node)
 
 ;*---------------------------------------------------------------------*/

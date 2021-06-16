@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Bdb/bdb_emit.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Bdb/bdb_emit.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Fri Apr 21 18:44:14 2017 (serrano)                */
-;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:55:01 2021 (serrano)                */
+;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
 ;*=====================================================================*/
@@ -295,7 +295,8 @@
 ;*    bdb! ::set-ex-it ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (bdb! node::set-ex-it)
-   (with-access::set-ex-it node (body)
+   (with-access::set-ex-it node (body onexit)
+      (bdb! onexit)
       (bdb! body)))
 
 ;*---------------------------------------------------------------------*/

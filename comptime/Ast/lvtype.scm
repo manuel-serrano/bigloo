@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/lvtype.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/lvtype.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Sun Feb 19 21:17:45 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 15:52:50 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -213,8 +213,9 @@
 ;*    lvtype-node! ::set-ex-it ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (lvtype-node! body)
+      (lvtype-node! onexit)
       (lvtype-node! var)))
 
 ;*---------------------------------------------------------------------*/

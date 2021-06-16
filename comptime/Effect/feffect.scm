@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Effect/feffect.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Effect/feffect.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Wed Jun  7 05:40:24 2017 (serrano)                */
-;*    Copyright   :  2003-17 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 16:00:13 2021 (serrano)                */
+;*    Copyright   :  2003-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
 ;*    does it set a vector or a global variable, ...).                 */
@@ -280,6 +280,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (body-effect! node::set-ex-it effect::feffect)
    (with-access::set-ex-it node (var)
+      (body-effect! (set-ex-it-onexit node) effect)
       (body-effect! (set-ex-it-body node) effect)))
 
 ;*---------------------------------------------------------------------*/

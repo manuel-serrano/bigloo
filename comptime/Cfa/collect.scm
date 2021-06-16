@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/collect.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/collect.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Fri Apr 21 18:48:49 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:56:42 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Collect all types and allocs approximations                      */
 ;*=====================================================================*/
@@ -350,7 +350,8 @@
 ;*    node-collect! ::set-ex-it ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (node-collect! node::set-ex-it owner)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
+      (node-collect! onexit owner)
       (node-collect! body owner)))
 
 ;*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/specialize.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Cfa/specialize.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Sat Dec  9 08:53:46 2017 (serrano)                */
-;*    Copyright   :  1997-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:57:38 2021 (serrano)                */
+;*    Copyright   :  1997-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What it does is, for each generic     */
@@ -481,8 +481,9 @@
 ;*    patch! ::set-ex-it ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (set! body (patch! body))
+      (set! onexit (patch! onexit))
       (patch! var)
       node))
 

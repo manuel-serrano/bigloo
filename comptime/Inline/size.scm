@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Sat Apr 21 18:06:03 2018 (serrano)                */
-;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:05:13 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
 ;*=====================================================================*/
@@ -228,7 +228,9 @@
 ;*    node-size ::set-ex-it ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (node-size node::set-ex-it)
-   (+fx 2 (node-size (set-ex-it-body node))))
+   (+fx 1 
+      (+fx (node-size (set-ex-it-body node))
+	 (node-size (set-ex-it-onexit node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-size ::jump-ex-it ...                                       */

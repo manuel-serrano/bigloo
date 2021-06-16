@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/alphatize.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Ast/alphatize.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Jun  7 18:06:31 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 15:49:38 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -494,11 +494,12 @@
 	  (old-hdlg   (sexit-handler old-exit))
 	  (alpha-hdlg (variable-fast-alpha old-hdlg))
 	  (new-var    (make-local-sexit (local-id old-var)
-					(local-type old-var)
-					(duplicate::sexit old-exit
-					   (handler alpha-hdlg))))
-								 
-	  (old-body   (set-ex-it-body node)))
+			 (local-type old-var)
+			 (duplicate::sexit old-exit
+			    (handler alpha-hdlg))))
+	  
+	  (old-body   (set-ex-it-body node))
+	  (old-onexit (set-ex-it-onexit node)))
       (local-user?-set! new-var (local-user? old-var))
       (duplicate::set-ex-it node
 	 (loc (get-location node loc))
@@ -506,9 +507,10 @@
 		 (loc (get-location node loc))
 		 (variable new-var)))
 	 (body (alphatize (list old-var)
-			  (list new-var)
-			  (get-location node loc)
-			  old-body)))))
+		  (list new-var)
+		  (get-location node loc)
+		  old-body))
+	 (onexit (do-alphatize old-onexit loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::jump-ex-it ...                                    */

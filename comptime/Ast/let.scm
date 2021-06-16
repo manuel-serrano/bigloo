@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sat Jan 11 10:10:36 2020 (serrano)                */
+;*    Last change :  Wed Jun 16 15:52:32 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -333,9 +333,10 @@
 				(safe-rec-val-optim? (cdr binding) vars))
 			 bindings))))
 	     ((set-ex-it? val)
-	      (with-access::set-ex-it val (var body)
+	      (with-access::set-ex-it val (var body onexit)
 		 (and (safe-rec-val-optim? var vars)
-		      (safe-rec-val-optim? body vars))))
+		      (safe-rec-val-optim? body vars)
+		      (safe-rec-val-optim? onexit vars))))
 	     ((jump-ex-it? val)
 	      (with-access::jump-ex-it val (exit value)
 		 (and (safe-rec-val-optim? exit vars)

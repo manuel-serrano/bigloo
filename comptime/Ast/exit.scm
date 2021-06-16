@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 14:19:17 1995                          */
-;*    Last change :  Wed Jun 16 14:44:42 2021 (serrano)                */
+;*    Last change :  Wed Jun 16 17:34:27 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `set-exit' and `jmp-exit' management.                        */
 ;*=====================================================================*/
@@ -48,7 +48,7 @@
                  (body       (sexp->node body (cons exit stack) loc 'value))
 		 (onexit     (instantiate::pragma
 				(loc loc)
-				(type *_*)
+				(type (strict-node-type *obj* *_*))
 				(format "BGL_EXIT_VALUE()")
 				(expr* '())))
                  (exit-body  (instantiate::set-ex-it

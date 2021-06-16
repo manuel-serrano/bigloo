@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Inline/loop.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Inline/loop.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 11 09:27:29 1996                          */
-;*    Last change :  Fri Apr 21 18:40:40 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:03:43 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The loop unrolling module.                                       */
 ;*=====================================================================*/
@@ -163,7 +163,8 @@
 ;*    find-let-fun? ::set-ex-it ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (find-let-fun? node::set-ex-it)
-   (find-let-fun? (set-ex-it-body node)))
+   (or (find-let-fun? (set-ex-it-body node))
+       (find-let-fun? (set-ex-it-onexit node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-let-fun? ::jump-ex-it ...                                   */
@@ -355,8 +356,9 @@
 ;*    nest-loop! ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (nest-loop! node::set-ex-it var nester)
-   (with-access::set-ex-it node (body)
+   (with-access::set-ex-it node (body onexit)
       (set! body (nest-loop! body var nester))
+      (set! onexit (nest-loop! onexit var nester))
       node))
 
 ;*---------------------------------------------------------------------*/

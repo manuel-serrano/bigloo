@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Wed Jan  8 13:04:14 2020 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 17:15:16 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -409,6 +409,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (trace-node node::set-ex-it stack level)
    (set-ex-it-body-set! node (trace-node (set-ex-it-body node) stack level))
+   (set-ex-it-onexit-set! node (trace-node (set-ex-it-onexit node) stack level))
    node)
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Thu Jan 24 10:04:47 2019 (serrano)                */
-;*    Copyright   :  2000-19 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 15:51:39 2021 (serrano)                */
+;*    Copyright   :  2000-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -241,9 +241,10 @@
 ;*    check-node-type ::set-ex-it ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-type node::set-ex-it)
-   (with-access::set-ex-it node (type var body)
+   (with-access::set-ex-it node (var type body onexit)
       (check-node-type var)
       (check-node-type body)
+      (check-node-type onexit)
       (unless (eqtype? type (get-type node #f))
 	 (err node type (node-type body)))))
 

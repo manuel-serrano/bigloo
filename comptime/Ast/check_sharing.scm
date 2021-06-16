@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/check_sharing.scm       */
+;*    .../project/bigloo/bigloo/comptime/Ast/check_sharing.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Mon Nov 11 09:41:41 2013 (serrano)                */
-;*    Copyright   :  2000-13 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 15:51:24 2021 (serrano)                */
+;*    Copyright   :  2000-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that appears several times (because of illegal sharing)    */
@@ -208,7 +208,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-sharing node::set-ex-it context)
    (call-next-method)
-   (check-node-sharing (set-ex-it-body node) node))
+   (check-node-sharing (set-ex-it-body node) node)
+   (check-node-sharing (set-ex-it-onexit node) node))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-node-sharing ::jump-ex-it ...                              */

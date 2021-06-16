@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/cond.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/cond.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Tue Jul 18 08:21:30 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 17:10:27 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -281,8 +281,9 @@
 ;*    node-cond! ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cond! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (set! body (node-cond! body))
+      (set! onexit (node-cond! onexit))
       (set! var (node-cond! var))
       node))
 

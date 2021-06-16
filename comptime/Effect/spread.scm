@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Effect/spread.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Effect/spread.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 11:36:01 1996                          */
-;*    Last change :  Wed Jun  7 06:04:31 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:00:31 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We spread the computed side-effect properties                    */
 ;*=====================================================================*/
@@ -171,7 +171,8 @@
 ;*    spread-side-effect! ::set-ex-it ...                              */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::set-ex-it)
-   (with-access::set-ex-it node (body)
+   (with-access::set-ex-it node (body onexit)
+      (spread-side-effect! onexit)
       (spread-side-effect! body)))
 
 ;*---------------------------------------------------------------------*/

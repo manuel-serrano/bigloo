@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/cto.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Integrate/cto.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 25 15:52:39 1995                          */
-;*    Last change :  Fri Apr 21 18:48:28 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:06:21 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the `cto' property.                           */
 ;*=====================================================================*/
@@ -200,7 +200,8 @@
 ;*    set-cto! ::set-ex-it ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (set-cto! node::set-ex-it local)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
+      (set-cto! onexit local)
       (set-cto! body local)))
 
 ;*---------------------------------------------------------------------*/

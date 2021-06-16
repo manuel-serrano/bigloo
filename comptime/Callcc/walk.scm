@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Tue Feb 26 13:55:25 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:55:45 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
 ;*    in cells.                                                        */
@@ -319,6 +319,7 @@
 ;*    callcc! ::set-ex-it ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (callcc! node::set-ex-it)
+   (set-ex-it-onexit-set! node (callcc! (set-ex-it-onexit node)))
    (set-ex-it-body-set! node (callcc! (set-ex-it-body node)))
    node)
 

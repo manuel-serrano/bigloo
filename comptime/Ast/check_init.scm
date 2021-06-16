@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/check_init.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Ast/check_init.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 11:02:16 1999                          */
-;*    Last change :  Fri Aug 28 08:26:00 2015 (serrano)                */
+;*    Last change :  Wed Jun 16 15:51:08 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module checks that global variables are not used before     */
 ;*    being initialized. This function implements a walk thru          */
@@ -191,7 +191,8 @@
 ;*    check-init ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (check-init node::set-ex-it)
-   (check-init (set-ex-it-body node)))
+   (check-init (set-ex-it-body node))
+   (check-init (set-ex-it-onexit node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-init ::jump-ex-it ...                                      */

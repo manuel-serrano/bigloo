@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/ltype.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/ltype.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Apr 21 18:42:41 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:56:58 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election for light closures.                                */
 ;*=====================================================================*/
@@ -281,10 +281,11 @@
 ;*    type-node! ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (let ((v (var-variable var)))
 	 (type-variable! (local-value v) v))
       (type-node! body)
+      (type-node! onexit)
       (type-node! var)))
 
 ;*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/cfa.scm                 */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/cfa.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Wed May 31 15:23:03 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:56:19 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
 ;*=====================================================================*/
@@ -330,8 +330,9 @@
 ;*    cfa! ::set-ex-it/Cinfo ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::set-ex-it/Cinfo)
-   (with-access::set-ex-it/Cinfo node (approx body)
+   (with-access::set-ex-it/Cinfo node (approx body onexit)
       (loose! (cfa! body) 'all)
+      (loose! (cfa! onexit) 'all)
       approx))
 
 ;*---------------------------------------------------------------------*/

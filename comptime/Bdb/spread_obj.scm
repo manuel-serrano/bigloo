@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Bdb/spread_obj.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Bdb/spread_obj.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Apr 21 18:45:18 2017 (serrano)                */
-;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 15:55:17 2021 (serrano)                */
+;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for Bdb we have to turn all _ type into obj type. */
 ;*=====================================================================*/
@@ -166,6 +166,7 @@
 ;*    spread-obj-node! ::set-ex-it ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-obj-node! node::set-ex-it)
+   (spread-obj-node! (set-ex-it-onexit node))
    (spread-obj-node! (set-ex-it-body node)))
 
 ;*---------------------------------------------------------------------*/

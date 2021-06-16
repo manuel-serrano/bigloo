@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/let_fun.scm       */
+;*    .../project/bigloo/bigloo/comptime/Integrate/let_fun.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 09:38:46 1995                          */
-;*    Last change :  Fri Apr 21 18:43:59 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:06:52 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which remove displaced         */
 ;*    local functions and which adds the integrated ones.              */
@@ -292,7 +292,8 @@
 ;*    displace-let-fun-node! ::set-ex-it ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (displace-let-fun-node! node::set-ex-it hosts)
-   (with-access::set-ex-it node (body)
+   (with-access::set-ex-it node (body onexit)
+      (displace-let-fun-node! onexit hosts)
       (displace-let-fun-node! body hosts)))
 
 ;*---------------------------------------------------------------------*/

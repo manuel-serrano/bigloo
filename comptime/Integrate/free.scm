@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/free.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Integrate/free.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Fri Apr 21 18:41:31 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 16:06:38 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -247,8 +247,9 @@
 ;*    node-free ::set-ex-it ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (node-free node::set-ex-it free)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (bind-variable! (var-variable var) *integrator*)
+      (node-free onexit free)
       (node-free body free)))
 
 ;*---------------------------------------------------------------------*/

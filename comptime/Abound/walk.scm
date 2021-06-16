@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Abound/walk.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Abound/walk.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Apr 21 18:41:24 2017 (serrano)                */
-;*    Copyright   :  2010-17 Manuel Serrano                            */
+;*    Last change :  Wed Jun 16 15:48:50 2021 (serrano)                */
+;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
 ;*=====================================================================*/
@@ -413,6 +413,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::set-ex-it)
    (set-ex-it-body-set! node (abound-node (set-ex-it-body node)))
+   (set-ex-it-onexit-set! node (abound-node (set-ex-it-onexit node)))
    node)
 
 ;*---------------------------------------------------------------------*/

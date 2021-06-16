@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/shrinkify.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Ast/shrinkify.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 11:09:52 1996                          */
-;*    Last change :  Fri Apr 21 18:47:26 2017 (serrano)                */
+;*    Last change :  Wed Jun 16 15:53:47 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We shrink all the ast to get rid off all the pass info for the   */
 ;*    following passes.                                                */
@@ -211,9 +211,10 @@
 ;*    shrink-node! ::set-ex-it ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (shrink-node! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (shrink-node! var)
       (shrink-node! body)
+      (shrink-node! onexit)
       #unspecified)) 
 
 ;*---------------------------------------------------------------------*/

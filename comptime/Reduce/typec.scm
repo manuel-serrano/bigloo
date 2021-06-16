@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Jan  5 19:08:29 2018 (serrano)                */
-;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 17:12:13 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -225,8 +225,9 @@
 ;*    node-typec! ::set-ex-it ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::set-ex-it)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (set! body (node-typec! body))
+      (set! onexit (node-typec! onexit))
       (set! var (node-typec! var))
       node))
 

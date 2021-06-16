@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/ftypec.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Reduce/ftypec.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Apr 21 18:43:09 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 17:11:44 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -258,8 +258,9 @@
 ;*    node-typec! ::set-ex-it ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::set-ex-it stack)
-   (with-access::set-ex-it node (var body)
+   (with-access::set-ex-it node (var body onexit)
       (set! body (node-typec! body stack))
+      (set! onexit (node-typec! onexit stack))
       (set! var (node-typec! var stack))
       node))
 
