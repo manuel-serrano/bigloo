@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Wed Jan  8 20:00:53 2020 (serrano)                */
+;*    Last change :  Fri Jun 18 13:48:46 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
@@ -296,7 +296,8 @@
 ;*    Is the variable $get-exitd-top?                                  */
 ;*---------------------------------------------------------------------*/
 (define (is-get-exitd-top? var)
-   (eq? (variable-id var) '$get-exitd-top))
+   (or (eq? (variable-id var) '$get-exitd-top)
+       (eq? (variable-id var) '$env-get-exitd-top)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cfun-non-tail-app->cop ...                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Wed Jun 16 16:05:53 2021 (serrano)                */
+;*    Last change :  Fri Jun 18 13:21:11 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -205,7 +205,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::var host k A)
    (if *optim-return-goto?*
-       (with-access::var node (variable loc)
+       (with-access::var node (variable)
 	  (let ((val (variable-value variable)))
 	     (if (isa? val svar/Iinfo)
 		 (with-access::svar/Iinfo val (xhdl)
@@ -399,8 +399,6 @@
 	    ;; not to force globalization if not tail
 	    (set! forceG?
 	       (or (not *optim-return-goto?*) (not (eq? (car k) 'tail))))
-	    (set! forceG?
-	       (not *optim-return-goto?*))
 	    (set! xhdl? #t))))
    
    (with-access::let-fun node (body)
@@ -427,6 +425,10 @@
 ;*    node-A ::let-var ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::let-var host k A)
+
+   (define (is-get-exitd-top? var)
+      (or (eq? (variable-id var) '$get-exitd-top)
+	  (eq? (variable-id var) '$env-get-exitd-top)))
    
    (define (is-get-exitd-top-app? node)
       (unless *local-exit?*
