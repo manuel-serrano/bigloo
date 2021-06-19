@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Jun 15 08:53:11 2021 (serrano)                */
+;*    Last change :  Sat Jun 19 06:31:12 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -432,6 +432,18 @@
 ;*---------------------------------------------------------------------*/
 (define (raise val)
    
+   (define (raise/denv hdl)
+      ;; since 19 jun 2021, error handlers are pushed
+      ;; along a cell where to store the exection value
+      ;; this removes one closure allocation of 
+      ;; with-handler forms (see comptime/Expand/exit.scm)
+      (let ((denv (cdr hdl))
+	    (h (car hdl)))
+	 (env-set-exitd-val! denv val)
+	 (if (procedure? h)
+	     (h denv)
+	     (unwind-until! h denv))))
+
    (define (raise/cell hdl)
       ;; since 14 jun 2021, error handlers are pushed
       ;; along a cell where to store the exection value
@@ -446,8 +458,12 @@
    
    (let ((handlers ($get-error-handler)))
       (if (pair? handlers)
-	  (if (cell? (cdr handlers))
-	      (raise/cell handlers)
+	  (cond
+	     ((dynamic-env? (cdr handlers))
+	      (raise/denv handlers))
+	     ((cell? (cdr handlers))
+	      (raise/cell handlers))
+	     (else
 	      (let* ((hdls (cdr handlers))
 		     (hdl (car handlers)))
 		 ;; ($set-error-handler! hdls)
@@ -461,7 +477,7 @@
 			  (error/location "raise"
 			     "Handler return from error"
 			     val fname location)))
-		    r)))
+		    r))))
 	  (begin
 	     (default-exception-handler val)
 	     (the_failure "raise" "uncaught exception" val)))))

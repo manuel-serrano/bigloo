@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Mon Jun 14 15:55:09 2021 (serrano)                */
+;*    Last change :  Sat Jun 19 06:33:15 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -58,6 +58,10 @@
 	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
 	    (macro $set-exitd-top!::obj (::obj) "BGL_EXITD_TOP_SET")
 	    (macro $get-exitd-val::obj () "BGL_EXITD_VAL")
+	    (macro $get-exitd-val::obj (::dynamic-env) "BGL_EXITD_VAL")
+	    (macro $set-exitd-val!::obj (::obj) "BGL_EXITD_VAL_SET")
+	    (macro $env-get-exitd-val::obj (::dynamic-env) "BGL_ENV_EXITD_VAL")
+	    (macro $env-set-exitd-val!::obj (::dynamic-env ::obj) "BGL_ENV_EXITD_VAL_SET")
 
 	    (macro $exitd-protect0::obj (::exit) "BGL_EXITD_PROTECT0")
 	    (macro $exitd-protect0-set!::void (::exit ::obj) "BGL_EXITD_PROTECT0_SET")
@@ -77,6 +81,8 @@
 
    (cond-expand (bigloo-c
 		 (export
+		    (inline env-get-exitd-val::obj ::dynamic-env)
+		    (inline env-set-exitd-val!::obj ::dynamic-env ::obj)
 		    ($exitd-mutex-profile)
 		    ($failsafe-mutex-profile))))
    
@@ -282,3 +288,12 @@
    (bigloo-c
     (define ($exitd-mutex-profile) #unspecified)
     (define ($failsafe-mutex-profile) #unspecified)))
+
+;*---------------------------------------------------------------------*/
+;*    env-get-exitd-val ...                                            */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-c
+    (define-inline (env-get-exitd-val env) ($env-get-exitd-val env))
+    (define-inline (env-set-exitd-val! env obj) ($env-set-exitd-val! env obj))))
+   
