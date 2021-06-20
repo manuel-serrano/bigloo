@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Tue Apr 17 07:59:52 2018 (serrano)                */
+/*    Last change :  Sun Jun 20 08:46:30 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -233,7 +233,7 @@ input_obj( obj_t port ) {
    char magic[ 4 ];
    size_t size;
 
-#if( defined( BIGLOO_TRACE ) )
+#if( BIGLOO_TRACE > 1 )
    PUSH_TRACE( string_to_symbol( "input_obj" ) );
 #endif
 
@@ -285,7 +285,7 @@ input_obj( obj_t port ) {
 
       res = string_to_obj( BSTRING( string ), BFALSE, BFALSE );
 
-#if( defined( BIGLOO_TRACE ) )
+#if( BIGLOO_TRACE > 1 )
       POP_TRACE();
 #endif
       return res;
@@ -315,7 +315,7 @@ input_obj( obj_t port ) {
 
       free( string );
 		
-#if( defined( BIGLOO_TRACE ) )
+#if( BIGLOO_TRACE > 1 )
       POP_TRACE(); 
 #endif
 		

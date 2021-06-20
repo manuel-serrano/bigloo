@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sat Jun 19 06:31:12 2021 (serrano)                */
+;*    Last change :  Sat Jun 19 14:22:01 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -443,7 +443,7 @@
 	 (if (procedure? h)
 	     (h denv)
 	     (unwind-until! h denv))))
-
+   
    (define (raise/cell hdl)
       ;; since 14 jun 2021, error handlers are pushed
       ;; along a cell where to store the exection value
@@ -457,7 +457,8 @@
 	     (unwind-until! h cell))))
    
    (let ((handlers ($get-error-handler)))
-      (if (pair? handlers)
+      (cond
+	 ((pair? handlers)
 	  (cond
 	     ((dynamic-env? (cdr handlers))
 	      (raise/denv handlers))
@@ -477,10 +478,13 @@
 			  (error/location "raise"
 			     "Handler return from error"
 			     val fname location)))
-		    r))))
-	  (begin
-	     (default-exception-handler val)
-	     (the_failure "raise" "uncaught exception" val)))))
+		    r)))))
+	 ((not (null? handlers))
+	  (env-set-exitd-val! (current-dynamic-env) val)
+	  (unwind-until! handlers #f))
+	 (else
+	  (default-exception-handler val)
+	  (the_failure "raise" "uncaught exception" val)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-exception-handler ...                                    */

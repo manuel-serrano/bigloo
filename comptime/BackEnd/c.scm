@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Mon Jun 14 10:34:22 2021 (serrano)                */
+;*    Last change :  Sun Jun 20 09:24:33 2021 (serrano)                */
 ;*    Copyright   :  2003-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -127,6 +127,9 @@
    ;; unsafe mode?
    (when *unsafe-library*
       (emit-unsafe-activation))
+
+   ;; debug traces
+   (emit-trace-activation)
    
    ;; the include (both Bigloo's and user's ones)
    (emit-include)

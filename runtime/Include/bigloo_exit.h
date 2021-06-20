@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Apr 17 07:40:02 2018                          */
-/*    Last change :  Tue Apr 17 07:42:42 2018 (serrano)                */
-/*    Copyright   :  2018 Manuel Serrano                               */
+/*    Last change :  Sat Jun 19 17:30:02 2021 (serrano)                */
+/*    Copyright   :  2018-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo EXITs                                                     */
 /*=====================================================================*/
@@ -78,7 +78,10 @@ extern struct ia64_rv_t ia64_getcontext (ucontext_t *) __asm__ ("getcontext");
 /*---------------------------------------------------------------------*/
 struct exitd {
    void *exit;
+#if( !defined( __ia64__ ) )
    long userp;
+#endif
+   int flags;
    obj_t stamp;
    /* protected blocks */
    union scmobj *protect0;
@@ -89,40 +92,69 @@ struct exitd {
    struct exitd *prev;
 };
 
-#define EXITD_SYSTEM 0
+/* #define EXITD_SYSTEM 0                                              */
 #define EXITD_USER 1
 #define EXITD_CALLCC 2		 
 
-#define PUSH_ENV_EXIT( env, _xit, _ser ) \
+#if 1 || (BIGLOO_TRACE > 0)
+#  define BGL_EXITD_TOP_OF_FRAME_PUSH(env) \
+     exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME(env)
+#  define BGL_EXITD_TOP_OF_FRAME_POP(env) \
+     BGL_ENV_SET_TOP_OF_FRAME(env, BGL_ENV_EXITD_TOP(env)->top_of_frame)
+#else
+#  define BGL_EXITD_TOP_OF_FRAME_PUSH(env)
+#  define BGL_EXITD_TOP_OF_FRAME_POP(env)
+#endif
+
+#if( !defined( __ia64__ ) )
+#  define BGL_EXITD_USERP_SET(_exitd,_ser) _exitd.userp = _ser
+#else
+#  define BGL_EXITD_USERP_SET(_exitd,_ser)
+#endif
+
+#define PUSH_ENV_EXIT_CALLCC(env, _xit, _ser) \
    struct exitd exitd; \
-   exitd.exit  = _xit; \
-   exitd.userp = _ser; \
+   exitd.exit = _xit; \
+   exitd.flags = 0; \
+   BGL_EXITD_USERP_SET(exitd,_ser); \
    exitd.protect0 = BFALSE; \
    exitd.protect1 = BFALSE; \
    exitd.protectn = BNIL; \
-   exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \
-   exitd.prev  = BGL_ENV_EXITD_TOP( env ); \
-   exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \
-   BGL_ENV_EXITD_TOP_SET( env, (&exitd) );
+   BGL_EXITD_TOP_OF_FRAME_PUSH(env); \
+   exitd.prev = BGL_ENV_EXITD_TOP(env); \
+   exitd.stamp = BGL_ENV_EXITD_STAMP(env); \
+   BGL_ENV_EXITD_TOP_SET(env, (&exitd));
    
-#define PUSH_EXIT( _xit, _ser ) \
-   PUSH_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV(), _xit, _ser )
+#define PUSH_ENV_EXIT(env, _xit, _ser) \
+   struct exitd exitd; \
+   exitd.exit = _xit; \
+   exitd.flags = 0; \
+   BGL_EXITD_USERP_SET(exitd,_ser); \
+   exitd.protect0 = BFALSE; \
+   exitd.protect1 = BFALSE; \
+   exitd.protectn = BNIL; \
+   BGL_EXITD_TOP_OF_FRAME_PUSH(env); \
+   exitd.prev = BGL_ENV_EXITD_TOP(env); \
+   BGL_ENV_EXITD_TOP_SET(env, (&exitd));
+   
+#define PUSH_EXIT(_xit, _ser) \
+   PUSH_ENV_EXIT(BGL_CURRENT_DYNAMIC_ENV(), _xit, _ser)
 
-#define POP_ENV_EXIT( env ) \
-   BGL_ENV_SET_TOP_OF_FRAME( env, BGL_ENV_EXITD_TOP( env )->top_of_frame); \
-   BGL_ENV_EXITD_TOP_SET( env, BGL_ENV_EXITD_TOP( env )->prev ); \
+#define POP_ENV_EXIT(env) \
+   BGL_EXITD_TOP_OF_FRAME_POP(env); \
+   BGL_ENV_EXITD_TOP_SET(env, BGL_ENV_EXITD_TOP(env)->prev)
 
 #define POP_EXIT() \
-   POP_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV() )
+   POP_ENV_EXIT(BGL_CURRENT_DYNAMIC_ENV())
 
 #define EXITD_TO_EXIT( ptr ) \
    ((struct exitd *)(ptr))->exit
 
-#define EXITD_USERP( ptr ) \
-   (((struct exitd *)(ptr))->userp != EXITD_SYSTEM)
-
-#define EXITD_CALLCCP( ptr ) \
-   (((struct exitd *)(ptr))->userp == EXITD_CALLCC)
+#if( !defined( __ia64__ ) )
+#  define EXITD_CALLCCP(ptr) (((struct exitd *)(ptr))->userp == EXITD_CALLCC)
+#else
+#  define EXITD_CALLCCP(ptr) 0
+#endif
 
 #define EXITD_STAMP( ptr ) \
    (((struct exitd *)(ptr))->stamp)

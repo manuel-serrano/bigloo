@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Mon Jun 14 10:34:08 2021 (serrano)                */
+;*    Last change :  Sun Jun 20 08:44:10 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -31,6 +31,7 @@
 	    (emit-include)
 	    (emit-debug-activation)
 	    (emit-unsafe-activation)
+	    (emit-trace-activation)
 	    (emit-main)
 	    *c-port*
 	    (emit-dlopen-init ::global ::bstring)
@@ -188,6 +189,14 @@
 (define (emit-unsafe-activation)
    (fprint *c-port* "/* unsafe mode */")
    (fprint *c-port* "#define BIGLOO_UNSAFE 1")
+   (newline *c-port*))
+
+;*---------------------------------------------------------------------*/
+;*    emit-trace-activation ...                                        */
+;*---------------------------------------------------------------------*/
+(define (emit-trace-activation)
+   (fprint *c-port* "/* traces mode */")
+   (fprint *c-port* "#define BIGLOO_TRACE " *compiler-debug-trace*)
    (newline *c-port*))
 
 ;*---------------------------------------------------------------------*/

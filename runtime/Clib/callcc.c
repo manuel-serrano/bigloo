@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Wed Jun 16 07:38:26 2021 (serrano)                */
+/*    Last change :  Sat Jun 19 17:26:24 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -276,8 +276,9 @@ call_cc( obj_t proc ) {
       char *stack_top;
       unsigned long stack_size;
       obj_t aux;
+      
       /* We push the exit taking care that it is a callcc exit. */
-      PUSH_ENV_EXIT( env, (obj_t)(&jmpbuf), EXITD_CALLCC );
+      PUSH_ENV_EXIT_CALLCC( env, (obj_t)(&jmpbuf), EXITD_CALLCC );
       
       /* sur sparc, il est indispensables de flusher les registres. */
       flush_regs_in_stack();

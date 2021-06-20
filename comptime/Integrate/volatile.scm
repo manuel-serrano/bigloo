@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 12 08:55:10 2021                          */
-;*    Last change :  Mon Jun 14 16:41:15 2021 (serrano)                */
+;*    Last change :  Sat Jun 19 08:20:55 2021 (serrano)                */
 ;*    Copyright   :  2021 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Flag as "volatile" local variables that traverses a set-exit     */
@@ -21,6 +21,7 @@
 	    ast_var
 	    ast_node
 	    ast_walk
+	    defuse_defuse
 	    tools_shape
 	    tools_speek)
    (export  (volatile!::global ::global)))
@@ -35,11 +36,20 @@
 ;*---------------------------------------------------------------------*/
 (define (volatile! global)
    (with-access::global global (value id)
-      (with-access::sfun value (body)
-	 (when (use-set-exit? body)
-	    (volatile body '()))))
+      (multiple-value-bind (def use)
+	 (defuse-sfun! value)
+	 (with-access::sfun value (body)
+	    (when (use-set-exit? body)
+	       (volatile body '())))))
    global)
 
+;*---------------------------------------------------------------------*/
+;*    volalite-sfun ...                                                */
+;*---------------------------------------------------------------------*/
+(define (volatile-sfun node env)
+   (with-access::sfun node (args body)
+      (volatile body (append args env))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    volatile ::node ...                                              */
 ;*---------------------------------------------------------------------*/
@@ -47,38 +57,57 @@
    (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
+;*    volatile ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-walk-method (volatile node::closure env)
+   (with-access::closure node (variable)
+      (with-access::variable variable (value)
+	 (volatile-sfun value env))))
+      
+;*---------------------------------------------------------------------*/
 ;*    volatile ::let-var ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (volatile node::let-var env)
    (with-access::let-var node (bindings body)
       (for-each (lambda (b)
 		   (with-access::local (car b) (volatile)
-		      (set! volatile #t)))
+		      (set! volatile #f)))
+	 bindings)
+      (for-each (lambda (b)
+		   (volatile (cdr b) env))
 	 bindings)
       (volatile body (append bindings env))))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    volatile ::let-fun ...                                           *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-walk-method (volatile node::let-fun env)                    */
-;*    (with-access::let-fun node (locals body)                         */
-;*       (for-each (lambda (l)                                         */
-;* 		   (with-access::local l (value)                       */
-;* 		      (with-access::sfun value (body)                  */
-;* 			 (volatile body env))))                        */
-;* 	 locals)                                                       */
-;*       (volatile body env)))                                         */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    volatile ::set-ex-it ...                                         *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-walk-method (volatile node::set-ex-it env)                  */
-;*    (for-each (lambda (l)                                            */
-;* 		(with-access::local (car l) (volatile id)              */
-;* 		   (set! volatile #t)))                                */
-;*       env)                                                          */
-;*    (with-access::set-ex-it node (body)                              */
-;*       (volatile body env)))                                         */
+;*---------------------------------------------------------------------*/
+;*    volatile ::let-fun ...                                           */
+;*---------------------------------------------------------------------*/
+(define-walk-method (volatile node::let-fun env)
+   (with-access::let-fun node (locals body)
+      (for-each (lambda (l)
+		   (with-access::local l (value)
+		      (volatile-sfun value env)))
+	 locals)
+      (volatile body
+	 (append (append-map (lambda (l)
+				(with-access::local l (value)
+				   (sfun-args value)))
+		    locals)
+	    locals
+	    env))))
+
+;*---------------------------------------------------------------------*/
+;*    volatile ::set-ex-it ...                                         */
+;*---------------------------------------------------------------------*/
+(define-walk-method (volatile node::set-ex-it env)
+   (multiple-value-bind (def use)
+      (defuse node)
+      (for-each (lambda (l)
+		   (when (memq l env)
+		      (with-access::local l (volatile)
+			 (set! volatile #t))))
+	 use)
+      (with-access::set-ex-it node (body onexit)
+	 (volatile body env))))
       
 ;*---------------------------------------------------------------------*/
 ;*    use-set-exit? ...                                                */

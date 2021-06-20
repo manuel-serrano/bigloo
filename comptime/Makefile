@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sat Jun 12 09:02:53 2021 (serrano)                */
+#*    Last change :  Sat Jun 19 08:10:00 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -332,6 +332,11 @@ ISA_FILE	= walk
 
 ISA_OBJ	        = $(ISA_FILE:%=Isa/%.o)
 
+#*--- defus -----------------------------------------------------------*/
+DEFUSE_FILE	= defuse set types
+
+DEFUSE_OBJ 	= $(DEFUSE_FILE:%=Defuse/%.o)
+
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
 #*---------------------------------------------------------------------*/
@@ -347,7 +352,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
                   $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  $(STACKABLE_OBJ) $(UNCELL_OBJ)
+                  $(STACKABLE_OBJ) $(UNCELL_OBJ) $(DEFUSE_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

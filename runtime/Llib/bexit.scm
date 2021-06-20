@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Sat Jun 19 06:33:15 2021 (serrano)                */
+;*    Last change :  Sun Jun 20 08:15:08 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -50,7 +50,7 @@
 	    (macro $env-pop-exit!::obj (::dynamic-env) "POP_ENV_EXIT")
 	    (macro call/cc-jump-exit::obj (::exit ::obj) "CALLCC_JUMP_EXIT")
 	    (macro $exitd->exit::exit (::obj) "EXITD_TO_EXIT")
-	    (macro exitd-user?::bool (::obj) "EXITD_USERP")
+;* 	    (macro exitd-user?::bool (::obj) "EXITD_USERP")            */
 	    (macro exitd-call/cc?::bool (::obj) "EXITD_CALLCCP")
 	    (macro exitd-stamp::bint (::obj) "EXITD_STAMP")
 	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP_AS_OBJ")
@@ -95,8 +95,8 @@
 		  "CALLCC_JUMP_EXIT")
 	       (method static $exitd->exit::exit (::obj)
 		  "EXITD_TO_EXIT")
-	       (method static exitd-user?::bool (::obj)
-		  "EXITD_USERP")
+;* 	       (method static exitd-user?::bool (::obj)                */
+;* 		  "EXITD_USERP")                                       */
 	       (method static exitd-call/cc?::bool (::obj)
 		  "EXITD_CALLCCP")
 	       (method static exitd-stamp::bint (::obj)
@@ -165,7 +165,9 @@
 ;*---------------------------------------------------------------------*/
 (define (unwind-until! exitd val)
    (if (pair? exitd)
-       (unwind-stack-until! (car exitd) #f val (cdr exitd))
+       (begin
+	  (error "unwind-until!" "Old form should not be used" (typeof val))
+	  (unwind-stack-until! (car exitd) #f val (cdr exitd)))
        (unwind-stack-until! exitd #f val #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -185,10 +187,9 @@
 		(if (procedure? proc-bottom)
 		    (proc-bottom val)
 		    (let ((hdl ($get-uncaught-exception-handler)))
-		       ((if (procedure? hdl)
-			    hdl
-			    default-uncaught-exception-handler)
-			val))))
+		       (if (procedure? hdl)
+			   (hdl val)
+			   (default-uncaught-exception-handler val)))))
 	     (begin
 		;; execute the unwind protects pushed above the exitd block
 		(exitd-exec-and-pop-protects! exitd-top)
@@ -205,27 +206,9 @@
 			;; this is a regular exit
 			(jump-exit ($exitd->exit exitd-top) val))
 		    #unspecified)
-		   ((not (exitd-user? exitd-top))
-		    (let ((p ($get-exitd-val)))
-		       (set-car! (car p) exitd)
-		       (set-cdr! (car p) proc-bottom)
-		       (set-cdr! p val)
-		       (jump-exit ($exitd->exit exitd-top) p))
-		    #unspecified)
 		   (else
 		    (loop))))))))
 
-;*---------------------------------------------------------------------*/
-;*    exitd-exec-protect ...                                           */
-;*---------------------------------------------------------------------*/
-(define (exitd-exec-protect p)
-   (cond
-      ((mutex? p) (mutex-unlock! p))
-      ((procedure? p) (p))
-      ((pair? p) ($set-error-handler! p))
-      ((integer? p) (evaluate2-restore-bp! p))
-      ((vector? p) (evaluate2-restore-state! p))))
-      
 ;*---------------------------------------------------------------------*/
 ;*    exitd-exec-and-pop-protects! ...                                 */
 ;*    -------------------------------------------------------------    */
@@ -248,6 +231,17 @@
       ($exitd-protect0-set! exitd #f)
       (exitd-exec-protect p)))
 
+;*---------------------------------------------------------------------*/
+;*    exitd-exec-protect ...                                           */
+;*---------------------------------------------------------------------*/
+(define (exitd-exec-protect p)
+   (cond
+      ((mutex? p) (mutex-unlock! p))
+      ((procedure? p) (p))
+      ((pair? p) ($set-error-handler! p))
+      ((integer? p) (evaluate2-restore-bp! p))
+      ((vector? p) (evaluate2-restore-state! p))))
+      
 ;*---------------------------------------------------------------------*/
 ;*    exitd-push-protect! ...                                          */
 ;*---------------------------------------------------------------------*/
