@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Mon Jun 21 13:40:40 2021 (serrano)                */
+;*    Last change :  Mon Jun 21 18:17:42 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -122,8 +122,8 @@
 		    ($failsafe-mutex-profile fail-safe)
 		    ($exitd-mutex-profile fail-safe))))
 
-   (pragma ;;(exitd-protect-set! (args-noescape m))
-	   ;;($exitd-protect-set! (args-noescape 1))
+   (pragma (exitd-protect-set! (args-noescape m))
+	   ($exitd-protect-set! (args-noescape 1))
 	   (exitd-push-protect! (args-noescape m))
 	   ($exitd-push-protect! (args-noescape 1))))
 
