@@ -5022,34 +5022,14 @@ public final class foreign
 	 return bint.BZERO;
       }
 
-   public static Object BGL_EXITD_PROTECT0(exit o)
+   public static Object BGL_EXITD_PROTECT(exit o)
       {
-	 return o.protect0;
+	 return o.protect;
       }
 
-   public static void BGL_EXITD_PROTECT0_SET(exit o, Object m)
+   public static void BGL_EXITD_PROTECT_SET(exit o, Object m)
       {
-	 o.protect0 = m;
-      }
-
-   public static Object BGL_EXITD_PROTECT1(exit o)
-      {
-	 return o.protect1;
-      }
-
-   public static void BGL_EXITD_PROTECT1_SET(exit o, Object m)
-      {
-	 o.protect1 = m;
-      }
-
-   public static Object BGL_EXITD_PROTECTN(exit o)
-      {
-	 return o.protectn;
-      }
-
-   public static void BGL_EXITD_PROTECTN_SET(exit o, Object m)
-      {
-	 o.protectn = m;
+	 o.protect = m;
       }
 
    public static Object jumpexit(Object excep, Object value)

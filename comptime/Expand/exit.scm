@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Wed Jun 16 14:38:37 2021 (serrano)                */
+;*    Last change :  Mon Jun 21 13:40:10 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -243,18 +243,35 @@
 
    (define (error-handler-expander exp ohs)
       (let ((exitd (mark-symbol-non-user! (gensym 'exitd)))
-	    (tmp (mark-symbol-non-user! (gensym 'tmp))))
-	 (let ((new `(let ((,exitd ($get-exitd-top)))
-			((@ exitd-push-protect! __bexit) ,exitd ,ohs)
+	    (tmp (mark-symbol-non-user! (gensym 'tmp)))
+	    (protect (mark-symbol-non-user! (gensym 'tmp))))
+	 (let ((new `(let* ((,exitd ($get-exitd-top))
+			    (,protect (cons ,ohs ($exitd-protect ,exitd))))
+			((@ exitd-protect-set! __bexit) ,exitd ,protect)
 			(let ((,tmp ,exp))
 			   ((@ exitd-pop-protect! __bexit) ,exitd)
 			   ($set-error-handler! ,ohs)
 			   ,tmp))))
-	       (replace! x (e new e)))))
+	    (replace! x (e new e)))))
+
+   (define (env-error-handler-expander exp env ohs)
+      (let ((exitd (mark-symbol-non-user! (gensym 'exitd)))
+	    (tmp (mark-symbol-non-user! (gensym 'tmp)))
+	    (protect (mark-symbol-non-user! (gensym 'tmp))))
+	 (let ((new `(let* ((,exitd ($env-get-exitd-top ,env))
+			    (,protect (cons ,ohs ($exitd-protect ,exitd))))
+			((@ exitd-protect-set! __bexit) ,exitd ,protect)
+			(let ((,tmp ,exp))
+			   ((@ exitd-pop-protect! __bexit) ,exitd)
+			   ($env-set-error-handler! ,env ,ohs)
+			   ,tmp))))
+	    (replace! x (e new e)))))
 
    (match-case x
       ((?- ?exp ($set-error-handler! (and (? symbol?) ?ohs)))
        (error-handler-expander exp ohs))
+      ((?- ?exp ($env-set-error-handler! (and (? symbol?) ?env) (and (? symbol?) ?ohs)))
+       (env-error-handler-expander exp env ohs))
       ((?- ?exp . (and (? pair?) ?cleanup))
        (new-expander exp cleanup))
       (else

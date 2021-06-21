@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Apr 17 07:40:02 2018                          */
-/*    Last change :  Mon Jun 21 08:05:33 2021 (serrano)                */
+/*    Last change :  Mon Jun 21 15:14:56 2021 (serrano)                */
 /*    Copyright   :  2018-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo EXITs                                                     */
@@ -83,9 +83,7 @@ struct exitd {
 #endif
    obj_t stamp;
    /* protected blocks */
-   union scmobj *protect0;
-   union scmobj *protect1;
-   union scmobj *protectn;
+   union scmobj *protect;
    /* linking */
    struct bgl_dframe *top_of_frame;
    struct exitd *prev;
@@ -116,9 +114,7 @@ struct exitd {
    exitd.exit = _xit; \
    BGL_EXITD_USERP_SET(exitd,_ser); \
    BGL_EXITD_TOP_OF_FRAME_PUSH(env); \
-   exitd.protect0 = BFALSE; \
-   exitd.protect1 = BFALSE; \
-   exitd.protectn = BNIL; \
+   exitd.protect = BNIL; \
    exitd.prev = BGL_ENV_EXITD_TOP(env); \
    exitd.stamp = BGL_ENV_EXITD_STAMP(env); \
    BGL_ENV_EXITD_TOP_SET(env, (&exitd));
@@ -128,9 +124,7 @@ struct exitd {
    exitd.exit = _xit; \
    BGL_EXITD_USERP_SET(exitd,_ser); \
    BGL_EXITD_TOP_OF_FRAME_PUSH(env); \
-   exitd.protect0 = BFALSE; \
-   exitd.protect1 = BFALSE; \
-   exitd.protectn = BNIL; \
+   exitd.protect = BNIL; \
    exitd.prev = BGL_ENV_EXITD_TOP(env); \
    BGL_ENV_EXITD_TOP_SET(env, (&exitd));
    
@@ -159,38 +153,20 @@ struct exitd {
 #define EXITD_FLAGS( ptr ) \
    (((struct exitd *)(ptr))->flags)
 
-#define BGL_EXITD_BOTTOMP( extd ) \
-   (((struct exitd *)(extd)) == BGL_ENV_EXITD_BOTTOM( BGL_CURRENT_DYNAMIC_ENV() ))
+#define BGL_EXITD_BOTTOMP(extd) \
+   (((struct exitd *)(extd)) == BGL_ENV_EXITD_BOTTOM(BGL_CURRENT_DYNAMIC_ENV()))
 
-#define BGL_EXITD_PROTECT0( ptr ) \
-   (((struct exitd *)(ptr))->protect0)
-   
-#define BGL_EXITD_PROTECT1( ptr ) \
-   (((struct exitd *)(ptr))->protect1)
-   
-#define BGL_EXITD_PROTECTN( ptr ) \
-   (((struct exitd *)(ptr))->protectn)
+#define BGL_EXITD_PROTECT_SET(extd, p) \
+   (BGL_EXITD_PROTECT(extd) = (p))
 
-#define BGL_EXITD_PROTECT0_SET( extd, p ) \
-   (BGL_EXITD_PROTECT0( extd ) = (p))
-   
-#define BGL_EXITD_PROTECT1_SET( extd, p ) \
-   (BGL_EXITD_PROTECT1( extd ) = (p))
-   
-#define BGL_EXITD_PROTECTN_SET( extd, p ) \
-   (BGL_EXITD_PROTECTN( extd ) = (p))
+#define BGL_EXITD_PROTECT(ptr) \
+   (((struct exitd *)(ptr))->protect)
 
-#define BGL_EXITD_PUSH_PROTECT( extd, p ) \
-   BGL_EXITD_PROTECT0( extd ) == BFALSE ? BGL_EXITD_PROTECT0_SET( extd, p ) : \
-   BGL_EXITD_PROTECT1( extd ) == BFALSE ? BGL_EXITD_PROTECT1_SET( extd, p ) : \
-      BGL_EXITD_PROTECTN_SET( extd, MAKE_STACK_PAIR( p, BGL_EXITD_PROTECTN( extd ) ) )
+#define BGL_EXITD_PUSH_PROTECT(extd, p) \
+   BGL_EXITD_PROTECT_SET(extd, MAKE_STACK_PAIR(p, BGL_EXITD_PROTECT(extd)))
    
 #define BGL_EXITD_POP_PROTECT( extd ) \
-   BGL_EXITD_PROTECT1( extd ) == BFALSE ? \
-      BGL_EXITD_PROTECT0_SET( extd, BFALSE ) :	\
-      NULLP( BGL_EXITD_PROTECTN( extd ) ) ? \
-        BGL_EXITD_PROTECT1_SET( extd, BFALSE ) : \
-        BGL_EXITD_PROTECTN_SET( extd, CDR( BGL_EXITD_PROTECTN( extd ) ) )
+   BGL_EXITD_PROTECT_SET(extd, CDR(BGL_EXITD_PROTECT(extd)))
    
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */

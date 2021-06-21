@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Sun Jun 20 08:15:08 2021 (serrano)                */
+;*    Last change :  Mon Jun 21 13:40:40 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -50,7 +50,6 @@
 	    (macro $env-pop-exit!::obj (::dynamic-env) "POP_ENV_EXIT")
 	    (macro call/cc-jump-exit::obj (::exit ::obj) "CALLCC_JUMP_EXIT")
 	    (macro $exitd->exit::exit (::obj) "EXITD_TO_EXIT")
-;* 	    (macro exitd-user?::bool (::obj) "EXITD_USERP")            */
 	    (macro exitd-call/cc?::bool (::obj) "EXITD_CALLCCP")
 	    (macro exitd-stamp::bint (::obj) "EXITD_STAMP")
 	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP_AS_OBJ")
@@ -63,12 +62,8 @@
 	    (macro $env-get-exitd-val::obj (::dynamic-env) "BGL_ENV_EXITD_VAL")
 	    (macro $env-set-exitd-val!::obj (::dynamic-env ::obj) "BGL_ENV_EXITD_VAL_SET")
 
-	    (macro $exitd-protect0::obj (::exit) "BGL_EXITD_PROTECT0")
-	    (macro $exitd-protect0-set!::void (::exit ::obj) "BGL_EXITD_PROTECT0_SET")
-	    (macro $exitd-protect1::obj (::exit) "BGL_EXITD_PROTECT1")
-	    (macro $exitd-protect1-set!::void (::exit ::obj) "BGL_EXITD_PROTECT1_SET")
-	    (macro $exitd-protectn::pair-nil (::exit) "BGL_EXITD_PROTECTN")
-	    (macro $exitd-protectn-set!::void (::exit ::pair-nil) "BGL_EXITD_PROTECTN_SET")
+	    (macro $exitd-protect::obj (::exit) "BGL_EXITD_PROTECT")
+	    (macro $exitd-protect-set!::void (::exit ::obj) "BGL_EXITD_PROTECT_SET")
 	    (macro $exitd-push-protect!::void (::exit ::obj) "BGL_EXITD_PUSH_PROTECT")
 	    (macro $exitd-pop-protect!::void (::exit) "BGL_EXITD_POP_PROTECT")
 
@@ -95,8 +90,6 @@
 		  "CALLCC_JUMP_EXIT")
 	       (method static $exitd->exit::exit (::obj)
 		  "EXITD_TO_EXIT")
-;* 	       (method static exitd-user?::bool (::obj)                */
-;* 		  "EXITD_USERP")                                       */
 	       (method static exitd-call/cc?::bool (::obj)
 		  "EXITD_CALLCCP")
 	       (method static exitd-stamp::bint (::obj)
@@ -110,33 +103,28 @@
 	       (method static $get-exitd-val::obj ()
 		  "BGL_EXITD_VAL")
 	       
-	       (method static $exitd-protect0::obj (::exit)
-		  "BGL_EXITD_PROTECT0")
-	       (method static $exitd-protect0-set!::void (::exit ::obj)
-		  "BGL_EXITD_PROTECT0_SET")
-	       (method static $exitd-protect1::obj (::exit)
-		  "BGL_EXITD_PROTECT1")
-	       (method static $exitd-protect1-set!::void (::exit ::obj)
-		  "BGL_EXITD_PROTECT1_SET")
-	       (method static $exitd-protectn::pair-nil (::exit)
-		  "BGL_EXITD_PROTECTN")
-	       (method static $exitd-protectn-set!::void (::exit ::pair-nil)
-		  "BGL_EXITD_PROTECTN_SET")))
+	       (method static $exitd-protect::pair-nil (::exit)
+		  "BGL_EXITD_PROTECT")
+	       (method static $exitd-protect-set!::void (::exit ::pair-nil)
+		  "BGL_EXITD_PROTECT_SET")))
       
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
 	    (unwind-until! exitd ::obj)
 	    (unwind-stack-until! exitd ::obj ::obj ::obj)
 	    (default-uncaught-exception-handler ::obj)
-	    (exitd-push-protect! ::obj m::obj)
-	    (exitd-pop-protect! ::obj))
+	    (inline exitd-protect-set! ::obj m::obj)
+	    (inline exitd-push-protect! ::obj m::obj)
+	    (inline exitd-pop-protect! ::obj))
 
    (cond-expand (bigloo-c
 		 (pragma
 		    ($failsafe-mutex-profile fail-safe)
 		    ($exitd-mutex-profile fail-safe))))
 
-   (pragma (exitd-push-protect! (args-noescape m))
+   (pragma ;;(exitd-protect-set! (args-noescape m))
+	   ;;($exitd-protect-set! (args-noescape 1))
+	   (exitd-push-protect! (args-noescape m))
 	   ($exitd-push-protect! (args-noescape 1))))
 
 ;*---------------------------------------------------------------------*/
@@ -216,20 +204,12 @@
 ;*    exitd block.                                                     */
 ;*---------------------------------------------------------------------*/
 (define (exitd-exec-and-pop-protects! exitd)
-   (let loop ((l ($exitd-protectn exitd)))
+   (let loop ((l ($exitd-protect exitd)))
       (when (pair? l)
 	 (let ((p (car l)))
-	    ($exitd-protectn-set! exitd (cdr l))
+	    ($exitd-protect-set! exitd (cdr l))
 	    (exitd-exec-protect p)
-	    (loop (cdr l)))))
-   (let ((p ($exitd-protect1 exitd)))
-      (when p
-	 ($exitd-protect1-set! exitd #f)
-	 (exitd-exec-protect p)))
-   (let ((p ($exitd-protect0 exitd)))
-      ;; don't need to test protect0, it is always true
-      ($exitd-protect0-set! exitd #f)
-      (exitd-exec-protect p)))
+	    (loop (cdr l))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-exec-protect ...                                           */
@@ -243,28 +223,23 @@
       ((vector? p) (evaluate2-restore-state! p))))
       
 ;*---------------------------------------------------------------------*/
+;*    exitd-protect-set! ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (exitd-protect-set! exitd p)
+   ($exitd-protect-set! exitd p))
+
+;*---------------------------------------------------------------------*/
 ;*    exitd-push-protect! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (exitd-push-protect! exitd m)
-   (cond
-      ((not ($exitd-protect0 exitd))
-       ($exitd-protect0-set! exitd m))
-      ((not ($exitd-protect1 exitd))
-       ($exitd-protect1-set! exitd m))
-      (else
-       ($exitd-protectn-set! exitd (cons m ($exitd-protectn exitd))))))
+(define-inline (exitd-push-protect! exitd m)
+   ($exitd-protect-set! exitd (cons m ($exitd-protect exitd))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-pop-protect! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (exitd-pop-protect! exitd)
-   (cond
-      ((not ($exitd-protect1 exitd))
-       ($exitd-protect0-set! exitd #f))
-      ((null? ($exitd-protectn exitd))
-       ($exitd-protect1-set! exitd #f))
-      (else
-       ($exitd-protectn-set! exitd (cdr ($exitd-protectn exitd))))))
+(define-inline (exitd-pop-protect! exitd)
+   (when (pair? ($exitd-protect exitd))
+      ($exitd-protect-set! exitd (cdr ($exitd-protect exitd)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-uncaught-exception-handler ...                           */
