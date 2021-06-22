@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Jun 22 11:16:32 2021 (serrano)                */
+;*    Last change :  Tue Jun 22 18:44:36 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -332,21 +332,21 @@
 	   (ehdl (gensym 'errhandler))
 	   (val (gensym 'val))
 	   (env (gensym 'env)))
-	(e `(let ((,cell ($make-stack-cell #unspecified))
-                  (,hdl ,handler)
+	(e `(let ((,hdl ,handler)
 		  (,env (current-dynamic-env)))
-	       (let ((,val (bind-exit :env ,env (,escape)
-			      (let* ((,ohs ($env-get-error-handler ,env))
-				     (,hds (cons ,escape ,cell)))
-				 ($env-set-error-handler! ,env ,hds)
-				 (unwind-protect
-				    (begin ,@body)
-				    ($env-set-error-handler! ,env ,ohs))))))
-		  (if (eq? ,val ,cell)
-		      (begin
-			 (sigsetmask 0)
-			 (,hdl (cell-ref ,val)))
-		      ,val)))
+	       (let ((,cell ($make-stack-cell #unspecified)))
+		  (let ((,val (bind-exit :env ,env (,escape)
+				 (let ((,ohs ($env-get-error-handler ,env)))
+				    (let ((,hds ($acons ,escape ,cell)))
+				       ($env-set-error-handler! ,env ,hds)
+				       (unwind-protect
+					  (begin ,@body)
+					  ($env-set-error-handler! ,env ,ohs)))))))
+		     (if (eq? ,val ,cell)
+			 (begin
+			    (sigsetmask 0)
+			    (,hdl (cell-ref ,val)))
+			 ,val))))
 	   e)))
 
    (match-case x

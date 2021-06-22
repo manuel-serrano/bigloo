@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 12 08:33:01 2020                          */
-;*    Last change :  Sun Jul 12 08:33:02 2020 (serrano)                */
+;*    Last change :  Tue Jun 22 19:09:58 2021 (serrano)                */
 ;*    Copyright   :  2020-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Mark "stackable" expressions, that is expression that can        */
@@ -222,14 +222,15 @@
 	 args))
       
    (with-access::app node ((callee fun) args (stkp stackable))
-      (with-access::app/depth node ((adepth depth))
-	 (when (or escp (<fx depth adepth))
-	    (when (and #f stkp)
-	       (tprint "! " (node->sexp node)
-		  " escp=" escp " D=" depth " AD=" adepth))
-	    (escape! node ctx)))
       (let* ((v (var-variable callee))
 	     (f (variable-value v)))
+	 (with-access::app/depth node ((adepth depth))
+	    (when (or escp (<fx depth adepth))
+	       (unless (and (global? v)
+			    (with-access::global v (id module)
+			       (and (eq? module 'foreign)
+				    (memq id '($make-stack-cell $acons)))))
+		  (escape! node ctx))))
 	 (cond
 	    ((isa? v local)
 	     ;; local loops cannot stack allocate

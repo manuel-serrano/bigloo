@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sat Jun 12 17:37:02 2021 (serrano)                */
+;*    Last change :  Tue Jun 22 18:38:30 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -313,11 +313,13 @@
 	    (procedure-el-ref nesting args-safe fail-safe)
 	    ($make-cell args-safe fail-safe (args-retescape)
 	       (stack-allocator "struct bgl_cell ~a" "BGL_MAKE_CELL_STACK"))
+	    ($make-stack-cell args-safe fail-safe (args-retescape)
+	       (stack-allocator "struct bgl_cell ~a" "BGL_MAKE_CELL_STACK"))
 	    (make-cell args-safe fail-safe (args-retescape)
 	       (stack-allocator "struct bgl_cell ~a" "BGL_MAKE_CELL_STACK"))
 	    ($cell? (predicate-of cell) nesting fail-safe)
 	    ($cell-set! nesting args-safe fail-safe (args-noescape 1))
-	    ($cell-ref nesting  args-safe fail-safe (args-noescape))
+	    ($cell-ref nesting args-safe fail-safe (args-noescape))
 	    (cell? (predicate-of cell) nesting fail-safe)
 	    (cell-set! nesting args-safe fail-safe (args-noescape 1))
 	    (cell-ref nesting  args-safe fail-safe (args-noescape))
