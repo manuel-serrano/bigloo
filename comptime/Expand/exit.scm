@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Mon Jun 21 13:40:10 2021 (serrano)                */
+;*    Last change :  Tue Jun 22 11:16:32 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -119,53 +119,75 @@
 	  body)
 	 (else
 	  body)))
-      
+
+   (define (trace?)
+      (and (>fx (bigloo-compiler-debug) 0)
+	   (backend-trace-support (the-backend))))
+   
+   (define (add-trace tracesp body)
+      (if (trace?)
+	  (let ((tmp (mark-symbol-non-user! (gensym 'tmp))))
+	     `(let ((,tracesp ($get-trace-stacksp)))
+		 (let ((,tmp ,body))
+		    ($set-trace-stacksp ,tracesp)
+		    ,tmp)))
+	  body))
+
    (define (default-expansion exit body)
       (let ((an-exit (mark-symbol-non-user! (gensym 'an_exit)))
 	    (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
 	    (val (mark-symbol-non-user! (gensym 'val)))
 	    (res (mark-symbol-non-user! (gensym 'res)))
-	    (env (mark-symbol-non-user! (gensym 'env))))
+	    (env (mark-symbol-non-user! (gensym 'env)))
+	    (tracesp (mark-symbol-non-user! (gensym 'tracesp))))
 	 (let ((new `(set-exit (,an-exit)
-			(let ((,env (current-dynamic-env)))
-			   ($env-push-exit! ,env ,an-exit 1)
-			   (let ((,an-exitd ($env-get-exitd-top ,env)))
-			      (labels ((,exit (,val)
-					  ((@ unwind-until! __bexit)
-					   ,an-exitd
-					   ,val)))
-				 (let ((,res (begin ,@body)))
-				    ($env-pop-exit! ,env)
-				    ,res)))))))
+			,(add-trace tracesp
+			    `(let ((,env (current-dynamic-env)))
+				($env-push-exit! ,env ,an-exit 1)
+				(let ((,an-exitd ($env-get-exitd-top ,env)))
+				   (labels ((,exit (,val)
+					       ((@ unwind-stack-until! __bexit)
+						,an-exitd
+						#f
+						,val
+						#f
+						,(when (trace?) tracesp))))
+				      (let ((,res (begin ,@body)))
+					 ($env-pop-exit! ,env)
+					 ,res))))))))
 	    (replace! x new))))
 
    (define (env-expansion env exit body)
       (let ((an-exit (mark-symbol-non-user! (gensym 'an_exit)))
 	    (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
 	    (val (mark-symbol-non-user! (gensym 'val)))
-	    (res (mark-symbol-non-user! (gensym 'res))))
-	 (let ((new `(set-exit (,an-exit)
-			(begin
-			   ($env-push-exit! ,env ,an-exit 1)
-			   (let ((,exit ($env-get-exitd-top ,env)))
-			      (let ((,res ,body))
-				 ($env-pop-exit! ,env)
-				 ,res))))))
+	    (res (mark-symbol-non-user! (gensym 'res)))
+	    (tracesp (mark-symbol-non-user! (gensym 'tracesp))))
+	 (let ((new (add-trace tracesp
+		       `(set-exit (,an-exit)
+			   (begin
+			      ($env-push-exit! ,env ,an-exit 1)
+			      (let ((,exit ($env-get-exitd-top ,env)))
+				 (let ((,res ,body))
+				    ($env-pop-exit! ,env)
+				    ,res)))))))
 	    (replace! x new))))
 
    (define (env-exit-expansion env exit body onexit)
       (let ((an-exit (mark-symbol-non-user! (gensym 'an_exit)))
 	    (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
 	    (val (mark-symbol-non-user! (gensym 'val)))
-	    (res (mark-symbol-non-user! (gensym 'res))))
-	 (let ((new `(set-exit (,an-exit)
-			(begin
-			   ($env-push-exit! ,env ,an-exit 1)
-			   (let ((,exit ($env-get-exitd-top ,env)))
-			      (let ((,res ,body))
-				 ($env-pop-exit! ,env)
-				 ,res)))
-			,onexit)))
+	    (res (mark-symbol-non-user! (gensym 'res)))
+	    (tracesp (mark-symbol-non-user! (gensym 'tracesp))))
+	 (let ((new (add-trace tracesp
+		       `(set-exit (,an-exit)
+			   (begin
+			      ($env-push-exit! ,env ,an-exit 1)
+			      (let ((,exit ($env-get-exitd-top ,env)))
+				 (let ((,res ,body))
+				    ($env-pop-exit! ,env)
+				    ,res)))
+			   ,onexit))))
 	    (replace! x new))))
    
    (match-case x
@@ -228,17 +250,35 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-unwind-protect x e)
 
+   (define (trace?)
+      (and (>fx (bigloo-compiler-debug) 0)
+	   (backend-trace-support (the-backend))))
+   
+   (define (add-trace tracesp body)
+      (if (trace?)
+	  (let ((tmp (mark-symbol-non-user! (gensym 'tmp))))
+	     `(let ((,tracesp ($get-trace-stacksp)))
+		 (let ((,tmp ,body))
+		    ($set-trace-stacksp ,tracesp)
+		    ,tmp)))
+	  body))
+
    (define (new-expander exp cleanup)
       (let ((exitd (mark-symbol-non-user! (gensym 'exitd)))
 	    (protect (mark-symbol-non-user! (gensym 'protect)))
-	    (tmp (mark-symbol-non-user! (gensym 'tmp))))
-	 (let ((new `(let ((,exitd ($get-exitd-top))
-			   (,protect (lambda () ,@cleanup)))
-			((@ exitd-push-protect! __bexit) ,exitd ,protect)
-			(let ((,tmp ,exp))
-			   ((@ exitd-pop-protect! __bexit) ,exitd)
-			   (,protect)
-			   ,tmp))))
+	    (tmp (mark-symbol-non-user! (gensym 'tmp)))
+	    (tracesp (mark-symbol-non-user! (gensym 'tracesp))))
+	 (let ((new (add-trace tracesp
+		       `(let ((,exitd ($get-exitd-top))
+			      (,protect (lambda () ,@cleanup)))
+			   ((@ exitd-push-protect! __bexit) ,exitd ,protect)
+			   (let ((,tmp ,exp))
+			      ((@ exitd-pop-protect! __bexit) ,exitd)
+			      ,@(if (trace?)
+				    `(($set-trace-stacksp ,tracesp))
+				    '())
+			      (,protect)
+			      ,tmp)))))
 	    (replace! x (e new e)))))
 
    (define (error-handler-expander exp ohs)
@@ -309,30 +349,9 @@
 		      ,val)))
 	   e)))
 
-   (define (add-trace body)
-      (let ((loc (find-location x)))
-	 (if (and (location? loc)
-		  (>fx (bigloo-compiler-debug) 0)
-		  (backend-trace-support (the-backend)))
-	     (let ((at `(at ,(location-full-fname loc) ,(location-pos loc)))
-		   (vid (gensym))
-		   (tmp1 (mark-symbol-non-user! (gensym 'name)))
-		   (tmp2 (mark-symbol-non-user! (gensym 'loc))))
-		`(let ((,tmp1 ',(string->symbol
-				   (format "with-handler@~a:~a"
-				      (location-pos loc)
-				      (location-full-fname loc))))
-		       (,tmp2 ',at))
-		    (let ()
-		       ($push-trace ,tmp1 ,tmp2)
-		       (let ((,vid ,body))
-			  ,(econs '$pop-trace '() at)
-			  ,vid))))
-	     body)))
-   
    (match-case x
       ((?- ?handler . ?body)
-       (replace! x (add-trace (expand handler body))))
+       (replace! x (expand handler body)))
       (else
        (error #f "Illegal `with-handler' form" x))))
 

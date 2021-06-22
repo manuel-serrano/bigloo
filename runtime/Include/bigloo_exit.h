@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Apr 17 07:40:02 2018                          */
-/*    Last change :  Mon Jun 21 15:14:56 2021 (serrano)                */
+/*    Last change :  Tue Jun 22 11:20:10 2021 (serrano)                */
 /*    Copyright   :  2018-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo EXITs                                                     */
@@ -85,7 +85,7 @@ struct exitd {
    /* protected blocks */
    union scmobj *protect;
    /* linking */
-   struct bgl_dframe *top_of_frame;
+/*    struct bgl_dframe *top_of_frame;                                 */
    struct exitd *prev;
 };
 
@@ -93,7 +93,7 @@ struct exitd {
 #define EXITD_USER 1
 #define EXITD_CALLCC 2		 
 
-#if 1 || (BIGLOO_TRACE > 0)
+#if 0 && (BIGLOO_TRACE > 0)
 #  define BGL_EXITD_TOP_OF_FRAME_PUSH(env) \
      exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME(env)
 #  define BGL_EXITD_TOP_OF_FRAME_POP(env) \

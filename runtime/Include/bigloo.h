@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Jun 20 08:47:24 2021 (serrano)                */
+/*    Last change :  Tue Jun 22 11:30:53 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -669,6 +669,8 @@ union scmobj {
       char *stack_top;
       /* bottom of stack */
       char *stack_bot;
+      /* trace sp */
+      void *trace_sp;
       /* heap allocated copy of the stack */
       void *stack;
    } stack;
@@ -2139,6 +2141,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    (BGL_DYNAMIC_ENV( env ).top_of_frame)
 #define BGL_ENV_SET_TOP_OF_FRAME( env, _top ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env ) = (_top))
+
+#define BGL_GET_TRACE_STACKSP() \
+   ((obj_t)BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )
+#define BGL_SET_TRACE_STACKSP(_sp) \
+   BGL_ENV_SET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV(), (struct bgl_dframe *)(_sp) )
 
 #define BGL_ENV_PUSH_TRACE( env, nm, loc ) \
    struct bgl_dframe bgl_dframe; \

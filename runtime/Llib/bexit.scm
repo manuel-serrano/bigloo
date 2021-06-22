@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Mon Jun 21 18:17:42 2021 (serrano)                */
+;*    Last change :  Tue Jun 22 11:20:02 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -111,7 +111,7 @@
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
 	    (unwind-until! exitd ::obj)
-	    (unwind-stack-until! exitd ::obj ::obj ::obj)
+	    (unwind-stack-until! exitd ::obj ::obj ::obj ::obj)
 	    (default-uncaught-exception-handler ::obj)
 	    (inline exitd-protect-set! ::obj m::obj)
 	    (inline exitd-push-protect! ::obj m::obj)
@@ -152,11 +152,7 @@
 ;*    directly invoke unwind-stack-until!                              */
 ;*---------------------------------------------------------------------*/
 (define (unwind-until! exitd val)
-   (if (pair? exitd)
-       (begin
-	  (error "unwind-until!" "Old form should not be used" (typeof val))
-	  (unwind-stack-until! (car exitd) #f val (cdr exitd)))
-       (unwind-stack-until! exitd #f val #f)))
+   (unwind-stack-until! exitd #f val #f #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    unwind-stack-until! ...                                          */
@@ -166,7 +162,7 @@
 ;*    This function is used by unwind-until! (introduced by any        */
 ;*    unwind-protect) and by call/cc.                                  */
 ;*---------------------------------------------------------------------*/
-(define (unwind-stack-until! exitd estamp val proc-bottom)
+(define (unwind-stack-until! exitd estamp val proc-bottom tracestk)
    (let loop ()
       (let ((exitd-top ($get-exitd-top)))
 	 (if ($exitd-bottom? exitd-top)
@@ -183,6 +179,9 @@
 		(exitd-exec-and-pop-protects! exitd-top)
 		;; then, remove the exitd block from the stack
 		(pop-exit!)
+		(if tracestk
+		    ($set-trace-stacksp tracestk)
+		    ($init-trace-stacksp))
 		;; unwind the stack
 		(cond  
 		   ((and (eq? exitd-top exitd) 
