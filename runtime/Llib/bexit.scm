@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Jun 22 11:20:02 2021 (serrano)                */
+;*    Last change :  Tue Jun 22 13:48:35 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -12,7 +12,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __bexit
-
+   
    ;; disable debugging traces when compiling this module otherwise
    ;; the Bigloo error handling is all wrong
    (option  (set! *compiler-debug* 0))
@@ -43,7 +43,7 @@
 	    __r4_output_6_10_3
 	    
 	    __evenv)
-
+   
    (extern  (macro push-exit!::obj (::exit ::long) "PUSH_EXIT")
 	    (macro $env-push-exit!::obj (::dynamic-env ::exit ::long) "PUSH_ENV_EXIT")
 	    (macro pop-exit!::obj () "POP_EXIT")
@@ -61,19 +61,19 @@
 	    (macro $set-exitd-val!::obj (::obj) "BGL_EXITD_VAL_SET")
 	    (macro $env-get-exitd-val::obj (::dynamic-env) "BGL_ENV_EXITD_VAL")
 	    (macro $env-set-exitd-val!::obj (::dynamic-env ::obj) "BGL_ENV_EXITD_VAL_SET")
-
+	    
 	    (macro $exitd-protect::obj (::exit) "BGL_EXITD_PROTECT")
 	    (macro $exitd-protect-set!::void (::exit ::obj) "BGL_EXITD_PROTECT_SET")
 	    (macro $exitd-push-protect!::void (::exit ::obj) "BGL_EXITD_PUSH_PROTECT")
 	    (macro $exitd-pop-protect!::void (::exit) "BGL_EXITD_POP_PROTECT")
-
+	    
 	    (export $failsafe-mutex-profile "bgl_failsafe_mutex_profile")
 	    (export $exitd-mutex-profile "bgl_exitd_mutex_profile")
 	    (export unwind-stack-until! "unwind_stack_until")
 	    (export unwind-stack-value? "unwind_stack_value_p")
-
+	    
 	    (export default-uncaught-exception-handler "bgl_uncaught_exception_handler"))
-
+   
    (cond-expand (bigloo-c
 		 (export
 		    (inline env-get-exitd-val::obj ::dynamic-env)
@@ -107,7 +107,7 @@
 		  "BGL_EXITD_PROTECT")
 	       (method static $exitd-protect-set!::void (::exit ::pair-nil)
 		  "BGL_EXITD_PROTECT_SET")))
-      
+   
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
 	    (unwind-until! exitd ::obj)
@@ -116,12 +116,12 @@
 	    (inline exitd-protect-set! ::obj m::obj)
 	    (inline exitd-push-protect! ::obj m::obj)
 	    (inline exitd-pop-protect! ::obj))
-
+   
    (cond-expand (bigloo-c
 		 (pragma
 		    ($failsafe-mutex-profile fail-safe)
 		    ($exitd-mutex-profile fail-safe))))
-
+   
    (pragma (exitd-protect-set! (args-noescape m))
 	   ($exitd-protect-set! (args-noescape 1))
 	   (exitd-push-protect! (args-noescape m))

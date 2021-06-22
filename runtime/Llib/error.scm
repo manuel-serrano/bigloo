@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Jun 22 11:41:21 2021 (serrano)                */
+;*    Last change :  Tue Jun 22 13:15:09 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -407,14 +407,12 @@
 ;*---------------------------------------------------------------------*/
 (define (with-exception-handler handler thunk)
    (if (correct-arity? handler 1)
-       (let ((old-handlers ($get-error-handler))
-	     (cell ($make-stack-cell #unspecified)))
+       (let ((old-handlers ($get-error-handler)))
 	  ($set-error-handler!
-	     (cons ($acons (lambda (c)
-			      ($set-error-handler! old-handlers)
-			      (handler (cell-ref c)))
-		      cell)
-		old-handlers))
+	     ($acons (lambda (c)
+			($set-error-handler! old-handlers)
+			(handler c))
+		#unspecified))
 	  (unwind-protect
 	     (if (correct-arity? thunk 0)
 		 (thunk)
@@ -426,9 +424,20 @@
 ;*    current-exception-handler ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (current-exception-handler)
-   (if (pair? ($get-error-handler))
-       (car ($get-error-handler))
-       default-exception-handler))
+   
+   (define (wrong-handler handler)
+      (error "current-exception-handler" "wrong error handler" handler))
+   
+   (let ((handler ($get-error-handler)))
+      (cond
+	 ((pair? handler)
+	  (cond
+	     ((eq? (cdr handler) #unspecified)
+	      (car handler))
+	     (else
+	      (wrong-handler handler))))
+	 (else
+	  (wrong-handler handler)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    raise ...                                                        */
@@ -443,9 +452,7 @@
       (let ((denv (cdr hdl))
 	    (h (car hdl)))
 	 (env-set-exitd-val! denv val)
-	 (if (procedure? h)
-	     (h denv)
-	     (unwind-until! h denv))))
+	 (unwind-until! h denv)))
    
    (define (raise/cell hdl)
       ;; since 14 jun 2021, error handlers are pushed
@@ -455,39 +462,30 @@
       (let ((cell (cdr hdl))
 	    (h (car hdl)))
 	 (cell-set! cell val)
-	 (if (procedure? h)
-	     (h cell)
-	     (unwind-until! h cell))))
+	 (unwind-until! h cell)))
    
-   (let ((handlers ($get-error-handler)))
+   (define (wrong-handler handler val)
+      (tprint "*** INTERNAL ERROR: wrong error handler " handler)
+      (tprint "when raising error: " val)
+      (exit 0))
+   
+   (let ((handler ($get-error-handler)))
       (cond
-	 ((pair? handlers)
+	 ((pair? handler)
 	  (cond
-	     ((dynamic-env? (cdr handlers))
-	      (raise/denv handlers))
-	     ((cell? (cdr handlers))
-	      (raise/cell handlers))
+	     ((dynamic-env? (cdr handler))
+	      (raise/denv handler))
+	     ((cell? (cdr handler))
+	      (raise/cell handler))
+	     ((not (cdr handler))
+	      (default-exception-handler val)
+	      (the_failure "raise" "uncaught exception" val))
+	     ((eq? (cdr handler) #unspecified)
+	      ((car handler) val))
 	     (else
-	      (let* ((hdls (cdr handlers))
-		     (hdl (car handlers)))
-		 ;; ($set-error-handler! hdls)
-		 (let ((r (if (pair? hdl)
-			      (raise/cell hdl)
-			      ;; old form for backward compa
-			      (hdl val))))
-		    ;; ($set-error-handler! hdls)
-		    (when (isa? val &error)
-		       (with-access::&error val (fname location)
-			  (error/location "raise"
-			     "Handler return from error"
-			     val fname location)))
-		    r)))))
-	 ((not (null? handlers))
-	  (env-set-exitd-val! (current-dynamic-env) val)
-	  (unwind-until! handlers #f))
+	      (wrong-handler handler val))))
 	 (else
-	  (default-exception-handler val)
-	  (the_failure "raise" "uncaught exception" val)))))
+	  (wrong-handler handler val)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-exception-handler ...                                    */
@@ -1394,7 +1392,7 @@
 ;*    get-error-handler ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (get-error-handler)
-   (get-error-handler))
+   ($get-error-handler))
 
 ;*---------------------------------------------------------------------*/
 ;*    env-get-error-handler ...                                        */
