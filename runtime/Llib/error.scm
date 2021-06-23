@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Jun 22 13:15:09 2021 (serrano)                */
+;*    Last change :  Wed Jun 23 06:54:55 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -451,9 +451,19 @@
       ;; with-handler forms (see comptime/Expand/exit.scm)
       (let ((denv (cdr hdl))
 	    (h (car hdl)))
-	 (env-set-exitd-val! denv val)
+	 (set-cdr! hdl val)
 	 (unwind-until! h denv)))
    
+   (define (raise/cell hdl)
+      ;; since 14 jun 2021, error handlers are pushed
+      ;; along a cell where to store the exection value
+      ;; this removes one closure allocation of 
+      ;; with-handler forms (see comptime/Expand/exit.scm)
+      (let ((cell (cdr hdl))
+	    (h (car hdl)))
+	 (cell-set! cell val)
+	 (unwind-until! h cell)))
+
    (define (raise/cell hdl)
       ;; since 14 jun 2021, error handlers are pushed
       ;; along a cell where to store the exection value
