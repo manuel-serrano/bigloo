@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Sun Aug 25 09:12:32 2019 (serrano)                */
+;*    Last change :  Fri Jun 25 14:14:12 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -185,6 +185,8 @@
 		(out (string-append "#s16:" (number->string obj)) col))
 	       ((int32? obj)
 		(out (string-append "#s32:" (number->string obj)) col))
+	       ((bignum? obj)
+		(out (string-append "#z" (number->string obj)) col))
 	       (else
 		(out (number->string obj) col))))
 	   ((symbol? obj)
