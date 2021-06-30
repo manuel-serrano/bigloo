@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Wed May 27 07:17:48 2020 (serrano)                */
-/*    Copyright   :  2015-20 Manuel Serrano                            */
+/*    Last change :  Wed Jun 30 13:23:43 2021 (serrano)                */
+/*    Copyright   :  2015-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
 /*=====================================================================*/
@@ -73,7 +73,7 @@ function findChapter( key ) {
 function chapterEntries( chapter ) {
    
    function chapterFile( file, i = undefined, arr = undefined ) {
-      var base = path.basename( file );
+      let base = path.basename( file );
       return {
 	 path: file.replace( /[.]md$/, ".html" ),
 	 href: base.replace( /[.]md$/, ".html" ),
@@ -85,7 +85,7 @@ function chapterEntries( chapter ) {
       if( typeof file != "string" ) {
 	 return [ false ];
       } else {
-	 var fp = path.join( ROOT, file );
+	 let fp = path.join( ROOT, file );
 	 if( fs.lstatSync( fp ).isDirectory() ) {
 	    return fs.readdirSync( fp )
 	       .filter( function( e, idx = undefined, arr = undefined ) {
@@ -102,7 +102,7 @@ function chapterEntries( chapter ) {
    }
 
    if( chapter.json ) {
-      var c = require( path.join( PWD, chapter.json ) );
+      let c = require( path.join( PWD, chapter.json ) );
       return Array.prototype.concat.apply( [], c.files.map( chapterEntry ) );
    } else if( chapter.files ) {
       return Array.prototype.concat.apply( [], chapter.files.map( chapterEntry ) );
@@ -115,9 +115,9 @@ function chapterEntries( chapter ) {
 /*    childrenSize ...                                                 */
 /*---------------------------------------------------------------------*/
 function childrenSize( children ) {
-   var res = 0;
+   let res = 0;
    
-   for( var i = 0; i < children.length; i++ ) {
+   for( let i = 0; i < children.length; i++ ) {
       if( children[ i ].tagName == "ul" ) {
 	 res += childrenSize( children[ i ].childNodes );
       } else if( children[ i ].tagName == "li" ) {
@@ -136,18 +136,18 @@ function makeToc( els, k, proc = false ) {
       if( els.length == k  ) {
 	 return [];
       } else {
-	 var acc = [];
-	 var tag = els[ k ].tagName;
+	 let acc = [];
+	 let tag = els[ k ].tagName;
 
-	 for( var i = k; i < els.length; ) {
+	 for( let i = k; i < els.length; ) {
 	    if( els[ i ].tagName == tag ) {
-	       var el = els[ i++ ];
-	       var n = proc ? proc( el ) : el.childNodes;
+	       let el = els[ i++ ];
+	       let n = proc ? proc( el ) : el.childNodes;
 	       acc.push( <li>
 		 <a href=${"#" + el.id} role="presentation">${n}</a>
                </li> );
 	    } else if( els[ i ].tagName > tag ) {
-	       var children = _makeToc( els, i, proc, indent + "  " );
+	       let children = _makeToc( els, i, proc, indent + "  " );
 	       acc.push( <ul>${children}</ul> );
 	       i += childrenSize( children );
 	    } else {
@@ -167,13 +167,13 @@ function makeToc( els, k, proc = false ) {
 /*    compileXML ...                                                   */
 /*---------------------------------------------------------------------*/
 function compileXML( ast, title, clazz, target, tocfile = undefined ) {
-   var footer = path.join( PWD, "footer.md" );
-   var toc = hopdoc.toc( ast );
-   var affix = "normal";
+   let footer = path.join( PWD, "footer.md" );
+   let toc = hopdoc.toc( ast );
+   let affix = "normal";
    
    toc.shift();
    
-   var document = <html>
+   let document = <html>
      <head css=${css}
 	   title=${www.title + "/" + title}
            jscript=${jscript}
@@ -182,7 +182,7 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      let top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
 		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
@@ -241,10 +241,10 @@ function compileXML( ast, title, clazz, target, tocfile = undefined ) {
 /*    compileNode ...                                                  */
 /*---------------------------------------------------------------------*/
 function compileNode( node, title, clazz, target, tocfile = undefined ) {
-   var footer = path.join( PWD, "footer.md" );
-   var affix = "normal";
+   let footer = path.join( PWD, "footer.md" );
+   let affix = "normal";
    
-   var document = <html>
+   let document = <html>
      <head css=${css}
 	   title=${www.title + "/" + title}
            jscript=${jscript}
@@ -253,7 +253,7 @@ function compileNode( node, title, clazz, target, tocfile = undefined ) {
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section ${clazz}`}
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      let top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
 		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
@@ -289,13 +289,13 @@ function compileNode( node, title, clazz, target, tocfile = undefined ) {
 /*    compileSection ...                                               */
 /*---------------------------------------------------------------------*/
 function compileSection( page ) {
-   var footer = path.join( PWD, "footer.md" );
-   var ast = hopdoc.load( path.join( PWD, page ) )
-   var toc = hopdoc.toc( ast );
-   var title = path.basename( page ).replace( /[0-9]+[-]|[.][^.]*$/g, "" );
-   var key = path.basename( path.dirname( page ) ).toLowerCase();
-   var affix = "normal";
-   var chap = findChapter( title );
+   let footer = path.join( PWD, "footer.md" );
+   let ast = hopdoc.load( path.join( PWD, page ) )
+   let toc = hopdoc.toc( ast );
+   let title = path.basename( page ).replace( /[0-9]+[-]|[.][^.]*$/g, "" );
+   let key = path.basename( path.dirname( page ) ).toLowerCase();
+   let affix = "normal";
+   let chap = findChapter( title );
    
    if( key == "www" ) {
       key = alias[ path.basename( page ) ];
@@ -303,7 +303,7 @@ function compileSection( page ) {
       key = title;
    }
 
-   var document = <html>
+   let document = <html>
      <head css=${css}
 	   title=${www.title + "/" + title}
            jscript=${jscript}
@@ -312,7 +312,7 @@ function compileSection( page ) {
 
      <body data-spy="scroll" data-target="#navbar" class=${`bigloo ${title} section`}
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      let top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
 		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
@@ -379,11 +379,11 @@ function compileSection( page ) {
 /*    compileChapter ...                                               */
 /*---------------------------------------------------------------------*/
 function compileChapter( json ) {
-   var footer = path.join( PWD, "footer.md" );
-   var chapter = require( path.join( PWD, json ) );
-   var toc = chapterEntries( chapter ).filter( x => x );
+   let footer = path.join( PWD, "footer.md" );
+   let chapter = require( path.join( PWD, json ) );
+   let toc = chapterEntries( chapter ).filter( x => x );
 
-   var document = <html>
+   let document = <html>
      <head css=${css}
 	   title=${www.title + "/" + chapter.title}
            jscript=${jscript}
@@ -436,7 +436,7 @@ function compileChapter( json ) {
 /*---------------------------------------------------------------------*/
 function compileMain( content ) {
 
-   var document = <html>
+   let document = <html>
      <head css=${css}
 	   title=${www.title}
            jscript=${jscript}
@@ -445,7 +445,7 @@ function compileMain( content ) {
 
      <body class="bigloo home" data-spy="scroll" data-target="#navbar"
            onscroll=~{
-	      var top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
+	      let top = (window.pageYOffset || document.scrollTop)-(document.clientTop||0);
 	      if( top > 180 ) {
 		 document.body.setAttribute( "scrolled", "yes" );
 	      } else {
@@ -477,9 +477,9 @@ function compileMain( content ) {
 /*    compileLibrary ...                                               */
 /*---------------------------------------------------------------------*/
 function compileLibrary( content ) {
-   var footer = path.join( PWD, "footer.md" );
+   let footer = path.join( PWD, "footer.md" );
    
-   var document = <html>
+   let document = <html>
      <head css=${css}
 	   title=${www.title}
            jscript=${jscript}
@@ -515,11 +515,11 @@ function compileLibrary( content ) {
 /*    compile the HTML index page.                                     */
 /*---------------------------------------------------------------------*/
 function compileIdx( json ) {
-   var idx = require( path.join( PWD, json ) );
-   var chapter = { title: "Index", key: "manual" };
-   var footer = path.join( PWD, "footer.md" );
+   let idx = require( path.join( PWD, json ) );
+   let chapter = { title: "Index", key: "manual" };
+   let footer = path.join( PWD, "footer.md" );
 
-   var document = <html>
+   let document = <html>
      <head css=${css}
 	   title=${www.title + "/" + chapter.title}
            jscript=${jscript}
