@@ -49,9 +49,17 @@ p.danger {
 /*---------------------------------------------------------------------*/
 /*    title                                                            */
 /*---------------------------------------------------------------------*/
+@media screen and (min-width: 1024px) {
+    .bigloo .jumbotron {
+	position: fixed;
+    }
+    .filler {
+	height: 290px;
+    }
+}
+
 .bigloo .jumbotron {
   margin-top: 40px;
-  position: fixed;
   top: 0px;
   right: 0;
   left: 0;
@@ -126,7 +134,6 @@ p.danger {
 /*    filler                                                           */
 /*---------------------------------------------------------------------*/
 .filler {
-  height: 290px;
   visibility: hidden;
 }
 
