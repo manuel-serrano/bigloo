@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Aug  1 10:22:56 2015                          */
-/*    Last change :  Thu May 14 11:36:36 2020 (serrano)                */
-/*    Copyright   :  2015-20 Manuel Serrano                            */
+/*    Last change :  Wed Jun 30 13:23:53 2021 (serrano)                */
+/*    Copyright   :  2015-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hop.js XML extensions                                            */
 /*=====================================================================*/
@@ -57,7 +57,7 @@ function title( attrs, ... subtitle ) {
 /*    xmlNodes ...                                                     */
 /*---------------------------------------------------------------------*/
 function xmlNodes( args ) {
-   var nodes = Array.prototype.slice.call( args, 1 );
+   let nodes = Array.prototype.slice.call( args, 1 );
    
    function pred( el ) {
       return !(typeof( el ) == "string" );
@@ -69,8 +69,8 @@ function xmlNodes( args ) {
 /*---------------------------------------------------------------------*/
 /*    navbut ...                                                       */
 /*---------------------------------------------------------------------*/
-function navbut( attrs, _ ) {
-   const body = xmlNodes( arguments );
+function navbut( attrs, args ) {
+   const body = xmlNodes( args );
 
    return <div class="btn-group navbut">
        <button type="button"
@@ -92,8 +92,8 @@ function navbut( attrs, _ ) {
 /*---------------------------------------------------------------------*/
 /*    navbar ...                                                       */
 /*---------------------------------------------------------------------*/
-function navbar( attrs, chapters ) {
-   if( !(chapters instanceof Array) ) { chapters = arguments[ 2 ]; }
+function navbar( attrs, ... chapters ) {
+   if( !(chapters[ 0 ] instanceof Array) ) { chapters = chapters[ 1 ]; }
 
    return <nav class="navbar navbar-inverse navbar-fixed-top">
      <div class="container">
@@ -107,7 +107,7 @@ function navbar( attrs, chapters ) {
        <ul class="nav navbar-nav">
          ${chapters.map( function( p, idx = undefined, arr = undefined ) {
 	    if( p.entries.length == 0 ) {
-               var clazz = p.name.toLowerCase()==attrs.key
+               let clazz = p.name.toLowerCase()==attrs.key
 		   ? "active" : "";
                return <li class=${clazz}>
 	         <a href=${p.href}>
@@ -116,7 +116,7 @@ function navbar( attrs, chapters ) {
 	         </a>
 	       </li>;
 	    } else {
-               var clazz = p.name.toLowerCase()==attrs.key
+               let clazz = p.name.toLowerCase()==attrs.key
 		   ? "dropdown active" : "dropdown";
                return <li class=${clazz}>
 	         <a href=${p.href}
@@ -146,7 +146,7 @@ function navbar( attrs, chapters ) {
 /*    copyrightYears ...                                               */
 /*---------------------------------------------------------------------*/
 function copyrightYears( iyear ) {
-   var y = new Date().getFullYear();
+   let y = new Date().getFullYear();
 
    if( y == iyear ) {
       return iyear + "";
@@ -210,12 +210,13 @@ function entryLetter( en ) {
 /*    idxLetters ...                                                   */
 /*---------------------------------------------------------------------*/
 function idxLetters( es ) {
-   var res = [];
-   var letter = false;
-   var mark = 0;
+   let res = [];
+   let letter = false;
+   let mark = 0;
+   let i = 0;
 
-   for( var i = 0; i < es.length; i++ ) {
-      var l = entryLetter( es[ i ] );
+   for( i = 0; i < es.length; i++ ) {
+      let l = entryLetter( es[ i ] );
       if( l != letter ) {
 	 if( i > 0 ) {
 	    res = res.concat( es.slice( mark, i ) );
@@ -278,9 +279,9 @@ function idxEntry( e, idx = undefined, arr = undefined ) {
 /*    idx ...                                                          */
 /*---------------------------------------------------------------------*/
 function idx( attrs, entries ) {
-   var en = idxLetters( entries.filter( x => x ) );
-   var collen = en.length / 3;
-   var a = new Array( 27 );
+   let en = idxLetters( entries.filter( x => x ) );
+   let collen = en.length / 3;
+   let a = new Array( 27 );
    const c0 = "A".charCodeAt( 0 );
    
    for( let i = 0; i < 26; i++ ) {
