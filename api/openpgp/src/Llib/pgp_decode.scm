@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Sun Apr 18 18:26:11 2021 (serrano)                */
+;*    Last change :  Thu Jul  1 09:25:36 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Florian Loitsch, Manuel Serrano.          */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
@@ -93,7 +93,9 @@
 			(decode-packet-length-v4 p)
 			(set! partial? p?)
 			(set! pp (length-limited-pipe-port p len))
-			(read-chars 256 pp)))
+			(let ((str (read-chars 256 pp)))
+			   (unless (eof-object? str)
+			      str))))
 		    ((eof-object? str) #f)
 		    (else str)))))))))
 
