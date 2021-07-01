@@ -364,13 +364,9 @@ introspection facilities.
 
 @section Threads
 
-Since release 2.4d, Bigloo has included a thread library. Bigloo
-supports Fair threads that are cooperative threads run by a fair
-scheduler which gives them equal access to the processor. Fair threads
-can communicate using broadcast events and their semantics does not
-depends on the executing platform. Fine control over fair threads
-execution is possible allowing the programming of specific
-user-defined scheduling strategies.
+Since release 2.4d, Bigloo supports multi-threading. It fully supports
+posix threads (preemptive threads) and fair threads (cooperative
+threads).
 
 @section SQL
 

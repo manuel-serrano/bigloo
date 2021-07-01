@@ -14,7 +14,7 @@ ${<div class="row">
        title="Latest"
        icon="glyphicon-download"
 	   label=${"bigloo-latest.tgz (" + cfg.version + ")"}
-       href=${cfg.bglurlbase + "/bigloo-latest.tar.gz"}/>
+       href="download/bigloo-latest.tar.gz"/>
   </div>
   <div class="col-xs-4">
     <xml.downloadButton
@@ -22,7 +22,7 @@ ${<div class="row">
        title="Unstable"
        icon="glyphicon-download"
 	   label="bigloo-unstable.tgz"
-       href=${cfg.bglurlbase + "/bigloo-unstable.tar.gz"}/>
+       href="download/bigloo-unstable.tar.gz"/>
   </div>
   <div class="col-xs-4">
     <xml.downloadButton
