@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Tue Jun 15 08:45:09 2021 (serrano)                */
+;*    Last change :  Mon Jul  5 10:53:18 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -160,7 +160,6 @@
       (bind-exit (esc)
 	 (with-exception-handler
 	    (lambda (e)
-	       (tprint "e=" e)
 	       (newline (current-error-port))
 	       (test-fail err)
 	       (flush-output-port (current-output-port))

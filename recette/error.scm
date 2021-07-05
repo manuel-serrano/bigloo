@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/error.scm                    */
+;*    serrano/prgm/project/bigloo/bigloo/recette/error.scm             */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 16 15:41:47 1993                          */
-;*    Last change :  Sun Jan 19 21:52:09 2014 (serrano)                */
+;*    Last change :  Mon Jul  5 10:50:26 2021 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des `error-handler'                    */
 ;*---------------------------------------------------------------------*/
@@ -308,13 +308,15 @@
 		i))
 	 0)
    (test "with-handler.11"
-	 (cons
-	  (bind-exit (exit)
-	     (with-handler (lambda (e) (exit 'a))
-			   (/fx 1 0)))
-	  (with-handler (lambda (e) 'b)
-			(/fx 1 0)))
-	 '(a . b))
+      (cons
+	 (bind-exit (exit)
+	    (with-handler
+	       (lambda (e) (exit 'a))
+	       (error #f #f #f)))
+	 (with-handler
+	    (lambda (e) 'b)
+	    (error #f #f #f)))
+      '(a . b))
    (test "with-handler.1-eval"
 	 (eval '(with-handler
 		   (lambda (e) e)
