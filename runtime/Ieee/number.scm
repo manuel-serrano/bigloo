@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Sun Dec 30 15:20:57 2018 (serrano)                */
+;*    Last change :  Wed Jul  7 08:27:53 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -109,6 +109,11 @@
 	    (inline llong->flonum::double ::llong)
 	    (inline bignum->flonum::double ::bignum)
 	    (inline flonum->bignum::bignum ::double)
+
+	    (inline bignum->int64::int64 ::bignum)
+	    (inline int64->bignum::bignum ::int64)
+	    (inline bignum->uint64::uint64 ::bignum)
+	    (inline uint64->bignum::bignum ::uint64)
 	    
 	    (inline flonum->int32::int32 ::double)
 	    (inline int32->flonum::double  ::int32)
@@ -172,6 +177,10 @@
 	    ($flonum->llong side-effect-free args-safe (effect) no-cfa-top)
 	    (bignum->flonum side-effect-free no-cfa-top nesting (effect) no-cfa-top)
  	    (flonum->bignum side-effect-free args-safe (effect) no-cfa-top)
+	    (bignum->int64 side-effect-free no-cfa-top nesting (effect) no-cfa-top)
+ 	    (int64->bignum side-effect-free args-safe (effect) no-cfa-top)
+	    (bignum->uint64 side-effect-free no-cfa-top nesting (effect) no-cfa-top)
+ 	    (uint64->bignum side-effect-free args-safe (effect) no-cfa-top)
 	    (flonum->int32 side-effect-free args-safe (effect) no-cfa-top)
 	    (int32->flonum side-effect-free args-safe (effect) no-cfa-top)
 	    (flonum->uint32 side-effect-free args-safe (effect) no-cfa-top)
@@ -301,6 +310,15 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (flonum->bignum x) ($flonum->bignum x))
 (define-inline (bignum->flonum x) ($bignum->flonum x))
+
+;*---------------------------------------------------------------------*/
+;*    int64->bignum ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (int64->bignum x) ($int64->bignum x))
+(define-inline (bignum->int64 x) ($bignum->int64 x))
+
+(define-inline (uint64->bignum x) ($uint64->bignum x))
+(define-inline (bignum->uint64 x) ($bignum->uint64 x))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum->int32 ...                                                */

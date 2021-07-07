@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Dec 11 07:43:40 2019 (serrano)                */
-;*    Copyright   :  2006-19 Marc Feeley                               */
+;*    Last change :  Wed Jul  7 08:18:28 2021 (serrano)                */
+;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -98,7 +98,10 @@
 	  (export $$bignum->llong "bgl_bignum_to_llong")
 	  (export $$elong->bignum "bgl_elong_to_bignum")
 	  (export $$llong->bignum "bgl_llong_to_bignum")
+	  (export $$int64->bignum "bgl_int64_to_bignum")
 	  (export $$uint64->bignum "bgl_uint64_to_bignum")
+	  (export $$bignum->int64 "bgl_bignum_to_int64")
+	  (export $$bignum->uint64 "bgl_bignum_to_uint54")
 	  (export $$bignum-cmp "bgl_bignum_cmp")
 	  (export $$absbx "bgl_bignum_abs")
 	  (export $$negbx "bgl_bignum_neg")
@@ -135,7 +138,10 @@
 	  ($$bignum->llong::llong ::bignum)
 	  ($$elong->bignum::bignum ::elong)
 	  ($$llong->bignum::bignum ::llong)
+	  ($$int64->bignum::bignum ::int64)
 	  ($$uint64->bignum::bignum ::uint64)
+	  ($$bignum->int64 ::int64 ::bignum)
+	  ($$bignum->uint64 ::uint64 ::bignum)
 	  ($$bignum-cmp::int ::bignum ::bignum)
 	  ($$zerobx?::bool ::bignum)
 	  ($$positivebx?::bool ::bignum)
@@ -218,6 +224,15 @@
    (*llong #l-2 (expt #l2 30)))
 (define (bignum-min-llong-div-radix)
    (quotientllong (*llong #l-2 (expt #l2 60)) #l32768))
+
+(define (bignum-int64-radix)
+   (expt #s64:2 30))
+(define (bignum-uint64-radix)
+   (expt #s64:2 30))
+(define (bignum-min-int64)
+   (*s64 #s64:-2 (expts64 #s64:2 30)))
+(define (bignum-min-int64-div-radix)
+   (quotients64 (*s64 #s64:-2 (expt #s64:2 60)) #s64:32768))
 
 ;*---------------------------------------------------------------------*/
 ;*    Constructors and accessors                                       */
@@ -327,6 +342,26 @@
 			   i
 			   (-fx 0 ($llong->long (remainderllong x ($long->llong (bignum-radix))))))
 			  (loop2 (+fx i 1) (quotientllong x (bignum-radix))))
+		       r)))))))
+
+(define ($$int64->bignum n)
+   (let ((neg-n (if (<s64 n #s64:0) n (-s64 #s64:0 n))))
+      ;; computing with negative n avoids overflow
+      (let loop1 ((nb-digits 0) (x::int64 neg-n))
+	 (if (not (=s64 x #s64:0))
+	     (loop1 (+fx nb-digits 1) (quotients64 x (bignum-s64-radix)))
+	     (let ((r (make-bignum (+fx nb-digits 1))))
+		(if (<s64 n #s64:0)
+		    (bignum-set-neg! r)
+		    (bignum-set-nonneg! r))
+		(let loop2 ((i 1) (x neg-n))
+		   (if (not (=s64 x #s64:0))
+		       (begin
+			  (bignum-digit-set!
+			   r
+			   i
+			   (-fx 0 ($int64->long (remainders64 x ($long->int64 (bignum-radix))))))
+			  (loop2 (+fx i 1) (quotients64 x (bignum-radix))))
 		       r)))))))
 
 (define ($$uint64->bignum n)
@@ -1063,6 +1098,28 @@
 		(-llong #l0 n))
 	       (else
 		#f)))))
+
+(define ($$bignum->int64 x) ;; returns #f on fixnum overflow
+   (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
+      (let loop ((n::int64 #s64:0) (i lenx-minus-1))
+	 (cond ((<fx 0 i)
+		(if (<s64 n (bignum-min-int64-div-radix))
+		    #f
+		    (let ((m (*s64 n (bignum-int64-radix)))
+			  (d ($long->int64 (bignum-digit-ref x i))))
+		       (if (<s64 m (+s64 (bignum-min-int64) d))
+			   #f
+			   (loop (-s64 m d)
+				 (-fx i 1))))))
+	       (($$negativebx? x)
+		n)
+	       ((not (=s64 n (bignum-min-int64)))
+		(-s64 #l0 n))
+	       (else
+		#f)))))
+
+(define ($$bignum->uint64 x) ;; returns #f on fixnum overflow
+   (int64->uint64 ($$bignum->int64 x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$seed-rand ...                                                  */

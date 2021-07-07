@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Wed Dec 11 06:57:29 2019 (serrano)                */
-;*    Copyright   :  2008-19 Manuel Serrano                            */
+;*    Last change :  Wed Jul  7 08:58:54 2021 (serrano)                */
+;*    Copyright   :  2008-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
 ;*=====================================================================*/
@@ -19,9 +19,12 @@
       ($elong->bignum::bignum (::elong) "bgl_long_to_bignum")
       ($llong->bignum::bignum (::llong) "bgl_llong_to_bignum")
       ($uint64->bignum::bignum (::uint64) "bgl_uint64_to_bignum")
+      ($int64->bignum::bignum (::uint64) "bgl_int64_to_bignum")
       ($bignum->fixnum::long (::bignum) "bgl_bignum_to_long")
       ($bignum->elong::elong (::bignum) "bgl_bignum_to_long")
       ($bignum->llong::llong (::bignum) "bgl_bignum_to_llong")
+      ($bignum->int64::int64 (::bignum) "bgl_bignum_to_int64")
+      ($bignum->uint64::uint64 (::bignum) "bgl_bignum_to_uint64")
       ($bignum-cmp::int (::bignum ::bignum) "bgl_bignum_cmp")
       ($absbx::bignum (::bignum) "bgl_bignum_abs")
       ($negbx::bignum (::bignum) "bgl_bignum_neg")
@@ -86,6 +89,12 @@
 	    "LLONG_TO_BIGNUM")
 	 (method static $uint64->bignum::bignum (::uint64)
 	    "LLONG_TO_BIGNUM")
+	 (method static $int64->bignum::bignum (::int64)
+	    "LLONG_TO_BIGNUM")
+	 (method static $bignum->int64::llong (::bignum)
+	    "bgl_bignum_to_llong")
+	 (method static $bignum->uint64::llong (::bignum)
+	    "bgl_bignum_to_llong")
 	 (method static $bignum->fixnum::long (::bignum)
 	    "bgl_bignum_to_long")
 	 (method static $bignum->elong::elong (::bignum)

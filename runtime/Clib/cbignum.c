@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Mon Jun 10 07:46:56 2019 (serrano)                */
-/*    Copyright   :  2003-19 Manuel Serrano                            */
+/*    Last change :  Wed Jul  7 08:19:31 2021 (serrano)                */
+/*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -156,6 +156,38 @@ bgl_llong_to_bignum( const BGL_LONGLONG_T n ) {
 
 /*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_int64_to_bignum ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_int64_to_bignum( const int64_t n ) {
+   obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
+   
+#if( BGL_LONGLONG_LIMBS == 1 )
+   if( n < 0 ) {
+      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) -n;
+      BXSIZ( x ) = -1;
+   } else {
+      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) n;
+      BXSIZ( x ) = (n!=0);
+   }
+#else
+   mp_size_t size = 0;
+   uint64_t vl = (uint64_t) (n < 0 ? -n : n);
+      
+   do {
+      BXLIMBS( x )[ size ] = (mp_limb_t) (vl & GMP_NUMB_MASK);
+      size++;
+      vl >>= GMP_NUMB_BITS;
+   } while( vl );
+
+   BXSIZ( x ) = n > 0 ? size : (n < 0 ? -size : 0);
+#endif
+   
+   return x;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
 /*    bgl_uint64_to_bignum ...                                         */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
@@ -213,6 +245,24 @@ bgl_bignum_to_long( obj_t x ) {
 BGL_RUNTIME_DEF BGL_LONGLONG_T
 bgl_bignum_to_llong( obj_t x ) {
    return (BGL_LONGLONG_T)mpz_get_ui( &(BIGNUM( x ).mpz) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF int64_t                                          */
+/*    bgl_bignum_to_int64 ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int64_t
+bgl_bignum_to_int64( obj_t x ) {
+   return (int64_t)mpz_get_ui( &(BIGNUM( x ).mpz) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF uint64_t                                         */
+/*    bgl_bignum_to_uint64 ...                                         */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF uint64_t
+bgl_bignum_to_uint64( obj_t x ) {
+   return (uint64_t)mpz_get_ui( &(BIGNUM( x ).mpz) );
 }
 
 /*---------------------------------------------------------------------*/
