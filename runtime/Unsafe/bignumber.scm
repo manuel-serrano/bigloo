@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Jul  7 08:18:28 2021 (serrano)                */
+;*    Last change :  Wed Jul  7 09:57:28 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -167,7 +167,7 @@
 	  ($$bignum->flonum::double ::bignum)))))
 
 ;*---------------------------------------------------------------------*/
-;*    $$string->integer-obj ...                                         */
+;*    $$string->integer-obj ...                                        */
 ;*    -------------------------------------------------------------    */
 ;*    When no native bignum implementation is available, standard      */
 ;*    aritmethic operations do not promote their result because        */
@@ -190,8 +190,10 @@
        `(bit-lshelong 1 ,e))
       ((and (llong? v) (=llong v #l2))
        `(bit-lshllong 1 ,e))
+      ((and (int64? v) (=s64 v #s64:2))
+       `(bit-lshs64 #s64:1 ,e))
       (else
-       (error 'expt "Illegal exponentiation" v))))
+       (error "expt" "Illegal exponentiation" v))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Global constants                                                 */
@@ -226,13 +228,13 @@
    (quotientllong (*llong #l-2 (expt #l2 60)) #l32768))
 
 (define (bignum-int64-radix)
-   (expt #s64:2 30))
+   (expts64 #s64:2 30))
 (define (bignum-uint64-radix)
-   (expt #s64:2 30))
+   (expts64 #s64:2 30))
 (define (bignum-min-int64)
    (*s64 #s64:-2 (expts64 #s64:2 30)))
 (define (bignum-min-int64-div-radix)
-   (quotients64 (*s64 #s64:-2 (expt #s64:2 60)) #s64:32768))
+   (quotients64 (*s64 #s64:-2 (expts64 #s64:2 60)) #s64:32768))
 
 ;*---------------------------------------------------------------------*/
 ;*    Constructors and accessors                                       */
@@ -821,7 +823,7 @@
 		 (multi-digit-divisor-div x y lenx leny r)))))
    
    (if ($$zerobx? y)
-       (error '/bx "divide by zero" x)
+       (error "/bx" "divide by zero" x)
        (div x y (bignum-length x) (bignum-length y))))
 
 (define ($$divrembx x y)

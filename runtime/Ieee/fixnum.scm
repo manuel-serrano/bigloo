@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Jan  5 18:36:39 2020 (serrano)                */
+;*    Last change :  Wed Jul  7 09:57:06 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -979,6 +979,8 @@
 	    (exptfx::long ::long ::long)
 	    (expts32::int32 ::int32 ::int32)
 	    (exptu32::uint32 ::uint32 ::uint32)
+	    (expts64::int64 ::int64 ::int64)
+	    (exptu64::uint64 ::uint64 ::uint64)
 	    (exptbx::bignum ::bignum ::bignum)
 	    (integer->string::bstring ::long #!optional (radix::long 10))
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
@@ -1216,6 +1218,8 @@
 	    (exptfx no-alloc side-effect-free no-cfa-top nesting (effect))
 	    (expts32 no-alloc side-effect-free no-cfa-top nesting (effect))
 	    (exptu32 no-alloc side-effect-free no-cfa-top nesting (effect))
+	    (expts64 no-alloc side-effect-free no-cfa-top nesting (effect))
+	    (exptu64 no-alloc side-effect-free no-cfa-top nesting (effect))
 	    (exptbx side-effect-free no-cfa-top nesting (effect))
  	    (positivefx? no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
 	    (positiveelong? no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
@@ -2309,6 +2313,24 @@
       ((zerou32? y) #u32:1)
       ((evenu32? y) (exptu32 (*u32 x x) (quotientu32 y #u32:2)))
       (else (*u32 x (exptu32 x (-u32 y #u32:1))))))
+
+;*---------------------------------------------------------------------*/
+;*    expts64 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (expts64 x y)
+   (cond
+      ((zeros64? y) #s64:1)
+      ((evens64? y) (expts64 (*s64 x x) (quotients64 y #s64:2)))
+      (else (*s64 x (expts64 x (-s64 y #s64:1))))))
+
+;*---------------------------------------------------------------------*/
+;*    exptu64 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (exptu64 x y)
+   (cond
+      ((zerou64? y) #u64:1)
+      ((evenu64? y) (exptu64 (*u64 x x) (quotientu64 y #u64:2)))
+      (else (*u64 x (exptu64 x (-u64 y #u64:1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptbx ...                                                       */
