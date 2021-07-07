@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Jul  7 09:57:28 2021 (serrano)                */
+;*    Last change :  Wed Jul  7 10:44:21 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -140,8 +140,8 @@
 	  ($$llong->bignum::bignum ::llong)
 	  ($$int64->bignum::bignum ::int64)
 	  ($$uint64->bignum::bignum ::uint64)
-	  ($$bignum->int64 ::int64 ::bignum)
-	  ($$bignum->uint64 ::uint64 ::bignum)
+	  ($$bignum->int64::int64 ::bignum)
+	  ($$bignum->uint64::uint64 ::bignum)
 	  ($$bignum-cmp::int ::bignum ::bignum)
 	  ($$zerobx?::bool ::bignum)
 	  ($$positivebx?::bool ::bignum)
@@ -219,8 +219,6 @@
    (quotientelong (*elong #e-2 (expt #e2 30)) #e16384))
 
 (define (bignum-llong-radix)
-   (expt #l2 30))
-(define (bignum-uint64-radix)
    (expt #l2 30))
 (define (bignum-min-llong)
    (*llong #l-2 (expt #l2 30)))
