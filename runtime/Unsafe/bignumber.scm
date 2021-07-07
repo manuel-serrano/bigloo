@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Jul  7 10:44:21 2021 (serrano)                */
+;*    Last change :  Wed Jul  7 10:51:54 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -349,7 +349,7 @@
       ;; computing with negative n avoids overflow
       (let loop1 ((nb-digits 0) (x::int64 neg-n))
 	 (if (not (=s64 x #s64:0))
-	     (loop1 (+fx nb-digits 1) (quotients64 x (bignum-s64-radix)))
+	     (loop1 (+fx nb-digits 1) (quotients64 x (bignum-int64-radix)))
 	     (let ((r (make-bignum (+fx nb-digits 1))))
 		(if (<s64 n #s64:0)
 		    (bignum-set-neg! r)
@@ -360,7 +360,7 @@
 			  (bignum-digit-set!
 			   r
 			   i
-			   (-fx 0 ($int64->long (remainders64 x ($long->int64 (bignum-radix))))))
+			   (-fx 0 (int64->long (remainders64 x (long->int64 (bignum-radix))))))
 			  (loop2 (+fx i 1) (quotients64 x (bignum-radix))))
 		       r)))))))
 
