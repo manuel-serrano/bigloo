@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov  9 08:19:20 2013                          */
-;*    Last change :  Sat Jun 19 08:04:45 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 10:51:05 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wide types used to annotate the AST with a defuse property.      */
@@ -25,6 +25,10 @@
 	   engine_param)
    (export (wide-class local/defuse::local
 	       (%count::int (default 0)))
+
+	   (wide-class literal/defuse::literal
+	      (def::pair-nil read-only)
+	      (use::pair-nil read-only))
 
 	   (wide-class sequence/defuse::sequence
 	      (def::pair-nil read-only)

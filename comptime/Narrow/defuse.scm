@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Narrow/defuse.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Narrow/defuse.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Fri Apr 21 18:40:20 2017 (serrano)                */
-;*    Copyright   :  2013-17 Manuel Serrano                            */
+;*    Last change :  Thu Jul  8 10:45:48 2021 (serrano)                */
+;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Def/Use node property.                                           */
+;*    Partial Def/Use node property. No fix point iteration.           */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

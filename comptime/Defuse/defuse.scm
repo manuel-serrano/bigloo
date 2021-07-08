@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Sat Jun 19 08:23:28 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 10:45:08 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Def/Use node property.                                           */
+;*    Def/Use node property with fix point iteration.                  */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -28,7 +28,7 @@
 	    defuse_types
 	    defuse_set)
    (export (defuse-sfun! ::sfun)
-	   (generic defuse ::node)))
+	   (defuse-get ::node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse-sfun! ...                                                 */
@@ -38,7 +38,20 @@
       (for-each (lambda (l)
 		   (widen!::local/defuse l))
 	 args)
-      (defuse body)))
+      (let ((fix (make-cell #f)))
+	 (let loop ()
+	    (cell-set! fix #t)
+	    (multiple-value-bind (def use)
+	       (defuse body fix)
+	       (if (cell-ref fix)
+		   (values def use)
+		   (loop)))))))
+
+;*---------------------------------------------------------------------*/
+;*    defuse-get ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (defuse-get node)
+   (defuse node (make-cell #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::node ...                                                */
@@ -46,40 +59,60 @@
 ;*    Returns two values: def x use                                    */
 ;*    Does not store anything in the node                              */
 ;*---------------------------------------------------------------------*/
-(define-generic (defuse n::node)
+(define-generic (defuse n::node fix::cell)
    (values '() '()))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::literal ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::literal fix)
+   (cell-set! fix #f)
+   (defuse 
+      (widen!::literal/defuse n
+	 (def '())
+	 (use '()))
+      fix))
+
+(define-method (defuse n::literal/defuse fix)
+   (with-access::literal/defuse n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::var ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::var)
+(define-method (defuse n::var fix)
+;*    (cell-set! fix #f)                                               */
    (with-access::var n ((v variable))
       (values '() (if (isa? v local/defuse) (list v) '()))))
+
+;* (define-method (defuse n::var/defuse)                               * fix/
+;*    (with-access::sequence/defuse n (def use)                        */
+;*       (values def use)))                                            */
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse* ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (defuse* nodes::pair-nil def::pair-nil use::pair-nil)
+(define (defuse* nodes::pair-nil def::pair-nil use::pair-nil fix)
    (let loop ((nodes nodes)
 	      (def def)
 	      (use use))
       (if (null? nodes)
 	  (values def use)
 	  (multiple-value-bind (d u)
-	     (defuse (car nodes))
+	     (defuse (car nodes) fix)
 	     (loop (cdr nodes) (union d def) (union u use))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse-sequence ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (defuse-sequence nodes::pair-nil)
+(define (defuse-sequence nodes::pair-nil fix)
    (let loop ((nodes nodes)
 	      (def '())
 	      (use '()))
       (if (null? nodes)
 	  (values def use)
 	  (multiple-value-bind (d u)
-	     (defuse (car nodes))
+	     (defuse (car nodes) fix)
 	     (loop (cdr nodes)
 		(union def d)
 		(union use (disjonction u def)))))))
@@ -87,261 +120,290 @@
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::sequence ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::sequence)
+(define-method (defuse n::sequence fix)
+   (cell-set! fix #f)
    (with-access::sequence n (nodes)
       (multiple-value-bind (def use)
-	 (defuse-sequence nodes)
+	 (defuse-sequence nodes fix)
 	 (defuse
 	    (widen!::sequence/defuse n
 	       (def def)
-	       (use use))))))
+	       (use use))
+	    fix))))
 
-(define-method (defuse n::sequence/defuse)
+(define-method (defuse n::sequence/defuse fix)
    (with-access::sequence/defuse n (def use)
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::app ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::app)
+(define-method (defuse n::app fix)
+   (cell-set! fix #f)
    (with-access::app n (fun args)
       (multiple-value-bind (d u)
-	 (defuse fun)
+	 (defuse fun fix)
 	 (multiple-value-bind (def use)
-	    (defuse* args d u)
+	    (defuse* args d u fix)
 	    (defuse 
 	       (widen!::app/defuse n
 		  (def def)
-		  (use use)))))))
+		  (use use))
+	       fix)))))
 
-(define-method (defuse n::app/defuse)
+(define-method (defuse n::app/defuse fix)
    (with-access::app/defuse n (def use)
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::app-ly ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::app-ly)
+(define-method (defuse n::app-ly fix)
+   (cell-set! fix #f)
    (with-access::app-ly n (fun arg)
       (multiple-value-bind (deffun usefun)
-	 (defuse fun)
+	 (defuse fun fix)
 	 (multiple-value-bind (defarg usearg)
-	    (defuse arg)
+	    (defuse arg fix)
 	    (defuse 
 	       (widen!::app-ly/defuse n
 		  (def (union deffun defarg))
-		  (use (union usefun usearg))))))))
+		  (use (union usefun usearg)))
+	       fix)))))
 
-(define-method (defuse n::app-ly/defuse)
+(define-method (defuse n::app-ly/defuse fix)
    (with-access::app-ly/defuse n (def use)
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::funcall ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::funcall)
+(define-method (defuse n::funcall fix)
+   (cell-set! fix #f)
    (with-access::funcall n (fun args)
       (multiple-value-bind (d u)
-	 (defuse fun)
+	 (defuse fun fix)
 	 (multiple-value-bind (def use)
-	    (defuse* args d u)
+	    (defuse* args d u fix)
 	    (defuse 
 	       (widen!::funcall/defuse n
 		  (def def)
-		  (use use)))))))
+		  (use use))
+	       fix)))))
 
-(define-method (defuse n::funcall/defuse)
+(define-method (defuse n::funcall/defuse fix)
    (with-access::funcall/defuse n (def use)
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::extern ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::extern)
+(define-method (defuse n::extern fix)
+   ;;(cell-set! fix #f)
    (with-access::extern n (expr*)
-      (defuse* expr* '() '())))
+      (defuse* expr* '() '() fix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::cast ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::cast)
+(define-method (defuse n::cast fix)
+   ;;(cell-set! fix #f)
    (with-access::cast n (arg)
-      (defuse arg)))
+      (defuse arg fix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::setq ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::setq)
+(define-method (defuse n::setq fix)
+   (cell-set! fix #f)
    (with-access::setq n (var value)
       (multiple-value-bind (defvalue usevalue)
-	 (defuse value)
+	 (defuse value fix)
 	 (with-access::var var ((v variable))
 	    (when (isa? v local/defuse)
 	       (set! defvalue (add v defvalue)))
 	    (defuse
 	       (widen!::setq/defuse n
 		  (def defvalue)
-		  (use usevalue)))))))
+		  (use usevalue))
+	       fix)))))
 
-(define-method (defuse n::setq/defuse)
+(define-method (defuse n::setq/defuse fix)
    (with-access::setq/defuse n (def use)
       (values def use)))
    
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::conditional ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::conditional)
+(define-method (defuse n::conditional fix)
+   (cell-set! fix #f)
    (with-access::conditional n (test true false)
       (multiple-value-bind (deftest usetest)
-	 (defuse test)
+	 (defuse test fix)
 	 (multiple-value-bind (deftrue usetrue)
-	    (defuse true)
+	    (defuse true fix)
 	    (multiple-value-bind (deffalse usefalse)
-	       (defuse false)
+	       (defuse false fix)
 	       (defuse
 		  (widen!::conditional/defuse n
 		     (def (union deftest (intersection deftrue deffalse)))
-		     (use (union usetest (disjonction (union usetrue usefalse) deftest))))))))))
+		     (use (union usetest (disjonction (union usetrue usefalse) deftest))))
+		  fix))))))
 
-(define-method (defuse n::conditional/defuse)
+(define-method (defuse n::conditional/defuse fix)
    (with-access::conditional/defuse n (def use)
       (values def use)))
    
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::fail ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::fail)
+(define-method (defuse n::fail fix)
+   (cell-set! fix #f)
    (with-access::fail n (proc msg obj)
       (multiple-value-bind (defproc useproc)
-	 (defuse proc)
+	 (defuse proc fix)
 	 (multiple-value-bind (defmsg usemsg)
-	    (defuse msg)
+	    (defuse msg fix)
 	    (multiple-value-bind (defobj useobj)
-	       (defuse obj)
+	       (defuse obj fix)
 	       (defuse
 		  (widen!::fail/defuse n
 		     (def (union defproc defmsg defobj))
-		     (use (union useproc usemsg useobj)))))))))
+		     (use (union useproc usemsg useobj)))
+		  fix))))))
 
-(define-method (defuse n::fail/defuse)
+(define-method (defuse n::fail/defuse fix)
    (with-access::fail/defuse n (def use)
       (values def use)))
       
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::switch ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::switch)
+(define-method (defuse n::switch fix)
+   (cell-set! fix #f)
    (with-access::switch n (test clauses)
       (multiple-value-bind (deftest usetest)
-	 (defuse test)
+	 (defuse test fix)
 	 ;; compute separatly the def use props of all clauses
 	 (let ((defs '())
 	       (uses '()))
 	    (for-each (lambda (clause)
 			 (multiple-value-bind (def use)
-			    (defuse (cdr clause))
+			    (defuse (cdr clause) fix)
 			    (set! defs (cons def defs))
 			    (set! uses (cons use uses))))
 	       clauses)
 	    (defuse
 	       (widen!::switch/defuse n
 		  (def (union deftest (apply intersection defs)))
-		  (use (union usetest (disjonction (apply union uses) deftest)))))))))
+		  (use (union usetest (disjonction (apply union uses) deftest))))
+	       fix)))))
 
-(define-method (defuse n::switch/defuse)
+(define-method (defuse n::switch/defuse fix)
    (with-access::switch/defuse n (def use)
       (values def use)))
       
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::set-ex-it ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::set-ex-it)
+(define-method (defuse n::set-ex-it fix)
+   (cell-set! fix #f)
    (with-access::set-ex-it n (var body onexit)
       (multiple-value-bind (defvar usevar)
-	 (defuse var)
+	 (defuse var fix)
 	 (multiple-value-bind (defbody usebody)
-	    (defuse body)
+	    (defuse body fix)
 	    (multiple-value-bind (defonx useonx)
-	       (defuse onexit)
+	       (defuse onexit fix)
 	       (defuse
 		  (widen!::set-ex-it/defuse n
 		     (def (union defvar (intersection defbody defonx)))
-		     (use (union usevar (disjonction (union usebody useonx) defvar))))))))))
+		     (use (union usevar (disjonction (union usebody useonx) defvar))))
+		  fix))))))
 
-(define-method (defuse n::set-ex-it/defuse)
+(define-method (defuse n::set-ex-it/defuse fix)
    (with-access::set-ex-it/defuse n (def use)
       (values def use)))
       
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::jump-ex-it ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::jump-ex-it)
+(define-method (defuse n::jump-ex-it fix)
+   (cell-set! fix #f)
    (with-access::jump-ex-it n (exit value)
       (multiple-value-bind (defexit useexit)
-	 (defuse exit)
+	 (defuse exit fix)
 	 (multiple-value-bind (defvalue usevalue)
-	    (defuse value)
+	    (defuse value fix)
 	    (defuse
 	       (widen!::jump-ex-it/defuse n
 		  (def (union defexit defvalue))
-		  (use (union useexit usevalue))))))))
+		  (use (union useexit usevalue)))
+	       fix)))))
 
-(define-method (defuse n::jump-ex-it/defuse)
+(define-method (defuse n::jump-ex-it/defuse fix)
    (with-access::jump-ex-it/defuse n (def use)
       (values def use)))
       
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::make-box ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::make-box)
+(define-method (defuse n::make-box fix)
+   ;;(cell-set! fix #f)
    (with-access::make-box n (value)
-      (defuse value)))
+      (defuse value fix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::box-ref ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::box-ref)
+(define-method (defuse n::box-ref fix)
+   ;;(cell-set! fix #f)
    (with-access::box-ref n (var)
-      (defuse var)))
+      (defuse var fix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::box-set! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::box-set!)
+(define-method (defuse n::box-set! fix)
+   (cell-set! fix #f)
    (with-access::box-set! n (var value)
       (multiple-value-bind (defvalue usevalue)
-	 (defuse value)
+	 (defuse value fix)
 	 (multiple-value-bind (defvar usevar)
-	    (defuse var)
+	    (defuse var fix)
 	    (defuse
 	       (widen!::box-set!/defuse n
 		  (def (union defvalue defvar))
-		  (use (union usevalue usevar))))))))
+		  (use (union usevalue usevar)))
+	       fix)))))
 
-(define-method (defuse n::box-set!/defuse)
+(define-method (defuse n::box-set!/defuse fix)
    (with-access::box-set!/defuse n (def use)
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::sync)
+(define-method (defuse n::sync fix)
+   (cell-set! fix #f)
    (with-access::sync n (mutex prelock body)
       (multiple-value-bind (def use)
-	 (defuse-sequence (list prelock mutex body))
+	 (defuse-sequence (list prelock mutex body) fix)
 	 (defuse
 	    (widen!::sync/defuse n
 	       (def def)
-	       (use use))))))
+	       (use use))
+	    fix))))
 
-(define-method (defuse n::sync/defuse)
+(define-method (defuse n::sync/defuse fix)
    (with-access::sync/defuse n (def use)
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::let-var ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::let-var)
+(define-method (defuse n::let-var fix)
+   (cell-set! fix #f)
    (with-access::let-var n (bindings body)
       ;; bindings evaluation in unorder so cannot
       ;; be treated like a sequence
@@ -350,25 +412,27 @@
 	 (for-each (lambda (b)
 		      (widen!::local/defuse (car b))
 		      (multiple-value-bind (def use)
-			 (defuse (cdr b))
+			 (defuse (cdr b) fix)
 			 (set! defbindings (union def defbindings))
 			 (set! usebindings (union use usebindings))))
 	    bindings)
 	 (multiple-value-bind (defbody usebody)
-	    (defuse body)
+	    (defuse body fix)
 	    (defuse
 	       (widen!::let-var/defuse n
 		  (def (union defbindings defbody))
-		  (use (union usebindings (disjonction usebody defbindings)))))))))
+		  (use (union usebindings (disjonction usebody defbindings))))
+	       fix)))))
 
-(define-method (defuse n::let-var/defuse)
+(define-method (defuse n::let-var/defuse fix)
    (with-access::let-var/defuse n (def use)
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::let-fun ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::let-fun)
+(define-method (defuse n::let-fun fix)
+   (cell-set! fix #f)
    (with-access::let-fun n (locals body)
       ;; this is a conservative approach, we assume all functions called
       ;; for use but none called for def
@@ -382,13 +446,14 @@
 			 (set! usebindings (union use usebindings))))
 	    locals)
 	 (multiple-value-bind (defbody usebody)
-	    (defuse body)
+	    (defuse body fix)
 	    (defuse
 	       (widen!::let-fun/defuse n
 		  (def (union defbody defbindings))
-		  (use (union usebody usebindings))))))))
+		  (use (union usebody usebindings)))
+	       fix)))))
 
-(define-method (defuse n::let-fun/defuse)
+(define-method (defuse n::let-fun/defuse fix)
    (with-access::let-fun/defuse n (def use)
       (values def use)))
 

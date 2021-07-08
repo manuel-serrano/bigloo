@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 12 08:55:10 2021                          */
-;*    Last change :  Sat Jun 19 08:20:55 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 10:21:49 2021 (serrano)                */
 ;*    Copyright   :  2021 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    Flag as "volatile" local variables that traverses a set-exit     */
+;*    Flag as "volatile" local variables that survive a set-exit       */
 ;*    node. This is used only when  *local-exit?* is true.             */
 ;*=====================================================================*/
 
@@ -69,6 +69,11 @@
 ;*---------------------------------------------------------------------*/
 (define-walk-method (volatile node::let-var env)
    (with-access::let-var node (bindings body)
+      (multiple-value-bind (def use)
+	 (defuse-get node)
+	 (tprint "let-var..." (map (lambda (b) (shape (car b))) bindings))
+	 (tprint " def=" (map shape def))
+	 (tprint " use=" (map shape use)))
       (for-each (lambda (b)
 		   (with-access::local (car b) (volatile)
 		      (set! volatile #f)))
@@ -100,10 +105,14 @@
 ;*---------------------------------------------------------------------*/
 (define-walk-method (volatile node::set-ex-it env)
    (multiple-value-bind (def use)
-      (defuse node)
+      (defuse-get node)
+      (tprint "set-ex-it...")
+      (tprint " def=" (map shape def))
+      (tprint " use=" (map shape use))
       (for-each (lambda (l)
 		   (when (memq l env)
 		      (with-access::local l (volatile)
+			 (tprint "MARKING: " (shape l))
 			 (set! volatile #t))))
 	 use)
       (with-access::set-ex-it node (body onexit)
