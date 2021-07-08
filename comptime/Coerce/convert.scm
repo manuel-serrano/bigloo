@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Coerce/convert.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Coerce/convert.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Wed May 31 10:39:42 2017 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:28:41 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -129,7 +129,7 @@
    (trace coerce "runtime-type-error: " (shape ti) "  " (shape value) #\Newline)
    (let* ((aux (gensym 'aux))
 	  (uvalue (if (var? value)
-		      (duplicate::var value
+		      (duplicate::ref value
 			 (type *obj*))
 		      value))
 	  (res (top-level-sexp->node
@@ -328,7 +328,7 @@
       (spread-side-effect! lnode)
       (let* ((var (car (car (let-var-bindings lnode))))
 	     (coerce-app (do-convert coerce-op
-				     (instantiate::var
+				     (instantiate::ref
 					(loc loc)
 					(type (strict-node-type to from))
 					(variable var))
@@ -370,7 +370,7 @@
 	  (spread-side-effect! lnode)
 	  (let* ((var (car (car (let-var-bindings lnode))))
 		 (coerce-app (do-convert coerce-op
-					 (instantiate::var
+					 (instantiate::ref
 					    (loc loc)
 					    (type from)
 					    (variable var))
@@ -384,7 +384,7 @@
 		(set-cdr! binding2 (instantiate::cast
 				      (loc loc)
 				      (type *obj*)
-				      (arg (instantiate::var 
+				      (arg (instantiate::ref 
 					      (loc loc)
 					      (type from)
 					      (variable var))))))

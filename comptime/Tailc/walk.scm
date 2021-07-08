@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tailc/walk.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Tailc/walk.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Fri Apr 21 18:41:46 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:30:40 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `tail-call' pass.                                            */
 ;*=====================================================================*/
@@ -72,12 +72,12 @@
 		    (body (instantiate::app
 			     (loc loc)
 			     (type gtype)
-			     (fun (instantiate::var
+			     (fun (instantiate::ref
 				     (loc loc)
 				     (type gtype)
 				     (variable local)))
 			     (args (map (lambda (v)
-					   (instantiate::var
+					   (instantiate::ref
 					      (loc loc)
 					      (type (local-type v))
 					      (variable v)))
@@ -88,7 +88,7 @@
       ;; patch the body of the local function
       (for-each (lambda (call)
 		   (let* ((loc (node-loc call))
-			  (var (instantiate::var
+			  (var (instantiate::ref
 				  (loc loc)
 				  (type (local-type local))
 				  (variable local))))

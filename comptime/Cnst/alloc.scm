@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cnst/alloc.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/alloc.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Wed May 31 10:42:35 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:29:39 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -202,7 +202,7 @@
    (instantiate::app
       (loc loc)
       (type (strict-node-type type (get-default-type)))
-      (fun (instantiate::var
+      (fun (instantiate::ref
 	      (loc loc)
 	      (type (strict-node-type (get-default-type) (variable-type *cnst-table-ref*)))
 	      (variable *cnst-table-ref*)))
@@ -229,14 +229,14 @@
 		    loc)))
 	 (if *shared-cnst?*
 	     (hashtable-put! *string-env* string (cnst-info string var)))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type *bstring*)
 	    (variable var))))
    (let ((old (and *shared-cnst?* (hashtable-get *string-env* string))))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type *bstring*)
 	     (variable (cnst-info-offset old))))
@@ -260,7 +260,7 @@
 				  (instantiate::app
 				     (loc loc)
 				     (type *ucs2string*)
-				     (fun (instantiate::var
+				     (fun (instantiate::ref
 					     (loc loc)
 					     (type *ucs2string*)
 					     (variable *string->ucs2string*)))
@@ -268,7 +268,7 @@
 				  var
 				  (strict-node-type *ucs2string* *obj*)
 				  #f)))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -283,7 +283,7 @@
       (cond
 	 (old
 	  (if (eq? *init-mode* 'lib)
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type (strict-node-type *ucs2string* (get-default-type)))
 		 (variable (cnst-info-offset old)))
@@ -311,7 +311,7 @@
 				  (instantiate::app
 				     (loc loc)
 				     (type *symbol*)
-				     (fun (instantiate::var
+				     (fun (instantiate::ref
 					     (loc loc)
 					     (type *symbol*)
 					     (variable *bstring->symbol*)))
@@ -319,7 +319,7 @@
 				  var
 				  (strict-node-type *symbol* *obj*)
 				  #f)))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -335,12 +335,12 @@
 	 ((cnst-info? old)
 	  (cond
 	     ((variable? (cnst-info-offset old))
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type *symbol*)
 		 (variable (cnst-info-offset old))))
 	     ((eq? *init-mode* 'lib)
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type *symbol*)
 		 (variable (cnst-info-offset old))))
@@ -374,7 +374,7 @@
 				  (instantiate::app
 				     (loc loc)
 				     (type *keyword*)
-				     (fun (instantiate::var
+				     (fun (instantiate::ref
 					     (loc loc)
 					     (type *keyword*)
 					     (variable *bstring->keyword*)))
@@ -382,7 +382,7 @@
 				  var
 				  (strict-node-type *keyword* *obj*)
 				  #f)))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -397,7 +397,7 @@
       (cond
 	 (old
 	  (if (eq? *init-mode* 'lib)
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type *keyword*)
 		 (variable (cnst-info-offset old)))
@@ -430,13 +430,13 @@
 	 ((pair? old)
 	  (cond
 	     ((variable? (cnst-info-offset (cdr old)))
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type (strict-node-type
 			*bignum* (variable-type (cnst-info-offset (cdr old)))))
 		 (variable (cnst-info-offset (cdr old)))))
 	     ((eq? *init-mode* 'lib)
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type (strict-node-type
 			*bignum* (variable-type (cnst-info-offset (cdr old)))))
@@ -463,7 +463,7 @@
 		 procedure
 		 'sfun
 		 loc)))
-      (instantiate::var
+      (instantiate::ref
 	 (loc loc)
 	 (type (variable-type var))
 	 (variable var))))
@@ -477,7 +477,7 @@
 		 procedure
 		 'slfun
 		 loc)))
-      (instantiate::var
+      (instantiate::ref
 	 (loc loc)
 	 (type (variable-type var))
 	 (variable var))))
@@ -493,7 +493,7 @@
 		    'sreal
 		    loc)))
 	 (set! *real-env* (cons (cons real var) *real-env*))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -510,7 +510,7 @@
    (let ((old (find-real)))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type (variable-type old))
 	     (variable old)))
@@ -528,7 +528,7 @@
 		    'selong
 		    loc)))
 	 (set! *elong-env* (cons (cons elong var) *elong-env*))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -544,7 +544,7 @@
    (let ((old (find-elong)))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type (variable-type old))
 	     (variable old)))
@@ -562,7 +562,7 @@
 		    'sllong
 		    loc)))
 	 (set! *llong-env* (cons (cons llong var) *llong-env*))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -578,7 +578,7 @@
    (let ((old (find-llong)))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type (variable-type old))
 	     (variable old)))
@@ -596,7 +596,7 @@
 		    'sint32
 		    loc)))
 	 (set! *int32-env* (cons (cons int32 var) *int32-env*))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -612,7 +612,7 @@
    (let ((old (find-int32)))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type (variable-type old))
 	     (variable old)))
@@ -630,7 +630,7 @@
 		    'suint32
 		    loc)))
 	 (set! *uint32-env* (cons (cons uint32 var) *uint32-env*))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -646,7 +646,7 @@
    (let ((old (find-uint32)))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type (variable-type old))
 	     (variable old)))
@@ -664,7 +664,7 @@
 		    'sint64
 		    loc)))
 	 (set! *int64-env* (cons (cons int64 var) *int64-env*))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -680,7 +680,7 @@
    (let ((old (find-int64)))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type (variable-type old))
 	     (variable old)))
@@ -698,7 +698,7 @@
 		    'suint64
 		    loc)))
 	 (set! *uint64-env* (cons (cons uint64 var) *uint64-env*))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -714,7 +714,7 @@
    (let ((old (find-uint64)))
       (cond
 	 (old
-	  (instantiate::var
+	  (instantiate::ref
 	     (loc loc)
 	     (type (variable-type old))
 	     (variable old)))
@@ -742,7 +742,7 @@
 	     (instantiate::app
 		(loc loc)
 		(type *pair*)
-		(fun (instantiate::var
+		(fun (instantiate::ref
 			(loc loc)
 			(type (variable-type *cons*))
 			(variable *cons*)))
@@ -763,7 +763,7 @@
 	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
 				,(coerce! (cnst-list pair) var
 					  (strict-node-type *pair* *obj*) #f)))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -786,7 +786,7 @@
       (cond
 	 (old
 	  (if (eq? *init-mode* 'lib)
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type (strict-node-type
 			*pair* (variable-type (cnst-info-offset old))))
@@ -815,7 +815,7 @@
 		      (instantiate::app
 			 (loc loc)
 			 (type *vector*)
-			 (fun (instantiate::var
+			 (fun (instantiate::ref
 				 (loc loc)
 				 (type (variable-type *list->vector*))
 				 (variable *list->vector*)))
@@ -825,7 +825,7 @@
 				   (type (strict-node-type
 					  (get-type-kwote l) *obj*))
 				   (value l))))))))
-	      (body (let ((var-body (instantiate::var
+	      (body (let ((var-body (instantiate::ref
 				       (loc loc)
 				       (type (variable-type var))
 				       (variable var))))
@@ -838,13 +838,13 @@
 				(instantiate::app
 				   (loc loc)
 				   (type *obj*)
-				   (fun (instantiate::var
+				   (fun (instantiate::ref
 					   (loc loc)
 					   (type (variable-type
 						  *vector-tag-set!*))
 					   (variable *vector-tag-set!*)))
 				   (args (list
-					  (instantiate::var
+					  (instantiate::ref
 					     (loc loc)
 					     (type (variable-type var))
 					     (variable var))
@@ -875,7 +875,7 @@
 	     (set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
 	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
 				,(cnst-vector-node)))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (strict-node-type *vector* (variable-type var)))
 	    (variable var))))
@@ -891,7 +891,7 @@
       (cond
 	 (old
 	  (if (eq? *init-mode* 'lib)
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type (strict-node-type
 			*vector* (variable-type (cnst-info-offset old))))
@@ -939,7 +939,7 @@
 			 (instantiate::app
 			    (loc loc)
 			    (type vec-type)
-			    (fun (instantiate::var
+			    (fun (instantiate::ref
 				    (loc loc)
 				    (type vec-type)
 				    (variable (find-global list->vector))))
@@ -949,7 +949,7 @@
 				      (type (strict-node-type
 					     (get-type-kwote l) *obj*))
 				      (value l))))))))
-		 (body (instantiate::var
+		 (body (instantiate::ref
 			  (loc loc)
 			  (type vec-type)
 			  (variable var)))))
@@ -975,7 +975,7 @@
 		(set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
 	    (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
 				   ,(cnst-vector-node)))
-	    (instantiate::var
+	    (instantiate::ref
 	       (loc loc)
 	       (type vec-type)
 	       (variable var))))
@@ -993,7 +993,7 @@
 	 (cond
 	    (old
 	     (if (eq? *init-mode* 'lib)
-		 (instantiate::var
+		 (instantiate::ref
 		    (loc loc)
 		    (type (strict-node-type
 			   vec-type (variable-type (cnst-info-offset old))))
@@ -1036,7 +1036,7 @@
 	    (add-cnst-sexp! `($tvector-descr-set!
 			      (@ ,(global-id var) ,(global-module var))
 			      (get-tvector-descriptor ,aid))))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -1070,7 +1070,7 @@
 		      (instantiate::app
 			 (loc loc)
 			 (type *struct*)
-			 (fun (instantiate::var
+			 (fun (instantiate::ref
 				 (loc loc)
 				 (type (variable-type *list->struct*))
 				 (variable *list->struct*)))
@@ -1080,7 +1080,7 @@
 				   (type (strict-node-type
 					  (get-type-kwote l) *obj*))
 				   (value l))))))))
-	      (body (instantiate::var
+	      (body (instantiate::ref
 		       (loc loc)
 		       (type (variable-type var))
 		       (variable var)))))
@@ -1103,7 +1103,7 @@
 	     (set! *struct-env* (cons (cnst-info struct var) *struct-env*)))
 	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
 				,(cnst-struct-node)))
-	 (instantiate::var
+	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
@@ -1119,7 +1119,7 @@
       (cond
 	 (old
 	  (if (eq? *init-mode* 'lib)
-	      (instantiate::var
+	      (instantiate::ref
 		 (loc loc)
 		 (type (variable-type (cnst-info-offset old)))
 		 (variable (cnst-info-offset old)))

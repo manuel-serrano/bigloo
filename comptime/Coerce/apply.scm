@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Coerce/apply.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Coerce/apply.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Mon Mar 28 14:12:51 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:28:29 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `apply' coercion                                            */
 ;*=====================================================================*/
@@ -48,7 +48,7 @@
 		       (app-ly-fun-set! node c-fun)
 		       (convert! node *obj* to safe))
 		    (let ((fun (make-local-svar 'fun *procedure*)))
-		       (app-ly-fun-set! node (instantiate::var
+		       (app-ly-fun-set! node (instantiate::ref
 						(loc (node-loc c-fun))
 						(type *procedure*)
 						(variable fun)))
@@ -80,11 +80,11 @@
 					      (cons val (app-ly-arg node))))
 			      (body body))))
 		   ;; we set the new apply value
-		(app-ly-fun-set! node (instantiate::var
+		(app-ly-fun-set! node (instantiate::ref
 					(loc loc)
 					(type *procedure*)
 					(variable fun)))
-		(app-ly-arg-set! node (instantiate::var
+		(app-ly-arg-set! node (instantiate::ref
 					(loc loc)
 					(type (strict-node-type
 					       (variable-type val) *obj*))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/closure.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/closure.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Tue Aug  9 10:38:55 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:30:08 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -322,7 +322,7 @@
 				 (trace (cfa 2) "extra-light" #\Newline)
 				 (funcall-fun-set!
 				    app
-				    (duplicate::var (car args)
+				    (duplicate::ref (car args)
 				       (type (strict-node-type
 						(get-approx-type approx (car args))
 						(var-type (car args))))))

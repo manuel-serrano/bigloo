@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 14:19:17 1995                          */
-;*    Last change :  Wed Jun 16 17:34:27 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:25:21 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `set-exit' and `jmp-exit' management.                        */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
                  (exit-body  (instantiate::set-ex-it
 				(loc loc)
 				(type (strict-node-type *obj* *_*))
-				(var (instantiate::var
+				(var (instantiate::ref
 					(type (strict-node-type *_* *exit*))
 					(loc loc)
 					(variable exit)))
@@ -83,7 +83,7 @@
                  (exit-body  (instantiate::set-ex-it
 				(loc loc)
 				(type (strict-node-type *obj* *_*))
-				(var (instantiate::var
+				(var (instantiate::ref
 					(type (strict-node-type *_* *exit*))
 					(loc loc)
 					(variable exit)))

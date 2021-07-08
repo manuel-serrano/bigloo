@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Jun 16 15:49:38 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:24:24 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -125,7 +125,7 @@
       (cond
 	 ((eq? alpha #unspecified)
 	  (use-variable! var (node-loc node) 'value)
-	  (duplicate::var node (loc (get-location node loc))))
+	  (duplicate::ref node (loc (get-location node loc))))
 	 ((variable? alpha)
 	  (use-variable! alpha (node-loc node) 'value)
 	  (if (fun? (variable-value alpha))
@@ -133,7 +133,7 @@
 		 (loc (get-location node loc))
 		 (type (strict-node-type *procedure* (variable-type alpha)))
 		 (variable alpha))
-	      (duplicate::var node
+	      (duplicate::ref node
 		 (loc (get-location node loc))
 		 (variable alpha))))
 	 ((literal? alpha)
@@ -200,12 +200,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (do-alphatize node::app loc)
    ;; we have to enforce here a variable and not a closure (that
-   ;; why the duplicate::var of the fun field).
+   ;; why the duplicate::ref of the fun field).
    (duplicate::app node
       (loc (get-location node loc))
       (fun (let ((var (do-alphatize (app-fun node) loc)))
 	      (if (closure? var)
-		  (duplicate::var var)
+		  (duplicate::ref var)
 		  var)))
       (args (do-alphatize* (app-args node) loc))))
 
@@ -220,7 +220,7 @@
 	       (not (global-key? (var-variable fun))))
 	  (known-app-ly->node '()
 			      (get-location node loc)
-			      (duplicate::var fun)
+			      (duplicate::ref fun)
 			      arg
 			      'value)
 	  (duplicate::app-ly node
@@ -238,7 +238,7 @@
    (let ((fun  (do-alphatize (funcall-fun node) loc))
 	 (args (do-alphatize* (funcall-args node) loc)))
       (if (closure? fun)
-	  (sexp->node `(,(duplicate::var fun) ,@(cdr args))
+	  (sexp->node `(,(duplicate::ref fun) ,@(cdr args))
 	     '() (node-loc node) 'app)
 	  (duplicate::funcall node
 	     (loc (get-location node loc))
@@ -345,13 +345,13 @@
 	  (use-variable! var (node-loc node) 'set!)
 	  (duplicate::setq node
 	     (loc (get-location node loc))
-	     (var (duplicate::var v (loc (get-location node loc))))
+	     (var (duplicate::ref v (loc (get-location node loc))))
 	     (value (do-alphatize (setq-value node) loc))))
 	 ((variable? alpha)
 	  (use-variable! alpha (node-loc node) 'set!)
 	  (duplicate::setq node
 	     (loc (get-location node loc))
-	     (var (duplicate::var v
+	     (var (duplicate::ref v
 		     (loc (get-location node loc))
 		     (variable alpha)))
 	     (value (do-alphatize (setq-value node) loc))))
@@ -503,7 +503,7 @@
       (local-user?-set! new-var (local-user? old-var))
       (duplicate::set-ex-it node
 	 (loc (get-location node loc))
-	 (var (duplicate::var (set-ex-it-var node)
+	 (var (duplicate::ref (set-ex-it-var node)
 		 (loc (get-location node loc))
 		 (variable new-var)))
 	 (body (alphatize (list old-var)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Thu Jul  8 10:45:08 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:44:32 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property with fix point iteration.                  */
@@ -54,6 +54,12 @@
    (defuse node (make-cell #t)))
 
 ;*---------------------------------------------------------------------*/
+;*    defuse-use-add! ...                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (defuse-use-add! node use fix)
+   (error "defuse-use-add!" "should not be here" (shape node)))
+
+;*---------------------------------------------------------------------*/
 ;*    defuse ::node ...                                                */
 ;*    -------------------------------------------------------------    */
 ;*    Returns two values: def x use                                    */
@@ -78,16 +84,20 @@
       (values def use)))
 
 ;*---------------------------------------------------------------------*/
-;*    defuse ::var ...                                                 */
+;*    defuse ::ref ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::var fix)
-;*    (cell-set! fix #f)                                               */
-   (with-access::var n ((v variable))
-      (values '() (if (isa? v local/defuse) (list v) '()))))
+(define-method (defuse n::ref fix)
+   (cell-set! fix #f)
+   (with-access::ref n (variable)
+      (defuse 
+	 (widen!::ref/defuse n
+	    (def '())
+	    (use (if (isa? variable local) (list variable) '())))
+	 fix)))
 
-;* (define-method (defuse n::var/defuse)                               * fix/
-;*    (with-access::sequence/defuse n (def use)                        */
-;*       (values def use)))                                            */
+(define-method (defuse n::ref/defuse fix)
+   (with-access::ref/defuse n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse* ...                                                      */
@@ -106,14 +116,23 @@
 ;*    defuse-sequence ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (defuse-sequence nodes::pair-nil fix)
-   (let loop ((nodes nodes)
+   (let loop ((n nodes)
 	      (def '())
 	      (use '()))
-      (if (null? nodes)
-	  (values def use)
+      (if (null? n)
+	  ;; propagate backwards the def use properties
+	  (if (null? (cdr nodes))
+	      (values def use)
+	      (let loop ((n (reverse nodes)))
+		 (if (null? (cdr n))
+		     (values def use)
+		     (multiple-value-bind (d u)
+			(defuse (car n) fix)
+			(defuse-use-add! (cdr n) (disjonction u d) fix)
+			(loop (cdr n))))))
 	  (multiple-value-bind (d u)
-	     (defuse (car nodes) fix)
-	     (loop (cdr nodes)
+	     (defuse (car n) fix)
+	     (loop (cdr n)
 		(union def d)
 		(union use (disjonction u def)))))))
 

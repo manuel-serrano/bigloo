@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Wed Jun 16 14:59:48 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:14:20 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -56,13 +56,13 @@
 	      (index::long (default -1))
 	      (patchid::obj (default #unspecified)))
 
-	   ;; the variable node
-	   (class var::node
+	   ;; the variables node
+	   (abstract-class var::node
 	      ;; the variable
 	      variable::variable)
 
-	   ;; the functional values
-	   (class closure::var)
+	   (final-class ref::var)
+	   (final-class closure::var)
 
 	   ;; the literal node
 	   (final-class kwote::node

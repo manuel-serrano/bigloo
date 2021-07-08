@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Jun 16 15:52:32 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:24:54 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -407,7 +407,7 @@
 		    (let ((init (instantiate::setq
 				   (loc loc)
 				   (type *unspec*)
-				   (var (instantiate::var
+				   (var (instantiate::ref
 					   (type *_*)
 					   (loc loc)
 					   (variable var)))
@@ -454,11 +454,11 @@
 		    (let ((init (instantiate::setq
 				   (loc loc)
 				   (type *unspec*)
-				   (var (instantiate::var
+				   (var (instantiate::ref
 					   (type *_*)
 					   (loc loc)
 					   (variable var)))
-				   (value (instantiate::var
+				   (value (instantiate::ref
 					     (type *_*)
 					     (loc loc)
 					     (variable nvar))))))

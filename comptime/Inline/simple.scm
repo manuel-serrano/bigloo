@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Inline/simple.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Inline/simple.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Wed Feb 17 09:13:06 2016 (serrano)                */
+;*    Last change :  Thu Jul  8 11:27:25 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
@@ -165,7 +165,7 @@
 		      (type type)
 		      (side-effect (side-effect? ibody))
 		      (bindings (list (cons var ibody)))
-		      (body (instantiate::var
+		      (body (instantiate::ref
 			       (loc loc)
 			       (type type)
 			       (variable var))))))))))

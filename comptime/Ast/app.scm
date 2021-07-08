@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/app.scm                 */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/app.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Wed May 31 10:30:01 2017 (serrano)                */
+;*    Last change :  Thu Jul  8 11:26:09 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -300,7 +300,7 @@
 	     (instantiate::app
 		(loc loc)
 		(type (strict-node-type *_* (variable-type v)))
-		(fun  (if (closure? var) (duplicate::var var) var))
+		(fun  (if (closure? var) (duplicate::ref var) var))
 		(args actuals))
 	     ;; compile the optionals arguments in a left-to-right env
 	     (let* ((reqs (take args-name arity))
@@ -461,7 +461,7 @@
 	  (let ((call (instantiate::app
 			 (loc loc)
 			 (type (strict-node-type *_* (variable-type v)))
-			 (fun  (if (closure? var) (duplicate::var var) var))
+			 (fun  (if (closure? var) (duplicate::ref var) var))
 			 (args args))))
 	     (if (eq? (variable-type v) *void*)
 		 ;; the call is cast into obj
@@ -478,7 +478,7 @@
 	     (loc loc)
 	     (type *_*)
 	     (fun  var)
-	     (args (cons (duplicate::var var) args)))))))
+	     (args (cons (duplicate::ref var) args)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-va-app-node ...                                             */

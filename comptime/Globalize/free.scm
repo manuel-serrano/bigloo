@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Wed Jun 16 18:05:24 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:29:16 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
@@ -367,7 +367,7 @@
 			       'make-va-procedure
 			       'make-fx-procedure))
 		 (node     (sexp->node `(,make-clo
-					 ,(instantiate::var
+					 ,(instantiate::ref
 					     (loc loc)
 					     (type *_*)
 					     (variable gloclo))

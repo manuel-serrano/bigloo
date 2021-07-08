@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Sync/node.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Sync/node.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Thu Mar  3 14:16:58 2016 (serrano)                */
-;*    Copyright   :  2012-16 Manuel Serrano                            */
+;*    Last change :  Thu Jul  8 11:32:33 2021 (serrano)                */
+;*    Copyright   :  2012-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
 ;*    explicitly lock/unlock and push/pop operations. Used by the      */
@@ -132,7 +132,7 @@
 			  (app `(,mlock ,mutex) loc)
 			  (app `(,mlockprelock ,mutex ,prelock) loc)))
 		(unlock (app `(,mulock ,mutex) loc))
-		(vref (instantiate::var
+		(vref (instantiate::ref
 			 (loc loc)
 			 (type type)
 			 (variable tmp)))
@@ -155,7 +155,7 @@
       (with-access::sync node (loc body mutex type prelock)
 	 (let* ((tmp (make-local-svar (gensym 'tmp) type))
 		(top (make-local-svar (gensym 'top) *obj*))
-		(topref (instantiate::var
+		(topref (instantiate::ref
 			   (loc loc)
 			   (type *obj*)
 			   (variable top)))
@@ -166,7 +166,7 @@
 		(push (app `(,mpush ,topref ,mutex) loc))
 		(pop (app `(,mpop ,topref) loc))
 		(unlock (app `(,mulock ,mutex) loc))
-		(vref (instantiate::var
+		(vref (instantiate::ref
 			 (loc loc)
 			 (type type)
 			 (variable tmp)))

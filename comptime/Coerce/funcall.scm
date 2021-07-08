@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Coerce/funcall.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Coerce/funcall.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Wed May 31 10:35:18 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:28:14 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
 ;*=====================================================================*/
@@ -87,11 +87,12 @@
 							caller
 							to)))
 					    loc)))))
-		    (funcall-fun-set! node (instantiate::var
-					      (loc loc)
-					      (type (strict-node-type
-						       (variable-type fun) *obj*))
-					      (variable fun)))
+		    (funcall-fun-set! node
+		       (instantiate::ref
+			  (loc loc)
+			  (type (strict-node-type
+				   (variable-type fun) *obj*))
+			  (variable fun)))
 		    (lvtype-node! lnode)
 		    lnode)))))))
 

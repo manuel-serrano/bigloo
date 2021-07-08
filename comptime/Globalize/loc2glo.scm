@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Wed Jun 12 10:34:47 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:29:23 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
 ;*=====================================================================*/
@@ -177,13 +177,13 @@
 		  (body (instantiate::app
 			   (loc loc)
 			   (type (strict-node-type (variable-type local) *_*))
-			   (fun (instantiate::var
+			   (fun (instantiate::ref
 				   (loc loc)
 				   (type (strict-node-type
 					  (variable-type local) *_*))
 				   (variable local)))
 			   (args (map (lambda (v)
-					 (instantiate::var
+					 (instantiate::ref
 					    (loc loc)
 					    (type (strict-node-type
 						   (variable-type v) *_*))

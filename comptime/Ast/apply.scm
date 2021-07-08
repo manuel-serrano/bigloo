@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/apply.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/apply.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Mon Nov 14 17:32:00 2011 (serrano)                */
+;*    Last change :  Thu Jul  8 11:26:41 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The apply compilation                                            */
 ;*=====================================================================*/
@@ -158,7 +158,7 @@
 		      (let ((app (application->node
 				  `(,proc
 				    ,@(map (lambda (local)
-					      (instantiate::var
+					      (instantiate::ref
 						 (loc loc)
 						 (type (strict-node-type *_* (local-type local)))
 						 (variable local)))
@@ -170,7 +170,7 @@
 			     app
 			     (sexp->node
 			      `(if (null? (cdr
-					   ,(instantiate::var
+					   ,(instantiate::ref
 					       (loc loc)
 					       (type (strict-node-type *_* (local-type runner)))
 					       (variable runner))))
@@ -188,7 +188,7 @@
 					  (car locals)
 					  (sexp->node
 					   `(car
-					     ,(instantiate::var
+					     ,(instantiate::ref
 						 (loc loc)
 						 (type (strict-node-type *_* (local-type runner)))
 						 (variable runner)))
@@ -199,12 +199,12 @@
 				   (loop (cdr locals))
 				   (sexp->node
 				    `(begin
-					(set! ,(instantiate::var
+					(set! ,(instantiate::ref
 						  (loc loc)
 						  (type (strict-node-type *_* (local-type runner)))
 						  (variable runner))
 					      (cdr
-					       ,(instantiate::var
+					       ,(instantiate::ref
 						   (loc loc)
 						   (type (strict-node-type *_* (local-type runner)))
 						   (variable runner))))
@@ -248,9 +248,9 @@
 			 (instantiate::app
 			    (loc loc)
 			    (type (strict-node-type *_* (variable-type (var-variable proc))))
-			    (fun (duplicate::var proc))
+			    (fun (duplicate::ref proc))
 			    (args (map (lambda (local)
-					  (instantiate::var
+					  (instantiate::ref
 					     (loc loc)
 					     (type (strict-node-type *_* (local-type local)))
 					     (variable local)))
@@ -262,7 +262,7 @@
 					  (car locals)
 					  (sexp->node
 					   `(car
-					     ,(instantiate::var
+					     ,(instantiate::ref
 						 (loc loc)
 						 (type (strict-node-type *_* (local-type runner)))
 						 (variable runner)))
@@ -271,11 +271,11 @@
 					   'value))))
 			 (body (sexp->node
 				`(begin
-				    (set! ,(instantiate::var
+				    (set! ,(instantiate::ref
 					      (loc loc)
 					      (type (strict-node-type *_* (local-type runner)))
 					      (variable runner))
-					  (cdr ,(instantiate::var
+					  (cdr ,(instantiate::ref
 						   (loc loc)
 						   (type (strict-node-type *_* (local-type runner)))
 						   (variable runner))))

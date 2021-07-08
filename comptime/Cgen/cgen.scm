@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Jun 16 15:08:35 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:31:03 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -625,10 +625,10 @@
 					       (node->cop a *id-kont* inpushexit))
 					  args)))))
 		   ;; adjust the original function call
-		   (set! fun (duplicate::var fun
+		   (set! fun (duplicate::ref fun
 				(variable (duplicate::global v
 					     (name (cadr sa))))))
-		   (set! args (cons (instantiate::var
+		   (set! args (cons (instantiate::ref
 				       (loc loc)
 				       (type *obj*)
 				       (variable decl))
@@ -658,10 +658,10 @@
 						  (node->cop a *id-kont* inpushexit))
 					     args)))))
 		      ;; adjust the orignal function call
-		      (set! fun (duplicate::var fun
+		      (set! fun (duplicate::ref fun
 				   (variable (duplicate::global v
 						(name (cadr sa))))))
-		      (set! args (cons (instantiate::var
+		      (set! args (cons (instantiate::ref
 					  (loc loc)
 					  (type *obj*)
 					  (variable decl))
@@ -974,7 +974,7 @@
    (instantiate::setq
       (loc (node-loc value))
       (type *unspec*)
-      (var (instantiate::var
+      (var (instantiate::ref
 	      (loc #f)
 	      (type (variable-type variable))
 	      (variable variable)))

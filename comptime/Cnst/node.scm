@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Wed Jun 16 15:58:46 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:29:46 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -316,11 +316,11 @@
 		((eq? fun *bool->bbool*)
 		 (if (boolean? actual-value)
 		     (if actual-value
-			 (instantiate::var
+			 (instantiate::ref
 			    (loc loc)
 			    (type *bbool*)
 			    (variable *btrue*))
-			 (instantiate::var
+			 (instantiate::ref
 			    (loc loc)
 			    (type *bbool*)
 			    (variable *bfalse*)))

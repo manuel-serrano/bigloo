@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/gloclo.scm        */
+;*    .../prgm/project/bigloo/bigloo/comptime/Globalize/gloclo.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Tue Aug  9 08:57:35 2016 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul  8 11:29:31 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -131,7 +131,7 @@
    (instantiate::app
       (loc loc)
       (type (strict-node-type (global-type global) *obj*))
-      (fun (instantiate::var
+      (fun (instantiate::ref
 	      (loc loc)
 	      (type (strict-node-type (global-type global) *_*))
 	      (variable global)))
@@ -139,7 +139,7 @@
       ;; parameters, so we just take the cdr of the
       ;; formals list.
       (args (map (lambda (v)
-		    (instantiate::var
+		    (instantiate::ref
 		       (loc loc)
 		       (type (strict-node-type (variable-type v) *obj*))
 		       (variable v)))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Fxop/walk.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Fxop/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Jul 27 13:08:26 2017 (serrano)                */
-;*    Copyright   :  2010-20 Manuel Serrano                            */
+;*    Last change :  Thu Jul  8 11:28:00 2021 (serrano)                */
+;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize tagged binary operators by avoid useless tagging        */
 ;*    untagging operations. Typically, replaces:                       */
@@ -167,7 +167,7 @@
 	    (else
 	     (instantiate::app
 		(type *bint*)
-		(fun (instantiate::var
+		(fun (instantiate::ref
 			(variable *long->bint*)
 			(type *bint*)))
 		(args (list expr)))))))
@@ -176,7 +176,7 @@
       (with-access::let-var node (loc type bindings)
 	 (instantiate::app
 	    (type *bint*)
-	    (fun (instantiate::var
+	    (fun (instantiate::ref
 		    (variable op)
 		    (type *bint*)))
 	    (args (list
@@ -189,7 +189,7 @@
 	    (with-access::app call (fun args)
 	       (instantiate::app
 		  (type *bint*)
-		  (fun (instantiate::var
+		  (fun (instantiate::ref
 			  (variable op)
 			  (type *bint*)))
 		  (args (list
@@ -208,7 +208,7 @@
       (with-access::let-var node (loc type bindings)
 	 (instantiate::app
 	    (type *bool*)
-	    (fun (instantiate::var
+	    (fun (instantiate::ref
 		    (variable op)
 		    (type (variable-type op))))
 	    (args (list

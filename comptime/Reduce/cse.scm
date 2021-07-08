@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Jun 16 17:11:23 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:31:48 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Common sub-expression elimination.                               */
@@ -312,7 +312,7 @@
 		   ((variable? previous)
 		    (set! *cse-removed* (+fx 1 *cse-removed*))
 		    (trace (reduce 2) "***cse: " (shape node) #\Newline)
-		    (values stack (instantiate::var
+		    (values stack (instantiate::ref
 				     (loc loc)
 				     (type type)
 				     (variable previous))))
@@ -347,7 +347,7 @@
 			      (set! *cse-removed* (+fx 1 *cse-removed*))
 			      (trace (reduce 2) "***cse: " (shape node)
 				     #\Newline)
-			      (values stack' (instantiate::var
+			      (values stack' (instantiate::ref
 						(loc loc)
 						(type type)
 						(variable previous))))

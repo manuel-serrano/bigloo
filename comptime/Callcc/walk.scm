@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Wed Jun 16 15:55:45 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:31:37 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
@@ -89,7 +89,7 @@
 	     (bindings (map (lambda (o-n)
 			       (cons (cdr o-n)
 				  (a-make-cell
-				     (instantiate::var
+				     (instantiate::ref
 					(type (variable-type (car o-n)))
 					(loc loc)
 					(variable (car o-n)))
@@ -252,7 +252,7 @@
 				    (vtype (get-bigloo-defined-type vtype))
 				    (loc loc)
 				    (var (setq-var node))
-				    (value (instantiate::var
+				    (value (instantiate::ref
 					      (type (variable-type a-var))
 					      (loc loc)
 					      (variable a-var)))))))))))))

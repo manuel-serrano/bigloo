@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Wed Jun 16 16:02:49 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 11:29:07 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -97,7 +97,7 @@
 	     (bindings (map (lambda (o-n)
 			       (cons (cdr o-n)
 				  (a-make-cell
-				     (instantiate::var
+				     (instantiate::ref
 					(type (variable-type (car o-n)))
 					(loc loc)
 					(variable (car o-n)))
@@ -181,7 +181,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::closure integrator)
    (with-access::closure node (loc variable)
-      (glo! (instantiate::var
+      (glo! (instantiate::ref
 	       (loc loc)
 	       (type *procedure*)
 	       (variable (the-closure variable loc)))
@@ -225,7 +225,7 @@
 		      (not (local/Ginfo-escape? fun)))
 		  (sfun/Ginfo-G? info))
 	     (app-fun-set! node
-			   (instantiate::var
+			   (instantiate::ref
 			      (loc loc)
 			      (type type)
 			      (variable (the-global fun)))))
@@ -246,7 +246,7 @@
 	    ((local/Ginfo-escape? fun)
 	     ;; this is a direct call to an escaping call,
 	     ;; we add its environement if it is a local function ...
-	     (set! args (cons (glo! (instantiate::var
+	     (set! args (cons (glo! (instantiate::ref
 				       (loc loc)
 				       (type (variable-type (the-closure fun loc)))
 				       (variable (the-closure fun loc)))
@@ -262,7 +262,7 @@
 		    (let* ((kap   (car kaptured))
 			   (alpha (local-fast-alpha kap))
 			   (var   (if (local? alpha) alpha kap)))
-		       (loop (cons (instantiate::var
+		       (loop (cons (instantiate::ref
 				      (loc loc)
 				      (type (variable-type var))
 				      (variable var))
@@ -336,7 +336,7 @@
 				      (type *unspec*)
 				      (vtype (get-bigloo-defined-type vtype))
 				      (var (setq-var node))
-				      (value (instantiate::var
+				      (value (instantiate::ref
 						(loc loc)
 						(type (variable-type a-var))
 						(variable a-var)))))))
@@ -573,11 +573,11 @@
 		       (let ((gv (global-value v)))
 			  (when (fun? gv)
 			     (fun-stack-allocator gv)))))
-	 (fun (instantiate::var
+	 (fun (instantiate::ref
 		 (loc loc)
 		 (type (variable-type v))
 		 (variable v)))
-	 (args (list (instantiate::var
+	 (args (list (instantiate::ref
 			(loc loc)
 			(type (variable-type (the-global local)))
 			(variable (the-global local)))
@@ -627,11 +627,11 @@
       (instantiate::app
 	 (loc loc)
 	 (type (variable-type vf))
-	 (fun (instantiate::var
+	 (fun (instantiate::ref
 		 (loc loc)
 		 (type (variable-type vf))
 		 (variable vf)))
-	 (args (list (instantiate::var
+	 (args (list (instantiate::ref
 			(loc loc)
 			(type (variable-type new))
 			(variable new))
@@ -640,7 +640,7 @@
 			(type (get-type-atom indice))
 			(value indice))
 		     (let ()
-			(instantiate::var
+			(instantiate::ref
 			   (loc loc)
 			   (type (variable-type va))
 			   (variable va))))))))
