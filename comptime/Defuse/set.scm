@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Defuse/set.scm       */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/liveness/set.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 22 09:48:04 2013                          */
-;*    Last change :  Sat Jun 19 08:04:55 2021 (serrano)                */
+;*    Last change :  Thu Jul  8 12:59:27 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Defuse set handling                                              */
@@ -27,8 +27,9 @@
 	    engine_param
 	    defuse_types)
    (export  (in? ::local ::pair-nil)
+	    (subset? ::pair-nil ::pair-nil)
 	    (union::pair-nil . ::pair-nil)
-	    (add ::local/defuse pair-nil)
+	    (add ::local/liveness pair-nil)
 	    (intersection::pair-nil . ::pair-nil)
 	    (disjonction::pair-nil ::pair-nil ::pair-nil)))
 
@@ -36,15 +37,34 @@
 ;*    variable-reset! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (variable-reset! v)
-   (with-access::local/defuse v (%count)
+   (with-access::local/liveness v (%count)
       (set! %count 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    in? ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (in? el set)
-   (when (isa? el local/defuse)
+   (when (isa? el local/liveness)
       (memq el set)))
+
+;*---------------------------------------------------------------------*/
+;*    subset? ...                                                      */
+;*    -------------------------------------------------------------    */
+;*    is set1 a subset of set2?                                        */
+;*---------------------------------------------------------------------*/
+(define (subset? set1 set2)
+   
+   (define (variable-mark! v)
+      (with-access::local/liveness v (%count)
+	 (set! %count 1)))
+
+   (for-each variable-reset! set1)
+   (for-each variable-mark! set2)
+
+   (every (lambda (v)
+	     (with-access::local/liveness v (%count)
+		(=fx %count 1)))
+      set1))
 
 ;*---------------------------------------------------------------------*/
 ;*    union ...                                                        */
@@ -56,7 +76,7 @@
    (define res '())
    
    (define (variable-mark! v)
-      (with-access::local/defuse v (%count)
+      (with-access::local/liveness v (%count)
 	 (when (=fx %count 0)
 	    (set! %count 1)
 	    (set! res (cons v res)))))
@@ -79,7 +99,7 @@
 (define (intersection . ls)
    
    (define (variable-mark! v)
-      (with-access::local/defuse v (%count)
+      (with-access::local/liveness v (%count)
 	 (set! %count (+fx 1 %count))))
    
    (define (mark-list! l)
@@ -90,7 +110,7 @@
    
    (let ((%count (length ls)))
       (filter (lambda (l)
-		 (with-access::local/defuse l ((c %count))
+		 (with-access::local/liveness l ((c %count))
 		    (=fx c %count)))
 	 (car ls))))
 
@@ -102,13 +122,13 @@
 (define (disjonction l1 l2)
    
    (define (variable-mark! v)
-      (with-access::local/defuse v (%count)
+      (with-access::local/liveness v (%count)
 	 (set! %count 1)))
    
    (for-each variable-reset! l1)
    (for-each variable-mark! l2)
    
    (filter (lambda (v)
-	      (with-access::local/defuse v (%count)
+	      (with-access::local/liveness v (%count)
 		 (=fx %count 0)))
       l1))
