@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 12 08:55:10 2021                          */
-;*    Last change :  Thu Jul  8 15:57:43 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 07:36:15 2021 (serrano)                */
 ;*    Copyright   :  2021 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Flag as "volatile" local variables that survive a set-exit       */
@@ -21,7 +21,7 @@
 	    ast_var
 	    ast_node
 	    ast_walk
-	    defuse_defuse
+	    liveness_liveness
 	    tools_shape
 	    tools_speek)
    (export  (volatile!::global ::global)))

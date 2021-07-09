@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/liveness/liveness.scm        */
+;*    .../project/bigloo/bigloo/comptime/Liveness/liveness.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Thu Jul  8 12:59:34 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 07:46:03 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property with fix point iteration.                  */
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module defuse_defuse
+(module liveness_liveness
    (include "Tools/trace.sch")
    (import  tools_error
 	    tools_shape
@@ -25,8 +25,8 @@
 	    ast_env
 	    module_module
 	    engine_param
-	    defuse_types
-	    defuse_set)
+	    liveness_types
+	    liveness_set)
    (export (liveness-sfun! ::sfun)
 	   (liveness-live ::node)))
 
@@ -90,7 +90,7 @@
 	      (out out))
       (when (pair? sedon)
 	 (multiple-value-bind (nin nout)
-	    (inout*! (car sedon) out)
+	    (inout! (car sedon) out)
 	    (loop (cdr sedon) nout)))))
 
 ;*---------------------------------------------------------------------*/

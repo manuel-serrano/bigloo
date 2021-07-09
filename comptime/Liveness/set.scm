@@ -1,18 +1,18 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/liveness/set.scm       */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Liveness/set.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 22 09:48:04 2013                          */
-;*    Last change :  Thu Jul  8 12:59:27 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 07:35:56 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Defuse set handling                                              */
+;*    Liveness set handling                                            */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module defuse_set
+(module liveness_set
    (include "Tools/trace.sch")
    (import  tools_error
 	    tools_shape
@@ -25,7 +25,7 @@
 	    ast_env
 	    module_module
 	    engine_param
-	    defuse_types)
+	    liveness_types)
    (export  (in? ::local ::pair-nil)
 	    (subset? ::pair-nil ::pair-nil)
 	    (union::pair-nil . ::pair-nil)

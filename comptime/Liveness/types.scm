@@ -1,18 +1,18 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/liveness/types.scm     */
+;*    .../prgm/project/bigloo/bigloo/comptime/Liveness/types.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov  9 08:19:20 2013                          */
-;*    Last change :  Thu Jul  8 13:00:22 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 07:36:05 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Wide types used to annotate the AST with a defuse property.      */
+;*    Wide types used to annotate the AST with a liveness property.    */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module defuse_types
+(module liveness_types
    (import tools_shape
 	   type_type
 	   type_typeof
