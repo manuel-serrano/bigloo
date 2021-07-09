@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Fri Jul  9 07:46:03 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 09:40:03 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property with fix point iteration.                  */
@@ -47,11 +47,22 @@
       (inout! body '())))
 
 ;*---------------------------------------------------------------------*/
+;*    debug ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (debug . args)
+   (when #t
+      (with-output-to-port (current-error-port)
+	 (lambda ()
+	    (apply print args)))))
+
+;*---------------------------------------------------------------------*/
 ;*    liveness-live ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (liveness-live node)
    (multiple-value-bind (in out)
       (inout node)
+      (debug "in=" (shape in))
+      (debug "out=" (shape out))
       (intersection in out)))
 
 ;*---------------------------------------------------------------------*/
@@ -91,7 +102,7 @@
       (when (pair? sedon)
 	 (multiple-value-bind (nin nout)
 	    (inout! (car sedon) out)
-	    (loop (cdr sedon) nout)))))
+	    (loop (cdr sedon) nin)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::node ...                                                */
@@ -112,11 +123,11 @@
 ;*    defuse ::literal ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::literal)
-   (widen!::literal/liveness n)
-   (values '() '()))
+   (defuse (widen!::literal/liveness n)))
 
 (define-method (defuse n::literal/liveness)
-   (values '() '()))
+   (with-access::literal/liveness n (def use)
+      (values def use)))
 
 (define-method (inout! n::literal/liveness o)
    (with-access::literal/liveness n (def use in out)
@@ -143,14 +154,59 @@
    (with-access::ref/liveness n (def use)
       (values def use)))
 
-(define-method (inout! n::literal/liveness o)
-   (with-access::literal/liveness n (def use in out)
+(define-method (inout! n::ref/liveness o)
+   (with-access::ref/liveness n (def use in out)
       (set! out o)
       (set! in (union use (disjonction out def)))
       (values in out)))
 
-(define-method (inout n::literal/liveness)
-   (with-access::literal/liveness n (in out)
+(define-method (inout n::ref/liveness)
+   (with-access::ref/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::closure ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::closure)
+   (with-access::closure n (variable)
+      (let ((use (if (isa? variable local) (list variable) '())))
+	 (defuse
+	    (widen!::closure/liveness n
+	       (def '())
+	       (use use))))))
+
+(define-method (defuse n::closure/liveness)
+   (with-access::closure/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::closure/liveness o)
+   (with-access::closure/liveness n (def use in out)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (values in out)))
+
+(define-method (inout n::closure/liveness)
+   (with-access::closure/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::kwote ...                                               */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::kwote)
+   (defuse (widen!::kwote/liveness n)))
+
+(define-method (defuse n::kwote/liveness)
+   (with-access::kwote/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::kwote/liveness o)
+   (with-access::kwote/liveness n (def use in out)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (values in out)))
+
+(define-method (inout n::kwote/liveness)
+   (with-access::kwote/liveness n (in out)
       (values in out)))
 
 ;*---------------------------------------------------------------------*/
@@ -171,6 +227,8 @@
 
 (define-method (inout! n::sequence/liveness o)
    (with-access::sequence/liveness n (nodes def use in out)
+      (debug "inout " (typeof n) " o=" (shape o)
+	 " def=" (shape def) " use=" (shape use))
       (set! out o)
       (set! in (union use (disjonction out def)))
       (inout*! nodes o)
@@ -202,7 +260,7 @@
    (with-access::app/liveness n (in out use def args)
       (set! out o)
       (set! in (union use (disjonction out def)))
-      (for-each (lambda (a) (inout! args o)) args)
+      (for-each (lambda (a) (inout! a o)) args)
       (values in out)))
 
 (define-method (inout n::app/liveness)
@@ -260,7 +318,7 @@
    (with-access::funcall/liveness n (in out use def args)
       (set! out o)
       (set! in (union use (disjonction out def)))
-      (for-each (lambda (a) (inout! args o)) args)
+      (for-each (lambda (a) (inout! a o)) args)
       (values in out)))
 
 (define-method (inout n::funcall/liveness)
@@ -299,6 +357,276 @@
 
 (define-method (inout n::pragma/liveness)
    (with-access::pragma/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::getfield ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::getfield)
+   (with-access::getfield n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::getfield/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::getfield/liveness)
+   (with-access::getfield/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::getfield/liveness o)
+   (with-access::getfield/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::getfield/liveness)
+   (with-access::getfield/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::setfield ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::setfield)
+   (with-access::setfield n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::setfield/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::setfield/liveness)
+   (with-access::setfield/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::setfield/liveness o)
+   (with-access::setfield/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::setfield/liveness)
+   (with-access::setfield/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::widening ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::widening)
+   (with-access::widening n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::widening/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::widening/liveness)
+   (with-access::widening/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::widening/liveness o)
+   (with-access::widening/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::widening/liveness)
+   (with-access::widening/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::new ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::new)
+   (with-access::new n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::new/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::new/liveness)
+   (with-access::new/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::new/liveness o)
+   (with-access::new/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::new/liveness)
+   (with-access::new/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::valloc ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::valloc)
+   (with-access::valloc n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::valloc/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::valloc/liveness)
+   (with-access::valloc/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::valloc/liveness o)
+   (with-access::valloc/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::valloc/liveness)
+   (with-access::valloc/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::vref ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::vref)
+   (with-access::vref n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::vref/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::vref/liveness)
+   (with-access::vref/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::vref/liveness o)
+   (with-access::vref/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::vref/liveness)
+   (with-access::vref/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::vset! ...                                               */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::vset!)
+   (with-access::vset! n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::vset!/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::vset!/liveness)
+   (with-access::vset!/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::vset!/liveness o)
+   (with-access::vset!/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::vset!/liveness)
+   (with-access::vset!/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::vlength ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::vlength)
+   (with-access::vlength n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::vlength/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::vlength/liveness)
+   (with-access::vlength/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::vlength/liveness o)
+   (with-access::vlength/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::vlength/liveness)
+   (with-access::vlength/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::instanceof ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::instanceof)
+   (with-access::instanceof n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::instanceof/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::instanceof/liveness)
+   (with-access::instanceof/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::instanceof/liveness o)
+   (with-access::instanceof/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::instanceof/liveness)
+   (with-access::instanceof/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::cast-null ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::cast-null)
+   (with-access::cast-null n (expr*)
+      (multiple-value-bind (def use)
+	 (defuse* expr* '() '())
+	 (defuse
+	    (widen!::cast-null/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::cast-null/liveness)
+   (with-access::cast-null/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::cast-null/liveness o)
+   (with-access::cast-null/liveness n (in out def use expr*)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (e) (inout! e o)) expr*)
+      (values in out)))
+
+(define-method (inout n::cast-null/liveness)
+   (with-access::cast-null/liveness n (in out)
       (values in out)))
 
 ;*---------------------------------------------------------------------*/
@@ -467,6 +795,100 @@
       (values in out)))
 
 ;*---------------------------------------------------------------------*/
+;*    defuse ::let-fun ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::let-fun)
+   (with-access::let-fun n (locals body)
+      ;; this is a conservative approach, we assume all functions called
+      ;; for use but none called for def
+      (let ((defbindings '())
+	    (usebindings '()))
+	 (for-each (lambda (fun)
+		      (widen!::local/liveness fun)
+		      (multiple-value-bind (def use)
+			 (with-access::local fun (value)
+			    (liveness-sfun! value))
+			 (set! defbindings (union def defbindings))
+			 (set! usebindings (union use usebindings))))
+	    locals)
+	 (multiple-value-bind (defbody usebody)
+	    (defuse body)
+	    (defuse
+	       (widen!::let-fun/liveness n
+		  (def (union defbody defbindings))
+		  (use (union usebody usebindings))))))))
+
+(define-method (defuse n::let-fun/liveness)
+   (with-access::let-fun/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::let-fun/liveness o)
+   (with-access::let-fun/liveness n (def use locals body in out)
+      (debug "inout " (typeof n) " " (shape locals) " o=" (shape o))
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (for-each (lambda (fun)
+		   (with-access::local fun (value)
+		      (with-access::sfun value (body)
+			 (inout! body o))))
+	 locals)
+      (inout! body o)
+      (values in out)))
+
+(define-method (inout n::let-fun/liveness)
+   (with-access::let-fun/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::let-var ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::let-var)
+   (with-access::let-var n (bindings body)
+      ;; bindings evaluation in unorder so cannot
+      ;; be treated like a sequence
+      (let ((defbindings '())
+	    (usebindings '()))
+	 (for-each (lambda (b)
+		      (widen!::local/liveness (car b)))
+	    bindings)
+	 (for-each (lambda (b)
+		      (multiple-value-bind (def use)
+			 (defuse (cdr b))
+			 (set! defbindings (union def defbindings))
+			 (set! usebindings (union use usebindings))))
+	    bindings)
+	 (multiple-value-bind (defbody usebody)
+	    (defuse body)
+	    (defuse
+	       (widen!::let-var/liveness n
+		  (def (union defbindings defbody))
+		  (use (union usebindings (disjonction usebody defbindings)))))))))
+
+(define-method (defuse n::let-var/liveness)
+   (with-access::let-var/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::let-var/liveness o)
+   (with-access::let-var/liveness n (def use body in out bindings)
+      (debug "inout " (typeof n) " " (shape (map car bindings))
+	 " o=" (shape o) " def=" (shape def) " use=" (shape use))
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (debug "  inout " (typeof n) " in=" (shape in))
+      (multiple-value-bind (def use)
+	 (defuse body)
+	 (multiple-value-bind (in out)
+	    (inout! body out)
+	    (for-each (lambda (b)
+			 (inout! (cdr b) in))
+	       bindings)))
+      (values in out)))
+
+(define-method (inout n::let-var/liveness)
+   (with-access::let-var/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
 ;*    defuse ::set-ex-it ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::set-ex-it)
@@ -490,6 +912,7 @@
       
 (define-method (inout! n::set-ex-it/liveness o)
    (with-access::set-ex-it/liveness n (def use in out body)
+      (debug "inout set-exit o=" (shape o))
       (set! out o)
       (set! in (union use (disjonction out def)))
       (inout! body o)
@@ -526,6 +949,60 @@
 
 (define-method (inout n::jump-ex-it/liveness)
    (with-access::jump-ex-it/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::retblock ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::retblock)
+   (with-access::retblock n (body)
+      (multiple-value-bind (def use)
+	 (defuse body)
+	 (defuse
+	    (widen!::retblock/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::retblock/liveness)
+   (with-access::retblock/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::retblock/liveness o)
+   (with-access::retblock/liveness n (def use in out body)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (inout! body o)
+      (values in out)))
+
+(define-method (inout n::retblock/liveness)
+   (with-access::retblock/liveness n (in out)
+      (values in out)))
+
+;*---------------------------------------------------------------------*/
+;*    defuse ::return ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (defuse n::return)
+   (with-access::return n (value)
+      (multiple-value-bind (def use)
+	 (defuse value)
+	 (defuse
+	    (widen!::return/liveness n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::return/liveness)
+   (with-access::return/liveness n (def use)
+      (values def use)))
+
+(define-method (inout! n::return/liveness o)
+   (with-access::return/liveness n (def use in out value)
+      (set! out o)
+      (set! in (union use (disjonction out def)))
+      (inout! value o)
+      (values in out)))
+
+(define-method (inout n::return/liveness)
+   (with-access::return/liveness n (in out)
       (values in out)))
 
 ;*---------------------------------------------------------------------*/
@@ -634,92 +1111,3 @@
    (with-access::sync/liveness n (in out)
       (values in out)))
 
-;*---------------------------------------------------------------------*/
-;*    defuse ::let-var ...                                             */
-;*---------------------------------------------------------------------*/
-(define-method (defuse n::let-var)
-   (with-access::let-var n (bindings body)
-      ;; bindings evaluation in unorder so cannot
-      ;; be treated like a sequence
-      (let ((defbindings '())
-	    (usebindings '()))
-	 (for-each (lambda (b)
-		      (widen!::local/liveness (car b)))
-	    bindings)
-	 (for-each (lambda (b)
-		      (multiple-value-bind (def use)
-			 (defuse (cdr b))
-			 (set! defbindings (union def defbindings))
-			 (set! usebindings (union use usebindings))))
-	    bindings)
-	 (multiple-value-bind (defbody usebody)
-	    (defuse body)
-	    (defuse
-	       (widen!::let-var/liveness n
-		  (def (union defbindings defbody))
-		  (use (union usebindings (disjonction usebody defbindings)))))))))
-
-(define-method (defuse n::let-var/liveness)
-   (with-access::let-var/liveness n (def use)
-      (values def use)))
-
-(define-method (inout! n::let-var/liveness o)
-   (with-access::let-var/liveness n (def use body in out bindings)
-      (set! out o)
-      (set! in (union use (disjonction out def)))
-      (multiple-value-bind (def use)
-	 (defuse body)
-	 (multiple-value-bind (in out)
-	    (inout! body out)
-	    (for-each (lambda (b)
-			 (inout! (cdr b) in))
-	       bindings)))
-      (values in out)))
-
-(define-method (inout n::let-var/liveness)
-   (with-access::let-var/liveness n (in out)
-      (values in out)))
-
-;*---------------------------------------------------------------------*/
-;*    defuse ::let-fun ...                                             */
-;*---------------------------------------------------------------------*/
-(define-method (defuse n::let-fun)
-   (with-access::let-fun n (locals body)
-      ;; this is a conservative approach, we assume all functions called
-      ;; for use but none called for def
-      (let ((defbindings '())
-	    (usebindings '()))
-	 (for-each (lambda (fun)
-		      (widen!::local/liveness fun)
-		      (multiple-value-bind (def use)
-			 (with-access::local fun (value)
-			    (liveness-sfun! value))
-			 (set! defbindings (union def defbindings))
-			 (set! usebindings (union use usebindings))))
-	    locals)
-	 (multiple-value-bind (defbody usebody)
-	    (defuse body)
-	    (defuse
-	       (widen!::let-fun/liveness n
-		  (def (union defbody defbindings))
-		  (use (union usebody usebindings))))))))
-
-(define-method (defuse n::let-fun/liveness)
-   (with-access::let-fun/liveness n (def use)
-      (values def use)))
-
-(define-method (inout! n::let-fun/liveness o)
-   (with-access::let-fun/liveness n (def use locals body in out)
-      (set! out o)
-      (set! in (union use (disjonction out def)))
-      (for-each (lambda (fun)
-		   (with-access::local fun (value)
-		      (with-access::sfun value (body)
-			 (inout! body o))))
-	 locals)
-      (inout! body o)
-      (values in out)))
-
-(define-method (inout n::let-fun/liveness)
-   (with-access::let-fun/liveness n (in out)
-      (values in out)))
