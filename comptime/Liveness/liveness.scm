@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Fri Jul  9 09:40:03 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 14:40:56 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property with fix point iteration.                  */
@@ -50,7 +50,7 @@
 ;*    debug ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (debug . args)
-   (when #t
+   (when #f
       (with-output-to-port (current-error-port)
 	 (lambda ()
 	    (apply print args)))))
@@ -1043,6 +1043,10 @@
 	    (widen!::box-ref/liveness n
 	       (use use)
 	       (def def))))))
+
+(define-method (defuse n::box-ref/liveness)
+   (with-access::box-ref/liveness n (def use)
+      (values def use)))
 
 (define-method (inout! n::box-ref/liveness o)
    (with-access::box-ref/liveness n (var def use in out)

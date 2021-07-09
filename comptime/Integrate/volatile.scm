@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 12 08:55:10 2021                          */
-;*    Last change :  Fri Jul  9 09:57:44 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 14:43:08 2021 (serrano)                */
 ;*    Copyright   :  2021 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Flag as "volatile" local variables that survive a set-exit       */
@@ -76,7 +76,7 @@
       (for-each (lambda (b)
 		   (volatile (cdr b) env))
 	 bindings)
-      (volatile body (append bindings env))))
+      (volatile body (append (map car bindings) env))))
 
 ;*---------------------------------------------------------------------*/
 ;*    volatile ::let-fun ...                                           */
@@ -101,7 +101,7 @@
 (define-walk-method (volatile node::set-ex-it env)
    (let ((live (liveness-live node)))
       (for-each (lambda (l)
-		   (when (assq l env)
+		   (when (memq l env)
 		      (with-access::local l (volatile)
 			 (set! volatile #t))))
 	 live)
