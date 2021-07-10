@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Fri Jul  9 14:40:56 2021 (serrano)                */
+;*    Last change :  Fri Jul  9 17:13:06 2021 (serrano)                */
 ;*    Copyright   :  2013-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property with fix point iteration.                  */
@@ -243,14 +243,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::app)
    (with-access::app n (fun args)
-      (multiple-value-bind (d u)
-	 (defuse fun)
-	 (multiple-value-bind (def use)
-	    (defuse* args d u)
-	    (defuse
-	       (widen!::app/liveness n
-		  (def def)
-		  (use use)))))))
+      ;; don't scan the function has it is pure code
+      (multiple-value-bind (def use)
+	 (defuse* args '() '())
+	 (defuse
+	    (widen!::app/liveness n
+	       (def def)
+	       (use use))))))
 
 (define-method (defuse n::app/liveness)
    (with-access::app/liveness n (def use)
@@ -804,7 +803,9 @@
       (let ((defbindings '())
 	    (usebindings '()))
 	 (for-each (lambda (fun)
-		      (widen!::local/liveness fun)
+		      (widen!::local/liveness fun))
+	    locals)
+	 (for-each (lambda (fun)
 		      (multiple-value-bind (def use)
 			 (with-access::local fun (value)
 			    (liveness-sfun! value))
