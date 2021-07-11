@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Fri Jun 18 13:21:11 2021 (serrano)                */
+;*    Last change :  Sun Jul 11 09:46:57 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -269,8 +269,7 @@
       (let ((callee (var-variable fun)))
 	 (cond
 	    ((unwind-until-call node)
-	     =>
-	     (lambda (callee) A))
+	     A)
 	    (else
 	     (let liip ((args (app-args node))
 			(A A))
@@ -399,6 +398,8 @@
 	    ;; not to force globalization if not tail
 	    (set! forceG?
 	       (or (not *optim-return-goto?*) (not (eq? (car k) 'tail))))
+	    (set! forceG?
+	       (not *optim-return-goto?*))
 	    (set! xhdl? #t))))
    
    (with-access::let-fun node (body)
@@ -477,21 +478,24 @@
       (node-A exit
 	 host
 	 (cons (get-new-kont) (get-normalized-type exit #f))
-	 (node-A value host (cons (get-new-kont) (get-normalized-type value #f)) A))))
+	 (node-A value host
+	    (cons (get-new-kont) (get-normalized-type value #f)) A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::make-box ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::make-box host k A)
    (with-access::make-box node (value)
-      (node-A value host (cons (get-new-kont) (get-normalized-type value #f)) A)))
+      (node-A value host
+	 (cons (get-new-kont) (get-normalized-type value #f)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::box-set! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::box-set! host k A)
    (with-access::box-set! node (var value)
-      (node-A value host (cons (get-new-kont) (get-normalized-type value #f)) A)))
+      (node-A value host
+	 (cons (get-new-kont) (get-normalized-type value #f)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::box-ref ...                                             */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 13 16:16:29 1995                          */
-;*    Last change :  Mon Jun 14 09:24:17 2021 (serrano)                */
+;*    Last change :  Sun Jul 11 09:38:06 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The integration of one global definition.                        */
@@ -81,8 +81,7 @@
 			 (let* ((g (sfun/Iinfo-L (local-value f)))
 				(ifu (variable-value g)))
 			    (sfun/Iinfo-Led-set! ifu
-			       (cons f
-				  (sfun/Iinfo-Led ifu))))))
+			       (cons f (sfun/Iinfo-Led ifu))))))
 		   *phi*)
 		;; for each function (local and global), we add/remove
 		;; the integrated local functions.

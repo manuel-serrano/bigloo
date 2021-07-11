@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Jun 18 13:37:00 2021 (serrano)                */
+;*    Last change :  Sun Jul 11 10:07:57 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -66,7 +66,7 @@
       (set! *current-dynamic-env* (find-global '$current-dynamic-env 'foreign))
       (set! *get-exitd-top* (find-global '$get-exitd-top 'foreign))
       (set! *env-get-exitd-top* (find-global '$env-get-exitd-top 'foreign))
-      (set! *unwind-until!* (find-global 'unwind-until! '__bexit))
+      (set! *unwind-until!* (find-global 'unwind-stack-until! '__bexit))
       (set! *pop-exit!* (find-global 'pop-exit! 'foreign))
       (set! *env-pop-exit!* (find-global '$env-pop-exit! 'foreign))
       (set! *push-exit!* (find-global 'push-exit! 'foreign))

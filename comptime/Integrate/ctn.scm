@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 14:10:09 1995                          */
-;*    Last change :  Mon Jun 14 09:12:29 2021 (serrano)                */
+;*    Last change :  Sun Jul 11 09:42:21 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of `Cn' and `Ct'.                                */
@@ -27,7 +27,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    Cn&Ct! ...                                                       */
 ;*    -------------------------------------------------------------    */
-;*    This function returns the list of the globalized functions due   */
+;*    This function returns the list of globalized functions due       */
 ;*    to the Cn property.                                              */
 ;*---------------------------------------------------------------------*/
 (define (Cn&Ct! A)
