@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Sun Jul 11 10:07:57 2021 (serrano)                */
+;*    Last change :  Mon Jul 12 19:43:26 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -350,7 +350,7 @@
    (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
-;*    is-exit-return? ::var ...                                        */
+;*    is-return? ::var ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (is-return? node::var exitvar abort)
    (with-access::var node (variable)
@@ -358,7 +358,7 @@
 	 (abort #f))))
 
 ;*---------------------------------------------------------------------*/
-;*    is-exit-return? ::let-var ...                                    */
+;*    is-return? ::let-var ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (is-return? node::let-var exitvar abort)
    (with-access::let-var node (bindings body)
@@ -370,7 +370,8 @@
 	     (if (isa? bnode app)
 		 (with-access::app bnode (fun)
 		    (with-access::var fun (variable)
-		       (if (eq? variable *get-exitd-top*)
+		       (if (or (eq? variable *get-exitd-top*)
+			       (eq? variable *env-get-exitd-top*))
 			   (is-return? body (cons (caar bindings) exitvar) abort)
 			   (call-default-walker))))
 		 (call-default-walker))))
@@ -378,7 +379,7 @@
 	  (call-default-walker)))))
 
 ;*---------------------------------------------------------------------*/
-;*    is-exit-return? ::app ...                                        */
+;*    is-return? ::app ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (is-return? node::app exitvar abort)
    (with-access::app node (fun args)
@@ -390,7 +391,8 @@
 		    (or (and (pair? exitvar) (memq variable exitvar))
 			(is-return? (car args) exitvar abort)))
 		 (call-default-walker)))
-	    ((eq? variable *get-exitd-top*)
+	    ((or (eq? variable *get-exitd-top*)
+		 (eq? variable *env-get-exitd-top*))
 	     (or *optim-return-goto?* (abort #f)))
 	    (else
 	     (call-default-walker))))))
@@ -416,7 +418,7 @@
 			      (loc loc)
 			      (type (node-type rblock))
 			      (block rblock)
-			      (value (cadr args)))
+			      (value (caddr args)))
 			   (call-default-walker)))
 		    (call-default-walker)))
 	     (call-default-walker)))))
