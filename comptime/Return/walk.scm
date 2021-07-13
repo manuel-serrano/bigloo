@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Jul 12 19:43:26 2021 (serrano)                */
+;*    Last change :  Tue Jul 13 07:11:14 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -370,10 +370,13 @@
 	     (if (isa? bnode app)
 		 (with-access::app bnode (fun)
 		    (with-access::var fun (variable)
-		       (if (or (eq? variable *get-exitd-top*)
-			       (eq? variable *env-get-exitd-top*))
-			   (is-return? body (cons (caar bindings) exitvar) abort)
-			   (call-default-walker))))
+		       (cond
+			  ((eq? variable *env-get-exitd-top*)
+			   (is-return? body (cons (caar bindings) exitvar) abort))
+			  ((eq? variable *get-exitd-top*)
+			   (is-return? body (cons (car bindings) exitvar) abort))
+			  (else
+			   (call-default-walker)))))
 		 (call-default-walker))))
 	 (else
 	  (call-default-walker)))))
