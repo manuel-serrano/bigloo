@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Sun May 16 10:05:09 2021 (serrano)                */
+;*    Last change :  Fri Jul 23 19:27:36 2021 (serrano)                */
 ;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
@@ -395,7 +395,7 @@
 (define-macro (receive-fast-divider bindings call body)
    (match-case bindings
       ((?divider ?k ?exact)
-       `(let* ((,(symbol-append divider '::long) ,call)
+       `(let* ((,(symbol-append divider '::llong) ,call)
 	       (,k fast-divider-res-k)
 	       (,exact fast-divider-res-exact?))
 	   ,body))
