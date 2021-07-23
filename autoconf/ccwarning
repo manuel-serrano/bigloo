@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/ccwarning                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/ccwarning            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar  7 16:28:42 2017                          */
-#*    Last change :  Thu Jul  6 10:37:38 2017 (serrano)                */
-#*    Copyright   :  2017 Manuel Serrano                               */
+#*    Last change :  Thu Jul 15 11:50:39 2021 (serrano)                */
+#*    Copyright   :  2017-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Disable useless but painful clang warning messages.              */
 #*=====================================================================*/
@@ -13,7 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cwarning="-Wno-unused-value -Wno-parentheses-equality -Wno-parentheses -Wno-invalid-source-encoding -Wno-return-type"
+cwarning="-Wno-unused-value -Wno-parentheses-equality -Wno-parentheses -Wno-invalid-source-encoding -Wno-return-type -Wno-trigraphs"
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
