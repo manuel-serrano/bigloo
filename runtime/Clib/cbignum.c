@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Jul  7 08:19:31 2021 (serrano)                */
+/*    Last change :  Tue Jul 27 08:14:16 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -128,30 +128,16 @@ bgl_long_to_bignum( const long n ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_llong_to_bignum( const BGL_LONGLONG_T n ) {
-   obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
-   
-#if( BGL_LONGLONG_LIMBS == 1 )
-   if( n < 0 ) {
-      BXLIMBS( x )[ 0 ] = (mp_limb_t) (unsigned BGL_LONGLONG_T) -n;
-      BXSIZ( x ) = -1;
-   } else {
-      BXLIMBS( x )[ 0 ] = (mp_limb_t) (unsigned BGL_LONGLONG_T) n;
-      BXSIZ( x ) = (n!=0);
-   }
+#if (BGL_ELONG_BIT_SIZE > 32)
+   return bgl_long_to_bignum((long)n);
 #else
-   mp_size_t size = 0;
-   unsigned BGL_LONGLONG_T vl = (unsigned BGL_LONGLONG_T) (n < 0 ? -n : n);
-      
-   do {
-      BXLIMBS( x )[ size ] = (mp_limb_t) (vl & GMP_NUMB_MASK);
-      size++;
-      vl >>= GMP_NUMB_BITS;
-   } while( vl );
-
-   BXSIZ( x ) = n > 0 ? size : (n < 0 ? -size : 0);
-#endif
+   obj_t x = make_bignum( sizeof(n) );
+   
+   mpz_import(&(BIGNUM( x ).mpz), 1, 1, sizeof(n), 0, 0, &n);
+   if (n < 0) mpz_neg(&(BIGNUM( x ).mpz), &(BIGNUM( x ).mpz));
    
    return x;
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -160,30 +146,16 @@ bgl_llong_to_bignum( const BGL_LONGLONG_T n ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_int64_to_bignum( const int64_t n ) {
-   obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
-   
-#if( BGL_LONGLONG_LIMBS == 1 )
-   if( n < 0 ) {
-      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) -n;
-      BXSIZ( x ) = -1;
-   } else {
-      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) n;
-      BXSIZ( x ) = (n!=0);
-   }
+#if (BGL_ELONG_BIT_SIZE > 32)
+   return bgl_long_to_bignum((long)n);
 #else
-   mp_size_t size = 0;
-   uint64_t vl = (uint64_t) (n < 0 ? -n : n);
-      
-   do {
-      BXLIMBS( x )[ size ] = (mp_limb_t) (vl & GMP_NUMB_MASK);
-      size++;
-      vl >>= GMP_NUMB_BITS;
-   } while( vl );
-
-   BXSIZ( x ) = n > 0 ? size : (n < 0 ? -size : 0);
-#endif
+   obj_t x = make_bignum( sizeof(n) );
+   
+   mpz_import(&(BIGNUM( x ).mpz), 1, 1, sizeof(n), 0, 0, &n);
+   if (n < 0) mpz_neg(&(BIGNUM( x ).mpz), &(BIGNUM( x ).mpz));
    
    return x;
+#endif
 }
 
 /*---------------------------------------------------------------------*/
@@ -192,12 +164,13 @@ bgl_int64_to_bignum( const int64_t n ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_uint64_to_bignum( const uint64_t n ) {
+#if (BGL_ELONG_BIT_SIZE > 32)
    obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
    
-#if( BGL_LONGLONG_LIMBS == 1 )
+#  if( BGL_LONGLONG_LIMBS == 1 )
    BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) n;
    BXSIZ( x ) = (n!=0);
-#else
+#  else
    mp_size_t size = 0;
    uint64_t vl = (uint64_t) (n < 0 ? -n : n);
       
@@ -208,9 +181,16 @@ bgl_uint64_to_bignum( const uint64_t n ) {
    } while( vl );
 
    BXSIZ( x ) = n > 0 ? size : (n < 0 ? -size : 0);
-#endif
+#  endif
    
    return x;
+#else
+   obj_t x = make_bignum( sizeof(n) );
+   
+   mpz_import(&(BIGNUM( x ).mpz), 1, 1, sizeof(n), 0, 0, &n);
+   
+   return x;
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -244,7 +224,18 @@ bgl_bignum_to_long( obj_t x ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BGL_LONGLONG_T
 bgl_bignum_to_llong( obj_t x ) {
-   return (BGL_LONGLONG_T)mpz_get_ui( &(BIGNUM( x ).mpz) );
+#if (BGL_ELONG_BIT_SIZE > 32)
+   return (BGL_LONGLONG_T)mpz_get_si( &(BIGNUM( x ).mpz) );
+#else
+   const int size = sizeof(BGL_LONGLONG_T);
+   const int numb = 8 * size - 0;
+   int count = (mpz_sizeinbase(&(BIGNUM(x).mpz), 2) + numb-1) / numb;
+   const BGL_LONGLONG_T *i = alloca(count * size);
+
+   mpz_export((void *)i, &count, 1, sizeof(BGL_LONGLONG_T), 0, 0, &(BIGNUM( x ).mpz));
+
+   return i[count - 1];
+#endif
 }
 
 /*---------------------------------------------------------------------*/
@@ -253,7 +244,18 @@ bgl_bignum_to_llong( obj_t x ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int64_t
 bgl_bignum_to_int64( obj_t x ) {
-   return (int64_t)mpz_get_ui( &(BIGNUM( x ).mpz) );
+#if (BGL_ELONG_BIT_SIZE > 32)
+   return (int64_t)mpz_get_si( &(BIGNUM( x ).mpz) );
+#else   
+   const int size = sizeof(int64_t);
+   const int numb = 8 * size - 0;
+   int count = (mpz_sizeinbase(&(BIGNUM(x).mpz), 2) + numb-1) / numb;
+   const int64_t *i = alloca(count * size);
+
+   mpz_export((void *)i, &count, 1, sizeof(int64_t), 0, 0, &(BIGNUM( x ).mpz));
+
+   return i[count - 1];
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -262,7 +264,18 @@ bgl_bignum_to_int64( obj_t x ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF uint64_t
 bgl_bignum_to_uint64( obj_t x ) {
+#if (BGL_ELONG_BIT_SIZE > 32)
    return (uint64_t)mpz_get_ui( &(BIGNUM( x ).mpz) );
+#else
+   const int size = sizeof(uint64_t);
+   const int numb = 8 * size - 0;
+   int count = (mpz_sizeinbase(&(BIGNUM(x).mpz), 2) + numb-1) / numb;
+   const uint64_t *i = alloca(count * size);
+
+   mpz_export((void *)i, &count, 1, sizeof(uint64_t), 0, 0, &(BIGNUM( x ).mpz));
+
+   return i[count - 1];
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
