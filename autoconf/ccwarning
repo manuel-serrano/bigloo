@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar  7 16:28:42 2017                          */
-#*    Last change :  Thu Jul 15 11:50:39 2021 (serrano)                */
+#*    Last change :  Thu Jul 29 07:18:59 2021 (serrano)                */
 #*    Copyright   :  2017-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Disable useless but painful clang warning messages.              */
@@ -51,7 +51,10 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
+#include <stdio.h>
+
 int foo( long x ) {
+   puts( "??-" );
    if( x = 3 ) {
       return x + 1;
    } else {
