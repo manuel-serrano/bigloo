@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/gmtoff                      */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/localtime_r          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Apr 11 07:36:17 2014 (serrano)                */
+#*    Last change :  Wed Jul 28 09:40:44 2021 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if localtime_r exists                                      */
 #*=====================================================================*/
@@ -55,12 +55,12 @@ cat > $file.c <<EOF
 #include <sys/time.h>
 
 int main( int argc, char *argv[] ) {
-   time_t sec = 2346544;
+   time_t sec = 1445367545;
    struct tm res;
 
    localtime_r( &sec, &res );
 
-   return res.tm_hour != 0 ? 0 : 1;
+   return res.tm_hour != 20 ? 0 : 1;
 }
 EOF
 
