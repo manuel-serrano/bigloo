@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Tue Jul 27 08:14:16 2021 (serrano)                */
+/*    Last change :  Sat Jul 31 07:14:56 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -225,7 +225,7 @@ bgl_bignum_to_long( obj_t x ) {
 BGL_RUNTIME_DEF BGL_LONGLONG_T
 bgl_bignum_to_llong( obj_t x ) {
 #if (BGL_ELONG_BIT_SIZE > 32)
-   return (BGL_LONGLONG_T)mpz_get_si( &(BIGNUM( x ).mpz) );
+   return (BGL_LONGLONG_T)mpz_get_ui( &(BIGNUM( x ).mpz) );
 #else
    const int size = sizeof(BGL_LONGLONG_T);
    const int numb = 8 * size - 0;
@@ -245,7 +245,7 @@ bgl_bignum_to_llong( obj_t x ) {
 BGL_RUNTIME_DEF int64_t
 bgl_bignum_to_int64( obj_t x ) {
 #if (BGL_ELONG_BIT_SIZE > 32)
-   return (int64_t)mpz_get_si( &(BIGNUM( x ).mpz) );
+   return (int64_t)mpz_get_ui( &(BIGNUM( x ).mpz) );
 #else   
    const int size = sizeof(int64_t);
    const int numb = 8 * size - 0;
