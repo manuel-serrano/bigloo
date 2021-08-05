@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Thu Jul  8 11:24:54 2021 (serrano)                */
+;*    Last change :  Wed Aug  4 19:37:35 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -614,7 +614,7 @@
 	 (match-case expr
 	    ((letrec ((and ?binding (?- ?val))) ?subexpr)
 	     (cond
-		((function? val)
+		((function? val #t)
 		 (loop subexpr (cons binding bindings)))
 		((null? bindings)
 		 `(letrec (,binding) ,(letcollapse subexpr)))
@@ -627,7 +627,6 @@
 		 expr)))))
    
    (define (labelscollapse expr)
-      (tprint "labels collapse val=" expr)
       expr)
    
    (define (letcollapse expr)
@@ -679,14 +678,22 @@
 		(map (lambda (x) (shape (ebinding-var x))) let-bindings))
 	     (trace-item "rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
-	     (if (pair? let-bindings)
+	     (cond
+		((and (pair? let-bindings) (pair? rec*-bindings))
 		 (sexp->node
 		    (letcollapse
 		       (letstar let-bindings
 			  `(letrec* ,(map ebinding-binding rec*-bindings)
 			      ,body)))
-		    stack loc site)
-		 (kont ebindings body))))))
+		    stack loc site))
+		((pair? let-bindings)
+		 (sexp->node
+		    (letcollapse
+		       (letstar let-bindings
+			  body))
+		    stack loc site))
+		(else
+		 (kont ebindings body)))))))
 
    (define (split-tail-letrec ebindings body split::procedure kont)
       (cond
@@ -1070,6 +1077,8 @@
 		   ;; one of the variables introduced in the next bindings
 		   ;; appears free in the value of the current binding
 		   (trace-item "abort=" (ebinding-var (car ebindings)))
+		   (trace-item "let*-bindings="
+		      (map (lambda (b) (shape (ebinding-var b))) let*-bindings))
 		   (values (reverse ebindings) let*-bindings))))))
       
       (with-trace 'letrec* "letrec*/stage1"
