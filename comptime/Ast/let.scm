@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Aug  4 19:37:35 2021 (serrano)                */
+;*    Last change :  Mon Aug  9 08:18:16 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -580,33 +580,26 @@
 	    ebindings)))
 
    (define (letstar ebindings body)
-      (cond
-	 ((null? ebindings)
-	  body)
-	 ((used-in? (car ebindings) (list (car ebindings)))
-	  `(letrec (,(ebinding-binding (car ebindings)))
-	      ,(letstar (cdr ebindings) body)))
-	 (else
-	  `(let (,(ebinding-binding (car ebindings)))
-	      ,(letstar (cdr ebindings) body)))))
-
-   (define (letstarcollapse expr)
-      (let loop ((expr expr)
-		 (bindings '()))
-	 (match-case expr
-	    ((let ((and ?binding (?- ?val))) ?subexpr)
-	     (cond
-		((or (constant? val) (function? val))
-		 (loop subexpr (cons binding bindings)))
-		((null? bindings)
-		 `(let (,binding) ,(letcollapse subexpr)))
-		(else
-		 `(let ,(reverse bindings)
-		     (let (,binding) ,(letcollapse subexpr))))))
+      (let loop ((ebindings ebindings)
+		 (lbindings '()))
+	 (cond
+	    ((null? ebindings)
+	     (if (null? lbindings)
+		 body
+		 `(let ,(reverse lbindings) ,body)))
+	    ((used-in? (car ebindings) (list (car ebindings)))
+	     (if (null? lbindings)
+		 `(letrec (,(ebinding-binding (car ebindings)))
+		     ,(loop (cdr ebindings) '()))
+		 `(let ,(reverse lbindings)
+		     (letrec (,(ebinding-binding (car ebindings)))
+			,(loop (cdr ebindings) '())))))
+	    ((used-in? (car ebindings) (cdr ebindings))
+	     `(let (,@(reverse lbindings) ,(ebinding-binding (car ebindings)))
+		 ,(loop (cdr ebindings) '())))
 	    (else
-	     (if (pair? bindings)
-		 `(let ,(reverse bindings) ,expr)
-		 expr)))))
+	     (loop (cdr ebindings)
+		(cons (ebinding-binding (car ebindings)) lbindings))))))
 
    (define (letreccollapse expr)
       (let loop ((expr expr)
@@ -631,7 +624,7 @@
    
    (define (letcollapse expr)
       (match-case expr
-	 ((let . ?-) (letstarcollapse expr))
+	 ((let . ?-) expr)
 	 ((letrec . ?-) (letreccollapse expr))
 	 ((labels . ?-) (labelscollapse expr))
 	 (else expr)))
@@ -674,23 +667,20 @@
 	 (else
 	  (multiple-value-bind (let-bindings rec*-bindings)
 	     (split ebindings)
-	     (trace-item "let="
+	     (trace-item "split-head-let*, let*="
 		(map (lambda (x) (shape (ebinding-var x))) let-bindings))
-	     (trace-item "rec*="
+	     (trace-item "split-head-let*, rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
 	     (cond
 		((and (pair? let-bindings) (pair? rec*-bindings))
 		 (sexp->node
-		    (letcollapse
-		       (letstar let-bindings
-			  `(letrec* ,(map ebinding-binding rec*-bindings)
-			      ,body)))
+		    (letstar let-bindings
+		       `(letrec* ,(map ebinding-binding rec*-bindings)
+			   ,body))
 		    stack loc site))
 		((pair? let-bindings)
 		 (sexp->node
-		    (letcollapse
-		       (letstar let-bindings
-			  body))
+		    (letstar let-bindings body)
 		    stack loc site))
 		(else
 		 (kont ebindings body)))))))
