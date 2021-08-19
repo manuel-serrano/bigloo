@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Tue Apr 20 15:33:25 2021 (serrano)                */
+;*    Last change :  Thu Aug 19 17:38:29 2021 (serrano)                */
 ;*    Copyright   :  2007-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -71,7 +71,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-hostname m::maildir)
    (with-access::maildir m (path)
-      path))
+      (format "~a:~a" (hostname) path)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-prefix ::maildir ...                                     */
