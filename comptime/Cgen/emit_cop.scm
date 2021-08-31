@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Sat Jun 12 08:43:02 2021 (serrano)                */
+;*    Last change :  Tue Aug 31 13:53:23 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -611,7 +611,7 @@
       (emit-bdb-loc loc)
       (display "} else {\n" *c-port*)
       (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)
-      (display "  // MS: CARE 5 jan 2021: see runtime/Clib/csystem.c" *c-port*)
+      (display "  // MS: CARE 5 jan 2021: see runtime/Clib/csystem.c\n" *c-port*)
       (display "  // bgl_restore_signal_handlers();\n" *c-port*)
       (display "#endif\n" *c-port*)
       (emit-cop body)
