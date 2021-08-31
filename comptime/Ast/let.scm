@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Aug  4 19:37:35 2021 (serrano)                */
+;*    Last change :  Tue Aug 31 09:09:51 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -590,50 +590,59 @@
 	  `(let (,(ebinding-binding (car ebindings)))
 	      ,(letstar (cdr ebindings) body)))))
 
-   (define (letstarcollapse expr)
+   (define (letstarcollapse ebindings expr)
       (let loop ((expr expr)
-		 (bindings '()))
+		 (bindings '())
+		 (ebindings ebindings))
 	 (match-case expr
-	    ((let ((and ?binding (?- ?val))) ?subexpr)
+	    ((let ((and ?binding (?var ?val))) ?subexpr)
 	     (cond
-		((or (constant? val) (function? val))
-		 (loop subexpr (cons binding bindings)))
+		((and (or (constant? val) (function? val))
+		      (not (find (lambda (var)
+				    (pair? (assq var bindings)))
+			      (ebinding-frees (car ebindings)))))
+		 (trace-item "letstarcollapse.var=" var
+		    " ebindings=" (ebinding-var (car ebindings))
+		    " frees=" (ebinding-frees (car ebindings))
+		    " bindings=" (map car bindings))
+		 (loop subexpr (cons binding bindings) (cdr ebindings)))
 		((null? bindings)
-		 `(let (,binding) ,(letcollapse subexpr)))
+		 `(let (,binding) ,(letcollapse (cdr ebindings) subexpr)))
 		(else
 		 `(let ,(reverse bindings)
-		     (let (,binding) ,(letcollapse subexpr))))))
+		     (let (,binding) ,(letcollapse (cdr ebindings) subexpr))))))
 	    (else
 	     (if (pair? bindings)
 		 `(let ,(reverse bindings) ,expr)
 		 expr)))))
 
-   (define (letreccollapse expr)
+   (define (letreccollapse ebindings expr)
       (let loop ((expr expr)
-		 (bindings '()))
+		 (bindings '())
+		 (ebindings ebindings))
 	 (match-case expr
 	    ((letrec ((and ?binding (?- ?val))) ?subexpr)
 	     (cond
 		((function? val #t)
-		 (loop subexpr (cons binding bindings)))
+		 (loop subexpr (cons binding bindings) ebindings))
 		((null? bindings)
-		 `(letrec (,binding) ,(letcollapse subexpr)))
+		 `(letrec (,binding) ,(letcollapse (cdr ebindings) subexpr)))
 		(else
 		 `(letrec ,(reverse bindings)
-		     (letrec (,binding) ,(letcollapse subexpr))))))
+		     (letrec (,binding) ,(letcollapse (cdr ebindings) subexpr))))))
 	    (else
 	     (if (pair? bindings)
 		 `(letrec ,(reverse bindings) ,expr)
 		 expr)))))
    
-   (define (labelscollapse expr)
+   (define (labelscollapse ebindings expr)
       expr)
    
-   (define (letcollapse expr)
+   (define (letcollapse ebindings expr)
       (match-case expr
-	 ((let . ?-) (letstarcollapse expr))
-	 ((letrec . ?-) (letreccollapse expr))
-	 ((labels . ?-) (labelscollapse expr))
+	 ((let . ?-) (letstarcollapse ebindings expr))
+	 ((letrec . ?-) (letreccollapse ebindings expr))
+	 ((labels . ?-) (labelscollapse ebindings expr))
 	 (else expr)))
 
    (define (letrecursive ebindings body)
@@ -654,13 +663,13 @@
 	 (else
 	  (multiple-value-bind (rec-bindings rec*-bindings)
 	     (split ebindings)
-	     (trace-item "rec="
+	     (trace-item "split-head-letrec, rec="
 		(map (lambda (x) (shape (ebinding-var x))) rec-bindings))
-	     (trace-item "rec*="
+	     (trace-item "split-head-letrec, rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
 	     (if (pair? rec-bindings)
 		 (sexp->node
-		    (letcollapse
+		    (letcollapse rec-bindings
 		       (letrecursive rec-bindings
 			  `(letrec* ,(map ebinding-binding rec*-bindings)
 			      ,body)))
@@ -674,21 +683,21 @@
 	 (else
 	  (multiple-value-bind (let-bindings rec*-bindings)
 	     (split ebindings)
-	     (trace-item "let="
+	     (trace-item "split-head-let*, let*="
 		(map (lambda (x) (shape (ebinding-var x))) let-bindings))
-	     (trace-item "rec*="
+	     (trace-item "split-head-let*, rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
 	     (cond
 		((and (pair? let-bindings) (pair? rec*-bindings))
 		 (sexp->node
-		    (letcollapse
+		    (letcollapse let-bindings
 		       (letstar let-bindings
 			  `(letrec* ,(map ebinding-binding rec*-bindings)
 			      ,body)))
 		    stack loc site))
 		((pair? let-bindings)
 		 (sexp->node
-		    (letcollapse
+		    (letcollapse let-bindings
 		       (letstar let-bindings
 			  body))
 		    stack loc site))
@@ -702,9 +711,9 @@
 	 (else
 	  (multiple-value-bind (rec*-bindings tail-bindings)
 	     (split ebindings)
-	     (trace-item "rec*="
+	     (trace-item "split-tail-letrec, rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
-	     (trace-item "tail="
+	     (trace-item "split-tail-letrec, tail="
 		(map (lambda (x) (shape (ebinding-var x))) tail-bindings))
 	     (if (pair? tail-bindings)
 		 (sexp->node
@@ -721,9 +730,9 @@
 	 (else
 	  (multiple-value-bind (rec*-bindings tail-bindings)
 	     (split ebindings)
-	     (trace-item "rec*="
+	     (trace-item "split-tail-let*, rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
-	     (trace-item "tail="
+	     (trace-item "split-tail-let*, tail="
 		(map (lambda (x) (shape (ebinding-var x))) tail-bindings))
 	     (cond
 		((null? tail-bindings)
@@ -1096,7 +1105,7 @@
 		(values (reverse! rec-bindings) (reverse! rec*-bindings)))
 	       ((and (not (side-effect? (ebinding-value (car ebindings))))
 		     (immutable-in? (car ebindings) rec*-bindings))
-		;; this is literal is bound to an immutable variable
+		;; this literal is bound to an immutable variable
 		(loop (cdr ebindings)
 		   (cons (car ebindings) rec-bindings)
 		   rec*-bindings))
