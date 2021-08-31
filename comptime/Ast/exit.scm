@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 14:19:17 1995                          */
-;*    Last change :  Thu Jul  8 11:25:21 2021 (serrano)                */
+;*    Last change :  Tue Aug 31 16:09:00 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `set-exit' and `jmp-exit' management.                        */
 ;*=====================================================================*/
@@ -69,7 +69,7 @@
 	     (sfun-class-set! (local-value hdlg-fun) 'snifun)
 	     (sfun-body-set!  (local-value hdlg-fun) exit-body)
              hdlg-node))
-	 ((?- (?exit) ?body ?onexit)
+	 ((?- (?exit) ?body :onexit ?onexit)
 	  ;; new form introduced Jun 2021
           (let* ((hdlg-name  (mark-symbol-non-user!
 				(make-anonymous-name loc "exit")))

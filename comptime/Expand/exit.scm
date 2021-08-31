@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Jun 22 18:44:36 2021 (serrano)                */
+;*    Last change :  Tue Aug 31 15:58:48 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -49,8 +49,11 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-set-exit x e)
    (match-case x
-      ((?- (?exit) . ?body)
-       (let ((new `(set-exit (,exit) ,(e (expand-progn body) e))))
+      ((?- (?exit) ?body :onexit ?onexit)
+       (let ((new `(set-exit (,exit) ,(e body e) :onexit ,(e onexit e))))
+	  (replace! x new)))
+      ((?- (?exit) ?body)
+       (let ((new `(set-exit (,exit) ,(e body e))))
 	  (replace! x new)))
       (else
        (error #f "Illegal `set-exit' form" x))))
@@ -187,8 +190,9 @@
 				 (let ((,res ,body))
 				    ($env-pop-exit! ,env)
 				    ,res)))
-			   ,onexit))))
-	    (replace! x new))))
+			   :onexit ,onexit))))
+	    (replace! x new)
+	    x)))
    
    (match-case x
       ((?- (?exit) (?exit ?expr))
