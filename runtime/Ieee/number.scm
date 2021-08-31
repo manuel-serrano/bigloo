@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Jul  7 08:27:53 2021 (serrano)                */
+;*    Last change :  Wed Aug 11 09:17:30 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -51,7 +51,7 @@
 	    
 	    (macro $flonum->int32::int32 (::double) "(int32_t)")
 	    (macro $int32->flonum::double (::int32) "(double)")
-	    (macro $flonum->uint32::int32 (::double) "(uint32_t)")
+	    (macro $flonum->uint32::uint32 (::double) "(uint32_t)")
 	    (macro $uint32->flonum::double (::uint32) "(double)")
 	    
 	    (macro $flonum->int64::int64 (::double) "(int64_t)")

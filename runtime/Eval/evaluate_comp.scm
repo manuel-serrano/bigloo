@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Tue Jun 22 13:53:51 2021 (serrano)                */
+;*    Last change :  Mon Aug 30 09:21:44 2021 (serrano)                */
 ;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -941,6 +941,8 @@
        (with-access::ev_app expr (loc fun args tail?)
 	  (let ( (fval (global-fun-value fun)) )
 	     (cond
+		((not (and (pair? args) (pair? (cdr args)) (null? (cddr args))))
+		 (evarity-error loc fun 2 (length args)))
 		((eq? fval +fl)
 		 (vector 6 (CF (car args)) (CF (cadr args))))
 		((eq? fval -fl)
