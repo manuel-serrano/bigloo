@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Mon Aug 30 09:21:44 2021 (serrano)                */
+;*    Last change :  Thu Sep  2 07:36:35 2021 (serrano)                */
 ;*    Copyright   :  2011-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -917,6 +917,9 @@
 ;; expression arithmetique
 (define (compile-float-arith expr stk)
    (define (CF e) (compile-float-arith e stk))
+   (define (check-arity-binop loc fun args)
+      (unless (and (pair? args) (pair? (cdr args)) (null? (cddr args)))
+	 (evarity-error loc fun 2 (length args))))
    ;(print "compile " (uncompile expr))
    (cond
       ((isa? expr ev_litt)
@@ -941,15 +944,17 @@
        (with-access::ev_app expr (loc fun args tail?)
 	  (let ( (fval (global-fun-value fun)) )
 	     (cond
-		((not (and (pair? args) (pair? (cdr args)) (null? (cddr args))))
-		 (evarity-error loc fun 2 (length args)))
 		((eq? fval +fl)
+		 (check-arity-binop loc fun args)
 		 (vector 6 (CF (car args)) (CF (cadr args))))
 		((eq? fval -fl)
+		 (check-arity-binop loc fun args)
 		 (vector 7 (CF (car args)) (CF (cadr args))))
 		((eq? fval *fl)
+		 (check-arity-binop loc fun args)
 		 (vector 8 (CF (car args)) (CF (cadr args))))
 		((eq? fval /fl)
+		 (check-arity-binop loc fun args)
 		 (vector 9 (CF (car args)) (CF (cadr args))))
 		((eq? fval fixnum->flonum)
 		 (vector 10 (comp (car args) stk)))
