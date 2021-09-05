@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/approx.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/approx.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sat Mar 18 21:03:34 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep  4 15:10:43 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
 ;*=====================================================================*/
@@ -13,7 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cfa_approx
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Cfa/set.sch")
    (import  type_type
 	    type_cache
 	    type_coercion
@@ -40,6 +41,8 @@
 	    (union-approx-filter!::approx ::approx ::approx)
 	    (approx-set-type! ::approx ::type)
 	    (approx-set-top! ::approx)
+	    (approx-has-procedure?::bool ::approx)
+	    (approx-check-has-procedure?::bool ::approx)
 	    (make-empty-approx::approx)
 	    (make-type-approx::approx ::type)
 	    (make-type-alloc-approx::approx ::type ::node)
@@ -72,14 +75,42 @@
    (node/effect-key-set! node key))
 
 ;*---------------------------------------------------------------------*/
+;*    approx-check-has-procedure? ...                                  */
+;*---------------------------------------------------------------------*/
+(define (approx-check-has-procedure? approx)
+   (let ((res #f))
+      (for-each-approx-alloc (lambda (app)
+				(when (make-procedure-app? app)
+				   (set! res #t)))
+	 approx)
+      res))
+
+;*---------------------------------------------------------------------*/
+;*    approx-has-procedure? ...                                        */
+;*---------------------------------------------------------------------*/
+(define (approx-has-procedure? a::approx)
+   (with-access::approx a (has-procedure?)
+      has-procedure?))
+
+;*---------------------------------------------------------------------*/
+;*    approx-has-procedure?-set! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (approx-has-procedure?-set! a::approx v)
+   (with-access::approx a (has-procedure?)
+      (set! has-procedure? v)))
+
+;*---------------------------------------------------------------------*/
 ;*    union-approx! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (union-approx!::approx dst::approx src::approx)
+   ;; merge has-procedure?
+   (when (approx-has-procedure? src)
+      (approx-has-procedure?-set! dst #t))
    ;; we make the union of the type
    (approx-set-type! dst (get-src-approx-type src))
    ;; check the consistency with *_* type
    (unless (eq? (approx-type dst) *_*)
-      (when (any vector-approx? (set->list (approx-allocs src)))
+      (when (set-any vector-approx? (approx-allocs src))
 	 (approx-set-type! dst *vector*)))
    ;; we check *obj* to prevent closure optimizations
    (when (not (or (eq? (approx-type dst) *procedure*)
@@ -90,7 +121,7 @@
       (approx-set-top! dst))
    ;; and we make the union of approximations
    (when (set-union! (approx-allocs dst) (approx-allocs src))
-       (continue-cfa! 'union))
+      (continue-cfa! 'union))
    ;; and we return the dst
    dst)
 
@@ -103,11 +134,11 @@
       ;; as set-union! but only copy values satisfying pred
       (let ((res #f)
 	    (set (approx-allocs dst)))
-	 (for-each (lambda (v)
-		      (when (and (pred v) (not (set-member? set v)))
-			 (set-extend! set v)
-			 (set! res #t)))
-	    (set->list (approx-allocs src)))
+	 (set-for-each (lambda (v)
+			  (when (and (pred v) (not (set-member? set v)))
+			     (set-extend! set v)
+			     (set! res #t)))
+	    (approx-allocs src))
 	 res))
    
    (when (approx-top? src)
@@ -118,6 +149,8 @@
 	  (when (set-union/type! dst src vector-approx?)
 	     (continue-cfa! 'union)))
 	 ((eq? ty *procedure*)
+	  (when (approx-has-procedure? src)
+	     (approx-has-procedure?-set! dst #t))
 	  (when (set-union/type! dst src procedure-approx?)
 	     (continue-cfa! 'union)))
 	 ((or (eq? ty *pair*)
@@ -198,9 +231,9 @@
 	 ((=fx (set-length (approx-allocs a)) 0)
 	  type)
 	 (else
-	  (let ((allocs (set->list (approx-allocs a))))
-	     (if (any vector-approx? allocs)
-		 (if (and (eq? type *vector*) (every vector-approx? allocs))
+	  (let ((allocs (approx-allocs a)))
+	     (if (set-any vector-approx? allocs)
+		 (if (and (eq? type *vector*) (set-every vector-approx? allocs))
 		     *vector*
 		     *obj*)
 		 type))))))
@@ -321,13 +354,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-type-alloc-approx ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (make-type-alloc-approx type alloc)
+(define (make-type-alloc-approx type alloc::node)
    (let ((allocs (make-set! *alloc-set*)))
       (set-extend! allocs alloc)
       (instantiate::approx
 	 (type-locked? (not (eq? type *_*)))
 	 (type type)
-	 (allocs allocs))))
+	 (allocs allocs)
+	 (has-procedure? (make-procedure-app? alloc)))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    shape ...                                                        */

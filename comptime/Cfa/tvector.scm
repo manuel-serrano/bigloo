@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Wed Jun 16 15:57:56 2021 (serrano)                */
+;*    Last change :  Sat Sep  4 15:17:39 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -15,7 +15,8 @@
 (module cfa_tvector
    (include "Tools/trace.sch"
 	    "Ast/unit.sch"
-	    "Tvector/tvector.sch")
+	    "Tvector/tvector.sch"
+	    "Cfa/set.sch")
    (import  engine_param
 	    module_type
 	    module_pragma

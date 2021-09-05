@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Thu Jul  8 11:30:08 2021 (serrano)                */
+;*    Last change :  Sat Sep  4 15:17:27 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -23,7 +23,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cfa_closure
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Cfa/set.sch")
    (import  engine_param
 	    type_type
 	    type_cache
@@ -141,15 +142,17 @@
 		   (cond
 		      (top?
 		       (trace (cfa 3) "nok (top?)")
-		       (for-each-approx-alloc
-			(lambda (alloc)
-			   (if (make-procedure-app? alloc)
-			       (begin
-				  (trace (cfa 3) #"nok: " (shape alloc)
-					 #\Newline)
-				  (make-procedure-app-T-set! alloc #f)
-				  (make-procedure-app-X-set! alloc #f))))
-			approx))
+		       [assert (approx) (eq? (approx-check-has-procedure? approx) (approx-has-procedure? approx))]
+		       (when (approx-has-procedure? approx)
+			  (for-each-approx-alloc
+			     (lambda (alloc)
+				(if (make-procedure-app? alloc)
+				    (begin
+				       (trace (cfa 3) #"nok: " (shape alloc)
+					  #\Newline)
+				       (make-procedure-app-T-set! alloc #f)
+				       (make-procedure-app-X-set! alloc #f))))
+			     approx)))
 		      ((=fx (set-length alloc) 0)
 		       (trace (cfa 3) #"ok.\n")
 		       'ok)
@@ -160,15 +163,17 @@
 		      (else
 		       ;; several functions can be applied, the
 		       ;; closure does not satisfy X.
-		       (for-each-approx-alloc
-			(lambda (alloc)
-			   (if (make-procedure-app? alloc)
-			       (begin
-				  (trace (cfa 3) #"nok: " (shape alloc)
-					 #\Newline)
-				  (make-procedure-app-X-set! alloc #f))))
-			approx)))))
-	     funcall-list))
+		       [assert (approx) (eq? (approx-check-has-procedure? approx) (approx-has-procedure? approx))]
+		       (when (approx-has-procedure? approx)
+			  (for-each-approx-alloc
+			     (lambda (alloc)
+				(if (make-procedure-app? alloc)
+				    (begin
+				       (trace (cfa 3) #"nok: " (shape alloc)
+					  #\Newline)
+				       (make-procedure-app-X-set! alloc #f))))
+			     approx))))))
+      funcall-list))
    
 ;*---------------------------------------------------------------------*/
 ;*    T-fix-point! ...                                                 */
@@ -496,25 +501,23 @@
 (define (light-access!)
    (for-each
     (lambda (app)
-       (let* ((args       (app-args app))
-	      (approx     (cfa! (car (app-args app))))
-	      (alloc-list (set->list (approx-allocs approx)))
-	      (fun        (app-fun app))
-	      (vfun       (var-variable fun)))
-	  (if (or (not (pair? alloc-list))
-		  (not (make-procedure-app? (car alloc-list))))
-	      'nothing-to-do
-	      (let ((alloc::app (car alloc-list)))
-		 (with-access::make-procedure-app alloc (X T args)
-		    (cond
-		       (X
-			(if (eq? vfun *procedure-ref*)
-			    (var-variable-set! fun *procedure-el-ref*)
-			    (var-variable-set! fun *procedure-el-set!*)))
-		       (T
-			(if (eq? vfun *procedure-ref*)
-			    (var-variable-set! fun *procedure-l-ref*)
-			    (var-variable-set! fun *procedure-l-set!*)))))))))
+       (let* ((args (app-args app))
+	      (approx (cfa! (car (app-args app))))
+	      (fun (app-fun app))
+	      (vfun (var-variable fun))
+	      (alloc (set-head (approx-allocs approx))))
+	  (when (make-procedure-app? alloc)
+	     (let ((alloc::app alloc))
+		(with-access::make-procedure-app alloc (X T args)
+		   (cond
+		      (X
+		       (if (eq? vfun *procedure-ref*)
+			   (var-variable-set! fun *procedure-el-ref*)
+			   (var-variable-set! fun *procedure-el-set!*)))
+		      (T
+		       (if (eq? vfun *procedure-ref*)
+			   (var-variable-set! fun *procedure-l-ref*)
+			   (var-variable-set! fun *procedure-l-set!*)))))))))
     *procedure-ref-list*))
 
 ;*---------------------------------------------------------------------*/
@@ -582,13 +585,11 @@
 ;*    approx-procedure-el? ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (approx-procedure-el? approx)
-   (let ((type (approx-type approx))
-	 (alloc-list (set->list (approx-allocs approx))))
-      (and (eq? type *procedure*)
-	   (pair? alloc-list)
-	   (null? (cdr alloc-list))
-	   (make-procedure-app? (car alloc-list))
-	   (make-procedure-app-X (car alloc-list)))))
+   (when (eq? (approx-type approx) *procedure*)
+      (when (=fx (set-length (approx-allocs approx)) 1)
+	 (let ((alloc (set-head (approx-allocs approx))))
+	    (and (make-procedure-app? alloc)
+		 (make-procedure-app-X alloc))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    A small cache                                                    */

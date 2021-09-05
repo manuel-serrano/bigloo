@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Thu Jul  8 11:14:20 2021 (serrano)                */
+;*    Last change :  Sat Sep  4 15:04:34 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -37,7 +37,7 @@
 	   (class node/effect::node
 	      ;; a side effect field
 	      (side-effect (default #unspecified))
-	      ;; a key for set manipulation (exclusively the cfa
+	      ;; a key for set manipulation (exclusively used by the cfa
 	      ;; but to avoid wasting time in node-key this field
 	      ;; is in the global tree)
 	      (key (default -1)))

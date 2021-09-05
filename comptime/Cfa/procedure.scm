@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/procedure.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Cfa/procedure.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Sat Aug 25 07:16:06 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep  4 17:37:23 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
 ;*=====================================================================*/
@@ -36,7 +36,7 @@
 ;*    disable-X-T! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (disable-X-T! approx reason)
-   
+
    (define (disable-alloc! app)
       (when (make-procedure-app? app)
 	 (trace (cfa 3)
@@ -51,8 +51,10 @@
 		   (v (var-variable callee))
 		   (fun (variable-value v)))
 	       (for-each loose-arg! (cdr (sfun-args fun)))))))
-   
-   (for-each-approx-alloc disable-alloc! approx))
+
+   [assert (approx) (eq? (approx-check-has-procedure? approx) (approx-has-procedure? approx))]
+   (when (approx-has-procedure? approx)
+      (for-each-approx-alloc disable-alloc! approx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::pre-make-procedure-app ...                         */

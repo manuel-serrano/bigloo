@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/cinfo.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/cinfo.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 15:46:49 1996                          */
-;*    Last change :  Wed May 31 15:21:00 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep  4 17:51:41 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa's information structures                                 */
 ;*=====================================================================*/
@@ -39,7 +39,9 @@
        (lost-stamp::long (default -1))
        ;; dup (variables duplicate their approx), this points to
        ;; the initial approx
-       (dup (default #unspecified)))
+       (dup (default #unspecified))
+       ;; does the approximation contains at least one make-procedure-app?
+       (has-procedure?::bool (default #f)))
     
     ;; function extensions
     (wide-class cfun/Cinfo::cfun

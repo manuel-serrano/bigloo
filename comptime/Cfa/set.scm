@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/set.scm                 */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/set.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 17:02:23 1995                          */
-;*    Last change :  Sat Jun 11 06:54:48 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep  4 15:01:18 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `set' package.                                               */
 ;*=====================================================================*/
@@ -13,6 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cfa_set
+   (include "Cfa/set.sch")
    (import  type_type
 	    ast_var
 	    ast_node
@@ -26,30 +27,27 @@
 	    (make-set! <set>)
 	    (set?::bool <obj>)
 	    (set-extend! <set> <obj>)
-	    (set-member? <set> <obj>)
+	    (inline set-member? <set> <obj>)
 	    (set-union! <set> . <set>*)
 	    (set-for-each ::procedure <set>)
+	    (set-any ::procedure <set>)
+	    (set-every ::procedure <set>)
 	    (set-length <set>)
 	    (set->list <set>)
-	    (set->vector <set>)))
-
-;*---------------------------------------------------------------------*/
-;*    The `set' and `meta-set' structures                              */
-;*---------------------------------------------------------------------*/
-(define-struct meta-set table compacted-size)
-(define-struct large-set the-set meta)
+	    (set->vector <set>)
+	    (set-head <set> #!optional emptyval)))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-set! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (declare-set! table)
-   (let* ((cardinal  (vector-length table))
-	  (quotient  (quotientfx cardinal 8))
+   (let* ((cardinal (vector-length table))
+	  (quotient (quotientfx cardinal 8))
 	  (remainder (remainderfx cardinal 8))
-	  (size      (if (=fx remainder 0) (+fx quotient 1) (+fx quotient 2))))
-      (let loop ((i         0)
-		 (quotient  0)
-		 (mask      1))
+	  (size (if (=fx remainder 0) (+fx quotient 1) (+fx quotient 2))))
+      (let loop ((i 0)
+		 (quotient 0)
+		 (mask 1))
 	 (cond
 	    ((=fx i cardinal)
 	     (meta-set table size))
@@ -80,25 +78,23 @@
 ;*    set-extend! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (set-extend! set obj)
-   (let* ((key       (node-key obj))
-	  (the-set   (large-set-the-set set))
-	  (quotient  (car key))
-	  (mask      (cdr key)))
-      (string-set! the-set
-		   quotient
-		   (char-or (integer->char mask)
-			    (string-ref the-set quotient)))
+   (let* ((key (node-key obj))
+	  (the-set (large-set-the-set set))
+	  (quotient (car key))
+	  (mask (cdr key)))
+      (string-set! the-set quotient
+	 (char-or (integer->char mask) (string-ref the-set quotient)))
       #unspecified))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-member? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (set-member? set obj)
-   (let* ((key       (node-key obj))
-	  (the-set   (large-set-the-set set))
-	  (quotient  (car key))
-	  (mask      (cdr key)))
-      (>fx (bit-and mask (char->integer (string-ref the-set quotient))) 0)))
+(define-inline (set-member? set obj)
+   (let* ((key (node-key obj))
+	  (the-set (large-set-the-set set))
+	  (quotient (car key))
+	  (mask (cdr key)))
+      (>fx (bit-and mask (char->integer (string-ref-ur the-set quotient))) 0)))
        
 ;*---------------------------------------------------------------------*/
 ;*    set-union-2! ...                                                 */
@@ -154,40 +150,68 @@
 ;*    set-for-each ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (set-for-each proc set)
-   (define (large-set-for-each)
-      (let* ((meta  (large-set-meta set))
-	     (table (meta-set-table meta)))
-	 (let loop ((i (-fx (vector-length table) 1)))
-	    (cond
-	       ((=fx i -1)
-		#unspecified)
-	       ((set-member? set (vector-ref table i))
-		(proc (vector-ref table i))
-		(loop (-fx i 1)))
-	       (else
-		(loop (-fx i 1)))))))
-   (large-set-for-each))
+   (let* ((meta (large-set-meta set))
+	  (table (meta-set-table meta)))
+      (let loop ((i (-fx (vector-length table) 1)))
+	 (cond
+	    ((=fx i -1)
+	     #unspecified)
+	    ((set-member? set (vector-ref table i))
+	     (proc (vector-ref table i))
+	     (loop (-fx i 1)))
+	    (else
+	     (loop (-fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    set-any ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (set-any proc set)
+   (let* ((meta (large-set-meta set))
+	  (table (meta-set-table meta)))
+      (let loop ((i (-fx (vector-length table) 1)))
+	 (cond
+	    ((=fx i -1)
+	     #f)
+	    ((set-member? set (vector-ref table i))
+	     (or (proc (vector-ref table i))
+		 (loop (-fx i 1))))
+	    (else
+	     (loop (-fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    set-every ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (set-every proc set)
+   (let* ((meta (large-set-meta set))
+	  (table (meta-set-table meta)))
+      (let loop ((i (-fx (vector-length table) 1)))
+	 (cond
+	    ((=fx i -1)
+	     #t)
+	    ((set-member? set (vector-ref table i))
+	     (when (proc (vector-ref table i))
+		(loop (-fx i 1))))
+	    (else
+	     (loop (-fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-length ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (set-length set)
-   (define (large-set-length)
-      (let* ((the-set (large-set-the-set set))
-	     (the-len (string-length the-set)))
-	 (let loop ((offset 0)
-		    (num    0))
-	    (if (=fx offset the-len)
-		num
-		(let liip ((char (char->integer (string-ref the-set offset)))
-			   (num  num))
-		   (cond
-		      ((=fx char 0)
-		       (loop (+fx 1 offset) num))
-		      (else
-		       (liip (bit-rsh char 1)
-			     (+fx num (bit-and char 1))))))))))
-   (large-set-length))
+   (let* ((the-set (large-set-the-set set))
+	  (the-len (string-length the-set)))
+      (let loop ((offset 0)
+		 (num 0))
+	 (if (=fx offset the-len)
+	     num
+	     (let liip ((char (char->integer (string-ref the-set offset)))
+			(num num))
+		(cond
+		   ((=fx char 0)
+		    (loop (+fx 1 offset) num))
+		   (else
+		    (liip (bit-rsh char 1)
+		       (+fx num (bit-and char 1))))))))))
     
 ;*---------------------------------------------------------------------*/
 ;*    set->list ...                                                    */
@@ -211,5 +235,23 @@
 ;*---------------------------------------------------------------------*/
 (define (set->vector set)
    (list->vector (set->list set)))
+
+;*---------------------------------------------------------------------*/
+;*    set-head ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (set-head set #!optional emptyval)
+   (let ((meta (large-set-meta set)))
+      (let* ((table (meta-set-table meta))
+	     (size (vector-length table)))
+	 (let loop ((i 0))
+	    (cond
+	       ((=fx i size)
+		emptyval)
+	       ((set-member? set (vector-ref table i))
+		(vector-ref table i))
+	       (else
+		(loop (+fx i 1))))))))
+
+
 		
 		

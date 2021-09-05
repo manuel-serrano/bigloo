@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/iterate.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/iterate.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Sun Jun 26 06:41:58 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  1 10:09:19 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
 ;*=====================================================================*/
@@ -15,6 +15,7 @@
 (module cfa_iterate
    (include "Tools/trace.sch")
    (import  tools_shape
+	    tools_speek
 	    type_type
 	    type_cache
 	    ast_var
@@ -53,12 +54,15 @@
       ;; start iterations
       (continue-cfa! 'init)
       ;; and loop
-      (let loop ()
+      (verbose 3 "      ")
+      (let loop ((i 0))
+	 (verbose 3 "." i)
 	 (if (continue-cfa?)
 	     (begin
 		(cfa-iterate! glodefs)
-		(loop))
-	     glodefs))))
+		(loop (+fx i 1)))
+	     glodefs))
+      (verbose 3 "\n")))
 
 ;*---------------------------------------------------------------------*/
 ;*    exported-closure? ...                                            */
@@ -79,8 +83,10 @@
    (trace cfa #\Newline "=======> Cfa iteration!: " *cfa-stamp* #\Newline)
    (for-each (lambda (g)
 		(trace (cfa 2) "Exporting " (shape g) #\: #\Newline)
-		(cfa-export-var! (global-value g) g)
-		(trace (cfa 2) #\Newline)) 
+		(with-trace 'cfa "cfa-iterate!"
+		   (trace-item "g=" (shape g))
+		   (cfa-export-var! (global-value g) g)
+		   (trace (cfa 2) #\Newline)) )
       globals)
    (trace cfa #\Newline))
 
@@ -145,21 +151,28 @@
 	 approx))
    
    (with-access::intern-sfun/Cinfo sfun (stamp body approx args)
-      (if (=fx stamp *cfa-stamp*)
-	  (begin
-	     (trace (cfa 2) "<<< " (shape owner)
-		" <- " (shape approx) #\Newline)
-	     (polymorphic approx))
-	  (begin
-	     (trace (cfa 2) ">>> " (shape owner) #\Newline)
-	     (set! stamp *cfa-stamp*)
-	     (let ((cur *cfa-current*))
-		(set! *cfa-current* (format "~a[~a]" (variable-id owner) stamp))
-		(union-approx-filter! approx (cfa! body))
-		(trace (cfa 3) "<<< " (shape owner) " <= " (shape approx)
-		   #\Newline)
-		(set! *cfa-current* cur))
-	     (polymorphic approx)))))
+      (with-trace 'cfa "cfa-intern-sfun"
+	 (if (=fx stamp *cfa-stamp*)
+	     (begin
+		(trace (cfa 2) "<<< " (shape owner)
+		   " <- " (shape approx) #\Newline)
+		(polymorphic approx))
+	     (multiple-value-bind (res rtime stime utime)
+		(time
+		   (lambda ()
+		      (trace-item (shape owner)
+			 " stamp=" stamp " cfa-stamp=" *cfa-stamp*)
+		      (trace (cfa 2) ">>> " (shape owner) #\Newline)
+		      (set! stamp *cfa-stamp*)
+		      (let ((cur *cfa-current*))
+			 (set! *cfa-current* (format "~a[~a]" (variable-id owner) stamp))
+			 (union-approx-filter! approx (cfa! body))
+			 (trace (cfa 3) "<<< " (shape owner) " <= " (shape approx)
+			    #\Newline)
+			 (set! *cfa-current* cur))
+		      (polymorphic approx)))
+		(trace-item "rtime=" rtime)
+		res)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    The iteration process control                                    */
