@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Jun 23 06:54:55 2021 (serrano)                */
+;*    Last change :  Mon Sep  6 16:50:04 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -424,20 +424,29 @@
 ;*    current-exception-handler ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (current-exception-handler)
+   (lambda (val)
+      (raise val)))
    
-   (define (wrong-handler handler)
-      (error "current-exception-handler" "wrong error handler" handler))
-   
-   (let ((handler ($get-error-handler)))
-      (cond
-	 ((pair? handler)
-	  (cond
-	     ((eq? (cdr handler) #unspecified)
-	      (car handler))
-	     (else
-	      (wrong-handler handler))))
-	 (else
-	  (wrong-handler handler)))))
+;*    (define (wrong-handler handler)                                  */
+;*       (tprint "wrong handler..." (current-thread))                  */
+;*       default-exception-handler)                                    */
+;* {*       (error "current-exception-handler"                            *} */
+;* {* 	 "wrong error handler" (typeof handler)))                      *} */
+;*                                                                     */
+;*    (let ((handler ($get-error-handler)))                            */
+;*       (cond                                                         */
+;* 	 ((pair? handler)                                              */
+;* 	  (cond                                                        */
+;* 	     ((dynamic-env? (cdr handler))                             */
+;* 	                                                               */
+;* 	      ((eq? (cdr handler) #unspecified)                        */
+;* 	      (car handler))                                           */
+;* 	     ((eq? (cdr handler) #f)                                   */
+;* 	      default-exception-handler)                               */
+;* 	     (else                                                     */
+;* 	      (wrong-handler handler))))                               */
+;* 	 (else                                                         */
+;* 	  (wrong-handler handler)))))                                  */
 
 ;*---------------------------------------------------------------------*/
 ;*    raise ...                                                        */
