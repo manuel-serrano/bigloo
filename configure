@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun May  2 07:04:26 2021 (serrano)                */
+#*    Last change :  Tue Sep  7 13:55:12 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -2716,7 +2716,7 @@ if [ "$regexp " = " " ]; then
   else
     regexp=pregexp
     regexpscm=pregexp.scm
-    regexpc=_
+    regexpc=pregexp.c
   fi
 fi
 
