@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Jul  7 10:53:59 2021 (serrano)                */
+;*    Last change :  Wed Sep  8 08:34:34 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -101,7 +101,7 @@
 	  (export $$int64->bignum "bgl_int64_to_bignum")
 	  (export $$uint64->bignum "bgl_uint64_to_bignum")
 	  (export $$bignum->int64 "bgl_bignum_to_int64")
-	  (export $$bignum->uint64 "bgl_bignum_to_uint54")
+	  (export $$bignum->uint64 "bgl_bignum_to_uint64")
 	  (export $$bignum-cmp "bgl_bignum_cmp")
 	  (export $$absbx "bgl_bignum_abs")
 	  (export $$negbx "bgl_bignum_neg")
