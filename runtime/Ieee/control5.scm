@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb 27 14:11:26 1998                          */
-;*    Last change :  Tue Mar 11 15:55:59 2008 (serrano)                */
+;*    Last change :  Wed Sep 15 14:32:55 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    An implementation of the R5RS multiple values.                   */
 ;*=====================================================================*/
@@ -76,7 +76,9 @@
 ;*    %get-mvalues-val ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (%get-mvalues-val n)
-   ($get-mvalues-val n))
+   (let ((tmp ($get-mvalues-val n)))
+      (%set-mvalues-val! n #unspecified)
+      tmp))
 
 ;*---------------------------------------------------------------------*/
 ;*    %set-mvalues-val ...                                             */
