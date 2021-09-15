@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Sun Apr 14 06:48:35 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 15 14:04:11 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
 ;*=====================================================================*/
@@ -387,7 +387,7 @@
 (define (import-module! import)
    (with-access::import import (module vars aliases decl access code)
       ;; the regular variables
-      (multiple-value-bind (inline macro syntax expander vars)
+      (multiple-value-bind (inline macro syntax expander)
 	 (if (pair? vars)
 	     (import-wanted import vars)
 	     (import-everything import))
@@ -396,7 +396,7 @@
 	    code (progn-tail-expressions decl) access module))
       ;; the aliases
       (when (pair? aliases)
-	 (multiple-value-bind (inline macro syntax expander vars)
+	 (multiple-value-bind (inline macro syntax expander)
 	    (import-wanted import aliases)
 	    (look-for-inlines-and-macros inline
 	       macro syntax expander

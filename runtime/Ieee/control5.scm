@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/control5.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/control5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb 27 14:11:26 1998                          */

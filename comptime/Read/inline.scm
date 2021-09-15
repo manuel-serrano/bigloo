@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Read/inline.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Read/inline.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 10:30:51 1994                          */
-;*    Last change :  Wed Aug  2 16:04:54 2017 (serrano)                */
-;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 15 14:13:54 2021 (serrano)                */
+;*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We scan files in order to find `inline' definitions.             */
 ;*=====================================================================*/
@@ -200,7 +200,7 @@
 				      (else
 				       (loop (cdr exp*))))))))
 	      (if (null? exp*)
-		  inlines
+		  (values inlines macros syntaxes expanders)
 		  (multiple-value-bind (inlines macros syntaxes expanders)
 		     (look-for/exp inlines macros syntaxes expanders (car exp*) module)
 		     (loop inlines macros syntaxes expanders (cdr exp*))))))
