@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Sep  6 16:50:04 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 08:00:35 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -113,8 +113,12 @@
 	       
 	       (method static $get-error-handler::obj ()
 		       "BGL_ERROR_HANDLER_GET")
+	       (method static $env-get-error-handler::obj (::dynamic-env)
+		       "BGL_ENV_ERROR_HANDLER_GET")
 	       (method static $set-error-handler!::void (::obj)
 		       "BGL_ERROR_HANDLER_SET")
+	       (method static $env-set-error-handler!::void (::dynamic-env ::obj)
+		       "BGL_ENV_ERROR_HANDLER_SET")
 	       (method static $push-error-handler!::void (::obj ::obj)
 		       "BGL_ERROR_HANDLER_PUSH")
 	       (method static $get-uncaught-exception-handler::obj ()

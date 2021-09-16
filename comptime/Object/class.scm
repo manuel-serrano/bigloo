@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/class.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Object/class.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Mon Dec 11 09:12:40 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Sep 13 18:14:21 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
 ;*=====================================================================*/

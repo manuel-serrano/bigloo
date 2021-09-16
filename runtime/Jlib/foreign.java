@@ -4824,9 +4824,18 @@ public final class foreign
 	 return bgldynamic.abgldynamic.get().error_handler;
       }
 
+   public static Object BGL_ENV_ERROR_HANDLER_GET(bgldynamic env)
+      {
+	 return env.get().error_handler;
+      }
+
    public static void BGL_ERROR_HANDLER_SET(Object hdl)
       {
 	 bgldynamic.abgldynamic.get().error_handler = hdl;
+      }
+   public static void BGL_ENV_ERROR_HANDLER_SET(bgldynamic env, Object hdl)
+      {
+	 env.get().error_handler = hdl;
       }
 
    public static void BGL_ERROR_HANDLER_PUSH(Object h, Object hdl)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Jul  8 11:33:01 2021 (serrano)                */
+;*    Last change :  Mon Sep 13 17:05:26 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace isa? calls with specialized inlinable versions           */
@@ -22,6 +22,7 @@
 	    type_cache
 	    type_misc
 	    type_typeof
+	    type_env
 	    ast_ident
 	    ast_local
 	    ast_env
@@ -104,6 +105,8 @@
    
    (let ((typ (isa-of node)))
       (if typ
+	  ;; use (type-exists? type) to enable library bootstrapping
+	  ;; and the bigloo.heap generation
 	  (with-access::app node (fun args loc)
 	     (cond
 		((or (static-final-class? typ)

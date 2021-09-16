@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Dec 11 06:54:31 2019 (serrano)                */
+;*    Last change :  Mon Sep 13 17:09:52 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -317,6 +317,12 @@
 	    (check-sharing "stackable" ast)
 	    (check-type "stackable" ast #f #f)
 
+	    ;; isa optimization
+	    (set! ast (profile isa (isa-walk! ast)))
+	    (stop-on-pass 'isa (lambda () (write-ast ast)))
+	    (check-sharing "isa" ast)
+	    (check-type "isa" ast #f #f)
+	    
 	    ;; we perform the inlining pass
 	    (set! ast (profile inline (inline-walk! ast 'all)))
 	    (stop-on-pass 'inline (lambda () (write-ast ast)))
