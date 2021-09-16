@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Oct 19 10:42:04 2002                          */
-/*    Last change :  Tue Jun 22 15:32:56 2021 (serrano)                */
+/*    Last change :  Thu Sep 16 17:44:39 2021 (serrano)                */
 /*    Copyright   :  2002-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Handling global dynamic environments (current_output_port et al) */
@@ -78,7 +78,7 @@ public class bgldynamic
 				     unspecified.unspecified),
 			    unspecified.unspecified );
 
-      error_handler = new pair( unspecified.unspecified, BFALSE );
+      error_handler = new pair( unspecified.unspecified, bigloo.foreign.BFALSE );
       uncaught_exception_handler = bigloo.nil.nil;
 
       mvalues_number = 1;

@@ -5349,17 +5349,17 @@ public final class foreign
 	 return stack_trace.get(depth);
       }
 
-   public static Object init_trace_stacksp() {
+   public static Object init_trace_stacksp()
       {
 	 return unspecified.unspecified;
       }
       
-   public static Object BGL_GET_TRACE_STACKSP() {
+   public static Object BGL_GET_TRACE_STACKSP()
       {
 	 return unspecified.unspecified;
       }
       
-   public static Object BGL_SET_TRACE_STACKSP(Object sp) {
+   public static Object BGL_SET_TRACE_STACKSP(Object sp)
       {
 	 return unspecified.unspecified;
       }

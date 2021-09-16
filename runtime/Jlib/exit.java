@@ -8,7 +8,7 @@ public class exit {
    public Object protect;
 
    public exit() {
-      protectn = foreign.BNIL;
+      protect = foreign.BNIL;
    }
 
    public void write( final output_port p ) {
