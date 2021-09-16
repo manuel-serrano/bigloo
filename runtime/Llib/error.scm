@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Sep 16 14:00:02 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 15:06:27 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -98,7 +98,7 @@
 		       "init_trace_stacksp")
 	       (method static $get-trace-stacksp::obj ()
 		       "BGL_GET_TRACE_STACKSP")
-	       (method $set-trace-stacksp::obj (::obj)
+	       (method static $set-trace-stacksp::obj (::obj)
 		       "BGL_SET_TRACE_STACKSP")
 	       (method static $push-trace::obj (::obj ::obj)
 		       "PUSH_TRACE")
