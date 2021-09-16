@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Tue Feb  6 08:29:46 2018 (serrano)                */
+;*    Last change :  Thu Sep 16 17:27:37 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -34,6 +34,11 @@
 	    __r5_control_features_6_4
 	    
 	    __evenv)
+   
+   (cond-expand
+      (bigloo-jvm
+       (use __thread
+	    __object)))
    
    (extern  (macro c-procedure?::bool (::obj) "PROCEDUREP")
 	    (call-cc::obj (::procedure) "call_cc")
