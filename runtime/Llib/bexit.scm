@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Thu Sep 16 13:31:53 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 13:54:20 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -112,7 +112,9 @@
 	       (method static $exitd-protect::pair-nil (::exit)
 		  "BGL_EXITD_PROTECT")
 	       (method static $exitd-protect-set!::void (::exit ::pair-nil)
-		  "BGL_EXITD_PROTECT_SET")))
+		  "BGL_EXITD_PROTECT_SET")
+	       (method $exitd-push-protect!::void (::exit ::obj)
+		  "BGL_EXITD_PUSH_PROTECT")))
    
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)

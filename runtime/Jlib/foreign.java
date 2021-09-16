@@ -5041,6 +5041,11 @@ public final class foreign
 	 return o.protect;
       }
 
+   public static void BGL_EXITD_PUSH_PROTECT(exit o, Object p)
+      {
+	 BGL_EXITD_PROTECT_SET(o, MAKE_PAIR(p, BGL_EXITD_PROTECT(o)));
+      }
+
    public static void BGL_EXITD_PROTECT_SET(exit o, Object m)
       {
 	 o.protect = m;
@@ -5344,6 +5349,21 @@ public final class foreign
 	 return stack_trace.get(depth);
       }
 
+   public static Object init_trace_stacksp() {
+      {
+	 return unspecified.unspecified;
+      }
+      
+   public static Object BGL_GET_TRACE_STACKSP() {
+      {
+	 return unspecified.unspecified;
+      }
+      
+   public static Object BGL_SET_TRACE_STACKSP(Object sp) {
+      {
+	 return unspecified.unspecified;
+      }
+      
    public static Object __EVMEANING_ADDRESS_REF(procedure f)
       {
 	 return f.funcall0();

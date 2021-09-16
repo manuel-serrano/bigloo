@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Aug 31 15:58:48 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 14:03:04 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -145,7 +145,7 @@
 	    (tracesp (mark-symbol-non-user! (gensym 'tracesp))))
 	 (let ((new `(set-exit (,an-exit)
 			,(add-trace tracesp
-			    `(let ((,env (current-dynamic-env)))
+			    `(let ((,env ($current-dynamic-env)))
 				($env-push-exit! ,env ,an-exit 1)
 				(let ((,an-exitd ($env-get-exitd-top ,env)))
 				   (labels ((,exit (,val)
@@ -337,7 +337,7 @@
 	   (val (gensym 'val))
 	   (env (gensym 'env)))
 	(e `(let ((,hdl ,handler)
-		  (,env (current-dynamic-env)))
+		  (,env ($current-dynamic-env)))
 	       (let ((,cell ($make-stack-cell #unspecified)))
 		  (let ((,val (bind-exit :env ,env (,escape)
 				 (let ((,ohs ($env-get-error-handler ,env)))

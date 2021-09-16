@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Sep 16 08:00:35 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 14:00:02 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -94,6 +94,12 @@
 	    (class foreign
 	       (method static $get-trace-stack::pair-nil (::int)
 		       "get_trace_stack")
+	       (method static $init-trace-stacksp::obj ()
+		       "init_trace_stacksp")
+	       (method static $get-trace-stacksp::obj ()
+		       "BGL_GET_TRACE_STACKSP")
+	       (method $set-trace-stacksp::obj (::obj)
+		       "BGL_SET_TRACE_STACKSP")
 	       (method static $push-trace::obj (::obj ::obj)
 		       "PUSH_TRACE")
 	       (method static $set-trace-name::obj (::obj)

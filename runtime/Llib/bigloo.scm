@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Sep 16 13:35:48 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 13:53:26 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -184,7 +184,9 @@
 	       (method static $make-procedure::procedure (::obj ::int ::int)
 		       "bgl_make_procedure")		 
 	       (method static make-fx-procedure::procedure (::obj ::int ::int)
-		       "make_fx_procedure")		 
+		       "make_fx_procedure")
+	       (method static make-stack-fx-procedure::procedure (::obj ::obj ::int)
+		       "make_fx_procedure")
 	       (method static make-va-procedure::procedure (::obj ::int ::int)
 		       "make_va_procedure")
 	       
