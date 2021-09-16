@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Tue Jun 22 18:38:30 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 13:35:48 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -215,6 +215,8 @@
 		       "PROCEDURE_EL_REF")
 	       
 	       (method static $make-cell::cell (::obj)
+		       "MAKE_CELL")
+	       (method static $make-stack-cell::cell (::obj)
 		       "MAKE_CELL")
 	       (method static $cell-set!::obj (::cell ::obj)
 		       "CELL_SET")

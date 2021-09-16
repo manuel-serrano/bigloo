@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Jun 22 13:48:35 2021 (serrano)                */
+;*    Last change :  Thu Sep 16 13:31:53 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -84,8 +84,12 @@
    (java    (class foreign
 	       (method static push-exit!::obj (::exit ::long)
 		  "PUSH_EXIT")
+	       (method static $env-push-exit!::obj (::dynamic-env ::exit ::long)
+		  "PUSH_ENV_EXIT")
 	       (method static pop-exit!::obj ()
 		  "POP_EXIT")
+	       (method static $env-pop-exit!::obj (::dynamic-env)
+		  "POP_ENV_EXIT")
 	       (method static call/cc-jump-exit::obj (::exit ::obj)
 		  "CALLCC_JUMP_EXIT")
 	       (method static $exitd->exit::exit (::obj)
@@ -96,6 +100,8 @@
 		  "EXITD_STAMP")
 	       (method static $get-exitd-top::obj ()
 		  "BGL_EXITD_TOP")
+	       (method static $env-get-exitd-top::obj (::dynamic-env)
+		  "BGL_ENV_EXITD_TOP_AS_OBJ")
 	       (method static $exitd-bottom?::bool (::obj)
 		  "BGL_EXITD_BOTTOMP")
 	       (method static $set-exitd-top!::obj (::obj)

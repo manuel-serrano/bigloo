@@ -4982,6 +4982,11 @@ public final class foreign
 	 return bgldynamic.abgldynamic.get().exitd_top;
       }
 
+   public static Object BGL_ENV_EXITD_TOP_AS_OBJ( bgldynamic env)
+      {
+	 return env.get().exitd_top;
+      }
+
    public static boolean BGL_EXITD_BOTTOMP( Object o ) {
       return ((exit)o).prev == null;
    }
@@ -5224,6 +5229,13 @@ public final class foreign
       System.exit(1);
    }
 
+   public static Object PUSH_ENV_EXIT( bgldynamic env, exit v, int protect ) {
+      v.userp = protect;
+      v.prev = (exit) env.get().exitd_top;
+      env.get().exitd_top = v;
+      return unspecified.unspecified;
+   }
+      
    public static Object PUSH_EXIT(exit v, int protect) {
 //      print("** PUSH " + v + " " + protect + " abgldynamic=" + bgldynamic.abgldynamic.get() + " thread=" + Thread.currentThread());
       v.userp = protect;
@@ -5238,6 +5250,17 @@ public final class foreign
       try {
 	 bgldynamic.abgldynamic.get().exitd_top =
 	    ((exit) bgldynamic.abgldynamic.get().exitd_top).prev;
+      } catch( Throwable _t ) {
+	 System.err.println( "\n\n\n******************* POP_EXIT: " + _t );
+      }
+      return unspecified.unspecified;
+   }
+
+   public static Object POP_ENV_EXIT( bgldynamic env ) {
+//      print("** POP abgldynamic=" + bgldynamic.abgldynamic.get()  + " thread=" + Thread.currentThread());
+      try {
+	 env.get().exitd_top =
+	    ((exit) env.get().exitd_top).prev;
       } catch( Throwable _t ) {
 	 System.err.println( "\n\n\n******************* POP_EXIT: " + _t );
       }
