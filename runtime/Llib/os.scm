@@ -1072,8 +1072,15 @@
 ;*    dynamic-load-symbol ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (dynamic-load-symbol lib name #!optional module)
-   (let ((sym (if (string? module) (bigloo-module-mangle name module) name)))
-      ($bgl-dlsym lib name sym)))
+   (let ((sym (if (string? module) (bigloo-module-mangle name module) name))
+         (flib (cond-expand
+		  (bigloo-c
+		   (find-file/path lib *dynamic-load-path*))
+		  (bigloo-jvm
+		   lib)
+		  (else
+		   (find-file/path lib *dynamic-load-path*)))))
+      ($bgl-dlsym flib name sym)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-load-symbol-get ...                                      */
