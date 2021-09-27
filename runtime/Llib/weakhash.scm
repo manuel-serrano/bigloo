@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Sun Sep 26 19:54:45 2021 (serrano)                */
+;*    Last change :  Mon Sep 27 08:03:36 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -65,7 +65,13 @@
 	   (weak-hashtable-add! ::struct ::obj ::procedure obj obj)
 	   (weak-hashtable-remove! ::struct ::obj)
 	   (weak-hashtable-expand! ::struct)))
-   
+
+;* (define-macro (make-weakptr a . d) `(vector ,a ,(if (pair? d) (car d) ''()))) */
+;* (define-macro (weakptr-data p) `(vector-ref ,p 0))                  */
+;* (define-macro (weakptr-data-set! p v) `(vector-set! ,p 0 ,v))       */
+;* (define-macro (weakptr-ref p) `(vector-ref ,p 1))                   */
+;* (define-macro (weakptr-ref-set! p v) `(vector-set! ,p 1 ,v))        */
+
 ;*---------------------------------------------------------------------*/
 ;*    Some constants                                                   */
 ;*---------------------------------------------------------------------*/
@@ -176,9 +182,26 @@
 		 (else ret)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    traverse-hash ...                                                */
+;*    keys-traverse-hash ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (traverse-hash table::struct fun)
+(define (keys-traverse-hash table::struct fun)
+   ;; cleanup all dead references
+   (weak-keys-hashtable-filter! table (lambda (k v) #t))
+   ;; apply fun to all live entries
+   (let* ((buckets (%hashtable-buckets table))
+	  (buckets-len (vector-length buckets)))
+      (let loop ((i 0))
+	 (unless (=fx i buckets-len)
+	    (let ((bucket (vector-ref buckets i)))
+	       (for-each (lambda (p)
+			    (unless (eq? (weakptr-data p) #unspecified)
+			       (fun (weakptr-data p) (weakptr-ref p))))
+		  bucket))))))
+
+;*---------------------------------------------------------------------*/
+;*    old-traverse-hash ...                                            */
+;*---------------------------------------------------------------------*/
+(define (old-traverse-hash table::struct fun)
    (fork
     (let* ((buckets (%hashtable-buckets table))
 	   (buckets-len (vector-length buckets)))
@@ -188,29 +211,29 @@
 			(last-bucket #f))
 		(unless (null? bucket)
 		   (let ((ret (unfork-cond
-			       ((=fx (weak-keys) (%hashtable-weak table))
-				;; only weak keys
-				(let ((key (weakptr-data (caar bucket))))
-				   (if (eq? key #unspecified)
-				       remove
-				       (fun key (cdar bucket)))))
-			       ((=fx (weak-data) (%hashtable-weak table))
-				;; only weak data
-				(let ((data (weakptr-data (cdar bucket))))
-				   (if (eq? data #unspecified)
-				       remove
-				       (fun (caar bucket) data))))
-			       ((=fx (weak-both) (%hashtable-weak table))
-				;; weak keys and data
-				(let ((key (weakptr-data (caar bucket)))
-				      (data (weakptr-data (cdar bucket))))
-				   (if (or (eq? key #unspecified)
-					   (eq? data #unspecified))
-				       remove
-				       (fun key data))))
-			       (else
-				;; all strong
-				(fun (caar bucket) (cdar bucket))))))
+				 ((=fx (weak-keys) (%hashtable-weak table))
+				  ;; only weak keys
+				  (let ((key (weakptr-data (caar bucket))))
+				     (if (eq? key #unspecified)
+					 remove
+					 (fun key (cdar bucket)))))
+				 ((=fx (weak-data) (%hashtable-weak table))
+				  ;; only weak data
+				  (let ((data (weakptr-data (cdar bucket))))
+				     (if (eq? data #unspecified)
+					 remove
+					 (fun (caar bucket) data))))
+				 ((=fx (weak-both) (%hashtable-weak table))
+				  ;; weak keys and data
+				  (let ((key (weakptr-data (caar bucket)))
+					(data (weakptr-data (cdar bucket))))
+				     (if (or (eq? key #unspecified)
+					     (eq? data #unspecified))
+					 remove
+					 (fun key data))))
+				 (else
+				  ;; all strong
+				  (fun (caar bucket) (cdar bucket))))))
 		      ;; here we only generate remove ourselves
 		      (if (eq? ret remove)
 			  (begin
@@ -220,15 +243,23 @@
 	     (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    traverse-hash ...                                                */
+;*---------------------------------------------------------------------*/
+(define (traverse-hash table::struct fun)
+   (if (hashtable-weak-keys? table)
+       (keys-traverse-hash table fun)
+       (old-traverse-hash table fun)))
+
+;*---------------------------------------------------------------------*/
 ;*    weak-hashtable->vector ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (weak-hashtable->vector table::struct)
    (let ((vec (make-vector (hashtable-size table)))
 	 (w 0))
       (traverse-hash table
-		     (lambda (key val)
-			(vector-set! vec w val)
-			(set! w (+fx w 1))))
+	 (lambda (key val)
+	    (vector-set! vec w val)
+	    (set! w (+fx w 1))))
       (if (<fx w (hashtable-size table))
 	  (copy-vector vec w)
 	  vec)))
@@ -239,8 +270,8 @@
 (define (weak-hashtable->list table::struct)
    (let ((res '()))
       (traverse-hash table
-		     (lambda (key val)
-			(set! res (cons val res))))
+	 (lambda (key val)
+	    (set! res (cons val res))))
       res))
 
 ;*---------------------------------------------------------------------*/
@@ -249,26 +280,9 @@
 (define (weak-hashtable-key-list table::struct)
    (let ((res '()))
       (traverse-hash table
-		     (lambda (key val)
-			(set! res (cons key res))))
+	 (lambda (key val)
+	    (set! res (cons key res))))
       res))
-
-;*---------------------------------------------------------------------*/
-;*    plain-hashtable-key-list ...                                     */
-;*---------------------------------------------------------------------*/
-(define (plain-hashtable-key-list table::struct)
-   (let* ((vec (make-vector (hashtable-size table)))
-	  (buckets (%hashtable-buckets table))
-	  (buckets-len (vector-length buckets)))
-      (let loop ((i 0)
-		 (res '()))
-	 (if (=fx i buckets-len)
-	     res
-	     (let liip ((bucket (vector-ref buckets i))
-			(res res))
-		(if (null? bucket)
-		    (loop (+fx i 1) res)
-		    (liip (cdr bucket) (cons (caar bucket) res))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-map ...                                           */
@@ -276,8 +290,8 @@
 (define (weak-hashtable-map table::struct fun::procedure)
    (let ((res '()))
       (traverse-hash table
-		     (lambda (key val)
-			(set! res (cons (fun key val) res))))
+	 (lambda (key val)
+	    (set! res (cons (fun key val) res))))
       res))
 
 ;*---------------------------------------------------------------------*/
@@ -287,80 +301,63 @@
    (traverse-hash table fun))
 
 ;*---------------------------------------------------------------------*/
-;*    weak-hashtable-filter! ...                                       */
+;*    weak-keys-hashtable-filter! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-filter! table::struct fun::procedure)
+(define (weak-keys-hashtable-filter! table::struct fun::procedure)
+   (let* ((buckets (%hashtable-buckets table))
+	  (buckets-len (vector-length buckets)))
+      (let loop ((i 0))
+	 (when (<fx i buckets-len)
+	    (let ((bucket (vector-ref buckets i))
+		  (count 0))
+	       (vector-set! buckets i
+		  (filter! (lambda (v)
+			      (if (or (eq? (weakptr-data v) #unspecified)
+				      (not (fun (weakptr-data v) (weakptr-ref v))))
+				  (begin
+				     (set! count (+fx count 1))
+				     #f)
+				  #t))
+		     bucket))
+	       (%hashtable-size-set! table (-fx (%hashtable-size table) count))
+	       (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-old-hashtable-filter! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (weak-old-hashtable-filter! table::struct fun::procedure)
    (let* ((buckets (%hashtable-buckets table))
 	  (buckets-len (vector-length buckets)))
       (let loop ((i 0))
 	 (if (<fx i buckets-len)
 	     (begin
 		(traverse-buckets table buckets i
-				  (lambda (key val bucket)
-				     (if (fun key val)
-					 keepgoing
-					 remove)))
+		   (lambda (key val bucket)
+		      (if (fun key val)
+			  keepgoing
+			  remove)))
 		(loop (+fx i 1)))))))
 
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-filter! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-filter! table::struct fun::procedure)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-filter! table fun)
+       (weak-old-hashtable-filter! table fun)))
+       
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-clear! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (weak-hashtable-clear! table::struct)
-   (weak-hashtable-filter! table (lambda (k v) #f)))
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-filter! table (lambda (k v) #f))
+       (weak-old-hashtable-filter! table (lambda (k v) #f))))
 
 ;*---------------------------------------------------------------------*/
-;*    plain-hashtable-filter! ...                                      */
+;*    weak-keys-hashtable-contains? ...                                */
 ;*---------------------------------------------------------------------*/
-(define (plain-hashtable-filter! table::struct fun::procedure)
-   (let* ((buckets (%hashtable-buckets table))
-	  (buckets-len (vector-length buckets)))
-      (let loop ((i 0) (delta 0))
-	 (if (<fx i buckets-len)
-	     (let* ((l (vector-ref buckets i))
-                    (old-len (length l))
-                    (newl (filter! (lambda (cell)
-                                    (fun (car cell) (cdr cell)))
-                                   l))
-                    (new-len (length newl)))
-		(vector-set! buckets i newl)
-		(loop (+fx i 1) (+fx delta (-fx new-len old-len))))
-             (%hashtable-size-set! table
-                                   (+fx delta (%hashtable-size table)))))))
-
-;*---------------------------------------------------------------------*/
-;*    weak-hashtable-contains? ...                                     */
-;*---------------------------------------------------------------------*/
-(define (weak-hashtable-contains? table::struct key::obj)
-   (let* ((buckets (%hashtable-buckets table))
-	  (bucket-len (vector-length buckets))
-	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (ret (traverse-buckets table buckets bucket-num
-				 (lambda (bkey val bucket)
-				    (if (hashtable-equal? table key bkey)
-					#t
-					keepgoing)))))
-      (not (eq? ret keepgoing))))
-
-;*---------------------------------------------------------------------*/
-;*    weak-hashtable-get ...                                           */
-;*---------------------------------------------------------------------*/
-(define (weak-hashtable-get table::struct key::obj)
-   (let* ((buckets (%hashtable-buckets table))
-	  (bucket-len (vector-length buckets))
-	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (ret (traverse-buckets table buckets bucket-num
-				 (lambda (bkey val bucket)
-				    (if (hashtable-equal? table key bkey)
-					val
-					keepgoing)))))
-      (if (eq? ret keepgoing)
-	  #f
-	  ret)))
-
-;*---------------------------------------------------------------------*/
-;*    plain-hashtable-get ...                                          */
-;*---------------------------------------------------------------------*/
-(define (plain-hashtable-get table::struct key::obj)
+(define (weak-keys-hashtable-contains? table::struct key::obj)
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
@@ -369,15 +366,109 @@
 	 (cond
 	    ((null? bucket)
 	     #f)
-	    ((hashtable-equal? table (caar bucket) key)
-	     (cdar bucket))
+	    ((hashtable-equal? table (weakptr-data (car bucket)) key)
+	     #t)
 	    (else
 	     (loop (cdr bucket)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    weak-hashtable-put! ...                                          */
+;*    weak-old-hashtable-contains? ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-put! table::struct key::obj obj::obj)
+(define (weak-old-hashtable-contains? table::struct key::obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
+	  (ret (traverse-buckets table buckets bucket-num
+		  (lambda (bkey val bucket)
+		     (if (hashtable-equal? table key bkey)
+			 #t
+			 keepgoing)))))
+      (not (eq? ret keepgoing))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-contains? ...                                     */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-contains? table::struct key::obj)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-contains? table key)
+       (weak-old-hashtable-contains? table key)))
+
+;*---------------------------------------------------------------------*/
+;*    weak-keys-hashtable-get ...                                      */
+;*---------------------------------------------------------------------*/
+(define (weak-keys-hashtable-get table::struct key::obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
+	  (bucket (vector-ref buckets bucket-num)))
+      (let loop ((bucket bucket))
+	 (cond
+	    ((null? bucket)
+	     #f)
+	    ((hashtable-equal? table (weakptr-data (car bucket)) key)
+	     (weakptr-ref (car bucket)))
+	    (else
+	     (loop (cdr bucket)))))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-old-hashtable-get ...                                       */
+;*---------------------------------------------------------------------*/
+(define (weak-old-hashtable-get table::struct key::obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
+	  (ret (traverse-buckets table buckets bucket-num
+		  (lambda (bkey val bucket)
+		     (if (hashtable-equal? table key bkey)
+			 val
+			 keepgoing)))))
+      (if (eq? ret keepgoing)
+	  #f
+	  ret)))
+
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-get ...                                           */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-get table::struct key::obj)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-get table key)
+       (weak-old-hashtable-get table key)))
+   
+;*---------------------------------------------------------------------*/
+;*    weak-keys-hashtable-put! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (weak-keys-hashtable-put! table::struct key::obj obj::obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
+	  (bucket (vector-ref-ur buckets bucket-num))
+	  (max-bucket-len (%hashtable-max-bucket-len table)))
+      (if (null? bucket)
+	  (begin
+	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+	     (vector-set-ur! buckets bucket-num (list (make-weakptr key obj)))
+	     obj)
+	  (let loop ((buck bucket)
+		     (count 0))
+	     (cond
+		((null? buck)
+		 (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+		 (vector-set-ur! buckets bucket-num
+		    (cons (make-weakptr key obj) bucket))
+		 (when (>fx count max-bucket-len)
+		    (weak-keys-hashtable-expand! table))
+		 obj)
+		((hashtable-equal? table (weakptr-data (car buck)) key)
+		 (let ((old-obj (weakptr-ref (car buck))))
+		    (weakptr-ref-set! (car buck) obj)
+		    old-obj))
+		(else
+		 (loop (cdr buck) (+fx count 1))))))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-old-hashtable-put! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (weak-old-hashtable-put! table::struct key::obj obj::obj)
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
@@ -386,42 +477,81 @@
           (count 0)
           ;; try to find it first
           (found (traverse-buckets
-                  table buckets bucket-num
-                  (lambda (bkey val bucket)
-		     (set! count (+fx count 1))
-		     (if (hashtable-equal? table bkey key)
-			 (begin
-			    (set-cdr! (car bucket)
-				      (if (hashtable-weak-data? table)
-					  (make-weakptr obj)
-					  obj))
-			    ;; return the old value
-			    val)
-			 keepgoing)))))
+		    table buckets bucket-num
+		    (lambda (bkey val bucket)
+		       (set! count (+fx count 1))
+		       (if (hashtable-equal? table bkey key)
+			   (begin
+			      (set-cdr! (car bucket)
+				 (if (hashtable-weak-data? table)
+				     (make-weakptr obj)
+				     obj))
+			      ;; return the old value
+			      val)
+			   keepgoing)))))
       ;; if found we're good
       (if (not (eq? found keepgoing))
 	  found
 	  (begin
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
 	     (vector-set! buckets bucket-num
-			  (cons (cons (if (hashtable-weak-keys? table)
-					  (make-weakptr key)
-					  key)
-				      (if (hashtable-weak-data? table)
-					  (make-weakptr obj)
-					  obj))
-				;; we need to retake the bucket in case
-				;; it changed while walking it
-				(vector-ref (%hashtable-buckets table)
-					    bucket-num)))
-	     (if (>fx count max-bucket-len)
-		 (weak-hashtable-expand! table))
+		(cons (cons (if (hashtable-weak-keys? table)
+				(make-weakptr key)
+				key)
+			 (if (hashtable-weak-data? table)
+			     (make-weakptr obj)
+			     obj))
+		   ;; we need to retake the bucket in case
+		   ;; it changed while walking it
+		   (vector-ref (%hashtable-buckets table)
+		      bucket-num)))
+	     (when (>fx count max-bucket-len)
+		(weak-hashtable-expand! table))
 	     obj))))
 
 ;*---------------------------------------------------------------------*/
-;*    weak-hashtable-update! ...                                       */
+;*    weak-hashtable-put! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-update! table::struct key::obj proc::procedure obj)
+(define (weak-hashtable-put! table::struct key::obj obj::obj)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-put! table key obj)
+       (weak-old-hashtable-put! table key obj)))
+
+;*---------------------------------------------------------------------*/
+;*    weak-keys-hashtable-update! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (weak-keys-hashtable-update! table::struct key::obj proc::procedure obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
+	  (bucket (vector-ref-ur buckets bucket-num))
+	  (max-bucket-len (%hashtable-max-bucket-len table)))
+      (if (null? bucket)
+	  (begin
+	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+	     (vector-set-ur! buckets bucket-num (list (cons key obj)))
+	     obj)
+	  (let loop ((buck bucket)
+		     (count 0))
+	     (cond
+		((null? buck)
+		 (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+		 (vector-set-ur! buckets bucket-num
+		    (cons (make-weakptr key obj) bucket))
+		 (when (>fx count max-bucket-len)
+		    (weak-keys-hashtable-expand! table))
+		 obj)
+		((hashtable-equal? table (weakptr-data (car buck)) key)
+		 (let ((res (proc (weakptr-ref (car buck)))))
+		    (weakptr-ref-set! (car buck) res)
+		    res))
+		(else
+		 (loop (cdr buck) (+fx count 1))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    weak-old-hashtable-update! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (weak-old-hashtable-update! table::struct key::obj proc::procedure obj)
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
@@ -430,18 +560,18 @@
           (count 0)
           ;; try to find it first
           (found (traverse-buckets
-                  table buckets bucket-num
-                  (lambda (bkey val bucket)
-		     (set! count (+fx count 1))
-		     (if (hashtable-equal? table bkey key)
-			 (let ((newval (proc val)))
-			    (set-cdr! (car bucket)
-				      (if (hashtable-weak-data? table)
-					  (make-weakptr newval)
-					  newval))
-			    ;; return the old value
-			    newval)
-			 keepgoing)))))
+		    table buckets bucket-num
+		    (lambda (bkey val bucket)
+		       (set! count (+fx count 1))
+		       (if (hashtable-equal? table bkey key)
+			   (let ((newval (proc val)))
+			      (set-cdr! (car bucket)
+				 (if (hashtable-weak-data? table)
+				     (make-weakptr newval)
+				     newval))
+			      ;; return the old value
+			      newval)
+			   keepgoing)))))
       ;; if found we're good
       (if (not (eq? found keepgoing))
 	  found
@@ -463,9 +593,49 @@
 	     obj))))
 
 ;*---------------------------------------------------------------------*/
+;*    weak-hashtable-update! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-update! table::struct key::obj proc::procedure obj)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-update! table key proc obj)
+       (weak-old-hashtable-update! table key proc obj)))
+
+;*---------------------------------------------------------------------*/
+;*    weak-keys-hashtable-add! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (weak-keys-hashtable-add! table::struct key::obj proc::procedure obj init)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
+	  (bucket (vector-ref-ur buckets bucket-num))
+	  (max-bucket-len (%hashtable-max-bucket-len table)))
+      (if (null? bucket)
+	  (let ((v (proc obj init)))
+	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+	     (vector-set-ur! buckets bucket-num (list (cons key v)))
+	     v)
+	  (let loop ((buck bucket)
+		     (count 0))
+	     (cond
+		((null? buck)
+		 (let ((v (proc obj init)))
+		    (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
+		    (vector-set-ur! buckets bucket-num
+		       (cons (make-weakptr key v) bucket))
+		    (when (>fx count max-bucket-len)
+		       (weak-keys-hashtable-expand! table))
+		    v))
+		((hashtable-equal? table (weakptr-data (car buck)) key)
+		 (let ((res (proc obj (weakptr-ref (car buck)))))
+		    (weakptr-ref-set! (car buck) res)
+		    res))
+		(else
+		 (loop (cdr buck) (+fx count 1))))))))
+   
+;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-add! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-add! table::struct key::obj proc::procedure obj init)
+(define (weak-old-hashtable-add! table::struct key::obj proc::procedure obj init)
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
@@ -474,18 +644,18 @@
           (count 0)
           ;; try to find it first
           (found (traverse-buckets
-                  table buckets bucket-num
-                  (lambda (bkey val bucket)
-		     (set! count (+fx count 1))
-		     (if (hashtable-equal? table bkey key)
-			 (let ((newval (proc val)))
-			    (set-cdr! (car bucket)
-				      (if (hashtable-weak-data? table)
-					  (make-weakptr newval)
-					  newval))
-			    ;; return the old value
-			    newval)
-			 keepgoing)))))
+		    table buckets bucket-num
+		    (lambda (bkey val bucket)
+		       (set! count (+fx count 1))
+		       (if (hashtable-equal? table bkey key)
+			   (let ((newval (proc val)))
+			      (set-cdr! (car bucket)
+				 (if (hashtable-weak-data? table)
+				     (make-weakptr newval)
+				     newval))
+			      ;; return the old value
+			      newval)
+			   keepgoing)))))
       ;; if found we're good
       (if (not (eq? found keepgoing))
 	  found
@@ -494,38 +664,122 @@
 		       (proc obj init))))
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
 	     (vector-set! buckets bucket-num
-			  (cons (cons (if (hashtable-weak-keys? table)
-					  (make-weakptr key)
-					  key)
-				      v)
-				;; we need to retake the bucket in case
-				;; it changed while walking it
-				(vector-ref (%hashtable-buckets table)
-					    bucket-num)))
+		(cons (cons (if (hashtable-weak-keys? table)
+				(make-weakptr key)
+				key)
+			 v)
+		   ;; we need to retake the bucket in case
+		   ;; it changed while walking it
+		   (vector-ref (%hashtable-buckets table)
+		      bucket-num)))
 	     (if (>fx count max-bucket-len)
 		 (weak-hashtable-expand! table))
 	     v))))
 
 ;*---------------------------------------------------------------------*/
-;*    weak-hashtable-remove! ...                                       */
+;*    weak-hashtable-add! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-remove! table::struct key::obj)
+(define (weak-hashtable-add! table::struct key::obj proc::procedure obj init)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-add! table key proc obj init)
+       (weak-old-hashtable-add! table key proc obj init)))
+
+;*---------------------------------------------------------------------*/
+;*    weak-keys-hashtable-remove! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (weak-keys-hashtable-remove! table::struct key::obj)
+   (let* ((buckets (%hashtable-buckets table))
+	  (bucket-len (vector-length buckets))
+	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
+	  (bucket (vector-ref-ur buckets bucket-num)))
+      (cond
+	 ((null? bucket)
+	  #f)
+	 ((hashtable-equal? table (weakptr-data (car bucket)) key)
+	  (vector-set-ur! buckets bucket-num (cdr bucket))
+	  (%hashtable-size-set! table (-fx (%hashtable-size table) 1))
+	  #t)
+	 (else
+	  (let loop ((bucket (cdr bucket))
+		     (prev bucket))
+	     (if (pair? bucket)
+		 (if (hashtable-equal? table (weakptr-data (car bucket)) key)
+		     (begin
+			(set-cdr! prev (cdr bucket))
+			(%hashtable-size-set! table
+			   (-fx (%hashtable-size table) 1))
+			#t)
+		     (loop (cdr bucket) bucket))
+		 #f))))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-old-hashtable-remove! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (weak-old-hashtable-remove! table::struct key::obj)
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
 	  (bucket (vector-ref buckets bucket-num))
           (found  (traverse-buckets
-                   table buckets bucket-num
-                   (lambda (bkey val bucket)
-		      (if (hashtable-equal? table key bkey)
-			  removestop
-			  keepgoing)))))
+		     table buckets bucket-num
+		     (lambda (bkey val bucket)
+			(if (hashtable-equal? table key bkey)
+			    removestop
+			    keepgoing)))))
       (not (eq? found keepgoing))))
 
 ;*---------------------------------------------------------------------*/
-;*    weak-hashtable-expand! ...                                       */
+;*    weak-hashtable-remove! ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-expand! table)
+(define (weak-hashtable-remove! table::struct key::obj)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-remove! table key)
+       (weak-old-hashtable-remove! table key)))
+
+;*---------------------------------------------------------------------*/
+;*    weak-keys-hashtable-expand! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (weak-keys-hashtable-expand! table)
+   (let* ((old-bucks (%hashtable-buckets table))
+	  (len (vector-length old-bucks))
+	  (new-len (*fx 2 len))
+	  (max-len (%hashtable-max-length table))
+	  (count 0))
+      ;; enlarge the max-bucket-len
+      (let ((nmax (* (%hashtable-max-bucket-len table)
+		     (%hashtable-bucket-expansion table))))
+	 (%hashtable-max-bucket-len-set! table
+	    (if (flonum? nmax) (flonum->fixnum nmax) nmax)))
+      ;; re-construct the buckets
+      (if (or (<fx max-len 0) (<=fx new-len max-len))
+	  (let ((new-bucks (make-vector new-len '())))
+	     (%hashtable-buckets-set! table new-bucks)
+	     (let loop ((i 0))
+		(cond
+		   ((<fx i len)
+		    (for-each (lambda (cell)
+				 (let ((key (weakptr-data cell)))
+				    (if (eq? key #unspecified)
+					(set! count (+fx count 1))
+					(let* ((n (table-get-hashnumber table key))
+					       (h (remainderfx n new-len)))
+					   (vector-set-ur! new-bucks
+					      h (cons cell (vector-ref new-bucks h)))))))
+		       (vector-ref-ur old-bucks i))
+		    (loop (+fx i 1)))
+		   ((>fx count 0)
+		    (%hashtable-size-set! table
+		       (-fx (%hashtable-size table) count))))))
+	  (error "hashtable-put!"
+	     (format "Hashtable too large (new-len=~a/~a, size=~a)"
+		new-len max-len
+		(hashtable-size table))
+	     table))))
+   
+;*---------------------------------------------------------------------*/
+;*    weak-old-hashtable-expand! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (weak-old-hashtable-expand! table)
    (fork
     (let* ((old-bucks (%hashtable-buckets table))
 	   (old-bucks-len (vector-length old-bucks))
@@ -598,4 +852,12 @@
 		       (vector-ref old-bucks i))
 	     (loop (+fx i 1))))
        (%hashtable-size-set! table count))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-expand! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-expand! table)
+   (if (hashtable-weak-keys? table)
+       (weak-keys-hashtable-expand! table)
+       (weak-old-hashtable-expand! table)))
 

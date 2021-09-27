@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Sep 13 17:09:52 2021 (serrano)                */
+;*    Last change :  Mon Sep 27 10:32:22 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -105,6 +105,7 @@
    (set-backend! *target-language*)
 
    ;; adjust the compilation parameters according to the backend specificities
+   ;; and various options
    (unless (>fx (bigloo-compiler-debug) 0)
       (unless (backend-bound-check (the-backend))
 	 (set! *unsafe-range* #t))
@@ -112,6 +113,10 @@
 	 (set! *unsafe-type* #t)))
    (unless (backend-typed-funcall (the-backend))
       (set! *optim-cfa-unbox-closure-args* #f))
+   (when (>fx *compiler-debug-trace* 0)
+      ;; compiler introduced traces are imcompatible with the setjmp/longmp
+      ;; optimization
+      (set! *optim-return-goto?* #f))
    
    ;; we read the source file
    (let ((src (*pre-processor* (profile read (read-src)))))

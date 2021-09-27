@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Mon Oct  8 08:18:26 2018 (serrano)                */
+;*    Last change :  Mon Sep 27 10:36:50 2021 (serrano)                */
 ;*    Copyright   :  2002-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -515,9 +515,9 @@
      (test "intext weakptr"
            (and (weakptr? ptr2)
                 (let ((d (weakptr-data ptr2)))
-                 (and (pair? d)
-                      (eq? (car d) ptr2)
-                      (eq? (cdr d) 3))))
+		   (and (pair? d)
+			(eq? (car d) ptr2)
+			(eq? (cdr d) 3))))
            #t)))
    (test "top level forms" (list order_foo1
 				 order_foo2

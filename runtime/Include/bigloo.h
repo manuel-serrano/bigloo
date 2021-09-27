@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep 27 07:22:05 2021 (serrano)                */
+/*    Last change :  Mon Sep 27 09:28:19 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -922,7 +922,7 @@ union scmobj {
    /* weak pointers */
    struct bgl_weakptr {
       header_t header;
-      union scmobj *data;
+      union scmobj **data;
       union scmobj *ref;
    } weakptr;
 
