@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Stephane Epardaud                                 */
 ;*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-;*    Last change :  Sun Aug 25 09:09:06 2019 (serrano)                */
+;*    Last change :  Mon Sep 27 07:02:27 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Weak pointers.                                                   */
 ;*=====================================================================*/
@@ -41,55 +41,78 @@
 	    __evenv
 	    __bit)
 
-   (extern (macro c-weakptr?::bool (::obj)
+   (extern (macro $weakptr?::bool (::obj)
 		  "BGL_WEAKPTRP")
-	   (c-weakptr-data::obj (::weakptr)
-		  "weakptr_data")
-	   (c-weakptr-data-set!::void (::weakptr ::obj)
-		  "weakptr_data_set")
-	   (c-make-weakptr::weakptr (::obj)
-		  "make_weakptr"))
+	   ($weakptr-data::obj (::weakptr)
+		  "bgl_weakptr_data")
+	   ($weakptr-data-set!::void (::weakptr ::obj)
+		  "bgl_weakptr_data_set")
+	   ($weakptr-ref::obj (::weakptr)
+		  "bgl_weakptr_ref")
+	   ($weakptr-ref-set!::void (::weakptr ::obj)
+		  "bgl_weakptr_ref_set")
+	   ($make-weakptr::weakptr (::obj ::obj)
+		  "bgl_make_weakptr"))
 	   
    (java   (class foreign
-            (method static c-weakptr?::bool (::obj)
+            (method static $weakptr?::bool (::obj)
                     "BGL_WEAKPTRP")
-            (method static c-weakptr-data::obj (::weakptr)
-                    "weakptr_data")
-            (method static c-weakptr-data-set!::void (::weakptr ::obj)
-                    "weakptr_data_set")
-            (method static c-make-weakptr::weakptr (::obj)
-                    "make_weakptr")))
+            (method static $weakptr-data::obj (::weakptr)
+                    "bgl_weakptr_data")
+            (method static $weakptr-data-set!::void (::weakptr ::obj)
+                    "bgl_weakptr_data_set")
+            (method static $weakptr-ref::obj (::weakptr)
+                    "bgl_weakptr_ref")
+            (method static $weakptr-ref-set!::void (::weakptr ::obj)
+                    "bgl_weakptr_ref_set")
+            (method static $make-weakptr::weakptr (::obj)
+                    "bgl_make_weakptr")))
 
    (export  (inline weakptr?::bool ::obj)
 	    (inline weakptr-data::obj ::weakptr)
 	    (inline weakptr-data-set! ::weakptr ::obj)
-	    (inline make-weakptr::weakptr ::obj))
+	    (inline weakptr-ref::obj ::weakptr)
+	    (inline weakptr-ref-set! ::weakptr ::obj)
+	    (inline make-weakptr::weakptr ::obj #!optional ref))
 
-   (pragma  (c-weakptr? (predicate-of weakptr) no-cfa-top nesting)
+   (pragma  ($weakptr? (predicate-of weakptr) no-cfa-top nesting)
 	    (weakptr? side-effect-free no-cfa-top nesting)))
 
 ;*---------------------------------------------------------------------*/
 ;*    weakptr? ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (weakptr? obj)
-   (c-weakptr? obj))
+   ($weakptr? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    weakptr-data ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (weakptr-data obj)
-   (c-weakptr-data obj))
+   ($weakptr-data obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    weakptr-data-set! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (weakptr-data-set! ptr obj)
-   (c-weakptr-data-set! ptr obj)
+   ($weakptr-data-set! ptr obj)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    weakptr-ref ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (weakptr-ref obj)
+   ($weakptr-ref obj))
+
+;*---------------------------------------------------------------------*/
+;*    weakptr-ref-set! ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (weakptr-ref-set! ptr obj)
+   ($weakptr-ref-set! ptr obj)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    make-weakptr ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-weakptr obj)
-   (c-make-weakptr obj))
+(define-inline (make-weakptr obj #!optional ref)
+   ($make-weakptr obj ref))
 

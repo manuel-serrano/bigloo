@@ -37,7 +37,8 @@ weak pointers to such objects will cease to point to it and point to
 @code{#unspecified} instead.
 
 @deffn {bigloo procedure} make-weakptr data
-Creates a weak pointer to @var{data}.
+@deffnx {bigloo procedure} make-weakptr data ref
+Creates a weak pointer to @var{data} and @var{ref}.
 @end deffn
 
 @deffn {bigloo procedure} weakptr? obj
@@ -46,6 +47,19 @@ Returns @code{#t} if @var{obj} is a weak pointer, constructed by
 @end deffn
 
 @deffn {bigloo procedure} weakptr-data ptr
-Returns the data object pointed to by @var{ptr}. If the object has been
+Returns the @var{data} object pointed to by @var{ptr}. If the object has been
 collected, it returns @code{#unspecified}.
+@end deffn
+
+@deffn {bigloo procedure} weakptr-data-set! ptr data
+Set a new @var{data} to the weak pointer.
+@end deffn
+
+@deffn {bigloo procedure} weakptr-ref ptr
+Returns the @var{ref} object pointed to by @var{ptr}. If the object has been
+collected, it returns @code{#unspecified}.
+@end deffn
+
+@deffn {bigloo procedure} weakptr-ref-set! ptr ref
+Set a new @var{ref} to the weak pointer.
 @end deffn

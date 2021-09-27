@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Feb 25 14:08:36 2019 (serrano)                */
+;*    Last change :  Sun Sep 26 19:54:45 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -77,9 +77,11 @@
 ;*    the fork macro ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-macro (fork . code)
+   
    ;; collects the cases
    (define (collect-cases expr cases)
-      (cond ((not (pair? expr)) cases)
+      (cond
+	 ((not (pair? expr)) cases)
 	    ((eq? (car expr) 'unfork-cond)
 	     ;; walk all the tests
 	     (let loop ((tests (cdr expr))
@@ -90,6 +92,7 @@
 		      (else (loop (cdr tests) (cons (caar tests) cases))))))
 	    (else
 	     (collect-cases (cdr expr) (collect-cases (car expr) cases)))))
+   
    ; and expands only the given case
    (define (expand-case expr case)
       (cond ((not (pair? expr)) expr)
@@ -103,19 +106,20 @@
 		    #unspecified)))
 	    (else
 	     (cons (expand-case (car expr) case)
-		   (expand-case (cdr expr) case)))))
+		(expand-case (cdr expr) case)))))
+   
    (let ((cases (reverse (collect-cases code '()))))
       ;; panic if there are no cases
-      (if (= 0 (length cases))
-	  (error 'fork "Missing unfork-cond in fork" '()))
+      (when (=fx 0 (length cases))
+	 (error "weakhash-fork" "Missing unfork-cond in fork" '()))
       ;; keep them ordered except the else
-      (if (member 'else cases)
-	  (set! cases (append (delete 'else cases) (list 'else))))
+      (when (member 'else cases)
+	 (set! cases (append (delete 'else cases) (list 'else))))
       ;; now make a cond
       (cons 'cond
-	    (map (lambda (case)
-		    (cons case (expand-case code case)))
-		 cases))))
+	 (map (lambda (case)
+		 (cons case (expand-case code case)))
+	    cases))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-bucket ...                                                */
@@ -139,19 +143,19 @@
 	   keepgoing
 	   (let ((ret (unfork-cond
 		       ((=fx (weak-keys) (%hashtable-weak table))
-			l; only weak keys
+			;; only weak keys
 			(let ((key (weakptr-data (caar bucket))))
 			   (if (eq? key #unspecified)
 			       remove
 			       (fun key (cdar bucket) bucket))))
 		       ((=fx (weak-data) (%hashtable-weak table))
-			;l only weak data
+			;; only weak data
 			(let ((data (weakptr-data (cdar bucket))))
 			   (if (eq? data #unspecified)
 			       remove
 			       (fun (caar bucket) data bucket))))
 		       ((=fx (weak-both) (%hashtable-weak table))
-			;l weak keys and data
+			;; weak keys and data
 			(let ((key (weakptr-data (caar bucket)))
 			      (data (weakptr-data (cdar bucket))))
 			   (if (or (eq? key #unspecified)
@@ -159,16 +163,17 @@
 			       remove
 			       (fun key data bucket))))
 		       (else
-			;l all strong
+			;; all strong
 			(fun (caar bucket) (cdar bucket) bucket)))))
-	      (cond ((eq? ret keepgoing)
-		     (liip (cdr bucket) bucket))
-		    ((eq? ret remove)
-		     (remove-bucket bucket last-bucket table buckets i)
-		     (liip (cdr bucket) last-bucket))
-		    ((eq? ret removestop)
-		     (remove-bucket bucket last-bucket table buckets i))
-		    (else ret)))))))
+	      (cond
+		 ((eq? ret keepgoing)
+		  (liip (cdr bucket) bucket))
+		 ((eq? ret remove)
+		  (remove-bucket bucket last-bucket table buckets i)
+		  (liip (cdr bucket) last-bucket))
+		 ((eq? ret removestop)
+		  (remove-bucket bucket last-bucket table buckets i))
+		 (else ret)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    traverse-hash ...                                                */
@@ -443,16 +448,16 @@
 	  (begin
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
 	     (vector-set! buckets bucket-num
-			  (cons (cons (if (hashtable-weak-keys? table)
-					  (make-weakptr key)
-					  key)
-				      (if (hashtable-weak-data? table)
-					  (make-weakptr obj)
-					  obj))
-				;; we need to retake the bucket in case
-				;; it changed while walking it
-				(vector-ref (%hashtable-buckets table)
-					    bucket-num)))
+		(cons (cons (if (hashtable-weak-keys? table)
+				(make-weakptr key)
+				key)
+			 (if (hashtable-weak-data? table)
+			     (make-weakptr obj)
+			     obj))
+		   ;; we need to retake the bucket in case
+		   ;; it changed while walking it
+		   (vector-ref (%hashtable-buckets table)
+		      bucket-num)))
 	     (if (>fx count max-bucket-len)
 		 (weak-hashtable-expand! table))
 	     obj))))

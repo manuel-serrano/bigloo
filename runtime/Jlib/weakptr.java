@@ -4,10 +4,12 @@ import java.lang.ref.WeakReference;
 
 
 public class weakptr extends obj {
+  public WeakReference data;
   public WeakReference ref;
 
-  public weakptr(final Object data){
-    ref = new WeakReference(data);
+  public weakptr(final Object d, final Object r){
+     data = new WeakReference(d);
+     ref = new WeakReference(r);
   }
 
   public Object getData(){
@@ -16,6 +18,15 @@ public class weakptr extends obj {
   }
 
   public void setData(Object o){
+    data = new WeakReference(o);
+  }
+
+  public Object getRef(){
+    Object d = data.get();
+    return d == null ? unspecified.unspecified : d;
+  }
+
+  public void setRef(Object o){
     ref = new WeakReference(o);
   }
 

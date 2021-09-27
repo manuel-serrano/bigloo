@@ -4337,16 +4337,20 @@ public final class foreign
       return (o instanceof weakptr);
    }
 
-   public static Object weakptr_data(weakptr p){
-      return p.getData();
+   public static Object bgl_weakptr_ref(weakptr p){
+      return p.getRef();
    }
 
-   public static void weakptr_data_set(weakptr p, Object o){
+   public static void bgl_weakptr_data_set(weakptr p, Object o){
       p.setData(o);
    }
 
-   public static weakptr make_weakptr(Object o){
-      return new weakptr(o);
+   public static void bgl_weakptr_ref_set(weakptr p, Object o){
+      p.setRef(o);
+   }
+
+   public static weakptr bgl_make_weakptr(Object o, Object r){
+      return new weakptr(o, r);
    }
 
    //////
