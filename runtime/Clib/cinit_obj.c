@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Thu Apr 19 09:32:34 2018 (serrano)                */
-/*    Copyright   :  2002-18 Manuel Serrano                            */
+/*    Last change :  Wed Oct  6 08:25:14 2021 (serrano)                */
+/*    Copyright   :  2002-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -51,7 +51,6 @@ extern void bgl_init_date();
 extern void bgl_init_signal();
 extern void bgl_init_keyword_table();
 extern void bgl_init_io();
-extern void bgl_init_trace();
 extern void bgl_init_process_table();
 extern void bgl_init_dload();
 extern void bgl_init_bignum();

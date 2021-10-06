@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Sep 16 15:06:27 2021 (serrano)                */
+;*    Last change :  Wed Oct  6 08:29:01 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -31,7 +31,7 @@
 	    (export c-debugging-show-type "bgl_show_type")
 	    (export stack-overflow-error "bgl_stack_overflow_error")
 	    
-	    ($get-trace-stack::pair-nil (::int) "bgl_get_trace_stack")
+	    (macro $get-trace-stack::pair-nil (::int) "bgl_get_trace_stack")
 	    (macro $init-trace-stacksp::obj () "bgl_init_trace")
 	    (macro $get-trace-stacksp::obj () "BGL_GET_TRACE_STACKSP")
 	    (macro $set-trace-stacksp::obj (::obj) "BGL_SET_TRACE_STACKSP")

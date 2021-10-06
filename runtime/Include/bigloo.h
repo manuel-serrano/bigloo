@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep 27 09:28:19 2021 (serrano)                */
+/*    Last change :  Wed Oct  6 08:17:26 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2511,7 +2511,8 @@ BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_getsockopt( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_setsockopt( obj_t, obj_t, obj_t );
    
-BGL_RUNTIME_DECL void bgl_init_trace( void );
+BGL_RUNTIME_DECL void (*bgl_init_trace)();
+BGL_RUNTIME_DECL obj_t (*bgl_get_trace_stack)( int );
 
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 

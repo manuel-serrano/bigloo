@@ -3,50 +3,90 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Sun Mar 18 07:19:58 2018 (serrano)                */
+/*    Last change :  Wed Oct  6 07:56:49 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
-/*    We dump a execution trace                                        */
+/*    Execution traces (mainly for error reporting)                    */
 /*=====================================================================*/
 #include <bigloo.h>
 
 /*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bgl_init_trace ...                                               */
+/*    Stack registrations                                              */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
+static void default_init_trace();
+static obj_t default_get_trace_stack(int);
+static void default_walk_trace_stack(obj_t);
+
+BGL_RUNTIME_DEF void (*bgl_init_trace)() = &default_init_trace;
+BGL_RUNTIME_DEF obj_t (*bgl_get_trace_stack)(int) = &default_get_trace_stack;
+BGL_RUNTIME_DEF void (*bgl_walk_trace_stack)(obj_t) = &default_walk_trace_stack;
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_init_trace_register ...                                      */
+/*---------------------------------------------------------------------*/
 void
-bgl_init_trace() {
-   obj_t env = BGL_CURRENT_DYNAMIC_ENV();
-
-   BGL_DYNAMIC_ENV( env ).top.name = BUNSPEC;
-   BGL_DYNAMIC_ENV( env ).top.link = 0;
-
-   BGL_ENV_SET_TOP_OF_FRAME( env, &(BGL_DYNAMIC_ENV( env ).top) );
+bgl_init_trace_register(void (*i)(), obj_t (*g)(int), void (*w)(obj_t)) {
+   bgl_init_trace = i;
+   bgl_get_trace_stack = g;
+   bgl_walk_trace_stack = w;
 }
 
 /*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_get_trace_stack ...                                          */
+/*    static void                                                      */
+/*    default_init_trace ...                                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-bgl_get_trace_stack( int depth ) {
+static void
+default_init_trace() {
+   obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+
+   BGL_DYNAMIC_ENV(env).top.name = BUNSPEC;
+   BGL_DYNAMIC_ENV(env).top.link = 0;
+
+   BGL_ENV_SET_TOP_OF_FRAME(env, &(BGL_DYNAMIC_ENV(env).top));
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    default_get_trace_stack ...                                      */
+/*---------------------------------------------------------------------*/
+static obj_t
+default_get_trace_stack(int depth) {
    long level = 0L;
-   struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() );
-   obj_t l = MAKE_PAIR( BNIL, BNIL );
+   struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME(BGL_CURRENT_DYNAMIC_ENV());
+   obj_t l = MAKE_PAIR(BNIL, BNIL);
    obj_t r = l;
 
-   while( ((depth < 0) || (level < depth)) && runner ) {
-      if( SYMBOLP( runner->name ) || STRINGP( runner->name ) ) {
-	 obj_t p = MAKE_PAIR( runner->name, MAKE_PAIR( runner->location, BNIL ) );
-	 SET_CDR( r, MAKE_PAIR( p, BNIL ) );
-	 r = CDR( r );
+   while (((depth < 0) || (level < depth)) && runner) {
+      if (SYMBOLP( runner->name) || STRINGP(runner->name)) {
+	 obj_t p = MAKE_PAIR(runner->name, MAKE_PAIR(runner->location, BNIL));
+	 SET_CDR(r, MAKE_PAIR(p, BNIL));
+	 r = CDR(r);
 	 level++; 
       }
       
       runner = runner->link;
    }
    
-   return CDR( l );
+   return CDR(l);
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    default_walk_trace_stack ...                                     */
+/*---------------------------------------------------------------------*/
+static void
+default_walk_trace_stack(obj_t proc) {
+   
+   struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME(BGL_CURRENT_DYNAMIC_ENV());
+
+_loop: {
+      if (SYMBOLP( runner->name) || STRINGP(runner->name)) {
+	 obj_t p = MAKE_PAIR(runner->name, MAKE_PAIR(runner->location, BNIL));
+	 if (PROCEDURE_ENTRY(proc)(proc, p) != BFALSE) {
+	    goto _loop;
+	 }
+      }
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -54,8 +94,8 @@ bgl_get_trace_stack( int depth ) {
 /*    cref ...                                                         */
 /*---------------------------------------------------------------------*/
 obj_t
-cref( obj_t obj ) {
-   return CREF( obj );
+cref(obj_t obj) {
+   return CREF(obj);
 }
 
 /*---------------------------------------------------------------------*/
@@ -63,8 +103,8 @@ cref( obj_t obj ) {
 /*    car ...                                                          */
 /*---------------------------------------------------------------------*/
 obj_t
-car( obj_t obj ) {
-   return CAR( obj );
+car(obj_t obj) {
+   return CAR(obj);
 }
 
 /*---------------------------------------------------------------------*/
@@ -72,8 +112,8 @@ car( obj_t obj ) {
 /*    cdr ...                                                          */
 /*---------------------------------------------------------------------*/
 obj_t
-cdr( obj_t obj ) {
-   return CDR( obj );
+cdr(obj_t obj) {
+   return CDR(obj);
 }
 
 /*---------------------------------------------------------------------*/
@@ -81,19 +121,19 @@ cdr( obj_t obj ) {
 /*    byteshow ...                                                     */
 /*---------------------------------------------------------------------*/
 static void
-byteshow( unsigned char *addr ) {
-#define PP_CHAR( c ) (((c) >= 33) && ((c) < 127)) ? c : '.'
+byteshow(unsigned char *addr) {
+#define PP_CHAR(c) (((c) >= 33) && ((c) < 127)) ? c : '.'
 
-   printf( "  %08lx  :  %02x %02x %02x %02x  :  %c%c%c%c\n",
+   printf("  %08lx  :  %02x %02x %02x %02x  :  %c%c%c%c\n",
            (unsigned long)addr,
            addr[ 0 ],
            addr[ 1 ],
            addr[ 2 ],
            addr[ 3 ],
-           PP_CHAR( addr[ 0 ] ),
-           PP_CHAR( addr[ 1 ] ),
-           PP_CHAR( addr[ 2 ] ),
-           PP_CHAR( addr[ 3 ] ) );
+           PP_CHAR(addr[ 0 ]),
+           PP_CHAR(addr[ 1 ]),
+           PP_CHAR(addr[ 2 ]),
+           PP_CHAR(addr[ 3 ]));
 }
              
 /*---------------------------------------------------------------------*/
@@ -101,18 +141,18 @@ byteshow( unsigned char *addr ) {
 /*    memshow ...                                                      */
 /*---------------------------------------------------------------------*/
 void
-memshow( char *from, char *to, long step ) {
+memshow(char *from, char *to, long step) {
    char *i;
 
    step *= 4;
       
-   if( from > to )
-      for( i = from; i > to; i -= step )
-         byteshow( (unsigned char *)i );
+   if (from > to) 
+      for (i = from; i > to; i -= step)
+         byteshow((unsigned char *)i);
    else
-      for( i = from; i < to; i += step )
-         byteshow( (unsigned char *)i );
+      for (i = from; i < to; i += step)
+         byteshow((unsigned char *)i);
 
-   puts( "" );
+   puts("");
    return ;
 }
