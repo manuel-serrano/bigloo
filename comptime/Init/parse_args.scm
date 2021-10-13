@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Jun 13 08:37:25 2021 (serrano)                */
+;*    Last change :  Wed Oct 13 12:10:46 2021 (serrano)                */
 ;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -642,12 +642,14 @@
        (bigloo-warning-set! 0)
        (set! *load-verbose* #f))
       ;; verbose
-      (("-v" (help "-v[23]" "Be verbose"))
-       (set! *verbose* 1))
+      (("-v" (help "-v[234]" "Be verbose"))
+       (set! *verbose* (max 1 *verbose*)))
       (("-v2")
-       (set! *verbose* 2))
+       (set! *verbose* (max 2 *verbose*)))
       (("-v3")
-       (set! *verbose* 3))
+       (set! *verbose* (max 3 *verbose*)))
+      (("-v4")
+       (set! *verbose* (max 4 *verbose*)))
       (("-hello" (help "Say hello"))
        (set! *hello* #t))
       (("-no-hello" (help "Dont' say hello even in verbose mode"))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Wed Oct  6 08:25:14 2021 (serrano)                */
+/*    Last change :  Thu Oct  7 08:20:22 2021 (serrano)                */
 /*    Copyright   :  2002-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -66,7 +66,6 @@ void bgl_init_objects() {
    bgl_saw_init();
 #endif   
    bgl_init_dynamic_env();
-   bgl_init_trace();
    bgl_init_symbol_table();
    bgl_init_signal();
    bgl_init_io();

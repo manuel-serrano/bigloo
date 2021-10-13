@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat May  1 09:09:47 2021 (serrano)                */
+#*    Last change :  Thu Oct  7 07:37:00 2021 (serrano)                */
 #*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -73,6 +73,7 @@ BUNSAFEO0FLAGS	= $(BCOMMONFLAGS) \
                   -unsafe -safee
 BUNSAFEFLAGS	= -srfi bigloo-unsafe $(BUNSAFEO0FLAGS) -O4
 CUNSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS) $(CBUILDFLAGS)
+CSAFEFLAGS	= $(CUNSAFEFLAGS) -g
 #*--- Bigloo, unsafe, profiled ----------------------------------------*/
 BUNSAFEPFLAGS	= $(BCOMMONFLAGS) \
                   -O4 -mklib -unsafe -safee -cc $(CC) -fsharing -q -no-hello \
@@ -323,7 +324,7 @@ INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
 #*    The file non-inline_alloc.c is added by configure when non       */
 #*    custom GC is selected.                                           */
 #*---------------------------------------------------------------------*/
-OBJECTS		= $(C_CLIB:%.c=objs/$(OBJDIR_SYS)/%.o) \
+OBJECTS		= $(C_CLIB:%.c=objs/$(OBJDIR_USR)/%.o) \
                   objs/$(OBJDIR_SYS)/Mlib/mach_dep.o \
                   $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.o) \
                   $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.o) \
@@ -813,7 +814,7 @@ objs/obj_u/$(COBJSUFFIX): objs/obj_u/%.c
         mv $(*D)-$(@F) $@
 
 objs/obj_s/$(COBJSUFFIX): objs/obj_s/%.c
-	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
+	$(CC) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
 objs/saw_u/$(COBJSUFFIX): objs/saw_u/%.c

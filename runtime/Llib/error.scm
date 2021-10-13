@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Oct  6 08:29:01 2021 (serrano)                */
+;*    Last change :  Thu Oct  7 08:22:47 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -32,7 +32,7 @@
 	    (export stack-overflow-error "bgl_stack_overflow_error")
 	    
 	    (macro $get-trace-stack::pair-nil (::int) "bgl_get_trace_stack")
-	    (macro $init-trace-stacksp::obj () "bgl_init_trace")
+	    (macro $init-trace-stacksp::obj (::dynamic-env) "bgl_init_trace")
 	    (macro $get-trace-stacksp::obj () "BGL_GET_TRACE_STACKSP")
 	    (macro $set-trace-stacksp::obj (::obj) "BGL_SET_TRACE_STACKSP")
 	    (macro $push-trace::obj (::obj ::obj) "BGL_PUSH_TRACE")
@@ -94,7 +94,7 @@
 	    (class foreign
 	       (method static $get-trace-stack::pair-nil (::int)
 		       "get_trace_stack")
-	       (method static $init-trace-stacksp::obj ()
+	       (method static $init-trace-stacksp::obj (::dynamic-env)
 		       "init_trace_stacksp")
 	       (method static $get-trace-stacksp::obj ()
 		       "BGL_GET_TRACE_STACKSP")

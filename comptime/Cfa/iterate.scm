@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Wed Sep  1 10:09:19 2021 (serrano)                */
+;*    Last change :  Wed Oct 13 12:16:21 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -80,6 +80,7 @@
 (define (cfa-iterate! globals)
    (stop-cfa!)
    (set! *cfa-stamp* (+fx 1 *cfa-stamp*))
+   (verbose 4 " [")
    (trace cfa #\Newline "=======> Cfa iteration!: " *cfa-stamp* #\Newline)
    (for-each (lambda (g)
 		(trace (cfa 2) "Exporting " (shape g) #\: #\Newline)
@@ -88,6 +89,7 @@
 		   (cfa-export-var! (global-value g) g)
 		   (trace (cfa 2) #\Newline)) )
       globals)
+   (verbose 4 "]")
    (trace cfa #\Newline))
 
 ;*---------------------------------------------------------------------*/
@@ -160,6 +162,9 @@
 	     (multiple-value-bind (res rtime stime utime)
 		(time
 		   (lambda ()
+		      (if (global? owner)
+			  (verbose 4 "<" (variable-id owner) "> ")
+			  (verbose 4 (variable-id owner) " "))
 		      (trace-item (shape owner)
 			 " stamp=" stamp " cfa-stamp=" *cfa-stamp*)
 		      (trace (cfa 2) ">>> " (shape owner) #\Newline)

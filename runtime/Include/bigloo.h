@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Oct  6 08:17:26 2021 (serrano)                */
+/*    Last change :  Thu Oct  7 08:18:41 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -993,6 +993,7 @@ union scmobj {
       struct bgl_dframe top;
       struct bgl_dframe *top_of_frame;
       union scmobj *exit_traces;
+      void *backtrace;
       /* current thread */
       void *current_thread;
       /* thread lexical stack */
@@ -2143,6 +2144,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_SET_TOP_OF_FRAME( env, _top ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env ) = (_top))
 
+#define BGL_ENV_GET_BACKTRACE( env ) \
+   (BGL_DYNAMIC_ENV( env ).backtrace)
+#define BGL_ENV_SET_BACKTRACE( env, _bt ) \
+   (BGL_ENV_GET_BACKTRACE( env ) = (_bt))
+
 #define BGL_GET_TRACE_STACKSP() \
    ((obj_t)BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )
 #define BGL_SET_TRACE_STACKSP(_sp) \
@@ -2511,8 +2517,8 @@ BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_getsockopt( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_setsockopt( obj_t, obj_t, obj_t );
    
-BGL_RUNTIME_DECL void (*bgl_init_trace)();
-BGL_RUNTIME_DECL obj_t (*bgl_get_trace_stack)( int );
+BGL_RUNTIME_DECL void (*bgl_init_trace)(obj_t);
+BGL_RUNTIME_DECL obj_t (*bgl_get_trace_stack)(int);
 
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 

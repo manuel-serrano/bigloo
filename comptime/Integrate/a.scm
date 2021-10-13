@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Sun Jul 11 09:46:57 2021 (serrano)                */
+;*    Last change :  Wed Oct 13 10:27:49 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -269,7 +269,12 @@
       (let ((callee (var-variable fun)))
 	 (cond
 	    ((unwind-until-call node)
-	     A)
+	     =>
+	     (lambda (xhdl)
+		(with-access::sfun/Iinfo (variable-value host) (xhdls)
+		   (unless (memq xhdl xhdls)
+		      (set! xhdls (cons xhdl xhdls))))
+		A))
 	    (else
 	     (let liip ((args (app-args node))
 			(A A))

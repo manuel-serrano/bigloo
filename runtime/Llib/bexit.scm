@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Thu Sep 16 14:14:04 2021 (serrano)                */
+;*    Last change :  Thu Oct  7 08:22:57 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -189,7 +189,7 @@
 		(pop-exit!)
 		(if tracestk
 		    ($set-trace-stacksp tracestk)
-		    ($init-trace-stacksp))
+		    ($init-trace-stacksp ($current-dynamic-env)))
 		;; unwind the stack
 		(cond  
 		   ((and (eq? exitd-top exitd) 

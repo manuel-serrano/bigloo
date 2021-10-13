@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
+;; Bigloo (4.4c)
+;; Inria -- Sophia Antipolis     Thu 07 Oct 2021 10:29:44 AM CEST 
 ;; (bigloo.new -classgen Integrate/iinfo.scm)
 ;; ==========================================================
 
@@ -11,9 +11,11 @@
 ;; svar/Iinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-svar/Iinfo::svar/Iinfo loc1210::obj f-mark1211::obj u-mark1212::obj kaptured?1213::bool celled?1214::bool)
+    (inline make-svar/Iinfo::svar/Iinfo loc1227::obj f-mark1228::obj u-mark1229::obj kaptured?1230::bool celled?1231::bool xhdl1232::obj)
     (inline svar/Iinfo?::bool ::obj)
     (svar/Iinfo-nil::svar/Iinfo)
+    (inline svar/Iinfo-xhdl::obj ::svar/Iinfo)
+    (inline svar/Iinfo-xhdl-set! ::svar/Iinfo ::obj)
     (inline svar/Iinfo-celled?::bool ::svar/Iinfo)
     (inline svar/Iinfo-celled?-set! ::svar/Iinfo ::bool)
     (inline svar/Iinfo-kaptured?::bool ::svar/Iinfo)
@@ -28,7 +30,7 @@
 ;; sexit/Iinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sexit/Iinfo::sexit/Iinfo handler1203::obj detached?1204::bool f-mark1205::obj u-mark1206::obj kaptured?1207::bool celled?1208::bool)
+    (inline make-sexit/Iinfo::sexit/Iinfo handler1220::obj detached?1221::bool f-mark1222::obj u-mark1223::obj kaptured?1224::bool celled?1225::bool)
     (inline sexit/Iinfo?::bool ::obj)
     (sexit/Iinfo-nil::sexit/Iinfo)
     (inline sexit/Iinfo-celled?::bool ::sexit/Iinfo)
@@ -47,9 +49,13 @@
 ;; sfun/Iinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfun/Iinfo::sfun/Iinfo arity1164::long side-effect1165::obj predicate-of1166::obj stack-allocator1167::obj top?1168::bool the-closure1169::obj effect1170::obj failsafe1171::obj property1172::obj args1173::obj args-name1174::obj body1175::obj class1176::obj dsssl-keywords1177::obj loc1178::obj optionals1179::obj keys1180::obj the-closure-global1181::obj strength1182::symbol owner1183::obj free1184::obj bound1185::obj cfrom1186::obj cto1187::obj K1188::obj K*1189::obj U1190::obj Cn1191::obj Ct1192::obj kont1193::obj G?1194::bool forceG?1195::bool L1196::obj Led1197::obj istamp1198::obj global1199::obj kaptured1200::obj tail-coercion1201::obj)
+    (inline make-sfun/Iinfo::sfun/Iinfo arity1176::long side-effect1177::obj predicate-of1178::obj stack-allocator1179::obj top?1180::bool the-closure1181::obj effect1182::obj failsafe1183::obj args-noescape1184::obj args-retescape1185::obj property1186::obj args1187::obj args-name1188::obj body1189::obj class1190::obj dsssl-keywords1191::obj loc1192::obj optionals1193::obj keys1194::obj the-closure-global1195::obj strength1196::symbol stackable1197::obj owner1198::obj free1199::obj bound1200::obj cfrom1201::obj cto1202::obj K1203::obj K*1204::obj U1205::obj Cn1206::obj Ct1207::obj kont1208::obj G?1209::bool forceG?1210::bool L1211::obj Led1212::obj istamp1213::obj global1214::obj kaptured1215::obj tail-coercion1216::obj xhdl?1217::bool xhdls1218::pair-nil)
     (inline sfun/Iinfo?::bool ::obj)
     (sfun/Iinfo-nil::sfun/Iinfo)
+    (inline sfun/Iinfo-xhdls::pair-nil ::sfun/Iinfo)
+    (inline sfun/Iinfo-xhdls-set! ::sfun/Iinfo ::pair-nil)
+    (inline sfun/Iinfo-xhdl?::bool ::sfun/Iinfo)
+    (inline sfun/Iinfo-xhdl?-set! ::sfun/Iinfo ::bool)
     (inline sfun/Iinfo-tail-coercion::obj ::sfun/Iinfo)
     (inline sfun/Iinfo-tail-coercion-set! ::sfun/Iinfo ::obj)
     (inline sfun/Iinfo-kaptured::obj ::sfun/Iinfo)
@@ -88,6 +94,8 @@
     (inline sfun/Iinfo-free-set! ::sfun/Iinfo ::obj)
     (inline sfun/Iinfo-owner::obj ::sfun/Iinfo)
     (inline sfun/Iinfo-owner-set! ::sfun/Iinfo ::obj)
+    (inline sfun/Iinfo-stackable::obj ::sfun/Iinfo)
+    (inline sfun/Iinfo-stackable-set! ::sfun/Iinfo ::obj)
     (inline sfun/Iinfo-strength::symbol ::sfun/Iinfo)
     (inline sfun/Iinfo-strength-set! ::sfun/Iinfo ::symbol)
     (inline sfun/Iinfo-the-closure-global::obj ::sfun/Iinfo)
@@ -107,6 +115,10 @@
     (inline sfun/Iinfo-args-set! ::sfun/Iinfo ::obj)
     (inline sfun/Iinfo-property::obj ::sfun/Iinfo)
     (inline sfun/Iinfo-property-set! ::sfun/Iinfo ::obj)
+    (inline sfun/Iinfo-args-retescape::obj ::sfun/Iinfo)
+    (inline sfun/Iinfo-args-retescape-set! ::sfun/Iinfo ::obj)
+    (inline sfun/Iinfo-args-noescape::obj ::sfun/Iinfo)
+    (inline sfun/Iinfo-args-noescape-set! ::sfun/Iinfo ::obj)
     (inline sfun/Iinfo-failsafe::obj ::sfun/Iinfo)
     (inline sfun/Iinfo-failsafe-set! ::sfun/Iinfo ::obj)
     (inline sfun/Iinfo-effect::obj ::sfun/Iinfo)
@@ -126,9 +138,11 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; svar/Iinfo
-(define-inline (make-svar/Iinfo::svar/Iinfo loc1210::obj f-mark1211::obj u-mark1212::obj kaptured?1213::bool celled?1214::bool) (instantiate::svar/Iinfo (loc loc1210) (f-mark f-mark1211) (u-mark u-mark1212) (kaptured? kaptured?1213) (celled? celled?1214)))
+(define-inline (make-svar/Iinfo::svar/Iinfo loc1227::obj f-mark1228::obj u-mark1229::obj kaptured?1230::bool celled?1231::bool xhdl1232::obj) (instantiate::svar/Iinfo (loc loc1227) (f-mark f-mark1228) (u-mark u-mark1229) (kaptured? kaptured?1230) (celled? celled?1231) (xhdl xhdl1232)))
 (define-inline (svar/Iinfo?::bool obj::obj) ((@ isa? __object) obj (@ svar/Iinfo integrate_info)))
 (define (svar/Iinfo-nil::svar/Iinfo) (class-nil (@ svar/Iinfo integrate_info)))
+(define-inline (svar/Iinfo-xhdl::obj o::svar/Iinfo) (-> |#!bigloo_wallow| o xhdl))
+(define-inline (svar/Iinfo-xhdl-set! o::svar/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o xhdl) v))
 (define-inline (svar/Iinfo-celled?::bool o::svar/Iinfo) (-> |#!bigloo_wallow| o celled?))
 (define-inline (svar/Iinfo-celled?-set! o::svar/Iinfo v::bool) (set! (-> |#!bigloo_wallow| o celled?) v))
 (define-inline (svar/Iinfo-kaptured?::bool o::svar/Iinfo) (-> |#!bigloo_wallow| o kaptured?))
@@ -141,7 +155,7 @@
 (define-inline (svar/Iinfo-loc-set! o::svar/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; sexit/Iinfo
-(define-inline (make-sexit/Iinfo::sexit/Iinfo handler1203::obj detached?1204::bool f-mark1205::obj u-mark1206::obj kaptured?1207::bool celled?1208::bool) (instantiate::sexit/Iinfo (handler handler1203) (detached? detached?1204) (f-mark f-mark1205) (u-mark u-mark1206) (kaptured? kaptured?1207) (celled? celled?1208)))
+(define-inline (make-sexit/Iinfo::sexit/Iinfo handler1220::obj detached?1221::bool f-mark1222::obj u-mark1223::obj kaptured?1224::bool celled?1225::bool) (instantiate::sexit/Iinfo (handler handler1220) (detached? detached?1221) (f-mark f-mark1222) (u-mark u-mark1223) (kaptured? kaptured?1224) (celled? celled?1225)))
 (define-inline (sexit/Iinfo?::bool obj::obj) ((@ isa? __object) obj (@ sexit/Iinfo integrate_info)))
 (define (sexit/Iinfo-nil::sexit/Iinfo) (class-nil (@ sexit/Iinfo integrate_info)))
 (define-inline (sexit/Iinfo-celled?::bool o::sexit/Iinfo) (-> |#!bigloo_wallow| o celled?))
@@ -158,9 +172,13 @@
 (define-inline (sexit/Iinfo-handler-set! o::sexit/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o handler) v))
 
 ;; sfun/Iinfo
-(define-inline (make-sfun/Iinfo::sfun/Iinfo arity1164::long side-effect1165::obj predicate-of1166::obj stack-allocator1167::obj top?1168::bool the-closure1169::obj effect1170::obj failsafe1171::obj property1172::obj args1173::obj args-name1174::obj body1175::obj class1176::obj dsssl-keywords1177::obj loc1178::obj optionals1179::obj keys1180::obj the-closure-global1181::obj strength1182::symbol owner1183::obj free1184::obj bound1185::obj cfrom1186::obj cto1187::obj K1188::obj K*1189::obj U1190::obj Cn1191::obj Ct1192::obj kont1193::obj G?1194::bool forceG?1195::bool L1196::obj Led1197::obj istamp1198::obj global1199::obj kaptured1200::obj tail-coercion1201::obj) (instantiate::sfun/Iinfo (arity arity1164) (side-effect side-effect1165) (predicate-of predicate-of1166) (stack-allocator stack-allocator1167) (top? top?1168) (the-closure the-closure1169) (effect effect1170) (failsafe failsafe1171) (property property1172) (args args1173) (args-name args-name1174) (body body1175) (class class1176) (dsssl-keywords dsssl-keywords1177) (loc loc1178) (optionals optionals1179) (keys keys1180) (the-closure-global the-closure-global1181) (strength strength1182) (owner owner1183) (free free1184) (bound bound1185) (cfrom cfrom1186) (cto cto1187) (K K1188) (K* K*1189) (U U1190) (Cn Cn1191) (Ct Ct1192) (kont kont1193) (G? G?1194) (forceG? forceG?1195) (L L1196) (Led Led1197) (istamp istamp1198) (global global1199) (kaptured kaptured1200) (tail-coercion tail-coercion1201)))
+(define-inline (make-sfun/Iinfo::sfun/Iinfo arity1176::long side-effect1177::obj predicate-of1178::obj stack-allocator1179::obj top?1180::bool the-closure1181::obj effect1182::obj failsafe1183::obj args-noescape1184::obj args-retescape1185::obj property1186::obj args1187::obj args-name1188::obj body1189::obj class1190::obj dsssl-keywords1191::obj loc1192::obj optionals1193::obj keys1194::obj the-closure-global1195::obj strength1196::symbol stackable1197::obj owner1198::obj free1199::obj bound1200::obj cfrom1201::obj cto1202::obj K1203::obj K*1204::obj U1205::obj Cn1206::obj Ct1207::obj kont1208::obj G?1209::bool forceG?1210::bool L1211::obj Led1212::obj istamp1213::obj global1214::obj kaptured1215::obj tail-coercion1216::obj xhdl?1217::bool xhdls1218::pair-nil) (instantiate::sfun/Iinfo (arity arity1176) (side-effect side-effect1177) (predicate-of predicate-of1178) (stack-allocator stack-allocator1179) (top? top?1180) (the-closure the-closure1181) (effect effect1182) (failsafe failsafe1183) (args-noescape args-noescape1184) (args-retescape args-retescape1185) (property property1186) (args args1187) (args-name args-name1188) (body body1189) (class class1190) (dsssl-keywords dsssl-keywords1191) (loc loc1192) (optionals optionals1193) (keys keys1194) (the-closure-global the-closure-global1195) (strength strength1196) (stackable stackable1197) (owner owner1198) (free free1199) (bound bound1200) (cfrom cfrom1201) (cto cto1202) (K K1203) (K* K*1204) (U U1205) (Cn Cn1206) (Ct Ct1207) (kont kont1208) (G? G?1209) (forceG? forceG?1210) (L L1211) (Led Led1212) (istamp istamp1213) (global global1214) (kaptured kaptured1215) (tail-coercion tail-coercion1216) (xhdl? xhdl?1217) (xhdls xhdls1218)))
 (define-inline (sfun/Iinfo?::bool obj::obj) ((@ isa? __object) obj (@ sfun/Iinfo integrate_info)))
 (define (sfun/Iinfo-nil::sfun/Iinfo) (class-nil (@ sfun/Iinfo integrate_info)))
+(define-inline (sfun/Iinfo-xhdls::pair-nil o::sfun/Iinfo) (-> |#!bigloo_wallow| o xhdls))
+(define-inline (sfun/Iinfo-xhdls-set! o::sfun/Iinfo v::pair-nil) (set! (-> |#!bigloo_wallow| o xhdls) v))
+(define-inline (sfun/Iinfo-xhdl?::bool o::sfun/Iinfo) (-> |#!bigloo_wallow| o xhdl?))
+(define-inline (sfun/Iinfo-xhdl?-set! o::sfun/Iinfo v::bool) (set! (-> |#!bigloo_wallow| o xhdl?) v))
 (define-inline (sfun/Iinfo-tail-coercion::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o tail-coercion))
 (define-inline (sfun/Iinfo-tail-coercion-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o tail-coercion) v))
 (define-inline (sfun/Iinfo-kaptured::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o kaptured))
@@ -199,6 +217,8 @@
 (define-inline (sfun/Iinfo-free-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o free) v))
 (define-inline (sfun/Iinfo-owner::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o owner))
 (define-inline (sfun/Iinfo-owner-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o owner) v))
+(define-inline (sfun/Iinfo-stackable::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o stackable))
+(define-inline (sfun/Iinfo-stackable-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (sfun/Iinfo-strength::symbol o::sfun/Iinfo) (-> |#!bigloo_wallow| o strength))
 (define-inline (sfun/Iinfo-strength-set! o::sfun/Iinfo v::symbol) (set! (-> |#!bigloo_wallow| o strength) v))
 (define-inline (sfun/Iinfo-the-closure-global::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o the-closure-global))
@@ -221,6 +241,10 @@
 (define-inline (sfun/Iinfo-args-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (sfun/Iinfo-property::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o property))
 (define-inline (sfun/Iinfo-property-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o property) v))
+(define-inline (sfun/Iinfo-args-retescape::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o args-retescape))
+(define-inline (sfun/Iinfo-args-retescape-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o args-retescape) v))
+(define-inline (sfun/Iinfo-args-noescape::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o args-noescape))
+(define-inline (sfun/Iinfo-args-noescape-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o args-noescape) v))
 (define-inline (sfun/Iinfo-failsafe::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o failsafe))
 (define-inline (sfun/Iinfo-failsafe-set! o::sfun/Iinfo v::obj) (set! (-> |#!bigloo_wallow| o failsafe) v))
 (define-inline (sfun/Iinfo-effect::obj o::sfun/Iinfo) (-> |#!bigloo_wallow| o effect))

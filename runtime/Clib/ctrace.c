@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Wed Oct  6 07:56:49 2021 (serrano)                */
+/*    Last change :  Thu Oct  7 08:15:32 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Execution traces (mainly for error reporting)                    */
 /*=====================================================================*/
@@ -15,8 +15,10 @@
 static void default_init_trace();
 static obj_t default_get_trace_stack(int);
 static void default_walk_trace_stack(obj_t);
+static obj_t no_get_trace_stack(int);
+static void no_walk_trace_stack(obj_t);
 
-BGL_RUNTIME_DEF void (*bgl_init_trace)() = &default_init_trace;
+BGL_RUNTIME_DEF void (*bgl_init_trace)(obj_t) = &default_init_trace;
 BGL_RUNTIME_DEF obj_t (*bgl_get_trace_stack)(int) = &default_get_trace_stack;
 BGL_RUNTIME_DEF void (*bgl_walk_trace_stack)(obj_t) = &default_walk_trace_stack;
 
@@ -27,8 +29,9 @@ BGL_RUNTIME_DEF void (*bgl_walk_trace_stack)(obj_t) = &default_walk_trace_stack;
 void
 bgl_init_trace_register(void (*i)(), obj_t (*g)(int), void (*w)(obj_t)) {
    bgl_init_trace = i;
-   bgl_get_trace_stack = g;
-   bgl_walk_trace_stack = w;
+
+   bgl_get_trace_stack = (g ? g : no_get_trace_stack);
+   bgl_walk_trace_stack = (w ? w : no_walk_trace_stack);
 }
 
 /*---------------------------------------------------------------------*/
@@ -36,10 +39,9 @@ bgl_init_trace_register(void (*i)(), obj_t (*g)(int), void (*w)(obj_t)) {
 /*    default_init_trace ...                                           */
 /*---------------------------------------------------------------------*/
 static void
-default_init_trace() {
-   obj_t env = BGL_CURRENT_DYNAMIC_ENV();
-
+default_init_trace(obj_t env) {
    BGL_DYNAMIC_ENV(env).top.name = BUNSPEC;
+   BGL_DYNAMIC_ENV(env).top.location = BUNSPEC;
    BGL_DYNAMIC_ENV(env).top.link = 0;
 
    BGL_ENV_SET_TOP_OF_FRAME(env, &(BGL_DYNAMIC_ENV(env).top));
@@ -71,12 +73,20 @@ default_get_trace_stack(int depth) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    no_get_trace_stack ...                                           */
+/*---------------------------------------------------------------------*/
+static obj_t
+no_get_trace_stack(int depth) {
+   return BNIL;
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    default_walk_trace_stack ...                                     */
 /*---------------------------------------------------------------------*/
 static void
 default_walk_trace_stack(obj_t proc) {
-   
    struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME(BGL_CURRENT_DYNAMIC_ENV());
 
 _loop: {
@@ -89,6 +99,15 @@ _loop: {
    }
 }
 
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    default_walk_trace_stack ...                                     */
+/*---------------------------------------------------------------------*/
+static void
+no_walk_trace_stack(obj_t proc) {
+   ;
+}
+   
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    cref ...                                                         */

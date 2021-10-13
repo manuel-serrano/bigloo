@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/g.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Integrate/g.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 14:53:50 1995                          */
-;*    Last change :  Thu Nov 17 05:41:06 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 13 11:20:16 2021 (serrano)                */
+;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the set of globalized functions.                         */
 ;*=====================================================================*/
@@ -25,7 +25,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    G! ...                                                           */
 ;*    -------------------------------------------------------------    */
-;*    The globalized function due to Cn property have already          */
+;*    The globalized functions due to Cn property have already         */
 ;*    been computed during the Cn computation. Now, we just            */
 ;*    perform a fix-point iteration with the Ct property.              */
 ;*---------------------------------------------------------------------*/
@@ -33,7 +33,7 @@
    (trace integrate "G!, G/cn: " (shape G/cn) #\Newline)
    (let loop ((stop? #f)
 	      (stamp 0)
-	      (Gs    G/cn))
+	      (Gs G/cn))
       (if stop?
 	  (begin
 	     ;; we erase every marks because DISPLAY-LET-FUN uses
@@ -41,32 +41,32 @@
 	     (for-each (lambda (f)
 			  (if (local? f)
 			      (sfun/Iinfo-istamp-set! (local-value f) -1)))
-		       *phi*)
+		*phi*)
 	     (integrate-remaining-local-functions!)
 	     (trace integrate "G: " (shape Gs) #\Newline)
 	     (trace (integrate 2) "   " stamp #" iteration(s) to fix point\n")
 	     Gs)
-	  (let liip ((phi   *phi*)
+	  (let liip ((phi *phi*)
 		     (stop? #t) 
-		     (Gs    Gs))
+		     (Gs Gs))
 	     (if (null? phi)
 		 (loop stop? (+fx stamp 1) Gs)
-		 (let* ((f   (car phi))
+		 (let* ((f (car phi))
 			(fif (variable-value f)))
-		    (let laap ((Ct    (sfun/Iinfo-Ct fif))
+		    (let laap ((Ct (sfun/Iinfo-Ct fif))
 			       (stop? stop?)
-			       (Gs    Gs))
+			       (Gs Gs))
 		       (if (null? Ct)
 			   (liip (cdr phi) stop? Gs)
-			   (let* ((g   (car Ct))
+			   (let* ((g (car Ct))
 				  (gif (local-value g)))
 			      (trace (integrate 4)
-				     " Ct( " (shape f) "[G?:"
-				     (sfun/Iinfo-G? fif)
-				     "], " (shape g) "[G?: "
-				     (sfun/Iinfo-G? gif)
-				     "] )"
-				     #\Newline)
+				 " Ct( " (shape f) "[G?:"
+				 (sfun/Iinfo-G? fif)
+				 "], " (shape g) "[G?: "
+				 (sfun/Iinfo-G? gif)
+				 "] )"
+				 #\Newline)
 			      (cond
 				 ((eq? f g)
 				  (laap (cdr Ct) stop? Gs))
@@ -76,9 +76,9 @@
 				  (cond
 				     ((not (variable? (sfun/Iinfo-L gif)))
 				      (trace (integrate 4)
-					     "   trying L.1( "
-					     (shape f) ", " (shape g) " )"
-					     #\Newline)
+					 "   trying L.1( "
+					 (shape f) ", " (shape g) " )"
+					 #\Newline)
 				      (sfun/Iinfo-L-set! gif f)
 				      (laap (cdr Ct) #f Gs))
 				     ((eq? (sfun/Iinfo-L gif) f)
@@ -86,50 +86,50 @@
 				     (else
 				      (sfun/Iinfo-G?-set! gif #t)
 				      (trace (integrate 4)
-					     "   G.1( " (shape g) " )"
-					     #\Newline)
+					 "   G.1( " (shape g) " )"
+					 #\Newline)
 				      (laap (cdr Ct) #f (cons g Gs)))))
 				 ((not (variable? (sfun/Iinfo-L gif)))
 				  (cond
 				     ((variable? (sfun/Iinfo-L fif))
 				      (sfun/Iinfo-L-set! gif (sfun/Iinfo-L fif))
 				      (trace (integrate 4)
-					     "   trying L.2( "
-					     (shape (sfun/Iinfo-L fif)) ", "
-					     (shape g) " )"
-					     #\Newline)
+					 "   trying L.2( "
+					 (shape (sfun/Iinfo-L fif)) ", "
+					 (shape g) " )"
+					 #\Newline)
 				      (laap (cdr Ct) #f Gs))
 				     (else
 				      (let ((stop? (and
 						    stop?
 						    (fixnum? (sfun/Iinfo-istamp
-							       fif))
+								fif))
 						    (<=fx (sfun/Iinfo-istamp
-							   fif)
-							  stamp))))
+							     fif)
+						       stamp))))
 					 (trace (integrate 4)
-						"  ** G!.bind-fun!("
-						(shape f) ", " stamp
-						")" #\Newline)
+					    "  ** G!.bind-fun!("
+					    (shape f) ", " stamp
+					    ")" #\Newline)
 					 (sfun/Iinfo-istamp-set! fif stamp)
 					 (laap (cdr Ct) stop? Gs)))))
 				 ((not (variable? (sfun/Iinfo-L fif)))
 				  (trace (integrate 4)
-					 "   trying L.3( "
-					 (shape (sfun/Iinfo-L gif)) ", "
-					 (shape f)
-					 " )" #\Newline)
+				     "   trying L.3( "
+				     (shape (sfun/Iinfo-L gif)) ", "
+				     (shape f)
+				     " )" #\Newline)
 				  (sfun/Iinfo-L-set! fif (sfun/Iinfo-L gif))
 				  (laap (cdr Ct) #f Gs))
 				 ((eq? (sfun/Iinfo-L fif) (sfun/Iinfo-L gif))
 				  (trace (integrate 4)
-					 "   (eq? (sfun/Iinfo-L fif) (sfun/Iinfo-L gif))"
-					 #\Newline)
+				     "   (eq? (sfun/Iinfo-L fif) (sfun/Iinfo-L gif))"
+				     #\Newline)
 				  (laap (cdr Ct) stop? Gs))
 				 (else
 				  (sfun/Iinfo-G?-set! gif #t)
 				  (trace (integrate 4)
-					 "   G.3( " (shape g) " )" #\Newline)
+				     "   G.3( " (shape g) " )" #\Newline)
 				  (laap (cdr Ct) #f (cons g Gs)))))))))))))
 		       
       

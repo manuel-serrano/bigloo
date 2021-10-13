@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 14:10:09 1995                          */
-;*    Last change :  Sun Jul 11 09:42:21 2021 (serrano)                */
+;*    Last change :  Wed Oct 13 11:37:31 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of `Cn' and `Ct'.                                */
@@ -31,16 +31,16 @@
 ;*    to the Cn property.                                              */
 ;*---------------------------------------------------------------------*/
 (define (Cn&Ct! A)
-   (let loop ((As    A)
+   (let loop ((As A)
 	      (G/cn '()))
       (if (null? As)
 	  (begin
 	     (trace-ctn)
 	     G/cn)
-	  (let* ((A  (car As))
-		 (f  (car A))
-		 (g  (cadr A))
-		 (k  (caddr A))
+	  (let* ((A (car As))
+		 (f (car A))
+		 (g (cadr A))
+		 (k (caddr A))
 		 (fi (variable-value f))
 		 (gi (variable-value g)))
 	     (cond
@@ -48,15 +48,13 @@
 		 (loop (cdr As) G/cn))
 		((sfun/Iinfo-forceG? gi)
 		 (if (not (sfun/Iinfo-G? gi))
-		     (begin
-			(sfun/Iinfo-G?-set! gi #t)
-			(loop (cdr As) (cons g G/cn)))
+		     (loop (cdr As) (append (globalize! g) G/cn))
 		     (loop (cdr As) G/cn)))
 		((eq? k 'tail)
 		 (sfun/Iinfo-Ct-set! fi (cons g (sfun/Iinfo-Ct fi)))
 		 (when (and (not (eq? f g))
 			    (not (memq g (sfun/Iinfo-kont fi))))
-		     (sfun/Iinfo-kont-set! fi (cons g (sfun/Iinfo-kont fi))))
+		    (sfun/Iinfo-kont-set! fi (cons g (sfun/Iinfo-kont fi))))
 		 (loop (cdr As) G/cn))
 		((eq? k 'escape)
 		 (error "Cn&Ct!" "Should not be here" A))
@@ -68,10 +66,24 @@
 		(else
 		 (sfun/Iinfo-Cn-set! fi (cons g (sfun/Iinfo-Cn fi)))
 		 (if (not (sfun/Iinfo-G? gi))
-		     (begin
-			(sfun/Iinfo-G?-set! gi #t)
-			(loop (cdr As) (cons g G/cn)))
+		     (loop (cdr As) (append (globalize! g) G/cn))
 		     (loop (cdr As) G/cn))))))))
+
+;*---------------------------------------------------------------------*/
+;*    globalize! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (globalize!::pair l::local)
+   (let ((i (local-value l)))
+      (sfun/Iinfo-G?-set! i #t)
+      (let ((xg (append-map (lambda (x)
+			       (let ((xi (local-value x)))
+				  (if (sfun/Iinfo-G? xi)
+				      '()
+				      (begin
+					 (sfun/Iinfo-G?-set! xi #t)
+					 (list x)))))
+		   (sfun/Iinfo-xhdls i))))
+	 (cons l xg))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-ctn ...                                                    */

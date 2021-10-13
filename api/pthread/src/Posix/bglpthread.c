@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Wed Sep 25 13:49:57 2019 (serrano)                */
-/*    Copyright   :  2002-20 Manuel Serrano                            */
+/*    Last change :  Thu Oct  7 08:25:03 2021 (serrano)                */
+/*    Copyright   :  2002-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -149,8 +149,8 @@ bglpth_thread_init( bglpthread_t self, char *stack_bottom ) {
 
    BGL_DYNAMIC_ENV( self->env ).stack_bottom = stack_bottom;
    BGL_DYNAMIC_ENV( self->env ).current_thread = self;
-   
-   bgl_init_trace();
+
+   bgl_init_trace( self->env );
 }
 
 /*---------------------------------------------------------------------*/

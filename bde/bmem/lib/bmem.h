@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Fri Jan 10 08:45:51 2020 (serrano)                */
-/*    Copyright   :  2003-20 Manuel Serrano                            */
+/*    Last change :  Thu Oct  7 19:31:44 2021 (serrano)                */
+/*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -122,14 +122,6 @@ extern void *(*____create_string_for_read)( void *, int );
 extern void *(*____bgl_make_keyword)( void * );
 extern void *(*____string_to_llong)( char * );
 extern void *(*____string_to_elong)( char * );
-
-extern void *(*____create_vector)( int );
-extern void *(*____create_vector_uncollectable)( int );
-extern void *(*____make_vector)( int, void * );
-extern void *(*____make_vector_uncollectable)( int, void * );
-
-extern void *(*____make_fx_procedure)( void *(*)(), int, int );
-extern void *(*____make_va_procedure)( void *(*)(), int, int );
 
 extern void *(*____bgl_make_output_port)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
                                         

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/iinfo.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/Integrate/iinfo.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 28 14:06:46 1996                          */
-;*    Last change :  Thu Nov 17 08:47:03 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 13 11:28:44 2021 (serrano)                */
+;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The extension for the integrate pass.                            */
 ;*=====================================================================*/
@@ -82,6 +82,8 @@
 	      ;; tail-coercion
 	      (tail-coercion::obj (default #unspecified))
 	      ;; is it an exit handler
-	      (xhdl?::bool (default #f)))))
+	      (xhdl?::bool (default #f))
+	      ;; the list of exit handlers the function calls
+	      (xhdls::pair-nil (default '())))))
 	      
 	   
