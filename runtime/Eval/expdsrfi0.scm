@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Sun Aug 25 09:15:32 2019 (serrano)                */
-;*    Copyright   :  2001-19 Manuel Serrano                            */
+;*    Last change :  Tue Oct 19 18:31:14 2021 (serrano)                */
+;*    Copyright   :  2001-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -244,11 +244,22 @@
 (define (eval-srfi? srfi)
    (synchronize *srfi-mutex*
       (memq srfi (srfi-eval-list))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    progn ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (progn body)
+   (if (pair? (cdr body))
+       `(begin ,@body)
+       (car body)))
+
 ;*---------------------------------------------------------------------*/
 ;*    expand-cond-exapnd ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (expand-cond-expand x e features)
+   
+   
+   
    (match-case x
       ((cond-expand)
        #unspecified)
@@ -256,10 +267,10 @@
        (match-case clause
 	  (((kwote else) . ?body)
 	   (if (null? else)
-	       (e (evepairify `(begin ,@body) x) e)
+	       (e (evepairify (progn body) x) e)
 	       (expand-error "cond-expand" "Illegal form" x)))
 	  ((((kwote and)) . ?body)
-	   (e (evepairify `(begin ,@body) x) e))
+	   (e (evepairify (progn body) x) e))
 	  ((((kwote and) ?req1) . ?body)
 	   (e (evepairify `(cond-expand
 			      (,req1 ,@body)
@@ -286,19 +297,19 @@
 	      e))
 	  (((library (and (? symbol?) ?lib)) . ?body)
 	   (e (evepairify (if (library-exists? lib)
-			      `(begin ,@body)
+			      (progn body)
 			      `(cond-expand ,@else))
 			  x)
 	      e))
 	  (((config ?key ?value) . ?body)
 	   (e (evepairify (if (equal? (bigloo-config key) value)
-			      `(begin ,@body)
+			      (progn body)
 			      `(cond-expand ,@else))
 			  x)
 	      e))
 	  (((and (? symbol?) ?feature) . ?body)
 	   (e (evepairify (if (memq feature features)
-			      `(begin ,@body)
+			      (progn body)
 			      `(cond-expand ,@else))
 			  x)
 	      e))
@@ -325,7 +336,7 @@
 (define (expand-cond-expand-or x e req1 req2 reqs body else)
    (let ((bd (gensym)))
       (e (evepairify `(cond-expand
-			 (,req1 ,(evepairify `(begin ,@body) body))
+			 (,req1 ,(evepairify (progn body) body))
 			 (else
 			  (cond-expand
 			     ((or ,req2 ,@reqs) ,@body)
