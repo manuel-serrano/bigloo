@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Jul 13 07:11:14 2021 (serrano)                */
+;*    Last change :  Thu Oct 21 13:48:37 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -33,7 +33,6 @@
 	    backend_backend)
    (export  (return-walk! globals)
 	    (init-return-cache!)
-	    (function-exit-node ::node)
 	    (is-unwind-until?::bool ::variable)
 	    (is-get-exitd-top?::bool ::variable)
 	    (is-exit-return?::bool ::node ::local)))
@@ -51,6 +50,7 @@
 ;*---------------------------------------------------------------------*/
 (define *get-exitd-top* #unspecified)
 (define *env-get-exitd-top* #unspecified)
+(define *exitd-protect-set!* #unspecified)
 (define *unwind-until!* #unspecified)
 (define *push-exit!* #unspecified)
 (define *env-push-exit!* #unspecified)
@@ -65,6 +65,7 @@
    (unless (global? *get-exitd-top*)
       (set! *current-dynamic-env* (find-global '$current-dynamic-env 'foreign))
       (set! *get-exitd-top* (find-global '$get-exitd-top 'foreign))
+      (set! *exitd-protect-set!* (find-global '$exitd-protect-set! 'foreign))
       (set! *env-get-exitd-top* (find-global '$env-get-exitd-top 'foreign))
       (set! *unwind-until!* (find-global 'unwind-stack-until! '__bexit))
       (set! *pop-exit!* (find-global 'pop-exit! 'foreign))
@@ -115,7 +116,7 @@
 ;*    function-exit-node ...                                           */
 ;*    -------------------------------------------------------------    */
 ;*    This checks if NODE is a function set-exit body function. That   */
-;*    is a node of on of the two forms:                                */
+;*    is a node of one of the two forms:                               */
 ;*                                                                     */
 ;*    (set-exit an_exit1012                              ;; step0      */
 ;*       (let ()                                         ;; step1      */
@@ -397,6 +398,8 @@
 	    ((or (eq? variable *get-exitd-top*)
 		 (eq? variable *env-get-exitd-top*))
 	     (or *optim-return-goto?* (abort #f)))
+	    ((eq? variable *exitd-protect-set!*)
+	     (abort #f))
 	    (else
 	     (call-default-walker))))))
 
