@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Wed Jul  7 08:58:54 2021 (serrano)                */
+;*    Last change :  Tue Nov  2 17:38:04 2021 (serrano)                */
 ;*    Copyright   :  2008-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
@@ -34,6 +34,7 @@
       ($+bx::bignum (::bignum ::bignum) "bgl_bignum_add")
       ($-bx::bignum (::bignum ::bignum) "bgl_bignum_sub")
       ($*bx::bignum (::bignum ::bignum) "bgl_bignum_mul")
+      ($exptbx::bignum (::bignum ::bignum) "bgl_bignum_expt")
       ($quotientbx::bignum (::bignum ::bignum) "bgl_bignum_quotient")
       ($remainderbx::bignum (::bignum ::bignum) "bgl_bignum_remainder")
       ($gcdbx::bignum (::bignum ::bignum) "bgl_bignum_gcd")
@@ -193,6 +194,7 @@
 	($+bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	($-bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	($*bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($exptbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	($quotientbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	($remainderbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	($gcdbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
@@ -212,7 +214,3 @@
       (+llong-safe fail-safe)
       (-llong-safe fail-safe)
       (*llong-safe fail-safe)))
-
-
-
-   

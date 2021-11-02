@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Wed Jun 16 16:03:27 2021 (serrano)                */
+;*    Last change :  Tue Nov  2 17:11:02 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -89,10 +89,12 @@
 			(= (global-occurrencew variable) 1)))
 	       (or (atom? (global-src variable))
 		   (and (kwote? (global-src variable)) (eq? *inline-mode* 'all))))
-	  (begin
+	  (with-access::atom (global-src variable) (value)
 	     (trace inline "*** inlining global variable: " (shape variable)
-		    #\Newline)
-	     (alphatize '() '() loc (global-src variable)))
+		#\Newline)
+	     (if (bignum? value)
+		 node
+		 (alphatize '() '() loc (global-src variable))))
 	  node)))
 
 ;*---------------------------------------------------------------------*/

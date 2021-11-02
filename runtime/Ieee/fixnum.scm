@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Jul  7 09:57:06 2021 (serrano)                */
+;*    Last change :  Tue Nov  2 16:49:31 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -981,7 +981,7 @@
 	    (exptu32::uint32 ::uint32 ::uint32)
 	    (expts64::int64 ::int64 ::int64)
 	    (exptu64::uint64 ::uint64 ::uint64)
-	    (exptbx::bignum ::bignum ::bignum)
+	    (inline exptbx::bignum ::bignum ::bignum)
 	    (integer->string::bstring ::long #!optional (radix::long 10))
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
@@ -1384,6 +1384,14 @@
 	    ($gtfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	    ($gefx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	    ($egfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)))))
+
+;*---------------------------------------------------------------------*/
+;*    preallocated constants                                           */
+;*---------------------------------------------------------------------*/
+(define Z0 #z0)
+(define Z1 #z1)
+(define Z2 #z2)
+(define Z256 #z256)
 
 ;*---------------------------------------------------------------------*/
 ;*    integer? ...                                                     */
@@ -2335,11 +2343,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    exptbx ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (exptbx x y)
-   (cond
-      ((zerobx? y) #z1)
-      ((evenbx? y) (exptbx (*bx x x) (quotientbx y #z2)))
-      (else (*bx x (exptbx x (-bx y #z1))))))
+(define-inline (exptbx x y)
+   (cond-expand
+      (bigloo-c
+       ($exptbx x y))
+      (else
+       (cond
+	  ((zerobx? y) Z1)
+	  ((evenbx? y) (exptbx (*bx x x) (quotientbx y Z2)))
+	  (else (*bx x (exptbx x (-bx y Z1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer->string-op ...                                           */
@@ -2440,7 +2452,7 @@
    (define (bignum-bit-length::long b::bignum)
       (let loop ((b b)
 		 (res 0))
-	 (let ((divided (/bx b #z256)))
+	 (let ((divided (/bx b Z256)))
 	    (cond
 	       ((zerobx? b) res)
 	       ((zerobx? divided) ;; this is the last octet
@@ -2458,7 +2470,7 @@
 		(loop divided (+fx res 8)))))))
 
    (define (last-char-digit::char x::bignum)
-      (integer->char-ur (bignum->fixnum (remainderbx x #z256))))
+      (integer->char-ur (bignum->fixnum (remainderbx x Z256))))
 
    (let* ((len (/ceilingfx (bignum-bit-length x) 8))
 	  (buffer (make-string len)))
@@ -2472,18 +2484,18 @@
 	     (error "bignum->bin-str!" "integer too large" x))
 	    (else
 	     (string-set! buffer i (last-char-digit x))
-	     (loop (/bx x #z256) (-fx i 1)))))))
+	     (loop (/bx x Z256) (-fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    octet-string->bignum ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (octet-string->bignum str)
    (let loop ((i 0)
-	      (res #z0))
+	      (res Z0))
       (if (=fx i (string-length str))
 	  res
 	  (loop (+fx i 1)
-		(+bx (*bx res #z256)
+		(+bx (*bx res Z256)
 		     (fixnum->bignum (char->integer (string-ref str i))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -2538,7 +2550,7 @@
 ;*    randombx ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (randombx max::bignum)
-   (if (=bx max #z0) #z0 ($randbx max)))
+   (if (=fx (bignum->fixnum max) 0) #z0 ($randbx max)))
 
 ;*---------------------------------------------------------------------*/
 ;*    seed-random! ...                                                 */

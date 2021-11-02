@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Wed Jun 16 15:55:31 2021 (serrano)                */
+;*    Last change :  Tue Nov  2 17:06:07 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atom (e.g., bool, number)     */
@@ -204,7 +204,7 @@
 		(if (and (atom? (cdr binding))
 			 (eq? (local-access (car binding)) 'read)
 			 (let ((val (atom-value (cdr binding))))
-			    (or (number? val)
+			    (or (and (number? val) (not (bignum? val)))
 				(boolean? val)
 				(char? val)
 				(symbol? val)

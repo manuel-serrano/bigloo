@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Sat Jul 31 07:14:56 2021 (serrano)                */
+/*    Last change :  Tue Nov  2 17:31:12 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -649,6 +649,26 @@ bgl_bignum_mul( obj_t x, obj_t y ) {
 	    BXSIZ( z ) = -BXSIZ( z );
       return z;
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_bignum_expt ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_bignum_expt( obj_t x, obj_t y ) {
+   obj_t z;
+   mpz_t x1, y1, z1;
+   
+   mpz_init_set( x1, &(BIGNUM( x ).mpz) );
+   mpz_init( z1 );
+   
+   mpz_pow_ui( z1, x1, (uint)bgl_bignum_to_long( y ) );
+   z = mpz_to_bignum( z1 );
+   
+   mpz_clear( x1 );
+   
+   return z;
 }
 
 /*---------------------------------------------------------------------*/

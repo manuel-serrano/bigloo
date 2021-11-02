@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Sep  8 08:34:34 2021 (serrano)                */
+;*    Last change :  Tue Nov  2 17:39:36 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -111,6 +111,7 @@
 	  (export $$+bx "bgl_bignum_add")
 	  (export $$-bx "bgl_bignum_sub")
 	  (export $$*bx "bgl_bignum_mul")
+	  (export $$exptbx "bgl_bignum_mul")
 	  (export $$quotientbx "bgl_bignum_quotient")
 	  (export $$remainderbx "bgl_bignum_remainder")
 	  (export $$gcdbx "bgl_bignum_gcd")
@@ -154,6 +155,7 @@
 	  ($$+bx::bignum ::bignum ::bignum)
 	  ($$-bx::bignum ::bignum ::bignum)
 	  ($$*bx::bignum ::bignum ::bignum)
+	  ($$exptbx::bignum ::bignum ::bignum)
 	  ($$quotientbx::bignum ::bignum ::bignum)
 	  ($$remainderbx::bignum ::bignum ::bignum)
 	  ($$gcdbx::bignum ::bignum ::bignum)
@@ -654,6 +656,15 @@
 	      n))
        ($$fixnum->bignum 1)))
 
+;*---------------------------------------------------------------------*/
+;*    $$exptbx ...                                                     */
+;*---------------------------------------------------------------------*/
+(define ($$exptbx x y)
+   (cond
+      (($$zerobx? y) ($$fixnum->bignum 1))
+      (($$evenbx? y) ($$exptbx ($$*bx x x) ($$quotientbx y ($$fixnum->bignum 2))))
+      (else ($$*bx x ($$exptbx x ($$-bx y ($$fixnum->bignum 1)))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    Bignum division                                                  */
 ;*---------------------------------------------------------------------*/
