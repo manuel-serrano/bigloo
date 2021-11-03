@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Wed Nov  3 09:23:23 2021 (serrano)                */
+;*    Last change :  Wed Nov  3 19:36:13 2021 (serrano)                */
 ;*    Copyright   :  2008-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
@@ -47,6 +47,10 @@
 
       ($bitlshbx::bignum (::bignum ::long) "bgl_bignum_lsh")
       ($bitrshbx::bignum (::bignum ::long) "bgl_bignum_rsh")
+      ($bitorbx::bignum (::bignum ::bignum) "bgl_bignum_or")
+      ($bitxorbx::bignum (::bignum ::bignum) "bgl_bignum_xor")
+      ($bitandbx::bignum (::bignum ::bignum) "bgl_bignum_and")
+      ($bitnotbx::bignum (::bignum) "bgl_bignum_not")
       
       (macro $zerobx?::bool (::bignum) "BXZERO")
       (macro $positivebx?::bool (::bignum) "BXPOSITIVE")

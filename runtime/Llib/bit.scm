@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 11:06:41 1995                          */
-;*    Last change :  Wed Nov  3 09:25:05 2021 (serrano)                */
+;*    Last change :  Wed Nov  3 19:35:35 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bit management                                                   */
 ;*=====================================================================*/
@@ -291,6 +291,7 @@
 	    (inline bit-oru32::uint32 ::uint32 ::uint32)
 	    (inline bit-ors64::int64 ::int64 ::int64)
 	    (inline bit-oru64::uint64 ::uint64 ::uint64)
+	    (inline bit-orbx::bignum ::bignum ::bignum)
 	    
 	    (inline bit-and::long ::long ::long)
 	    (inline bit-andelong::elong ::elong ::elong)
@@ -303,6 +304,7 @@
 	    (inline bit-andu32::uint32 ::uint32 ::uint32)
 	    (inline bit-ands64::int64 ::int64 ::int64)
 	    (inline bit-andu64::uint64 ::uint64 ::uint64)
+	    (inline bit-andbx::bignum ::bignum ::bignum)
 	    
 	    (inline bit-xor::long ::long ::long)
 	    (inline bit-xorelong::elong ::elong ::elong)
@@ -315,6 +317,7 @@
 	    (inline bit-xoru32::uint32 ::uint32 ::uint32)
 	    (inline bit-xors64::int64 ::int64 ::int64)
 	    (inline bit-xoru64::uint64 ::uint64 ::uint64)
+	    (inline bit-xorbx::bignum ::bignum ::bignum)
 	    
 	    (inline bit-not::long ::long)
 	    (inline bit-notelong::elong ::elong)
@@ -327,6 +330,7 @@
 	    (inline bit-notu32::uint32 ::uint32)
 	    (inline bit-nots64::int64 ::int64)
 	    (inline bit-notu64::uint64 ::uint64)
+	    (inline bit-notbx::bignum ::bignum)
 	    
 	    (inline bit-rsh::long ::long ::long)
 	    (inline bit-rshelong::elong ::elong ::long)
@@ -378,6 +382,7 @@
 	    (bit-oru32 side-effect-free no-cfa-top nesting)
 	    (bit-ors64 side-effect-free no-cfa-top nesting)
 	    (bit-oru64 side-effect-free no-cfa-top nesting)
+	    (bit-orbx side-effect-free no-cfa-top nesting)
 	    (c-bitor side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitorelong side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitorllong side-effect-free no-cfa-top nesting args-safe)
@@ -401,6 +406,7 @@
 	    (bit-andu32 side-effect-free no-cfa-top nesting)
 	    (bit-ands64 side-effect-free no-cfa-top nesting)
 	    (bit-andu64 side-effect-free no-cfa-top nesting)
+	    (bit-andbx side-effect-free no-cfa-top nesting)
 	    (c-bitand side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitandelong side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitandllong side-effect-free no-cfa-top nesting args-safe)
@@ -424,6 +430,7 @@
 	    (bit-xoru32 side-effect-free no-cfa-top nesting)
 	    (bit-xors64 side-effect-free no-cfa-top nesting)
 	    (bit-xoru64 side-effect-free no-cfa-top nesting)
+	    (bit-xorbx side-effect-free no-cfa-top nesting)
 	    (c-bitxor side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitxorelong side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitxorllong side-effect-free no-cfa-top nesting args-safe)
@@ -447,6 +454,7 @@
 	    (bit-notu32 side-effect-free no-cfa-top nesting)
 	    (bit-nots64 side-effect-free no-cfa-top nesting)
 	    (bit-notu64 side-effect-free no-cfa-top nesting)
+	    (bit-notbx side-effect-free no-cfa-top nesting)
 	    (c-bitnot side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitnotelong side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitnotllong side-effect-free no-cfa-top nesting args-safe)
@@ -541,6 +549,7 @@
 (define-inline (bit-oru32 x y) ($bitoru32 x y))
 (define-inline (bit-ors64 x y) ($bitors64 x y))
 (define-inline (bit-oru64 x y) ($bitoru64 x y))
+(define-inline (bit-orbx x y) ($bitorbx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-and ...                                                      */
@@ -556,6 +565,7 @@
 (define-inline (bit-andu32 x y) ($bitandu32 x y))
 (define-inline (bit-ands64 x y) ($bitands64 x y))
 (define-inline (bit-andu64 x y) ($bitandu64 x y))
+(define-inline (bit-andbx x y) ($bitandbx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-xor ...                                                      */
@@ -571,6 +581,7 @@
 (define-inline (bit-xoru32 x y) ($bitxoru32 x y))
 (define-inline (bit-xors64 x y) ($bitxors64 x y))
 (define-inline (bit-xoru64 x y) ($bitxoru64 x y))
+(define-inline (bit-xorbx x y) ($bitxorbx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-not ...                                                      */
@@ -586,6 +597,7 @@
 (define-inline (bit-notu32 x) ($bitnotu32 x))
 (define-inline (bit-nots64 x) ($bitnots64 x))
 (define-inline (bit-notu64 x) ($bitnotu64 x))
+(define-inline (bit-notbx x) ($bitnotbx x))
    
 ;*---------------------------------------------------------------------*/
 ;*    bit-rsh ...                                                      */
@@ -601,6 +613,7 @@
 (define-inline (bit-rshu32 x y) ($bitrshu32 x y))
 (define-inline (bit-rshs64 x y) ($bitrshs64 x y))
 (define-inline (bit-rshu64 x y) ($bitrshu64 x y))
+(define-inline (bit-rshbx x y) ($bitrshbx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-ursh ...                                                     */
@@ -632,6 +645,6 @@
 (define-inline (bit-lshs64 x y) ($bitlshs64 x y))
 (define-inline (bit-lshu64 x y) ($bitlshu64 x y))
 (define-inline (bit-lshbx x y) ($bitlshbx x y))
-(define-inline (bit-rshbx x y) ($bitrshbx x y))
+
 
 

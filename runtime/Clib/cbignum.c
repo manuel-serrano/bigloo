@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Nov  3 08:05:23 2021 (serrano)                */
+/*    Last change :  Wed Nov  3 19:32:15 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -658,15 +658,12 @@ bgl_bignum_mul(obj_t x, obj_t y) {
 BGL_RUNTIME_DEF obj_t
 bgl_bignum_expt(obj_t x, obj_t y) {
    obj_t z;
-   mpz_t x1, y1, z1;
+   mpz_t z1;
    
-   mpz_init_set(x1, &(BIGNUM(x).mpz));
    mpz_init(z1);
    
-   mpz_pow_ui(z1, x1, (uint)bgl_bignum_to_long(y));
+   mpz_pow_ui(z1, &(BIGNUM(x).mpz), (uint)bgl_bignum_to_long(y));
    z = mpz_to_bignum(z1);
-   
-   mpz_clear(x1);
    
    return z;
 }
@@ -1100,6 +1097,74 @@ bgl_bignum_rsh(obj_t z, long n) {
    mpz_clear(rop);
    
    return o;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_bignum_and ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_bignum_and(obj_t x, obj_t y) {
+   obj_t obj;
+   mpz_t rop;
+   
+   mpz_init(rop);
+   
+   mpz_and(rop, &(BIGNUM(x).mpz), &(BIGNUM(y).mpz)); 
+   obj = mpz_to_bignum(rop);
+   
+   return obj;
+}
+      
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_bignum_or ...                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_bignum_or(obj_t x, obj_t y) {
+   obj_t obj;
+   mpz_t rop;
+   
+   mpz_init(rop);
+   
+   mpz_ior(rop, &(BIGNUM(x).mpz), &(BIGNUM(y).mpz));
+   obj = mpz_to_bignum(rop);
+   
+   return obj;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_bignum_xor ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_bignum_xor(obj_t x, obj_t y) {
+   obj_t obj;
+   mpz_t rop;
+   
+   mpz_init(rop);
+   
+   mpz_ior(rop, &(BIGNUM(x).mpz), &(BIGNUM(y).mpz));
+   obj = mpz_to_bignum(rop);
+   
+   return obj;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_bignum_not ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_bignum_not(obj_t x) {
+   obj_t obj;
+   mpz_t rop;
+   
+   mpz_init(rop);
+   
+   mpz_com(rop, &(BIGNUM(x).mpz));
+   obj = mpz_to_bignum(rop);
+   
+   return obj;
 }
 #else
 
