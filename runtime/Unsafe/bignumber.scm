@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Tue Nov  2 17:39:36 2021 (serrano)                */
+;*    Last change :  Wed Nov  3 19:41:27 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -127,7 +127,14 @@
 	  (export $$negativebx? "BXNEGATIVE")
 	  
 	  (export $$bignum->flonum "bgl_bignum_to_flonum")
-	  (export $$flonum->bignum "bgl_flonum_to_bignum"))))
+	  (export $$flonum->bignum "bgl_flonum_to_bignum")
+
+	  (export $$bitlshbx "bgl_bignum_lsh")
+	  (export $$bitrshbx "bgl_bignum_rsh")
+	  (export $$bitorbx "bgl_bignum_or")
+	  (export $$bitxorbx "bgl_bignum_xor")
+	  (export $$bitandbx "bgl_bignum_and")
+	  (export $$bitnotxx "bgl_bignum_not"))))
    
    (cond-expand
       ((not enable-gmp)
@@ -166,7 +173,10 @@
 	  ($$seed-rand ::long)
 	  
 	  ($$flonum->bignum::bignum ::double)
-	  ($$bignum->flonum::double ::bignum)))))
+	  ($$bignum->flonum::double ::bignum)
+
+	  ($$bit-lshbx::bignum ::bignum ::long)
+	  ($$bit-rshbx::bignum ::bignum ::long)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$string->integer-obj ...                                        */
@@ -1177,4 +1187,24 @@
 (define ($$bignum->flonum n)
    ($fixnum->flonum ($$bignum->fixnum n)))
 
+;*---------------------------------------------------------------------*/
+;*    bitwise operations                                               */
+;*---------------------------------------------------------------------*/
+(define ($$bitlshbx z n)
+   ($$*bx z ($$exptbx ($$fixnum->bignum 2) ($$fixnum->bignum n))))
+
+(define ($$bitrshbx z n)
+   ($$/bx z ($$exptbx ($$fixnum->bignum 2) ($$fixnum->bignum n))))
+
+(define ($$bitorbx x y)
+   (error "bitorbx" "not implemented" x))
+
+(define ($$bitxorbx x y)
+   (error "bitxorbx" "not implemented" x))
+
+(define ($$bitandbx x y)
+   (error "bitandbx" "not implemented" x))
+
+(define ($$bitnegbx x)
+   (error "bitnegbx" "not implemented" x))
 ))

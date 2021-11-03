@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Tue Nov  2 17:38:04 2021 (serrano)                */
+;*    Last change :  Wed Nov  3 19:36:13 2021 (serrano)                */
 ;*    Copyright   :  2008-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
@@ -44,6 +44,13 @@
       ($bignum->string::bstring  (::bignum ::int) "bgl_bignum_to_string")
       ($randbx::bignum (::bignum) "bgl_rand_bignum")
       ($seed-rand::void (::long) "bgl_seed_rand")
+
+      ($bitlshbx::bignum (::bignum ::long) "bgl_bignum_lsh")
+      ($bitrshbx::bignum (::bignum ::long) "bgl_bignum_rsh")
+      ($bitorbx::bignum (::bignum ::bignum) "bgl_bignum_or")
+      ($bitxorbx::bignum (::bignum ::bignum) "bgl_bignum_xor")
+      ($bitandbx::bignum (::bignum ::bignum) "bgl_bignum_and")
+      ($bitnotbx::bignum (::bignum) "bgl_bignum_not")
       
       (macro $zerobx?::bool (::bignum) "BXZERO")
       (macro $positivebx?::bool (::bignum) "BXPOSITIVE")
@@ -179,28 +186,29 @@
    (cond-expand
       (enable-gmp
        (pragma
-	($fixnum->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($elong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($llong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($uint64->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($oddbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($evenbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($bignum-cmp side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($zerobx? side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($positivebx? side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($negativebx? side-effect-free no-cfa-top nesting (effect) fail-safe)
-	($absbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($negbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($+bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($-bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($*bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($exptbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($quotientbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($remainderbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($gcdbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($lcmbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	($flonum->bignum side-effect-free args-safe (effect) fail-safe)
-	($bignum->flonum side-effect-free no-cfa-top nesting (effect) fail-safe))))
+	  ($fixnum->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($elong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($llong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($uint64->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($oddbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($evenbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($bignum-cmp side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($zerobx? side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($positivebx? side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($negativebx? side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($absbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($negbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($+bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($-bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($*bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($exptbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($quotientbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($remainderbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($gcdbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($lcmbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($flonum->bignum side-effect-free args-safe (effect) fail-safe)
+	  ($bignum->flonum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	  ($bitlshbx side-effect-free args-safe (effect) fail-safe))))
 
    (pragma
       ($bignum? side-effect-free (predicate-of bignum) no-cfa-top nesting fail-safe)
