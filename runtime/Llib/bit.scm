@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/bit.scm                 */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/bit.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 11:06:41 1995                          */
-;*    Last change :  Sat Mar 18 10:04:55 2017 (serrano)                */
+;*    Last change :  Wed Nov  3 09:25:05 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bit management                                                   */
 ;*=====================================================================*/
@@ -363,6 +363,8 @@
 	    (inline bit-lshu32::uint32 ::uint32 ::long)
 	    (inline bit-lshs64::int64 ::int64 ::long)
 	    (inline bit-lshu64::uint64 ::uint64 ::long)
+	    (inline bit-lshbx::bignum ::bignum ::long)
+	    (inline bit-rshbx::bignum ::bignum ::long)
 	    )
    
    (pragma  (bit-or side-effect-free no-cfa-top nesting)
@@ -510,6 +512,8 @@
 	    (bit-lshu32 side-effect-free no-cfa-top nesting)
 	    (bit-lshs64 side-effect-free no-cfa-top nesting)
 	    (bit-lshu64 side-effect-free no-cfa-top nesting)
+	    (bit-lshbx side-effect-free no-cfa-top nesting)
+	    (bit-rshbx side-effect-free no-cfa-top nesting)
 	    (c-bitlsh side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitlshelong side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitlshllong side-effect-free no-cfa-top nesting args-safe)
@@ -627,5 +631,7 @@
 (define-inline (bit-lshu32 x y) ($bitlshu32 x y))
 (define-inline (bit-lshs64 x y) ($bitlshs64 x y))
 (define-inline (bit-lshu64 x y) ($bitlshu64 x y))
+(define-inline (bit-lshbx x y) ($bitlshbx x y))
+(define-inline (bit-rshbx x y) ($bitrshbx x y))
 
 
