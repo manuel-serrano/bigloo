@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Wed Nov  3 19:36:13 2021 (serrano)                */
+;*    Last change :  Thu Nov  4 18:55:38 2021 (serrano)                */
 ;*    Copyright   :  2008-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
@@ -50,6 +50,7 @@
       ($bitorbx::bignum (::bignum ::bignum) "bgl_bignum_or")
       ($bitxorbx::bignum (::bignum ::bignum) "bgl_bignum_xor")
       ($bitandbx::bignum (::bignum ::bignum) "bgl_bignum_and")
+      ($bitmaskbx::bignum (::bignum ::long) "bgl_bignum_mask")
       ($bitnotbx::bignum (::bignum) "bgl_bignum_not")
       
       (macro $zerobx?::bool (::bignum) "BXZERO")
@@ -163,7 +164,20 @@
 	    "SAFE_MINUS_FX")
 	 (method static *fx-safe::obj (::long ::long)
 	    "SAFE_MUL_FX")
-	 
+	 (method static $bitlshbx::bignum (::bignum ::long)
+	    "BITLSH_BIGNUM")
+	 (method static $bitrshbx::bignum (::bignum ::long)
+	    "BITRSH_BIGNUM")
+	 (method static $bitorbx::bignum (::bignum ::bignum)
+	    "BITOR_BIGNUM")
+	 (method static $bitxorbx::bignum (::bignum ::bignum)
+	    "BITXOR_BIGNUM")
+	 (method static $bitandbx::bignum (::bignum ::bignum)
+	    "BITAND_BIGNUM")
+	 (method static $bitmaskbx::bignum (::bignum ::long)
+	    "BITMASK_BIGNUM")
+	 (method static $bitnotbx::bignum (::bignum)
+	    "BITNOT_BIGNUM")
 	 (method static +elong-safe::obj (::elong ::elong)
 	    "SAFE_PLUS_ELONG")
 	 (method static -elong-safe::obj (::elong ::elong)
