@@ -19,21 +19,27 @@
 
 These procedures allow the manipulation of fixnums as bit-fields.
 @deffn {bigloo procedure} bit-or i1 i2
+@deffn {bigloo procedure} bit-orbx z1 z2
 @deffnx {bigloo procedure} bit-orelong i1 i2
 @deffnx {bigloo procedure} bit-orllong i1 i2
 @deffnx {bigloo procedure} bit-xor i1 i2
+@deffnx {bigloo procedure} bit-xorbx z1 z2
 @deffnx {bigloo procedure} bit-xorelong i1 i2
 @deffnx {bigloo procedure} bit-xorllong i1 i2
 @deffnx {bigloo procedure} bit-and i1 i2
+@deffnx {bigloo procedure} bit-andbx z1 z2
 @deffnx {bigloo procedure} bit-andelong i1 i2
 @deffnx {bigloo procedure} bit-andllong i1 i2
 @deffnx {bigloo procedure} bit-not i
+@deffnx {bigloo procedure} bit-notbx z
 @deffnx {bigloo procedure} bit-notelong i
 @deffnx {bigloo procedure} bit-notllong i
 @deffnx {bigloo procedure} bit-lsh i1 i2
+@deffnx {bigloo procedure} bit-lshbx z1 i2
 @deffnx {bigloo procedure} bit-lshelong i1 i2
 @deffnx {bigloo procedure} bit-lshllong i1 i2
 @deffnx {bigloo procedure} bit-rsh i1 i2
+@deffnx {bigloo procedure} bit-rshbx z1 i2
 @deffnx {bigloo procedure} bit-ursh i1 i2
 @deffnx {bigloo procedure} bit-rshelong i1 i2
 @deffnx {bigloo procedure} bit-rshllong i1 i2
@@ -44,9 +50,11 @@ These procedures allow the manipulation of fixnums as bit-fields.
 (bit-or 5 3)                           @result{} 7
 (bit-orelong #e5 #e3)                  @result{} #e7
 (bit-xor 5 3)                          @result{} 6
+(bit-xorbx #z5 #z3)                    @result{} #z6
 (bit-andllong #l5 #l3)                 @result{} #l1
 (bit-not 5)                            @result{} -6
 (bit-lsh 5 3)                          @result{} 40
 (bit-rsh 5 1)                          @result{} 2
+(bit-rsh #z5 1)                        @result{} #z2
 @end smalllisp
 @end deffn

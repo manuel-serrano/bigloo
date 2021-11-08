@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Nov  3 19:32:15 2021 (serrano)                */
+/*    Last change :  Thu Nov  4 18:47:26 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -14,6 +14,7 @@
 #include <bigloo.h>
 
 static obj_t bgl_belongzero, bgl_bllongzero;
+static mpz_t onez;
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -23,6 +24,8 @@ void
 bgl_init_bignum() {
    bgl_belongzero = make_belong(0);
    bgl_bllongzero = make_bllong(0);
+
+   mpz_init_set_si(onez, 1);
 }
 
 #if (BGL_HAVE_GMP)   
@@ -1101,10 +1104,32 @@ bgl_bignum_rsh(obj_t z, long n) {
 
 /*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_bignum_mask ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_bignum_mask(obj_t x, long n) {
+   obj_t obj;
+   mpz_t rop;
+   
+   mpz_init(rop);
+   
+   mpz_mul_2exp(rop, onez, n);
+   mpz_sub(rop, rop, onez);
+   
+   mpz_and(rop, &(BIGNUM(x).mpz), rop); 
+   obj = mpz_to_bignum(rop);
+   
+   mpz_clear(rop);
+
+   return obj;
+}
+      
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
 /*    bgl_bignum_and ...                                               */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_bignum_and(obj_t x, obj_t y) {
+bgl_bignum_and(obj_t x, long y) {
    obj_t obj;
    mpz_t rop;
    
@@ -1112,6 +1137,8 @@ bgl_bignum_and(obj_t x, obj_t y) {
    
    mpz_and(rop, &(BIGNUM(x).mpz), &(BIGNUM(y).mpz)); 
    obj = mpz_to_bignum(rop);
+   
+   mpz_clear(rop);
    
    return obj;
 }
@@ -1130,6 +1157,8 @@ bgl_bignum_or(obj_t x, obj_t y) {
    mpz_ior(rop, &(BIGNUM(x).mpz), &(BIGNUM(y).mpz));
    obj = mpz_to_bignum(rop);
    
+   mpz_clear(rop);
+   
    return obj;
 }
 
@@ -1147,6 +1176,8 @@ bgl_bignum_xor(obj_t x, obj_t y) {
    mpz_ior(rop, &(BIGNUM(x).mpz), &(BIGNUM(y).mpz));
    obj = mpz_to_bignum(rop);
    
+   mpz_clear(rop);
+   
    return obj;
 }
 
@@ -1163,6 +1194,8 @@ bgl_bignum_not(obj_t x) {
    
    mpz_com(rop, &(BIGNUM(x).mpz));
    obj = mpz_to_bignum(rop);
+   
+   mpz_clear(rop);
    
    return obj;
 }

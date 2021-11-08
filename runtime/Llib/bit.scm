@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 11:06:41 1995                          */
-;*    Last change :  Wed Nov  3 19:35:35 2021 (serrano)                */
+;*    Last change :  Thu Nov  4 18:55:03 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bit management                                                   */
 ;*=====================================================================*/
@@ -305,6 +305,7 @@
 	    (inline bit-ands64::int64 ::int64 ::int64)
 	    (inline bit-andu64::uint64 ::uint64 ::uint64)
 	    (inline bit-andbx::bignum ::bignum ::bignum)
+	    (inline bit-maskbx::bignum ::bignum ::long)
 	    
 	    (inline bit-xor::long ::long ::long)
 	    (inline bit-xorelong::elong ::elong ::elong)
@@ -407,6 +408,7 @@
 	    (bit-ands64 side-effect-free no-cfa-top nesting)
 	    (bit-andu64 side-effect-free no-cfa-top nesting)
 	    (bit-andbx side-effect-free no-cfa-top nesting)
+	    (bit-maskbx side-effect-free no-cfa-top nesting)
 	    (c-bitand side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitandelong side-effect-free no-cfa-top nesting args-safe)
 	    (c-bitandllong side-effect-free no-cfa-top nesting args-safe)
@@ -566,6 +568,8 @@
 (define-inline (bit-ands64 x y) ($bitands64 x y))
 (define-inline (bit-andu64 x y) ($bitandu64 x y))
 (define-inline (bit-andbx x y) ($bitandbx x y))
+
+(define-inline (bit-maskbx x n) ($bitmaskbx x n))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-xor ...                                                      */

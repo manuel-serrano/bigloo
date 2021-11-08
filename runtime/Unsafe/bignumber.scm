@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Nov  3 19:41:27 2021 (serrano)                */
+;*    Last change :  Thu Nov  4 19:01:15 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -134,7 +134,7 @@
 	  (export $$bitorbx "bgl_bignum_or")
 	  (export $$bitxorbx "bgl_bignum_xor")
 	  (export $$bitandbx "bgl_bignum_and")
-	  (export $$bitnotxx "bgl_bignum_not"))))
+	  (export $$bitnotbx "bgl_bignum_not"))))
    
    (cond-expand
       ((not enable-gmp)
@@ -176,7 +176,12 @@
 	  ($$bignum->flonum::double ::bignum)
 
 	  ($$bit-lshbx::bignum ::bignum ::long)
-	  ($$bit-rshbx::bignum ::bignum ::long)))))
+	  ($$bit-rshbx::bignum ::bignum ::long)
+	  ($$bit-mask::bignum ::bignum ::long)
+	  ($$bit-and::bignum ::bignum ::bignum)
+	  ($$bit-or::bignum ::bignum ::bignum)
+	  ($$bit-xor::bignum ::bignum ::bignum)
+	  ($$bit-not::bignum ::bignum)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$string->integer-obj ...                                        */
@@ -1196,6 +1201,9 @@
 (define ($$bitrshbx z n)
    ($$/bx z ($$exptbx ($$fixnum->bignum 2) ($$fixnum->bignum n))))
 
+(define ($$bitmaskrbx x y)
+   (error "bitmaskbx" "not implemented" x))
+
 (define ($$bitorbx x y)
    (error "bitorbx" "not implemented" x))
 
@@ -1205,6 +1213,6 @@
 (define ($$bitandbx x y)
    (error "bitandbx" "not implemented" x))
 
-(define ($$bitnegbx x)
-   (error "bitnegbx" "not implemented" x))
+(define ($$bitnotbx x)
+   (error "bitnotbx" "not implemented" x))
 ))
