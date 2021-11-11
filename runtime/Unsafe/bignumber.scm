@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Nov 11 08:50:16 2021 (serrano)                */
+;*    Last change :  Thu Nov 11 08:51:12 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -1199,7 +1199,7 @@
    ($$*bx z ($$exptbx ($$fixnum->bignum 2) ($$fixnum->bignum n))))
 
 (define ($$bitrshbx z n)
-   ($$/bx z ($$exptbx ($$fixnum->bignum 2) ($$fixnum->bignum n))))
+   (bignum-div z ($$exptbx ($$fixnum->bignum 2) ($$fixnum->bignum n))))
 
 (define ($$bitmaskbx x y)
    (error "bitmaskbx" "not implemented" x))
