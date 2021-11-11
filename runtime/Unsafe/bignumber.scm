@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Nov 11 08:35:59 2021 (serrano)                */
+;*    Last change :  Thu Nov 11 08:45:42 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -178,10 +178,10 @@
 	  ($$bitlshbx::bignum ::bignum ::long)
 	  ($$bitrshbx::bignum ::bignum ::long)
 	  ($$bitmask::bignum ::bignum ::long)
-	  ($$bitand::bignum ::bignum ::bignum)
-	  ($$bitor::bignum ::bignum ::bignum)
-	  ($$bitxor::bignum ::bignum ::bignum)
-	  ($$bitnot::bignum ::bignum)))))
+	  ($$bitandbx::bignum ::bignum ::bignum)
+	  ($$bitorbx::bignum ::bignum ::bignum)
+	  ($$bitxorbx::bignum ::bignum ::bignum)
+	  ($$bitnotbx::bignum ::bignum)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$string->integer-obj ...                                        */
