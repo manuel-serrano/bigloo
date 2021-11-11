@@ -19,7 +19,7 @@
 
 These procedures allow the manipulation of fixnums as bit-fields.
 @deffn {bigloo procedure} bit-or i1 i2
-@deffn {bigloo procedure} bit-orbx z1 z2
+@deffnx {bigloo procedure} bit-orbx z1 z2
 @deffnx {bigloo procedure} bit-orelong i1 i2
 @deffnx {bigloo procedure} bit-orllong i1 i2
 @deffnx {bigloo procedure} bit-xor i1 i2
