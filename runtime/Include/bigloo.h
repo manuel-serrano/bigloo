@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 12 06:27:49 2021 (serrano)                */
+/*    Last change :  Fri Nov 12 08:35:42 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -968,8 +968,9 @@ union scmobj {
       union scmobj *all_fields;
       /* the module defining the class */
       union scmobj *module;
-      /* a unique index number */
+      /* class index and inheritance index (64 bit platforms) */
       long index;
+      long inheritance_index;
       /* depth in the inheritance tree */
       long depth;
       /* eval private data */
@@ -2495,7 +2496,8 @@ BGL_RUNTIME_DECL obj_t bgl_open_mmap( obj_t, bool_t, bool_t );
 BGL_RUNTIME_DECL obj_t bgl_string_to_mmap( obj_t, bool_t, bool_t );
 BGL_RUNTIME_DECL obj_t bgl_close_mmap( obj_t );
    
-BGL_RUNTIME_DECL obj_t bgl_make_class( obj_t, obj_t, long,
+BGL_RUNTIME_DECL obj_t bgl_make_class( obj_t, obj_t,
+				       long, long,
 				       obj_t, obj_t,
 				       obj_t, long,
 				       obj_t, obj_t,

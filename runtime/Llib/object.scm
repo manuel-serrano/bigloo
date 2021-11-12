@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 12 06:15:25 2021 (serrano)                */
+;*    Last change :  Fri Nov 12 08:33:43 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -77,7 +77,8 @@
 	    (%object-hashnumber::long (::obj) "bgl_obj_hash_number")
 	    ($make-generic::procedure (::procedure) "bgl_make_generic")
 
-	    (macro $make-class::class (::symbol ::symbol ::long
+	    (macro $make-class::class (::symbol ::symbol
+					 ::long ::long
 					 ::obj ::pair-nil
 					 ::procedure ::long
 					 ::vector ::vector
@@ -157,7 +158,8 @@
 	       (method static %object-hashnumber::int (::obj)
 		  "bgl_obj_hash_number")
 	       
-	       (method static $make-class::class (::symbol ::symbol ::long
+	       (method static $make-class::class (::symbol ::symbol
+						    ::long ::long
 						    ::obj ::pair-nil
 						    ::procedure ::long
 						    ::vector ::vector
@@ -419,7 +421,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-class name::symbol module::symbol num::long
+(define (make-class name::symbol module::symbol
+	   num::long inheritance-num::long
 	   super::obj sub::pair-nil 
 	   alloc::procedure ha::long
 	   fd::vector allfd::vector
@@ -427,7 +430,8 @@
 	   new::obj nil::procedure
 	   shrink::obj depth::long
 	   evdata)
-   ($make-class name module num 
+   ($make-class name module
+      num inheritance-num
       super sub
       alloc ha
       fd allfd
@@ -987,7 +991,7 @@
 			(+fx (class-depth super) 1)
 			0))
 	     (class (make-class name module
-		       num
+		       num *inheritance-cnt*
 		       super
 		       '()
 		       allocator

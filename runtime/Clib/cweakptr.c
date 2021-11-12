@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Stephane Epardaud                                 */
 /*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-/*    Last change :  Mon Sep 27 09:09:27 2021 (serrano)                */
+/*    Last change :  Fri Nov 12 08:52:41 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C weak pointer management                                        */
 /*=====================================================================*/
@@ -49,7 +49,7 @@ bgl_make_weakptr( obj_t data, obj_t ref ) {
    // check if data has been allocated by the GC.
    // constants and ints are not pointers
    if( POINTERP( data ) && GC_base( CREFSLOW( data ) ) != NULL ) {
-      GC_general_register_disappearing_link( &(ptr->weakptr.data), 
+      GC_general_register_disappearing_link( (obj_t *)&(ptr->weakptr.data), 
 					     GC_base( CREFSLOW( data ) ) );
       GC_general_register_disappearing_link( &(ptr->weakptr.ref), 
 					     GC_base( CREFSLOW( data ) ) );
@@ -75,7 +75,7 @@ bgl_weakptr_data_set( obj_t ptr, obj_t data ) {
   // constants and ints are not pointers
   // in theory if old_data is NULL the link was already unregistered by the GC
   if( POINTERP( old_data ) && GC_base( old_data ) != NULL ) {
-      GC_unregister_disappearing_link( &(WEAKPTR( ptr ).data) );
+      GC_unregister_disappearing_link( (obj_t *)&(WEAKPTR( ptr ).data) );
       GC_unregister_disappearing_link( &(WEAKPTR( ptr ).ref) );
   }
 
@@ -86,7 +86,7 @@ bgl_weakptr_data_set( obj_t ptr, obj_t data ) {
   // constants and ints are not pointers
   if( POINTERP( data ) && GC_base( CREFSLOW( data ) ) != NULL ) {
      // it's a real weak pointer
-     GC_general_register_disappearing_link( &(WEAKPTR( ptr ).data), 
+     GC_general_register_disappearing_link( (obj_t *)&(WEAKPTR( ptr ).data), 
 					    GC_base( CREFSLOW( data ) ) );
      GC_general_register_disappearing_link( &(WEAKPTR( ptr ).ref), 
 					    GC_base( CREFSLOW( data ) ) );

@@ -4460,7 +4460,8 @@ public final class foreign
 	 return (o instanceof bclass);
       }
 
-   public static Object bgl_make_class( symbol name, symbol module, int num,
+   public static Object bgl_make_class( symbol name, symbol module,
+					int num, int inheritance_num,
 					Object bsuper, Object sub,
 					procedure alloc, int hash,
 					Object[] fd, Object[] allfd,
