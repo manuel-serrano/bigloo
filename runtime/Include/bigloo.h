@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 12 08:35:42 2021 (serrano)                */
+/*    Last change :  Fri Nov 12 11:43:51 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -340,7 +340,7 @@ error "Unknown garbage collector type"
 #  define HEADER_TYPE_BIT_SIZE 20
 #  define HEADER_TYPE_MASK ((1 << BGL_HEADER_OBJECT_TYPE_SIZE) - 1)
 #  define HEADER_TYPE(_i) ((((long)(_i)) >> TYPE_SHIFT) & HEADER_TYPE_MASK)
-#  define HEADER_DATA(_i) ((((long)(_i)) >> (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))
+#  define HEADER_DATA(_i) ((((unsigned long)(_i)) >> (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))
 #else
 #  define HEADER_TYPE_BIT_SIZE ((sizeof(void *) << 3) - (TYPE_SHIFT))
 #  define HEADER_TYPE( _i) (((long)(_i)) >> TYPE_SHIFT)

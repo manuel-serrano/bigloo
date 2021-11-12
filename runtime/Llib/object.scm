@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 12 08:33:43 2021 (serrano)                */
+;*    Last change :  Fri Nov 12 10:45:30 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -70,9 +70,7 @@
 	    (macro %object-class-num-set!::obj (::object ::long)
 		   "BGL_OBJECT_CLASS_NUM_SET")
 	    (macro $object-inheritance-num::long (::object)
-		   "BGL_OBJECT_CLASS_INHERITANCE_NUM_")
-	    (macro $object-inheritance-num-set!::obj (::object ::long)
-		   "BGL_OBJECT_CLASS_INHERITANCE_NUM_SET")
+		   "BGL_OBJECT_INHERITANCE_NUM")
 	    ($bigloo-generic-mutex::mutex "bigloo_generic_mutex")
 	    (%object-hashnumber::long (::obj) "bgl_obj_hash_number")
 	    ($make-generic::procedure (::procedure) "bgl_make_generic")
@@ -93,6 +91,8 @@
 		   "BGL_CLASS_NAME")
 	    (macro $class-index::long (::class)
 		   "BGL_CLASS_INDEX")
+	    (macro $class-num::long (::class)
+		   "BGL_CLASS_NUM")
 	    (macro $class-depth::long (::class)
 		   "BGL_CLASS_DEPTH")
 	    (macro $class-super::obj (::class)
@@ -173,6 +173,8 @@
 	       (method static $class-name::symbol (::class)
 		  "BGL_CLASS_NAME")
 	       (method static $class-index::long (::class)
+		  "BGL_CLASS_INDEX")
+	       (method static $class-num::long (::class)
 		  "BGL_CLASS_INDEX")
 	       (method static $class-depth::long (::class)
 		  "BGL_CLASS_DEPTH")
@@ -265,6 +267,7 @@
 	    (inline bigloo-generic-bucket-mask::int)
 	    (bigloo-types-number::long)
 	    *classes*
+	    *inheritances*
 	    (inline object?::bool ::obj)
 	    (inline object-class-num::long ::object)
 	    (inline object-class-num-set! ::object ::long)
@@ -278,6 +281,7 @@
 	    (class-wide?::bool ::class)
 	    (class-super ::class)
 	    (class-subclasses::pair-nil ::class)
+	    (inline class-index::long ::class)
 	    (inline class-num::long ::class)
 	    (class-name::symbol ::class)
 	    (class-module::symbol ::class)
@@ -316,6 +320,7 @@
 	    (inline generic-method-array ::procedure)
 	    (inline method-array-ref ::procedure ::vector ::int)
 	    (isa?::bool ::obj ::class)
+	    (isa64?::bool ::obj ::class)
 	    (inline %isa/cdepth?::bool ::obj ::class ::long)
 	    (inline %isa-object/cdepth?::bool ::object ::class ::long)
 	    (inline %isa/final?::bool ::obj ::class)
@@ -348,6 +353,7 @@
 	    *nb-generics*
 	    *class-key*
 	    *inheritance-cnt*
+	    *inheritance-max-depth*
 	    (inline generic-default-set! ::procedure ::procedure)
 	    (inline generic-method-array-set! ::procedure ::vector))
 
@@ -360,6 +366,7 @@
 	    (class-creator side-effect-free no-cfa-top no-trace nesting)
 	    (class-nil side-effect-free no-cfa-top no-trace nesting)
 	    (class-num side-effect-free no-cfa-top no-trace nesting)
+	    (class-index side-effect-free no-cfa-top no-trace nesting)
 	    (class-name side-effect-free no-cfa-top no-trace nesting)
 	    (class-module side-effect-free no-cfa-top no-trace nesting)
 	    (object-class side-effect-free no-cfa-top no-trace nesting)
@@ -492,10 +499,16 @@
    ($class-module class))
 
 ;*---------------------------------------------------------------------*/
+;*    class-index ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (class-index class)
+   ($class-index class))
+
+;*---------------------------------------------------------------------*/
 ;*    class-num ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (class-num class)
-   ($class-index class))
+   ($class-num class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-virtual ...                                                */
@@ -749,8 +762,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    inheritance                                                      */
 ;*---------------------------------------------------------------------*/
-(define *inheritance-cnt* 0)
-(define *inheritances* '#())
+(define *inheritance-cnt* *inheritance-cnt*)
+(define *inheritance-max-depth* *inheritance-max-depth*)
+(define *inheritances* *inheritances*)
 
 ;*---------------------------------------------------------------------*/
 ;*    Generics                                                         */
@@ -781,6 +795,7 @@
       (cond-expand
 	 (bint61
 	  (set! *inheritance-cnt* 0)
+	  (set! *inheritance-max-depth* 128)
 	  (set! *inheritances* ($make-vector-uncollectable 256 #f))))
       (set! *nb-generics-max* 64)
       (set! *nb-generics* 0)
@@ -960,13 +975,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    For each generic, we add the super class method to the class.    */
 ;*---------------------------------------------------------------------*/
-(define (generics-add-class! class-num super-num)
+(define (generics-add-class! class-idx super-idx)
    (let loop ((g 0))
       (when (<fx g *nb-generics*)
 	 (let* ((gen (vector-ref-ur *generics* g))
 		(method-array (generic-method-array gen))
-		(method (method-array-ref gen method-array super-num)))
-	    (method-array-set! gen method-array class-num method)
+		(method (method-array-ref gen method-array super-idx)))
+	    (method-array-set! gen method-array class-idx method)
 	    (loop (+fx g 1))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1020,24 +1035,28 @@
 	 ;; class super classes in the inheritance vector
 	 (cond-expand
 	    (bint61
+	     (when (>fx depth *inheritance-max-depth*)
+		(set! *inheritance-max-depth* depth))
 	     (let ((idx (+fx *inheritance-cnt* depth)))
 		;; extend the inheritance vector if needed
 		(when (>=fx idx (vector-length *inheritances*))
 		   (let* ((ovec *inheritances*)
 			  (nvec (extend-vector ovec #f
-				   (+fx (vector-length ovec) (+fx idx 128)))))
+				   (+fx (vector-length ovec)
+				      (+fx idx *inheritance-max-depth*)))))
 		      (set! *inheritances* nvec)
 		      ($free-vector-uncollectable ovec)))
 		;; store the super classes in the inheritance vectors
-		(let loop ((i (-fx depth 1))
-			   (j (+fx *inheritance-cnt* (-fx depth 1))))
-		   (when (>=fx i 0)
-		      (vector-set! *inheritances* j
-			 (class-ancestors-ref class i))
-		      (loop (-fx i 1) (-fx j 1))))
-		(set! *inheritance-cnt* (+fx *inheritance-cnt* depth)))))
+		(let loop ((i 0)
+			   (j *inheritance-cnt*))
+		   (if (<=fx i depth)
+		       (begin
+			  (vector-set! *inheritances* j
+			     (class-ancestors-ref class i))
+			  (loop (+fx i 1) (+fx j 1)))
+		       (set! *inheritance-cnt* j))))))
 	 ;; and we adjust the method arrays of all generic functions
-	 (generics-add-class! num (if (class? super) (class-num super) num))
+	 (generics-add-class! num (if (class? super) (class-index super) num))
 	 class)))
 
 ;*---------------------------------------------------------------------*/
@@ -1175,11 +1194,11 @@
 	 ;; allow cycle in module graph.
 	 (register-generic-sans-lock! generic #f ""))
       (let* ((method-array (generic-method-array generic))
-	     (cnum (class-num class))
+	     (cnum (class-index class))
 	     (previous (method-array-ref generic method-array cnum))
 	     (def (generic-default generic)))
 	 (let loop ((clazz class))
-	    (let* ((cn (class-num clazz))
+	    (let* ((cn (class-index clazz))
 		   (current (method-array-ref generic method-array cn)))
 	       (if (or (eq? current def) (eq? current previous))
 		   (begin
@@ -1243,7 +1262,7 @@
    (let loop ((super (class-super class)))
       (if (not (class? super))
 	  (generic-default generic)
-	  (let ((obj-super-class-num (class-num super)))
+	  (let ((obj-super-class-num (class-index super)))
 	     (let ((method (method-array-ref generic
 			      (generic-method-array generic)
 			      obj-super-class-num)))
@@ -1259,7 +1278,7 @@
    (let loop ((class class))
       (if (not (class? class))
 	  (cons #f #f)
-	  (let ((obj-super-class-num (class-num class)))
+	  (let ((obj-super-class-num (class-index class)))
 	     (let ((method (method-array-ref generic
 			      (generic-method-array generic)
 			      obj-super-class-num)))
@@ -1277,7 +1296,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    isa? ...                                                         */
 ;*    -------------------------------------------------------------    */
-;*    The constant-time and thread-safe implementation of is-a?        */
+;*    The constant-time and thread-safe implementation of isa?         */
 ;*---------------------------------------------------------------------*/
 (define (isa? obj class)
    (if (object? obj)
@@ -1292,19 +1311,43 @@
        #f))
 
 ;*---------------------------------------------------------------------*/
+;*    isa64? ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (isa64? obj class)
+   (when (object? obj)
+      (%isa-object/cdepth? obj class (class-depth class))))
+
+;*---------------------------------------------------------------------*/
 ;*    %isa/cdepth? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa/cdepth? obj class cdepth)
    (when (object? obj)
-      (let ((oclass (object-class obj)))
-	 (eq? ($class-ancestors-ref oclass cdepth) class))))
+      (%isa-object/cdepth? obj class cdepth)))
+
+;*---------------------------------------------------------------------*/
+;*    %isa64/cdepth? ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (%isa64/cdepth? obj class cdepth)
+   (when (object? obj)
+      (%isa64-object/cdepth? obj class cdepth)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa-object/cdepth? ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa-object/cdepth? obj class cdepth)
    (let ((oclass (object-class obj)))
-      (eq? ($class-ancestors-ref oclass cdepth) class)))
+      (or (eq? class oclass)
+	  (let ((odepth ($class-depth oclass)))
+	     (and (<fx cdepth odepth)
+		  (eq? ($class-ancestors-ref oclass cdepth) class))))))
+
+;*---------------------------------------------------------------------*/
+;*    %isa64-object/cdepth? ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (%isa64-object/cdepth? obj class cdepth)
+   (let ((idx ($object-inheritance-num obj))
+	 (cdepth (class-depth class)))
+      (eq? (vector-ref *inheritances* (+fx idx cdepth)) class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa/final? ...                                                  */

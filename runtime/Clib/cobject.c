@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 08:08:56 2012                          */
-/*    Last change :  Fri Nov 12 08:34:19 2021 (serrano)                */
+/*    Last change :  Fri Nov 12 11:36:20 2021 (serrano)                */
 /*    Copyright   :  2012-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Bigloo object management.                                      */
@@ -19,6 +19,15 @@ bmem_set_allocation_type(long tname, long offset) {
    /* just a place holder for bmem */
 }
 
+void debug(obj_t c) {
+   obj_t o = BOBJECT(GC_MALLOC(1000));
+   BGL_OBJECT_CLASS_NUM_SET(o, BGL_CLASS_NUM(c));
+   fprintf(stderr, "*** DEBUG cidx=%d type=%d index=%d\n",
+	   BGL_CLASS_NUM(c),
+	   BGL_OBJECT_CLASS_NUM(o),
+	   BGL_OBJECT_INHERITANCE_NUM(o));
+}
+   
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_make_class ...                                               */
@@ -44,7 +53,13 @@ bgl_make_class(obj_t name, obj_t module,
    klass->class.name = name;
 
    klass->class.index = num;
-   klass->class.inheritance_index = inheritance_num;
+   // only used no 64 bit platforms
+   klass->class.inheritance_index =
+      inheritance_num << (HEADER_TYPE_BIT_SIZE);
+//   klass->class.inheritance_index = 0;
+/*    fprintf(stderr, "num=%d inum=%d cnum=%ld -> %d\n", num, inheritance_num, */
+/*       BGL_CLASS_NUM(BREF(klass)),                                   */
+/* 	   BGL_CLASS_NUM(BREF(klass)) >> (HEADER_TYPE_BIT_SIZE));      */
    klass->class.super = super;
    klass->class.subclasses = sub;
    klass->class.alloc_fun = alloc;
@@ -72,5 +87,6 @@ bgl_make_class(obj_t name, obj_t module,
       }
    }
 
+/*    debug(BREF(klass));                                              */
    return BREF(klass);
 }

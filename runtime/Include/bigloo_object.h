@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Nov 12 08:56:03 2021 (serrano)                */
+/*    Last change :  Fri Nov 12 11:36:15 2021 (serrano)                */
 /*    Copyright   :  2016-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -133,6 +133,8 @@ typedef struct BgL_objectz00_bgl {
 #define BGL_CLASS_NAME( f ) (BGL_CLASS( f ).name)
    
 #define BGL_CLASS_INDEX( f ) (BGL_CLASS( f ).index)
+   
+#define BGL_CLASS_NUM( f ) ((BGL_CLASS( f ).index) + BGL_CLASS( f ).inheritance_index)
    
 #define BGL_CLASS_INHERITANCE_INDEX( f ) (BGL_CLASS( f ).inheritance_index)
    
