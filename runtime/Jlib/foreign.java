@@ -4451,6 +4451,10 @@ public final class foreign
    ////
    // CLASS
    ////
+   public static int BGL_MAX_CLASS_NUM(Object o) {
+      return 1 << 32;
+   }
+   
    public static boolean BGL_CLASSP(Object o)
       {
 	 return (o instanceof bclass);

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Mar 27 12:01:07 2020 (serrano)                */
+;*    Last change :  Fri Nov 12 06:15:25 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -63,10 +63,16 @@
 		   "BGL_OBJECTP")
 	    (macro $nanobject?::bool (::obj)
 		   "BGL_NANOBJECTP")
+	    (macro $bgl-max-class-num::long ()
+		   "BGL_MAX_CLASS_NUM")
 	    (macro %object-class-num::long (::object)
 		   "BGL_OBJECT_CLASS_NUM")
 	    (macro %object-class-num-set!::obj (::object ::long)
 		   "BGL_OBJECT_CLASS_NUM_SET")
+	    (macro $object-inheritance-num::long (::object)
+		   "BGL_OBJECT_CLASS_INHERITANCE_NUM_")
+	    (macro $object-inheritance-num-set!::obj (::object ::long)
+		   "BGL_OBJECT_CLASS_INHERITANCE_NUM_SET")
 	    ($bigloo-generic-mutex::mutex "bigloo_generic_mutex")
 	    (%object-hashnumber::long (::obj) "bgl_obj_hash_number")
 	    ($make-generic::procedure (::procedure) "bgl_make_generic")
@@ -339,6 +345,7 @@
 	    *nb-generics-max*
 	    *nb-generics*
 	    *class-key*
+	    *inheritance-cnt*
 	    (inline generic-default-set! ::procedure ::procedure)
 	    (inline generic-method-array-set! ::procedure ::vector))
 
@@ -736,6 +743,12 @@
 (define *classes* *classes*)
 
 ;*---------------------------------------------------------------------*/
+;*    inheritance                                                      */
+;*---------------------------------------------------------------------*/
+(define *inheritance-cnt* 0)
+(define *inheritances* '#())
+
+;*---------------------------------------------------------------------*/
 ;*    Generics                                                         */
 ;*---------------------------------------------------------------------*/
 (define *nb-generics-max* *nb-generics-max*)
@@ -761,6 +774,10 @@
       (set! *nb-classes* 0)
       (set! *nb-classes-max* 64)
       (set! *classes* ($make-vector-uncollectable *nb-classes-max* #f))
+      (cond-expand
+	 (bint61
+	  (set! *inheritance-cnt* 0)
+	  (set! *inheritances* ($make-vector-uncollectable 256 #f))))
       (set! *nb-generics-max* 64)
       (set! *nb-generics* 0)
       (set! *generics* ($make-vector-uncollectable *nb-generics-max* #f))
@@ -995,6 +1012,26 @@
 	 (vector-set! *classes* *nb-classes* class)
 	 ;; we increment the global class number
 	 (set! *nb-classes* (+fx *nb-classes* 1))
+	 ;; on 64bit platforms that supports header data, store the
+	 ;; class super classes in the inheritance vector
+	 (cond-expand
+	    (bint61
+	     (let ((idx (+fx *inheritance-cnt* depth)))
+		;; extend the inheritance vector if needed
+		(when (>=fx idx (vector-length *inheritances*))
+		   (let* ((ovec *inheritances*)
+			  (nvec (extend-vector ovec #f
+				   (+fx (vector-length ovec) (+fx idx 128)))))
+		      (set! *inheritances* nvec)
+		      ($free-vector-uncollectable ovec)))
+		;; store the super classes in the inheritance vectors
+		(let loop ((i (-fx depth 1))
+			   (j (+fx *inheritance-cnt* (-fx depth 1))))
+		   (when (>=fx i 0)
+		      (vector-set! *inheritances* j
+			 (class-ancestors-ref class i))
+		      (loop (-fx i 1) (-fx j 1))))
+		(set! *inheritance-cnt* (+fx *inheritance-cnt* depth)))))
 	 ;; and we adjust the method arrays of all generic functions
 	 (generics-add-class! num (if (class? super) (class-num super) num))
 	 class)))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Oct  7 08:18:41 2021 (serrano)                */
+/*    Last change :  Fri Nov 12 06:27:49 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -309,46 +309,65 @@ error "Unknown garbage collector type"
 /*---------------------------------------------------------------------*/
 /*    Allocated objects                                                */
 /*    -------------------------------------------------------------    */
-/*    Header managment:                                                */
-/*    The header of generic allocated 32 values is as follows:         */
+/*    The header of allocated values is as follows.                    */
+/*                                                                     */
+/*    32 bit platforms:                                                */
 /*    +--------+--------+--------+--------+                            */
 /*    |tttttttt|tttttsss|ssssssss|sssss???|                            */
 /*    +--------+--------+--------+--------+                            */
 /*      ?: the three least significant bit are ignored                 */
 /*      s: 16 bit size                                                 */
-/*      t: 12 bit type                                                 */   
+/*      t: 12 bit type                                                 */
+/*                                                                     */
+/*    64 bit platforms:                                                */
+/*    +--------+........+--------+--------+--------+--------+--------+ */
+/*    |dddddddd|........|tttttttt|tttttttt|tttttsss|ssssssss|sssss???| */
+/*    +--------+........+--------+--------+--------+--------+--------+ */
+/*      ?: the three least significant bit are ignored                 */
+/*      s: 16 bit size                                                 */
+/*      t: 20 bit type                                                 */   
+/*      d: 25 bit data                                                 */   
 /*---------------------------------------------------------------------*/
 #define HEADER_SHIFT 3
-#define SIZE_MASK ((1 << HEADER_SIZE_BIT_SIZE) - 1)
 #define HEADER_SIZE_BIT_SIZE 16
+#define SIZE_MASK ((1 << HEADER_SIZE_BIT_SIZE) - 1)
 #define TYPE_SHIFT (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE)
 
-#define MAKE_HEADER( _i, _sz ) \
-   ((header_t)( (((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT )) )
+#define MAKE_HEADER( _i, _sz) \
+   ((header_t)( (((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT)))
 
-#define HEADER_TYPE( _i ) (((long)(_i)) >> TYPE_SHIFT)
-
-#define HEADER_SIZE( _h ) (((_h) >> HEADER_SHIFT) & SIZE_MASK)
-
-#define TYPE( _o ) HEADER_TYPE( CREF( _o )->header )
-       
-#define OBJ_SIZE ((long)(sizeof( obj_t )))
-
-#if( TAG_YOUNG )
-#  define BYOUNG( r ) ((obj_t)((long)r + TAG_YOUNG))
-
-#  define BYOUNGP( r ) ((((long)r) & TAG_MASK) == TAG_YOUNG)
-#  define BOLDP( r ) ((((long)r) & TAG_MASK) == TAG_STRUCT)
+#if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
+#  define HEADER_TYPE_BIT_SIZE 20
+#  define HEADER_TYPE_MASK ((1 << BGL_HEADER_OBJECT_TYPE_SIZE) - 1)
+#  define HEADER_TYPE(_i) ((((long)(_i)) >> TYPE_SHIFT) & HEADER_TYPE_MASK)
+#  define HEADER_DATA(_i) ((((long)(_i)) >> (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))
+#else
+#  define HEADER_TYPE_BIT_SIZE ((sizeof(void *) << 3) - (TYPE_SHIFT))
+#  define HEADER_TYPE( _i) (((long)(_i)) >> TYPE_SHIFT)
+#  define HEADER_DATA(_i) 0
 #endif
 
-#if( BGL_GC == BGL_SAW_GC )
-#  define BASSIGN( field, value, obj ) (bps_bassign( &(field), value, obj), BUNSPEC)
-#  define BMASSIGN( field, value ) bps_bmassign( &(field), value)
-#  define BBACKPTR( field, value ) BYOUNGP( value ) ? bps_dobackptr( &(field), value ) : 0
+#define HEADER_SIZE(_h) (((_h) >> HEADER_SHIFT) & SIZE_MASK)
+
+#define TYPE(_o) HEADER_TYPE(CREF(_o)->header)
+       
+#define OBJ_SIZE ((long)(sizeof(obj_t)))
+
+#if(TAG_YOUNG)
+#  define BYOUNG(r) ((obj_t)((long)r + TAG_YOUNG))
+
+#  define BYOUNGP(r) ((((long)r) & TAG_MASK) == TAG_YOUNG)
+#  define BOLDP(r) ((((long)r) & TAG_MASK) == TAG_STRUCT)
+#endif
+
+#if(BGL_GC == BGL_SAW_GC)
+#  define BASSIGN(field, value, obj) (bps_bassign(&(field), value, obj), BUNSPEC)
+#  define BMASSIGN(field, value) bps_bmassign(&(field), value)
+#  define BBACKPTR(field, value) BYOUNGP(value) ? bps_dobackptr(&(field), value) : 0
 #else
-#  define BASSIGN( field, value, obj ) (((field) = (value)), BUNSPEC)
-#  define BMASSIGN( field, value ) ((field) = (value))
-#  define BBACKPTR( field, value )
+#  define BASSIGN(field, value, obj) (((field) = (value)), BUNSPEC)
+#  define BMASSIGN(field, value) ((field) = (value))
+#  define BBACKPTR(field, value)
 #endif
 
 /*---------------------------------------------------------------------*/

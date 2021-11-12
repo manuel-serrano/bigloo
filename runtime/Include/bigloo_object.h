@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed May  9 12:12:45 2018 (serrano)                */
-/*    Copyright   :  2016-18 Manuel Serrano                            */
+/*    Last change :  Fri Nov 12 06:14:29 2021 (serrano)                */
+/*    Copyright   :  2016-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
 /*=====================================================================*/
@@ -84,26 +84,43 @@ typedef struct BgL_objectz00_bgl {
 /*---------------------------------------------------------------------*/
 /*    Object macros                                                    */
 /*---------------------------------------------------------------------*/
+#define BGL_MAX_CLASS_NUM() \
+   ((1L << HEADER_TYPE_BIT_SIZE) - 1)
+
 #define BGL_OBJECT_MIN_DISPLAY_SIZE 6
 
-#define BGL_OBJECT_CLASS_NUM( _obj ) \
-   (HEADER_TYPE( COBJECT( _obj )->header ))
+#define BGL_HEADER_OBJECT_TYPE_SIZE 20
+#define BGL_HEADER_OBJECT_TYPE_MASK ((1 << BGL_HEADER_OBJECT_TYPE_SIZE) - 1)
 
-#define BGL_OBJECT_CLASS_NUM_SET( _1, _2 ) \
-   (((obj_t)COBJECT( _1 ))->header = MAKE_HEADER( _2, 0 ), BUNSPEC)
+#define BGL_OBJECT_CLASS_NUM(_obj) \
+     (HEADER_TYPE(COBJECT(_obj)->header))
+
+#define BGL_OBJECT_CLASS_NUM_SET(_1, _2) \
+   (((obj_t)COBJECT(_1))->header = MAKE_HEADER(_2, 0), BUNSPEC)
    
-#define BGL_OBJECT_WIDENING( _obj ) \
-   (((object_bglt)(COBJECT( _obj )))->widening)
+#define BGL_OBJECT_WIDENING(_obj) \
+   (((object_bglt)(COBJECT(_obj)))->widening)
 
-#define BGL_OBJECT_WIDENING_SET( _obj, _wdn ) \
-   BASSIGN( BGL_OBJECT_WIDENING( _obj ), _wdn, (obj_t)_obj )
+#define BGL_OBJECT_WIDENING_SET(_obj, _wdn) \
+   BASSIGN( BGL_OBJECT_WIDENING(_obj), _wdn, (obj_t)_obj)
 
-#define BGL_OBJECT_HEADER_SIZE( _obj ) \
-   (HEADER_SIZE( COBJECT( _obj )->header ))
+#define BGL_OBJECT_HEADER_SIZE(_obj) \
+   (HEADER_SIZE(COBJECT(_obj)->header))
 
-#define BGL_OBJECT_HEADER_SIZE_SET( _o, _s ) \
-   (((obj_t)COBJECT( _o ))->header = \
-    MAKE_HEADER( BGL_OBJECT_CLASS_NUM( _o ), _s ))
+#define BGL_OBJECT_HEADER_SIZE_SET(_o, _s) \
+   (((obj_t)COBJECT(_o))->header = \
+    MAKE_HEADER(BGL_OBJECT_CLASS_NUM(_o), _s))
+
+#if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
+#  define BGL_OBJECT_INHERITANCE_NUM(_obj) \
+     (HEADER_DATA(COBJECT(_obj)->header))
+
+#  define BGL_OBJECT_INHERITANCE_NUM_SET(_o, _d) \
+   (((obj_t)COBJECT(_o))->header = \
+    ((((obj_t)COBJECT(_o))->header \
+      & ((1 << (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE + HEADER_TYPE_BIT_SIZE)) - 1)) \
+     | ((_d << (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Classes                                                          */
