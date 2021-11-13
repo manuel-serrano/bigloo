@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 12 14:34:20 2021 (serrano)                */
+;*    Last change :  Fri Nov 12 15:22:03 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1048,7 +1048,7 @@
 		   (let* ((ovec *inheritances*)
 			  (nvec (extend-vector ovec #f
 				   (+fx (vector-length ovec)
-				      (+fx idx *inheritance-max-depth*)))))
+				      *inheritance-max-depth*))))
 		      (set! *inheritances* nvec)
 		      ($free-vector-uncollectable ovec)))
 		;; store the super classes in the inheritance vectors
@@ -1305,7 +1305,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (isa? obj class)
    (cond-expand
-      (bint61xx
+      (bint61xxx
        (isa64? obj class))
       (else
        (isa32? obj class))))
@@ -1315,7 +1315,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa/cdepth? obj class cdepth)
    (cond-expand
-      (bint61xx
+      (bint61xxx
        (%isa64/cdepth? obj class cdepth))
       (else
        (%isa32/cdepth? obj class cdepth))))
@@ -1325,7 +1325,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa-object/cdepth? obj class cdepth)
    (cond-expand
-      (bint61xx
+      (bint61xxx
        (%isa64-object/cdepth? obj class cdepth))
       (else
        (%isa32-object/cdepth? obj class cdepth))))
@@ -1367,7 +1367,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (isa64? obj class)
    (when (object? obj)
-      (%isa-object/cdepth? obj class ($class-depth class))))
+      (%isa64-object/cdepth? obj class ($class-depth class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa64/cdepth? ...                                               */
