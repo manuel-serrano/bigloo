@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Nov 14 08:38:39 2021 (serrano)                */
+/*    Last change :  Sun Nov 14 16:32:16 2021 (serrano)                */
 /*    Copyright   :  2016-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -118,6 +118,8 @@ typedef struct BgL_objectz00_bgl {
     ((((obj_t)COBJECT(_o))->header \
       & ((1 << (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE + HEADER_TYPE_BIT_SIZE)) - 1)) \
      | ((_d << (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))))
+#else
+#  define BGL_OBJECT_INHERITANCE_NUM(_obj) 0
 #endif
 
 /*---------------------------------------------------------------------*/
