@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 12 11:43:51 2021 (serrano)                */
+/*    Last change :  Sun Nov 14 08:37:05 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -333,17 +333,19 @@ error "Unknown garbage collector type"
 #define SIZE_MASK ((1 << HEADER_SIZE_BIT_SIZE) - 1)
 #define TYPE_SHIFT (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE)
 
-#define MAKE_HEADER( _i, _sz) \
+#define MAKE_HEADER(_i, _sz) \
    ((header_t)( (((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT)))
 
 #if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
 #  define HEADER_TYPE_BIT_SIZE 20
 #  define HEADER_TYPE_MASK ((1 << BGL_HEADER_OBJECT_TYPE_SIZE) - 1)
-#  define HEADER_TYPE(_i) ((((long)(_i)) >> TYPE_SHIFT) & HEADER_TYPE_MASK)
+#  define HEADER_TYPE(_i) ((((unsigned long)(_i)) >> TYPE_SHIFT) & HEADER_TYPE_MASK)
+#  define HEADER_SANS_SIZE(_i) ((((unsigned long)(_i)) >> TYPE_SHIFT))
 #  define HEADER_DATA(_i) ((((unsigned long)(_i)) >> (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))
 #else
 #  define HEADER_TYPE_BIT_SIZE ((sizeof(void *) << 3) - (TYPE_SHIFT))
-#  define HEADER_TYPE( _i) (((long)(_i)) >> TYPE_SHIFT)
+#  define HEADER_TYPE( _i) (((unsigned long)(_i)) >> TYPE_SHIFT)
+#  define HEADER_SANS_SIZE(_i) ((((unsigned long)(_i)) >> TYPE_SHIFT))
 #  define HEADER_DATA(_i) 0
 #endif
 

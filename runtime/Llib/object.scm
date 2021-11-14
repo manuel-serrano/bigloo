@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Nov 13 19:05:34 2021 (serrano)                */
+;*    Last change :  Sun Nov 14 07:24:28 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -327,8 +327,7 @@
 	    (inline %isa32-object/cdepth?::bool ::object ::class ::long)
 	    (inline isa64?::bool ::obj ::class)
 	    (inline %isa64/cdepth?::bool ::obj ::class ::long)
-	    ;;(inline %isa64-object/cdepth?::bool ::object ::class ::long)
-	    (%isa64-object/cdepth?::bool ::object ::class ::long)
+	    (inline %isa64-object/cdepth?::bool ::object ::class ::long)
 	    (inline %isa/final?::bool ::obj ::class)
 	    (inline %isa-object/final?::bool ::object ::class)
 	    (nil?::bool ::object)
@@ -1380,8 +1379,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    %isa64-object/cdepth? ...                                        */
 ;*---------------------------------------------------------------------*/
-;;(define-inline (%isa64-object/cdepth? obj class cdepth)
-(define (%isa64-object/cdepth? obj class cdepth)
+(define-inline (%isa64-object/cdepth? obj class cdepth)
+   (let ((idx ($object-inheritance-num obj)))
+      (eq? (vector-ref *inheritances* (+fx idx cdepth)) class)))
+
+(define (%isa64-object/cdepth?.tbr obj class cdepth)
    (let ((idx ($object-inheritance-num obj)))
       (let ((r1 (eq? (vector-ref *inheritances* (+fx idx cdepth)) class))
 	    (r2 (%isa32-object/cdepth? obj class cdepth)))
@@ -1389,7 +1391,9 @@
 	    (print "PAS BON " (typeof obj) " " class " cdepth=" cdepth
 	       " idx=" idx " cidx=" (class-index class)
 	       " class-depth=" (class-depth class)
-	       " " (vector-ref *inheritances* (+fx idx cdepth))))
+	       " " (vector-ref *inheritances* (+fx idx cdepth)))
+	    (if (not (= (pragma::long "getenv(\"DEBUG\") != 0L") 0))
+		(print (/fx 1 0))))
 	 r2)))
 
 ;*---------------------------------------------------------------------*/
