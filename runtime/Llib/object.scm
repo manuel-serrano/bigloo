@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Nov 14 07:24:28 2021 (serrano)                */
+;*    Last change :  Sun Nov 14 11:55:42 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -324,10 +324,10 @@
 	    (inline %isa-object/cdepth?::bool ::object ::class ::long)
 	    (isa32?::bool ::obj ::class)
 	    (inline %isa32/cdepth?::bool ::obj ::class ::long)
-	    (inline %isa32-object/cdepth?::bool ::object ::class ::long)
+	    (inline %isa32-object/cdepth?::bool ::obj ::class ::long)
 	    (inline isa64?::bool ::obj ::class)
 	    (inline %isa64/cdepth?::bool ::obj ::class ::long)
-	    (inline %isa64-object/cdepth?::bool ::object ::class ::long)
+	    (inline %isa64-object/cdepth?::bool ::obj ::class ::long)
 	    (inline %isa/final?::bool ::obj ::class)
 	    (inline %isa-object/final?::bool ::object ::class)
 	    (nil?::bool ::object)
