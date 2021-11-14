@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Nov 14 11:55:42 2021 (serrano)                */
+;*    Last change :  Sun Nov 14 12:57:38 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -47,7 +47,9 @@
 	    __pp_circle
 	    __evenv)
 
-   (extern  (macro $object-widening::obj (::object)
+   (extern  (macro $as-object::object (::obj)
+		   "(BgL_objectz00_bglt)")
+	    (macro $object-widening::obj (::object)
 		   "BGL_OBJECT_WIDENING")
 	    (macro $object-widening-set!::obj (::object ::obj)
 		   "BGL_OBJECT_WIDENING_SET")
@@ -143,6 +145,8 @@
 		  "bigloo_generic_mutex")
 	       (field static %object-type-number::long
 		  "OBJECT_TYPE")
+	       (method static $as-object::objet (::as)
+		  "BGL_AS_OBJECT")
 	       (method static $object-widening::obj (::object)
 		  "BGL_OBJECT_WIDENING")
 	       (method static $object-widening-set!::obj (::object ::obj)
@@ -324,10 +328,10 @@
 	    (inline %isa-object/cdepth?::bool ::object ::class ::long)
 	    (isa32?::bool ::obj ::class)
 	    (inline %isa32/cdepth?::bool ::obj ::class ::long)
-	    (inline %isa32-object/cdepth?::bool ::obj ::class ::long)
+	    (inline %isa32-object/cdepth?::bool ::object ::class ::long)
 	    (inline isa64?::bool ::obj ::class)
 	    (inline %isa64/cdepth?::bool ::obj ::class ::long)
-	    (inline %isa64-object/cdepth?::bool ::obj ::class ::long)
+	    (inline %isa64-object/cdepth?::bool ::object ::class ::long)
 	    (inline %isa/final?::bool ::obj ::class)
 	    (inline %isa-object/final?::bool ::object ::class)
 	    (nil?::bool ::object)
@@ -1335,7 +1339,7 @@
 ;*---------------------------------------------------------------------*/
 (define (isa32? obj class)
    (if (object? obj)
-       (let ((oclass (object-class obj)))
+       (let ((oclass (object-class ($as-object obj))))
 	  (if (eq? oclass class)
 	      #t
 	      (let ((odepth (class-depth oclass))
@@ -1350,7 +1354,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa32/cdepth? obj class cdepth)
    (when (object? obj)
-      (%isa-object/cdepth? obj class cdepth)))
+      (%isa-object/cdepth? ($as-object obj) class cdepth)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa32-object/cdepth? ...                                        */
@@ -1367,14 +1371,14 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (isa64? obj class)
    (when (object? obj)
-      (%isa64-object/cdepth? obj class ($class-depth class))))
+      (%isa64-object/cdepth? ($as-object obj) class ($class-depth class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa64/cdepth? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa64/cdepth? obj class cdepth)
    (when (object? obj)
-      (%isa64-object/cdepth? obj class cdepth)))
+      (%isa64-object/cdepth? ($as-object obj) class cdepth)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa64-object/cdepth? ...                                        */

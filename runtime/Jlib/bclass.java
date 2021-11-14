@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Jlib/bclass.java             */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Jlib/bclass.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 10:19:34 2012                          */
-/*    Last change :  Tue Dec  6 20:05:56 2016 (serrano)                */
-/*    Copyright   :  2012-16 Manuel Serrano                            */
+/*    Last change :  Sun Nov 14 13:03:20 2021 (serrano)                */
+/*    Copyright   :  2012-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java Bigloo class implementation                                 */
 /*=====================================================================*/
@@ -39,8 +39,6 @@ public class bclass extends obj {
 		  procedure nil_fun, Object shrink,
 		  int depth, 
 		  Object evdata ) {
-      int dspsz = (depth < foreign.MIN_DISPLAY_SIZE)
-	 ? foreign.MIN_DISPLAY_SIZE : depth;
       this.name = name;
       this.module = module;
       this.index = num;
@@ -58,16 +56,12 @@ public class bclass extends obj {
       this.depth = depth;
       this.nil = foreign.BFALSE;
       this.evdata = evdata;
-      this.ancestors = new Object[ dspsz ];
+      this.ancestors = new Object[depth + 1];
 
       if( depth > 0 ) {
 	 bclass sup = (bclass)bsuper;
-	 System.arraycopy( sup.ancestors, 0, this.ancestors, 0, depth - 1 );
-	 this.ancestors[ depth - 1 ] = bsuper;
-
-	 if( depth < foreign.MIN_DISPLAY_SIZE ) {
-	    this.ancestors[ depth ] = this;
-	 }
+	 System.arraycopy( sup.ancestors, 0, this.ancestors, 0, depth );
       }
+      this.ancestors[depth] = this;
    }
 }
