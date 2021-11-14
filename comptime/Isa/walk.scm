@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Sep 13 17:05:26 2021 (serrano)                */
+;*    Last change :  Sun Nov 14 06:33:36 2021 (serrano)                */
 ;*    Copyright   :  2010-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace isa? calls with specialized inlinable versions           */
@@ -39,7 +39,8 @@
 ;*    isa-walk! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (isa-walk! globals)
-   (pass-prelude "Isa" init-isa-cache!) 
+   (pass-prelude "Isa" init-isa-cache!)
+   (for-each set-class-depth! (get-class-list))
    (for-each isa-fun! globals)
    (pass-postlude globals clear-isa-cache!))
 
@@ -70,6 +71,17 @@
    (set! *isa-object/cdepth* #f)
    (set! *isa/final* #f)
    (set! *isa-object/final* #f))
+
+;*---------------------------------------------------------------------*/
+;*    set-class-depth! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (set-class-depth! clazz::tclass)
+   (with-access::tclass clazz (depth its-super)
+      (when (=fx depth 0)
+	 (if (tclass? its-super)
+	     (set! depth (+fx 1 (set-class-depth! its-super)))
+	     0))
+      depth))
 
 ;*---------------------------------------------------------------------*/
 ;*    isa-fun! ...                                                     */

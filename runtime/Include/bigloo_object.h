@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Nov 12 11:36:15 2021 (serrano)                */
+/*    Last change :  Sat Nov 13 18:52:34 2021 (serrano)                */
 /*    Copyright   :  2016-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -86,8 +86,6 @@ typedef struct BgL_objectz00_bgl {
 /*---------------------------------------------------------------------*/
 #define BGL_MAX_CLASS_NUM() \
    ((1L << HEADER_TYPE_BIT_SIZE) - 1)
-
-#define BGL_OBJECT_MIN_DISPLAY_SIZE 6
 
 #define BGL_HEADER_OBJECT_TYPE_SIZE 20
 #define BGL_HEADER_OBJECT_TYPE_MASK ((1 << BGL_HEADER_OBJECT_TYPE_SIZE) - 1)

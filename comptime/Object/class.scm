@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Mon Sep 13 18:14:21 2021 (serrano)                */
+;*    Last change :  Sun Nov 14 06:36:49 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -162,9 +162,7 @@
       ;; object_access).
       (widen!::tclass type
 	 (its-super   super)
-	 (depth       (if (not (tclass? super))
-			  0
-			  (+fx (tclass-depth super) 1)))
+	 (depth       0)
 	 (holder      class-holder)
 	 (widening    widening)
 	 (final?      final?)

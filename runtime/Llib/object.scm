@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 12 15:22:03 2021 (serrano)                */
+;*    Last change :  Sat Nov 13 19:05:34 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -327,7 +327,8 @@
 	    (inline %isa32-object/cdepth?::bool ::object ::class ::long)
 	    (inline isa64?::bool ::obj ::class)
 	    (inline %isa64/cdepth?::bool ::obj ::class ::long)
-	    (inline %isa64-object/cdepth?::bool ::object ::class ::long)
+	    ;;(inline %isa64-object/cdepth?::bool ::object ::class ::long)
+	    (%isa64-object/cdepth?::bool ::object ::class ::long)
 	    (inline %isa/final?::bool ::obj ::class)
 	    (inline %isa-object/final?::bool ::object ::class)
 	    (nil?::bool ::object)
@@ -1305,7 +1306,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (isa? obj class)
    (cond-expand
-      (bint61xxx
+      (bint61
        (isa64? obj class))
       (else
        (isa32? obj class))))
@@ -1315,7 +1316,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa/cdepth? obj class cdepth)
    (cond-expand
-      (bint61xxx
+      (bint61
        (%isa64/cdepth? obj class cdepth))
       (else
        (%isa32/cdepth? obj class cdepth))))
@@ -1325,7 +1326,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa-object/cdepth? obj class cdepth)
    (cond-expand
-      (bint61xxx
+      (bint61
        (%isa64-object/cdepth? obj class cdepth))
       (else
        (%isa32-object/cdepth? obj class cdepth))))
@@ -1379,9 +1380,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    %isa64-object/cdepth? ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (%isa64-object/cdepth? obj class cdepth)
+;;(define-inline (%isa64-object/cdepth? obj class cdepth)
+(define (%isa64-object/cdepth? obj class cdepth)
    (let ((idx ($object-inheritance-num obj)))
-      (eq? (vector-ref *inheritances* (+fx idx cdepth)) class)))
+      (let ((r1 (eq? (vector-ref *inheritances* (+fx idx cdepth)) class))
+	    (r2 (%isa32-object/cdepth? obj class cdepth)))
+	 (unless (eq? r1 r2)
+	    (print "PAS BON " (typeof obj) " " class " cdepth=" cdepth
+	       " idx=" idx " cidx=" (class-index class)
+	       " class-depth=" (class-depth class)
+	       " " (vector-ref *inheritances* (+fx idx cdepth))))
+	 r2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa/final? ...                                                  */
