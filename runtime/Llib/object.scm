@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Nov 14 12:57:38 2021 (serrano)                */
+;*    Last change :  Sun Nov 14 17:01:27 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -801,11 +801,14 @@
       (set! *nb-classes* 0)
       (set! *nb-classes-max* 64)
       (set! *classes* ($make-vector-uncollectable *nb-classes-max* #f))
+      (set! *inheritance-cnt* 0)
+      (set! *inheritance-max-depth* 128)
       (cond-expand
 	 (bint61
-	  (set! *inheritance-cnt* 0)
-	  (set! *inheritance-max-depth* 128)
-	  (set! *inheritances* ($make-vector-uncollectable 256 #f))))
+	  (set! *inheritances* ($make-vector-uncollectable 256 #f)))
+	 (else
+	  ;; not use on 32bit platforms
+	  (set! *inheritances* '#())))
       (set! *nb-generics-max* 64)
       (set! *nb-generics* 0)
       (set! *generics* ($make-vector-uncollectable *nb-generics-max* #f))
@@ -1014,6 +1017,10 @@
 	     (depth (if (class? super)
 			(+fx (class-depth super) 1)
 			0))
+	     (fs (if (class? super)
+			   (vector-append (class-all-fields super) plain)
+			   plain))
+	     (vs (make-class-virtual-slots-vector super virtual))
 	     (class (make-class name module
 		       num *inheritance-cnt*
 		       super
@@ -1021,11 +1028,9 @@
 		       allocator
 		       hash
 		       plain
-		       (if (class? super)
-			   (vector-append (class-all-fields super) plain)
-			   plain)
+		       fs
 		       constructor
-		       (make-class-virtual-slots-vector super virtual)
+		       vs
 		       creator
 		       nil
 		       shrink
