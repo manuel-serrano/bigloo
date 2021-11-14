@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 08:08:56 2012                          */
-/*    Last change :  Tue Apr 17 08:03:20 2018 (serrano)                */
-/*    Copyright   :  2012-18 Manuel Serrano                            */
+/*    Last change :  Sat Nov 13 18:52:19 2021 (serrano)                */
+/*    Copyright   :  2012-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Bigloo object management.                                      */
 /*=====================================================================*/
@@ -15,7 +15,7 @@
 /*    bmem_set_allocation_type ...                                     */
 /*---------------------------------------------------------------------*/
 void
-bmem_set_allocation_type( long tname, long offset ) {
+bmem_set_allocation_type(long tname, long offset) {
    /* just a place holder for bmem */
 }
 
@@ -25,24 +25,24 @@ bmem_set_allocation_type( long tname, long offset ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-bgl_make_class( obj_t name, obj_t module, long num,
+bgl_make_class(obj_t name, obj_t module,
+		long num, long inheritance_num,
 		obj_t super, obj_t sub,
 		obj_t alloc, long hash,
 		obj_t fd, obj_t allfd,
 		obj_t constr, obj_t virt, obj_t new, obj_t nil, obj_t shrink,
 		long depth, 
-		obj_t evdata ) {
+		obj_t evdata) {
    obj_t klass;
-   long dspsz = depth < BGL_OBJECT_MIN_DISPLAY_SIZE ?
-      BGL_OBJECT_MIN_DISPLAY_SIZE : depth;
-   //dspsz = depth;
 
-   klass = GC_MALLOC_UNCOLLECTABLE( BGL_CLASS_SIZE + (sizeof(obj_t) * dspsz) );
+   klass = GC_MALLOC_UNCOLLECTABLE(BGL_CLASS_SIZE + (sizeof(obj_t) * depth));
 
-   klass->class.header = MAKE_HEADER( CLASS_TYPE, 0 );
+   klass->class.header = MAKE_HEADER(CLASS_TYPE, 0);
    klass->class.name = name;
 
    klass->class.index = num;
+   // only used no 64 bit platforms
+   klass->class.inheritance_index = inheritance_num << (HEADER_TYPE_BIT_SIZE);
    klass->class.super = super;
    klass->class.subclasses = sub;
    klass->class.alloc_fun = alloc;
@@ -60,15 +60,12 @@ bgl_make_class( obj_t name, obj_t module, long num,
    klass->class.nil = BFALSE;
    klass->class.depth = depth;
 
-   if( depth > 0 ) {
-      memcpy( &(klass->class.ancestor0),
-	      &(BGL_CLASS_ANCESTORS_REF( super, 0 )),
-	      sizeof( obj_t ) * (depth - 1) );
-	 (&klass->class.ancestor0)[ depth - 1 ] = super;
-      if( depth < BGL_OBJECT_MIN_DISPLAY_SIZE ) {
-	 (&klass->class.ancestor0)[ depth ] = BREF( klass );
-      }
+   if (depth > 0) {
+      memcpy(&(klass->class.ancestor0),
+	      &(BGL_CLASS_ANCESTORS_REF(super, 0)),
+	      sizeof(obj_t) * depth);
    }
+   (&klass->class.ancestor0)[depth] = BREF(klass);
 
-   return BREF( klass );
+   return BREF(klass);
 }

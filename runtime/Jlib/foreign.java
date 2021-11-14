@@ -4415,7 +4415,9 @@ public final class foreign
 
    public static int OBJECT_TYPE = 0;
 
-   public static int MIN_DISPLAY_SIZE = 6;
+   public static Object BGL_AS_OBJECT(Object o) {
+      return o;
+   }
    
    public static Object BGL_OBJECT_WIDENING_SET(object o, Object v)
       {
@@ -4451,12 +4453,17 @@ public final class foreign
    ////
    // CLASS
    ////
+   public static int BGL_MAX_CLASS_NUM(Object o) {
+      return 1 << 32;
+   }
+   
    public static boolean BGL_CLASSP(Object o)
       {
 	 return (o instanceof bclass);
       }
 
-   public static Object bgl_make_class( symbol name, symbol module, int num,
+   public static Object bgl_make_class( symbol name, symbol module,
+					int num, int inheritance_num,
 					Object bsuper, Object sub,
 					procedure alloc, int hash,
 					Object[] fd, Object[] allfd,
