@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 26 09:22:36 2021 (serrano)                */
+;*    Last change :  Fri Nov 26 10:54:42 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -145,7 +145,7 @@
 		  "bigloo_generic_mutex")
 	       (field static %object-type-number::long
 		  "OBJECT_TYPE")
-	       (method static $as-object::objet (::obj)
+	       (method static $as-object::object (::obj)
 		  "BGL_AS_OBJECT")
 	       (method static $object-widening::obj (::object)
 		  "BGL_OBJECT_WIDENING")
