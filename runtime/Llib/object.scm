@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 26 10:54:42 2021 (serrano)                */
+;*    Last change :  Fri Nov 26 13:00:36 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1389,21 +1389,12 @@
 ;*    %isa64-object/cdepth? ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa64-object/cdepth? obj class cdepth)
-   (let ((idx ($object-inheritance-num obj)))
-      (eq? (vector-ref *inheritances* (+fx idx cdepth)) class)))
-
-(define (%isa64-object/cdepth?.tbr obj class cdepth)
-   (let ((idx ($object-inheritance-num obj)))
-      (let ((r1 (eq? (vector-ref *inheritances* (+fx idx cdepth)) class))
-	    (r2 (%isa32-object/cdepth? obj class cdepth)))
-	 (unless (eq? r1 r2)
-	    (print "PAS BON " (typeof obj) " " class " cdepth=" cdepth
-	       " idx=" idx " cidx=" (class-index class)
-	       " class-depth=" (class-depth class)
-	       " " (vector-ref *inheritances* (+fx idx cdepth)))
-	    (if (not (= (pragma::long "getenv(\"DEBUG\") != 0L") 0))
-		(print (/fx 1 0))))
-	 r2)))
+   (cond-expand
+      (bint61
+       (let ((idx ($object-inheritance-num obj)))
+	  (eq? (vector-ref *inheritances* (+fx idx cdepth)) class)))
+      (else
+       #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa/final? ...                                                  */

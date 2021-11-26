@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Stephane Epardaud                                 */
 ;*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-;*    Last change :  Mon Sep 27 07:02:27 2021 (serrano)                */
+;*    Last change :  Fri Nov 26 13:01:45 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Weak pointers.                                                   */
 ;*=====================================================================*/
@@ -65,7 +65,7 @@
                     "bgl_weakptr_ref")
             (method static $weakptr-ref-set!::void (::weakptr ::obj)
                     "bgl_weakptr_ref_set")
-            (method static $make-weakptr::weakptr (::obj)
+            (method static $make-weakptr::weakptr (::obj ::obj)
                     "bgl_make_weakptr")))
 
    (export  (inline weakptr?::bool ::obj)
