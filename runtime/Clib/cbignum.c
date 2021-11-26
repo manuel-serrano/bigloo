@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Thu Nov  4 18:47:26 2021 (serrano)                */
+/*    Last change :  Fri Nov 26 12:54:11 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -14,7 +14,10 @@
 #include <bigloo.h>
 
 static obj_t bgl_belongzero, bgl_bllongzero;
+
+#if (BGL_HAVE_GMP)   
 static mpz_t onez;
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -25,7 +28,9 @@ bgl_init_bignum() {
    bgl_belongzero = make_belong(0);
    bgl_bllongzero = make_bllong(0);
 
+#if (BGL_HAVE_GMP)   
    mpz_init_set_si(onez, 1);
+#endif
 }
 
 #if (BGL_HAVE_GMP)   
