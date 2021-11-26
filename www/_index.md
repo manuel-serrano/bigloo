@@ -37,13 +37,13 @@ the result of the `fib` Scheme function operating on Scheme fixnum numbers
 will be passed to the standard `printf` C function. This example also
 give a flavor of Bigloo's module.
 
-```scheme[:@scheme]
+```scheme
 ${doc.include( "./fib.scm" )}
 ```
 
 This Scheme program can be turned into a binary executable with:
 
-```shell[:@shell]
+```shell
 $ bigloo fib.scm -o fib
 $ ./fib 30
 ```
@@ -58,13 +58,13 @@ Once instantiate they can be spawned and synchronized. Bigloo supports
 the traditional smorgasbord of locking and synchronization primtives.
 
 
-```scheme[:@scheme]
+```scheme
 ${doc.include( "./fib-mt.scm" )}
 ```
 
 To compile and run this program, simply use:
 
-```shell[:@shell]
+```shell
 $ bigloo fib-mt.scm -o fib-mt
 $ ./fib-mt 30
 ```
@@ -76,13 +76,13 @@ The third example. hardly more complex, shows how to use builtin
 libraries to build an efficient music player decoding `.flac` on
 the fly.
 
-```scheme[:@scheme]
+```scheme
 ${doc.include( "./flac.scm" )}
 ```
 
 To compile and run this program, simply use:
 
-```shell[:@shell]
+```shell
 $ bigloo flac.scm -o flac
 $ ./flac sample1.flac sample2.flac sample3.flac
 ```
