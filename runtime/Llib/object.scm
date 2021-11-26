@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 26 13:00:36 2021 (serrano)                */
+;*    Last change :  Fri Nov 26 13:32:14 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -804,7 +804,7 @@
       (set! *inheritance-cnt* 0)
       (set! *inheritance-max-depth* 128)
       (cond-expand
-	 (bint61
+	 ((and bigloo-c bint61)
 	  (set! *inheritances* ($make-vector-uncollectable 256 #f)))
 	 (else
 	  ;; not use on 32bit platforms
@@ -1048,7 +1048,7 @@
 	 ;; on 64bit platforms that supports header data, store the
 	 ;; class super classes in the inheritance vector
 	 (cond-expand
-	    (bint61
+	    ((and bigloo-c bint61)
 	     (when (>fx depth *inheritance-max-depth*)
 		(set! *inheritance-max-depth* depth))
 	     (let ((idx (+fx *inheritance-cnt* depth)))
@@ -1314,7 +1314,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (isa? obj class)
    (cond-expand
-      (bint61
+      ((and bigloo-c bint61)
        (isa64? obj class))
       (else
        (isa32? obj class))))
@@ -1324,7 +1324,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa/cdepth? obj class cdepth)
    (cond-expand
-      (bint61
+      ((and bigloo-c bint61)
        (%isa64/cdepth? obj class cdepth))
       (else
        (%isa32/cdepth? obj class cdepth))))
@@ -1334,7 +1334,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa-object/cdepth? obj class cdepth)
    (cond-expand
-      (bint61
+      ((and bigloo-c bint61)
        (%isa64-object/cdepth? obj class cdepth))
       (else
        (%isa32-object/cdepth? obj class cdepth))))
@@ -1390,7 +1390,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa64-object/cdepth? obj class cdepth)
    (cond-expand
-      (bint61
+      ((and bigloo-c bint61)
        (let ((idx ($object-inheritance-num obj)))
 	  (eq? (vector-ref *inheritances* (+fx idx cdepth)) class)))
       (else
