@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 26 13:32:14 2021 (serrano)                */
+;*    Last change :  Mon Nov 29 15:44:27 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -59,6 +59,8 @@
 	    (macro object-header-size-set!::long (::obj ::long)
 		   "BGL_OBJECT_HEADER_SIZE_SET")
 
+	    (macro $isa-c-backend::bool (::bool ::bool)
+		   "BGL_ISA_C_BACKEND")
 	    (macro %object-type-number::long
 		   "OBJECT_TYPE")
 	    (macro %object?::bool (::obj)
@@ -326,11 +328,7 @@
 	    (inline isa?::bool ::obj ::class)
 	    (inline %isa/cdepth?::bool ::obj ::class ::long)
 	    (inline %isa-object/cdepth?::bool ::object ::class ::long)
-	    (isa32?::bool ::obj ::class)
-	    (inline %isa32/cdepth?::bool ::obj ::class ::long)
 	    (inline %isa32-object/cdepth?::bool ::object ::class ::long)
-	    (inline isa64?::bool ::obj ::class)
-	    (inline %isa64/cdepth?::bool ::obj ::class ::long)
 	    (inline %isa64-object/cdepth?::bool ::object ::class ::long)
 	    (inline %isa/final?::bool ::obj ::class)
 	    (inline %isa-object/final?::bool ::object ::class)
@@ -383,6 +381,8 @@
 	    (isa? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%isa/cdepth? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%isa-object/cdepth? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
+	    (%isa32-object/cdepth? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
+	    (%isa64-object/cdepth? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%isa/final? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%isa-object/final? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%object? (predicate-of object) no-cfa-top nesting)
@@ -1313,53 +1313,27 @@
 ;*    The constant-time and thread-safe implementation of isa?         */
 ;*---------------------------------------------------------------------*/
 (define-inline (isa? obj class)
-   (cond-expand
-      ((and bigloo-c bint61)
-       (isa64? obj class))
-      (else
-       (isa32? obj class))))
+   (when (object? obj)
+      (%isa-object/cdepth? ($as-object obj) class ($class-depth class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa/cdepth? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa/cdepth? obj class cdepth)
-   (cond-expand
-      ((and bigloo-c bint61)
-       (%isa64/cdepth? obj class cdepth))
-      (else
-       (%isa32/cdepth? obj class cdepth))))
+   (when (object? obj)
+      (%isa-object/cdepth? ($as-object obj) class cdepth)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa-object/cdepth? ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa-object/cdepth? obj class cdepth)
    (cond-expand
-      ((and bigloo-c bint61)
-       (%isa64-object/cdepth? obj class cdepth))
+      (bigloo-c
+       ($isa-c-backend
+	  (%isa64-object/cdepth? obj class cdepth)
+	  (%isa32-object/cdepth? obj class cdepth)))
       (else
        (%isa32-object/cdepth? obj class cdepth))))
-
-;*---------------------------------------------------------------------*/
-;*    isa32? ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (isa32? obj class)
-   (if (object? obj)
-       (let ((oclass (object-class ($as-object obj))))
-	  (if (eq? oclass class)
-	      #t
-	      (let ((odepth (class-depth oclass))
-		    (cdepth (class-depth class)))
-		 (if (<fx cdepth odepth)
-		     (eq? (class-ancestors-ref oclass cdepth) class)
-		     #f))))
-       #f))
-
-;*---------------------------------------------------------------------*/
-;*    %isa32/cdepth? ...                                               */
-;*---------------------------------------------------------------------*/
-(define-inline (%isa32/cdepth? obj class cdepth)
-   (when (object? obj)
-      (%isa-object/cdepth? ($as-object obj) class cdepth)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa32-object/cdepth? ...                                        */
@@ -1372,25 +1346,11 @@
 		  (eq? ($class-ancestors-ref oclass cdepth) class))))))
 
 ;*---------------------------------------------------------------------*/
-;*    isa64? ...                                                       */
-;*---------------------------------------------------------------------*/
-(define-inline (isa64? obj class)
-   (when (object? obj)
-      (%isa64-object/cdepth? ($as-object obj) class ($class-depth class))))
-
-;*---------------------------------------------------------------------*/
-;*    %isa64/cdepth? ...                                               */
-;*---------------------------------------------------------------------*/
-(define-inline (%isa64/cdepth? obj class cdepth)
-   (when (object? obj)
-      (%isa64-object/cdepth? ($as-object obj) class cdepth)))
-
-;*---------------------------------------------------------------------*/
 ;*    %isa64-object/cdepth? ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (%isa64-object/cdepth? obj class cdepth)
    (cond-expand
-      ((and bigloo-c bint61)
+      (bigloo-c
        (let ((idx ($object-inheritance-num obj)))
 	  (eq? (vector-ref *inheritances* (+fx idx cdepth)) class)))
       (else
