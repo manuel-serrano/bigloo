@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Nov 29 07:05:32 2021 (serrano)                */
+;*    Last change :  Mon Nov 29 09:37:36 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -131,6 +131,7 @@
 
 	  (export $$bitlshbx "bgl_bignum_lsh")
 	  (export $$bitrshbx "bgl_bignum_rsh")
+	  (export $$bitmaskbx "bgl_bignum_mask")
 	  (export $$bitorbx "bgl_bignum_or")
 	  (export $$bitxorbx "bgl_bignum_xor")
 	  (export $$bitandbx "bgl_bignum_and")
