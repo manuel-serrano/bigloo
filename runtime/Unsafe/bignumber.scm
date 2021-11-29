@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Nov 11 08:51:12 2021 (serrano)                */
+;*    Last change :  Mon Nov 29 07:05:32 2021 (serrano)                */
 ;*    Copyright   :  2006-21 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -111,7 +111,7 @@
 	  (export $$+bx "bgl_bignum_add")
 	  (export $$-bx "bgl_bignum_sub")
 	  (export $$*bx "bgl_bignum_mul")
-	  (export $$exptbx "bgl_bignum_mul")
+	  (export $$exptbx "bgl_bignum_expt")
 	  (export $$quotientbx "bgl_bignum_quotient")
 	  (export $$remainderbx "bgl_bignum_remainder")
 	  (export $$gcdbx "bgl_bignum_gcd")
