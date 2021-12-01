@@ -1,9 +1,9 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
-/*   Bigloo (4.4b)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Wed 24 Mar 2021 07:28:19 AM CET     */
+/*   Bigloo (4.4c)                                                           */
+/*   Inria -- Sophia Antipolis (c)       Wed Dec 1 08:55:16 AM CET 2021      */
 /*===========================================================================*/
-/* COMPILATION: (/home/serrano/prgm/project/bigloo/4.4b/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/4.4b/lib/bigloo/4.4b -I Llib -lib-dir /home/serrano/prgm/project/bigloo/4.4b/lib/bigloo/4.4b -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/4.4b/libuv/libuv-v1.40.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
+/* COMPILATION: (/home/serrano/prgm/project/bigloo/4.4c/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/4.4c/lib/bigloo/4.4c -I Llib -lib-dir /home/serrano/prgm/project/bigloo/4.4c/lib/bigloo/4.4c -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/4.4c/libuv/libuv-v1.40.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
 
 /* object type definitions */
 typedef struct BgL_z52uvz52_bgl {
