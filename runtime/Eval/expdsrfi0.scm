@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdsrfi0.scm        */
+;*    serrano/prgm/project/bigloo/4.4c/runtime/Eval/expdsrfi0.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue Oct 19 18:31:14 2021 (serrano)                */
+;*    Last change :  Thu Dec  2 20:17:00 2021 (serrano)                */
 ;*    Copyright   :  2001-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -249,9 +249,15 @@
 ;*    progn ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (progn body)
-   (if (pair? (cdr body))
-       `(begin ,@body)
-       (car body)))
+   (cond
+      ((pair? body)
+       (if (pair? (cdr body))
+	   `(begin ,@body)
+	   (car body)))
+      ((null? body)
+       #unspecified)
+      (else
+       body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-cond-exapnd ...                                           */
