@@ -1,6 +1,6 @@
 {
    "title": "Bigloo",
-   "version": "4.4c",
+   "version": "4.4c-2",
    "date": "December 2021",
    "urlbase": "ftp://ftp-sop.inria.fr/indes/fp/Bigloo",
    "github": "https://github.com/manuel-serrano/bigloo.git",
