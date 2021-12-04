@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu May  6 10:44:33 2021 (serrano)                */
+#*    Last change :  Thu Dec  2 15:07:37 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -134,6 +134,7 @@ DIRECTORIES	= cigloo \
                   pcre \
                   pcre2 \
                   libunistring \
+                  libbacktrace \
                   libuv
 
 #*---------------------------------------------------------------------*/
@@ -197,6 +198,9 @@ boot-c: checkgmake
         fi
 	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libunistring boot; \
+        fi
+<	if [ "$(LIBBACKTRACECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libbacktrace boot; \
         fi
 	if [ -x $(BGLBUILDBINDIR)/bigloo ]; then \
 	  $(MAKE) -C runtime .afile && \

@@ -1,16 +1,14 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/libuv/install-libuv           */
+#*    .../project/bigloo/bigloo/libbacktrace/install-libbacktrace      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Thu Dec  2 11:51:13 2021 (serrano)                */
+#*    Last change :  Thu Dec  2 14:10:08 2021 (serrano)                */
 #*    Copyright   :  2007-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    This shell script installs a new LIBUV.                          */
+#*    This shell script installs a new LIBBACKTRACE.                   */
 #*=====================================================================*/
 
-src=libuv-$libuvversion.tgz
-
-tar xfz $src || (echo "tar xfz $src failed"; exit 1)
+tar xfz $LIBBACKTRACESRC || (echo "tar xfz $LIBBACKTRACESRC failed"; exit 1)
 

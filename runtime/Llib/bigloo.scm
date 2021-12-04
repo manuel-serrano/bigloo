@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Sep 16 13:53:26 2021 (serrano)                */
+;*    Last change :  Fri Dec  3 18:33:17 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -156,6 +156,7 @@
 	    (export bigloo-class-mangled? "bigloo_class_mangledp")
 	    (export bigloo-demangle "bigloo_demangle")
 	    (export bigloo-class-demangle "bigloo_class_demangle")
+	    (export bigloo-module-demangle "bigloo_module_demangle")
 	    (export bigloo-exit-apply "bigloo_exit_apply")
 	    (export bigloo-exit-mutex "bgl_exit_mutex"))
 
@@ -263,6 +264,7 @@
 	    (export bigloo-demangle "bigloo_demangle")
 	    (export bigloo-class-mangled? "bigloo_class_mangledp")
 	    (export bigloo-class-demangle "bigloo_class_demangle")
+	    (export bigloo-module-demangle "bigloo_module_demangle")
 	    (export bigloo-exit-apply "bigloo_exit_apply"))
 
    (export  (check-version! ::obj ::string ::obj)
@@ -282,6 +284,7 @@
 	    (bigloo-module-mangle::bstring ::bstring ::bstring)
 	    (bigloo-demangle ::bstring)
 	    (bigloo-class-demangle::bstring ::bstring)
+	    (bigloo-module-demangle::bstring ::bstring)
 	    (register-exit-function! ::procedure)
 	    (unregister-exit-function! ::procedure)
 	    (bigloo-exit-apply::obj ::obj)
@@ -604,6 +607,16 @@
 	  (bigloo-demangle-module))
 	 (else
 	  string))))
+
+;*---------------------------------------------------------------------*/
+;*    bigloo-module-demangle ...                                       */
+;*---------------------------------------------------------------------*/
+(define (bigloo-module-demangle string)
+   (multiple-value-bind (id module)
+      (bigloo-demangle string)
+      (if (string? module)
+	  (string-append id "@" module)
+	  id)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-class-mangled? ...                                        */

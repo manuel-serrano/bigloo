@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/alibrary.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/Module/alibrary.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Thu Sep 19 11:59:07 2013 (serrano)                */
-;*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Dec  3 16:47:21 2021 (serrano)                */
+;*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
 ;*=====================================================================*/
@@ -94,7 +94,7 @@
        (for-each (lambda (x)
 		    (if (symbol? x)
 			(use-library! x)
-			(error 'library "Illegal prototype" x)))
+			(error "library" "Illegal prototype" x)))
 		 protos)
        '())
       (else
@@ -120,7 +120,7 @@
 						    (car *src-files*)
 						    "-")))
 					  `(,v 0 ,f))
-				       (error 'library "Cannot find library init module"
+				       (error "library" "Cannot find library init module"
 					  (libinfo-module_s info)))))
 			    ,(when (libinfo-init info)
 				`(,(libinfo-init info)))))))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Thu Oct  7 08:19:52 2021 (serrano)                */
+/*    Last change :  Sat Dec  4 18:19:57 2021 (serrano)                */
 /*    Copyright   :  2004-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -268,6 +268,7 @@ make_dynamic_env() {
    
    env->dynamic_env.top_of_frame = 0L;
    env->dynamic_env.exit_traces = BNIL;
+   env->dynamic_env.backtrace = 0L;
 
    env->dynamic_env.debug_alist = BNIL;
 

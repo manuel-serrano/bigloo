@@ -1,0 +1,86 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/libbacktrace         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Jose Romildo                                      */
+#*    Creation    :  Sat Nov 11 13:27:23 1995                          */
+#*    Last change :  Thu Dec  2 13:37:54 2021 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host libbacktrace library.                         */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+libbacktracelib="libbacktrace"
+type=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --type=*|-type=*)
+      type="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest.$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout -l$libbacktracelib >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <backtrace.h>
+
+int main( int argc, char *argv[] ) {
+   struct backtrace_state *bt_state = backtrace_create_state(0L, 0, cbe, 0L);
+   return bt_state != 0;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout aaa aaa"
+   ret_code=$?
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   if [ $ret_code = 0 ]; then
+     echo "$libbacktracelib"
+   else
+     echo "no"
+   fi
+   exit $ret_code
+else
+   \rm -f $file.*
+   echo "no"
+   exit 0
+fi
+

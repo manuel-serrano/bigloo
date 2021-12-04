@@ -1,14 +1,14 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/libuv/Makefile            */
+#*    serrano/prgm/project/bigloo/bigloo/api/libbacktrace/Makefile     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Thu Dec  2 15:46:15 2021 (serrano)                */
+#*    Last change :  Thu Dec  2 15:46:09 2021 (serrano)                */
 #*    Copyright   :  2001-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
-#*    The Makefile for libuv                                           */
+#*    The Makefile for libbacktrace                                    */
 #*=====================================================================*/
 include ../../Makefile.buildconfig
 include ../../Makefile.config
@@ -16,7 +16,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    The name of the API (used by Makefile.api)                       */
 #*---------------------------------------------------------------------*/
-API = libuv
+API = libbacktrace
 
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
@@ -45,7 +45,7 @@ build-c:
           fi
 
 build-jvm:
-	@ echo "LIBUV .jvm: Not implemented";
+	@ echo "LIBBACKTRACE .jvm: Not implemented";
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -55,7 +55,7 @@ build-jvm:
 #*---------------------------------------------------------------------*/
 .PHONY: pop
 pop:
-	@ echo $(POPULATION:%=libuv/%)
+	@ echo $(POPULATION:%=libbacktrace/%)
 	@ for d in $(POPDIR); do \
             (cd $$d && $(MAKE) -s pop) \
           done;
