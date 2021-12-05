@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Oct 13 12:10:46 2021 (serrano)                */
+;*    Last change :  Sun Dec  5 07:00:12 2021 (serrano)                */
 ;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -624,13 +624,23 @@
        (set! *profile-library* #t)
        (set! *cc-options* (append *cc-options* (list *cflags-prof*))))
       (("-pmem?level" (help "-pmem[level]" "Compile for memory profiling"))
-       ;;(bigloo-compiler-debug-set! 1)
-       ;; (set! *compiler-debug* 1)
        (let ((l (max (string->integer level) 1)))
-	  (set! *compiler-debug-trace* (*fx 5 l))
-	  (set! *jas-peephole* #f)
 	  (set! *bmem-profiling* #t)
-	  (bigloo-profile-set! l)))
+	  (bigloo-profile-set! l)
+	  (cond-expand
+	     ((library libbacktrace)
+	      (let ((fpopt  (bigloo-config 'c-compiler-fp-option)))
+		 (when (and (string? fpopt) (not (string=? fpopt "")))
+		    (set! *cc-options* (cons fpopt *cc-options*))))
+	      (set! *strip* #f)
+	      (case l
+		 ((2)
+		  (set! *user-inlining?* #f))
+		 ((3)
+		  (set! *inlining?* #f))))
+	     (else
+	      (set! *compiler-debug-trace* (*fx 5 l))
+	      (set! *jas-peephole* #f)))))
       (("-psync" (help "Profile synchronize expr (see $exitd-mutex-profile)"))
        (set! *sync-profiling* #t))
       

@@ -1,17 +1,23 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/bmem.h           */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/bmem.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Thu Oct  7 19:31:44 2021 (serrano)                */
+/*    Last change :  Sun Dec  5 08:36:05 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
+#ifndef BMEM_H 
+#define BMEM_H
+
 #include <bigloo_config.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <pthread.h>
+#if BGL_HAVE_BACKTRACE
+#  include <backtrace.h>
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Identity                                                         */
@@ -72,18 +78,91 @@ typedef struct fun_info {
    fun_alloc_info_t *allocs;
 } fun_info_t;
 
+typedef struct alloc_info {
+   long typenum;
+   long size;
+   char *function;
+   char *filename;
+   long lineno;
+   int depth;
+} alloc_info_t;
+
+typedef struct line_alloc {
+   long lineno;
+   long size;
+   long count;
+   unsigned int typecount;
+   long *typenums;
+} line_alloc_t;
+
+typedef struct file_alloc {
+   char *filename;
+   long size;
+   line_alloc_t *lines;
+} file_alloc_t;
+
+/*---------------------------------------------------------------------*/
+/*    LOADF ...                                                        */
+/*---------------------------------------------------------------------*/
+#define LOADF(hdl, ident) \
+   ____##ident = get_function(hdl, #ident)
+
+/*---------------------------------------------------------------------*/
+/*    WRAP ...                                                         */
+/*---------------------------------------------------------------------*/
+#define WRAP(ident, tnum, proto, call) \
+obj_t ident proto { \
+   obj_t __res; \
+   long otnum = bmem_get_alloc_type(); \
+   bmem_set_alloc_type(tnum); \
+   __res =  ____##ident call ; \
+   bmem_set_alloc_type(otnum); \
+   return __res; \
+}
+
+#define WRAPR(ident, identr, tnum, proto, call)	\
+obj_t ident proto { \
+   obj_t __res; \
+   long otnum = bmem_get_alloc_type(); \
+   bmem_set_alloc_type(tnum); \
+   __res =  ____##identr call ; \
+   bmem_set_alloc_type(otnum); \
+   return __res; \
+}
+
+#define WRAP_DEBUG(ident, tnum, proto, call) \
+obj_t ident proto { \
+   obj_t __res; \
+   long otnum = bmem_get_alloc_type(); \
+   fprintf( stderr, ">>> wrap " #ident "\n..."); \
+   bmem_set_alloc_type(tnum); \
+   __res =  ____##ident call ; \
+   bmem_set_alloc_type(otnum); \
+   fprintf( stderr, "<<< wrap " #ident "\n..."); \
+   return __res; \
+}
+
+#define MARKF(ident, tnum) \
+   backtrace_alloc_name_put(ident, tnum)
+
+/*---------------------------------------------------------------------*/
+/*    shared libraries handling                                        */
+/*---------------------------------------------------------------------*/
+fun_t get_function(void *, char *);
+extern void declare_type(int, char *, char *);
+
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
 /*---------------------------------------------------------------------*/
 extern int bmem_debug;
 extern int bmem_thread;
+extern int bmem_color;
+extern int bmem_backtrace;
+extern int bmem_verbose;
 extern void *unknown_ident;
 extern void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 extern void *bgl_make_input_port_symbol;
 extern unsigned long gc_number;
-extern void bmem_set_alloc_type( long, long );
-extern long bmem_get_alloc_index();
-extern void bmem_set_alloc_index( long );
 extern unsigned long ante_bgl_init_dsz;
 
 extern pthread_key_t bmem_key;
@@ -93,13 +172,12 @@ extern pthread_mutex_t bmem_mutex;
 
 extern void mark_function( void *, long, long, long, int, int, long );
 
+extern void *(*____pthread_getspecific)( pthread_key_t );
+extern int (*____pthread_setspecific)( pthread_key_t, void * );
+extern int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
+extern int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
+
 extern void (*____GC_reset_allocated_bytes)();
-extern void *(*____make_pair)( void *, void * );
-extern void *(*____make_cell)( void * );
-extern void *(*____make_real)( double );
-extern void *(*____make_belong)( long );
-extern void *(*____make_bllong)( BGL_LONGLONG_T );
-extern void *(*____make_cell)( void * );
 extern void *(*____GC_malloc)( size_t );
 extern void *(*____GC_realloc)( void *, size_t );
 extern void *(*____GC_malloc_atomic)( size_t );
@@ -109,69 +187,8 @@ extern BGL_LONGLONG_T (*____bgl_current_nanoseconds)();
 
 extern void (*____bgl_init_objects)();
 
-extern void *(*____string_to_bstring)( char * );
-extern void *(*____string_to_bstring_len)( char *, int );
-extern void *(*____make_string)( int, char );
-extern void *(*____make_string_sans_fill)( long );
-extern void *(*____string_append)( void *, void * );
-extern void *(*____string_append_3)( void *, void *, void * );
-extern void *(*____c_substring)( void *, int, int );
-extern void *(*____bgl_escape_C_string)( unsigned char *, long, long );
-extern void *(*____bgl_escape_scheme_string)( unsigned char *, long, long );
-extern void *(*____create_string_for_read)( void *, int );
-extern void *(*____bgl_make_keyword)( void * );
-extern void *(*____string_to_llong)( char * );
-extern void *(*____string_to_elong)( char * );
-
-extern void *(*____bgl_make_output_port)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
-                                        
-extern void *(*____bgl_output_port_timeout_set)( void *, long );
-
-extern void *(*____bgl_make_input_port)( void *, FILE *, void *, void * );
-extern void *(*____bgl_open_input_file)( void *, void * );
-extern void *(*____bgl_file_input_port)( FILE * );
-extern void *(*____bgl_open_input_pipe)( void *, void * );
-extern void *(*____bgl_open_input_resource)( void *, void * );
-extern void *(*____bgl_open_input_string)( void *, long );
-extern void *(*____bgl_open_input_substring)( void *, long, long );
-extern void *(*____bgl_open_input_c_string)( char * );
-extern void *(*____bgl_reopen_input_c_string)( void *, char * );
-extern void *(*____bgl_input_port_timeout_set)( void *, long );
-
-extern void *(*____bgl_make_regexp)( void * );
-
-extern void *(*____bgl_dynamic_env)();
-extern void *(*____make_dynamic_env)();
-extern void (*____bgl_init_dynamic_env)();
-extern void *(*____bgl_dup_dynamic_env)( void * );
-
-extern void *(*____bglthread_new )( void * );
-extern void *(*____bglthread_new_with_name )( void *, void * );
-	      
-extern void *(*____create_struct )( void *, int );
-extern void *(*____make_struct )( void *, int, void * );
-
-extern void *(*____bgl_make_client_socket )( void *, int, int, void *, void * );
-extern void *(*____bgl_make_server_socket )( void *, int, int, bool_t );
-extern void *(*____bgl_socket_accept )( void *, int, void *, void * );
-extern long (*____bgl_socket_accept_many )( void *, int, void *, void *, void * );
-extern void *(*____bgl_host )( void * );
-
-extern void *(*____bgl_seconds_to_date )( long );
-extern void *(*____bgl_nanoseconds_to_date )( long );
-extern void *(*____bgl_make_date )( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
-extern void *(*____bgl_seconds_format )( long, void * );
-
-extern obj_t(*____bgl_string_to_bignum)( char *s, int r );
-extern obj_t(*____bgl_long_to_bignum)( long );
-extern obj_t(*____bgl_llong_to_bignum)( long long );
-extern obj_t(*____bgl_uint64_to_bignum)( uint64_t );
-extern obj_t(*____bgl_flonum_to_bignum)( double );
-
-extern void *(*____scheduler_start)( void * );
-extern void *(*____scheduler_react)( void * );
-extern void (*____bglthread_switch)( void *, void * );
-extern void (*____bglasync_scheduler_notify)( void * );
+extern void (*____bgl_init_trace_register)();
+extern obj_t (*____bgl_get_trace_stack)(int);
 
 extern void *(*____register_class )( void *, void *, void *,
 				     long,
@@ -180,20 +197,13 @@ extern void *(*____register_class )( void *, void *, void *,
 				     void *, void * );
 extern int (*____bgl_types_number)();
 
-extern void *(*____pthread_getspecific)( pthread_key_t );
-extern int (*____pthread_setspecific)( pthread_key_t, void * );
-extern int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
-extern int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
-
-extern void *(*____bgl_make_mutex)( void * );
-extern void *(*____bgl_make_nil_mutex)( void * );
-extern void *(*____bgl_make_spinlock)( void * );
-extern void *(*____bgl_make_condvar)( void * );
-extern void *(*____bgl_make_nil_condvar)( void * );
-
-extern long (*____get_hash_power_number)( char *, unsigned long );
-extern long (*____get_hash_power_number_len)( char *, unsigned long, long );
-extern void *(*____bgl_get_symtab)();
+/*---------------------------------------------------------------------*/
+/*    alloc                                                            */
+/*---------------------------------------------------------------------*/
+extern void alloc_init(char **);
+extern int alloc_is_native(const char*);
+extern void bmem_set_alloc_type(long);
+extern long bmem_get_alloc_type();
 
 /*---------------------------------------------------------------------*/
 /*    Functions                                                        */
@@ -225,57 +235,83 @@ extern void *bgl_debug_trace_top( int );
 extern char *bgl_debug_trace_top_name( int );
 extern char *bgl_debug_trace_symbol_name( void * );
 extern char *bgl_debug_trace_symbol_name_json( void * );
-extern void for_each_trace( void (*)(void *, void *), int, int, void * );
+
+extern void backtrace_for_each(backtrace_full_callback, int, void *);
+extern int backtrace_alloc_cb(void *, uintptr_t, const char *, int, const char *);
+extern void backtrace_alloc_name_put(char *, int);
+
+/*---------------------------------------------------------------------*/
+/*    Hash                                                             */
+/*---------------------------------------------------------------------*/
+typedef struct hashbucketentry {
+   char *key;
+   void *data;
+} hashbucketentry_t;
+
+typedef struct hashtable {
+   long size;
+   hashbucketentry_t *buckets;
+} hashtable_t;
+
+extern hashtable_t *hashtable_create(long);
+extern void *hashtable_get(hashtable_t *, const char *);
+extern int hashtable_put(hashtable_t *, const char *, void *);
+extern void hashtable_foreach(hashtable_t *, void (*)(const char *, void*));
 
 /*---------------------------------------------------------------------*/
 /*    Types                                                            */
 /*---------------------------------------------------------------------*/
-#define PAIR_TYPE_NUM                  0
-#define STRING_TYPE_NUM                1
-#define VECTOR_TYPE_NUM                2
-#define PROCEDURE_TYPE_NUM             3
-#define UCS2_STRING_TYPE_NUM           4
-#define OPAQUE_TYPE_NUM                5
-#define CUSTOM_TYPE_NUM                6
-#define KEYWORD_TYPE_NUM               7
-#define SYMBOL_TYPE_NUM                8
-#define STACK_TYPE_NUM                 9
-#define INPUT_PORT_TYPE_NUM            10
-#define OUTPUT_PORT_TYPE_NUM           11
-#define DATE_TYPE_NUM                  12
-#define CELL_TYPE_NUM                  13
-#define SOCKET_TYPE_NUM                14
-#define STRUCT_TYPE_NUM                15
-#define REAL_TYPE_NUM                  16
-#define PROCESS_TYPE_NUM               17
-#define FOREIGN_TYPE_NUM               18
-#define OUTPUT_STRING_PORT_TYPE_NUM    19
-#define BINARY_PORT_TYPE_NUM           20
-#define EXTENDED_PAIR_TYPE_NUM         21
-#define TVECTOR_TYPE_NUM               22
-#define TSTRUCT_TYPE_NUM               23
-#define PROCEDURE_LIGHT_TYPE_NUM       24
-#define ELONG_TYPE_NUM                 25
-#define LLONG_TYPE_NUM                 26
-#define ROWSTRING_TYPE_NUM             27
-#define _THREAD_TYPE_NUM               28
-#define _DYNAMIC_ENV_TYPE_NUM          29
-#define UNKNOWN_TYPE_NUM               30
-#define UNKNOWN_ATOMIC_TYPE_NUM        31
-#define UNKNOWN_REALLOC_TYPE_NUM       32
-#define HOSTENT_TYPE_NUM               33
-#define PORT_TIMEOUT_TYPE_NUM          34
-#define DATAGRAM_SOCKET_TYPE_NUM       44
-#define REGEXP_TYPE_NUM                45
-#define INT32_TYPE_NUM                 48
-#define UINT32_TYPE_NUM                49
-#define INT64_TYPE_NUM                 50
-#define UINT64_TYPE_NUM                51
-#define UNKNOWN_UNCOLLECTABLE_TYPE_NUM 52
-#define MUTEX_TYPE_NUM                 53
-#define SPINLOCK_TYPE_NUM              54
-#define CONDVAR_TYPE_NUM               55
-#define BIGNUM_TYPE_NUM                56
+#define NO_TYPE_NUM                    0 
+#define PAIR_TYPE_NUM                  1
+#define STRING_TYPE_NUM                2
+#define VECTOR_TYPE_NUM                3
+#define PROCEDURE_TYPE_NUM             4
+#define UCS2_STRING_TYPE_NUM           5
+#define OPAQUE_TYPE_NUM                6
+#define CUSTOM_TYPE_NUM                7
+#define KEYWORD_TYPE_NUM               8
+#define SYMBOL_TYPE_NUM                9
+#define STACK_TYPE_NUM                 11
+#define INPUT_PORT_TYPE_NUM            12
+#define OUTPUT_PORT_TYPE_NUM           13
+#define DATE_TYPE_NUM                  14
+#define CELL_TYPE_NUM                  15
+#define SOCKET_TYPE_NUM                16
+#define STRUCT_TYPE_NUM                17
+#define REAL_TYPE_NUM                  18
+#define PROCESS_TYPE_NUM               19
+#define FOREIGN_TYPE_NUM               20
+#define OUTPUT_STRING_PORT_TYPE_NUM    21
+#define BINARY_PORT_TYPE_NUM           22
+#define EXTENDED_PAIR_TYPE_NUM         23
+#define TVECTOR_TYPE_NUM               24
+#define TSTRUCT_TYPE_NUM               25
+#define PROCEDURE_LIGHT_TYPE_NUM       26
+#define ELONG_TYPE_NUM                 27
+#define LLONG_TYPE_NUM                 28
+#define ROWSTRING_TYPE_NUM             29
+#define _THREAD_TYPE_NUM               30
+#define _DYNAMIC_ENV_TYPE_NUM          31
+#define UNKNOWN_TYPE_NUM               32
+#define UNKNOWN_ATOMIC_TYPE_NUM        33
+#define UNKNOWN_REALLOC_TYPE_NUM       34
+#define HOSTENT_TYPE_NUM               35
+#define PORT_TIMEOUT_TYPE_NUM          36
+#define DATAGRAM_SOCKET_TYPE_NUM       37
+#define REGEXP_TYPE_NUM                38
+#define INT32_TYPE_NUM                 39
+#define UINT32_TYPE_NUM                40
+#define INT64_TYPE_NUM                 41
+#define UINT64_TYPE_NUM                42
+#define UNKNOWN_UNCOLLECTABLE_TYPE_NUM 43
+#define MUTEX_TYPE_NUM                 44
+#define SPINLOCK_TYPE_NUM              45
+#define CONDVAR_TYPE_NUM               46
+#define BIGNUM_TYPE_NUM                47
+
+#define IGNORE_TYPE_NUM                50
 
 /* a fake type */
 #define CLASS_TYPE_NUM                 99
+
+#endif

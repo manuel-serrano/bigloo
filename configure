@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec  2 13:31:24 2021 (serrano)                */
+#*    Last change :  Sun Dec  5 07:05:53 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -71,6 +71,7 @@ fi
 bootflags=""
 featureflags=
 coflags=-O3
+cfpflags=-fno-omit-frame-pointer
 crpath=
 
 cstrip=""
@@ -179,7 +180,7 @@ libbacktrace=
 libbacktraceforce=no
 customlibbacktrace=
 libbacktracesrc=$LIBBACKTRACESRC
-libbacktraceconfigureopt=
+libbacktraceconfigureopt=--enable-shared
 
 if [ "$libbacktracesrc " = " " ]; then
   libbacktraceversion=d0f5e95
@@ -511,6 +512,7 @@ while : ; do
       ld=gcc;
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
+      cfpflags="$cfpflags";
       bootflags="$bootflags -cg";
       jvmbackend="no";
       mode=standard;
@@ -696,6 +698,9 @@ while : ; do
     --coflags=*)
       coflags="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --cfpflags=*)
+      cfpflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --ldlibs=*)
       ldlibs="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -848,6 +853,7 @@ while : ; do
       as=icc;
       ldopt="no-share";
       coflags="$coflags -O3 -ip";
+      cfpflags="$cfpflags -g";
       customgc=no;
       extralibs="";
       cstrip="no";;
@@ -1179,6 +1185,7 @@ while : ; do
       echo "   --cflags=C compilation flags" >&2;
       echo "   --lflags=compiler link flags" >&2;
       echo "   --coflags=optimization_flags" >&2;
+      echo "   --cfpflags=fp_flags" >&2;
       echo "   --cwarningflags=warning_flags" >&2;
       echo "   --cpicflags=pic_flags" >&2;
       echo "   --ldlibs=ld_libs" >&2;
@@ -2952,6 +2959,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # The -O C compiler options
   coflags=`$autoconf ccoptim --cflags="$coflags"` || exit 1
 
+  # The debug/profiling C compiler options
+  cfpflags=`$autoconf ccfp --cflags="$cfpflags"` || exit 1
+
   # The -s C linker options
   if [ "$cstrip" != "no" ]; then
     csflags=`$autoconf ccstrip --cflags="$cstrip"` || exit 1;
@@ -3639,7 +3649,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_RESOLV_APL@|$haveresolvapl|" \
               -e "s|@BGL_HAVE_RESOLV_ZXFR@|$haveresolvzxfr|" \
               -e "s|@BGL_HAVE_UNISTRING@|$haveunistring|" \
-              -e "s|@BGL_HAVE_LIBBACKTRACE@|$havelibbacktrace|" \
+              -e "s|@BGL_HAVE_BACKTRACE@|$havelibbacktrace|" \
               -e "s|@HAVE_SIGCHLD@|$sigchld|" \
               -e "s|@HAVE_SETENV@|$setenv|" \
               -e "s|@HAVE_SIGACTION@|$sigaction|" \
@@ -3685,9 +3695,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_NANFLAGS@|$cnanflags|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
+              -e "s|@C_COMPILER_FP_OPTION@|$cfpflags|" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
               -e "s|@C_OBJECT_FILE_EXTENSION@|$cobj|" \
               -e "s|@C_COMPILER_OPTIM_FLAGS@|$coflags|" \
+              -e "s|@C_COMPILER_FP_FLAGS@|$cfpflags|" \
               -e "s|@C_COMPILER_RPATH@|$crpath|" \
               -e "s|@C_STRIP_FLAGS@|$csflags|" \
               -e "s|@C_LINKER_STYLE@|$ldstyle|" \
@@ -4132,6 +4144,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The C compiler
   $echo "CC=$cc" >> $makefile_cfg
   $echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
+  $echo "CFPFLAGS=$cfpflags" >> $makefile_cfg
   $echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
@@ -5190,6 +5203,7 @@ $echo "Compilers and linkers:" >> $configurelog
 $echo "  C compiler used....................... $cc" >> $configurelog
 $echo "  options for compiling................. $cflags" >> $configurelog
 $echo "  options for optimizing................ $coflags" >> $configurelog
+$echo "  options for debugging/profiling....... $cfpflags" >> $configurelog
 $echo "  options for stripping................. $csflags" >> $configurelog
 $echo "  options for PIC code.................. $cpicflags" >> $configurelog
 $echo "  options for NAN code.................. $cnanflags" >> $configurelog

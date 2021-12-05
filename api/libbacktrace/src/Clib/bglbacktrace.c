@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec  2 14:27:09 2021                          */
-/*    Last change :  Sat Dec  4 18:46:36 2021 (serrano)                */
+/*    Last change :  Sun Dec  5 08:40:20 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Optional libbacktrace Bigloo binding                             */
@@ -95,10 +95,10 @@ static void cbe(void *data, const char *msg, int errnum) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    struct backtrace_state *                                         */
+/*    static struct backtrace_state *                                  */
 /*    libbacktrace_get_state ...                                       */
 /*---------------------------------------------------------------------*/
-struct backtrace_state *
+static struct backtrace_state *
 libbacktrace_get_state(obj_t env) {
    if (!BGL_ENV_GET_BACKTRACE(env)) {
       struct backtrace_state *bt_state = backtrace_create_state(0L, 0, cbe, 0L);

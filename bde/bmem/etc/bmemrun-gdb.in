@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    .../prgm/project/bigloo/bigloo/bde/bmem-ng/etc/bmemrun.in        */
+#*    .../project/bigloo/bigloo/bde/bmem-ng/etc/bmemrun-gdb.in         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Sun Dec  5 09:36:39 2021 (serrano)                */
+#*    Last change :  Sun Dec  5 09:40:02 2021 (serrano)                */
 #*    Copyright   :  2003-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
@@ -113,4 +113,5 @@ if [ "$thread " != " " ]; then
 fi  
 
 libbacktrace=$bmemdir/libbacktrace.so
-LD_PRELOAD="$lib$libextra $libbacktrace" $exe $args
+
+gdb --args env "LD_PRELOAD=\"$lib$libextra $libbacktrace\"" $exe $args

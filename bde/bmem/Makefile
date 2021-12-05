@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/Makefile             */
+#*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Fri May  1 16:08:47 2020 (serrano)                */
-#*    Copyright   :  2003-20 Manuel Serrano                            */
+#*    Last change :  Sun Dec  5 09:45:06 2021 (serrano)                */
+#*    Copyright   :  2003-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -19,24 +19,25 @@ include ../../Makefile.misc
 #*---------------------------------------------------------------------*/
 #*    Objects                                                          */
 #*---------------------------------------------------------------------*/
-SRC		= bmem.scm function.scm tools.scm gc.scm type.scm \
-                  html.scm param.scm thread.scm
-INCLUDE		= html.sch html-private.sch
+SRC		= 
+INCLUDE		= 
 OBJECT		= $(SRC:%.scm=bmem/%.o)
-LIBSRC		= init.c alloc.c gchook.c list.c symbol.c trace.c thread.c
-LIBINCLUDE	= bmem.h esymbol.h
+LIBSRC		= init.c  gchook.c trace.c alloc.c backtrace.c hash.c \
+                  wrapper.c
+LIBINCLUDE	= bmem.h
 LIBOBJECT	= $(LIBSRC:%.c=lib/%.o)
 
 POPULATION	= $(SRC:%=bmem/%) $(INCLUDE:%=bmem/%) \
-                  $(LIBSRC:%=lib/%) $(LIBINCLUDE:%=lib/%) \
-                  Makefile etc/bmem.css etc/bmemrun.in
+                  Makefile etc/bmemrun.in etc/bmemrun-gdb.in
 
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
 #*---------------------------------------------------------------------*/
 IFLAGS		= -Ilib -I$(BOOTLIBDIR)
-CMEMFLAGS	= -DBMEMDEBUG $(CPICFLAGS)
-BMEMFLAGS	= $(BFLAGS) -g -I bmem $(EFLAGS)
+CMEMFLAGS	= -DBMEMDEBUG $(CPICFLAGS) -g
+BMEMFLAGS	= $(BFLAGS) -g -I bmem $(EFLAGS) -I /tmp/include
+
+LDBMEMOPTS	= 
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
@@ -47,33 +48,22 @@ BMEMFLAGS	= $(BFLAGS) -g -I bmem $(EFLAGS)
 #*---------------------------------------------------------------------*/
 #*    Targets                                                          */
 #*---------------------------------------------------------------------*/
-.PHONY: bmem lib bmemrun bmem.css css
+.PHONY: lib bmemrun
 
-all: lib bmem bmemrun css
+all: lib bmemrun
 
 #*--- bmemrun ---------------------------------------------------------*/
 bmemrun: $(BOOTBINDIR)/$(BMEMRUN_EXE)
 $(BOOTBINDIR)/$(BMEMRUN_EXE): etc/bmemrun.in
 	cat etc/bmemrun.in | \
-            sed -e "s|<fildir>|$(LIBDIR)/$(FILDIR)|g" > \
+            sed -e "s|@FILDIR@|$(LIBDIR)/$(FILDIR)|g" > \
             $(BOOTBINDIR)/$(BMEMRUN_EXE)
 	chmod a+x $(BOOTBINDIR)/$(BMEMRUN_EXE)
-
-#*--- bmem.css --------------------------------------------------------*/
-css: bmem.css
-bmem.css: $(BOOTLIBDIR)/bmem/bmem.css
-$(BOOTLIBDIR)/bmem/bmem.css: $(BOOTLIBDIR)/bmem
-	cp etc/bmem.css $(BOOTLIBDIR)/bmem/bmem.css
-
-#*--- bmem ------------------------------------------------------------*/
-bmem:
-	if [ ! -f .afile ]; then \
-	  $(MAKE) .afile || exit 1; \
-	fi
-	$(MAKE) $(BOOTBINDIR)/$(BMEM_EXE)
-
-$(BOOTBINDIR)/$(BMEM_EXE): $(OBJECT)
-	$(BIGLOO) $(BMEMFLAGS) -o $@ $^
+etc/bmemrun-gdb: etc/bmemrun-gdb.in
+	cat etc/bmemrun-gdb.in | \
+            sed -e "s|@FILDIR@|$(LIBDIR)/$(FILDIR)|g" > \
+            etc/bmemrun-gdb
+	chmod a+x etc/bmemrun-gdb
 
 #*--- lib -------------------------------------------------------------*/
 lib: $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
@@ -88,8 +78,8 @@ $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_u.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_u-$(RELEASE)"
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           EXTRALIBS="-lbigloo_u-$(RELEASE) -lbacktrace"
 
 $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
@@ -98,8 +88,8 @@ $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_s.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_s-$(RELEASE)"
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           EXTRALIBS="-lbigloo_s-$(RELEASE) -lbacktrace"
 
 $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
@@ -108,8 +98,8 @@ $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_u_mt.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_u_mt-$(RELEASE)"
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           EXTRALIBS="-lbigloo_u_mt-$(RELEASE) -lbacktrace"
 
 $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
@@ -118,8 +108,8 @@ $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_s_mt.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
-           CLOSELIBS="-lbigloo_s_mt-$(RELEASE)"
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           EXTRALIBS="-lbigloo_s_mt-$(RELEASE) -lbacktrace"
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:
@@ -160,15 +150,10 @@ install:
              $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) || exit 1; \
           chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX); \
         fi
-	cp etc/bmem.css $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.css
-	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.css
 	cp lib/bmem.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.h
 	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.h
-	cp lib/esymbol.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/esymbol.h
-	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/esymbol.h
 
 uninstall:
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMEM_EXE)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE)
 	- $(RM) -rf $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem
 
@@ -178,7 +163,6 @@ uninstall:
 cleanbmem:
 	- $(RM) -f .afile .etags
 	- $(RM) -f $(OBJECT)
-	- $(RM) -f $(BOOTBINDIR)/$(BMEM_EXE)
 
 cleanlib:
 	- $(RM) -f $(LIBOBJECT)
@@ -186,7 +170,6 @@ cleanlib:
 
 clean: cleanbmem cleanlib
 	- $(RM) -f $(BOOTBINDIR)/$(BMEMRUN_EXE)
-	- $(RM) -rf $(BOOTLIBDIR)/bmem
 
 #*---------------------------------------------------------------------*/
 #*    Automatic rule                                                   */
@@ -218,7 +201,7 @@ dep:
 	@ mv /tmp/Makefile.aux Makefile
 
 getbinary:
-	@ echo "$(BOOTBINDIR)/$(BMEM_EXE)"
+	@ echo ""
 
 getsources:
 	@ echo $(SRC:%=bmem/%)

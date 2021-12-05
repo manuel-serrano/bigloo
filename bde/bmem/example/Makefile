@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bde/bmem/example/Makefile            */
+#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/example/Makefile     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Apr 24 09:18:07 2003                          */
-#*    Last change :  Wed Oct 14 07:15:08 2015 (serrano)                */
-#*    Copyright   :  2003-15 Manuel Serrano                            */
+#*    Last change :  Sun Dec  5 10:29:01 2021 (serrano)                */
+#*    Copyright   :  2003-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the bmem example                           */
 #*=====================================================================*/
@@ -20,8 +20,7 @@ POPULATION 	= $(SRC) Makefile
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
 #*---------------------------------------------------------------------*/
-BFLAGS		= -g2
-BMEM		= bglmem
+BFLAGS		= -pmem2
 BMEMRUN		= bglmemrun
 
 #*---------------------------------------------------------------------*/
@@ -33,10 +32,7 @@ BMEMRUN		= bglmemrun
 #*---------------------------------------------------------------------*/
 #*    Target                                                           */
 #*---------------------------------------------------------------------*/
-all: example.html
-
-example.html: example.bmem
-	$(BMEM) example.bmem -o example.html
+all: example.bmem
 
 example.bmem: example
 	$(BMEMRUN) ./example 25 20
@@ -68,7 +64,6 @@ pop:
 clean:
 	$(RM) -f example
 	$(RM) -f example.bmem
-	$(RM) -f example.html
 	$(RM) -f $(OBJECT)
 	$(RM) -f .afile
 

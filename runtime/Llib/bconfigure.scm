@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Sat Dec  7 18:48:05 2019 (serrano)                */
-;*    Copyright   :  2000-19 Manuel Serrano                            */
+;*    Last change :  Sun Dec  5 07:11:41 2021 (serrano)                */
+;*    Copyright   :  2000-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -55,6 +55,7 @@
 	   (macro $configure-c-compiler::string "C_COMPILER")
 	   (macro $configure-c-ld::string "C_LD")
 	   (macro $configure-c-compiler-o-option::string "C_COMPILER_O_OPTION")
+	   (macro $configure-c-compiler-fp-option::string "C_COMPILER_FP_OPTION")
            (macro $configure-c-compiler-debug-option::string "C_COMPILER_DEBUG_OPTION")
 	   (macro $configure-c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	   (macro $configure-c-compiler-rpath::string "C_COMPILER_RPATH")
@@ -134,6 +135,7 @@
               (field static c-compiler::string "C_COMPILER")
               (field static c-ld::string "C_LD")
 	      (field static c-compiler-o-option::string "C_COMPILER_O_OPTION")
+	      (field static c-compiler-fp-option::string "C_COMPILER_FP_OPTION")
               (field static c-compiler-debug-option::string "C_COMPILER_DEBUG_OPTION")
 	      (field static c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	      (field static c-compiler-rpath::string "C_COMPILER_RPATH")
@@ -221,6 +223,7 @@
      (c-compiler . ,$configure-c-compiler)
      (c-ld . ,$configure-c-ld)
      (c-compiler-o-option . ,$configure-c-compiler-o-option)
+     (c-compiler-fp-option . ,$configure-c-compiler-fp-option)
      (c-compiler-debug-option . ,$configure-c-compiler-debug-option)
      (c-compiler-optim-flag . ,$configure-c-compiler-optim-flag)
      (c-compiler-rpath . ,$configure-c-compiler-rpath)

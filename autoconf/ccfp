@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Sat Dec  4 09:46:11 2021 (serrano)                */
+#*    Last change :  Sun Dec  5 07:21:17 2021 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler frame pointer option                     */
 #*=====================================================================*/
@@ -32,7 +32,6 @@ while : ; do
 done
 
 file1=$TMP/actest1$USER
-file2=$TMP/actest2$USER
 aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
@@ -41,9 +40,6 @@ aout=$TMP/Xactest$USER
 if( test -f $file1.c ); then
    rm -f $file1.c || exit $?
 fi
-if( test -f $file2.c ); then
-   rm -f $file2.c || exit $?
-fi
 
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
@@ -51,94 +47,36 @@ fi
 #*    GCC versions 3.xx (until gcc3.3.3 I think) on the register       */
 #*    allocations. We try to detect this in the Bigloo configuration.  */
 #*---------------------------------------------------------------------*/
-cat > $file2.c <<EOF
-int gcc3xxx_bug( int x ) {
-   return x + 1;
-}
-EOF
-
 cat > $file1.c <<EOF
-#include <stdlib.h>
-extern int gcc3xxx_bug();
-
-int foo( int x ) {
+int foo(int x) {
    return x + 1;
 }
 
-int failure_then_exit( int x ) {
-   exit( x );
-}
-
-int direction( int new_addr )
-{
-   static int *old_addr;
-   static int flag = 0;
-
-   if( !flag )
-   {
-      old_addr = &new_addr;
-      flag = 1;
-      return direction( 2 );
-   }
-   else
-   {
-      return old_addr > &new_addr ? 1 : 2;
-   }
-}
-
-int main( int argc, char *argv[] ) {
-   if( gcc3xxx_bug( 5 ) != 5 )
-      return 1;
-
-   if( direction( 1 ) < 1 )
-      return 1;
-   else
-      return 0;
+int main(int argc, char *argv[]) {
+   return foo(argc);
 }
 EOF
 
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-compile="$CC $CFLAGS $cflags $file1.c -c && 
-         mv `basename $file1.o` $file1.o && \
-         $CC $CFLAGS $cflags $file2.c -c && 
-         mv `basename $file2.o` $file2.o && \
-         $CC $CFLAGS $cflags $file1.o $file2.o -o $aout"
+compile="$CC $CFLAGS $cflags $file1.c -c"
 
 if eval "$BUILDSH $compile"; then
-   eval "$HOSTSH $aout"; res=$?
-else
-   res=1;
-fi
-
-if [ "$res" = "0" ]; then
    \rm -f $file1.*
-   \rm -f $file2.*
    echo $cflags
    exit 0
 fi
 
 cflags=-g
-compile="$CC $CFLAGS $cflags $file1.c -c && \
-         mv `basename $file1.o` $file1.o && \
-         $CC $CFLAGS $cflags $file2.c -c && \
-         mv `basename $file2.o` $file2.o && \
-         $CC $CFLAGS $cflags $file1.o $file2.o -o $aout"
+compile="$CC $CFLAGS $cflags $file1.c -c"
 
 if eval "$BUILDSH $compile"; then
-   eval "$HOSTSH $aout"; res=$?
-else
-   res=1;
+   \rm -f $file1.*
+   echo $cflags
+   exit 0
 fi
 
 \rm -f $file1.*
-\rm -f $file2.*
+echo ""
 
-if [ "$res" = "0" ]; then
-  echo $cflags
-else
-  echo ""
-fi
-
-exit 0
