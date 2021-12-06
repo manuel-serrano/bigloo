@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/Makefile          */
+#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Sun Dec  5 09:45:06 2021 (serrano)                */
+#*    Last change :  Mon Dec  6 09:08:59 2021 (serrano)                */
 #*    Copyright   :  2003-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -73,43 +73,47 @@ lib: $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
 
 $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
+           LIBSUFFIX=_u LIBSUFFIXTHREAD= \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_u.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS="-lbigloo_u-$(RELEASE) -lbacktrace"
+           EXTRALIBS="-lbacktrace"
 
 $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
+           LIBSUFFIX=_s LIBSUFFIXTHREAD= \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_s.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS="-lbigloo_s-$(RELEASE) -lbacktrace"
+           EXTRALIBS="-lbacktrace"
 
 $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
+           LIBSUFFIX=_u LIBSUFFIXTHREAD=_mt \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_u_mt.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS="-lbigloo_u_mt-$(RELEASE) -lbacktrace"
+           EXTRALIBS="-lbacktrace"
 
 $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
+           LIBSUFFIX=_s LIBSUFFIXTHREAD=_mt \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_s_mt.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS="-lbigloo_s_mt-$(RELEASE) -lbacktrace"
+           EXTRALIBS="-lbacktrace"
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Oct  6 15:37:29 2021                          */
-/*    Last change :  Sun Dec  5 17:54:41 2021 (serrano)                */
+/*    Last change :  Mon Dec  6 09:18:25 2021 (serrano)                */
 /*    Copyright   :  2021 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    libbacktrace interface                                           */
@@ -57,16 +57,18 @@ backtrace_alloc_cb(void *data, uintptr_t pc, const char *filename, int lineno, c
    if (!function) {
       return 0;
    }
-   
-   if (info->typenum == -1 || info->typenum == NO_TYPE_NUM) {
-      info->typenum = backtrace_frame_type(filename, function);
-   }
 
    if (!info->filename && function && !alloc_is_native(function)) {
       if (strcmp(filename, "lib/wrapper.c")) {
 	 info->filename = (char *)filename;
 	 info->lineno = lineno;
+      } else {
+	 return 0;
       }
+   }
+   
+   if (info->typenum == -1 || info->typenum == NO_TYPE_NUM) {
+      info->typenum = backtrace_frame_type(filename, function);
    }
    
    if (info->typenum != -1 && info->filename) {

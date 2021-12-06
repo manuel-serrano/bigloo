@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Fri Nov 26 12:54:11 2021 (serrano)                */
+/*    Last change :  Mon Dec  6 09:56:12 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -56,10 +56,10 @@ bgl_init_bignum() {
 /*---------------------------------------------------------------------*/
 static obj_t
 make_bignum(size_t sz) {
-   obj_t o = GC_MALLOC(BIGNUM_SIZE);
+   obj_t o = GC_MALLOC_ATOMIC(BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *));
    
    o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0);
-   o->bignum.mpz._mp_d = (mp_limb_t *)GC_MALLOC_ATOMIC(sz * sizeof(mp_limb_t));
+   o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
    o->bignum.mpz._mp_alloc = sz;
 
    return BREF(o);
