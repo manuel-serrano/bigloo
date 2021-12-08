@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec  8 12:01:23 2021 (serrano)                */
+/*    Last change :  Wed Dec  8 13:36:53 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -85,9 +85,13 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    BGL_TAIL                                                         */
 /*    -------------------------------------------------------------    */
-/*    C tail return annotation.                                        */
+/*    Clang tail return annotation.                                    */
 /*---------------------------------------------------------------------*/
-#if BGL_HAVE_MUSTTAIL
+#ifndef __has_attribute
+#  define __has_attribute(x) 0
+#endif
+
+#if __has_attribute(musttail)
 #  define BGL_TAIL (__attribute__((musttail)))
 #else
 #  define BGL_TAIL

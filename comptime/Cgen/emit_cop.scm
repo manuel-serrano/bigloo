@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Dec  8 13:04:28 2021 (serrano)                */
+;*    Last change :  Wed Dec  8 13:38:02 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -92,6 +92,8 @@
 (define-method (emit-cop cop::creturn)
    (with-access::creturn cop (value loc tail)
       (emit-bdb-loc loc)
+      (when tail
+	 (display "BGL_TAIL " *c-port*))
       (display "return " *c-port*)
       (if (emit-cop value)
 	  (write-char #\; *c-port*))
