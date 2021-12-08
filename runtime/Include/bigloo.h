@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec  8 13:36:53 2021 (serrano)                */
+/*    Last change :  Wed Dec  8 16:45:07 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -92,7 +92,7 @@ extern "C" {
 #endif
 
 #if __has_attribute(musttail)
-#  define BGL_TAIL (__attribute__((musttail)))
+#  define BGL_TAIL __attribute__((musttail))
 #else
 #  define BGL_TAIL
 #endif
