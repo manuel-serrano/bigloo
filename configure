@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec  8 11:59:30 2021 (serrano)                */
+#*    Last change :  Wed Dec  8 16:31:38 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3053,7 +3053,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   window=`$autoconf winreg` || exit 1
 
   # Does the C compiler supports musttail annotation?
-  musttail=`$autoconf musttail` || exit 1
+  musttail=`$autoconf musttail`
 
   # Does the system have sigpipe?
   sigpipe=`$autoconf sigpipe` || exit 1
