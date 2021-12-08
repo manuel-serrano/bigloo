@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Thu Jul  8 11:31:03 2021 (serrano)                */
+;*    Last change :  Wed Dec  8 13:05:25 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -163,8 +163,9 @@
 		    (instantiate::csequence
 		       (loc    (cop-loc cop))
 		       (c-exp? #t)
-		       (cops (list cop (instantiate::catom
-					  (value #unspecified))))))
+		       (cops (list cop
+				(instantiate::catom
+				   (value #unspecified))))))
 		   (else
 		    cop))))))
 

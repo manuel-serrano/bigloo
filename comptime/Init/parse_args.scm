@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Dec  5 07:00:12 2021 (serrano)                */
+;*    Last change :  Wed Dec  8 12:09:27 2021 (serrano)                */
 ;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -488,6 +488,10 @@
       (("-fno-O-macro" (help "Disable Optimization macro"))
        (set! *optim-O-macro?* #f))
       ;; tailc
+      (("-ftailc" (help "Enable tail-call optimization"))
+       (set! *c-tail-call* #t))
+      (("-fno-tailc" (help "Disable tail-call optimization"))
+       (set! *c-tail-call* #f))
       (("-fglobal-tailc" (help "Enable global tail-call optimization"))
        (set! *global-tail-call?* #t))
       (("-fno-global-tailc" (help "Disable global tail-call optimization"))
@@ -1272,7 +1276,9 @@
       ;; (set! *optim-narrow?* #t)
       ;; (set! *optim-return?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)
-      (set! *optim-cfa-unbox-closure-args* #t))
+      (set! *optim-cfa-unbox-closure-args* #t)
+      (unless (eq? *c-tail-call* #f)
+	 (set! *c-tail-call* #t)))
       
    (define (-O3!)
       (-O2!)

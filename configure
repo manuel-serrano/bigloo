@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Dec  5 07:05:53 2021 (serrano)                */
+#*    Last change :  Wed Dec  8 11:59:30 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3052,6 +3052,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # The number of window register
   window=`$autoconf winreg` || exit 1
 
+  # Does the C compiler supports musttail annotation?
+  musttail=`$autoconf musttail` || exit 1
+
   # Does the system have sigpipe?
   sigpipe=`$autoconf sigpipe` || exit 1
 
@@ -3610,6 +3613,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@LONGJMP@|$longjmp|" \
               -e "s|@HAVE_BCOPY@|$havebcopy|" \
               -e "s|@NB_WINDOW_REGISTER@|$window|" \
+              -e "s|@HAVE_MUSTTAIL@|$musttail|" \
               -e "s|@HAVE_SIGPIPE@|$sigpipe|" \
               -e "s|@BGL_HAVE_GETGROUPS@|$getgroups|" \
               -e "s|@BGL_HAVE_IOCTL@|$ioctl|" \

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Jun 12 07:18:12 2021 (serrano)                */
+;*    Last change :  Wed Dec  8 12:07:55 2021 (serrano)                */
 ;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -117,6 +117,7 @@
 	    *c-debug-option*
 	    *c-user-header*
 	    *c-user-foot*
+	    *c-tail-call*
 	    *jvm-debug*
 	    *bdb-debug*
 	    *bdb-debug-no-line-directives?*
@@ -641,6 +642,10 @@
 (param-define *c-user-foot*
    "C foot"
    '())
+;; C tail call
+(param-define *c-tail-call*
+   "C tail call?"
+   #unspecified)
 ;; jvm debuggin mode?
 (param-define *jvm-debug*
    "JVM debugging mode?"
