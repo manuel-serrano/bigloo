@@ -145,6 +145,11 @@ api/gstreamer/work/
 # libuv
 api/libuv/src/Misc/libuv.init
 
+# libbacktrace
+api/libbacktrace/src/Misc/libbacktrace.init
+libbacktrace/libbacktrace-d0f5e95
+libbacktrace/home
+
 # mpg123
 api/mpg123/src/Clib/bglhandle.h
 api/mpg123/src/Misc/mpg123.init

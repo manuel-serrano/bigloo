@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Thu Oct  7 08:20:22 2021 (serrano)                */
+/*    Last change :  Thu Dec  2 15:02:50 2021 (serrano)                */
 /*    Copyright   :  2002-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -54,6 +54,7 @@ extern void bgl_init_io();
 extern void bgl_init_process_table();
 extern void bgl_init_dload();
 extern void bgl_init_bignum();
+extern void bgl_init_backtrace();
 #if( BGL_SAW == 1  && BGL_GC == BGL_SAW_GC )    
 extern void bgl_saw_init();
 #endif

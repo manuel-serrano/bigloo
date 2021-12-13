@@ -51,6 +51,7 @@ public class configure {
   public static final byte[] C_PICFLAGS = "@C_PICFLAGS@".getBytes();
   public static final byte[] C_NANFLAGS = "@C_NANFLAGS@".getBytes();
   public static final byte[] C_COMPILER_O_OPTION = "@C_COMPILER_O_OPTION@".getBytes();
+  public static final byte[] C_COMPILER_FP_OPTION = "@C_COMPILER_FP_OPTION@".getBytes();
   public static final byte[] C_COMPILER_DEBUG_OPTION = "@C_COMPILER_DEBUG_OPTION@".getBytes();
   public static final byte[] C_OBJECT_FILE_EXTENSION = "@C_OBJECT_FILE_EXTENSION@".getBytes();
   public static final byte[] C_COMPILER_OPTIM_FLAGS = "@C_COMPILER_OPTIM_FLAGS@".getBytes();

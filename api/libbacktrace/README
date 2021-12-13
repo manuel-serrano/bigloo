@@ -1,0 +1,3 @@
+This directory contains a binding to the Bigloo libbacktrace library.
+
+LIBBACKTRACE is a unix oriented library for scanning an execution trace.

@@ -1,11 +1,11 @@
 ;; -*- mode: bee -*-
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/pthread/src/Misc/pthread.init.in     */
+;*    .../bigloo/bigloo/api/pthread/src/Misc/pthread.init.in           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Mon Jul 28 09:37:10 2014 (serrano)                */
-;*    Copyright   :  2001-20 Manuel Serrano                            */
+;*    Last change :  Sun Dec  5 17:56:29 2021 (serrano)                */
+;*    Copyright   :  2001-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Pthread init file.                                           */
 ;*=====================================================================*/
@@ -31,7 +31,8 @@
     (set! *multi-threaded-gc?* #t)
     ;; setup
     (set! *bigloo-libraries-c-setup*
-       (cons "bglpth_setup" *bigloo-libraries-c-setup*))
+       (cons "bglpth_setup"
+	  *bigloo-libraries-c-setup*))
     ;; link option
     (unless (string=? (os-class) "win32")
        (set! *ld-post-options* (cons "@PTHREADLIBS@" *ld-post-options*)))))

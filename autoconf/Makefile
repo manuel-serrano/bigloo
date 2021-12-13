@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Sat May  1 09:20:13 2021 (serrano)                */
+#*    Last change :  Wed Dec  8 11:58:57 2021 (serrano)                */
 #*    Copyright   :  1997-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -42,8 +42,8 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   socket getaddrinfo getifaddrs gethwaddrs socklen setsockopt \
                   inet_aton inet_pton \
                   unixsocket info cctest ccoptim ccbracket ccdiv0 ccwarning \
-                  ccprof termio termios installinfo installinfodir dlopen \
-                  user xemacsbin gmaketest ccpic ccpic2 ccssex86 \
+                  ccprof ccfp termio termios installinfo installinfodir \
+                  dlopen user xemacsbin gmaketest ccpic ccpic2 ccssex86 \
                   ziptest javatest jartest \
                   oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \
@@ -65,7 +65,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
                   gmtoff localtime_r gmtime_r timegm libuv getgroups ioctl \
                   pthreadkill syslog overflow semaphore lockf likely \
-                  gccattrs getrlimit c99stackalloc tools bootmethod
+                  gccattrs getrlimit c99stackalloc tools bootmethod musttail
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

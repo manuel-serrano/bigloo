@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Thu Mar 14 15:09:40 2019 (serrano)                */
+/*    Last change :  Wed Dec  8 16:37:10 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -328,9 +328,9 @@ dlsym_to_string( obj_t obj, char *buffer, int len ) {
 static obj_t
 dlsym_output( obj_t obj, obj_t op ) {
    obj_t id = (obj_t)CUSTOM_IDENTIFIER( obj );
-   bgl_write( op, "<dlsym:", 8 );
-   bgl_write( op, BSTRING_TO_STRING( id ), STRING_LENGTH( id ) );
-   bgl_write( op, ">", 1 );
+   bgl_write( op, (unsigned char *)"<dlsym:", 8 );
+   bgl_write( op, (unsigned char *)BSTRING_TO_STRING( id ), STRING_LENGTH( id ) );
+   bgl_write( op, (unsigned char *)">", 1 );
    return obj;
 }
 

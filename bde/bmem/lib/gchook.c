@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/gchook.c         */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/gchook.c      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Fri May  1 16:06:28 2020 (serrano)                */
+/*    Last change :  Thu Oct  7 19:17:45 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -68,7 +68,7 @@ GC_collect_hook( int heapsz, long livesz ) {
       
    gc_alloc_size = 0;
    
-   gcs_info = pa_cons( info, gcs_info );
+   //gcs_info = pa_cons( info, gcs_info );
 
 }
 
@@ -77,10 +77,10 @@ GC_collect_hook( int heapsz, long livesz ) {
 /*    gc_alloc_size_add ...                                            */
 /*---------------------------------------------------------------------*/
 void
-gc_alloc_size_add( int size ) {
-   if( bmem_thread ) pthread_mutex_lock( &bmem_mutex );
+gc_alloc_size_add(int size) {
+   if (bmem_thread) pthread_mutex_lock(&bmem_mutex);
    gc_alloc_size += size;
-   if( bmem_thread ) pthread_mutex_unlock( &bmem_mutex );
+   if (bmem_thread) pthread_mutex_unlock(&bmem_mutex);
 }
 
 /*---------------------------------------------------------------------*/

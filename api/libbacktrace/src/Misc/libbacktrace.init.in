@@ -1,0 +1,38 @@
+;; -*- mode: bee -*-
+;*=====================================================================*/
+;*    .../bigloo/api/libbacktrace/src/Misc/libbacktrace.init.in        */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Dec  5 13:21:09 2021 (serrano)                */
+;*    Copyright   :  2001-21 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The LIBBACKTRACE init file.                                      */
+;*=====================================================================*/
+ 
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'libbacktrace
+   :srfi '(libbacktrace)
+   :basename "bigloolibbacktrace"
+   :module-init '__libbacktrace
+   :module-eval '__libbacktrace_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Compile and Link options                                         */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; cc options
+    (let ((fpopt (bigloo-config 'c-compiler-fp-option)))
+       (when (string? fpopt)
+	  (set! *cc-options*
+	     (cons fpopt *cc-options*))))
+    (set! *strip*
+       #f)
+    ;; libbacktrace libraries
+    (set! *ld-post-options*
+       (cons "@LIBBACKTRACELIBS@" *ld-post-options*))
+    ))
+

@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/libuv/Makefile                   */
+#*    serrano/prgm/project/bigloo/bigloo/api/libuv/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:12:52 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Thu Dec  2 15:46:15 2021 (serrano)                */
+#*    Copyright   :  2001-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -72,7 +72,6 @@ distclean: clean
 
 cleanall: distclean
 	(cd src && $(MAKE) cleanall)
-	$(RM) -f lib/*fth* >/dev/null 2>&1
 	$(RM) -f *~ >/dev/null 2>&1
 
 #*---------------------------------------------------------------------*/

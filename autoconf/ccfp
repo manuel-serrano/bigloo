@@ -1,0 +1,82 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/ccfp                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 10:31:33 1999                          */
+#*    Last change :  Sun Dec  5 07:21:17 2021 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking the C compiler frame pointer option                     */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags="-fno-omit-frame-pointer"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file1=$TMP/actest1$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file1.c ); then
+   rm -f $file1.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*    -------------------------------------------------------------    */
+#*    GCC versions 3.xx (until gcc3.3.3 I think) on the register       */
+#*    allocations. We try to detect this in the Bigloo configuration.  */
+#*---------------------------------------------------------------------*/
+cat > $file1.c <<EOF
+int foo(int x) {
+   return x + 1;
+}
+
+int main(int argc, char *argv[]) {
+   return foo(argc);
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+compile="$CC $CFLAGS $cflags $file1.c -c"
+
+if eval "$BUILDSH $compile"; then
+   \rm -f $file1.*
+   echo $cflags
+   exit 0
+fi
+
+cflags=-g
+compile="$CC $CFLAGS $cflags $file1.c -c"
+
+if eval "$BUILDSH $compile"; then
+   \rm -f $file1.*
+   echo $cflags
+   exit 0
+fi
+
+\rm -f $file1.*
+echo ""
+

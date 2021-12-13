@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Fri May 15 07:20:52 2020 (serrano)                */
-;*    Copyright   :  2005-20 Manuel Serrano                            */
+;*    Last change :  Thu Dec  9 09:15:40 2021 (serrano)                */
+;*    Copyright   :  2005-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -283,6 +283,7 @@
 ;*    *loaded-libraries* ...                                           */
 ;*---------------------------------------------------------------------*/
 (define *loaded-libraries* '())
+(define *loaded-init-libraries* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    library-loaded? ...                                              */
@@ -299,6 +300,15 @@
       (set! *loaded-libraries* (cons lib *loaded-libraries*)))
    #unspecified)
 
+;*---------------------------------------------------------------------*/
+;*    load-init ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (load-init init)
+   (synchronize *library-mutex*
+      (unless (member init *loaded-init-libraries*)
+	 (set! *loaded-init-libraries* (cons init *loaded-init-libraries*))
+	 (loadq init))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    library-load ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -323,7 +333,7 @@
 		 (be (cond-expand
 			(bigloo-c 'bigloo-c)
 			(bigloo-jvm 'bigloo-jvm))))
-	     (when init (loadq init))
+	     (when init (load-init init))
 	     (let* ((info (library-info lib))
 		    (n (make-shared-lib-name
 			  (library-file-name lib "" be) be))
@@ -409,7 +419,7 @@
 		  (set! to-load #t)
 		  (set! *loaded-init-files* (cons init *loaded-init-files*))))
 	    (when to-load
-	       (loadq init))))))
+	       (load-init init))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    library-load_e ...                                               */

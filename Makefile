@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu May  6 10:44:33 2021 (serrano)                */
+#*    Last change :  Mon Dec  6 08:11:23 2021 (serrano)                */
 #*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -134,6 +134,7 @@ DIRECTORIES	= cigloo \
                   pcre \
                   pcre2 \
                   libunistring \
+                  libbacktrace \
                   libuv
 
 #*---------------------------------------------------------------------*/
@@ -197,6 +198,9 @@ boot-c: checkgmake
         fi
 	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libunistring boot; \
+        fi
+	if [ "$(LIBBACKTRACECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libbacktrace boot; \
         fi
 	if [ -x $(BGLBUILDBINDIR)/bigloo ]; then \
 	  $(MAKE) -C runtime .afile && \
@@ -409,6 +413,10 @@ fullbootstrap-sans-configure:
 	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libuv clean; \
 	  $(MAKE) -C libuv boot; \
+        fi
+	if [ "$(LIBBACKTRACECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libbacktrace clean; \
+	  $(MAKE) -C libbacktrace boot; \
         fi
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime EFLAGS+=-gself
 	$(MAKE) -C runtime -i touchall; $(MAKE) -C runtime heap libs-c
@@ -735,6 +743,9 @@ install-libs: install-dirs
         fi
 	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libuv install; \
+        fi
+	if [ "$(LIBBACKTRACECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libbacktrace install; \
         fi
 	(cp Makefile.config $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.config && \
          chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.config)

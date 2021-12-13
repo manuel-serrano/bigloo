@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/etc/bmemrun.in       */
+#*    .../prgm/project/bigloo/bigloo/bde/bmem-ng/etc/bmemrun.in        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Fri Jun 21 11:19:16 2019 (serrano)                */
-#*    Copyright   :  2003-20 Manuel Serrano                            */
+#*    Last change :  Sun Dec  5 09:36:39 2021 (serrano)                */
+#*    Copyright   :  2003-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
 #*=====================================================================*/
@@ -19,6 +19,8 @@ libextra=
 exe=a.out
 bmon=
 thread=
+
+bmemdir=@FILDIR@
 
 #*---------------------------------------------------------------------*/
 #*    Argument parsing                                                 */
@@ -37,7 +39,9 @@ while : ; do
       echo "  --lib-extra <lib>    -- Add an extra profiling lib" >&2;
       echo "" >&2;
       echo "To be profiled, programs have to be compiled with" >&2;
-      echo "  -g [-gtraceN]" >&2;
+      echo "  -pmem" >&2;
+      echo "  -pmem2 (as -pmem but disable inlining of user functions)" >&2;
+      echo "  -pmem3 (as -pmem but disable all inlining)" >&2;
       echo "" >&2;
       echo "Normally bmem finds automatically the correct libraries to use" >&2;
       echo "however, if needed, to force the unsafe multithread libaries" >&2;
@@ -94,7 +98,7 @@ if [ "$lib " = " " ]; then
     thread=_mt
   fi
     
-  lib=<fildir>/bmem/bmem"$safety""$thread".so
+  lib=$bmemdir/bmem/bmem"$safety""$thread".so
 fi
 
 
@@ -108,4 +112,5 @@ if [ "$thread " != " " ]; then
   export BMEMTHREAD=$thread
 fi  
 
-LD_PRELOAD="$lib$libextra" $exe $args
+libbacktrace=$bmemdir/libbacktrace.so
+LD_PRELOAD="$lib$libextra $libbacktrace" $exe $args

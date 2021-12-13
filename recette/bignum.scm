@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/bignum.scm                   */
+;*    serrano/prgm/project/bigloo/bigloo/recette/bignum.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 13 05:06:17 2008                          */
-;*    Last change :  Fri Dec 17 09:59:35 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Mon Nov 29 10:21:59 2021 (serrano)                */
+;*    Copyright   :  2008-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test bignums                                                     */
 ;*=====================================================================*/
@@ -25,6 +25,14 @@
       (if (positivebx? n)
 	  (loop (-bx n #z1) (*bx f n))
 	  f)))
+
+;*---------------------------------------------------------------------*/
+;*    fixbig? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (fixbig? n)
+   (cond-expand
+      (enable-gmp (fixnum? n))
+      (else (or (fixnum? n) (bignum? n)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-bignum ...                                                  */
@@ -109,9 +117,9 @@
 			  (string->bignum "ABCDEE" 16)) #t)
    (test "bignum.31" (*bx #z10000 #z0) #z0)
    (test "bignum.32" (*bx #z10000000000000000000000000000000000 #z0) #z0)
-   (test "bignum.33" (fixnum? (+ 34 (car (list 35)))) #t)
-   (test "bignum.34" (fixnum? (+ 34 (car (list #z35)))) #t)
-   (test "bignum.35" (fixnum? (+ #z34 (car (list #z35)))) #t)
+   (test "bignum.33" (fixbig? (+ 34 (car (list 35)))) #t)
+   (test "bignum.34" (fixbig? (+ 34 (car (list #z35)))) #t)
+   (test "bignum.35" (fixbig? (+ #z34 (car (list #z35)))) #t)
    (test "bignum.36" (fixnum? (+ #z34 (car (list 35)))) #t)
    (test "bignum.37" (number? (/ #z2 (if (> (current-seconds) 0) 1 2))) #t)
    (test "bignum.38" (number? (/ #z3 (if (> (current-seconds) 0) 2 2))) #t))

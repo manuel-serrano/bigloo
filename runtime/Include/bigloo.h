@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Nov 27 06:54:51 2021 (serrano)                */
+/*    Last change :  Wed Dec  8 16:45:07 2021 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -80,6 +80,21 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #if (!defined(BIGLOO_MAIN))
 #  define BIGLOO_MAIN main
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    BGL_TAIL                                                         */
+/*    -------------------------------------------------------------    */
+/*    Clang tail return annotation.                                    */
+/*---------------------------------------------------------------------*/
+#ifndef __has_attribute
+#  define __has_attribute(x) 0
+#endif
+
+#if __has_attribute(musttail)
+#  define BGL_TAIL __attribute__((musttail))
+#else
+#  define BGL_TAIL
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -2538,7 +2553,8 @@ BGL_RUNTIME_DECL obj_t bgl_socket_hostname(obj_t);
 BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname(obj_t);
 BGL_RUNTIME_DECL obj_t bgl_getsockopt(obj_t, obj_t);
 BGL_RUNTIME_DECL obj_t bgl_setsockopt(obj_t, obj_t, obj_t);
-   
+
+BGL_RUNTIME_DECL void bgl_init_trace_register(void (*i)(), obj_t (*g)(int), void (*w)(obj_t));
 BGL_RUNTIME_DECL void (*bgl_init_trace)(obj_t);
 BGL_RUNTIME_DECL obj_t (*bgl_get_trace_stack)(int);
 

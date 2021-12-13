@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Thu Jul  8 11:31:03 2021 (serrano)                */
+;*    Last change :  Wed Dec  8 13:37:57 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -157,14 +157,26 @@
 (define *return-kont*
    (lambda (cop)
       (instantiate::creturn
-	 (loc   (cop-loc cop))
+	 (loc (cop-loc cop))
+	 (tail (when *c-tail-call*
+		  (or (isa? cop capply)
+		      (isa? cop cfuncall)
+		      (isa? cop cfail)
+		      (when (isa? cop capp)
+			 (let ((fun (varc-variable (capp-fun cop))))
+			    (cond
+			       ((not (cfun? (global-value fun))) #t)
+			       ((cfun-infix? (global-value fun)) #f)
+			       ((cfun-macro? (global-value fun)) #f)
+			       (else #t)))))))
 	 (value (cond
 		   ((csetq? cop)
 		    (instantiate::csequence
 		       (loc    (cop-loc cop))
 		       (c-exp? #t)
-		       (cops (list cop (instantiate::catom
-					  (value #unspecified))))))
+		       (cops (list cop
+				(instantiate::catom
+				   (value #unspecified))))))
 		   (else
 		    cop))))))
 

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/Makefile.git                  */
+#*    serrano/prgm/project/bigloo/4.4c/Makefile.git                    */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jan 20 14:43:37 2006                          */
-#*    Last change :  Wed Mar 24 06:59:55 2021 (serrano)                */
+#*    Last change :  Wed Dec  1 09:53:38 2021 (serrano)                */
 #*    Copyright   :  2006-21 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Git config                                                       */
@@ -64,7 +64,7 @@ revision: populate
 #*    checkout ...                                                     */
 #*---------------------------------------------------------------------*/
 checkout:
-	@ $(VM-CLONE) $(BOOTDIR) \
+	@ $(VM-CLONE) $(BOOTDIR) $(BUILDDIRNAME) \
            && $(RM) -rf $(BUILDDIRNAME)/.git \
            && $(RM) -rf $(BUILDDIRNAME)/.gitignore
 

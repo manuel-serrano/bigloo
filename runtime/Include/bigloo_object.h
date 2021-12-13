@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Nov 27 07:05:34 2021 (serrano)                */
+/*    Last change :  Mon Nov 29 15:28:40 2021 (serrano)                */
 /*    Copyright   :  2016-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -120,6 +120,15 @@ typedef struct BgL_objectz00_bgl {
      | ((_d << (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))))
 #else
 #  define BGL_OBJECT_INHERITANCE_NUM(_obj) 0
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    BGL_ISA                                                          */
+/*---------------------------------------------------------------------*/
+#if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
+#  define BGL_ISA_C_BACKEND(e1, e2) (e1)
+#else
+#  define BGL_ISA_C_BACKEND(e1, e2) (e2)
 #endif
 
 /*---------------------------------------------------------------------*/

@@ -1,0 +1,117 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    .../project/bigloo/bigloo/bde/bmem-ng/etc/bmemrun-gdb.in         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Sun Apr 20 09:35:07 2003                          */
+#*    Last change :  Sun Dec  5 09:40:02 2021 (serrano)                */
+#*    Copyright   :  2003-21 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    The script shell to monitor memory allocations of Bigloo prgms   */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Configuration                                                    */
+#*---------------------------------------------------------------------*/
+safety=s
+lib=
+libextra=
+exe=a.out
+bmon=
+thread=
+
+bmemdir=@FILDIR@
+
+#*---------------------------------------------------------------------*/
+#*    Argument parsing                                                 */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    -h|--help)
+      echo "bglmemrun: [options] exe [arg1] [arg2]..." >&2;
+      echo "  -h|--help            -- This message" >&2;
+      echo "  -s|-safe|--safe      -- Preload safe libraries" >&2;
+      echo "  -u|-unsafe|--unsafe  -- Preload unsafe libraries" >&2;
+      echo "  -t|--thread          -- Profile multithreaded program" >&2;
+      echo "  --lib-extra <lib>    -- Add an extra profiling lib" >&2;
+      echo "" >&2;
+      echo "To be profiled, programs have to be compiled with" >&2;
+      echo "  -pmem" >&2;
+      echo "  -pmem2 (as -pmem but disable inlining of user functions)" >&2;
+      echo "  -pmem3 (as -pmem but disable all inlining)" >&2;
+      echo "" >&2;
+      echo "Normally bmem finds automatically the correct libraries to use" >&2;
+      echo "however, if needed, to force the unsafe multithread libaries" >&2;
+      echo "use the following options" >&2;
+      echo "  -u -t" >&2;
+      echo "in that order" >&2;
+      exit 0;;
+
+    -s|-safe|--safe)
+      safety=_s;;
+    
+    -u|-unsafe|--unsafe)
+      safety=_u;;
+
+    -t|--thread)
+      thread=_mt;;
+    
+    --lib-extra)
+      shift;
+      libextra="$libextra $1";;
+
+    *)
+      exe=$1;
+      shift;
+      args=$*;
+      if [ "$bmon " = " " ]; then
+        bmon="`echo $exe | sed 's/[.][^.]*$//'`.bmem";
+        bmon=`basename $bmon`;
+      fi;
+      break;;
+
+  esac
+  shift
+done
+
+
+#*---------------------------------------------------------------------*/
+#*    autoconfiguration                                                */
+#*---------------------------------------------------------------------*/
+if [ "$lib " = " " ]; then
+  # safety
+  g=`ldd $exe | grep libbigloo_u`
+  if [ "$g " = " " ]; then
+    safety=_s
+  else
+    safety=_u
+  fi
+
+  # gc
+  g=`ldd $exe | grep libbigloogc_mt`
+  if [ "$g " = " " ]; then
+    gc=
+  else
+    thread=_mt
+  fi
+    
+  lib=$bmemdir/bmem/bmem"$safety""$thread".so
+fi
+
+
+#*---------------------------------------------------------------------*/
+#*    Run the program                                                  */
+#*---------------------------------------------------------------------*/
+export BMEMLIBSUFFIX=$safety$thread
+export BMEMGCSUFFIX=$thread
+
+if [ "$thread " != " " ]; then
+  export BMEMTHREAD=$thread
+fi  
+
+libbacktrace=$bmemdir/libbacktrace.so
+
+gdb --args env "LD_PRELOAD=\"$lib$libextra $libbacktrace\"" $exe $args

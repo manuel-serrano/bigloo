@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Nov 27 07:01:24 2021 (serrano)                */
+#*    Last change :  Wed Dec  8 16:31:38 2021 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -17,7 +17,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=5.5a
+release=4.5a
 buildrelease=4.4c
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
@@ -43,7 +43,7 @@ lispdir=
 rpath=
 
 #*--- api -------------------------------------------------------------*/
-importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv"
+importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv libbacktrace"
 apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat"
 
 #*--- bee configuration -----------------------------------------------*/
@@ -71,6 +71,7 @@ fi
 bootflags=""
 featureflags=
 coflags=-O3
+cfpflags=-fno-omit-frame-pointer
 crpath=
 
 cstrip=""
@@ -173,6 +174,19 @@ if [ "$unistringsrc " = " " ]; then
   unistringversion=0.9.10
   unistringsrc=libunistring/libunistring-$unistringversion.tgz
 fi  
+
+#*--- libbacktrace version (left blank for autoconfiguration) ---------*/
+libbacktrace=
+libbacktraceforce=no
+customlibbacktrace=
+libbacktracesrc=$LIBBACKTRACESRC
+libbacktraceconfigureopt=--enable-shared
+
+if [ "$libbacktracesrc " = " " ]; then
+  libbacktraceversion=d0f5e95
+  libbacktracesrc=libbacktrace/libbacktrace-$libbacktraceversion.tgz
+fi  
+
 
 #*--- socket library (left empty for automatic configuration) ---------*/
 socketlibs=
@@ -498,6 +512,7 @@ while : ; do
       ld=gcc;
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
+      cfpflags="$cfpflags";
       bootflags="$bootflags -cg";
       jvmbackend="no";
       mode=standard;
@@ -520,6 +535,7 @@ while : ; do
       pcreconfigureopt="$pcreconfigureopt $opt";
       pcre2configureopt="$pcre2configureopt $opt";
       unistringconfigureopt="$unistringconfigureopt $opt";
+      libbacktraceconfigureopt="$libbacktraceconfigureopt $opt";
       gmpconfigureopt="$gmpconfigureopt $opt";;
       
     --bigloo_config.h)
@@ -682,6 +698,9 @@ while : ; do
     --coflags=*)
       coflags="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --cfpflags=*)
+      cfpflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --ldlibs=*)
       ldlibs="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -834,6 +853,7 @@ while : ; do
       as=icc;
       ldopt="no-share";
       coflags="$coflags -O3 -ip";
+      cfpflags="$cfpflags -g";
       customgc=no;
       extralibs="";
       cstrip="no";;
@@ -858,6 +878,7 @@ while : ; do
       customgc=yes;
       customgmp=yes;
       customunistring=yes;
+      customlibbacktrace=yes;
       customlibuv=yes;
       custompcre=no;
       custompcre2=yes;;
@@ -1009,6 +1030,22 @@ while : ; do
     --unistringconfigureopt=*)
       unistringconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --no-libbacktrace|--disable-libbacktrace|--disable-libbacktrace)
+      libbacktrace="no";;
+
+    --enable-libbacktrace)
+      libbacktrace=""
+      libbacktraceforce="yes";;
+
+    --customlibbacktrace=yes)
+      customlibbacktrace=yes;;
+
+    --customlibbacktrace=no)
+      customlibbacktrace=no;;
+
+    --libbacktraceconfigureopt=*)
+      libbacktraceconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --customlibuv=yes|--customlibuv)
       customlibuv=yes;;
 
@@ -1148,6 +1185,7 @@ while : ; do
       echo "   --cflags=C compilation flags" >&2;
       echo "   --lflags=compiler link flags" >&2;
       echo "   --coflags=optimization_flags" >&2;
+      echo "   --cfpflags=fp_flags" >&2;
       echo "   --cwarningflags=warning_flags" >&2;
       echo "   --cpicflags=pic_flags" >&2;
       echo "   --ldlibs=ld_libs" >&2;
@@ -1183,6 +1221,7 @@ while : ; do
       echo "   --no-gmp (disable gmp library support)" >&2;
       echo "   --no-resolv (disable resolv library support)" >&2;
       echo "   --no-unistring (disable unistring library support)" >&2;
+      echo "   --no-libbacktrace (disable libbacktrace library support)" >&2;
       echo "   --no-pcre (disable prce library support)" >&2;
       echo "   --no-pcre2 (disable prce2 library support)" >&2;
       echo "   --no-ldpreload" >&2;
@@ -1212,6 +1251,7 @@ while : ; do
       echo "   --disable-gmp (see --no-gmp)" >&2;
       echo "   --disable-revolv (see --no-resolv)" >&2;
       echo "   --disable-unistring (see --no-unistring)" >&2;
+      echo "   --disable-libbacktrace (see --no-libbacktrace)" >&2;
       echo "   --disable-pcre (see --no-pcre)" >&2;
       echo "   --custompcre=yes|no [default no]" >&2;
       echo "   --pcresrc=file [default \$PCRE\")" >&2;
@@ -1222,6 +1262,7 @@ while : ; do
       echo "   --gmpsrc=file [default \$GMP\")" >&2;
       echo "   --customunistring=yes|no [default no]" >&2;
       echo "   --unistringsrc=file [default \$UNISTRING\")" >&2;
+      echo "   --customlibbacktrace=yes|no [default no]" >&2;
       echo "   --customlibuv=yes|no [default yes]" >&2;
       echo "   --sqltiny [force sqltiny backend]" >&2;
       echo "" >&2;
@@ -1407,6 +1448,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   openpgp_is_enabled=no
   gstreamer_is_enabled=no
   libuv_is_enabled=no
+  libbacktrace_is_enabled=no
   
   for a in $apis; do
     case $a in
@@ -1424,6 +1466,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       openpgp) openpgp_is_enabled="yes";;
       gstreamer) gstreamer_is_enabled="yes";;
       libuv) libuv_is_enabled="yes";;
+      libbacktrace) libbacktrace_is_enabled="yes";;
     esac
   done
   
@@ -1888,6 +1931,7 @@ case $hostos in
       customgmp=yes
       customgmpmakefile=Makefile.macosx
       customunistring=yes
+      customlibbacktrace=yes
       customlibuv=yes
       customgc=yes
       custompcre=no
@@ -2790,6 +2834,62 @@ else
 fi
 
 #*---------------------------------------------------------------------*/
+#*    libbacktrace                                                     */
+#*---------------------------------------------------------------------*/
+buildlibbacktracelibdir=$buildlibdir # dummy existing path
+
+if [ "$libbacktrace " != "no " ]; then
+  if [ "$customlibbacktrace " != "yes " ]; then
+    extralibbacktrace=`$autoconf libbacktrace` || exit 1
+    
+    if [ "$extralibbacktrace " = "no " -a "$customlibbacktrace " != "no " ]; then
+      customlibbacktrace=yes
+    fi
+  fi
+
+  if [ "$customlibbacktrace " = "yes " ]; then
+    libbacktracelibs="-lbacktrace"
+    havelibbacktrace=1;
+    featureflags="-srfi enable-libbacktrace $featureflags";
+    extralibbacktrace=libbacktrace
+    libbacktracebuildpath="\$(BOOTDIR)/libbacktrace\$(LIBDIR)/\$(FILDIR)"
+    ldbuildopts="-L$bootdir/libbacktrace$libdir/$fildir $ldbuildopts"
+    #lcustomflags="-L$bootdir/libbacktrace$libdir/$fildir $lcustomflags"
+    buildlibdir="$bootdir/libbacktrace$libdir/$fildir:$buildlibdir"
+    #cflags="-I$bootdir/libbacktrace$libdir/$fildir $cflags"
+    cbuildflags="-I$bootdir/libbacktrace$libdir/$fildir $cbuildflags"
+    libbacktraceversion=`basename $libbacktracesrc .tgz | sed 's|libbacktrace-||'`
+    buildlibbacktracelibdir=$bootdir/libbacktrace/libbacktrace-$libbacktraceversion/lib/.libs
+      
+    $echo "+ Installing custom libbacktrace source code."
+    (cd libbacktrace && LIBBACKTRACESRC=../$libbacktracesrc && export LIBBACKTRACESRC && ./install-libbacktrace) || exit 1
+  
+    autoopts=`$autoconf config.guess --dir="$pwd/libbacktrace"`
+    libbacktraceconfigureopt="$autoopts $libbacktraceconfigureopt"
+    
+    $echo "+ configuring custom libbacktrace..."
+    (cd libbacktrace; . ./configure-libbacktrace) || exit 1
+  fi
+    
+  if [ "$extralibbacktrace " = "no " ]; then
+    havelibbacktrace=0;
+    extralibbacktrace=no
+    if [ $libbacktraceforce = "yes" ]; then
+      $echo "*** ERROR:configure:--enable-libbacktrace. Cannot find LIBBACKTRACE library."
+      $echo "Aborting";
+      exit 1;
+    fi
+  else
+    havelibbacktrace=1;
+    featureflags="-srfi enable-libbacktrace $featureflags";
+  fi
+else
+  havelibbacktrace=0;
+  extralibbacktrace=no;
+  libbacktracelibs=no;
+fi
+
+#*---------------------------------------------------------------------*/
 #*    avahi                                                            */
 #*---------------------------------------------------------------------*/
 # find out the C library for avahi
@@ -2858,6 +2958,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # The -O C compiler options
   coflags=`$autoconf ccoptim --cflags="$coflags"` || exit 1
+
+  # The debug/profiling C compiler options
+  cfpflags=`$autoconf ccfp --cflags="$cfpflags"` || exit 1
 
   # The -s C linker options
   if [ "$cstrip" != "no" ]; then
@@ -2948,6 +3051,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # The number of window register
   window=`$autoconf winreg` || exit 1
+
+  # Does the C compiler supports musttail annotation?
+  musttail=`$autoconf musttail`
 
   # Does the system have sigpipe?
   sigpipe=`$autoconf sigpipe` || exit 1
@@ -3507,6 +3613,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@LONGJMP@|$longjmp|" \
               -e "s|@HAVE_BCOPY@|$havebcopy|" \
               -e "s|@NB_WINDOW_REGISTER@|$window|" \
+              -e "s|@HAVE_MUSTTAIL@|$musttail|" \
               -e "s|@HAVE_SIGPIPE@|$sigpipe|" \
               -e "s|@BGL_HAVE_GETGROUPS@|$getgroups|" \
               -e "s|@BGL_HAVE_IOCTL@|$ioctl|" \
@@ -3546,6 +3653,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_RESOLV_APL@|$haveresolvapl|" \
               -e "s|@BGL_HAVE_RESOLV_ZXFR@|$haveresolvzxfr|" \
               -e "s|@BGL_HAVE_UNISTRING@|$haveunistring|" \
+              -e "s|@BGL_HAVE_BACKTRACE@|$havelibbacktrace|" \
               -e "s|@HAVE_SIGCHLD@|$sigchld|" \
               -e "s|@HAVE_SETENV@|$setenv|" \
               -e "s|@HAVE_SIGACTION@|$sigaction|" \
@@ -3591,9 +3699,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_NANFLAGS@|$cnanflags|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
+              -e "s|@C_COMPILER_FP_OPTION@|$cfpflags|" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
               -e "s|@C_OBJECT_FILE_EXTENSION@|$cobj|" \
               -e "s|@C_COMPILER_OPTIM_FLAGS@|$coflags|" \
+              -e "s|@C_COMPILER_FP_FLAGS@|$cfpflags|" \
               -e "s|@C_COMPILER_RPATH@|$crpath|" \
               -e "s|@C_STRIP_FLAGS@|$csflags|" \
               -e "s|@C_LINKER_STYLE@|$ldstyle|" \
@@ -3664,6 +3774,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
 	      -e "s|@BGLBUILDLIBUVLIBDIR@|$buildlibuvlibdir|" \
 	      -e "s|@BGLBUILDLIBUNISTRINGLIBDIR@|$buildlibunistringlibdir|" \
+	      -e "s|@BGLBUILDLIBBACKTRACELIBDIR@|$buildlibbacktracelibdir|" \
 	      -e "s|@BGLBUILDPCRELIBDIR@|$buildpcrelibdir|" \
 	      -e "s|@BGLBUILDPCRE2LIBDIR@|$buildpcre2libdir|" \
 	      -e "s|@BGLBUILDGMPLIBDIR@|$buildgmplibdir|" \
@@ -4037,6 +4148,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The C compiler
   $echo "CC=$cc" >> $makefile_cfg
   $echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
+  $echo "CFPFLAGS=$cfpflags" >> $makefile_cfg
   $echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
@@ -4109,6 +4221,16 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   else
     $echo "UNISTRINGCUSTOM=no" >> $makefile_cfg
     $echo "UNISTRINGCUSTOMVERSION=$unistringversion" >> $makefile_cfg
+  fi
+  $echo >> $makefile_cfg
+
+  # The LIBBACKTRACE library
+  if [ "$customlibbacktrace " = "yes " ]; then
+    $echo "LIBBACKTRACECUSTOM=yes" >> $makefile_cfg
+    $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
+  else
+    $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
+    $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
   fi
   $echo >> $makefile_cfg
 
@@ -4224,6 +4346,16 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     else
       ldcompshared="-lunistring $ldcompshared" >> $makefile_cfg
       ldcompstatic="-lunistring $ldcompstatic" >> $makefile_cfg
+    fi
+  fi
+  
+  if [ "$libbacktracelibs " != "no " ]; then
+    if [ "$customlibbacktrace " = "yes " ]; then
+      ldcompshared="-llibbacktrace $ldcompshared" >> $makefile_cfg
+      ldcompstatic="$libbacktracebuildpath/libbacktrace.a $ldcompstatic" >> $makefile_cfg
+    else
+      ldcompshared="-llibbacktrace $ldcompshared" >> $makefile_cfg
+      ldcompstatic="-llibbacktrace $ldcompstatic" >> $makefile_cfg
     fi
   fi
   
@@ -4620,6 +4752,42 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "LIBUVCUSTOM=no" >> $makefile_cfg
     $echo "LIBUVLIBS=" >> $makefile_cfg
     $echo "LIBUVCFLAGS=" >> $makefile_cfg
+  fi
+
+  # LIBBACKTRACE
+  $echo "LIBBACKTRACE=$libbacktrace" >> $makefile_cfg
+  if [ "$libbacktrace_is_enabled " = "yes " -a "$libbacktrace " != "no " ]; then
+    $echo "LIBBACKTRACELIBS=$libbacktracelibs" >> $makefile_cfg
+    $echo "LIBBACKTRACECFLAGS=$libbacktracebootcflags" >> $makefile_cfg
+
+    if [ "$customlibbacktrace " = "yes " ]; then
+      $echo "LIBBACKTRACECUSTOM=yes" >> $makefile_cfg
+      $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
+    else
+      $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
+    fi
+
+    # Patch the code of the LIBBACKTRACE init file
+    $echo ";; automatically generated. Don't edit" >  api/libbacktrace/src/Misc/libbacktrace.init
+    cat api/libbacktrace/src/Misc/libbacktrace.init.in \
+      | sed -e "s|@LIBBACKTRACELIBS@|$libbacktracelibs|g" \
+            -e "s|@LIBBACKTRACECFLAGS@|$libbacktracecflags|g" \
+      >>  api/libbacktrace/src/Misc/libbacktrace.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "libbacktrace" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
+    $echo "LIBBACKTRACELIBS=" >> $makefile_cfg
+    $echo "LIBBACKTRACECFLAGS=" >> $makefile_cfg
   fi
 
   # PHIDGET
@@ -5039,6 +5207,7 @@ $echo "Compilers and linkers:" >> $configurelog
 $echo "  C compiler used....................... $cc" >> $configurelog
 $echo "  options for compiling................. $cflags" >> $configurelog
 $echo "  options for optimizing................ $coflags" >> $configurelog
+$echo "  options for debugging/profiling....... $cfpflags" >> $configurelog
 $echo "  options for stripping................. $csflags" >> $configurelog
 $echo "  options for PIC code.................. $cpicflags" >> $configurelog
 $echo "  options for NAN code.................. $cnanflags" >> $configurelog
@@ -5051,6 +5220,7 @@ $echo "  options for building static libs...... $arflags" >> $configurelog
 $echo "  socket libraries...................... $socketlibs" >> $configurelog
 $echo "  gmp version........................... $gmpversion" >> $configurelog
 $echo "  unistring library..................... $extraunistring" >> $configurelog
+$echo "  libbacktrace library.................. $extralibbacktrace" >> $configurelog
 $echo "  pthread libraries..................... $pthreadlibs" >> $configurelog
 $echo "  openssl libraries..................... $openssllibs" >> $configurelog
 $echo "  regexp................................ $regexp" >> $configurelog
@@ -5187,6 +5357,11 @@ if [ "$summary" = "yes" ]; then
     $echo "  unistring support........... minimal"
   else
     $echo "  unistring support........... $extraunistring"
+  fi
+  if [ "$libbacktrace" = "no" ]; then
+    $echo "  libbacktrace support........ minimal"
+  else
+    $echo "  libbacktrace support........ $extralibbacktrace"
   fi
   $echo "  regexp...................... $regexp"
   $echo

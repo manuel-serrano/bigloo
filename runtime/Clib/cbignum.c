@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Fri Nov 26 12:54:11 2021 (serrano)                */
+/*    Last change :  Tue Dec  7 08:41:40 2021 (serrano)                */
 /*    Copyright   :  2003-21 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -56,15 +56,22 @@ bgl_init_bignum() {
 /*---------------------------------------------------------------------*/
 static obj_t
 make_bignum(size_t sz) {
-   obj_t o = GC_MALLOC(BIGNUM_SIZE);
+   obj_t o = GC_MALLOC_ATOMIC(BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *));
    
    o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0);
-   o->bignum.mpz._mp_d = (mp_limb_t *)GC_MALLOC_ATOMIC(sz * sizeof(mp_limb_t));
+   o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
    o->bignum.mpz._mp_alloc = sz;
 
    return BREF(o);
 }
 
+#define MAKE_STACK_BIGNUM(o, sz) \
+   (o = alloca(BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *)), \
+      o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0), \
+      o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d), \
+      o->bignum.mpz._mp_alloc = sz, \
+    BREF(o))
+   
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bignum_set_size ...                                              */
@@ -691,7 +698,7 @@ bgl_bignum_quotient(obj_t x, obj_t y) {
       obj_t r;
       const int size_q = size_x - size_y + 1;
       q = make_bignum(size_q);
-      r = make_bignum(size_y);
+      r = MAKE_STACK_BIGNUM(r, size_y);
       mpn_tdiv_qr(BXLIMBS(q), BXLIMBS(r), 0,
 		   BXLIMBS(x), size_x, BXLIMBS(y), size_y);
       bignum_set_size(q, size_q);
@@ -716,18 +723,19 @@ bgl_bignum_remainder(obj_t x, obj_t y) {
    obj_t r;
    const int size_x = BXABSIZ(x);
    const int size_y = BXABSIZ(y);
-   if (size_x < size_y)
+   if (size_x < size_y) {
       r = x;
-   else {
+   } else {
       obj_t q;
       const int size_q = size_x - size_y + 1;
-      q = make_bignum(size_q);
+      q = MAKE_STACK_BIGNUM(q, size_q);
       r = make_bignum(size_y);
       mpn_tdiv_qr(BXLIMBS(q), BXLIMBS(r), 0,
 		  BXLIMBS(x), size_x, BXLIMBS(y), size_y);
       bignum_set_size(r, size_y);
-      if (BXNEGATIVE(x))
+      if (BXNEGATIVE(x)) {
 	 BXSIZ(r) = -BXSIZ(r);
+      }
    }
 
    return r;

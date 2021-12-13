@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cgen/cop.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cgen/cop.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:53:24 1996                          */
-;*    Last change :  Wed Dec 23 13:45:44 2015 (serrano)                */
+;*    Last change :  Wed Dec  8 13:02:39 2021 (serrano)                */
 ;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The intermediate structure to emit c code.                       */
@@ -36,6 +36,7 @@
 	      (body::cop read-only))
 
 	   (class creturn::cop
+	      (tail::bool read-only (default #f))
 	      (value::cop read-only))
 
 	   (class cvoid::cop
