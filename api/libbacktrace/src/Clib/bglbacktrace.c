@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec  2 14:27:09 2021                          */
-/*    Last change :  Sun Dec  5 08:40:20 2021 (serrano)                */
+/*    Last change :  Sat Dec 11 05:52:45 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Optional libbacktrace Bigloo binding                             */
@@ -142,7 +142,6 @@ bgl_backtrace_foreach(void *proc) {
 obj_t
 bgl_backtrace_get(long depth, long start) {
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
-
    if (env) {
       struct backtrace_state *bt_state = libbacktrace_get_state(env);
       obj_t pair = MAKE_PAIR(BNIL, BNIL);
@@ -170,6 +169,7 @@ libbacktrace_get(int depth) {
 /*    bgl_init_backtrace ...                                           */
 /*---------------------------------------------------------------------*/
 void bgl_init_backtrace() {
+   fprintf(stderr, "BGLBT\n");
    orig_init_trace = bgl_init_trace;
    bgl_init_trace_register(&libbacktrace_init, &libbacktrace_get, 0L);
 }
@@ -180,5 +180,6 @@ void bgl_init_backtrace() {
 /*---------------------------------------------------------------------*/
 void
 bglbacktrace_setup(int argc, char *argv[], char *env[]) {
+   fprintf(stderr, "BGLBT\n");
    return bgl_init_backtrace();
 }

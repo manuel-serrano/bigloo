@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sun Dec  5 13:21:09 2021 (serrano)                */
+;*    Last change :  Sat Dec 11 05:57:11 2021 (serrano)                */
 ;*    Copyright   :  2001-21 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The LIBBACKTRACE init file.                                      */
@@ -31,6 +31,10 @@
 	     (cons fpopt *cc-options*))))
     (set! *strip*
        #f)
+    ;; setup
+    (set! *bigloo-libraries-c-setup*
+       (cons "bglbacktrace_setup"
+	  *bigloo-libraries-c-setup*))
     ;; libbacktrace libraries
     (set! *ld-post-options*
        (cons "@LIBBACKTRACELIBS@" *ld-post-options*))
