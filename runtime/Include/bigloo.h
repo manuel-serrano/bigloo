@@ -258,44 +258,43 @@ extern "C" {
 #if (BGL_NAN_TAGGING)
 #  define TAG_QNAN (0x7ff8UL<<48)
 #  define TAG_SNAN (0xfff8UL<<48)
-#  define TAG_INT (0x7ff9L<<48)       /*  Int tagging       011...1000 */
-#  define TAG_STRUCT (0x7ffaUL<<48)   /*  Pointers tagging  011...1001 */
-#  define TAG_CNST (0x7ffbUL<<48)     /*  Constants tagging 011...1010 */
-#  define TAG_VECTOR (0x7ffcUL<<48)   /*  Vector tagging    011...1011 */
-#  define TAG_CELL (0x7ffdUL<<48)     /*  Cell tagging      011...1100 */
-#  define TAG_PAIR (0x7ffeUL<<48)     /*  Pair tagging      011...1101 */
-#  define TAG_OBJECT (0x7fffUL<<48)   /*  Object tagging    011...1110 */
-#  define TAG_NANOBJECT (0xffffUL<<48)/*  Object tagging    111...1110 */
-#  define TAG_STRING (0xfff9UL<<48)   /*  Object tagging    111...1000 */
-#  define TAG_SYMBOL (0xfffaUL<<48)   /*  Symbol tagging    111...1001 */
+#  define TAG_INT (0x7ff9L<<48)       /*  int tagging       011...1000 */
+#  define TAG_STRUCT (0x7ffaUL<<48)   /*  pointers tagging  011...1001 */
+#  define TAG_CNST (0x7ffbUL<<48)     /*  constants tagging 011...1010 */
+#  define TAG_VECTOR (0x7ffcUL<<48)   /*  vector tagging    011...1011 */
+#  define TAG_CELL (0x7ffdUL<<48)     /*  cell tagging      011...1100 */
+#  define TAG_PAIR (0x7ffeUL<<48)     /*  pair tagging      011...1101 */
+#  define TAG_OBJECT (0x7fffUL<<48)   /*  object tagging    011...1110 */
+#  define TAG_NANOBJECT (0xffffUL<<48)/*  object tagging    111...1110 */
+#  define TAG_STRING (0xfff9UL<<48)   /*  object tagging    111...1000 */
+#  define TAG_SYMBOL (0xfffaUL<<48)   /*  symbol tagging    111...1001 */
 #elif (BGL_GC == BGL_SAW_GC)    
 #  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  Integers tagging      ....00 */
-#  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
-#  define TAG_YOUNG 2                 /*  Pointers tagging      ....10 */
-#  define TAG_CNST 3                  /*  Constants tagging     ....11 */
+#  define TAG_INT 0                   /*  integer tagging       ....00 */
+#  define TAG_STRUCT 1                /*  pointer tagging       ....01 */
+#  define TAG_YOUNG 2                 /*  pointer tagging       ....10 */
+#  define TAG_CNST 3                  /*  constant tagging      ....11 */
 #elif (BGL_GC == BGL_BOEHM_GC) 
 #  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  Integers tagging      ....00 */
-#  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
-#  define TAG_CNST 2                  /*  Constants tagging     ....10 */
-#  define TAG_PAIR 3                  /*  Pairs tagging         ....11 */
+#  define TAG_INT 0                   /*  integer tagging       ....00 */
+#  define TAG_STRUCT 1                /*  pointer tagging       ....01 */
+#  define TAG_CNST 2                  /*  constant tagging      ....10 */
+#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
 #elif (BGL_GC == BGL_NO_GC)
 #  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  Integers tagging      ....00 */
-#  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
-#  define TAG_CNST 2                  /*  Constants tagging     ....10 */
-#  define TAG_PAIR 3                  /*  Pairs tagging         ....11 */
+#  define TAG_INT 0                   /*  integer tagging       ....00 */
+#  define TAG_STRUCT 1                /*  pointer tagging       ....01 */
+#  define TAG_CNST 2                  /*  constant tagging      ....10 */
+#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
 #else
 error "Unknown garbage collector type"
 #endif
 
 #if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING)
-#  define TAG_VECTOR 4                /*  Vector tagging        ...100 */
-#  define TAG_CELL 5                  /*  Cells tagging         ...101 */
-#  define TAG_REAL 6                  /*  Reals tagging         ...110 */
-#  define TAG_STRING 7                /*  Strings tagging       ...111 */
-//#  define TAG_SYMBOL 7                /*  Symbols tagging       ...111 */
+#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
+#  define TAG_CELL 5                  /*  cell tagging          ...101 */
+#  define TAG_REAL 6                  /*  real tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
 #endif
 
 #if (PTR_ALIGNMENT == 2 && defined(BGL_TAG_CNST32) && !BGL_NAN_TAGGING)
