@@ -2356,7 +2356,7 @@ if [ "$gmpversion " != "no " ]; then
         gmplib=-lgmp
       fi
   
-      gmpversion=`$autoconf gmp --lib=$gmplib` || exit 1
+      gmpversion=`$autoconf gmp --lib="$gmplib"` || exit 1
     fi
   fi  
   
