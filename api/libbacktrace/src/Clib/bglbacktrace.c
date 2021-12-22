@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec  2 14:27:09 2021                          */
-/*    Last change :  Sat Dec 11 05:52:45 2021 (serrano)                */
+/*    Last change :  Wed Dec 22 13:55:46 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Optional libbacktrace Bigloo binding                             */
@@ -169,7 +169,6 @@ libbacktrace_get(int depth) {
 /*    bgl_init_backtrace ...                                           */
 /*---------------------------------------------------------------------*/
 void bgl_init_backtrace() {
-   fprintf(stderr, "BGLBT\n");
    orig_init_trace = bgl_init_trace;
    bgl_init_trace_register(&libbacktrace_init, &libbacktrace_get, 0L);
 }
@@ -180,6 +179,5 @@ void bgl_init_backtrace() {
 /*---------------------------------------------------------------------*/
 void
 bglbacktrace_setup(int argc, char *argv[], char *env[]) {
-   fprintf(stderr, "BGLBT\n");
    return bgl_init_backtrace();
 }
