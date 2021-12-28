@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sun May  2 14:47:51 2021 (serrano)                */
+;*    Last change :  Tue Dec 28 18:53:03 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -182,14 +182,19 @@
 ;*    eval/expander ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (eval/expander exp::obj env expand::procedure evaluate::procedure)
-   (let ((loc (get-source-location exp))
-	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
-      (if (and loc (> (bigloo-debug) 0))
-	  (with-handler
-	     (lambda (e)
-		(eval-exception-handler e loc))
-	     (evaluate (expand sexp) env loc))
-	  (evaluate (expand sexp) env loc))))
+   (let ((denv::dynamic-env (current-dynamic-env)))
+      (let ()
+	 (let ((loc (get-source-location exp))
+	       (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
+	    ($env-push-trace denv :eval #f)
+	    (let ((tmp (if (and loc (> (bigloo-debug) 0))
+			   (with-handler
+			      (lambda (e)
+				 (eval-exception-handler e loc))
+			      (evaluate (expand sexp) env loc))
+			   (evaluate (expand sexp) env loc))))
+	       ($env-pop-trace denv)
+	       tmp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-exception-handler ...                                       */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Oct  7 08:22:47 2021 (serrano)                */
+;*    Last change :  Tue Dec 28 18:27:37 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -994,10 +994,10 @@
 ;*---------------------------------------------------------------------*/
 (define (display-trace-stack stack port #!optional (offset 1))
 
-   (define (filename file num)
+   (define (filename file num sz)
       (cond
 	 ((=fx num 1)
-	  (filename-for-error file 12))
+	  (filename-for-error file sz))
 	 ((file-exists? file)
 	  file)
 	 (else
@@ -1006,8 +1006,11 @@
    (define (display-trace-stack-frame frame level num)
       (match-case frame
 	 ((?name ?loc . (and (? alist?) ?rest))
-	  (let ((margin (assq 'margin rest))
-		(fmt (assq 'format rest)))
+	  (let* ((margin (assq 'margin rest))
+		 (fmt (assq 'format rest))
+		 (nm (if (and (pair? fmt) (string? (cdr fmt)))
+			 (format (cdr fmt) name)
+			 name)))
 	     ;; margin
 	     (if (and (pair? margin) (char? (cdr margin)))
 		 (display (cdr margin) port)
@@ -1020,9 +1023,7 @@
 	     (display level port)
 	     (display ". " port)
 	     ;; frame name
-	     (if (and (pair? fmt) (string? (cdr fmt)))
-		 (display (format (cdr fmt) name) port)
-		 (display name port))
+	     (display name port)
 	     (cond
 		((>fx num 1)
 		 (display " (* " port)
@@ -1034,7 +1035,11 @@
 		    (location-line-num loc)
 		    ;; file name
 		    (when file
-		       (display (filename file num) port))
+		       (display (filename file num
+				   (if (string? nm)
+				       (-fx (-fx 80 4) (string-length nm))
+				       60))
+			  port))
 		    ;; line num
 		    (cond
 		       (lnum

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec  2 14:27:09 2021                          */
-/*    Last change :  Wed Dec 22 13:55:46 2021 (serrano)                */
+/*    Last change :  Tue Dec 28 08:42:26 2021 (serrano)                */
 /*    Copyright   :  2021 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Optional libbacktrace Bigloo binding                             */
@@ -21,9 +21,12 @@ extern obj_t bigloo_module_demangle(obj_t);
 /*    struct getinfo                                                   */
 /*---------------------------------------------------------------------*/
 struct getinfo {
+   obj_t env;
+   char ineval;
    long depth;
    long start;
    obj_t pair;
+   struct bgl_dframe *runner;
 };
    
 /*---------------------------------------------------------------------*/
@@ -47,6 +50,37 @@ backtrace_foreach_cb(void *data, uintptr_t pc, const char *filename, int lineno,
        function ? string_to_bstring((char *)function) : BUNSPEC,
        BEOA)
       != BFALSE;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    eval_get_trace_stack ...                                         */
+/*---------------------------------------------------------------------*/
+static void
+eval_get_trace_stack(struct getinfo *info) {
+   struct bgl_dframe *runner = info->runner;
+   obj_t l = MAKE_PAIR(BNIL, BNIL);
+   obj_t r = l;
+
+   while ((info->depth > 1) && runner) {
+      if (SYMBOLP(runner->name) || STRINGP(runner->name)) {
+	 obj_t fun = runner->name;
+	 obj_t file = runner->location;
+	 obj_t rest = MAKE_PAIR(file, BNIL);
+	 obj_t entry = MAKE_PAIR(fun, rest);
+
+	 SET_CDR(info->pair, MAKE_PAIR(entry, BNIL));
+	 info->pair = CDR(info->pair);
+	 info->depth--;
+      } else if (KEYWORDP(runner->name)) {
+	 // a mark that stop the stack walk
+	 runner = runner->link;
+	 break;
+      }
+      
+      runner = runner->link;
+   }
+   info->runner = runner;
 }
 
 /*---------------------------------------------------------------------*/
@@ -77,12 +111,37 @@ backtrace_get_cb(void *data, uintptr_t pc, const char *filename, int lineno, con
 
       /* a Scheme function */
       if (fun != BUNSPEC && bigloo_mangledp(fun)) {
-	 SET_CAR(entry, bigloo_module_demangle(fun));
-      }
+	 obj_t dm = bigloo_module_demangle(fun);
+	 long len = STRING_LENGTH(dm);
+	 char *s = BSTRING_TO_STRING(dm);
+	 char ec[] = "@__evaluate_comp";
+	 char ea[] = "@__evaluate";
+	 char ev[] = "@__eval";
+
+	 if ((len > sizeof(ec)) && !strcmp(&(s[len-sizeof(ec)+1]), ec)) {
+	    /* grab the portion of the Scheme eval trace stack */
+	    if (!info->ineval) {
+	       info->ineval = 1;
+	       eval_get_trace_stack(info);
+	       return info->depth-- == 0;
+	    } else {
+	       return 0;
+	    }
+	 } else if (!strcmp(&(s[len-sizeof(ea)+1]), ea)) {
+	    return 0;
+	 } else if (!strcmp(&(s[len-sizeof(ev)+1]), ev)) {
+	    return 0;
+	 } else {
+	    info->ineval = 0;
+	    SET_CAR(entry, dm);
+	 }
       
-      SET_CDR(info->pair, MAKE_PAIR(entry, BNIL));
-      info->pair = CDR(info->pair);
-      return info->depth-- == 0;
+	 SET_CDR(info->pair, MAKE_PAIR(entry, BNIL));
+	 info->pair = CDR(info->pair);
+	 return info->depth-- == 0;
+      } else {
+	 return 0;
+      }
    }
 }
 
@@ -142,10 +201,11 @@ bgl_backtrace_foreach(void *proc) {
 obj_t
 bgl_backtrace_get(long depth, long start) {
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+
    if (env) {
       struct backtrace_state *bt_state = libbacktrace_get_state(env);
       obj_t pair = MAKE_PAIR(BNIL, BNIL);
-      struct getinfo info = { depth = depth, start = start, pair = pair };
+      struct getinfo info = { env, 0, depth, start, pair, BGL_ENV_GET_TOP_OF_FRAME(env) };
 
       backtrace_full(bt_state, start, backtrace_get_cb, cbe, &info);
 
