@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Dec 28 18:27:37 2021 (serrano)                */
+;*    Last change :  Wed Dec 29 17:24:11 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -996,6 +996,8 @@
 
    (define (filename file num sz)
       (cond
+	 ((<fx sz 0)
+	  "...")
 	 ((=fx num 1)
 	  (filename-for-error file sz))
 	 ((file-exists? file)
