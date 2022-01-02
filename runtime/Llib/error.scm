@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Dec 29 17:24:11 2021 (serrano)                */
+;*    Last change :  Fri Dec 31 18:07:14 2021 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -793,6 +793,8 @@
 ;*---------------------------------------------------------------------*/
 (define (filename-for-error file #!optional (sz 255))
    (cond
+      ((<fx sz 0)
+       "...")
       ((file-exists? file)
        (relative-file-name file))
       ((string-prefix? "string://" file)
@@ -801,6 +803,8 @@
 	   (string-append (substring file 9 (+fx sz 6)) "...")))
       ((<=fx (string-length file) sz)
        file)
+      ((<fx sz 4)
+       "...")
       (else
        (string-append (substring file 0 (-fx sz 3)) "..."))))
 
@@ -996,8 +1000,6 @@
 
    (define (filename file num sz)
       (cond
-	 ((<fx sz 0)
-	  "...")
 	 ((=fx num 1)
 	  (filename-for-error file sz))
 	 ((file-exists? file)
