@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
 ;*    Last change :  Thu Mar 26 14:29:39 2020 (serrano)                */
-;*    Copyright   :  2003-20 Manuel Serrano                            */
+;*    Copyright   :  2003-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Aug 31 09:09:51 2021 (serrano)                */
+;*    Last change :  Mon Jan  3 07:44:31 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -1037,7 +1037,7 @@
 	       (cond
 		  ((null? ebindings)
 		   (values (reverse! val-bindings) (reverse! rec*-bindings)))
-		  ((and (function? (ebinding-value (car ebindings)))
+		  ((and (direct-function? (ebinding-value (car ebindings)))
 			(immutable-in? (car ebindings) (cdr ebindings)))
 		   (loop (cdr ebindings)
 		      val-bindings
@@ -1068,27 +1068,28 @@
 
       (define (split ebindings)
 	 (with-trace 'letrec* "letrec*/stage1/split"
-	    (let loop ((ebindings (reverse ebindings))
+	    (let loop ((rebindings (reverse ebindings))
 		       (let*-bindings '()))
 	       (cond
-		  ((null? ebindings)
+		  ((null? rebindings)
 		   (values '() let*-bindings))
 		  ((and (every (lambda (var)
 				  (find (lambda (eb)
 					   (eq? var (ebinding-var eb)))
-				     (cdr ebindings)))
-			   (ebinding-frees (car ebindings)))
+				     (cdr rebindings)))
+			   (ebinding-frees (car rebindings)))
 			;; all the ebinding free variables are defined before
 			;; and the binding is never used in a previous binding
-			(not (used-in? (car ebindings) (cdr ebindings))))
-		   (loop (cdr ebindings) (cons (car ebindings) let*-bindings)))
+			(not (used-in? (car rebindings) (cdr rebindings))))
+		   (loop (cdr rebindings)
+		      (cons (car rebindings) let*-bindings)))
 		  (else
 		   ;; one of the variables introduced in the next bindings
 		   ;; appears free in the value of the current binding
-		   (trace-item "abort=" (ebinding-var (car ebindings)))
+		   (trace-item "abort=" (ebinding-var (car rebindings)))
 		   (trace-item "let*-bindings="
 		      (map (lambda (b) (shape (ebinding-var b))) let*-bindings))
-		   (values (reverse ebindings) let*-bindings))))))
+		   (values (reverse rebindings) let*-bindings))))))
       
       (with-trace 'letrec* "letrec*/stage1"
 	 (split-tail-let* ebindings body split stage2)))
@@ -1191,6 +1192,22 @@
 	   (and (symbol? var) (eq? (fast-id-of-id var #f) 'lambda))
 	   (function? var)
 	   (and (not directp) (any* function? args))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    direct-function? ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Is exp a lambda definition (no nesting).                         */
+;*---------------------------------------------------------------------*/
+(define (direct-function? exp #!optional directp)
+   (match-case exp
+      ((lambda . ?-)
+       #t)
+      ((labels ((?tid . ?-)) ?id)
+       (eq? (fast-id-of-id tid #f) id))
+      (((and (? symbol?) ?var) . ?-)
+       (eq? (fast-id-of-id var #f) 'lambda))
       (else
        #f)))
 
