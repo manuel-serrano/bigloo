@@ -63,7 +63,6 @@ cat > $file.c <<EOF
 void match(char *data, char *pattern) {
   int count = 0;
   double elapsed;
-  struct timespec start, end;
   pcre2_code *re;
   int errorcode;
   PCRE2_SIZE erroroffset;
