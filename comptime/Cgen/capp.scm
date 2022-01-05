@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Fri Jun 18 13:48:46 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  5 07:37:10 2022 (serrano)                */
+;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -205,7 +205,7 @@
    (with-access::app node (fun)
       (let ((var (var-variable fun)))
 	 (if (and (global? var)
-		  (or (not (eq? var *the-global*))
+		  (or (not (eq? var *the-current-global*))
 		      (not (eq? kont *return-kont*)))) 
 	     (node-non-tail-app->cop var node kont inpushexit)
 	     (node-tail-app->cop var node kont inpushexit)))))

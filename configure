@@ -4,9 +4,9 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec  8 16:31:38 2021 (serrano)                */
+#*    Last change :  Tue Jan  4 08:40:14 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
-#*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -1928,14 +1928,14 @@ case $hostos in
       sharedcompiler=yes
       sharedbde=yes
       ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
-      customgmp=yes
+      #customgmp=yes
       customgmpmakefile=Makefile.macosx
-      customunistring=yes
+      #customunistring=yes
       customlibbacktrace=yes
       customlibuv=yes
       customgc=yes
       custompcre=no
-      custompcre2=yes
+      #custompcre2=yes
       
       if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
         if [ "$threadsupport " = "no " ]; then
@@ -3583,6 +3583,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
         | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit), `date`|" \
               -e "s|@BGL_RELEASE@|BGL_$rel|" \
               -e "s|@BGL_RELEASE_NUMBER@|$release|" \
+              -e "s|@BGL_RELEASE_VERSION@|$version|" \
               -e "s|@BGL_RELEASE_BRANCH@|$branch|" \
               -e "s|@BGL_HOMEURL@|$bigloourl|" \
               -e "s|@BGL_SPECIFIC_VERSION@|$specific|" \
@@ -3841,6 +3842,14 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     mv $p $bootdir/bin/$p
     chmod u+rx $bootdir/bin/$p
   done
+
+  # www/www.json
+  date=`date +"%B %Y"`
+  cat www/www.json.in |
+    sed -e "s|@BGL_RELEASE_NUMBER@|$release|" \
+        -e "s|@BGL_RELEASE_VERSION@|$version|" \
+        -e "s|@BGL_RELEASE_BRANCH@|$branch|" \
+        -e "s|@BGL_RELEASE_DATE@|$date|" > www/www.json
 fi
 
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Dec  8 13:37:57 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  5 07:36:59 2022 (serrano)                */
+;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -52,7 +52,7 @@
 	    (generic node->cop::cop ::node ::procedure ::bool)
 	    (make-local-svar/name::local ::symbol ::type)
 	    (bdb-let-var::cop ::cop loc)
-	    *the-global*
+	    *the-current-global*
 	    *return-kont*
 	    *id-kont*
 	    (block-kont cop loc)
@@ -67,7 +67,7 @@
       (trace cgen "cgen global: " (shape global) #\Newline)
       (trace (cgen 2) "*void-kont*: " *void-kont* #\Newline)
       (trace (cgen 2) "*return-kont*: " *return-kont* #\Newline)
-      (set! *the-global* global)
+      (set! *the-current-global* global)
       (let ((sh (shape global)))
 	 (assert (sh) (string? (global-name global))))
       (let* ((sfun (widen!::sfun/C (global-value global)
@@ -118,11 +118,11 @@
 	 (leave-function))))
   
 ;*---------------------------------------------------------------------*/
-;*    *the-global* ...                                                 */
+;*    *the-current-global* ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    This variable is use to implement global tail calls.             */
 ;*---------------------------------------------------------------------*/
-(define *the-global* #unspecified)
+(define *the-current-global* #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    global->c ...                                                    */
@@ -152,6 +152,30 @@
    (no-bdb-newline))
 
 ;*---------------------------------------------------------------------*/
+;*    capply-tailcallable? ...                                         */
+;*    -------------------------------------------------------------    */
+;*    Generalized C tail calls requires the caller and the callee      */
+;*    to have the same number of arguments.                            */
+;*---------------------------------------------------------------------*/
+(define (capply-tailcallable? cop::capply)
+   (let ((sfun (global-value *the-current-global*)))
+      (=fx (length (sfun-args sfun)) 2)))
+
+;*---------------------------------------------------------------------*/
+;*    cfuncall-tailcallable? ...                                       */
+;*---------------------------------------------------------------------*/
+(define (cfuncall-tailcallable? cop::cfuncall)
+   (let ((sfun (global-value *the-current-global*)))
+      (=fx (length (sfun-args sfun)) (length (cfuncall-args cop)))))
+
+;*---------------------------------------------------------------------*/
+;*    capp-tailcallable? ...                                           */
+;*---------------------------------------------------------------------*/
+(define (capp-tailcallable? cop::capp)
+   (let ((sfun (global-value *the-current-global*)))
+      (=fx (length (sfun-args sfun)) (length (capp-args cop)))))
+   
+;*---------------------------------------------------------------------*/
 ;*    *return-kont* ...                                                */
 ;*---------------------------------------------------------------------*/
 (define *return-kont*
@@ -159,10 +183,9 @@
       (instantiate::creturn
 	 (loc (cop-loc cop))
 	 (tail (when *c-tail-call*
-		  (or (isa? cop capply)
-		      (isa? cop cfuncall)
-		      (isa? cop cfail)
-		      (when (isa? cop capp)
+		  (or (and (isa? cop capply) (capply-tailcallable? cop))
+		      (and (isa? cop cfuncall) (cfuncall-tailcallable? cop))
+		      (when (and (isa? cop capp) (capp-tailcallable? cop))
 			 (let ((fun (varc-variable (capp-fun cop))))
 			    (cond
 			       ((not (cfun? (global-value fun))) #t)

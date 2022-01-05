@@ -41,6 +41,7 @@ tools/lnname.c
 include/
 
 # Web site
+www/www.json
 www/*.html
 www/archlinux.txt
 www/bench/

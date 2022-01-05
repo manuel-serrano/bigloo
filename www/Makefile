@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Thu May 14 12:49:17 2020 (serrano)                */
-#*    Copyright   :  2020-21 Manuel Serrano                            */
+#*    Last change :  Tue Jan  4 08:50:04 2022 (serrano)                */
+#*    Copyright   :  2020-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
 #*=====================================================================*/
@@ -44,7 +44,7 @@ POP=bib.md cross.md documentation.md homebrew.md license.md manual.md \
   $(BOOTSTRAP_POP) $(JQUERY_POP) \
   favicon.png bigloo.svg \
   fib.scm fib-mt.scm flac.scm \
-  Makefile.md
+  www.json.in Makefile.md
 
 ALL_TARGETS=index.html license.html download.html debian.html homebrew.html \
   manual.html bib.html contribs.html cross.html
