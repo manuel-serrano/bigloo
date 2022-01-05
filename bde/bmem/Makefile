@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Mon Dec  6 09:08:59 2021 (serrano)                */
-#*    Copyright   :  2003-21 Manuel Serrano                            */
+#*    Last change :  Wed Jan  5 15:54:36 2022 (serrano)                */
+#*    Copyright   :  2003-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -137,10 +137,6 @@ install:
           chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE); \
         fi
 	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  if [ ! -d $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem ]; then \
-            mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem && \
-              chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem; \
-          fi && \
 	  cp $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
              $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX) || exit 1; \
           chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX); \
@@ -159,7 +155,6 @@ install:
 
 uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE)
-	- $(RM) -rf $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */
