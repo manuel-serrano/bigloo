@@ -2,7 +2,7 @@
 ;;;;
 ;;;; imap-lib.stk	-- IMAP Library
 ;;;; 
-;;;; Copyright © 2005 Erick Gallesio - I3S-CNRS/ESSI <eg@essi.fr>
+;;;; Copyright Â© 2005 Erick Gallesio - I3S-CNRS/ESSI <eg@essi.fr>
 ;;;; 
 ;;;; 
 ;;;; This program is free software; you can redistribute it and/or modify
@@ -411,12 +411,20 @@
 ;;	imap-folders ...
 ;; ----------------------------------------------------------------------
 (define (imap-folders s)
+
+  (define (to-string n)
+     (cond
+	((string? n) n)
+	((symbol? n) (symbol->string n))
+	((number? n) (number->string n))
+	(else (format "~a" n))))
+
   (let* ((result '())
 	 (reply  (%imap-send s
 			     (format "LIST \"\" \"*\"")
 			     (lambda (x)
 			       (when (and (pair? x) (>= (length x) 4))
-				 (set! result (cons (cadddr x) result))))
+				 (set! result (cons (to-string (cadddr x)) result))))
 			     void)))
     (%imap-result 'imap-folders
                   s
