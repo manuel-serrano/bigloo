@@ -1,19 +1,19 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/recette/recette.scm        */
+;*    .../bigloo/bigloo/api/libbacktrace/recette/recette.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Tue May  6 15:12:50 2014 (serrano)                */
-;*    Copyright   :  2002-14 Manuel Serrano                            */
+;*    Last change :  Thu Jan  6 11:19:14 2022 (serrano)                */
+;*    Copyright   :  2002-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    A test module that for the Gstreamer library.                    */
+;*    A test module that for the libbacktrace library.                 */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module recette
-   (library pthread libuv)
+   (library pthread libbacktrace)
    (main    main))
 
 ;*---------------------------------------------------------------------*/
@@ -85,7 +85,7 @@
 ;*---------------------------------------------------------------------*/
 (define-test cond-expand
    (cond-expand
-      (libuv #t)
+      (libbacktrace #t)
       (else #f))
    :result #t)
 
