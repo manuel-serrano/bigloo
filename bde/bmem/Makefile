@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Wed Jan  5 15:54:36 2022 (serrano)                */
+#*    Last change :  Thu Jan  6 14:58:13 2022 (serrano)                */
 #*    Copyright   :  2003-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -130,6 +130,7 @@ pop:
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
 install:
+	mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
 	  cp $(BOOTBINDIR)/$(BMEM_EXE) $(DESTDIR)$(BINDIR)/$(BMEM_EXE) || exit 1; \
           chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BMEM_EXE); \
