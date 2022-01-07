@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/alloc.c       */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/alloc.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Nov  5 09:15:25 2021 (serrano)                */
-/*    Copyright   :  2003-21 Manuel Serrano                            */
+/*    Last change :  Fri Jan  7 17:21:30 2022 (serrano)                */
+/*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -28,7 +28,7 @@
 static hashtable_t *native_allocators = 0L;
 static hashtable_t *file_allocs = 0L;
 
-static long alloc_size = 0;
+static long long alloc_size = 0;
 
 extern void gc_alloc_size_add(int size);
 extern long gc_alloc_size();
@@ -41,7 +41,7 @@ static long alloc_typenum = -1;
 /*---------------------------------------------------------------------*/
 long
 bmem_get_alloc_type() {
-   if(bmem_thread) {
+   if (bmem_thread) {
       return (long)____pthread_getspecific(bmem_key);
    } else {
       return alloc_typenum;
@@ -54,7 +54,7 @@ bmem_get_alloc_type() {
 /*---------------------------------------------------------------------*/
 void
 bmem_set_alloc_type(long tnum) {
-   if( bmem_thread ) {
+   if (bmem_thread) {
       ____pthread_setspecific(bmem_key, (void *)tnum);
    } else {
       alloc_typenum = tnum;
@@ -374,11 +374,11 @@ alloc_dump_statistics() {
 /*    alloc_dump_type ...                                              */
 /*---------------------------------------------------------------------*/
 void
-alloc_dump_type( pa_pair_t *i, FILE *f ) {
-   type_alloc_info_t *tai = (type_alloc_info_t *)PA_CDR( i );
+alloc_dump_type(pa_pair_t *i, FILE *f) {
+   type_alloc_info_t *tai = (type_alloc_info_t *)PA_CDR(i);
    
-   fprintf( f, "\n          (%ld #l%ld #l%ld)", (long)PA_CAR( i ),
-	    tai->num, BMEMSIZE( tai->size ) );
+   fprintf(f, "\n          (%ld #l%ld #l%ld)", (long)PA_CAR(i),
+	    tai->num, BMEMSIZE(tai->size));
 }
 
 /*---------------------------------------------------------------------*/
@@ -439,7 +439,7 @@ trace_alloc(obj_t o, size_t lb) {
    all_types[info.typenum].cnt++;
    all_types[info.typenum].size += lb;
    
-   if (info.filename && info.lineno >= 0 ) {
+   if (info.filename && info.lineno >= 0) {
       file_alloc_add(info.filename, info.lineno, lb, info.typenum);
 
       if (info.typenum == NO_TYPE_NUM ||
@@ -478,7 +478,7 @@ GC_malloc(size_t lb) {
 /*    GC_realloc ...                                                   */
 /*---------------------------------------------------------------------*/
 obj_t
-GC_realloc( obj_t old, size_t lb ) {
+GC_realloc(obj_t old, size_t lb) {
    return trace_alloc(____GC_realloc(old,lb), lb);
 }
 
@@ -487,7 +487,7 @@ GC_realloc( obj_t old, size_t lb ) {
 /*    GC_malloc_atomic ...                                             */
 /*---------------------------------------------------------------------*/
 obj_t
-GC_malloc_atomic( size_t lb ) {
+GC_malloc_atomic(size_t lb) {
    return trace_alloc(____GC_malloc_atomic(lb), lb);
 }
 
@@ -496,7 +496,7 @@ GC_malloc_atomic( size_t lb ) {
 /*    GC_malloc_uncollectable ...                                      */
 /*---------------------------------------------------------------------*/
 obj_t
-GC_malloc_uncollectable( size_t lb ) {
+GC_malloc_uncollectable(size_t lb) {
    return trace_alloc(____GC_malloc_uncollectable(lb), lb);
 }
 
@@ -509,8 +509,8 @@ GC_malloc_uncollectable( size_t lb ) {
 /*    multithreaded environment.                                       */
 /*---------------------------------------------------------------------*/
 obj_t
-GC_local_malloc( size_t lb ) {
-   return GC_malloc( lb );
+GC_local_malloc(size_t lb) {
+   return GC_malloc(lb);
 }
 
 /*---------------------------------------------------------------------*/
@@ -518,6 +518,6 @@ GC_local_malloc( size_t lb ) {
 /*    GC_local_malloc_atomic ...                                       */
 /*---------------------------------------------------------------------*/
 obj_t
-GC_local_malloc_atomic( size_t lb ) {
-   return GC_malloc_atomic( lb );
+GC_local_malloc_atomic(size_t lb) {
+   return GC_malloc_atomic(lb);
 }
