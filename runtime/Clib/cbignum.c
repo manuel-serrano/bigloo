@@ -1142,7 +1142,7 @@ bgl_bignum_mask(obj_t x, long n) {
 /*    bgl_bignum_and ...                                               */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_bignum_and(obj_t x, long y) {
+bgl_bignum_and(obj_t x, obj_t y) {
    obj_t obj;
    mpz_t rop;
    
