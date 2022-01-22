@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jan  4 08:40:14 2022 (serrano)                */
+#*    Last change :  Sat Jan 22 07:20:36 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -265,7 +265,8 @@ libuvconfigureopt=
 #* libuvversion=v1.19.1                                                */
 #* libuvversion=v1.19.2                                                */
 #* libuvversion=v1.20.3                                                */
-libuvversion=v1.40.0
+#* libuvversion=v1.40.0                                                */
+libuvversion=v1.43.0
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
