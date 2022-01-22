@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Sat Jan 22 08:49:57 2022 (serrano)                */
+#*    Last change :  Sat Jan 22 09:09:10 2022 (serrano)                */
 #*    Copyright   :  2003-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -33,7 +33,7 @@ POPULATION	= $(SRC:%=bmem/%) $(INCLUDE:%=bmem/%) \
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
 #*---------------------------------------------------------------------*/
-IFLAGS		= -Ilib -I$(BOOTLIBDIR)
+IFLAGS		= -Ilib -I$(BOOTLIBDIR) -I$(LIBBACKTRACEBOOTINCDIR)
 CMEMFLAGS	= -DBMEMDEBUG $(CPICFLAGS) -g
 BMEMFLAGS	= $(BFLAGS) -g -I bmem $(EFLAGS) -I /tmp/include
 

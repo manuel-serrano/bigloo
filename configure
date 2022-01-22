@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jan 22 07:20:36 2022 (serrano)                */
+#*    Last change :  Sat Jan 22 09:04:16 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -4234,16 +4234,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
   $echo >> $makefile_cfg
 
-  # The LIBBACKTRACE library
-  if [ "$customlibbacktrace " = "yes " ]; then
-    $echo "LIBBACKTRACECUSTOM=yes" >> $makefile_cfg
-    $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
-  else
-    $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
-    $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
-  fi
-  $echo >> $makefile_cfg
-
   # additional bigloo compiler link flags (some architecture such as AIX
   # require a special to link huge executable
   $echo "EXTRA_LD_OPT=$lflags $lcustomflags $rflags" >> $makefile_cfg
@@ -4773,8 +4763,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     if [ "$customlibbacktrace " = "yes " ]; then
       $echo "LIBBACKTRACECUSTOM=yes" >> $makefile_cfg
       $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
+      $echo "LIBBACKTRACEBOOTINCDIR=$bootdir/libbacktrace/libbacktrace-$libbacktraceversion" >> $makefile_cfg
     else
       $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
+      $echo "LIBBACKTRACEBOOTINCDIR=." >> $makefile_cfg
     fi
 
     # Patch the code of the LIBBACKTRACE init file
