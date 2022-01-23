@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Dec  2 16:02:56 2021 (serrano)                */
+#*    Last change :  Sun Jan 23 07:08:36 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -39,7 +39,7 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 BAPIUNSAFE	= -safee -unsafe 
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
                   -srfi $(API) -copt "$(LIBBACKTRACECFLAGS) -DBGL_DUMMY" $(BAPIUNSAFE)
-CAPIFLAGS       = $(LIBBACKTRACECFLAGS) $(CGCTHREADFLAGS)
+CAPIFLAGS       = $(LIBBACKTRACECFLAGS) $(CGCTHREADFLAGS) -I$(LIBBACKTRACEBOOTINCDIR)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(API)
