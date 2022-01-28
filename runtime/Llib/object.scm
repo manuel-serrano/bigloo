@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec 31 08:50:01 2021 (serrano)                */
+;*    Last change :  Fri Jan 28 08:00:08 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -140,7 +140,9 @@
 	    (macro $class-evdata-set!::obj (::class ::obj)
 		   "BGL_CLASS_EVDATA_SET")
 
-	    (export bigloo-types-number "bgl_types_number"))
+	    (export bigloo-types-number "bgl_types_number")
+	    (export *classes* "bgl_classes")
+	    (export *inheritances* "bgl_class_inheritances"))
 
    (java    (class foreign
 	       (field static $bigloo-generic-mutex::mutex
