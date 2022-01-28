@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Nov 29 15:28:40 2021 (serrano)                */
-/*    Copyright   :  2016-21 Manuel Serrano                            */
+/*    Last change :  Fri Jan 28 08:18:48 2022 (serrano)                */
+/*    Copyright   :  2016-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
 /*=====================================================================*/
@@ -126,9 +126,9 @@ typedef struct BgL_objectz00_bgl {
 /*    BGL_ISA                                                          */
 /*---------------------------------------------------------------------*/
 #if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
-#  define BGL_ISA_C_BACKEND(e1, e2) (e1)
+#  define BGL_CONDEXPAND_ISA_ARCH64() 1
 #else
-#  define BGL_ISA_C_BACKEND(e1, e2) (e2)
+#  define BGL_CONDEXPAND_ISA_ARCH64() 0
 #endif
 
 /*---------------------------------------------------------------------*/

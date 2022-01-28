@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Jan 28 08:00:08 2022 (serrano)                */
+;*    Last change :  Fri Jan 28 08:15:22 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -59,8 +59,8 @@
 	    (macro object-header-size-set!::long (::obj ::long)
 		   "BGL_OBJECT_HEADER_SIZE_SET")
 
-	    (macro $isa-c-backend::bool (::bool ::bool)
-		   "BGL_ISA_C_BACKEND")
+	    (macro $cond-expand-isa-arch64?::bool ()
+		   "BGL_CONDEXPAND_ISA_ARCH64")
 	    (macro %object-type-number::long
 		   "OBJECT_TYPE")
 	    (macro %object?::bool (::obj)
@@ -1340,9 +1340,12 @@
 (define-inline (%isa-object/cdepth? obj class cdepth)
    (cond-expand
       (bigloo-c
-       ($isa-c-backend
-	  (%isa64-object/cdepth? obj class cdepth)
-	  (%isa32-object/cdepth? obj class cdepth)))
+       ;; the decision to use the 32 or 64 backend must be delayed
+       ;; to C, otherwise the Bigloo C tarball distribution would
+       ;; not be portable across various architectures
+       (if ($cond-expand-isa-arch64?)
+	   (%isa64-object/cdepth? obj class cdepth)
+	   (%isa32-object/cdepth? obj class cdepth)))
       (else
        (%isa32-object/cdepth? obj class cdepth))))
 
