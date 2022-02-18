@@ -1,0 +1,188 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/text.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Joseph Donaldson                                  @c
+@c    Creation    :  Tue Aug 31 13:16:21 2010                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2010 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Web Programming Tools                                            @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    web ...                                                          @c
+@c ------------------------------------------------------------------- @c
+@node Web, CSV, Eval, Top
+@comment  node-name,  next,  previous,  up
+@chapter Web
+@cindex Web
+
+This chapter describes the Bigloo API for Web programming.
+
+@comment node-name, next,          previous, up
+@menu
+* Web Overview::    What is this Bigloo web library?.
+* XML::             XML parsers, encoders, decoders.
+* WebDAV::          WebDAV tools.
+* CSS::             CSS parsers.
+* Web Date::        Dates.
+@end menu
+
+@node Web Overview, XML, , Web
+@comment node-name, next, previous, up
+@section Overview
+
+The Bigloo web library supports tools helping Web programming.
+It contains XML, JSON, and CSS parsers, WebDAV tools, and function
+for handling the web formats of dates.
+
+@node XML, WebDAV, Web Overview, Web
+@comment node-name, next, previous, up
+@section XML
+
+@deffn {bigloo procedure} xml-parse input-port #!key (content-length 0) (make-element (lambda (tag attr body start-pos) (list tag attr body))) (make-comment (lambda (str pos) str)) (make-declaration (lambda (str pos) (cons 'declaration str))) (make-cdata (lambda (str pos) (cons 'cdata str))) (make-xml-declaration (lambda (attr pos) (cons 'xml-decl attr))) (make-instruction (lambda (str pos) (cons 'instruction str))) (specials '()) (strict #t) (encoding 'UTF-8) (eoi #f)
+Parses an XML documention. The arguments are:
+
+@itemize @bullet
+@item @var{input-port} the input port containing the document to be parsed.
+@item @var{content-length} if > 0, the number of characters to parse.
+@item @var{make-element} the element constructor.
+@item @var{make-comment} the comment constructor.
+@item @var{make-declaration} the declaration constructor.
+@item @var{make-cdata} the cdata constructor.
+@item @var{make-xml-declaration} the cdata constructor.
+@item @var{make-instruction} the instruction constructor.
+@item @var{specials} an alist @code{(tag . parse)} of tags to be parsed
+ using special parsers.
+@item @var{strict} require strict xml syntax conformance.
+@item @var{encoding} characters encoding.
+@item @var{eoi} an optional predicat that is true on end-of-input.
+@end itemize
+@end deffn
+
+@deffn {bigloo procedure} xml-string-decode str
+@deffnx {bigloo procedure} xml-string-decode! str
+@deffnx {bigloo procedure} xml-string-encode str
+Decode/encode XML strings.
+
+@smalllisp 
+(xml-string-decode "foo&gt;bar&#032;gee") @result{}  "foo>bar gee"
+@end smalllisp
+@end deffn
+
+@node WebDAV, CSS, Web Date, Web
+@comment node-name, next, previous, up
+@section WebDAV
+
+This section describes the functions that may help implementing WebDAV
+servers and clients.
+
+@deffn {class} &webdav-access-control-exception::&access-control-exception
+
+The class used to raised access denied. It contains one field:
+
+@itemize @bullet
+@item @var{header}
+@end itemize
+@end deffn
+
+@deffn {bigloo procedure} webdav-directory->list url #!key (timeout 0) (proxy #f)
+@deffnx {bigloo procedure} webdav-directory->path-list url #!key (timeout 0) (proxy #f)
+The list of files, respec. urls, in the directory @var{url}.
+@end deffn
+
+@deffn {bigloo procedure} webdav-directory->prop-list url #!key (timeout 0) (proxy #f)
+The list of properties of a WebDAV repository.
+@end deffn
+
+@deffn {bigloo procedure} webdav-file-exists? url #!key (timeout 0) (proxy #f)
+Return @code{#t} if and only if @var{url} exists, returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} webdav-directory? url #!key (timeout 0) (proxy #f) 
+Return @code{#t} if and only if @var{url} is a directory, returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} webdav-file-modification-time url #!key (timeout 0) (proxy #f)
+The last modification time of @var{url}.
+@end deffn
+
+@deffn {bigloo procedure} webdav-file-size url #!key (timeout 0) (proxy #f)
+The file size.
+@end deffn
+
+@deffn {bigloo procedure} webdav-delete-file url #!key (timeout 0) (proxy #f)
+@deffnx {bigloo procedure} webdav-delete-directory url #!key (timeout 0) (proxy #f)
+Delete a file, respec. a directory.
+@end deffn
+
+@deffn {bigloo procedure} webdav-make-directory url #!key (timeout 0) (proxy #f)
+@deffnx {bigloo procedure} webdav-make-directories url #!key (timeout 0) (proxy #f)
+Create a directory, respec. a directory hierarchy.
+@end deffn
+
+@deffn {bigloo procedure} webdav-rename-file url dst #!key (timeout 0) (proxy #f)
+@deffnx {bigloo procedure} webdav-cop-file url dst #!key (timeout 0) (proxy #f)
+Rename, respec. copy, a WebDAV file.
+@end deffn
+
+@deffn {bigloo procedure} webdav-put-file url obj #!key (timeout 0) (proxy #f)
+Create a WebDAV file at @var{url} whose content is @var{obj}.
+@end deffn
+
+@node CSS, WebDAV, Web Date, Web
+@comment node-name, next, previous, up
+@section CSS
+
+CSS files and rules are internally represented as an abstract syntax tree
+defined by the @code{css} class hierarchy given belown.
+
+The type of fields whose names end with @code{*} is @code{pair-nil}. The type of
+fields whose names end with @code{+} is @code{pair}.
+
+@deffn {class} css-url value::bstring
+@deffnx {class} css-ext value::bstring
+@deffnx {class} css-stylesheed charset comment* import* rule*-nil
+@deffnx {class} css-charset charset::bstring spec::bstring
+@deffnx {class} css-comment cdo::bstring cdc::bstring content
+@deffnx {class} css-import value medium*
+@deffnx {class} css-media medium+ ruleset*
+@deffnx {class} css-media-query operator type::bstring expr*
+@deffnx {class} css-page ident pseudopage declaration*
+@deffnx {class} css-fontface declaration*
+@deffnx {class} css-keyframes operator::bstring ident::bstring keyframe*
+@deffnx {class} css-pseudopage ident
+@deffnx {class} css-ruleset stamp::int specificity selector+ declaration*
+@deffnx {class} css-keyframe selector declaration*
+@deffnx {class} css-selector element attr*
+@deffnx {class} css-selector-class name
+@deffnx {class} css-selector-hash name
+@deffnx {class} css-selector-name name
+@deffnx {class} css-selector-attr ident op arg
+@deffnx {class} css-selector-pseudo expr fun
+@deffnx {class} css-declaration proprety expr prio
+@deffnx {class} css-function fun expr
+@deffnx {class} css-hash-color value::bstring
+@end deffn
+
+@deffn {bigloo procedure} css-write ast o::output-port
+Output a CSS AST into a CSS document.
+@end deffn
+
+@deffn {bigloo procedure} css->ast::css-stylesheet i::input-port #!key extension eoff
+Parses a CSS document.
+@end deffn
+
+@node Web Date,  CSS, Web
+@comment node-name, next, previous, up
+@section Date
+
+@deffn {bigloo procedure} w3c-datetime-timestamp
+Returns the current date as a w3c datetime.
+@end deffn
+
+@deffn {bigloo procedure} w3c-datetime->date
+@deffnx {bigloo procedure} date->w3c-datetime
+Convert from and to Bigloo Dates and W3C dates.
+@end deffn
+

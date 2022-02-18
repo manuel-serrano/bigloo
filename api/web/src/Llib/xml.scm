@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/api/web/src/Llib/xml.scm      */
+;*    /tmp/xml-5.scm                                                   */
 ;*    -------------------------------------------------------------    */
-;*    Author      :  Manuel Serrano                                    */
+;*    Author      :  Manuel Serrano & joe Donaldson                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Sun Oct  7 08:46:03 2018 (serrano)                */
-;*    Copyright   :  2005-18 Manuel Serrano                            */
+;*    Last change :  Thu Feb 17 16:13:55 2022 (serrano)                */
+;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -13,17 +13,24 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __web_xml
-
+   
    (option (set! *dlopen-init-gc* #t))
    
    (export (xml-parse::pair-nil port::input-port
-				#!key
-				(content-length 0)
-				(procedure list)
-				(specials '())
-				(strict #t)
-				(encoding 'UTF-8)
-				(eoi #f))
+	      #!key
+	      (content-length 0)
+	      (make-element (lambda (tag attribs body start-pos)
+			       (list tag attribs body)))
+	      (make-content (lambda (str pos) str))
+	      (make-comment (lambda (str pos) (cons 'comment str)))
+	      (make-declaration (lambda (str pos) (cons 'declaration str)))
+	      (make-cdata (lambda (str pos) (cons 'cdata str)))
+	      (make-xml-declaration (lambda (attr pos) (cons 'xml-decl attr)))
+	      (make-instruction (lambda (str pos) (cons 'instruction str)))
+	      (specials '())
+	      (strict #t)
+	      (encoding 'UTF-8)
+	      (eoi #f))
 	   (xml-string-decode::bstring ::bstring)
 	   (xml-string-decode!::bstring ::bstring)
 	   (xml-string-encode::bstring ::bstring)
@@ -34,13 +41,20 @@
 ;*    xml-parse ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (xml-parse::pair-nil port::input-port
-			     #!key
-			     (content-length 0)
-			     (procedure list)
-			     (specials '())
-			     (strict #t)
-			     (encoding 'UTF-8)
-			     (eoi #f))
+	   #!key
+	   (content-length 0)
+	   (make-element (lambda (tag attribs body start-pos)
+			    (list tag attribs body)))
+	   (make-content (lambda (str pos) str))
+	   (make-comment (lambda (str pos) (cons 'comment str)))
+	   (make-declaration (lambda (str pos) (cons 'declaration str)))
+	   (make-cdata (lambda (str pos) (cons 'cdata str)))
+	   (make-xml-declaration (lambda (attr pos) (cons 'xml-decl attr)))
+	   (make-instruction (lambda (str pos) (cons 'instruction str)))
+	   (specials '())
+	   (strict #t)
+	   (encoding 'UTF-8)
+	   (eoi #f))
    (when (elong? content-length)
       (set! content-length (elong->fixnum content-length)))
    (when (and (fixnum? content-length) (>fx content-length 0))
@@ -48,7 +62,7 @@
    (when (>fx content-length 0)
       (set! content-length (+fx content-length (input-port-position port))))
    (let loop ((decoder (lambda (x) x)))
-      (let ((obj (read/rp xml-grammar port procedure procedure specials strict decoder encoding)))
+      (let ((obj (read/rp xml-grammar port make-element make-content make-comment make-declaration make-cdata make-xml-declaration make-instruction specials strict decoder encoding (input-port-position port))))
 	 (when (and (fixnum? content-length) (>fx content-length 0))
 	    (input-port-fill-barrier-set! port -1))
 	 (cond
@@ -70,19 +84,19 @@
 ;*    xml-parse-error ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (xml-parse-error msg obj name pos)
-   (raise
+  (raise
     (instantiate::&io-parse-error
-       (proc 'xml-parse)
-       (msg msg)
-       (obj obj)
-       (fname name)
-       (location pos))))
+      (proc 'xml-parse)
+      (msg msg)
+      (obj obj)
+      (fname name)
+      (location pos))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error-line ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (error-line c port)
-   (let ((line (read-line port)))
+  (let ((line (read-line port)))
       (string-append "{" (string c) "}" (if (string? line) line ""))))
 
 ;*---------------------------------------------------------------------*/
@@ -90,10 +104,13 @@
 ;*---------------------------------------------------------------------*/
 (define-struct special tag attributes body owner)
 
+
 ;*---------------------------------------------------------------------*/
 ;*    collect-up-to ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (collect-up-to ignore tag attributes port make specials strict decoder encoding)
+(define (collect-up-to start-pos ignore tag attributes port
+           make-element make-content make-comment make-declaration
+           make-cdata make-xml-declaration make-instruction specials strict decoder encoding)
    
    (define (collect ignore tags)
       (let ((name (input-port-name port))
@@ -104,47 +121,52 @@
 	       ((symbol? item)
 		(cond
 		   ((eq? item tag)
-		    (make tag attributes (reverse! acc)))
+		    (make-element tag attributes (reverse! acc) start-pos))
 		   (strict
 		    (xml-parse-error "Illegal closing tag"
 		       (format "`~a' expected, `~a' provided"
 			  tag item)
 		       name po))
 		   (else
-		    (make tag attributes (reverse! acc)))))
+		    (make-element tag attributes (reverse! acc) start-pos))))
 	       ((special? item)
-		(let ((nitem (make (special-tag item)
+		(let ((nitem (make-element (special-tag item)
 				(special-attributes item)
-				(special-body item))))
+				(special-body item)
+                                start-pos)))
 		   (if (memq (special-tag item) tags)
 		       (loop acc nitem)
-		       (begin
-			  (list (make tag attributes (reverse! acc)) nitem)))))
+		       (list (make-element tag attributes (reverse! acc) start-pos) nitem))))
 	       ((eof-object? item)
 		(if strict
 		    (xml-parse-error
 		       (format "Premature end of line, expecting tag `~a'"
 			  tag)
 		       item name po)
-		    (make tag attributes (reverse! acc))))
+		    (make-element tag attributes (reverse! acc) start-pos)))
 	       (else
 		(let ((po (input-port-last-token-position port)))
 		   (loop (econs item acc (list 'at name po)) (ignore))))))))
-
+   
    (let ((spec (assq tag specials)))
       (cond
 	 ((not spec)
 	  (collect ignore '()))
 	 ((null? (cdr spec))
-	  (make tag attributes '()))
+	  (make-element tag attributes '() start-pos))
 	 ((procedure? (cdr spec))
-	  (make tag attributes ((cdr spec) port)))
+	  (make-element tag attributes ((cdr spec) port) start-pos))
 	 ((pair? (cdr spec))
 	  (let ((ignore (lambda ()
 			   (read/rp xml-grammar port
-				    (lambda (t a b) (special t a b tag))
-				    make
-				    specials strict decoder encoding)))) 
+			      make-element
+			      make-content
+			      make-comment
+			      make-declaration
+			      make-cdata
+			      make-xml-declaration
+			      make-instruction
+			      specials strict  decoder encoding (input-port-position port)))))
 	     (collect ignore (cdr spec))))
 	 (else
 	  (error "xml-parse" "Illegal special handler" spec)))))
@@ -163,16 +185,16 @@
       ((: (+ digit) (? (or "%" "px" "cm" "em" "mm" "inch")))
        (if strict
 	   (xml-parse-error (format "Illegal `~a' attribute value" tag)
-			    (the-string)
-			    (input-port-name (the-port))
-			    (input-port-position (the-port)))
+	      (the-string)
+	      (input-port-name (the-port))
+	      (input-port-position (the-port)))
 	   (the-string)))
       ((+ (out " \t\n\r<>(){}[]@!\"'/"))
        (if strict
 	   (xml-parse-error (format "Illegal `~a' attribute character" tag)
-			    (the-string)
-			    (input-port-name (the-port))
-			    (input-port-position (the-port)))
+	      (the-string)
+	      (input-port-name (the-port))
+	      (input-port-position (the-port)))
 	   (the-string)))
       (else
        (let ((c (the-failure)))
@@ -182,17 +204,17 @@
 			       (char=? c #\Newline)
 			       (char=? c #\>))))
 		  (xml-parse-error
-		   (format "Illegal `~a' attribute character" tag)
-		   (error-line c (the-port))
-		   (input-port-name (the-port))
-		   (input-port-position (the-port)))
+		     (format "Illegal `~a' attribute character" tag)
+		     (error-line c (the-port))
+		     (input-port-name (the-port))
+		     (input-port-position (the-port)))
 		  " ")
 	      (xml-parse-error
-	       (format "Premature end of line for tag `~a' attribute" tag)
-	       c
-	       (input-port-name (the-port))
-	       (-fx (input-port-position (the-port)) 1)))))))
-      
+		 (format "Premature end of line for tag `~a' attribute" tag)
+		 c
+		 (input-port-name (the-port))
+		 (-fx (input-port-position (the-port)) 1)))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    attribute-grammar ...                                            */
 ;*---------------------------------------------------------------------*/
@@ -226,14 +248,14 @@
        (let ((c (the-failure)))
 	  (if (not (eof-object? c))
 	      (xml-parse-error "Illegal attribute character"
-			       (error-line c (the-port))
-			       (input-port-name (the-port))
-			       (input-port-position (the-port)))
+		 (error-line c (the-port))
+		 (input-port-name (the-port))
+		 (input-port-position (the-port)))
 	      (xml-parse-error
-	       (format "Premature end of line, expecting tag `~a'" tag)
-	       c
-	       (input-port-name (the-port))
-	       (-fx (input-port-position (the-port)) 1)))))))
+		 (format "Premature end of line, expecting tag `~a'" tag)
+		 c
+		 (input-port-name (the-port))
+		 (-fx (input-port-position (the-port)) 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdata-grammar ...                                                */
@@ -254,9 +276,9 @@
 		       "Illegal <![CDATA[ character"
 		       "Premature end of line, expecting tag `]]>'")))
 	  (xml-parse-error msg
-			   c
-			   (input-port-name (the-port))
-			   (input-port-position (the-port)))))))
+	     c
+	     (input-port-name (the-port))
+	     (input-port-position (the-port)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-decoder ...                                                  */
@@ -285,32 +307,51 @@
 	      (lambda (x) x))))
 	 (else
 	  (lambda (x) x)))))
-      
+
 ;*---------------------------------------------------------------------*/
 ;*    xml-grammar ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define xml-grammar
    (regular-grammar ((id (: (in ("azAZ") "!?") (* (in ("azAZ09") ":_-"))))
-		     next
-		     make
+		     make-element
+		     make-content
+		     make-comment
+		     make-declaration
+		     make-cdata
+		     make-xml-declaration
+		     make-instruction
 		     specials
 		     strict
 		     decoder
-		     encoding)
+		     encoding
+		     pos)
+      
+      (define (update-start-position!)
+       (set! pos (input-port-position (the-port))))
+      
+      (define (ignore-w/-pos-update!)
+       (update-start-position!)
+       (ignore))
       
       ((+ (in " \t\n\r"))
-       (the-string))
+       (update-start-position!)
+       (make-content (the-string) (- pos (the-length))))
       ((: "<!--"
 	  (* (or (out "-") (: "-" (out "-")) (: "--" (out ">"))))
 	  "-->")
-       (cons 'comment (the-string)))
+       (update-start-position!)
+       (make-comment (the-string) (- pos (the-length))))
       ((: "<!" (: (or (out "[-") (: "-" (out "-")))
 		  (* (out ">]"))
 		  (? (: "[" (* (out "]")) "]"))
 		  (* (out ">"))) ">")
-       (cons 'declaration (the-string)))
+       (update-start-position!)
+       (make-declaration (the-string) (- pos (the-length))))
       ("<![CDATA["
-       (cons 'cdata (read/rp cdata-grammar (the-port) decoder)))
+       (let ((p pos)
+	     (cdata (read/rp cdata-grammar (the-port) decoder)))
+	  (update-start-position!)
+	  (make-cdata cdata p)))
       ((: "<?xml " (* (out "?>")) "?>")
        (let ((s (the-substring 6 (the-length))))
 	  (string-set! s (-fx (string-length s) 2) #\space)
@@ -321,17 +362,27 @@
 		      ((pair? obj)
 		       (loop (cons obj attr)))
 		      ((eq? obj '>)
-		       (cons 'xml-decl attr))))))))
+		       (let ((p pos))
+			  (update-start-position!)
+			  (make-xml-declaration attr p)))))))))
       ((: "<?" (* (out ">")) ">")
-       (cons 'instruction (the-string)))
+       (let ((p pos))
+	  (update-start-position!)
+	  (make-instruction (the-string) p)))
       ((: "<" id ">")
        (let* ((t (the-substring 1 (-fx (the-length) 1)))
 	      (ts (string->symbol t))
 	      (p (the-port)))
-	  (collect-up-to ignore ts '() p make specials strict decoder encoding)))
+	  (let ((element (collect-up-to pos ignore-w/-pos-update! ts '() p
+			    make-element make-content make-comment make-declaration
+			    make-cdata make-xml-declaration make-instruction specials strict decoder encoding)))
+	     (update-start-position!)
+	     element)))
       ((: "<" id "/>")
        (let ((t (the-substring 1 (-fx (the-length) 2))))
-	  (make (string->symbol t) '() '())))
+	  (let ((p pos))
+	     (update-start-position!)
+	     (make-element (string->symbol t) '() '() p))))
       ((: "<" id (in " \n\t\r"))
        (let* ((t (the-substring 1 (-fx (the-length) 1)))
 	      (ts (string->symbol t))
@@ -342,21 +393,29 @@
 		   ((pair? obj)
 		    (loop (cons obj attr)))
 		   ((eq? obj '>)
-		    (collect-up-to ignore ts (reverse! attr) p make specials strict decoder encoding))
+		    (let ((element (collect-up-to pos ignore-w/-pos-update! ts (reverse! attr) p
+				      make-element make-content make-comment make-declaration make-cdata
+				      make-xml-declaration make-instruction specials strict decoder encoding)))
+		       (update-start-position!)
+		       element))
 		   ((eq? obj '/>)
-		    (make ts (reverse! attr) '())))))))
+		    (let ((p pos))
+		       (update-start-position!)
+		       (make-element ts (reverse! attr) '() p))))))))
       ((: "</" id ">")
+       (update-start-position!)
        (string->symbol (the-substring 2 (-fx (the-length) 1))))
       ((+ (out "<"))
-       (decoder (the-string)))
+       (update-start-position!)
+       (make-content (decoder (the-string)) (- pos (the-length))))
       (else
        (let ((c (the-failure)))
 	  (cond
 	     ((not (eof-object? c))
 	      (xml-parse-error "Illegal character"
-			       (error-line c (the-port))
-			       (input-port-name (the-port))
-			       (input-port-position (the-port))))
+		 (error-line c (the-port))
+		 (input-port-name (the-port))
+		 (input-port-position (the-port))))
 	     (else
 	      c))))))
 
@@ -497,7 +556,7 @@
 		    (xml-decode! str res ol nl)
 		    res)))
 	  (string-copy str))))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    xml-string-decode! ...                                           */
 ;*---------------------------------------------------------------------*/
@@ -558,7 +617,7 @@
 			   (loop (+fx i 1) (+fx j 1))))))))))
    (let ((ol (string-length str)))
       (encode str ol (count str ol))))
-	 
+
 ;*---------------------------------------------------------------------*/
 ;*    read-xml ...                                                     */
 ;*---------------------------------------------------------------------*/
@@ -583,7 +642,7 @@
 			     (case (car at)
 				((version) (set! xml-ver (cdr attr)))
 				((encoding) (set! xml-enc (cdr attr)))))
-			  attr))
+		   attr))
 	       ((?mark ?lattr . ?-)
 		(let loop3 ((lattr lattr))
 		   (unless xml-root (set! xml-root mark))
@@ -603,8 +662,8 @@
 					  (s (substring str 6 l))
 					  (si (string->symbol s)))
 				      (set! xml-ns
-					    (cons (cons (cdr attr) si)
-						  xml-ns)))))))
+					 (cons (cons (cdr attr) si)
+					    xml-ns)))))))
 			 (loop3 (cdr lattr)))))))
 	    (loop1 (cdr l))))
       (unless xml-root
@@ -614,7 +673,7 @@
       ;; - XML Encoding (#f if unknown)
       ;; - xml:lang value
       ;; - Pair, which car is the first data markup, and
-      ;;   cdr the default namespace
+      ;;  cdr the default namespace
       ;; - xml first data markup version attribute (0 if unspecified)
       ;; - list of prefixed namespaces (prefix . path)
       (values xml-ver xml-enc xml-lang xml-root root-ver xml-ns)))

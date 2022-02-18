@@ -197,6 +197,7 @@ Bigloo @value{bigloovers}, @value{bigloodate}
 * Mail::                           Mail related technologies
 * Text::                           Text processing facilities
 * CSV::                            Spreadsheet parsers
+* Web::                            Web Programming tools
 * Eval::                           Use of the interpreter
 * Macro Expansion::                The two available macro schemes
 * Parameters::                     Controlling the global programs behaviors
@@ -494,6 +495,11 @@ and keyword functions.
 @c    Csv                                                              @c
 @c ------------------------------------------------------------------- @c
 @include csv.texi
+ 
+@c ------------------------------------------------------------------- @c
+@c    Web                                                              @c
+@c ------------------------------------------------------------------- @c
+@include web.texi
  
 @c ------------------------------------------------------------------- @c
 @c    Eval                                                             @c

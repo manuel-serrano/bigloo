@@ -6,13 +6,13 @@
 @c    Last change :                                                    @c
 @c    Copyright   :  2010 Manuel Serrano                               @c
 @c    ------------------------------------------------------------     @c
-@c    Text manipulations                                               @c
+@c    csv manipulations                                                @c
 @c =================================================================== @c
 
 @c ------------------------------------------------------------------- @c
 @c    Csv ...                                                          @c
 @c ------------------------------------------------------------------- @c
-@node CSV, Eval, Text, Top
+@node CSV, Web, Text, Top
 @comment  node-name,  next,  previous,  up
 @chapter CSV
 @cindex Csv
@@ -85,7 +85,7 @@ error, it will throw an @code{&invalid-port-error} or
 @end deffn
 
 
-@node    csv-for-each,csv-map ,read-csv-records, API Reference
+@node csv-for-each,csv-map ,read-csv-records, API Reference
 @comment node-name, next,          previous, up
 
 @deffn {bigloo procedure} csv-for-each proc input-port [custom-lexer]
@@ -99,7 +99,7 @@ error, it will throw an @code{&invalid-port-error} or
 
 @end deffn
 
-@node    csv-map,make-csv-lexer,csv-for-each, API Reference
+@node csv-map,make-csv-lexer,csv-for-each, API Reference
 @comment node-name, next,          previous, up
 
 @deffn {bigloo procedure} csv-map proc input-port [custom-lexer]
@@ -114,7 +114,7 @@ supporting standard csv files. It returnsthe results of applying
 @end deffn
 
 
-@node    make-csv-lexer,+csv-lexer+,csv-map, API Reference
+@node make-csv-lexer,+csv-lexer+,csv-map, API Reference
 @comment node-name, next,          previous, up
 
 @deffn {bigloo form} make-csv-lexer sep  quot
@@ -123,28 +123,28 @@ supporting standard csv files. It returnsthe results of applying
 separate records and a character for quoting. It returns custom lexer.
 @end deffn
 
-@node    +csv-lexer+,+tsv-lexer+,make-csv-lexer, API Reference
+@node +csv-lexer+,+tsv-lexer+,make-csv-lexer, API Reference
 @comment node-name, next,          previous, up
 
 @defvar {bigloo variable} +csv-lexer+
 @var{+csv-lexer+} is a bigloo-csv lexer supporting the standard comma-separated value format.
 @end defvar
 
-@node    +tsv-lexer+,+psv-lexer+,+csv-lexer+, API Reference
+@node +tsv-lexer+,+psv-lexer+,+csv-lexer+, API Reference
 @comment node-name, next,          previous, up
 
 @defvar {bigloo variable} +tsv-lexer+
 @var{+tsv-lexer+} is a bigloo-csv lexer supporting the tab-separated value format.
 @end defvar
 
-@node    +psv-lexer+,,+tsv-lexer+, API Reference
+@node +psv-lexer+,,+tsv-lexer+, API Reference
 @comment node-name, next,          previous, up
 
 @defvar {bigloo variable} +psv-lexer+
 @var{+psv-lexer+} is a bigloo-csv lexer supporting the pipe-separated value format.
 @end defvar
 
-@node    Example, ,API Reference, CSV
+@node Example, ,API Reference, CSV
 @comment node-name, next,          previous, up
 The following is a simple example of using the bigloo-csv library. It parses a single record from the given csv data and prints it.
 
