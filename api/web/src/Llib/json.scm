@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Tue Sep 10 16:46:58 2019 (serrano)                */
-;*    Copyright   :  2014-19 Manuel Serrano                            */
+;*    Last change :  Fri Feb 18 07:37:21 2022 (serrano)                */
+;*    Copyright   :  2014-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
 ;*=====================================================================*/
@@ -17,7 +17,7 @@
    (option (set! *unsafe-type* #t)
 	   (set! *unsafe-arity* #t))
 
-   (export (json-parse o::input-port #!key
+   (export (json-parse ::input-port #!key
 	      array-alloc array-set array-return
 	      object-alloc object-set object-return
 	      parse-error (undefined #t) reviver expr

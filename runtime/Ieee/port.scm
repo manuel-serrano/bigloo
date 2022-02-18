@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sun Aug 25 09:19:02 2019 (serrano)                */
+;*    Last change :  Fri Feb 18 08:54:26 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -89,6 +89,7 @@
 		   "BGL_INPUT_GZIP_PORT_INPUT_PORT")
 	    
 	    ($open-input-file::obj (::bstring ::bstring) "bgl_open_input_file")
+	    ($open-input-descriptor::obj (::int ::bstring) "bgl_open_input_descriptor")
 	    ($open-input-pipe::obj (::bstring ::bstring) "bgl_open_input_pipe")
 	    ($open-input-resource::obj (::bstring ::bstring) "bgl_open_input_resource")
  	    ($open-input-c-string::obj (::string) "bgl_open_input_c_string")
@@ -244,6 +245,8 @@
 	       
 	       (method static $open-input-file::obj (::bstring ::bstring)
 		  "bgl_open_input_file")
+	       (method static $open-input-descriptor::obj (::int ::bstring)
+		  "bgl_open_input_descriptor")
 	       (method static $open-input-pipe::obj (::bstring ::bstring)
 		  "bgl_open_input_pipe")
 	       (method static $open-input-resource::obj (::bstring ::bstring)
@@ -438,6 +441,7 @@
 	    (with-error-to-procedure ::procedure ::procedure)
 	    
 	    (open-input-file ::bstring #!optional (bufinfo #t) (timeout 5000000))
+	    (open-input-descriptor ::int #!optional (bufinfo #t))
 	    (open-input-string::input-port string::bstring
 	       #!optional (start 0) (end (string-length string)))
 	    (open-input-string!::input-port string::bstring
@@ -890,7 +894,8 @@
      ("zlib:" . ,open-input-zlib-file)
      ("inflate:" . ,open-input-inflate-file)
      ("/resource/" . ,%open-input-resource)
-     ("ftp://" . ,open-input-ftp-file)))
+     ("ftp://" . ,open-input-ftp-file)
+     ("fd:" . ,%open-input-descriptor)))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-protocols ...                                         */
@@ -948,6 +953,13 @@
 ;*---------------------------------------------------------------------*/
 (define (%open-input-file string buf tmt)
    ($open-input-file string buf))
+
+;*---------------------------------------------------------------------*/
+;*    %open-input-descriptor ...                                       */
+;*---------------------------------------------------------------------*/
+(define (%open-input-descriptor string buf tmt)
+   (let ((fd (string->integer (substring string 3))))
+      ($open-input-descriptor fd buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %open-input-pipe ...                                             */
@@ -1049,6 +1061,13 @@
 		       (open name buffer timeout))
 		    (loop (cdr protos))))))))
 
+;*---------------------------------------------------------------------*/
+;*    open-input-descriptor ...                                        */
+;*---------------------------------------------------------------------*/
+(define (open-input-descriptor fd #!optional (bufinfo #t))
+   (let ((buffer (get-port-buffer "open-input-file" bufinfo c-default-io-bufsiz)))
+      ($open-input-descriptor fd buffer)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    open-input-string ...                                            */
 ;*---------------------------------------------------------------------*/

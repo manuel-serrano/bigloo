@@ -195,7 +195,6 @@ of @var{thunk}.
 
 @deffn {procedure} open-input-file file-name [buffer #f] [timeout 5000000]
 
-
 If @var{file-name} is a regular file name, @code{open-input-file} behaves as
 the function defined in the Scheme report. If @var{file-name} starts with
 special prefixes it behaves differently. Here are the recognized prefixes:
@@ -220,6 +219,16 @@ Same as @code{| }.
 
 @item @code{file:}
 Opens a regular file.
+
+@item @code{fd:}
+Opens a file descriptor.
+
+@smalllisp
+(with-input-from-file "fd:0"
+   (lambda ()
+      (read)))
+@end smalllisp
+
 
 @item @code{gzip:}
 Opens a port on a gzipped filed. This is equivalent to 
@@ -322,7 +331,12 @@ Open respectively a zlib file for input and a port on a zlib stream.
 Note that closing a zlib port opened from a port @var{pi} does not close
 the @var{pi} port.
 @end deffn
- 
+
+@deffn {bigloo procedure} open-input-descriptor fd [buffer #t]
+Open a file descriptor (as C @code{fdopen}).
+@end deffn
+
+
 @deffn {bigloo procedure} open-input-string string [start 0] [end]
 @deffnx {bigloo procedure} open-input-string! string [start 0] [end]
 @cindex SRFI-6

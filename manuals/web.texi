@@ -26,6 +26,7 @@ This chapter describes the Bigloo API for Web programming.
 * WebDAV::          WebDAV tools.
 * CSS::             CSS parsers.
 * Web Date::        Dates.
+* JSON::            JSON parser.
 @end menu
 
 @node Web Overview, XML, , Web
@@ -45,19 +46,54 @@ Parses an XML documention. The arguments are:
 
 @itemize @bullet
 @item @var{input-port} the input port containing the document to be parsed.
-@item @var{content-length} if > 0, the number of characters to parse.
+@item @var{content-length} if > 0, the number of characters to parse. 
+@item @var{procedure} element constructor for backward compatibility.
+A function of 3 arguments: tag, attributes, children.
 @item @var{make-element} the element constructor.
+A function of 4 arguments: tag, attributes, children, start position.
 @item @var{make-comment} the comment constructor.
+A function of 2 arguments: the comment and the start position.
 @item @var{make-declaration} the declaration constructor.
+A function of 2 arguments: the declaration and the start position.
 @item @var{make-cdata} the cdata constructor.
+A function of 2 arguments: the cdata and the start position.
 @item @var{make-xml-declaration} the cdata constructor.
+A function of 2 arguments: the xml-declaration and the start position.
 @item @var{make-instruction} the instruction constructor.
+A function of 2 arguments: the instruction and the start position.
 @item @var{specials} an alist @code{(tag . parse)} of tags to be parsed
- using special parsers.
-@item @var{strict} require strict xml syntax conformance.
+ using special parsers. This can be used to parse elements (e.g., HTML elements)
+ that do not comply with strict syntax, for instance because they do not
+ accept closing tags.
+@item @var{strict} a boolean, require strict xml syntax conformance.
+@item @var{encoding} a string, characters encoding.
+@item @var{eoi} an optional predicat that is true on end-of-input.
+@end itemize
+
+@end deffn
+
+@deffn {bigloo procedure} html-parse input-port #!key (content-length 0) (procedure list) (encoding 'UTF-8) (eoi #f)
+Parse an HTML document. The optional arguments are:
+
+@itemize @bullet
+@item @var{input-port} the input port containing the document to be parsed.
+@item @var{content-length} if > 0, the number of characters to parse.
+@item @var{procedure} the function invoked to construct elements.
 @item @var{encoding} characters encoding.
 @item @var{eoi} an optional predicat that is true on end-of-input.
 @end itemize
+
+This function is mere wrapper of @code{xml-parse}.
+@end deffn
+
+@deffn {bigloo procedure} unhtml-port input-port output-port #!key table
+Removes tags from @var{input-port} and write the result to @var{output-port}.
+If provided, @var{table} must a hashtable associating HTML escape
+sequences (e.g., "&amp;") to strings used in the replacement.
+@end deffn
+
+@deffn {bigloo procedure} unhtml str::bstring #!optional table
+Removes HTML tags from the string @var{str}.
 @end deffn
 
 @deffn {bigloo procedure} xml-string-decode str
@@ -67,6 +103,15 @@ Decode/encode XML strings.
 
 @smalllisp 
 (xml-string-decode "foo&gt;bar&#032;gee") @result{}  "foo>bar gee"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} html-string-decode str
+@deffnx {bigloo procedure} html-string-encode str
+Decode/encode HTML strings.
+
+@smalllisp 
+(xml-string-decode "foo&amp;bar&#quot;gee") @result{}  "foo&bar\"gee"
 @end smalllisp
 @end deffn
 
@@ -173,7 +218,7 @@ Output a CSS AST into a CSS document.
 Parses a CSS document.
 @end deffn
 
-@node Web Date,  CSS, Web
+@node Web Date, JSON, CSS, Web
 @comment node-name, next, previous, up
 @section Date
 
@@ -186,3 +231,29 @@ Returns the current date as a w3c datetime.
 Convert from and to Bigloo Dates and W3C dates.
 @end deffn
 
+@node JSON, , Web Date, Web
+@comment node-name, next, previous, up
+@section JSON
+
+@deffn {bigloo procedure} json-parse i::input-port #!key array-alloc array-set array-return object-alloc object-set object-return parse-error (undefined #t) reviver expr constant-alloc string-alloc
+
+Parses a JSON document. The keywored arguments are:
+
+@itemize @bullet
+@item @var{array-alloc} a function of 0 argument invoked when parsing an array.
+@item @var{array-set} a function of 3 arguments invoked after each array element is parsed. The first argument is the result of the last @code{array-alloc} call. The second argument is the index, and the last, the element value.
+@item @var{array-return} a function of two arguments, the allocated array
+and the length.
+@item @var{object-alloc} a function of 0 argument.
+@item @var{object-set} a function of 3 arguments.
+@item @var{object-return} a function of 1 argument.
+@item @var{parse-error} a function of 3 arguments.
+@item @var{undefined} the value used to represent @code{undefined}.
+@item @var{constant-alloc} a function of one argument, the parsed contant.
+@item @var{string-alloc} a function of one argument, the parsed string.
+@item @var{reviver} either @code{#f} or a function of three arguments, invoked
+after parsing an object property. 
+@item @var{expr} if false, check end-of-file after parsing the last JSON value.
+@end itemize
+
+@end deffn

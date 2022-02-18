@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /tmp/xml-5.scm                                                   */
+;*    serrano/prgm/project/bigloo/bigloo/api/web/src/Llib/xml.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & joe Donaldson                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Thu Feb 17 16:13:55 2022 (serrano)                */
+;*    Last change :  Fri Feb 18 12:44:31 2022 (serrano)                */
 ;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -19,8 +19,8 @@
    (export (xml-parse::pair-nil port::input-port
 	      #!key
 	      (content-length 0)
-	      (make-element (lambda (tag attribs body start-pos)
-			       (list tag attribs body)))
+	      (procedure #f)
+	      (make-element #f)
 	      (make-content (lambda (str pos) str))
 	      (make-comment (lambda (str pos) (cons 'comment str)))
 	      (make-declaration (lambda (str pos) (cons 'declaration str)))
@@ -43,8 +43,8 @@
 (define (xml-parse::pair-nil port::input-port
 	   #!key
 	   (content-length 0)
-	   (make-element (lambda (tag attribs body start-pos)
-			    (list tag attribs body)))
+	   (procedure #f)
+	   (make-element #f)
 	   (make-content (lambda (str pos) str))
 	   (make-comment (lambda (str pos) (cons 'comment str)))
 	   (make-declaration (lambda (str pos) (cons 'declaration str)))
@@ -55,12 +55,38 @@
 	   (strict #t)
 	   (encoding 'UTF-8)
 	   (eoi #f))
+
+   (define (check-procedure proc arity name)
+      (unless (and (procedure? proc) (correct-arity? proc arity))
+	 (raise
+	    (instantiate::&error
+	       (proc "xml-parse")
+	       (msg (format "wrong argument \"~s\"" name))
+	       (obj proc)))))
+   
    (when (elong? content-length)
       (set! content-length (elong->fixnum content-length)))
    (when (and (fixnum? content-length) (>fx content-length 0))
       (input-port-fill-barrier-set! port content-length))
    (when (>fx content-length 0)
       (set! content-length (+fx content-length (input-port-position port))))
+   (if make-element
+       (check-procedure make-element 4 "make-element")
+       ;; backward compatibility
+       (set! make-element
+	  (if (procedure? procedure)
+	      (lambda (tag attrs children pos)
+		 (procedure tag children pos))
+	      (lambda (tag attrs children pos)
+		 (list tag attrs children)))))
+   
+   (check-procedure make-content 2 "make-content")
+   (check-procedure make-comment 2 "make-comment")
+   (check-procedure make-declaration 2 "make-declaration")
+   (check-procedure make-cdata 2 "make-cdata")
+   (check-procedure make-xml-declaration 2 "make-xml-declaration")
+   (check-procedure make-instruction 2 "make-instruction")
+   
    (let loop ((decoder (lambda (x) x)))
       (let ((obj (read/rp xml-grammar port make-element make-content make-comment make-declaration make-cdata make-xml-declaration make-instruction specials strict decoder encoding (input-port-position port))))
 	 (when (and (fixnum? content-length) (>fx content-length 0))

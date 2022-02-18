@@ -6300,6 +6300,11 @@ public final class foreign
 	 }
       }
 
+   public static Object bgl_open_input_descriptor(int fd, byte[] b)
+      {
+	 return BFALSE;
+      }
+
    public static Object bgl_open_input_pipe(byte[]s, byte[] b)
       {
 	 return new input_pipe_port(new String(s), b);
