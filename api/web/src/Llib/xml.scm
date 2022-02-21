@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & joe Donaldson                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Fri Feb 18 12:44:31 2022 (serrano)                */
+;*    Last change :  Fri Feb 18 18:03:27 2022 (serrano)                */
 ;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -76,7 +76,7 @@
        (set! make-element
 	  (if (procedure? procedure)
 	      (lambda (tag attrs children pos)
-		 (procedure tag children pos))
+		 (procedure tag attrs children))
 	      (lambda (tag attrs children pos)
 		 (list tag attrs children)))))
    
