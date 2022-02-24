@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec  2 14:27:09 2021                          */
-/*    Last change :  Tue Dec 28 08:42:26 2021 (serrano)                */
-/*    Copyright   :  2021 Manuel Serrano                               */
+/*    Last change :  Mon Feb 21 10:10:12 2022 (serrano)                */
+/*    Copyright   :  2021-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Optional libbacktrace Bigloo binding                             */
 /*=====================================================================*/
@@ -33,6 +33,7 @@ struct getinfo {
 /*    orig_init_trace ...                                              */
 /*---------------------------------------------------------------------*/
 static void (*orig_init_trace)(obj_t) = 0L;
+static obj_t (*orig_get_trace_stack)(int) = 0L;
 static obj_t linesym = 0L;
 
 /*---------------------------------------------------------------------*/
@@ -201,6 +202,7 @@ bgl_backtrace_foreach(void *proc) {
 obj_t
 bgl_backtrace_get(long depth, long start) {
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+   obj_t res;
 
    if (env) {
       struct backtrace_state *bt_state = libbacktrace_get_state(env);
@@ -209,9 +211,15 @@ bgl_backtrace_get(long depth, long start) {
 
       backtrace_full(bt_state, start, backtrace_get_cb, cbe, &info);
 
-      return CDR(pair);
+      res = CDR(pair);
    } else {
-      return BNIL;
+      res = BNIL;
+   }
+
+   if (NULLP(res)) {
+      return orig_get_trace_stack(depth);
+   } else {
+      return res;
    }
 }
 
@@ -230,6 +238,7 @@ libbacktrace_get(int depth) {
 /*---------------------------------------------------------------------*/
 void bgl_init_backtrace() {
    orig_init_trace = bgl_init_trace;
+   orig_get_trace_stack = bgl_get_trace_stack;
    bgl_init_trace_register(&libbacktrace_init, &libbacktrace_get, 0L);
 }
 
