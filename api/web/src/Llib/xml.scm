@@ -128,7 +128,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    special ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-struct special tag attributes body owner)
+(define-struct special tag attributes body owner pos)
 
 
 ;*---------------------------------------------------------------------*/
@@ -159,7 +159,7 @@
 		(let ((nitem (make-element (special-tag item)
 				(special-attributes item)
 				(special-body item)
-                                start-pos)))
+                                (special-pos item))))
 		   (if (memq (special-tag item) tags)
 		       (loop acc nitem)
 		       (list (make-element tag attributes (reverse! acc) start-pos) nitem))))
@@ -185,7 +185,7 @@
 	 ((pair? (cdr spec))
 	  (let ((ignore (lambda ()
 			   (read/rp xml-grammar port
-			      make-element
+			      (lambda (t a b p) (special t a b tag p))
 			      make-content
 			      make-comment
 			      make-declaration

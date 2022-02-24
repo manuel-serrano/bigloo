@@ -57,7 +57,7 @@ A function of 2 arguments: the comment and the start position.
 A function of 2 arguments: the declaration and the start position.
 @item @var{make-cdata} the cdata constructor.
 A function of 2 arguments: the cdata and the start position.
-@item @var{make-xml-declaration} the cdata constructor.
+@item @var{make-xml-declaration} the xml declaration constructor.
 A function of 2 arguments: the xml-declaration and the start position.
 @item @var{make-instruction} the instruction constructor.
 A function of 2 arguments: the instruction and the start position.
