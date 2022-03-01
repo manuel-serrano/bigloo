@@ -32,7 +32,7 @@
 ;*    *html-special-elements* ...                                      */
 ;*---------------------------------------------------------------------*/
 (define *html-special-elements*
-   '((meta)
+   `((meta)
      (link)
      (br) (hr) (img) (input)
      (p . (a abbr acronym address big button caption del em
