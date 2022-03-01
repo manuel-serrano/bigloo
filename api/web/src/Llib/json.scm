@@ -18,10 +18,19 @@
 	   (set! *unsafe-arity* #t))
 
    (export (json-parse ::input-port #!key
-	      array-alloc array-set array-return
-	      object-alloc object-set object-return
-	      parse-error (undefined #t) reviver expr
-	      constant-alloc string-alloc)))
+              (array-alloc (lambda () (make-cell '()))) 
+              (array-set (lambda (a i v) (cell-set! a (cons v (cell-ref a)))))
+              (array-return (lambda (a i) (list->vector (reverse! (cell-ref a)))))
+              (object-alloc (lambda ()  (make-cell '()))) 
+              (object-set (lambda (obj key value) (cell-set! obj 
+                                                     (cons (cons key value)
+                                                        (cell-ref obj)))))
+              (object-return (lambda (obj)  (cell-ref obj)))
+              (parse-error (lambda (msg arg1 arg2) (error "json-parse"
+                                                      msg (list arg1 arg2))))
+	      (undefined #t) reviver expr
+	      constant-alloc string-alloc)
+           (read-json #!optional (port::input-port (current-input-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    return ...                                                       */
@@ -166,9 +175,17 @@
 ;*    json-parse ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (json-parse o::input-port #!key
-	   array-alloc array-set array-return
-	   object-alloc object-set object-return
-	   parse-error (undefined #t) reviver expr
+           (array-alloc (lambda () (make-cell '()))) 
+           (array-set (lambda (a i v) (cell-set! a (cons v (cell-ref a)))))
+           (array-return (lambda (a i) (list->vector (reverse! (cell-ref a)))))
+           (object-alloc (lambda ()  (make-cell '()))) 
+           (object-set (lambda (obj key value) (cell-set! obj 
+                                                  (cons (cons key value)
+                                                     (cell-ref obj)))))
+           (object-return (lambda (obj)  (cell-ref obj)))
+           (parse-error (lambda (msg arg1 arg2) (error "json-parse"
+                                                   msg (list arg1 arg2))))
+           (undefined #t) reviver expr
 	   constant-alloc string-alloc)
    
    (define (check-procedure proc arity name)
@@ -292,4 +309,5 @@
 		      #f #f)))))
       val))
 
-
+(define (read-json #!optional (port::input-port (current-input-port)))
+   (json-parse port))
