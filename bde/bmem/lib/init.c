@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/init.c        */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/init.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Nov  5 07:25:20 2021 (serrano)                */
-/*    Copyright   :  2003-21 Manuel Serrano                            */
+/*    Last change :  Sat Mar  5 09:18:02 2022 (serrano)                */
+/*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -388,7 +388,7 @@ bmem_init_inner() {
    /* backtrace */
    if (getenv( "BMEMBACKTRACE")) {
       bmem_backtrace = atoi(getenv("BMEMBACKTRACE"));
-      if (!bmem_backtrace < 0 && bmem_verbose >= 1) {
+      if (bmem_backtrace < 0 && bmem_verbose >= 1) {
 	 fprintf(stderr, "Disabling stack back traces...\n");
       }
    }
