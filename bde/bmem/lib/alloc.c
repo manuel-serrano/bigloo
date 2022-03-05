@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Jan  7 17:21:30 2022 (serrano)                */
+/*    Last change :  Sat Mar  5 09:32:43 2022 (serrano)                */
 /*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -424,9 +424,11 @@ trace_alloc(obj_t o, size_t lb) {
    gc_alloc_size_add(lb);
    alloc_size += lb;
 
+#if BGL_HAVE_BACKTRACE
    if (bmem_backtrace == 0 || bmem_backtrace == info.typenum) {
       backtrace_for_each(backtrace_alloc_cb, 1, &info);
    }
+#endif      
 
    if (info.typenum == IGNORE_TYPE_NUM) {
       return o;
