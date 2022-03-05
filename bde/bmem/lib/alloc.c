@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Sat Mar  5 09:32:43 2022 (serrano)                */
+/*    Last change :  Sat Mar  5 09:47:11 2022 (serrano)                */
 /*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -277,7 +277,7 @@ file_dump_alloc_size(const char *filename, void *data) {
 
       for (long i = 0; i < file->size; i++) {
 	 if (file->lines[i].size > DUMP_LINE_SIZE_THRESHOLD) {
-	    fprintf(stderr, "   %6d: %8.2fMB %5.2f%% [%8ld] (", file->lines[i].lineno,
+	    fprintf(stderr, "   %6ld: %8.2fMB %5.2f%% [%8ld] (", file->lines[i].lineno,
 		    (double)(file->lines[i].size) / (1024. * 1024.),
 		    ((double)(file->lines[i].size) * 100) / alloc_size,
 		    file->lines[i].count);
@@ -307,7 +307,7 @@ file_dump_alloc_count(const char *filename, void *data) {
 
       for (long i = 0; i < file->size; i++) {
 	 if (file->lines[i].size > DUMP_LINE_COUNT_THRESHOLD) {
-	    fprintf(stderr, "   %6d: %8ld (", file->lines[i].lineno,
+	    fprintf(stderr, "   %6ld: %8ld (", file->lines[i].lineno,
 		    file->lines[i].count);
 	    file_dump_typenums(file, i);
 	    fprintf(stderr, ")\n");
@@ -413,12 +413,12 @@ GC_malloc_untracked(obj_t o, size_t lb) {
 /*---------------------------------------------------------------------*/
 static obj_t
 trace_alloc(obj_t o, size_t lb) {
-   alloc_info_t info = { typenum: bmem_get_alloc_type(),
-      size: lb,
-      function: 0L,
-      filename: 0L,
-      lineno: -1,
-      depth: SEARCH_TYPE_STACK_DEPTH
+   alloc_info_t info = { /* typenum: */ bmem_get_alloc_type(),
+      /* size: */ lb,
+      /* function: */ 0L,
+      /* filename: */ 0L,
+      /* lineno: */ -1,
+      /* depth: */ SEARCH_TYPE_STACK_DEPTH
    };
    
    gc_alloc_size_add(lb);
