@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Wed Jun 20 13:23:03 2018 (serrano)                */
+;*    Last change :  Sat Mar  5 06:51:32 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -46,6 +46,7 @@
 	    module_include
 	    module_impuse
 	    type_cache
+	    type_env
 	    expand_eps)
    (export  (unit-sexp*-add! <unit> ::obj)
 	    (unit-sexp*-add-head! <unit> ::obj)
@@ -206,6 +207,16 @@
    (and (symbol? sym) (eq? (fast-id-of-id sym #f) 'lambda)))
 	
 ;*---------------------------------------------------------------------*/
+;*    error-class-shadow ...                                           */
+;*---------------------------------------------------------------------*/
+(define (error-class-shadow id src)
+   (let ((loc (find-location src))
+	 (msg "Illegal class shadowing"))
+      (if loc
+	  (user-error/location loc *module* msg id)
+	  (user-error *module* msg id))))
+
+;*---------------------------------------------------------------------*/
 ;*    toplevel->ast ...                                                */
 ;*    -------------------------------------------------------------    */
 ;*    !!! WARNING: this function must build a reversed list !!!        */
@@ -227,6 +238,8 @@
 	  ;; We may not find global in def because it can has been
 	  ;; introduced after the computation of gdefs (for instance
 	  ;; if it is a default method of a generic).
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var sexp))
 	  (if (or (not (pair? def))
 		  (and (eq? (car (cdr def)) 'read)
 		       (or (not (global? global))
@@ -239,6 +252,8 @@
 		 (replace! sexp new-sexp)
 		 (make-svar-definition var sexp)))))
       ((define ?var (lambda ?args . ?exp))
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (let* ((id (id-of-id var (find-location sexp)))
 	      (def (assq id gdefs))
 	      (global (find-global/module id *module*)))
@@ -252,6 +267,8 @@
 		 sexp 'sfun)
 	      (make-svar-definition var sexp))))
       ((define ?var (labels ((?f ?args . ?exp)) ?f))
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (let* ((id (id-of-id var (find-location sexp)))
 	      (def (assq id gdefs))
 	      (global (find-global/module id *module*)))
@@ -266,6 +283,8 @@
 		 sexp 'sfun)
 	      (make-svar-definition var sexp))))
       ((define ?var ((and ?lam (? lambda?)) ?args . ?exp))
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (let* ((id (id-of-id var (find-location sexp)))
 	      (def (assq id gdefs))
 	      (global (find-global/module id *module*))
@@ -280,9 +299,13 @@
 		 sexp 'sfun)
 	      (make-svar-definition var sexp))))
       ((define ?var (begin ?1-exp))
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (set-car! (cddr sexp) 1-exp)
        (toplevel->ast sexp gdefs))
       ((define ?var (and (? symbol?) ?var2))
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
 	  (if (eq? (car (cdr def)) 'read)
 	      (let* ((g (find-global var2))
@@ -307,6 +330,8 @@
 		     (make-svar-definition var sexp)))
 	      (make-svar-definition var sexp))))
       ((define ?var (@ (and (? symbol?) ?var2) (and (? symbol?) ?module)))
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
 	  (if (eq? (car (cdr def)) 'read)
 	      (let* ((g (find-global/module var2 module))
@@ -331,23 +356,38 @@
 		     (make-svar-definition var sexp)))
 	      (make-svar-definition var sexp))))
       ((define ?var . ?exp)
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (unless (match-case exp
+		     ((((@ register-class! __object) . ?-)) #t)
+		     (else #f))
+	     (error-class-shadow var sexp)))
        (make-svar-definition var sexp))
       ((define-inline ((@ ?var ?module) . ?args) . ?exp)
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (make-sfun-definition var
 	  module args
 	  (normalize-progn/error exp sexp (find-location (cddr sexp)))
 	  sexp 'sifun))
       ((define-inline (?var . ?args) . ?exp)
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (make-sfun-definition var
 	  *module* args
 	  (normalize-progn/error exp sexp (find-location (cddr sexp)))
 	  sexp 'sifun))
       ((define-generic ((@ ?var ?module) . ?args) . ?exp)
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (warning "define-generic" "form no longer supported" sexp)
        (make-generic-definition var module args exp sexp))
       ((define-generic (?var . ?args) . ?exp)
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (make-generic-definition var *module* args exp sexp))
       ((define-method (?var . ?args) . ?exp)
+       (when (and (type-exists? var) (isa? (find-type var) tclass))
+	  (error-class-shadow var sexp))
        (make-method-definition var
 	  args
 	  (normalize-progn/error exp sexp (find-location (cddr sexp)))

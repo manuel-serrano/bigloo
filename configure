@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jan 22 09:04:16 2022 (serrano)                */
+#*    Last change :  Sat Mar  5 07:43:37 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1673,6 +1673,9 @@ case $hostos in
     gcspecial=-DIGNORE_DYNAMIC_LOADING;
     # Use the multithreaded libbigloogc to close the other shared libraries
     sharedlibrarygcclosed=$sharedlibrarygcmtclosed
+
+    # disable libbacktrace as it crashes on some Android versions
+    libbacktrace=no
   
     ;;
 esac
