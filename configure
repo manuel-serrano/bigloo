@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Mar  5 07:43:37 2022 (serrano)                */
+#*    Last change :  Sat Mar  5 09:02:00 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -4793,6 +4793,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
     $echo "LIBBACKTRACELIBS=" >> $makefile_cfg
     $echo "LIBBACKTRACECFLAGS=" >> $makefile_cfg
+    $echo "LIBBACKTRACEBOOTINCDIR=." >> $makefile_cfg
   fi
 
   # PHIDGET
