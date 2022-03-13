@@ -1,0 +1,22 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/mqtt/src/Misc/mqtt.init          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Fri Dec 13 12:50:16 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Mqtt init file.                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'mqtt
+   :srfi '(mqtt)
+   :basename "bigloomqtt"
+   :module-init '__mqtt_server
+   :module-eval '__mqtt_makelib
+   :class-init "bigloo.mqtt.server"
+   :class-eval "bigloo.mqtt.make_lib")
+   
