@@ -16,7 +16,7 @@
    (if (>fx *jas-profile-mode* 0)
        ;; CARE use profile-mode == 1 to profile only functions entry points
        (let ( (r (profiling l)) )
-	  ; (pp r)
+	  ;(pp r)
 	  r )
        l ))
 
@@ -120,10 +120,10 @@
 	     (with-access::_env env (has_clinit clinit)
 		(if has_clinit
 		    (let ( (slot (get clinit r)) )
-		       (set-cdr! slot
-				 (append extra (cdr slot)) )
+                       (set-cdr! slot
+                          (append extra (cdr slot)))
 		       r )
-		    (cons `(,clinit () () ,@extra) r) )))))))
+		    (cons `(method ,clinit () () ,@(append extra '((return)))) r) )))))))
 
 (define (profile-methods env methods)
    (define (profile-method i m)
