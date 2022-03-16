@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Sun Mar 13 16:47:45 2022 (serrano)                */
+;*    Last change :  Wed Mar 16 18:15:52 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -130,6 +130,12 @@
 		    (mqtt-read-publish-packet ip version))
 		   ((=fx ptype (MQTT-CPT-SUBSCRIBE))
 		    (mqtt-read-subscribe-packet ip version))
+		   ((=fx ptype (MQTT-CPT-PUBREC))
+		    (mqtt-read-pubrec-packet ip version))
+		   ((=fx ptype (MQTT-CPT-PINGREQ))
+		    (mqtt-read-pingreq-packet ip version))
+		   ((=fx ptype (MQTT-CPT-DISCONNECT))
+		    (mqtt-read-disconnect-packet ip version))
 		   (else
 		    (error "mqtt:server" "Illegal packet type"
 		       (mqtt-control-packet-type-name ptype)))))))))

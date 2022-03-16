@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:59:12 2022                          */
-;*    Last change :  Sun Mar 13 12:22:27 2022 (serrano)                */
+;*    Last change :  Wed Mar 16 21:22:29 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    An MQTT client example.                                          */
@@ -27,4 +27,8 @@
 	 (print "sending connect")
 	 (let ((conn (mqtt-connect sock :username "foo-bar")))
 	    (print "conn=" conn)
+	    (mqtt-write-publish-packet (socket-output sock)
+	       #f 0 #f
+	       "zigbee2mqtt/0x00124b0024c106d9" -1
+	       "{\"state\": \"ON\"}")
 	    (socket-close sock)))))

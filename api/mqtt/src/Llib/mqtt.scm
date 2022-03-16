@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Sun Mar 13 19:55:31 2022 (serrano)                */
+;*    Last change :  Wed Mar 16 17:58:46 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -32,7 +32,8 @@
 	      (username::bstring (default ""))
 	      (password::obj (default #f)))
 
-	   (class mqtt-publish-packet::mqtt-control-packet)
+	   (class mqtt-publish-packet::mqtt-control-packet
+	      (topic::bstring (default "")))
 	   
 	   (class mqtt-subscribe-packet::mqtt-control-packet
 	      (ident::long (default -1)))
@@ -65,7 +66,7 @@
 
 	   (inline MQTT-PROPERTY-PAYLOAD-FORMAT-INDICATOR)
 	   (inline MQTT-PROPERTY-MESSAGE-EXPIRY-INTERVAL)
-	   (inline MQTT-PROPERTY-MESSAGE-CONTENT-TYPPE)
+	   (inline MQTT-PROPERTY-MESSAGE-CONTENT-TYPE)
 	   (inline MQTT-PROPERTY-MESSAGE-RESPONSE-TOPIC)
 	   (inline MQTT-PROPERTY-MESSAGE-CORRELATION-DATA)
 	   (inline MQTT-PROPERTY-MESSAGE-SUBSCRIPTION-IDENTIFIER)
@@ -114,11 +115,18 @@
 	   (mqtt-write-connack-packet op::output-port code::long)
 	   
 	   (mqtt-read-publish-packet ::input-port version::long)
-	   (mqtt-write-publish-packet ::output-port dup qos retain)
+	   (mqtt-write-publish-packet ::output-port dup::bool qos::long retain::bool topic::bstring pi payload)
 
 	   (mqtt-read-subscribe-packet ip::input-port version::long)
 
 	   (mqtt-write-suback-packet op::output-port ident::long ::pair-nil)
+
+	   (mqtt-read-pubrec-packet ip::input-port version::long)
+
+	   (mqtt-read-pingreq-packet ip::input-port version::long)
+	   (mqtt-write-pingresp-packet op::output-port)
+
+	   (mqtt-read-disconnect-packet ip::input-port version::long)
 	   ))
 
 ;*---------------------------------------------------------------------*/
@@ -157,7 +165,7 @@
 ;; Properties
 (define-inline (MQTT-PROPERTY-PAYLOAD-FORMAT-INDICATOR) #x1)
 (define-inline (MQTT-PROPERTY-MESSAGE-EXPIRY-INTERVAL) #x2)
-(define-inline (MQTT-PROPERTY-MESSAGE-CONTENT-TYPPE) #x3)
+(define-inline (MQTT-PROPERTY-MESSAGE-CONTENT-TYPE) #x3)
 (define-inline (MQTT-PROPERTY-MESSAGE-RESPONSE-TOPIC) #x8)
 (define-inline (MQTT-PROPERTY-MESSAGE-CORRELATION-DATA) #x9)
 (define-inline (MQTT-PROPERTY-MESSAGE-SUBSCRIPTION-IDENTIFIER) #xb)
@@ -344,49 +352,51 @@
 ;*    read-property ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (read-property ip::input-port)
-   (let ((ident (read-vbi ip)))
-      (cond
-	 ((eof-object? ident)
-	  ident)
-	 ((=fx ident (MQTT-PROPERTY-SESSION-EXPIRY-INTERVAL))
-	  (cons 'SESSION-EXPIRY-INTERVAL (read-int32 ip)))
-	 ((=fx ident (MQTT-PROPERTY-RECEIVE-MAXIMUM))
-	  (cons 'RECEIVE-MAXIMUM (read-int16 ip)))
-	 ((=fx ident (MQTT-PROPERTY-MAXIMUM-PACKET-SIZE))
-	  (cons 'MAXIMUM-PACKET-SIZE (read-int32 ip)))
-	 ((=fx ident (MQTT-PROPERTY-TOPIC-ALIAS-MAXIMUM))
-	  (cons 'TOPIC-ALIAS-MAXIMUM (read-int16 ip)))
-	 ((=fx ident (MQTT-PROPERTY-REQUEST-RESPONSE-INFORMATION))
-	  (cons 'REQUEST-RESPONSE-INFORMATION (read-byte ip)))
-	 ((=fx ident (MQTT-PROPERTY-REQUEST-PROBLEM-INFORMATION))
-	  (cons 'REQUEST-PROBLEM-INFORMATION (read-byte ip)))
-	 ((=fx ident (MQTT-PROPERTY-USER-PROPERTY))
-	  (let* ((name (read-utf8 ip))
-		 (value (read-utf8 ip)))
-	     (cons 'PROBLEM-INFORMATION (cons name value))))
-	 ((=fx ident (MQTT-PROPERTY-AUTHENTICATION-METHOD))
-	  (cons 'AUTHENTICATION-METHOD (read-utf8 ip)))
-	 ((=fx ident (MQTT-PROPERTY-AUTHENTICATION-DATA))
-	  (cons 'AUTHENTICATION-DATA "TODO-aut-data"))
-	 ((=fx ident (MQTT-PROPERTY-PAYLOAD-FORMAT-INDICATOR))
-	  (cons 'PAYLOAD-FORMAT-INDICATOR (read-byte ip)))
-	 ((=fx ident (MQTT-PROPERTY-MESSAGE-EXPIRY-INTERVAL))
-	  (cons 'MESSAGE-EXPIRY-INTERVAL (read-int32 ip)))
-	 ((=fx ident (MQTT-PROPERTY-TOPIC-ALIAS))
-	  (cons 'TOPIC-ALIAS (read-int16 ip)))
-	 ((=fx ident (MQTT-PROPERTY-MESSAGE-RESPONSE-TOPIC))
-	  (cons 'MESSAGE-RESPONSE-TOPIC (read-utf8 ip)))
-	 ((=fx ident (MQTT-PROPERTY-MESSAGE-CORRELATION-DATA))
-	  (cons 'MESSAGE-CORRELATION-DATA "TODO-correlation-data"))
-	 ((=fx ident (MQTT-PROPERTY-USER-PROPERTY))
-	  (cons 'USER-PROPERTY (read-utf8 ip)))
-	 ((=fx ident (MQTT-PROPERTY-MESSAGE-SUBSCRIPTION-IDENTIFIER))
-	  (cons 'MESSAGE-SUBSCRIPTION-IDENTIFIER (read-vbi ip)))
-	 ((=fx ident (MQTT-PROPERTY-MESSAGE-CONTENT-TYPPE))
-	  (cons 'MESSAGE-CONTENT-TYPPE (read-utf8 ip)))
-	 (else
-	  (tprint "unknown message " ident)
-	  (cons 'UNKNOWN (format "~a" ident))))))
+   (with-trace 'mqtt "read-property"
+      (let ((ident (read-vbi ip)))
+	 (trace-item "ident=" ident " " (integer->string ident 16))
+	 (cond
+	    ((eof-object? ident)
+	     ident)
+	    ((=fx ident (MQTT-PROPERTY-SESSION-EXPIRY-INTERVAL))
+	     (cons 'SESSION-EXPIRY-INTERVAL (read-int32 ip)))
+	    ((=fx ident (MQTT-PROPERTY-RECEIVE-MAXIMUM))
+	     (cons 'RECEIVE-MAXIMUM (read-int16 ip)))
+	    ((=fx ident (MQTT-PROPERTY-MAXIMUM-PACKET-SIZE))
+	     (cons 'MAXIMUM-PACKET-SIZE (read-int32 ip)))
+	    ((=fx ident (MQTT-PROPERTY-TOPIC-ALIAS-MAXIMUM))
+	     (cons 'TOPIC-ALIAS-MAXIMUM (read-int16 ip)))
+	    ((=fx ident (MQTT-PROPERTY-REQUEST-RESPONSE-INFORMATION))
+	     (cons 'REQUEST-RESPONSE-INFORMATION (read-byte ip)))
+	    ((=fx ident (MQTT-PROPERTY-REQUEST-PROBLEM-INFORMATION))
+	     (cons 'REQUEST-PROBLEM-INFORMATION (read-byte ip)))
+	    ((=fx ident (MQTT-PROPERTY-USER-PROPERTY))
+	     (let* ((name (read-utf8 ip))
+		    (value (read-utf8 ip)))
+		(cons 'PROBLEM-INFORMATION (cons name value))))
+	    ((=fx ident (MQTT-PROPERTY-AUTHENTICATION-METHOD))
+	     (cons 'AUTHENTICATION-METHOD (read-utf8 ip)))
+	    ((=fx ident (MQTT-PROPERTY-AUTHENTICATION-DATA))
+	     (cons 'AUTHENTICATION-DATA "TODO-aut-data"))
+	    ((=fx ident (MQTT-PROPERTY-PAYLOAD-FORMAT-INDICATOR))
+	     (cons 'PAYLOAD-FORMAT-INDICATOR (read-byte ip)))
+	    ((=fx ident (MQTT-PROPERTY-MESSAGE-EXPIRY-INTERVAL))
+	     (cons 'MESSAGE-EXPIRY-INTERVAL (read-int32 ip)))
+	    ((=fx ident (MQTT-PROPERTY-TOPIC-ALIAS))
+	     (cons 'TOPIC-ALIAS (read-int16 ip)))
+	    ((=fx ident (MQTT-PROPERTY-MESSAGE-RESPONSE-TOPIC))
+	     (cons 'MESSAGE-RESPONSE-TOPIC (read-utf8 ip)))
+	    ((=fx ident (MQTT-PROPERTY-MESSAGE-CORRELATION-DATA))
+	     (cons 'MESSAGE-CORRELATION-DATA "TODO-correlation-data"))
+	    ((=fx ident (MQTT-PROPERTY-USER-PROPERTY))
+	     (cons 'USER-PROPERTY (read-utf8 ip)))
+	    ((=fx ident (MQTT-PROPERTY-MESSAGE-SUBSCRIPTION-IDENTIFIER))
+	     (cons 'MESSAGE-SUBSCRIPTION-IDENTIFIER (read-vbi ip)))
+	    ((=fx ident (MQTT-PROPERTY-MESSAGE-CONTENT-TYPE))
+	     (cons 'MESSAGE-CONTENT-TYPE (read-utf8 ip)))
+	    (else
+	     (tprint "unknown message " ident)
+	     (cons 'UNKNOWN (format "~a" ident)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-properties ...                                              */
@@ -473,10 +483,12 @@
 	    ;; 3.1.2 CONNECT Variable Header
 	    (write-vbi (string-length str) op)
 	    (display-string str op)
-	    (close-output-port op)))))
+	    (flush-output-port op)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-read-connack-packet ...                                     */
+;*    -------------------------------------------------------------    */
+;*    3.2 CONNACK                                                      */
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-connack-packet ip::input-port version)
    (with-trace 'mqtt "mqtt-read-connack-packet"
@@ -495,6 +507,8 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-write-connack-packet ...                                    */
+;*    -------------------------------------------------------------    */
+;*    3.2 CONNACK                                                      */
 ;*---------------------------------------------------------------------*/
 (define (mqtt-write-connack-packet op::output-port code::long)
    (with-trace 'mqtt "mqtt-write-connack-packet"
@@ -510,21 +524,23 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-read-publish-packet ...                                     */
+;*    -------------------------------------------------------------    */
+;*    3.3 PUBLISH                                                      */
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-publish-packet ip::input-port version::long)
 
    (define (read-publish-variable-header ip::input-port pk::mqtt-control-packet flags)
       (with-trace 'mqtt "read-publish-variable-header"
-	 (with-access::mqtt-publish-packet pk (properties payload)
+	 (with-access::mqtt-publish-packet pk (properties payload topic)
 	    ;; 3.3.2.1 Topic Name
-	    (let ((topic (read-utf8 ip)))
-	       (trace-item "topic=" topic)
-	       ;; 3.2.2.2 Packet Identifier
-	       (let* ((id (if (>fx (bit-and 3 flags) 0) (read-int16 ip) -1)))
-		  (set! properties (read-properties ip))
-		  (trace-item "id=" id)
-		  (trace-item "props=" properties)
-		  pk)))))
+	    (set! topic (read-utf8 ip))
+	    (trace-item "topic=" topic)
+	    ;; 3.2.2.2 Packet Identifier
+	    (let* ((qos (bit-and 3 (bit-rsh flags 1)))
+		   (id (if (or (=fx qos 1) (=fx qos 2)) (read-int16 ip) -1)))
+	       (trace-item "id=" id)
+	       (trace-item "props=" properties)
+	       pk))))
    
    (with-trace 'mqtt "mqtt-read-publish-packet"
       (multiple-value-bind (ptype pflags length)
@@ -542,18 +558,32 @@
 				(flags pflags))))
 		  (read-publish-variable-header vip packet pflags)
 		  (with-access::mqtt-publish-packet packet (payload)
-		     (set! payload (read-string vip)))
+		     (set! payload (read-string vip))
+		     (trace-item "payload=" (string-for-read payload)))
 		  packet))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-write-publish-packet ...                                    */
+;*    -------------------------------------------------------------    */
+;*    3.3 PUBLISH                                                      */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-write-publish-packet op dup qos retain)
+(define (mqtt-write-publish-packet op dup qos retain topic pi payload)
    ;; 3.1.1 CONNECT Fixed Header
    (let ((flags (bit-or (if dup 4 0)
 		   (bit-or (if retain 1 0)
 		      qos))))
-      (write-byte (bit-or (bit-lsh (MQTT-CPT-PUBLISH) 4) flags) op)))
+      (write-byte (bit-or (bit-lsh (MQTT-CPT-PUBLISH) 4) flags) op)
+      (let ((sop (open-output-string 256)))
+	 (unwind-protect
+	    (begin
+	       (write-utf8 topic sop)
+	       (when (or (=fx qos 1) (=fx qos 2))
+		  (write-int16 pi sop))
+	       (display-string payload sop))
+	    (let ((str (close-output-port sop)))
+	       (write-vbi (string-length str) op)
+	       (display-string str op)
+	       (flush-output-port op))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-read-subscribe-packet ...                                   */
@@ -612,4 +642,82 @@
       ;; 3.2.3 Payload
       (for-each (lambda (code) (write-byte code op)) payload)
       (flush-output-port op)))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-read-pubrec-packet ...                                      */
+;*    -------------------------------------------------------------    */
+;*    3.5 PUBREC                                                       */
+;*---------------------------------------------------------------------*/
+(define (mqtt-read-pubrec-packet ip::input-port version::long)
+   (with-trace 'mqtt "mqtt-read-pubrec-packet"
+      (multiple-value-bind (ptype pflags length)
+	 (read-fixed-header ip)
+	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
+	    " flags=" pflags)
+	 (trace-item "length=" length)
+	 (unless (eq? ptype (MQTT-CPT-PUBREC))
+	    (error "mqtt" "PUBREC packet expected"
+	       (mqtt-control-packet-type-name ptype)))
+	 (instantiate::mqtt-control-packet
+	    (type ptype)
+	    (flags pflags)
+	    (properties `((pi . ,(read-int16 ip))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    mqtt-read-pingreq-packet ...                                     */
+;*    -------------------------------------------------------------    */
+;*    3.12 PINGREQ                                                     */
+;*---------------------------------------------------------------------*/
+(define (mqtt-read-pingreq-packet ip::input-port version::long)
+   (with-trace 'mqtt "mqtt-read-pingreq-packet"
+      (multiple-value-bind (ptype pflags length)
+	 (read-fixed-header ip)
+	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
+	    " flags=" pflags)
+	 (trace-item "length=" length)
+	 (unless (eq? ptype (MQTT-CPT-PINGREQ))
+	    (error "mqtt" "PINGREQ packet expected"
+	       (mqtt-control-packet-type-name ptype)))
+	 (call-with-input-string (read-chars length ip)
+	    (lambda (vip)
+	       (let ((packet (instantiate::mqtt-control-packet
+				(type ptype)
+				(flags pflags))))
+		  packet))))))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-write-pingresp-packet ...                                   */
+;*    -------------------------------------------------------------    */
+;*    3.13 PINGRESP                                                    */
+;*---------------------------------------------------------------------*/
+(define (mqtt-write-pingresp-packet op::output-port)
+   (with-trace 'mqtt "mqtt-write-pingresp-packet"
+      ;; 3.13.1.1 PINGRESP Fixed Header
+      (write-byte (bit-lsh (MQTT-CPT-PINGRESP) 4) op)
+      ;; 3.13.2 Variable header
+      (write-byte 0 op)
+      (flush-output-port op)))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-read-disconnect-packet ...                                  */
+;*    -------------------------------------------------------------    */
+;*    3.14 DISCONNECT                                                  */
+;*---------------------------------------------------------------------*/
+(define (mqtt-read-disconnect-packet ip::input-port version::long)
+   (with-trace 'mqtt "mqtt-read-disconnect-packet"
+      (multiple-value-bind (ptype pflags length)
+	 (read-fixed-header ip)
+	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
+	    " flags=" pflags)
+	 (trace-item "length=" length)
+	 (unless (eq? ptype (MQTT-CPT-DISCONNECT))
+	    (error "mqtt" "DISCONNECT packet expected"
+	       (mqtt-control-packet-type-name ptype)))
+	 (call-with-input-string (read-chars length ip)
+	    (lambda (vip)
+	       (let ((packet (instantiate::mqtt-control-packet
+				(type ptype)
+				(flags pflags))))
+		  packet))))))
+
 
