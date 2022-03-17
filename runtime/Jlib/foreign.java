@@ -4415,8 +4415,8 @@ public final class foreign
 
    public static int OBJECT_TYPE = 0;
 
-   public static Object BGL_AS_OBJECT(Object o) {
-      return o;
+   public static object BGL_AS_OBJECT(Object o) {
+       return (object)o;
    }
    
    public static Object BGL_OBJECT_WIDENING_SET(object o, Object v)
