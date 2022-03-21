@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:59:12 2022                          */
-;*    Last change :  Wed Mar 16 18:25:27 2022 (serrano)                */
+;*    Last change :  Sat Mar 19 06:37:38 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    An MQTT server example.                                          */
@@ -52,7 +52,10 @@
 				    " from " client-id)
 				 (cond
 				    ((=fx type (MQTT-CPT-PUBLISH))
-				     (with-access::mqtt-publish-packet pk (ident payload topic)
+				     (with-access::mqtt-publish-packet pk (pid payload topic flags)
+					(case (bit-and 3 (bit-rsh flags 1))
+					   ((1) (mqtt-write-puback-packet (socket-output s) pid 0 '()))
+					   ((2) (mqtt-write-pubrec-packet (socket-output s) pid 0 '())))
 					(when (string=? topic "zigbee2mqtt/0x00124b00246cd6a7")
 					   (tprint "SENDING ON")
 					   (mqtt-write-publish-packet (socket-output s)
@@ -62,10 +65,10 @@
 					(tprint "  payload=" (string-for-read payload)))
 				     (loop))
 				    ((=fx type (MQTT-CPT-SUBSCRIBE))
-				     (with-access::mqtt-subscribe-packet pk (ident payload)
+				     (with-access::mqtt-subscribe-packet pk (pid payload)
 					(tprint "Sending SUBACK to " client-id)
 					(mqtt-write-suback-packet (socket-output s)
-					   ident
+					   pid
 					   (map cdr payload)))
 				     (loop))
 				    ((=fx type (MQTT-CPT-PINGREQ))

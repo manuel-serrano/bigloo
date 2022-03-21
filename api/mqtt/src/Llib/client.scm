@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:42:42 2022                          */
-;*    Last change :  Sun Mar 13 15:20:12 2022 (serrano)                */
+;*    Last change :  Sat Mar 19 08:26:09 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT client side                                                 */
@@ -25,6 +25,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-protocol-version version)
    (cond
+      ((integer? version) version)
       ((string=? version "5") 5)
       ((string=? version "3.1.1") 4)
       (else (error "mqtt" "Unsupported protocol version" version))))
