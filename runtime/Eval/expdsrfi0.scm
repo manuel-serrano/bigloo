@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue Oct 19 18:31:14 2021 (serrano)                */
-;*    Copyright   :  2001-21 Manuel Serrano                            */
+;*    Last change :  Mon Mar 21 14:09:51 2022 (serrano)                */
+;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -267,7 +267,9 @@
        (match-case clause
 	  (((kwote else) . ?body)
 	   (if (null? else)
-	       (e (evepairify (progn body) x) e)
+	       (if (null? body)
+		   #unspecified
+		   (e (evepairify (progn body) x) e))
 	       (expand-error "cond-expand" "Illegal form" x)))
 	  ((((kwote and)) . ?body)
 	   (e (evepairify (progn body) x) e))
