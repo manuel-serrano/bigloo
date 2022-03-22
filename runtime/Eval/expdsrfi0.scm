@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Mon Mar 21 14:09:51 2022 (serrano)                */
+;*    Last change :  Tue Mar 22 10:08:43 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -311,7 +311,9 @@
 	      e))
 	  (((and (? symbol?) ?feature) . ?body)
 	   (e (evepairify (if (memq feature features)
-			      (progn body)
+			      (if (null? body)
+				  #unspecified
+				  (progn body))
 			      `(cond-expand ,@else))
 			  x)
 	      e))
