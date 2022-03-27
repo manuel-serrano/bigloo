@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Wed Mar 16 18:15:52 2022 (serrano)                */
+;*    Last change :  Sun Mar 27 09:11:01 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -13,109 +13,227 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __mqtt_server
+
+   (library pthread)
    
-   (option (set! *dlopen-init-gc* #t))
+   (import __mqtt_common)
    
-   (import __mqtt_mqtt)
-   
-   (export (mqtt-read-connect-packet::obj ::input-port)
+   (export (class mqtt-server
+	      (lock read-only (default (make-mutex "mqtt-server")))
+	      (socket::socket read-only)
+	      (subscriptions::pair-nil (default '()))
+	      (retains::pair-nil (default '()))
+	      (debug::long (default 0)))
+	   
+	   (class mqtt-client-conn
+	      (sock::socket read-only)
+	      (lock read-only (default (make-mutex "mqtt-server-conn")))
+	      (version::long read-only)
+	      (client-id::bstring read-only)
+	      (will-flag::bool (default #f))
+	      (will-topic::bstring (default ""))
+	      (will-message::bstring (default "")))
+
+	   (mqtt-make-server ::obj #!key (debug 0))
+	   (mqtt-server-loop ::mqtt-server)
 	   (mqtt-read-server-packet ip::input-port ::long)))
 
 ;*---------------------------------------------------------------------*/
-;*    read-connect-payload ...                                         */
+;*    topic ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (read-connect-payload ip::input-port pk::mqtt-control-packet)
+(define-struct topic name regexp qos)
 
-   (define (has-flags? flags flag)
-      (=fx (bit-and flags flag) flag))
+;*---------------------------------------------------------------------*/
+;*    mqtt-make-server ...                                             */
+;*---------------------------------------------------------------------*/
+(define (mqtt-make-server socket #!key (debug 0))
+   (instantiate::mqtt-server
+      (socket socket)
+      (debug debug)))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-server-loop ...                                             */
+;*---------------------------------------------------------------------*/
+(define (mqtt-server-loop srv::mqtt-server)
+   (with-access::mqtt-server srv (socket)
+      (unwind-protect
+	 (let loop ()
+	    (let* ((sock (socket-accept socket))
+		   (p (mqtt-read-connect-packet (socket-input sock))))
+	       (when (isa? p mqtt-connect-packet)
+		  (with-access::mqtt-connect-packet p (version client-id)
+		     (let ((conn (instantiate::mqtt-client-conn
+				    (sock sock)
+				    (version version)
+				    (client-id client-id))))
+			(mqtt-conn-loop srv conn))))
+	       (loop)))
+	 (mqtt-server-close srv))))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-server-close ...                                            */
+;*---------------------------------------------------------------------*/
+(define (mqtt-server-close srv::mqtt-server)
+   (with-access::mqtt-server srv (socket lock)
+      #f))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-server-debug ...                                            */
+;*---------------------------------------------------------------------*/
+(define-macro (mqtt-server-debug srv thunk)
+   `(with-access::mqtt-server ,srv (debug)
+       (when (>fx debug 0)
+	  (,thunk))))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-conn-loop ...                                               */
+;*---------------------------------------------------------------------*/
+(define (mqtt-conn-loop srv::mqtt-server conn::mqtt-client-conn)
+   (with-access::mqtt-client-conn conn (sock lock version client-id)
+      (mqtt-server-debug srv
+	 (lambda ()
+	    (tprint "New client connected as " client-id)
+	    (tprint "sending CONNACK to " client-id)))
+      (mqtt-write-connack-packet (socket-output sock) 0)
+      (thread-start!
+	 (instantiate::pthread
+	    (name "mqtt-server-loop")
+	    (body (lambda ()
+		     (let ((ip (socket-input sock))
+			   (op (socket-output sock)))
+			(let loop ()
+			   (let ((pk (mqtt-read-server-packet ip version)))
+			      (if (not (isa? pk mqtt-control-packet))
+				  (mqtt-server-will conn)
+				  (with-access::mqtt-control-packet pk (type)
+				     (mqtt-server-debug srv
+					(lambda ()
+					   (tprint "Received "
+					      (mqtt-control-packet-type-name type)
+					      " from " client-id)))
+				     (cond
+					((=fx type (MQTT-CPT-PUBLISH))
+					 ;; 3.3
+					 (mqtt-server-publish srv pk)
+					 (loop))
+					((=fx type (MQTT-CPT-PUBACK))
+					 ;; 3.4
+					 (loop))
+					((=fx type (MQTT-CPT-PUBREC))
+					 ;; 3.5
+					 (loop))
+					((=fx type (MQTT-CPT-SUBSCRIBE))
+					 ;; 3.8
+					 (mqtt-server-subscribe srv conn pk)
+					 (loop))
+					((=fx type (MQTT-CPT-UNSUBSCRIBE))
+					 ;; 3.10
+					 (mqtt-server-unsubscribe srv conn pk)
+					 (loop))
+					((=fx type (MQTT-CPT-PINGREQ))
+					 ;; 3.12
+					 (mqtt-write-pingresp-packet op)
+					 (loop))
+					((=fx type (MQTT-CPT-DISCONNECT))
+					 ;; 3.14
+					 #unspecified)
+					(else
+					 (loop))))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-server-will ...                                             */
+;*---------------------------------------------------------------------*/
+(define (mqtt-server-will conn::mqtt-client-conn)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-server-publish ...                                          */
+;*---------------------------------------------------------------------*/
+(define (mqtt-server-publish srv::mqtt-server pk::mqtt-publish-packet)
+   (with-trace 'mqtt "mqtt-server-publish"
+      (with-access::mqtt-server srv (lock subscriptions retains)
+	 (with-access::mqtt-publish-packet pk (flags)
+	    (when (=fx (bit-and flags 1) 1)
+	       ;; 3.3.1.3 RETAIN
+	       (synchronize lock
+		  (set! retains (cons pk retains)))))
+	 (for-each (lambda (subscription)
+		      (mqtt-server-debug srv
+			 (lambda ()
+			    (with-access::mqtt-publish-packet pk (topic)
+			       (tprint "Publish " topic))))
+		      (mqtt-conn-publish subscription pk))
+	    subscriptions))))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-conn-publish ...                                            */
+;*---------------------------------------------------------------------*/
+(define (mqtt-conn-publish subscription::pair pk::mqtt-publish-packet)
+   (with-trace 'mqtt "mqtt-conn-publish"
+      (with-access::mqtt-publish-packet pk (topic payload)
+	 (let ((conn (car subscription))
+	       (topics (cdr subscription)))
+	    (for-each (lambda (t)
+			 (when (mqtt-topic-match? (topic-regexp t) topic)
+			    (with-access::mqtt-client-conn conn (sock)
+			       (mqtt-write-publish-packet
+				  (socket-output sock)
+				  #f 0 #f topic 0 payload))))
+	       topics)))))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-server-subscribe ...                                        */
+;*---------------------------------------------------------------------*/
+(define (mqtt-server-subscribe srv::mqtt-server conn pk::mqtt-control-packet)
    
-   (define (read-will-topic ip flags)
-      (if (has-flags? flags (MQTT-CONFLAG-WILL-FLAG))
-	  (read-utf8 ip)
-	  ""))
-
-   (define (read-will-message ip flags)
-      (when (has-flags? flags (MQTT-CONFLAG-WILL-FLAG))
-	 (read-chars (read-int16 ip) ip)))
-
-   (define (read-username ip flags)
-      (if (has-flags? flags (MQTT-CONFLAG-USERNAME-FLAG))
-	  (read-utf8 ip)
-	  ""))
-      
-   (define (read-password ip flags)
-      (when (has-flags? flags (MQTT-CONFLAG-PASSWORD-FLAG))
-	 (read-chars (read-int16 ip) ip)))
-      
-   (with-trace 'mqtt "read-connect-payload"
-      (with-access::mqtt-connect-packet pk (connect-flags
-					      client-id will-topic
-					      will-message username
-					      password)
-	 ;; mandatory client identifier
-	 (set! client-id (read-utf8 ip))
-	 (set! will-topic (read-will-topic ip connect-flags))
-	 (set! will-message (read-will-message ip connect-flags))
-	 (set! username (read-username ip connect-flags))
-	 (set! password (read-password ip connect-flags))
-	 (trace-item "client-id=" client-id)
-	 (trace-item "will-topic=" will-topic)
-	 (trace-item "will-message=" will-message)
-	 (trace-item "username=" username)
-	 (trace-item "password=" password)
-	 pk)))
+   (define (payload->topic payload)
+      (topic (car payload)
+	 (topic-filter->regexp (car payload))
+	 (cdr payload)))
+   
+   (with-trace 'mqtt "mqtt-server-subscribe"
+      (with-access::mqtt-server srv (lock subscriptions retains)
+	 (synchronize lock
+	    (with-access::mqtt-control-packet pk (payload)
+	       (mqtt-server-debug srv
+		  (lambda ()
+		     (tprint "Subscribe " payload)))
+	       (let ((cell (assq conn subscriptions)))
+		  (if (not cell)
+		      (set! subscriptions
+			 (cons (cons conn (map payload->topic payload))
+			    subscriptions))
+		      (for-each (lambda (payload)
+				   (unless (find (lambda (t) (string=? (topic-name t) (car payload)))
+					      (cdr cell))
+				      (set-cdr! cell (cons (payload->topic payload) (cdr cell)))))
+			 payload)))))
+	 (for-each (lambda (pk)
+		      (mqtt-server-publish srv pk))
+	    retains))))
 
 ;*---------------------------------------------------------------------*/
-;*    read-connect-variable-header ...                                 */
+;*    mqtt-server-unsubscribe ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (read-connect-variable-header ip::input-port pk::mqtt-control-packet)
-   (with-trace 'mqtt "read-connect-variable-header"
-      (with-access::mqtt-connect-packet pk (version connect-flags keep-alive
-					      properties)
-	 (let* ((protocol-name (read-utf8 ip))
-		(protocol-version (read-byte ip))
-		(conn-flags (read-byte ip))
-		(kalive (read-int16 ip)))
-	    (trace-item "name=" protocol-name)
-	    (trace-item "version="protocol-version)
-	    (trace-item "connect-flags=" conn-flags)
-	    (trace-item "keep-alive=" kalive)
-	    (set! version protocol-version)
-	    (set! connect-flags conn-flags)
-	    (set! keep-alive kalive)
-	    (when (=fx protocol-version 5)
-	       (set! properties (read-properties ip)))
-	    pk))))
-
-;*---------------------------------------------------------------------*/
-;*    mqtt-read-connect-packet ...                                     */
-;*---------------------------------------------------------------------*/
-(define (mqtt-read-connect-packet ip::input-port)
-   (with-trace 'mqtt "mqtt-read-packet"
-      (multiple-value-bind (ptype pflags length)
-	 (read-fixed-header ip)
-	 (if (eof-object? ptype)
-	     ptype
-	     (begin
-		(trace-item "header=" (mqtt-control-packet-type-name ptype)
-		   " flags=" pflags)
-		(trace-item "length=" length)
-		(unless (=fx ptype (MQTT-CPT-CONNECT))
-		   (error "mqtt" "CONNECT packet expected"
-		      (mqtt-control-packet-type-name ptype)))
-		(call-with-input-string (read-chars length ip)
-		   (lambda (vip)
-		      (let ((packet (instantiate::mqtt-connect-packet
-				       (type ptype)
-				       (flags pflags))))
-			 (read-connect-variable-header vip packet)
-			 (read-connect-payload vip packet)
-			 packet))))))))
+(define (mqtt-server-unsubscribe srv::mqtt-server conn pk::mqtt-control-packet)
+   (with-trace 'mqtt "mqtt-server-unsubscribe"
+      (with-access::mqtt-server srv (lock subscriptions)
+	 (with-access::mqtt-control-packet pk (payload pid)
+	    (synchronize lock
+	       (let ((cell (assq conn subscriptions)))
+		  (when (pair? cell)
+		     (set-cdr! cell
+			(filter! (lambda (topic)
+				    (not (member (topic-name topic) payload)))
+			   (cdr cell))))))
+	    (with-access::mqtt-client-conn conn (sock)
+	       ;; 3.10.4 Response
+	       (mqtt-write-unsuback-packet (socket-output sock) pid))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-read-server-packet ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-read-server-packet ip::input-port version)
+(define (mqtt-read-server-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-server-packet"
       (let ((header (read-byte ip)))
 	 (if (eof-object? header)
@@ -130,6 +248,8 @@
 		    (mqtt-read-publish-packet ip version))
 		   ((=fx ptype (MQTT-CPT-SUBSCRIBE))
 		    (mqtt-read-subscribe-packet ip version))
+		   ((=fx ptype (MQTT-CPT-UNSUBSCRIBE))
+		    (mqtt-read-unsubscribe-packet ip version))
 		   ((=fx ptype (MQTT-CPT-PUBREC))
 		    (mqtt-read-pubrec-packet ip version))
 		   ((=fx ptype (MQTT-CPT-PINGREQ))
