@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Tue Mar 29 10:29:32 2022 (serrano)                */
+;*    Last change :  Fri Apr  1 19:45:09 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -118,8 +118,12 @@
 	   (mqtt-read-publish-packet ::input-port version::long)
 	   (mqtt-write-publish-packet ::output-port dup::bool qos::long retain::bool topic::bstring pid::long payload)
 
+	   (mqtt-read-puback-packet ip::input-port version::long)
 	   (mqtt-write-puback-packet op::output-port pid::long reason::long props::pair-nil)
 	   
+	   (mqtt-read-pubrec-packet ip::input-port version::long)
+	   (mqtt-write-pubrec-packet op::output-port pid::long reason::long props::pair-nil)
+
 	   (mqtt-read-subscribe-packet ip::input-port version::long)
 	   (mqtt-write-subscribe-packet op::output-port pid::long payload::pair-nil)
 	   
@@ -130,9 +134,6 @@
 	   (mqtt-read-unsuback-packet ip::input-port version::long)
 	   (mqtt-write-unsuback-packet op::output-port pid::long)
 	   
-	   (mqtt-read-pubrec-packet ip::input-port version::long)
-	   (mqtt-write-pubrec-packet op::output-port pid::long reason::long props::pair-nil)
-
 	   (mqtt-read-pingreq-packet ip::input-port version::long)
 	   (mqtt-write-pingreq-packet op::output-port)
 	   
@@ -719,6 +720,36 @@
 		  (flush-output-port op)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    mqtt-read-puback-packet ...                                      */
+;*    -------------------------------------------------------------    */
+;*    3.4 PUBACK                                                       */
+;*---------------------------------------------------------------------*/
+(define (mqtt-read-puback-packet ip::input-port version::long)
+   (with-trace 'mqtt "mqtt-read-puback-packet"
+      (multiple-value-bind (ptype pflags length)
+	 (read-fixed-header ip)
+	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
+	    " flags=" pflags)
+	 (trace-item "length=" length)
+	 (unless (eq? ptype (MQTT-CPT-PUBACK))
+	    (error "mqtt" "PUBACK packet expected"
+	       (mqtt-control-packet-type-name ptype)))
+	 (if (=fx version 5)
+	     (let* ((reason-code (read-byte ip))
+		    (props (if (=fx reason-code 0)
+			       (read-properties ip)
+			       '())))
+		(instantiate::mqtt-control-packet
+		   (type ptype)
+		   (flags pflags)
+		   (pid (read-int16 ip))
+		   (properties props)))
+	     (instantiate::mqtt-control-packet
+		(type ptype)
+		(flags pflags)
+		(pid (read-int16 ip)))))))
+
+;*---------------------------------------------------------------------*/
 ;*    mqtt-write-puback-packet ...                                     */
 ;*    -------------------------------------------------------------    */
 ;*    3.4 PUBACK                                                       */
@@ -730,8 +761,9 @@
       (let ((sop (open-output-string 256)))
 	 ;; 3.4.2 Variable header
 	 (write-int16 pid sop)
-	 (write-byte reason sop)
-	 (write-properties sop props)
+	 (when (>fx reason 0)
+	    (write-byte reason sop)
+	    (write-properties sop props))
 	 (let ((varh (close-output-port sop)))
 	    ;; 3.4.1 PUBACK Fixed Header
 	    (write-byte (bit-lsh (MQTT-CPT-PUBACK) 4) op)
@@ -754,10 +786,20 @@
 	 (unless (eq? ptype (MQTT-CPT-PUBREC))
 	    (error "mqtt" "PUBREC packet expected"
 	       (mqtt-control-packet-type-name ptype)))
-	 (instantiate::mqtt-control-packet
-	    (type ptype)
-	    (flags pflags)
-	    (pid (read-int16 ip))))))
+	 (if (=fx version 5)
+	     (let* ((reason-code (read-byte ip))
+		    (props (if (=fx reason-code 0)
+			       (read-properties ip)
+			       '())))
+		(instantiate::mqtt-control-packet
+		   (type ptype)
+		   (flags pflags)
+		   (pid (read-int16 ip))
+		   (properties props)))
+	     (instantiate::mqtt-control-packet
+		(type ptype)
+		(flags pflags)
+		(pid (read-int16 ip)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-write-pubrec-packet ...                                     */
@@ -771,8 +813,9 @@
       (let ((sop (open-output-string 256)))
 	 ;; 3.5.2 Variable header
 	 (write-int16 pid sop)
-	 (write-byte reason sop)
-	 (write-properties sop props)
+	 (when (>fx reason 0)
+	    (write-byte reason sop)
+	    (write-properties sop props))
 	 (let ((varh (close-output-port sop)))
 	    ;; 3.5.1 PUBREC Fixed Header
 	    (write-byte (bit-lsh (MQTT-CPT-PUBREC) 4) op)

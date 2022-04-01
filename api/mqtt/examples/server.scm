@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:59:12 2022                          */
-;*    Last change :  Tue Mar 29 10:28:53 2022 (serrano)                */
+;*    Last change :  Fri Apr  1 13:57:36 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    An MQTT server example.                                          */
@@ -22,11 +22,11 @@
 (define (main argv)
    (let* ((port (if (pair? (cdr argv)) (string->integer (cadr argv)) 1883))
 	  (sock (make-server-socket port))
-	  (srv (mqtt-make-server sock :debug (if (getenv "MQTT_DEBUG") 1 0)
-		  :on (lambda (name payload) (print name ": " payload)))))
+	  (srv (mqtt-make-server sock :debug (if (getenv "MQTT_DEBUG") 1 0))))
       (print "MQTT server waiting connections on port " port)
       (unwind-protect
-	 (mqtt-server-loop srv)
+	 (mqtt-server-loop srv
+	    (lambda (name payload) (print name ": " payload)))
 	 (socket-close sock))))
 
 ;*---------------------------------------------------------------------*/
