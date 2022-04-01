@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:42:42 2022                          */
-;*    Last change :  Sun Mar 27 09:18:05 2022 (serrano)                */
+;*    Last change :  Tue Mar 29 13:08:00 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT client side                                                 */
@@ -26,9 +26,13 @@
 	      (onpacket::procedure read-only)
 	      (%thread (default #f)))
 
-	   (mqtt-connect ::socket ::procedure
+	   (mqtt-connect ::socket ::procedure ::procedure ::procedure
 	      #!key (version "3.1.1") (keep-alive 0)
 	      (clientid "bigloomqtt") username password)
+
+	   (mqtt-client-close ::mqtt-client)
+	   (mqtt-client-publish ::mqtt-client ::bstring ::bstring
+	      #!key (retain #f) (qos 0) (dup #f) (pid -1))
 
 	   (mqtt-read-client-packet ip::input-port version::long)))
 
@@ -51,7 +55,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-connect ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-connect sock onpacket #!key (version "3.1.1") (keep-alive 0)
+(define (mqtt-connect sock onconnect onpacket onclose
+	   #!key (version "3.1.1") (keep-alive 0)
 	   (clientid "bigloomqtt") username password)
    (unless (correct-arity? onpacket 1)
       (error "mqtt-connect" "wrong procedure" onpacket))
@@ -71,10 +76,10 @@
 		     (mqtt-client-keep-alive-loop client keep-alive)
 		     (input-port-timeout-set! (socket-input sock)
 			(micro-seconds keep-alive)))
-		  ;; client loop
-		  (mqtt-client-loop client keep-alive)
 		  ;; invoke the connack
-		  (onpacket pk)
+		  (onconnect pk)
+		  ;; client loop
+		  (mqtt-client-loop client version onclose)
 		  ;; return the server connection
 		  client))))))
 
@@ -99,7 +104,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-client-loop ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-client-loop client::mqtt-client version::long)
+(define (mqtt-client-loop client::mqtt-client version::long onclose)
    (with-access::mqtt-client client (sock lock onpacket %thread)
       (set! %thread
 	 (instantiate::pthread
@@ -107,13 +112,34 @@
 	    (body (lambda ()
 		     (let ((ip (socket-input sock)))
 			(let loop ()
+			   (tprint "reading...")
 			   (let ((pk (mqtt-read-client-packet ip version)))
+			      (tprint "pk=" pk)
 			      (if (isa? pk mqtt-control-packet)
 				  (begin
 				     (onpacket pk)
 				     (loop))
-				  (socket-close sock)))))))))
+				  (begin
+				     (socket-close sock)
+				     (onclose pk))))))))))
       (thread-start-joinable! %thread)))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-client-close ...                                            */
+;*---------------------------------------------------------------------*/
+(define (mqtt-client-close cl::mqtt-client)
+   (with-access::mqtt-client cl (sock)
+      (socket-close sock)))
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-client-publish ...                                          */
+;*---------------------------------------------------------------------*/
+(define (mqtt-client-publish cl::mqtt-client topic::bstring message::bstring
+	   #!key (retain #f) (qos 0) (dup #f) (pid -1))
+   
+   (with-access::mqtt-client cl (sock)
+      (mqtt-write-publish-packet (socket-output sock)
+	 retain qos dup topic pid message)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-read-client-packet ...                                      */
@@ -121,11 +147,13 @@
 (define (mqtt-read-client-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-client-packet"
       (let ((header (read-byte ip)))
+	 (tprint "h=" header)
 	 (if (eof-object? header)
 	     header
 	     (let ((ptype (bit-rsh header 4)))
 		(trace-item "type=" (mqtt-control-packet-type-name ptype))
 		(unread-char! (integer->char header) ip)
+		(tprint "ptype=" ptype)
 		(cond
 		   ((=fx ptype (MQTT-CPT-PUBLISH))
 		    ;; 3.3
@@ -139,3 +167,4 @@
 		   (else
 		    (error "mqtt:client" "Illegal packet type"
 		       (mqtt-control-packet-type-name ptype)))))))))
+

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sun Mar 27 10:34:54 2022 (serrano)                */
+;*    Last change :  Tue Mar 29 14:12:52 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file and the _e library        */
@@ -18,5 +18,10 @@
 	   __mqtt_server
 	   __mqtt_client)
    
-   (eval   (export-all)))
+   (eval   (export-all)
+      
+           (class mqtt-control-packet)
+	   (class mqtt-connect-packet)
+	   (class mqtt-publish-packet)
+	   (class mqtt-client)))
 

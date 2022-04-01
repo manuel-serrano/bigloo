@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Sun Mar 27 09:11:01 2022 (serrano)                */
+;*    Last change :  Tue Mar 29 10:32:00 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -23,18 +23,16 @@
 	      (socket::socket read-only)
 	      (subscriptions::pair-nil (default '()))
 	      (retains::pair-nil (default '()))
-	      (debug::long (default 0)))
+	      (debug::long (default 0))
+	      (on (default #f)))
 	   
 	   (class mqtt-client-conn
 	      (sock::socket read-only)
 	      (lock read-only (default (make-mutex "mqtt-server-conn")))
 	      (version::long read-only)
-	      (client-id::bstring read-only)
-	      (will-flag::bool (default #f))
-	      (will-topic::bstring (default ""))
-	      (will-message::bstring (default "")))
+	      (connpk::mqtt-connect-packet read-only))
 
-	   (mqtt-make-server ::obj #!key (debug 0))
+	   (mqtt-make-server ::obj #!key (debug 0) (on #f))
 	   (mqtt-server-loop ::mqtt-server)
 	   (mqtt-read-server-packet ip::input-port ::long)))
 
@@ -44,12 +42,21 @@
 (define-struct topic name regexp qos)
 
 ;*---------------------------------------------------------------------*/
+;*    flag? ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (flag? flags flag)
+   (=fx (bit-and flags flag) flag))
+
+;*---------------------------------------------------------------------*/
 ;*    mqtt-make-server ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-make-server socket #!key (debug 0))
+(define (mqtt-make-server socket #!key (debug 0) (on #f))
+   (when (and on (not (and (procedure? on) (correct-arity? on 2))))
+      (error "mqtt-make-server" "wrong event listener" on))
    (instantiate::mqtt-server
       (socket socket)
-      (debug debug)))
+      (debug debug)
+      (on on)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-server-loop ...                                             */
@@ -59,13 +66,13 @@
       (unwind-protect
 	 (let loop ()
 	    (let* ((sock (socket-accept socket))
-		   (p (mqtt-read-connect-packet (socket-input sock))))
-	       (when (isa? p mqtt-connect-packet)
-		  (with-access::mqtt-connect-packet p (version client-id)
+		   (pk (mqtt-read-connect-packet (socket-input sock))))
+	       (when (isa? pk mqtt-connect-packet)
+		  (with-access::mqtt-connect-packet pk (version client-id flags)
 		     (let ((conn (instantiate::mqtt-client-conn
 				    (sock sock)
 				    (version version)
-				    (client-id client-id))))
+				    (connpk pk))))
 			(mqtt-conn-loop srv conn))))
 	       (loop)))
 	 (mqtt-server-close srv))))
@@ -89,11 +96,14 @@
 ;*    mqtt-conn-loop ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (mqtt-conn-loop srv::mqtt-server conn::mqtt-client-conn)
-   (with-access::mqtt-client-conn conn (sock lock version client-id)
-      (mqtt-server-debug srv
-	 (lambda ()
-	    (tprint "New client connected as " client-id)
-	    (tprint "sending CONNACK to " client-id)))
+   (with-access::mqtt-client-conn conn (sock lock version connpk)
+      (with-access::mqtt-connect-packet connpk (client-id)
+	 (with-access::mqtt-server srv (on)
+	    (when on (on "connection" client-id))
+	    (mqtt-server-debug srv
+	       (lambda ()
+		  (tprint "New client connected as " client-id)
+		  (tprint "sending CONNACK to " client-id)))))
       (mqtt-write-connack-packet (socket-output sock) 0)
       (thread-start!
 	 (instantiate::pthread
@@ -104,14 +114,19 @@
 			(let loop ()
 			   (let ((pk (mqtt-read-server-packet ip version)))
 			      (if (not (isa? pk mqtt-control-packet))
-				  (mqtt-server-will conn)
+				  (mqtt-server-will srv conn)
 				  (with-access::mqtt-control-packet pk (type)
 				     (mqtt-server-debug srv
 					(lambda ()
-					   (tprint "Received "
-					      (mqtt-control-packet-type-name type)
-					      " from " client-id)))
+					   (with-access::mqtt-connect-packet connpk (client-id)
+					      (tprint "Received "
+						 (mqtt-control-packet-type-name type)
+						 " from " client-id))))
 				     (cond
+					((=fx type (MQTT-CPT-CONNECT))
+					 ;; 3.1, error
+					 (mqtt-server-will srv conn)
+					 #f)
 					((=fx type (MQTT-CPT-PUBLISH))
 					 ;; 3.3
 					 (mqtt-server-publish srv pk)
@@ -138,32 +153,50 @@
 					 ;; 3.14
 					 #unspecified)
 					(else
-					 (loop))))))))))))))
+					 (loop)))))))
+			(socket-close sock))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-server-will ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-server-will conn::mqtt-client-conn)
-   #f)
+(define (mqtt-server-will srv::mqtt-server conn::mqtt-client-conn)
+   (with-access::mqtt-client-conn conn (connpk)
+      (with-access::mqtt-connect-packet connpk (flags will-topic will-message)
+	 (when (flag? flags (MQTT-CONFLAG-WILL-FLAG))
+	    (let* ((flags (if (flag? flags (MQTT-CONFLAG-WILL-RETAIN))
+			      1 0))
+		   (qos (bit-rsh
+			   (bit-or
+			      (bit-and flags (MQTT-CONFLAG-WILL-QOSL))
+			      (bit-and flags (MQTT-CONFLAG-WILL-QOSH)))
+			   3))
+		   (pk (instantiate::mqtt-publish-packet
+			  (type (MQTT-CPT-PUBLISH))
+			  (topic will-topic)
+			  (flags flags)
+			  (qos qos)
+			  (payload will-message))))
+	       (mqtt-server-publish srv pk))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-server-publish ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (mqtt-server-publish srv::mqtt-server pk::mqtt-publish-packet)
    (with-trace 'mqtt "mqtt-server-publish"
-      (with-access::mqtt-server srv (lock subscriptions retains)
-	 (with-access::mqtt-publish-packet pk (flags)
+      (with-access::mqtt-server srv (lock subscriptions retains on)
+	 (with-access::mqtt-publish-packet pk (flags topic)
+	    (mqtt-server-debug srv
+	       (lambda ()
+		  (with-access::mqtt-publish-packet pk (topic)
+		     (tprint "Publish " topic))))
+	    (when on (on "publish" topic))
 	    (when (=fx (bit-and flags 1) 1)
 	       ;; 3.3.1.3 RETAIN
 	       (synchronize lock
-		  (set! retains (cons pk retains)))))
-	 (for-each (lambda (subscription)
-		      (mqtt-server-debug srv
-			 (lambda ()
-			    (with-access::mqtt-publish-packet pk (topic)
-			       (tprint "Publish " topic))))
-		      (mqtt-conn-publish subscription pk))
-	    subscriptions))))
+		  (set! retains (cons pk retains))))
+	    (for-each (lambda (subscription)
+			 (mqtt-conn-publish subscription pk))
+	       subscriptions)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-conn-publish ...                                            */
@@ -204,9 +237,13 @@
 			 (cons (cons conn (map payload->topic payload))
 			    subscriptions))
 		      (for-each (lambda (payload)
-				   (unless (find (lambda (t) (string=? (topic-name t) (car payload)))
+				   (unless (find (lambda (t)
+						    (string=? (topic-name t)
+						       (car payload)))
 					      (cdr cell))
-				      (set-cdr! cell (cons (payload->topic payload) (cdr cell)))))
+				      (set-cdr! cell
+					 (cons (payload->topic payload)
+					    (cdr cell)))))
 			 payload)))))
 	 (for-each (lambda (pk)
 		      (mqtt-server-publish srv pk))

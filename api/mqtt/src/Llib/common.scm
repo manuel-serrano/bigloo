@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Sun Mar 27 19:02:57 2022 (serrano)                */
+;*    Last change :  Tue Mar 29 10:29:32 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -37,8 +37,6 @@
 	      (topic::bstring (default ""))
 	      (qos::long (default 0)))
 	   
-	   (class mqtt-subscribe-packet::mqtt-control-packet)
-
 	   (inline MQTT-VERSION)
 	   (inline MQTT-CPT-RESERVED)
 	   (inline MQTT-CPT-CONNECT)
@@ -142,7 +140,7 @@
 
 	   (mqtt-read-disconnect-packet ip::input-port version::long)
 
-	   (mqtt-topic-match?::bool filter::regexp name::bstring)
+	   (mqtt-topic-match?::bool filter name::bstring)
 	   (topic-filter->regexp filter::bstring)
 	   ))
 
@@ -701,12 +699,12 @@
 ;*    -------------------------------------------------------------    */
 ;*    3.3 PUBLISH                                                      */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-write-publish-packet op dup qos retain topic pid payload)
+(define (mqtt-write-publish-packet op retain qos dup topic pid payload)
    (with-trace 'mqtt "mqtt-write-publish-packet"
       ;; 3.1.1 CONNECT Fixed Header
       (let ((flags (bit-or (if dup 4 0)
 		      (bit-or (if retain 1 0)
-			 qos))))
+			 (bit-lsh qos 1)))))
 	 (write-byte (bit-or (bit-lsh (MQTT-CPT-PUBLISH) 4) flags) op)
 	 (let ((sop (open-output-string 256)))
 	    (unwind-protect
@@ -789,17 +787,17 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-subscribe-packet ip::input-port version::long)
    
-   (define (read-subscribe-variable-header ip::input-port pk::mqtt-subscribe-packet)
-      (with-access::mqtt-subscribe-packet pk (pid properties)
+   (define (read-subscribe-variable-header ip::input-port pk::mqtt-control-packet)
+      (with-access::mqtt-control-packet pk (pid properties)
 	 (with-trace 'mqtt "read-subscribe-variable-header"
 	    (set! pid (read-int16 ip))
 	    (trace-item "pid=" pid)
 	    (when (>=fx version 5)
 	       (set! properties (read-properties ip))))))
    
-   (define (read-subscribe-payload ip::input-port pk::mqtt-subscribe-packet)
+   (define (read-subscribe-payload ip::input-port pk::mqtt-control-packet)
       (with-trace 'mqtt "read-subscribe-payload"
-	 (with-access::mqtt-subscribe-packet pk (payload)
+	 (with-access::mqtt-control-packet pk (payload)
 	    ;; 3.8.3 SUBSCRIBE Payload
 	    (let loop ((filters '()))
 	       (let ((str (read-utf8/eof ip)))
@@ -820,7 +818,7 @@
 	       (mqtt-control-packet-type-name ptype)))
 	 (call-with-input-string (read-chars length ip)
 	    (lambda (vip)
-	       (let ((packet (instantiate::mqtt-subscribe-packet
+	       (let ((packet (instantiate::mqtt-control-packet
 				(type ptype)
 				(flags pflags))))
 		  (read-subscribe-variable-header vip packet)
@@ -874,18 +872,18 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-unsubscribe-packet ip::input-port version::long)
    
-   (define (read-unsubscribe-variable-header ip::input-port pk::mqtt-subscribe-packet)
-      (with-access::mqtt-subscribe-packet pk (pid properties)
+   (define (read-unsubscribe-variable-header ip::input-port pk::mqtt-control-packet)
+      (with-access::mqtt-control-packet pk (pid properties)
 	 (with-trace 'mqtt "read-sunubscribe-variable-header"
 	    (set! pid (read-int16 ip))
 	    (trace-item "pid=" pid)
 	    (when (>=fx version 5)
 	       (set! properties (read-properties ip))))))
    
-   (define (read-unsubscribe-payload ip::input-port pk::mqtt-subscribe-packet)
+   (define (read-unsubscribe-payload ip::input-port pk::mqtt-control-packet)
       (with-trace 'mqtt "read-unsubscribe-payload"
-	 (with-access::mqtt-subscribe-packet pk (payload)
-	    ;; 3.8.3 SUBSCRIBE Payload
+	 (with-access::mqtt-control-packet pk (payload)
+	    ;; 3.8.3 UNSUBSCRIBE Payload
 	    (let loop ((filters '()))
 	       (let ((str (read-utf8/eof ip)))
 		  (if (eof-object? str)
@@ -1019,11 +1017,11 @@
 ;*    -------------------------------------------------------------    */
 ;*    4.7 Topic Names and Topic Filters                                */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-topic-match?::bool filter::regexp name::bstring)
+(define (mqtt-topic-match?::bool filter name::bstring)
    (cond
-      ((char=? (string-ref name 0) #\$)
-       ;; 4.7.2 Topics beginning with $
-       (string=? filter name))
+      ;; 4.7.2 Topics beginning with $
+      ((char=? (string-ref name 0) #\$) (string=? filter name))
+      ((string? filter) (string=? filter name))
       ((pregexp-match filter name) #t)
       (else #f)))
 
@@ -1038,10 +1036,11 @@
        (pregexp ".+"))
       ((string=? filter "+")
        (pregexp "[^/]+"))
+      ((not (string-index filter "#+"))
+       filter)
       (else
        (let loop ((path (string-split filter "/"))
 		  (acc '()))
-	  (tprint "path=" path " acc=" acc)
 	  (cond
 	     ((null? path)
 	      (tprint "filter-> " (apply string-append (reverse acc)))
