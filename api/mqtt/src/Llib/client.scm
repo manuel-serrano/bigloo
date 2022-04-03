@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:42:42 2022                          */
-;*    Last change :  Fri Apr  1 08:51:17 2022 (serrano)                */
+;*    Last change :  Sat Apr  2 17:00:04 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT client side                                                 */
@@ -137,12 +137,13 @@
       (let ((ip (socket-input sock)))
 	 (with-handler
 	    (lambda (e)
-	       (on 'error e)))
-	 (let loop ()
-	    (let ((pk (mqtt-read-client-packet ip version)))
-	       (when (isa? pk mqtt-control-packet)
-		  (on 'packet pk)
-		  (loop))))
+	       (unless (string=? %status "close")
+		  (on 'error e)))
+	    (let loop ()
+	       (let ((pk (mqtt-read-client-packet ip version)))
+		  (when (isa? pk mqtt-control-packet)
+		     (on 'packet pk)
+		     (loop)))))
 	 (synchronize lock
 	    (unless (string=? %status "close")
 	       (on 'error
@@ -190,6 +191,9 @@
 		   ((=fx ptype (MQTT-CPT-PUBREC))
 		    ;; 3.5
 		    (mqtt-read-pubrec-packet ip version))
+		   ((=fx ptype (MQTT-CPT-SUBACK))
+		    ;; 3.9
+		    (mqtt-read-suback-packet ip version))
 		   ((=fx ptype (MQTT-CPT-UNSUBACK))
 		    ;; 3.11
 		    (mqtt-read-unsuback-packet ip version))

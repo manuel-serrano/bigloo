@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Fri Apr  1 08:53:49 2022 (serrano)                */
+;*    Last change :  Sat Apr  2 16:49:16 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -234,8 +234,8 @@
    
    (with-trace 'mqtt "mqtt-server-subscribe"
       (with-access::mqtt-server srv (lock subscriptions retains)
-	 (synchronize lock
-	    (with-access::mqtt-control-packet pk (payload)
+	 (with-access::mqtt-control-packet pk (payload pid qos)
+	    (synchronize lock
 	       (mqtt-server-debug srv
 		  (lambda ()
 		     (tprint "Subscribe " payload)))
@@ -252,7 +252,9 @@
 				      (set-cdr! cell
 					 (cons (payload->topic payload)
 					    (cdr cell)))))
-			 payload)))))
+			 payload))))
+	    (with-access::mqtt-client-conn conn (sock)
+	       (mqtt-write-suback-packet (socket-output sock) pid '())))
 	 (for-each (lambda (pk)
 		      (mqtt-server-publish srv conn on pk))
 	    retains))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Fri Apr  1 19:45:09 2022 (serrano)                */
+;*    Last change :  Sat Apr  2 17:01:00 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -103,7 +103,9 @@
 	   (write-vbi ::long ::output-port)
 
 	   (read-fixed-header ::input-port)
+	   
 	   (read-properties::pair-nil ::input-port)
+	   (write-properties ::pair-nil ::output-port)
 
 	   (packet-identifier? type::byte flags::long)
 
@@ -127,6 +129,7 @@
 	   (mqtt-read-subscribe-packet ip::input-port version::long)
 	   (mqtt-write-subscribe-packet op::output-port pid::long payload::pair-nil)
 	   
+	   (mqtt-read-suback-packet ip::input-port version::long)
 	   (mqtt-write-suback-packet op::output-port pid::long ::pair-nil)
 
 	   (mqtt-read-unsubscribe-packet ip::input-port version::long)
@@ -433,7 +436,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    write-properties ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (write-properties op::output-port props::pair-nil)
+(define (write-properties props::pair-nil op::output-port)
    
    (define (write-property o::output-port prop)
       (with-trace 'mqtt "write-property"
@@ -763,7 +766,7 @@
 	 (write-int16 pid sop)
 	 (when (>fx reason 0)
 	    (write-byte reason sop)
-	    (write-properties sop props))
+	    (write-properties props sop))
 	 (let ((varh (close-output-port sop)))
 	    ;; 3.4.1 PUBACK Fixed Header
 	    (write-byte (bit-lsh (MQTT-CPT-PUBACK) 4) op)
@@ -815,7 +818,7 @@
 	 (write-int16 pid sop)
 	 (when (>fx reason 0)
 	    (write-byte reason sop)
-	    (write-properties sop props))
+	    (write-properties props sop))
 	 (let ((varh (close-output-port sop)))
 	    ;; 3.5.1 PUBREC Fixed Header
 	    (write-byte (bit-lsh (MQTT-CPT-PUBREC) 4) op)
@@ -890,7 +893,28 @@
 	    (write-byte (string-length str) op)
 	    (display-string str op)
 	    (flush-output-port op)))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    mqtt-read-suback-packet ...                                      */
+;*    -------------------------------------------------------------    */
+;*    3.9 SUBACK                                                       */
+;*---------------------------------------------------------------------*/
+(define (mqtt-read-suback-packet ip::input-port version::long)
+   (with-trace 'mqtt "mqtt-read-suback-packet"
+      (multiple-value-bind (ptype pflags length)
+	 (read-fixed-header ip)
+	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
+	    " flags=" pflags)
+	 (trace-item "length=" length)
+	 (unless (eq? ptype (MQTT-CPT-SUBACK))
+	    (error "mqtt" "SUBACK packet expected"
+	       (mqtt-control-packet-type-name ptype)))
+	 (instantiate::mqtt-control-packet
+	    (type ptype)
+	    (flags pflags)
+	    (pid (read-int16 ip))
+	    (properties (read-properties ip))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-write-suback-packet ...                                     */
 ;*    -------------------------------------------------------------    */
@@ -901,12 +925,16 @@
       (trace-item "pid=" pid)
       ;; 3.9.1 SUBACK Fixed Header
       (write-byte (bit-lsh (MQTT-CPT-SUBACK) 4) op)
-      (write-byte (+fx 2 (length payload)) op)
-      ;; 3.9.2 Variable header
-      (write-int16 pid op)
-      ;; 3.2.3 Payload
-      (for-each (lambda (code) (write-byte code op)) payload)
-      (flush-output-port op)))
+      (let ((sop (open-output-string 256)))
+	 ;; 3.9.2 Variable header
+	 (write-int16 pid sop)
+	 ;; 3.2.3 Payload
+	 (write-properties payload sop)
+	 (let ((str (close-output-port sop)))
+	    ;; 3.1.2 CONNECT Variable Header
+	    (write-vbi (string-length str) op)
+	    (display-string str op)
+	    (flush-output-port op)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-read-unsubscribe-packet ...                                 */
