@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Sat Apr  2 17:01:00 2022 (serrano)                */
+;*    Last change :  Sun Apr  3 16:26:34 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -705,6 +705,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-write-publish-packet op retain qos dup topic pid payload)
    (with-trace 'mqtt "mqtt-write-publish-packet"
+      (trace-item "topic=" topic)
       ;; 3.1.1 CONNECT Fixed Header
       (let ((flags (bit-or (if dup 4 0)
 		      (bit-or (if retain 1 0)
@@ -869,6 +870,7 @@
 				(flags pflags))))
 		  (read-subscribe-variable-header vip packet)
 		  (read-subscribe-payload vip packet)
+		  (tprint "pk=" packet)
 		  packet))))))
 
 ;*---------------------------------------------------------------------*/
@@ -881,7 +883,7 @@
       (trace-item "pid=" pid)
       ;; 3.9.1 SUBSCRIBE Fixed Header
       (let ((sop (open-output-string 256)))
-	 (write-byte (bit-lsh (MQTT-CPT-SUBSCRIBE) 4) op)
+	 (write-byte (bit-or (bit-lsh (MQTT-CPT-SUBSCRIBE) 4) 2) op)
 	 ;; 3.9.2 Variable header
 	 (write-int16 pid sop)
 	 ;; 3.2.3 Payload
@@ -890,7 +892,7 @@
 		      (write-byte (cdr topic) sop))
 	    topics)
 	 (let ((str (close-output-port sop)))
-	    (write-byte (string-length str) op)
+	    (write-vbi (string-length str) op)
 	    (display-string str op)
 	    (flush-output-port op)))))
 

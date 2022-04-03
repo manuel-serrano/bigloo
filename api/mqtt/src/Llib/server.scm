@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Sat Apr  2 16:49:16 2022 (serrano)                */
+;*    Last change :  Sun Apr  3 16:05:17 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -189,7 +189,8 @@
 	    (mqtt-server-debug srv
 	       (lambda ()
 		  (with-access::mqtt-publish-packet pk (topic)
-		     (tprint "Publish " topic))))
+		     (tprint "Publish " topic
+			" retain=" (=fx (bit-and flags 1) 1)))))
 	    (when on (on "publish" topic))
 	    (when (=fx (bit-and flags 1) 1)
 	       ;; 3.3.1.3 RETAIN
