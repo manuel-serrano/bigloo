@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Mar 13 12:26:16 2022 (serrano)                */
+#*    Last change :  Sun Mar 27 10:35:16 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -46,7 +46,7 @@ BHEAPFLAGS	= -unsafe -q \
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= mqtt client server
+_BGL_OBJECTS	= mqtt common client server
 
 _OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
