@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Sun Apr  3 16:26:34 2022 (serrano)                */
+;*    Last change :  Fri Apr  8 16:33:59 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -870,7 +870,6 @@
 				(flags pflags))))
 		  (read-subscribe-variable-header vip packet)
 		  (read-subscribe-payload vip packet)
-		  (tprint "pk=" packet)
 		  packet))))))
 
 ;*---------------------------------------------------------------------*/

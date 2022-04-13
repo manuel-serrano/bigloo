@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Sun Apr  3 16:05:17 2022 (serrano)                */
+;*    Last change :  Fri Apr  8 16:10:35 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -39,6 +39,14 @@
 ;*    topic ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-struct topic name regexp qos)
+
+;*---------------------------------------------------------------------*/
+;*    conn-id ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (conn-id conn::mqtt-client-conn)
+   (with-access::mqtt-client-conn conn (sock lock version connpk)
+      (with-access::mqtt-connect-packet connpk (client-id)
+	 client-id)))
 
 ;*---------------------------------------------------------------------*/
 ;*    flag? ...                                                        */
@@ -96,16 +104,17 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-conn-loop srv::mqtt-server conn::mqtt-client-conn on)
    (with-access::mqtt-client-conn conn (sock lock version connpk)
-      (with-access::mqtt-connect-packet connpk (client-id)
-	 (mqtt-server-debug srv
-	    (lambda ()
-	       (tprint "New client connected as " client-id)
-	       (tprint "sending CONNACK to " client-id))))
+      (mqtt-server-debug srv
+	 (lambda ()
+	    (tprint "New client connected as " (conn-id conn))
+	    (tprint "sending CONNACK to " (conn-id conn))))
       (mqtt-write-connack-packet (socket-output sock) 0)
       (thread-start!
 	 (instantiate::pthread
 	    (name "mqtt-server-loop")
 	    (body (lambda ()
+		     (with-trace 'mqtt "mqtt-connloop"
+			(trace-item "connid=" (conn-id conn)))
 		     (let ((ip (socket-input sock))
 			   (op (socket-output sock)))
 			(let loop ()
@@ -113,12 +122,6 @@
 			      (if (not (isa? pk mqtt-control-packet))
 				  (mqtt-server-will srv on conn)
 				  (with-access::mqtt-control-packet pk (type)
-				     (mqtt-server-debug srv
-					(lambda ()
-					   (with-access::mqtt-connect-packet connpk (client-id)
-					      (tprint "Received "
-						 (mqtt-control-packet-type-name type)
-						 " from " client-id))))
 				     (cond
 					((=fx type (MQTT-CPT-CONNECT))
 					 ;; 3.1, error
@@ -151,10 +154,18 @@
 					 #unspecified)
 					(else
 					 (loop)))))))
-			(mqtt-server-debug srv
-			   (lambda ()
-			      (with-access::mqtt-connect-packet connpk (client-id)
-				 (tprint "closing " client-id))))
+			(trace-item "closing " (conn-id conn))
+			(with-access::mqtt-server srv (lock subscriptions retains)
+			   (synchronize lock
+			      (set! subscriptions
+				 (filter (lambda (sub)
+					    (not (eq? (car sub) conn)))
+				    subscriptions))
+			      (set! retains
+				 (filter (lambda (pub)
+					    (not (eq? (car pub) conn)))
+				    retains))))
+			;; remove all connection subscriptions
 			(socket-close sock))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -186,16 +197,23 @@
    (with-trace 'mqtt "mqtt-server-publish"
       (with-access::mqtt-server srv (lock subscriptions retains)
 	 (with-access::mqtt-publish-packet pk (flags topic pid)
-	    (mqtt-server-debug srv
-	       (lambda ()
-		  (with-access::mqtt-publish-packet pk (topic)
-		     (tprint "Publish " topic
-			" retain=" (=fx (bit-and flags 1) 1)))))
-	    (when on (on "publish" topic))
+	    (trace-item "topic=" topic " retain=" (=fx (bit-and flags 1) 1))
 	    (when (=fx (bit-and flags 1) 1)
 	       ;; 3.3.1.3 RETAIN
 	       (synchronize lock
-		  (set! retains (cons pk retains))))
+		  (cond
+		     ((null? retains)
+		      (set! retains (list (cons conn pk))))
+		     ((find (lambda (p)
+			       (and (eq? (car p) conn)
+				    (with-access::mqtt-publish-packet (cdr p) ((t topic))
+				       (string=? t topic))))
+			 retains)
+		      =>
+		      (lambda (p)
+			 (set-cdr! p pk)))
+		     (else
+		      (set! retains (cons (cons conn pk) retains))))))
 	    ;; qos
 	    (with-access::mqtt-client-conn conn (sock)
 	       (cond
@@ -204,24 +222,38 @@
 		  ((=fx (bit-and flags 4) 4)
 		   (mqtt-write-pubrec-packet (socket-output sock) pid -1 '()))))
 	    (for-each (lambda (subscription)
-			 (mqtt-conn-publish subscription pk))
+			 (let ((connsub (car subscription))
+			       (topics (cdr subscription)))
+			    (unless (eq? connsub conn)
+			       (mqtt-conn-publish connsub topics on pk))))
 	       subscriptions)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-conn-publish ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (mqtt-conn-publish subscription::pair pk::mqtt-publish-packet)
+(define (mqtt-conn-publish conn topics on pk::mqtt-publish-packet)
    (with-trace 'mqtt "mqtt-conn-publish"
       (with-access::mqtt-publish-packet pk (topic payload)
-	 (let ((conn (car subscription))
-	       (topics (cdr subscription)))
-	    (for-each (lambda (t)
-			 (when (mqtt-topic-match? (topic-regexp t) topic)
-			    (with-access::mqtt-client-conn conn (sock)
-			       (mqtt-write-publish-packet
-				  (socket-output sock)
-				  #f 0 #f topic 0 payload))))
-	       topics)))))
+	 (trace-item "conn=" (conn-id conn))
+	 (trace-item "topics=" topics)
+	 (trace-item "retain=" topic)
+	 (for-each (lambda (t)
+		      (when (mqtt-topic-match? (topic-regexp t) topic)
+			 (with-access::mqtt-client-conn conn (sock connpk)
+			    (with-handler
+			       (lambda (e)
+				  (with-access::mqtt-connect-packet connpk (client-id)
+				     (fprintf (current-error-port)
+					"Could not publish ~s to client ~a"
+					topic
+					client-id))
+				  (exception-notify e))
+			       (begin
+				  (mqtt-write-publish-packet
+				     (socket-output sock)
+				     #f 0 #f topic 0 payload)
+				  (when on (on "publish" (cons (conn-id conn) topic))))))))
+	    topics))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-server-subscribe ...                                        */
@@ -236,29 +268,30 @@
    (with-trace 'mqtt "mqtt-server-subscribe"
       (with-access::mqtt-server srv (lock subscriptions retains)
 	 (with-access::mqtt-control-packet pk (payload pid qos)
-	    (synchronize lock
-	       (mqtt-server-debug srv
-		  (lambda ()
-		     (tprint "Subscribe " payload)))
-	       (let ((cell (assq conn subscriptions)))
-		  (if (not cell)
-		      (set! subscriptions
-			 (cons (cons conn (map payload->topic payload))
-			    subscriptions))
-		      (for-each (lambda (payload)
-				   (unless (find (lambda (t)
-						    (string=? (topic-name t)
-						       (car payload)))
-					      (cdr cell))
-				      (set-cdr! cell
-					 (cons (payload->topic payload)
-					    (cdr cell)))))
-			 payload))))
-	    (with-access::mqtt-client-conn conn (sock)
-	       (mqtt-write-suback-packet (socket-output sock) pid '())))
-	 (for-each (lambda (pk)
-		      (mqtt-server-publish srv conn on pk))
-	    retains))))
+	    (let ((subtopics (map payload->topic payload)))
+	       ;; add the subscription
+	       (synchronize lock
+		  (trace-item "subscribe=" payload)
+		  (trace-item "conn=" (conn-id conn))
+		  (let ((cell (assq conn subscriptions)))
+		     (if (not cell)
+			 (set! subscriptions
+			    (cons (cons conn subtopics)
+			       subscriptions))
+			 (for-each (lambda (payload)
+				      (unless (find (lambda (t)
+						       (string=? (topic-name t)
+							  (car payload)))
+						 (cdr cell))
+					 (set-cdr! cell
+					    (cons (payload->topic payload)
+					       (cdr cell)))))
+			    payload))))
+	       (with-access::mqtt-client-conn conn (sock)
+		  (mqtt-write-suback-packet (socket-output sock) pid '()))
+	       (for-each (lambda (rt)
+			    (mqtt-conn-publish conn subtopics on (cdr rt)))
+		  retains))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-server-unsubscribe ...                                      */
