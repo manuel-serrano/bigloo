@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Wed Dec  8 16:38:40 2021 (serrano)                */
-/*    Copyright   :  2021 Manuel Serrano                               */
+/*    Last change :  Sat Apr 16 08:29:23 2022 (serrano)                */
+/*    Copyright   :  2021-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
 /*=====================================================================*/
@@ -174,7 +174,7 @@ bgl_regmatch_n(obj_t re, char *string, obj_t vres, int beg, int len, int offset)
    string += offset;
 
    r = pcre2_jit_match(BGL_REGEXP_PCRE2(re), 
-			string, len, beg, 0, BGL_REGEXP(re).match_data, 0L);
+		       (PCRE2_SPTR8)string, len, beg, 0, BGL_REGEXP(re).match_data, 0L);
 
    if (r < 0) {
       return -1;
@@ -355,7 +355,7 @@ bgl_regcomp(obj_t pat, obj_t optargs, bool_t finalize) {
 		  erroffset, errbuf);
 
 	 if (!(options & PCRE_BGLNORAISE)) {
-	    C_SYSTEM_FAILURE(BGL_IO_PARSE_ERROR, "pregexp", buf, pat);
+	    C_SYSTEM_FAILURE(BGL_IO_PARSE_ERROR, "pregexp", (char *)buf, pat);
 
 	    return re;
 	 } else {

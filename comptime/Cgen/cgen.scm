@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Jan  5 07:36:59 2022 (serrano)                */
+;*    Last change :  Sat Apr 16 08:41:45 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -135,7 +135,7 @@
 		(string-append
 		 name
 		 (if (null? (sfun-args value))
-		     "()"
+		     "(void)"
 		     (string-append
 		      "("
 		      (let loop ((args (sfun-args value)))
@@ -170,10 +170,38 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    capp-tailcallable? ...                                           */
+;*    -------------------------------------------------------------    */
+;*    A tail call is tail callable is the caller and the callee        */
+;*    have the same arguments (number and types).                      */
 ;*---------------------------------------------------------------------*/
 (define (capp-tailcallable? cop::capp)
-   (let ((sfun (global-value *the-current-global*)))
-      (=fx (length (sfun-args sfun)) (length (capp-args cop)))))
+
+   (define (arg-type a)
+      (cond
+	 ((type? a) a)
+	 ((variable? a) (variable-type a))
+	 (else "arg-type@cgen" "wrong argument" (shape a))))
+
+   (define (fun-args callee)
+      (cond
+	 ((sfun? callee) (sfun-args callee))
+	 ((cfun? callee) (cfun-args-type callee))
+	 (else '())))
+   
+   (with-access::capp cop (fun)
+      (let ((caller (global-value *the-current-global*))
+	    (callee (variable-value (varc-variable fun))))
+	 (let loop ((actuals (fun-args callee))
+		    (formals (sfun-args caller)))
+	    (cond
+	       ((null? actuals)
+		(null? formals))
+	       ((null? formals)
+		#f)
+	       ((eq? (arg-type (car actuals)) (arg-type (car formals)))
+		(loop (cdr actuals) (cdr formals)))
+	       (else
+		#f))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    *return-kont* ...                                                */
