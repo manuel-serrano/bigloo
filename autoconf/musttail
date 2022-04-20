@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Dec  8 11:58:29 2021 (serrano)                */
+#*    Last change :  Wed Apr 20 10:25:37 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if mustail annotation is supported 0, 1.                   */
 #*=====================================================================*/
@@ -74,9 +74,10 @@ EOF
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
   res=1
-   echo 1
+  echo 1
 else
   res=0
+  echo 0
 fi
 
 \rm -f $file.*
