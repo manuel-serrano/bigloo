@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Jan  5 07:46:07 2022 (serrano)                */
+;*    Last change :  Wed Apr 20 16:20:11 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -298,19 +298,39 @@
       (emit-cop body)
       (display "} " *c-port*)
       (trace cgen (display " /* cop-bdb-block */" *c-port*))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    cfuncall-casts ...                                               */
+;*---------------------------------------------------------------------*/
+(define cfuncall-casts
+   (make-vector 32 #f))
+
 ;*---------------------------------------------------------------------*/
 ;*    emit-cop ::cfuncall ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::cfuncall)
-   
-   (define (out-call op cop)
+
+   (define (fun-cast largs)
+      (cond
+	 ((>=fx largs (vector-length cfuncall-casts))
+	  (format "(obj_t (*)(~(, )))" (make-list largs "obj_t")))
+	 ((vector-ref cfuncall-casts largs)
+	  =>
+	  (lambda (p) p))
+	 (else
+	  (let ((p (format "(obj_t (*)(~(, )))" (make-list largs "obj_t"))))
+	     (vector-set! cfuncall-casts largs p)
+	     p))))
+	     
+   (define (out-call op len)
       (if (eq? (cfuncall-type cop) *obj*)
 	  (begin
+	     (display "(" *c-port*)
+	     (display (fun-cast len) *c-port*)
 	     (display op *c-port*)
 	     (display "(" *c-port*)
 	     (emit-cop (cfuncall-fun cop))
-	     (display ")(" *c-port*))
+	     (display "))(" *c-port*))
 	  (begin
 	     (display "((" *c-port*)
 	     (display (type-name (cfuncall-type cop)) *c-port*)
@@ -325,7 +345,7 @@
 		  (emit-cop (cfuncall-fun cop))
 		  (write-char #\( *c-port*)
 		  (let loop ((actuals actuals))
-		     ;; actuals are never empty because their are always
+		     ;; actuals are never empty because there is always
 		     ;; the EOA.
 		     (if (null? (cddr actuals))
 			 (begin
@@ -338,9 +358,9 @@
 			    (loop (cdr actuals)))))))
 	    (emit-light-cfuncall (cop)
                (let ((actuals (cfuncall-args cop)))
-		  (out-call "PROCEDURE_L_ENTRY" cop)
+		  (out-call "PROCEDURE_L_ENTRY" (-fx (length actuals) 1))
 		  (let loop ((actuals actuals))
-		     ;; actuals are never empty because their are always
+		     ;; actuals are never empty because there is always
 		     ;; the function and EOA.
 		     (if (null? (cddr actuals))
 			 (begin
@@ -353,9 +373,9 @@
 			    (loop (cdr actuals)))))))
 	    (emit-regular-cfuncall/eoa (cop)
 	       (let ((actuals (cfuncall-args cop)))
-		  (out-call "PROCEDURE_ENTRY" cop)
+		  (out-call "PROCEDURE_ENTRY" (length actuals))
 		  (let loop ((actuals actuals))
-		     ;; actuals are never empty because their are always
+		     ;; actuals are never empty because there is always
 		     ;; the function and EOA.
 		     (if (null? (cdr actuals))
 			 (begin
@@ -368,9 +388,9 @@
 			    (loop (cdr actuals)))))))
 	    (emit-regular-cfuncall/oeoa (cop)
 	       (let ((actuals (cfuncall-args cop)))
-		  (out-call "PROCEDURE_ENTRY" cop)
+		  (out-call "PROCEDURE_ENTRY" (length actuals))
 		  (let loop ((actuals actuals))
-		     ;; actuals are never empty because their are always
+		     ;; actuals are never empty because there is always
 		     ;; the function and EOA.
 		     (if (null? (cddr actuals))
 			 (begin
