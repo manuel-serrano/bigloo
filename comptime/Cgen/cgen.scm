@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Sat Apr 16 08:41:45 2022 (serrano)                */
+;*    Last change :  Wed Apr 20 19:26:09 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -152,21 +152,52 @@
    (no-bdb-newline))
 
 ;*---------------------------------------------------------------------*/
+;*    arg-type ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (arg-type a)
+   (cond
+      ((type? a) a)
+      ((variable? a) (variable-type a))
+      (else "arg-type@cgen" "wrong argument" (shape a))))
+
+;*---------------------------------------------------------------------*/
 ;*    capply-tailcallable? ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    Generalized C tail calls requires the caller and the callee      */
 ;*    to have the same number of arguments.                            */
 ;*---------------------------------------------------------------------*/
 (define (capply-tailcallable? cop::capply)
-   (let ((sfun (global-value *the-current-global*)))
-      (=fx (length (sfun-args sfun)) 2)))
+   (let* ((caller (global-value *the-current-global*))
+	  (formals (sfun-args caller)))
+      (when (=fx (length formals) 2)
+	 (and (eq? (arg-type (car formals)) *obj*)
+	      (eq? (arg-type (cadr formals)) *obj*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfuncall-tailcallable? ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (cfuncall-tailcallable? cop::cfuncall)
-   (let ((sfun (global-value *the-current-global*)))
-      (=fx (length (sfun-args sfun)) (length (cfuncall-args cop)))))
+   
+   (define (fun-args callee)
+      (cond
+	 ((sfun? callee) (sfun-args callee))
+	 ((cfun? callee) (cfun-args-type callee))
+	 (else '())))
+   
+   (with-access::cfuncall cop (fun)
+      (let ((caller (global-value *the-current-global*))
+	    (callee (variable-value (varc-variable fun))))
+	 (let loop ((actuals (fun-args callee))
+		    (formals (sfun-args caller)))
+	    (cond
+	       ((null? actuals)
+		(null? formals))
+	       ((null? formals)
+		#f)
+	       ((eq? (arg-type (car actuals)) (arg-type (car formals)))
+		(loop (cdr actuals) (cdr formals)))
+	       (else
+		#f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    capp-tailcallable? ...                                           */
@@ -175,12 +206,6 @@
 ;*    have the same arguments (number and types).                      */
 ;*---------------------------------------------------------------------*/
 (define (capp-tailcallable? cop::capp)
-
-   (define (arg-type a)
-      (cond
-	 ((type? a) a)
-	 ((variable? a) (variable-type a))
-	 (else "arg-type@cgen" "wrong argument" (shape a))))
 
    (define (fun-args callee)
       (cond
