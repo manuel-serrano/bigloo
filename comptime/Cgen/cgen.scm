@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Apr 20 19:26:09 2022 (serrano)                */
+;*    Last change :  Thu Apr 21 08:05:40 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -67,55 +67,57 @@
       (trace cgen "cgen global: " (shape global) #\Newline)
       (trace (cgen 2) "*void-kont*: " *void-kont* #\Newline)
       (trace (cgen 2) "*return-kont*: " *return-kont* #\Newline)
-      (set! *the-current-global* global)
-      (let ((sh (shape global)))
-	 (assert (sh) (string? (global-name global))))
-      (let* ((sfun (widen!::sfun/C (global-value global)
-		      (label (instantiate::clabel
-				(loc (sfun-loc (global-value global)))
-				(name (global-name global))))
-		      (integrated #t)))
-	     (loc  (sfun-loc sfun))
-	     (cop  (node->cop (sfun-body sfun)
-			      (if (eq? (global-type global) *void*)
-				  *void-kont*
-				  *return-kont*)
-			      #f)))
-	 (reset-bdb-loc!)
-	 (newline *c-port*)
-	 (newline *c-port*)
-	 (display "/* " *c-port*)
-	 (display
-	    (pregexp-replace* "[*]/" (symbol->string! (shape global)) "*|")
-	    *c-port*)
-	 (display " */" *c-port*)
-	 ;; we have to emit a dummy location otherwise gdb get confused
-	 ;; with the function arguments! Thus all functions looks like
-	 ;; starting at the module definition site instead of there correct
-	 ;; definition site
-	 (emit-bdb-loc #f)
-	 ;; we have to reset the loc because we must not emit location
-	 ;; before the first c expression otherwise gdb get confused
-	 (reset-bdb-loc!)
-	 (clabel-body-set! (sfun/C-label sfun) cop)
-	 (global->c global)
-	 (let ((cop (block-kont (sfun/C-label sfun) loc)))
-	    ;; we define a local variable that acts as a temporary variable
-	    (display "{" *c-port*)
-	    ;; when compiling for debugging, we have to insert a dummy
-	    ;; statement otherwise gdb get confused
-	    (if (and (> *bdb-debug* 0) (location? loc))
-		(begin
-		   (emit-bdb-loc loc)
-		   (display "{ obj_t ___ = BUNSPEC; } /* bdb dummy init stmt */"
-			    *c-port*)))
-	    ;; we now may emit the body
-	    (emit-cop cop)
-	    ;; emit the current location before the closing bracket
-	    (emit-bdb-loc (get-current-bdb-loc))
-	    (fprint *c-port* "\n}"))
-	 (no-bdb-newline)
-	 (leave-function))))
+      (let ((glob *the-current-global*))
+	 (set! *the-current-global* global)
+	 (let ((sh (shape global)))
+	    (assert (sh) (string? (global-name global))))
+	 (let* ((sfun (widen!::sfun/C (global-value global)
+			 (label (instantiate::clabel
+				   (loc (sfun-loc (global-value global)))
+				   (name (global-name global))))
+			 (integrated #t)))
+		(loc  (sfun-loc sfun))
+		(cop  (node->cop (sfun-body sfun)
+			 (if (eq? (global-type global) *void*)
+			     *void-kont*
+			     *return-kont*)
+			 #f)))
+	    (reset-bdb-loc!)
+	    (newline *c-port*)
+	    (newline *c-port*)
+	    (display "/* " *c-port*)
+	    (display
+	       (pregexp-replace* "[*]/" (symbol->string! (shape global)) "*|")
+	       *c-port*)
+	    (display " */" *c-port*)
+	    ;; we have to emit a dummy location otherwise gdb get confused
+	    ;; with the function arguments! Thus all functions looks like
+	    ;; starting at the module definition site instead of there correct
+	    ;; definition site
+	    (emit-bdb-loc #f)
+	    ;; we have to reset the loc because we must not emit location
+	    ;; before the first c expression otherwise gdb get confused
+	    (reset-bdb-loc!)
+	    (clabel-body-set! (sfun/C-label sfun) cop)
+	    (global->c global)
+	    (let ((cop (block-kont (sfun/C-label sfun) loc)))
+	       ;; we define a local variable that acts as a temporary variable
+	       (display "{" *c-port*)
+	       ;; when compiling for debugging, we have to insert a dummy
+	       ;; statement otherwise gdb get confused
+	       (if (and (> *bdb-debug* 0) (location? loc))
+		   (begin
+		      (emit-bdb-loc loc)
+		      (display "{ obj_t ___ = BUNSPEC; } /* bdb dummy init stmt */"
+			 *c-port*)))
+	       ;; we now may emit the body
+	       (emit-cop cop)
+	       ;; emit the current location before the closing bracket
+	       (emit-bdb-loc (get-current-bdb-loc))
+	       (fprint *c-port* "\n}"))
+	    (no-bdb-newline)
+	    (set! *the-current-global* glob)
+	    (leave-function)))))
   
 ;*---------------------------------------------------------------------*/
 ;*    *the-current-global* ...                                         */
@@ -178,16 +180,16 @@
 ;*---------------------------------------------------------------------*/
 (define (cfuncall-tailcallable? cop::cfuncall)
    
-   (define (fun-args callee)
+   (define (fun-args callee actuals)
       (cond
 	 ((sfun? callee) (sfun-args callee))
 	 ((cfun? callee) (cfun-args-type callee))
-	 (else '())))
+	 (else actuals)))
    
-   (with-access::cfuncall cop (fun)
+   (with-access::cfuncall cop (fun args)
       (let ((caller (global-value *the-current-global*))
 	    (callee (variable-value (varc-variable fun))))
-	 (let loop ((actuals (fun-args callee))
+	 (let loop ((actuals (fun-args callee args))
 		    (formals (sfun-args caller)))
 	    (cond
 	       ((null? actuals)
