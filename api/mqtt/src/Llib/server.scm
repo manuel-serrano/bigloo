@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Fri Apr  8 16:10:35 2022 (serrano)                */
+;*    Last change :  Sat Apr 23 16:02:31 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -252,7 +252,7 @@
 				  (mqtt-write-publish-packet
 				     (socket-output sock)
 				     #f 0 #f topic 0 payload)
-				  (when on (on "publish" (cons (conn-id conn) topic))))))))
+				  (when on (on 'publish (cons (conn-id conn) topic))))))))
 	    topics))))
 
 ;*---------------------------------------------------------------------*/
