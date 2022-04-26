@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/avahi/src/Llib/avahi.scm         */
+;*    .../prgm/project/bigloo/bigloo/api/avahi/src/Llib/avahi.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Fri Dec 13 12:00:32 2013 (serrano)                */
-;*    Copyright   :  2011-20 Manuel Serrano                            */
+;*    Last change :  Mon Apr 25 07:14:34 2022 (serrano)                */
+;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
 ;*=====================================================================*/
@@ -97,7 +97,7 @@
 	    (get (lambda (o::avahi-client)
 		    (if ($avahi-client-nil? (-> o $builtin))
 			"nil"
-			($avahi-client-get-host-name-fqdn (-> o $builtin))))))
+ 			($avahi-client-get-host-name-fqdn (-> o $builtin))))))
 	 (state::symbol
 	    read-only
 	    (get (lambda (o::avahi-client)
@@ -194,6 +194,23 @@
       (%avahi-lock! no-trace)
       (%avahi-unlock! no-trace)
       (%avahi-signal no-trace)))
+
+;*---------------------------------------------------------------------*/
+;*    object-display ::avahi-client ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (object-display o::avahi-client . port)
+   (with-output-to-port (if (null? port) (current-output-port) (car port))
+      (lambda ()
+	 (with-access::avahi-client o (hostname domainname state)
+	    (print "#<avahi-client(" state "):" hostname "." domainname)))))
+
+;*---------------------------------------------------------------------*/
+;*    object-display ::avahi-poll ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (object-display o::avahi-poll . port)
+   (with-output-to-port (if (null? port) (current-output-port) (car port))
+      (lambda ()
+	 (print "#<" (class-name (object-class o)) ">"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *avahi-mutex* ...                                                */
@@ -321,7 +338,7 @@
    (if (correct-arity? proc 0)
        (with-access::avahi-simple-poll o ($builtin %procs)
 	  (set! %procs (cons proc %procs))
-	  ($bgl-avahi-simple-poll-timeout $builtin t proc))
+	  ($bgl-avahi-simple-poll-timeout $builtin t proc o))
        (avahi-error "avahi-simple-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))
 
@@ -383,7 +400,7 @@
    (if (correct-arity? proc 0)
        (with-access::avahi-threaded-poll o ($builtin %procs)
 	  (set! %procs (cons proc %procs))
-	  ($bgl-avahi-threaded-poll-timeout $builtin t proc))
+	  ($bgl-avahi-threaded-poll-timeout $builtin t proc o))
        (avahi-error "avahi-threaded-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))
 

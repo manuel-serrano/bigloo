@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Apr 20 13:05:18 2022 (serrano)                */
+#*    Last change :  Sun Apr 24 09:42:53 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -44,7 +44,7 @@ rpath=
 
 #*--- api -------------------------------------------------------------*/
 importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv libbacktrace"
-apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat"
+apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"

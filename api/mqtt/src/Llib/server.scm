@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Sat Apr 23 16:02:31 2022 (serrano)                */
+;*    Last change :  Sun Apr 24 09:51:39 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -79,7 +79,7 @@
 				    (sock sock)
 				    (version version)
 				    (connpk pk))))
-			(on 'connection client-id)
+			(on 'connect client-id)
 			(mqtt-conn-loop srv conn on))))
 	       (loop)))
 	 (mqtt-server-close srv))))
@@ -114,59 +114,61 @@
 	    (name "mqtt-server-loop")
 	    (body (lambda ()
 		     (with-trace 'mqtt "mqtt-connloop"
-			(trace-item "connid=" (conn-id conn)))
-		     (let ((ip (socket-input sock))
-			   (op (socket-output sock)))
-			(let loop ()
-			   (let ((pk (mqtt-read-server-packet ip version)))
-			      (if (not (isa? pk mqtt-control-packet))
-				  (mqtt-server-will srv on conn)
-				  (with-access::mqtt-control-packet pk (type)
-				     (cond
-					((=fx type (MQTT-CPT-CONNECT))
-					 ;; 3.1, error
-					 (mqtt-server-will srv on conn)
-					 #f)
-					((=fx type (MQTT-CPT-PUBLISH))
-					 ;; 3.3
-					 (mqtt-server-publish srv conn on pk)
-					 (loop))
-					((=fx type (MQTT-CPT-PUBACK))
-					 ;; 3.4
-					 (loop))
-					((=fx type (MQTT-CPT-PUBREC))
-					 ;; 3.5
-					 (loop))
-					((=fx type (MQTT-CPT-SUBSCRIBE))
-					 ;; 3.8
-					 (mqtt-server-subscribe srv on conn pk)
-					 (loop))
-					((=fx type (MQTT-CPT-UNSUBSCRIBE))
-					 ;; 3.10
-					 (mqtt-server-unsubscribe srv conn pk)
-					 (loop))
-					((=fx type (MQTT-CPT-PINGREQ))
-					 ;; 3.12
-					 (mqtt-write-pingresp-packet op)
-					 (loop))
-					((=fx type (MQTT-CPT-DISCONNECT))
-					 ;; 3.14
-					 #unspecified)
-					(else
-					 (loop)))))))
-			(trace-item "closing " (conn-id conn))
-			(with-access::mqtt-server srv (lock subscriptions retains)
-			   (synchronize lock
-			      (set! subscriptions
-				 (filter (lambda (sub)
-					    (not (eq? (car sub) conn)))
-				    subscriptions))
-			      (set! retains
-				 (filter (lambda (pub)
-					    (not (eq? (car pub) conn)))
-				    retains))))
-			;; remove all connection subscriptions
-			(socket-close sock))))))))
+			(trace-item "connid=" (conn-id conn))
+			(let ((ip (socket-input sock))
+			      (op (socket-output sock)))
+			   (let loop ()
+			      (let ((pk (mqtt-read-server-packet ip version)))
+				 (on 'packet pk)
+				 (if (not (isa? pk mqtt-control-packet))
+				     (mqtt-server-will srv on conn)
+				     (with-access::mqtt-control-packet pk (type)
+					(cond
+					   ((=fx type (MQTT-CPT-CONNECT))
+					    ;; 3.1, error
+					    (mqtt-server-will srv on conn)
+					    #f)
+					   ((=fx type (MQTT-CPT-PUBLISH))
+					    ;; 3.3
+					    (mqtt-server-publish srv conn on pk)
+					    (loop))
+					   ((=fx type (MQTT-CPT-PUBACK))
+					    ;; 3.4
+					    (loop))
+					   ((=fx type (MQTT-CPT-PUBREC))
+					    ;; 3.5
+					    (loop))
+					   ((=fx type (MQTT-CPT-SUBSCRIBE))
+					    ;; 3.8
+					    (mqtt-server-subscribe srv on conn pk)
+					    (loop))
+					   ((=fx type (MQTT-CPT-UNSUBSCRIBE))
+					    ;; 3.10
+					    (mqtt-server-unsubscribe srv conn pk)
+					    (loop))
+					   ((=fx type (MQTT-CPT-PINGREQ))
+					    ;; 3.12
+					    (mqtt-write-pingresp-packet op)
+					    (loop))
+					   ((=fx type (MQTT-CPT-DISCONNECT))
+					    ;; 3.14
+					    #unspecified)
+					   (else
+					    (loop)))))))
+			   (trace-item "closing " (conn-id conn))
+			   (with-access::mqtt-server srv (lock subscriptions retains)
+			      (synchronize lock
+				 (set! subscriptions
+				    (filter (lambda (sub)
+					       (not (eq? (car sub) conn)))
+				       subscriptions))
+				 (set! retains
+				    (filter (lambda (pub)
+					       (not (eq? (car pub) conn)))
+				       retains))))
+			   (on 'disconnect (conn-id conn))
+			   ;; remove all connection subscriptions
+			   (socket-close sock)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-server-will ...                                             */

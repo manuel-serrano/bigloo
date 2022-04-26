@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Fri Apr  8 16:33:59 2022 (serrano)                */
+;*    Last change :  Sun Apr 24 09:41:22 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -92,6 +92,7 @@
 	   
 	   (mqtt-control-packet-type-name::bstring ::long)
 	   (mqtt-connect-reason-code-name::bstring ::long)
+	   (mqtt-disconnect-reason-code-name::bstring ::long)
 
 	   (read-int16::long ::input-port)
 	   (read-int32::long ::input-port)
@@ -252,6 +253,42 @@
       ((#x9c) "Use another server")
       ((#x9d) "Server mode")
       ((#x9f) "Connection rate exceeded")
+      (else "Illegal code")))
+   
+;*---------------------------------------------------------------------*/
+;*    mqtt-disconnect-reason-code-name ...                             */
+;*---------------------------------------------------------------------*/
+(define (mqtt-disconnect-reason-code-name code)
+   ;; 3.14.2.1 Connect Reason Code
+   (case code
+      ((#x00) "Normal disconnection")
+      ((#x04) "Disocnnect with Will Message")
+      ((#x80) "Unspecified error")
+      ((#x81) "Malformed Packet")
+      ((#x82) "Protocol Error")
+      ((#x83) "Implementation specific error")
+      ((#x87) "Not authorized")
+      ((#x89) "Server busy")
+      ((#x8b) "Server shutting down")
+      ((#x8d) "Keep Alive timeout")
+      ((#x8e) "Session taken over")
+      ((#x90) "Topic Name invalid")
+      ((#x93) "Receive Maximum exceeded")
+      ((#x94) "Topc Alias invalid")
+      ((#x95) "Packet too large")
+      ((#x96) "Message rate too high")
+      ((#x97) "Quota exceeded")
+      ((#x98) "Administrative action")
+      ((#x99) "Payload format invalid")
+      ((#x9a) "Retain not supported")
+      ((#x9b) "QoS not supported")
+      ((#x9c) "Use another server")
+      ((#x9d) "Server mode")
+      ((#x9e) "Shared Subscriptions not supported")
+      ((#x9f) "Connection rate exceeded")
+      ((#xa0) "Maximum connect time")
+      ((#xa1) "Subscription Identifiers not supported")
+      ((#xa2) "Wildcard Subscriptions not supported")
       (else "Illegal code")))
    
 ;*---------------------------------------------------------------------*/
@@ -1077,12 +1114,18 @@
 	 (unless (eq? ptype (MQTT-CPT-DISCONNECT))
 	    (error "mqtt" "DISCONNECT packet expected"
 	       (mqtt-control-packet-type-name ptype)))
-	 (call-with-input-string (read-chars length ip)
-	    (lambda (vip)
-	       (let ((packet (instantiate::mqtt-control-packet
-				(type ptype)
-				(flags pflags))))
-		  packet))))))
+	 (if (=fx length 0)
+	     (instantiate::mqtt-control-packet
+		(type ptype)
+		(flags pflags))
+	     (let ((code (read-byte ip)))
+		(trace-item "reason=" (mqtt-disconnect-reason-code-name code))
+		(call-with-input-string (read-chars (-fx length 1) ip)
+		   (lambda (vip)
+		      (instantiate::mqtt-control-packet
+			 (type ptype)
+			 (flags pflags)
+			 (payload (read-string vip))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mqtt-topic-match ...                                             */
@@ -1115,7 +1158,6 @@
 		  (acc '()))
 	  (cond
 	     ((null? path)
-	      (tprint "filter-> " (apply string-append (reverse acc)))
 	      (pregexp (apply string-append (reverse! acc))))
 	     ((string=? (car path) "#")
 	      (if (null? (cdr path))
