@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Apr 25 07:34:00 2022 (serrano)                */
+/*    Last change :  Wed Apr 27 09:52:31 2022 (serrano)                */
 /*    Copyright   :  2011-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -103,6 +103,10 @@ extern obj_t bgl_avahi_signal();
    (((bgl_avahi_service_browser_t)CREF(o))->BgL_typez00)
 #define BGL_AVAHI_SERVICE_BROWSER_DOMAIN(o) \
    (((bgl_avahi_service_browser_t)CREF(o))->BgL_domainz00)
+#define BGL_AVAHI_SERVICE_BROWSER_INTERFACE(o) \
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_interfacez00)
+#define BGL_AVAHI_SERVICE_BROWSER_PROTOCOL(o) \
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_protocolz00)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_service_type_browser                                       */
@@ -537,10 +541,10 @@ simple_poll_timeout_callback(AvahiTimeout *e, void *udata) {
 /*    bgl_avahi_simple_poll_timeout ...                                */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_simple_poll_timeout(AvahiSimplePoll *o, long t, obj_t proc, obj_t poll) {
+bgl_avahi_simple_poll_timeout(AvahiSimplePoll *o, long t, obj_t proc, struct BgL_avahizd2simplezd2pollz00_bgl *poll) {
    struct timeval tv;
    const AvahiPoll *apoll = avahi_simple_poll_get(o);
-   callback_t cb = make_callback(proc, 0, "timeout", poll);
+   callback_t cb = make_callback(proc, 0, "timeout", (obj_t)poll);
 
    apoll->timeout_new(apoll,
 		      avahi_elapse_time(&tv, t, 0),
@@ -592,10 +596,10 @@ threaded_poll_timeout_callback(AvahiTimeout *e, void *udata) {
 /*    bgl_avahi_threaded_poll_timeout ...                              */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_threaded_poll_timeout(AvahiThreadedPoll *o, long t, obj_t proc, obj_t poll) {
+bgl_avahi_threaded_poll_timeout(AvahiThreadedPoll *o, long t, obj_t proc, struct BgL_avahizd2threadedzd2pollz00_bgl * poll) {
    struct timeval tv;
    const AvahiPoll *apoll = avahi_threaded_poll_get(o);
-   callback_t cb = make_callback(proc, 0, "timeout", poll);
+   callback_t cb = make_callback(proc, 0, "timeout", (obj_t)poll);
 
    apoll->timeout_new(apoll,
 		      avahi_elapse_time(&tv, t, 0),
@@ -797,8 +801,8 @@ bgl_avahi_service_browser_new(bgl_avahi_service_browser_t o) {
    AvahiServiceBrowser *browser =
       avahi_service_browser_new(
 	 client,
-	 AVAHI_IF_UNSPEC,
-	 AVAHI_PROTO_UNSPEC,
+	 BGL_AVAHI_SERVICE_BROWSER_INTERFACE(o),
+	 bgl_avahi_symbol_to_protocol(BGL_AVAHI_SERVICE_BROWSER_PROTOCOL(o)),
 	 BGL_STRING_TO_STRING(BGL_AVAHI_SERVICE_BROWSER_TYPE(o)),
 	 BGL_STRING_TO_STRING(BGL_AVAHI_SERVICE_BROWSER_DOMAIN(o)),
 	 0,
@@ -1101,7 +1105,10 @@ bgl_avahi_service_resolver_new(bgl_avahi_service_resolver_t o) {
 /*---------------------------------------------------------------------*/
 void
 bgl_avahi_service_resolver_close(bgl_avahi_service_resolver_t o) {
-   if (BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o)) {
-      avahi_service_resolver_free(BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o));
+   AvahiServiceResolver *resolver = BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o);
+   
+   if (resolver) {
+      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o) = 0L;
+      avahi_service_resolver_free(resolver);
    }
 }

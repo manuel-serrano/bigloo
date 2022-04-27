@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Apr 20 16:20:11 2022 (serrano)                */
+;*    Last change :  Tue Apr 26 14:18:10 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -364,10 +364,12 @@
 		     ;; the function and EOA.
 		     (if (null? (cddr actuals))
 			 (begin
+			    (display "(obj_t)" *c-port*)
 			    (emit-cop (car actuals))
 			    (display ")" *c-port*)
 			    #t)
 			 (begin
+			    (display "(obj_t)" *c-port*)
 			    (emit-cop (car actuals))
 			    (display ", " *c-port*)
 			    (loop (cdr actuals)))))))
