@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 13 06:41:15 2022                          */
-;*    Last change :  Sun Apr 24 09:51:39 2022 (serrano)                */
+;*    Last change :  Wed Apr 27 18:06:08 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT server side                                                 */
@@ -119,10 +119,10 @@
 			      (op (socket-output sock)))
 			   (let loop ()
 			      (let ((pk (mqtt-read-server-packet ip version)))
-				 (on 'packet pk)
 				 (if (not (isa? pk mqtt-control-packet))
 				     (mqtt-server-will srv on conn)
 				     (with-access::mqtt-control-packet pk (type)
+					(on 'packet pk)
 					(cond
 					   ((=fx type (MQTT-CPT-CONNECT))
 					    ;; 3.1, error
