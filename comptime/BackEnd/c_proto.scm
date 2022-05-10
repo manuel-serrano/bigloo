@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Sat Apr 16 09:26:47 2022 (serrano)                */
+;*    Last change :  Tue May 10 12:29:26 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -78,6 +78,7 @@
       (when (pair? pragmas)
 	 (for-each (lambda (p::pragma)
 		      (emit-cop (instantiate::cpragma
+				   (type *_*)
 				   (format (pragma-format p))
 				   (args (pragma-expr* p))
 				   (loc (pragma-loc p)))))

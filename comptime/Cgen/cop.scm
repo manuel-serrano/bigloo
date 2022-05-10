@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:53:24 1996                          */
-;*    Last change :  Wed Dec  8 13:02:39 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue May 10 08:16:25 2022 (serrano)                */
+;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The intermediate structure to emit c code.                       */
 ;*=====================================================================*/
@@ -22,7 +22,8 @@
    
    (export (class cop
 	      ;; the source line number associated to this instruction
-	      (loc::obj (default #f)))
+	      (loc::obj (default #f))
+	      (type::type read-only))
 
 	   (class clabel::cop
 	      (name::bstring read-only)
@@ -53,7 +54,6 @@
 	      (args read-only))
 
 	   (class ccast::cop
-	      (type::type read-only)
 	      (arg::cop read-only))
 	   
 	   (class csequence::cop
@@ -80,8 +80,7 @@
 	   (class cfuncall::cop
 	      (fun::cop read-only)
 	      (args read-only)
-	      (strength::symbol read-only)
-	      (type read-only))
+	      (strength::symbol read-only))
 	   
 	   (class capply::cop
 	      (fun::cop read-only)
