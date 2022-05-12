@@ -132,6 +132,7 @@
 	    (hashtable-for-each ::struct ::procedure)
 	    (hashtable-filter! ::struct ::procedure)
 	    (hashtable-clear! ::struct)
+            (hashtable-collisions::pair-nil ::struct)
 	    (open-string-hashtable-contains?::obj ::struct ::bstring)
 	    (open-string-hashtable-update!::obj ::struct ::bstring ::procedure ::obj)
 	    (open-string-hashtable-add! ::struct ::bstring ::procedure obj init)
@@ -1079,6 +1080,25 @@
 		new-len max-len
 		(hashtable-size table))
 	     table))))
+
+(define (hashtable-collisions table::struct)
+   (if (hashtable-weak? table)
+       '() ; (weak-hashtable-collisions table)
+       (plain-hashtable-collisions table)))
+
+(define (plain-hashtable-collisions table::struct)
+   (let* ((buckets (%hashtable-buckets table))
+	   (buckets-len (vector-length buckets)))
+      (let loop ((i 0)
+                 (res '()))
+	 (if (=fx i buckets-len)
+	     res
+	     (let liip ((bucket (vector-ref-ur buckets i))
+			(res res)
+                       (coll 0))
+		(if (null? bucket)
+		    (loop (+fx i 1) res)
+		    (liip (cdr bucket) (if (> coll 0) (cons coll res) res) (+fx coll 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-hashnumber ...                                               */
