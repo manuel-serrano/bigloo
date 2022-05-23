@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Feb 18 08:48:36 2022 (serrano)                */
+/*    Last change :  Mon May 23 18:12:28 2022 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1491,8 +1491,9 @@ bgl_open_input_pipe(obj_t name, obj_t buffer) {
    FILE *file;
    char *cname = BSTRING_TO_STRING(name);
 
-   if (!(file = popen(cname, "r")))
+   if (!(file = popen(cname, "r"))) {
       return BFALSE;
+   }
 
    /* we use our own buffer */
    setvbuf(file, NULL, _IONBF, 0);  
