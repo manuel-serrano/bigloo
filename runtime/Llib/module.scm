@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Jun  3 14:05:33 2022 (serrano)                */
+;*    Last change :  Fri Jun  3 14:55:39 2022 (serrano)                */
 ;*    Copyright   :  2009-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
@@ -192,7 +192,7 @@
       (if (and (>fx (string-length f) 0)
 	       (char=? (string-ref f 0) runtime-file-separator))
 	  f
-	  (make-file-name base f)))
+	  (file-name-canonicalize (make-file-name base f))))
    
    (synchronize modules-mutex
       (module-add-access-inner! module
@@ -226,7 +226,7 @@
       (cond
 	 ((not (string? f)) f)
 	 ((or (string=? f "") (char=? (string-ref f 0) (file-separator))) f)
-	 (else (make-file-name abase f))))
+	 (else (file-name-canonicalize (make-file-name abase f)))))
    
    (define (load-afile file dir abase)
       (call-with-input-file file
@@ -242,24 +242,19 @@
 			       (car access) info abase)))
 	       (module-read-access-file port))))
       file)
-   
-   (synchronize modules-mutex
-      (or (hashtable-get *afiles-table* path)
-	  (cond
-	     ((directory? path)
-	      (let loop ((d path))
-		 (let ((file (make-file-name d ".afile")))
-		    (if (file-exists? file)
-			(load-afile file d path)
-			(let ((parent (dirname d)))
-			   (unless (string=? parent d)
-			      (loop parent)))))))
-	     ((file-exists? path)
-	      (let ((dir (dirname path)))
-		 (load-afile path dir dir)))))))
-	    
-	     
-	     
-			 
 
-
+   (let ((path (file-name-canonicalize path)))
+      (synchronize modules-mutex
+	 (or (hashtable-get *afiles-table* path)
+	     (cond
+		((directory? path)
+		 (let loop ((d path))
+		    (let ((file (make-file-name d ".afile")))
+		       (if (file-exists? file)
+			   (load-afile file d path)
+			   (let ((parent (dirname d)))
+			      (unless (string=? parent d)
+				 (loop parent)))))))
+		((file-exists? path)
+		 (let ((dir (dirname path)))
+		    (load-afile path dir dir))))))))
