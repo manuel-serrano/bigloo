@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/mqq/Makefile              */
+#*    serrano/prgm/project/bigloo/bigloo/api/mqtt/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Fri Mar 11 19:14:21 2022 (serrano)                */
+#*    Last change :  Fri Jun  3 10:07:56 2022 (serrano)                */
 #*    Copyright   :  2001-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -78,9 +78,9 @@ cleanall: distclean
 #*---------------------------------------------------------------------*/
 #*    Installation                                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: install mqtt-install-data mqtt-uninstall-data
+.PHONY: install
 
-install: api-install-init mqtt-install-data
+install: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
 	    $(MAKE) api-install-c; \
           fi
@@ -88,28 +88,9 @@ install: api-install-init mqtt-install-data
             $(MAKE) api-install-jvm; \
           fi
 
-mqtt-install-data:
-	if [ ! -d $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt ]; then \
-	   mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt \
-             && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt \
-             && mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt/data \
-             && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt/data; \
-	elif [ ! -d $(DESTDIR)$(LIBDIR)/mqtt/data ]; then \
-          mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt/data \
-             && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt/data; \
-        fi
-	for p in data/*; do \
-          cp $$p $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt/data \
-            && chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt/$$p; \
-        done
-
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm \
-           mqtt-uninstall-data
-
-mqtt-uninstall-data:
-	-$(RM) -rf $(DESTDIR)$(LIBDIR)/$(FILDIR)/mqtt
+           api-uninstall-jvm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
