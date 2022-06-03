@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/module.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/module.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Wed Oct 14 22:01:29 2015 (serrano)                */
-;*    Copyright   :  2009-15 Manuel Serrano                            */
+;*    Last change :  Fri Jun  3 12:52:11 2022 (serrano)                */
+;*    Copyright   :  2009-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
 ;*    that is in charge of mapping module names to file names.         */
@@ -187,8 +187,17 @@
 ;*    module-add-access! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module-add-access! module files abase)
+   
+   (define (relative f base)
+      (if (and (>fx (string-length f) 0)
+	       (char=? (string-ref f 0) runtime-file-separator))
+	  f
+	  (make-file-name base f)))
+   
    (synchronize modules-mutex
-      (module-add-access-inner! module files abase)))
+      (module-add-access-inner! module
+	 (map (lambda (f) (relative f abase)) files)
+	 abase)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-read-access-file ...                                      */
