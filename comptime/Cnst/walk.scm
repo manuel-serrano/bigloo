@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cnst/walk.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:46:40 1995                          */
-;*    Last change :  Tue Jul 12 11:31:44 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jun  3 14:19:08 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `constant compilation'                                       */
 ;*=====================================================================*/
@@ -41,10 +41,11 @@
 		       (new-body (cnst! (sfun-body fun))))
 		   (sfun-body-set! fun new-body))
 		(leave-function))
-	     globals)
-   (pass-postlude (remove-var 'cnst (append (initialize-ast) globals))
-		  stop-cnst-alloc!
-		  safe!))
+      globals)
+   (let ((ast (append (initialize-ast) globals)))
+      (pass-postlude (remove-var 'cnst ast)
+	 stop-cnst-alloc!
+	 safe!)))
 
 ;*---------------------------------------------------------------------*/
 ;*    unsafe! ...                                                      */

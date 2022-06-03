@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Jun  3 12:52:11 2022 (serrano)                */
+;*    Last change :  Fri Jun  3 14:05:33 2022 (serrano)                */
 ;*    Copyright   :  2009-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
@@ -240,22 +240,23 @@
 					    (cdr access)))))
 			    (module-add-access-inner!
 			       (car access) info abase)))
-	       (module-read-access-file port)))))
+	       (module-read-access-file port))))
+      file)
    
    (synchronize modules-mutex
-      (unless (hashtable-get *afiles-table* path)
-	 (cond
-	    ((directory? path)
-	     (let loop ((d path))
-		(let ((file (make-file-name d ".afile")))
-		   (if (file-exists? file)
-		       (load-afile file d path)
-		       (let ((parent (dirname d)))
-			  (unless (string=? parent d)
-			     (loop parent)))))))
-	    ((file-exists? path)
-	     (let ((dir (dirname path)))
-		(load-afile path dir dir)))))))
+      (or (hashtable-get *afiles-table* path)
+	  (cond
+	     ((directory? path)
+	      (let loop ((d path))
+		 (let ((file (make-file-name d ".afile")))
+		    (if (file-exists? file)
+			(load-afile file d path)
+			(let ((parent (dirname d)))
+			   (unless (string=? parent d)
+			      (loop parent)))))))
+	     ((file-exists? path)
+	      (let ((dir (dirname path)))
+		 (load-afile path dir dir)))))))
 	    
 	     
 	     
