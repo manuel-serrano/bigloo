@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Fri Jun  3 14:23:38 2022 (serrano)                */
+;*    Last change :  Fri Jun  3 14:41:10 2022 (serrano)                */
 ;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
@@ -128,7 +128,6 @@
 	     port)
 	  (begin
 	     (for-each (lambda (cnst)
-			  (display-circle cnst (current-error-port))
 			  (write cnst port)
 			  (write-char #\space port))
 		set)
