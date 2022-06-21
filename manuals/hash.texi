@@ -20,17 +20,17 @@ functions which define and use them.
 
 @deffn {bigloo procedure} make-hashtable [bucket-len] [max-bucket-len] [eqtest] [hash] [weak-keys] [weak-data]
 @deffnx {bigloo procedure} create-hashtable [:size] [:max-bucket-len] [:eqtest] [:hash] [:weak] [:max-length] [:bucket-expansion] [:persistent #f]
-Defines an hash table for which the number of buckets is @var{size}.
+Defines a hash table for which the number of buckets is @var{size}.
 The variable @var{max-bucket-len} specify when the table should be
 resized. If provided, these two values have to be exact integers greater or
 equal to 1. Normally you could ignore @var{size} and @var{max-bucket-len}
 arguments and call @code{make-hashtable} with no argument at all. The argument
 @var{eqtest} enables the specification of a comparison function. The first
 argument of this function is the keys contained in the table. The second
-argument is the searched key. By default
+argument is the searched key. By default,
 hash tables rely on @code{hashtable-equal?}, which is defined as:
 
-Persistent hashtables are serializable. Non persisent hashtables are
+Persistent hashtables are serializable. Non persistent hashtables are
 not.
 
 @smalllisp
@@ -193,6 +193,15 @@ Here is an example of hash table.
       ("tutu" . TUTU)
       (foo . foo)
 @end smalllisp
+
+@deffn {bigloo procedure} hashtable-collisions table
+Returns a list of collisions for the keys from @var{table}.
+A collision is represented by the number of extra steps (comparisons)
+needed for a key. The length of the result gives the number of keys with
+collisions, and the sum of all list elements is the sum of all extra
+steps needed. This function can help to test different hash functions and
+other hash table parameters.
+@end deffn
 
 @deffn {bigloo procedure} get-hashnumber obj
 @deffnx {bigloo procedure} get-hashnumber-persistent obj
