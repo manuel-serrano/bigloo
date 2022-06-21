@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/SawMill/regalloc.scm        */
+;*    .../prgm/project/bigloo/bigloo/comptime/SawMill/regalloc.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 31 09:56:21 2005                          */
-;*    Last change :  Fri Jul 21 09:29:33 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Tue Jun 21 09:31:11 2022 (serrano)                */
+;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the liveness analysis of the rtl instructions            */
 ;*=====================================================================*/
@@ -48,19 +48,25 @@
 ;*    register-allocation ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (register-allocation back global params blocks)
-   (let* ((id (global-id global))
-	  (p (and *saw-register-allocation?*
-		  (not (memq id *saw-no-register-allocation-functions*))
-		  (if (pair? *saw-register-allocation-functions*)
-		      (memq id *saw-register-allocation-functions*)
-		      (or (<fx *saw-register-allocation-max-size* 0)
-			  (<fx (rtl-size blocks)
-			       *saw-register-allocation-max-size*))))))
-      (if p
-	  (%register-allocation back global params blocks)
-	  (verbose 2 "        NOT reg. alloc. "
-		   (shape global) " [size=" (rtl-size blocks)
-		   " instrs]: too large\n"))
+   
+   (define (cause msg)
+      (verbose 2 "        no reg. alloc. " msg "\n"))
+   
+   (let ((id (global-id global)))
+      (when *saw-register-allocation?*
+	 (cond
+	    ((memq id *saw-no-register-allocation-functions*)
+	     (cause "blacklist"))
+	    ((pair? *saw-register-allocation-functions*)
+	     (%register-allocation back global params blocks))
+	    ((<fx *saw-register-allocation-max-size* 0)
+	     (%register-allocation back global params blocks))
+	    ((>=fx (rtl-size blocks) *saw-register-allocation-max-size*)
+	     (cause
+		(format "too large [~a/~a]"
+		   (rtl-size blocks) *saw-register-allocation-max-size*)))
+	    (else
+	     (%register-allocation back global params blocks))))
       blocks))
 
 ;*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/SawMill/bbv.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/SawMill/bbv.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Fri Jul 28 09:40:11 2017 (serrano)                */
-;*    Copyright   :  2017 Manuel Serrano                               */
+;*    Last change :  Tue Jun 21 09:23:15 2022 (serrano)                */
+;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
 ;*=====================================================================*/
@@ -55,7 +55,12 @@
 ;*    bbv ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (bbv back global params blocks)
-   (if *saw-bbv?*
+   (when *saw-bbv?*
+      (tprint (global-id global)
+	 (memq (global-id global) *saw-bbv-functions*)))
+   (if (and *saw-bbv?*
+	    (or (not (null? *saw-bbv-functions*))
+		(memq (global-id global) *saw-bbv-functions*)))
        (with-trace 'bbv (global-id global)
 	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global))
@@ -66,7 +71,6 @@
 	     (when (>=fx (bigloo-debug) 1)
 		(dump-blocks global params blocks ".norm.bb"))
 	     (let ((regs (liveness! back blocks params)))
-		(tprint ">>> " (global-id global))
 		(unwind-protect
 		   (if (null? blocks)
 		       '()
@@ -79,7 +83,6 @@
 					      (merge! (get-bb-mark)
 						 s)))
 					s))))
-			  (tprint "<<< " (global-id global))
 			  (verbose 3 " " (length blocks) " -> " (length b))
 			  (verbose 2 "\n")
 			  (when (>=fx (bigloo-debug) 1)
