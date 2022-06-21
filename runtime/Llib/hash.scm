@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Sep 27 08:06:29 2021 (serrano)                */
+;*    Last change :  Tue Jun 21 08:51:03 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -1081,24 +1081,38 @@
 		(hashtable-size table))
 	     table))))
 
+;*---------------------------------------------------------------------*/
+;*    hashtable-collisions ...                                         */
+;*---------------------------------------------------------------------*/
 (define (hashtable-collisions table::struct)
    (if (hashtable-weak? table)
-       '() ; (weak-hashtable-collisions table)
+       (weak-hashtable-collisions table)
        (plain-hashtable-collisions table)))
 
+;*---------------------------------------------------------------------*/
+;*    plain-hashtable-collisions ...                                   */
+;*---------------------------------------------------------------------*/
 (define (plain-hashtable-collisions table::struct)
    (let* ((buckets (%hashtable-buckets table))
-	   (buckets-len (vector-length buckets)))
+	  (buckets-len (vector-length buckets)))
       (let loop ((i 0)
                  (res '()))
 	 (if (=fx i buckets-len)
 	     res
 	     (let liip ((bucket (vector-ref-ur buckets i))
 			(res res)
-                       (coll 0))
+			(coll 0))
 		(if (null? bucket)
 		    (loop (+fx i 1) res)
-		    (liip (cdr bucket) (if (> coll 0) (cons coll res) res) (+fx coll 1))))))))
+		    (liip (cdr bucket)
+		       (if (> coll 0) (cons coll res) res)
+		       (+fx coll 1))))))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-collisions ...                                    */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-collisions table::struct)
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    get-hashnumber ...                                               */
