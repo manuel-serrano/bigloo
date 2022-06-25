@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jun 21 09:47:46 2022 (serrano)                */
+;*    Last change :  Sat Jun 25 16:25:45 2022 (serrano)                */
 ;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -146,6 +146,7 @@
 	  (register-srfi! 'bigloo-jvm))
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
+	  (when *saw* (register-srfi! 'bigloo-saw))
 	  (register-srfi! 'bigloo-c)))
       ;; and we are done for the arguments parsing
       pres))
