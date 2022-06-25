@@ -4,6 +4,7 @@
    (import type_type		; type
 	   ast_var		; local/global
 	   ast_node		; atom
+	   ast_env
 	   module_module	; *module*
 	   engine_param		; *stdc* ...
 
@@ -242,20 +243,24 @@
    (gen-Xfuncall "L_" args #f) )
 
 (define-method (gen-expr fun::rtl_getfield args);
-   (display "((")
+   (display "BGL_SAW_GETFIELD(")
+   (display (type-name (rtl_getfield-objtype fun)))
+   (display ", ")
    (gen-prefix fun)
    (gen-reg (car args))
-   (display ")->")
+   (display ", ")
    (display (rtl_getfield-name fun))
    (display ")") )
 
 (define-method (gen-expr fun::rtl_setfield args);
-   (display "((")
+   (display "BGL_SAW_SETFIELD(")
+   (display (type-name (rtl_setfield-objtype fun)))
+   (display ", ")
    (gen-prefix fun)
    (gen-reg (car args))
-   (display ")->")
+   (display ",")
    (display (rtl_setfield-name fun))
-   (display "=")
+   (display ",")
    (gen-reg (cadr args))
    (display ")") )
 

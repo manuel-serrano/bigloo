@@ -23,6 +23,8 @@
       (class rtl_return::rtl_last type::type)
       (class rtl_jumpexit::rtl_last)
       (class rtl_fail::rtl_last)
+      (class rtl_retblock::rtl_fun)
+      (class rtl_ret::rtl_last)
       ; dest = #f and multiple continuation (last instruction of blocks)
       (class rtl_notseq::rtl_fun)
       (class rtl_if::rtl_notseq)

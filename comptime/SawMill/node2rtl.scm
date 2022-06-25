@@ -18,7 +18,8 @@
 	   (local->reg::rtl_reg var::local))
    (static (class area entry::block exit::block)
 	   (wide-class reversed::block)
-	   (wide-class rlocal::local reg code))
+	   (wide-class rlocal::local reg code)
+	   (wide-class lblblock::retblock block::block))
    )
 
 (define *reverse-call-argument* #f)
@@ -114,9 +115,10 @@
    (bdestination! (area-exit a) reg) )
 
 (define (unlink::area a::area) ;()
-   (instantiate::area (entry (area-entry a))
-		      ;; This basic block is unlinked and thus is dead!
-		      (exit (area-exit (single #f (instantiate::rtl_nop)))) ))
+   (instantiate::area
+      (entry (area-entry a))
+      ;; This basic block is unlinked and thus is dead!
+      (exit (area-exit (single #f (instantiate::rtl_nop)))) ))
 
 (define (link::area b1::area b2::area) ; ()
    (successor! (area-exit b1) (area-entry b2))
@@ -468,6 +470,18 @@
 	    (single #f (instantiate::rtl_nop)) )))
 
 ;;
+(define-method (node->rtl::area e::retblock) ;()
+   (with-access::retblock e (var body)
+      (link (let ( (a (single e (instantiate::rtl_nop))) )
+	       ;;(adestination! a (local->reg (var-variable var)))
+	       a )
+	    (call e (instantiate::rtl_protected) body) )))
+
+;; 
+(define-method (node->rtl::area e::return) ;()
+   (with-access::return e (block value)
+      (unlink (call e (instantiate::rtl_ret) value))))
+;;
 ;; The generic function to compile a predicate, followed by implementations
 ;;
 (define-generic (predicate::area e::node joined);()
@@ -487,7 +501,7 @@
 
 ;;
 (define-method (predicate::area e::let-var l);()
-   ;; MANU pour bien compiler le code g�n�r� par les grammaires (rgc)
+   ;; MANU pour bien compiler le code gÃ©nÃ©rÃ© par les grammaires (rgc)
    (with-access::let-var e (bindings body)
       (cond
 	 ((and (not (null? bindings))
