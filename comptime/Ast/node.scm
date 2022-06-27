@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Sat Sep  4 15:04:34 2021 (serrano)                */
+;*    Last change :  Mon Jun 27 09:57:10 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -262,7 +262,7 @@
 	      ;; the value
 	      value::node)
 
-	   ;;  return retblock
+	   ;; retblock (for breaks, continues, and explicit returns)
 	   (final-class retblock::node
 	      body::node)
 	   

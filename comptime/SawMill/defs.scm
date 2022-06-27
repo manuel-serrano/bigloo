@@ -24,7 +24,7 @@
       (class rtl_jumpexit::rtl_last)
       (class rtl_fail::rtl_last)
       (class rtl_retblock::rtl_fun)
-      (class rtl_ret::rtl_last)
+      (class rtl_ret::rtl_last to::block)
       ; dest = #f and multiple continuation (last instruction of blocks)
       (class rtl_notseq::rtl_fun)
       (class rtl_if::rtl_notseq)

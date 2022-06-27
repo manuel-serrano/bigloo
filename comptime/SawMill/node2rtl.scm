@@ -19,7 +19,7 @@
    (static (class area entry::block exit::block)
 	   (wide-class reversed::block)
 	   (wide-class rlocal::local reg code)
-	   (wide-class lblblock::retblock block::block))
+	   (wide-class retblock/to::retblock to::block))
    )
 
 (define *reverse-call-argument* #f)
@@ -477,16 +477,22 @@
 
 ;;
 (define-method (node->rtl::area e::retblock) ;()
-   (with-access::retblock e (var body)
-      (link (let ( (a (single e (instantiate::rtl_nop))) )
-	       ;;(adestination! a (local->reg (var-variable var)))
-	       a )
-	    (call e (instantiate::rtl_protected) body) )))
+   (with-access::retblock e (body)
+      (let ((r (single e (instantiate::rtl_pragma (format "glop")))))
+	 (tprint "R=" r)
+	 (widen!::retblock/to e (to (area-entry r)))
+	 (link (node->rtl body) r))))
+;*       (link (call e (instantiate::                                  */
+;*       (link (let ( (a (single e (instantiate::rtl_nop))) )          */
+;* 	       ;;(adestination! a (local->reg (var-variable var)))     */
+;* 	       a )                                                     */
+;* 	    (call e (instantiate::rtl_protected) body) )))             */
 
 ;; 
 (define-method (node->rtl::area e::return) ;()
    (with-access::return e (block value)
-      (unlink (call e (instantiate::rtl_ret) value))))
+      (with-access::retblock/to block (to)
+	 (call e (instantiate::rtl_go (to to))))))
 ;;
 ;; The generic function to compile a predicate, followed by implementations
 ;;

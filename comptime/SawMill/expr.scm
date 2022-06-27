@@ -58,7 +58,7 @@
 (define (build-tree be::backend params::pair-nil l::pair-nil);()
    (define (nop)
       (instantiate::rtl_ins (fun (instantiate::rtl_nop)) (args '())) )
-   (define (usefull ins)
+   (define (useful ins)
       (define (x=x ins dest)
 	 (let ( (fun (rtl_ins-fun ins)) )
 	    (if (rtl_mov? fun)
@@ -73,7 +73,7 @@
 		(let ( (l (block-first b)) (moves '()) )
 		   (for-each (lambda (ins) (set! moves (analyse be moves ins)))
 			     l )
-		   (let ( (r (filter! usefull l)) )
+		   (let ( (r (filter! useful l)) )
 		      (block-first-set! b (if (null? r) (list (nop)) r)) )))
 	     l ))
 
