@@ -35,7 +35,7 @@
    (let ( (a (call #f (instantiate::rtl_return (type (global-type var)))
 		   (sfun-body (global-value var))) ))
       ; (link (single (instantiate::rtl_entry)) a)
-      (let ( (r (area-entry a)) (n '0) )
+      (let ( (r (area-entry a)) (n 0) )
 	 (let dfs ( (b r) )
 	    (widen!::reversed b)
 	    (block-label-set! b n)
@@ -479,7 +479,6 @@
 (define-method (node->rtl::area e::retblock) ;()
    (with-access::retblock e (body)
       (let ((r (single e (instantiate::rtl_pragma (format "glop")))))
-	 (tprint "R=" r)
 	 (widen!::retblock/to e (to (area-entry r)))
 	 (link (node->rtl body) r))))
 ;*       (link (call e (instantiate::                                  */
@@ -492,7 +491,11 @@
 (define-method (node->rtl::area e::return) ;()
    (with-access::return e (block value)
       (with-access::retblock/to block (to)
-	 (call e (instantiate::rtl_go (to to))))))
+	 (let ((r (call e (instantiate::rtl_go (to to)))))
+	    r))))
+;* 	    (block-preds-set! to (cons (area-exit r) (block-preds to))) */
+;* 	    r))))                                                      */
+
 ;;
 ;; The generic function to compile a predicate, followed by implementations
 ;;

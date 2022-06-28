@@ -391,3 +391,14 @@
 	       p)
       (dump-args args p)))
 
+;*---------------------------------------------------------------------*/
+;*    dump-fun ::rtl_pragma ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (dump-fun o::rtl_pragma dest args p m)
+   (show-fun o p)
+   (display " " p)
+   (display (rtl_pragma-format o) p)
+   (display " " p)
+   (dump-args args p))
+   
+

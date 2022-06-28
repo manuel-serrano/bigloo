@@ -2,7 +2,7 @@
    (import type_type ast_var ast_node
 	   saw_lib saw_defs )
    (export (inline-returns b::block))
-   (include "SawMill/InlineReturn.sch")
+   (include "SawMill/inlinereturn.sch")
    (static (wide-class dfs::block)) )
 
 (define (inline-returns b::block) ;()

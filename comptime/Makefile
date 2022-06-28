@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Jul  9 07:34:58 2021 (serrano)                */
-#*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun 27 15:53:21 2022 (serrano)                */
+#*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -232,7 +232,7 @@ BACKEND_FILE    = backend walk init lib cplib cvm bvm \
 BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 
 #*--- SawMill ---------------------------------------------------------*/
-SAW_FILE        = lib defs rtl node2rtl collapse remove InlineReturn \
+SAW_FILE        = lib defs rtl node2rtl collapse remove inlinereturn \
 		  blockorder gotos cast expr woodcutter \
 		  procedures elsewhere regalloc regset regutils \
                   bbv bbv-types bbv-specialize bbv-cache bbv-utils

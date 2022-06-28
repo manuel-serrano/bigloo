@@ -26,7 +26,7 @@
 
 (define *collapse* #t)
 (define *remove* #t)
-(define *saw_inline_returns* #t)
+(define *saw_inline_returns* #f)
 (define *cast* #t)
 
 ;;
