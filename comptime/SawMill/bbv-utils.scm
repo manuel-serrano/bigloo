@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/SawMill/bbv-utils.scm       */
+;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-utils.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Jul 28 09:56:27 2017 (serrano)                */
-;*    Copyright   :  2017 Manuel Serrano                               */
+;*    Last change :  Wed Jun 29 07:17:07 2022 (serrano)                */
+;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
 ;*=====================================================================*/
@@ -343,11 +343,11 @@
 ;*---------------------------------------------------------------------*/
 (define (remove-temps! b::block)
 
-   (define (remove-ins-temps! i)
-      (with-access::rtl_ins i (args)
+   (define (remove-ins-temps! ins::rtl_ins)
+      (with-access::rtl_ins ins (args)
 	 (let loop ((args args))
 	    (if (null? args)
-		i
+		ins
 		(let liip ((arg (car args)))
 		   (if (isa? arg rtl_ins)
 		       (if (rtl_ins-mov? arg)

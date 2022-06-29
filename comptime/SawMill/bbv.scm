@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jun 21 13:50:26 2022 (serrano)                */
+;*    Last change :  Tue Jun 28 16:11:24 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -67,7 +67,7 @@
 	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
 	     (when (>=fx (bigloo-debug) 1)
 		(dump-blocks global params blocks ".norm.bb"))
-	     (let ((regs (liveness! back blocks params)))
+	     '(let ((regs (liveness! back blocks params)))
 		(unwind-protect
 		   (if (null? blocks)
 		       '()
@@ -88,8 +88,8 @@
 				b ".bb"))
 			  (map! (lambda (b) (shrink! b)) b)
 			  b))
-		   (begin
-		      (for-each (lambda (r) (shrink! r)) regs))))))
+		   (for-each (lambda (r) (shrink! r)) regs)))
+	     blocks))
        blocks))
 
 ;*---------------------------------------------------------------------*/

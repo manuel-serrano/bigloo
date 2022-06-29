@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Apr 24 09:42:53 2022 (serrano)                */
+#*    Last change :  Wed Jun 29 09:04:14 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1935,11 +1935,12 @@ case $hostos in
       #customgmp=yes
       customgmpmakefile=Makefile.macosx
       #customunistring=yes
-      customlibbacktrace=yes
       customlibuv=yes
       customgc=yes
       custompcre=no
       #custompcre2=yes
+      libbacktrace=no
+      #customlibbacktrace=yes
       
       if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
         if [ "$threadsupport " = "no " ]; then
