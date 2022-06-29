@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jun 29 09:40:47 2022 (serrano)                */
+#*    Last change :  Wed Jun 29 09:51:59 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -37,6 +37,7 @@ BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
                   -srfi $(API) -safee -g -unsafe
+CAPIFLAGS	= $(CGCTHREADFLAGS)
 #BAPIFLAGS	= -unsafe $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q \
@@ -85,7 +86,7 @@ all:
 	  fi
 
 c: build-c
-build-c: api-c
+build-c: api-c_mt
 
 jvm: build-jvm
 build-jvm: api-jvm
