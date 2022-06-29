@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jun 29 09:24:08 2022 (serrano)                */
+#*    Last change :  Wed Jun 29 09:40:47 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -42,6 +42,9 @@ BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
 BHEAPFLAGS	= -unsafe -q \
                   -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
+
+# Additional pthread lib for C
+EXTRALIBS	+= $(PTHREADLIBS)
 BIGLOOEXTRALIBS	+= bigloopthread
 
 #*---------------------------------------------------------------------*/
