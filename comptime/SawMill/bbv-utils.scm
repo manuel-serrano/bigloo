@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Wed Jun 29 07:17:07 2022 (serrano)                */
+;*    Last change :  Wed Jun 29 15:09:24 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -38,9 +38,10 @@
 	    (genlabel)
 	    (block->block-list regs b::block)
 	    (remove-temps! b::block)
-	    (normalize-goto! b::block)
+	    (normalize-goto!::pair b::block)
 	    (simplify-branch! b::block)
 	    (remove-nop! b::block)
+	    (remove-goto! b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)))
 
 ;*---------------------------------------------------------------------*/
@@ -141,11 +142,6 @@
 ;*---------------------------------------------------------------------*/
 (define (block->block-list regs b::block)
    
-   (define (swap-succ? b)
-      (with-access::block b (first)
-	 (when (pair? first)
-	    (rtl_ins-ifne? (car (last-pair first))))))
-   
    (define (goto-block? b)
       ;; is a block explicitly jumping to its successor
       (with-access::block b (first)
@@ -178,7 +174,7 @@
 		      (out (make-empty-regset regs)))))
 	 (succs (list to))
 	 (preds (list bs))))
-   
+
    (let loop ((bs (list b))
 	      (acc (make-empty-bbset)))
       (cond
@@ -196,16 +192,17 @@
 			(last (car lp))
 			(succs (block-succs (car bs))))
 		    (cond
-		       ((rtl_ins-ifne? last)
+		       ((and #f (rtl_ins-ifne? last))
 			(cond
 			   ((and (rtl_ins-typecheck? last)
 				 (not (bbset-in? (car succs) acc)))
 			    ;; change the ifne for an ifeq
+			    (tprint "swap")
 			    (with-access::rtl_ins last (fun)
 			       (set! fun
 				  (instantiate::rtl_ifeq
 				     (then (cadr succs)))))
-			    (loop bs acc))
+			    (loop bs (bbset-cons (car bs) acc)))
 			   ((bbset-in? (cadr succs) acc)
 			    (let ((hop (make-go-block (car bs) (cadr succs))))
 			       (with-access::block (car succs) (preds)
@@ -217,7 +214,7 @@
 			   (else
 			    (loop (append (reverse succs) (cdr bs))
 			       (bbset-cons (car bs) acc)))))
-		       ((rtl_ins-ifeq? last)
+		       ((and #f (rtl_ins-ifeq? last))
 			(if (bbset-in? (car succs) acc)
 			    (let ((hop (make-go-block (car bs) (car succs))))
 			       (with-access::block (car succs) (preds)
@@ -246,97 +243,23 @@
 		       (else
 			(loop (append succs (cdr bs))
 			   (bbset-cons (car bs) acc))))))
-		((and (goto-block? (car bs)) (not (bbset-in? (car succs) acc)))
-		 (with-access::block (car bs) (first)
-		    (set! first
-		       (if (null? (cdr first))
-			   (list (instantiate::rtl_ins/bbv
-				    (fun (instantiate::rtl_nop))
-				    (dest #f)
-				    (args '())
-				    (def (make-empty-regset regs))
-				    (in (make-empty-regset regs))
-				    (out (make-empty-regset regs))))
-			   (reverse (cdr (reverse first)))))
-		    (loop (append succs (cdr bs))
-		       (bbset-cons (car bs) acc))))
+;* 		((and (goto-block? (car bs)) (not (bbset-in? (car succs) acc))) */
+;* 		 (with-access::block (car bs) (first)                  */
+;* 		    (set! first                                        */
+;* 		       (if (null? (cdr first))                         */
+;* 			   (list (instantiate::rtl_ins/bbv             */
+;* 				    (fun (instantiate::rtl_nop))       */
+;* 				    (dest #f)                          */
+;* 				    (args '())                         */
+;* 				    (def (make-empty-regset regs))     */
+;* 				    (in (make-empty-regset regs))      */
+;* 				    (out (make-empty-regset regs))))   */
+;* 			   (reverse (cdr (reverse first)))))           */
+;* 		    (loop (append succs (cdr bs))                      */
+;* 		       (bbset-cons (car bs) acc))))                    */
 		(else
 		 (loop (append succs (cdr bs))
 		    (bbset-cons (car bs) acc)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    normalize-goto! ...                                              */
-;*---------------------------------------------------------------------*/
-(define (normalize-goto! b::block)
-
-   (define (collapse-branch b first)
-      (let ((next (car (block-succs b))))
-	 (when (and (rtl_ins-branch? (car (block-first next)))
-		    (null? (cdr (block-first next))))
-	    (let ((nsuccs (block-succs next)))
-	       (if (rtl_ins-go? (car first))
-		   (set-car! first (car (block-first next)))
-		   (set-cdr! first (block-first next)))
-	       (block-preds-set! next (remq! b (block-preds next)))
-	       (block-succs-set! b nsuccs)
-	       (for-each (lambda (ns)
-			    (block-preds-set! ns
-			       (replace (block-preds ns) next b)))
-		  nsuccs)))))
-
-   (let loop ((bs (list b))
-	      (acc '()))
-      (cond
-	 ((null? bs)
-	  (reverse acc))
-	 ((memq (car bs) acc)
-	  (loop (cdr bs) acc))
-	 (else
-	  (with-access::block (car bs) (succs preds first)
-	     (let liip ((first first))
-		(cond
-		   ((null? first)
-		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
-		   ((rtl_ins-go? (car first))
-		    (collapse-branch (car bs) first)
-		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
-		   ((null? (cdr first))
-		    (when (and (not (rtl_ins-branch? (car first)))
-			       (pair? (block-succs (car bs))))
-		       (collapse-branch (car bs) first))
-		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
-		   ((rtl_ins-ifeq? (car first))
-		    [assert (first) (rtl_ins-go? (cadr first))]
-		    (with-access::rtl_ins (car first) (fun)
-		       (with-access::rtl_ifeq fun (then)
-			  (let ((nb (instantiate::block
-				       (label (genlabel))
-				       (first (cdr first))
-				       (preds (list (car bs)))
-				       (succs (list then)))))
-			     (set-car! succs nb)
-			     (set-cdr! first '())
-			     (with-access::block then (preds)
-				(set! preds (replace preds (car bs) nb)))
-			     (loop (append (reverse succs) (cdr bs))
-				(cons (car bs) acc))))))
-		   ((rtl_ins-ifne? (car first))
-		    [assert (first) (rtl_ins-go? (cadr first))]
-		    (with-access::rtl_ins (car first) (fun)
-		       (with-access::rtl_ifne fun (then)
-			  (let ((nb (instantiate::block
-				       (label (genlabel))
-				       (first (cdr first))
-				       (preds (list (car bs)))
-				       (succs (list then)))))
-			     (set-car! (cdr succs) nb)
-			     (set-cdr! first '())
-			     (with-access::block then (preds)
-				(set! preds (replace preds (car bs) nb)))
-			     (loop (append (reverse succs) (cdr bs))
-				(cons (car bs) acc))))))
-		   (else
-		    (liip (cdr first))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-temps! ...                                                */
@@ -377,6 +300,120 @@
 	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    normalize-goto! ...                                              */
+;*    -------------------------------------------------------------    */
+;*    returns a list of blocks (those that follow* the argument).      */
+;*    -------------------------------------------------------------    */
+;*    Add an explicit goto to all BB so that they all end with         */
+;*    a return/fail/exit or a goto.                                    */
+;*---------------------------------------------------------------------*/
+(define (normalize-goto!::pair b::block)
+
+   (define (normalize-block! b::block)
+      (with-access::block b (succs first)
+	 (when (pair? succs)
+	    ;; rtl_ins-last have to succs
+	    (let* ((lp (last-pair first))
+		   (last (car lp)))
+	       (unless (rtl_ins-go? (car lp))
+		  (let ((go (instantiate::rtl_ins
+			       (dest #f)
+			       (fun (instantiate::rtl_go
+				       (loc (rtl_ins-loc last))
+				       (to (car succs))))
+			       (args '()))))
+		     (set-cdr! lp (list go))))))))
+
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  (reverse acc))
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (normalize-block! (car bs))
+	  (with-access::block (car bs) (succs)
+	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+
+;*---------------------------------------------------------------------*/
+;*    normalize-goto! ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Add an explicit goto to all BB so that they all end with         */
+;*    a return/fail/exit or a goto.                                    */
+;*---------------------------------------------------------------------*/
+(define (normalize-goto-TBR-1ju22! b::block)
+
+   (define (collapse-branch b::block first::pair)
+      (let ((next (car (block-succs b))))
+	 (when (and (rtl_ins-ifxx? (car (block-first next)))
+		    (null? (cdr (block-first next))))
+	    (let ((nsuccs (block-succs next)))
+	       (if (rtl_ins-go? (car first))
+		   (set-car! first (car (block-first next)))
+		   (set-cdr! first (block-first next)))
+	       (block-preds-set! next (remq! b (block-preds next)))
+	       (block-succs-set! b nsuccs)
+	       (for-each (lambda (ns)
+			    (block-preds-set! ns
+			       (replace (block-preds ns) next b)))
+		  nsuccs)))))
+
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  (reverse acc))
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (with-access::block (car bs) (succs preds first)
+	     (let liip ((first first))
+		(cond
+		   ((null? first)
+		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
+		   ((rtl_ins-go? (car first))
+		    (collapse-branch (car bs) first)
+		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
+		   ((null? (cdr first))
+		    (when (and (not (rtl_ins-ifxx? (car first)))
+			       (pair? (block-succs (car bs))))
+		       (collapse-branch (car bs) first))
+		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
+;* 		   ((rtl_ins-ifeq? (car first))                        */
+;* 		    [assert (first) (rtl_ins-go? (cadr first))]        */
+;* 		    (with-access::rtl_ins (car first) (fun)            */
+;* 		       (with-access::rtl_ifeq fun (then)               */
+;* 			  (let ((nb (instantiate::block                */
+;* 				       (label (genlabel))              */
+;* 				       (first (cdr first))             */
+;* 				       (preds (list (car bs)))         */
+;* 				       (succs (list then)))))          */
+;* 			     (set-car! succs nb)                       */
+;* 			     (set-cdr! first '())                      */
+;* 			     (with-access::block then (preds)          */
+;* 				(set! preds (replace preds (car bs) nb))) */
+;* 			     (loop (append (reverse succs) (cdr bs))   */
+;* 				(cons (car bs) acc))))))               */
+;* 		   ((rtl_ins-ifne? (car first))                        */
+;* 		    [assert (first) (rtl_ins-go? (cadr first))]        */
+;* 		    (with-access::rtl_ins (car first) (fun)            */
+;* 		       (with-access::rtl_ifne fun (then)               */
+;* 			  (let ((nb (instantiate::block                */
+;* 				       (label (genlabel))              */
+;* 				       (first (cdr first))             */
+;* 				       (preds (list (car bs)))         */
+;* 				       (succs (list then)))))          */
+;* 			     (set-car! (cdr succs) nb)                 */
+;* 			     (set-cdr! first '())                      */
+;* 			     (with-access::block then (preds)          */
+;* 				(set! preds (replace preds (car bs) nb))) */
+;* 			     (loop (append (reverse succs) (cdr bs))   */
+;* 				(cons (car bs) acc))))))               */
+		   (else
+		    (liip (cdr first))))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    simplify-branch! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (simplify-branch! b::block)
@@ -394,7 +431,7 @@
 	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (with-access::blockS (car bs) (succs first octxs)
+	  (with-access::blockS (car bs) (succs first outctxs)
 	     ;; remove useless nop instructions
 	     (if (=fx (length succs) 1)
 		 (if (=fx (length (block-preds (car succs))) 1)
@@ -411,7 +448,7 @@
 				  (set-car! lp (car (block-first s)))
 				  (set-cdr! lp (cdr (block-first s))))
 			       (set! first (append! first (block-first s)))))
-			(set! octxs (blockS-octxs s))
+			(set! outctxs (blockS-outctxs s))
 			(loop bs acc))
 		     (loop (cons (car succs) (cdr bs))
 			(bbset-cons (car bs) acc)))
@@ -443,6 +480,42 @@
 			       (liip (cdr ss) (cons s nsuccs))))))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    redirect-block! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (redirect-block! b::blockS old::blockS new::blockS)
+   (with-trace 'bbv "redirect-block"
+      (trace-item "b=" (block-label b))
+      (trace-item "old=" (block-label old) " "
+	 (map block-label (block-succs old)))
+      (trace-item "new="(block-label new) " "
+	 (map block-label (block-succs new)))
+      (with-access::blockS b (succs first)
+	 (set! succs (replace succs old new))
+	 (with-access::block old (preds)
+	    (set! preds (remq! b preds)))
+	 (with-access::block new (preds)
+	    (set! preds (cons b preds)))
+	 (for-each (lambda (ins)
+		      (cond
+			 ((rtl_ins-ifeq? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_ifeq fun (then)
+				(when (eq? then old)
+				   (set! then new)))))
+			 ((rtl_ins-ifne? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_ifne fun (then)
+				(when (eq? then old)
+				   (set! then new)))))
+			 ((rtl_ins-go? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_go fun (to)
+				(when (eq? to old)
+				   (set! to new)))))))
+	    first)))
+   b)
+
+;*---------------------------------------------------------------------*/
 ;*    remove-nop! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (remove-nop! b::block)
@@ -464,36 +537,34 @@
 	     (loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    redirect-block! ...                                              */
+;*    remove-goto! ...                                                 */
+;*    -------------------------------------------------------------    */
+;*    Remove useless gotos (fallthru).                                 */
 ;*---------------------------------------------------------------------*/
-(define (redirect-block! b::blockS old::blockS new::blockS)
-   (with-trace 'bbv "redirect-block"
-      (trace-item "b=" (block-label b))
-      (trace-item "old=" (block-label old) " "
-	 (map block-label (block-succs old)))
-      (trace-item "new="(block-label new) " "
-	 (map block-label (block-succs new)))
-      (with-access::blockS b (succs first)
-	 (set! succs (replace succs old new))
-	 (with-access::block old (preds)
-	    (set! preds (remq! b preds)))
-	 (with-access::block new (preds)
-	    (set! preds (cons b preds)))
-	 (let ((last (car (last-pair first))))
-	    (cond
-	       ((rtl_ins-ifeq? last)
-		(with-access::rtl_ins last (fun)
-		   (with-access::rtl_ifeq fun (then)
-		      (when (eq? then old)
-			 (set! then new)))))
-	       ((rtl_ins-ifne? last)
-		(with-access::rtl_ins last (fun)
-		   (with-access::rtl_ifne fun (then)
-		      (when (eq? then old)
-			 (set! then new)))))
-	       ((rtl_ins-go? last)
-		(with-access::rtl_ins last (fun)
-		   (with-access::rtl_go fun (to)
-		      (set! to new))))))))
-   b)
+(define (remove-goto! b::block)
+   
+   (define (goto-block? b)
+      ;; is a block explicitly jumping to its successor
+      (with-access::block b (first)
+	 (when (pair? first)
+	    (let ((i (car (last-pair first))))
+	       (rtl_ins-go? i)))))
+   
+   (let loop ((bs (list b))
+	      (acc (make-empty-bbset)))
+      (cond
+	 ((null? bs)
+	  b)
+	 ((bbset-in? (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (with-access::block (car bs) (succs)
+	     (when (and (goto-block? (car bs))
+			(not (bbset-in? (car succs) acc)))
+		(with-access::block (car bs) (first)
+		   (with-access::rtl_ins (car (last-pair first)) (fun)
+		      (set! fun (instantiate::rtl_nop)))))
+	     (loop (append succs (cdr bs))
+		(bbset-cons (car bs) acc)))))))
+   
 

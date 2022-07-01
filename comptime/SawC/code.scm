@@ -371,7 +371,7 @@
 
 (define (vfun-name f::bstring type::type) ; ()
    (display* "BGL_RTL_" (if (basic-type? type) "T" "") f) )
-   
+
 (define-method (gen-fun-name fun::rtl_valloc) ;()
    (vfun-name "VALLOC" (rtl_valloc-type fun)) )
 

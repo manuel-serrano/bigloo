@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/comptime/SawMill/bbv-specialize.scm      */
+;*    .../bigloo/bigloo/comptime/SawMill/bbv-specialize.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jul 27 13:25:59 2017 (serrano)                */
-;*    Copyright   :  2017 Manuel Serrano                               */
+;*    Last change :  Thu Jun 30 11:44:08 2022 (serrano)                */
+;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
 ;*=====================================================================*/
@@ -54,12 +54,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize ...                                           */
 ;*    -------------------------------------------------------------    */
-;*    Specialize a instruction according to the typing context.        */
+;*    Specialize an instruction according to the typing context.       */
 ;*    Returns the new instruction and the new context.                 */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specialize i::rtl_ins ctx::pair-nil)
    
-   (with-trace 'bbv-ins "ins"
+   (with-trace 'bbv-ins "rtl_ins-specialize"
       (trace-item "ins=" (shape i))
       (trace-item "ctx=" (ctx->string ctx))
       (cond
@@ -92,7 +92,7 @@
 	     (else
 	      (with-access::rtl_ins i (fun)
 		 (let ((s (duplicate::rtl_ins/bbv i
-			     (fun (duplicate::rtl_ifeq fun)))))
+			     (fun (duplicate-iffun fun)))))
 		    (values s ctx))))))
 	 ((rtl_ins-ifne? i)
 	  ;; have to duplicate the instruction to break "to" sharing
@@ -148,75 +148,73 @@
    (when (or (rtl_ins-ifeq? i) (rtl_ins-ifne? i))
       (with-access::rtl_ins i (args)
 	 (when (and (isa? (car args) rtl_ins) (rtl_ins-call? (car args)))
-	    (let ((typ (rtl_call-predicate (car args))))
-	       (when typ
-		  (let ((args (rtl_ins-args* i)))
-		     (and (pair? args) (null? (cdr args)) (rtl_reg? (car args))))))))))
+	    (when (rtl_call-predicate (car args))
+	       (let ((args (rtl_ins-args* i)))
+		  (and (pair? args) (null? (cdr args)) (rtl_reg? (car args)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-typecheck ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specialize-typecheck i::rtl_ins ctx::pair-nil)
-   (multiple-value-bind (reg type flag)
-      (rtl_ins-typecheck i)
-      (trace-item "typ=" (shape type) " flag=" flag)
-      (let ((e (ctx-get ctx reg)))
-	 (cond
-	    ((or (not e) (eq? (bbv-ctxentry-typ e) *obj*))
-	     (with-access::rtl_ins i (fun)
-		(let ((s (duplicate::rtl_ins/bbv i
-			    (fun (if (isa? fun rtl_ifeq)
-				     (duplicate::rtl_ifeq fun)
-				     (duplicate::rtl_ifne fun))))))
-		   (values s ctx))))
-	    ((and (eq? (bbv-ctxentry-typ e) type) (bbv-ctxentry-flag e))
-	     (with-access::rtl_ins/bbv i (fun)
-		(let ((s (if (isa? fun rtl_ifeq)
-			     (duplicate::rtl_ins/bbv i
-				(fun (instantiate::rtl_nop))
-				(dest #f)
-				(args '()))
-			     (with-access::rtl_ifne fun (then)
+   (with-trace 'bbv-ins "rtl_ins-specialize-typecheck"
+      (multiple-value-bind (reg type flag)
+	 (rtl_ins-typecheck i)
+	 (trace-item "typ=" (shape type) " flag=" flag)
+	 (let ((e (ctx-get ctx reg)))
+	    (trace-item "e=" (shape e))
+	    (cond
+	       ((or (not e) (eq? (bbv-ctxentry-typ e) *obj*))
+		(with-access::rtl_ins i (fun)
+		   (trace-item "fun=" (typeof fun) " " (isa? fun rtl_ifeq))
+		   (let ((s (duplicate::rtl_ins/bbv i
+			       (fun (duplicate-iffun fun)))))
+		      (values s ctx))))
+	       ((and (eq? (bbv-ctxentry-typ e) type) (bbv-ctxentry-flag e))
+		(with-access::rtl_ins/bbv i (fun)
+		   (let ((s (if (isa? fun rtl_ifeq)
 				(duplicate::rtl_ins/bbv i
-				   (fun (instantiate::rtl_go (to then)))
+				   (fun (instantiate::rtl_nop))
 				   (dest #f)
-				   (args '()))))))
-		   (values s ctx))))
-	    ((and (eq? (bbv-ctxentry-typ e) type) (not (bbv-ctxentry-flag e)))
-	     (with-access::rtl_ins/bbv i (fun)
-		(let ((s (if (isa? fun rtl_ifeq)
-			     (with-access::rtl_ifeq fun (then)
+				   (args '()))
+				(with-access::rtl_ifne fun (then)
+				   (duplicate::rtl_ins/bbv i
+				      (fun (instantiate::rtl_go (to then)))
+				      (dest #f)
+				      (args '()))))))
+		      (values s ctx))))
+	       ((and (eq? (bbv-ctxentry-typ e) type) (not (bbv-ctxentry-flag e)))
+		(with-access::rtl_ins/bbv i (fun)
+		   (let ((s (if (isa? fun rtl_ifeq)
+				(with-access::rtl_ifeq fun (then)
+				   (duplicate::rtl_ins/bbv i
+				      (fun (instantiate::rtl_go (to then)))
+				      (dest #f)
+				      (args '())))
 				(duplicate::rtl_ins/bbv i
-				   (fun (instantiate::rtl_go (to then)))
+				   (fun (instantiate::rtl_nop))
 				   (dest #f)
-				   (args '())))
-			     (duplicate::rtl_ins/bbv i
-				(fun (instantiate::rtl_nop))
-				(dest #f)
-				(args '())))))
-		   (values s ctx))))
-	    ((and (not (eq? (bbv-ctxentry-typ e) type)) (bbv-ctxentry-flag e))
-	     (with-access::rtl_ins/bbv i (fun)
-		(let ((s (if (isa? fun rtl_ifne)
-			     (duplicate::rtl_ins/bbv i
-				(fun (instantiate::rtl_nop))
-				(dest #f)
-				(args '()))
-			     (with-access::rtl_ifeq fun (then)
+				   (args '())))))
+		      (values s ctx))))
+	       ((and (not (eq? (bbv-ctxentry-typ e) type)) (bbv-ctxentry-flag e))
+		(with-access::rtl_ins/bbv i (fun)
+		   (let ((s (if (isa? fun rtl_ifne)
 				(duplicate::rtl_ins/bbv i
-				   (fun (instantiate::rtl_go (to then)))
+				   (fun (instantiate::rtl_nop))
 				   (dest #f)
-				   (args '()))))))
-		   (values s ctx))))
-	    (else
-	     ;; branch used the the flag differs, might be improved
-	     ;; in the future
-	     (with-access::rtl_ins i (fun)
-		(let ((s (duplicate::rtl_ins/bbv i
-			    (fun (if (isa? fun rtl_ifeq)
-				     (duplicate::rtl_ifeq fun)
-				     (duplicate::rtl_ifne fun))))))
-		   (values s ctx))))))))
+				   (args '()))
+				(with-access::rtl_ifeq fun (then)
+				   (duplicate::rtl_ins/bbv i
+				      (fun (instantiate::rtl_go (to then)))
+				      (dest #f)
+				      (args '()))))))
+		      (values s ctx))))
+	       (else
+		;; branch used when the flag differs, might be improved
+		;; in the future
+		(with-access::rtl_ins i (fun)
+		   (let ((s (duplicate::rtl_ins/bbv i
+			       (fun (duplicate-iffun fun)))))
+		      (values s ctx)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-bool ...                                      */
@@ -600,4 +598,10 @@
    (tprint "                  " (ctx->string ctx))
    (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t)))
    
-   
+;*---------------------------------------------------------------------*/
+;*    duplicate-iffun ...                                              */
+;*---------------------------------------------------------------------*/
+(define (duplicate-iffun fun)
+   (if (isa? fun rtl_ifeq)
+       (duplicate::rtl_ifeq fun)
+       (duplicate::rtl_ifne fun)))

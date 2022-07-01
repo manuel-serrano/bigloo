@@ -352,8 +352,9 @@
    (with-access::rtl_ifeq o (then)
       (show-fun o p)
       (dump-args args p)
-      (display " " p)
-      (display (block-label then) p)))
+      (display " (go " p)
+      (display (block-label then) p)
+      (display ")" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_ifne ...                                          */
@@ -362,8 +363,9 @@
    (with-access::rtl_ifne o (then)
       (show-fun o p)
       (dump-args args p)
-      (display " " p)
-      (display (block-label then) p)))
+      (display " (go " p)
+      (display (block-label then) p)
+      (display ")" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_go ...                                            */

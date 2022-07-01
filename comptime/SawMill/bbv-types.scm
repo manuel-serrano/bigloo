@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/SawMill/bbv-types.scm       */
+;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-types.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Jul 28 14:34:49 2017 (serrano)                */
-;*    Copyright   :  2017 Manuel Serrano                               */
+;*    Last change :  Thu Jun 30 11:58:22 2022 (serrano)                */
+;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
 ;*=====================================================================*/
@@ -36,8 +36,8 @@
 	       (versions::pair-nil (default '()))
 	       (%mark::long (default -1)))
 	    (wide-class blockS::block
-	       (ictx::pair-nil (default '()))
-	       (octxs::pair-nil (default '()))
+	       (inctx::pair-nil (default '()))
+	       (outctxs::pair-nil (default '()))
 	       (%mark::long (default -1))
 	       (%parent::obj read-only (default #unspecified))
 	       (%hash::obj (default #f))
@@ -88,7 +88,7 @@
 	    (rtl_ins-bool?::bool i::rtl_ins)
 	    (rtl_ins-true?::bool i::rtl_ins)
 	    (rtl_ins-false?::bool i::rtl_ins)
-	    (rtl_ins-branch? i::rtl_ins)
+	    (rtl_ins-ifxx? i::rtl_ins)
 	    
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)))
@@ -112,10 +112,10 @@
    (with-access::bbv-ctxentry e (reg) reg))
 
 ;*---------------------------------------------------------------------*/
-;*    ctx->string ...                                                  */
+;*    shape ::bbv-ctxentry ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (ctx->string ctx)
-
+(define-method (shape e::bbv-ctxentry)
+   
    (define (pp-int-value v)
       (cond
 	 ((interval? v)
@@ -135,21 +135,24 @@
 
    (define (pp-int-range i a)
       (format "[~a..~a]" (pp-int-value i) (pp-int-value a)))
-      
+
+   (with-access::bbv-ctxentry e (reg typ flag value aliases)
+      (vector (shape reg)
+	 (if flag
+	     (shape typ)
+	     (string-append "no-" (shape typ)))
+	 (if (eq? typ *int*)
+	     (pp-int-value value)
+	     value)
+	 (map shape aliases))))
+   
+;*---------------------------------------------------------------------*/
+;*    ctx->string ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (ctx->string ctx)
    (call-with-output-string
       (lambda (op)
-	 (fprintf op "~s"
-	    (map (lambda (e)
-		    (with-access::bbv-ctxentry e (reg typ flag value aliases)
-		       (vector (shape reg)
-			  (if flag
-			      (shape typ)
-			      (string-append "no-" (shape typ)))
-			  (if (eq? typ *int*)
-			      (pp-int-value value)
-			      value)
-			  (map shape aliases))))
-	       ctx)))))
+	 (fprintf op "~s" (map shape ctx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    params->ctx ...                                                  */
@@ -364,6 +367,30 @@
 		       (loop (cdr as) ctx)))))))))
 	  
 ;*---------------------------------------------------------------------*/
+;*    shape ::rtl_ins/bbv ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (shape o::rtl_ins/bbv)
+   (call-with-output-string
+      (lambda (p)
+	 (dump o p 0))))
+
+;*---------------------------------------------------------------------*/
+;*    shape ::block ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (shape o::block)
+   (call-with-output-string
+      (lambda (p)
+	 (dump o p 0))))
+
+;*---------------------------------------------------------------------*/
+;*    shape ::blockS ...                                               */
+;*---------------------------------------------------------------------*/
+(define-method (shape o::blockS)
+   (call-with-output-string
+      (lambda (p)
+	 (dump o p 0))))
+
+;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::rtl_ins/bbv p m)
@@ -388,13 +415,13 @@
 (define-method (dump o::blockS p m)
    (with-access::block o (label first)
       (fprint p "(block " label)
-      (with-access::blockS o (ictx octxs %parent)
+      (with-access::blockS o (inctx outctxs %parent)
 	 (fprint p " ;; parent=" (block-label %parent))
-	 (fprint p " ;; ictx=" (ctx->string ictx))
-	 (for-each (lambda (ctx)
-		      (fprint p " ;; octx="
-			 (ctx->string ctx)))
-	    octxs))
+	 (fprint p " ;; ictx=" (ctx->string inctx))
+	 (when (pair? outctxs)
+	    (fprint p " ;; noutctx=" (ctx->string (car outctxs)))
+	    (when (pair? (cdr outctxs))
+	       (fprint p " ;; poutctx=" (ctx->string (cadr outctxs))))))
       (with-access::block o (preds succs)
 	 (dump-margin p (+fx m 1))
 	 (fprint p ":preds " (map block-label preds))
@@ -485,9 +512,9 @@
       (eq? (rtl_ins-loadi-value i) #f)))
 
 ;*---------------------------------------------------------------------*/
-;*    rtl_ins-branch? ...                                              */
+;*    rtl_ins-ifxx? ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-branch? i::rtl_ins)
+(define (rtl_ins-ifxx? i::rtl_ins)
    (with-access::rtl_ins i (fun)
       (or (isa? fun rtl_ifne) (isa? fun rtl_ifeq))))
 
@@ -928,4 +955,4 @@
    (when (isa? y rtl_cast_null)
       (bbv-equal? (rtl_cast_null-type x) (rtl_cast_null-type y))))
 
-
+   
