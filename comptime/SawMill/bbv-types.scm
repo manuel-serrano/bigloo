@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jun 30 11:58:22 2022 (serrano)                */
+;*    Last change :  Fri Jul  1 15:01:42 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -535,7 +535,7 @@
    (with-access::rtl_ins i (args)
       (let ((typ (rtl_call-predicate (car args))))
 	 (let ((args (rtl_ins-args* i)))
-	    (values (car args) typ (rtl_ins-ifeq? i))))))
+	    (values (car args) typ (rtl_ins-ifne? i))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_call-predicate ...                                           */

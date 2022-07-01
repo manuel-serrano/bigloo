@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jun 30 09:30:54 2022 (serrano)                */
+;*    Last change :  Fri Jul  1 13:58:55 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -498,6 +498,7 @@
 	 (trace-item "ctx=" (map shape inctx))
 	 (let loop ((oins first)
 		    (nins '())
+		    (ictx inctx)
 		    (nctx inctx)
 		    (pctx inctx))
 	    (cond
@@ -505,7 +506,7 @@
 		(let ((lbl (genlabel)))
 		   (trace-item "new-label=" lbl)
 		   (let* ((first (reverse! nins))
-			  (inctx (filter-live-regs (car first) inctx))
+			  (inctx (filter-live-regs (car first) ictx))
 			  (outctxs (cond
 				      ((null? succs) '())
 				      ((null? (cdr succs)) (list inctx))
@@ -516,34 +517,46 @@
 			 (first first)
 			 (inctx inctx)
 			 (outctxs outctxs)))))
+	       ((rtl_ins-specializer (car oins))
+		=>
+		(lambda (specialize)
+		   (multiple-value-bind (ins ictx nctx pctx)
+		      (specialize (car oins) ictx nctx pctx)
+		      (if (rtl_ins-go? ins)
+			  (loop '() (cons ins nins) ictx nctx pctx)
+			  (loop (cdr oins) (cons ins nins) ictx nctx pctx)))))
 	       ((rtl_ins-last? (car oins))
 		;; a return, fail, ...
-		(multiple-value-bind (ins ctx)
-		   (rtl_ins-specialize (car oins) inctx)
-		   (loop '() (cons ins nins) '() '())))
+		(loop '() (cons (car oins) nins) ictx '() '()))
 	       ((rtl_ins-go? (car oins))
-		(multiple-value-bind (ins ctx)
-		   (rtl_ins-specialize (car oins) inctx)
-		   (loop '() (cons ins nins) nctx pctx)))
+		;; have to duplicate the instruction to break "to" sharing
+		(with-access::rtl_ins (car oins) (fun)
+		   (let ((ins (duplicate::rtl_ins/bbv (car oins)
+				 (fun (duplicate::rtl_go fun)))))
+		      (loop '() (cons ins nins) ictx nctx pctx))))
+	       ((not (rtl_reg? (rtl_ins-dest (car oins))))
+		(loop (cdr oins) (cons (car oins) nins) ictx nctx pctx))
 	       ((rtl_ins-typecheck? (car oins))
+		(tprint "SHOULD NOT...")
 		(multiple-value-bind (ins ctx)
-		   (rtl_ins-specialize (car oins) inctx)
+		   (rtl_ins-specialize (car oins) ictx)
 		   (cond
 		      ((rtl_ins-typecheck? ins)
 		       (multiple-value-bind (reg type flag)
 			  (rtl_ins-typecheck ins)
 			  (loop (cdr oins)
 			     (cons ins nins)
+			     ictx
 			     (filter-live-regs ins (refine-ctx nctx reg type #f))
 			     (filter-live-regs ins (refine-ctx pctx reg type #t)))))
 		      ((rtl_ins-go? ins)
-		       (loop '() (cons ins nins) ctx ctx))
+		       (loop '() (cons ins nins) ictx ctx ctx))
 		      (else
-		       (loop (cdr oins) (cons ins nins) ctx ctx)))))
+		       (loop (cdr oins) (cons ins nins) ictx ctx ctx)))))
 	       (else
 		(multiple-value-bind (ins ctx)
-		   (rtl_ins-specialize (car oins) inctx)
-		   (loop (cdr oins) (cons ins nins) nctx pctx))))))))
+		   (rtl_ins-specialize (car oins) ictx)
+		   (loop (cdr oins) (cons ins nins) ictx nctx pctx))))))))
 ;* 		   (instantiate::blockS                                */
 ;* 		      (%parent b)                                      */
 ;* 		      (label nlbl)                                     */
@@ -652,19 +665,3 @@
 ;* 		   (multiple-value-bind (sin sctx)                     */
 ;* 		      (rtl_ins-specialize (car inss) ctx)              */
 ;* 		      (loop (cdr inss) (cons sin sis) sctx)))))))))    */
-
-;*---------------------------------------------------------------------*/
-;*    filter-live-regs ...                                             */
-;*---------------------------------------------------------------------*/
-(define (filter-live-regs ins::rtl_ins/bbv ctx)
-   (with-access::rtl_ins/bbv ins (out)
-      (filter (lambda (e)
-		 (let ((reg (bbv-ctxentry-reg e)))
-		    (when (or (not (isa? reg rtl_reg/ra))
-			      (regset-member? reg out))
-		       (bbv-ctxentry-aliases-set! e
-			  (filter (lambda (reg)
-				     (regset-member? reg out))
-			     (bbv-ctxentry-aliases e))))))
-	 ctx)))
-   
