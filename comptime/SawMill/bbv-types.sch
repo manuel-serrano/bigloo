@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
 ;; Bigloo (4.5a)
-;; Inria -- Sophia Antipolis     Tue Jun 28 02:48:39 PM CEST 2022 
+;; Inria -- Sophia Antipolis     Mon Jul 4 11:18:37 AM CEST 2022 
 ;; (bigloo -classgen SawMill/bbv-types.scm)
 ;; ==========================================================
 
@@ -11,7 +11,7 @@
 ;; blockV
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-blockV::blockV label1230::int preds1231::pair-nil succs1232::pair-nil first1233::pair versions1234::pair-nil %mark1235::long)
+    (inline make-blockV::blockV label1228::int preds1229::pair-nil succs1230::pair-nil first1231::pair versions1232::pair-nil %mark1233::long)
     (inline blockV?::bool ::obj)
     (blockV-nil::blockV)
     (inline blockV-%mark::long ::blockV)
@@ -30,7 +30,7 @@
 ;; blockS
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-blockS::blockS label1219::int preds1220::pair-nil succs1221::pair-nil first1222::pair inctx1223::pair-nil outctxs1224::pair-nil %mark1225::long %parent1226::obj %hash1227::obj %blacklist1228::obj)
+    (inline make-blockS::blockS label1219::int preds1220::pair-nil succs1221::pair-nil first1222::pair %mark1223::long %parent1224::obj %hash1225::obj %blacklist1226::obj)
     (inline blockS?::bool ::obj)
     (blockS-nil::blockS)
     (inline blockS-%blacklist::obj ::blockS)
@@ -40,10 +40,6 @@
     (inline blockS-%parent::obj ::blockS)
     (inline blockS-%mark::long ::blockS)
     (inline blockS-%mark-set! ::blockS ::long)
-    (inline blockS-outctxs::pair-nil ::blockS)
-    (inline blockS-outctxs-set! ::blockS ::pair-nil)
-    (inline blockS-inctx::pair-nil ::blockS)
-    (inline blockS-inctx-set! ::blockS ::pair-nil)
     (inline blockS-first::pair ::blockS)
     (inline blockS-first-set! ::blockS ::pair)
     (inline blockS-succs::pair-nil ::blockS)
@@ -56,11 +52,13 @@
 ;; rtl_ins/bbv
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_ins/bbv::rtl_ins/bbv loc1209::obj %spill1210::pair-nil dest1211::obj fun1212::rtl_fun args1213::pair-nil def1214::obj out1215::obj in1216::obj %hash1217::obj)
+    (inline make-rtl_ins/bbv::rtl_ins/bbv loc1208::obj %spill1209::pair-nil dest1210::obj fun1211::rtl_fun args1212::pair-nil def1213::obj out1214::obj in1215::obj ctx1216::pair-nil %hash1217::obj)
     (inline rtl_ins/bbv?::bool ::obj)
     (rtl_ins/bbv-nil::rtl_ins/bbv)
     (inline rtl_ins/bbv-%hash::obj ::rtl_ins/bbv)
     (inline rtl_ins/bbv-%hash-set! ::rtl_ins/bbv ::obj)
+    (inline rtl_ins/bbv-ctx::pair-nil ::rtl_ins/bbv)
+    (inline rtl_ins/bbv-ctx-set! ::rtl_ins/bbv ::pair-nil)
     (inline rtl_ins/bbv-in::obj ::rtl_ins/bbv)
     (inline rtl_ins/bbv-in-set! ::rtl_ins/bbv ::obj)
     (inline rtl_ins/bbv-out::obj ::rtl_ins/bbv)
@@ -81,7 +79,7 @@
 ;; bbv-ctxentry
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-bbv-ctxentry::bbv-ctxentry reg1203::rtl_reg typ1204::type flag1205::bool value1206::obj aliases1207::pair-nil)
+    (inline make-bbv-ctxentry::bbv-ctxentry reg1202::rtl_reg typ1203::type flag1204::bool value1205::obj aliases1206::pair-nil)
     (inline bbv-ctxentry?::bool ::obj)
     (bbv-ctxentry-nil::bbv-ctxentry)
     (inline bbv-ctxentry-aliases::pair-nil ::bbv-ctxentry)
@@ -94,7 +92,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; blockV
-(define-inline (make-blockV::blockV label1230::int preds1231::pair-nil succs1232::pair-nil first1233::pair versions1234::pair-nil %mark1235::long) (instantiate::blockV (label label1230) (preds preds1231) (succs succs1232) (first first1233) (versions versions1234) (%mark %mark1235)))
+(define-inline (make-blockV::blockV label1228::int preds1229::pair-nil succs1230::pair-nil first1231::pair versions1232::pair-nil %mark1233::long) (instantiate::blockV (label label1228) (preds preds1229) (succs succs1230) (first first1231) (versions versions1232) (%mark %mark1233)))
 (define-inline (blockV?::bool obj::obj) ((@ isa? __object) obj (@ blockV saw_bbv-types)))
 (define (blockV-nil::blockV) (class-nil (@ blockV saw_bbv-types)))
 (define-inline (blockV-%mark::long o::blockV) (-> |#!bigloo_wallow| o %mark))
@@ -111,7 +109,7 @@
 (define-inline (blockV-label-set! o::blockV v::int) (set! (-> |#!bigloo_wallow| o label) v))
 
 ;; blockS
-(define-inline (make-blockS::blockS label1219::int preds1220::pair-nil succs1221::pair-nil first1222::pair inctx1223::pair-nil outctxs1224::pair-nil %mark1225::long %parent1226::obj %hash1227::obj %blacklist1228::obj) (instantiate::blockS (label label1219) (preds preds1220) (succs succs1221) (first first1222) (inctx inctx1223) (outctxs outctxs1224) (%mark %mark1225) (%parent %parent1226) (%hash %hash1227) (%blacklist %blacklist1228)))
+(define-inline (make-blockS::blockS label1219::int preds1220::pair-nil succs1221::pair-nil first1222::pair %mark1223::long %parent1224::obj %hash1225::obj %blacklist1226::obj) (instantiate::blockS (label label1219) (preds preds1220) (succs succs1221) (first first1222) (%mark %mark1223) (%parent %parent1224) (%hash %hash1225) (%blacklist %blacklist1226)))
 (define-inline (blockS?::bool obj::obj) ((@ isa? __object) obj (@ blockS saw_bbv-types)))
 (define (blockS-nil::blockS) (class-nil (@ blockS saw_bbv-types)))
 (define-inline (blockS-%blacklist::obj o::blockS) (-> |#!bigloo_wallow| o %blacklist))
@@ -122,10 +120,6 @@
 (define-inline (blockS-%parent-set! o::blockS v::obj) (set! (-> |#!bigloo_wallow| o %parent) v))
 (define-inline (blockS-%mark::long o::blockS) (-> |#!bigloo_wallow| o %mark))
 (define-inline (blockS-%mark-set! o::blockS v::long) (set! (-> |#!bigloo_wallow| o %mark) v))
-(define-inline (blockS-outctxs::pair-nil o::blockS) (-> |#!bigloo_wallow| o outctxs))
-(define-inline (blockS-outctxs-set! o::blockS v::pair-nil) (set! (-> |#!bigloo_wallow| o outctxs) v))
-(define-inline (blockS-inctx::pair-nil o::blockS) (-> |#!bigloo_wallow| o inctx))
-(define-inline (blockS-inctx-set! o::blockS v::pair-nil) (set! (-> |#!bigloo_wallow| o inctx) v))
 (define-inline (blockS-first::pair o::blockS) (-> |#!bigloo_wallow| o first))
 (define-inline (blockS-first-set! o::blockS v::pair) (set! (-> |#!bigloo_wallow| o first) v))
 (define-inline (blockS-succs::pair-nil o::blockS) (-> |#!bigloo_wallow| o succs))
@@ -136,11 +130,13 @@
 (define-inline (blockS-label-set! o::blockS v::int) (set! (-> |#!bigloo_wallow| o label) v))
 
 ;; rtl_ins/bbv
-(define-inline (make-rtl_ins/bbv::rtl_ins/bbv loc1209::obj %spill1210::pair-nil dest1211::obj fun1212::rtl_fun args1213::pair-nil def1214::obj out1215::obj in1216::obj %hash1217::obj) (instantiate::rtl_ins/bbv (loc loc1209) (%spill %spill1210) (dest dest1211) (fun fun1212) (args args1213) (def def1214) (out out1215) (in in1216) (%hash %hash1217)))
+(define-inline (make-rtl_ins/bbv::rtl_ins/bbv loc1208::obj %spill1209::pair-nil dest1210::obj fun1211::rtl_fun args1212::pair-nil def1213::obj out1214::obj in1215::obj ctx1216::pair-nil %hash1217::obj) (instantiate::rtl_ins/bbv (loc loc1208) (%spill %spill1209) (dest dest1210) (fun fun1211) (args args1212) (def def1213) (out out1214) (in in1215) (ctx ctx1216) (%hash %hash1217)))
 (define-inline (rtl_ins/bbv?::bool obj::obj) ((@ isa? __object) obj (@ rtl_ins/bbv saw_bbv-types)))
 (define (rtl_ins/bbv-nil::rtl_ins/bbv) (class-nil (@ rtl_ins/bbv saw_bbv-types)))
 (define-inline (rtl_ins/bbv-%hash::obj o::rtl_ins/bbv) (-> |#!bigloo_wallow| o %hash))
 (define-inline (rtl_ins/bbv-%hash-set! o::rtl_ins/bbv v::obj) (set! (-> |#!bigloo_wallow| o %hash) v))
+(define-inline (rtl_ins/bbv-ctx::pair-nil o::rtl_ins/bbv) (-> |#!bigloo_wallow| o ctx))
+(define-inline (rtl_ins/bbv-ctx-set! o::rtl_ins/bbv v::pair-nil) (set! (-> |#!bigloo_wallow| o ctx) v))
 (define-inline (rtl_ins/bbv-in::obj o::rtl_ins/bbv) (-> |#!bigloo_wallow| o in))
 (define-inline (rtl_ins/bbv-in-set! o::rtl_ins/bbv v::obj) (set! (-> |#!bigloo_wallow| o in) v))
 (define-inline (rtl_ins/bbv-out::obj o::rtl_ins/bbv) (-> |#!bigloo_wallow| o out))
@@ -159,7 +155,7 @@
 (define-inline (rtl_ins/bbv-loc-set! o::rtl_ins/bbv v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; bbv-ctxentry
-(define-inline (make-bbv-ctxentry::bbv-ctxentry reg1203::rtl_reg typ1204::type flag1205::bool value1206::obj aliases1207::pair-nil) (instantiate::bbv-ctxentry (reg reg1203) (typ typ1204) (flag flag1205) (value value1206) (aliases aliases1207)))
+(define-inline (make-bbv-ctxentry::bbv-ctxentry reg1202::rtl_reg typ1203::type flag1204::bool value1205::obj aliases1206::pair-nil) (instantiate::bbv-ctxentry (reg reg1202) (typ typ1203) (flag flag1204) (value value1205) (aliases aliases1206)))
 (define-inline (bbv-ctxentry?::bool obj::obj) ((@ isa? __object) obj (@ bbv-ctxentry saw_bbv-types)))
 (define (bbv-ctxentry-nil::bbv-ctxentry) (class-nil (@ bbv-ctxentry saw_bbv-types)))
 (define-inline (bbv-ctxentry-aliases::pair-nil o::bbv-ctxentry) (-> |#!bigloo_wallow| o aliases))

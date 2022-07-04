@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Jul  1 15:01:42 2022 (serrano)                */
+;*    Last change :  Mon Jul  4 08:11:41 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -36,8 +36,8 @@
 	       (versions::pair-nil (default '()))
 	       (%mark::long (default -1)))
 	    (wide-class blockS::block
-	       (inctx::pair-nil (default '()))
-	       (outctxs::pair-nil (default '()))
+;* 	       (inctx::pair-nil (default '()))                         */
+;* 	       (outctxs::pair-nil (default '()))                       */
 	       (%mark::long (default -1))
 	       (%parent::obj read-only (default #unspecified))
 	       (%hash::obj (default #f))
@@ -46,6 +46,7 @@
 	       (def (default #unspecified))
 	       (out (default #unspecified))
 	       (in (default #unspecified))
+	       (ctx::pair-nil (default '()))
 	       (%hash::obj (default #f)))
 
 	    (class bbv-ctxentry
@@ -80,6 +81,7 @@
 	    (rtl_ins-nop?::bool i::rtl_ins)
 	    (rtl_ins-mov?::bool i::rtl_ins)
 	    (rtl_ins-go?::bool i::rtl_ins)
+	    (rtl_ins-br?::bool i::rtl_ins)
 	    (rtl_ins-ifeq?::bool i::rtl_ins)
 	    (rtl_ins-ifne?::bool i::rtl_ins)
 	    (rtl_ins-call?::bool i::rtl_ins)
@@ -137,14 +139,19 @@
       (format "[~a..~a]" (pp-int-value i) (pp-int-value a)))
 
    (with-access::bbv-ctxentry e (reg typ flag value aliases)
-      (vector (shape reg)
-	 (if flag
-	     (shape typ)
-	     (string-append "no-" (shape typ)))
-	 (if (eq? typ *int*)
-	     (pp-int-value value)
-	     value)
-	 (map shape aliases))))
+      (if (>= *verbose* 2)
+	  (vector (shape reg)
+	     (if flag
+		 (shape typ)
+		 (string-append "no-" (shape typ)))
+	     (if (eq? typ *int*)
+		 (pp-int-value value)
+		 value)
+	     (map shape aliases))
+	  (vector (shape reg)
+	     (if flag
+		 (shape typ)
+		 (string-append "no-" (shape typ)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ctx->string ...                                                  */
@@ -166,11 +173,10 @@
       (filter-map (lambda (p)
 		     (when (isa? p rtl_reg/ra)
 			(with-access::rtl_reg p (type)
-			   (unless (eq? type *obj*)
-			      (instantiate::bbv-ctxentry
-				 (reg p)
-				 (typ type)
-				 (flag #t))))))
+			   (instantiate::bbv-ctxentry
+			      (reg p)
+			      (typ type)
+			      (flag #t)))))
 	 params)))
 
 ;*---------------------------------------------------------------------*/
@@ -393,36 +399,31 @@
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (dump o::rtl_ins/bbv p m)
-   (with-access::rtl_ins/bbv o (%spill fun dest args def in out)
-      (with-output-to-port p
-	 (lambda ()
-	    (when dest
-	       (display "[" p)
-	       (dump dest p m)
-	       (display " <- " p))
-	    (dump-ins-rhs o p m)
-	    (when dest (display "]" p))
-	    (display* " #|fun=" (typeof fun))
-	    (display* " def=" (map shape (regset->list def)))
-	    (display* " in=" (map shape (regset->list in)))
-	    (display* " out=" (map shape (regset->list out)))
-	    (display "|#")))))
+;* (define-method (dump o::rtl_ins/bbv p m)                            */
+;*    (with-access::rtl_ins/bbv o (%spill fun dest args def in out)    */
+;*       (with-output-to-port p                                        */
+;* 	 (lambda ()                                                    */
+;* 	    (when dest                                                 */
+;* 	       (display "[" p)                                         */
+;* 	       (dump dest p m)                                         */
+;* 	       (display " <- " p))                                     */
+;* 	    (dump-ins-rhs o p m)                                       */
+;* 	    (when dest (display "]" p))                                */
+;* 	    (display* " #|fun=" (typeof fun))                          */
+;* 	    (display* " def=" (map shape (regset->list def)))          */
+;* 	    (display* " in=" (map shape (regset->list in)))            */
+;* 	    (display* " out=" (map shape (regset->list out)))          */
+;* 	    (display "|#")))))                                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::blockS ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::blockS p m)
    (with-access::block o (label first)
-      (fprint p "(block " label)
-      (with-access::blockS o (inctx outctxs %parent)
-	 (fprint p " ;; parent=" (block-label %parent))
-	 (fprint p " ;; ictx=" (ctx->string inctx))
-	 (when (pair? outctxs)
-	    (fprint p " ;; noutctx=" (ctx->string (car outctxs)))
-	    (when (pair? (cdr outctxs))
-	       (fprint p " ;; poutctx=" (ctx->string (cadr outctxs))))))
-      (with-access::block o (preds succs)
+      (fprint p "(blockS " label)
+      (with-access::blockS o (%parent preds succs)
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":parent " (block-label %parent))
 	 (dump-margin p (+fx m 1))
 	 (fprint p ":preds " (map block-label preds))
 	 (dump-margin p (+fx m 1))
@@ -458,6 +459,13 @@
 (define (rtl_ins-go? i::rtl_ins)
    (with-access::rtl_ins i (fun)
       (isa? fun rtl_go)))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-br? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-br? i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (isa? fun rtl_br)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-ifeq? ...                                                */

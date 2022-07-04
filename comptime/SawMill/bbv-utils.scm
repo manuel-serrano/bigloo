@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Jul  1 14:52:16 2022 (serrano)                */
+;*    Last change :  Mon Jul  4 11:01:58 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -43,7 +43,8 @@
 	    (remove-nop! b::block)
 	    (remove-goto! b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)
-	    (filter-live-regs ins::rtl_ins/bbv ctx)))
+	    (filter-live-in-regs::pair-nil ins::rtl_ins/bbv ctx)
+	    (extend-live-out-regs::pair-nil ins::rtl_ins/bbv ctx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    replace ...                                                      */
@@ -385,7 +386,7 @@
 	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (with-access::blockS (car bs) (succs first outctxs)
+	  (with-access::blockS (car bs) (succs first)
 	     ;; remove useless nop instructions
 	     (if (=fx (length succs) 1)
 		 (if (=fx (length (block-preds (car succs))) 1)
@@ -402,7 +403,6 @@
 				  (set-car! lp (car (block-first s)))
 				  (set-cdr! lp (cdr (block-first s))))
 			       (set! first (append! first (block-first s)))))
-			(set! outctxs (blockS-outctxs s))
 			(loop bs acc))
 		     (loop (cons (car succs) (cdr bs))
 			(bbset-cons (car bs) acc)))
@@ -522,18 +522,31 @@
 		(bbset-cons (car bs) acc)))))))
    
 ;*---------------------------------------------------------------------*/
-;*    filter-live-regs ...                                             */
+;*    filter-live-in-regs ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (filter-live-regs ins::rtl_ins/bbv ctx)
-   (with-access::rtl_ins/bbv ins (out)
+(define (filter-live-in-regs ins::rtl_ins/bbv ctx)
+   (with-access::rtl_ins/bbv ins (in)
       (filter (lambda (e)
 		 (let ((reg (bbv-ctxentry-reg e)))
 		    (when (or (not (isa? reg rtl_reg/ra))
-			      (regset-member? reg out))
+			      (regset-member? reg in))
 		       (bbv-ctxentry-aliases-set! e
 			  (filter (lambda (reg)
-				     (regset-member? reg out))
+				     (regset-member? reg in))
 			     (bbv-ctxentry-aliases e))))))
 	 ctx)))
    
-
+;*---------------------------------------------------------------------*/
+;*    extend-live-out-regs ...                                         */
+;*---------------------------------------------------------------------*/
+(define (extend-live-out-regs ins::rtl_ins/bbv ctx)
+   (with-access::rtl_ins/bbv ins (out)
+      (let ((nctx (filter (lambda (e)
+			     (regset-member? (bbv-ctxentry-reg e) out))
+		     ctx)))
+	 (regset-for-each (lambda (r)
+			     (unless (ctx-get nctx r)
+				(with-access::rtl_reg r (type)
+				   (set! nctx (extend-ctx nctx r type #t)))))
+	    out)
+	 nctx)))

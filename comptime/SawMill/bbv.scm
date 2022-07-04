@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Fri Jul  1 13:58:55 2022 (serrano)                */
+;*    Last change :  Mon Jul  4 07:42:28 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -62,19 +62,18 @@
 	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global))
 	  (when (>=fx (bigloo-debug) 1)
-	     (dump-blocks global params blocks ".plain.bb"))
+	     (dump-blocks global params blocks ".plain.cfg"))
 	  (set-max-label! blocks)
 	  (reorder-succs! blocks)
 	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
 	     (when (>=fx (bigloo-debug) 1)
-		(dump-blocks global params blocks ".norm.bb"))
+		(dump-blocks global params blocks ".norm.cfg"))
 	     (let ((regs (liveness! back blocks params)))
 		;; liveness also widen each block into a blockV
 		(unwind-protect
 		   (if (null? blocks)
 		       '()
-		       (let* ((s (get-specialize-block (car blocks)
-				    (params->ctx params)))
+		       (let* ((s (bbv-block (car blocks) (params->ctx params)))
 			      (b (block->block-list regs
 				    (if *cleanup*
 					(remove-nop!
@@ -86,9 +85,9 @@
 			  (verbose 2 "\n")
 			  (when (>=fx (bigloo-debug) 1)
 			     (dump-blocks global params
-				(block->block-list regs s) ".bbv.bb")
+				(block->block-list regs s) ".bbv.cfg")
 			     (dump-blocks global params
-				b ".bb"))
+				b ".cfg"))
 			  (map! (lambda (b) (shrink! b)) b)
 			  b))
 		   ;; don't shrink, otherwise dump could no longer be used
@@ -281,11 +280,16 @@
 ;*    merge-block! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (merge-block! mark b by)
+   (tprint "merging " mark)
+   (tprint (shape b))
+   (tprint (shape by))
    (with-trace 'bbv "merge-block!"
       (trace-item "b=" (block-label b) " <- " (block-label by))
-      ;; merge by into bx
+      ;; merge by into b, i.e., replace all occurrence of by with b
       (let loop ((by (list by))
 		 (bx (list b)))
+	 (trace-item "by=" (map block-label by))
+	 (trace-item "bx=" (map block-label bx))
 	 (cond
 	    ((null? by)
 	     b)
@@ -307,7 +311,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    merge? ...                                                       */
 ;*    -------------------------------------------------------------    */
-;*    Is it possible to merge two blocks with the hash?                */
+;*    Is it possible to merge two blocks with the same hash?           */
 ;*---------------------------------------------------------------------*/
 (define (merge? bx::blockS by::blockS stack)
    (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
@@ -341,327 +345,36 @@
 		#f))))))
 
 ;*---------------------------------------------------------------------*/
-;*    gAt-specialize-block ::blockV ...                                */
-;*---------------------------------------------------------------------*/
-(define (gAt-specialize-block-TBR::blockS b::blockV ctx::pair-nil)
-   
-   (define (get-specialize-succ! b s ctx)
-      (let ((n (get-specialize-block s ctx)))
-	 (block-succs-set! b (cons n (block-succs b)))
-	 (block-preds-set! n (cons b (block-preds n)))
-	 n))
-   
-   (with-access::blockV b (label versions succs)
-      (with-trace 'bbv (format "get-specialize block ~a" label)
-	 (trace-item "succs=" (map block-label succs))
-	 (trace-item "ctx=" (ctx->string ctx))
-	 (trace-item "versions= #" (length versions) " "
-	    (map ctx->string (map car versions)))
-	 (let ((old (assoc ctx versions)))
-	    (if (pair? old)
-		(cdr old)
-		(let ((s (specialize-block! b ctx)))
-		   (set! versions (cons (cons ctx s) versions))
-		   (with-access::blockS s ((ssuccs succs) inctx outctxs first)
-		      (trace-item "inctxs=" (shape inctx))
-		      (trace-item "outctxs=" (map shape outctxs))
-		      (for-each (lambda (ins)
-				   (cond
-				      ((rtl_ins-go? ins)
-				       (with-access::rtl_ins ins (fun)
-					  (with-access::rtl_go fun (to)
-					     (let ((n (get-specialize-succ!
-							 s to (car outctxs))))
-						(set! to n)
-						(set! outctxs (list (car outctxs)))))))
-;* 				      ((rtl_ins-nop? ins)              */
-;* 				       (unless (null? (cdr first))     */
-;* 					  (set! first (remq! ins first))) */
-;* 				       (let ((n (get-specialize-succ!  */
-;* 						   s (car succs) (car outctxs)))) */
-;* 					  (set! outctxs (list (car outctxs))))) */
-				      ((rtl_ins-ifeq? ins)
-				       (let* ((n2 (get-specialize-succ!
-						     s (cadr succs) (cadr outctxs)))
-					      (n1 (get-specialize-succ!
-						     s (car succs) (car outctxs))))
-					  (set-car! ssuccs n1)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_ifeq fun (then)
-						(set! then n2)))))
-				      ((rtl_ins-ifne? ins)
-				       (let* ((n2 (get-specialize-succ!
-						     s (cadr succs) (car outctxs)))
-					      (n1 (get-specialize-succ!
-						     s (car succs) (cadr outctxs))))
-					  (set-car! ssuccs n1)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_ifne fun (then)
-						(set! then n2)))))
-				      ))
-;* 				      (else                            */
-;* 				       (trace-item "#succs=" (length succs) " " */
-;* 					  (length ssuccs))             */
-;* 				       (trace-item "#outctxs=" (length outctxs)) */
-;* 				       (trace-item "ins-ins=" (typeof ins) " " */
-;* 					  (rtl_ins-ins? ins)           */
-;* 					  " " (with-access::rtl_ins ins (fun) */
-;* 						 (typeof fun)))        */
-;* 				       (set! ssuccs                    */
-;* 					  (map (lambda (u c)           */
-;* 						  (get-specialize-succ! s u c)) */
-;* 					     (reverse succs)           */
-;* 					     (reverse outctxs))))))      */
-			 first)
-		      s)))))))
-
-;*---------------------------------------------------------------------*/
-;*    get-specialize-block ::blockV ...                                */
-;*---------------------------------------------------------------------*/
-(define (get-specialize-block::blockS b::blockV ctx::pair-nil)
-   (with-access::blockV b (label versions succs first)
-      (with-trace 'bbv (format "get-specialize block ~a" label)
-	 (trace-item "succs=" (map block-label succs))
-	 (trace-item "ctx=" (ctx->string ctx))
-	 (trace-item "versions= #" (length versions) " "
-	    (map ctx->string (map car versions)))
-	 (let ((fctx (filter-live-regs (car first) ctx)))
-	    (trace-item "fctx=" (ctx->string fctx))
-	    (let ((old (assoc fctx versions)))
-	       (if (pair? old)
-		   (cdr old)
-		   (let ((s (specialize-block! b fctx)))
-		      (set! versions (cons (cons fctx s) versions))
-		      (with-access::blockS s ((ssuccs succs) inctx outctxs first)
-			 (trace-item "inctxs=" (shape inctx))
-			 (trace-item "outctxs=" (map shape outctxs))
-			 (for-each (lambda (ins)
-				      (specialize-block-ins! s ins))
-			    first)
-			 s))))))))
-   
-;*---------------------------------------------------------------------*/
 ;*    specialize-block-ins! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (specialize-block-ins! s::blockS ins::rtl_ins)
-   (with-access::blockS s (succs inctx outctxs)
-      (cond
-	 ((rtl_ins-go? ins)
-	  (with-access::rtl_ins ins (fun)
-	     (with-access::rtl_go fun (to)
-		(let ((n (get-specialize-block to (car outctxs))))
-		   (set! to n)
-		   (block-succs-set! s (cons n succs))
-		   (block-preds-set! n (cons s (block-preds n)))))))
-	 ((rtl_ins-ifeq? ins)
-	  (with-access::rtl_ins ins (fun)
-	     (with-access::rtl_ifeq fun (then)
-		(let ((n (get-specialize-block then (car outctxs))))
-		   (set! then n)
-		   (block-succs-set! s (list n))
-		   (block-preds-set! n (cons s (block-preds n)))))))
-	 ((rtl_ins-ifne? ins)
-	  (with-access::rtl_ins ins (fun)
-	     (with-access::rtl_ifne fun (then)
-		(let ((n (get-specialize-block then (cadr outctxs))))
-		   (set! then n)
-		   (block-succs-set! s (list n))
-		   (block-preds-set! n (cons s (block-preds n))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    specialize-block! ...                                            */
-;*---------------------------------------------------------------------*/
-(define (specialize-block!::blockS b::blockV inctx)
-   
-;*    (define (resolve-intcmp b sin next sis sctx gettrue getfalse)    */
-;*       (with-access::block b (succs)                                 */
-;* 	 (let ((ni (duplicate::rtl_ins/bbv next                        */
-;* 		      (fun (instantiate::rtl_go                        */
-;* 			      (to (gettrue succs)))))))                */
-;* 	    (block-preds-set! (getfalse succs)                         */
-;* 	       (remq! b (block-preds (getfalse succs))))               */
-;* 	    (instantiate::blockS                                       */
-;* 	       (%parent b)                                             */
-;* 	       (label (genlabel))                                      */
-;* 	       (first (reverse! (cons* ni sin sis)))                   */
-;* 	       (inctx ctx0)                                            */
-;* 	       (outctxs (list sctx))                                   */
-;* 	       (succs (list (gettrue succs)))))))                      */
-;*                                                                     */
-;*    (define (resolve-intcmp-nop b sin next sis sctx gettrue getfalse) */
-;*       (let ((nsin (duplicate::rtl_ins/bbv next                      */
-;* 		     (fun (instantiate::rtl_nop)))))                   */
-;* 	 (resolve-intcmp b nsin next sis sctx gettrue getfalse)))      */
-   
-   (with-access::block b (first label succs)
-      (with-trace 'bbv-block (format "specialize-block! ~a" label)
-	 (trace-item "ctx=" (map shape inctx))
-	 (let loop ((oins first)
-		    (nins '())
-		    (ictx inctx)
-		    (nctx inctx)
-		    (pctx inctx))
-	    (cond
-	       ((null? oins)
-		(let ((lbl (genlabel)))
-		   (trace-item "new-label=" lbl)
-		   (let* ((first (reverse! nins))
-			  (inctx (filter-live-regs (car first) ictx))
-			  (outctxs (cond
-				      ((null? succs) '())
-				      ((null? (cdr succs)) (list inctx))
-				      (else (list nctx pctx)))))
-		      (instantiate::blockS
-			 (%parent b)
-			 (label lbl)
-			 (first first)
-			 (inctx inctx)
-			 (outctxs outctxs)))))
-	       ((rtl_ins-specializer (car oins))
-		=>
-		(lambda (specialize)
-		   (multiple-value-bind (ins ictx nctx pctx)
-		      (specialize (car oins) ictx nctx pctx)
-		      (if (rtl_ins-go? ins)
-			  (loop '() (cons ins nins) ictx nctx pctx)
-			  (loop (cdr oins) (cons ins nins) ictx nctx pctx)))))
-	       ((rtl_ins-last? (car oins))
-		;; a return, fail, ...
-		(loop '() (cons (car oins) nins) ictx '() '()))
-	       ((rtl_ins-go? (car oins))
-		;; have to duplicate the instruction to break "to" sharing
-		(with-access::rtl_ins (car oins) (fun)
-		   (let ((ins (duplicate::rtl_ins/bbv (car oins)
-				 (fun (duplicate::rtl_go fun)))))
-		      (loop '() (cons ins nins) ictx nctx pctx))))
-	       ((not (rtl_reg? (rtl_ins-dest (car oins))))
-		(loop (cdr oins) (cons (car oins) nins) ictx nctx pctx))
-	       ((rtl_ins-typecheck? (car oins))
-		(tprint "SHOULD NOT...")
-		(multiple-value-bind (ins ctx)
-		   (rtl_ins-specialize (car oins) ictx)
-		   (cond
-		      ((rtl_ins-typecheck? ins)
-		       (multiple-value-bind (reg type flag)
-			  (rtl_ins-typecheck ins)
-			  (loop (cdr oins)
-			     (cons ins nins)
-			     ictx
-			     (filter-live-regs ins (refine-ctx nctx reg type #f))
-			     (filter-live-regs ins (refine-ctx pctx reg type #t)))))
-		      ((rtl_ins-go? ins)
-		       (loop '() (cons ins nins) ictx ctx ctx))
-		      (else
-		       (loop (cdr oins) (cons ins nins) ictx ctx ctx)))))
-	       (else
-		(multiple-value-bind (ins ctx)
-		   (rtl_ins-specialize (car oins) ictx)
-		   (loop (cdr oins) (cons ins nins) ictx nctx pctx))))))))
-;* 		   (instantiate::blockS                                */
-;* 		      (%parent b)                                      */
-;* 		      (label nlbl)                                     */
-;* 		      (first (reverse! (cons sin sis)))                */
-;* 		      (inctx ctx0)                                     */
-;* 		      (outctxs (list                                   */
-;* 				  (filter-live-regs sin                */
-;* 				     (refine-ctx sctx reg type #t))    */
-;* 				  (filter-live-regs sin                */
-;* 				     (refine-ctx sctx reg type #f))))))) */
-;* 	                                                               */
-;* 		(let ((lbl (genlabel)))                                */
-;* 		   (trace-item "new-label=" lbl)                       */
-;* 		      (instantiate::blockS                             */
-;* 			 (%parent b)                                   */
-;* 			 (label nlbl)                                  */
-;* 			 (first (reverse! (cons sin sis)))             */
-;* 			 (inctx ctx0)))))                              */
-;* 		                                                       */
-;* 	    (cond                                                      */
-;* 	       ((null? (cdr inss))                                     */
-;* 		(let ((nlbl (genlabel)))                               */
-;* 		   (trace-item "ins.null.cdr=" (shape (car inss)))     */
-;* 		   (trace-item "new-label=" nlbl)                      */
-;* 		   (multiple-value-bind (sin sctx)                     */
-;* 		      (rtl_ins-specialize (car inss) ctx)              */
-;* 		      (trace-item "sin=" (shape sin))                  */
-;* 		      (trace-item "sis=" (map shape sis))              */
-;* 		      (cond                                            */
-;* 			 ((rtl_ins-last? sin)                          */
-;* 			  (instantiate::blockS                         */
-;* 			     (%parent b)                               */
-;* 			     (label nlbl)                              */
-;* 			     (first (reverse! (cons sin sis)))         */
-;* 			     (inctx ctx0)))                            */
-;* 			 ((rtl_ins-typecheck? sin)                     */
-;* 			  (multiple-value-bind (reg type flag)         */
-;* 			     (rtl_ins-typecheck sin)                   */
-;* 			     (trace-item "reg=" (shape reg))           */
-;* 			     (trace-item "typ=" (shape type))          */
-;* 			     (instantiate::blockS                      */
-;* 				(%parent b)                            */
-;* 				(label nlbl)                           */
-;* 				(first (reverse! (cons sin sis)))      */
-;* 				(inctx ctx0)                           */
-;* 				(outctxs (list                         */
-;* 					  (filter-live-regs sin        */
-;* 					     (refine-ctx sctx reg type #t)) */
-;* 					  (filter-live-regs sin        */
-;* 					     (refine-ctx sctx reg type #f))))))) */
-;* 			 (else                                         */
-;* 			  (instantiate::blockS                         */
-;* 			     (%parent b)                               */
-;* 			     (label nlbl)                              */
-;* 			     (first (reverse! (cons sin sis)))         */
-;* 			     (inctx ctx0)                              */
-;* 			     (outctxs (map (lambda (_)                 */
-;* 					    (filter-live-regs sin sctx)) */
-;* 				       succs))))))))                   */
-;* 	       ((and (rtl_ins-intcmp? (car inss)) (rtl_ins-ifxx? (cadr inss))) */
-;* 		(trace-item "ins.intcmp=" (shape (car inss)))          */
-;* 		;; tmp <- arg0 BINOP arg1                              */
-;* 		;; ifeq tmp                                            */
-;* 		(tprint ">>> GOTONE.1.." (shape (car inss)))           */
-;* 		(tprint "              " (ctx->string ctx))            */
-;* 		(multiple-value-bind (sin sctx ctxt ctxo)              */
-;* 		   (rtl_ins-specialize-intcmp (car inss) ctx)          */
-;* 		   (cond                                               */
-;* 		      ((or (rtl_ins-true? sin) (rtl_ins-false? sin))   */
-;* 		       (let ((tmp (rtl_ins-dest (car inss))))          */
-;* 			  (if (regset-member? (rtl_ins-dest (car inss)) */
-;* 				 (rtl_ins/bbv-out (cadr inss)))        */
-;* 			      ;; the temp is live after the test, keep */
-;* 			      ;; the constant load                     */
-;* 			      (if (rtl_ins-true? sin)                  */
-;* 				  (resolve-intcmp b sin (cadr inss) sis sctx */
-;* 				     car cadr)                         */
-;* 				  (resolve-intcmp b sin (cadr inss) sis sctx */
-;* 				     cadr car))                        */
-;* 			      ;; temp dead after testing               */
-;* 			      (if (rtl_ins-true? sin)                  */
-;* 				  (resolve-intcmp-nop b sin (cadr inss) sis sctx */
-;* 				     car cadr)                         */
-;* 				  (resolve-intcmp-nop b sin (cadr inss) sis sctx */
-;* 				     cadr car)))))                     */
-;* 		      ((not ctxt)                                      */
-;* 		       (tprint "<<< GOTONE.3..")                       */
-;* 		       (loop (cdr inss) (cons sin sis) sctx))          */
-;* 		      (else                                            */
-;* 		       (tprint "<<< GOTONE.4a."                        */
-;* 			  (ctx->string (filter-live-regs (cadr inss) ctxt))) */
-;* 		       (tprint "<<< GOTONE.4b."                        */
-;* 			  (ctx->string (filter-live-regs (cadr inss) ctxo))) */
-;* 		       (instantiate::blockS                            */
-;* 			  (%parent b)                                  */
-;* 			  (label (genlabel))                           */
-;* 			  (first (reverse! (cons* (cadr inss) sin sis))) */
-;* 			  (inctx ctx0)                                 */
-;* 			  (outctxs (list                               */
-;* 				    (filter-live-regs (cadr inss) ctxt) */
-;* 				    (filter-live-regs (cadr inss) ctxo)))))))) */
-;* 	       (else                                                   */
-;* 		(let ((ins (car inss)))                                */
-;* 		   (trace-item "ins.default=" (shape (car inss)))      */
-;* 		   [assert (ins) (not (rtl_notseq? ins))]              */
-;* 		   (multiple-value-bind (sin sctx)                     */
-;* 		      (rtl_ins-specialize (car inss) ctx)              */
-;* 		      (loop (cdr inss) (cons sin sis) sctx)))))))))    */
+;* (define (specialize-block-ins! s::blockS ins::rtl_ins)              */
+;*    (with-access::blockS s (succs inctx outctxs)                     */
+;*       (cond                                                         */
+;* 	 ((rtl_ins-go? ins)                                            */
+;* 	  (with-access::rtl_ins ins (fun)                              */
+;* 	     (with-access::rtl_go fun (to)                             */
+;* 		(let ((n (get-specialize-block to (car outctxs))))     */
+;* 		   (set! to n)                                         */
+;* 		   (block-succs-set! s (cons n succs))                 */
+;* 		   (block-preds-set! n (cons s (block-preds n)))))))   */
+;* 	 ((rtl_ins-ifeq? ins)                                          */
+;* 	  (with-access::rtl_ins ins (fun)                              */
+;* 	     (with-access::rtl_ifeq fun (then)                         */
+;* 		(let ((n (get-specialize-block then (car outctxs))))   */
+;* 		   (set! then n)                                       */
+;* 		   (block-succs-set! s (list n))                       */
+;* 		   (block-preds-set! n (cons s (block-preds n)))))))   */
+;* 	 ((rtl_ins-ifne? ins)                                          */
+;* 	  (with-access::rtl_ins ins (fun)                              */
+;* 	     (with-access::rtl_ifne fun (then)                         */
+;* 		(when (isa? then blockS)                               */
+;* 		   (tprint "specializing specialized: ")               */
+;* 		   (tprint "ctx=" (shape (cadr outctxs)))              */
+;* 		   (tprint "s=" (shape s))                             */
+;* 		   (tprint "then=" (shape then))                       */
+;* 		   (tprint "exit before error...")                     */
+;* 		   (exit 1))                                           */
+;* 		(let ((n (get-specialize-block then (cadr outctxs))))  */
+;* 		   (set! then n)                                       */
+;* 		   (block-succs-set! s (list n))                       */
+;* 		   (block-preds-set! n (cons s (block-preds n)))))))))) */
