@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Jul  4 08:28:13 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 09:14:05 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -61,18 +61,16 @@
 (define (bbv-block::blockS b::blockV ctx::pair-nil)
    (with-access::blockV b (label versions succs preds first)
       (with-trace 'bbv (format "bbv-block ~a" label)
-	 (let ((fctx (filter-live-in-regs (car first) ctx)))
+	 (let ((ctx (filter-live-in-regs (car first) ctx)))
 	    (trace-item "succs=" (map block-label succs))
 	    (trace-item "preds=" (map block-label preds))
 	    (trace-item "ctx=" (ctx->string ctx))
 	    (trace-item "versions= #" (length versions) " "
 	       (map ctx->string (map car versions)))
-	    (let ((old (assoc fctx versions)))
+	    (let ((old (assoc ctx versions)))
 	       (if (pair? old)
 		   (cdr old)
-		   (let ((s (specialize-block! b fctx)))
-		      (set! versions (cons (cons fctx s) versions))
-		      s)))))))
+		   (specialize-block! b ctx)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    specialize-block! ...                                            */
@@ -81,9 +79,14 @@
    
    (define (connect! s::blockS ins::rtl_ins)
       (cond
-	 ((rtl_ins-br? ins)
+	 ((rtl_ins-ifeq? ins)
 	  (with-access::rtl_ins ins (fun)
-	     (let ((n (rtl_br-then fun)))
+	     (let ((n (rtl_ifeq-then fun)))
+		(block-succs-set! s (list #unspecified n))
+		(block-preds-set! n (cons s (block-preds n))))))
+	 ((rtl_ins-ifne? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (let ((n (rtl_ifne-then fun)))
 		(block-succs-set! s (list #unspecified n))
 		(block-preds-set! n (cons s (block-preds n))))))
 	 ((rtl_ins-go? ins)
@@ -94,13 +97,14 @@
 		    (block-succs-set! s (list n)))
 		(block-preds-set! n (cons s (block-preds n))))))))
    
-   (with-access::block b (first label succs)
+   (with-access::blockV b (first label succs versions)
       (with-trace 'bbv-block (format "specialize-block! ~a" label)
 	 (let* ((lbl (genlabel))
 		(s (instantiate::blockS
 		      (%parent b)
 		      (label lbl)
 		      (first '()))))
+	    (set! versions (cons (cons ctx s) versions))
 	    (trace-item "new-label=" lbl)
 	    (trace-item "ctx=" (shape ctx))
 	    (let loop ((oins first)
@@ -139,16 +143,22 @@
 						(to n))))))
 			    (connect! s ins)
 			    (loop '() (cons ins nins) ctx)))))
-		  ((rtl_ins-br? (car oins))
+		  ((rtl_ins-ifeq? (car oins))
 		   (with-access::rtl_ins (car oins) (fun)
-		      (with-access::rtl_br fun (then)
+		      (with-access::rtl_ifeq fun (then)
 			 (let* ((n (bbv-block then ctx))
 				(ins (duplicate::rtl_ins/bbv (car oins)
-					(fun (if (isa? fun rtl_ifeq)
-						 (duplicate::rtl_ifeq fun
-						    (then n))
-						 (duplicate::rtl_ifne fun
-						    (then n)))))))
+					(fun (duplicate::rtl_ifeq fun
+						    (then n))))))
+			    (connect! s ins)
+			    (loop (cdr oins) (cons ins nins) ctx)))))
+		  ((rtl_ins-ifne? (car oins))
+		   (with-access::rtl_ins (car oins) (fun)
+		      (with-access::rtl_ifne fun (then)
+			 (let* ((n (bbv-block then ctx))
+				(ins (duplicate::rtl_ins/bbv (car oins)
+					(fun (duplicate::rtl_ifne fun
+						    (then n))))))
 			    (connect! s ins)
 			    (loop (cdr oins) (cons ins nins) ctx)))))
 		  ((not (rtl_reg? (rtl_ins-dest (car oins))))
@@ -225,11 +235,11 @@
 					   (then n))))))
 			 (values s (extend-ctx ctx reg type (not flag))))))
 		  ((isa? fun rtl_ifeq)
-		   (with-access::rtl_ifne fun (then)
+		   (with-access::rtl_ifeq fun (then)
 		      (let* ((n (bbv-block then
 				   (extend-ctx ctx reg type (not flag))))
 			     (s (duplicate::rtl_ins/bbv i
-				   (fun (duplicate::rtl_ifne fun
+				   (fun (duplicate::rtl_ifeq fun
 					   (then n))))))
 		      (values s (extend-ctx ctx reg type flag)))))
 		  (else
@@ -245,8 +255,9 @@
       (with-access::rtl_ins i (dest args fun)
 	 (cond
 	    ((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
-	     (let ((e (ctx-get ctx (car args))))
-		(values i (extend-ctx ctx dest type #t))))
+	     (with-access::rtl_reg (car args) (type)
+		(let ((e (ctx-get ctx (car args))))
+		   (values i (extend-ctx ctx dest type #t)))))
 	    ((and *type-call* (pair? args) (rtl_ins-call? (car args)))
 	     (with-access::rtl_ins (car args) (fun)
 		(with-access::rtl_call fun (var)
@@ -256,7 +267,9 @@
 	     (with-access::rtl_ins (car args) (fun)
 		(with-access::rtl_loadi fun (constant)
 		   (with-access::atom constant (type)
-		      (values i (extend-ctx ctx dest type #t))))))))))
+		      (values i (extend-ctx ctx dest type #t))))))
+	    (else
+	     (values i ctx))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadi ...                                     */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Jul  4 07:42:28 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 09:34:42 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -100,27 +100,33 @@
 ;*    dump-blocks ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (dump-blocks global params blocks suffix)
-   
+
+   (define oname
+      (if (string? *dest*)
+	  *dest*
+	  (if (and (pair? *src-files*) (string? (car *src-files*)))
+	      (prefix (car *src-files*))
+	      "./a.out")))
+   (define name (format "~a-~a" oname (global-id global)))
+   (define filename (string-append name suffix))
+      
    (define (dump-blocks port)
       (let* ((id (global-id global)))
 	 (fprint port ";; -*- mode: bee -*-")
 	 (fprint port ";; *** " id ":")
 	 (fprint port ";; " (map shape params))
+	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -O -Tpdf\n"
+	    filename name name)
+	 (fprintf port ";;   '~a.dot.pdf'\n" name)
 	 (for-each (lambda (b)
 		      (dump b port 0)
 		      (newline port))
 	    blocks)
 	 id))
    
-   (let ((oname (if (string? *dest*)
-		    *dest*
-		    (if (and (pair? *src-files*) (string? (car *src-files*)))
-			(prefix (car *src-files*))
-			#f)))
-	 (id (global-id global)))
-      (if oname
-	  (call-with-output-file (format "~a-~a~a" oname id suffix) dump-blocks)
-	  (dump-blocks (current-error-port)))))
+   (if oname
+       (call-with-output-file filename dump-blocks)
+       (dump-blocks (current-error-port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    reorder-succs! ...                                               */

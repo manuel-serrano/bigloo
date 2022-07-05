@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Jul  4 08:11:41 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 09:16:07 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -36,8 +36,6 @@
 	       (versions::pair-nil (default '()))
 	       (%mark::long (default -1)))
 	    (wide-class blockS::block
-;* 	       (inctx::pair-nil (default '()))                         */
-;* 	       (outctxs::pair-nil (default '()))                       */
 	       (%mark::long (default -1))
 	       (%parent::obj read-only (default #unspecified))
 	       (%hash::obj (default #f))
@@ -66,7 +64,7 @@
 	    (ctx->string ::pair-nil)
 	    (params->ctx ::pair-nil)
 	    (ctx-get ::pair-nil ::rtl_reg)
-	    (extend-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
+	    (extend-ctx::pair-nil ::pair-nil ::rtl_reg ::obj ::bool
 	       #!optional (value '_))
 	    (extend-normalize-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
 	       #!optional (value '_))
@@ -215,9 +213,9 @@
 ;*    Extend the context with a new register assignement. This         */
 ;*    function breaks aliasing information.                            */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx ctx reg type flag #!optional (value '_))
+(define (extend-ctx ctx::pair-nil reg::rtl_reg type flag::bool #!optional (value '_))
    
-   (define (new-ctxentry reg type flag value)
+   (define (new-ctxentry reg::rtl_reg type flag::bool value)
       (instantiate::bbv-ctxentry
 	 (reg reg)
 	 (typ type)
@@ -464,8 +462,7 @@
 ;*    rtl_ins-br? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-br? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_br)))
+   (or (rtl_ins-ifeq? i) (rtl_ins-ifne? i)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-ifeq? ...                                                */

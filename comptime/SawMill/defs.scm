@@ -30,9 +30,8 @@
       (class rtl_if::rtl_notseq)
       (class rtl_select::rtl_notseq type::type patterns)
       (class rtl_switch::rtl_select labels)
-      (abstract-class rtl_br::rtl_notseq then::block)
-      (class rtl_ifeq::rtl_br)
-      (class rtl_ifne::rtl_br)
+      (class rtl_ifeq::rtl_notseq then::block)
+      (class rtl_ifne::rtl_notseq then::block)
       (class rtl_go::rtl_notseq to::block)
       ; doesn't make side effects
       (class rtl_pure::rtl_fun)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon Jul  4 11:01:58 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 09:23:33 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -43,8 +43,8 @@
 	    (remove-nop! b::block)
 	    (remove-goto! b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)
-	    (filter-live-in-regs::pair-nil ins::rtl_ins/bbv ctx)
-	    (extend-live-out-regs::pair-nil ins::rtl_ins/bbv ctx)))
+	    (filter-live-in-regs::pair-nil ins::rtl_ins/bbv ctx::pair-nil)
+	    (extend-live-out-regs::pair-nil ins::rtl_ins/bbv ctx::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    replace ...                                                      */
