@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul  5 09:14:05 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 12:43:21 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -37,7 +37,7 @@
    
    (export (bbv-block::blockS b::blockV ctx::pair-nil)
 	   (rtl_ins-specializer ::rtl_ins)
-	   (rtl_ins-specialize ::rtl_ins ::pair-nil)
+;* 	   (rtl_ins-specialize ::rtl_ins ::pair-nil)                   */
 	   (rtl_ins-typecheck?::bool ::rtl_ins)
 	   (rtl_ins-intcmp?::bool ::rtl_ins)
 	   (rtl_ins-specialize-intcmp i ctx)))
@@ -96,6 +96,10 @@
 		    (set-car! (block-succs s) n)
 		    (block-succs-set! s (list n)))
 		(block-preds-set! n (cons s (block-preds n))))))))
+
+   (define (duplicate-ins ins ctx)
+      (duplicate::rtl_ins/bbv ins
+	 (ctx ctx)))
    
    (with-access::blockV b (first label succs versions)
       (with-trace 'bbv-block (format "specialize-block! ~a" label)
@@ -133,12 +137,13 @@
 				(loop (cdr oins) (cons ins nins) ctx)))))))
 		  ((rtl_ins-last? (car oins))
 		   ;; a return, fail, ...
-		   (loop '() (cons (car oins) nins) '()))
+		   (loop '() (cons (duplicate-ins (car oins) ctx) nins) '()))
 		  ((rtl_ins-go? (car oins))
 		   (with-access::rtl_ins (car oins) (fun)
 		      (with-access::rtl_go fun (to)
 			 (let* ((n (bbv-block to ctx))
 				(ins (duplicate::rtl_ins/bbv (car oins)
+					(ctx ctx)
 					(fun (duplicate::rtl_go fun
 						(to n))))))
 			    (connect! s ins)
@@ -148,6 +153,7 @@
 		      (with-access::rtl_ifeq fun (then)
 			 (let* ((n (bbv-block then ctx))
 				(ins (duplicate::rtl_ins/bbv (car oins)
+					(ctx ctx)
 					(fun (duplicate::rtl_ifeq fun
 						    (then n))))))
 			    (connect! s ins)
@@ -157,14 +163,16 @@
 		      (with-access::rtl_ifne fun (then)
 			 (let* ((n (bbv-block then ctx))
 				(ins (duplicate::rtl_ins/bbv (car oins)
+					(ctx ctx)
 					(fun (duplicate::rtl_ifne fun
 						    (then n))))))
 			    (connect! s ins)
 			    (loop (cdr oins) (cons ins nins) ctx)))))
-		  ((not (rtl_reg? (rtl_ins-dest (car oins))))
-		   (loop (cdr oins) (cons (car oins) nins) ctx))
+;* 		  ((not (rtl_reg? (rtl_ins-dest (car oins))))          */
+;* 		   (loop (cdr oins)                                    */
+;* 		      (cons (duplicate-ins (car oins) ctx) nins) ctx)) */
 		  (else
-		   (loop (cdr oins) (cons (car oins) nins)
+		   (loop (cdr oins) (cons (duplicate-ins (car oins) ctx) nins)
 		      (extend-live-out-regs (car oins) ctx)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -197,12 +205,14 @@
 		      (with-access::rtl_ins/bbv i (fun)
 			 (if (isa? fun rtl_ifeq)
 			     (let ((s (duplicate::rtl_ins/bbv i
+					 (ctx ctx)
 					 (fun (instantiate::rtl_nop))
 					 (dest #f)
 					 (args '()))))
 				(values s pctx))
 			     (with-access::rtl_ifne fun (then)
 				(let ((s (duplicate::rtl_ins/bbv i
+					    (ctx ctx)
 					    (fun (instantiate::rtl_go
 						    (to (bbv-block then pctx))))
 					    (dest #f)
@@ -215,12 +225,14 @@
 		      (with-access::rtl_ins/bbv i (fun)
 			 (if (isa? fun rtl_ifne)
 			     (let ((s (duplicate::rtl_ins/bbv i
+					 (ctx ctx)
 					 (fun (instantiate::rtl_nop))
 					 (dest #f)
 					 (args '()))))
 				(values s nctx))
 			     (with-access::rtl_ifeq fun (then)
 				(let ((s (duplicate::rtl_ins/bbv i
+					    (ctx ctx)
 					    (fun (instantiate::rtl_go
 						    (to (bbv-block then nctx))))
 					    (dest #f)
@@ -231,6 +243,7 @@
 		      (let* ((n (bbv-block then
 				   (extend-ctx ctx reg type flag)))
 			     (s (duplicate::rtl_ins/bbv i
+				   (ctx ctx)
 				   (fun (duplicate::rtl_ifne fun
 					   (then n))))))
 			 (values s (extend-ctx ctx reg type (not flag))))))
@@ -287,17 +300,17 @@
 ;*    Specialize an instruction according to the typing context.       */
 ;*    Returns the new instruction and the new context.                 */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize i::rtl_ins ctx::pair-nil)
+(define (rtl_ins-specialize-TBR i::rtl_ins ctx::pair-nil)
    (with-trace 'bbv-ins "rtl_ins-specialize"
       (trace-item "ins=" (shape i))
       (trace-item "ctx=" (ctx->string ctx))
       (cond
-	 ((rtl_ins-last? i)
-	  (tprint "SHOULD NOT...")
-	  (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t)))
-	 ((rtl_ins-typecheck? i)
-	  (tprint "SHOULD NOT....")
-	  (rtl_ins-specialize-typecheck-old i ctx))
+;* 	 ((rtl_ins-last? i)                                            */
+;* 	  (tprint "SHOULD NOT...")                                     */
+;* 	  (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t)))       */
+;* 	 ((rtl_ins-typecheck? i)                                       */
+;* 	  (tprint "SHOULD NOT....")                                    */
+;* 	  (rtl_ins-specialize-typecheck-old i ctx))                    */
 ;* 	 ((rtl_ins-vector-bound-check? i)                              */
 ;* 	  (rtl_ins-specialize-vector-bound-check i ctx))               */
 ;*  	 ((rtl_ins-bool? i)                                            */
@@ -392,70 +405,6 @@
 	    (when (rtl_call-predicate (car args))
 	       (let ((args (rtl_ins-args* i)))
 		  (and (pair? args) (null? (cdr args)) (rtl_reg? (car args)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-specialize-typecheck-old ...                             */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-typecheck-old i::rtl_ins ctx::pair-nil)
-   (with-trace 'bbv-ins "rtl_ins-specialize-typecheck"
-      (multiple-value-bind (reg type flag)
-	 (rtl_ins-typecheck i)
-	 (trace-item "typ=" (shape type) " flag=" flag)
-	 (let ((e (ctx-get ctx reg)))
-	    (trace-item "e=" (shape e))
-	    (cond
-	       ((or (not e) (eq? (bbv-ctxentry-typ e) *obj*))
-		(with-access::rtl_ins i (fun)
-		   (trace-item "fun=" (typeof fun) " " (isa? fun rtl_ifeq))
-		   (let ((s (duplicate::rtl_ins/bbv i
-			       (fun (duplicate-iffun fun)))))
-		      (values s ctx))))
-	       ((and (eq? (bbv-ctxentry-typ e) type) (bbv-ctxentry-flag e))
-		(with-access::rtl_ins/bbv i (fun)
-		   (let ((s (if (isa? fun rtl_ifeq)
-				(duplicate::rtl_ins/bbv i
-				   (fun (instantiate::rtl_nop))
-				   (dest #f)
-				   (args '()))
-				(with-access::rtl_ifne fun (then)
-				   (duplicate::rtl_ins/bbv i
-				      (fun (instantiate::rtl_go (to then)))
-				      (dest #f)
-				      (args '()))))))
-		      (values s ctx))))
-	       ((and (eq? (bbv-ctxentry-typ e) type) (not (bbv-ctxentry-flag e)))
-		(with-access::rtl_ins/bbv i (fun)
-		   (let ((s (if (isa? fun rtl_ifeq)
-				(with-access::rtl_ifeq fun (then)
-				   (duplicate::rtl_ins/bbv i
-				      (fun (instantiate::rtl_go (to then)))
-				      (dest #f)
-				      (args '())))
-				(duplicate::rtl_ins/bbv i
-				   (fun (instantiate::rtl_nop))
-				   (dest #f)
-				   (args '())))))
-		      (values s ctx))))
-	       ((and (not (eq? (bbv-ctxentry-typ e) type)) (bbv-ctxentry-flag e))
-		(with-access::rtl_ins/bbv i (fun)
-		   (let ((s (if (isa? fun rtl_ifne)
-				(duplicate::rtl_ins/bbv i
-				   (fun (instantiate::rtl_nop))
-				   (dest #f)
-				   (args '()))
-				(with-access::rtl_ifeq fun (then)
-				   (duplicate::rtl_ins/bbv i
-				      (fun (instantiate::rtl_go (to then)))
-				      (dest #f)
-				      (args '()))))))
-		      (values s ctx))))
-	       (else
-		;; branch used when the flag differs, might be improved
-		;; in the future
-		(with-access::rtl_ins i (fun)
-		   (let ((s (duplicate::rtl_ins/bbv i
-			       (fun (duplicate-iffun fun)))))
-		      (values s ctx)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-bool ...                                      */

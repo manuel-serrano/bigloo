@@ -130,7 +130,6 @@
 	     (display "%" p)
 	     (display hardware p))
 	    (var
-	     (display "!" p)
 	     (display (variable-id var) p))
 	    (else
 	     (display "$" p)

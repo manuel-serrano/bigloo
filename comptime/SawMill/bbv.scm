@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jul  5 09:34:42 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 11:10:13 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -39,7 +39,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    *cleanup* ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define *cleanup* #t)
+(define *cleanup* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    replace ...                                                      */
@@ -107,17 +107,16 @@
 	  (if (and (pair? *src-files*) (string? (car *src-files*)))
 	      (prefix (car *src-files*))
 	      "./a.out")))
-   (define name (format "~a-~a" oname (global-id global)))
-   (define filename (string-append name suffix))
+   (define filename (format "~a-~a~a" oname (global-id global) suffix))
+   (define name (prefix filename))
       
    (define (dump-blocks port)
       (let* ((id (global-id global)))
 	 (fprint port ";; -*- mode: bee -*-")
 	 (fprint port ";; *** " id ":")
 	 (fprint port ";; " (map shape params))
-	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -O -Tpdf\n"
-	    filename name name)
-	 (fprintf port ";;   '~a.dot.pdf'\n" name)
+	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
+	    filename name name name)
 	 (for-each (lambda (b)
 		      (dump b port 0)
 		      (newline port))
@@ -286,9 +285,6 @@
 ;*    merge-block! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (merge-block! mark b by)
-   (tprint "merging " mark)
-   (tprint (shape b))
-   (tprint (shape by))
    (with-trace 'bbv "merge-block!"
       (trace-item "b=" (block-label b) " <- " (block-label by))
       ;; merge by into b, i.e., replace all occurrence of by with b

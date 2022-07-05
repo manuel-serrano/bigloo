@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Jul  5 09:16:07 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 12:45:21 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -109,7 +109,8 @@
 ;*    bbv-ctxentry-reg ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (bbv-ctxentry-reg e)
-   (with-access::bbv-ctxentry e (reg) reg))
+   (with-access::bbv-ctxentry e (reg)
+      reg))
 
 ;*---------------------------------------------------------------------*/
 ;*    shape ::bbv-ctxentry ...                                         */
@@ -141,7 +142,7 @@
 	  (vector (shape reg)
 	     (if flag
 		 (shape typ)
-		 (string-append "no-" (shape typ)))
+		 (string-append "!" (shape typ)))
 	     (if (eq? typ *int*)
 		 (pp-int-value value)
 		 value)
@@ -149,7 +150,7 @@
 	  (vector (shape reg)
 	     (if flag
 		 (shape typ)
-		 (string-append "no-" (shape typ)))))))
+		 (string-append "!" (shape typ)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ctx->string ...                                                  */
@@ -397,16 +398,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */
 ;*---------------------------------------------------------------------*/
-;* (define-method (dump o::rtl_ins/bbv p m)                            */
-;*    (with-access::rtl_ins/bbv o (%spill fun dest args def in out)    */
-;*       (with-output-to-port p                                        */
-;* 	 (lambda ()                                                    */
-;* 	    (when dest                                                 */
-;* 	       (display "[" p)                                         */
-;* 	       (dump dest p m)                                         */
-;* 	       (display " <- " p))                                     */
-;* 	    (dump-ins-rhs o p m)                                       */
-;* 	    (when dest (display "]" p))                                */
+(define-method (dump o::rtl_ins/bbv p m)
+
+   (define (dump-ctx ctx p)
+      (display (map shape ctx) p))
+
+   (with-access::rtl_ins/bbv o (%spill fun dest args def use out ctx)
+      (with-output-to-port p
+	 (lambda ()
+	    (display "[" p)
+	    (when dest
+	       (display "(" p)
+	       (dump dest p m)
+	       (display " <- " p))
+	    (dump-ins-rhs o p m)
+	    (when dest
+	       (display ")" p))
+	    (display " " p)
+	    (dump-ctx ctx p)
+	    (display "]" p)))))
 ;* 	    (display* " #|fun=" (typeof fun))                          */
 ;* 	    (display* " def=" (map shape (regset->list def)))          */
 ;* 	    (display* " in=" (map shape (regset->list in)))            */

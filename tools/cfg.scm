@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Tue Jul  5 10:47:47 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 11:00:41 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -52,9 +52,9 @@
 ;*---------------------------------------------------------------------*/
 (define (list->bb l)
    (match-case l
-      (((or block blockS) ?num :parent ?parent :preds ?preds :succs ?succs . ?ins)
+      (((or block blockS SawDone) ?num :parent ?parent :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins parent (get-color parent)))
-      (((or block blockS) ?num :preds ?preds :succs ?succs . ?ins)
+      (((or block blockS SawDone) ?num :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins 0 (get-color 0)))
       (else
        (error "list->bb" "bad syntax" l))))
@@ -132,13 +132,18 @@
    (define (gen-row content)
       `("<tr>" ,@content "</tr>"))
    
-   (define (gen-col id last? content::pair #!key (align "left"))
-      `(,(format "<td align=\"~a\"" align)
+   (define (gen-col id content::pair ctx::pair-nil)
+      `("<td align=\"left\""
 	  ,@(if id `(" port=\"" ,id "\"") '())
-	  ,(if last? " colspan=\"20\"" "")
 	  ">"
 	  ,@content
+	  "</td>"
+	  "<td align=\"right\">"
+	  ,@ctx
 	  "</td>"))
+   
+   (define (gen-head content::pair-nil)
+      `("<td align=\"center\">" ,@content "</td>"))
    
    (define (gen-html-label content)
       `("<" ,@content ">"))
@@ -152,17 +157,13 @@
 			   ((char=? c #\>) "&gt;")
 			   ((char=? c #\&) "&amp;")
 			   (else (string c))))
-		(string->list obj))))
-	 ((symbol? obj)
+		(string->list obj))))	 ((symbol? obj)
 	  (escape (symbol->string obj)))
 	 ((pair? obj)
 	  (format "(~( ))" (map escape obj)))
 	 (else
 	  (format "~s" obj))))
 
-   (define (bold x)
-      `("<b>" ,x "</b>"))
-   
    (define (jump? x)
       (and (pair? x) (memq (car x) '(ifne ifeq go))))
 
@@ -194,16 +195,26 @@
 	 (define (target-id ref)
 	    (string->number (substring ref 1 (string-length ref))))
 	 
-	 (gen-row
-	    (gen-col #f #f
-	       (gen-table #f
-		  (gen-row
-		     (if (string? ins)
-			 (gen-col #f #t (list ins) :align "center")
-			 (gen-col (getport ins) #f (list (format "~( )" (map escape ins))))))
-		  :bgcolor (if (string? ins) (bb-color bb))))))
+	 (let ((code (car ins))
+	       (ctx (cadr ins)))
+	    (gen-row
+	       (gen-col #f
+		  (gen-table #f
+		     (gen-row
+			(gen-col (getport code)
+			   (list (format "~( )" (map escape code)))
+			   (list (format "~( )" (map typeof ctx))))))
+		  '()))))
       
-      (let ((instrs (cons (format "<b>#~a</b> [~a]" (bb-lbl-num bb) (bb-parent bb)) (bb-instrs bb))))
+      (let* ((lbl `(,(format "<b>#~a</b>" (bb-lbl-num bb)) ,(format "[~s]" (bb-parent bb))))
+	     (head (gen-row
+		      (gen-col #f
+			 (gen-table #f
+			    (gen-row
+			       (gen-head lbl))
+			    :bgcolor (bb-color bb))
+			 '())))
+	     (instrs (bb-instrs bb)))
 	 (let loop ((instrs instrs)
 		    (succs (reverse (bb-succs bb)))
 		    (port (-fx (length (bb-succs bb)) 1)))
@@ -212,29 +223,30 @@
 		  (cond
 		     ((not (pair? ins))
 		      (loop (cdr instrs) succs port))
-		     ((eq? (car ins) 'go)
-		      (add-ref! port ":w" (car succs) #f "green")
+		     ((eq? (caar ins) 'go)
+		      (add-ref! port ":sw" (car succs) #f "green")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
-		     ((eq? (car ins) 'ifne)
+		     ((eq? (caar ins) 'ifne)
 		      (add-ref! port ":e" (car succs) #t "blue")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
-		     ((eq? (car ins) 'ifeq)
+		     ((eq? (caar ins) 'ifeq)
 		      (add-ref! port ":e" (car succs) #t "red")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
 		     (else
 		      (loop (cdr instrs) succs port))))))
-	 (when (and (pair? instrs) (pair? (bb-succs bb)) (not (go? (car (last-pair instrs)))))
+	 (when (and (pair? (bb-succs bb)) (or (null? instrs) (not (go? (car (last-pair instrs))))))
 	    (add-ref! #f ":s" (car (bb-succs bb)) #f #f))
 	 (add-node
 	    (gen-node id
 	       (gen-html-label
 		  (gen-table #f
-		     (let loop ((lst instrs))
-			(if (pair? lst)
-			    (let ((rest (cdr lst)))
-			       (append (decorate-instr (car lst) (null? rest))
-				  (loop rest)))
-			    '()))))))))
+		     (cons head
+			(let loop ((lst instrs))
+			   (if (pair? lst)
+			       (let ((rest (cdr lst)))
+				  (append (decorate-instr (car lst) (null? rest))
+				     (loop rest)))
+			       '())))))))))
    
    (define (dump-bbs bbs)
       (for-each dump-bb bbs))
