@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Tue Jul  5 11:00:41 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 16:21:12 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -18,20 +18,16 @@
 ;*    ;; *** sum:                                                      */
 ;*    ;; (!v)                                                          */
 ;*    (block 25                                                        */
-;*     ;; ictx=()                                                      */
-;*     ;; octx=(#("$g1130" "bint") #("!s" "bint"))                     */
 ;*     :preds ()                                                       */
 ;*     :succs (26)                                                     */
-;*     [$g1130 <- (mov ($long->bint (loadi 0)))]                       */
-;*     [!s <- (mov ($long->bint (loadi 0)))])                          */
+;*     [($g1130 <- (mov ($long->bint (loadi 0)))) (ctx ... ctx)]       */
+;*     [(!s <- (mov ($long->bint (loadi 0)))) (ctx ... ctx)]           */
 ;*                                                                     */
 ;*    (block 26                                                        */
 ;*     ;; ictx=(#("$g1130" "bint") #("!s" "bint"))                     */
-;*     ;; octx=(#("$g1130" "bint") #("!s" "bint") #("!v" "vector"))    */
-;*     ;; octx=(#("$g1130" "bint") #("!s" "bint") #("!v" "no-vector")) */
 ;*     :preds (25)                                                     */
 ;*     :succs (27 186)                                                 */
-;*     (ifeq ($vector? !v) 186))                                       */
+;*     [(ifeq ($vector? !v) 186) (ctx ... ctx)]                        */
 ;*                                                                     */
 ;*    ...                                                              */
 ;*=====================================================================*/
@@ -52,9 +48,9 @@
 ;*---------------------------------------------------------------------*/
 (define (list->bb l)
    (match-case l
-      (((or block blockS SawDone) ?num :parent ?parent :preds ?preds :succs ?succs . ?ins)
+      (((or block blockS blockV SawDone) ?num :parent ?parent :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins parent (get-color parent)))
-      (((or block blockS SawDone) ?num :preds ?preds :succs ?succs . ?ins)
+      (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins 0 (get-color 0)))
       (else
        (error "list->bb" "bad syntax" l))))
@@ -95,19 +91,11 @@
    
    (define edges '())
    
-   (define (add-node node)
-      (set! nodes
-	 `(,@node ,@nodes)))
+   (define (add-node! node)
+      (set! nodes (append node nodes)))
    
-   (define (add-edge! from to dotted? color)
-      (set! edges
-	 `("  " ,from " -> " ,to
-	     ,(cond
-		 ((and dotted? color) (format " [style = dashed; color = ~a];\n" color))
-		 (dotted? " [style = dotted];\n")
-		 (color (format " [color = ~a];\n" color))
-		 (else ";\n"))
-	     ,@edges)))
+   (define (add-edge! from to dotted color)
+      (set! edges (append (gen-edge from to dotted color) edges)))
    
    (define (gen-digraph name)
       `("digraph \"" ,name "\" {\n"
@@ -120,10 +108,21 @@
       `("  " ,id " [fontname = \"Courier New\" shape = \"none\" label = "
 	  ,@label
 	  " ];\n"))
+
+   (define (gen-edge from to dotted? color)
+      `(,from " -> " ,to
+	  ,(cond
+	      ((and dotted? color) (format " [style = dashed; color = ~a];\n" color))
+	      (dotted? " [style = dotted];\n")
+	      (color (format " [color = ~a];\n" color))
+	      (else ";\n"))))
    
-   (define (gen-table id content #!key (bgcolor "gray80"))
-      `("<table border=\"0\" cellborder=\"0\" cellspacing=\"0\" cellpadding=\"0\""
+   (define (gen-table id content #!key (bgcolor "gray80") (color "black") (cellspacing 0))
+      `("<table border=\"0\" cellborder=\"0\" cellspacing=\""
+	  ,cellspacing
+	  "\" cellpadding=\"0\""
 	  ,@(if bgcolor `(" bgcolor=\"" ,bgcolor "\"") '())
+	  ,@(if color `(" color=\"" ,color "\"") '())
 	  ,@(if id `(" port=\"" ,id "\"") '())
 	  ">"
 	  ,@content
@@ -132,14 +131,12 @@
    (define (gen-row content)
       `("<tr>" ,@content "</tr>"))
    
-   (define (gen-col id content::pair ctx::pair-nil)
+   (define (gen-col id content::pair #!key color)
       `("<td align=\"left\""
 	  ,@(if id `(" port=\"" ,id "\"") '())
+	  ,@(if color `(" color=\"" ,color "\"") '())
 	  ">"
 	  ,@content
-	  "</td>"
-	  "<td align=\"right\">"
-	  ,@ctx
 	  "</td>"))
    
    (define (gen-head content::pair-nil)
@@ -168,9 +165,9 @@
       (and (pair? x) (memq (car x) '(ifne ifeq go))))
 
    (define (go? x)
-      (and (pair? x) (eq? (car x) 'go)))
+      (and (pair? x) (pair? (car x)) (eq? (caar x) 'go)))
 
-   (define (dump-bb bb)
+   (define (add-bb! bb)
       
       (define id (bb-lbl-num bb))
       (define port-count (-fx (length (bb-succs bb)) 1))
@@ -184,12 +181,32 @@
 	     (add-edge! (format "~a:~a ~a" id from side) to dotted? color)
 	     (add-edge! (format "~a ~a" id side) to dotted? color)))
       
-      (define (getport ins)
-	 (when (jump? ins)
+      (define (getport code)
+	 (when (jump? code)
 	    (let ((port port-count))
 	       (set! port-count (-fx port-count 1))
 	       port)))
+
+      (define (decorate-ctx-entry entry)
+	 (match-case entry
+	    (#(?reg ?type)
+	     (format "~a:~a" reg type))
+	    (else
+	     "")))
       
+      (define (decorate-ctx::pair ins)
+	 (let ((code (car ins))
+	       (ctx (cadr ins)))
+	    (gen-row
+	       (gen-col #f
+		  (gen-table #f
+		     (gen-row
+			(gen-col #f
+			   (list (format "<i>;; ~( )</i>"
+				    (map decorate-ctx-entry ctx)))))
+		     :color "blue"
+		     :cellspacing 2)))))
+
       (define (decorate-instr::pair ins last-instr?)
 	 
 	 (define (target-id ref)
@@ -202,18 +219,16 @@
 		  (gen-table #f
 		     (gen-row
 			(gen-col (getport code)
-			   (list (format "~( )" (map escape code)))
-			   (list (format "~( )" (map typeof ctx))))))
-		  '()))))
+			   (list (format "~( )" (map escape code)))))
+		     :cellspacing 2)))))
       
-      (let* ((lbl `(,(format "<b>#~a</b>" (bb-lbl-num bb)) ,(format "[~s]" (bb-parent bb))))
+      (let* ((lbl `(,(format "<b>#~a</b>" (bb-lbl-num bb))
+		    ,(format "[~s]" (bb-parent bb))))
 	     (head (gen-row
 		      (gen-col #f
 			 (gen-table #f
-			    (gen-row
-			       (gen-head lbl))
-			    :bgcolor (bb-color bb))
-			 '())))
+			    (gen-row (gen-head lbl))
+			    :bgcolor (bb-color bb)))))
 	     (instrs (bb-instrs bb)))
 	 (let loop ((instrs instrs)
 		    (succs (reverse (bb-succs bb)))
@@ -224,19 +239,20 @@
 		     ((not (pair? ins))
 		      (loop (cdr instrs) succs port))
 		     ((eq? (caar ins) 'go)
-		      (add-ref! port ":sw" (car succs) #f "green")
+		      (add-ref! port ":sw" (car succs) #f "blue")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
 		     ((eq? (caar ins) 'ifne)
-		      (add-ref! port ":e" (car succs) #t "blue")
+		      (add-ref! port ":e" (car succs) #t "green")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
 		     ((eq? (caar ins) 'ifeq)
 		      (add-ref! port ":e" (car succs) #t "red")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
 		     (else
 		      (loop (cdr instrs) succs port))))))
-	 (when (and (pair? (bb-succs bb)) (or (null? instrs) (not (go? (car (last-pair instrs))))))
+	 (when (and (pair? (bb-succs bb))
+		    (or (null? instrs) (not (go? (car (last-pair instrs))))))
 	    (add-ref! #f ":s" (car (bb-succs bb)) #f #f))
-	 (add-node
+	 (add-node!
 	    (gen-node id
 	       (gen-html-label
 		  (gen-table #f
@@ -244,14 +260,13 @@
 			(let loop ((lst instrs))
 			   (if (pair? lst)
 			       (let ((rest (cdr lst)))
-				  (append (decorate-instr (car lst) (null? rest))
+				  (append
+				     (decorate-ctx (car lst))
+				     (decorate-instr (car lst) (null? rest))
 				     (loop rest)))
 			       '())))))))))
    
-   (define (dump-bbs bbs)
-      (for-each dump-bb bbs))
-
-   (dump-bbs (map list->bb (reverse bbs)))
+   (for-each add-bb! (map list->bb (reverse bbs)))
    (for-each display (gen-digraph name)))
 
 ;*---------------------------------------------------------------------*/

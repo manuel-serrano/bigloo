@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul  5 12:43:21 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 17:24:17 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -36,9 +36,6 @@
 	    saw_bbv-utils)
    
    (export (bbv-block::blockS b::blockV ctx::pair-nil)
-	   (rtl_ins-specializer ::rtl_ins)
-;* 	   (rtl_ins-specialize ::rtl_ins ::pair-nil)                   */
-	   (rtl_ins-typecheck?::bool ::rtl_ins)
 	   (rtl_ins-intcmp?::bool ::rtl_ins)
 	   (rtl_ins-specialize-intcmp i ctx)))
 
@@ -97,10 +94,6 @@
 		    (block-succs-set! s (list n)))
 		(block-preds-set! n (cons s (block-preds n))))))))
 
-   (define (duplicate-ins ins ctx)
-      (duplicate::rtl_ins/bbv ins
-	 (ctx ctx)))
-   
    (with-access::blockV b (first label succs versions)
       (with-trace 'bbv-block (format "specialize-block! ~a" label)
 	 (let* ((lbl (genlabel))
@@ -176,6 +169,13 @@
 		      (extend-live-out-regs (car oins) ctx)))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    duplicate-ins ...                                                */
+;*---------------------------------------------------------------------*/
+(define (duplicate-ins ins ctx)
+      (duplicate::rtl_ins/bbv ins
+	 (ctx ctx)))
+
+;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specializer ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specializer i::rtl_ins)
@@ -241,20 +241,21 @@
 		  ((isa? fun rtl_ifne)
 		   (with-access::rtl_ifne fun (then)
 		      (let* ((n (bbv-block then
-				   (extend-ctx ctx reg type flag)))
+				   (extend-ctx ctx reg type #t)))
 			     (s (duplicate::rtl_ins/bbv i
 				   (ctx ctx)
 				   (fun (duplicate::rtl_ifne fun
 					   (then n))))))
-			 (values s (extend-ctx ctx reg type (not flag))))))
+			 (values s (extend-ctx ctx reg type #f)))))
 		  ((isa? fun rtl_ifeq)
 		   (with-access::rtl_ifeq fun (then)
 		      (let* ((n (bbv-block then
-				   (extend-ctx ctx reg type (not flag))))
+				   (extend-ctx ctx reg type #f)))
 			     (s (duplicate::rtl_ins/bbv i
+				   (ctx ctx)
 				   (fun (duplicate::rtl_ifeq fun
 					   (then n))))))
-		      (values s (extend-ctx ctx reg type flag)))))
+		      (values s (extend-ctx ctx reg type #t)))))
 		  (else
 		   (error "rtl_ins-specialize-typecheck"
 		      "should not be here"
@@ -270,19 +271,22 @@
 	    ((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
 	     (with-access::rtl_reg (car args) (type)
 		(let ((e (ctx-get ctx (car args))))
-		   (values i (extend-ctx ctx dest type #t)))))
+		   (values (duplicate-ins i ctx)
+		      (extend-ctx ctx dest type #t)))))
 	    ((and *type-call* (pair? args) (rtl_ins-call? (car args)))
 	     (with-access::rtl_ins (car args) (fun)
 		(with-access::rtl_call fun (var)
 		   (with-access::global var (value type)
-		      (values i (extend-ctx ctx dest type #t))))))
+		      (values (duplicate-ins i ctx)
+			 (extend-ctx ctx dest type #t))))))
 	    ((and *type-loadi* (pair? args) (rtl_ins-loadi? (car args)))
 	     (with-access::rtl_ins (car args) (fun)
 		(with-access::rtl_loadi fun (constant)
 		   (with-access::atom constant (type)
-		      (values i (extend-ctx ctx dest type #t))))))
+		      (values (duplicate-ins i ctx)
+			 (extend-ctx ctx dest type #t))))))
 	    (else
-	     (values i ctx))))))
+	     (values (duplicate-ins i ctx) ctx))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadi ...                                     */

@@ -242,7 +242,7 @@
 	 (fprint p ":succs " (map block-label succs)))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
-      (display ")\n" p)))
+      (display "\n )\n" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins ...                                               */

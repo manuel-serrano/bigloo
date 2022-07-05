@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jul  5 11:10:13 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 17:35:02 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -65,11 +65,15 @@
 	     (dump-blocks global params blocks ".plain.cfg"))
 	  (set-max-label! blocks)
 	  (reorder-succs! blocks)
+	  (when (>=fx (bigloo-debug) 1)
+	     (dump-blocks global params blocks ".reorder.cfg"))
 	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
 	     (when (>=fx (bigloo-debug) 1)
 		(dump-blocks global params blocks ".norm.cfg"))
 	     (let ((regs (liveness! back blocks params)))
 		;; liveness also widen each block into a blockV
+		(when (>=fx (bigloo-debug) 1)
+		   (dump-blocks global params blocks ".liveness.cfg"))
 		(unwind-protect
 		   (if (null? blocks)
 		       '()
@@ -136,9 +140,10 @@
 	 (when (pair? (cdr bs))
 	    (let ((b (car bs))
 		  (n (cadr bs)))
-	       (with-access::block b (succs)
+	       (with-access::block b (succs first)
 		  (when (pair? succs)
-		     (set! succs (cons n (remq! n succs)))))
+		     (unless (rtl_ins-go? (car (last-pair first)))
+			(set! succs (cons n (remq! n succs))))))
 	       (loop (cdr bs)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -183,6 +188,11 @@
 ;*    -------------------------------------------------------------    */
 ;*    Computes the liveness of a list of blocks. Returns the           */
 ;*    list of used registers.                                          */
+;*    -------------------------------------------------------------    */
+;*    This function implements a fix point interation to find the      */
+;*    maximal solution of the equations:                               */
+;*       in[ n ] = use[ n ] U (out[ n ] - def[ n ])                    */
+;*      out[ n ] = Union(succ[ n ]) in[ s ]                            */
 ;*---------------------------------------------------------------------*/
 (define (liveness! back blocks params)
    
@@ -217,7 +227,7 @@
 	  (hregs (append-map! collect-register! (backend-registers back)))
 	  (pregs (filter rtl_reg/ra? params))
 	  (regs (append hregs cregs)))
-      ;; pre the instructions
+      ;; pre widen the instructions
       (widen-bbv! blocks regs)
       ;; add the argument of the function to the IN set of the
       ;; first instruction of the first block
@@ -345,38 +355,3 @@
 		(set! xbl (cons by xbl))
 		(set! ybl (cons bx ybl))
 		#f))))))
-
-;*---------------------------------------------------------------------*/
-;*    specialize-block-ins! ...                                        */
-;*---------------------------------------------------------------------*/
-;* (define (specialize-block-ins! s::blockS ins::rtl_ins)              */
-;*    (with-access::blockS s (succs inctx outctxs)                     */
-;*       (cond                                                         */
-;* 	 ((rtl_ins-go? ins)                                            */
-;* 	  (with-access::rtl_ins ins (fun)                              */
-;* 	     (with-access::rtl_go fun (to)                             */
-;* 		(let ((n (get-specialize-block to (car outctxs))))     */
-;* 		   (set! to n)                                         */
-;* 		   (block-succs-set! s (cons n succs))                 */
-;* 		   (block-preds-set! n (cons s (block-preds n)))))))   */
-;* 	 ((rtl_ins-ifeq? ins)                                          */
-;* 	  (with-access::rtl_ins ins (fun)                              */
-;* 	     (with-access::rtl_ifeq fun (then)                         */
-;* 		(let ((n (get-specialize-block then (car outctxs))))   */
-;* 		   (set! then n)                                       */
-;* 		   (block-succs-set! s (list n))                       */
-;* 		   (block-preds-set! n (cons s (block-preds n)))))))   */
-;* 	 ((rtl_ins-ifne? ins)                                          */
-;* 	  (with-access::rtl_ins ins (fun)                              */
-;* 	     (with-access::rtl_ifne fun (then)                         */
-;* 		(when (isa? then blockS)                               */
-;* 		   (tprint "specializing specialized: ")               */
-;* 		   (tprint "ctx=" (shape (cadr outctxs)))              */
-;* 		   (tprint "s=" (shape s))                             */
-;* 		   (tprint "then=" (shape then))                       */
-;* 		   (tprint "exit before error...")                     */
-;* 		   (exit 1))                                           */
-;* 		(let ((n (get-specialize-block then (cadr outctxs))))  */
-;* 		   (set! then n)                                       */
-;* 		   (block-succs-set! s (list n))                       */
-;* 		   (block-preds-set! n (cons s (block-preds n)))))))))) */

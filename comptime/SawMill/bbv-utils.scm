@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Tue Jul  5 09:23:33 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 17:54:33 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -270,7 +270,7 @@
 	    ;; rtl_ins-last have to succs
 	    (let* ((lp (last-pair first))
 		   (last (car lp)))
-	       (unless (rtl_ins-go? (car lp))
+	       (unless (rtl_ins-go? last)
 		  (let ((go (instantiate::rtl_ins
 			       (dest #f)
 			       (fun (instantiate::rtl_go
@@ -290,83 +290,6 @@
 	  (normalize-block! (car bs))
 	  (with-access::block (car bs) (succs)
 	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
-
-;*---------------------------------------------------------------------*/
-;*    normalize-goto! ...                                              */
-;*    -------------------------------------------------------------    */
-;*    Add an explicit goto to all BB so that they all end with         */
-;*    a return/fail/exit or a goto.                                    */
-;*---------------------------------------------------------------------*/
-(define (normalize-goto-TBR-1ju22! b::block)
-
-   (define (collapse-branch b::block first::pair)
-      (let ((next (car (block-succs b))))
-	 (when (and (rtl_ins-ifxx? (car (block-first next)))
-		    (null? (cdr (block-first next))))
-	    (let ((nsuccs (block-succs next)))
-	       (if (rtl_ins-go? (car first))
-		   (set-car! first (car (block-first next)))
-		   (set-cdr! first (block-first next)))
-	       (block-preds-set! next (remq! b (block-preds next)))
-	       (block-succs-set! b nsuccs)
-	       (for-each (lambda (ns)
-			    (block-preds-set! ns
-			       (replace (block-preds ns) next b)))
-		  nsuccs)))))
-
-   (let loop ((bs (list b))
-	      (acc '()))
-      (cond
-	 ((null? bs)
-	  (reverse acc))
-	 ((memq (car bs) acc)
-	  (loop (cdr bs) acc))
-	 (else
-	  (with-access::block (car bs) (succs preds first)
-	     (let liip ((first first))
-		(cond
-		   ((null? first)
-		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
-		   ((rtl_ins-go? (car first))
-		    (collapse-branch (car bs) first)
-		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
-		   ((null? (cdr first))
-		    (when (and (not (rtl_ins-ifxx? (car first)))
-			       (pair? (block-succs (car bs))))
-		       (collapse-branch (car bs) first))
-		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
-;* 		   ((rtl_ins-ifeq? (car first))                        */
-;* 		    [assert (first) (rtl_ins-go? (cadr first))]        */
-;* 		    (with-access::rtl_ins (car first) (fun)            */
-;* 		       (with-access::rtl_ifeq fun (then)               */
-;* 			  (let ((nb (instantiate::block                */
-;* 				       (label (genlabel))              */
-;* 				       (first (cdr first))             */
-;* 				       (preds (list (car bs)))         */
-;* 				       (succs (list then)))))          */
-;* 			     (set-car! succs nb)                       */
-;* 			     (set-cdr! first '())                      */
-;* 			     (with-access::block then (preds)          */
-;* 				(set! preds (replace preds (car bs) nb))) */
-;* 			     (loop (append (reverse succs) (cdr bs))   */
-;* 				(cons (car bs) acc))))))               */
-;* 		   ((rtl_ins-ifne? (car first))                        */
-;* 		    [assert (first) (rtl_ins-go? (cadr first))]        */
-;* 		    (with-access::rtl_ins (car first) (fun)            */
-;* 		       (with-access::rtl_ifne fun (then)               */
-;* 			  (let ((nb (instantiate::block                */
-;* 				       (label (genlabel))              */
-;* 				       (first (cdr first))             */
-;* 				       (preds (list (car bs)))         */
-;* 				       (succs (list then)))))          */
-;* 			     (set-car! (cdr succs) nb)                 */
-;* 			     (set-cdr! first '())                      */
-;* 			     (with-access::block then (preds)          */
-;* 				(set! preds (replace preds (car bs) nb))) */
-;* 			     (loop (append (reverse succs) (cdr bs))   */
-;* 				(cons (car bs) acc))))))               */
-		   (else
-		    (liip (cdr first))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    simplify-branch! ...                                             */

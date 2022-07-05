@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Jul  5 12:45:21 2022 (serrano)                */
+;*    Last change :  Tue Jul  5 17:31:40 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -403,7 +403,7 @@
    (define (dump-ctx ctx p)
       (display (map shape ctx) p))
 
-   (with-access::rtl_ins/bbv o (%spill fun dest args def use out ctx)
+   (with-access::rtl_ins/bbv o (%spill fun dest args def in out ctx)
       (with-output-to-port p
 	 (lambda ()
 	    (display "[" p)
@@ -416,12 +416,10 @@
 	       (display ")" p))
 	    (display " " p)
 	    (dump-ctx ctx p)
-	    (display "]" p)))))
-;* 	    (display* " #|fun=" (typeof fun))                          */
-;* 	    (display* " def=" (map shape (regset->list def)))          */
-;* 	    (display* " in=" (map shape (regset->list in)))            */
-;* 	    (display* " out=" (map shape (regset->list out)))          */
-;* 	    (display "|#")))))                                         */
+	    (display "]" p)
+	    (display* " ;; def=" (map shape (regset->list def)))
+	    (display* " in=" (map shape (regset->list in)))
+	    (display* " out=" (map shape (regset->list out)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::blockS ...                                                */
@@ -438,7 +436,7 @@
 	 (fprint p ":succs " (map block-label succs)))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
-      (display ")\n" p)))
+      (display "\n )\n" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-last? ...                                                */
