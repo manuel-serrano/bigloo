@@ -116,7 +116,7 @@ POPULATION	= Makefile README $(EMACS_SOURCES) $(OLD_SOURCES) \
 #*---------------------------------------------------------------------*/
 all: $(EMACSBRAND)
 
-emacs22 emacs23 emacs24 emacs25 emacs26 emacs27:
+emacs22 emacs23 emacs24 emacs25 emacs26 emacs27 emacs28:
 	(expr=load-path; \
           for p in . $(LOADPATH); do \
              expr="(cons \"../$$p\" (cons \"$$p\" $$expr))"; \
