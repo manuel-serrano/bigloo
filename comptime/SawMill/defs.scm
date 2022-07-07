@@ -249,8 +249,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::rtl_ins p m)
    (with-access::rtl_ins o (%spill fun dest args)
+      (display "[" p)
       (when dest
-	 (display "[" p)
 	 (dump dest p m)
 	 (display " <- " p))
       (dump-ins-rhs o p m)
@@ -261,7 +261,7 @@
 		      (display " " p))
 	    %spill)
 	 (display ")" p))
-      (when dest (display "]" p))))
+      (display "]" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-ins-rhs ...                                                 */
