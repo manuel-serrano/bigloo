@@ -22,10 +22,12 @@ public class datagram_server_socket extends datagram_socket {
       super();
    }
    
-   public datagram_server_socket( final int port ) {
+    public datagram_server_socket( final int port,
+                                   final symbol family ) {
       super();
 
       try {
+         // FIXME: The address family cannot be specified.
 	 socket = new DatagramSocket( port );
 	 input = new input_datagram_port( this, port );
       } catch( final IOException e ) {

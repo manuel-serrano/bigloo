@@ -55,8 +55,10 @@ The supported domains are:
 
 @itemize @bullet
 @item @code{inet}: IPv4 Internet protocols.
+@item @code{inet6}: IPv6 Internet protocols.
 @item @code{unix}: Unix sockets for local inter-process communications.
 @item @code{local}: Same as @code{unix}.
+@item @code{unspec}: uses IPv4 or IPv6 as determined by getaddrinfo.
 @end itemize
 
 If the connection cannot be established, an @code{&io-error} is raised
@@ -137,7 +139,7 @@ the distant system's idea of the time of day.}:
 @end smalllisp
 @end deffn
 
-@deffn {bigloo procedure} make-server-socket #!optional (port 0) #!key (name #f) (backlog 5)
+@deffn {bigloo procedure} make-server-socket #!optional (port 0) #!key (name #f) (backlog 5) (domain 'inet)
 @code{make-server-socket} returns a new socket object. 
 The socket will be listening on the network interface @var{name}, 
 either on the specified @var{port}, or on a port chosen by the system
@@ -147,6 +149,17 @@ be used (as returned by the name server lookup).
 
 The @var{backlog} argument specifies the size of the wait-queue used for
 accepting connections.
+
+The @var{domain} argument specifies the address family to use. The supported domains
+are:
+
+@itemize @bullet
+@item @code{inet}: IPv4 Internet protocols.
+@item @code{inet6}: IPv6 Internet protocols.
+@item @code{unix}: Unix sockets for local inter-process communications.
+@item @code{local}: Same as @code{unix}.
+@end itemize
+
 @end deffn
 
 @deffn {bigloo procedure} socket-accept socket #!key (errp #t) (inbuf #t) (outbuf #t)
@@ -320,16 +333,56 @@ consecutive connections:
 Bigloo also provides primitives dealing with @dfn{datagram} sockets, for
 use with transports such as UDP.  These are shown below:
 
-@deffn {bigloo procedure} make-datagram-server-socket @var{port}
-Return a datagram server socket bound to the loopback address on
-@var{port}, and whose address family and protocol family are those
-normally used for services on @var{port}.
+@deffn {bigloo procedure} make-datagram-client-socket hostname port #!optional broadcast (domain 'inet)
+
+return a datagram client socket connected to @var{hostname} on @var{port} whose address family is specified by @var{domain}.
+
+The supported domains
+are:
+
+@itemize @bullet
+@item @code{inet}: IPv4 Internet protocols.
+@item @code{inet6}: IPv6 Internet protocols.
+@end itemize
+
+@end deffn
+
+@deffn {bigloo procedure} make-datagram-server-socket #!optional (port 0) (domain 'inet)
+Return a datagram server socket listening on @var{port}, and whose address family is
+specified by @var{domain}. The supported domains
+are:
+
+@itemize @bullet
+@item @code{inet}: IPv4 Internet protocols.
+@item @code{inet6}: IPv6 Internet protocols.
+@end itemize
+
+
+
 @end deffn
 
 @deffn {bigloo procedure} make-datagram-unbound-socket [(domain 'inet)]
-Return an unbound datagram socket.  It may then be used in conjunction
+Return an unbound datagram socket,whose address family is
+specified by @var{domain}. The supported domains
+are:
+
+@itemize @bullet
+@item @code{inet}: IPv4 Internet protocols.
+@item @code{inet6}: IPv6 Internet protocols.
+@end itemize
+
+It may then be used in conjunction
 with @code{datagram-socket-send} and @code{datagram-socket-receive}, for
 instance send to and receive from a UDP multicast address.
+@end deffn
+
+@deffn {bigloo procedure} datagram-socket-input socket
+@deffnx {bigloo procedure} datagram-socket-output socket
+
+Returns the file port associated for reading or writing with the program 
+connected with datagram @var{socket}. If no connection has already been established,
+these functions return @code{#f}.
+
 @end deffn
 
 @deffn {bigloo procedure} datagram-socket-receive sock size

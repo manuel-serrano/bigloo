@@ -831,10 +831,10 @@ union scmobj {
       int stype;
       /* the close hook */
       union scmobj *chook;
-      /* socket server */
-      void *server;
       /* assocated port */
       union scmobj *port;
+      /* socket server */
+      void *server;
    } datagram_socket;
 
    /* regular expressions */
@@ -2543,8 +2543,8 @@ BGL_RUNTIME_DECL void (*bgl_gc_stop_blocking)(void);
 BGL_RUNTIME_DECL void *(*bgl_gc_do_blocking)(void (*fun)(), void *);
 #endif
    
-BGL_RUNTIME_DECL obj_t bgl_make_client_socket(obj_t, int, int, obj_t, obj_t);
-BGL_RUNTIME_DECL obj_t bgl_make_server_socket(obj_t, int, int, bool_t);
+BGL_RUNTIME_DECL obj_t bgl_make_client_socket(obj_t, int, int, obj_t, obj_t, obj_t);
+BGL_RUNTIME_DECL obj_t bgl_make_server_socket(obj_t, int, int, obj_t);
 BGL_RUNTIME_DECL obj_t bgl_socket_accept(obj_t, bool_t, obj_t, obj_t);
 BGL_RUNTIME_DECL long bgl_socket_accept_many(obj_t, bool_t, obj_t, obj_t, obj_t);
    
