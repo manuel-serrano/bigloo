@@ -19,7 +19,7 @@
    (static (class area entry::block exit::block)
 	   (wide-class reversed::block)
 	   (wide-class rlocal::local reg code)
-	   (wide-class retblock/to::retblock to::block))
+	   (wide-class retblock/to::retblock to::block dst::rtl_reg))
    )
 
 (define *reverse-call-argument* #f)
@@ -478,9 +478,13 @@
 ;;
 (define-method (node->rtl::area e::retblock) ;()
    (with-access::retblock e (body)
-      (let ((r (single e (instantiate::rtl_pragma (format "glop")))))
-	 (widen!::retblock/to e (to (area-entry r)))
-	 (link (node->rtl body) r))))
+;      (let ((r (single e (instantiate::rtl_pragma (format "glop")))))
+      (let ( (dst (new-reg e)) )
+	 (let ( (join (single #f (instantiate::rtl_mov) dst)) )
+	    (widen!::retblock/to e (to (area-entry join)) (dst dst))
+	    (link (node->rtl/in body dst)
+		  join )))))
+;	 (link (node->rtl body) r))))
 ;*       (link (call e (instantiate::                                  */
 ;*       (link (let ( (a (single e (instantiate::rtl_nop))) )          */
 ;* 	       ;;(adestination! a (local->reg (var-variable var)))     */
@@ -490,9 +494,12 @@
 ;; 
 (define-method (node->rtl::area e::return) ;()
    (with-access::return e (block value)
-      (with-access::retblock/to block (to)
-	 (let ((r (call e (instantiate::rtl_go (to to)))))
-	    r))))
+      (with-access::retblock/to block (to dst)
+	 (let ( (r (node->rtl/in value dst)) )
+	    (successor! (area-exit r) to)
+	    (unlink r) ))))
+;	 (let ((r (call e (instantiate::rtl_go (to to)))))
+;	    r))))
 ;* 	    (block-preds-set! to (cons (area-exit r) (block-preds to))) */
 ;* 	    r))))                                                      */
 

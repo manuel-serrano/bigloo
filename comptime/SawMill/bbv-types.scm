@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Jul  5 17:31:40 2022 (serrano)                */
+;*    Last change :  Thu Jul  7 09:52:44 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -65,12 +65,15 @@
 	    (params->ctx ::pair-nil)
 	    (ctx-get ::pair-nil ::rtl_reg)
 	    (extend-ctx::pair-nil ::pair-nil ::rtl_reg ::obj ::bool
-	       #!optional (value '_))
+	       #!key (value '_))
+	    (extend-ctx* ctx::pair-nil regs::pair type flag::bool
+	       #!key (value '_))
 	    (extend-normalize-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
-	       #!optional (value '_))
+	       #!key (value '_))
 	    (refine-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
-	       #!optional (value '_))
+	       #!key (value '_))
 	    (alias-ctx::pair-nil ::pair-nil ::rtl_reg ::rtl_reg)
+	    (unalias-ctx::pair-nil ::pair-nil ::rtl_reg)
 	    
 	    (generic bbv-hash ::obj)
 	    (generic bbv-equal?::bool ::obj ::obj)
@@ -138,19 +141,14 @@
       (format "[~a..~a]" (pp-int-value i) (pp-int-value a)))
 
    (with-access::bbv-ctxentry e (reg typ flag value aliases)
-      (if (>= *verbose* 2)
-	  (vector (shape reg)
-	     (if flag
-		 (shape typ)
-		 (string-append "!" (shape typ)))
-	     (if (eq? typ *int*)
-		 (pp-int-value value)
-		 value)
-	     (map shape aliases))
-	  (vector (shape reg)
-	     (if flag
-		 (shape typ)
-		 (string-append "!" (shape typ)))))))
+      (vector (shape reg)
+	 (if flag
+	     (shape typ)
+	     (string-append "!" (shape typ)))
+	 (if (eq? typ *int*)
+	     (pp-int-value value)
+	     value)
+	 (map shape aliases))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ctx->string ...                                                  */
@@ -211,10 +209,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx ...                                                   */
 ;*    -------------------------------------------------------------    */
-;*    Extend the context with a new register assignement. This         */
-;*    function breaks aliasing information.                            */
+;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx ctx::pair-nil reg::rtl_reg type flag::bool #!optional (value '_))
+(define (extend-ctx ctx::pair-nil reg::rtl_reg type flag::bool
+	   #!key (value '_))
    
    (define (new-ctxentry reg::rtl_reg type flag::bool value)
       (instantiate::bbv-ctxentry
@@ -222,11 +220,11 @@
 	 (typ type)
 	 (flag flag)
 	 (value value)))
-
+   
    (if (not (isa? reg rtl_reg/ra))
        ctx
        (let ((rnum (rtl_reg/ra-num reg)))
-	  (let loop ((ctx (unalias-ctx ctx reg)))
+	  (let loop ((ctx ctx))
 	     (cond
 		((null? ctx)
 		 (let ((n (new-ctxentry reg type flag value)))
@@ -238,21 +236,33 @@
 		 (let ((n (duplicate::bbv-ctxentry (car ctx)
 			     (typ type)
 			     (flag flag)
-			     (value value)
-			     (aliases '()))))
-		    (with-access::bbv-ctxentry (car ctx) (aliases)
-		       (cons n (cdr ctx)))))
+			     (value value))))
+		    (cons n (cdr ctx))))
 		(else
 		 (cons (car ctx) (loop (cdr ctx)))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    extend-ctx* ...                                                  */
+;*    -------------------------------------------------------------    */
+;*    Extend the context with a new register assignement.              */
+;*---------------------------------------------------------------------*/
+(define (extend-ctx* ctx::pair-nil regs::pair type flag::bool
+	   #!key (value '_))
+   (let loop ((ctx ctx)
+	      (regs regs))
+      (if (null? regs)
+	  ctx
+	  (loop (extend-ctx ctx (car regs) type flag :value value)
+	     (cdr regs)))))
+
+;*---------------------------------------------------------------------*/
 ;*    extend-normalize-ctx ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (extend-normalize-ctx ctx reg type flag #!optional (value '_))
+(define (extend-normalize-ctx ctx reg type flag #!key (value '_))
    (let ((tynorm (assq type *type-norms*)))
       (if (pair? tynorm)
-	  (extend-ctx ctx reg (cdr tynorm) flag value)
-	  (extend-ctx ctx reg type flag value))))
+	  (extend-ctx ctx reg (cdr tynorm) flag :value value)
+	  (extend-ctx ctx reg type flag :value value))))
 
 ;*---------------------------------------------------------------------*/
 ;*    refine-ctx ...                                                   */
@@ -260,7 +270,7 @@
 ;*    Refine the knowledge of an environment, propagating the          */
 ;*    information to the aliases.                                      */
 ;*---------------------------------------------------------------------*/
-(define (refine-ctx ctx reg type flag #!optional (value '_))
+(define (refine-ctx ctx reg type flag #!key (value '_))
    
    (define (new-ctxentry reg type flag value)
       (instantiate::bbv-ctxentry
@@ -309,68 +319,59 @@
 		(cons (car worklist) stack) nctx))))))
 
 ;*---------------------------------------------------------------------*/
+;*    alias-ctx ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    Create an alias between REG and ALIAS.                           */
+;*---------------------------------------------------------------------*/
+(define (alias-ctx ctx::pair-nil reg::rtl_reg alias::rtl_reg)
+   (let ((re (ctx-get ctx reg))
+	 (ae (ctx-get ctx alias)))
+      (with-access::bbv-ctxentry re (aliases)
+	 (with-access::bbv-ctxentry ae ((aaliases aliases))
+	    (let ((all (delete-duplicates
+			  (cons alias (append aliases aaliases)))))
+	       (let ((nre (duplicate::bbv-ctxentry re
+			     (aliases all))))
+		  (let loop ((all all)
+			     (ctx (extend-ctx/entry ctx nre)))
+		     (if (null? all)
+			 ctx
+			 (let ((ae (ctx-get ctx (car all))))
+			    (if ae
+				(with-access::bbv-ctxentry ae (aliases)
+				   (let ((nae (duplicate::bbv-ctxentry ae
+						 (aliases (cons reg aliases)))))
+				      (loop (cdr all)
+					 (extend-ctx/entry ctx nae))))
+				(loop (cdr all) ctx)))))))))))
+	  
+;*---------------------------------------------------------------------*/
 ;*    unalias-ctx ...                                                  */
+;*    -------------------------------------------------------------    */
+;*    Removing all REG aliasings.                                      */
 ;*---------------------------------------------------------------------*/
 (define (unalias-ctx ctx::pair-nil reg::rtl_reg)
    
    (define (unalias ctx::pair-nil reg::rtl_reg alias::rtl_reg)
-      (let ((ae (ctx-get ctx alias)))
-	 (if ae
-	     (with-access::bbv-ctxentry ae (aliases)
+      (let ((e (ctx-get ctx alias)))
+	 (if e
+	     (with-access::bbv-ctxentry e (aliases)
 		(extend-ctx/entry ctx
-		   (duplicate::bbv-ctxentry ae
+		   (duplicate::bbv-ctxentry e
 		      (aliases (remq reg aliases)))))
 	     ctx)))
    
-   (let ((re (ctx-get ctx reg)))
-      (if re
-	  (with-access::bbv-ctxentry re (aliases)
+   (let ((e (ctx-get ctx reg)))
+      (if e
+	  (with-access::bbv-ctxentry e (aliases typ flag value)
 	     (let loop ((aliases aliases)
-			(ctx ctx))
+			(ctx (extend-ctx ctx reg typ flag :value value)))
 		(if (null? aliases)
 		    ctx
 		    (loop (cdr aliases)
 		       (unalias ctx reg (car aliases))))))
 	  ctx)))
 
-;*---------------------------------------------------------------------*/
-;*    alias-ctx ...                                                    */
-;*    -------------------------------------------------------------    */
-;*    Create an alias between REG and ALIAS. REG is automatically      */
-;*    added to CTX if not already there.                               */
-;*---------------------------------------------------------------------*/
-(define (alias-ctx ctx::pair-nil reg::rtl_reg alias::rtl_reg)
-   (let* ((re (ctx-get ctx reg))
-	  (ae (ctx-get ctx alias))
-	  (ctx (unalias-ctx ctx reg)))
-      (if (not ae)
-	  (let ((nre (instantiate::bbv-ctxentry
-			(reg reg)
-			(flag #t)
-			(aliases (list alias)))))
-	     (extend-ctx/entry ctx nre))
-	  (with-access::bbv-ctxentry ae (aliases)
-	     (let ((nre (duplicate::bbv-ctxentry ae
-			   (reg reg)
-			   (aliases (cons alias aliases)))))
-		(let loop ((as (cons alias aliases))
-			   (ctx (extend-ctx/entry ctx nre)))
-		   (cond
-		      ((null? as)
-		       ctx)
-		      ((ctx-get ctx (car as))
-		       =>
-		       (lambda (e)
-			  (with-access::bbv-ctxentry e (aliases)
-			     (if (memq reg aliases)
-				 (loop (cdr as) ctx)
-				 (let ((n (duplicate::bbv-ctxentry e
-					     (aliases (cons reg aliases)))))
-				    (extend-ctx/entry ctx n)
-				    (loop (cdr as) ctx))))))
-		      (else
-		       (loop (cdr as) ctx)))))))))
-	  
 ;*---------------------------------------------------------------------*/
 ;*    shape ::rtl_ins/bbv ...                                          */
 ;*---------------------------------------------------------------------*/

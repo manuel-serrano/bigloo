@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jul  5 17:35:02 2022 (serrano)                */
+;*    Last change :  Thu Jul  7 12:21:56 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -39,7 +39,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    *cleanup* ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define *cleanup* #f)
+(define *cleanup*
+   (let ((e (getenv "BIGLOOBBVCLEANUP")))
+      (not e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    replace ...                                                      */
@@ -247,111 +249,3 @@
 		    regs)
 		(liip (cdr bs) (or (liveness-block! (car bs)) t)))))))
 
-;*---------------------------------------------------------------------*/
-;*    merge! ...                                                       */
-;*    -------------------------------------------------------------    */
-;*    Merge equivalent basic blocks subgraphs                          */
-;*---------------------------------------------------------------------*/
-(define (merge! mark b::blockS)
-   (with-access::blockS b (%parent succs)
-      (with-access::blockV %parent (versions %mark)
-	 (unless (=fx mark %mark)
-	    (set! %mark mark)
-	    (with-trace 'bbv "merge"
-	       (trace-item "b=" (block-label b))
-	       (if (or (null? versions) (null? (cdr versions)))
-		   (for-each (lambda (s) (merge! mark s)) succs)
-		   (let ((ks (sort (lambda (v1 v2)
-				      (<=fx (car v1) (car v2)))
-				(map (lambda (v)
-					(cons (bbv-hash (cdr v)) (cdr v)))
-				   versions))))
-		      (trace-item "merge "
-			 (map (lambda (k)
-				 (cons (block-label (cdr k)) (car k)))
-			    ks))
-		      (let loop ((ks ks))
-			 (cond
-			    ((null? (cdr ks))
-			     (for-each (lambda (s) (merge! mark s)) succs))
-			    ((>=fx (blockS-%mark (cdar ks)) mark)
-			     (loop (cdr ks)))
-			    (else
-			     (let ((k (car ks)))
-				(let liip ((ls (cdr ks)))
-				   (cond
-				      ((null? ls)
-				       (loop (cdr ks)))
-				      ((and (=fx (car k) (caar ls))
-					    (not (eq? (cdr k) (cdar ls)))
-					    (merge? (cdr k) (cdar ls) '()))
-				       (merge-block! mark (cdr k) (cdar ls))
-				       (liip (cdr ls)))
-				      (else
-				       (liip (cdr ls)))))))))))))))
-   b)
-
-;*---------------------------------------------------------------------*/
-;*    merge-block! ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (merge-block! mark b by)
-   (with-trace 'bbv "merge-block!"
-      (trace-item "b=" (block-label b) " <- " (block-label by))
-      ;; merge by into b, i.e., replace all occurrence of by with b
-      (let loop ((by (list by))
-		 (bx (list b)))
-	 (trace-item "by=" (map block-label by))
-	 (trace-item "bx=" (map block-label bx))
-	 (cond
-	    ((null? by)
-	     b)
-	    ((=fx (blockS-%mark (car by)) mark)
-	     b)
-	    ((eq? (car by) (car bx))
-	     b)
-	    (else
-	     (with-access::blockS (car by) (preds (ysuccs succs) first %mark)
-		(set! %mark mark)
-		(for-each (lambda (d)
-			     (with-access::blockS d (%mark)
-				(unless (=fx mark %mark)
-				   (redirect-block! d (car by) (car bx)))))
-		   preds)
-		(with-access::blockS (car bx) ((xsuccs succs))
-		   (loop ysuccs xsuccs))))))))
-
-;*---------------------------------------------------------------------*/
-;*    merge? ...                                                       */
-;*    -------------------------------------------------------------    */
-;*    Is it possible to merge two blocks with the same hash?           */
-;*---------------------------------------------------------------------*/
-(define (merge? bx::blockS by::blockS stack)
-   (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
-      (with-access::blockS by ((ybl %blacklist) (ysuccs succs) first)
-	 (cond
-	    ((eq? bx by)
-	     #t)
-	    ((and (memq bx stack) (memq by stack))
-	     #t)
-	    ((not (=fx (bbv-hash bx) (bbv-hash by)))
-	     #f)
-	    ((not (bbv-equal? bx by))
-	     #f)
-	    ((or (eq? xbl '*) (eq? ybl '*))
-	     #f)
-	    ((or (memq bx ybl) (memq by xbl))
-	     #f)
-	    ((and (=fx (length ysuccs) 0) (=fx (length first) 1))
-	     #f)
-	    ((=fx (length ysuccs) (length xsuccs))
-	     (let ((ns (cons* bx by stack)))
-		(or (every (lambda (x y) (merge? x y ns)) xsuccs ysuccs)
-		    (begin
-		       (set! xbl (cons by xbl))
-		       (set! ybl (cons bx ybl))
-		       #f))))
-	    (else
-	     (begin
-		(set! xbl (cons by xbl))
-		(set! ybl (cons bx ybl))
-		#f))))))

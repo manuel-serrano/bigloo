@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Tue Jul  5 16:21:12 2022 (serrano)                */
+;*    Last change :  Wed Jul  6 08:50:31 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -75,9 +75,9 @@
 ;*    gennewcolor ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (gennewcolor)
-   (let ((r (+fx 127 (random 127)))
-	 (g (+fx 127 (random 127)))
-	 (b (+fx 127 (random 127))))
+   (let ((r (+fx 100 (random 155)))
+	 (g (+fx 100 (random 155)))
+	 (b (+fx 100 (random 155))))
       (format "#~02x~02x~02x" r g b)))
 
 ;*---------------------------------------------------------------------*/
@@ -117,7 +117,7 @@
 	      (color (format " [color = ~a];\n" color))
 	      (else ";\n"))))
    
-   (define (gen-table id content #!key (bgcolor "gray80") (color "black") (cellspacing 0))
+   (define (gen-table id content #!key (bgcolor "gray85") (color "black") (cellspacing 0))
       `("<table border=\"0\" cellborder=\"0\" cellspacing=\""
 	  ,cellspacing
 	  "\" cellpadding=\"0\""
@@ -189,8 +189,10 @@
 
       (define (decorate-ctx-entry entry)
 	 (match-case entry
-	    (#(?reg ?type)
+	    (#(?reg ?type ?val ())
 	     (format "~a:~a" reg type))
+	    (#(?reg ?type ?val ?aliases)
+	     (format "~a:~a[~( )]" reg type aliases))
 	    (else
 	     "")))
       
@@ -202,7 +204,7 @@
 		  (gen-table #f
 		     (gen-row
 			(gen-col #f
-			   (list (format "<i>;; ~( )</i>"
+			   (list (format "<font color=\"blue\"><i>;; ~( )</i></font>"
 				    (map decorate-ctx-entry ctx)))))
 		     :color "blue"
 		     :cellspacing 2)))))

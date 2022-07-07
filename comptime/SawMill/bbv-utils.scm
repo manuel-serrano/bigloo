@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Tue Jul  5 17:54:33 2022 (serrano)                */
+;*    Last change :  Thu Jul  7 12:25:09 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -42,6 +42,7 @@
 	    (simplify-branch! b::block)
 	    (remove-nop! b::block)
 	    (remove-goto! b::block)
+	    (merge! mark b::blockS)	    
 	    (redirect-block! b::blockS old::blockS new::blockS)
 	    (filter-live-in-regs::pair-nil ins::rtl_ins/bbv ctx::pair-nil)
 	    (extend-live-out-regs::pair-nil ins::rtl_ins/bbv ctx::pair-nil)))
@@ -143,40 +144,6 @@
 ;*    block->block-list ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (block->block-list regs b::block)
-   
-;*    (define (goto-block? b)                                          */
-;*       ;; is a block explicitly jumping to its successor             */
-;*       (with-access::block b (first)                                 */
-;* 	 (when (pair? first)                                           */
-;* 	    (let ((i (car (last-pair first))))                         */
-;* 	       (rtl_ins-go? i)))))                                     */
-;*                                                                     */
-;*    (define (fallthru-block? b)                                      */
-;*       ;; is a block implicitly followed by its successor            */
-;*       (not (goto-block? b)))                                        */
-;*                                                                     */
-;*    (define (branch-block? b)                                        */
-;*       ;; is a block implicitly followed by its successor            */
-;*       (with-access::block b (first)                                 */
-;* 	 (when (pair? first)                                           */
-;* 	    (let ((i (car (last-pair first))))                         */
-;* 	       (or (rtl_ins-ifeq? i) (rtl_ins-ifne? i))))))            */
-;*                                                                     */
-;*    (define (make-go-block bs to)                                    */
-;*       (duplicate::blockS bs                                         */
-;* 	 (label (genlabel))                                            */
-;* 	 (first (list                                                  */
-;* 		   (instantiate::rtl_ins/bbv                           */
-;* 		      (fun (instantiate::rtl_go                        */
-;* 			      (to to)))                                */
-;* 		      (dest #f)                                        */
-;* 		      (args '())                                       */
-;* 		      (def (make-empty-regset regs))                   */
-;* 		      (in (make-empty-regset regs))                    */
-;* 		      (out (make-empty-regset regs)))))                */
-;* 	 (succs (list to))                                             */
-;* 	 (preds (list bs))))                                           */
-   
    (let loop ((bs (list b))
 	      (acc (make-empty-bbset)))
       (cond
@@ -189,29 +156,6 @@
 	     (cond
 		((null? succs)
 		 (loop (cdr bs) (bbset-cons (car bs) acc)))
-;* 		((fallthru-block? (car bs))                            */
-;* 		 (let* ((lp (last-pair (block-first (car bs))))        */
-;* 			(last (car lp))                                */
-;* 			(succs (block-succs (car bs))))                */
-;* 		    (cond                                              */
-;* 		       ((bbset-in? (car succs) acc)                    */
-;* 			(with-access::block (car bs) (first)           */
-;* 			   (let ((lp (last-pair first))                */
-;* 				 (go (instantiate::rtl_ins/bbv         */
-;* 					(fun (instantiate::rtl_go      */
-;* 						(to (car succs))))     */
-;* 					(dest #f)                      */
-;* 					(args '())                     */
-;* 					(def (make-empty-regset regs)) */
-;* 					(in (make-empty-regset regs))  */
-;* 					(out (make-empty-regset regs))))) */
-;* 			      (if (rtl_ins-nop? (car lp))              */
-;* 				  (set-car! lp go)                     */
-;* 				  (set-cdr! lp (list go))))            */
-;* 			   (loop (cdr bs) (bbset-cons (car bs) acc)))) */
-;* 		       (else                                           */
-;* 			(loop (append succs (cdr bs))                  */
-;* 			   (bbset-cons (car bs) acc))))))              */
 		(else
 		 (loop (append succs (cdr bs))
 		    (bbset-cons (car bs) acc)))))))))
@@ -310,7 +254,6 @@
 	  (loop (cdr bs) acc))
 	 (else
 	  (with-access::blockS (car bs) (succs first)
-	     ;; remove useless nop instructions
 	     (if (=fx (length succs) 1)
 		 (if (=fx (length (block-preds (car succs))) 1)
 		     ;; collapse the two blocks
@@ -335,7 +278,7 @@
 			(loop (append (reverse succs) (cdr bs))
 			   (bbset-cons (car bs) acc))
 			(let ((s (car ss)))
-			   (if (goto-block? s)
+			   (if (and #f (goto-block? s))
 			       (let ((t (car (block-succs s))))
 				  (if (=fx (length (block-preds s)) 1)
 				      (begin
@@ -443,20 +386,129 @@
 		      (set! fun (instantiate::rtl_nop)))))
 	     (loop (append succs (cdr bs))
 		(bbset-cons (car bs) acc)))))))
+
+;*---------------------------------------------------------------------*/
+;*    merge! ...                                                       */
+;*    -------------------------------------------------------------    */
+;*    Merge equivalent basic blocks subgraphs                          */
+;*---------------------------------------------------------------------*/
+(define (merge! mark b::blockS)
+   (with-access::blockS b (%parent succs)
+      (with-access::blockV %parent (versions %mark)
+	 (unless (=fx mark %mark)
+	    (set! %mark mark)
+	    (with-trace 'bbv "merge"
+	       (trace-item "b=" (block-label b))
+	       (if (or (null? versions) (null? (cdr versions)))
+		   (for-each (lambda (s) (merge! mark s)) succs)
+		   (let ((ks (sort (lambda (v1 v2)
+				      (<=fx (car v1) (car v2)))
+				(map (lambda (v)
+					(cons (bbv-hash (cdr v)) (cdr v)))
+				   versions))))
+		      (trace-item "merge "
+			 (map (lambda (k)
+				 (cons (block-label (cdr k)) (car k)))
+			    ks))
+		      (let loop ((ks ks))
+			 (cond
+			    ((null? (cdr ks))
+			     (for-each (lambda (s) (merge! mark s)) succs))
+			    ((>=fx (blockS-%mark (cdar ks)) mark)
+			     (loop (cdr ks)))
+			    (else
+			     (let ((k (car ks)))
+				(let liip ((ls (cdr ks)))
+				   (cond
+				      ((null? ls)
+				       (loop (cdr ks)))
+				      ((and (=fx (car k) (caar ls))
+					    (not (eq? (cdr k) (cdar ls)))
+					    (merge? (cdr k) (cdar ls) '()))
+				       (merge-block! mark (cdr k) (cdar ls))
+				       (liip (cdr ls)))
+				      (else
+				       (liip (cdr ls)))))))))))))))
+   b)
+
+;*---------------------------------------------------------------------*/
+;*    merge-block! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (merge-block! mark b by)
+   (with-trace 'bbv "merge-block!"
+      (trace-item "b=" (block-label b) " <- " (block-label by))
+      ;; merge by into b, i.e., replace all occurrence of by with b
+      (let loop ((by (list by))
+		 (bx (list b)))
+	 (trace-item "by=" (map block-label by))
+	 (trace-item "bx=" (map block-label bx))
+	 (cond
+	    ((null? by)
+	     b)
+	    ((=fx (blockS-%mark (car by)) mark)
+	     b)
+	    ((eq? (car by) (car bx))
+	     b)
+	    (else
+	     (with-access::blockS (car by) (preds (ysuccs succs) first %mark)
+		(set! %mark mark)
+		(for-each (lambda (d)
+			     (with-access::blockS d (%mark)
+				(unless (=fx mark %mark)
+				   (redirect-block! d (car by) (car bx)))))
+		   preds)
+		(with-access::blockS (car bx) ((xsuccs succs))
+		   (loop ysuccs xsuccs))))))))
+
+;*---------------------------------------------------------------------*/
+;*    merge? ...                                                       */
+;*    -------------------------------------------------------------    */
+;*    Is it possible to merge two blocks with the same hash?           */
+;*---------------------------------------------------------------------*/
+(define (merge? bx::blockS by::blockS stack)
+   (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
+      (with-access::blockS by ((ybl %blacklist) (ysuccs succs) first)
+	 (cond
+	    ((eq? bx by)
+	     #t)
+	    ((and (memq bx stack) (memq by stack))
+	     #t)
+	    ((not (=fx (bbv-hash bx) (bbv-hash by)))
+	     #f)
+	    ((not (bbv-equal? bx by))
+	     #f)
+	    ((or (eq? xbl '*) (eq? ybl '*))
+	     #f)
+	    ((or (memq bx ybl) (memq by xbl))
+	     #f)
+	    ((and (=fx (length ysuccs) 0) (=fx (length first) 1))
+	     #f)
+	    ((=fx (length ysuccs) (length xsuccs))
+	     (let ((ns (cons* bx by stack)))
+		(or (every (lambda (x y) (merge? x y ns)) xsuccs ysuccs)
+		    (begin
+		       (set! xbl (cons by xbl))
+		       (set! ybl (cons bx ybl))
+		       #f))))
+	    (else
+	     (begin
+		(set! xbl (cons by xbl))
+		(set! ybl (cons bx ybl))
+		#f))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    filter-live-in-regs ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (filter-live-in-regs ins::rtl_ins/bbv ctx)
    (with-access::rtl_ins/bbv ins (in)
-      (filter (lambda (e)
-		 (let ((reg (bbv-ctxentry-reg e)))
-		    (when (or (not (isa? reg rtl_reg/ra))
-			      (regset-member? reg in))
-		       (bbv-ctxentry-aliases-set! e
-			  (filter (lambda (reg)
-				     (regset-member? reg in))
-			     (bbv-ctxentry-aliases e))))))
+      (filter-map (lambda (e)
+		     (let ((reg (bbv-ctxentry-reg e)))
+			(when (or (not (isa? reg rtl_reg/ra))
+				  (regset-member? reg in))
+			   (duplicate::bbv-ctxentry e
+			      (aliases (filter (lambda (reg)
+						  (regset-member? reg in))
+					  (bbv-ctxentry-aliases e)))))))
 	 ctx)))
    
 ;*---------------------------------------------------------------------*/
