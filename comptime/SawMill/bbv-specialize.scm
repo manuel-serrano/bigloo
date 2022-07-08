@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Jul  8 09:21:24 2022 (serrano)                */
+;*    Last change :  Fri Jul  8 14:16:07 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -341,27 +341,6 @@
 		      (values s (extend-ctx ctx dest *obj* #t)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    rtl_call-fxcmp? ...                                              */
-;*---------------------------------------------------------------------*/
-(define (rtl_call-fxcmp? i)
-   
-   (define (reg? a)
-      (or (rtl_reg? a)
-	  (and (rtl_ins? a)
-	       (with-access::rtl_ins a (fun args dest)
-		  (when (isa? fun rtl_call)
-		     (rtl_reg? dest))))))
-   
-   (with-access::rtl_ins i (dest fun args)
-      (with-access::rtl_call fun (var)
-	 (and (=fx (length args) 2)
-	      (or (eq? var *<fx*) (eq? var *<=fx*)
-		  (eq? var *>fx*) (eq? var *>=fx*)
-		  (eq? var *=fx*))
-	      (or (reg? (car args)) (rtl_ins-loadi? (car args)))
-	      (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))))))
-   
-;*---------------------------------------------------------------------*/
 ;*    rtl_ins-fxcmp? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-fxcmp? i)
@@ -372,6 +351,16 @@
 	       (with-access::rtl_ins a (fun args dest)
 		  (when (isa? fun rtl_call)
 		     (rtl_reg? dest))))))
+
+   (define (rtl_call-fxcmp? i)
+      (with-access::rtl_ins i (dest fun args)
+	 (with-access::rtl_call fun (var)
+	    (and (=fx (length args) 2)
+		 (or (eq? var *<fx*) (eq? var *<=fx*)
+		     (eq? var *>fx*) (eq? var *>=fx*)
+		     (eq? var *=fx*))
+		 (or (reg? (car args)) (rtl_ins-loadi? (car args)))
+		 (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))))))
    
    (with-access::rtl_ins i (dest fun args)
       (cond
@@ -513,43 +502,62 @@
 	 (else
 	  (values #f #f))))
    
+   (define (specialize-call i::rtl_ins ctx)
+      (with-access::rtl_ins i (fun args)
+	 (with-access::rtl_call fun (var)
+	    (let* ((lhs (car args))
+		   (rhs (cadr args))
+		   (intl (rtl-range lhs ctx))
+		   (intr (rtl-range rhs ctx))
+		   (op (fxcmp-op i)))
+	       (tprint "FX op=" (shape i) " " (typeof intl) " " (typeof intr)
+		  " rhs=" (shape rhs) " TO=" (typeof rhs))
+	       (cond
+		  ((not (and (bbv-range? intl) (bbv-range? intr)))
+		   (tprint "fx.1")
+		   (multiple-value-bind (pctx nctx)
+		      (specialize/op op lhs (or intl (fixnum-range))
+			 rhs (or intr (fixnum-range)) ctx)
+		      (values i pctx nctx)))
+		  ((resolve/op i op intl intr)
+		   =>
+		   (lambda (ni)
+		      (tprint "fx.2")
+		      (values ni ctx ctx)))
+		  (else
+		   (tprint "fx.3")
+		   (multiple-value-bind (pctx nctx)
+		      (specialize/op op lhs intl rhs intr ctx)
+		      (values i pctx nctx))))))))
+   
    (with-access::rtl_ins i (dest fun args)
+      (tprint "FUN=" (shape i) " " (map typeof args))
       (cond
 	 ((isa? fun rtl_ifeq)
-	  (multiple-value-bind (ins ctx)
-	     (rtl_ins-specialize-fxcmp (car args) ctx)
-	     (values (duplicate::rtl_ins/bbv i
-			(args (list ins)))
-		ctx)))
-	 ((isa? fun rtl_ifne)
-	  (multiple-value-bind (ins ctx)
-	     (rtl_ins-specialize-fxcmp (car args) ctx)
-	     (values (duplicate::rtl_ins/bbv i
-			(args (list ins)))
-		ctx)))
+	  (with-access::rtl_ifeq fun (then)
+	     (multiple-value-bind (ins pctx nctx)
+		(specialize-call (car args) ctx)
+		(tprint "INS.1=" (shape ins))
+		(let ((f (duplicate::rtl_ifeq fun
+			    (then (bbv-block then nctx)))))
+		   (values (duplicate::rtl_ins/bbv i
+			      (ctx ctx)
+			      (args (list ins))
+			      (fun f))
+		      pctx)))))
+;* 	 ((isa? fun rtl_ifne)                                          */
+;* 	  (multiple-value-bind (ins pctx nctx)                         */
+;* 	     (specialize-call (car args) ctx)                          */
+;* 	     (tprint "INS.2=" (shape ins))                             */
+;* 	     (values (duplicate::rtl_ins/bbv i                         */
+;* 			(ctx ctx))                                     */
+;* 		nctx)))                                                */
+;* 	 ((isa? fun rtl_call)                                          */
+;* 	  'todo)                                                       */
 	 (else
-	  (with-access::rtl_call fun (var)
-	     (let* ((lhs (car args))
-		    (rhs (cadr args))
-		    (intl (rtl-range lhs ctx))
-		    (intr (rtl-range rhs ctx))
-		    (sctx (extend-ctx ctx dest *bool* #t))
-		    (op (fxcmp-op i)))
-		(tprint "FX op=" (shape i) " " (typeof intl) " " (typeof intr)
-		   " rhs=" (shape rhs) " TO=" (typeof rhs))
-		(cond
-		   ((not (and (bbv-range? intl) (bbv-range? intr)))
-		    (multiple-value-bind (ctxt ctxo)
-		       (specialize/op op lhs (or intl (fixnum-range))
-			  rhs (or intr (fixnum-range)) sctx)
-		       (values i sctx ctxt ctxo)))
-		   ((resolve/op i op intl intr)
-		    =>
-		    (lambda (ni) (values ni sctx #f #f)))
-		   (else
-		    (multiple-value-bind (ctxt ctxo)
-		       (specialize/op op lhs intl rhs intr sctx)
-		       (values i sctx ctxt ctxo))))))))))
+	  (values (duplicate::rtl_ins/bbv i
+		     (ctx ctx))
+	     ctx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize ...                                           */

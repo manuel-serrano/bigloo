@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Fri Jul  8 11:43:15 2022 (serrano)                */
+;*    Last change :  Fri Jul  8 14:13:29 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -114,12 +114,10 @@
 		 (rtl-range (car (rtl_ins-args i)) ctx))
 		(else
 		 #f)))))
-      ((isa? i rtl_loadi)
-       (tprint "loadi...")
+      ((rtl_ins-loadi? i)
        (with-access::rtl_ins i (fun)
 	  (with-access::rtl_loadi fun (constant)
 	     (with-access::atom constant (value)
-		(tprint "VAL=" (typeof value))
 		(when (fixnum? value)
 		   (fixnum->range value))))))
       (else
