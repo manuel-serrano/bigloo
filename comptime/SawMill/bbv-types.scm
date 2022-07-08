@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jul  7 09:52:44 2022 (serrano)                */
+;*    Last change :  Fri Jul  8 09:53:55 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -119,35 +119,12 @@
 ;*    shape ::bbv-ctxentry ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-ctxentry)
-   
-   (define (pp-int-value v)
-      (cond
-	 ((interval? v)
-	  (pp-int-range (interval-min v) (interval-max v)))
-	 ((llong? v)
-	  (cond
-	     ((=llong v *max-fixnum*) 'MAXFX)
-	     ((=llong v (-llong *max-fixnum* 1)) 'MAXFX-1)
-	     ((=llong v *min-fixnum*) 'MINFX)
-	     ((=llong v *+inf.0*) '+INF)
-	     ((=llong v *-inf.0*) '-INF)
-	     (else v)))
-	 ((vector? v)
-	  `(vlen ,(shape (vector-ref v 0))))
-	 (else
-	  '_)))
-
-   (define (pp-int-range i a)
-      (format "[~a..~a]" (pp-int-value i) (pp-int-value a)))
-
    (with-access::bbv-ctxentry e (reg typ flag value aliases)
       (vector (shape reg)
 	 (if flag
 	     (shape typ)
 	     (string-append "!" (shape typ)))
-	 (if (eq? typ *int*)
-	     (pp-int-value value)
-	     value)
+	 (shape value)
 	 (map shape aliases))))
    
 ;*---------------------------------------------------------------------*/
