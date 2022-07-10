@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Fri Jul  8 14:13:29 2022 (serrano)                */
+;*    Last change :  Sun Jul 10 09:55:45 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module saw_bbv-range
-
+   
    (import  engine_param
 	    ast_var
 	    ast_node
@@ -28,8 +28,9 @@
    (export (class bbv-range
 	      (min read-only)
 	      (max read-only))
-
+	   
 	   (inline bbv-range?::bool ::obj)
+	   (bbv-range-fixnum?::bool ::bbv-range)
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
 	   (rtl-range::obj ::obj ::pair-nil)
@@ -42,7 +43,16 @@
 	   (bbv-range-lte::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-gt::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-gte::bbv-range ::bbv-range ::bbv-range)
-	   (bbv-range-eq::bool ::bbv-range ::bbv-range)))
+	   (bbv-range-eq::bool ::bbv-range ::bbv-range)
+	   (bbv-range-sub::bbv-range ::bbv-range ::bbv-range)))
+
+;*---------------------------------------------------------------------*/
+;*    integer boundaries ...                                           */
+;*---------------------------------------------------------------------*/
+(define *max-fixnum*
+   (bit-lsh 1 (-fx (bigloo-config 'int-size) 2)))
+(define *min-fixnum*
+   (-fx (negfx *max-fixnum*) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range? ...                                                   */
@@ -51,10 +61,17 @@
    (isa? o bbv-range))
 
 ;*---------------------------------------------------------------------*/
+;*    bbv-range-fixnum? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (bbv-range-fixnum? o)
+   (with-access::bbv-range o (min max)
+      (and (fixnum? min) (fixnum? max))))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-range-min ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (bbv-range-min o)
-   (with-access::bbv-range o (min)
+  (with-access::bbv-range o (min)
       min))
    
 ;*---------------------------------------------------------------------*/
@@ -68,16 +85,30 @@
 ;*    shape ::bbv-range ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-range)
+   
+   (define (shape n)
+      (cond
+	 ((eq? n *max-fixnum*) "maxfx")
+	 ((eq? n (-fx *max-fixnum* 1)) "maxfx-1")
+	 ((eq? n (-fx *max-fixnum* 2)) "maxfx-2")
+	 ((eq? n *min-fixnum*) "minfx")
+	 ((eq? n (+fx *min-fixnum* 1)) "minfx+1")
+	 ((eq? n (+fx *min-fixnum* 2)) "minfx+2")
+	 ((fixnum? n) n)
+	 ((not (flonum? n)) n)
+	 ((infinitefl? n) (if (<fl n 0.0) "-inf" "+inf"))
+	 (else n)))
+   
    (with-access::bbv-range e (min max)
-      (format "\"[~a..~a]\"" min max)))
+      (format "[~a..~a]" (shape min) (shape max))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *fixnum-range* ...                                               */
 ;*---------------------------------------------------------------------*/
 (define *fixnum-range*
    (instantiate::bbv-range
-      (min *-inf.0*)
-      (max *+inf.0*)))
+      (min *min-fixnum*)
+      (max *max-fixnum*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum-range ...                                                 */
@@ -101,7 +132,7 @@
       ((isa? i rtl_reg)
        (let ((e (ctx-get ctx i)))
 	  (with-access::bbv-ctxentry e (typ value)
-	     (when (and e (eq? typ *int*))
+	     (when (and e (or (eq? typ *bint*) (eq? typ *long*)))
 		(when (bbv-range? value)
 		   value)))))
       ((rtl_ins-mov? i)
@@ -111,6 +142,8 @@
 	  (with-access::rtl_call fun (var)
 	     (cond
 		((eq? var *int->long*)
+		 (rtl-range (car (rtl_ins-args i)) ctx))
+		((eq? var *bint->long*)
 		 (rtl-range (car (rtl_ins-args i)) ctx))
 		(else
 		 #f)))))
@@ -211,4 +244,24 @@
 	    (min oi)
 	    (max oa)))))
 
-   
+;*---------------------------------------------------------------------*/
+;*    normalize ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (normalize n)
+   (cond
+      ((< n *min-fixnum*) -inf.0)
+      ((> n *max-fixnum*) +inf.0)
+      (else n)))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-range-sub ...                                                */
+;*---------------------------------------------------------------------*/
+(define (bbv-range-sub left::bbv-range right::bbv-range)
+   (let ((ri (bbv-range-min right))
+	 (ra (bbv-range-max right))
+	 (li (bbv-range-min left))
+	 (la (bbv-range-max left)))
+      (instantiate::bbv-range
+	 (min (normalize (- li ra)))
+	 (max (normalize (- la ri))))))
+      

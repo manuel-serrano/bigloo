@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/SawMill/bbv-cache.scm       */
+;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-cache.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Wed Jul 26 10:12:18 2017 (serrano)                */
-;*    Copyright   :  2017 Manuel Serrano                               */
+;*    Last change :  Sun Jul 10 10:44:00 2022 (serrano)                */
+;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
 ;*=====================================================================*/
@@ -26,8 +26,11 @@
 	    *>=fx*
 	    *>fx*
 	    *=fx*
+	    *-fx*
+	    *-fx-safe*
 	    *int->long*
 	    *bint->long*
+	    *long->bint*
 	    *vector-bound-check*
 	    *type-norms*))
 
@@ -41,8 +44,11 @@
 (define *>=fx* #f)
 (define *>fx* #f)
 (define *=fx* #f)
+(define *-fx* #f)
+(define *-fx-safe* #f)
 (define *int->long* #f)
 (define *bint->long* #f)
+(define *long->bint* #f)
 (define *vector-bound-check* #f)
 (define *type-norms* #f)
 
@@ -57,8 +63,11 @@
       (set! *>fx* (get-global/module 'c->fx 'foreign))
       (set! *>=fx* (get-global/module 'c->=fx 'foreign))
       (set! *=fx* (get-global/module 'c-=fx 'foreign))
+      (set! *-fx* (get-global/module 'c--fx 'foreign))
+      (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
       (set! *int->long* (get-global/module '$int->long 'foreign))
       (set! *bint->long* (get-global/module '$bint->long 'foreign))
+      (set! *long->bint* (get-global/module '$long->bint 'foreign))
       (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))
       (set! *type-norms*
 	 (list (cons *int* *bint*)))))
@@ -73,7 +82,10 @@
    (set! *>fx* #f)
    (set! *>=fx* #f)
    (set! *=fx* #f)
+   (set! *-fx* #f)
+   (set! *-fx-safe* #f)
    (set! *int->long* #f)
    (set! *bint->long* #f)
+   (set! *long->bint* #f)
    (set! *vector-bound-check* #f)
    (set! *type-norms* #f))

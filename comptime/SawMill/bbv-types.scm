@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Jul  8 09:53:55 2022 (serrano)                */
+;*    Last change :  Sun Jul 10 09:57:14 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -54,8 +54,6 @@
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '())))
 
-	    *max-fixnum*
-	    *min-fixnum*
 	    *max-length*
 	    *max-index*
 	    *+inf.0*
@@ -124,7 +122,7 @@
 	 (if flag
 	     (shape typ)
 	     (string-append "!" (shape typ)))
-	 (shape value)
+	 (format "~s" (shape value))
 	 (map shape aliases))))
    
 ;*---------------------------------------------------------------------*/
