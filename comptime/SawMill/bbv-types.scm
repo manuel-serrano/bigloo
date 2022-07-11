@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Sun Jul 10 09:57:14 2022 (serrano)                */
+;*    Last change :  Mon Jul 11 10:27:35 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -30,7 +30,8 @@
 	    saw_defs
 	    saw_regset
 	    saw_regutils
-	    saw_bbv-cache)
+	    saw_bbv-cache
+	    saw_bbv-range)
 
    (export  (wide-class blockV::block
 	       (versions::pair-nil (default '()))
@@ -92,7 +93,8 @@
 	    (rtl_ins-ifxx? i::rtl_ins)
 	    
 	    (rtl_ins-typecheck i::rtl_ins)
-	    (rtl_call-predicate i::rtl_ins)))
+	    (rtl_call-predicate i::rtl_ins)
+	    (rtl_call-values i::rtl_ins)))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer boundaries ...                                           */
@@ -401,15 +403,19 @@
 ;*    dump ::blockS ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::blockS p m)
+   
+   (define (lbl n)
+      (if (isa? n block) (block-label n) (typeof n)))
+   
    (with-access::block o (label first)
       (fprint p "(blockS " label)
       (with-access::blockS o (%parent preds succs)
 	 (dump-margin p (+fx m 1))
 	 (fprint p ":parent " (block-label %parent))
 	 (dump-margin p (+fx m 1))
-	 (fprint p ":preds " (map block-label preds))
+	 (fprint p ":preds " (map lbl preds))
 	 (dump-margin p (+fx m 1))
-	 (fprint p ":succs " (map block-label succs)))
+	 (fprint p ":succs " (map lbl succs)))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))
@@ -522,9 +528,10 @@
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-typecheck i::rtl_ins)
    (with-access::rtl_ins i (args)
-      (let ((typ (rtl_call-predicate (car args))))
+      (let ((typ (rtl_call-predicate (car args)))
+	    (val (rtl_call-values (car args))))
 	 (let ((args (rtl_ins-args* i)))
-	    (values (car args) typ (rtl_ins-ifne? i))))))
+	    (values (car args) typ (rtl_ins-ifne? i) val)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_call-predicate ...                                           */
@@ -534,6 +541,18 @@
       (with-access::rtl_call fun (var)
 	 (let ((val (variable-value var)))
 	    (fun-predicate-of val)))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_call-values ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_call-values i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (with-access::rtl_call fun (var)
+	 (let* ((val (variable-value var))
+		(typ (fun-predicate-of val)))
+	    (cond
+	       ((eq? typ *bint*) (fixnum-range))
+	       (else '_))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-xor* ...                                                     */

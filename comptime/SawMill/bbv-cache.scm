@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Sun Jul 10 10:44:00 2022 (serrano)                */
+;*    Last change :  Mon Jul 11 10:51:55 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -27,7 +27,9 @@
 	    *>fx*
 	    *=fx*
 	    *-fx*
+	    *+fx*
 	    *-fx-safe*
+	    *+fx-safe*
 	    *int->long*
 	    *bint->long*
 	    *long->bint*
@@ -45,7 +47,9 @@
 (define *>fx* #f)
 (define *=fx* #f)
 (define *-fx* #f)
+(define *+fx* #f)
 (define *-fx-safe* #f)
+(define *+fx-safe* #f)
 (define *int->long* #f)
 (define *bint->long* #f)
 (define *long->bint* #f)
@@ -64,7 +68,9 @@
       (set! *>=fx* (get-global/module 'c->=fx 'foreign))
       (set! *=fx* (get-global/module 'c-=fx 'foreign))
       (set! *-fx* (get-global/module 'c--fx 'foreign))
+      (set! *+fx* (get-global/module 'c-+fx 'foreign))
       (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
+      (set! *+fx-safe* (get-global/module '+fx-safe 'foreign))
       (set! *int->long* (get-global/module '$int->long 'foreign))
       (set! *bint->long* (get-global/module '$bint->long 'foreign))
       (set! *long->bint* (get-global/module '$long->bint 'foreign))
@@ -83,7 +89,9 @@
    (set! *>=fx* #f)
    (set! *=fx* #f)
    (set! *-fx* #f)
+   (set! *+fx* #f)
    (set! *-fx-safe* #f)
+   (set! *+fx-safe* #f)
    (set! *int->long* #f)
    (set! *bint->long* #f)
    (set! *long->bint* #f)

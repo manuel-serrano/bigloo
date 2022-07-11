@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Jul  7 12:25:09 2022 (serrano)                */
+;*    Last change :  Mon Jul 11 08:44:47 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -485,6 +485,10 @@
 	     #f)
 	    ((=fx (length ysuccs) (length xsuccs))
 	     (let ((ns (cons* bx by stack)))
+		(let ((bad (filter (lambda (b) (not (isa? b blockS))) ysuccs)))
+		   (when (pair? bad)
+		      (tprint "PAS BON: " (map block-label bad) " "
+			 (shape by))))
 		(or (every (lambda (x y) (merge? x y ns)) xsuccs ysuccs)
 		    (begin
 		       (set! xbl (cons by xbl))

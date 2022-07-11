@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Fri Jul  8 09:54:58 2022 (serrano)                */
+;*    Last change :  Mon Jul 11 08:23:44 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -200,18 +200,19 @@
 	    (else
 	     "")))
       
-      (define (decorate-ctx::pair ins)
-	 (let ((code (car ins))
-	       (ctx (cadr ins)))
-	    (gen-row
-	       (gen-col #f
-		  (gen-table #f
-		     (gen-row
-			(gen-col #f
-			   (list (format "<font color=\"blue\"><i>;; ~( )</i></font>"
-				    (map decorate-ctx-entry ctx)))))
-		     :color "blue"
-		     :cellspacing 2)))))
+      (define (decorate-ctx::pair-nil ins)
+	 (if (pair? (cadr ins))
+	     (let ((ctx (cadr ins)))
+		(gen-row
+		   (gen-col #f
+		      (gen-table #f
+			 (gen-row
+			    (gen-col #f
+			       (list (format "<font color=\"blue\"><i>;; ~( )</i></font>"
+					(map decorate-ctx-entry ctx)))))
+			 :color "blue"
+			 :cellspacing 2))))
+	     '()))
 
       (define (decorate-instr::pair ins last-instr?)
 	 

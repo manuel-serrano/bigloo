@@ -251,16 +251,20 @@
    (with-access::rtl_ins o (%spill fun dest args)
       (display "[" p)
       (when dest
+	 (display "(" p)
 	 (dump dest p m)
 	 (display " <- " p))
       (dump-ins-rhs o p m)
-      (when (pair? %spill)
-	 (display " (" p)
-	 (for-each (lambda (r)
-		      (display (shape r) p)
-		      (display " " p))
-	    %spill)
+      (when dest
 	 (display ")" p))
+      (display " " p)
+      (display " (" p)
+      (when (pair? %spill)
+	 (for-each (lambda (r)
+		       (display (shape r) p)
+		       (display " " p))
+	     %spill))
+      (display ")" p)
       (display "]" p)))
 
 ;*---------------------------------------------------------------------*/

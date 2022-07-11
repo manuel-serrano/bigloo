@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Sun Jul 10 09:55:45 2022 (serrano)                */
+;*    Last change :  Mon Jul 11 10:43:03 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -34,17 +34,19 @@
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
 	   (rtl-range::obj ::obj ::pair-nil)
-	   (bbv-range<?::bool ::bbv-range ::bbv-range)
-	   (bbv-range<=?::bool ::bbv-range ::bbv-range)
-	   (bbv-range>?::bool ::bbv-range ::bbv-range)
-	   (bbv-range>=?::bool ::bbv-range ::bbv-range)
-	   (bbv-range=?::bool ::bbv-range ::bbv-range)
+	   (bbv-range<? ::bbv-range ::bbv-range)
+	   (bbv-range<=? ::bbv-range ::bbv-range)
+	   (bbv-range>? ::bbv-range ::bbv-range)
+	   (bbv-range>=? ::bbv-range ::bbv-range)
+	   (bbv-range=? ::bbv-range ::bbv-range)
 	   (bbv-range-lt::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-lte::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-gt::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-gte::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-eq::bool ::bbv-range ::bbv-range)
-	   (bbv-range-sub::bbv-range ::bbv-range ::bbv-range)))
+	   (bbv-range-add::bbv-range ::bbv-range ::bbv-range)
+	   (bbv-range-sub::bbv-range ::bbv-range ::bbv-range)
+	   (bbv-range-intersection::bbv-range ::bbv-range ::bbv-range)))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer boundaries ...                                           */
@@ -160,32 +162,49 @@
 ;*    bbv-range<? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range<? left right)
-   (<fx (bbv-range-max left) (bbv-range-min right)))
+   (cond
+      ((<fx (bbv-range-max left) (bbv-range-min right)) 'true)
+      ((>=fx (bbv-range-min left) (bbv-range-max right)) 'false)
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range<=? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range<=? left right)
-   (<=fx (bbv-range-max left) (bbv-range-min right)))
+   (cond
+      ((<=fx (bbv-range-max left) (bbv-range-min right)) 'true)
+      ((>fx (bbv-range-min left) (bbv-range-max right)) 'false)
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range>? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range>? left right)
-   (>fx (bbv-range-min left) (bbv-range-max right)))
+   (cond
+      ((>fx (bbv-range-min left) (bbv-range-max right)) 'true)
+      ((<=fx (bbv-range-max left) (bbv-range-min right)) 'false)
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range>=? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range>=? left right)
-   (>=fx (bbv-range-min left) (bbv-range-max right)))
+   (cond
+      ((>=fx (bbv-range-min left) (bbv-range-max right)) 'true)
+      ((<fx (bbv-range-max left) (bbv-range-min right)) 'false)
+      (else #f)))
+      
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range=? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range=? left right)
-   (and (=fx (bbv-range-min left) (bbv-range-min right))
-	(=fx (bbv-range-max left) (bbv-range-max right))))
+   (cond
+      ((and (=fx (bbv-range-min left) (bbv-range-min right))
+	    (=fx (bbv-range-max left) (bbv-range-max right)))
+       'true)
+      (else
+       'false)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-lts ...                                                */
@@ -193,13 +212,9 @@
 (define (bbv-range-lts left::bbv-range right::bbv-range shift::int)
    (let ((ra (- (bbv-range-max right) shift)))
       (if (< ra (bbv-range-max left))
-	  (if (>= ra (bbv-range-min left))
-	      (instantiate::bbv-range
-		 (min (min (bbv-range-min left) ra))
-		 (max ra))
-	      (instantiate::bbv-range
-		 (min ra)
-		 (max ra)))
+	  (instantiate::bbv-range
+	     (min (min ra (bbv-range-min left)))
+	     (max ra))
 	  left)))
 
 (define (bbv-range-lt left right)
@@ -214,13 +229,9 @@
 (define (bbv-range-gts left::bbv-range right::bbv-range shift::int)
    (let ((ri (+ (bbv-range-min right) shift)))
       (if (> ri (bbv-range-min left))
-	  (if (<= ri (bbv-range-max left))
-	      (instantiate::bbv-range
-		 (min ri)
-		 (max (max (bbv-range-max left) ri)))
-	      (instantiate::bbv-range
-		 (min ri)
-		 (max ri)))
+	  (instantiate::bbv-range
+	     (min ri)
+	     (max (max ri (bbv-range-max left))))
 	  left)))
 
 (define (bbv-range-gt left right)
@@ -254,6 +265,45 @@
       (else n)))
 
 ;*---------------------------------------------------------------------*/
+;*    +rng ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (+rng x y)
+   (cond
+      ((=fx x *max-fixnum*) *max-fixnum*)
+      ((=fx y *max-fixnum*) *max-fixnum*)
+      ((=fx x *min-fixnum*) (+fx *min-fixnum* 1))
+      ((=fx x (+fx *min-fixnum* 1)) x)
+      ((=fx y (+fx *min-fixnum* 1)) y)
+      ((and (=fx x (-fx *max-fixnum* 1)) (>fx y 0)) *max-fixnum*)
+      ((and (=fx y (-fx *max-fixnum* 1)) (>fx x 0)) *max-fixnum*)
+      (else (+fx x y))))
+      
+;*---------------------------------------------------------------------*/
+;*    -rng ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (-rng x y)
+   (cond
+      ((=fx x *min-fixnum*) *min-fixnum*)
+      ((=fx y *min-fixnum*) *min-fixnum*)
+      ((=fx x (-fx *max-fixnum* 1)) x)
+      ((=fx y (-fx *max-fixnum* 1)) y)
+      ((and (=fx x (-fx *min-fixnum* 1)) (<fx y 0)) *min-fixnum*)
+      ((and (=fx y (-fx *min-fixnum* 1)) (<fx x 0)) *min-fixnum*)
+      (else (-fx x y))))
+      
+;*---------------------------------------------------------------------*/
+;*    bbv-range-add ...                                                */
+;*---------------------------------------------------------------------*/
+(define (bbv-range-add left::bbv-range right::bbv-range)
+   (let ((ri (bbv-range-min right))
+	 (ra (bbv-range-max right))
+	 (li (bbv-range-min left))
+	 (la (bbv-range-max left)))
+      (instantiate::bbv-range
+	 (min (+rng li ri))
+	 (max (+rng la ra)))))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-range-sub ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-sub left::bbv-range right::bbv-range)
@@ -262,6 +312,15 @@
 	 (li (bbv-range-min left))
 	 (la (bbv-range-max left)))
       (instantiate::bbv-range
-	 (min (normalize (- li ra)))
-	 (max (normalize (- la ri))))))
+	 (min (-rng li ra))
+	 (max (-rng la ri)))))
       
+;*---------------------------------------------------------------------*/
+;*    bbv-range-intersection ...                                       */
+;*---------------------------------------------------------------------*/
+(define (bbv-range-intersection::bbv-range x::bbv-range y::bbv-range)
+   (with-access::bbv-range x ((minx min) (maxx max))
+      (with-access::bbv-range y ((miny min) (maxy max))
+	 (instantiate::bbv-range
+	    (min (max minx miny))
+	    (max (min maxx maxy))))))
