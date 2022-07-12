@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Jul 11 16:30:46 2022 (serrano)                */
+;*    Last change :  Tue Jul 12 08:04:58 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -71,35 +71,38 @@
 	     (dump-blocks global params blocks ".reorder.cfg"))
 	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
 	     (when (>=fx (bigloo-debug) 1)
-		(dump-blocks global params blocks ".norm.cfg"))
-	     (let ((regs (liveness! back blocks params)))
-		;; liveness also widen each block into a blockV
+		(dump-blocks global params blocks ".goto.cfg"))
+	     (let ((blocks (normalize-ifeq! (car blocks))))
 		(when (>=fx (bigloo-debug) 1)
-		   (dump-blocks global params blocks ".liveness.cfg"))
-		(unwind-protect
-		   (if (null? blocks)
-		       '()
-		       (let* ((s (bbv-block (car blocks) (params->ctx params)))
-			      (b (block->block-list regs
-				    (if *cleanup*
-					(remove-nop!
-					   (remove-goto!
-					      (simplify-branch!
-						 (merge! (get-bb-mark) s))))
-					s))))
-			  (verbose 3 " " (length blocks) " -> " (length b))
-			  (verbose 2 "\n")
-			  (when (>=fx (bigloo-debug) 1)
-			     (dump-blocks global params
-				(block->block-list regs s) ".bbv.cfg")
-			     (dump-blocks global params
-				b ".cfg"))
-			  (map! (lambda (b) (shrink! b)) b)
-			  b))
-		   ;; don't shrink, otherwise dump could no longer be used
-		   (unless (or (>=fx *compiler-debug* 1)
-			       (>=fx (bigloo-debug) 1))
-		      (for-each (lambda (r) (shrink! r)) regs))))))
+		   (dump-blocks global params blocks ".ifeq.cfg"))
+		(let ((regs (liveness! back blocks params)))
+		   ;; liveness also widen each block into a blockV
+		   (when (>=fx (bigloo-debug) 1)
+		      (dump-blocks global params blocks ".liveness.cfg"))
+		   (unwind-protect
+		      (if (null? blocks)
+			  '()
+			  (let* ((s (bbv-block (car blocks) (params->ctx params)))
+				 (b (block->block-list regs
+				       (if *cleanup*
+					   (remove-nop!
+					      (remove-goto!
+						 (simplify-branch!
+						    (merge! (get-bb-mark) s))))
+					   s))))
+			     (verbose 3 " " (length blocks) " -> " (length b))
+			     (verbose 2 "\n")
+			     (when (>=fx (bigloo-debug) 1)
+				(dump-blocks global params
+				   (block->block-list regs s) ".bbv.cfg")
+				(dump-blocks global params
+				   b ".cfg"))
+			     (map! (lambda (b) (shrink! b)) b)
+			     b))
+		      ;; don't shrink, otherwise dump could no longer be used
+		      (unless (or (>=fx *compiler-debug* 1)
+				  (>=fx (bigloo-debug) 1))
+			 (for-each (lambda (r) (shrink! r)) regs)))))))
        blocks))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Mon Jul 11 10:51:55 2022 (serrano)                */
+;*    Last change :  Tue Jul 12 08:59:57 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -30,6 +30,8 @@
 	    *+fx*
 	    *-fx-safe*
 	    *+fx-safe*
+	    *2-*
+	    *2+*
 	    *int->long*
 	    *bint->long*
 	    *long->bint*
@@ -50,6 +52,8 @@
 (define *+fx* #f)
 (define *-fx-safe* #f)
 (define *+fx-safe* #f)
+(define *2-* #f)
+(define *2+* #f)
 (define *int->long* #f)
 (define *bint->long* #f)
 (define *long->bint* #f)
@@ -71,6 +75,8 @@
       (set! *+fx* (get-global/module 'c-+fx 'foreign))
       (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
       (set! *+fx-safe* (get-global/module '+fx-safe 'foreign))
+      (set! *2-* (get-global/module '2- '__r4_numbers_6_5))
+      (set! *2+* (get-global/module '2+ '__r4_numbers_6_5))
       (set! *int->long* (get-global/module '$int->long 'foreign))
       (set! *bint->long* (get-global/module '$bint->long 'foreign))
       (set! *long->bint* (get-global/module '$long->bint 'foreign))
@@ -92,6 +98,8 @@
    (set! *+fx* #f)
    (set! *-fx-safe* #f)
    (set! *+fx-safe* #f)
+   (set! *2-* #f)
+   (set! *2+* #f)
    (set! *int->long* #f)
    (set! *bint->long* #f)
    (set! *long->bint* #f)

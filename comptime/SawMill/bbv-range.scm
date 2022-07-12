@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Jul 11 10:43:03 2022 (serrano)                */
+;*    Last change :  Tue Jul 12 08:52:17 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -34,6 +34,7 @@
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
 	   (rtl-range::obj ::obj ::pair-nil)
+	   (bbv-singleton?::bool ::obj)
 	   (bbv-range<? ::bbv-range ::bbv-range)
 	   (bbv-range<=? ::bbv-range ::bbv-range)
 	   (bbv-range>? ::bbv-range ::bbv-range)
@@ -133,10 +134,11 @@
    (cond
       ((isa? i rtl_reg)
        (let ((e (ctx-get ctx i)))
-	  (with-access::bbv-ctxentry e (typ value)
-	     (when (and e (or (eq? typ *bint*) (eq? typ *long*)))
-		(when (bbv-range? value)
-		   value)))))
+	  (when e
+	     (with-access::bbv-ctxentry e (typ value)
+		(when (or (eq? typ *bint*) (eq? typ *long*))
+		   (when (bbv-range? value)
+		      value))))))
       ((rtl_ins-mov? i)
        (rtl-range (car (rtl_ins-args i)) ctx))
       ((rtl_ins-call? i)
@@ -157,6 +159,15 @@
 		   (fixnum->range value))))))
       (else
        #f)))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-singleton? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (bbv-singleton? rng)
+   (and (isa? rng bbv-range)
+	(=fx (bbv-range-max rng) (bbv-range-min rng))
+	(> (bbv-range-max rng) (+fx *min-fixnum* 1))
+	(< (bbv-range-max rng) (-fx *max-fixnum* 1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range<? ...                                                  */

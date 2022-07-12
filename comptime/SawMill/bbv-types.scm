@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Jul 11 10:27:35 2022 (serrano)                */
+;*    Last change :  Tue Jul 12 13:15:17 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -35,7 +35,9 @@
 
    (export  (wide-class blockV::block
 	       (versions::pair-nil (default '()))
-	       (%mark::long (default -1)))
+	       (%mark::long (default -1))
+	       (%widening::bool (default #f))
+	       (%merge (default #f)))
 	    (wide-class blockS::block
 	       (%mark::long (default -1))
 	       (%parent::obj read-only (default #unspecified))
@@ -90,7 +92,7 @@
 	    (rtl_ins-bool?::bool i::rtl_ins)
 	    (rtl_ins-true?::bool i::rtl_ins)
 	    (rtl_ins-false?::bool i::rtl_ins)
-	    (rtl_ins-ifxx? i::rtl_ins)
+	    (rtl_ins-return? i::rtl_ins)
 	    
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)
@@ -492,26 +494,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-loadi-value ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-loadi-value i::rtl_ins)
-   (when (rtl_ins-loadi? i)
-      (with-access::rtl_ins i (args)
-	 (when (isa? (car args) literal)
-	    (with-access::literal (car args) (value)
-	       value)))))
-
-(define (rtl_ins-true? i::rtl_ins)
-   (eq? (rtl_ins-loadi-value i) #t))
-
-(define (rtl_ins-false? i::rtl_ins)
-   (when (rtl_ins-loadi? i)
-      (eq? (rtl_ins-loadi-value i) #f)))
+(define (rtl_ins-boolean? ins bool)
+   (with-access::rtl_ins ins (fun)
+      (when (isa? fun rtl_loadi)
+	 (with-access::rtl_loadi fun (constant)
+	    (with-access::literal constant (value)
+	       (eq? value bool))))))
+   
+(define (rtl_ins-true? ins)
+   (rtl_ins-boolean? ins #t))
+   
+(define (rtl_ins-false? ins)
+   (rtl_ins-boolean? ins #f))
 
 ;*---------------------------------------------------------------------*/
-;*    rtl_ins-ifxx? ...                                                */
+;*    rtl_ins-return? ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-ifxx? i::rtl_ins)
+(define (rtl_ins-return? i::rtl_ins)
    (with-access::rtl_ins i (fun)
-      (or (isa? fun rtl_ifne) (isa? fun rtl_ifeq))))
+      (isa? fun rtl_return)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-bool? ...                                                */

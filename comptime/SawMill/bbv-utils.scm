@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon Jul 11 08:44:47 2022 (serrano)                */
+;*    Last change :  Tue Jul 12 08:05:48 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -39,6 +39,7 @@
 	    (block->block-list regs b::block)
 	    (remove-temps! b::block)
 	    (normalize-goto!::pair b::block)
+	    (normalize-ifeq!::pair b::block)
 	    (simplify-branch! b::block)
 	    (remove-nop! b::block)
 	    (remove-goto! b::block)
@@ -211,7 +212,6 @@
    (define (normalize-block! b::block)
       (with-access::block b (succs first)
 	 (when (pair? succs)
-	    ;; rtl_ins-last have to succs
 	    (let* ((lp (last-pair first))
 		   (last (car lp)))
 	       (unless (rtl_ins-go? last)
@@ -222,6 +222,53 @@
 				       (to (car succs))))
 			       (args '()))))
 		     (set-cdr! lp (list go))))))))
+
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  (reverse acc))
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (normalize-block! (car bs))
+	  (with-access::block (car bs) (succs)
+	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+
+;*---------------------------------------------------------------------*/
+;*    normalize-ifeq! ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Replace rtl_ifeq with rtl_ifne. After this pass, no rtl_ifeq     */
+;*    remain.                                                          */
+;*---------------------------------------------------------------------*/
+(define (normalize-ifeq!::pair b::block)
+
+   (define (normalize-block! b::block)
+      (with-access::block b (succs first)
+	 (when (and (pair? succs) (pair? (cdr succs)))
+	    ;; the block ends with either if_eq or if_ne
+	    (let loop ((first first))
+	       (cond
+		  ((null? first)
+		   (error "normalize-ifeq!" "bad block" (shape b)))
+		  ((rtl_ins-ifne? (car first))
+		   #unspecified)
+		  ((rtl_ins-ifeq? (car first))
+		   ;; replace ifeq with ifne using the following goto
+		   (if (or (null? (cdr first)) (not (rtl_ins-go? (cadr first))))
+		       (error "normalize-ifeq!" "bad block" (shape b))
+		       (with-access::rtl_ins (car first) ((ifeq fun))
+			  (with-access::rtl_ifeq ifeq (then loc)
+			     (with-access::rtl_ins (cadr first) ((go fun))
+				(with-access::rtl_go go (to)
+				   (set! ifeq
+				      (instantiate::rtl_ifne
+					 (loc loc)
+					 (then to)))
+				   (set! to then)
+				   (set! succs (reverse! succs))))))))
+		  (else
+		   (loop (cdr first))))))))
 
    (let loop ((bs (list b))
 	      (acc '()))
