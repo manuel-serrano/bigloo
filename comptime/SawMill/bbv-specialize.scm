@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Jul 11 18:42:59 2022 (serrano)                */
+;*    Last change :  Tue Jul 12 17:49:42 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -224,8 +224,8 @@
    (define (type-eq? x y)
       (cond
 	 ((eq? x y) #t)
-	 ((eq? x *bint*) (eq? y *long*) #t)
-	 ((eq? x *long*) (eq? y *bint*) #t)
+	 ((eq? x *bint*) (eq? y *long*))
+	 ((eq? x *long*) (eq? y *bint*))
 	 (else #f)))
 
    (define (min-value x y)
@@ -265,6 +265,7 @@
 			(not (bbv-ctxentry-flag e)))
 		   ;; negative type simplification
 		   (let ((nctx (extend-ctx ctx reg type #f)))
+		      (tprint "GOTO " (shape type))
 		      (with-access::rtl_ins/bbv i (fun)
 			 (let ((s (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
