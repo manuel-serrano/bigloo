@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Wed Jul 13 07:54:01 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 09:01:08 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -43,16 +43,6 @@
 (define *cleanup*
    (let ((e (getenv "BIGLOOBBVCLEANUP")))
       (not e)))
-
-;*---------------------------------------------------------------------*/
-;*    replace ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (replace lst old new)
-   (let loop ((l lst))
-      (cond
-	 ((null? l) l)
-	 ((eq? (car l) old) (cons new (cdr l)))
-	 (else (cons (car l) (loop (cdr l)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv ...                                                          */
@@ -136,21 +126,6 @@
    (if oname
        (call-with-output-file filename dump-blocks)
        (dump-blocks (current-error-port))))
-
-;*---------------------------------------------------------------------*/
-;*    reorder-succs! ...                                               */
-;*---------------------------------------------------------------------*/
-(define (reorder-succs! blocks)
-   (when (and (pair? blocks) (pair? (cdr blocks)))
-      (let loop ((bs blocks))
-	 (when (pair? (cdr bs))
-	    (let ((b (car bs))
-		  (n (cadr bs)))
-	       (with-access::block b (succs first)
-		  (when (pair? succs)
-		     (unless (rtl_ins-go? (car (last-pair first)))
-			(set! succs (cons n (remq! n succs))))))
-	       (loop (cdr bs)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    widen-bbv! ...                                                   */

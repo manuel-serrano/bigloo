@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Wed Jul 13 08:13:53 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 09:02:08 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -37,6 +37,7 @@
 	    (set-max-label! blocks::pair-nil)
 	    (genlabel)
 	    (block->block-list regs b::block)
+	    (reorder-succs! ::pair-nil)
 	    (remove-temps! b::block)
 	    (normalize-goto!::pair b::block)
 	    (normalize-ifeq!::pair b::block)
@@ -160,6 +161,21 @@
 		(else
 		 (loop (append succs (cdr bs))
 		    (bbset-cons (car bs) acc)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    reorder-succs! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (reorder-succs! blocks)
+   (when (and (pair? blocks) (pair? (cdr blocks)))
+      (let loop ((bs blocks))
+	 (when (pair? (cdr bs))
+	    (let ((b (car bs))
+		  (n (cadr bs)))
+	       (with-access::block b (succs first)
+		  (when (pair? succs)
+		     (unless (rtl_ins-go? (car (last-pair first)))
+			(set! succs (cons n (remq! n succs))))))
+	       (loop (cdr bs)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-temps! ...                                                */
