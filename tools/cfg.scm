@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Mon Jul 11 08:23:44 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 07:57:08 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -41,24 +41,28 @@
 ;*---------------------------------------------------------------------*/
 ;*    bb ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define-struct bb lbl-num preds succs instrs parent color)
+(define-struct bb lbl-num preds succs instrs parent widener color)
 
 ;*---------------------------------------------------------------------*/
 ;*    list->bb ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (list->bb l)
    (match-case l
+      (((or block blockS blockV SawDone) ?num :parent ?parent :widener ?widener :preds ?preds :succs ?succs . ?ins)
+       (bb num preds succs ins parent widener (get-color parent)))
       (((or block blockS blockV SawDone) ?num :parent ?parent :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins parent (get-color parent)))
+       (bb num preds succs ins parent #f (get-color parent)))
+      (((or block blockS blockV SawDone) ?num :widener ?widener :preds ?preds :succs ?succs . ?ins)
+       (bb num preds succs ins #f widener (get-color 0)))
       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins 0 (get-color 0)))
+       (bb num preds succs ins 0 #f (get-color 0)))
       (else
        (error "list->bb" "bad syntax" l))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *colors* ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define *colors* '())
+(define *colors* '((0 . "#999999")))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-color ...                                                    */
@@ -229,12 +233,15 @@
 			   (list (format "~( )" (map escape code)))))
 		     :cellspacing 2)))))
       
-      (let* ((lbl `(,(format "<b>#~a</b>" (bb-lbl-num bb))
-		    ,(format "[~s]" (bb-parent bb))))
+      (let* ((lbl (format "<b>#~a</b>" (bb-lbl-num bb)))
+	     (title `(,(if (bb-widener bb)
+			   (format "<font color=\"red\">~a</font>" lbl)
+			   lbl)
+		      ,(if (bb-parent bb) (format "[~s]" (bb-parent bb)) "")))
 	     (head (gen-row
 		      (gen-col #f
 			 (gen-table #f
-			    (gen-row (gen-head lbl))
+			    (gen-row (gen-head title))
 			    :bgcolor (bb-color bb)))))
 	     (instrs (bb-instrs bb)))
 	 (let loop ((instrs instrs)

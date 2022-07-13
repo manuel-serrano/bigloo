@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Tue Jul 12 08:05:48 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 08:13:53 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -440,8 +440,8 @@
 ;*    Merge equivalent basic blocks subgraphs                          */
 ;*---------------------------------------------------------------------*/
 (define (merge! mark b::blockS)
-   (with-access::blockS b (%parent succs)
-      (with-access::blockV %parent (versions %mark)
+   (with-access::blockS b (parent succs)
+      (with-access::blockV parent (versions %mark)
 	 (unless (=fx mark %mark)
 	    (set! %mark mark)
 	    (with-trace 'bbv "merge"

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Jun 21 09:45:15 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 08:36:16 2022 (serrano)                */
 ;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -55,6 +55,7 @@
 	    *warning-default-slot-value*
 	    *profile-library*
 	    *trace-name*
+	    *trace-level*
 	    *trace-write-length*
 	    *additional-traces*
 	    *inlining?*
@@ -845,6 +846,9 @@
 (param-define *trace-name*
    "Trace file name"
    "trace")
+(param-define *trace-level*
+   "Trace level"
+   0)
 (param-define *trace-write-length*
    "Trace dumping max level"
    80)

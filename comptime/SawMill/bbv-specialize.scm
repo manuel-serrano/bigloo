@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul 12 17:49:42 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 08:12:10 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -163,7 +163,7 @@
 			ctx))
 		(lbl (genlabel))
 		(s (instantiate::blockS
-		      (%parent b)
+		      (parent b)
 		      (label lbl)
 		      (first '()))))
 	    (set! versions (cons (cons ctx s) versions))
@@ -265,7 +265,6 @@
 			(not (bbv-ctxentry-flag e)))
 		   ;; negative type simplification
 		   (let ((nctx (extend-ctx ctx reg type #f)))
-		      (tprint "GOTO " (shape type))
 		      (with-access::rtl_ins/bbv i (fun)
 			 (let ((s (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
@@ -624,13 +623,11 @@
    
    (with-trace 'bbv-ins "rtl_ins-specialize-fxcmp"
       (with-access::rtl_ins i (dest fun args)
-	 (tprint ">>> SPEC CALL " (shape i))
 	 (cond
 	    ((isa? fun rtl_ifne)
 	     (with-access::rtl_ifne fun (then)
 		(multiple-value-bind (ins pctx nctx)
 		   (specialize-call (car args) ctx)
-		   (tprint "--- SPEC CALL " (shape ins) " " (rtl_ins-call? ins))
 		   (cond
 		      ((rtl_ins-true? ins)
 		       (with-access::rtl_ifne fun (then)

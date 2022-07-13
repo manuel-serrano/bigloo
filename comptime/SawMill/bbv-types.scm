@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Jul 12 13:15:17 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 07:55:40 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -36,13 +36,12 @@
    (export  (wide-class blockV::block
 	       (versions::pair-nil (default '()))
 	       (%mark::long (default -1))
-	       (%widening::bool (default #f))
-	       (%merge (default #f)))
+	       (widener::bool (default #f)))
 	    (wide-class blockS::block
 	       (%mark::long (default -1))
-	       (%parent::obj read-only (default #unspecified))
 	       (%hash::obj (default #f))
-	       (%blacklist::obj (default '())))
+	       (%blacklist::obj (default '()))
+	       (parent::obj read-only (default #unspecified)))
 	    (wide-class rtl_ins/bbv::rtl_ins
 	       (def (default #unspecified))
 	       (out (default #unspecified))
@@ -402,6 +401,27 @@
 	    (display* " out=" (map shape (regset->list out)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    dump ::blockV ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (dump o::blockV p m)
+   
+   (define (lbl n)
+      (if (isa? n block) (block-label n) (typeof n)))
+   
+   (with-access::block o (label first)
+      (fprint p "(blockV " label)
+      (with-access::blockV o (preds succs widener)
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":widener " widener)
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":preds " (map lbl preds))
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":succs " (map lbl succs)))
+      (dump-margin p (+fx m 1))
+      (dump* first p (+fx m 1))
+      (display "\n )\n" p)))
+
+;*---------------------------------------------------------------------*/
 ;*    dump ::blockS ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::blockS p m)
@@ -411,9 +431,11 @@
    
    (with-access::block o (label first)
       (fprint p "(blockS " label)
-      (with-access::blockS o (%parent preds succs)
+      (with-access::blockS o (parent preds succs)
 	 (dump-margin p (+fx m 1))
-	 (fprint p ":parent " (block-label %parent))
+	 (fprint p ":parent " (block-label parent))
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":widener " (with-access::blockV parent (widener) widener))
 	 (dump-margin p (+fx m 1))
 	 (fprint p ":preds " (map lbl preds))
 	 (dump-margin p (+fx m 1))

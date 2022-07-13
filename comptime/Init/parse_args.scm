@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Jun 25 16:25:45 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 08:36:23 2022 (serrano)                */
 ;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -43,7 +43,6 @@
 ;*---------------------------------------------------------------------*/
 (define *extended-done?* #f)
 (define *libraries* '())
-(define *trace-level* 0)
 (define *user-load-path* (list "." (bigloo-config 'library-directory)))
 (define *force-saw* #unspecified)
 (define *error-localization-opt* #unspecified)
@@ -870,7 +869,9 @@
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")
       ;; traces
-      (("-t" (help "-t[2|3|4]" "Generate a trace file (*)"))
+      (("-t" (help "-t[1|2|3|4]" "Generate a trace file (*)"))
+       (set! *trace-level* 1))
+      (("-t1")
        (set! *trace-level* 1))
       (("-t2")
        (set! *trace-level* 2))
