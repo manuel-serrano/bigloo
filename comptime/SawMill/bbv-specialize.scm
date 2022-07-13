@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jul 13 11:47:54 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 13:49:29 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -280,7 +280,6 @@
 					 (ctx ctx)
 					 (fun (duplicate::rtl_ifne fun
 						 (then (bbv-block then pctx)))))))
-			       (tprint "N=" (shape nctx))
 			       (values s nctx))))))
 		  (else
 		   (error "rtl_ins-specialize-typecheck"
