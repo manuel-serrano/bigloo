@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Tue Jul 12 08:59:57 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 11:47:21 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -35,8 +35,7 @@
 	    *int->long*
 	    *bint->long*
 	    *long->bint*
-	    *vector-bound-check*
-	    *type-norms*))
+	    *vector-bound-check*))
 
 ;*---------------------------------------------------------------------*/
 ;*    The cache registers definition                                   */
@@ -80,9 +79,7 @@
       (set! *int->long* (get-global/module '$int->long 'foreign))
       (set! *bint->long* (get-global/module '$bint->long 'foreign))
       (set! *long->bint* (get-global/module '$long->bint 'foreign))
-      (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))
-      (set! *type-norms*
-	 (list (cons *int* *bint*)))))
+      (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stop-bbv-cache! ...                                              */

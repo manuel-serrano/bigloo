@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Tue Jul 12 08:52:17 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 13:23:26 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -135,8 +135,9 @@
       ((isa? i rtl_reg)
        (let ((e (ctx-get ctx i)))
 	  (when e
-	     (with-access::bbv-ctxentry e (typ value)
-		(when (or (eq? typ *bint*) (eq? typ *long*))
+	     (with-access::bbv-ctxentry e (types value flag)
+		(when (and flag
+			   (or (type-in? *bint* types) (type-in? *long* types)))
 		   (when (bbv-range? value)
 		      value))))))
       ((rtl_ins-mov? i)

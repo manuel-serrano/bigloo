@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Wed Jul 13 07:57:08 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 13:40:38 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -198,9 +198,9 @@
 	    (#(?reg ?type ?val ())
 	     (format "~a:~a/~a" reg type val))
 	    (#(?reg ?type ?val ?aliases)
-	     (format "~a:~a(~( ))" reg type aliases))
+	     (format "~a:~a[~( )]" reg type aliases))
 	    (#(?reg ?type ?val ?aliases)
-	     (format "~a:~a/~a(~( ))" reg type val aliases))
+	     (format "~a:~a/~a[~( )]" reg type val aliases))
 	    (else
 	     "")))
       

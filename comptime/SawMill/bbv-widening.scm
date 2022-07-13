@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Wed Jul 13 08:29:38 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 13:32:38 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV widening                                                     */
@@ -43,7 +43,6 @@
    (let loop ((block block)
 	      (stack '()))
       (with-access::block block (succs)
-	 (tprint "loop: " (block-label block))
 	 (let liip ((succs succs))
 	    (when (pair? succs)
 	       (let ((n (car succs)))

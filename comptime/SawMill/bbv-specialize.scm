@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jul 13 08:12:10 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 11:47:54 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -221,13 +221,6 @@
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specialize-typecheck i::rtl_ins ctx)
 
-   (define (type-eq? x y)
-      (cond
-	 ((eq? x y) #t)
-	 ((eq? x *bint*) (eq? y *long*))
-	 ((eq? x *long*) (eq? y *bint*))
-	 (else #f)))
-
    (define (min-value x y)
       (cond
 	 ((eq? x '_) y)
@@ -247,10 +240,10 @@
 	       (trace-item "value=" (shape value))
 	       (trace-item "e=" (shape e))
 	       (cond
-		  ((and (type-eq? (bbv-ctxentry-typ e) type)
+		  ((and (type-in? type (bbv-ctxentry-types e))
 			(bbv-ctxentry-flag e))
 		   ;; positive type simplification
-		   (let ((pctx (extend-ctx ctx reg type #t
+		   (let ((pctx (extend-ctx ctx reg (list type) #t
 				  :value (min-value value (bbv-ctxentry-value e)))))
 		      (with-access::rtl_ins/bbv i (fun)
 			 (with-access::rtl_ifne fun (then)
@@ -260,30 +253,35 @@
 						(to (bbv-block then pctx))))
 					(dest #f)
 					(args '()))))
-			       (values s (extend-ctx ctx reg type #f)))))))
-		  ((and (type-eq? (bbv-ctxentry-typ e) type)
+			       ;; the next ctx will be ignored...
+			       (values s '()))))))
+		  ((and (type-in? type (bbv-ctxentry-types e))
 			(not (bbv-ctxentry-flag e)))
 		   ;; negative type simplification
-		   (let ((nctx (extend-ctx ctx reg type #f)))
-		      (with-access::rtl_ins/bbv i (fun)
-			 (let ((s (duplicate::rtl_ins/bbv i
-				     (ctx ctx)
-				     (fun (instantiate::rtl_nop))
-				     (dest #f)
-				     (args '()))))
-			    (values s nctx)))))
+		   (with-access::rtl_ins/bbv i (fun)
+		      (let ((s (duplicate::rtl_ins/bbv i
+				  (ctx ctx)
+				  (fun (instantiate::rtl_nop))
+				  (dest #f)
+				  (args '()))))
+			 (values s ctx))))
 		  ((isa? fun rtl_ifne)
 		   (with-access::bbv-ctxentry e (aliases)
 		      (let ((regs (cons reg aliases)))
 			 (with-access::rtl_ifne fun (then)
-			    (let* ((n (bbv-block then
-					 (extend-ctx* ctx regs type #t
-					    :value (min-value value (bbv-ctxentry-value e)))))
+			    (let* ((pctx (extend-ctx* ctx regs (list type) #t
+					    :value (min-value value (bbv-ctxentry-value e))))
+				   (nctx (if (bbv-ctxentry-flag e)
+					     (extend-ctx* ctx regs
+						(list type) #f)
+					     (extend-ctx* ctx regs
+						(cons type (bbv-ctxentry-types e)) #f)))
 				   (s (duplicate::rtl_ins/bbv i
 					 (ctx ctx)
 					 (fun (duplicate::rtl_ifne fun
-						 (then n))))))
-			       (values s (extend-ctx* ctx regs type #f)))))))
+						 (then (bbv-block then pctx)))))))
+			       (tprint "N=" (shape nctx))
+			       (values s nctx))))))
 		  (else
 		   (error "rtl_ins-specialize-typecheck"
 		      "should not be here"
@@ -292,14 +290,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    range->loadi ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (range->loadi i::rtl_ins dest value typ)
+(define (range->loadi i::rtl_ins dest value types)
    (with-access::bbv-range value (max)
       (let* ((atom (instantiate::literal
 		      (type *long*)
 		      (value max)))
 	     (loadi (instantiate::rtl_loadi
 		       (constant atom))))
-	 (if (eq? typ *long*)
+	 (if (memq *long* types)
 	     (duplicate::rtl_ins/bbv i
 		(dest dest)
 		(args '())
@@ -323,13 +321,13 @@
 	    (cond
 	       ((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
 		(let ((e (ctx-get ctx (car args))))
-		   (with-access::bbv-ctxentry e (typ value)
+		   (with-access::bbv-ctxentry e (types value)
 		      (if (and (bbv-singleton? value))
-			  (values (range->loadi i dest value typ)
-			     (extend-ctx ctx dest typ #t :value value))
+			  (values (range->loadi i dest value types)
+			     (extend-ctx ctx dest types #t :value value))
 			  (values (duplicate-ins i ctx)
 			     (alias-ctx
-				(extend-ctx ctx dest typ #t :value value)
+				(extend-ctx ctx dest types #t :value value)
 				dest (car args)))))))
 	       ((and *type-call* (pair? args) (rtl_ins-call? (car args)))
 		(with-access::rtl_ins (car args) (fun args)
@@ -340,16 +338,16 @@
 				(with-access::rtl_loadi fun (constant)
 				   (with-access::atom constant (value type)
 				      (values (duplicate-ins i ctx)
-					 (extend-ctx ctx dest *bint* #t
+					 (extend-ctx ctx dest (list *bint*) #t
 					    :value (if (fixnum? value) (fixnum->range value) '_))))))
 			     (values (duplicate-ins i ctx)
-				(extend-ctx ctx dest type #t)))))))
+				(extend-ctx ctx dest (list type) #t)))))))
 	       ((and *type-loadi* (pair? args) (rtl_ins-loadi? (car args)))
 		(with-access::rtl_ins (car args) (fun)
 		   (with-access::rtl_loadi fun (constant)
 		      (with-access::atom constant (value type)
 			 (values (duplicate-ins i ctx)
-			    (extend-ctx ctx dest type #t :value
+			    (extend-ctx ctx dest (list type) #t :value
 			       (if (fixnum? value) (fixnum->range value) '_)))))))
 	       (else
 		(values (duplicate-ins i ctx) ctx)))))))
@@ -364,11 +362,10 @@
 	    (with-access::atom constant (value type)
 	       (let ((s (duplicate::rtl_ins/bbv i
 			   (ctx ctx)
-			   (fun (duplicate::rtl_loadi fun)))))
-		  (if (fixnum? value)
-		      (values s (extend-ctx ctx dest type #t
-				   :value (fixnum->range value)))
-		      (values s (extend-ctx ctx dest type #t)))))))))
+			   (fun (duplicate::rtl_loadi fun))))
+		     (v (if (fixnum? value) (fixnum->range value) '_)))
+		  (values s
+		     (extend-ctx ctx dest (list type) #t :value v))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-call-specialize? ...                                     */
@@ -402,11 +399,9 @@
 			    (ctx ctx)
 			    (fun (duplicate::rtl_call fun))))
 		      (nv (new-value i)))
-		  (if (fun? value)
-		      (values s
-			 (extend-normalize-ctx ctx dest type #t :value nv))
-		      (values s
-			 (extend-ctx ctx dest *obj* #t :value nv)))))))))
+		  (values s
+		     (extend-ctx ctx dest (list (if (fun? value) type *obj*)) #t
+			:value nv))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-return-specialize? ...                                   */
@@ -422,10 +417,11 @@
 (define (rtl_ins-specialize-return i::rtl_ins ctx)
    (with-access::rtl_ins i (args dest)
       (let ((e (ctx-get ctx (car args))))
-	 (with-access::bbv-ctxentry e (typ value)
+	 (with-access::bbv-ctxentry e (types value)
 	    (if (bbv-singleton? value)
 		(let ((loadi (duplicate::rtl_ins/bbv i
-				(args (list (range->loadi i (car args) value typ)))
+				(args (list (range->loadi i
+					       (car args) value types)))
 				(fun (instantiate::rtl_mov))
 				(dest (car args)))))
 		   (values (duplicate::rtl_ins i
@@ -528,39 +524,39 @@
       (if (or (not (bbv-range? intl)) (not (bbv-range? intr)))
 	  (values ctx ctx)
 	  (let* ((e (ctx-get ctx reg))
-		 (typ (bbv-ctxentry-typ e)))
+		 (types (bbv-ctxentry-types e)))
 	     (case op
 		((<)
 		 (let ((intrt (bbv-range-lt intl intr))
 		       (intro (bbv-range-gte intl intr)))
-		    (values (extend-ctx ctx reg typ #t :value intrt)
-		       (extend-ctx ctx reg typ #t :value intro))))
+		    (values (extend-ctx ctx reg types #t :value intrt)
+		       (extend-ctx ctx reg types #t :value intro))))
 		((<=)
 		 (let ((intrt (bbv-range-lte intl intr))
 		       (intro (bbv-range-gt intl intr)))
-		    (values (extend-ctx ctx reg typ #t :value intrt)
-		       (extend-ctx ctx reg typ #t :value intro))))
+		    (values (extend-ctx ctx reg types #t :value intrt)
+		       (extend-ctx ctx reg types #t :value intro))))
 		((>)
 		 (let ((intrt (bbv-range-gt intl intr))
 		       (intro (bbv-range-lte intl intr)))
-		    (values (extend-ctx ctx reg typ #t :value intrt)
-		       (extend-ctx ctx reg typ #t :value intro))))
+		    (values (extend-ctx ctx reg types #t :value intrt)
+		       (extend-ctx ctx reg types #t :value intro))))
 		((>=)
 		 (let ((intrt (bbv-range-gte intl intr))
 		       (intro (bbv-range-lt intl intr)))
-		    (values (extend-ctx ctx reg typ #t :value intrt)
-		       (extend-ctx ctx reg typ #t :value intro))))
+		    (values (extend-ctx ctx reg types #t :value intrt)
+		       (extend-ctx ctx reg types #t :value intro))))
 		((== ===)
 		 (let ((ieq (bbv-range-eq intl intr)))
 		    (values (if (bbv-range? ieq)
-				(extend-ctx ctx reg typ #t :value ieq)
+				(extend-ctx ctx reg types #t :value ieq)
 				ctx)
 		       ctx)))
 		((!= !==)
 		 (let ((ieq (bbv-range-eq intl intr)))
 		    (values ctx
 		       (if (bbv-range? ieq)
-			   (extend-ctx ctx reg typ #t :value ieq)
+			   (extend-ctx ctx reg types #t :value ieq)
 			   ctx))))
 		(else
 		 (values ctx ctx))))))
@@ -791,84 +787,84 @@
 			   (ctx ctx))
 		   ctx)))))))
    
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-specialize ...                                           */
-;*    -------------------------------------------------------------    */
-;*    Specialize an instruction according to the typing context.       */
-;*    Returns the new instruction and the new context.                 */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-TBR i::rtl_ins ctx::pair-nil)
-   (with-trace 'bbv-ins "rtl_ins-specialize"
-      (trace-item "ins=" (shape i))
-      (trace-item "ctx=" (ctx->string ctx))
-      (cond
-;* 	 ((rtl_ins-last? i)                                            */
-;* 	  (tprint "SHOULD NOT...")                                     */
-;* 	  (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t)))       */
-;* 	 ((rtl_ins-typecheck? i)                                       */
+;* {*---------------------------------------------------------------------*} */
+;* {*    rtl_ins-specialize ...                                           *} */
+;* {*    -------------------------------------------------------------    *} */
+;* {*    Specialize an instruction according to the typing context.       *} */
+;* {*    Returns the new instruction and the new context.                 *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (rtl_ins-specialize-TBR i::rtl_ins ctx::pair-nil)           */
+;*    (with-trace 'bbv-ins "rtl_ins-specialize"                        */
+;*       (trace-item "ins=" (shape i))                                 */
+;*       (trace-item "ctx=" (ctx->string ctx))                         */
+;*       (cond                                                         */
+;* {* 	 ((rtl_ins-last? i)                                            *} */
+;* {* 	  (tprint "SHOULD NOT...")                                     *} */
+;* {* 	  (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t)))       *} */
+;* {* 	 ((rtl_ins-typecheck? i)                                       *} */
+;* {* 	  (tprint "SHOULD NOT....")                                    *} */
+;* {* 	  (rtl_ins-specialize-typecheck-old i ctx))                    *} */
+;* {* 	 ((rtl_ins-vector-bound-check? i)                              *} */
+;* {* 	  (rtl_ins-specialize-vector-bound-check i ctx))               *} */
+;* {*  	 ((rtl_ins-bool? i)                                            *} */
+;* {* 	  (rtl_ins-specialize-bool i ctx))                             *} */
+;* 	 ((rtl_ins-go? i)                                              */
+;* 	  ;; have to duplicate the instruction to break "to" sharing   */
 ;* 	  (tprint "SHOULD NOT....")                                    */
-;* 	  (rtl_ins-specialize-typecheck-old i ctx))                    */
-;* 	 ((rtl_ins-vector-bound-check? i)                              */
-;* 	  (rtl_ins-specialize-vector-bound-check i ctx))               */
-;*  	 ((rtl_ins-bool? i)                                            */
-;* 	  (rtl_ins-specialize-bool i ctx))                             */
-	 ((rtl_ins-go? i)
-	  ;; have to duplicate the instruction to break "to" sharing
-	  (tprint "SHOULD NOT....")
-	  (with-access::rtl_ins i (fun)
-	     (let ((s (duplicate::rtl_ins/bbv i
-			 (fun (duplicate::rtl_go fun)))))
-		(values s ctx))))
-	 ((not (rtl_reg? (rtl_ins-dest i)))
-	  (tprint "SHOULD NOT....")
-	  (values i ctx))
-	 ((rtl_ins-mov? i)
-	  (tprint "SHOULD NOT....")
-	  (with-access::rtl_ins i (dest args fun)
-	     (cond
-		((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
-		 (values i (alias-ctx ctx dest (car args))))
-		((and *type-call* (pair? args) (rtl_ins-call? (car args)))
-		 (with-access::rtl_ins (car args) (fun)
-		    (with-access::rtl_call fun (var)
-		       (with-access::global var (value type)
-			  (values i (extend-normalize-ctx ctx dest type #t))))))
-		(else
-		 (values i (extend-ctx ctx dest *obj* #t))))))
-	 ((rtl_ins-ifne? i)
-	  ;; have to duplicate the instruction to break "to" sharing
-	  (case (bool-value (car (rtl_ins-args i)) ctx)
-	     ((true)
-	      (tprint "ifne.TRUE...")
-	      (with-access::rtl_ins i (fun)
-		 (with-access::rtl_ifne fun (then)
-		    (let ((s (duplicate::rtl_ins/bbv i
-				(fun (instantiate::rtl_go
-					(to then))))))
-		       (values s ctx)))))
-	     ((false)
-	      (tprint "ifne.FALSE...")
-	      (let ((s (duplicate::rtl_ins/bbv i
-			  (fun (instantiate::rtl_nop)))))
-		 (values s ctx)))
-	     (else
-	      (with-access::rtl_ins i (fun)
-		 (let ((s (duplicate::rtl_ins/bbv i
-			     (fun (duplicate::rtl_ifne fun)))))
-		    (values s ctx))))))
-	 
-	 ((and *type-call* (rtl_ins-call? i))
-	  (with-access::rtl_ins i (dest fun)
-	     (with-access::rtl_call fun (var)
-		(with-access::global var (value type)
-		   (if (fun? value)
-		       (values i (extend-normalize-ctx ctx dest type #t))
-		       (values i (extend-ctx ctx dest *obj* #t)))))))
-;* 	 ((rtl_ins-vlen? i)                                            */
-;* 	  (rtl_ins-specialize-vlength i ctx))                          */
-	 (else
-	  (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t))))))
-
+;* 	  (with-access::rtl_ins i (fun)                                */
+;* 	     (let ((s (duplicate::rtl_ins/bbv i                        */
+;* 			 (fun (duplicate::rtl_go fun)))))              */
+;* 		(values s ctx))))                                      */
+;* 	 ((not (rtl_reg? (rtl_ins-dest i)))                            */
+;* 	  (tprint "SHOULD NOT....")                                    */
+;* 	  (values i ctx))                                              */
+;* 	 ((rtl_ins-mov? i)                                             */
+;* 	  (tprint "SHOULD NOT....")                                    */
+;* 	  (with-access::rtl_ins i (dest args fun)                      */
+;* 	     (cond                                                     */
+;* 		((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args))) */
+;* 		 (values i (alias-ctx ctx dest (car args))))           */
+;* 		((and *type-call* (pair? args) (rtl_ins-call? (car args))) */
+;* 		 (with-access::rtl_ins (car args) (fun)                */
+;* 		    (with-access::rtl_call fun (var)                   */
+;* 		       (with-access::global var (value type)           */
+;* 			  (values i (extend-ctx ctx dest type #t)))))) */
+;* 		(else                                                  */
+;* 		 (values i (extend-ctx ctx dest *obj* #t))))))         */
+;* 	 ((rtl_ins-ifne? i)                                            */
+;* 	  ;; have to duplicate the instruction to break "to" sharing   */
+;* 	  (case (bool-value (car (rtl_ins-args i)) ctx)                */
+;* 	     ((true)                                                   */
+;* 	      (tprint "ifne.TRUE...")                                  */
+;* 	      (with-access::rtl_ins i (fun)                            */
+;* 		 (with-access::rtl_ifne fun (then)                     */
+;* 		    (let ((s (duplicate::rtl_ins/bbv i                 */
+;* 				(fun (instantiate::rtl_go              */
+;* 					(to then))))))                 */
+;* 		       (values s ctx)))))                              */
+;* 	     ((false)                                                  */
+;* 	      (tprint "ifne.FALSE...")                                 */
+;* 	      (let ((s (duplicate::rtl_ins/bbv i                       */
+;* 			  (fun (instantiate::rtl_nop)))))              */
+;* 		 (values s ctx)))                                      */
+;* 	     (else                                                     */
+;* 	      (with-access::rtl_ins i (fun)                            */
+;* 		 (let ((s (duplicate::rtl_ins/bbv i                    */
+;* 			     (fun (duplicate::rtl_ifne fun)))))        */
+;* 		    (values s ctx))))))                                */
+;* 	                                                               */
+;* 	 ((and *type-call* (rtl_ins-call? i))                          */
+;* 	  (with-access::rtl_ins i (dest fun)                           */
+;* 	     (with-access::rtl_call fun (var)                          */
+;* 		(with-access::global var (value type)                  */
+;* 		   (if (fun? value)                                    */
+;* 		       (values i (extend-ctx ctx dest type #t))        */
+;* 		       (values i (extend-ctx ctx dest *obj* #t)))))))  */
+;* {* 	 ((rtl_ins-vlen? i)                                            *} */
+;* {* 	  (rtl_ins-specialize-vlength i ctx))                          *} */
+;* 	 (else                                                         */
+;* 	  (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t))))))    */
+;*                                                                     */
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    rtl_ins-specialize-bool ...                                      *} */
 ;* {*---------------------------------------------------------------------*} */
@@ -930,30 +926,30 @@
 ;*       (else                                                         */
 ;*        #f)))                                                        */
 
-;*---------------------------------------------------------------------*/
-;*    bool-value ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (bool-value i ctx)
-   (cond
-      ((isa? i rtl_reg)
-       (let ((e (ctx-get ctx i)))
-	  (cond
-	     ((or (not e) (not (eq? (bbv-ctxentry-typ e) *bool*))) '_)
-	     ((eq? (bbv-ctxentry-value e) #t) 'true)
-	     ((eq? (bbv-ctxentry-value e) #f) 'false)
-	     (else '_))))
-      ((rtl_ins-mov? i)
-       (bool-value (car (rtl_ins-args i)) ctx))
-      ((rtl_ins-loadi? i)
-       (with-access::rtl_ins i (fun)
-	  (with-access::rtl_loadi fun (constant)
-	     (cond
-		((not (isa? constant literal)) '_)
-		((eq? (literal-value constant) #t) 'true)
-		((eq? (literal-value constant) #f) 'false)
-		(else '_)))))
-      (else
-       '_)))
+;* {*---------------------------------------------------------------------*} */
+;* {*    bool-value ...                                                   *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (bool-value i ctx)                                          */
+;*    (cond                                                            */
+;*       ((isa? i rtl_reg)                                             */
+;*        (let ((e (ctx-get ctx i)))                                   */
+;* 	  (cond                                                        */
+;* 	     ((or (not e) (not (eq? (bbv-ctxentry-typ e) *bool*))) '_) */
+;* 	     ((eq? (bbv-ctxentry-value e) #t) 'true)                   */
+;* 	     ((eq? (bbv-ctxentry-value e) #f) 'false)                  */
+;* 	     (else '_))))                                              */
+;*       ((rtl_ins-mov? i)                                             */
+;*        (bool-value (car (rtl_ins-args i)) ctx))                     */
+;*       ((rtl_ins-loadi? i)                                           */
+;*        (with-access::rtl_ins i (fun)                                */
+;* 	  (with-access::rtl_loadi fun (constant)                       */
+;* 	     (cond                                                     */
+;* 		((not (isa? constant literal)) '_)                     */
+;* 		((eq? (literal-value constant) #t) 'true)              */
+;* 		((eq? (literal-value constant) #f) 'false)             */
+;* 		(else '_)))))                                          */
+;*       (else                                                         */
+;*        '_)))                                                        */
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-vlength ...                                   */

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Jul 13 08:10:27 2022 (serrano)                */
+#*    Last change :  Wed Jul 13 13:47:00 2022 (serrano)                */
 #*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -402,7 +402,7 @@ POPULATION	= $(SOURCE_FILES) \
                   Jas/classfile.sch \
                   SawMill/defs.sch SawMill/regalloc.sch SawMill/node2rtl.sch \
                   SawMill/collapse.sch SawMill/remove.sch \
-                  SawMill/InlineReturn.sch SawMill/blockorder.sch \
+                  SawMill/inlinereturn.sch SawMill/blockorder.sch \
                   SawMill/expr.sch SawMill/regset.sch SawMill/bbv-types.sch \
                   SawMill/bbv-interval.sch SawC/code.sch \
                   SawJvm/funcall.sch SawJvm/code.sch SawJvm/names.sch \

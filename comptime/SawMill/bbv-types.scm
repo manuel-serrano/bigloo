@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Jul 13 07:55:40 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 11:40:36 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -51,7 +51,7 @@
 
 	    (class bbv-ctxentry
 	       (reg::rtl_reg read-only)
-	       (typ::type read-only (default *obj*))
+	       (types::pair read-only (default (list *obj*)))
 	       (flag::bool read-only)
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '())))
@@ -63,14 +63,15 @@
 	    
 	    (ctx->string ::pair-nil)
 	    (params->ctx ::pair-nil)
+
+	    (type-in?::bool ::type ::pair)
+	    
 	    (ctx-get ::pair-nil ::rtl_reg)
-	    (extend-ctx::pair-nil ::pair-nil ::rtl_reg ::obj ::bool
+	    (extend-ctx::pair-nil ::pair-nil ::rtl_reg ::pair ::bool
 	       #!key (value '_))
-	    (extend-ctx* ctx::pair-nil regs::pair type flag::bool
+	    (extend-ctx* ctx::pair-nil regs::pair ::pair ::bool
 	       #!key (value '_))
-	    (extend-normalize-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
-	       #!key (value '_))
-	    (refine-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
+	    (refine-ctx::pair-nil ::pair-nil ::obj ::pair ::bool
 	       #!key (value '_))
 	    (alias-ctx::pair-nil ::pair-nil ::rtl_reg ::rtl_reg)
 	    (unalias-ctx::pair-nil ::pair-nil ::rtl_reg)
@@ -120,11 +121,12 @@
 ;*    shape ::bbv-ctxentry ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-ctxentry)
-   (with-access::bbv-ctxentry e (reg typ flag value aliases)
+   (with-access::bbv-ctxentry e (reg types flag value aliases)
       (vector (shape reg)
-	 (if flag
-	     (shape typ)
-	     (string-append "!" (shape typ)))
+	 (format "[~( )]"
+	    (if flag
+		(map shape types)
+		(map (lambda (t) (string-append "!" (shape t))) types)))
 	 (format "~s" (shape value))
 	 (map shape aliases))))
    
@@ -150,9 +152,23 @@
 			(with-access::rtl_reg p (type)
 			   (instantiate::bbv-ctxentry
 			      (reg p)
-			      (typ type)
+			      (types (list type))
 			      (flag #t)))))
 	 params)))
+
+;*---------------------------------------------------------------------*/
+;*    type-in? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (type-in? type types)
+   
+   (define (type-eq? x y)
+      (cond
+	 ((eq? x y) #t)
+	 ((eq? x *bint*) (eq? y *long*))
+	 ((eq? x *long*) (eq? y *bint*))
+	 (else #f)))
+   
+   (any (lambda (t) (type-eq? type t)) types))
 
 ;*---------------------------------------------------------------------*/
 ;*    ctx-get ...                                                      */
@@ -189,13 +205,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx ctx::pair-nil reg::rtl_reg type flag::bool
+(define (extend-ctx ctx::pair-nil reg::rtl_reg types::pair flag::bool
 	   #!key (value '_))
    
    (define (new-ctxentry reg::rtl_reg type flag::bool value)
       (instantiate::bbv-ctxentry
 	 (reg reg)
-	 (typ type)
+	 (types types)
 	 (flag flag)
 	 (value value)))
    
@@ -212,7 +228,7 @@
 		    (cons n ctx)))
 		((eq? (bbv-ctxentry-reg (car ctx)) reg)
 		 (let ((n (duplicate::bbv-ctxentry (car ctx)
-			     (typ type)
+			     (types types)
 			     (flag flag)
 			     (value value))))
 		    (cons n (cdr ctx))))
@@ -224,23 +240,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx* ctx::pair-nil regs::pair type flag::bool
+(define (extend-ctx* ctx::pair-nil regs::pair types flag::bool
 	   #!key (value '_))
    (let loop ((ctx ctx)
 	      (regs regs))
       (if (null? regs)
 	  ctx
-	  (loop (extend-ctx ctx (car regs) type flag :value value)
+	  (loop (extend-ctx ctx (car regs) types flag :value value)
 	     (cdr regs)))))
-
-;*---------------------------------------------------------------------*/
-;*    extend-normalize-ctx ...                                         */
-;*---------------------------------------------------------------------*/
-(define (extend-normalize-ctx ctx reg type flag #!key (value '_))
-   (let ((tynorm (assq type *type-norms*)))
-      (if (pair? tynorm)
-	  (extend-ctx ctx reg (cdr tynorm) flag :value value)
-	  (extend-ctx ctx reg type flag :value value))))
 
 ;*---------------------------------------------------------------------*/
 ;*    refine-ctx ...                                                   */
@@ -250,10 +257,10 @@
 ;*---------------------------------------------------------------------*/
 (define (refine-ctx ctx reg type flag #!key (value '_))
    
-   (define (new-ctxentry reg type flag value)
+   (define (new-ctxentry reg type flag::bool value)
       (instantiate::bbv-ctxentry
 	 (reg reg)
-	 (typ type)
+	 (types (list type))
 	 (flag flag)
 	 (value value)))
    
@@ -271,7 +278,7 @@
 		       (values (cons n ctx) '())))
 		   ((eq? (bbv-ctxentry-reg (car ctx)) reg)
 		    (let ((n (duplicate::bbv-ctxentry (car ctx)
-				(typ type)
+				(types (list type))
 				(flag flag)
 				(value value))))
 		       (values (cons n (cdr ctx))
@@ -341,9 +348,9 @@
    
    (let ((e (ctx-get ctx reg)))
       (if e
-	  (with-access::bbv-ctxentry e (aliases typ flag value)
+	  (with-access::bbv-ctxentry e (aliases types flag value)
 	     (let loop ((aliases aliases)
-			(ctx (extend-ctx ctx reg typ flag :value value)))
+			(ctx (extend-ctx ctx reg types flag :value value)))
 		(if (null? aliases)
 		    ctx
 		    (loop (cdr aliases)
