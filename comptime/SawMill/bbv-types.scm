@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Jul 13 11:40:36 2022 (serrano)                */
+;*    Last change :  Fri Jul 15 07:14:19 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -41,7 +41,8 @@
 	       (%mark::long (default -1))
 	       (%hash::obj (default #f))
 	       (%blacklist::obj (default '()))
-	       (parent::obj read-only (default #unspecified)))
+	       (parent::obj read-only (default #unspecified))
+	       (wblock::obj (default #f)))
 	    (wide-class rtl_ins/bbv::rtl_ins
 	       (def (default #unspecified))
 	       (out (default #unspecified))
@@ -52,7 +53,7 @@
 	    (class bbv-ctxentry
 	       (reg::rtl_reg read-only)
 	       (types::pair read-only (default (list *obj*)))
-	       (flag::bool read-only)
+	       (polarity::bool read-only)
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '())))
 
@@ -121,10 +122,10 @@
 ;*    shape ::bbv-ctxentry ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-ctxentry)
-   (with-access::bbv-ctxentry e (reg types flag value aliases)
+   (with-access::bbv-ctxentry e (reg types polarity value aliases)
       (vector (shape reg)
 	 (format "[~( )]"
-	    (if flag
+	    (if polarity
 		(map shape types)
 		(map (lambda (t) (string-append "!" (shape t))) types)))
 	 (format "~s" (shape value))
@@ -153,7 +154,7 @@
 			   (instantiate::bbv-ctxentry
 			      (reg p)
 			      (types (list type))
-			      (flag #t)))))
+			      (polarity #t)))))
 	 params)))
 
 ;*---------------------------------------------------------------------*/
@@ -205,14 +206,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx ctx::pair-nil reg::rtl_reg types::pair flag::bool
+(define (extend-ctx ctx::pair-nil reg::rtl_reg types::pair polarity::bool
 	   #!key (value '_))
    
-   (define (new-ctxentry reg::rtl_reg type flag::bool value)
+   (define (new-ctxentry reg::rtl_reg type polarity::bool value)
       (instantiate::bbv-ctxentry
 	 (reg reg)
 	 (types types)
-	 (flag flag)
+	 (polarity polarity)
 	 (value value)))
    
    (if (not (isa? reg rtl_reg/ra))
@@ -221,15 +222,15 @@
 	  (let loop ((ctx ctx))
 	     (cond
 		((null? ctx)
-		 (let ((n (new-ctxentry reg type flag value)))
+		 (let ((n (new-ctxentry reg type polarity value)))
 		    (list n)))
 		((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car ctx))) rnum)
-		 (let ((n (new-ctxentry reg type flag value)))
+		 (let ((n (new-ctxentry reg type polarity value)))
 		    (cons n ctx)))
 		((eq? (bbv-ctxentry-reg (car ctx)) reg)
 		 (let ((n (duplicate::bbv-ctxentry (car ctx)
 			     (types types)
-			     (flag flag)
+			     (polarity polarity)
 			     (value value))))
 		    (cons n (cdr ctx))))
 		(else
@@ -240,13 +241,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx* ctx::pair-nil regs::pair types flag::bool
+(define (extend-ctx* ctx::pair-nil regs::pair types polarity::bool
 	   #!key (value '_))
    (let loop ((ctx ctx)
 	      (regs regs))
       (if (null? regs)
 	  ctx
-	  (loop (extend-ctx ctx (car regs) types flag :value value)
+	  (loop (extend-ctx ctx (car regs) types polarity :value value)
 	     (cdr regs)))))
 
 ;*---------------------------------------------------------------------*/
@@ -255,13 +256,13 @@
 ;*    Refine the knowledge of an environment, propagating the          */
 ;*    information to the aliases.                                      */
 ;*---------------------------------------------------------------------*/
-(define (refine-ctx ctx reg type flag #!key (value '_))
+(define (refine-ctx ctx reg type polarity #!key (value '_))
    
-   (define (new-ctxentry reg type flag::bool value)
+   (define (new-ctxentry reg type polarity::bool value)
       (instantiate::bbv-ctxentry
 	 (reg reg)
 	 (types (list type))
-	 (flag flag)
+	 (polarity polarity)
 	 (value value)))
    
    (define (refine-one reg ctx)
@@ -271,15 +272,15 @@
 	     (let loop ((ctx ctx))
 		(cond
 		   ((null? ctx)
-		    (let ((n (new-ctxentry reg type flag value)))
+		    (let ((n (new-ctxentry reg type polarity value)))
 		       (values (list n) '())))
 		   ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car ctx))) rnum)
-		    (let ((n (new-ctxentry reg type flag value)))
+		    (let ((n (new-ctxentry reg type polarity value)))
 		       (values (cons n ctx) '())))
 		   ((eq? (bbv-ctxentry-reg (car ctx)) reg)
 		    (let ((n (duplicate::bbv-ctxentry (car ctx)
 				(types (list type))
-				(flag flag)
+				(polarity polarity)
 				(value value))))
 		       (values (cons n (cdr ctx))
 			  (with-access::bbv-ctxentry (car ctx) (aliases)
@@ -348,9 +349,9 @@
    
    (let ((e (ctx-get ctx reg)))
       (if e
-	  (with-access::bbv-ctxentry e (aliases types flag value)
+	  (with-access::bbv-ctxentry e (aliases types polarity value)
 	     (let loop ((aliases aliases)
-			(ctx (extend-ctx ctx reg types flag :value value)))
+			(ctx (extend-ctx ctx reg types polarity :value value)))
 		(if (null? aliases)
 		    ctx
 		    (loop (cdr aliases)

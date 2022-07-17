@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jul 13 13:49:29 2022 (serrano)                */
+;*    Last change :  Wed Jul 13 16:34:02 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -38,16 +38,21 @@
    (export (bbv-block::blockS b::blockV ctx::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
-;*    basic-block versionning configuration                            */
+;*    basic-block versioning configuration                             */
 ;*---------------------------------------------------------------------*/
 (define *type-call* #t)
 (define *type-loadi* #t)
+
+;; the maximum number of versions all block accept
+(define *max-versions* 20)
+;; the maximum number of versions widener accept before widening
+(define *max-widener-versions* 3)
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block::blockS b::blockV ctx::pair-nil)
-   (with-access::blockV b (label versions succs preds first)
+   (with-access::blockV b (label versions succs preds first widener)
       (with-trace 'bbv (format "bbv-block ~a" label)
 	 (let ((ctx (filter-live-in-regs (car first) ctx)))
 	    (trace-item "succs=" (map block-label succs))
@@ -55,12 +60,30 @@
 	    (trace-item "ctx=" (shape ctx))
 	    (trace-item "versions= #" (length versions) " "
 	       (map ctx->string (map car versions)))
-	    (let ((old (assoc ctx versions)))
-	       (trace-item "old=" (shape old))
-	       (if (pair? old)
-		   (cdr old)
-		   (specialize-block! b ctx)))))))
-   
+	    (let ((sb (find-block ctx versions)))
+	       (trace-item "old=" (shape sb))
+	       (or sb
+		   (let ((numv (length versions)))
+		      (cond
+			 ((>=fx numv *max-versions*)
+			  ...)
+			 ((and widener (>=fx numv *max-widener-versions*))
+			  (widen-block! b ctx))
+			 (else
+			  (specialize-block! b ctx))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    find-block ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (find-block ctx versions)
+   (let ((b (assoc ctx versions)))
+      (when (pair? b)
+	 (let loop ((b (cdr b)))
+	    (with-access::blockS b (lblock)
+	       (if lblock
+		   (loop lblock)
+		   b))))))
+	       
 ;*---------------------------------------------------------------------*/
 ;*    specialize-block! ...                                            */
 ;*---------------------------------------------------------------------*/
@@ -231,17 +254,17 @@
 	 (else '_)))
    
    (with-trace 'bbv-ins "rtl_ins-specialize-typecheck"
-      (multiple-value-bind (reg type flag value)
+      (multiple-value-bind (reg type polarity value)
 	 (rtl_ins-typecheck i)
 	 (let ((e (ctx-get ctx reg)))
 	    (with-access::rtl_ins i (fun)
 	       (trace-item "ins=" (shape i))
-	       (trace-item "typ=" (shape type) " flag=" flag)
+	       (trace-item "typ=" (shape type) " polarity=" polarity)
 	       (trace-item "value=" (shape value))
 	       (trace-item "e=" (shape e))
 	       (cond
 		  ((and (type-in? type (bbv-ctxentry-types e))
-			(bbv-ctxentry-flag e))
+			(bbv-ctxentry-polarity e))
 		   ;; positive type simplification
 		   (let ((pctx (extend-ctx ctx reg (list type) #t
 				  :value (min-value value (bbv-ctxentry-value e)))))
@@ -256,7 +279,7 @@
 			       ;; the next ctx will be ignored...
 			       (values s '()))))))
 		  ((and (type-in? type (bbv-ctxentry-types e))
-			(not (bbv-ctxentry-flag e)))
+			(not (bbv-ctxentry-polarity e)))
 		   ;; negative type simplification
 		   (with-access::rtl_ins/bbv i (fun)
 		      (let ((s (duplicate::rtl_ins/bbv i
@@ -271,7 +294,7 @@
 			 (with-access::rtl_ifne fun (then)
 			    (let* ((pctx (extend-ctx* ctx regs (list type) #t
 					    :value (min-value value (bbv-ctxentry-value e))))
-				   (nctx (if (bbv-ctxentry-flag e)
+				   (nctx (if (bbv-ctxentry-polarity e)
 					     (extend-ctx* ctx regs
 						(list type) #f)
 					     (extend-ctx* ctx regs
@@ -670,7 +693,10 @@
       (with-access::rtl_ins i (dest fun args)
 	 (with-access::rtl_call fun (var)
 	    (and (=fx (length args) 2)
-		 (or (eq? var *-fx-safe*) (eq? var *+fx-safe*) (eq? var *2+*))
+		 (or (eq? var *+fx*)
+		     (eq? var *-fx-safe*)
+		     (eq? var *+fx-safe*)
+		     (eq? var *2+*))
 		 (or (reg? (car args)) (rtl_ins-loadi? (car args)))
 		 (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))))))
    
@@ -741,20 +767,38 @@
 		(values (duplicate::rtl_ins/bbv i
 			   (ctx ctx))
 		   ctx))
+	       ((eq? var *-fx*)
+		(let ((range (bbv-range-sub intl intr)))
+		   (if (bbv-range-fixnum? range)
+		       (let ((nctx (extend-ctx ctx dest (list *long*) #t
+				      :value range)))
+			  (values i nctx))
+		       (values (duplicate::rtl_ins/bbv i
+				  (ctx ctx))
+			  ctx))))
 	       ((eq? var *-fx-safe*)
 		(let ((range (bbv-range-sub intl intr)))
 		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest *bint* #t
+		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 				      :value range)))
 			  (values (fx-safe->fx var i ctx nctx)
 			     nctx))
 		       (values (duplicate::rtl_ins/bbv i
 				  (ctx ctx))
 			  ctx))))
+	       ((eq? var *+fx*)
+		(let ((range (bbv-range-add intl intr)))
+		   (if (bbv-range-fixnum? range)
+		       (let ((nctx (extend-ctx ctx dest (list *long*) #t
+				      :value range)))
+			  (values i nctx))
+		       (values (duplicate::rtl_ins/bbv i
+				  (ctx ctx))
+			  ctx))))
 	       ((eq? var *+fx-safe*)
 		(let ((range (bbv-range-add intl intr)))
 		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest *bint* #t
+		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 				      :value range)))
 			  (values (fx-safe->fx var i ctx nctx)
 			     nctx))
@@ -764,7 +808,7 @@
 	       ((eq? var *2-*)
 		(let ((range (bbv-range-sub intl intr)))
 		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest *bint* #t
+		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 				      :value range)))
 			  (values (2->fx var i ctx nctx)
 			     nctx))
@@ -774,7 +818,7 @@
 	       ((eq? var *2+*)
 		(let ((range (bbv-range-add intl intr)))
 		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest *bint* #t
+		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 				      :value range)))
 			  (values (2->fx var i ctx nctx)
 			     nctx))
