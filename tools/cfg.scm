@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Wed Jul 13 13:40:38 2022 (serrano)                */
+;*    Last change :  Mon Jul 18 12:59:43 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -41,21 +41,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    bb ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define-struct bb lbl-num preds succs instrs parent widener color)
+(define-struct bb lbl-num preds succs instrs parent merge cost color)
 
 ;*---------------------------------------------------------------------*/
 ;*    list->bb ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (list->bb l)
    (match-case l
-      (((or block blockS blockV SawDone) ?num :parent ?parent :widener ?widener :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins parent widener (get-color parent)))
+      ((blockS ?num :parent ?parent :merge ?merge :cost ?cost :preds ?preds :succs ?succs . ?ins)
+       (bb num preds succs ins parent merge cost (get-color parent)))
+      (((or block blockV SawDone) ?num :parent ?parent :merge ?merge :preds ?preds :succs ?succs . ?ins)
+       (bb num preds succs ins parent merge 0 (get-color parent)))
       (((or block blockS blockV SawDone) ?num :parent ?parent :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins parent #f (get-color parent)))
-      (((or block blockS blockV SawDone) ?num :widener ?widener :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins #f widener (get-color 0)))
+       (bb num preds succs ins parent #f 0 (get-color parent)))
+      (((or block blockS blockV SawDone) ?num :merge ?merge :preds ?preds :succs ?succs . ?ins)
+       (bb num preds succs ins #f merge 0 (get-color 0)))
       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins 0 #f (get-color 0)))
+       (bb num preds succs ins 0 #f 0 (get-color 0)))
       (else
        (error "list->bb" "bad syntax" l))))
 
@@ -234,8 +236,9 @@
 		     :cellspacing 2)))))
       
       (let* ((lbl (format "<b>#~a</b>" (bb-lbl-num bb)))
-	     (title `(,(if (bb-widener bb)
-			   (format "<font color=\"red\">~a</font>" lbl)
+	     (title `(,(if (bb-merge bb)
+			   (format "<font color=\"red\">~a$~a</font>"
+			      lbl (bb-cost bb))
 			   lbl)
 		      ,(if (bb-parent bb) (format "[~s]" (bb-parent bb)) "")))
 	     (head (gen-row

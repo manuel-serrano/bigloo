@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Jul 15 07:14:19 2022 (serrano)                */
+;*    Last change :  Mon Jul 18 07:55:11 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -36,13 +36,14 @@
    (export  (wide-class blockV::block
 	       (versions::pair-nil (default '()))
 	       (%mark::long (default -1))
-	       (widener::bool (default #f)))
+	       (merge::bool (default #f)))
 	    (wide-class blockS::block
 	       (%mark::long (default -1))
 	       (%hash::obj (default #f))
 	       (%blacklist::obj (default '()))
 	       (parent::obj read-only (default #unspecified))
-	       (wblock::obj (default #f)))
+	       (wblock::obj (default #f))
+	       (cost::long (default -1)))
 	    (wide-class rtl_ins/bbv::rtl_ins
 	       (def (default #unspecified))
 	       (out (default #unspecified))
@@ -416,15 +417,14 @@
    (define (lbl n)
       (if (isa? n block) (block-label n) (typeof n)))
    
-   (with-access::block o (label first)
+   (with-access::blockV o (label first cost preds succs merge)
       (fprint p "(blockV " label)
-      (with-access::blockV o (preds succs widener)
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":widener " widener)
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":preds " (map lbl preds))
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":succs " (map lbl succs)))
+      (dump-margin p (+fx m 1))
+      (fprint p ":merge " merge)
+      (dump-margin p (+fx m 1))
+      (fprint p ":preds " (map lbl preds))
+      (dump-margin p (+fx m 1))
+      (fprint p ":succs " (map lbl succs))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))
@@ -437,18 +437,18 @@
    (define (lbl n)
       (if (isa? n block) (block-label n) (typeof n)))
    
-   (with-access::block o (label first)
+   (with-access::blockS o (label first parent preds succs cost)
       (fprint p "(blockS " label)
-      (with-access::blockS o (parent preds succs)
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":parent " (block-label parent))
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":widener " (with-access::blockV parent (widener) widener))
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":preds " (map lbl preds))
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":succs " (map lbl succs)))
       (dump-margin p (+fx m 1))
+      (fprint p ":parent " (block-label parent))
+      (dump-margin p (+fx m 1))
+      (fprint p ":merge " (with-access::blockV parent (merge) merge))
+      (dump-margin p (+fx m 1))
+      (fprint p ":cost " cost)
+      (dump-margin p (+fx m 1))
+      (fprint p ":preds " (map lbl preds))
+      (dump-margin p (+fx m 1))
+      (fprint p ":succs " (map lbl succs))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))
 

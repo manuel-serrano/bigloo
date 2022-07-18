@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jul 13 16:34:02 2022 (serrano)                */
+;*    Last change :  Mon Jul 18 08:08:54 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -33,7 +33,8 @@
 	    saw_bbv-types
 	    saw_bbv-cache
 	    saw_bbv-utils
-	    saw_bbv-range)
+	    saw_bbv-range
+	    saw_bbv-merge)
    
    (export (bbv-block::blockS b::blockV ctx::pair-nil)))
 
@@ -43,45 +44,51 @@
 (define *type-call* #t)
 (define *type-loadi* #t)
 
-;; the maximum number of versions all block accept
-(define *max-versions* 20)
-;; the maximum number of versions widener accept before widening
-(define *max-widener-versions* 3)
+;; the maximum number of block versions
+(define *max-versions* 3)
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block::blockS b::blockV ctx::pair-nil)
-   (with-access::blockV b (label versions succs preds first widener)
+   (with-access::blockV b (label versions succs preds first merge)
       (with-trace 'bbv (format "bbv-block ~a" label)
-	 (let ((ctx (filter-live-in-regs (car first) ctx)))
+	 (let* ((ctx (filter-live-in-regs (car first) ctx))
+		(lvs (ctx-live-versions versions)))
+	    (trace-item "merge=" merge)
 	    (trace-item "succs=" (map block-label succs))
 	    (trace-item "preds=" (map block-label preds))
 	    (trace-item "ctx=" (shape ctx))
-	    (trace-item "versions= #" (length versions) " "
-	       (map ctx->string (map car versions)))
-	    (let ((sb (find-block ctx versions)))
+	    (trace-item "versions= " (length lvs) "/" (length versions) " "
+	       (map ctx->string (map car lvs)))
+	    (let ((sb (find-live-block ctx versions)))
 	       (trace-item "old=" (shape sb))
 	       (or sb
-		   (let ((numv (length versions)))
+		   (let ((num (length lvs)))
 		      (cond
-			 ((>=fx numv *max-versions*)
-			  ...)
-			 ((and widener (>=fx numv *max-widener-versions*))
-			  (widen-block! b ctx))
+			 ((and merge (>fx num *max-versions*))
+			  (multiple-value-bind (wctx obs)
+			     (block-merge-contexts b)
+			     (let ((wb (specialize-block! b wctx)))
+				(for-each (lambda (ov)
+					     (let ((ob (cdr ov)))
+						(with-access::blockS ob (wblock label)
+						   (set! wblock wb))))
+				   obs)
+				wb)))
 			 (else
 			  (specialize-block! b ctx))))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-block ...                                                   */
+;*    find-live-block ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (find-block ctx versions)
+(define (find-live-block ctx versions)
    (let ((b (assoc ctx versions)))
       (when (pair? b)
 	 (let loop ((b (cdr b)))
-	    (with-access::blockS b (lblock)
-	       (if lblock
-		   (loop lblock)
+	    (with-access::blockS b (wblock)
+	       (if wblock
+		   (loop wblock)
 		   b))))))
 	       
 ;*---------------------------------------------------------------------*/
@@ -180,7 +187,7 @@
 			 (extend-live-out-regs (car oins) ctx)))))))))
    
    (with-access::blockV b (first label succs versions)
-      (with-trace 'bbv-block (format "specialize-block! ~a" label)
+      (with-trace 'bbv-specialize (format "specialize-block! ~a" label)
 	 (let* ((ctx (map (lambda (d)
 			     (duplicate::bbv-ctxentry d))
 			ctx))

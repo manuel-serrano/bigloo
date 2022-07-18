@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Wed Jul 13 13:23:26 2022 (serrano)                */
+;*    Last change :  Mon Jul 18 08:15:06 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -34,6 +34,7 @@
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
 	   (rtl-range::obj ::obj ::pair-nil)
+	   (range-type?::bool ::obj)
 	   (bbv-singleton?::bool ::obj)
 	   (bbv-range<? ::bbv-range ::bbv-range)
 	   (bbv-range<=? ::bbv-range ::bbv-range)
@@ -47,7 +48,9 @@
 	   (bbv-range-eq::bool ::bbv-range ::bbv-range)
 	   (bbv-range-add::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-sub::bbv-range ::bbv-range ::bbv-range)
-	   (bbv-range-intersection::bbv-range ::bbv-range ::bbv-range)))
+	   (bbv-range-intersection::bbv-range ::bbv-range ::bbv-range)
+	   (bbv-range-merge::bbv-range ::bbv-range ::bbv-range)
+	   (bbv-range-widen::bbv-range ::bbv-range ::bbv-range)))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer boundaries ...                                           */
@@ -128,6 +131,12 @@
       (max n)))
 
 ;*---------------------------------------------------------------------*/
+;*    range-type? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (range-type? ty)
+   (or (eq? ty *bint*) (eq? ty *long*)))
+
+;*---------------------------------------------------------------------*/
 ;*    rtl-range ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (rtl-range i ctx)
@@ -135,9 +144,8 @@
       ((isa? i rtl_reg)
        (let ((e (ctx-get ctx i)))
 	  (when e
-	     (with-access::bbv-ctxentry e (types value flag)
-		(when (and flag
-			   (or (type-in? *bint* types) (type-in? *long* types)))
+	     (with-access::bbv-ctxentry e (types value polarity)
+		(when (and polarity (any range-type? types))
 		   (when (bbv-range? value)
 		      value))))))
       ((rtl_ins-mov? i)
@@ -336,3 +344,43 @@
 	 (instantiate::bbv-range
 	    (min (max minx miny))
 	    (max (min maxx maxy))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-range-merge ...                                              */
+;*---------------------------------------------------------------------*/
+(define (bbv-range-merge x::bbv-range y::bbv-range)
+   (with-access::bbv-range x ((minx min) (maxx max))
+      (with-access::bbv-range y ((miny min) (maxy max))
+	 (instantiate::bbv-range
+	    (min (min minx miny))
+	    (max (max maxx maxy))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-range-widen ...                                              */
+;*---------------------------------------------------------------------*/
+(define (bbv-range-widen x::bbv-range y::bbv-range)
+   
+   (define (widen-min minx miny)
+      (let ((i (min minx miny)))
+	 (cond
+	    ((>fx i 16) (/fx i 2))
+	    ((>=fx i -2) (-fx i 1))
+	    ((>=fx i -16) (*fx i 2))
+	    ((=fx i (+fx *min-fixnum* 1)) *min-fixnum*)
+	    ((<=fx i -256) (+fx *min-fixnum* 1))
+	    (else *min-fixnum*))))
+
+   (define (widen-max maxx maxy)
+      (let ((i (max maxx maxy)))
+	 (cond
+	    ((<=fx i 2) (+fx i 1))
+	    ((<=fx i 256) (*fx i 2))
+	    ((=fx i (-fx *max-fixnum* 1)) *max-fixnum*)
+	    ((>=fx i 256) (-fx *max-fixnum* 1))
+	    (else *max-fixnum*))))
+   
+   (with-access::bbv-range x ((minx min) (maxx max))
+      (with-access::bbv-range y ((miny min) (maxy max))
+	 (instantiate::bbv-range
+	    (min (if (=fx minx miny) minx (widen-min minx miny)))
+	    (max (if (=fx maxx maxy) maxx (widen-max maxx maxy)))))))

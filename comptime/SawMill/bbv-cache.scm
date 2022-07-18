@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Wed Jul 13 11:47:21 2022 (serrano)                */
+;*    Last change :  Mon Jul 18 11:44:17 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -21,15 +21,9 @@
    
    (export  (start-bbv-cache!)
 	    (stop-bbv-cache!)
-	    *<fx*
-	    *<=fx*
-	    *>=fx*
-	    *>fx*
-	    *=fx*
-	    *-fx*
-	    *+fx*
-	    *-fx-safe*
-	    *+fx-safe*
+	    *<fx* *<=fx* *>=fx* *>fx* *=fx* *-fx* *+fx*
+	    *-fx-safe* *+fx-safe*
+	    *<fl* *<=fl* *>=fl* *>fl* *=fl* *-fl* *+fl*
 	    *2-*
 	    *2+*
 	    *int->long*
@@ -51,6 +45,13 @@
 (define *+fx* #f)
 (define *-fx-safe* #f)
 (define *+fx-safe* #f)
+(define *<fl* #f)
+(define *<=fl* #f)
+(define *>=fl* #f)
+(define *>fl* #f)
+(define *=fl* #f)
+(define *-fl* #f)
+(define *+fl* #f)
 (define *2-* #f)
 (define *2+* #f)
 (define *int->long* #f)
@@ -74,6 +75,13 @@
       (set! *+fx* (get-global/module 'c-+fx 'foreign))
       (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
       (set! *+fx-safe* (get-global/module '+fx-safe 'foreign))
+      (set! *<fl* (get-global/module 'c-<fl 'foreign))
+      (set! *<=fl* (get-global/module 'c-<=fl 'foreign))
+      (set! *>fl* (get-global/module 'c->fl 'foreign))
+      (set! *>=fl* (get-global/module 'c->=fl 'foreign))
+      (set! *=fl* (get-global/module 'c-=fl 'foreign))
+      (set! *-fl* (get-global/module 'c--fl 'foreign))
+      (set! *+fl* (get-global/module 'c-+fl 'foreign))
       (set! *2-* (get-global/module '2- '__r4_numbers_6_5))
       (set! *2+* (get-global/module '2+ '__r4_numbers_6_5))
       (set! *int->long* (get-global/module '$int->long 'foreign))
@@ -95,6 +103,13 @@
    (set! *+fx* #f)
    (set! *-fx-safe* #f)
    (set! *+fx-safe* #f)
+   (set! *<fl* #f)
+   (set! *<=fl* #f)
+   (set! *>fl* #f)
+   (set! *>=fl* #f)
+   (set! *=fl* #f)
+   (set! *-fl* #f)
+   (set! *+fl* #f)
    (set! *2-* #f)
    (set! *2+* #f)
    (set! *int->long* #f)
