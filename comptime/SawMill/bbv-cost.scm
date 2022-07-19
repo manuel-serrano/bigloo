@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 18 11:31:11 2022                          */
-;*    Last change :  Mon Jul 18 13:42:20 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 10:58:25 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Instructions, blocks, and paths, cost computations.              */
@@ -35,7 +35,7 @@
 	    saw_bbv-cache
 	    saw_bbv-utils)
 
-   (export  (path-cost::long ::blockS)))
+   (export  (rtl_ins-cost::long ::rtl_ins)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_fun-cost ...                                                 */
@@ -51,21 +51,21 @@
 	    (rtl_ins-call? (car args))
 	    (rtl_call-predicate (car args)))
        ;; type predicate
-       (+fx 1 (apply + (lambda (a) (rtl_fun-cost a '())))))
+       (+fx 1 (apply + (map (lambda (a) (rtl_fun-cost a '())) args))))
       ((and (=fx (length args) 2)
 	    (or (eq? var *<fx*) (eq? var *<=fx*)
 		(eq? var *>fx*) (eq? var *>=fx*)
 		(eq? var *=fx*)
 		(eq? var *+fx*) (eq? var *-fx*)))
        ;; fixnum operators
-       (+fx 1 (apply + (lambda (a) (rtl_fun-cost a '())))))
+       (+fx 1 (apply + (map (lambda (a) (rtl_fun-cost a '())) args))))
       ((and (=fx (length args) 2)
 	    (or (eq? var *<fl*) (eq? var *<=fl*)
 		(eq? var *>fl*) (eq? var *>=fl*)
 		(eq? var *=fl*)
 		(eq? var *+fl*) (eq? var *-fl*)))
        ;; flonum operators
-       (+fx 2 (apply + (lambda (a) (rtl_fun-cost a '())))))
+       (+fx 2 (apply + (map (lambda (a) (rtl_fun-cost a '())) args))))
       (else
        0)))
    

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Jul 18 08:03:20 2022 (serrano)                */
+#*    Last change :  Tue Jul 19 07:17:17 2022 (serrano)                */
 #*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -236,7 +236,7 @@ SAW_FILE        = lib defs rtl node2rtl collapse remove inlinereturn \
 		  blockorder gotos cast expr woodcutter \
 		  procedures elsewhere regalloc regset regutils \
                   bbv bbv-types bbv-specialize bbv-cache bbv-utils \
-                  bbv-range bbv-merge bbv-cost
+                  bbv-range bbv-merge bbv-cost bbv-config
 
 SAW_OBJ		= $(SAW_FILE:%=SawMill/%.o)
 

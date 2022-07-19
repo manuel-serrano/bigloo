@@ -72,14 +72,14 @@
 	 (%spill::pair-nil (default '()))
 	 (dest (default #f)) ; ::(or reg #f)
 	 (fun::rtl_fun)
-	 (args::pair-nil) )   ; ::(list (or reg ins))
+	 (args::pair-nil) )  ; ::(list (or reg ins))
       
       ;; Block of instructions
       (final-class block
 	 (label::int (default 0))
 	 (preds::pair-nil (default '()))		; ::(list block)
 	 (succs::pair-nil (default '()))		; ::(list block)
-	 first::pair-nil)				; ::(list ins)
+	 (first::pair-nil (default '())))    	        ; ::(list ins)
 
       (rtl_ins-args*::pair-nil ::rtl_ins)
       

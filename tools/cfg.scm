@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Mon Jul 18 12:59:43 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 12:35:40 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -50,14 +50,14 @@
    (match-case l
       ((blockS ?num :parent ?parent :merge ?merge :cost ?cost :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins parent merge cost (get-color parent)))
-      (((or block blockV SawDone) ?num :parent ?parent :merge ?merge :preds ?preds :succs ?succs . ?ins)
+      (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins parent merge 0 (get-color parent)))
       (((or block blockS blockV SawDone) ?num :parent ?parent :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins parent #f 0 (get-color parent)))
       (((or block blockS blockV SawDone) ?num :merge ?merge :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins #f merge 0 (get-color 0)))
       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins 0 #f 0 (get-color 0)))
+       (bb num preds succs ins #f #f 0 (get-color 0)))
       (else
        (error "list->bb" "bad syntax" l))))
 
@@ -150,6 +150,13 @@
    
    (define (gen-html-label content)
       `("<" ,@content ">"))
+
+   (define (normalize-mov obj)
+      (match-case obj
+	 ((mov ?exp) exp)
+	 ((?fun ?exp) `(,fun ,(normalize-mov exp)))
+	 ((?- . ?-) (map normalize-mov obj))
+	 (else obj)))
    
    (define (escape obj)
       (cond
@@ -160,10 +167,16 @@
 			   ((char=? c #\>) "&gt;")
 			   ((char=? c #\&) "&amp;")
 			   (else (string c))))
-		(string->list obj))))	 ((symbol? obj)
+		(string->list obj))))
+	 ((symbol? obj)
 	  (escape (symbol->string obj)))
 	 ((pair? obj)
-	  (format "(~( ))" (map escape obj)))
+	  (let ((nobj (normalize-mov obj)))
+	     (if (pair? nobj)
+		 (format "(~( ))" (map escape nobj))
+		 (escape nobj))))
+	 ((string? obj)
+	  obj)
 	 (else
 	  (format "~s" obj))))
 
@@ -237,8 +250,8 @@
       
       (let* ((lbl (format "<b>#~a</b>" (bb-lbl-num bb)))
 	     (title `(,(if (bb-merge bb)
-			   (format "<font color=\"red\">~a$~a</font>"
-			      lbl (bb-cost bb))
+			   (format "<font color=\"red\">~a</font>"
+			      lbl)
 			   lbl)
 		      ,(if (bb-parent bb) (format "[~s]" (bb-parent bb)) "")))
 	     (head (gen-row

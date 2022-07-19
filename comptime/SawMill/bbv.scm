@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Jul 18 07:54:40 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 07:13:58 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -55,9 +55,13 @@
        (with-trace 'bbv (global-id global)
 	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global))
-	  (when (>=fx *trace-level* 1)
+	  (when (>=fx *trace-level* 2)
 	     (dump-blocks global params blocks ".plain.cfg"))
 	  (set-max-label! blocks)
+	  ;; After the reorder-succs! pass, the succs list order is meaningful.
+	  ;; The first successor is the target of the last go instruction
+	  ;; (sometimes implicit). If any second successor, it is the target
+	  ;; of the conditional branch of the instruction.
 	  (reorder-succs! blocks)
 	  (when (>=fx *trace-level* 2)
 	     (dump-blocks global params blocks ".reorder.cfg"))
@@ -65,7 +69,7 @@
 	     (when (>=fx *trace-level* 2)
 		(dump-blocks global params blocks ".goto.cfg"))
 	     (let ((blocks (normalize-ifeq! (car blocks))))
-		(when (>=fx *trace-level* 2)
+		(when (>=fx *trace-level* 1)
 		   (dump-blocks global params blocks ".ifeq.cfg"))
 		(let ((regs (liveness! back blocks params)))
 		   ;; liveness also widen each block into a blockV
@@ -75,9 +79,8 @@
 		   (unwind-protect
 		      (if (null? blocks)
 			  '()
-			  (let* ((s (relink-block!
-				       (bbv-block (car blocks)
-					  (params->ctx params))))
+			  (let* ((s (bbv-function (car blocks)
+				       (params->ctx params)))
 				 (b (block->block-list regs
 				       (if *cleanup*
 					   (remove-nop!
@@ -97,37 +100,6 @@
 				  (>=fx *trace-level* 1))
 			 (for-each (lambda (r) (shrink! r)) regs)))))))
        blocks))
-
-;*---------------------------------------------------------------------*/
-;*    dump-blocks ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (dump-blocks global params blocks suffix)
-
-   (define oname
-      (if (string? *dest*)
-	  *dest*
-	  (if (and (pair? *src-files*) (string? (car *src-files*)))
-	      (prefix (car *src-files*))
-	      "./a.out")))
-   (define filename (format "~a-~a~a" oname (global-id global) suffix))
-   (define name (prefix filename))
-      
-   (define (dump-blocks port)
-      (let* ((id (global-id global)))
-	 (fprint port ";; -*- mode: bee -*-")
-	 (fprint port ";; *** " id ":")
-	 (fprint port ";; " (map shape params))
-	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
-	    filename name name name)
-	 (for-each (lambda (b)
-		      (dump b port 0)
-		      (newline port))
-	    blocks)
-	 id))
-   
-   (if oname
-       (call-with-output-file filename dump-blocks)
-       (dump-blocks (current-error-port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    widen-bbv! ...                                                   */
@@ -595,21 +567,53 @@
 	     (loop (append succs (cdr bs))
 		(bbset-cons (car bs) acc)))))))
 
+;* {*---------------------------------------------------------------------*} */
+;* {*    relink-block! ...                                                *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (relink-block! b::blockS)                                   */
+;*    (let loop ((bs (list b))                                         */
+;* 	      (cost 0)                                                 */
+;* 	      (acc (make-empty-bbset)))                                */
+;*       (cond                                                         */
+;* 	 ((null? bs)                                                   */
+;* 	  cost)                                                        */
+;* 	 ((bbset-in? (car bs) acc)                                     */
+;* 	  0)                                                           */
+;* 	 (else                                                         */
+;* 	  (let ((b (car bs)))                                          */
+;* 	     (with-access::blockS b (preds)                            */
+;* 		(loop (append preds (cdr bs))                          */
+;* 		   (+ cost (block-cost (car bs)))                      */
+;* 		   (bbset-cons (car bs) acc))))))))                    */
+
 ;*---------------------------------------------------------------------*/
-;*    relink-block! ...                                                */
+;*    dump-blocks ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (relink-block! b::blockS)
-   (let loop ((bs (list b))
-	      (cost 0)
-	      (acc (make-empty-bbset)))
-      (cond
-	 ((null? bs)
-	  cost)
-	 ((bbset-in? (car bs) acc)
-	  0)
-	 (else
-	  (let ((b (car bs)))
-	     (with-access::blockS b (preds)
-		(loop (append preds (cdr bs))
-		   (+ cost (block-cost (car bs)))
-		   (bbset-cons (car bs) acc))))))))
+(define (dump-blocks global params blocks suffix)
+
+   (define oname
+      (if (string? *dest*)
+	  *dest*
+	  (if (and (pair? *src-files*) (string? (car *src-files*)))
+	      (prefix (car *src-files*))
+	      "./a.out")))
+   (define filename (format "~a-~a~a" oname (global-id global) suffix))
+   (define name (prefix filename))
+      
+   (define (dump-blocks port)
+      (let* ((id (global-id global)))
+	 (fprint port ";; -*- mode: bee -*-")
+	 (fprint port ";; *** " id ":")
+	 (fprint port ";; " (map shape params))
+	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
+	    filename name name name)
+	 (for-each (lambda (b)
+		      (dump b port 0)
+		      (newline port))
+	    blocks)
+	 id))
+   
+   (if oname
+       (call-with-output-file filename dump-blocks)
+       (dump-blocks (current-error-port))))
+

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon Jul 18 07:57:41 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 08:51:45 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -34,16 +34,31 @@
 	    saw_bbv-specialize
 	    saw_bbv-cache)
 
-   (export  (get-bb-mark)
+   (export  (type-in?::bool ::type ::pair-nil)
+	    (get-bb-mark)
 	    (set-max-label! blocks::pair-nil)
 	    (genlabel)
 	    (replace ::pair-nil ::obj ::obj)
 	    (block->block-list regs b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)
 	    (replace-block! ::blockS ::blockS)
-	    (filter-live-in-regs::pair-nil ins::rtl_ins/bbv ctx::pair-nil)
-	    (extend-live-out-regs::pair-nil ins::rtl_ins/bbv ctx::pair-nil)
-	    (ctx-live-versions::pair-nil ::pair-nil)))
+	    (bbv-ctx-filter-live-in-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
+	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
+	    (live-versions::pair-nil ::pair-nil)))
+
+;*---------------------------------------------------------------------*/
+;*    type-in? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (type-in? type types)
+   
+   (define (type-eq? x y)
+      (cond
+	 ((eq? x y) #t)
+	 ((eq? x *bint*) (eq? y *long*))
+	 ((eq? x *long*) (eq? y *bint*))
+	 (else #f)))
+   
+   (any (lambda (t) (type-eq? type t)) types))
 
 ;*---------------------------------------------------------------------*/
 ;*    *label* ...                                                      */
@@ -184,50 +199,52 @@
 	 new)))
 
 ;*---------------------------------------------------------------------*/
-;*    filter-live-in-regs ...                                          */
+;*    bbv-ctx-filter-live-in-regs ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (filter-live-in-regs ins::rtl_ins/bbv ctx)
-   (with-access::rtl_ins/bbv ins (in)
-      (filter-map (lambda (e)
-		     (let ((reg (bbv-ctxentry-reg e)))
-			(when (or (not (isa? reg rtl_reg/ra))
-				  (regset-member? reg in))
-			   (duplicate::bbv-ctxentry e
-			      (aliases (filter (lambda (reg)
-						  (regset-member? reg in))
-					  (bbv-ctxentry-aliases e)))))))
-	 ctx)))
+(define (bbv-ctx-filter-live-in-regs ctx ins::rtl_ins/bbv)
+   
+   (define (filter-entries ctx ins)
+      (with-access::rtl_ins/bbv ins (in)
+	 (filter-map (lambda (e)
+			(let ((reg (bbv-ctxentry-reg e)))
+			   (when (or (not (isa? reg rtl_reg/ra))
+				     (regset-member? reg in))
+			      (duplicate::bbv-ctxentry e
+				 (aliases (filter (lambda (reg)
+						     (regset-member? reg in))
+					     (bbv-ctxentry-aliases e)))))))
+	    (bbv-ctx-entries ctx))))
+   
+   (let ((es (filter-entries ctx ins)))
+      (if (=fx (length es) (length (bbv-ctx-entries ctx)))
+	  ctx
+	  (duplicate::bbv-ctx ctx
+	     (entries es)))))
    
 ;*---------------------------------------------------------------------*/
-;*    extend-live-out-regs ...                                         */
+;*    bbv-ctx-extend-live-out-regs ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (extend-live-out-regs ins::rtl_ins/bbv ctx)
+(define (bbv-ctx-extend-live-out-regs ctx ins::rtl_ins/bbv)
    (with-access::rtl_ins/bbv ins (out)
-      (let ((nctx (filter (lambda (e)
-			     (regset-member? (bbv-ctxentry-reg e) out))
-		     ctx)))
-	 (regset-for-each (lambda (r)
-			     (unless (ctx-get nctx r)
-				(with-access::rtl_reg r (type)
-				   (set! nctx (extend-ctx nctx r (list type) #t)))))
-	    out)
-	 nctx)))
+      (let ((entries (filter (lambda (e)
+				(regset-member? (bbv-ctxentry-reg e) out))
+			(bbv-ctx-entries ctx))))
+	 (let ((nctx (if (=fx (length entries) (length (bbv-ctx-entries ctx)))
+			 ctx
+			 (duplicate::bbv-ctx ctx
+			    (entries entries)))))
+	    (regset-for-each (lambda (r)
+				(unless (bbv-ctx-get nctx r)
+				   (with-access::rtl_reg r (type)
+				      (set! nctx (extend-ctx nctx r (list type) #t)))))
+	       out)
+	    nctx))))
 
 ;*---------------------------------------------------------------------*/
-;*    ctx-live-versions ...                                            */
+;*    live-versions ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (ctx-live-versions versions)
+(define (live-versions versions)
    (filter (lambda (v)
-	      (with-access::blockS (cdr v) (wblock)
-		 (not wblock)))
+	      (with-access::blockS (cdr v) (mblock)
+		 (not mblock)))
       versions))
-
-;*---------------------------------------------------------------------*/
-;*    block-merger ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (block-merger b::blockS)
-   (let loop ((b b))
-      (with-access::blockS b (wblock)
-	 (if wblock
-	     (loop wblock)
-	     b))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Jul 18 07:55:11 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 08:29:56 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -37,20 +37,25 @@
 	       (versions::pair-nil (default '()))
 	       (%mark::long (default -1))
 	       (merge::bool (default #f)))
+	    
 	    (wide-class blockS::block
 	       (%mark::long (default -1))
 	       (%hash::obj (default #f))
 	       (%blacklist::obj (default '()))
 	       (parent::obj read-only (default #unspecified))
-	       (wblock::obj (default #f))
-	       (cost::long (default -1)))
+	       (mblock::obj (default #f)))
+	    
 	    (wide-class rtl_ins/bbv::rtl_ins
 	       (def (default #unspecified))
 	       (out (default #unspecified))
 	       (in (default #unspecified))
-	       (ctx::pair-nil (default '()))
+	       (ctx::bbv-ctx (default (instantiate::bbv-ctx)))
 	       (%hash::obj (default #f)))
 
+	    (class bbv-ctx
+	       (cost::long (default 0))
+	       (entries::pair-nil (default '())))
+	    
 	    (class bbv-ctxentry
 	       (reg::rtl_reg read-only)
 	       (types::pair read-only (default (list *obj*)))
@@ -58,25 +63,23 @@
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '())))
 
-	    *max-length*
-	    *max-index*
-	    *+inf.0*
-	    *-inf.0*
-	    
-	    (ctx->string ::pair-nil)
-	    (params->ctx ::pair-nil)
+	    (class bbv-wsentry
+	       ctx::bbv-ctx
+	       (cost::long (default 0))
+	       (stack::pair-nil (default '()))
+	       block::blockS
+	       anchor::blockS)
 
-	    (type-in?::bool ::type ::pair)
-	    
-	    (ctx-get ::pair-nil ::rtl_reg)
-	    (extend-ctx::pair-nil ::pair-nil ::rtl_reg ::pair ::bool
+	    (ctx->string ::bbv-ctx)
+	    (params->ctx::bbv-ctx ::pair-nil)
+
+	    (bbv-ctx-get ::bbv-ctx ::rtl_reg)
+	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
 	       #!key (value '_))
-	    (extend-ctx* ctx::pair-nil regs::pair ::pair ::bool
+	    (extend-ctx* ctx::bbv-ctx regs::pair ::pair ::bool
 	       #!key (value '_))
-	    (refine-ctx::pair-nil ::pair-nil ::obj ::pair ::bool
-	       #!key (value '_))
-	    (alias-ctx::pair-nil ::pair-nil ::rtl_reg ::rtl_reg)
-	    (unalias-ctx::pair-nil ::pair-nil ::rtl_reg)
+	    (alias-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::rtl_reg)
+	    (unalias-ctx::bbv-ctx ::bbv-ctx ::rtl_reg)
 	    
 	    (generic bbv-hash ::obj)
 	    (generic bbv-equal?::bool ::obj ::obj)
@@ -101,18 +104,6 @@
 	    (rtl_call-values i::rtl_ins)))
 
 ;*---------------------------------------------------------------------*/
-;*    integer boundaries ...                                           */
-;*---------------------------------------------------------------------*/
-(define *max-fixnum* (bit-lshllong #l1 (-fx (bigloo-config 'int-size) 2)))
-(define *min-fixnum* (-llong (negllong *max-fixnum*) #l1))
-
-(define *max-length* *max-fixnum*)
-(define *max-index* (-llong *max-length* #l1))
-
-(define *+inf.0* (+llong *max-fixnum* #l1))
-(define *-inf.0* (-llong *min-fixnum* #l1))
-
-;*---------------------------------------------------------------------*/
 ;*    bbv-ctxentry-reg ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (bbv-ctxentry-reg e)
@@ -135,52 +126,39 @@
 ;*---------------------------------------------------------------------*/
 ;*    ctx->string ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (ctx->string ctx)
-   (call-with-output-string
-      (lambda (op)
-	 (fprintf op "~s" (map shape ctx)))))
+(define (ctx->string ctx::bbv-ctx)
+   (with-access::bbv-ctx ctx (cost entries)
+      (call-with-output-string
+	 (lambda (op)
+	    (fprintf op "[~d] ~s" cost (map shape entries))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    params->ctx ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (params->ctx params)
-   ;; a context is an alist of:
-   ;;   (reg . (type . #t|#f))
-   (sort (lambda (x y)
-	    (<=fx (rtl_reg/ra-num (bbv-ctxentry-reg x))
-	       (rtl_reg/ra-num (bbv-ctxentry-reg y))))
-      (filter-map (lambda (p)
-		     (when (isa? p rtl_reg/ra)
-			(with-access::rtl_reg p (type)
-			   (instantiate::bbv-ctxentry
-			      (reg p)
-			      (types (list type))
-			      (polarity #t)))))
-	 params)))
+   (instantiate::bbv-ctx
+      (entries (sort (lambda (x y)
+			(<=fx (rtl_reg/ra-num (bbv-ctxentry-reg x))
+			   (rtl_reg/ra-num (bbv-ctxentry-reg y))))
+		  (filter-map (lambda (p)
+				 (when (isa? p rtl_reg/ra)
+				    (with-access::rtl_reg p (type)
+				       (instantiate::bbv-ctxentry
+					  (reg p)
+					  (types (list type))
+					  (polarity #t)))))
+		     params)))))
 
 ;*---------------------------------------------------------------------*/
-;*    type-in? ...                                                     */
+;*    bbv-ctx-get ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (type-in? type types)
-   
-   (define (type-eq? x y)
-      (cond
-	 ((eq? x y) #t)
-	 ((eq? x *bint*) (eq? y *long*))
-	 ((eq? x *long*) (eq? y *bint*))
-	 (else #f)))
-   
-   (any (lambda (t) (type-eq? type t)) types))
-
-;*---------------------------------------------------------------------*/
-;*    ctx-get ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (ctx-get ctx reg)
-   (let loop ((ctx ctx))
-      (when (pair? ctx)
-	 (if (eq? (bbv-ctxentry-reg (car ctx)) reg)
-	     (car ctx)
-	     (loop (cdr ctx))))))
+(define (bbv-ctx-get ctx::bbv-ctx reg)
+   (with-access::bbv-ctx ctx (entries)
+      (let loop ((es entries))
+	 (when (pair? es)
+	    (if (eq? (bbv-ctxentry-reg (car es)) reg)
+		(car es)
+		(loop (cdr es)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx/entry ...                                             */
@@ -188,26 +166,32 @@
 ;*    Extend CTX with ENTRY. If the register of ENTRY is already in    */
 ;*    the CTX, the former entry is replaced with the new one.          */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx/entry ctx::pair-nil entry::bbv-ctxentry)
-   (let* ((reg (bbv-ctxentry-reg entry))
-	  (rnum (rtl_reg/ra-num reg)))
-      (let loop ((ctx ctx))
-	 (cond
-	    ((null? ctx)
-	     (list entry))
-	    ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car ctx))) rnum)
-	     (cons entry ctx))
-	    ((eq? (bbv-ctxentry-reg (car ctx)) reg)
-	     (cons entry (cdr ctx)))
-	    (else
-	     (cons (car ctx) (loop (cdr ctx))))))))
+(define (extend-ctx/entry ctx::bbv-ctx entry::bbv-ctxentry)
+   
+   (define (extend-entries ctx entry)
+      (let* ((reg (bbv-ctxentry-reg entry))
+	     (rnum (rtl_reg/ra-num reg)))
+	 (with-access::bbv-ctx ctx (entries)
+	    (let loop ((es entries))
+	       (cond
+		  ((null? es)
+		   (list entry))
+		  ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car es))) rnum)
+		   (cons entry ctx))
+		  ((eq? (bbv-ctxentry-reg (car es)) reg)
+		   (cons entry (cdr es)))
+		  (else
+		   (cons (car es) (loop (cdr es)))))))))
+   
+   (duplicate::bbv-ctx ctx
+      (entries (extend-entries ctx entry))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx ...                                                   */
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx ctx::pair-nil reg::rtl_reg types::pair polarity::bool
+(define (extend-ctx ctx::bbv-ctx reg::rtl_reg types::pair polarity::bool
 	   #!key (value '_))
    
    (define (new-ctxentry reg::rtl_reg type polarity::bool value)
@@ -216,33 +200,38 @@
 	 (types types)
 	 (polarity polarity)
 	 (value value)))
+
+   (define (extend-entries ctx reg types polarity value)
+      (let ((rnum (rtl_reg/ra-num reg)))
+	 (with-access::bbv-ctx ctx (entries)
+	    (let loop ((entries entries))
+	       (cond
+		  ((null? entries)
+		   (let ((n (new-ctxentry reg type polarity value)))
+		      (list n)))
+		  ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car entries))) rnum)
+		   (let ((n (new-ctxentry reg type polarity value)))
+		      (cons n entries)))
+		  ((eq? (bbv-ctxentry-reg (car entries)) reg)
+		   (let ((n (duplicate::bbv-ctxentry (car entries)
+			       (types types)
+			       (polarity polarity)
+			       (value value))))
+		      (cons n (cdr entries))))
+		  (else
+		   (cons (car entries) (loop (cdr entries)))))))))
    
    (if (not (isa? reg rtl_reg/ra))
        ctx
-       (let ((rnum (rtl_reg/ra-num reg)))
-	  (let loop ((ctx ctx))
-	     (cond
-		((null? ctx)
-		 (let ((n (new-ctxentry reg type polarity value)))
-		    (list n)))
-		((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car ctx))) rnum)
-		 (let ((n (new-ctxentry reg type polarity value)))
-		    (cons n ctx)))
-		((eq? (bbv-ctxentry-reg (car ctx)) reg)
-		 (let ((n (duplicate::bbv-ctxentry (car ctx)
-			     (types types)
-			     (polarity polarity)
-			     (value value))))
-		    (cons n (cdr ctx))))
-		(else
-		 (cons (car ctx) (loop (cdr ctx)))))))))
+       (duplicate::bbv-ctx ctx
+	  (entries (extend-entries ctx reg types polarity value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx* ...                                                  */
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx* ctx::pair-nil regs::pair types polarity::bool
+(define (extend-ctx* ctx::bbv-ctx regs::pair types polarity::bool
 	   #!key (value '_))
    (let loop ((ctx ctx)
 	      (regs regs))
@@ -252,67 +241,13 @@
 	     (cdr regs)))))
 
 ;*---------------------------------------------------------------------*/
-;*    refine-ctx ...                                                   */
-;*    -------------------------------------------------------------    */
-;*    Refine the knowledge of an environment, propagating the          */
-;*    information to the aliases.                                      */
-;*---------------------------------------------------------------------*/
-(define (refine-ctx ctx reg type polarity #!key (value '_))
-   
-   (define (new-ctxentry reg type polarity::bool value)
-      (instantiate::bbv-ctxentry
-	 (reg reg)
-	 (types (list type))
-	 (polarity polarity)
-	 (value value)))
-   
-   (define (refine-one reg ctx)
-      (if (not (isa? reg rtl_reg/ra))
-	  (cons ctx '())
-	  (let ((rnum (rtl_reg/ra-num reg)))
-	     (let loop ((ctx ctx))
-		(cond
-		   ((null? ctx)
-		    (let ((n (new-ctxentry reg type polarity value)))
-		       (values (list n) '())))
-		   ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car ctx))) rnum)
-		    (let ((n (new-ctxentry reg type polarity value)))
-		       (values (cons n ctx) '())))
-		   ((eq? (bbv-ctxentry-reg (car ctx)) reg)
-		    (let ((n (duplicate::bbv-ctxentry (car ctx)
-				(types (list type))
-				(polarity polarity)
-				(value value))))
-		       (values (cons n (cdr ctx))
-			  (with-access::bbv-ctxentry (car ctx) (aliases)
-			     aliases))))
-		   (else
-		    (multiple-value-bind (rctx aliases)
-		       (loop (cdr ctx))
-		       (values (cons (car ctx) rctx) aliases))))))))
-   
-   (let loop ((worklist (list reg))
-	      (stack '())
-	      (ctx ctx))
-      (cond
-	 ((null? worklist)
-	  ctx)
-	 ((memq (car worklist) stack)
-	  (loop (cdr worklist) stack ctx))
-	 (else
-	  (multiple-value-bind (nctx aliases)
-	     (refine-one (car worklist) ctx)
-	     (loop (append aliases (cdr worklist))
-		(cons (car worklist) stack) nctx))))))
-
-;*---------------------------------------------------------------------*/
 ;*    alias-ctx ...                                                    */
 ;*    -------------------------------------------------------------    */
 ;*    Create an alias between REG and ALIAS.                           */
 ;*---------------------------------------------------------------------*/
-(define (alias-ctx ctx::pair-nil reg::rtl_reg alias::rtl_reg)
-   (let ((re (ctx-get ctx reg))
-	 (ae (ctx-get ctx alias)))
+(define (alias-ctx ctx::bbv-ctx reg::rtl_reg alias::rtl_reg)
+   (let ((re (bbv-ctx-get ctx reg))
+	 (ae (bbv-ctx-get ctx alias)))
       (with-access::bbv-ctxentry re (aliases)
 	 (with-access::bbv-ctxentry ae ((aaliases aliases))
 	    (let ((all (delete-duplicates
@@ -323,7 +258,7 @@
 			     (ctx (extend-ctx/entry ctx nre)))
 		     (if (null? all)
 			 ctx
-			 (let ((ae (ctx-get ctx (car all))))
+			 (let ((ae (bbv-ctx-get ctx (car all))))
 			    (if ae
 				(with-access::bbv-ctxentry ae (aliases)
 				   (let ((nae (duplicate::bbv-ctxentry ae
@@ -337,10 +272,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Removing all REG aliasings.                                      */
 ;*---------------------------------------------------------------------*/
-(define (unalias-ctx ctx::pair-nil reg::rtl_reg)
+(define (unalias-ctx ctx::bbv-ctx reg::rtl_reg)
    
-   (define (unalias ctx::pair-nil reg::rtl_reg alias::rtl_reg)
-      (let ((e (ctx-get ctx alias)))
+   (define (unalias ctx::bbv-ctx reg::rtl_reg alias::rtl_reg)
+      (let ((e (bbv-ctx-get ctx alias)))
 	 (if e
 	     (with-access::bbv-ctxentry e (aliases)
 		(extend-ctx/entry ctx
@@ -348,7 +283,7 @@
 		      (aliases (remq reg aliases)))))
 	     ctx)))
    
-   (let ((e (ctx-get ctx reg)))
+   (let ((e (bbv-ctx-get ctx reg)))
       (if e
 	  (with-access::bbv-ctxentry e (aliases types polarity value)
 	     (let loop ((aliases aliases)
@@ -384,12 +319,20 @@
 	 (dump o p 0))))
 
 ;*---------------------------------------------------------------------*/
+;*    shape ::bbv-ctx ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (shape o::bbv-ctx)
+   (with-access::bbv-ctx o (cost entries)
+      (vector cost (map shape entries))))
+
+;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::rtl_ins/bbv p m)
 
    (define (dump-ctx ctx p)
-      (display (map shape ctx) p))
+      (with-access::bbv-ctx ctx (entries)
+	 (display (map shape entries) p)))
 
    (with-access::rtl_ins/bbv o (%spill fun dest args def in out ctx)
       (with-output-to-port p
@@ -417,7 +360,7 @@
    (define (lbl n)
       (if (isa? n block) (block-label n) (typeof n)))
    
-   (with-access::blockV o (label first cost preds succs merge)
+   (with-access::blockV o (label first preds succs merge)
       (fprint p "(blockV " label)
       (dump-margin p (+fx m 1))
       (fprint p ":merge " merge)
@@ -437,14 +380,12 @@
    (define (lbl n)
       (if (isa? n block) (block-label n) (typeof n)))
    
-   (with-access::blockS o (label first parent preds succs cost)
+   (with-access::blockS o (label first parent preds succs)
       (fprint p "(blockS " label)
       (dump-margin p (+fx m 1))
       (fprint p ":parent " (block-label parent))
       (dump-margin p (+fx m 1))
       (fprint p ":merge " (with-access::blockV parent (merge) merge))
-      (dump-margin p (+fx m 1))
-      (fprint p ":cost " cost)
       (dump-margin p (+fx m 1))
       (fprint p ":preds " (map lbl preds))
       (dump-margin p (+fx m 1))

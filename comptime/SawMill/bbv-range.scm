@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Jul 18 08:15:06 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 11:54:45 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -33,7 +33,7 @@
 	   (bbv-range-fixnum?::bool ::bbv-range)
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
-	   (rtl-range::obj ::obj ::pair-nil)
+	   (rtl-range::obj ::obj ::bbv-ctx)
 	   (range-type?::bool ::obj)
 	   (bbv-singleton?::bool ::obj)
 	   (bbv-range<? ::bbv-range ::bbv-range)
@@ -142,7 +142,7 @@
 (define (rtl-range i ctx)
    (cond
       ((isa? i rtl_reg)
-       (let ((e (ctx-get ctx i)))
+       (let ((e (bbv-ctx-get ctx i)))
 	  (when e
 	     (with-access::bbv-ctxentry e (types value polarity)
 		(when (and polarity (any range-type? types))
