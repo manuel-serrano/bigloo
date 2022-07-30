@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul 19 07:17:23 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 19:12:50 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -224,7 +224,6 @@
 
    (define (live-block b::blockS)
       (with-access::blockS b (mblock)
-	 (tprint "live-block b=" (block-label b) " " (eq? b mblock))
 	 (if mblock
 	     (live-block mblock)
 	     b)))

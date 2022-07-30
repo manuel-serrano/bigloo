@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Tue Jul 19 16:12:03 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 19:12:32 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -22,7 +22,7 @@
 ;*    basic-block versioning configuration                             */
 ;*---------------------------------------------------------------------*/
 ;; the maximum number of block versions
-(define *max-block-versions* 5)
+(define *max-block-versions* 3)
 
 ;; various optimizations
 (define *type-call* #t)
