@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/css_lexer.scm       */
+;*    .../project/bigloo/bigloo/api/web/src/Llib/css_lexer.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Thu Dec  3 11:11:21 2015 (serrano)                */
-;*    Copyright   :  2005-15 Manuel Serrano                            */
+;*    Last change :  Tue Aug 16 14:13:32 2022 (serrano)                */
+;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
 ;*=====================================================================*/
@@ -104,6 +104,15 @@
       
       ("|="
        (return 'DASHMATCH))
+      
+      ("*="
+       (return 'STARMATCH))
+      
+      ("$="
+       (return 'DOLLARMATCH))
+      
+      ("^="
+       (return 'HATMATCH))
       
       (string
        (return 'STRING))
