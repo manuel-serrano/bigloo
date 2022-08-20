@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Apr 21 11:12:45 2018 (serrano)                */
-/*    Copyright   :  2016-20 Manuel Serrano                            */
+/*    Last change :  Sat Aug 20 10:08:37 2022 (serrano)                */
+/*    Copyright   :  2016-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -96,7 +96,7 @@ struct bgl_ucs2_string {
 #   endif
 #else
 #   define BSTRING( p ) BREF( p )
-#   define CSTRING( p ) BGL_CPTR( ((obj_t)((unsigned long)(p) - TAG_STRUCT)) )
+#   define CSTRING( p ) BGL_CPTR( ((obj_t)((unsigned long)(p) - TAG_POINTER)) )
 #   define STRINGP( c ) (POINTERP( c ) && (TYPE( c ) == STRING_TYPE))
 #endif
 

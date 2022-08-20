@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cresolv.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cresolv.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jun  6 11:04:39 2015                          */
-/*    Last change :  Mon Feb  6 10:00:49 2017 (serrano)                */
-/*    Copyright   :  2015-17 Manuel Serrano                            */
+/*    Last change :  Sat Aug 20 17:22:35 2022 (serrano)                */
+/*    Copyright   :  2015-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Resolv library binding (optional)                                */
 /*=====================================================================*/
@@ -222,7 +222,7 @@ rr_format_naptr( ns_msg *msg, int i ) {
    char *rep;
    char dispbuf[ N ];
    regex_t re;
-   regmatch_t pmatch[ 8 ];
+   regmatch_t pmatch[8];
    
    if( regcomp( &re, "[^ \t]*[ \t]*[^ \t]*[ \t]*[^ \t]*[ \t]*[^ \t]*[ \t]*([0-9]*)[ \t]*([0-9]*)[ \t]*\"([^\"]*)\"[ \t]*\"([^\"]*)\"[ \t]*\"([^\"]*)\"[ \t]*([^ \t]*)", REG_EXTENDED ) ) {
        C_SYSTEM_FAILURE( BGL_ERROR, "resolv", "Cannot compile regular expression", BUNSPEC );

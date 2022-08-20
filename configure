@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun 29 09:04:14 2022 (serrano)                */
+#*    Last change :  Sat Aug 20 16:47:43 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -83,6 +83,7 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - blank (uninitalized) for automatic configuration of the
 #    position independent code compiler option
 cnanflags=-DBGL_NAN_TAGGING=0
+creservedflags=-DBGL_RESERVED_TAGGING=0
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
@@ -104,6 +105,7 @@ belong_prealloc_min=-10
 belong_prealloc_max=100
 
 bglnantagging=0
+bglreservedtagging=0
 bglsmi=0
 
 #*--- Java back-end user configuration --------------------------------*/
@@ -521,6 +523,7 @@ while : ; do
       bee="full";
       havebdb=1;
       pthreadlocalstorage=;
+      bglreservedtagging=1;
       action="all";;
 
     --bootdir=*)
@@ -930,6 +933,9 @@ while : ; do
 
     --nan-tagging)
       bglnantagging=1;;
+      
+    --reserved-tagging)
+      bglreservedtagging=1;;
       
     --smi)
       bglsmi=1;;
@@ -2240,6 +2246,15 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
 
+  if [ "$bglreservedtagging " != "0 " ]; then
+    if [ "$alignment" = "3" ]; then 
+      creservedflags="-DBGL_RESERVED_TAGGING=1";
+    else
+      $echo "*** ERROR: Reserved-tagging requires 64bit platforms"
+      exit 1
+    fi
+  fi
+     
   $echo "+ GC configuration ($customgc)..." >> $configurelog
   
   cgcflags="`$autoconf gcflags` $cgcflags" || exit 1
@@ -3603,6 +3618,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@INT_BIT_SIZE@|$intsize|" \
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
+              -e "s|@BGL_RESERVED_TAGGING@|$bglreservedtagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
@@ -5343,6 +5359,11 @@ if [ "$summary" = "yes" ]; then
     $echo "  nan tagging................. $bglnantagging"
   else
     $echo "  nan tagging................. no"
+  fi
+  if [ $bglreservedtagging != "0" ]; then
+    $echo "  reserved tagging............ $bglreservedtagging"
+  else
+    $echo "  reserved tagging............ no"
   fi
   if [ $customgc = "yes" ];then
      $echo "  gc.......................... custom ($gclib-$release, v$gcversion)"

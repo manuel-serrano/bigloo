@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 21 09:11:16 2022 (serrano)                */
+/*    Last change :  Sat Aug 20 10:07:39 2022 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -226,6 +226,7 @@ extern "C" {
 #  define TAG_SHIFT PTR_ALIGNMENT
 #  define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
 #  define TAG_MASKOBJECT TAG_MASK
+#  define TAG_MASKPOINTER TAG_MASK
 
 #  define TAG(_v, shift, tag) \
      ((long)(((unsigned long)(_v) << shift) | tag))
@@ -255,7 +256,7 @@ extern "C" {
 #  define TAG_QNAN (0x7ff8UL<<48)
 #  define TAG_SNAN (0xfff8UL<<48)
 #  define TAG_INT (0x7ff9L<<48)       /*  int tagging       011...1000 */
-#  define TAG_STRUCT (0x7ffaUL<<48)   /*  pointers tagging  011...1001 */
+#  define TAG_POINTER (0x7ffaUL<<48)  /*  pointers tagging  011...1001 */
 #  define TAG_CNST (0x7ffbUL<<48)     /*  constants tagging 011...1010 */
 #  define TAG_VECTOR (0x7ffcUL<<48)   /*  vector tagging    011...1011 */
 #  define TAG_CELL (0x7ffdUL<<48)     /*  cell tagging      011...1100 */
@@ -267,31 +268,51 @@ extern "C" {
 #elif (BGL_GC == BGL_SAW_GC)    
 #  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_STRUCT 1                /*  pointer tagging       ....01 */
+#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
 #  define TAG_YOUNG 2                 /*  pointer tagging       ....10 */
 #  define TAG_CNST 3                  /*  constant tagging      ....11 */
 #elif (BGL_GC == BGL_BOEHM_GC) 
 #  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_STRUCT 1                /*  pointer tagging       ....01 */
+#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
 #  define TAG_CNST 2                  /*  constant tagging      ....10 */
 #  define TAG_PAIR 3                  /*  pair tagging          ....11 */
 #elif (BGL_GC == BGL_NO_GC)
 #  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_STRUCT 1                /*  pointer tagging       ....01 */
+#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
 #  define TAG_CNST 2                  /*  constant tagging      ....10 */
 #  define TAG_PAIR 3                  /*  pair tagging          ....11 */
 #else
 error "Unknown garbage collector type"
 #endif
 
-#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING)
+#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING && !BGL_RESERVED_TAGGING)
 #  define TAG_VECTOR 4                /*  vector tagging        ...100 */
 #  define TAG_CELL 5                  /*  cell tagging          ...101 */
 #  define TAG_REAL 6                  /*  real tagging          ...110 */
 #  define TAG_STRING 7                /*  string tagging        ...111 */
 #endif
+
+#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING && BGL_RESERVED_TAGGING)
+#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
+#  define TAG_RESERVED 5              /*  reserved tagging      ...101 */
+#  define TAG_CELL 6                  /*  cell tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+
+#  undef TAG_MASKPOINTER
+#  define TAG_MASKPOINTER ((1 << PTR_ALIGNMENT -1) - 1)
+
+#  if (TAG_RESERVED & TAG_POINTER != TAG_POINTER)
+      || (TAG_RESERVED & TAG_VECTOR != 1 << PTR_ALIGNMENT)
+      || (TAG_RESERVED & TAG_CELL != 1 << PTR_ALIGNMENT)
+      || (TAG_RESERVED & TAG_STRING != 1 << PTR_ALIGNMENT)
+     error "illegal reserved tag..."
+#  endif
+#endif
+
+/* TBR 28aug2022, backward compatibility, to be remove */
+#define TAG_STRUCT TAG_POINTER
 
 #if (PTR_ALIGNMENT == 2 && defined(BGL_TAG_CNST32) && !BGL_NAN_TAGGING)
 #  define TAG_OBJECT TAG_CNST
@@ -305,16 +326,25 @@ error "Unknown garbage collector type"
 #if (TAG_YOUNG)
 #  define POINTERP(o) (((((long)BGL_CPTR(o)) & 1) == 0) && o)
 #else
-#  if (TAG_STRUCT != 0)
-#     define POINTERP(o) ((((long)BGL_CPTR(o)) & TAG_MASK) == TAG_STRUCT)
+#  if (TAG_POINTER != 0)
+#     define POINTERP(o) ((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER)
 #  else
-#     define POINTERP(o) (((((long)BGL_CPTR(o)) & TAG_MASK) == TAG_STRUCT) && BGL_CPTR(o))
+#     define POINTERP(o) (((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER) && BGL_CPTR(o))
 #  endif
 #endif
 
-#define BREF(r) BGL_BPTR((obj_t)((long)r + TAG_STRUCT))
+#define BREF(r) BGL_BPTR((obj_t)((long)r + TAG_POINTER))
 #define CREFSLOW(r) BGL_CPTR((obj_t)((unsigned long)r & ~(TAG_MASK)))
-#define CREF(r) BGL_CPTR((obj_t)((long)r - TAG_STRUCT))
+#define CREF(r) BGL_CPTR((obj_t)((long)r - TAG_POINTER))
+
+#if (defined(TAG_RESERVED)
+#  define BGL_RESERVEDP(o) \
+     ((((long)BGL_CPTR(o)) & TAG_MASK) == TAG_RESERVED)
+#  define BRESERVED(r) BGL_BPTR((obj_t)((long)r + TAG_RESERVED))
+#else
+#  define BGL_RESERVEDP(o) POINTERP(o)
+#  define BRESERVED(r) BGL_BPTR((obj_t)((long)r + TAG_POINTER))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Allocated objects                                                */
@@ -373,7 +403,7 @@ error "Unknown garbage collector type"
 #  define BYOUNG(r) ((obj_t)((long)r + TAG_YOUNG))
 
 #  define BYOUNGP(r) ((((long)r) & TAG_MASK) == TAG_YOUNG)
-#  define BOLDP(r) ((((long)r) & TAG_MASK) == TAG_STRUCT)
+#  define BOLDP(r) ((((long)r) & TAG_MASK) == TAG_POINTER)
 #endif
 
 #if (BGL_GC == BGL_SAW_GC)
@@ -1202,15 +1232,15 @@ typedef obj_t (*function_t)();
 	     nb_args }; \
       static const obj_t n = BREF(&(na.header))
 
+#define PROCEDUREP(o) \
+   (POINTERP(o) && (TYPE(o) == PROCEDURE_TYPE))
+
 #define PROCEDURE_SIZE (sizeof(struct procedure))
 
-#define PROCEDURE(o) CREF(o)->procedure
+#define PROCEDURE(fun) CREF(fun)->procedure
    
 #define PROCEDURE_ENTRY(fun) (obj_t)(PROCEDURE(fun).entry)
 #define PROCEDURE_VA_ENTRY(fun) (obj_t)(PROCEDURE(fun).va_entry)
-
-#define PROCEDUREP(fun) \
-   (POINTERP(fun) && (TYPE(fun) == PROCEDURE_TYPE))
 
 #define PROCEDURE_ARITY(fun) (PROCEDURE(fun).arity)
 #define PROCEDURE_LENGTH(fun) (HEADER_SIZE(CREF(fun)->header))

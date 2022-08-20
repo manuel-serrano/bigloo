@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Jan 16 08:25:00 2020 (serrano)                */
-/*    Copyright   :  2016-20 Manuel Serrano                            */
+/*    Last change :  Sat Aug 20 10:08:58 2022 (serrano)                */
+/*    Copyright   :  2016-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -76,7 +76,7 @@ struct bgl_hvector {
 #   endif
 #else
 #   define BVECTOR( p ) BREF( p )
-#   define CVECTOR( p ) BGL_CPTR( (obj_t)((unsigned long)(p) - TAG_STRUCT) )
+#   define CVECTOR( p ) BGL_CPTR( (obj_t)((unsigned long)(p) - TAG_POINTER) )
 #   define VECTORP( c ) (POINTERP( c ) && (TYPE( c ) == VECTOR_TYPE))
 #endif
 
