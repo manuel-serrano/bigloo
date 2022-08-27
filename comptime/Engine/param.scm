@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Jul 13 08:36:16 2022 (serrano)                */
+;*    Last change :  Sat Aug 27 18:45:48 2022 (serrano)                */
 ;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -99,6 +99,7 @@
 	    *jvm-env*
 	    *arithmetic-genericity*
 	    *arithmetic-overflow*
+	    *arithmetic-new-overflow*
 	    *shared-cnst?*
 	    ;; -------------------------------------------------------------
 	    ;; warning, any change about this variable name must be reported
@@ -816,6 +817,7 @@
 (define *alloc-shape?* #f)
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
+(define *arithmetic-new-overflow* #f)
 (param-define *shared-cnst?*
    "Shared constant compilation?"
    #t)

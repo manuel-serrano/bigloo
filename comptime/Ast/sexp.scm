@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Jul  8 11:24:33 2021 (serrano)                */
+;*    Last change :  Sat Aug 27 16:19:19 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -344,6 +344,15 @@
           (else
 	   (error-sexp->node
 	      "Illegal `define' form" exp (find-location/loc exp loc)))))
+;*--- let & letrec ----------------------------------------------------*/
+      (($let ?bindings . ?expr)
+       (let ((exp (let->node exp stack loc 'value)))
+	  (if (isa? exp let-var)
+	      (with-access::let-var exp (removable?)
+		 (set! removable? #f)
+		 exp)
+	      (error-sexp->node
+		 "illegal `$let' expression, does not produce a let" exp loc))))
 ;*--- a pattern to improve pattern-matching compilation ---------------*/
       ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
        (let* ((let-part (car exp))

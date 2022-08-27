@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Jul 19 11:23:39 2022 (serrano)                */
+;*    Last change :  Mon Aug 22 20:20:38 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -190,6 +190,5 @@
    
    [assert (x y) (=fx (length (bbv-ctx-entries x)) (length (bbv-ctx-entries y)))]
    (instantiate::bbv-ctx
-      (cost (*merge-ctx-costs* (bbv-ctx-cost x) (bbv-ctx-cost y)))
       (entries (merge-entries x y))))
       

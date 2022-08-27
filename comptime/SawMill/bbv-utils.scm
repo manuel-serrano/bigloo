@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Tue Jul 19 08:51:45 2022 (serrano)                */
+;*    Last change :  Mon Aug 22 10:42:12 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -125,7 +125,7 @@
 ;*    redirect-block! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (redirect-block! b::blockS old::blockS new::blockS)
-   (with-trace 'bbv "redirect-block!"
+   (with-trace 'bbv-utils "redirect-block!"
       (trace-item "b=" (block-label b))
       (trace-item "old=" (block-label old) " "
 	 (map block-label (block-succs old)))
@@ -164,7 +164,7 @@
 ;*    and succs of the old block.                                      */
 ;*---------------------------------------------------------------------*/
 (define (replace-block! old::blockS new::blockS)
-   (with-trace 'bbv "replace-block!"
+   (with-trace 'bbv-utils "replace-block!"
       (trace-item "old=" (block-label old) " "
 	 (map block-label (block-succs old)))
       (trace-item "new="(block-label new) " "

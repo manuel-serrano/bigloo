@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Aug 20 10:06:21 2022 (serrano)                */
+/*    Last change :  Sun Aug 21 08:32:34 2022 (serrano)                */
 /*    Copyright   :  2016-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -84,9 +84,9 @@ typedef struct BgL_objectz00_bgl {
 #endif
 
 #if (defined(TAG_RESERVED))
-#  define BRESERVEREDOBJECT(o) BRESERVED(o)
+#  define BRESERVEDOBJECT(o) BRESERVED(o)
 #else
-#  define BRESERVEREDOBJECT(o) BOBJECT(o)
+#  define BRESERVEDOBJECT(o) BOBJECT(o)
 #endif
 
 /*---------------------------------------------------------------------*/

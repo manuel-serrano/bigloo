@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Tue Jul 19 12:35:40 2022 (serrano)                */
+;*    Last change :  Mon Aug 22 09:17:50 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -59,7 +59,7 @@
       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins #f #f 0 (get-color 0)))
       (else
-       (error "list->bb" "bad syntax" l))))
+       (error "list->bb" "bad block syntax" l))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *colors* ...                                                     */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul 13 08:36:23 2022 (serrano)                */
+;*    Last change :  Sat Aug 27 18:47:20 2022 (serrano)                */
 ;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -381,6 +381,12 @@
        (set! *arithmetic-overflow* #f))
       (("-fno-arithmetic-overflow" (help "Enable arithmetic overflow checks"))
        (set! *arithmetic-overflow* #t))
+      (("-fno-arithmetic-overflow" (help "Enable arithmetic overflow checks"))
+       (set! *arithmetic-overflow* #t))
+      (("-farithmetic-new-overflow" (help "Enable the new overflow arithmetic checks"))
+       (set! *arithmetic-new-overflow* #t))
+      (("-fno-arithmetic-new-overflow" (help "Disable the new overflow arithmetic checks"))
+       (set! *arithmetic-new-overflow* #f))
       ;; case sensitivity
       (("-fcase-sensitive" (help "Case sensitive reader (default)"))
        (bigloo-case-sensitivity-set! 'sensitive))

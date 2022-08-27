@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Jul 19 08:29:56 2022 (serrano)                */
+;*    Last change :  Mon Aug 22 20:12:55 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -53,7 +53,6 @@
 	       (%hash::obj (default #f)))
 
 	    (class bbv-ctx
-	       (cost::long (default 0))
 	       (entries::pair-nil (default '())))
 	    
 	    (class bbv-ctxentry
@@ -62,13 +61,6 @@
 	       (polarity::bool read-only)
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '())))
-
-	    (class bbv-wsentry
-	       ctx::bbv-ctx
-	       (cost::long (default 0))
-	       (stack::pair-nil (default '()))
-	       block::blockS
-	       anchor::blockS)
 
 	    (ctx->string ::bbv-ctx)
 	    (params->ctx::bbv-ctx ::pair-nil)
@@ -127,10 +119,10 @@
 ;*    ctx->string ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (ctx->string ctx::bbv-ctx)
-   (with-access::bbv-ctx ctx (cost entries)
+   (with-access::bbv-ctx ctx (entries)
       (call-with-output-string
 	 (lambda (op)
-	    (fprintf op "[~d] ~s" cost (map shape entries))))))
+	    (fprintf op "~s" (map shape entries))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    params->ctx ...                                                  */
@@ -322,8 +314,8 @@
 ;*    shape ::bbv-ctx ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (shape o::bbv-ctx)
-   (with-access::bbv-ctx o (cost entries)
-      (vector cost (map shape entries))))
+   (with-access::bbv-ctx o (entries)
+      (vector (map shape entries))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */

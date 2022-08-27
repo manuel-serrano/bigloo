@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jul 19 07:13:58 2022 (serrano)                */
+;*    Last change :  Mon Aug 22 09:01:04 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -79,7 +79,7 @@
 		   (unwind-protect
 		      (if (null? blocks)
 			  '()
-			  (let* ((s (bbv-function (car blocks)
+			  (let* ((s (bbv-block (car blocks)
 				       (params->ctx params)))
 				 (b (block->block-list regs
 				       (if *cleanup*

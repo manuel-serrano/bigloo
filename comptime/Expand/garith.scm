@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Tue Jul 19 16:28:17 2022 (serrano)                */
+;*    Last change :  Sat Aug 27 18:45:15 2022 (serrano)                */
 ;*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -38,9 +38,13 @@
 (define (expand-g2 x e op)
    
    (define (fx id)
-      (if (and *arithmetic-overflow* (memq id '(+ - / *)))
-	  (symbol-append id 'fx-safe)
-	  (symbol-append id 'fx)))
+      (cond
+	 ((and *arithmetic-overflow* *arithmetic-new-overflow* (memq id '(+ - *)))
+	  (symbol-append id 'fx/ov))
+	 ((and *arithmetic-overflow* (memq id '(+ - / *)))
+	  (symbol-append id 'fx-safe))
+	 (else
+	  (symbol-append id 'fx))))
 
    (match-case x
       ((?id (? expand-g-number?) (expand-g-number? y))

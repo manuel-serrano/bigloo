@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul 19 19:12:50 2022 (serrano)                */
+;*    Last change :  Mon Aug 22 09:03:06 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -38,184 +38,17 @@
 	    saw_bbv-config
 	    saw_bbv-cost)
 
-   (export (bbv-function::blockS ::blockV ::bbv-ctx)))
+   (export (bbv-block::blockS ::blockV ::bbv-ctx)))
 
 ;*---------------------------------------------------------------------*/
-;*    *ws* ...                                                         */
-;*    -------------------------------------------------------------    */
-;*    BBV working set.                                                 */
+;*    configuration                                                    */
 ;*---------------------------------------------------------------------*/
-(define *ws* '())
+(define *max-block-version* 3)
 
-;*---------------------------------------------------------------------*/
-;*    ws-add! ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (ws-add! b::blockV ctx::bbv-ctx cost::long stack::pair-nil pred::blockS anchor::blockS)
-   (with-trace 'bbv (format "ws-add! ~s" (block-label b))
-      (let ((bucket (assq b *ws*))
-	    (e (instantiate::bbv-wsentry
-		  (ctx ctx)
-		  (stack stack)
-		  (block pred)
-		  (anchor anchor))))
-	 (if (pair? bucket)
-	     (set-cdr! bucket (cons e (cdr bucket)))
-	     (set! *ws* (cons (cons b (list e)) *ws*)))
-	 *ws*)))
-
-;*---------------------------------------------------------------------*/
-;*    bbv-function ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (bbv-function b::blockV ctx::bbv-ctx)
-   
-   (define (same-wsentry? x::bbv-wsentry y::bbv-wsentry)
-      ;; are two working set entries similar?
-      (and (eq? (bbv-wsentry-block x) (bbv-wsentry-block y))
-	   (equal? (bbv-ctx-entries (bbv-wsentry-ctx x))
-	      (bbv-ctx-entries (bbv-wsentry-ctx y)))))
-   
-   (define (find-same-wsentries e::bbv-wsentry lst::pair-nil)
-      ;; in lst, find entries similar to e, i.e., same block, same ctx
-      (let loop ((lst lst)
-		 (sames (list e))
-		 (others '()))
-	 (cond
-	    ((null? lst)
-	     (values sames others))
-	    ((same-wsentry? e (car lst))
-	     (loop (cdr lst) (cons (car lst) sames) others))
-	    (else
-	     (loop (cdr lst) sames (cons (car lst) others))))))
-   
-   (define (merge-wsentries sames)
-      ;; merge same wsentries
-      (let ((e (car sames)))
-	 (when (pair? (cdr sames))
-	    (bbv-ctx-cost-set! (bbv-wsentry-ctx e)
-	       (apply *merge-ctx-costs*
-		  (map (lambda (f)
-			  (bbv-ctx-cost (bbv-wsentry-ctx f)))
-		     sames))))
-	 e))
-   
-   (define (merge-same-wsentries! ws)
-      ;; for each block in ws, merge all its specialization
-      ;; contexts that only differ by their cost
-      (for-each (lambda (bucket)
-		   (let loop ((oldes (cdr bucket))
-			      (newes '()))
-		      (cond
-			 ((null? oldes)
-			  (set-cdr! bucket newes))
-			 ((null? (cdr oldes))
-			  (set-cdr! bucket (append oldes newes)))
-			 (else
-			  (multiple-value-bind (sames others)
-			     (find-same-wsentries (car oldes) (cdr oldes))
-			     (loop others
-				(cons (merge-wsentries sames) newes)))))))
-	 ws)
-      ws)
-
-   (define (bbv-ctx-most-general? ctx)
-      (with-access::bbv-ctx ctx (entries)
-	 (every (lambda (e)
-		   (with-access::bbv-ctxentry e (types polarity)
-		      (and polarity
-			   (pair? types)
-			   (null? (cdr types))
-			   (eq? (car types) *obj*) )))
-	    entries)))
-   
-   (define (merge-block-versions! b::blockV es::pair-nil lvs num)
-      (with-access::blockV b (versions)
-	 (let* ((allctx (append (map bbv-wsentry-ctx es) (map car lvs)))
-		(sortctx (sort (lambda (cx cy)
-				  (>= (bbv-ctx-cost cx) (bbv-ctx-cost cy)))
-			    allctx))
-		(remctx (take sortctx (-fx (+fx 1 num) *max-block-versions*)))
-		(mctx (find bbv-ctx-most-general? allctx)))
-	    (if mctx
-		;; the most general version has already been requested
-		;; we then have to merge the N other max versions into that one
-		(set! remctx (remq! mctx remctx))
-		;; the most general version is not there, merge the most
-		;; costly versions
-		(set! mctx (merge-contexts remctx))) 
-	    ;; generate the general version
-	    (let ((mb (bbv-block b mctx
-			 (bbv-ctx-cost mctx)
-			 '()
-			 (instantiate::blockS))))
-	       ;; patch all the removed block versions
-	       (for-each (lambda (ctx)
-			    (let ((v (assoc ctx versions)))
-			       (when (pair? v)
-				  (let ((b (cdr v)))
-				     (with-access::blockS b (mblock)
-					(unless (eq? b mb)
-					   (set! mblock mb))
-					(replace-block! b mb))))))
-		  remctx)
-	       (filter (lambda (e)
-			  (when (memq (bbv-wsentry-ctx e) remctx)
-			     ;; this specialized versions is removed
-			     ;; create a dummy specialized version that
-			     ;; points to the merge block
-			     (let ((nb (instantiate::blockS
-					  (parent b)
-					  (label (genlabel))
-					  (first '())
-					  (mblock mb))))
-				(set! versions
-				   (cons (cons (bbv-wsentry-ctx e) nb)
-				      versions)))
-			     (redirect-block! (bbv-wsentry-block e)
-				(bbv-wsentry-anchor e) mb)))
-		  es)))))
-   
-   (define (generate-block b::blockV es::pair-nil)
-      (with-access::blockV b (versions)
-	 (let* ((lvs (live-versions versions))
-		(num (+fx (length es) (length lvs))))
-	    (when (>fx num *max-block-versions*)
-	       ;; too many versions, merge the most expensive ones
-	       (set! es (merge-block-versions! b es lvs num)))
-	    ;; add the remaining specialized versions
-	    (for-each (lambda (e)
-			 (let* ((ctx (bbv-wsentry-ctx e))
-				(nb (bbv-block b ctx
-				       (bbv-ctx-cost ctx)
-				       '()
-				       (bbv-wsentry-block e))))
-			    (redirect-block! (bbv-wsentry-block e)
-			       (bbv-wsentry-anchor e) nb)))
-	       es))))
-
-   (with-trace 'bbv "bbv-function"
-      (let* ((anchor (instantiate::blockS
-			(label -1)
-			(first '())))
-	     (dummy (instantiate::blockS
-		       (label -2)
-		       (first '())
-		       (succs (list anchor)))))
-	 (let loop ((ws (ws-add! b ctx 0 '() dummy anchor)))
-	    (trace-item "ws=" (map (lambda (b) (block-label (car b))) ws))
-	    (set! *ws* '())
-	    (merge-same-wsentries! ws)
-	    (for-each (lambda (bucket)
-			 (generate-block (car bucket) (cdr bucket)))
-	       ws)
-	    (when (pair? *ws*)
-	       (loop *ws*)))
-	 (with-access::blockS dummy (succs)
-	    (car succs)))))
-   
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block::blockS b::blockV ctx::bbv-ctx cost::long stack::pair-nil cur::blockS)
+(define (bbv-block::blockS b::blockV ctx::bbv-ctx)
 
    (define (find-block-version ctx::bbv-ctx versions::pair-nil)
       (let ((c (assoc ctx versions)))
@@ -228,9 +61,23 @@
 	     (live-block mblock)
 	     b)))
 
-   (define (specialize::blockS b::blockV ctx::bbv-ctx cost::long stack)
+   (define (collapse-block!::blockS b::blockV ctx::bbv-ctx)
       (with-access::blockV b (first label succs versions)
-	 (with-trace 'bbv-specialize (format "specialize-block! ~a" label)
+	 (with-trace 'bbv-block (format "collapse-block! ~a" label)
+	    (let* ((gctx (with-access::bbv-ctx ctx (entries)
+			    (params->ctx
+			       (map (lambda (e)
+				       (with-access::bbv-ctxentry e (reg)
+					  reg))
+				  entries))))
+		   (ob (find-block-version gctx versions)))
+	       (if ob
+		   (live-block ob)
+		   (specialize-block! b gctx))))))
+
+   (define (specialize-block!::blockS b::blockV ctx::bbv-ctx)
+      (with-access::blockV b (first label succs versions)
+	 (with-trace 'bbv-block (format "specialize-block! ~a" label)
 	    (let* ((lbl (genlabel))
 		   (sb (instantiate::blockS
 			  (parent b)
@@ -239,13 +86,13 @@
 	       (set! versions (cons (cons ctx sb) versions))
 	       (trace-item "new-label=" lbl)
 	       (trace-item "ctx=" (shape ctx))
-	       (let ((nfirst (bbv-ins first sb ctx cost (cons b stack) sb)))
+	       (let ((nfirst (bbv-ins first sb ctx)))
 		  (with-access::blockS sb (first succs)
 		     (set! first nfirst)
 		     sb))))))
-   
+      
    (with-access::blockV b (label versions succs preds first merge)
-      (with-trace 'bbv (format "bbv-block ~a" label)
+      (with-trace 'bbv-block (format "bbv-block ~a" label)
 	 (let* ((ctx (bbv-ctx-filter-live-in-regs ctx (car first)))
 		(lvs (live-versions versions)))
 	    (trace-item "succs=" (map block-label succs))
@@ -255,23 +102,15 @@
 	       (map ctx->string (map car lvs)))
 	    (let ((ob (find-block-version ctx versions)))
 	       (trace-item "old=" (when ob (block-label ob)))
-	       (trace-item "stack=" (map block-label stack))
 	       (cond
-		  (ob
-		   (live-block ob))
-		  ((memq b stack)
-		   (let ((anchor (instantiate::blockS
-				    (parent b)
-				    (label (genlabel))
-				    (first '()))))
-		      (ws-add! b ctx cost stack cur anchor)
-		      anchor))
-		  (else (specialize b ctx cost stack))))))))
+		  (ob (live-block ob))
+		  ((>fx (length lvs) *max-block-version*) (collapse-block! b ctx))
+		  (else (specialize-block! b ctx))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ins ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (bbv-ins first sb::blockS ctx::bbv-ctx cost::long stack::pair cur)
+(define (bbv-ins first sb::blockS ctx::bbv-ctx)
    
    (define (connect! s::blockS ins::rtl_ins)
       (cond
@@ -291,8 +130,7 @@
    (with-trace 'bbv-ins (format "bbv-ins")
       (let loop ((oins first)
 		 (nins '())
-		 (ctx ctx)
-		 (cost cost))
+		 (ctx ctx))
 	 (when (pair? oins)
 	    (trace-item "ins=" (shape (car oins)) " " (length (cdr oins)))
 	    (trace-item "ctx=" (shape ctx)))
@@ -304,77 +142,64 @@
 	     (lambda (specialize)
 		;; instruction specialization
 		(multiple-value-bind (ins nctx)
-		   (specialize (car oins) ctx cost stack cur)
+		   (specialize (car oins) ctx)
 		   (with-access::rtl_ins ins (args)
 		      (set! args (map (lambda (i)
 					 (if (isa? i rtl_ins)
-					     (car (bbv-ins (list i) sb
-						     ctx
-						     (+fx cost (rtl_ins-cost i))
-						     stack cur))
+					     (car (bbv-ins (list i) sb ctx))
 					     i))
 				    args))
-		      (let ((ctx (bbv-ctx-extend-live-out-regs nctx (car oins)))
-			    (cost (+fx cost (rtl_ins-cost ins))))
+		      (let ((ctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
 			 (cond
 			    ((rtl_ins-br? ins)
 			     (connect! sb ins)
-			     (loop (cdr oins) (cons ins nins) ctx cost))
+			     (loop (cdr oins) (cons ins nins) ctx))
 			    ((rtl_ins-go? ins)
 			     (connect! sb ins)
-			     (loop '() (cons ins nins) ctx cost))
+			     (loop '() (cons ins nins) ctx))
 			    (else
-			     (loop (cdr oins) (cons ins nins) ctx cost))))))))
+			     (loop (cdr oins) (cons ins nins) ctx))))))))
 	    ((rtl_ins-last? (car oins))
 	     ;; a return, fail, ...
 	     (with-access::rtl_ins (car oins) (args)
 		(let ((args (map (lambda (i)
 				    (if (isa? i rtl_ins)
-					(car (bbv-ins (list i) sb
-						ctx
-						(+fx cost (rtl_ins-cost i))
-						     stack cur))
+					(car (bbv-ins (list i) sb ctx))
 					i))
 			       args)))
 		   (loop '()
 		      (cons (duplicate-ins/args (car oins) args ctx) nins)
-		      ctx
-		      (+fx cost (rtl_ins-cost (car oins)))))))
+		      ctx))))
 	    ((rtl_ins-go? (car oins))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_go fun (to)
-		   (let* ((n (bbv-block to ctx cost stack cur))
+		   (let* ((n (bbv-block to ctx))
 			  (ins (duplicate::rtl_ins/bbv (car oins)
 				  (ctx ctx)
 				  (fun (duplicate::rtl_go fun
 					  (to n))))))
 		      (connect! sb ins)
-		      (loop '() (cons ins nins) ctx
-			 (+fx cost (rtl_ins-cost (car oins))))))))
+		      (loop '() (cons ins nins) ctx)))))
 	    ((rtl_ins-ifne? (car oins))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_ifne fun (then)
-		   (let* ((n (bbv-block then ctx cost stack cur))
+		   (let* ((n (bbv-block then ctx))
 			  (ins (duplicate::rtl_ins/bbv (car oins)
 				  (ctx ctx)
 				  (fun (duplicate::rtl_ifne fun
 					  (then n))))))
 		      (connect! sb ins)
-		      (loop (cdr oins) (cons ins nins) ctx
-			 (+fx cost (rtl_ins-cost (car oins))))))))
+		      (loop (cdr oins) (cons ins nins) ctx)))))
 	    (else
 	     (with-access::rtl_ins (car oins) (args)
 		(let ((args (map (lambda (i)
 				    (if (isa? i rtl_ins)
-					(car (bbv-ins (list i) sb ctx
-						(+fx cost (rtl_ins-cost i))
-						stack cur))
+					(car (bbv-ins (list i) sb ctx))
 					i))
 			       args)))
 		   (loop (cdr oins)
 		      (cons (duplicate-ins/args (car oins) args ctx) nins)
-		      (bbv-ctx-extend-live-out-regs ctx (car oins))
-		      (+fx cost (rtl_ins-cost (car oins)))))))))))
+		      (bbv-ctx-extend-live-out-regs ctx (car oins))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    duplicate-ins/args ...                                           */
@@ -421,7 +246,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-typecheck ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-typecheck i::rtl_ins ctx cost stack cur)
+(define (rtl_ins-specialize-typecheck i::rtl_ins ctx)
 
    (define (min-value x y)
       (cond
@@ -452,7 +277,7 @@
 			    (let ((s (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(fun (instantiate::rtl_go
-						(to (bbv-block then pctx cost stack cur))))
+						(to (bbv-block then pctx))))
 					(dest #f)
 					(args '()))))
 			       ;; the next ctx will be ignored...
@@ -481,7 +306,7 @@
 				   (s (duplicate::rtl_ins/bbv i
 					 (ctx ctx)
 					 (fun (duplicate::rtl_ifne fun
-						 (then (bbv-block then pctx cost stack cur)))))))
+						 (then (bbv-block then pctx)))))))
 			       (values s nctx))))))
 		  (else
 		   (error "rtl_ins-specialize-typecheck"
@@ -515,7 +340,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-mov ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-mov i::rtl_ins ctx cost stack cur)
+(define (rtl_ins-specialize-mov i::rtl_ins ctx)
    (with-trace 'bbv-ins "rtl_ins-specialize-mov"
       (with-access::rtl_ins i (dest args fun)
 	 (let ((ctx (unalias-ctx ctx dest)))
@@ -556,7 +381,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadi ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-loadi i::rtl_ins ctx cost stack cur)
+(define (rtl_ins-specialize-loadi i::rtl_ins ctx)
    (with-trace 'bbv-ins "rtl_ins-specialize-loadi"
       (with-access::rtl_ins i (dest args fun)
 	 (with-access::rtl_loadi fun (constant)
@@ -579,7 +404,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-call ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-call i::rtl_ins ctx cost stack cur)
+(define (rtl_ins-specialize-call i::rtl_ins ctx)
    
    (define (new-value i)
       (with-access::rtl_ins i (dest fun args)
@@ -615,7 +440,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-return ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-return i::rtl_ins ctx cost stack cur)
+(define (rtl_ins-specialize-return i::rtl_ins ctx)
    (with-access::rtl_ins i (args dest)
       (let ((e (bbv-ctx-get ctx (car args))))
 	 (with-access::bbv-ctxentry e (types value)
@@ -661,7 +486,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxcmp ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxcmp i::rtl_ins ctx::bbv-ctx cost stack cur)
+(define (rtl_ins-specialize-fxcmp i::rtl_ins ctx::bbv-ctx)
    
    (define (true)
       (instantiate::rtl_loadi
@@ -831,7 +656,7 @@
 		      ((rtl_ins-true? ins)
 		       (with-access::rtl_ifne fun (then)
 			  (let* ((fun (duplicate::rtl_go fun
-					 (to (bbv-block then ctx cost stack cur))))
+					 (to (bbv-block then ctx))))
 				 (ni (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(args '())
@@ -849,7 +674,7 @@
 			     (values ni nctx))))
 		      (else
 		       (let ((fun (duplicate::rtl_ifne fun
-				     (then (bbv-block then pctx cost stack cur)))))
+				     (then (bbv-block then pctx)))))
 			  (values (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
 				     (args (list ins))
@@ -896,7 +721,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxop ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxop i::rtl_ins ctx cost stack cur)
+(define (rtl_ins-specialize-fxop i::rtl_ins ctx)
    
    (define (fx-safe->fx var i ctx nctx)
       (with-access::rtl_ins i (dest fun args)

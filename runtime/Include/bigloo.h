@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Aug 20 10:07:39 2022 (serrano)                */
+/*    Last change :  Sun Aug 21 08:15:50 2022 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -337,7 +337,7 @@ error "Unknown garbage collector type"
 #define CREFSLOW(r) BGL_CPTR((obj_t)((unsigned long)r & ~(TAG_MASK)))
 #define CREF(r) BGL_CPTR((obj_t)((long)r - TAG_POINTER))
 
-#if (defined(TAG_RESERVED)
+#if defined(TAG_RESERVED)
 #  define BGL_RESERVEDP(o) \
      ((((long)BGL_CPTR(o)) & TAG_MASK) == TAG_RESERVED)
 #  define BRESERVED(r) BGL_BPTR((obj_t)((long)r + TAG_RESERVED))
@@ -372,12 +372,9 @@ error "Unknown garbage collector type"
 #define HEADER_SIZE_BIT_SIZE 16
 #define SIZE_MASK ((1 << HEADER_SIZE_BIT_SIZE) - 1)
 #define TYPE_SHIFT (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE)
-#define BGL_AAA_SHIFT HEADER_SHIFT 
 
 #define MAKE_HEADER(_i, _sz) \
    ((header_t)((((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT)))
-#define BGL_MAKE_HEADER_AAA(_i, _sz, _aaa) \
-   ((header_t)(MAKE_HEADER(_i, _sz) | _aaa))
 
 #if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
 #  define HEADER_TYPE_BIT_SIZE 20
@@ -393,7 +390,6 @@ error "Unknown garbage collector type"
 #endif
 
 #define HEADER_SIZE(_h) (((_h) >> HEADER_SHIFT) & SIZE_MASK)
-#define HEADER_AAASIZE(_h) (((_h) ) & ((SIZE_MASK << HEADER_SHIFT) | 0x7))
 
 #define TYPE(_o) HEADER_TYPE(CREF(_o)->header)
        

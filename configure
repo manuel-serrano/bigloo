@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Aug 20 16:47:43 2022 (serrano)                */
+#*    Last change :  Sun Aug 21 10:46:11 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -523,7 +523,7 @@ while : ; do
       bee="full";
       havebdb=1;
       pthreadlocalstorage=;
-      bglreservedtagging=1;
+      bglreservedtagging=0;
       action="all";;
 
     --bootdir=*)
