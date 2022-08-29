@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Aug 27 18:45:48 2022 (serrano)                */
+;*    Last change :  Mon Aug 29 09:13:33 2022 (serrano)                */
 ;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -817,7 +817,7 @@
 (define *alloc-shape?* #f)
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
-(define *arithmetic-new-overflow* #f)
+(define *arithmetic-new-overflow* #t)
 (param-define *shared-cnst?*
    "Shared constant compilation?"
    #t)

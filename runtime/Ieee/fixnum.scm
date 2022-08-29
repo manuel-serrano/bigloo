@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sat Aug 27 16:55:25 2022 (serrano)                */
+;*    Last change :  Mon Aug 29 09:03:50 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -143,9 +143,9 @@
 	   (macro c-evenfx?::bool (::long) "EVENP_FX")
 	   (macro c-oddfx?::bool (::long) "ODDP_FX")
 	   (infix macro c-+fx::long (::long ::long) "+")
-	   (macro $+fx/ov::bool (::bint ::bint ::bint) "BGL_ADDFX_OV")
-	   (macro $-fx/ov::bool (::bint ::bint ::bint) "BGL_SUBFX_OV")
-	   (macro $*fx/ov::bool (::bint ::bint ::bint) "BGL_MULFX_OV")
+	   (macro $+fx/ov::bool (::long ::long ::long) "BGL_ADDFX_OV")
+	   (macro $-fx/ov::bool (::long ::long ::long) "BGL_SUBFX_OV")
+	   (macro $*fx/ov::bool (::long ::long ::long) "BGL_MULFX_OV")
 	   (infix macro c-+elong::elong (::elong ::elong) "+")
 	   (infix macro c-+llong::llong (::llong ::llong) "+")
 	   (infix macro $+s8::int8 (::int8 ::int8) "+")
@@ -1864,7 +1864,7 @@
 (define-inline (+bx z1 z2) ($+bx z1 z2))
 
 (define-inline (+fx/ov z1 z2)
-   ($let ((res::bint 0))
+   ($let ((res::long 0))
       (if ($+fx/ov z1 z2 res)
 	  (+bx (fixnum->bignum z1) (fixnum->bignum z2))
 	  res)))
@@ -1892,7 +1892,7 @@
 (define-inline (-bx z1 z2) ($-bx z1 z2))
 
 (define-inline (-fx/ov z1 z2)
-   ($let ((res::bint 0))
+   ($let ((res::long 0))
       (if ($-fx/ov z1 z2 res)
 	  (-bx (fixnum->bignum z1) (fixnum->bignum z2))
 	  res)))
@@ -1920,7 +1920,7 @@
 (define-inline (*bx z1 z2) ($*bx z1 z2))
 
 (define-inline (*fx/ov z1 z2)
-   ($let ((res::bint 0))
+   ($let ((res::long 0))
       (if ($*fx/ov z1 z2 res)
 	  (*bx (fixnum->bignum z1) (fixnum->bignum z2))
 	  res)))
