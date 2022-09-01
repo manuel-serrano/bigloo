@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Aug 27 18:47:20 2022 (serrano)                */
+;*    Last change :  Thu Sep  1 14:10:18 2022 (serrano)                */
 ;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -123,9 +123,11 @@
       ;; we start the trace if the level is > 0
       (when (>fx *trace-level* 0)
 	 (let ((passes (trace get-pass-names)))
-	    (if (memq *pass* passes)
-		(start-trace *trace-level* *pass*)
-		(warning "parse-args" "No trace for this pass -- " *pass*))
+	    (cond
+	       ((memq *pass* passes)
+		(start-trace *trace-level* *pass*))
+	       ((not (eq? *pass* 'ld))
+		(warning "parse-args" "No trace for this pass -- " *pass*)))
 	    (for-each (lambda (pass)
 			 (if (not (memq pass passes))
 			     (warning "parse-args"

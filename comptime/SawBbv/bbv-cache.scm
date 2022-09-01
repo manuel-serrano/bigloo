@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Mon Jul 18 11:44:17 2022 (serrano)                */
+;*    Last change :  Mon Aug 29 17:49:22 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -22,7 +22,8 @@
    (export  (start-bbv-cache!)
 	    (stop-bbv-cache!)
 	    *<fx* *<=fx* *>=fx* *>fx* *=fx* *-fx* *+fx*
-	    *-fx-safe* *+fx-safe*
+            *-fx-safe* *+fx-safe*
+            *$-fx/ov* *$+fx/ov* *$*fx/ov* 
 	    *<fl* *<=fl* *>=fl* *>fl* *=fl* *-fl* *+fl*
 	    *2-*
 	    *2+*
@@ -43,8 +44,14 @@
 (define *=fx* #f)
 (define *-fx* #f)
 (define *+fx* #f)
+
 (define *-fx-safe* #f)
 (define *+fx-safe* #f)
+
+(define *$-fx/ov* #f)
+(define *$+fx/ov* #f)
+(define *$*fx/ov* #f)
+
 (define *<fl* #f)
 (define *<=fl* #f)
 (define *>=fl* #f)
@@ -52,8 +59,10 @@
 (define *=fl* #f)
 (define *-fl* #f)
 (define *+fl* #f)
+
 (define *2-* #f)
 (define *2+* #f)
+
 (define *int->long* #f)
 (define *bint->long* #f)
 (define *long->bint* #f)
@@ -75,6 +84,9 @@
       (set! *+fx* (get-global/module 'c-+fx 'foreign))
       (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
       (set! *+fx-safe* (get-global/module '+fx-safe 'foreign))
+      (set! *$-fx/ov* (get-global/module '$-fx/ov 'foreign))
+      (set! *$+fx/ov* (get-global/module '$+fx/ov 'foreign))
+      (set! *$*fx/ov* (get-global/module '$*fx/ov 'foreign))
       (set! *<fl* (get-global/module 'c-<fl 'foreign))
       (set! *<=fl* (get-global/module 'c-<=fl 'foreign))
       (set! *>fl* (get-global/module 'c->fl 'foreign))
@@ -101,8 +113,14 @@
    (set! *=fx* #f)
    (set! *-fx* #f)
    (set! *+fx* #f)
+   
    (set! *-fx-safe* #f)
    (set! *+fx-safe* #f)
+   
+   (set! *$-fx/ov* #f)
+   (set! *$+fx/ov* #f)
+   (set! *$*fx/ov* #f)
+
    (set! *<fl* #f)
    (set! *<=fl* #f)
    (set! *>fl* #f)

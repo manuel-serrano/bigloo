@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Jul 19 07:17:17 2022 (serrano)                */
+#*    Last change :  Thu Sep  1 14:13:39 2022 (serrano)                */
 #*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -234,11 +234,15 @@ BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 #*--- SawMill ---------------------------------------------------------*/
 SAW_FILE        = lib defs rtl node2rtl collapse remove inlinereturn \
 		  blockorder gotos cast expr woodcutter \
-		  procedures elsewhere regalloc regset regutils \
-                  bbv bbv-types bbv-specialize bbv-cache bbv-utils \
-                  bbv-range bbv-merge bbv-cost bbv-config
+		  procedures elsewhere regalloc regset regutils
 
 SAW_OBJ		= $(SAW_FILE:%=SawMill/%.o)
+
+#*--- SawBbv ----------------------------------------------------------*/
+SAW_BBV_FILE    = bbv bbv-types bbv-specialize bbv-cache bbv-utils \
+                  bbv-range bbv-merge bbv-cost bbv-config
+
+SAW_BBV_OBJ	= $(SAW_BBV_FILE:%=SawBbv/%.o)
 
 #*--- SawC ------------------------------------------------------------*/
 SAW_C_FILE      = compile code
@@ -352,8 +356,8 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  $(STACKABLE_OBJ) $(UNCELL_OBJ) $(LIVENESS_OBJ)
+                  $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) $(ISA_OBJ) \
+                  $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) $(LIVENESS_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
@@ -403,8 +407,9 @@ POPULATION	= $(SOURCE_FILES) \
                   SawMill/defs.sch SawMill/regalloc.sch SawMill/node2rtl.sch \
                   SawMill/collapse.sch SawMill/remove.sch \
                   SawMill/inlinereturn.sch SawMill/blockorder.sch \
-                  SawMill/expr.sch SawMill/regset.sch SawMill/bbv-types.sch \
-                  SawMill/bbv-interval.sch SawMill/bbset.sch SawC/code.sch \
+                  SawMill/expr.sch SawMill/regset.sch SawMill/bbset.sch \
+                  SawBbv/bbv-types.sch SawBbv/bbv-interval.sch \
+                  SawC/code.sch \
                   SawJvm/funcall.sch SawJvm/code.sch SawJvm/names.sch \
                   Makefile
 

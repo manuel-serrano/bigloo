@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Aug 22 09:01:04 2022 (serrano)                */
+;*    Last change :  Thu Sep  1 14:12:56 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -69,7 +69,7 @@
 	     (when (>=fx *trace-level* 2)
 		(dump-blocks global params blocks ".goto.cfg"))
 	     (let ((blocks (normalize-ifeq! (car blocks))))
-		(when (>=fx *trace-level* 1)
+		(when (>=fx *trace-level* 2)
 		   (dump-blocks global params blocks ".ifeq.cfg"))
 		(let ((regs (liveness! back blocks params)))
 		   ;; liveness also widen each block into a blockV

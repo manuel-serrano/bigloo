@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-merge.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-merge.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Mon Aug 22 20:20:38 2022 (serrano)                */
+;*    Last change :  Thu Sep  1 14:28:30 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -15,8 +15,8 @@
 (module saw_bbv-merge
    
    (include "Tools/trace.sch"
-	    "SawMill/bbv-types.sch"
-	    "SawMill/regset.sch")
+	    "SawMill/regset.sch"
+	    "SawBbv/bbv-types.sch")
    
    (import  engine_param
 	    ast_var
@@ -33,9 +33,12 @@
 	    saw_bbv-utils
 	    saw_bbv-range
 	    saw_bbv-cost
-	    saw_bbv-config)
+	    saw_bbv-config
+	    saw_bbv-specialize
+	    saw_bbv-range)
 
    (export  (mark-widener! ::blockV)
+	    (block-merge-contexts! ::blockV)
 	    (merge-contexts ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -57,6 +60,70 @@
 			((memq n stack) (set! merge #t))
 			(else (loop n (cons block stack))))
 		     (liip (cdr succs)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    block-merge-contexts! ...                                        */
+;*    -------------------------------------------------------------    */
+;*    b is a merge block (i.e., in a loop) and the number of           */
+;*    specialized version has exceeded the maximum threshold, some     */
+;*    versions have to be collapsed and widened.                       */
+;*---------------------------------------------------------------------*/
+(define (block-merge-contexts! b::blockV)
+
+   (define (list-replace::pair-nil lst::pair-nil old new)
+      ;; return a copy of lst when old has been replaced with new
+      (let loop ((lst lst))
+	 (cond
+	    ((null? lst) lst)
+	    ((eq? (car lst) old) (cons new (loop (cdr lst))))
+	    (else (cons (car lst) (loop (cdr lst)))))))
+	 
+   (define (merge-singletons! versions::pair)
+      (with-trace 'bbv-merge "merge-singletons!"
+	 ;; merge singletons into intervals:
+	 ;; (((x (0 . 0)) (y obj))
+	 ;;  ((x (1 . 1)) (y obj))
+	 ;;  ((x (2 . 2)) (y obj)))
+	 ;; => ((x (0 . 3)) (y obj))
+	 (with-access::bbv-ctx (caar versions) (entries)
+	    ;; collect the min and max of singleton ranges
+	    (for-each (lambda (e::bbv-ctxentry)
+			 (let ((i (bbv-max-fixnum))
+			       (a (bbv-min-fixnum)))
+			    (with-access::bbv-ctxentry e (reg)
+			       (for-each (lambda (v::pair)
+					    (let* ((octx (car v))
+						   (olde (bbv-ctx-get octx reg)))
+					       (with-access::bbv-ctxentry olde (polarity value)
+						  (when (and polarity (bbv-singleton? value))
+						     (with-access::bbv-range value (min max)
+							(when (<fx min i) (set! i min))
+							(when (>fx max a) (set! a max)))))))
+				  versions)
+			       (when (and (>fx a i) (>fx a (+fx i 1)))
+				  ;; an interval spaning over all values has been found
+				  (trace-item "new-range [" i ".." a "]")
+				  (tprint "===== [" i ".." a "]")
+				  (let ((range (instantiate::bbv-range
+						  (min i)
+						  (max a))))
+				     (for-each (lambda (v::pair)
+						  (let* ((octx (car v))
+							 (oblock (cdr v))
+							 (olde (bbv-ctx-get octx reg))
+							 (newe (duplicate::bbv-ctxentry olde
+								  (value range)))
+							 (nctx (instantiate::bbv-ctx
+								  (entries (list-replace octx olde newe))))
+							 (nblock (bbv-block-specialize! b nctx)))
+						     (replace-block! oblock nblock)))
+					versions))))))
+	       entries))))
+   
+   (with-access::blockV b (versions label)
+      (with-trace 'bbv-merge (format "block-merge-contexts! ~a" label)
+	 ;; step1: reduce singleton approximation into intervals
+	 (merge-singletons! versions))))
 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    block-merge-contexts ...                                         *} */

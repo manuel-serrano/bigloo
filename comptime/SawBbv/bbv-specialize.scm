@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../bigloo/bigloo/comptime/SawMill/bbv-specialize.scm            */
+;*    .../project/bigloo/bigloo/comptime/SawBbv/bbv-specialize.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Aug 22 09:03:06 2022 (serrano)                */
+;*    Last change :  Thu Sep  1 14:18:22 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -16,7 +16,7 @@
    
    (include "Tools/trace.sch"
 	    "SawMill/regset.sch"
-	    "SawMill/bbv-types.sch")
+	    "SawBbv/bbv-types.sch")
    
    (import  engine_param
 	    ast_var
@@ -38,7 +38,8 @@
 	    saw_bbv-config
 	    saw_bbv-cost)
 
-   (export (bbv-block::blockS ::blockV ::bbv-ctx)))
+   (export (bbv-block::blockS ::blockV ::bbv-ctx)
+	   (bbv-block-specialize!::blockS ::blockV ::bbv-ctx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    configuration                                                    */
@@ -48,64 +49,78 @@
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block::blockS b::blockV ctx::bbv-ctx)
-
-   (define (find-block-version ctx::bbv-ctx versions::pair-nil)
-      (let ((c (assoc ctx versions)))
-	 (when (pair? c)
-	    (cdr c))))
-
-   (define (live-block b::blockS)
-      (with-access::blockS b (mblock)
-	 (if mblock
-	     (live-block mblock)
-	     b)))
-
-   (define (collapse-block!::blockS b::blockV ctx::bbv-ctx)
-      (with-access::blockV b (first label succs versions)
-	 (with-trace 'bbv-block (format "collapse-block! ~a" label)
-	    (let* ((gctx (with-access::bbv-ctx ctx (entries)
-			    (params->ctx
-			       (map (lambda (e)
-				       (with-access::bbv-ctxentry e (reg)
-					  reg))
-				  entries))))
-		   (ob (find-block-version gctx versions)))
-	       (if ob
-		   (live-block ob)
-		   (specialize-block! b gctx))))))
-
-   (define (specialize-block!::blockS b::blockV ctx::bbv-ctx)
-      (with-access::blockV b (first label succs versions)
-	 (with-trace 'bbv-block (format "specialize-block! ~a" label)
-	    (let* ((lbl (genlabel))
-		   (sb (instantiate::blockS
-			  (parent b)
-			  (label lbl)
-			  (first '()))))
-	       (set! versions (cons (cons ctx sb) versions))
-	       (trace-item "new-label=" lbl)
-	       (trace-item "ctx=" (shape ctx))
-	       (let ((nfirst (bbv-ins first sb ctx)))
-		  (with-access::blockS sb (first succs)
-		     (set! first nfirst)
-		     sb))))))
-      
-   (with-access::blockV b (label versions succs preds first merge)
+(define (bbv-block::blockS bv::blockV ctx::bbv-ctx)
+   
+   (define (generic-block bv::blockV)
+      ;; generate the most generic version (i.e., all variables are
+      ;; approximated with obj type) 
+      (let ((gctx (with-access::bbv-ctx ctx (entries)
+		     (params->ctx
+			(map (lambda (e)
+				(with-access::bbv-ctxentry e (reg)
+				   reg))
+			   entries)))))
+	 (bbv-block-specialize! bv gctx)))
+   
+   (with-access::blockV bv (label versions succs preds first merge)
       (with-trace 'bbv-block (format "bbv-block ~a" label)
-	 (let* ((ctx (bbv-ctx-filter-live-in-regs ctx (car first)))
-		(lvs (live-versions versions)))
+	 (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
 	    (trace-item "succs=" (map block-label succs))
 	    (trace-item "preds=" (map block-label preds))
 	    (trace-item "ctx=" (shape ctx))
-	    (trace-item "versions= " (length lvs) "/" (length versions) " "
-	       (map ctx->string (map car lvs)))
+	    (trace-item "versions=" (map ctx->string (map car (live-versions versions))))
+	    (let* ((bs (bbv-block-specialize! bv ctx))
+		   (lvs (live-versions versions)))
+	       (trace-item "nversions= " (length lvs) "/" (length versions) " "
+		  (map ctx->string (map car lvs)))
+	       (if (and merge (>fx (length lvs) *max-block-version*))
+		   (begin
+		      (block-merge-contexts! bv)
+		      (live-block bs))
+		   bs))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-specialize! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-specialize!::blockS b::blockV ctx::bbv-ctx)
+
+   (define (find-block-version ctx::bbv-ctx versions::pair-nil)
+      (let ((c (bbv-ctx-assoc ctx versions)))
+	 (when (pair? c)
+	    (cdr c))))
+   
+   (define (block-specialize!::blockS b::blockV ctx::bbv-ctx)
+      (with-access::blockV b (first label succs versions)
+	 (let* ((lbl (genlabel))
+		(sb (instantiate::blockS
+		       (parent b)
+		       (label lbl)
+		       (first '()))))
+	    (set! versions (cons (cons ctx sb) versions))
+	    (trace-item "new-label=" lbl)
+	    (let ((nfirst (bbv-ins first sb ctx)))
+	       (with-access::blockS sb (first succs)
+		  (set! first nfirst)
+		  sb)))))
+   
+   (with-access::blockV b (label versions succs preds first merge)
+      (with-trace 'bbv-block (format "bbv-block-specialize! ~a" label)
+	 (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
+	    (trace-item "ctx=" (shape ctx))
 	    (let ((ob (find-block-version ctx versions)))
 	       (trace-item "old=" (when ob (block-label ob)))
-	       (cond
-		  (ob (live-block ob))
-		  ((>fx (length lvs) *max-block-version*) (collapse-block! b ctx))
-		  (else (specialize-block! b ctx))))))))
+	       (if ob
+		   (live-block ob)
+		   (block-specialize! b ctx)))))))
+
+;*---------------------------------------------------------------------*/
+;*    live-block ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (live-block b::blockS)
+   (with-access::blockS b (mblock)
+      (if mblock
+	  (live-block mblock)
+	  b)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ins ...                                                      */
@@ -221,6 +236,7 @@
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specializer i::rtl_ins)
    (cond
+      ((rtl_ins-fxovop? i) rtl_ins-specialize-fxovop)
       ((rtl_ins-fxcmp? i) rtl_ins-specialize-fxcmp)
       ((rtl_ins-fxop? i) rtl_ins-specialize-fxop)
       ((rtl_ins-typecheck? i) rtl_ins-specialize-typecheck)
@@ -717,6 +733,83 @@
 	  (rtl_call-fxop? i))
 	 (else
 	  #f))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-fxovop? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-fxovop? i)
+   
+   (define (reg? a)
+      (or (rtl_reg? a)
+	  (and (rtl_ins? a)
+	       (with-access::rtl_ins a (fun args dest)
+		  (when (isa? fun rtl_call)
+		     (rtl_reg? dest))))))
+
+   (define (rtl_call-fxovop? i)
+      (when (rtl_ins-call? i)
+	 (with-access::rtl_ins i (dest fun args)
+	    (with-access::rtl_call fun (var)
+	       (and (=fx (length args) 3)
+		    (or (eq? var *$-fx/ov*)
+			(eq? var *$+fx/ov*)
+			(eq? var *$*fx/ov*))
+		    (or (reg? (car args)) (rtl_ins-loadi? (car args)))
+		    (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))
+		    (reg? (caddr args)))))))
+
+   (when (rtl_ins-ifne? i)
+      (with-access::rtl_ins i (fun args)
+	 (when (and (pair? args) (null? (cdr args)))
+	    (rtl_call-fxovop? (car args))))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-specialize-fxovop ...                                    */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-specialize-fxovop i::rtl_ins ctx::bbv-ctx)
+   
+   (define (fxovop-ctx ctx reg i::rtl_ins)
+      (with-access::rtl_ins i (fun args)
+	 (with-access::rtl_call fun (var)
+	    (let* ((lhs (car args))
+		   (rhs (cadr args))
+		   (intl (rtl-range lhs ctx))
+		   (intr (rtl-range rhs ctx))
+		   (intv (cond
+			    ((not (and (bbv-range? intl) (bbv-range? intr)))
+			     (fixnum-range))
+			    ((eq? var *$-fx/ov*)
+			     (bbv-range-sub intl intr))
+			    ((eq? var *$+fx/ov*)
+			     (bbv-range-add intl intr))
+			    ((eq? var *$*fx/ov*)
+			     (bbv-range-mul intl intr))
+			    (else
+			     (error "fxovop-ctx" "wrong operator" (shape fun))))))
+	       (tprint "*** fxov i=" (shape i))
+	       (tprint " intl=" (shape intl) " intr=" (shape intr)
+		  " -> intx=" (shape intv))
+	       (with-access::bbv-range intv ((i min) (a max))
+		  (let ((intx (instantiate::bbv-range
+				 (min (max i (bbv-min-fixnum)))
+				 (max (min a (bbv-max-fixnum))))))
+		     		     (extend-ctx ctx reg (list *bint*) #t
+			:value intx)))))))
+   
+   (with-trace 'bbv-ins "rtl_ins-specialize-fxovop"
+      (with-access::rtl_ins i (dest fun args)
+	 (with-access::rtl_ifne fun (then)
+	    (let ((call (car args)))
+	       (with-access::rtl_ins (car args) (args)
+		  (let ((reg (caddr args)))
+		     (let* ((pctx (extend-ctx ctx reg (list *bint*) #t
+				     :value (fixnum-range)))
+			    (nctx (fxovop-ctx ctx reg call))
+			    (s (duplicate::rtl_ins/bbv i
+				  (ctx ctx)
+				  (fun (duplicate::rtl_ifne fun
+					  (then (bbv-block then pctx)))))))
+			(values s nctx)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxop ...                                      */

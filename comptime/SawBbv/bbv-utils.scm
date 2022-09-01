@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-utils.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-utils.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon Aug 22 10:42:12 2022 (serrano)                */
+;*    Last change :  Thu Sep  1 14:26:26 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -125,8 +125,8 @@
 ;*    redirect-block! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (redirect-block! b::blockS old::blockS new::blockS)
-   (with-trace 'bbv-utils "redirect-block!"
-      (trace-item "b=" (block-label b))
+   (with-trace 'bbv-utils
+	 (format "redirect-block! ~a" (block-label b))
       (trace-item "old=" (block-label old) " "
 	 (map block-label (block-succs old)))
       (trace-item "new="(block-label new) " "
@@ -169,7 +169,9 @@
 	 (map block-label (block-succs old)))
       (trace-item "new="(block-label new) " "
 	 (map block-label (block-succs new)))
-      (with-access::blockS old (succs preds)
+      (with-access::blockS old (succs preds mblock)
+	 ;; mark the replacement
+	 (set! mblock new)
 	 (for-each (lambda (b)
 		      (with-access::blockS b (preds)
 			 (set! preds (replace preds old new))))

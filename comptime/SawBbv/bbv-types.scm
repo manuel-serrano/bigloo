@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-types.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-types.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Aug 22 20:12:55 2022 (serrano)                */
+;*    Last change :  Thu Sep  1 14:19:08 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -16,7 +16,7 @@
    
    (include "Tools/trace.sch"
 	    "SawMill/regset.sch"
-	    "SawMill/bbv-interval.sch")
+	    "SawBbv/bbv-interval.sch")
    
    (import  engine_param
 	    ast_var
@@ -60,11 +60,13 @@
 	       (types::pair read-only (default (list *obj*)))
 	       (polarity::bool read-only)
 	       (value read-only (default '_))
-	       (aliases::pair-nil (default '())))
+	       (aliases::pair-nil (default '()))
+	       (initval::obj (default #unspecified)))
 
 	    (ctx->string ::bbv-ctx)
 	    (params->ctx::bbv-ctx ::pair-nil)
 
+	    (bbv-ctx-assoc ::bbv-ctx ::pair-nil)
 	    (bbv-ctx-get ::bbv-ctx ::rtl_reg)
 	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
 	       #!key (value '_))
@@ -72,7 +74,7 @@
 	       #!key (value '_))
 	    (alias-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::rtl_reg)
 	    (unalias-ctx::bbv-ctx ::bbv-ctx ::rtl_reg)
-	    
+
 	    (generic bbv-hash ::obj)
 	    (generic bbv-equal?::bool ::obj ::obj)
 
@@ -140,6 +142,45 @@
 					  (types (list type))
 					  (polarity #t)))))
 		     params)))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctxentry-equal? ...                                          */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctxentry-equal? x::bbv-ctxentry y::bbv-ctxentry)
+   (with-access::bbv-ctxentry x ((xreg reg)
+				 (xpolarity polarity)
+				 (xtypes types)
+				 (xvalue value))
+      (with-access::bbv-ctxentry y ((yreg reg)
+				    (ypolarity polarity)
+				    (ytypes types)
+				    (yvalue value))
+	 (and (eq? xreg yreg)
+	      (eq? xpolarity ypolarity)
+	      (equal? xtypes ytypes)
+	      (equal? xvalue yvalue)))))
+	      
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-equal? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-equal? x::bbv-ctx y::bbv-ctx)
+   (with-access::bbv-ctx x ((xentries entries))
+      (with-access::bbv-ctx y ((yentries entries))
+	 (every (lambda (xe)
+		   (with-access::bbv-ctxentry xe (reg)
+		      (let ((ye (bbv-ctx-get y reg)))
+			 (bbv-ctxentry-equal? xe ye))))
+	    xentries))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-assoc ...                                                */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-assoc ctx::bbv-ctx versions::pair-nil)
+   (let loop ((versions versions))
+      (when (pair? versions)
+	 (if (bbv-ctx-equal? (caar versions) ctx)
+	     (car versions)
+	     (loop (cdr versions))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-get ...                                                  */
