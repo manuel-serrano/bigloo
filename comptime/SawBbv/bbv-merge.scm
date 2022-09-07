@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Thu Sep  1 14:28:30 2022 (serrano)                */
+;*    Last change :  Tue Sep  6 23:20:12 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -71,13 +71,18 @@
 (define (block-merge-contexts! b::blockV)
 
    (define (list-replace::pair-nil lst::pair-nil old new)
-      ;; return a copy of lst when old has been replaced with new
+      ;; return a copy of lst where old has been replaced with new
       (let loop ((lst lst))
 	 (cond
 	    ((null? lst) lst)
 	    ((eq? (car lst) old) (cons new (loop (cdr lst))))
 	    (else (cons (car lst) (loop (cdr lst)))))))
-	 
+
+   (define (bbv-ctx-replace ctx old new)
+      (with-access::bbv-ctx ctx (entries)
+	 (duplicate::bbv-ctx ctx
+	    (entries (list-replace entries old new)))))
+   
    (define (merge-singletons! versions::pair)
       (with-trace 'bbv-merge "merge-singletons!"
 	 ;; merge singletons into intervals:
@@ -113,8 +118,7 @@
 							 (olde (bbv-ctx-get octx reg))
 							 (newe (duplicate::bbv-ctxentry olde
 								  (value range)))
-							 (nctx (instantiate::bbv-ctx
-								  (entries (list-replace octx olde newe))))
+							 (nctx (bbv-ctx-replace octx olde newe))
 							 (nblock (bbv-block-specialize! b nctx)))
 						     (replace-block! oblock nblock)))
 					versions))))))
