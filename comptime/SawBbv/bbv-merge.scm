@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Fri Sep 16 09:05:13 2022 (serrano)                */
+;*    Last change :  Tue Sep 20 08:46:04 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -38,7 +38,7 @@
 	    saw_bbv-range)
 
    (export  (mark-widener! ::blockV)
-	    (block-merge-contexts ::blockV ::bbv-ctx)
+	    (bbv-block-ctx-merge ::blockV)
 	    (merge-contexts ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -62,17 +62,104 @@
 		     (liip (cdr succs)))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    bbv-block-ctx-merge ...                                          */
+;*    -------------------------------------------------------------    */
+;*    Returns a merge context and a list of blocks to be replaced.     */
+;*    -------------------------------------------------------------    */
+;*    b is a merge block (i.e., in a loop) and the number of           */
+;*    specialized version has exceeded the maximum threshold, some     */
+;*    versions have to be collapsed and widened.                       */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-ctx-merge bv::blockV) 
+   (with-access::blockV bv (label)
+      (with-trace 'bbv-merge (format "bbv-block-ctx-merge block=~a" label)
+	 (let ((lvs (blockV-live-versions bv)))
+	    (when (pair? lvs)
+	       (with-access::blockS (car lvs) (ctx)
+		  (let* ((regs (map bbv-ctxentry-reg (bbv-ctx-entries ctx)))
+			 (rrs (map (lambda (r) (cons r (reg-range-merge r lvs))) regs)))
+		     (when-trace 'bbv-merge
+			(for-each (lambda (bs num)
+				     (with-access::blockS bs (ctx)
+					(trace-item (format "ctx.~a=" num) (shape ctx))))
+			   lvs (iota (length lvs))))
+		     (filter-map (lambda (bs::blockS)
+				    (let ((mctx (bbv-ctx-widen bs rrs)))
+				       (when mctx
+					  (with-access::blockS bs (ctx)
+					     (with-access::bbv-ctx ctx (id)
+						(trace-item "mctx(" id ") -> " (shape mctx))))
+					  (cons bs mctx))))
+			lvs))))))))
+
+;*---------------------------------------------------------------------*/
+;*    reg-range-merge ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Find the smallest range for variable X that is compatible        */
+;*    with all the variable context ranges.                            */
+;*---------------------------------------------------------------------*/
+(define (reg-range-merge reg versions::pair-nil)
+   (let ((ranges (reg-ranges-get reg versions)))
+      (when (pair? ranges)
+	 (let loop ((o (bbv-max-fixnum))
+		    (u (bbv-min-fixnum))
+		    (r ranges))
+	    (if (null? r)
+		(reg-range-widening o u ranges)
+		(with-access::bbv-range (car r) (lo up)
+		   (loop (min o lo) (max u up) (cdr r))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    reg-ranges-get ...                                               */
 ;*    -------------------------------------------------------------    */
 ;*    Get all the ranges of variable X in CTX                          */
 ;*---------------------------------------------------------------------*/
 (define (reg-ranges-get reg versions::pair-nil)
-   (filter-map (lambda (v)
-		  (let ((e (bbv-ctx-get (car v) reg)))
-		     (with-access::bbv-ctxentry e (polarity value)
-			(when (and polarity (isa? value bbv-range))
-			   value))))
+   (filter-map (lambda (bs)
+		  (with-access::blockS bs (ctx)
+		     (let ((e (bbv-ctx-get ctx reg)))
+			(with-access::bbv-ctxentry e (polarity value)
+			   (when (and polarity (isa? value bbv-range))
+			      value)))))
       versions))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-widen ...                                                */
+;*    -------------------------------------------------------------    */
+;*    Widen the register ranges of a version. Return either a widened  */
+;*    context or #f. The arguments are:                                */
+;*      - bs: the specialized block                                    */
+;*      - rrs: a list of <reg, range>                                  */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-widen bs::blockS rrs::pair-nil)
+   (with-access::blockS bs (ctx)
+      (let loop ((rrs rrs)
+		 (mctx (instantiate::bbv-ctx))
+		 (equal #t))
+	 (cond
+	    ((pair? rrs)
+	     (let* ((rr (car rrs))
+		    (reg (car rr))
+		    (rng (cdr rr))
+		    (oe (bbv-ctx-get ctx reg)))
+		(if (not rng)
+		    (loop (cdr rrs)
+		       (extend-ctx/entry mctx oe)
+		       equal)
+		    (with-access::bbv-ctxentry oe (polarity value)
+		       (if (and polarity (isa? value bbv-range))
+			   (loop (cdr rrs)
+			      (let ((ne (duplicate::bbv-ctxentry oe
+					   (value rng))))
+				 (extend-ctx/entry mctx ne))
+			      #f)
+			   (loop (cdr rrs)
+			      (extend-ctx/entry mctx oe)
+			      equal))))))
+	    (equal
+	     #f)
+	    (else
+	     mctx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    reg-range-widening ...                                           */
@@ -117,77 +204,6 @@
 	 (instantiate::bbv-range
 	    (lo no)
 	    (up nu)))))
-   
-;*---------------------------------------------------------------------*/
-;*    reg-range-merge ...                                              */
-;*    -------------------------------------------------------------    */
-;*    Find the smallest range for variable X that is compatible        */
-;*    with all the variable context ranges.                            */
-;*---------------------------------------------------------------------*/
-(define (reg-range-merge reg versions::pair-nil)
-   (let ((ranges (reg-ranges-get reg versions)))
-      (cond
-	 ((not (pair? ranges))
-	  ;; the variable is not a fixnum
-	  #f)
-	 ((null? (cdr ranges))
-	  ;; just one range, which means that the variable is unmodified
-	  #f)
-	 (else
-	  (let loop ((o (bbv-max-fixnum))
-		     (u (bbv-min-fixnum))
-		     (r ranges))
-	     (if (null? r)
-		 (reg-range-widening o u ranges)
-		 (with-access::bbv-range (car r) (lo up)
-		    (loop (min o lo) (max u up) (cdr r)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    block-merge-contexts ...                                         */
-;*    -------------------------------------------------------------    */
-;*    Returns a merge context and a list of blocks to be replaced.     */
-;*    -------------------------------------------------------------    */
-;*    b is a merge block (i.e., in a loop) and the number of           */
-;*    specialized version has exceeded the maximum threshold, some     */
-;*    versions have to be collapsed and widened.                       */
-;*---------------------------------------------------------------------*/
-(define (block-merge-contexts b::blockV ctx::bbv-ctx)
-   (with-access::blockV b (versions label)
-      (with-trace 'bbv-merge (format "block-merge-contexts! block=~a" label)
-	 (let ((versions (live-versions versions)))
-	    (for-each (lambda (v num)
-			 (trace-item (format "ctx.~a=" num) (shape (car v))))
-	       versions (iota (length versions)))
-	    (let loop ((regs (map bbv-ctxentry-reg
-				(bbv-ctx-entries (caar versions))))
-		       (mctx (instantiate::bbv-ctx))
-		       (rversions '()))
-	       (if (null? regs)
-		   (if (null? rversions)
-		       ;; no replacement
-		       (begin
-			  (trace-item "mctx=" #f)
-			  (values #f #f))
-		       (begin
-			  (trace-item "mctx=" (shape mctx))
-			  (values mctx
-			     (delete-duplicates (map cdr rversions)))))
-		   (let* ((reg (car regs))
-			  (rng (reg-range-merge reg versions)))
-		      (trace-item "reg=" (shape reg) " rng=" (shape rng))
-		      (if rng
-			  (loop (cdr regs)
-			     (extend-ctx ctx reg (list *bint*) #t :value rng)
-			     (append rversions
-				(filter (lambda (v)
-					   (let ((e (bbv-ctx-get (car v) reg)))
-					      (with-access::bbv-ctxentry e (polarity value)
-						 (and polarity (isa? value bbv-range)))))
-				   versions)))
-			  (let ((ce (bbv-ctx-get ctx reg)))
-			     (loop (cdr regs)
-				(extend-ctx/entry mctx ce)
-				rversions))))))))))
 
 ;* (define (block-merge-contexts b::blockV)                            */
 ;*                                                                     */

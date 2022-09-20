@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Sat Sep 17 18:47:52 2022 (serrano)                */
+;*    Last change :  Tue Sep 20 08:47:46 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -33,28 +33,40 @@
 	    saw_bbv-cache
 	    saw_bbv-range)
 
-   (export  (wide-class blockV::block
-	       (versions::pair-nil (default '()))
-	       (%mark::long (default -1))
-	       (merge::bool (default #f)))
-	    
-	    (wide-class blockS::block
-	       (%mark::long (default -1))
-	       (%hash::obj (default #f))
-	       (%blacklist::obj (default '()))
-	       (parent::obj read-only (default #unspecified))
-	       (mblock::obj (default #f)))
-	    
-	    (wide-class rtl_ins/bbv::rtl_ins
+   (export  (wide-class rtl_ins/bbv::rtl_ins
 	       (def (default #unspecified))
 	       (out (default #unspecified))
 	       (in (default #unspecified))
 	       (ctx::bbv-ctx (default (instantiate::bbv-ctx)))
 	       (%hash::obj (default #f)))
 
-	    (class bbv-ctx
-	       (entries::pair-nil (default '())))
+	    ;; versioned block
+	    (wide-class blockV::block
+	       (versions::pair-nil (default '()))
+	       (%mark::long (default -1))
+	       (merge::bool (default #f)))
+
+	    ;; specialized block
+	    (wide-class blockS::block
+	       (%mark::long (default -1))
+	       (%hash::obj (default #f))
+	       (%blacklist::obj (default '()))
+	       (ctx::bbv-ctx read-only)
+	       (parent::blockV read-only)
+	       (mblock::obj (default #f)))
+
+	    ;; block queue
+	    (class bbv-queue
+	       (blocks::pair-nil (default '())))
 	    
+	    ;; block context
+	    (class bbv-ctx
+	       (bbv-ctx-init)
+	       ;; the id is only used for debugging
+	       (id::long (default -1))
+	       (entries::pair-nil (default '())))
+
+	    ;; context entry
 	    (class bbv-ctxentry
 	       (reg::rtl_reg read-only)
 	       (types::pair read-only (default (list *obj*)))
@@ -63,7 +75,10 @@
 	       (aliases::pair-nil (default '()))
 	       (initval::obj (default #unspecified)))
 
-	    (ctx->string ::bbv-ctx)
+	    (bbv-queue-push! ::bbv-queue ::blockV)
+	    
+	    (blockV-live-versions::pair-nil ::blockV)
+	    
 	    (params->ctx::bbv-ctx ::pair-nil)
 
 	    (bbv-ctx-assoc ::bbv-ctx ::pair-nil)
@@ -99,6 +114,19 @@
 	    (rtl_call-values i::rtl_ins)))
 
 ;*---------------------------------------------------------------------*/
+;*    *bbv-ctx-id* ...                                                 */
+;*---------------------------------------------------------------------*/
+(define *bbv-ctx-id* 0)
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-init ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-init this::bbv-ctx)
+   (with-access::bbv-ctx this (id)
+      (set! *bbv-ctx-id* (+fx 1 *bbv-ctx-id*))
+      (set! id *bbv-ctx-id*)))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-ctxentry-reg ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (bbv-ctxentry-reg e)
@@ -117,11 +145,29 @@
 		(map (lambda (t) (string-append "!" (shape t))) types)))
 	 (format "~s" (shape value))
 	 (map shape aliases))))
-   
+
 ;*---------------------------------------------------------------------*/
-;*    ctx->string ...                                                  */
+;*    bbv-queue-push! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (ctx->string ctx::bbv-ctx)
+(define (bbv-queue-push! queue::bbv-queue bv::blockV)
+   (with-access::bbv-queue queue (blocks)
+      (unless (memq bv blocks)
+	 (set! blocks (cons bv blocks)))))
+
+;*---------------------------------------------------------------------*/
+;*    blockV-live-versions ...                                         */
+;*---------------------------------------------------------------------*/
+(define (blockV-live-versions bv::blockV)
+   (with-access::blockV bv (versions)
+      (filter (lambda (bs)
+		 (with-access::blockS bs (mblock)
+		    (not mblock)))
+	 versions)))
+
+;*---------------------------------------------------------------------*/
+;*    shape ::bbv-ctx ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (shape ctx::bbv-ctx)
    (with-access::bbv-ctx ctx (entries)
       (call-with-output-string
 	 (lambda (op)
@@ -176,12 +222,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-assoc ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (bbv-ctx-assoc ctx::bbv-ctx versions::pair-nil)
+(define (bbv-ctx-assoc c::bbv-ctx versions::pair-nil)
    (let loop ((versions versions))
       (when (pair? versions)
-	 (if (bbv-ctx-equal? (caar versions) ctx)
-	     (car versions)
-	     (loop (cdr versions))))))
+	 (with-access::blockS (car versions) (ctx)
+	    (if (bbv-ctx-equal? c ctx)
+		(car versions)
+		(loop (cdr versions)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-get ...                                                  */
@@ -356,8 +403,8 @@
 ;*    shape ::bbv-ctx ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (shape o::bbv-ctx)
-   (with-access::bbv-ctx o (entries)
-      (vector (map shape entries))))
+   (with-access::bbv-ctx o (id entries)
+      (vector id (map shape entries))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */

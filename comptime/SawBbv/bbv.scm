@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/SawMill/bbv.scm      */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/SawBbv/bbv.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Sep  1 14:12:56 2022 (serrano)                */
+;*    Last change :  Tue Sep 20 16:47:09 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -79,7 +79,7 @@
 		   (unwind-protect
 		      (if (null? blocks)
 			  '()
-			  (let* ((s (bbv-block (car blocks)
+			  (let* ((s (bbv-block* (car blocks)
 				       (params->ctx params)))
 				 (b (block->block-list regs
 				       (if *cleanup*
@@ -234,7 +234,7 @@
 		   (let ((ks (sort (lambda (v1 v2)
 				      (<=fx (car v1) (car v2)))
 				(map (lambda (v)
-					(cons (bbv-hash (cdr v)) (cdr v)))
+					(cons (bbv-hash v) v))
 				   versions))))
 		      (trace-item "merge "
 			 (map (lambda (k)

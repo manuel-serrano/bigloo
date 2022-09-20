@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Sep 16 09:33:44 2022 (serrano)                */
+;*    Last change :  Tue Sep 20 08:42:25 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -38,100 +38,157 @@
 	    saw_bbv-config
 	    saw_bbv-cost)
 
-   (export (bbv-block::blockS ::blockV ::bbv-ctx)
-	   (bbv-block-specialize!::blockS ::blockV ::bbv-ctx)))
+   (export (bbv-block*::blockS ::blockV ::bbv-ctx)
+	   (bbv-block::blockS ::blockV ::bbv-ctx ::bbv-queue)
+	   (bbv-block-specialize!::blockS ::blockV ::bbv-ctx ::bbv-queue)))
 
 ;*---------------------------------------------------------------------*/
-;*    configuration                                                    */
+;*    new-blockS ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define *max-block-version* 3)
+(define (new-blockS bv::blockV ctx::bbv-ctx)
+   (let* ((lbl (genlabel))
+	  (bs (instantiate::blockS
+		 (ctx ctx)
+		 (parent bv)
+		 (label lbl)
+		 (first '()))))
+      (with-access::blockV bv (versions)
+	 (set! versions (cons bs versions))
+	 bs)))
+
+;*---------------------------------------------------------------------*/
+;*    live-blockS ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (live-blockS b::blockS)
+   (with-access::blockS b (mblock)
+      (if mblock
+	  (live-blockS mblock)
+	  b)))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block* ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (bbv-block*::blockS bv::blockV ctx::bbv-ctx)
+   (let* ((queue (instantiate::bbv-queue))
+	  (bs (bbv-block bv ctx queue)))
+      (let loop ((queue queue))
+	 (with-access::bbv-queue queue (blocks)
+	    (if (null? blocks)
+		(live-blockS bs)
+		(let ((queue (instantiate::bbv-queue)))
+		   (for-each (lambda (bv)
+				(bbv-block-merge! bv queue))
+		      blocks)
+		   (loop queue)))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge! bv::blockV queue::bbv-queue)
+   (with-access::blockV bv (label)
+      (with-trace 'bbv-merge (format "bbv-block-merge! ~a" label)
+	 (let ((merges (bbv-block-ctx-merge bv)))
+	    (for-each (lambda (m)
+			 ;; each m is a pair <blockS, ctx> where
+			 ;;   - blocks is the (live) block to be replaced
+			 ;;   - ctx is the context of the new block 
+			 (let* ((bs (car m))
+				(ctx (cdr m))
+				(nbs (bbv-block bv ctx queue)))
+			    (trace-item "bs="
+			       (with-access::blockS bs (label) label)
+			       " -> ctx="
+			       (with-access::bbv-ctx ctx (id) id))
+			    (replace-block! bs nbs)))
+	       merges)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block::blockS bv::blockV ctx::bbv-ctx)
-   
-   (define (generic-block bv::blockV)
-      ;; generate the most generic version (i.e., all variables are
-      ;; approximated with obj type) 
-      (let ((gctx (with-access::bbv-ctx ctx (entries)
-		     (params->ctx
-			(map (lambda (e)
-				(with-access::bbv-ctxentry e (reg)
-				   reg))
-			   entries)))))
-	 (bbv-block-specialize! bv gctx)))
-   
-   (with-access::blockV bv (label versions succs preds first merge)
+(define (bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
+   (with-access::blockV bv (label succs preds first merge)
       (with-trace 'bbv-block (format "bbv-block ~a" label)
-	 (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
+	 (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first)))
+	       (lvs (blockV-live-versions bv)))
 	    (trace-item "succs=" (map block-label succs))
 	    (trace-item "preds=" (map block-label preds))
 	    (trace-item "ctx=" (shape ctx))
-	    (trace-item "versions=" (map ctx->string (map car (live-versions versions))))
-	    (let* ((bs (bbv-block-specialize! bv ctx))
-		   (lvs (live-versions versions)))
-	       (trace-item "nversions= " (length lvs) "/" (length versions) " "
-		  (map ctx->string (map car lvs)))
-	       (if (and merge (>=fx (length lvs) *max-block-version*))
-		   (multiple-value-bind (mctx blocks)
-		      (block-merge-contexts bv ctx)
-		      (if mctx
-			  (let ((mbs (bbv-block-specialize! bv mctx)))
-			     (for-each (lambda (b)
-					  (replace-block! b mbs))
-				blocks)
-			     mbs)
-			  bs))
-		   bs))))))
+	    (trace-item "versions=" (map (lambda (bs)
+					    (with-access::blockS bs (ctx)
+					       (shape ctx)))
+				       lvs))
+	    (cond
+	       ((bbv-ctx-assoc ctx lvs)
+		=>
+		live-blockS)
+	       ((and merge (>=fx (length lvs) *max-block-versions*))
+		(let ((bs (new-blockS bv ctx)))
+		   '(bbv-queue-push! queue bv)
+		   bs))
+	       (else
+		(bbv-block-specialize! bv ctx queue)))))))
 
+;*                                                                     */
+;* 	    (let* ((bs (bbv-block-specialize! bv ctx))                 */
+;* 		   (lvs (blockV-live-versions bv)))                    */
+;* 	       (trace-item "nversions= " (length lvs) "/" (length versions) " " */
+;* 		  (map ctx->string (map car lvs)))                     */
+;* 	       (if (and merge (>=fx (length lvs) *max-block-version*)) */
+;* 		   (let* ((patches (block-merge-contexts bv ctx))      */
+;* 			  (stables (filter (lambda (ver)               */
+;* 					      (not (assq ver patches))) */
+;* 				      lvs)))                           */
+;* 		      (let loop ((patches patches)                     */
+;* 				 (stables stables)                     */
+;* 				 (bs bs))                              */
+;* 			 (if (null? patches)                           */
+;* 			     (begin                                    */
+;* 				(trace-item "merge="                   */
+;* 				   (map ctx->string                    */
+;* 				      (map car (live-versions versions)))) */
+;* 				bs)                                    */
+;* 			     (let* ((patch (car patches))              */
+;* 				    (pver (car patch))                 */
+;* 				    (pctx (cdr patch))                 */
+;* 				    (block (cdr pver))                 */
+;* 				    (old (bbv-ctx-assoc pctx stables))) */
+;* 				(if (pair? old)                        */
+;* 				    (begin                             */
+;* 				       (replace-block! block (cdr old)) */
+;* 				       (loop (cdr patches)             */
+;* 					  stables                      */
+;* 					  (if (eq? pctx ctx) (cdr old) bs))) */
+;* 				    (let ((new (bbv-block-specialize! bv pctx))) */
+;* 				       (replace-block! block new)      */
+;* 				       (loop (cdr patches)             */
+;* 					  (cons (cons pctx new) stables) */
+;* 					  (if (eq? pctx ctx) (cdr old) new)))))))) */
+;* 		   bs))))))                                            */
+;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-specialize! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block-specialize!::blockS b::blockV ctx::bbv-ctx)
-
-   (define (find-block-version ctx::bbv-ctx versions::pair-nil)
-      (let ((c (bbv-ctx-assoc ctx versions)))
-	 (when (pair? c)
-	    (cdr c))))
+(define (bbv-block-specialize!::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
    
-   (define (block-specialize!::blockS b::blockV ctx::bbv-ctx)
-      (with-access::blockV b (first label succs versions)
-	 (let* ((lbl (genlabel))
-		(sb (instantiate::blockS
-		       (parent b)
-		       (label lbl)
-		       (first '()))))
-	    (set! versions (cons (cons ctx sb) versions))
-	    (trace-item "new-label=" lbl)
-	    (let ((nfirst (bbv-ins first sb ctx)))
-	       (with-access::blockS sb (first succs)
+   (define (specialize!::blockS bv::blockV ctx::bbv-ctx)
+      (with-access::blockV bv (first)
+	 (let ((bs (new-blockS bv ctx)))
+	    (trace-item "new-label="
+	       (with-access::blockS bs (label) label))
+	    (let ((nfirst (bbv-ins first bs ctx queue)))
+	       (with-access::blockS bs (first)
 		  (set! first nfirst)
-		  sb)))))
+		  bs)))))
    
-   (with-access::blockV b (label versions succs preds first merge)
-      (with-trace 'bbv-block (format "bbv-block-specialize! ~a" label)
-	 (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
-	    (trace-item "ctx=" (shape ctx))
-	    (let ((ob (find-block-version ctx versions)))
-	       (trace-item "old=" (when ob (block-label ob)))
-	       (if ob
-		   (live-block ob)
-		   (block-specialize! b ctx)))))))
-
-;*---------------------------------------------------------------------*/
-;*    live-block ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (live-block b::blockS)
-   (with-access::blockS b (mblock)
-      (if mblock
-	  (live-block mblock)
-	  b)))
+   (with-access::blockV bv (label)
+      (with-trace 'bbv-specialize (format "bbv-block-specialize! ~a" label)
+	 (trace-item "ctx=" (shape ctx))
+	 (specialize! bv ctx))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ins ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (bbv-ins first sb::blockS ctx::bbv-ctx)
+(define (bbv-ins first sb::blockS ctx::bbv-ctx queue::bbv-queue)
    
    (define (connect! s::blockS ins::rtl_ins)
       (cond
@@ -164,11 +221,11 @@
 	     (lambda (specialize)
 		;; instruction specialization
 		(multiple-value-bind (ins nctx)
-		   (specialize (car oins) ctx)
+		   (specialize (car oins) ctx queue)
 		   (with-access::rtl_ins ins (args)
 		      (set! args (map (lambda (i)
 					 (if (isa? i rtl_ins)
-					     (car (bbv-ins (list i) sb ctx))
+					     (car (bbv-ins (list i) sb ctx queue))
 					     i))
 				    args))
 		      (let ((ctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
@@ -186,7 +243,7 @@
 	     (with-access::rtl_ins (car oins) (args)
 		(let ((args (map (lambda (i)
 				    (if (isa? i rtl_ins)
-					(car (bbv-ins (list i) sb ctx))
+					(car (bbv-ins (list i) sb ctx queue))
 					i))
 			       args)))
 		   (loop '()
@@ -195,7 +252,7 @@
 	    ((rtl_ins-go? (car oins))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_go fun (to)
-		   (let* ((n (bbv-block to ctx))
+		   (let* ((n (bbv-block to ctx queue))
 			  (ins (duplicate::rtl_ins/bbv (car oins)
 				  (ctx ctx)
 				  (fun (duplicate::rtl_go fun
@@ -205,7 +262,7 @@
 	    ((rtl_ins-ifne? (car oins))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_ifne fun (then)
-		   (let* ((n (bbv-block then ctx))
+		   (let* ((n (bbv-block then ctx queue))
 			  (ins (duplicate::rtl_ins/bbv (car oins)
 				  (ctx ctx)
 				  (fun (duplicate::rtl_ifne fun
@@ -216,7 +273,7 @@
 	     (with-access::rtl_ins (car oins) (args)
 		(let ((args (map (lambda (i)
 				    (if (isa? i rtl_ins)
-					(car (bbv-ins (list i) sb ctx))
+					(car (bbv-ins (list i) sb ctx queue))
 					i))
 			       args)))
 		   (loop (cdr oins)
@@ -269,7 +326,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-typecheck ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-typecheck i::rtl_ins ctx)
+(define (rtl_ins-specialize-typecheck i::rtl_ins ctx queue::bbv-queue)
 
    (define (min-value x y)
       (cond
@@ -300,7 +357,7 @@
 			    (let ((s (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(fun (instantiate::rtl_go
-						(to (bbv-block then pctx))))
+						(to (bbv-block then pctx queue))))
 					(dest #f)
 					(args '()))))
 			       ;; the next ctx will be ignored...
@@ -329,7 +386,7 @@
 				   (s (duplicate::rtl_ins/bbv i
 					 (ctx ctx)
 					 (fun (duplicate::rtl_ifne fun
-						 (then (bbv-block then pctx)))))))
+						 (then (bbv-block then pctx queue)))))))
 			       (values s nctx))))))
 		  (else
 		   (error "rtl_ins-specialize-typecheck"
@@ -363,7 +420,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-mov ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-mov i::rtl_ins ctx)
+(define (rtl_ins-specialize-mov i::rtl_ins ctx queue::bbv-queue)
    (with-trace 'bbv-ins "rtl_ins-specialize-mov"
       (with-access::rtl_ins i (dest args fun)
 	 (let ((ctx (unalias-ctx ctx dest)))
@@ -404,7 +461,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadi ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-loadi i::rtl_ins ctx)
+(define (rtl_ins-specialize-loadi i::rtl_ins ctx queue::bbv-queue)
    (with-trace 'bbv-ins "rtl_ins-specialize-loadi"
       (with-access::rtl_ins i (dest args fun)
 	 (with-access::rtl_loadi fun (constant)
@@ -427,7 +484,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-call ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-call i::rtl_ins ctx)
+(define (rtl_ins-specialize-call i::rtl_ins ctx queue::bbv-queue)
    
    (define (new-value-loadi i)
       (with-access::rtl_ins i (dest fun args)
@@ -494,7 +551,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-return ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-return i::rtl_ins ctx)
+(define (rtl_ins-specialize-return i::rtl_ins ctx queue::bbv-queue)
    (with-access::rtl_ins i (args dest)
       (let ((e (bbv-ctx-get ctx (car args))))
 	 (with-access::bbv-ctxentry e (types value)
@@ -540,7 +597,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxcmp ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxcmp i::rtl_ins ctx::bbv-ctx)
+(define (rtl_ins-specialize-fxcmp i::rtl_ins ctx::bbv-ctx queue::bbv-queue)
    
    (define (true)
       (instantiate::rtl_loadi
@@ -710,7 +767,7 @@
 		      ((rtl_ins-true? ins)
 		       (with-access::rtl_ifne fun (then)
 			  (let* ((fun (duplicate::rtl_go fun
-					 (to (bbv-block then ctx))))
+					 (to (bbv-block then ctx queue))))
 				 (ni (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(args '())
@@ -726,7 +783,7 @@
 			     (values ni nctx))))
 		      (else
 		       (let ((fun (duplicate::rtl_ifne fun
-				     (then (bbv-block then pctx)))))
+				     (then (bbv-block then pctx queue)))))
 			  (values (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
 				     (args (list ins))
@@ -805,7 +862,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxovop ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxovop i::rtl_ins ctx::bbv-ctx)
+(define (rtl_ins-specialize-fxovop i::rtl_ins ctx::bbv-ctx queue::bbv-queue)
    
    (define (fxovop-ctx ctx reg i::rtl_ins)
       (with-access::rtl_ins i (fun args)
@@ -844,13 +901,13 @@
 			    (s (duplicate::rtl_ins/bbv i
 				  (ctx ctx)
 				  (fun (duplicate::rtl_ifne fun
-					  (then (bbv-block then pctx)))))))
+					  (then (bbv-block then pctx queue)))))))
 			(values s nctx)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxop ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxop i::rtl_ins ctx)
+(define (rtl_ins-specialize-fxop i::rtl_ins ctx queue::bbv-queue)
    
    (define (fx-safe->fx var i ctx nctx)
       (with-access::rtl_ins i (dest fun args)
