@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Sep  5 14:01:24 2022 (serrano)                */
+;*    Last change :  Fri Sep 16 09:33:44 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -73,10 +73,16 @@
 		   (lvs (live-versions versions)))
 	       (trace-item "nversions= " (length lvs) "/" (length versions) " "
 		  (map ctx->string (map car lvs)))
-	       (if (and merge (>fx (length lvs) *max-block-version*))
-		   (begin
-		      (block-merge-contexts! bv)
-		      (live-block bs))
+	       (if (and merge (>=fx (length lvs) *max-block-version*))
+		   (multiple-value-bind (mctx blocks)
+		      (block-merge-contexts bv ctx)
+		      (if mctx
+			  (let ((mbs (bbv-block-specialize! bv mctx)))
+			     (for-each (lambda (b)
+					  (replace-block! b mbs))
+				blocks)
+			     mbs)
+			  bs))
 		   bs))))))
 
 ;*---------------------------------------------------------------------*/
@@ -334,10 +340,10 @@
 ;*    range->loadi ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (range->loadi i::rtl_ins dest value types)
-   (with-access::bbv-range value (max)
+   (with-access::bbv-range value (up)
       (let* ((atom (instantiate::literal
 		      (type *long*)
-		      (value max)))
+		      (value up)))
 	     (loadi (instantiate::rtl_loadi
 		       (constant atom))))
 	 (if (memq *long* types)
@@ -819,10 +825,10 @@
 			     (bbv-range-mul intl intr))
 			    (else
 			     (error "fxovop-ctx" "wrong operator" (shape fun))))))
-	       (with-access::bbv-range intv ((i min) (a max))
+	       (with-access::bbv-range intv ((i lo) (a up))
 		  (let ((intx (instantiate::bbv-range
-				 (min (max i (bbv-min-fixnum)))
-				 (max (min a (bbv-max-fixnum))))))
+				 (lo (max i (bbv-min-fixnum)))
+				 (up (min a (bbv-max-fixnum))))))
 		     		     (extend-ctx ctx reg (list *bint*) #t
 			:value intx)))))))
    

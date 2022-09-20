@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Sep  6 23:20:12 2022 (serrano)                */
+;*    Last change :  Fri Sep 16 09:05:13 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -38,7 +38,7 @@
 	    saw_bbv-range)
 
    (export  (mark-widener! ::blockV)
-	    (block-merge-contexts! ::blockV)
+	    (block-merge-contexts ::blockV ::bbv-ctx)
 	    (merge-contexts ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -62,73 +62,153 @@
 		     (liip (cdr succs)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    block-merge-contexts! ...                                        */
+;*    reg-ranges-get ...                                               */
+;*    -------------------------------------------------------------    */
+;*    Get all the ranges of variable X in CTX                          */
+;*---------------------------------------------------------------------*/
+(define (reg-ranges-get reg versions::pair-nil)
+   (filter-map (lambda (v)
+		  (let ((e (bbv-ctx-get (car v) reg)))
+		     (with-access::bbv-ctxentry e (polarity value)
+			(when (and polarity (isa? value bbv-range))
+			   value))))
+      versions))
+
+;*---------------------------------------------------------------------*/
+;*    reg-range-widening ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Range widening. The produced range is larger than [o..u].        */
+;*---------------------------------------------------------------------*/
+(define (reg-range-widening o u ranges)
+
+   (define (low-widening v)
+      (cond
+	 ((>fx v 1) (/fx v 2))
+	 ((=fx v 1) 0)
+	 ((=fx v 0) -1)
+	 ((>fx v -16) (*fx v 2))
+	 ((>fx v -255) -255)
+	 (else (bbv-min-fixnum))))
+
+   (define (up-widening v)
+      (cond
+	 ((<fx v -1) (/fx v 2))
+	 ((=fx v -1) 0)
+	 ((=fx v 0) 1)
+	 ((<fx v 16) (*fx v 2))
+	 ((<fx v 255) 255)
+	 ((<fx v 65535) 65535)
+	 (else (bbv-max-fixnum))))
+   
+   (let ((no (if (every (lambda (r)
+			   (with-access::bbv-range r (lo)
+			      (= o lo)))
+		    ranges)
+		 o
+		 (low-widening o)))
+	 (nu (if (every (lambda (r)
+			   (with-access::bbv-range r (up)
+			      (= u up)))
+		    ranges)
+		 u
+		 (up-widening u))))
+      (unless (and (= no o) (= nu u))
+	 ;; no widening possible because we are dealing with a constant
+	 (instantiate::bbv-range
+	    (lo no)
+	    (up nu)))))
+   
+;*---------------------------------------------------------------------*/
+;*    reg-range-merge ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Find the smallest range for variable X that is compatible        */
+;*    with all the variable context ranges.                            */
+;*---------------------------------------------------------------------*/
+(define (reg-range-merge reg versions::pair-nil)
+   (let ((ranges (reg-ranges-get reg versions)))
+      (cond
+	 ((not (pair? ranges))
+	  ;; the variable is not a fixnum
+	  #f)
+	 ((null? (cdr ranges))
+	  ;; just one range, which means that the variable is unmodified
+	  #f)
+	 (else
+	  (let loop ((o (bbv-max-fixnum))
+		     (u (bbv-min-fixnum))
+		     (r ranges))
+	     (if (null? r)
+		 (reg-range-widening o u ranges)
+		 (with-access::bbv-range (car r) (lo up)
+		    (loop (min o lo) (max u up) (cdr r)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    block-merge-contexts ...                                         */
+;*    -------------------------------------------------------------    */
+;*    Returns a merge context and a list of blocks to be replaced.     */
 ;*    -------------------------------------------------------------    */
 ;*    b is a merge block (i.e., in a loop) and the number of           */
 ;*    specialized version has exceeded the maximum threshold, some     */
 ;*    versions have to be collapsed and widened.                       */
 ;*---------------------------------------------------------------------*/
-(define (block-merge-contexts! b::blockV)
-
-   (define (list-replace::pair-nil lst::pair-nil old new)
-      ;; return a copy of lst where old has been replaced with new
-      (let loop ((lst lst))
-	 (cond
-	    ((null? lst) lst)
-	    ((eq? (car lst) old) (cons new (loop (cdr lst))))
-	    (else (cons (car lst) (loop (cdr lst)))))))
-
-   (define (bbv-ctx-replace ctx old new)
-      (with-access::bbv-ctx ctx (entries)
-	 (duplicate::bbv-ctx ctx
-	    (entries (list-replace entries old new)))))
-   
-   (define (merge-singletons! versions::pair)
-      (with-trace 'bbv-merge "merge-singletons!"
-	 ;; merge singletons into intervals:
-	 ;; (((x (0 . 0)) (y obj))
-	 ;;  ((x (1 . 1)) (y obj))
-	 ;;  ((x (2 . 2)) (y obj)))
-	 ;; => ((x (0 . 3)) (y obj))
-	 (with-access::bbv-ctx (caar versions) (entries)
-	    ;; collect the min and max of singleton ranges
-	    (for-each (lambda (e::bbv-ctxentry)
-			 (let ((i (bbv-max-fixnum))
-			       (a (bbv-min-fixnum)))
-			    (with-access::bbv-ctxentry e (reg)
-			       (for-each (lambda (v::pair)
-					    (let* ((octx (car v))
-						   (olde (bbv-ctx-get octx reg)))
-					       (with-access::bbv-ctxentry olde (polarity value)
-						  (when (and polarity (bbv-singleton? value))
-						     (with-access::bbv-range value (min max)
-							(when (<fx min i) (set! i min))
-							(when (>fx max a) (set! a max)))))))
-				  versions)
-			       (when (and (>fx a i) (>fx a (+fx i 1)))
-				  ;; an interval spaning over all values has been found
-				  (trace-item "new-range [" i ".." a "]")
-				  (tprint "===== [" i ".." a "]")
-				  (let ((range (instantiate::bbv-range
-						  (min i)
-						  (max a))))
-				     (for-each (lambda (v::pair)
-						  (let* ((octx (car v))
-							 (oblock (cdr v))
-							 (olde (bbv-ctx-get octx reg))
-							 (newe (duplicate::bbv-ctxentry olde
-								  (value range)))
-							 (nctx (bbv-ctx-replace octx olde newe))
-							 (nblock (bbv-block-specialize! b nctx)))
-						     (replace-block! oblock nblock)))
-					versions))))))
-	       entries))))
-   
+(define (block-merge-contexts b::blockV ctx::bbv-ctx)
    (with-access::blockV b (versions label)
-      (with-trace 'bbv-merge (format "block-merge-contexts! ~a" label)
-	 ;; step1: reduce singleton approximation into intervals
-	 (merge-singletons! versions))))
+      (with-trace 'bbv-merge (format "block-merge-contexts! block=~a" label)
+	 (let ((versions (live-versions versions)))
+	    (for-each (lambda (v num)
+			 (trace-item (format "ctx.~a=" num) (shape (car v))))
+	       versions (iota (length versions)))
+	    (let loop ((regs (map bbv-ctxentry-reg
+				(bbv-ctx-entries (caar versions))))
+		       (mctx (instantiate::bbv-ctx))
+		       (rversions '()))
+	       (if (null? regs)
+		   (if (null? rversions)
+		       ;; no replacement
+		       (begin
+			  (trace-item "mctx=" #f)
+			  (values #f #f))
+		       (begin
+			  (trace-item "mctx=" (shape mctx))
+			  (values mctx
+			     (delete-duplicates (map cdr rversions)))))
+		   (let* ((reg (car regs))
+			  (rng (reg-range-merge reg versions)))
+		      (trace-item "reg=" (shape reg) " rng=" (shape rng))
+		      (if rng
+			  (loop (cdr regs)
+			     (extend-ctx ctx reg (list *bint*) #t :value rng)
+			     (append rversions
+				(filter (lambda (v)
+					   (let ((e (bbv-ctx-get (car v) reg)))
+					      (with-access::bbv-ctxentry e (polarity value)
+						 (and polarity (isa? value bbv-range)))))
+				   versions)))
+			  (let ((ce (bbv-ctx-get ctx reg)))
+			     (loop (cdr regs)
+				(extend-ctx/entry mctx ce)
+				rversions))))))))))
 
+;* (define (block-merge-contexts b::blockV)                            */
+;*                                                                     */
+;*    (define (list-replace::pair-nil lst::pair-nil old new)           */
+;*       ;; return a copy of lst where old has been replaced with new  */
+;*       (let loop ((lst lst))                                         */
+;* 	 (cond                                                         */
+;* 	    ((null? lst) lst)                                          */
+;* 	    ((eq? (car lst) old) (cons new (loop (cdr lst))))          */
+;* 	    (else (cons (car lst) (loop (cdr lst)))))))                */
+;*                                                                     */
+;*    (define (bbv-ctx-replace ctx old new)                            */
+;*       (with-access::bbv-ctx ctx (entries)                           */
+;* 	 (duplicate::bbv-ctx ctx                                       */
+;* 	    (entries (list-replace entries old new)))))                */
+;*                                                                     */
+;*    (with-access::blockV b (versions label)                          */
+;*       (with-trace 'bbv-merge (format "block-merge-contexts! ~a" label) */
+;* 	 ;; step1: reduce singleton approximation into intervals       */
+;* 	 (merge-singletons! versions))))                               */
+;*                                                                     */
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    block-merge-contexts ...                                         *} */
 ;* {*---------------------------------------------------------------------*} */

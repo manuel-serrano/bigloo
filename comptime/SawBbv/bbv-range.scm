@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Sep  5 14:19:38 2022 (serrano)                */
+;*    Last change :  Fri Sep 16 09:17:21 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -26,8 +26,8 @@
 	    saw_bbv-types)
    
    (export (class bbv-range
-	      (min read-only)
-	      (max read-only))
+	      (lo read-only)
+	      (up read-only))
 
 	   (inline bbv-max-fixnum::long)
 	   (inline bbv-min-fixnum::long)
@@ -83,22 +83,22 @@
 ;*    bbv-range-fixnum? ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-fixnum? o)
-   (with-access::bbv-range o (min max)
-      (and (fixnum? min) (fixnum? max))))
+   (with-access::bbv-range o (lo up)
+      (and (fixnum? lo) (fixnum? up))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-range-min ...                                                */
+;*    bbv-range-lo ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (bbv-range-min o)
-  (with-access::bbv-range o (min)
-      min))
+(define-inline (bbv-range-lo o)
+  (with-access::bbv-range o (lo)
+      lo))
    
 ;*---------------------------------------------------------------------*/
-;*    bbv-range-max ...                                                */
+;*    bbv-range-up ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (bbv-range-max o)
-   (with-access::bbv-range o (max)
-      max))
+(define-inline (bbv-range-up o)
+   (with-access::bbv-range o (up)
+      up))
    
 ;*---------------------------------------------------------------------*/
 ;*    shape ::bbv-range ...                                            */
@@ -107,27 +107,27 @@
    
    (define (shape n)
       (cond
-	 ((eq? n (bbv-max-fixnum)) "maxfx")
-	 ((eq? n (-fx (bbv-max-fixnum) 1)) "maxfx-1")
-	 ((eq? n (-fx (bbv-max-fixnum) 2)) "maxfx-2")
-	 ((eq? n (bbv-min-fixnum)) "minfx")
-	 ((eq? n (+fx (bbv-min-fixnum) 1)) "minfx+1")
-	 ((eq? n (+fx (bbv-min-fixnum) 2)) "minfx+2")
+	 ((eq? n (bbv-max-fixnum)) "upfx")
+	 ((eq? n (-fx (bbv-max-fixnum) 1)) "upfx-1")
+	 ((eq? n (-fx (bbv-max-fixnum) 2)) "upfx-2")
+	 ((eq? n (bbv-min-fixnum)) "lofx")
+	 ((eq? n (+fx (bbv-min-fixnum) 1)) "lofx+1")
+	 ((eq? n (+fx (bbv-min-fixnum) 2)) "lofx+2")
 	 ((fixnum? n) n)
 	 ((not (flonum? n)) n)
 	 ((infinitefl? n) (if (<fl n 0.0) "-inf" "+inf"))
 	 (else n)))
    
-   (with-access::bbv-range e (min max)
-      (format "[~a..~a]" (shape min) (shape max))))
+   (with-access::bbv-range e (lo up)
+      (format "[~a..~a]" (shape lo) (shape up))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *fixnum-range* ...                                               */
 ;*---------------------------------------------------------------------*/
 (define *fixnum-range*
    (instantiate::bbv-range
-      (min (bbv-min-fixnum))
-      (max (bbv-max-fixnum))))
+      (lo (bbv-min-fixnum))
+      (up (bbv-max-fixnum))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum-range ...                                                 */
@@ -140,8 +140,8 @@
 ;*---------------------------------------------------------------------*/
 (define (fixnum->range n)
    (instantiate::bbv-range
-      (min n)
-      (max n)))
+      (lo n)
+      (up n)))
 
 ;*---------------------------------------------------------------------*/
 ;*    range-type? ...                                                  */
@@ -187,17 +187,17 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-singleton? rng)
    (and (isa? rng bbv-range)
-	(=fx (bbv-range-max rng) (bbv-range-min rng))
-	(> (bbv-range-max rng) (+fx (bbv-min-fixnum) 1))
-	(< (bbv-range-max rng) (-fx (bbv-max-fixnum) 1))))
+	(=fx (bbv-range-up rng) (bbv-range-lo rng))
+	(> (bbv-range-up rng) (+fx (bbv-min-fixnum) 1))
+	(< (bbv-range-up rng) (-fx (bbv-max-fixnum) 1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range<? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range<? left right)
    (cond
-      ((<fx (bbv-range-max left) (bbv-range-min right)) 'true)
-      ((>=fx (bbv-range-min left) (bbv-range-max right)) 'false)
+      ((<fx (bbv-range-up left) (bbv-range-lo right)) 'true)
+      ((>=fx (bbv-range-lo left) (bbv-range-up right)) 'false)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -205,8 +205,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range<=? left right)
    (cond
-      ((<=fx (bbv-range-max left) (bbv-range-min right)) 'true)
-      ((>fx (bbv-range-min left) (bbv-range-max right)) 'false)
+      ((<=fx (bbv-range-up left) (bbv-range-lo right)) 'true)
+      ((>fx (bbv-range-lo left) (bbv-range-up right)) 'false)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -214,8 +214,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range>? left right)
    (cond
-      ((>fx (bbv-range-min left) (bbv-range-max right)) 'true)
-      ((<=fx (bbv-range-max left) (bbv-range-min right)) 'false)
+      ((>fx (bbv-range-lo left) (bbv-range-up right)) 'true)
+      ((<=fx (bbv-range-up left) (bbv-range-lo right)) 'false)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -223,8 +223,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range>=? left right)
    (cond
-      ((>=fx (bbv-range-min left) (bbv-range-max right)) 'true)
-      ((<fx (bbv-range-max left) (bbv-range-min right)) 'false)
+      ((>=fx (bbv-range-lo left) (bbv-range-up right)) 'true)
+      ((<fx (bbv-range-up left) (bbv-range-lo right)) 'false)
       (else #f)))
       
 
@@ -233,8 +233,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range=? left right)
    (cond
-      ((and (=fx (bbv-range-min left) (bbv-range-min right))
-	    (=fx (bbv-range-max left) (bbv-range-max right)))
+      ((and (=fx (bbv-range-lo left) (bbv-range-lo right))
+	    (=fx (bbv-range-up left) (bbv-range-up right)))
        'true)
       (else
        'false)))
@@ -252,10 +252,10 @@
 ;* 	  :case4 ?case4                                                */
 ;*                                                                     */
 ;* 	  )                                                            */
-;*        `(let ((li (bbv-range-min left))                             */
-;* 	      (la (bbv-range-max left))                                */
-;* 	      (ri (bbv-range-min right))                               */
-;* 	      (ra (bbv-range-max right)))                              */
+;*        `(let ((li (bbv-range-lo left))                             */
+;* 	      (la (bbv-range-up left))                                */
+;* 	      (ri (bbv-range-lo right))                               */
+;* 	      (ra (bbv-range-up right)))                              */
 ;* 	   (cond                                                       */
 ;* 	      ((and (= li ri) (= la ra))                               */
 ;* 	       ;; [10..20]                                             */
@@ -316,10 +316,10 @@
 ;* {*    Enforce left <= right                                            *} */
 ;* {*---------------------------------------------------------------------*} */
 ;* (define (bbv-range-lts left::bbv-range right::bbv-range shift::int) */
-;*    (let ((li (bbv-range-min left))                                  */
-;* 	 (la (bbv-range-max left))                                     */
-;* 	 (ri (+fx (bbv-range-min right) shift))                        */
-;* 	 (ra (+fx (bbv-range-max right) shift)))                       */
+;*    (let ((li (bbv-range-lo left))                                  */
+;* 	 (la (bbv-range-up left))                                     */
+;* 	 (ri (+fx (bbv-range-lo right) shift))                        */
+;* 	 (ra (+fx (bbv-range-up right) shift)))                       */
 ;*       (cond                                                         */
 ;* 	 ((< la ri)                                                    */
 ;* 	  ;; [10..20]                                                  */
@@ -331,22 +331,22 @@
 ;* 	  ;;    [15....30]                                             */
 ;* 	  ;; => [10..15]                                               */
 ;* 	  (instantiate::bbv-range                                      */
-;* 	     (min li)                                                  */
-;* 	     (max ri)))                                                */
+;* 	     (lo li)                                                  */
+;* 	     (up ri)))                                                */
 ;* 	 ((and (< li ri) (> la ra))                                    */
 ;* 	  ;; [10.........40]                                           */
 ;* 	  ;;    [20..30]                                               */
 ;* 	  ;; => [10..20]                                               */
 ;* 	  (instantiate::bbv-range                                      */
-;* 	     (min li)                                                  */
-;* 	     (max ri)))                                                */
+;* 	     (lo li)                                                  */
+;* 	     (up ri)))                                                */
 ;* 	 ((and (< li ri) (= la ra))                                    */
 ;* 	  ;; [10.....30]                                               */
 ;* 	  ;;    [20..30]                                               */
 ;* 	  ;; => [10..20]                                               */
 ;* 	  (instantiate::bbv-range                                      */
-;* 	     (min li)                                                  */
-;* 	     (max ri)))                                                */
+;* 	     (lo li)                                                  */
+;* 	     (up ri)))                                                */
 ;* 	 ((and (= li ri) (= la ra))                                    */
 ;* 	  ;; [10..20]                                                  */
 ;* 	  ;; [10..20]                                                  */
@@ -382,48 +382,56 @@
 ;* 	     (format "~a/~a" (shape left) (shape right)))))))          */
        
 (define (bbv-range-lt left right)
-   (let ((li (bbv-range-min left))
-	 (la (bbv-range-max left))
-	 (ri (bbv-range-min right))
-	 (ra (bbv-range-max right)))
+   (let ((li (bbv-range-lo left))
+	 (la (bbv-range-up left))
+	 (ri (bbv-range-lo right))
+	 (ra (bbv-range-up right)))
       (if (>= li ra)
 	  ;; [30..40] < [10..30] => error
 	  *fixnum-range*
-	  ;; [30..X] < [Y..?] => [31..min(X, Y-1)]
-	  (instantiate::bbv-range (min li) (max (max li (min la (-- ri))))))))
+	  ;; [30..X] < [Y..?] => [31..lo(X, Y-1)]
+	  (instantiate::bbv-range
+	     (lo li)
+	     (up (max li (min la (-- ri))))))))
 
 (define (bbv-range-lte left right)
-   (let ((li (bbv-range-min left))
-	 (la (bbv-range-max left))
-	 (ri (bbv-range-min right))
-	 (ra (bbv-range-max right)))
+   (let ((li (bbv-range-lo left))
+	 (la (bbv-range-up left))
+	 (ri (bbv-range-lo right))
+	 (ra (bbv-range-up right)))
       (if (> li ra)
 	  ;; [30..40] <= [10..20] => error
 	  *fixnum-range*
-	  ;; [30..X] <= [Y..?] => [31..min(X, Y)]
-	  (instantiate::bbv-range (min li) (max (max li (min la ri)))))))
+	  ;; [30..X] <= [Y..?] => [31..lo(X, Y)]
+	  (instantiate::bbv-range
+	     (lo li)
+	     (up (max li (min la ri)))))))
 
 (define (bbv-range-gt left right)
-   (let ((li (bbv-range-min left))
-	 (la (bbv-range-max left))
-	 (ri (bbv-range-min right))
-	 (ra (bbv-range-max right)))
+   (let ((li (bbv-range-lo left))
+	 (la (bbv-range-up left))
+	 (ri (bbv-range-lo right))
+	 (ra (bbv-range-up right)))
       (if (<= la ri)
 	  ;; [10..20] > [30..40] => error
 	  *fixnum-range*
-	  ;; [X..20] > [?..Y] => [31..min(X, Y)]
-	  (instantiate::bbv-range (min (min la (max li (++ ri)))) (max la)))))
+	  ;; [X..20] > [?..Y] => [31..lo(X, Y)]
+	  (instantiate::bbv-range
+	     (lo (min la (max li (++ ri))))
+	     (up la)))))
 
 (define (bbv-range-gte left right)
-   (let ((li (bbv-range-min left))
-	 (la (bbv-range-max left))
-	 (ri (bbv-range-min right))
-	 (ra (bbv-range-max right)))
+   (let ((li (bbv-range-lo left))
+	 (la (bbv-range-up left))
+	 (ri (bbv-range-lo right))
+	 (ra (bbv-range-up right)))
       (if (< la ri)
 	  ;; [10..20] >= [30..40] => error
 	  *fixnum-range*
-	  ;; [X..20] >= [?..Y] => [31..min(X, Y)]
-	  (instantiate::bbv-range (min (min la (max li ri))) (max la)))))
+	  ;; [X..20] >= [?..Y] => [31..lo(X, Y)]
+	  (instantiate::bbv-range
+	     (lo (min la (max li ri)))
+	     (up la)))))
 
 ;*    (bbv-range-compare "bbv-range-lt" left right                     */
 ;*       ;; [10..20] < [10..20] => [10..20]                            */
@@ -433,11 +441,11 @@
 ;*       ;; [30..40] < [10..20] => error                               */
 ;*       :case2 *fixnum-range*                                         */
 ;*       ;; [10..20] < [15..30] => [10..14]                            */
-;*       :case3 (instantiate::bbv-range (min li) (max (-- ra)))        */
+;*       :case3 (instantiate::bbv-range (lo li) (up (-- ra)))        */
 ;*       ;; [10..40] < [20..30] => [10..19]                            */
-;*       :case4 (instantiate::bbv-range (min li) (max (-- ra)))        */
+;*       :case4 (instantiate::bbv-range (lo li) (up (-- ra)))        */
 ;*       ;; [10..30] < [20..30] => [10..19]                            */
-;*       :case5 (instantiate::bbv-range (min li) (max (-- ra)))        */
+;*       :case5 (instantiate::bbv-range (lo li) (up (-- ra)))        */
 ;*       ;; [15..20] < [10..20] => [                                   */
 ;*       ))                                                            */
 ;*                                                                     */
@@ -450,11 +458,11 @@
 ;*       ;; [30..40] <= [10..20] => error                              */
 ;*       :case2 *fixnum-range*                                         */
 ;*       ;; [10....20] <= [15....30] => [10..15]                       */
-;*       :case3 (instantiate::bbv-range (min li) (max ra))             */
+;*       :case3 (instantiate::bbv-range (lo li) (up ra))             */
 ;*       ;; [10..40] <= [20..30] => [10..20]                           */
-;*       :case4 (instantiate::bbv-range (min li) (max ra))             */
+;*       :case4 (instantiate::bbv-range (lo li) (up ra))             */
 ;*       ;; [10..30] <= [20..30] => [10..20]                           */
-;*       :case5 (instantiate::bbv-range (min li) (max ra))             */
+;*       :case5 (instantiate::bbv-range (lo li) (up ra))             */
 ;*       ))                                                            */
 ;*                                                                     */
 ;* (define (bbv-range-gt left right)                                   */
@@ -466,11 +474,11 @@
 ;*       ;; [30..40] > [10..20] => [30..40]                            */
 ;*       :case2 left                                                   */
 ;*       ;; [10....20] > [15....30] => [16..20]                        */
-;*       :case3 (instantiate::bbv-range (min (++ ri)) (max la))        */
+;*       :case3 (instantiate::bbv-range (lo (++ ri)) (up la))        */
 ;*       ;; [10..40] > [20..30] => [21..40]                            */
-;*       :case4 (instantiate::bbv-range (min (++ ri)) (max ra))        */
+;*       :case4 (instantiate::bbv-range (lo (++ ri)) (up ra))        */
 ;*       ;; [10..30] > [20..30] => [21..30]                            */
-;*       :case5 (instantiate::bbv-range (min (++ ri)) (max la)         */
+;*       :case5 (instantiate::bbv-range (lo (++ ri)) (up la)         */
 ;*       ))                                                            */
 ;*                                                                     */
 ;* (define (bbv-range-gte left right)                                  */
@@ -482,11 +490,11 @@
 ;*       ;; [30..40] >= [10..20] => [30..40]                           */
 ;*       :case2 left                                                   */
 ;*       ;; [10....20] >= [15....30] => [15..20]                       */
-;*       :case3 (instantiate::bbv-range (min ri) (max la))             */
+;*       :case3 (instantiate::bbv-range (lo ri) (up la))             */
 ;*       ;; [10..40] >= [20..30] => [20..40]                           */
-;*       :case4 (instantiate::bbv-range (min ri) (max ra))             */
+;*       :case4 (instantiate::bbv-range (lo ri) (up ra))             */
 ;*       ;; [10..30] >= [20..30] => [20..30]                           */
-;*       :case5 (instantiate::bbv-range (min ri) (max la)              */
+;*       :case5 (instantiate::bbv-range (lo ri) (up la)              */
 ;*       ))                                                            */
 ;*                                                                     */
 ;* {*---------------------------------------------------------------------*} */
@@ -495,10 +503,10 @@
 ;* {*    Enforce left >= right                                            *} */
 ;* {*---------------------------------------------------------------------*} */
 ;* (define (bbv-range-gts left::bbv-range right::bbv-range shift::int) */
-;*    (let ((li (bbv-range-min left))                                  */
-;* 	 (la (bbv-range-max left))                                     */
-;* 	 (ri (+fx (bbv-range-min right) shift))                        */
-;* 	 (ra (+fx (bbv-range-max right) shift)))                       */
+;*    (let ((li (bbv-range-lo left))                                  */
+;* 	 (la (bbv-range-up left))                                     */
+;* 	 (ri (+fx (bbv-range-lo right) shift))                        */
+;* 	 (ra (+fx (bbv-range-up right) shift)))                       */
 ;*       (cond                                                         */
 ;* 	 ((< la ri)                                                    */
 ;* 	  ;; [10..20]                                                  */
@@ -510,8 +518,8 @@
 ;* 	  ;;    [15....30]                                             */
 ;* 	  ;; => [15..20]                                               */
 ;* 	  (instantiate::bbv-range                                      */
-;* 	     (min ri)                                                  */
-;* 	     (max la)))                                                */
+;* 	     (lo ri)                                                  */
+;* 	     (up la)))                                                */
 ;* 	 ((and (< li ri) (> la ra))                                    */
 ;* 	  ;; [10.........40]                                           */
 ;* 	  ;;    [20..30]                                               */
@@ -522,8 +530,8 @@
 ;* 	  ;;    [20..30]                                               */
 ;* 	  ;; => [20..30]                                               */
 ;* 	  (instantiate::bbv-range                                      */
-;* 	     (min ri)                                                  */
-;* 	     (max la)))                                                */
+;* 	     (lo ri)                                                  */
+;* 	     (up la)))                                                */
 ;* 	 ((and (= li ri) (= la ra))                                    */
 ;* 	  ;; [10..20]                                                  */
 ;* 	  ;; [10..20]                                                  */
@@ -570,16 +578,16 @@
 ;*    bbv-range-eq ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-eq left::bbv-range right::bbv-range)
-   (let* ((ri (bbv-range-min right))
-	  (ra (bbv-range-max right))
-	  (li (bbv-range-min left))
-	  (la (bbv-range-max left))
+   (let* ((ri (bbv-range-lo right))
+	  (ra (bbv-range-up right))
+	  (li (bbv-range-lo left))
+	  (la (bbv-range-up left))
 	  (oi (max ri li))
 	  (oa (min ra la)))
       (when (<= oi oa)
 	 (instantiate::bbv-range
-	    (min oi)
-	    (max oa)))))
+	    (lo oi)
+	    (up oa)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    normalize ...                                                    */
@@ -628,34 +636,34 @@
 ;*    bbv-range-add ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-add left::bbv-range right::bbv-range)
-   (let ((ri (bbv-range-min right))
-	 (ra (bbv-range-max right))
-	 (li (bbv-range-min left))
-	 (la (bbv-range-max left)))
+   (let ((ri (bbv-range-lo right))
+	 (ra (bbv-range-up right))
+	 (li (bbv-range-lo left))
+	 (la (bbv-range-up left)))
       (instantiate::bbv-range
-	 (min (+rng li ri))
-	 (max (+rng la ra)))))
+	 (lo (+rng li ri))
+	 (up (+rng la ra)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-sub ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-sub left::bbv-range right::bbv-range)
-   (let ((ri (bbv-range-min right))
-	 (ra (bbv-range-max right))
-	 (li (bbv-range-min left))
-	 (la (bbv-range-max left)))
+   (let ((ri (bbv-range-lo right))
+	 (ra (bbv-range-up right))
+	 (li (bbv-range-lo left))
+	 (la (bbv-range-up left)))
       (instantiate::bbv-range
-	 (min (-rng li ra))
-	 (max (-rng la ri)))))
+	 (lo (-rng li ra))
+	 (up (-rng la ri)))))
       
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-mul ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-mul left::bbv-range right::bbv-range)
-   (let* ((ri (bbv-range-min right))
-	  (ra (bbv-range-max right))
-	  (li (bbv-range-min left))
-	  (la (bbv-range-max left))
+   (let* ((ri (bbv-range-lo right))
+	  (ra (bbv-range-up right))
+	  (li (bbv-range-lo left))
+	  (la (bbv-range-up left))
 	  (v0 (*rng li ri))
 	  (v1 (*rng li ra))
 	  (v2 (*rng la ra))
@@ -665,36 +673,36 @@
 	  (ma0 (max v0 v1))
 	  (ma1 (max v2 v3)))
       (instantiate::bbv-range
-	 (min (min mi0 mi1 li ri))
-	 (max (max ma0 ma1 la ra)))))
+	 (lo (min mi0 mi1 li ri))
+	 (up (max ma0 ma1 la ra)))))
       
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-intersection ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-intersection::bbv-range x::bbv-range y::bbv-range)
-   (with-access::bbv-range x ((minx min) (maxx max))
-      (with-access::bbv-range y ((miny min) (maxy max))
+   (with-access::bbv-range x ((lox lo) (upx up))
+      (with-access::bbv-range y ((loy lo) (upy up))
 	 (instantiate::bbv-range
-	    (min (max minx miny))
-	    (max (min maxx maxy))))))
+	    (lo (max lox loy))
+	    (up (min upx upy))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-merge ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-merge x::bbv-range y::bbv-range)
-   (with-access::bbv-range x ((minx min) (maxx max))
-      (with-access::bbv-range y ((miny min) (maxy max))
+   (with-access::bbv-range x ((lox lo) (upx up))
+      (with-access::bbv-range y ((loy lo) (upy up))
 	 (instantiate::bbv-range
-	    (min (min minx miny))
-	    (max (max maxx maxy))))))
+	    (lo (min lox loy))
+	    (up (max upx upy))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-widen ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-widen x::bbv-range y::bbv-range)
    
-   (define (widen-min minx miny)
-      (let ((i (min minx miny)))
+   (define (widen-lo lox loy)
+      (let ((i (min lox loy)))
 	 (cond
 	    ((>fx i 16) (/fx i 2))
 	    ((>=fx i -2) (-fx i 1))
@@ -703,8 +711,8 @@
 	    ((<=fx i -256) (+fx (bbv-min-fixnum) 1))
 	    (else (bbv-min-fixnum)))))
 
-   (define (widen-max maxx maxy)
-      (let ((i (max maxx maxy)))
+   (define (widen-up upx upy)
+      (let ((i (max upx upy)))
 	 (cond
 	    ((<=fx i 2) (+fx i 1))
 	    ((<=fx i 256) (*fx i 2))
@@ -712,8 +720,8 @@
 	    ((>=fx i 256) (-fx (bbv-max-fixnum) 1))
 	    (else (bbv-max-fixnum)))))
    
-   (with-access::bbv-range x ((minx min) (maxx max))
-      (with-access::bbv-range y ((miny min) (maxy max))
+   (with-access::bbv-range x ((lox lo) (upx up))
+      (with-access::bbv-range y ((loy lo) (upy up))
 	 (instantiate::bbv-range
-	    (min (if (=fx minx miny) minx (widen-min minx miny)))
-	    (max (if (=fx maxx maxy) maxx (widen-max maxx maxy)))))))
+	    (lo (if (=fx lox loy) lox (widen-lo lox loy)))
+	    (up (if (=fx upx upy) upx (widen-up upx upy)))))))

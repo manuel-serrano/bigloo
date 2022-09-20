@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Sep  1 14:19:08 2022 (serrano)                */
+;*    Last change :  Sat Sep 17 18:47:52 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -68,6 +68,7 @@
 
 	    (bbv-ctx-assoc ::bbv-ctx ::pair-nil)
 	    (bbv-ctx-get ::bbv-ctx ::rtl_reg)
+	    (extend-ctx/entry ::bbv-ctx ::bbv-ctxentry)
 	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
 	       #!key (value '_))
 	    (extend-ctx* ctx::bbv-ctx regs::pair ::pair ::bool
