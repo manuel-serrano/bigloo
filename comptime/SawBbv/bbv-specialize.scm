@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Sep 20 08:42:25 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 06:12:50 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -69,25 +69,38 @@
 ;*    bbv-block* ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block*::blockS bv::blockV ctx::bbv-ctx)
-   (let* ((queue (instantiate::bbv-queue))
-	  (bs (bbv-block bv ctx queue)))
-      (let loop ((queue queue))
-	 (with-access::bbv-queue queue (blocks)
-	    (if (null? blocks)
-		(live-blockS bs)
-		(let ((queue (instantiate::bbv-queue)))
-		   (for-each (lambda (bv)
-				(bbv-block-merge! bv queue))
-		      blocks)
-		   (loop queue)))))))
+   (with-trace 'bbv-block*
+	 (format "bbv-block ~a" (with-access::blockV bv (label) label))
+      (let* ((queue (instantiate::bbv-queue))
+	     (bs (bbv-block bv ctx queue)))
+	 (let loop ((queue queue))
+	    (with-access::bbv-queue queue (blocks)
+	       (trace-item "queue="
+		  (map (lambda (b)
+			  (with-access::blockV b (label)
+			     label))
+		     blocks))
+	       (if (null? blocks)
+		   (live-blockS bs)
+		   (let ((queue (instantiate::bbv-queue)))
+		      (for-each (lambda (bv)
+				   (bbv-block-merge! bv queue))
+			 blocks)
+		      (loop queue))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge! bv::blockV queue::bbv-queue)
-   (with-access::blockV bv (label)
-      (with-trace 'bbv-merge (format "bbv-block-merge! ~a" label)
-	 (let ((merges (bbv-block-ctx-merge bv)))
+   (with-access::blockV bv (label versions)
+      (with-trace 'bbv-merge
+	    (format "bbv-block-merge! ~a ~a" label
+	       (filter-map (lambda (bs)
+			     (with-access::blockS bs (label mblock)
+				(unless mblock label)))
+		  versions))
+	 (let ((merges (bbv-block-merge-ctx bv)))
+	    ;; replace all the blockS that are merged into something else
 	    (for-each (lambda (m)
 			 ;; each m is a pair <blockS, ctx> where
 			 ;;   - blocks is the (live) block to be replaced
@@ -95,12 +108,24 @@
 			 (let* ((bs (car m))
 				(ctx (cdr m))
 				(nbs (bbv-block bv ctx queue)))
-			    (trace-item "bs="
+			    (trace-item "merge <"
 			       (with-access::blockS bs (label) label)
-			       " -> ctx="
-			       (with-access::bbv-ctx ctx (id) id))
+			       ", "
+			       (with-access::bbv-ctx ctx (id) id)
+			       ">")
 			    (replace-block! bs nbs)))
-	       merges)))))
+	       merges)
+	    (trace-item "after merge " label ": "
+	       (filter-map (lambda (bs)
+			      (with-access::blockS bs (label mblock)
+				 (unless mblock label)))
+		  versions))
+	    ;; specialize all the blocks that been delayed
+	    (for-each (lambda (bs)
+			 (with-access::blockS bs (first mblock)
+			    (when (and (null? first) (not mblock))
+			       (bbv-block-specialize-ins! bv bs queue))))
+	       versions)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
@@ -123,7 +148,7 @@
 		live-blockS)
 	       ((and merge (>=fx (length lvs) *max-block-versions*))
 		(let ((bs (new-blockS bv ctx)))
-		   '(bbv-queue-push! queue bv)
+		   (bbv-queue-push! queue bv)
 		   bs))
 	       (else
 		(bbv-block-specialize! bv ctx queue)))))))
@@ -169,21 +194,23 @@
 ;*    bbv-block-specialize! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-specialize!::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
-   
-   (define (specialize!::blockS bv::blockV ctx::bbv-ctx)
-      (with-access::blockV bv (first)
-	 (let ((bs (new-blockS bv ctx)))
-	    (trace-item "new-label="
-	       (with-access::blockS bs (label) label))
-	    (let ((nfirst (bbv-ins first bs ctx queue)))
-	       (with-access::blockS bs (first)
-		  (set! first nfirst)
-		  bs)))))
-   
    (with-access::blockV bv (label)
       (with-trace 'bbv-specialize (format "bbv-block-specialize! ~a" label)
 	 (trace-item "ctx=" (shape ctx))
-	 (specialize! bv ctx))))
+	 (bbv-block-specialize-ins! bv (new-blockS bv ctx) queue))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-specialize-ins! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-specialize-ins!::blockS bv::blockV bs::blockS queue::bbv-queue)
+   (with-access::blockV bv (first)
+      (with-access::blockS bs (ctx label)
+	 (with-trace 'bbv-specialize
+	       (format "bbv-block-specialize-ins! ~a" label)
+	    (let ((nfirst (bbv-ins first bs ctx queue)))
+	       (with-access::blockS bs (first)
+		  (set! first nfirst)
+		  bs))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ins ...                                                      */

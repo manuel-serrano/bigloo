@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Sep  1 14:26:26 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 09:45:47 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -202,6 +202,8 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-filter-live-in-regs ...                                  */
+;*    -------------------------------------------------------------    */
+;*    Filter out non-live registers from the environment.              */
 ;*---------------------------------------------------------------------*/
 (define (bbv-ctx-filter-live-in-regs ctx ins::rtl_ins/bbv)
    
@@ -217,11 +219,8 @@
 					     (bbv-ctxentry-aliases e)))))))
 	    (bbv-ctx-entries ctx))))
    
-   (let ((es (filter-entries ctx ins)))
-      (if (=fx (length es) (length (bbv-ctx-entries ctx)))
-	  ctx
-	  (duplicate::bbv-ctx ctx
-	     (entries es)))))
+   (duplicate::bbv-ctx ctx
+      (entries (filter-entries ctx ins))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-extend-live-out-regs ...                                 */

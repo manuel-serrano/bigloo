@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Sep 20 08:46:04 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 06:40:28 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -38,7 +38,7 @@
 	    saw_bbv-range)
 
    (export  (mark-widener! ::blockV)
-	    (bbv-block-ctx-merge ::blockV)
+	    (bbv-block-merge-ctx ::blockV)
 	    (merge-contexts ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -62,33 +62,34 @@
 		     (liip (cdr succs)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-block-ctx-merge ...                                          */
+;*    bbv-block-merge-ctx ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    Returns a merge context and a list of blocks to be replaced.     */
-;*    -------------------------------------------------------------    */
-;*    b is a merge block (i.e., in a loop) and the number of           */
-;*    specialized version has exceeded the maximum threshold, some     */
-;*    versions have to be collapsed and widened.                       */
+;*    Returns a list of <blockS, ctx> where blockS is the block to be  */
+;*    replaced with a block generated for context ctx.                 */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block-ctx-merge bv::blockV) 
+(define (bbv-block-merge-ctx bv::blockV) 
    (with-access::blockV bv (label)
-      (with-trace 'bbv-merge (format "bbv-block-ctx-merge block=~a" label)
+      (with-trace 'bbv-merge (format "bbv-block-merge-ctx block=~a" label)
 	 (let ((lvs (blockV-live-versions bv)))
 	    (when (pair? lvs)
 	       (with-access::blockS (car lvs) (ctx)
+		  (when-trace 'bbv-merge
+		     (for-each (lambda (bs num)
+				  (with-access::blockS bs (ctx)
+				     (trace-item (format "ctx.~a=" num)
+					(shape ctx))))
+			lvs (iota (length lvs))))
 		  (let* ((regs (map bbv-ctxentry-reg (bbv-ctx-entries ctx)))
-			 (rrs (map (lambda (r) (cons r (reg-range-merge r lvs))) regs)))
-		     (when-trace 'bbv-merge
-			(for-each (lambda (bs num)
-				     (with-access::blockS bs (ctx)
-					(trace-item (format "ctx.~a=" num) (shape ctx))))
-			   lvs (iota (length lvs))))
+			 (rrs (map (lambda (r)
+				      (cons r (reg-range-merge r lvs)))
+				 regs)))
 		     (filter-map (lambda (bs::blockS)
 				    (let ((mctx (bbv-ctx-widen bs rrs)))
 				       (when mctx
 					  (with-access::blockS bs (ctx)
 					     (with-access::bbv-ctx ctx (id)
-						(trace-item "mctx(" id ") -> " (shape mctx))))
+						(trace-item "mctx(" id ") -> "
+						   (shape mctx))))
 					  (cons bs mctx))))
 			lvs))))))))
 
@@ -147,15 +148,17 @@
 		       (extend-ctx/entry mctx oe)
 		       equal)
 		    (with-access::bbv-ctxentry oe (polarity value)
-		       (if (and polarity (isa? value bbv-range))
+		       (cond
+			  ((and polarity (isa? value bbv-range))
 			   (loop (cdr rrs)
 			      (let ((ne (duplicate::bbv-ctxentry oe
 					   (value rng))))
 				 (extend-ctx/entry mctx ne))
-			      #f)
+			      #f))
+			  (else
 			   (loop (cdr rrs)
 			      (extend-ctx/entry mctx oe)
-			      equal))))))
+			      equal)))))))
 	    (equal
 	     #f)
 	    (else
