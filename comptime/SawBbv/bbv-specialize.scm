@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Sep 21 06:12:50 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 13:09:10 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -89,45 +89,6 @@
 		      (loop queue))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-block-merge! ...                                             */
-;*---------------------------------------------------------------------*/
-(define (bbv-block-merge! bv::blockV queue::bbv-queue)
-   (with-access::blockV bv (label versions)
-      (with-trace 'bbv-merge
-	    (format "bbv-block-merge! ~a ~a" label
-	       (filter-map (lambda (bs)
-			     (with-access::blockS bs (label mblock)
-				(unless mblock label)))
-		  versions))
-	 (let ((merges (bbv-block-merge-ctx bv)))
-	    ;; replace all the blockS that are merged into something else
-	    (for-each (lambda (m)
-			 ;; each m is a pair <blockS, ctx> where
-			 ;;   - blocks is the (live) block to be replaced
-			 ;;   - ctx is the context of the new block 
-			 (let* ((bs (car m))
-				(ctx (cdr m))
-				(nbs (bbv-block bv ctx queue)))
-			    (trace-item "merge <"
-			       (with-access::blockS bs (label) label)
-			       ", "
-			       (with-access::bbv-ctx ctx (id) id)
-			       ">")
-			    (replace-block! bs nbs)))
-	       merges)
-	    (trace-item "after merge " label ": "
-	       (filter-map (lambda (bs)
-			      (with-access::blockS bs (label mblock)
-				 (unless mblock label)))
-		  versions))
-	    ;; specialize all the blocks that been delayed
-	    (for-each (lambda (bs)
-			 (with-access::blockS bs (first mblock)
-			    (when (and (null? first) (not mblock))
-			       (bbv-block-specialize-ins! bv bs queue))))
-	       versions)))))
-
-;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
@@ -152,6 +113,49 @@
 		   bs))
 	       (else
 		(bbv-block-specialize! bv ctx queue)))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge! bv::blockV queue::bbv-queue)
+   (with-access::blockV bv (label versions)
+      (with-trace 'bbv-merge
+	    (format "bbv-block-merge! ~a ~a" label
+	       (filter-map (lambda (bs)
+			     (with-access::blockS bs (label mblock)
+				(unless mblock label)))
+		  versions))
+	 (let ((merges (bbv-block-merge-ctx bv)))
+	    ;; replace all the blockS that are merged into something else
+	    (for-each (lambda (m)
+			 ;; each m is a pair <blockS, ctx> where
+			 ;;   - blocks is the (live) block to be replaced
+			 ;;   - ctx is the context of the new block 
+			 (let* ((bs (car m))
+				(ctx (cdr m))
+				(nbs (bbv-block bv ctx queue)))
+			    (trace-item "merge <"
+			       (with-access::blockS bs (label) label)
+			       ", "
+			       (with-access::bbv-ctx ctx (id) id)
+			       "> -> "
+			       (with-access::blockS nbs (label) label))
+			    (replace-block! bs nbs)))
+	       merges)
+	    (trace-item "after merge " label ": "
+	       (filter-map (lambda (bs)
+			      (with-access::blockS bs (label mblock ctx)
+				 (unless mblock
+				    (with-access::bbv-ctx ctx (id)
+					  (format "~a@~a" id label)))))
+		  versions))
+	    ;; specialize all the blocks that been delayed
+	    (for-each (lambda (bs)
+			 (with-access::blockS bs (first mblock)
+			    (when (and (null? first) (not mblock))
+			       (bbv-block-specialize-ins! bv bs queue))))
+	       versions)))))
+
 
 ;*                                                                     */
 ;* 	    (let* ((bs (bbv-block-specialize! bv ctx))                 */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Wed Sep 21 09:45:47 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 13:34:24 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -206,21 +206,35 @@
 ;*    Filter out non-live registers from the environment.              */
 ;*---------------------------------------------------------------------*/
 (define (bbv-ctx-filter-live-in-regs ctx ins::rtl_ins/bbv)
+
+   (define filtered #f)
    
    (define (filter-entries ctx ins)
       (with-access::rtl_ins/bbv ins (in)
 	 (filter-map (lambda (e)
 			(let ((reg (bbv-ctxentry-reg e)))
-			   (when (or (not (isa? reg rtl_reg/ra))
-				     (regset-member? reg in))
-			      (duplicate::bbv-ctxentry e
-				 (aliases (filter (lambda (reg)
-						     (regset-member? reg in))
-					     (bbv-ctxentry-aliases e)))))))
+			   (if (or (not (isa? reg rtl_reg/ra))
+				   (regset-member? reg in))
+			       (let ((aliases (filter (lambda (reg)
+							 (regset-member? reg in))
+						 (bbv-ctxentry-aliases e))))
+				  (if (=fx (length aliases)
+					 (length (bbv-ctxentry-aliases e)))
+				      e
+				      (begin
+					 (set! filtered #t)
+					 (duplicate::bbv-ctxentry e
+					    (aliases aliases)))))
+			       (begin
+				  (set! filtered #t)
+				  #f))))
 	    (bbv-ctx-entries ctx))))
-   
-   (duplicate::bbv-ctx ctx
-      (entries (filter-entries ctx ins))))
+
+   (let ((entries (filter-entries ctx ins)))
+      (if filtered
+	  (duplicate::bbv-ctx ctx
+	     (entries entries))
+	  ctx)))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-extend-live-out-regs ...                                 */

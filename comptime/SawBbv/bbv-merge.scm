@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Wed Sep 21 06:40:28 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 13:11:58 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -81,14 +81,17 @@
 			lvs (iota (length lvs))))
 		  (let* ((regs (map bbv-ctxentry-reg (bbv-ctx-entries ctx)))
 			 (rrs (map (lambda (r)
-				      (cons r (reg-range-merge r lvs)))
+				      (let ((range (reg-range-merge r lvs)))
+					 (trace-item "reg " (shape r) ": "
+					    (shape range))
+					 (cons r range)))
 				 regs)))
 		     (filter-map (lambda (bs::blockS)
 				    (let ((mctx (bbv-ctx-widen bs rrs)))
 				       (when mctx
 					  (with-access::blockS bs (ctx)
 					     (with-access::bbv-ctx ctx (id)
-						(trace-item "mctx(" id ") -> "
+						(trace-item "mctx(" id ") => "
 						   (shape mctx))))
 					  (cons bs mctx))))
 			lvs))))))))
@@ -100,15 +103,19 @@
 ;*    with all the variable context ranges.                            */
 ;*---------------------------------------------------------------------*/
 (define (reg-range-merge reg versions::pair-nil)
-   (let ((ranges (reg-ranges-get reg versions)))
-      (when (pair? ranges)
-	 (let loop ((o (bbv-max-fixnum))
-		    (u (bbv-min-fixnum))
-		    (r ranges))
-	    (if (null? r)
-		(reg-range-widening o u ranges)
-		(with-access::bbv-range (car r) (lo up)
-		   (loop (min o lo) (max u up) (cdr r))))))))
+   (with-trace 'bbv-merge (format "reg-range-merge ~a" (shape reg))
+      (let ((ranges (reg-ranges-get reg versions)))
+	 (trace-item "range=" (map shape ranges))
+	 (when (pair? ranges)
+	    (let loop ((o (bbv-max-fixnum))
+		       (u (bbv-min-fixnum))
+		       (r ranges))
+	       (if (null? r)
+		   (let ((range (reg-range-widening o u ranges)))
+		      (trace-item "widening=" (shape range))
+		      range)
+		   (with-access::bbv-range (car r) (lo up)
+		      (loop (min o lo) (max u up) (cdr r)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    reg-ranges-get ...                                               */
@@ -171,7 +178,10 @@
 ;*---------------------------------------------------------------------*/
 (define (reg-range-widening o u ranges)
 
+   (define widening #f)
+   
    (define (low-widening v)
+      (set! widening #t)
       (cond
 	 ((>fx v 1) (/fx v 2))
 	 ((=fx v 1) 0)
@@ -181,6 +191,7 @@
 	 (else (bbv-min-fixnum))))
 
    (define (up-widening v)
+      (set! widening #t)
       (cond
 	 ((<fx v -1) (/fx v 2))
 	 ((=fx v -1) 0)
@@ -202,7 +213,7 @@
 		    ranges)
 		 u
 		 (up-widening u))))
-      (unless (and (= no o) (= nu u))
+      (unless (and (not widening) (= no o) (= nu u))
 	 ;; no widening possible because we are dealing with a constant
 	 (instantiate::bbv-range
 	    (lo no)
