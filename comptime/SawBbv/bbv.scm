@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Sep 20 16:47:09 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 16:41:43 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -86,7 +86,7 @@
 					   (remove-nop!
 					      (remove-goto!
 						 (simplify-branch!
-						    (merge! (get-bb-mark) s))))
+						    (coalesce! (get-bb-mark) s))))
 					   s))))
 			     (verbose 3 " " (length blocks) " -> " (length b))
 			     (verbose 2 "\n")
@@ -120,13 +120,30 @@
 	       (in (list->regset (get-args o) regs))
 	       (out (make-empty-regset regs)))
 	    (for-each args-widen-bbv! args))))
+
+   (define (overflow-def o)
+      ;; return the register assigned in special overflow operations
+      (when (rtl_ins-fxovop? o)
+	 ;; these special instructions assigned (so "define") their
+	 ;; third arguments
+	 (with-access::rtl_ins o (fun args)
+	    (with-access::rtl_ifne fun (then)
+	       (let ((call (car args)))
+		  (with-access::rtl_ins (car args) (args)
+		     (caddr args)))))))
    
    (define (ins-widen-bbv! o)
       (with-access::rtl_ins o (dest args fun)
 	 (widen!::rtl_ins/bbv o
-	    (def (if (or (not dest) (rtl_reg-onexpr? dest))
-		     (make-empty-regset regs)
-		     (list->regset (list dest) regs)))
+	    (def (cond
+		    ((overflow-def o)
+		     =>
+		     (lambda (reg)
+			(list->regset (list reg) regs)))
+		    ((or (not dest) (rtl_reg-onexpr? dest))
+		     (make-empty-regset regs))
+		    (else
+		     (list->regset (list dest) regs))))
 	    (in (list->regset (get-args o) regs))
 	    (out (make-empty-regset regs)))
 	 (for-each args-widen-bbv! args)))
@@ -218,32 +235,32 @@
 		(liip (cdr bs) (or (liveness-block! (car bs)) t)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    merge! ...                                                       */
+;*    coalesce! ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    Merge equivalent basic blocks subgraphs                          */
+;*    Coalesce equivalent basic blocks subgraphs                       */
 ;*---------------------------------------------------------------------*/
-(define (merge! mark b::blockS)
+(define (coalesce! mark b::blockS)
    (with-access::blockS b (parent succs)
       (with-access::blockV parent (versions %mark)
 	 (unless (=fx mark %mark)
 	    (set! %mark mark)
-	    (with-trace 'bbv "merge"
+	    (with-trace 'bbv "coalesce"
 	       (trace-item "b=" (block-label b))
 	       (if (or (null? versions) (null? (cdr versions)))
-		   (for-each (lambda (s) (merge! mark s)) succs)
+		   (for-each (lambda (s) (coalesce! mark s)) succs)
 		   (let ((ks (sort (lambda (v1 v2)
 				      (<=fx (car v1) (car v2)))
 				(map (lambda (v)
 					(cons (bbv-hash v) v))
 				   versions))))
-		      (trace-item "merge "
+		      (trace-item "coalesce "
 			 (map (lambda (k)
 				 (cons (block-label (cdr k)) (car k)))
 			    ks))
 		      (let loop ((ks ks))
 			 (cond
 			    ((null? (cdr ks))
-			     (for-each (lambda (s) (merge! mark s)) succs))
+			     (for-each (lambda (s) (coalesce! mark s)) succs))
 			    ((>=fx (blockS-%mark (cdar ks)) mark)
 			     (loop (cdr ks)))
 			    (else
@@ -254,20 +271,20 @@
 				       (loop (cdr ks)))
 				      ((and (=fx (car k) (caar ls))
 					    (not (eq? (cdr k) (cdar ls)))
-					    (merge? (cdr k) (cdar ls) '()))
-				       (merge-block! mark (cdr k) (cdar ls))
+					    (coalesce? (cdr k) (cdar ls) '()))
+				       (coalesce-block! mark (cdr k) (cdar ls))
 				       (liip (cdr ls)))
 				      (else
 				       (liip (cdr ls)))))))))))))))
    b)
 
 ;*---------------------------------------------------------------------*/
-;*    merge-block! ...                                                 */
+;*    coalesce-block! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (merge-block! mark b by)
-   (with-trace 'bbv "merge-block!"
+(define (coalesce-block! mark b by)
+   (with-trace 'bbv "coalesce-block!"
       (trace-item "b=" (block-label b) " <- " (block-label by))
-      ;; merge by into b, i.e., replace all occurrence of by with b
+      ;; coalesce by into b, i.e., replace all occurrences of by with bx
       (let loop ((by (list by))
 		 (bx (list b)))
 	 (trace-item "by=" (map block-label by))
@@ -291,11 +308,11 @@
 		   (loop ysuccs xsuccs))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    merge? ...                                                       */
+;*    coalesce? ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    Is it possible to merge two blocks with the same hash?           */
+;*    Is it possible to coalesce two blocks with the same hash?        */
 ;*---------------------------------------------------------------------*/
-(define (merge? bx::blockS by::blockS stack)
+(define (coalesce? bx::blockS by::blockS stack)
    (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
       (with-access::blockS by ((ybl %blacklist) (ysuccs succs) first)
 	 (cond
@@ -319,7 +336,7 @@
 		   (when (pair? bad)
 		      (tprint "PAS BON: " (map block-label bad) " "
 			 (shape by))))
-		(or (every (lambda (x y) (merge? x y ns)) xsuccs ysuccs)
+		(or (every (lambda (x y) (coalesce? x y ns)) xsuccs ysuccs)
 		    (begin
 		       (set! xbl (cons by xbl))
 		       (set! ybl (cons bx ybl))
@@ -527,13 +544,14 @@
 	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (with-access::block (car bs) (first succs)
-	     (when (and (pair? first) (pair? (cdr first)))
-		(let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
-		   (set! first
-		      (if (null? f)
-			  (list (car first))
-			  f))))
+	  (with-access::block (car bs) (first succs label)
+	     (let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
+		(if (pair? f)
+		    ;; prune the instructions
+		    (set! first f)
+		    ;; remove the block
+		    (let ((n (car succs)))
+		       (replace-block! (car bs) n))))
 	     (loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
 
 ;*---------------------------------------------------------------------*/

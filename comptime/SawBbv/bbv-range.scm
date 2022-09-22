@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Fri Sep 16 09:17:21 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 18:41:02 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -386,52 +386,40 @@
 	 (la (bbv-range-up left))
 	 (ri (bbv-range-lo right))
 	 (ra (bbv-range-up right)))
-      (if (>= li ra)
-	  ;; [30..40] < [10..30] => error
-	  *fixnum-range*
-	  ;; [30..X] < [Y..?] => [31..lo(X, Y-1)]
-	  (instantiate::bbv-range
-	     (lo li)
-	     (up (max li (min la (-- ri))))))))
+      ;; [li..la] < [ri..ra] => [li..max(li,min(X, Y-1)]
+      (instantiate::bbv-range
+	 (lo li)
+	 (up (max li (min la (-- ra)))))))
 
 (define (bbv-range-lte left right)
    (let ((li (bbv-range-lo left))
 	 (la (bbv-range-up left))
 	 (ri (bbv-range-lo right))
 	 (ra (bbv-range-up right)))
-      (if (> li ra)
-	  ;; [30..40] <= [10..20] => error
-	  *fixnum-range*
-	  ;; [30..X] <= [Y..?] => [31..lo(X, Y)]
-	  (instantiate::bbv-range
-	     (lo li)
-	     (up (max li (min la ri)))))))
+      ;; [30..X] <= [Y..?] => [li..max(li,min(X, Y))]
+      (instantiate::bbv-range
+	 (lo li)
+	 (up (max li (min la ra))))))
 
 (define (bbv-range-gt left right)
    (let ((li (bbv-range-lo left))
 	 (la (bbv-range-up left))
 	 (ri (bbv-range-lo right))
 	 (ra (bbv-range-up right)))
-      (if (<= la ri)
-	  ;; [10..20] > [30..40] => error
-	  *fixnum-range*
-	  ;; [X..20] > [?..Y] => [31..lo(X, Y)]
-	  (instantiate::bbv-range
-	     (lo (min la (max li (++ ri))))
-	     (up la)))))
+      ;; [li..la] > [ri..ra] => [min(la,max(li,ri++))..la]
+      (instantiate::bbv-range
+	 (lo (min la (max li (++ ri))))
+	 (up la))))
 
 (define (bbv-range-gte left right)
    (let ((li (bbv-range-lo left))
 	 (la (bbv-range-up left))
 	 (ri (bbv-range-lo right))
 	 (ra (bbv-range-up right)))
-      (if (< la ri)
-	  ;; [10..20] >= [30..40] => error
-	  *fixnum-range*
-	  ;; [X..20] >= [?..Y] => [31..lo(X, Y)]
-	  (instantiate::bbv-range
-	     (lo (min la (max li ri)))
-	     (up la)))))
+      ;; [li..la] > [ri..ra] => [min(la,max(li,ri))..la]
+      (instantiate::bbv-range
+	 (lo (min la (max li ri)))
+	 (up la))))
 
 ;*    (bbv-range-compare "bbv-range-lt" left right                     */
 ;*       ;; [10..20] < [10..20] => [10..20]                            */

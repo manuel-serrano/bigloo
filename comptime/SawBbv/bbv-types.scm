@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Sep 20 08:47:46 2022 (serrano)                */
+;*    Last change :  Wed Sep 21 16:44:20 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -108,6 +108,7 @@
 	    (rtl_ins-true?::bool i::rtl_ins)
 	    (rtl_ins-false?::bool i::rtl_ins)
 	    (rtl_ins-return? i::rtl_ins)
+	    (rtl_ins-fxovop?::bool i::rtl_ins)
 	    
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)
@@ -565,6 +566,35 @@
 (define (rtl_ins-return? i::rtl_ins)
    (with-access::rtl_ins i (fun)
       (isa? fun rtl_return)))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-fxovop? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-fxovop? i)
+   
+   (define (reg? a)
+      (or (rtl_reg? a)
+	  (and (rtl_ins? a)
+	       (with-access::rtl_ins a (fun args dest)
+		  (when (isa? fun rtl_call)
+		     (rtl_reg? dest))))))
+
+   (define (rtl_call-fxovop? i)
+      (when (rtl_ins-call? i)
+	 (with-access::rtl_ins i (dest fun args)
+	    (with-access::rtl_call fun (var)
+	       (and (=fx (length args) 3)
+		    (or (eq? var *$-fx/ov*)
+			(eq? var *$+fx/ov*)
+			(eq? var *$*fx/ov*))
+		    (or (reg? (car args)) (rtl_ins-loadi? (car args)))
+		    (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))
+		    (reg? (caddr args)))))))
+
+   (when (rtl_ins-ifne? i)
+      (with-access::rtl_ins i (fun args)
+	 (when (and (pair? args) (null? (cdr args)))
+	    (rtl_call-fxovop? (car args))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-bool? ...                                                */

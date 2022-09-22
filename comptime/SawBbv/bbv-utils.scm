@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Wed Sep 21 13:34:24 2022 (serrano)                */
+;*    Last change :  Thu Sep 22 14:23:05 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -198,6 +198,8 @@
 						   (set! to new)))))))
 			    first)))
 	    preds)
+	 (with-access::blockS new ((npreds preds))
+	    (set! npreds preds))
 	 new)))
 
 ;*---------------------------------------------------------------------*/
