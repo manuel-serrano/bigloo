@@ -3,10 +3,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sat Sep 24 15:16:50 2022 (serrano)                */
+;*    Last change :  Mon Sep 26 15:39:01 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
+;*    -------------------------------------------------------------    */
+;*    See https://exiftool.org/TagNames/EXIF.html                      */
+;*        https://exiftool.org/TagNames/GPS.html                       */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -23,6 +26,9 @@
 	      (%commentpos (default #f))
 	      (%commentlen (default #f))
 	      (date (default #f))
+	      (offset-time (default #f))
+	      (offset-time-original (default #f))
+	      (offset-time-digitized (default #f))
 	      (make (default #f))
 	      (model (default #f))
 	      (orientation (default 'landscape))
@@ -37,6 +43,11 @@
 	      (yresolution (default #f))
 	      (resolution-unit (default #f))
 	      (focal-length (default #f))
+	      (focal-length35 (default #f))
+	      (custom-render (default #f))
+	      (exposure-mode (default #f))
+	      (white-balance (default #f))
+	      (digital-zoom-ratio (default #f))
 	      (flash (default #f))
 	      (fnumber (default #f))
 	      (iso (default #f))
@@ -56,8 +67,15 @@
 	      (colorspace (default #f))
 	      (sensing-method (default #f))
 	      (composite-image (default #f))
-	      (lens-model (default #f))
 	      (lens-make (default #f))
+	      (lens-model (default #f))
+	      (digitalZoomRatio (default #f))
+	      (scene-capture-type (default "???"))
+	      (gain-control (default "???"))
+	      (contrast (default "???"))
+	      (saturation (default "???"))
+	      (sharpness (default "???"))
+	      (distance-subject-range (default #f))
 	      (thumbnail (default #f))
 	      (thumbnail-path (default #f))
 	      (thumbnail-offset (default #f))
@@ -223,6 +241,7 @@
 ;*    process-exif-dir! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (process-exif-dir! en::bool bytes start::int base::int exif o0)
+
    (define (strncpy o max)
       (let loop ((i 0))
 	 (if (=fx i max)
@@ -235,6 +254,15 @@
 		       (blit-string! bytes o s 0 i)
 		       s)
 		    (loop (+fx i 1)))))))
+   
+   (define (process-exif-gps-tag o bcount)
+      (tprint bcount " "
+	 (map (lambda (i) (integer->string i 16))
+	    (map char->integer
+	       (string->list (substring bytes o (+fx o bcount))))))
+      (let* ((tag (elong->fixnum (get16u en bytes o))))
+	 (tprint "TAG=" (integer->string tag 16) " ")))
+      
    (let ((dnum (elong->fixnum (get16u en bytes start))))
       (let loop ((de 0))
 	 (when (<fx de dnum)
@@ -243,8 +271,8 @@
 		   (fmt (elong->fixnum (get16u en bytes (+fx 2 da))))
 		   (cmp (get32u en bytes (+fx 4 da))))
 	       (let* ((bcount (*fx (elong->fixnum cmp)
-				   (vector-ref *exif-formats-size*
-					       (elong->fixnum fmt))))
+				 (vector-ref *exif-formats-size*
+				    (elong->fixnum fmt))))
 		      (valptr (if (> bcount 4)
 				  (let ((ov (get32u en bytes (+fx 8 da))))
 				     (+fx base (elong->fixnum ov)))
@@ -252,10 +280,10 @@
 		  (case tag
 		     ((#x1)
 		      ;; INTEROPINDEX
-		      (tprint "INTEROPINDEX software..."))
+		      #unspecified)
 		     ((#x2)
 		      ;; INTEROPVERSION
-		      (tprint "INTEROPVERSION software..."))
+		      #unspecified)
 		     ((#x100)
 		      ;; IMAGE_WIDTH
 		      (let ((w (getformat/fx en bytes valptr fmt)))
@@ -348,6 +376,7 @@
 			    (set! exposure-program e))))
 		     ((#x8825)
 		      ;; GPS_TAG
+		      (process-exif-gps-tag valptr bcount)
 		      (let ((t (getformat/fx en bytes valptr fmt)))
 			 (with-access::exif exif (gps-tag)
 			    (set! gps-tag t))))
@@ -362,7 +391,24 @@
 		     ((#x9003 #x9004)
 		      ;; TAG_DATE_TIME_ORIGINAL, TAG_DATE_TIME_DIGITIZED
 		      (with-access::exif exif (date)
-			 (set! date (strncpy valptr 19))))
+			 (set! date
+			    (parse-exif-date
+			       (strncpy valptr 19)))))
+		     ((#x9010)
+		      ;; OFFSET_TIME
+		      (with-access::exif exif (offset-time)
+			 (set! offset-time (strncpy valptr bcount))))
+		     ((#x9011)
+		      ;; OFFSET_TIME_ORIGINAL
+		      (with-access::exif exif (offset-time-original)
+			 (set! offset-time-original (strncpy valptr bcount))))
+		     ((#x9101)
+		      ;; COMPONENT_CONFIGURATION
+		      #unspecified)
+		     ((#x9012)
+		      ;; OFFSET_TIME_DIGITIZED
+		      (with-access::exif exif (offset-time-digitized)
+			 (set! offset-time-digitized (strncpy valptr bcount))))
 		     ((#x9201)
 		      ;; TAG_SHUTTER_SPEED_VALUE
 		      (let ((sv (getformat en bytes valptr fmt)))
@@ -475,14 +521,114 @@
 		     ((#xa301)
 		      ;; TAG_SCENE_TYPE
 		      #unspecified)
+		     ((#xa401)
+		      ;; CUSTOM_RENDER
+		      (let ((cr (case (getformat/fx en bytes valptr fmt)
+				   ((0) "normal")
+				   ((1) "custom")
+				   ((2) "HDR (no original saved)")
+				   ((3) "HDR (original saved)")
+				   ((4) "original (for HDR)")
+				   ((6) "panorama")
+				   ((7) "portrait HDR")
+				   ((8) "portraitauto")
+				   (else "???"))))
+			 (with-access::exif exif (custom-render)
+			    (set! custom-render cr))))
+		     ((#xa402)
+		      ;; EXPOSURE_MODE
+		      (let ((em (case (getformat/fx en bytes valptr fmt)
+				   ((0) "auto")
+				   ((1) "manual")
+				   ((1) "auto bracket")
+				   (else "???"))))
+			 (with-access::exif exif (exposure-mode)
+			    (set! exposure-mode em))))
+		     ((#xa403)
+		      ;; WHITE_BALANCE
+		      (let ((wb (case (getformat/fx en bytes valptr fmt)
+				   ((0) "auto")
+				   ((1) "manual")
+				   (else "???"))))
+			 (with-access::exif exif (white-balance)
+			    (set! white-balance wb))))
+		     ((#xa404)
+		      ;; DIGITAL_ZOOM_RATIO
+		      (let ((dz (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (digital-zoom-ratio)
+			    (set! digital-zoom-ratio dz))))
+		     ((#xa405)
+		      ;; FOCAL_LENGTH_IN_35MM
+		      (let ((fl (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (focal-length35)
+			    (set! focal-length35 fl))))
+		     ((#xa406)
+		      ;; SCENE_CAPTURE_TYPE
+		      (let ((mm (case (getformat/fx en bytes valptr fmt)
+				   ((0) "standard")
+				   ((1) "landscape")
+				   ((2) "portrait")
+				   ((3) "night")
+				   ((3) "other")
+				   (else "???"))))
+			 (with-access::exif exif (scene-capture-type)
+			    (set! scene-capture-type mm))))
+		     ((#xa407)
+		      ;; GAIN_CONTROL
+		      (let ((gc (case (getformat/fx en bytes valptr fmt)
+				   ((0) "none")
+				   ((1) "low gain up")
+				   ((2) "high gain up")
+				   ((3) "low gain down")
+				   ((4) "high gain down")
+				   (else "???"))))
+			 (with-access::exif exif (gain-control)
+			    (set! gain-control gc))))
+		     ((#xa408)
+		      ;; CONTRAST
+		      (let ((mm (case (getformat/fx en bytes valptr fmt)
+				   ((0) "normal")
+				   ((1) "low")
+				   ((2) "hight")
+				   (else "???"))))
+			 (with-access::exif exif (contrast)
+			    (set! contrast mm))))
+		     ((#xa409)
+		      ;; SATURATION
+		      (let ((mm (case (getformat/fx en bytes valptr fmt)
+				   ((0) "normal")
+				   ((1) "low")
+				   ((2) "hight")
+				   (else "???"))))
+			 (with-access::exif exif (saturation)
+			    (set! saturation mm))))
+		     ((#xa40a)
+		      ;; SHARPNESS
+		      (let ((mm (case (getformat/fx en bytes valptr fmt)
+				   ((0) "normal")
+				   ((1) "soft")
+				   ((2) "hard")
+				   (else "???"))))
+			 (with-access::exif exif (sharpness)
+			    (set! sharpness mm))))
+		     ((#xa40c)
+		      ;; DISTANCE_SUBJECT_RANGE
+		      (let ((d (case (getformat/fx en bytes valptr fmt)
+				  ((0) "unkown")
+				  ((1) "macro")
+				  ((2) "close")
+				  ((3) "distant")
+				  (else "???"))))
+			 (with-access::exif exif (distance-subject-range)
+			    (set! distance-subject-range d))))
+		     ((#xa433)
+		      ;; LENS_MAKE
+		      (with-access::exif exif (lens-make)
+			 (set! lens-make (strncpy valptr bcount))))
 		     ((#xa434)
 		      ;; LENS_MODEL
 		      (with-access::exif exif (lens-model)
 			 (set! lens-model (strncpy valptr bcount))))
-		     ((#xa435)
-		      ;; LENS_MAKE
-		      (with-access::exif exif (lens-make)
-			 (set! lens-make (strncpy valptr bcount))))
 		     ((#xa460)
 		      ;; COMPOSITE_IMAGE
 		      (with-access::exif exif (composite-image)
@@ -496,10 +642,10 @@
 	 (let ((of (get32u en bytes (+ start 2 (*fx 12 dnum)))))
 	    (if (>elong of #e0)
 		(process-exif-dir! en bytes
-				   (+fx (elong->fixnum of) base)
-				   base
-				   exif
-				   o0))))))
+		   (+fx (elong->fixnum of) base)
+		   base
+		   exif
+		   o0))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-jpeg-exif! ...                                              */
