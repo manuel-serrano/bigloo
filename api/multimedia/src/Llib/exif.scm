@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/multimedia/src/Llib/exif.scm     */
+;*    .../project/bigloo/bigloo/api/multimedia/src/Llib/exif.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Tue Nov 15 18:16:06 2011 (serrano)                */
-;*    Copyright   :  2004-11 Manuel Serrano                            */
+;*    Last change :  Sat Sep 24 15:16:50 2022 (serrano)                */
+;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
 	      (version (default #f))
 	      (jpeg-encoding (default #f))
 	      (jpeg-compress (default #f))
+	      (software (default #f))
 	      (comment (default #f))
 	      (%commentpos (default #f))
 	      (%commentlen (default #f))
@@ -28,6 +29,8 @@
 	      (%orientationpos (default #f))
 	      (width (default #f))
 	      (height (default #f))
+	      (iwidth (default #f))
+	      (ilength (default #f))
 	      (ewidth (default #f))
 	      (eheight (default #f))
 	      (xresolution (default #f))
@@ -38,13 +41,23 @@
 	      (fnumber (default #f))
 	      (iso (default #f))
 	      (shutter-speed-value (default #f))
+	      (exposure-program (default #f))
 	      (exposure-time (default #f))
 	      (exposure-bias-value (default #f))
 	      (aperture (default #f))
+	      (max-aperture (default #f))
 	      (metering-mode (default #f))
 	      (cdd-width (default #f))
 	      (focal-plane-xres (default #f))
 	      (focal-plane-units (default #f))
+	      (gps-tag (default #f))
+	      (brightness-value (default #f))
+	      (subject-distance (default #f))
+	      (colorspace (default #f))
+	      (sensing-method (default #f))
+	      (composite-image (default #f))
+	      (lens-model (default #f))
+	      (lens-make (default #f))
 	      (thumbnail (default #f))
 	      (thumbnail-path (default #f))
 	      (thumbnail-offset (default #f))
@@ -121,7 +134,7 @@
 	      0
 	      (cons num den))))
       (else
-       (exif-error 'exif "Unsupported number format" fmt))))
+       (exif-error "exif" "Unsupported number format" fmt))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getformat/fx ...                                                 */
@@ -237,6 +250,22 @@
 				     (+fx base (elong->fixnum ov)))
 				  (+fx 8 da))))
 		  (case tag
+		     ((#x1)
+		      ;; INTEROPINDEX
+		      (tprint "INTEROPINDEX software..."))
+		     ((#x2)
+		      ;; INTEROPVERSION
+		      (tprint "INTEROPVERSION software..."))
+		     ((#x100)
+		      ;; IMAGE_WIDTH
+		      (let ((w (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (iwidth)
+			    (set! iwidth w))))
+		     ((#x101)
+		      ;; IMAGE_LENGTH
+		      (let ((l (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (ilength)
+			    (set! ilength l))))
 		     ((#x103)
 		      ;; TAG_COMPRESS
 		      (let ((c (getformat en bytes valptr fmt)))
@@ -260,17 +289,6 @@
 				  ((#e6) 'portrait)
 				  ((#e8) 'upsidedown)
 				  (else 'seascape))))))
-		     ((#x201)
-		      ;; TAG_THUMBNAIL_OFFSET
-		      (let* ((ol (getformat/fx en bytes valptr fmt))
-			     (of (+fx ol base)))
-			 (with-access::exif exif (thumbnail-offset)
-			    (set! thumbnail-offset of))))
-		     ((#x202)
-		      ;; TAG_THUMBNAIL_LENGTH
-		      (let ((le (getformat/fx en bytes valptr fmt)))
-			 (with-access::exif exif (thumbnail-length)
-			    (set! thumbnail-length le))))
 		     ((#x11a)
 		      ;; TAG_XRESOLUTION
 		      (let ((xr (getformat en bytes valptr fmt)))
@@ -286,11 +304,26 @@
 		      (let ((ru (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (resolution-unit)
 			    (set! resolution-unit ru))))
+		     ((#x131)
+		      ;; TAG_SOFTWARE
+		      (with-access::exif exif (software)
+			 (set! software (strncpy valptr bcount))))
 		     ((#x132)
 		      ;; TAG_DATE_TIME
 		      (let ((dt (strncpy valptr 31)))
 			 (with-access::exif exif (date)
 			    (set! date dt))))
+		     ((#x201)
+		      ;; TAG_THUMBNAIL_OFFSET
+		      (let* ((ol (getformat/fx en bytes valptr fmt))
+			     (of (+fx ol base)))
+			 (with-access::exif exif (thumbnail-offset)
+			    (set! thumbnail-offset of))))
+		     ((#x202)
+		      ;; TAG_THUMBNAIL_LENGTH
+		      (let ((le (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (thumbnail-length)
+			    (set! thumbnail-length le))))
 		     ((#x213)
 		      ;; TAG_YCbCrPositioning
 		      'todo)
@@ -308,7 +341,18 @@
 		      ;; TAG_EXIF_OFFSET, TAG_INTEROP_OFFSET
 		      (let ((ss (+fx base (elong->fixnum (get32u en bytes valptr)))))
 			 (process-exif-dir! en bytes ss base exif o0)))
+		     ((#x8822)
+		      ;; EXPOSURE_PROGRAM
+		      (let ((e (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (exposure-program)
+			    (set! exposure-program e))))
+		     ((#x8825)
+		      ;; GPS_TAG
+		      (let ((t (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (gps-tag)
+			    (set! gps-tag t))))
 		     ((#x8827)
+		      ;; ISO
 		      (let ((is (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (iso)
 			    (set! iso is))))
@@ -324,7 +368,12 @@
 		      (let ((sv (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (shutter-speed-value)
 			    (set! shutter-speed-value sv))))
-		     ((#x9202 #x9205)
+		     ((#x9203)
+		      ;; TAG_BRIGHTNESS_VALUE
+		      (let ((bv (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (brightness-value)
+			    (set! brightness-value bv))))
+		     ((#x9202)
 		      ;; TAG_APERTURE
 		      (let ((ap (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (aperture)
@@ -334,6 +383,16 @@
 		      (let ((bv (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (exposure-bias-value)
 			    (set! exposure-bias-value bv))))
+		     ((#x9205)
+		      ;; TAG_MAX_APERTURE
+		      (let ((ap (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (max-aperture)
+			    (set! max-aperture ap))))
+		     ((#x9206)
+		      ;; TAG_SUBJECT_DISTANCE
+		      (let ((sd (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (subject-distance)
+			    (set! subject-distance sd))))
 		     ((#x9207)
 		      ;; TAG_METERING_MODE
 		      (let ((mm (case (getformat/fx en bytes valptr fmt)
@@ -365,6 +424,23 @@
 			    (set! comment
 			       (remove-trailing-spaces!
 				  (strncpy (+fx 8 valptr) 191))))))
+		     ((#x9290)
+		      ;; SUB_SEC_TIME (ascii)
+		      #unspecified)
+		     ((#x9291)
+		      ;; SUB_SEC_TIME_ORIGINAL (ascii)
+		      #unspecified)
+		     ((#x9292)
+		      ;; SUB_SEC_TIME_DIGITIZED (ascii)
+		      #unspecified)
+		     ((#xa000)
+		      ;; TAG_FLASH_PIX_VERSION
+		      #unspecified)
+		     ((#xa001)
+		      ;; TAG_COLOR_SPACE
+		      (let ((cs (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (colorspace)
+			    (set! colorspace cs))))
 		     ((#xa002)
 		      ;; TAG_EXIF_IMAGEWIDTH
 		      (let ((w (getformat/fx en bytes valptr fmt)))
@@ -391,8 +467,29 @@
 				    ((5) .001))))
 			 (with-access::exif exif (focal-plane-units)
 			    (set! focal-plane-units fpu))))
+		     ((#xa217)
+		      ;; TAG_SENSING_METHOD
+		      (let ((sm (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (sensing-method)
+			    (set! sensing-method sm))))
+		     ((#xa301)
+		      ;; TAG_SCENE_TYPE
+		      #unspecified)
+		     ((#xa434)
+		      ;; LENS_MODEL
+		      (with-access::exif exif (lens-model)
+			 (set! lens-model (strncpy valptr bcount))))
+		     ((#xa435)
+		      ;; LENS_MAKE
+		      (with-access::exif exif (lens-make)
+			 (set! lens-make (strncpy valptr bcount))))
+		     ((#xa460)
+		      ;; COMPOSITE_IMAGE
+		      (with-access::exif exif (composite-image)
+			 (set! composite-image (strncpy valptr bcount))))
 		     (else
 		      ;; TAG_UNKNOWN
+		      (tprint "TAG_UNKNOWN: " (integer->string tag 16))
 		      'unknown)))
 	       (loop (+fx de 1)))))
       (when (< (+ start 2 4 (*fx 12 dnum)) (string-length bytes))
@@ -425,10 +522,10 @@
        (let* ((en (exif-endianess))
 	      (hd (get16u en bytes 8)))
 	  (if (not (=elong hd #e42))
-	      (exif-error 'read-jpeg-exif "Illegal exif header" hd)
+	      (exif-error "read-jpeg-exif" "Illegal exif header" hd)
 	      (let ((fo (elong->fixnum (get32u en bytes 10))))
 		 (if (or (<fx fo 8) (>fx fo 16))
-		     (exif-error 'read-jpeg-exit
+		     (exif-error "read-jpeg-exit"
 			"Suspicious offset of first IFD value"
 			fo)
 		     (with-access::exif exif ((s thumbnail-offset)
@@ -492,7 +589,7 @@
 	      (m (mmap-get-char mm)))
       (if (char=? m #a255)
 	  (if (>= a 6)
-	      (exif-error 'read-jpeg-section "Too many padding bytes" a)
+	      (exif-error "read-jpeg-section" "Too many padding bytes" a)
 	      (loop (+ a 1) (mmap-get-char mm)))
 	  ;; the section length
 	  (let* ((lh (char->integer (mmap-get-char mm)))
@@ -500,9 +597,9 @@
 		 (l (fixnum->elong (bit-or (bit-lsh lh 8) ll))))
 	     (cond
 		((<elong l #e2)
-		 (exif-error 'read-jpeg-section "Section too small" a))
+		 (exif-error "read-jpeg-section" "Section too small" a))
 		((>=elong (+elong l (mmap-read-position mm)) (mmap-length mm))
-		 (exif-error 'read-jpeg-section
+		 (exif-error "read-jpeg-section"
 			     (format "Premature end of section read: ~s"
 				     (-elong (mmap-length mm)
 					     (mmap-read-position mm)))
@@ -517,7 +614,7 @@
 (define (read-jpeg-sections exif mm::mmap path)
    (let ((m (read-jpeg-marker mm)))
       (if (not (eq? m 'M_SOI))
-	  (exif-error 'read-jpeg-sections "Illegal section marker" m)
+	  (exif-error "read-jpeg-sections" "Illegal section marker" m)
 	  (let loop ()
 	     (multiple-value-bind (m bytes)
 		(read-jpeg-section mm path)
@@ -594,7 +691,7 @@
 (define (jpeg-exif path)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-		    'jpeg-exif "Can't find file" path)
+	  "jpeg-exif" "Can't find file" path)
        (let ((mm (open-mmap path write: #f))
 	     (exif (instantiate::exif)))
 	  (unwind-protect
@@ -609,7 +706,7 @@
 (define (jpeg-exif-comment-set! path comment)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-		    'jpeg-exif-comment-set! "Can't find file" path)
+	  "jpeg-exif-comment-set!" "Can't find file" path)
        (let ((mm (open-mmap path))
 	     (exif (instantiate::exif))
 	     (mtime #f))
@@ -647,7 +744,7 @@
 (define (jpeg-exif-orientation-set! path orientation)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-		    'jpeg-exif-comment-set! "Can't find file" path)
+	  "jpeg-exif-comment-set!" "Can't find file" path)
        (let ((mm (open-mmap path))
 	     (exif (instantiate::exif))
 	     (mtime #f))

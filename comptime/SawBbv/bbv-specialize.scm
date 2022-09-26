@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Sep 21 16:52:47 2022 (serrano)                */
+;*    Last change :  Fri Sep 23 16:57:33 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -473,7 +473,9 @@
 		(with-access::rtl_ins (car args) (fun args)
 		   (with-access::rtl_call fun (var)
 		      (with-access::global var (value type)
-			 (if (and (eq? var *long->bint*) (rtl_ins-loadi? (car args)))
+			 (if (and (eq? var *long->bint*)
+				  (isa? (car args) rtl_ins)
+				  (rtl_ins-loadi? (car args)))
 			     (with-access::rtl_ins (car args) (fun)
 				(with-access::rtl_loadi fun (constant)
 				   (with-access::atom constant (value type)
@@ -700,22 +702,16 @@
 		((<)
 		 (let ((intrt (bbv-range-lt intl intr))
 		       (intro (bbv-range-gte intl intr)))
-		    (tprint "< " (shape intl) " " (shape intr)
-		       " true=" (shape intrt) " false=" (shape intro))
 		    (values (extend-ctx ctx reg types #t :value intrt)
 		       (extend-ctx ctx reg types #t :value intro))))
 		((<=)
 		 (let ((intrt (bbv-range-lte intl intr))
 		       (intro (bbv-range-gt intl intr)))
-		    (tprint "<= " (shape intl) " " (shape intr)
-		       " true=" (shape intrt) " false=" (shape intro))
 		    (values (extend-ctx ctx reg types #t :value intrt)
 		       (extend-ctx ctx reg types #t :value intro))))
 		((>)
 		 (let ((intrt (bbv-range-gt intl intr))
 		       (intro (bbv-range-lte intl intr)))
-		    (tprint "> " (shape intl) " " (shape intr)
-		       " true=" (shape intrt) " false=" (shape intro))
 		    (values (extend-ctx ctx reg types #t :value intrt)
 		       (extend-ctx ctx reg types #t :value intro))))
 		((>=)
@@ -747,8 +743,6 @@
 		(test-ctxs-ref (reg rhs) intr intl (inv-op op) lctxt)
 		(multiple-value-bind (_ rctxo)
 		   (test-ctxs-ref (reg rhs) intr intl (inv-op op) lctxo)
-		   (tprint "lhs=" (shape (reg lhs)) " rhs=" (shape (reg rhs)))
-		   (tprint "TRUE=" (shape rctxt) " FALSE=" (shape rctxo))
 		   (values rctxt rctxo)))))
 	 ((reg? lhs)
 	  (test-ctxs-ref (reg lhs) intl intr op ctx))
@@ -826,7 +820,6 @@
 		      (else
 		       (let ((fun (duplicate::rtl_ifne fun
 				     (then (bbv-block then pctx queue)))))
-			  (tprint "INFE..." (shape i) " " (shape pctx))
 			  (values (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
 				     (args (list ins))
@@ -835,7 +828,6 @@
 	    ((isa? fun rtl_call)
 	     (multiple-value-bind (ins pctx nctx)
 		(specialize-call i ctx)
-		(tprint "CALL..." (shape i))
 		(cond
 		   ((rtl_ins-true? ins) (values ins pctx))
 		   ((rtl_ins-false? ins) (values ins nctx))
