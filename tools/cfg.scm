@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Mon Aug 22 09:17:50 2022 (serrano)                */
+;*    Last change :  Wed Sep 28 14:39:07 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -272,16 +272,16 @@
 		      (add-ref! port ":sw" (car succs) #f "blue")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
 		     ((eq? (caar ins) 'ifne)
-		      (add-ref! port ":e" (car succs) #t "green")
+		      (add-ref! port ":e" (car succs) #f "green")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
 		     ((eq? (caar ins) 'ifeq)
-		      (add-ref! port ":e" (car succs) #t "red")
+		      (add-ref! port ":e" (car succs) #t "black")
 		      (loop (cdr instrs) (cdr succs) (-fx port 1)))
 		     (else
 		      (loop (cdr instrs) succs port))))))
 	 (when (and (pair? (bb-succs bb))
 		    (or (null? instrs) (not (go? (car (last-pair instrs))))))
-	    (add-ref! #f ":s" (car (bb-succs bb)) #f #f))
+	    (add-ref! #f ":s" (car (bb-succs bb)) #f "red"))
 	 (add-node!
 	    (gen-node id
 	       (gen-html-label

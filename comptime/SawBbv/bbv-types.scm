@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Sep 21 16:44:20 2022 (serrano)                */
+;*    Last change :  Wed Sep 28 11:50:42 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -580,7 +580,7 @@
 		     (rtl_reg? dest))))))
 
    (define (rtl_call-fxovop? i)
-      (when (rtl_ins-call? i)
+      (when (and (isa? i rtl_ins) (rtl_ins-call? i))
 	 (with-access::rtl_ins i (dest fun args)
 	    (with-access::rtl_call fun (var)
 	       (and (=fx (length args) 3)

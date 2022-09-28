@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Sep 23 16:57:33 2022 (serrano)                */
+;*    Last change :  Wed Sep 28 11:52:14 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -204,7 +204,7 @@
 	 (bbv-block-specialize-ins! bv (new-blockS bv ctx) queue))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-block-specialize-ins! ...                                        */
+;*    bbv-block-specialize-ins! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-specialize-ins!::blockS bv::blockV bs::blockS queue::bbv-queue)
    (with-access::blockV bv (first)
@@ -339,6 +339,8 @@
       ((rtl_ins-loadi? i) rtl_ins-specialize-loadi)
       ((rtl_ins-call-specialize? i) rtl_ins-specialize-call)
       ((rtl_ins-return-specialize? i) rtl_ins-specialize-return)
+      ((rtl_ins-vlen? i) rtl_ins-specialize-vlen)
+      ((rtl_ins-vector-bound-check? i) rtl_ins-specialize-vector-bound-check)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -514,7 +516,7 @@
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-call-specialize? i::rtl_ins)
    (when (rtl_ins-call? i)
-      (with-access::rtl_ins i (dest)
+      (with-access::rtl_ins i (dest fun)
 	 dest)))
 
 ;*---------------------------------------------------------------------*/
@@ -603,6 +605,105 @@
 		(values i ctx))))))
 
 ;*---------------------------------------------------------------------*/
+;*    rtl_ins-specialize-vlen ...                                      */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-specialize-vlen i::rtl_ins ctx queue::bbv-queue)
+   (with-access::rtl_ins i (dest args)
+      (cond
+	 ((not (rtl_reg? (car args)))
+	  (values i
+	     (extend-ctx ctx dest (list *int*) #t
+		:value (vlen-range))))
+	 ((bbv-ctx-get ctx (car args))
+	  =>
+	  (lambda (e)
+	     (with-access::bbv-ctxentry e (types value)
+		(values i
+		   (extend-ctx ctx dest (list *int*) #t
+		      :value (if (memq *vector* types)
+				 ;; not enough must check that (car args)
+				 ;; is read-only
+				 (vlen->range (car args))
+				 (vlen-range)))))))
+	 (else
+	  (values i
+	     (extend-ctx ctx dest (list *int*) #t
+		:value (vlen-range)))))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-vector-bound-check? ...                                  */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-vector-bound-check? i::rtl_ins)
+   (when (rtl_ins-ifne? i)
+      (with-access::rtl_ins i (args fun)
+	 (when (and (isa? (car args) rtl_ins) (rtl_ins-call? (car args)))
+	    (with-access::rtl_ins (car args) (fun args)
+	       (with-access::rtl_call fun (var)
+		  (when (eq? var *vector-bound-check*)
+		     (let ((args (rtl_ins-args* i)))
+			(and (rtl_reg? (car args)) (rtl_reg? (cadr args)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-specialize-vector-bound-check ...                        */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-specialize-vector-bound-check i::rtl_ins ctx queue::bbv-queue)
+   
+   (define (true)
+      (instantiate::rtl_loadi
+	 (constant (instantiate::literal (type *bool*) (value #t)))))
+   
+   (define (false)
+      (instantiate::rtl_loadi
+	 (constant (instantiate::literal (type *bool*) (value #f)))))
+   
+   (define (dup-ifne i pctx nctx)
+      (with-access::rtl_ins i (fun)
+	 (with-access::rtl_ifne fun (args then)
+	    (let ((nfun (duplicate::rtl_ifne fun
+			   (then (bbv-block then pctx queue)))))
+	       (values (duplicate::rtl_ins/bbv i
+			  (ctx ctx)
+			  (args (list (duplicate::rtl_ins/bbv i)))
+			  (fun nfun))
+		  nctx)))))
+   
+   (with-access::rtl_ins i (args fun)
+      (with-access::rtl_ins (car args) (fun args)
+	 (with-access::rtl_call fun (var)
+	    (let* ((a (bbv-ctx-get ctx (car args)))
+		   (l (bbv-ctx-get ctx (cadr args)))
+		   (va (bbv-ctxentry-value a))
+		   (vl (bbv-ctxentry-value l)))
+	       (tprint (shape i))
+	       (tprint "a=" (shape a) " " (shape va))
+	       (tprint "l=" (shape l) " " (shape vl))
+	       (cond
+		  ((not (bbv-range? va))
+		   (if (bbv-range? vl)
+		       (let ((pctx (extend-ctx ctx (car args) (list *vector*) #t
+				      :value vl))
+			     (nctx ctx))
+			  (dup-ifne i pctx nctx))
+		       (values i ctx)))
+		  ((not (bbv-range? vl))
+		   (values i ctx))
+		  ((and (bbv-range<? va vl) (bbv-range>=? va (vlen-range)))
+		   (values (duplicate::rtl_ins/bbv i (fun (true)))
+		      (extend-ctx ctx (car args) (list *vector*) #t
+			 :value (bbv-range-lt va vl))))
+		  ((or (bbv-range>=? va vl) (bbv-range<? va (vlen-range)))
+		   (values (duplicate::rtl_ins/bbv i (fun (false)))
+		      ctx))
+		  (else
+		   (let ((pctx (extend-ctx ctx (car args) (list *vector*) #t
+				  :value (bbv-range-lt (vlen-range) vl))
+			 (nctx ctx))
+		      (tprint "VBC:...")
+		      (tprint "  pctx=" (shape pctx))
+		      (tprint "  nctx=" (shape nctx))
+		      (dup-ifne i pctx nctx)))))))))
+ 
+;*---------------------------------------------------------------------*/
 ;*    rtl_ins-fxcmp? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-fxcmp? i)
@@ -615,14 +716,16 @@
 		     (rtl_reg? dest))))))
 
    (define (rtl_call-fxcmp? i)
-      (with-access::rtl_ins i (dest fun args)
-	 (with-access::rtl_call fun (var)
-	    (and (=fx (length args) 2)
-		 (or (eq? var *<fx*) (eq? var *<=fx*)
-		     (eq? var *>fx*) (eq? var *>=fx*)
-		     (eq? var *=fx*))
-		 (or (reg? (car args)) (rtl_ins-loadi? (car args)))
-		 (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))))))
+      (when (isa? i rtl_ins)
+	 (with-access::rtl_ins i (dest fun args)
+	    (when (isa? fun rtl_call)
+	       (with-access::rtl_call fun (var)
+		  (and (=fx (length args) 2)
+		       (or (eq? var *<fx*) (eq? var *<=fx*)
+			   (eq? var *>fx*) (eq? var *>=fx*)
+			   (eq? var *=fx*))
+		       (or (reg? (car args)) (rtl_ins-loadi? (car args)))
+		       (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))))))))
    
    (with-access::rtl_ins i (dest fun args)
       (cond

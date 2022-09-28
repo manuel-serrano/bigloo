@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Wed Sep 21 18:41:02 2022 (serrano)                */
+;*    Last change :  Wed Sep 28 14:47:41 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -26,6 +26,9 @@
 	    saw_bbv-types)
    
    (export (class bbv-range
+	      ;; the values lo and up can either be
+	      ;;   - a fixnum
+	      ;;    - a vector #(reg shift), for instance #(v -1) 
 	      (lo read-only)
 	      (up read-only))
 
@@ -35,6 +38,8 @@
 	   (bbv-range-fixnum?::bool ::bbv-range)
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
+	   (vlen-range::bbv-range)
+	   (vlen->range::bbv-range ::rtl_reg)
 	   (rtl-range::obj ::obj ::bbv-ctx)
 	   (range-type?::bool ::obj)
 	   (bbv-singleton?::bool ::obj)
@@ -87,14 +92,14 @@
       (and (fixnum? lo) (fixnum? up))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-range-lo ...                                                */
+;*    bbv-range-lo ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (bbv-range-lo o)
-  (with-access::bbv-range o (lo)
+   (with-access::bbv-range o (lo)
       lo))
    
 ;*---------------------------------------------------------------------*/
-;*    bbv-range-up ...                                                */
+;*    bbv-range-up ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (bbv-range-up o)
    (with-access::bbv-range o (up)
@@ -104,8 +109,13 @@
 ;*    shape ::bbv-range ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-range)
+
+   (define (vector-str n)
+      (format "#(~a ~a)"
+	 (shape (vector-ref n 0))
+	 (shape (vector-ref n 1))))
    
-   (define (shape n)
+   (define (str n)
       (cond
 	 ((eq? n (bbv-max-fixnum)) "upfx")
 	 ((eq? n (-fx (bbv-max-fixnum) 1)) "upfx-1")
@@ -114,12 +124,13 @@
 	 ((eq? n (+fx (bbv-min-fixnum) 1)) "lofx+1")
 	 ((eq? n (+fx (bbv-min-fixnum) 2)) "lofx+2")
 	 ((fixnum? n) n)
-	 ((not (flonum? n)) n)
+	 ((vector? n) (vector-str n))
+	 ((not (flonum? n)) (shape n))
 	 ((infinitefl? n) (if (<fl n 0.0) "-inf" "+inf"))
 	 (else n)))
    
    (with-access::bbv-range e (lo up)
-      (format "[~a..~a]" (shape lo) (shape up))))
+      (format "[~a..~a]" (str lo) (str up))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *fixnum-range* ...                                               */
@@ -142,6 +153,28 @@
    (instantiate::bbv-range
       (lo n)
       (up n)))
+
+;*---------------------------------------------------------------------*/
+;*    *vlen-range* ...                                                 */
+;*---------------------------------------------------------------------*/
+(define *vlen-range*
+   (instantiate::bbv-range
+      (lo 0)
+      (up (bbv-max-fixnum))))
+
+;*---------------------------------------------------------------------*/
+;*    vlen-range ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (vlen-range)
+   *vlen-range*)
+
+;*---------------------------------------------------------------------*/
+;*    vlen->range ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (vlen->range n)
+   (instantiate::bbv-range
+      (lo (vector n 0))
+      (up (vector n 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    range-type? ...                                                  */
@@ -192,12 +225,33 @@
 	(< (bbv-range-up rng) (-fx (bbv-max-fixnum) 1))))
 
 ;*---------------------------------------------------------------------*/
+;*    binoprv ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-macro (rv op u v)
+   (let ((x (gensym 'x))
+	 (y (gensym 'y)))
+      `(let ((,x ,u)
+	     (,y ,v))
+	  (cond
+	     ((and (fixnum? ,x) (fixnum? ,y))
+	      (,op ,x ,y))
+	     ((and (vector? ,x) (vector? ,y))
+	      (when (eq? (vector-ref ,x 0) (vector-ref ,y 0))
+		 (,op (vector-ref ,x 1) (vector-ref ,y 1))))
+	     (else #f)))))
+
+(define (<rv x y) (rv <fx x y))
+(define (<=rv x y) (rv <=fx x y))
+(define (>rv x y) (rv >fx x y))
+(define (>=rv x y) (rv >=fx x y))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-range<? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range<? left right)
    (cond
-      ((<fx (bbv-range-up left) (bbv-range-lo right)) 'true)
-      ((>=fx (bbv-range-lo left) (bbv-range-up right)) 'false)
+      ((<rv (bbv-range-up left) (bbv-range-lo right)) 'true)
+      ((>=rv (bbv-range-lo left) (bbv-range-up right)) 'false)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -205,8 +259,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range<=? left right)
    (cond
-      ((<=fx (bbv-range-up left) (bbv-range-lo right)) 'true)
-      ((>fx (bbv-range-lo left) (bbv-range-up right)) 'false)
+      ((<=rv (bbv-range-up left) (bbv-range-lo right)) 'true)
+      ((>rv (bbv-range-lo left) (bbv-range-up right)) 'false)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -214,8 +268,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range>? left right)
    (cond
-      ((>fx (bbv-range-lo left) (bbv-range-up right)) 'true)
-      ((<=fx (bbv-range-up left) (bbv-range-lo right)) 'false)
+      ((>rv (bbv-range-lo left) (bbv-range-up right)) 'true)
+      ((<=rv (bbv-range-up left) (bbv-range-lo right)) 'false)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -223,8 +277,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range>=? left right)
    (cond
-      ((>=fx (bbv-range-lo left) (bbv-range-up right)) 'true)
-      ((<fx (bbv-range-up left) (bbv-range-lo right)) 'false)
+      ((>=rv (bbv-range-lo left) (bbv-range-up right)) 'true)
+      ((<rv (bbv-range-up left) (bbv-range-lo right)) 'false)
       (else #f)))
       
 
@@ -233,154 +287,15 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range=? left right)
    (cond
-      ((and (=fx (bbv-range-lo left) (bbv-range-lo right))
-	    (=fx (bbv-range-up left) (bbv-range-up right)))
+      ((and (rv =fx (bbv-range-lo left) (bbv-range-lo right))
+	    (rv =fx (bbv-range-up left) (bbv-range-up right)))
        'true)
       (else
        'false)))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    bbv-range-compare ...                                            *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-expander (bbv-range-compare x e)                            */
-;*    (match-case x                                                    */
-;*       ((?op ?left ?right                                            */
-;* 	  :case0 ?case0                                                */
-;* 	  :case1 ?case1                                                */
-;* 	  :case2 ?case2                                                */
-;* 	  :case3 ?case3                                                */
-;* 	  :case4 ?case4                                                */
-;*                                                                     */
-;* 	  )                                                            */
-;*        `(let ((li (bbv-range-lo left))                             */
-;* 	      (la (bbv-range-up left))                                */
-;* 	      (ri (bbv-range-lo right))                               */
-;* 	      (ra (bbv-range-up right)))                              */
-;* 	   (cond                                                       */
-;* 	      ((and (= li ri) (= la ra))                               */
-;* 	       ;; [10..20]                                             */
-;* 	       ;; [10..20]                                             */
-;* 	       case0)                                                  */
-;* 	      ((< la ri)                                               */
-;* 	       ;; [10..20]                                             */
-;* 	       ;;          [30..40]                                    */
-;* 	       case1)                                                  */
-;* 	      ((> li ra)                                               */
-;* 	       ;;          [30..40]                                    */
-;* 	       ;; [10..20]                                             */
-;* 	       case2)                                                  */
-;* 	      ((and (< li ri) (> la ri) (< la ra))                     */
-;* 	       ;; [10....20]                                           */
-;* 	       ;;    [15....30]                                        */
-;* 	       case3)                                                  */
-;* 	      ((and (< li ri) (> la ra))                               */
-;* 	       ;; [10.........40]                                      */
-;* 	       ;;    [20..30]                                          */
-;* 	       case4)                                                  */
-;* 	      ((and (< li ri) (= la ra))                               */
-;* 	       ;; [10.....30]                                          */
-;* 	       ;;    [20..30]                                          */
-;* 	       case5)                                                  */
-;* 	       ;; => [10..20]                                          */
-;* 	      ((and (> li ri) (> la ra))                               */
-;* 	       ;;    [15....30]                                        */
-;* 	       ;; [10.....20]                                          */
-;* 	       case6)                                                  */
-;* 	  ((and (> li ri) (= la ra))                                   */
-;* 	   ;;    [15..20]                                              */
-;* 	   ;; [10.....20]                                              */
-;* 	   ;; => [10..20]                                              */
-;* 	   right)                                                      */
-;* 	  ((> li ra)                                                   */
-;* 	   ;;          [30..40]                                        */
-;* 	   ;; [10..20]                                                 */
-;* 	   ;; => [-inf...+inf] (error)                                 */
-;* 	   *fixnum-range*)                                             */
-;* 	  ((and (> li ri) (< la ra))                                   */
-;* 	   ;;    [20...30]                                             */
-;* 	   ;; [10.........40]                                          */
-;* 	   ;; => [20...30]                                             */
-;* 	   left)                                                       */
-;* 	  ((and (> li ri) (= la ra))                                   */
-;* 	   ;;    [20...40]                                             */
-;* 	   ;; [10......40]                                             */
-;* 	   ;; => [10...40]                                             */
-;* 	   right)                                                      */
-;* 	  (else                                                        */
-;* 	   (error op "should not be here"                              */
-;* 	      (format "~a/~a" (shape ,left) (shape ,right)))))))       */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    bbv-range-lts ...                                                *} */
-;* {*    -------------------------------------------------------------    *} */
-;* {*    Enforce left <= right                                            *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (bbv-range-lts left::bbv-range right::bbv-range shift::int) */
-;*    (let ((li (bbv-range-lo left))                                  */
-;* 	 (la (bbv-range-up left))                                     */
-;* 	 (ri (+fx (bbv-range-lo right) shift))                        */
-;* 	 (ra (+fx (bbv-range-up right) shift)))                       */
-;*       (cond                                                         */
-;* 	 ((< la ri)                                                    */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;;          [30..40]                                         */
-;* 	  ;; => [10..20]                                               */
-;* 	  left)                                                        */
-;* 	 ((and (< li ri) (> la ri) (< la ra))                          */
-;* 	  ;; [10....20]                                                */
-;* 	  ;;    [15....30]                                             */
-;* 	  ;; => [10..15]                                               */
-;* 	  (instantiate::bbv-range                                      */
-;* 	     (lo li)                                                  */
-;* 	     (up ri)))                                                */
-;* 	 ((and (< li ri) (> la ra))                                    */
-;* 	  ;; [10.........40]                                           */
-;* 	  ;;    [20..30]                                               */
-;* 	  ;; => [10..20]                                               */
-;* 	  (instantiate::bbv-range                                      */
-;* 	     (lo li)                                                  */
-;* 	     (up ri)))                                                */
-;* 	 ((and (< li ri) (= la ra))                                    */
-;* 	  ;; [10.....30]                                               */
-;* 	  ;;    [20..30]                                               */
-;* 	  ;; => [10..20]                                               */
-;* 	  (instantiate::bbv-range                                      */
-;* 	     (lo li)                                                  */
-;* 	     (up ri)))                                                */
-;* 	 ((and (= li ri) (= la ra))                                    */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;; => [10..20]                                               */
-;* 	  left)                                                        */
-;* 	 ((and (> li ri) (> la ra))                                    */
-;* 	  ;;    [15....30]                                             */
-;* 	  ;; [10.....20]                                               */
-;* 	  ;; => [10...20]                                              */
-;* 	  right)                                                       */
-;* 	 ((and (> li ri) (= la ra))                                    */
-;* 	  ;;    [15..20]                                               */
-;* 	  ;; [10.....20]                                               */
-;* 	  ;; => [10..20]                                               */
-;* 	  right)                                                       */
-;* 	 ((> li ra)                                                    */
-;* 	  ;;          [30..40]                                         */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;; => [-inf...+inf] (error)                                  */
-;* 	  *fixnum-range*)                                              */
-;* 	 ((and (> li ri) (< la ra))                                    */
-;* 	  ;;    [20...30]                                              */
-;* 	  ;; [10.........40]                                           */
-;* 	  ;; => [20...30]                                              */
-;* 	  left)                                                        */
-;* 	 ((and (> li ri) (= la ra))                                    */
-;* 	  ;;    [20...40]                                              */
-;* 	  ;; [10......40]                                              */
-;* 	  ;; => [10...40]                                              */
-;* 	  right)                                                       */
-;* 	 (else                                                         */
-;* 	  (error "bbv-range-lts" "should not be here"                  */
-;* 	     (format "~a/~a" (shape left) (shape right)))))))          */
-       
+;*---------------------------------------------------------------------*/
+;*    bbv-range-lt ...                                                 */
+;*---------------------------------------------------------------------*/
 (define (bbv-range-lt left right)
    (let ((li (bbv-range-lo left))
 	 (la (bbv-range-up left))
@@ -391,6 +306,9 @@
 	 (lo li)
 	 (up (max li (min la (-- ra)))))))
 
+;*---------------------------------------------------------------------*/
+;*    bbv-range-lte ...                                                */
+;*---------------------------------------------------------------------*/
 (define (bbv-range-lte left right)
    (let ((li (bbv-range-lo left))
 	 (la (bbv-range-up left))
@@ -401,6 +319,9 @@
 	 (lo li)
 	 (up (max li (min la ra))))))
 
+;*---------------------------------------------------------------------*/
+;*    bbv-range-gt ...                                                 */
+;*---------------------------------------------------------------------*/
 (define (bbv-range-gt left right)
    (let ((li (bbv-range-lo left))
 	 (la (bbv-range-up left))
@@ -411,6 +332,9 @@
 	 (lo (min la (max li (++ ri))))
 	 (up la))))
 
+;*---------------------------------------------------------------------*/
+;*    bbv-range-gte ...                                                */
+;*---------------------------------------------------------------------*/
 (define (bbv-range-gte left right)
    (let ((li (bbv-range-lo left))
 	 (la (bbv-range-up left))
@@ -420,147 +344,6 @@
       (instantiate::bbv-range
 	 (lo (min la (max li ri)))
 	 (up la))))
-
-;*    (bbv-range-compare "bbv-range-lt" left right                     */
-;*       ;; [10..20] < [10..20] => [10..20]                            */
-;*       :case0 left                                                   */
-;*       ;; [10..20] < [30..40] => [10..20]                            */
-;*       :case1 left                                                   */
-;*       ;; [30..40] < [10..20] => error                               */
-;*       :case2 *fixnum-range*                                         */
-;*       ;; [10..20] < [15..30] => [10..14]                            */
-;*       :case3 (instantiate::bbv-range (lo li) (up (-- ra)))        */
-;*       ;; [10..40] < [20..30] => [10..19]                            */
-;*       :case4 (instantiate::bbv-range (lo li) (up (-- ra)))        */
-;*       ;; [10..30] < [20..30] => [10..19]                            */
-;*       :case5 (instantiate::bbv-range (lo li) (up (-- ra)))        */
-;*       ;; [15..20] < [10..20] => [                                   */
-;*       ))                                                            */
-;*                                                                     */
-;* (define (bbv-range-lte left right)                                  */
-;*    (bbv-range-compare "bbv-range-lte" left right                    */
-;*       ;; [10..20] <= [10..20] => [10..20]                           */
-;*       :case0 left                                                   */
-;*       ;; [10..20] <= [30..40] => [10..20]                           */
-;*       :case1 left                                                   */
-;*       ;; [30..40] <= [10..20] => error                              */
-;*       :case2 *fixnum-range*                                         */
-;*       ;; [10....20] <= [15....30] => [10..15]                       */
-;*       :case3 (instantiate::bbv-range (lo li) (up ra))             */
-;*       ;; [10..40] <= [20..30] => [10..20]                           */
-;*       :case4 (instantiate::bbv-range (lo li) (up ra))             */
-;*       ;; [10..30] <= [20..30] => [10..20]                           */
-;*       :case5 (instantiate::bbv-range (lo li) (up ra))             */
-;*       ))                                                            */
-;*                                                                     */
-;* (define (bbv-range-gt left right)                                   */
-;*    (bbv-range-compare "bbv-range-gt" left right                     */
-;*       ;; [10..20] > [10..20] => [10..20]                            */
-;*       :case0 left                                                   */
-;*       ;; [10..20] > [30..40] => error                               */
-;*       :case1 *fixnum-range*                                         */
-;*       ;; [30..40] > [10..20] => [30..40]                            */
-;*       :case2 left                                                   */
-;*       ;; [10....20] > [15....30] => [16..20]                        */
-;*       :case3 (instantiate::bbv-range (lo (++ ri)) (up la))        */
-;*       ;; [10..40] > [20..30] => [21..40]                            */
-;*       :case4 (instantiate::bbv-range (lo (++ ri)) (up ra))        */
-;*       ;; [10..30] > [20..30] => [21..30]                            */
-;*       :case5 (instantiate::bbv-range (lo (++ ri)) (up la)         */
-;*       ))                                                            */
-;*                                                                     */
-;* (define (bbv-range-gte left right)                                  */
-;*    (bbv-range-compare "bbv-range-gte" left right                    */
-;*       ;; [10..20] > [10..20] => [10..20]                            */
-;*       :case0 left                                                   */
-;*       ;; [10..20] >= [30..40] => error                              */
-;*       :case1 *fixnum-range*                                         */
-;*       ;; [30..40] >= [10..20] => [30..40]                           */
-;*       :case2 left                                                   */
-;*       ;; [10....20] >= [15....30] => [15..20]                       */
-;*       :case3 (instantiate::bbv-range (lo ri) (up la))             */
-;*       ;; [10..40] >= [20..30] => [20..40]                           */
-;*       :case4 (instantiate::bbv-range (lo ri) (up ra))             */
-;*       ;; [10..30] >= [20..30] => [20..30]                           */
-;*       :case5 (instantiate::bbv-range (lo ri) (up la)              */
-;*       ))                                                            */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    bbv-range-gts ...                                                *} */
-;* {*    -------------------------------------------------------------    *} */
-;* {*    Enforce left >= right                                            *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (bbv-range-gts left::bbv-range right::bbv-range shift::int) */
-;*    (let ((li (bbv-range-lo left))                                  */
-;* 	 (la (bbv-range-up left))                                     */
-;* 	 (ri (+fx (bbv-range-lo right) shift))                        */
-;* 	 (ra (+fx (bbv-range-up right) shift)))                       */
-;*       (cond                                                         */
-;* 	 ((< la ri)                                                    */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;;          [30..40]                                         */
-;* 	  ;; => [-inf...+inf] (error)                                  */
-;* 	  *fixnum-range*)                                              */
-;* 	 ((and (< li ri) (> la ri) (< la ra))                          */
-;* 	  ;; [10....20]                                                */
-;* 	  ;;    [15....30]                                             */
-;* 	  ;; => [15..20]                                               */
-;* 	  (instantiate::bbv-range                                      */
-;* 	     (lo ri)                                                  */
-;* 	     (up la)))                                                */
-;* 	 ((and (< li ri) (> la ra))                                    */
-;* 	  ;; [10.........40]                                           */
-;* 	  ;;    [20..30]                                               */
-;* 	  ;; => [20..40]                                               */
-;* 	  left)                                                        */
-;* 	 ((and (< li ri) (= la ra))                                    */
-;* 	  ;; [10.....30]                                               */
-;* 	  ;;    [20..30]                                               */
-;* 	  ;; => [20..30]                                               */
-;* 	  (instantiate::bbv-range                                      */
-;* 	     (lo ri)                                                  */
-;* 	     (up la)))                                                */
-;* 	 ((and (= li ri) (= la ra))                                    */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;; => [10..20]                                               */
-;* 	  left)                                                        */
-;* 	 ((and (> li ri) (> la ra))                                    */
-;* 	  ;;    [15....30]                                             */
-;* 	  ;; [10.....20]                                               */
-;* 	  ;; => [15...30]                                              */
-;* 	  left)                                                        */
-;* 	 ((and (> li ri) (= la ra))                                    */
-;* 	  ;;    [15..20]                                               */
-;* 	  ;; [10.....20]                                               */
-;* 	  ;; => [15..20]                                               */
-;* 	  left)                                                        */
-;* 	 ((> li ra)                                                    */
-;* 	  ;;          [30..40]                                         */
-;* 	  ;; [10..20]                                                  */
-;* 	  ;; => [30..40]                                               */
-;* 	  left)                                                        */
-;* 	 ((and (> li ri) (< la ra))                                    */
-;* 	  ;;    [20...30]                                              */
-;* 	  ;; [10.........40]                                           */
-;* 	  ;; => [20...30]                                              */
-;* 	  left)                                                        */
-;* 	 ((and (> li ri) (= la ra))                                    */
-;* 	  ;;    [20...40]                                              */
-;* 	  ;; [10......40]                                              */
-;* 	  ;; => [20...40]                                              */
-;* 	  left)                                                        */
-;* 	 (else                                                         */
-;* 	  (tprint "BAD " li " " la " " (shape left))                   */
-;* 	  (tprint "    " ri " " ra " " (shape right))                  */
-;* 	  (error "bbv-range-gts" "should not be here"                  */
-;* 	     (format "~a/~a" (shape left) (shape right)))))))          */
-;*                                                                     */
-;* (define (bbv-range-gt left right)                                   */
-;*    (bbv-range-gts left right 1))                                    */
-;*                                                                     */
-;* (define (bbv-range-gte left right)                                  */
-;*    (bbv-range-gts left right 0))                                    */
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-eq ...                                                 */
