@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Sep 28 11:52:14 2022 (serrano)                */
+;*    Last change :  Thu Sep 29 14:45:26 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -93,7 +93,8 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
    (with-access::blockV bv (label succs preds first merge)
-      (with-trace 'bbv-block (format "bbv-block ~a" label)
+      (with-trace 'bbv-block (format "bbv-block ~a~a" label
+				(if merge "!" ""))
 	 (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first)))
 	       (lvs (blockV-live-versions bv)))
 	    (trace-item "succs=" (map block-label succs))
@@ -109,8 +110,10 @@
 		live-blockS)
 	       ((and merge (>=fx (length lvs) *max-block-versions*))
 		(let ((bs (new-blockS bv ctx)))
-		   (bbv-queue-push! queue bv)
-		   bs))
+		   (with-trace 'bbv-block
+			 (format "bbv-queue-push! ~a" (block-label bs))
+		      (bbv-queue-push! queue bv)
+		      bs)))
 	       (else
 		(bbv-block-specialize! bv ctx queue)))))))
 
@@ -140,7 +143,8 @@
 			       (with-access::bbv-ctx ctx (id) id)
 			       "> -> "
 			       (with-access::blockS nbs (label) label))
-			    (replace-block! bs nbs)))
+			    (unless (eq? bs nbs)
+			       (replace-block! bs nbs))))
 	       merges)
 	    (trace-item "after merge " label ": "
 	       (filter-map (lambda (bs)
@@ -149,9 +153,9 @@
 				    (with-access::bbv-ctx ctx (id)
 					  (format "~a@~a" id label)))))
 		  versions))
-	    ;; specialize all the blocks that been delayed
+	    ;; specialize all the blocks that have been delayed
 	    (for-each (lambda (bs)
-			 (with-access::blockS bs (first mblock)
+			 (with-access::blockS bs (first mblock label)
 			    (when (and (null? first) (not mblock))
 			       (bbv-block-specialize-ins! bv bs queue))))
 	       versions)))))
@@ -267,6 +271,9 @@
 			    ((rtl_ins-go? ins)
 			     (connect! bs ins)
 			     (loop '() (cons ins nins) ctx))
+			    ((rtl_ins-ifne? ins)
+			     (connect! bs ins)
+			     (loop (cdr oins) (cons ins nins) ctx))
 			    (else
 			     (loop (cdr oins) (cons ins nins) ctx))))))))
 	    ((rtl_ins-last? (car oins))
@@ -291,6 +298,7 @@
 		      (connect! bs ins)
 		      (loop '() (cons ins nins) ctx)))))
 	    ((rtl_ins-ifne? (car oins))
+	     (tprint "BC=" (rtl_ins-vector-bound-check? (car oins)))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_ifne fun (then)
 		   (let* ((n (bbv-block then ctx queue))
@@ -483,7 +491,7 @@
 				   (with-access::atom constant (value type)
 				      (values (duplicate-ins i ctx)
 					 (extend-ctx ctx dest (list *bint*) #t
-					    :value (if (fixnum? value) (fixnum->range value) '_))))))
+					    :value (if (fixnum? value) (fixnum->range value) (fixnum-range)))))))
 			     (values (duplicate-ins i ctx)
 				(extend-ctx ctx dest (list type) #t)))))))
 	       ((and *type-loadi* (pair? args) (rtl_ins-loadi? (car args)))
@@ -541,22 +549,22 @@
 		       (let ((e (bbv-ctx-get ctx (car args))))
 			  (if (and e (bbv-range? (bbv-ctxentry-value e)))
 			      (bbv-ctxentry-value e)
-			      '_)))
+			      (fixnum-range))))
 		      ((rtl_ins-loadi? (car args))
 		       (new-value-loadi (car args)))
 		      (else
-		       '_)))
+		       (fixnum-range))))
 		  ((eq? var *long->bint*)
 		   (cond
 		      ((rtl_reg? (car args))
 		       (let ((e (bbv-ctx-get ctx (car args))))
 			  (if (and e (bbv-range? (bbv-ctxentry-value e)))
 			      (bbv-ctxentry-value e)
-			      '_)))
+			      (fixnum-range))))
 		      ((rtl_ins-loadi? (car args))
 		       (new-value-loadi (car args)))
 		      (else
-		       '_)))
+		       (fixnum-range))))
 		  (else
 		   '_))))))
    
@@ -663,7 +671,6 @@
 			   (then (bbv-block then pctx queue)))))
 	       (values (duplicate::rtl_ins/bbv i
 			  (ctx ctx)
-			  (args (list (duplicate::rtl_ins/bbv i)))
 			  (fun nfun))
 		  nctx)))))
    
@@ -674,9 +681,6 @@
 		   (l (bbv-ctx-get ctx (cadr args)))
 		   (va (bbv-ctxentry-value a))
 		   (vl (bbv-ctxentry-value l)))
-	       (tprint (shape i))
-	       (tprint "a=" (shape a) " " (shape va))
-	       (tprint "l=" (shape l) " " (shape vl))
 	       (cond
 		  ((not (bbv-range? va))
 		   (if (bbv-range? vl)
@@ -695,12 +699,9 @@
 		   (values (duplicate::rtl_ins/bbv i (fun (false)))
 		      ctx))
 		  (else
-		   (let ((pctx (extend-ctx ctx (car args) (list *vector*) #t
-				  :value (bbv-range-lt (vlen-range) vl))
+		   (let ((pctx (extend-ctx ctx (car args) (list *bint*) #t
+				  :value (bbv-range-lt (vlen-range) vl)))
 			 (nctx ctx))
-		      (tprint "VBC:...")
-		      (tprint "  pctx=" (shape pctx))
-		      (tprint "  nctx=" (shape nctx))
 		      (dup-ifne i pctx nctx)))))))))
  
 ;*---------------------------------------------------------------------*/

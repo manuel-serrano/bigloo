@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Sep 28 11:50:42 2022 (serrano)                */
+;*    Last change :  Thu Sep 29 18:24:09 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -282,7 +282,7 @@
 	 (types types)
 	 (polarity polarity)
 	 (value value)))
-
+   
    (define (extend-entries ctx reg types polarity value)
       (let ((rnum (rtl_reg/ra-num reg)))
 	 (with-access::bbv-ctx ctx (entries)
@@ -305,8 +305,12 @@
    
    (if (not (isa? reg rtl_reg/ra))
        ctx
-       (duplicate::bbv-ctx ctx
-	  (entries (extend-entries ctx reg types polarity value)))))
+       (let ((v (if (and (eq? value '_) polarity
+			 (pair? types) (eq? (car types) *bint*) (null? (cdr types)))
+		    (fixnum-range)
+		    value)))
+	  (duplicate::bbv-ctx ctx
+	     (entries (extend-entries ctx reg types polarity v))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx* ...                                                  */

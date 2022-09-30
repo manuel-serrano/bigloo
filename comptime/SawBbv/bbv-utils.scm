@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Sep 22 14:23:05 2022 (serrano)                */
+;*    Last change :  Thu Sep 29 18:22:33 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -253,7 +253,8 @@
 	    (regset-for-each (lambda (r)
 				(unless (bbv-ctx-get nctx r)
 				   (with-access::rtl_reg r (type)
-				      (set! nctx (extend-ctx nctx r (list type) #t)))))
+				      (set! nctx (extend-ctx nctx r
+						    (list type) #t)))))
 	       out)
 	    nctx))))
 

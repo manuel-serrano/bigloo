@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Wed Sep 28 14:47:41 2022 (serrano)                */
+;*    Last change :  Thu Sep 29 14:42:46 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -26,9 +26,6 @@
 	    saw_bbv-types)
    
    (export (class bbv-range
-	      ;; the values lo and up can either be
-	      ;;   - a fixnum
-	      ;;    - a vector #(reg shift), for instance #(v -1) 
 	      (lo read-only)
 	      (up read-only))
 
@@ -110,10 +107,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-range)
 
-   (define (vector-str n)
-      (format "#(~a ~a)"
-	 (shape (vector-ref n 0))
-	 (shape (vector-ref n 1))))
+;*    (define (vector-str n)                                           */
+;*       (format "#(~a ~a)"                                            */
+;* 	 (shape (vector-ref n 0))                                      */
+;* 	 (shape (vector-ref n 1))))                                    */
    
    (define (str n)
       (cond
@@ -124,7 +121,7 @@
 	 ((eq? n (+fx (bbv-min-fixnum) 1)) "lofx+1")
 	 ((eq? n (+fx (bbv-min-fixnum) 2)) "lofx+2")
 	 ((fixnum? n) n)
-	 ((vector? n) (vector-str n))
+;* 	 ((vector? n) (vector-str n))                                  */
 	 ((not (flonum? n)) (shape n))
 	 ((infinitefl? n) (if (<fl n 0.0) "-inf" "+inf"))
 	 (else n)))
@@ -171,10 +168,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    vlen->range ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (vlen->range n)
-   (instantiate::bbv-range
-      (lo (vector n 0))
-      (up (vector n 0))))
+(define (vlen->range v)
+   (vlen-range))
 
 ;*---------------------------------------------------------------------*/
 ;*    range-type? ...                                                  */
@@ -235,9 +230,6 @@
 	  (cond
 	     ((and (fixnum? ,x) (fixnum? ,y))
 	      (,op ,x ,y))
-	     ((and (vector? ,x) (vector? ,y))
-	      (when (eq? (vector-ref ,x 0) (vector-ref ,y 0))
-		 (,op (vector-ref ,x 1) (vector-ref ,y 1))))
 	     (else #f)))))
 
 (define (<rv x y) (rv <fx x y))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Wed Sep 21 16:41:43 2022 (serrano)                */
+;*    Last change :  Thu Sep 29 18:52:04 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -81,6 +81,10 @@
 			  '()
 			  (let* ((s (bbv-block* (car blocks)
 				       (params->ctx params)))
+				 (_ (when (>=fx *trace-level* 2)
+				       (dump-blocks global params
+					  (block->block-list regs s)
+					  ".specialize.cfg")))
 				 (b (block->block-list regs
 				       (if *cleanup*
 					   (remove-nop!
