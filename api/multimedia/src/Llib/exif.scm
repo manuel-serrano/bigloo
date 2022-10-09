@@ -3,13 +3,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Mon Sep 26 15:39:01 2022 (serrano)                */
+;*    Last change :  Sat Oct  8 17:31:04 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
 ;*    -------------------------------------------------------------    */
 ;*    See https://exiftool.org/TagNames/EXIF.html                      */
 ;*        https://exiftool.org/TagNames/GPS.html                       */
+;*        https://enqtran.com/standard-exif-tags/                      */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -31,6 +32,8 @@
 	      (offset-time-digitized (default #f))
 	      (make (default #f))
 	      (model (default #f))
+	      (unique-camera-model (default #f))
+	      (camera-serial-number (default #f))
 	      (orientation (default 'landscape))
 	      (%orientationpos (default #f))
 	      (width (default #f))
@@ -76,6 +79,14 @@
 	      (saturation (default "???"))
 	      (sharpness (default "???"))
 	      (distance-subject-range (default #f))
+	      (new-subfile-type (default #f))
+	      (YCbCr-coef (default #f))
+	      (YCbCr-subsampling (default #f))
+	      (YCbCr-positioning (default #f))
+	      (refere (default #f))
+	      (rating (default #f))
+	      (rating-percentage (default #f))
+	      (copyright (default #f))
 	      (thumbnail (default #f))
 	      (thumbnail-path (default #f))
 	      (thumbnail-offset (default #f))
@@ -256,12 +267,12 @@
 		    (loop (+fx i 1)))))))
    
    (define (process-exif-gps-tag o bcount)
-      (tprint bcount " "
+      '(tprint bcount " "
 	 (map (lambda (i) (integer->string i 16))
 	    (map char->integer
 	       (string->list (substring bytes o (+fx o bcount))))))
       (let* ((tag (elong->fixnum (get16u en bytes o))))
-	 (tprint "TAG=" (integer->string tag 16) " ")))
+	 '(tprint "TAG=" (integer->string tag 16) " ")))
       
    (let ((dnum (elong->fixnum (get16u en bytes start))))
       (let loop ((de 0))
@@ -284,6 +295,11 @@
 		     ((#x2)
 		      ;; INTEROPVERSION
 		      #unspecified)
+		     ((#xfe)
+		      ;; NEW SUBFILE TYPE
+		      (let ((s (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (new-subfile-type)
+			    (set! new-subfile-type s))))
 		     ((#x100)
 		      ;; IMAGE_WIDTH
 		      (let ((w (getformat/fx en bytes valptr fmt)))
@@ -352,9 +368,58 @@
 		      (let ((le (getformat/fx en bytes valptr fmt)))
 			 (with-access::exif exif (thumbnail-length)
 			    (set! thumbnail-length le))))
+		     ((#x203)
+		      ;; JPEGR
+		      'todo)
+		     ((#x205)
+		      ;; JPEGLo
+		      'todo)
+		     ((#x206)
+		      ;; JPEGP
+		      'todo)
+		     ((#x207)
+		      ;; JPEGQ
+		      'todo)
+		     ((#x208)
+		      ;; JPEGD
+		      'todo)
+		     ((#x208)
+		      ;; JPEGA
+		      'todo)
+		     ((#x211)
+		      ;; TAG_YCbCrcoef
+		      (let ((co (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (YCbCr-coef)
+			    (set! YCbCr-coef co))))
+		     ((#x212)
+		      ;; TAG_YCbCrsubsampling
+		      (let ((ss (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (YCbCr-subsampling)
+			    (set! YCbCr-subsampling ss))))
 		     ((#x213)
 		      ;; TAG_YCbCrPositioning
-		      'todo)
+		      (let ((pos (getformat/fx en bytes valptr fmt)))
+			 (with-access::exif exif (YCbCr-positioning)
+			    (set! YCbCr-positioning pos))))
+		     ((#x214)
+		      ;; REFERE
+		      (let ((ref (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (refere)
+			    (set! refere ref))))
+		     ((#x4746)
+		      ;; RATING
+		      (let ((ra (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (rating)
+			    (set! rating ra))))
+		     ((#x4749)
+		      ;; RATING PERCENT
+		      (let ((ra (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (rating-percentage)
+			    (set! rating-percentage ra))))
+		     ((#x8298)
+		      ;; COPYRIGHT
+		      (with-access::exif exif (copyright)
+			 (set! copyright (strncpy valptr bcount))))
 		     ((#x829A)
 		      ;; TAG_EXPOSURETIME
 		      (let ((et (getformat en bytes valptr fmt)))
@@ -633,6 +698,86 @@
 		      ;; COMPOSITE_IMAGE
 		      (with-access::exif exif (composite-image)
 			 (set! composite-image (strncpy valptr bcount))))
+		     ((#xc614)
+		      ;; UNIQUE CAMERA MODEL
+		      (with-access::exif exif (unique-camera-model)
+			 (set! unique-camera-model (strncpy valptr bcount))))
+		     ((#xc615)
+		      ;; LOCALIZED UNIQUE CAMERA MODEL
+		      'ignored)
+		     ((#xc623)
+		      ;; CAMERA CALIBRAIION
+		      'ignored)
+		     ((#xc624)
+		      ;; CAMERA CALIBRAIION2
+		      'ignored)
+		     ((#xc625)
+		      ;; RESOLUTION MATRIX1
+		      'ignored)
+		     ((#xc626)
+		      ;; RESOLUTION MATRIX2
+		      'ignored)
+		     ((#xc627)
+		      ;; ANALOG BALANCE
+		      'ignored)
+		     ((#xc628)
+		      ;; AS SHOT
+		      'ignored)
+		     ((#xc629)
+		      ;; AS SHOT
+		      'ignored)
+		     ((#xc62a)
+		      ;; BASELINE EXPOSURE
+		      'ignored)
+		     ((#xc62b)
+		      ;; BASELINE NOISE
+		      'ignored)
+		     ((#xc62c)
+		      ;; BASELINE SHARPNESS
+		      'ignored)
+		     ((#xc62d)
+		      ;; BAYER GREEN SPLIT
+		      'ignored)
+		     ((#xc62e)
+		      ;; LINEAR RESPONSE LIMIT
+		      'ignored)
+		     ((#xc62f)
+		      ;; CAMERA SERIAL NUMBER
+		      (with-access::exif exif (camera-serial-number)
+			 (set! camera-serial-number (strncpy valptr bcount))))
+		     ((#xc633)
+		      ;; SHADOW SCALE
+		      'ignored)
+		     ((#xc634)
+		      ;; DNGPrivateData
+		      'ignored)
+		     ((#xc635)
+		      ;; MakerNoteSafety
+		      'ignored)
+		     ((#xc6f3)
+		      ;; CAMERA CALIBRATION SIGNATURE
+		      'ignored)
+		     ((#xc6f4)
+		      ;; PROFILE CALIBRATION SIGNATURE
+		      'ignored)
+		     ((#xc6f6)
+		      ;; AS SHOT PROFILE NAME
+		      'ignored)
+		     ((#xc6f7)
+		      ;; NOISE REDUCTION APPLIED
+		      'ignored)
+		     ((#xc6f8)
+		      ;; PROFILE NAME
+		      'ignored)
+		     ((#xc761)
+		      ;; NOISE PROFILE
+		      'ignored)
+		     ((#xa302)
+		      ;; CFAPattern
+		      'ignored)
+		     ((#xc7a7)
+		      ;; NEW RAW IMAGE DIGEST
+		      'ignored)
 		     (else
 		      ;; TAG_UNKNOWN
 		      (tprint "TAG_UNKNOWN: " (integer->string tag 16))
