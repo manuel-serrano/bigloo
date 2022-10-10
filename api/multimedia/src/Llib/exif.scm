@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Mon Sep 26 15:39:01 2022 (serrano)                */
+;*    Last change :  Tue Oct  4 08:31:44 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -256,12 +256,13 @@
 		    (loop (+fx i 1)))))))
    
    (define (process-exif-gps-tag o bcount)
-      (tprint bcount " "
-	 (map (lambda (i) (integer->string i 16))
-	    (map char->integer
-	       (string->list (substring bytes o (+fx o bcount))))))
-      (let* ((tag (elong->fixnum (get16u en bytes o))))
-	 (tprint "TAG=" (integer->string tag 16) " ")))
+      '(tprint bcount " "
+	(map (lambda (i) (integer->string i 16))
+	   (map char->integer
+	      (string->list (substring bytes o (+fx o bcount))))))
+      '(let* ((tag (elong->fixnum (get16u en bytes o))))
+	(tprint "TAG=" (integer->string tag 16) " "))
+      #f)
       
    (let ((dnum (elong->fixnum (get16u en bytes start))))
       (let loop ((de 0))
