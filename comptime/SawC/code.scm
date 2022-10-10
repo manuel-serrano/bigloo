@@ -307,15 +307,15 @@
       (display ") {")
       (for-each (lambda (pat lab)
 		   (if (eq? pat 'else)
-		       (display* "\n\t default: ")
+		       (display "\n\t default: ")
 		       (for-each (lambda (n)
 				    (display "\n\t case ")
 				    (emit-atom-value n)
 				    (display ":") )
-				 pat ))
+			  pat ))
 		   (display* " goto L" (block-label lab) ";") )
-		pats
-		(rtl_switch-labels fun) )
+	 pats
+	 (rtl_switch-labels fun) )
       (display "\n\t}") ))
 
 ;;

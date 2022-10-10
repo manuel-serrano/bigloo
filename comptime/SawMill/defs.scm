@@ -349,6 +349,16 @@
    (dump-args args p))
 
 ;*---------------------------------------------------------------------*/
+;*    dump-fun ::rtl_switch ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (dump-fun o::rtl_switch dest args p m)
+   (with-access::rtl_switch o (labels)
+      (show-fun o p)
+      (dump-args args p)
+      (display " " p)
+      (display (map block-label labels) p)))
+
+;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_ifeq ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_ifeq dest args p m)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Sep 29 18:52:04 2022 (serrano)                */
+;*    Last change :  Mon Oct 10 15:54:45 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -170,7 +170,8 @@
 		  (n (cadr bs)))
 	       (with-access::block b (succs first)
 		  (when (pair? succs)
-		     (unless (rtl_ins-go? (car (last-pair first)))
+		     (unless (or (rtl_ins-go? (car (last-pair first)))
+				 (rtl_ins-switch? (car (last-pair first))))
 			(set! succs (cons n (remq! n succs))))))
 	       (loop (cdr bs)))))))
 
@@ -336,10 +337,6 @@
 	     #f)
 	    ((=fx (length ysuccs) (length xsuccs))
 	     (let ((ns (cons* bx by stack)))
-		(let ((bad (filter (lambda (b) (not (isa? b blockS))) ysuccs)))
-		   (when (pair? bad)
-		      (tprint "PAS BON: " (map block-label bad) " "
-			 (shape by))))
 		(or (every (lambda (x y) (coalesce? x y ns)) xsuccs ysuccs)
 		    (begin
 		       (set! xbl (cons by xbl))
@@ -363,19 +360,20 @@
       (with-access::block b (succs first)
 	 (when (and (pair? succs) (pair? (cdr succs)))
 	    ;; the block ends with either if_eq or if_ne
-	    (let loop ((first first))
+	    (let loop ((ins first))
 	       (cond
-		  ((null? first)
-		   (error "normalize-ifeq!" "bad block" (shape b)))
-		  ((rtl_ins-ifne? (car first))
+		  ((null? ins)
+		   (when (null? first)
+		       (error "normalize-ifeq!" "bad block (no instruction)" (shape b))))
+		  ((rtl_ins-ifne? (car ins))
 		   #unspecified)
-		  ((rtl_ins-ifeq? (car first))
+		  ((rtl_ins-ifeq? (car ins))
 		   ;; replace ifeq with ifne using the following goto
-		   (if (or (null? (cdr first)) (not (rtl_ins-go? (cadr first))))
+		   (if (or (null? (cdr ins)) (not (rtl_ins-go? (cadr ins))))
 		       (error "normalize-ifeq!" "bad block" (shape b))
-		       (with-access::rtl_ins (car first) ((ifeq fun))
+		       (with-access::rtl_ins (car ins) ((ifeq fun))
 			  (with-access::rtl_ifeq ifeq (then loc)
-			     (with-access::rtl_ins (cadr first) ((go fun))
+			     (with-access::rtl_ins (cadr ins) ((go fun))
 				(with-access::rtl_go go (to)
 				   (set! ifeq
 				      (instantiate::rtl_ifne
@@ -384,7 +382,7 @@
 				   (set! to then)
 				   (set! succs (reverse! succs))))))))
 		  (else
-		   (loop (cdr first))))))))
+		   (loop (cdr ins))))))))
 
    (let loop ((bs (list b))
 	      (acc '()))

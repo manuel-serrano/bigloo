@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Sep 29 18:24:09 2022 (serrano)                */
+;*    Last change :  Mon Oct 10 16:34:39 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -98,6 +98,7 @@
 	    (rtl_ins-nop?::bool i::rtl_ins)
 	    (rtl_ins-mov?::bool i::rtl_ins)
 	    (rtl_ins-go?::bool i::rtl_ins)
+	    (rtl_ins-switch? i::rtl_ins)
 	    (rtl_ins-br?::bool i::rtl_ins)
 	    (rtl_ins-ifeq?::bool i::rtl_ins)
 	    (rtl_ins-ifne?::bool i::rtl_ins)
@@ -506,6 +507,13 @@
 (define (rtl_ins-go? i::rtl_ins)
    (with-access::rtl_ins i (fun)
       (isa? fun rtl_go)))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-switch? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-switch? i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (isa? fun rtl_switch)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-br? ...                                                  */
