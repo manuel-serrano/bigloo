@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-cache.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-cache.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Mon Aug 29 17:49:22 2022 (serrano)                */
+;*    Last change :  Mon Oct 10 15:51:58 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -29,6 +29,7 @@
 	    *2+*
 	    *int->long*
 	    *bint->long*
+	    *$int->long*
 	    *long->bint*
 	    *vector-bound-check*))
 
@@ -65,6 +66,7 @@
 
 (define *int->long* #f)
 (define *bint->long* #f)
+(define *$int->long* #f)
 (define *long->bint* #f)
 (define *vector-bound-check* #f)
 (define *type-norms* #f)
@@ -98,6 +100,7 @@
       (set! *2+* (get-global/module '2+ '__r4_numbers_6_5))
       (set! *int->long* (get-global/module '$int->long 'foreign))
       (set! *bint->long* (get-global/module '$bint->long 'foreign))
+      (set! *$int->long* (get-global/module '$int->long 'foreign))
       (set! *long->bint* (get-global/module '$long->bint 'foreign))
       (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))))
 
@@ -132,6 +135,7 @@
    (set! *2+* #f)
    (set! *int->long* #f)
    (set! *bint->long* #f)
+   (set! *$int->long* #f)
    (set! *long->bint* #f)
    (set! *vector-bound-check* #f)
    (set! *type-norms* #f))

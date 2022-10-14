@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Sep 29 14:45:26 2022 (serrano)                */
+;*    Last change :  Mon Oct 10 15:33:23 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -160,44 +160,6 @@
 			       (bbv-block-specialize-ins! bv bs queue))))
 	       versions)))))
 
-
-;*                                                                     */
-;* 	    (let* ((bs (bbv-block-specialize! bv ctx))                 */
-;* 		   (lvs (blockV-live-versions bv)))                    */
-;* 	       (trace-item "nversions= " (length lvs) "/" (length versions) " " */
-;* 		  (map ctx->string (map car lvs)))                     */
-;* 	       (if (and merge (>=fx (length lvs) *max-block-version*)) */
-;* 		   (let* ((patches (block-merge-contexts bv ctx))      */
-;* 			  (stables (filter (lambda (ver)               */
-;* 					      (not (assq ver patches))) */
-;* 				      lvs)))                           */
-;* 		      (let loop ((patches patches)                     */
-;* 				 (stables stables)                     */
-;* 				 (bs bs))                              */
-;* 			 (if (null? patches)                           */
-;* 			     (begin                                    */
-;* 				(trace-item "merge="                   */
-;* 				   (map ctx->string                    */
-;* 				      (map car (live-versions versions)))) */
-;* 				bs)                                    */
-;* 			     (let* ((patch (car patches))              */
-;* 				    (pver (car patch))                 */
-;* 				    (pctx (cdr patch))                 */
-;* 				    (block (cdr pver))                 */
-;* 				    (old (bbv-ctx-assoc pctx stables))) */
-;* 				(if (pair? old)                        */
-;* 				    (begin                             */
-;* 				       (replace-block! block (cdr old)) */
-;* 				       (loop (cdr patches)             */
-;* 					  stables                      */
-;* 					  (if (eq? pctx ctx) (cdr old) bs))) */
-;* 				    (let ((new (bbv-block-specialize! bv pctx))) */
-;* 				       (replace-block! block new)      */
-;* 				       (loop (cdr patches)             */
-;* 					  (cons (cons pctx new) stables) */
-;* 					  (if (eq? pctx ctx) (cdr old) new)))))))) */
-;* 		   bs))))))                                            */
-;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-specialize! ...                                        */
 ;*---------------------------------------------------------------------*/
@@ -238,7 +200,13 @@
 		(if (pair? (block-succs bs))
 		    (set-car! (block-succs bs) n)
 		    (block-succs-set! bs (list n)))
-		(block-preds-set! n (cons bs (block-preds n))))))))
+		(block-preds-set! n (cons bs (block-preds n))))))
+	 ((rtl_ins-switch? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (block-succs-set! bs (rtl_switch-labels fun))
+	     (for-each (lambda (n)
+			  (block-preds-set! n (cons bs (block-preds n))))
+		(rtl_switch-labels fun))))))
    
    (with-trace 'bbv-ins "bbv-ins"
       (let loop ((oins first)
@@ -297,8 +265,18 @@
 					  (to n))))))
 		      (connect! bs ins)
 		      (loop '() (cons ins nins) ctx)))))
+	    ((rtl_ins-switch? (car oins))
+	     (with-access::rtl_ins (car oins) (fun)
+		(with-access::rtl_switch fun (labels)
+		   (let ((ins (duplicate::rtl_ins/bbv (car oins)
+				 (ctx ctx)
+				 (fun (duplicate::rtl_switch fun
+					 (labels (map (lambda (b)
+							 (bbv-block b ctx queue))
+						    labels)))))))
+		      (connect! bs ins)
+		      (loop '() (cons ins nins) ctx)))))
 	    ((rtl_ins-ifne? (car oins))
-	     (tprint "BC=" (rtl_ins-vector-bound-check? (car oins)))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_ifne fun (then)
 		   (let* ((n (bbv-block then ctx queue))
@@ -753,6 +731,13 @@
 	    (when (isa? fun rtl_call)
 	       (with-access::rtl_call fun (var)
 		  (eq? var *bint->long*))))))
+
+   (define (rtl_$int->long? a)
+      (when (isa? a rtl_ins)
+	 (with-access::rtl_ins a (fun)
+	    (when (isa? fun rtl_call)
+	       (with-access::rtl_call fun (var)
+		  (eq? var *$int->long*))))))
    
    (define (reg? a)
       (or (rtl_reg? a)
@@ -768,6 +753,7 @@
       (cond
 	 ((rtl_reg? a) a)
 	 ((rtl_bint->long? a) (car (rtl_ins-args a)))
+	 ((rtl_$int->long? a) (car (rtl_ins-args a)))
 	 (else (rtl_ins-dest a))))
    
    (define (fxcmp-op i)
