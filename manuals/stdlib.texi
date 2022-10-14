@@ -847,6 +847,10 @@ The function @code{randomfl} returns a double in the range [0..1].
 @deffnx {procedure} expfl z
 @deffnx {procedure} log z
 @deffnx {procedure} logfl z
+@deffnx {procedure} log2 z
+@deffnx {procedure} log2fl z
+@deffnx {procedure} log10 z
+@deffnx {procedure} log10fl z
 @deffnx {procedure} sin z
 @deffnx {procedure} sinfl z
 @deffnx {procedure} cos z

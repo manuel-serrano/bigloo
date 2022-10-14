@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Sat Jun 25 17:09:43 2022 (serrano)                */
+;*    Last change :  Fri Oct 14 15:01:31 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -50,6 +50,8 @@
 	    (macro c-fmod::double (::double ::double) "fmod")
 	    (macro c-exp::double (::double) "exp")
 	    (macro c-log::double (::double) "log")
+	    (macro c-log2::double (::double) "log2")
+	    (macro c-log10::double (::double) "log10")
 	    (macro c-sin::double (::double) "sin")
 	    (macro c-cos::double (::double) "cos")
 	    (macro c-tan::double (::double) "tan")
@@ -118,6 +120,10 @@
 		  "exp")
 	       (method static c-log::double (::double)
 		  "log")
+	       (method static c-log2::double (::double)
+		  "log2")
+	       (method static c-log10::double (::double)
+		  "log10")
 	       (method static c-sin::double (::double)
 		  "sin")
 	       (method static c-cos::double (::double)
@@ -202,6 +208,8 @@
 	    (inline remainderfl::double ::double ::double)
 	    (inline expfl::double ::double)
 	    (inline logfl::double ::double)
+	    (inline log2fl::double ::double)
+	    (inline log10fl::double ::double)
 	    (inline sinfl::double ::double)
 	    (inline cosfl::double ::double)
 	    (inline tanfl::double ::double)
@@ -249,6 +257,8 @@
 	    (c-negfl side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-exp side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-log side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    (c-log2 side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    (c-log10 side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-sin side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-cos side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-tan side-effect-free no-cfa-top nesting args-safe fail-safe)
@@ -278,6 +288,8 @@
 	    (negfl side-effect-free no-cfa-top nesting fail-safe)
 	    (expfl side-effect-free no-cfa-top nesting fail-safe)
 	    (logfl side-effect-free no-cfa-top nesting fail-safe)
+	    (log2fl side-effect-free no-cfa-top nesting fail-safe)
+	    (log10fl side-effect-free no-cfa-top nesting fail-safe)
 	    (sinfl side-effect-free no-cfa-top nesting fail-safe)
 	    (cosfl side-effect-free no-cfa-top nesting fail-safe)
 	    (tanfl side-effect-free no-cfa-top nesting fail-safe)
@@ -463,6 +475,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (logfl x)
    (c-log x))
+ 
+;*---------------------------------------------------------------------*/
+;*    log2fl ...                                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (log2fl x)
+   (c-log2 x))
+ 
+;*---------------------------------------------------------------------*/
+;*    log10fl ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (log10fl x)
+   (c-log10 x))
  
 ;*---------------------------------------------------------------------*/
 ;*    sinfl ...                                                        */
