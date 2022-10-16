@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Tue Oct  4 08:31:44 2022 (serrano)                */
+;*    Last change :  Sun Oct 16 17:34:24 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -51,6 +51,7 @@
 	      (exposure-mode (default #f))
 	      (white-balance (default #f))
 	      (digital-zoom-ratio (default #f))
+	      (light-source (default #f))
 	      (flash (default #f))
 	      (fnumber (default #f))
 	      (iso (default #f))
@@ -87,6 +88,7 @@
 	      (rating (default #f))
 	      (rating-percentage (default #f))
 	      (copyright (default #f))
+	      (maker-node (default #f))
 	      (thumbnail (default #f))
 	      (thumbnail-path (default #f))
 	      (thumbnail-offset (default #f))
@@ -519,6 +521,12 @@
 		      (let ((fl (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (focal-length)
 			    (set! focal-length fl))))
+		     ((#x9208)
+		      ;; TAG_LIGHTSOURCE
+		      (let* ((fl (getformat/fx en bytes valptr fmt))
+			     (f (not (=fx (bit-and fl 7) 0))))
+			 (with-access::exif exif (light-source)
+			    (set! light-source f))))
 		     ((#x9209)
 		      ;; TAG_FLASH
 		      (let* ((fl (getformat/fx en bytes valptr fmt))
@@ -536,6 +544,10 @@
 			    (set! comment
 			       (remove-trailing-spaces!
 				  (strncpy (+fx 8 valptr) 191))))))
+		     ((#x927c)
+		      ;; MAKER NOTE
+		      (with-access::exif exif (maker-note)
+			 (strncpy valptr bcount)))
 		     ((#x9290)
 		      ;; SUB_SEC_TIME (ascii)
 		      #unspecified)
