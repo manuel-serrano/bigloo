@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sun Oct 16 17:34:24 2022 (serrano)                */
+;*    Last change :  Wed Oct 19 07:09:14 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -26,6 +26,7 @@
 	      (comment (default #f))
 	      (%commentpos (default #f))
 	      (%commentlen (default #f))
+	      (description (default #f))
 	      (date (default #f))
 	      (offset-time (default #f))
 	      (offset-time-original (default #f))
@@ -318,6 +319,10 @@
 		      (let ((c (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (jpeg-compress)
 			    (set! jpeg-compress c))))
+		     ((#x10e)
+		      ;; TAG_DESCRIPTION
+		      (with-access::exif exif (description)
+			 (set! description (strncpy valptr bcount))))
 		     ((#x10f)
 		      ;; TAG_MAKE
 		      (with-access::exif exif (make)

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Aug 20 10:08:37 2022 (serrano)                */
+/*    Last change :  Wed Oct 19 09:50:35 2022 (serrano)                */
 /*    Copyright   :  2016-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -75,6 +75,8 @@ struct bgl_ucs2_string {
 #else
 #  define STRING_SIZE (sizeof( struct { long length; } ) + 1)
 #endif
+
+//#define STRING_SIZE (sizeof(struct bgl_string))
 
 #define UCS2_STRING_SIZE (sizeof( struct bgl_ucs2_string ))
 
