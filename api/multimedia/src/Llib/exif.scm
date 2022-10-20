@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Wed Oct 19 07:09:14 2022 (serrano)                */
+;*    Last change :  Thu Oct 20 10:56:22 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -11,7 +11,11 @@
 ;*    See https://exiftool.org/TagNames/EXIF.html                      */
 ;*        https://exiftool.org/TagNames/GPS.html                       */
 ;*        https://enqtran.com/standard-exif-tags/                      */
+;*        https://learn.microsoft.com/en-us/windows/win32/gdiplus      */
+;*           /-gdiplus-constant-property-item-                         */
+;*           descriptions?redirectedfrom=MSDN                          */
 ;*=====================================================================*/
+;; 
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
@@ -165,6 +169,12 @@
 	  (if (=elong den #e0)
 	      0
 	      (cons num den))))
+      ((11)
+       ;; FMT_SINGLE
+       (exif-error "exif" "Unsupported number format" fmt))
+      ((12)
+       ;; FMT_DOUBLE
+       (exif-error "exif" "Unsupported number format" fmt))
       (else
        (exif-error "exif" "Unsupported number format" fmt))))
 
@@ -296,9 +306,29 @@
 		     ((#x1)
 		      ;; INTEROPINDEX
 		      #unspecified)
+		     ((#x1)
+		      ;; TAG_GPS_LATITUDE_REF
+		      (let ((lr (strncpy valptr bcount)))
+			 (tprint "lr=" lr)
+			 #unspecified))
 		     ((#x2)
-		      ;; INTEROPVERSION
-		      #unspecified)
+		      ;; TAG_GPS_LATITUDE
+		      (tprint "lat..." fmt)
+		      (let ((la (strncpy valptr bcount)))
+			 (tprint "la=" (string-for-read la))
+			 #unspecified))
+		     ((#x3)
+		      ;; TAG_GPS_LONGITUDE_REF
+		      (tprint "long...")
+		      (let ((lr (strncpy valptr bcount)))
+			 (tprint "lr=" lr)
+			 #unspecified))
+		     ((#x4)
+		      ;; TAG_GPS_LONGITUDE_REF
+		      (tprint "lo...")
+		      (let ((lo (strncpy valptr bcount)))
+			 (tprint "lo=" lo)
+			 #unspecified))
 		     ((#xfe)
 		      ;; NEW SUBFILE TYPE
 		      (let ((s (getformat/fx en bytes valptr fmt)))

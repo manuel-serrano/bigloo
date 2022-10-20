@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Oct 10 16:34:39 2022 (serrano)                */
+;*    Last change :  Thu Oct 20 12:05:41 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -114,6 +114,18 @@
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)
 	    (rtl_call-values i::rtl_ins)))
+
+;*---------------------------------------------------------------------*/
+;*    object-print ::blockV ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (object-print o::blockV p proc)
+   (dump o p 0))
+
+;*---------------------------------------------------------------------*/
+;*    object-print ::blockS ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (object-print o::blockS p proc)
+   (dump o p 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bbv-ctx-id* ...                                                 */

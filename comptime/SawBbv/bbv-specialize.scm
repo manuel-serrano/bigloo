@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Oct 10 15:33:23 2022 (serrano)                */
+;*    Last change :  Thu Oct 20 12:15:28 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -666,9 +666,9 @@
 				      :value vl))
 			     (nctx ctx))
 			  (dup-ifne i pctx nctx))
-		       (values i ctx)))
+		       (dup-ifne i ctx ctx)))
 		  ((not (bbv-range? vl))
-		   (values i ctx))
+		   (dup-ifne i ctx ctx))
 		  ((and (bbv-range<? va vl) (bbv-range>=? va (vlen-range)))
 		   (values (duplicate::rtl_ins/bbv i (fun (true)))
 		      (extend-ctx ctx (car args) (list *vector*) #t
