@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Sep 29 18:22:33 2022 (serrano)                */
+;*    Last change :  Thu Oct 20 14:08:38 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -153,7 +153,11 @@
 			  (with-access::rtl_ins ins (fun)
 			     (with-access::rtl_go fun (to)
 				(when (eq? to old)
-				   (set! to new)))))))
+				   (set! to new)))))
+			 ((rtl_ins-switch? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_switch fun (labels)
+				(set! labels (replace labels old new)))))))
 	    first)))
    b)
 
@@ -195,11 +199,15 @@
 					  (with-access::rtl_ins ins (fun)
 					     (with-access::rtl_go fun (to)
 						(when (eq? to old)
-						   (set! to new)))))))
+						   (set! to new)))))
+					 ((rtl_ins-switch? ins)
+					  (with-access::rtl_ins ins (fun)
+					     (with-access::rtl_switch fun (labels)
+						(set! labels (replace labels old new)))))))
 			    first)))
 	    preds)
 	 (with-access::blockS new ((npreds preds))
-	    (set! npreds preds))
+	    (set! npreds (delete-duplicates! (append preds npreds) eq?)))
 	 new)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Oct 10 15:54:45 2022 (serrano)                */
+;*    Last change :  Thu Oct 20 12:53:20 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -474,12 +474,12 @@
 ;*    simplify-branch! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (simplify-branch! b::block)
-   
+
    (define (goto-block? b)
       ;; is a block explicitly jumping to its successor
       (with-access::block b (first)
 	 (every (lambda (i) (or (rtl_ins-nop? i) (rtl_ins-go? i))) first)))
-   
+
    (let loop ((bs (list b))
 	      (acc (make-empty-bbset)))
       (cond
@@ -488,9 +488,9 @@
 	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (with-access::blockS (car bs) (succs first)
+	  (with-access::blockS (car bs) (succs first label)
 	     (if (=fx (length succs) 1)
-		 (if (=fx (length (block-preds (car succs))) 1)
+		 (if (and #f (=fx (length (block-preds (car succs))) 1))
 		     ;; collapse the two blocks
 		     (let ((s (car succs)))
 			(for-each (lambda (ns)
@@ -500,20 +500,21 @@
 			(set! succs (block-succs s))
 			(let ((lp (last-pair first)))
 			   (if (rtl_ins-go? (car lp))
-			       (begin
-				  (set-car! lp (car (block-first s)))
-				  (set-cdr! lp (cdr (block-first s))))
-			       (set! first (append! first (block-first s)))))
+			       (let ((rev (reverse! (cdr (reverse first)))))
+				  (set! first (append! rev (block-first s))))
+			       (set! first
+				  (append first
+				     (list-copy (block-first s))))))
 			(loop bs acc))
 		     (loop (cons (car succs) (cdr bs))
 			(bbset-cons (car bs) acc)))
 		 (let liip ((ss succs)
 			    (nsuccs '()))
 		    (if (null? ss)
-			(loop (append (reverse succs) (cdr bs))
+			(loop (append (reverse nsuccs) (cdr bs))
 			   (bbset-cons (car bs) acc))
 			(let ((s (car ss)))
-			   (if (and #f (goto-block? s))
+			   (if (goto-block? s)
 			       (let ((t (car (block-succs s))))
 				  (if (=fx (length (block-preds s)) 1)
 				      (begin
@@ -531,6 +532,7 @@
 					 (block-preds-set! t
 					    (cons (car bs)
 					       (block-preds t)))
+					 (redirect-block! (car bs) s t)
 					 (liip (cdr ss) (cons s nsuccs)))))
 			       (liip (cdr ss) (cons s nsuccs))))))))))))
 
@@ -546,7 +548,7 @@
 	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (with-access::block (car bs) (first succs label)
+	  (with-access::block (car bs) (first succs preds label)
 	     (let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
 		(if (pair? f)
 		    ;; prune the instructions
@@ -563,12 +565,16 @@
 ;*---------------------------------------------------------------------*/
 (define (remove-goto! b::block)
    
-   (define (goto-block? b)
+   (define (goto-block? b succs)
       ;; is a block explicitly jumping to its successor
-      (with-access::block b (first)
-	 (when (pair? first)
-	    (let ((i (car (last-pair first))))
-	       (rtl_ins-go? i)))))
+      (when (pair? succs)
+	 (with-access::block b (first)
+	    (when (pair? first)
+	       (let ((i (car (last-pair first))))
+		  (when (rtl_ins-go? i)
+		     (with-access::rtl_ins i (fun)
+			(with-access::rtl_go fun (to)
+			   (eq? to (car succs))))))))))
    
    (let loop ((bs (list b))
 	      (acc (make-empty-bbset)))
@@ -579,9 +585,9 @@
 	  (loop (cdr bs) acc))
 	 (else
 	  (with-access::block (car bs) (succs)
-	     (when (and (goto-block? (car bs))
+	     (when (and (goto-block? (car bs) succs)
 			(not (bbset-in? (car succs) acc)))
-		(with-access::block (car bs) (first)
+		(with-access::block (car bs) (first label)
 		   (with-access::rtl_ins (car (last-pair first)) (fun)
 		      (set! fun (instantiate::rtl_nop)))))
 	     (loop (append succs (cdr bs))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Oct 20 12:15:28 2022 (serrano)                */
+;*    Last change :  Thu Oct 20 18:29:30 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -167,7 +167,8 @@
    (with-access::blockV bv (label)
       (with-trace 'bbv-specialize (format "bbv-block-specialize! ~a" label)
 	 (trace-item "ctx=" (shape ctx))
-	 (bbv-block-specialize-ins! bv (new-blockS bv ctx) queue))))
+	 (let ((bs (new-blockS bv ctx)))
+	    (bbv-block-specialize-ins! bv bs queue)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-specialize-ins! ...                                    */
