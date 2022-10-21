@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Thu Sep 29 14:42:46 2022 (serrano)                */
+;*    Last change :  Fri Oct 21 13:52:27 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -236,6 +236,7 @@
 (define (<=rv x y) (rv <=fx x y))
 (define (>rv x y) (rv >fx x y))
 (define (>=rv x y) (rv >=fx x y))
+(define (=rv x y) (rv =fx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range<? ...                                                  */
@@ -279,11 +280,14 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range=? left right)
    (cond
-      ((and (rv =fx (bbv-range-lo left) (bbv-range-lo right))
-	    (rv =fx (bbv-range-up left) (bbv-range-up right)))
+      ((and (=rv (bbv-range-lo left) (bbv-range-lo right))
+	    (=rv (bbv-range-up left) (bbv-range-up right)))
        'true)
+      ((or (eq? (bbv-range>? left right) 'true)
+	   (eq? (bbv-range<? left right) 'true))
+       'false)
       (else
-       'false)))
+       #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-lt ...                                                 */

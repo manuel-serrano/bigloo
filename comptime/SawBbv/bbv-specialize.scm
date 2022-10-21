@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Oct 20 18:29:30 2022 (serrano)                */
+;*    Last change :  Fri Oct 21 13:42:17 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -773,6 +773,7 @@
 	 ((<=) '>)
 	 ((>) '<=)
 	 ((>=) '<)
+	 ((=) '!=)
 	 (else op)))
    
    (define (resolve/op i op intl intr)
@@ -810,18 +811,11 @@
 		       (intro (bbv-range-lt intl intr)))
 		    (values (extend-ctx ctx reg types #t :value intrt)
 		       (extend-ctx ctx reg types #t :value intro))))
-		((== ===)
-		 (let ((ieq (bbv-range-eq intl intr)))
-		    (values (if (bbv-range? ieq)
-				(extend-ctx ctx reg types #t :value ieq)
-				ctx)
-		       ctx)))
-		((!= !==)
-		 (let ((ieq (bbv-range-eq intl intr)))
-		    (values ctx
-		       (if (bbv-range? ieq)
-			   (extend-ctx ctx reg types #t :value ieq)
-			   ctx))))
+		((=)
+		 (values (extend-ctx ctx reg types #t :value intl)
+		    ctx))
+		((!=)
+		 (values ctx ctx))
 		(else
 		 (values ctx ctx))))))
    
@@ -861,6 +855,7 @@
 		   (lambda (val)
 		      (with-trace 'bbv-ins "resolve/op"
 			 (trace-item "val=" val)
+			 (tprint "RESOLVE val=" val " " (shape i) " " (shape intl) " " (shape intr))
 			 (case val
 			    ((true)
 			     (multiple-value-bind (pctx nctx)
