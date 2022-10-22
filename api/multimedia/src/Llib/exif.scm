@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Thu Oct 20 10:56:22 2022 (serrano)                */
+;*    Last change :  Sat Oct 22 07:04:33 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -116,35 +116,72 @@
 ;*    -------------------------------------------------------------    */
 ;*    Get a 16 bits unsigned integer                                   */
 ;*---------------------------------------------------------------------*/
-(define (get16u::elong en::bool bytes::bstring o::int)
-   (fixnum->elong
-    (if en
-	(bit-or (bit-lsh (char->integer (string-ref bytes o)) 8)
+(define (get16u::elong en::bool bytes o::int)
+   
+   (define (string-get16u::elong en::bool bytes::bstring o::int)
+      (fixnum->elong
+	 (if en
+	     (bit-or (bit-lsh (char->integer (string-ref bytes o)) 8)
 		(char->integer (string-ref bytes (+fx 1 o))))
-	(bit-or (bit-lsh (char->integer (string-ref bytes (+fx 1 o))) 8)
+	     (bit-or (bit-lsh (char->integer (string-ref bytes (+fx 1 o))) 8)
 		(char->integer (string-ref bytes o))))))
+   
+   (define (mmap-get16u::elong en::bool bytes::mmap o::long)
+      (fixnum->elong
+	 (if en
+	     (bit-or (bit-lsh (char->integer (mmap-ref bytes o)) 8)
+		(char->integer (mmap-ref bytes (+fx 1 o))))
+	     (bit-or (bit-lsh (char->integer (mmap-ref bytes (+fx 1 o))) 8)
+		(char->integer (mmap-ref bytes o))))))
+   
+   (if (string? bytes)
+       (string-get16u en bytes o)
+       (mmap-get16u en bytes o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get32u ...                                                       */
 ;*    -------------------------------------------------------------    */
 ;*    Get a 32 bits unsigned integer                                   */
 ;*---------------------------------------------------------------------*/
-(define (get32u::elong en::bool bytes::bstring o::int)
-   (let ((e0 (fixnum->elong (char->integer (string-ref bytes o))))
-	 (e1 (fixnum->elong (char->integer (string-ref bytes (+fx 1 o)))))
-	 (e2 (fixnum->elong (char->integer (string-ref bytes (+fx 2 o)))))
-	 (e3 (fixnum->elong (char->integer (string-ref bytes (+fx 3 o))))))
-      (if en
-	  (bit-orelong
-	   (bit-lshelong e0 24)
-	   (bit-orelong
-	    (bit-lshelong e1 16)
-	    (bit-orelong (bit-lshelong e2 8) e3)))
-	  (bit-orelong
-	   (bit-lshelong e3 24)
-	   (bit-orelong
-	    (bit-lshelong e2 16)
-	    (bit-orelong (bit-lshelong e1 8) e0))))))
+(define (get32u::elong en::bool bytes o::int)
+   
+   (define (string-get32u::elong en::bool bytes::bstring o::int)
+      (let ((e0 (fixnum->elong (char->integer (string-ref bytes o))))
+	    (e1 (fixnum->elong (char->integer (string-ref bytes (+fx 1 o)))))
+	    (e2 (fixnum->elong (char->integer (string-ref bytes (+fx 2 o)))))
+	    (e3 (fixnum->elong (char->integer (string-ref bytes (+fx 3 o))))))
+	 (if en
+	     (bit-orelong
+		(bit-lshelong e0 24)
+		(bit-orelong
+		   (bit-lshelong e1 16)
+		   (bit-orelong (bit-lshelong e2 8) e3)))
+	     (bit-orelong
+		(bit-lshelong e3 24)
+		(bit-orelong
+		   (bit-lshelong e2 16)
+		   (bit-orelong (bit-lshelong e1 8) e0))))))
+   
+   (define (mmap-get32u::elong en::bool bytes::mmap o::long)
+      (let ((e0 (fixnum->elong (char->integer (mmap-ref bytes o))))
+	    (e1 (fixnum->elong (char->integer (mmap-ref bytes (+fx 1 o)))))
+	    (e2 (fixnum->elong (char->integer (mmap-ref bytes (+fx 2 o)))))
+	    (e3 (fixnum->elong (char->integer (mmap-ref bytes (+fx 3 o))))))
+	 (if en
+	     (bit-orelong
+		(bit-lshelong e0 24)
+		(bit-orelong
+		   (bit-lshelong e1 16)
+		   (bit-orelong (bit-lshelong e2 8) e3)))
+	     (bit-orelong
+		(bit-lshelong e3 24)
+		(bit-orelong
+		   (bit-lshelong e2 16)
+		   (bit-orelong (bit-lshelong e1 8) e0))))))
+   
+   (if (string? bytes)
+       (string-get32u en bytes o)
+       (mmap-get32u en bytes o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    getformat ...                                                    */
@@ -155,7 +192,8 @@
    (case fmt
       ((1 6) 
        ;; FMT_BYTE, FMT_SBYTE
-       (char->integer (string-ref bytes o)))
+       (char->integer
+	  (if (string? bytes) (string-ref bytes o) (mmap-ref bytes o))))
       ((3 8)
        ;; FMT_USHORT, FMT_SSHORT
        (get16u en bytes o))
@@ -170,10 +208,10 @@
 	      0
 	      (cons num den))))
       ((11)
-       ;; FMT_SINGLE
+       ;; FMT_SINGLE 32bit
        (exif-error "exif" "Unsupported number format" fmt))
       ((12)
-       ;; FMT_DOUBLE
+       ;; FMT_DOUBLE 64bit
        (exif-error "exif" "Unsupported number format" fmt))
       (else
        (exif-error "exif" "Unsupported number format" fmt))))
@@ -267,23 +305,34 @@
 (define (process-exif-dir! en::bool bytes start::int base::int exif o0)
 
    (define (strncpy o max)
-      (let loop ((i 0))
-	 (if (=fx i max)
-	     (let ((s (make-string i)))
-		(blit-string! bytes o s 0 i)
-		s)
-	     (let ((c (string-ref bytes (+fx i o))))
-		(if (char=? c #a000)
-		    (let ((s (make-string i)))
-		       (blit-string! bytes o s 0 i)
-		       s)
-		    (loop (+fx i 1)))))))
-   
+
+      (define (string-strncpy o max)
+	 (let loop ((i 0))
+	    (if (=fx i max)
+		(let ((s (make-string i)))
+		   (blit-string! bytes o s 0 i)
+		   s)
+		(let ((c (string-ref bytes (+fx i o))))
+		   (if (char=? c #a000)
+		       (let ((s (make-string i)))
+			  (blit-string! bytes o s 0 i)
+			  s)
+		       (loop (+fx i 1)))))))
+      
+      (define (mmap-strncpy o max)
+	 (let loop ((i 0))
+	    (if (=fx i max)
+		(mmap-substring bytes o (+fx o i))
+		(let ((c (mmap-ref bytes (+fx i o))))
+		   (if (char=? c #a000)
+		       (mmap-substring bytes o (+fx i o))
+		       (loop (+fx i 1)))))))
+      
+      (if (string? bytes)
+	  (string-strncpy o max)
+	  (mmap-strncpy o max)))
+
    (define (process-exif-gps-tag o bcount)
-      '(tprint bcount " "
-	(map (lambda (i) (integer->string i 16))
-	   (map char->integer
-	      (string->list (substring bytes o (+fx o bcount))))))
       '(let* ((tag (elong->fixnum (get16u en bytes o))))
 	(tprint "TAG=" (integer->string tag 16) " "))
       #f)
@@ -344,7 +393,13 @@
 		      (let ((l (getformat/fx en bytes valptr fmt)))
 			 (with-access::exif exif (ilength)
 			    (set! ilength l))))
+		     ((#x102)
+		      ;; BIT_PER_SAMPLE
+		      'todo)
 		     ((#x103)
+		      ;; COMPRESSION
+		      'todo)
+		     ((#x106)
 		      ;; TAG_COMPRESS
 		      (let ((c (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (jpeg-compress)
@@ -361,6 +416,9 @@
 		      ;; TAG_MODEL
 		      (with-access::exif exif (model)
 			 (set! model (strncpy valptr 39))))
+		     ((#x111)
+		      ;; STRIP_OFFSET
+		      'todo)
 		     ((#x112)
 		      ;; TAG_ORIENTATION
 		      (let ((o (getformat en bytes valptr fmt)))
@@ -371,6 +429,15 @@
 				  ((#e6) 'portrait)
 				  ((#e8) 'upsidedown)
 				  (else 'seascape))))))
+		     ((#x115)
+		      ;; SAMPLE_PER_PIXEL
+		      'todo)
+		     ((#x116)
+		      ;; ROWS_PER_STRIP
+		      'todo)
+		     ((#x117)
+		      ;; STRIP_BYTE_COUNT
+		      'todo)
 		     ((#x11a)
 		      ;; TAG_XRESOLUTION
 		      (let ((xr (getformat en bytes valptr fmt)))
@@ -381,6 +448,9 @@
 		      (let ((yr (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (yresolution)
 			    (set! yresolution yr))))
+		     ((#x11c)
+		      ;; PLANAR_CONFIGURATION
+		      'todo)
 		     ((#x128)
 		      ;; TAG_RESOLUTION_UNIT
 		      (let ((ru (getformat en bytes valptr fmt)))
@@ -395,6 +465,9 @@
 		      (let ((dt (strncpy valptr 31)))
 			 (with-access::exif exif (date)
 			    (set! date dt))))
+		     ((#x14a)
+		      ;; TIFF_SUB_ID
+		      'ignored)
 		     ((#x201)
 		      ;; TAG_THUMBNAIL_OFFSET
 		      (let* ((ol (getformat/fx en bytes valptr fmt))
@@ -828,7 +901,8 @@
 		      'ignored)
 		     (else
 		      ;; TAG_UNKNOWN
-		      (tprint "TAG_UNKNOWN: " (integer->string tag 16))
+		      (when (<fx tag #xc600)
+			 (tprint "TAG_UNKNOWN: " (integer->string tag 16)))
 		      'unknown)))
 	       (loop (+fx de 1)))))
       (when (< (+ start 2 4 (*fx 12 dnum)) (string-length bytes))
@@ -844,6 +918,7 @@
 ;*    read-jpeg-exif! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (read-jpeg-exif! exif bytes pos)
+   
    (define (exif-endianess)
       (cond
 	 ((substring-at? bytes "II" 6)
@@ -856,6 +931,7 @@
 	  (warning "'read-jpeg-exif"
 	     "Unknown exif endianess, assuminug big endian")
 	  #f)))
+   
    (if (and (char=? (string-ref bytes 4) #a000)
 	    (char=? (string-ref bytes 5) #a000))
        (let* ((en (exif-endianess))
@@ -1022,6 +1098,75 @@
    exif)
 
 ;*---------------------------------------------------------------------*/
+;*    read-tiff-sections ...                                           */
+;*    -------------------------------------------------------------    */
+;*    https://www.awaresystems.be/imaging/tiff/specification/TIFF6.pdf */
+;*---------------------------------------------------------------------*/
+(define (read-tiff-sections exif mm::mmap path)
+
+   (define (tiff-endianess)
+      ;; big endian
+      (char=? (mmap-ref mm 0) #a077))
+
+   (define (strncpy o max)
+      (let loop ((i 0))
+	 (if (=fx i max)
+	     (mmap-substring mm o (+fx o i))
+	     (let ((c (mmap-ref mm (+fx i o))))
+		(if (char=? c #a000)
+		    (mmap-substring mm o (+fx i o))
+		    (loop (+fx i 1)))))))
+
+   (define (read-entry en offset)
+      (let* ((tag (elong->fixnum (get16u en mm (+fx 0 offset))))
+	     (typ (get16u en mm (+fx 2 offset)))
+	     (cnt (get32u en mm (+fx 4 offset)))
+	     (voff (get32u en mm (+fx 8 offset))))
+	 (tprint "tag=" tag " " (fixnum->string tag 16)
+	    " typ=" typ " cnt=" cnt " voff=" voff " "
+	    (if (=fx typ 2) (strncpy voff cnt)))))
+			       
+   (define (read-ifd en offset)
+      '(let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
+		 (offset (+fx offset 2)))
+	 (if (>fx dnum 0)
+	     (begin
+		(read-entry en offset)
+		(loop (-fx dnum 1)
+		   (+fx offset 12)))
+	     (tprint "NEXT=" (get32u en mm offset))))
+      (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0))
+			       
+   (let* ((en (tiff-endianess))
+	  (offset (get32u en mm 4)))
+      (read-ifd en offset)))
+		
+;*---------------------------------------------------------------------*/
+;*    tiff? ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (tiff? mm::mmap)
+   ;; 32bit dng is denoted by the #a042 tag
+   ;; 64bit dng is denoted by the #a043 tag, which is currently not supported
+   (let ((res (case (mmap-get-char mm)
+		 ((#a073)
+		  ;; #x49
+		  (and (char=? (mmap-get-char mm) #a073)
+		       ;; 32bit dng
+		       (char=? (mmap-get-char mm) #a042) 
+		       (char=? (mmap-get-char mm) #a000)))
+		 ((#a077)
+		  ;; #x4d
+		  (and (char=? (mmap-get-char mm) #a077)
+		       (char=? (mmap-get-char mm) #a000)
+		       ;; 32bit dng
+		       (char=? (mmap-get-char mm) #a042)))
+		 (else
+		  #f))))
+      (unless res
+	 (mmap-read-position-set! mm 0))
+      res))
+		
+;*---------------------------------------------------------------------*/
 ;*    jpeg-exif ...                                                    */
 ;*    -------------------------------------------------------------    */
 ;*    This is the main function which reads a JPEG image a             */
@@ -1035,10 +1180,12 @@
 	     (exif (instantiate::exif)))
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
-		(read-jpeg-sections exif mm path))
+		(if (tiff? mm)
+		    (read-tiff-sections exif mm path)
+		    (read-jpeg-sections exif mm path)))
 	     (close-mmap mm))
 	  exif)))
-
+		
 ;*---------------------------------------------------------------------*/
 ;*    jpeg-exif-comment-set! ...                                       */
 ;*---------------------------------------------------------------------*/
@@ -1076,7 +1223,7 @@
 			 (write-char c pw))
 		      (close-input-port pr)
 		      (close-output-port pw))))))))
-   
+		
 ;*---------------------------------------------------------------------*/
 ;*    jpeg-exif-orientation-set! ...                                   */
 ;*---------------------------------------------------------------------*/
@@ -1112,7 +1259,7 @@
 			 (write-char c pw))
 		      (close-input-port pr)
 		      (close-output-port pw))))))))
-   
+		
 ;*---------------------------------------------------------------------*/
 ;*    parse-exif-date ...                                              */
 ;*---------------------------------------------------------------------*/
@@ -1123,9 +1270,9 @@
 		(proc 'parse-exif-date)
 		(msg "Illegal syntax")
 		(obj (format "~a{~a}~a"
-			     (substring d 0 i)
-			     (string-ref d i)
-			     (substring d (+fx i 1) (string-length d)))))))
+			(substring d 0 i)
+			(string-ref d i)
+			(substring d (+fx i 1) (string-length d)))))))
    
    (define (substring->int d i len)
       (let ((len (+fx i len))
@@ -1146,10 +1293,10 @@
 	    (char=? (string-ref d 13) #\:)
 	    (char=? (string-ref d 16) #\:))
        (make-date
-	:sec (substring->int d 17 2)
-	:min (substring->int d 14 2)
-	:hour (substring->int d 11 2)
-	:day (substring->int d 8 2)
-	:month (substring->int d 5 2)
-	:year (substring->int d 0 4))
+	  :sec (substring->int d 17 2)
+	  :min (substring->int d 14 2)
+	  :hour (substring->int d 11 2)
+	  :day (substring->int d 8 2)
+	  :month (substring->int d 5 2)
+	  :year (substring->int d 0 4))
        (parse-error d 0)))
