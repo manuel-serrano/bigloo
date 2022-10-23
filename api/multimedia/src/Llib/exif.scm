@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sat Oct 22 07:04:33 2022 (serrano)                */
+;*    Last change :  Sun Oct 23 08:01:53 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -819,6 +819,9 @@
 		      ;; COMPOSITE_IMAGE
 		      (with-access::exif exif (composite-image)
 			 (set! composite-image (strncpy valptr bcount))))
+		     ((#xc612 #xc613)
+		      ;; DNG version
+		      'ignored)
 		     ((#xc614)
 		      ;; UNIQUE CAMERA MODEL
 		      (with-access::exif exif (unique-camera-model)
@@ -826,8 +829,8 @@
 		     ((#xc615)
 		      ;; LOCALIZED UNIQUE CAMERA MODEL
 		      'ignored)
-		     ((#xc623)
-		      ;; CAMERA CALIBRAIION
+		     ((#xc621 #xc622 #xc623)
+		      ;; CAMERA CALIBRAIION ...
 		      'ignored)
 		     ((#xc624)
 		      ;; CAMERA CALIBRAIION2
@@ -875,6 +878,12 @@
 		     ((#xc635)
 		      ;; MakerNoteSafety
 		      'ignored)
+		     ((#xc65a #xc65b #xc65c)
+		      ;; SHORT ILLUMINATION ILLUMINANT1 ...
+		      'ignored)
+		     ((#xc65d)
+		      ;; BYTE DATA UNIQUE ID
+		      'ignored)
 		     ((#xc6f3)
 		      ;; CAMERA CALIBRATION SIGNATURE
 		      'ignored)
@@ -893,16 +902,29 @@
 		     ((#xc761)
 		      ;; NOISE PROFILE
 		      'ignored)
+		     ((#xc6f9 #xc6fa #xc6fb #xc6fc #xc6fd)
+		      ;; HUE_SAT_MAP_DIMS...
+		      'ignored)
+		     ((#xc6fe)
+		      ;; CAMERA PROFILE COPYRIGHT
+		      'ignored)
 		     ((#xa302)
 		      ;; CFAPattern
+		      'ignored)
+		     ((#xc714 #xc715 #xc716 #xc717 #xc718 #xc719 #xc71a)
+		      'ignored)
+		     ((#xc71b)
+		      ;; PREVIEW DATE TIME
+		      'ignored)
+		     ((#xc725  #xc726)
+		      ;; LOOK_TABLE_DIMS
 		      'ignored)
 		     ((#xc7a7)
 		      ;; NEW RAW IMAGE DIGEST
 		      'ignored)
 		     (else
 		      ;; TAG_UNKNOWN
-		      (when (<fx tag #xc600)
-			 (tprint "TAG_UNKNOWN: " (integer->string tag 16)))
+		      (tprint "TAG_UNKNOWN: " (integer->string tag 16))
 		      'unknown)))
 	       (loop (+fx de 1)))))
       (when (< (+ start 2 4 (*fx 12 dnum)) (string-length bytes))
@@ -1127,14 +1149,16 @@
 	    (if (=fx typ 2) (strncpy voff cnt)))))
 			       
    (define (read-ifd en offset)
-      '(let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
+      (let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
 		 (offset (+fx offset 2)))
 	 (if (>fx dnum 0)
 	     (begin
 		(read-entry en offset)
 		(loop (-fx dnum 1)
 		   (+fx offset 12)))
-	     (tprint "NEXT=" (get32u en mm offset))))
+	     (begin
+		(tprint "NEXT=" (get32u en mm offset))
+		(tprint "OFFSET=" offset " " (integer->string offset 16)))))
       (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0))
 			       
    (let* ((en (tiff-endianess))
