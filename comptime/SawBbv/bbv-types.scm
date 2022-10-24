@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Oct 20 12:05:41 2022 (serrano)                */
+;*    Last change :  Mon Oct 24 17:01:51 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -44,7 +44,7 @@
 	    (wide-class blockV::block
 	       (versions::pair-nil (default '()))
 	       (%mark::long (default -1))
-	       (merge::bool (default #f)))
+	       (merge::obj (default #unspecified)))
 
 	    ;; specialized block
 	    (wide-class blockS::block
@@ -105,6 +105,7 @@
 	    (rtl_ins-call?::bool i::rtl_ins)
 	    (rtl_ins-vlen?::bool i::rtl_ins)
 	    (rtl_ins-loadi?::bool i::rtl_ins)
+	    (rtl_ins-loadg?::bool i::rtl_ins)
 	    (rtl_ins-bool?::bool i::rtl_ins)
 	    (rtl_ins-true?::bool i::rtl_ins)
 	    (rtl_ins-false?::bool i::rtl_ins)
@@ -567,6 +568,13 @@
 (define (rtl_ins-loadi? i::rtl_ins)
    (with-access::rtl_ins i (fun)
       (isa? fun rtl_loadi)))
+   
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-loadg? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-loadg? i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (isa? fun rtl_loadg)))
    
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-loadi-value ...                                          */

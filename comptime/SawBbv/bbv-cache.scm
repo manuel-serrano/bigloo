@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Mon Oct 10 15:51:58 2022 (serrano)                */
+;*    Last change :  Mon Oct 24 13:10:07 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -21,8 +21,8 @@
    
    (export  (start-bbv-cache!)
 	    (stop-bbv-cache!)
-	    *<fx* *<=fx* *>=fx* *>fx* *=fx* *-fx* *+fx*
-            *-fx-safe* *+fx-safe*
+	    *<fx* *<=fx* *>=fx* *>fx* *=fx* *-fx* *+fx* **fx*
+            *-fx-safe* *+fx-safe* **fx-safe*
             *$-fx/ov* *$+fx/ov* *$*fx/ov* 
 	    *<fl* *<=fl* *>=fl* *>fl* *=fl* *-fl* *+fl*
 	    *2-*
@@ -45,9 +45,11 @@
 (define *=fx* #f)
 (define *-fx* #f)
 (define *+fx* #f)
+(define **fx* #f)
 
 (define *-fx-safe* #f)
 (define *+fx-safe* #f)
+(define **fx-safe* #f)
 
 (define *$-fx/ov* #f)
 (define *$+fx/ov* #f)
@@ -84,8 +86,10 @@
       (set! *=fx* (get-global/module 'c-=fx 'foreign))
       (set! *-fx* (get-global/module 'c--fx 'foreign))
       (set! *+fx* (get-global/module 'c-+fx 'foreign))
+      (set! **fx* (get-global/module 'c-*fx 'foreign))
       (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
       (set! *+fx-safe* (get-global/module '+fx-safe 'foreign))
+      (set! **fx-safe* (get-global/module '*fx-safe 'foreign))
       (set! *$-fx/ov* (get-global/module '$-fx/ov 'foreign))
       (set! *$+fx/ov* (get-global/module '$+fx/ov 'foreign))
       (set! *$*fx/ov* (get-global/module '$*fx/ov 'foreign))
@@ -116,9 +120,11 @@
    (set! *=fx* #f)
    (set! *-fx* #f)
    (set! *+fx* #f)
+   (set! **fx* #f)
    
    (set! *-fx-safe* #f)
    (set! *+fx-safe* #f)
+   (set! **fx-safe* #f)
    
    (set! *$-fx/ov* #f)
    (set! *$+fx/ov* #f)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Oct 21 13:42:17 2022 (serrano)                */
+;*    Last change :  Mon Oct 24 13:00:48 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -324,6 +324,7 @@
       ((rtl_ins-typecheck? i) rtl_ins-specialize-typecheck)
       ((rtl_ins-mov? i) rtl_ins-specialize-mov)
       ((rtl_ins-loadi? i) rtl_ins-specialize-loadi)
+      ((rtl_ins-loadg? i) rtl_ins-specialize-loadg)
       ((rtl_ins-call-specialize? i) rtl_ins-specialize-call)
       ((rtl_ins-return-specialize? i) rtl_ins-specialize-return)
       ((rtl_ins-vlen? i) rtl_ins-specialize-vlen)
@@ -480,6 +481,12 @@
 			 (values (duplicate-ins i ctx)
 			    (extend-ctx ctx dest (list type) #t :value
 			       (if (fixnum? value) (fixnum->range value) '_)))))))
+	       ((and *type-loadg* (pair? args) (rtl_ins-loadg? (car args)))
+		(with-access::rtl_ins (car args) (fun)
+		   (with-access::rtl_loadg fun (var)
+		      (with-access::variable var (value type)
+			 (values (duplicate-ins i ctx)
+			    (extend-ctx ctx dest (list type) #t))))))
 	       (else
 		(values (duplicate-ins i ctx) ctx)))))))
 
@@ -497,6 +504,20 @@
 		     (v (if (fixnum? value) (fixnum->range value) '_)))
 		  (values s
 		     (extend-ctx ctx dest (list type) #t :value v))))))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-specialize-loadg ...                                     */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-specialize-loadg i::rtl_ins ctx queue::bbv-queue)
+   (with-trace 'bbv-ins "rtl_ins-specialize-loadg"
+      (with-access::rtl_ins i (dest args fun)
+	 (with-access::rtl_loadg fun (var)
+	    (with-access::variable var (type)
+	       (let ((s (duplicate::rtl_ins/bbv i
+			   (ctx ctx)
+			   (fun (duplicate::rtl_loadg fun)))))
+		  (values s
+		     (extend-ctx ctx dest (list type) #t))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-call-specialize? ...                                     */
@@ -855,7 +876,6 @@
 		   (lambda (val)
 		      (with-trace 'bbv-ins "resolve/op"
 			 (trace-item "val=" val)
-			 (tprint "RESOLVE val=" val " " (shape i) " " (shape intl) " " (shape intr))
 			 (case val
 			    ((true)
 			     (multiple-value-bind (pctx nctx)
@@ -982,19 +1002,56 @@
 		     (extend-ctx ctx reg (list *bint*) #t
 			:value intx)))))))
    
+   (define (fx-ov->fx var ins reg ctx nctx)
+      (with-access::rtl_ins ins (dest fun args)
+	 (with-access::rtl_call fun (var)
+	    (let* ((lhs (car args))
+		   (rhs (cadr args))
+		   (subcall (duplicate::rtl_call fun
+			       (var (cond
+				       ((eq? var *$-fx/ov*) *-fx*)
+				       ((eq? var *$+fx/ov*) *+fx*)
+				       ((eq? var *$*fx/ov*) **fx*)
+				       (else (error "fx/ov" "unknown op" (shape var))))))))
+	       (values (duplicate::rtl_ins/bbv ins
+			  (dest reg)
+			  (fun subcall)
+			  (args (list lhs rhs))
+			  (ctx nctx))
+		  nctx)))))
+   
+   (define (default call fun reg)
+      (with-access::rtl_ifne fun (then)
+	 (let* ((pctx (extend-ctx ctx reg (list *bint*) #f))
+		(nctx (fxovop-ctx ctx reg call))
+		(s (duplicate::rtl_ins/bbv i
+		      (ctx ctx)
+		      (fun (duplicate::rtl_ifne fun
+			      (then (bbv-block then pctx queue)))))))
+	    (values s nctx))))
+   
    (with-trace 'bbv-ins "rtl_ins-specialize-fxovop"
-      (with-access::rtl_ins i (dest fun args)
-	 (with-access::rtl_ifne fun (then)
-	    (let ((call (car args)))
-	       (with-access::rtl_ins (car args) (args)
-		  (let ((reg (caddr args)))
-		     (let* ((pctx (extend-ctx ctx reg (list *bint*) #f))
-			    (nctx (fxovop-ctx ctx reg call))
-			    (s (duplicate::rtl_ins/bbv i
-				  (ctx ctx)
-				  (fun (duplicate::rtl_ifne fun
-					  (then (bbv-block then pctx queue)))))))
-			(values s nctx)))))))))
+      (with-access::rtl_ins i (dest (ifne fun) args)
+	 (let ((call (car args)))
+	    (with-access::rtl_ins (car args) (args fun)
+	       (let* ((reg (caddr args))
+		      (lhs (car args))
+		      (rhs (cadr args))
+		      (intl (rtl-range lhs ctx))
+		      (intr (rtl-range rhs ctx)))
+		  (with-access::rtl_call fun (var)
+		     (cond
+			((eq? var *$+fx/ov*)
+			 (let ((range (bbv-range-add intl intr)))
+			    (if (bbv-range-fixnum? range)
+				(let ((nctx (extend-ctx ctx reg
+					       (list *long*) #t
+					       :value range)))
+				   (values (fx-ov->fx var call reg ctx nctx)
+				      nctx))
+				(default call ifne reg))))
+			(else
+			 (default call ifne reg))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxop ...                                      */

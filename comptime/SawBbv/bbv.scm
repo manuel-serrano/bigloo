@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Oct 20 12:53:20 2022 (serrano)                */
+;*    Last change :  Mon Oct 24 15:45:01 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -163,17 +163,18 @@
 ;*    reorder-succs! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (reorder-succs! blocks)
-   (when (and (pair? blocks) (pair? (cdr blocks)))
-      (let loop ((bs blocks))
-	 (when (pair? (cdr bs))
-	    (let ((b (car bs))
-		  (n (cadr bs)))
-	       (with-access::block b (succs first)
-		  (when (pair? succs)
-		     (unless (or (rtl_ins-go? (car (last-pair first)))
-				 (rtl_ins-switch? (car (last-pair first))))
-			(set! succs (cons n (remq! n succs))))))
-	       (loop (cdr bs)))))))
+   (with-trace 'bbv "reorder-succss!"
+      (when (and (pair? blocks) (pair? (cdr blocks)))
+	 (let loop ((bs blocks))
+	    (when (pair? (cdr bs))
+	       (let ((b (car bs))
+		     (n (cadr bs)))
+		  (with-access::block b (succs first)
+		     (when (pair? succs)
+			(unless (or (rtl_ins-go? (car (last-pair first)))
+				    (rtl_ins-switch? (car (last-pair first))))
+			   (set! succs (cons n (remq! n succs))))))
+		  (loop (cdr bs))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    liveness! ...                                                    */
@@ -214,30 +215,30 @@
 		      (loop (cdr inss) (car inss) (or t u))))
 		t))))
    
-   
-   (let* ((cregs (collect-registers! blocks))
-	  (hregs (append-map! collect-register! (backend-registers back)))
-	  (pregs (filter rtl_reg/ra? params))
-	  (regs (append hregs cregs)))
-      ;; pre widen the instructions
-      (widen-bbv! blocks regs)
-      ;; add the argument of the function to the IN set of the
-      ;; first instruction of the first block
-      (when (pair? blocks)
-	 (let ((inss (block-first (car blocks))))
-	    (when (pair? inss)
-	       (let ((ins (car inss)))
-		  (with-access::rtl_ins/bbv ins (in)
-		     (for-each (lambda (a) (regset-add! in a)) pregs))))))
-      ;; fix-point iteration
-      (let loop ((i 0))
-	 (let liip ((bs blocks)
-		    (t #f))
-	    (if (null? bs)
-		(if t
-		    (loop (+fx i 1))
-		    regs)
-		(liip (cdr bs) (or (liveness-block! (car bs)) t)))))))
+   (with-trace 'bbv "liveness"
+      (let* ((cregs (collect-registers! blocks))
+	     (hregs (append-map! collect-register! (backend-registers back)))
+	     (pregs (filter rtl_reg/ra? params))
+	     (regs (append hregs cregs)))
+	 ;; pre widen the instructions
+	 (widen-bbv! blocks regs)
+	 ;; add the argument of the function to the IN set of the
+	 ;; first instruction of the first block
+	 (when (pair? blocks)
+	    (let ((inss (block-first (car blocks))))
+	       (when (pair? inss)
+		  (let ((ins (car inss)))
+		     (with-access::rtl_ins/bbv ins (in)
+			(for-each (lambda (a) (regset-add! in a)) pregs))))))
+	 ;; fix-point iteration
+	 (let loop ((i 0))
+	    (let liip ((bs blocks)
+		       (t #f))
+	       (if (null? bs)
+		   (if t
+		       (loop (+fx i 1))
+		       regs)
+		   (liip (cdr bs) (or (liveness-block! (car bs)) t))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coalesce! ...                                                    */
@@ -384,17 +385,18 @@
 		  (else
 		   (loop (cdr ins))))))))
 
-   (let loop ((bs (list b))
-	      (acc '()))
-      (cond
-	 ((null? bs)
-	  (reverse acc))
-	 ((memq (car bs) acc)
-	  (loop (cdr bs) acc))
-	 (else
-	  (normalize-block! (car bs))
-	  (with-access::block (car bs) (succs)
-	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+   (with-trace 'bbv "normalize-ifeq!"
+      (let loop ((bs (list b))
+		 (acc '()))
+	 (cond
+	    ((null? bs)
+	     (reverse acc))
+	    ((memq (car bs) acc)
+	     (loop (cdr bs) acc))
+	    (else
+	     (normalize-block! (car bs))
+	     (with-access::block (car bs) (succs)
+		(loop (append succs (cdr bs)) (cons (car bs) acc))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    normalize-goto! ...                                              */

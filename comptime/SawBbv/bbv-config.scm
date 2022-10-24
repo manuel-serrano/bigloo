@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawMill/bbv-config.scm        */
+;*    .../project/bigloo/bigloo/comptime/SawBbv/bbv-config.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Tue Jul 19 19:12:32 2022 (serrano)                */
+;*    Last change :  Mon Oct 24 17:15:01 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -16,6 +16,7 @@
    (export *max-block-versions*
 	   *type-call*
 	   *type-loadi*
+	   *type-loadg*
 	   *merge-ctx-costs*))
 
 ;*---------------------------------------------------------------------*/
@@ -27,6 +28,7 @@
 ;; various optimizations
 (define *type-call* #t)
 (define *type-loadi* #t)
+(define *type-loadg* #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    Merge block and contexts operators ...                           */

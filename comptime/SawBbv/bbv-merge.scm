@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Wed Sep 21 13:11:58 2022 (serrano)                */
+;*    Last change :  Mon Oct 24 15:49:38 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -48,18 +48,23 @@
 ;*    loop heads.                                                      */
 ;*---------------------------------------------------------------------*/
 (define (mark-widener! block)
-   (let loop ((block block)
-	      (stack '()))
-      (with-access::block block (succs)
-	 (let liip ((succs succs))
-	    (when (pair? succs)
-	       (let ((n (car succs)))
-		  (with-access::blockV n (merge)
-		     (cond
-			(merge #unspecified)
-			((memq n stack) (set! merge #t))
-			(else (loop n (cons block stack))))
-		     (liip (cdr succs)))))))))
+   (with-trace 'bbv "mark-widener!"
+      (let loop ((block block)
+		 (stack '()))
+	 (with-access::blockV block (merge label succs)
+	    (cond
+	       ((not (eq? merge #unspecified))
+		#unspecified)
+	       ((memq block stack)
+		(trace-item "mark merge " label)
+		(set! merge #t))
+	       (else
+		(let ((nstack (cons block stack)))
+		   (for-each (lambda (n)
+				(loop n nstack))
+		      succs)
+		   (unless (eq? merge #t)
+		      (set! merge #f)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-ctx ...                                          */

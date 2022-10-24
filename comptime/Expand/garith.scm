@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Sat Aug 27 18:45:15 2022 (serrano)                */
+;*    Last change :  Mon Oct 24 15:23:32 2022 (serrano)                */
 ;*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -59,6 +59,22 @@
 		      (,(fx id) ,a ,b)
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
+      ((?id ?a (and ?b (? flonum?)))
+       (let ((nx (if (symbol? a)
+		     `(if (flonum? ,a)
+			  (,(symbol-append id 'fl) ,a ,b)
+			  (,(symbol-append '|2| id) ,a ,b))
+		     (let ((tmp (gensym 'a)))
+			`(let ((,tmp ,a)) (,id ,tmp ,b))))))
+	  (e nx e)))
+      ((?id (and ?a (? flonum?)) ?b)
+       (let ((nx (if (symbol? b)
+		     `(if (flonum? ,b)
+			  (,(symbol-append id 'fl) ,a ,b)
+			  (,(symbol-append '|2| id) ,a ,b))
+		     (let ((tmp (gensym 'b)))
+			`(let ((,tmp ,b)) (,id ,a ,tmp))))))
+	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))
        (let ((nx `(if (and (fixnum? ,a) (fixnum? ,b))
 		      (,(fx id) ,a ,b)
@@ -72,6 +88,7 @@
        (let* ((tmp (gensym 'a))
 	      (nx `(let ((,tmp ,a)) (,id ,tmp ,b))))
 	  (e nx e)))
+      
       ((?id ?a ?b)
        (let* ((tmpa (gensym 'a))
 	      (tmpb (gensym 'b))
