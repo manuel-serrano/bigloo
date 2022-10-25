@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Oct 24 13:00:48 2022 (serrano)                */
+;*    Last change :  Tue Oct 25 10:07:37 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -108,7 +108,8 @@
 	       ((bbv-ctx-assoc ctx lvs)
 		=>
 		live-blockS)
-	       ((and merge (>=fx (length lvs) *max-block-versions*))
+	       ((or (>=fx (length lvs) *max-block-nomerge-versions*)
+		    (and merge (>=fx (length lvs) *max-block-merge-versions*)))
 		(let ((bs (new-blockS bv ctx)))
 		   (with-trace 'bbv-block
 			 (format "bbv-queue-push! ~a" (block-label bs))
