@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Oct 25 05:25:29 2022 (serrano)                */
+;*    Last change :  Tue Oct 25 08:44:09 2022 (serrano)                */
 ;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1315,6 +1315,7 @@
    (set! *optim-O-macro?* #t)
    (set! *optim-dataflow?* #t)
    (set! *optim-symbol-case* #t)
+   (set! *optim-specialize-flonum?* #t)
    (if (> (string-length string) 0)
        (case (string-ref string 0)
 	  ((#\0)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Fri Oct 14 15:02:57 2022 (serrano)                */
+;*    Last change :  Tue Oct 25 07:54:25 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -101,6 +101,9 @@
 	    (inline inexact?::bool z)
 	    (complex?::bool x)
 	    (rational?::bool x)
+	    
+	    (number->flonum::double ::obj)
+	    
 	    (inline flonum->fixnum::long ::double)
 	    (inline fixnum->flonum::double ::long)
 	    (inline flonum->elong::elong ::double)
@@ -290,6 +293,18 @@
 ;*---------------------------------------------------------------------*/
 (define (rational? x)
    (real? x))
+
+;*---------------------------------------------------------------------*/
+;*    number->flonum ...                                               */
+;*---------------------------------------------------------------------*/
+(define (number->flonum x)
+   (cond
+      ((fixnum? x) (fixnum->flonum x))
+      ((bignum? x) (bignum->flonum x))
+      (($subelong? x) (elong->flonum ($subelong->elong x)))
+      (($subllong? x) (llong->flonum ($subllong->llong x)))
+      ((flonum? x) x)
+      (else (bigloo-type-error "number->flonum" "number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum->fixnum ...                                               */
