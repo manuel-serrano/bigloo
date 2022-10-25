@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Sep  1 14:10:18 2022 (serrano)                */
+;*    Last change :  Tue Oct 25 05:25:29 2022 (serrano)                */
 ;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -407,11 +407,16 @@
       ;; optimization
       (("-O?opt" (help "-O[0..6]" "Optimization modes"))
        (parse-optim-args opt))
-      ;; fix arithmetic tagging
+      ;; fixnum arithmetic tagging
       (("-ftagged-fxop" (help "Enable tagged fix-ops optimization"))
        (set! *optim-tagged-fxop?* #t))
       (("-fno-tagged-fxop" (help "Disable tagged fix-ops optimization"))
        (set! *optim-tagged-fxop?* #f))
+      ;; flonum arithmetic specialization
+      (("-ffloop" (help "Enable flonum specialization"))
+       (set! *optim-specialize-flonum?* #t))
+      (("-fno-flop" (help "Disable flonum specialization"))
+       (set! *optim-specialize-flonum?* #f))
       ;; cfa optimizations
       (("-fcfa" (help "Enable CFA"))
        (set! *optim-cfa?* #t))
@@ -946,6 +951,8 @@
        (set! *pass* 'user))
       (("-fxop" (help "Stop after the fx-ops optimization"))
        (set! *pass* 'fxop))
+      (("-flop" (help "Stop after the flonum specialization optimization"))
+       (set! *pass* 'flop))
       (("-coerce" (help "Stop after the type coercing stage"))
        (set! *pass* 'coerce))
       (("-effect" (help "Stop after the effect stage"))

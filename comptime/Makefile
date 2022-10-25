@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Sep  1 14:13:39 2022 (serrano)                */
+#*    Last change :  Tue Oct 25 05:24:42 2022 (serrano)                */
 #*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -155,6 +155,11 @@ INLINE_OBJ	= $(INLINE_FILE:%=Inline/%.o)
 FXOP_FILE	= walk
 
 FXOP_OBJ	= $(FXOP_FILE:%=Fxop/%.o)
+
+#*--- flop ------------------------------------------------------------*/
+FLOP_FILE	= walk
+
+FLOP_OBJ	= $(FLOP_FILE:%=Flop/%.o)
 
 #*--- coerce ----------------------------------------------------------*/
 COERCE_FILE	= walk pproto coerce app funcall apply convert
@@ -345,19 +350,20 @@ LIVENESS_OBJ 	= $(LIVENESS_FILE:%=Liveness/%.o)
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
 #*---------------------------------------------------------------------*/
-O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
-                  $(READ_OBJ) $(AST_OBJ) $(BETA_OBJ) $(CC_OBJ) $(FOREIGN_OBJ) \
+O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) $(READ_OBJ) \
+                  $(AST_OBJ) $(BETA_OBJ) $(CC_OBJ) $(FOREIGN_OBJ) \
                   $(HEAP_OBJ) $(MODULE_OBJ) $(TYPE_OBJ) $(EXPAND_OBJ) \
                   $(INLINE_OBJ) $(BIVALUE_OBJ) $(USER_OBJ) $(HGEN_OBJ) \
-                  $(FXOP_OBJ) $(COERCE_OBJ) $(DATAFLOW_OBJ) $(INITFLOW_OBJ) \
-                  $(GLOBALIZE_OBJ) $(CNST_OBJ) $(CFA_OBJ) $(INTEGRATE_OBJ) \
-                  $(TAILC_OBJ) $(CGEN_OBJ) $(TVECTOR_OBJ) $(TSTRUCT_OBJ) \
-                  $(TRACE_OBJ) $(CALLCC_OBJ) $(EVAL_OBJ) $(LIFEXT_OBJ) \
-                  $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
-                  $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
-                  $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) $(ISA_OBJ) \
-                  $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) $(LIVENESS_OBJ)
+                  $(FXOP_OBJ) $(FLOP_OBJ) $(COERCE_OBJ) $(DATAFLOW_OBJ) \
+                  $(INITFLOW_OBJ) $(GLOBALIZE_OBJ) $(CNST_OBJ) $(CFA_OBJ) \
+                  $(INTEGRATE_OBJ) $(TAILC_OBJ) $(CGEN_OBJ) $(TVECTOR_OBJ) \
+                  $(TSTRUCT_OBJ) $(TRACE_OBJ) $(CALLCC_OBJ) $(EVAL_OBJ) \
+                  $(LIFEXT_OBJ) $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) \
+                  $(OBJECT_OBJ) $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) \
+                  $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) \
+                  $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) \
+                  $(ISA_OBJ) $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) \
+                  $(LIVENESS_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

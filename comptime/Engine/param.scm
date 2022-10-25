@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Aug 29 09:13:33 2022 (serrano)                */
+;*    Last change :  Tue Oct 25 05:26:44 2022 (serrano)                */
 ;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -93,6 +93,7 @@
 	    *optim-return?*
 	    *optim-return-goto?*
 	    *optim-tagged-fxop?*
+	    *optim-specialize-flonum?*
 	    *optim-stackable?*
 	    *optim-uncell?*
 	    *purify*
@@ -972,6 +973,9 @@
    #f)
 (param-define *optim-tagged-fxop?*
    "Optimize tagged fixnum operations"
+   #f)
+(param-define *optim-specialize-flonum?*
+   "Optimize specialize flonum operations"
    #f)
 (param-define *optim-stackable?*
    "Optimize stackable allocation"
