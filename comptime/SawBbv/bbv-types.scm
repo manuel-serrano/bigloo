@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Oct 25 16:08:32 2022 (serrano)                */
+;*    Last change :  Wed Oct 26 14:47:19 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -43,6 +43,7 @@
 	    ;; versioned block
 	    (wide-class blockV::block
 	       (versions::pair-nil (default '()))
+	       (generic::obj (default #unspecified))
 	       (%mark::long (default -1))
 	       (merge::obj (default #unspecified)))
 

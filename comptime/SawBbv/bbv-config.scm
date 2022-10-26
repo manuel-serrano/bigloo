@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Tue Oct 25 10:08:54 2022 (serrano)                */
+;*    Last change :  Wed Oct 26 14:30:26 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -14,7 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module saw_bbv-config
    (export *max-block-merge-versions*
-	   *max-block-nomerge-versions*
+	   *max-block-limit*
 	   *type-call*
 	   *type-loadi*
 	   *type-loadg*
@@ -25,7 +25,7 @@
 ;*---------------------------------------------------------------------*/
 ;; the maximum number of block versions
 (define *max-block-merge-versions* 3)
-(define *max-block-nomerge-versions* 6)
+(define *max-block-limit* 6)
 
 
 ;; various optimizations

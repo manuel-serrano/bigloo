@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Oct 25 16:17:23 2022 (serrano)                */
+;*    Last change :  Wed Oct 26 14:30:39 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -91,7 +91,7 @@
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue canmerge::bool)
-   (with-access::blockV bv (label succs preds first merge)
+   (with-access::blockV bv (label succs preds first merge generic)
       (with-trace 'bbv-block (format "bbv-block ~a~a" label
 				(if merge "!" ""))
 	 (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first)))
@@ -108,14 +108,29 @@
 	       ((bbv-ctx-assoc ctx lvs)
 		=>
 		live-blockS)
-	       ((and canmerge
-		     (or (>=fx (length lvs) *max-block-nomerge-versions*)
-			 (and merge (>=fx (length lvs) *max-block-merge-versions*))))
+	       ((and canmerge merge (>=fx (length lvs) *max-block-merge-versions*))
 		(let ((bs (new-blockS bv ctx)))
 		   (bbv-queue-push! queue bv)
 		   bs))
+	       ((and canmerge (>=fx (length lvs) *max-block-limit*))
+		(when (eq? generic #unspecified)
+		   (let ((bv (bbv-block-specialize! bv (ctx-top ctx) queue)))
+		      (set! generic bv)))
+		generic)
 	       (else
 		(bbv-block-specialize! bv ctx queue)))))))
+
+;*---------------------------------------------------------------------*/
+;*    ctx-top ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (ctx-top ctx::bbv-ctx)
+   (with-access::bbv-ctx ctx (entries)
+      (duplicate::bbv-ctx ctx
+	 (entries (map (lambda (e)
+			  (duplicate::bbv-ctxentry e
+			     (types (list *obj*))
+			     (value '_)))
+		     entries)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge! ...                                             */

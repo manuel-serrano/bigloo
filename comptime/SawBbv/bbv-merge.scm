@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Oct 25 16:34:56 2022 (serrano)                */
+;*    Last change :  Wed Oct 26 14:21:22 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -133,6 +133,7 @@
 ;*    merge-top ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (merge-top lvs regs)
+   (tprint "TOP")
    (map (lambda (bs::blockS)
 	   (let ((mctx (bbv-ctx-top-widen bs)))
 	      (with-access::blockS bs (ctx)
