@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Oct 24 17:01:51 2022 (serrano)                */
+;*    Last change :  Tue Oct 25 16:08:32 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -909,7 +909,8 @@
 ;*    bbv-equal? ::rtl_ins/bbv ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-equal? x::rtl_ins/bbv y)
-   (and (bbv-equal? (rtl_ins-dest x) (rtl_ins-dest y))
+   (and (isa? y rtl_ins/bbv)
+	(bbv-equal? (rtl_ins-dest x) (rtl_ins-dest y))
 	(=fx (length (rtl_ins-args x)) (length (rtl_ins-args y)))
 	(every bbv-equal? (rtl_ins-args x) (rtl_ins-args y))
 	(bbv-equal? (rtl_ins-fun x) (rtl_ins-fun y))))
@@ -918,7 +919,8 @@
 ;*    bbv-equal? ::rtl_reg ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-equal? x::rtl_reg y)
-   (and (bbv-equal? (rtl_reg-type x) (rtl_reg-type y))
+   (and (isa? y rtl_reg)
+	(bbv-equal? (rtl_reg-type x) (rtl_reg-type y))
 	(bbv-equal? (rtl_reg-var x) (rtl_reg-var y))
 	(bbv-equal? (rtl_reg-name x) (rtl_reg-name y))))
 

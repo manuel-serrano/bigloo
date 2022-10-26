@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Mon Oct 24 15:49:38 2022 (serrano)                */
+;*    Last change :  Tue Oct 25 16:34:56 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -87,19 +87,85 @@
 		  (let* ((regs (map bbv-ctxentry-reg (bbv-ctx-entries ctx)))
 			 (rrs (map (lambda (r)
 				      (let ((range (reg-range-merge r lvs)))
-					 (trace-item "reg " (shape r) ": "
-					    (shape range))
 					 (cons r range)))
-				 regs)))
-		     (filter-map (lambda (bs::blockS)
-				    (let ((mctx (bbv-ctx-widen bs rrs)))
-				       (when mctx
-					  (with-access::blockS bs (ctx)
-					     (with-access::bbv-ctx ctx (id)
-						(trace-item "mctx(" id ") => "
-						   (shape mctx))))
-					  (cons bs mctx))))
-			lvs))))))))
+				 regs))
+			 (typs (map (lambda (r)
+				       (let ((typ (reg-type-merge r lvs)))
+					  (cons r typ)))
+				  regs)))
+		     (or (merge-ranges lvs regs rrs)
+			 (merge-types lvs regs typs)
+			 (merge-top lvs regs)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    merge-ranges ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (merge-ranges lvs regs rrs)
+   (let ((merge (filter-map (lambda (bs::blockS)
+			       (let ((mctx (bbv-ctx-range-widen bs rrs)))
+				  (when mctx
+				     (with-access::blockS bs (ctx)
+					(with-access::bbv-ctx ctx (id)
+					   (trace-item "mctx(" id ") => "
+					      (shape mctx))))
+				     (cons bs mctx))))
+		   lvs)))
+      (when (pair? merge)
+	 merge)))
+
+;*---------------------------------------------------------------------*/
+;*    merge-types ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (merge-types lvs regs rrs)
+   (let ((merge (filter-map (lambda (bs::blockS)
+			       (let ((mctx (bbv-ctx-type-widen bs rrs)))
+				  (when mctx
+				     (with-access::blockS bs (ctx)
+					(with-access::bbv-ctx ctx (id)
+					   (trace-item "mctx(" id ") => "
+					      (shape mctx))))
+				     (cons bs mctx))))
+		   lvs)))
+      (when (pair? merge)
+	 merge)))
+
+;*---------------------------------------------------------------------*/
+;*    merge-top ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (merge-top lvs regs)
+   (map (lambda (bs::blockS)
+	   (let ((mctx (bbv-ctx-top-widen bs)))
+	      (with-access::blockS bs (ctx)
+		 (with-access::bbv-ctx ctx (id)
+		    (trace-item "mctx(" id ") => "
+		       (shape mctx)))
+		 (cons bs mctx))))
+      lvs))
+
+;*---------------------------------------------------------------------*/
+;*    reg-type-merge ...                                               */
+;*    -------------------------------------------------------------    */
+;*    Find the smallest type for variable X that is compatible         */
+;*    with all the variable context types.                             */
+;*---------------------------------------------------------------------*/
+(define (reg-type-merge reg versions::pair-nil)
+   (with-trace 'bbv-merge (format "reg-type-merge ~a" (shape reg))
+      (let ((types (delete-duplicates (reg-types-get reg versions) eq?)))
+	 (trace-item "types=" (map shape types))
+	 types)))
+
+;*---------------------------------------------------------------------*/
+;*    reg-types-get ...                                                */
+;*    -------------------------------------------------------------    */
+;*    Get all the types of variable X in CTX                           */
+;*---------------------------------------------------------------------*/
+(define (reg-types-get reg versions::pair-nil)
+   (append-map (lambda (bs)
+		  (with-access::blockS bs (ctx)
+		     (let ((e (bbv-ctx-get ctx reg)))
+			(with-access::bbv-ctxentry e (polarity types)
+			   (if polarity types (list *obj*))))))
+      versions))
 
 ;*---------------------------------------------------------------------*/
 ;*    reg-range-merge ...                                              */
@@ -137,14 +203,69 @@
       versions))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-ctx-widen ...                                                */
+;*    bbv-ctx-top-widen ...                                            */
+;*    -------------------------------------------------------------    */
+;*    Widen the register types of a version. Return either a widened   */
+;*    context or #f. The arguments are:                                */
+;*      - bs: the specialized block                                    */
+;*      - tys: a list of <reg, types>                                  */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-top-widen bs::blockS)
+   (with-access::blockS bs (ctx)
+      (instantiate::bbv-ctx
+	 (entries (map (lambda (e)
+			  (duplicate::bbv-ctxentry e
+			     (types (list *obj*))
+			     (value '_)))
+		     (with-access::bbv-ctx ctx (entries)
+			entries))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-type-widen ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Widen the register types of a version. Return either a widened   */
+;*    context or #f. The arguments are:                                */
+;*      - bs: the specialized block                                    */
+;*      - tys: a list of <reg, types>                                  */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-type-widen bs::blockS tys::pair-nil)
+   (with-access::blockS bs (ctx)
+      (let loop ((tys tys)
+		 (mctx (instantiate::bbv-ctx))
+		 (equal #t))
+	 (cond
+	    ((pair? tys)
+	     (let* ((rr (car tys))
+		    (reg (car rr))
+		    (typs (cdr rr))
+		    (oe (bbv-ctx-get ctx reg)))
+		(if (and (pair? typs)
+			 (not (pair? (cdr typs)))
+			 (not (memq *obj* typs)))
+		    (loop (cdr tys)
+		       (extend-ctx/entry mctx oe)
+		       equal)
+		    (with-access::bbv-ctxentry oe (value)
+		       (loop (cdr tys)
+			  (let ((ne (duplicate::bbv-ctxentry oe
+				       (types (list *obj*))
+				       (value '_))))
+			     (extend-ctx/entry mctx ne))
+			  #f)))))
+	    (equal
+	     #f)
+	    (else
+	     mctx)))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-range-widen ...                                          */
 ;*    -------------------------------------------------------------    */
 ;*    Widen the register ranges of a version. Return either a widened  */
 ;*    context or #f. The arguments are:                                */
 ;*      - bs: the specialized block                                    */
 ;*      - rrs: a list of <reg, range>                                  */
 ;*---------------------------------------------------------------------*/
-(define (bbv-ctx-widen bs::blockS rrs::pair-nil)
+(define (bbv-ctx-range-widen bs::blockS rrs::pair-nil)
    (with-access::blockS bs (ctx)
       (let loop ((rrs rrs)
 		 (mctx (instantiate::bbv-ctx))
