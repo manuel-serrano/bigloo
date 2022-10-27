@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Oct 26 14:47:19 2022 (serrano)                */
+;*    Last change :  Thu Oct 27 11:47:37 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -82,7 +82,9 @@
 	    
 	    (params->ctx::bbv-ctx ::pair-nil)
 
+	    (bbv-ctx-equal?::bool ::bbv-ctx ::bbv-ctx)
 	    (bbv-ctx-assoc ::bbv-ctx ::pair-nil)
+	    (bbv-ctx-in ::bbv-ctx ::pair-nil)
 	    (bbv-ctx-get ::bbv-ctx ::rtl_reg)
 	    (extend-ctx/entry ::bbv-ctx ::bbv-ctxentry)
 	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
@@ -243,6 +245,50 @@
       (when (pair? versions)
 	 (with-access::blockS (car versions) (ctx)
 	    (if (bbv-ctx-equal? c ctx)
+		(car versions)
+		(loop (cdr versions)))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctxentry-in? ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctxentry-in? x::bbv-ctxentry y::bbv-ctxentry)
+   (with-access::bbv-ctxentry x ((xreg reg)
+				 (xpolarity polarity)
+				 (xtypes types)
+				 (xvalue value))
+      (with-access::bbv-ctxentry y ((yreg reg)
+				    (ypolarity polarity)
+				    (ytypes types)
+				    (yvalue value))
+	 (and (eq? xreg yreg)
+	      (eq? xpolarity ypolarity)
+	      (equal? xtypes ytypes)
+	      (or (eq? yvalue '_)
+		  (and (bbv-range? xvalue)
+		       (bbv-range? yvalue)
+		       (eq? (bbv-range>=? xvalue yvalue) 'true)
+		       (eq? (bbv-range<=? xvalue yvalue) 'false)))))))
+	      
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-in? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-in? x::bbv-ctx y::bbv-ctx)
+   (with-access::bbv-ctx x ((xentries entries))
+      (with-access::bbv-ctx y ((yentries entries))
+	 (every (lambda (xe)
+		   (with-access::bbv-ctxentry xe (reg)
+		      (let ((ye (bbv-ctx-get y reg)))
+			 (bbv-ctxentry-in? xe ye))))
+	    xentries))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-ctx-in ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (bbv-ctx-in c::bbv-ctx versions::pair-nil)
+   (let loop ((versions versions))
+      (when (pair? versions)
+	 (with-access::blockS (car versions) (ctx)
+	    (if (bbv-ctx-in? c ctx)
 		(car versions)
 		(loop (cdr versions)))))))
 

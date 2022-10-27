@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Oct 24 15:45:01 2022 (serrano)                */
+;*    Last change :  Thu Oct 27 17:23:19 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -73,7 +73,7 @@
 		   (dump-blocks global params blocks ".ifeq.cfg"))
 		(let ((regs (liveness! back blocks params)))
 		   ;; liveness also widen each block into a blockV
-		   (mark-widener! (car blocks))
+		   (mark-merge! (car blocks))
 		   (when (>=fx *trace-level* 2)
 		      (dump-blocks global params blocks ".liveness.cfg"))
 		   (unwind-protect
@@ -104,6 +104,31 @@
 				  (>=fx *trace-level* 1))
 			 (for-each (lambda (r) (shrink! r)) regs)))))))
        blocks))
+
+;*---------------------------------------------------------------------*/
+;*    mark-merge! ...                                                  */
+;*    -------------------------------------------------------------    */
+;*    Mark the BB where merge is allowed. These blocks are the         */
+;*    loop heads.                                                      */
+;*---------------------------------------------------------------------*/
+(define (mark-merge! block::blockV)
+   (with-trace 'bbv "mark-widener!"
+      (let loop ((block block)
+		 (stack '()))
+	 (with-access::blockV block (merge label succs)
+	    (cond
+	       ((not (eq? merge #unspecified))
+		#unspecified)
+	       ((memq block stack)
+		(trace-item "mark merge " label)
+		(set! merge #t))
+	       (else
+		(let ((nstack (cons block stack)))
+		   (for-each (lambda (n)
+				(loop n nstack))
+		      succs)
+		   (unless (eq? merge #t)
+		      (set! merge #f)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    widen-bbv! ...                                                   */

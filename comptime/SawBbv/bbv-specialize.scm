@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Oct 27 09:28:00 2022 (serrano)                */
+;*    Last change :  Thu Oct 27 16:39:01 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -108,34 +108,58 @@
 	       ((bbv-ctx-assoc ctx lvs)
 		=>
 		live-blockS)
-	       ((and canmerge merge (>=fx (length lvs) *max-block-merge-versions*))
+	       ((and merge (>=fx (length lvs) *max-block-merge-versions*))
 		(let ((bs (new-blockS bv ctx)))
 		   (bbv-queue-push! queue bv)
 		   bs))
-	       ((and canmerge (>=fx (length lvs) *max-block-limit*))
-		(when (eq? generic #unspecified)
-		   (let ((bv (bbv-block-specialize! bv (ctx-top ctx) queue)))
-		      (set! generic bv)))
-		generic)
+	       ((>=fx (length lvs) *max-block-limit*)
+		(let ((bs (new-blockS bv ctx)))
+		   (bbv-queue-push! queue bv)
+		   bs))
 	       (else
 		(bbv-block-specialize! bv ctx queue)))))))
-
-;*---------------------------------------------------------------------*/
-;*    ctx-top ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (ctx-top ctx::bbv-ctx)
-   (with-access::bbv-ctx ctx (entries)
-      (duplicate::bbv-ctx ctx
-	 (entries (map (lambda (e)
-			  (duplicate::bbv-ctxentry e
-			     (types (list *obj*))
-			     (value '_)))
-		     entries)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge! bv::blockV queue::bbv-queue)
+   (with-access::blockV bv (label versions merge)
+      (with-trace 'bbv-merge (format "bbv-block-merge! ~a" label)
+	 (let loop ()
+	    (let ((lvs (filter (lambda (bs)
+				  (with-access::blockS bs (label mblock)
+				     (not mblock)))
+			  versions)))
+	       (when (>=fx (length lvs)
+			(if merge *max-block-merge-versions* *max-block-limit*))
+		  (multiple-value-bind (bs1 bs2 nctx)
+		     (bbv-block-merge lvs)
+		     (cond
+			((with-access::blockS bs1 (ctx)
+			    (bbv-ctx-equal? ctx nctx))
+			 (replace-block! bs2 bs1))
+			((with-access::blockS bs2 (ctx)
+			    (bbv-ctx-equal? ctx nctx))
+			 (replace-block! bs1 bs2))
+			(else
+			 (let ((nbs (new-blockS bv nctx)))
+			    (with-trace 'bbv-merge "merge @ bbv-block-merge"
+			       (with-access::blockS bs1 ((ctx1 ctx))
+				  (with-access::blockS bs2 ((ctx2 ctx))
+				     (trace-item "ctx1=" (shape ctx1))
+				     (trace-item "ctx2=" (shape ctx2))
+				     (trace-item "nctx=" (shape nctx)))))
+			    (replace-block! bs1 nbs)
+			    (replace-block! bs2 nbs)))))
+		  (loop))))
+	 (for-each (lambda (bs)
+		      (with-access::blockS bs (label mblock first)
+			 (when (and (null? first) (not mblock))
+			    (bbv-block-specialize-ins! bv bs queue))))
+	    versions))))
+
+
+(define (bbv-block-merge-old! bv::blockV queue::bbv-queue)
    (with-access::blockV bv (label versions)
       (with-trace 'bbv-merge
 	    (format "bbv-block-merge! ~a ~a" label
@@ -174,6 +198,18 @@
 			    (when (and (null? first) (not mblock))
 			       (bbv-block-specialize-ins! bv bs queue))))
 	       versions)))))
+
+;*---------------------------------------------------------------------*/
+;*    ctx-top ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (ctx-top ctx::bbv-ctx)
+   (with-access::bbv-ctx ctx (entries)
+      (duplicate::bbv-ctx ctx
+	 (entries (map (lambda (e)
+			  (duplicate::bbv-ctxentry e
+			     (types (list *obj*))
+			     (value '_)))
+		     entries)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-specialize! ...                                        */

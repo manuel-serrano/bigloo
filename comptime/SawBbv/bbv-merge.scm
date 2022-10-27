@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Wed Oct 26 14:21:22 2022 (serrano)                */
+;*    Last change :  Thu Oct 27 11:47:47 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -37,34 +37,8 @@
 	    saw_bbv-specialize
 	    saw_bbv-range)
 
-   (export  (mark-widener! ::blockV)
-	    (bbv-block-merge-ctx ::blockV)
-	    (merge-contexts ::pair-nil)))
-
-;*---------------------------------------------------------------------*/
-;*    mark-widener! ...                                                */
-;*    -------------------------------------------------------------    */
-;*    Mark the BB where widening is allowed. These blocks are the      */
-;*    loop heads.                                                      */
-;*---------------------------------------------------------------------*/
-(define (mark-widener! block)
-   (with-trace 'bbv "mark-widener!"
-      (let loop ((block block)
-		 (stack '()))
-	 (with-access::blockV block (merge label succs)
-	    (cond
-	       ((not (eq? merge #unspecified))
-		#unspecified)
-	       ((memq block stack)
-		(trace-item "mark merge " label)
-		(set! merge #t))
-	       (else
-		(let ((nstack (cons block stack)))
-		   (for-each (lambda (n)
-				(loop n nstack))
-		      succs)
-		   (unless (eq? merge #t)
-		      (set! merge #f)))))))))
+   (export  (bbv-block-merge-ctx ::blockV)
+	    (bbv-block-merge ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-ctx ...                                          */
@@ -183,7 +157,7 @@
 		       (u (bbv-min-fixnum))
 		       (r ranges))
 	       (if (null? r)
-		   (let ((range (reg-range-widening o u ranges)))
+		   (let ((range (range-widening o u ranges)))
 		      (trace-item "widening=" (shape range))
 		      range)
 		   (with-access::bbv-range (car r) (lo up)
@@ -299,11 +273,11 @@
 	     mctx)))))
 
 ;*---------------------------------------------------------------------*/
-;*    reg-range-widening ...                                           */
+;*    range-widening ...                                               */
 ;*    -------------------------------------------------------------    */
 ;*    Range widening. The produced range is larger than [o..u].        */
 ;*---------------------------------------------------------------------*/
-(define (reg-range-widening o u ranges)
+(define (range-widening o u ranges)
 
    (define widening #f)
    
@@ -346,157 +320,84 @@
 	    (lo no)
 	    (up nu)))))
 
-;* (define (block-merge-contexts b::blockV)                            */
-;*                                                                     */
-;*    (define (list-replace::pair-nil lst::pair-nil old new)           */
-;*       ;; return a copy of lst where old has been replaced with new  */
-;*       (let loop ((lst lst))                                         */
-;* 	 (cond                                                         */
-;* 	    ((null? lst) lst)                                          */
-;* 	    ((eq? (car lst) old) (cons new (loop (cdr lst))))          */
-;* 	    (else (cons (car lst) (loop (cdr lst)))))))                */
-;*                                                                     */
-;*    (define (bbv-ctx-replace ctx old new)                            */
-;*       (with-access::bbv-ctx ctx (entries)                           */
-;* 	 (duplicate::bbv-ctx ctx                                       */
-;* 	    (entries (list-replace entries old new)))))                */
-;*                                                                     */
-;*    (with-access::blockV b (versions label)                          */
-;*       (with-trace 'bbv-merge (format "block-merge-contexts! ~a" label) */
-;* 	 ;; step1: reduce singleton approximation into intervals       */
-;* 	 (merge-singletons! versions))))                               */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    block-merge-contexts ...                                         *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (block-merge-contexts b::blockV)                            */
-;*                                                                     */
-;*    (define (path-cost! v)                                           */
-;*       (let ((b (cdr v)))                                            */
-;* 	 (with-access::blockS b (cost)                                 */
-;* 	    (if (>=fx cost 0)                                          */
-;* 		cost                                                   */
-;* 		(let ((c (path-cost b)))                               */
-;* 		   (set! cost c)                                       */
-;* 		   c)))))                                              */
-;*                                                                     */
-;*    (with-access::blockV b (label)                                   */
-;*       (with-trace 'bbv-merge (format "block-merge-contexts ~a" label) */
-;* 	 (with-access::blockV b (versions)                             */
-;* 	    (let ((bs (ctx-live-versions versions)))                   */
-;* 	       ;; compute the cost of each version                     */
-;* 	       (for-each path-cost! bs)                                */
-;* 	       (let ((s (sort (lambda (vx vy)                          */
-;* 				 (with-access::blockS (cdr vx) ((costx cost)) */
-;* 				    (with-access::blockS (cdr vy) ((costy cost)) */
-;* 				       (<=fx costy costx))))           */
-;* 			   bs)))                                       */
-;* 		  (let ((wctx (merge-ctx (caar s) (caadr s))))         */
-;* 		     (trace-item "wctx=" (shape wctx))                 */
-;* 		     (values wctx (list (car s) (cadr s))))))))))      */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    find-closest-blocks ...                                          *} */
-;* {*    -------------------------------------------------------------    *} */
-;* {*    Find two blocks at the minimum distance.                         *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (find-closest-blocks ctx::pair-nil bs::pair-nil)            */
-;*    (let loop ((bs (cdr bs))                                         */
-;* 	      (d (ctx-distance ctx (caar bs)))                         */
-;* 	      (v (car bs)))                                            */
-;*       (if (null? bs)                                                */
-;* 	  v                                                            */
-;* 	  (let ((nd (ctx-distance ctx (caar bs))))                     */
-;* 	     (if (<fx nd d)                                            */
-;* 		 (loop (cdr bs) nd (car bs))                           */
-;* 		 (loop (cdr bs) d v))))))                              */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    ctx-distance ...                                                 *} */
-;* {*    -------------------------------------------------------------    *} */
-;* {*    The distance between two contexts.                               *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (ctx-distance x::pair-nil y::pair-nil)                      */
-;*    (let loop ((x x)                                                 */
-;* 	      (acc 0))                                                 */
-;*       (if (null? x)                                                 */
-;* 	  acc                                                          */
-;* 	  (let ((e (car x)))                                           */
-;* 	     (let ((f (ctx-get y (bbv-ctxentry-reg e))))               */
-;* 		(if (not f)                                            */
-;* 		    (error "ctx-distance" "inconsistent contexts" (shape y)) */
-;* 		    (loop (cdr x) (+fx acc (bbv-ctxentry-distance e f))))))))) */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    bbv-ctxentry-distance ...                                        *} */
-;* {*    -------------------------------------------------------------    *} */
-;* {*    Compute the distance between two entries associated with the     *} */
-;* {*    same register.                                                   *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (bbv-ctxentry-distance x::bbv-ctxentry y::bbv-ctxentry)     */
-;*    (with-access::bbv-ctxentry x ((tx types) (px polarity) (vx value)) */
-;*       (with-access::bbv-ctxentry y ((ty types) (py polarity) (vy value)) */
-;* 	 (cond                                                         */
-;* 	    ((equal? tx ty)                                            */
-;* 	     (cond                                                     */
-;* 		((not (eq? px py))                                     */
-;* 		 ;; opposite polarities                                */
-;* 		 20)                                                   */
-;* 		((equal? vx vy)                                        */
-;* 		 ;; same everything                                    */
-;* 		 0)                                                    */
-;* 		(else                                                  */
-;* 		 ;; values differ                                      */
-;* 		 5)))                                                  */
-;* 	    (else                                                      */
-;* 	     10)))))                                                   */
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge ...                                              */
+;*    -------------------------------------------------------------    */
+;*    lvs is a list of blockS. The result is three values. Two         */
+;*    block to be replaced and a ctx of the new block.                 */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge bs::pair-nil)
+   (multiple-value-bind (bs1 bs2)
+      (bbv-block-merge-select bs)
+      (with-access::blockS bs1 ((ctx1 ctx))
+	 (with-access::blockS bs2 ((ctx2 ctx))
+	    (values bs1 bs2 (merge-ctx ctx1 ctx2))))))
 
 ;*---------------------------------------------------------------------*/
-;*    merge-contexts ...                                               */
+;*    bbv-block-merge-select ...                                       */
+;*    -------------------------------------------------------------    */
+;*    Select two versions to merge.                                    */
 ;*---------------------------------------------------------------------*/
-(define (merge-contexts lst::pair-nil)
-   (let loop ((m (car lst))
-	      (lst (cdr lst)))
-      (if (pair? lst)
-	  (loop (merge-ctx m (car lst)) (cdr lst))
-	  m)))
+(define (bbv-block-merge-select bs::pair-nil)
+   (values (car bs) (cadr bs)))
 
 ;*---------------------------------------------------------------------*/
 ;*    merge-ctx ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    This function merges two bbv ctx and widen the result.           */
+;*    Each ctx is a list of entries. An entry is a register and        */
+;*    a property. Each list has exactly the same list of               */
+;*    registers. So, merging the ctx means merge the register          */
+;*    information.                                                     */
 ;*---------------------------------------------------------------------*/
-(define (merge-ctx x::bbv-ctx y::bbv-ctx)
+(define (merge-ctx ctx1::bbv-ctx ctx2::bbv-ctx)
+   (with-access::bbv-ctx ctx1 (entries)
+      (instantiate::bbv-ctx
+	 (entries (map (lambda (e)
+			  (with-access::bbv-ctxentry e (reg)
+			     (merge-ctxentry e (bbv-ctx-get ctx2 reg))))
+		     entries)))))
+
+;*---------------------------------------------------------------------*/
+;*    merge-ctxentry ...                                               */
+;*---------------------------------------------------------------------*/
+(define (merge-ctxentry e1::bbv-ctxentry e2::bbv-ctxentry)
    
-   (define (merge-entries x y)
-      (map (lambda (ex)
-	      (let ((ey (bbv-ctx-get y (bbv-ctxentry-reg ex))))
-		 (cond
-		    ((equal? ex ey)
-		     ex)
-		    ((not (equal? (bbv-ctxentry-types ex) (bbv-ctxentry-types ey)))
-		     (duplicate::bbv-ctxentry ex
-			(types (list *obj*))
-			(polarity #t)
-			(value '_)))
-		    ((not (eq? (bbv-ctxentry-polarity ex) (bbv-ctxentry-polarity ey)))
-		     (duplicate::bbv-ctxentry ex
-			(types (list *obj*))
-			(polarity #t)
-			(value '_)))
-		    ((or (not (every range-type? (bbv-ctxentry-types ex)))
-			 (not (isa? (bbv-ctxentry-value ex) bbv-range))
-			 (not (isa? (bbv-ctxentry-value ey) bbv-range)))
-		     (duplicate::bbv-ctxentry ex
-			(types (list *obj*))
-			(polarity #t)
-			(value '_)))
-		    (else
-		     (let* ((rx (bbv-ctxentry-value ex))
-			    (ry (bbv-ctxentry-value ey)))
-			(duplicate::bbv-ctxentry ex
-			   (value (bbv-range-widen rx ry))))))))
-	 (bbv-ctx-entries x)))
+   (define (same-types? types1 types2)
+      (when (=fx (length types1) (length types2))
+	 (every (lambda (t) (memq t types2)) types1)))
    
-   [assert (x y) (=fx (length (bbv-ctx-entries x)) (length (bbv-ctx-entries y)))]
-   (instantiate::bbv-ctx
-      (entries (merge-entries x y))))
-      
+   (define (bbv-ctxentry-top)
+      (duplicate::bbv-ctxentry e1
+	 (types (list *obj*))
+	 (polarity #t)
+	 (value '_)))
+   
+   (define (merge-range range1 range2)
+      (with-access::bbv-range range1 ((lo1 lo) (up1 up))
+	 (with-access::bbv-range range2 ((lo2 lo) (up2 up))
+	    ;; widening
+	    (range-widening (min lo1 lo2) (max up1 up2)
+	       (list range1 range2)))))
+   
+   (with-access::bbv-ctxentry e1 ((polarity1 polarity)
+				  (types1 types)
+				  (value1 value))
+      (with-access::bbv-ctxentry e2 ((polarity2 polarity)
+				     (types2 types)
+				     (value2 value))
+	 (cond
+	    ((not (eq? polarity1 polarity2))
+	     (bbv-ctxentry-top))
+	    ((not (same-types? types1 types2))
+	     (bbv-ctxentry-top))
+	    ((not (and (bbv-range? value1) (bbv-range? value2)))
+	     (bbv-ctxentry-top))
+	    ((not polarity1)
+	     (bbv-ctxentry-top))
+	    (else
+	     (let ((range (merge-range value1 value2)))
+		(if (isa? range bbv-range)
+		    (duplicate::bbv-ctxentry e1
+		       (value range))
+		    (bbv-ctxentry-top))))))))

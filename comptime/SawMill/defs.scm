@@ -93,6 +93,14 @@
       ))
 
 ;*---------------------------------------------------------------------*/
+;*    debug-saw ...                                                    */
+;*---------------------------------------------------------------------*/
+(define debug-saw
+   (let ((e (getenv "BIGLOOTRACE")))
+      (when (string? e)
+	 (string-index "bbv" e))))
+
+;*---------------------------------------------------------------------*/
 ;*    rtl_ins-args* ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-args* ins::rtl_ins)
@@ -291,7 +299,7 @@
 (define (show-fun o dest p)
    (let ((c (symbol->string (class-name (object-class o)))))
       (display (substring c 4 (string-length c)) p)
-      (when dest
+      (when (and dest debug-saw)
 	 (display " {" p)
 	 (dump dest p 0)
 	 (display "}" p))))
@@ -408,7 +416,7 @@
 		     (set! *access-shape?* oa)
 		     r))
 	 p)
-      (when dest
+      (when (and dest debug-saw)
 	 (display " {" p)
 	 (dump dest p 0)
 	 (display "}" p))
