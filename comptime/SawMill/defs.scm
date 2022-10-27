@@ -288,9 +288,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    show-fun ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (show-fun o p)
+(define (show-fun o dest p)
    (let ((c (symbol->string (class-name (object-class o)))))
-      (display (substring c 4 (string-length c)) p)))
+      (display (substring c 4 (string-length c)) p)
+      (when dest
+	 (display " {" p)
+	 (dump dest p 0)
+	 (display "}" p))))
    
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ...                                                     */
@@ -302,14 +306,14 @@
 ;*    dump-fun ::rtl_fun ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_fun dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (dump-args args p))
    
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_loadi ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_loadi dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (atom-value (rtl_loadi-constant o)) p)
    (dump-args args p))
@@ -318,14 +322,14 @@
 ;*    dump-fun ::rtl_mov ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_mov dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (dump-args args p))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_loadg ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_loadg dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (shape (rtl_loadg-var o)) p)
    (dump-args args p))
@@ -334,7 +338,7 @@
 ;*    dump-fun ::rtl_loadfun ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_loadfun dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (shape (rtl_loadfun-var o)) p)
    (dump-args args p))
@@ -343,7 +347,7 @@
 ;*    dump-fun ::rtl_globalref ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_globalref dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (shape (rtl_globalref-var o)) p)
    (dump-args args p))
@@ -353,7 +357,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_switch dest args p m)
    (with-access::rtl_switch o (labels)
-      (show-fun o p)
+      (show-fun o dest p)
       (dump-args args p)
       (display " " p)
       (display (map block-label labels) p)))
@@ -363,7 +367,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_ifeq dest args p m)
    (with-access::rtl_ifeq o (then)
-      (show-fun o p)
+      (show-fun o dest p)
       (dump-args args p)
       (display " (go " p)
       (display (block-label then) p)
@@ -374,7 +378,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_ifne dest args p m)
    (with-access::rtl_ifne o (then)
-      (show-fun o p)
+      (show-fun o dest p)
       (dump-args args p)
       (display " (go " p)
       (display (block-label then) p)
@@ -385,7 +389,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_go dest args p m)
    (with-access::rtl_go o (to)
-      (show-fun o p)
+      (show-fun o dest p)
       (display " " p)
       (display (block-label to) p)
       (dump-args args p)))
@@ -403,14 +407,18 @@
 		     (set! *user-shape?* ou)
 		     (set! *access-shape?* oa)
 		     r))
-	       p)
+	 p)
+      (when dest
+	 (display " {" p)
+	 (dump dest p 0)
+	 (display "}" p))
       (dump-args args p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_pragma ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_pragma dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (rtl_pragma-format o) p)
    (display " " p)

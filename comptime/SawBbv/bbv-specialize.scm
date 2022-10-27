@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Oct 26 14:30:39 2022 (serrano)                */
+;*    Last change :  Thu Oct 27 09:28:00 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -824,36 +824,38 @@
    (define (test-ctxs-ref reg intl intr op ctx::bbv-ctx)
       (if (or (not (bbv-range? intl)) (not (bbv-range? intr)))
 	  (values ctx ctx)
-	  (let* ((e (bbv-ctx-get ctx reg))
-		 (types (bbv-ctxentry-types e)))
-	     (case op
-		((<)
-		 (let ((intrt (bbv-range-lt intl intr))
-		       (intro (bbv-range-gte intl intr)))
-		    (values (extend-ctx ctx reg types #t :value intrt)
-		       (extend-ctx ctx reg types #t :value intro))))
-		((<=)
-		 (let ((intrt (bbv-range-lte intl intr))
-		       (intro (bbv-range-gt intl intr)))
-		    (values (extend-ctx ctx reg types #t :value intrt)
-		       (extend-ctx ctx reg types #t :value intro))))
-		((>)
-		 (let ((intrt (bbv-range-gt intl intr))
-		       (intro (bbv-range-lte intl intr)))
-		    (values (extend-ctx ctx reg types #t :value intrt)
-		       (extend-ctx ctx reg types #t :value intro))))
-		((>=)
-		 (let ((intrt (bbv-range-gte intl intr))
-		       (intro (bbv-range-lt intl intr)))
-		    (values (extend-ctx ctx reg types #t :value intrt)
-		       (extend-ctx ctx reg types #t :value intro))))
-		((=)
-		 (values (extend-ctx ctx reg types #t :value intl)
-		    ctx))
-		((!=)
-		 (values ctx ctx))
-		(else
-		 (values ctx ctx))))))
+	  (let ((e (bbv-ctx-get ctx reg)))
+	     (if (not e)
+		 (values ctx ctx)
+		 (let ((types (bbv-ctxentry-types e)))
+		    (case op
+		       ((<)
+			(let ((intrt (bbv-range-lt intl intr))
+			      (intro (bbv-range-gte intl intr)))
+			   (values (extend-ctx ctx reg types #t :value intrt)
+			      (extend-ctx ctx reg types #t :value intro))))
+		       ((<=)
+			(let ((intrt (bbv-range-lte intl intr))
+			      (intro (bbv-range-gt intl intr)))
+			   (values (extend-ctx ctx reg types #t :value intrt)
+			      (extend-ctx ctx reg types #t :value intro))))
+		       ((>)
+			(let ((intrt (bbv-range-gt intl intr))
+			      (intro (bbv-range-lte intl intr)))
+			   (values (extend-ctx ctx reg types #t :value intrt)
+			      (extend-ctx ctx reg types #t :value intro))))
+		       ((>=)
+			(let ((intrt (bbv-range-gte intl intr))
+			      (intro (bbv-range-lt intl intr)))
+			   (values (extend-ctx ctx reg types #t :value intrt)
+			      (extend-ctx ctx reg types #t :value intro))))
+		       ((=)
+			(values (extend-ctx ctx reg types #t :value intl)
+			   ctx))
+		       ((!=)
+			(values ctx ctx))
+		       (else
+			(values ctx ctx))))))))
    
    (define (specialize/op op lhs intl rhs intr ctx::bbv-ctx)
       (cond
