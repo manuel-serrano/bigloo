@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Oct 27 17:23:19 2022 (serrano)                */
+;*    Last change :  Fri Oct 28 07:06:39 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -30,6 +30,7 @@
 	    saw_defs
 	    saw_regset
 	    saw_regutils
+	    saw_bbv-config
 	    saw_bbv-types
 	    saw_bbv-specialize
 	    saw_bbv-cache
@@ -37,13 +38,6 @@
 	    saw_bbv-merge)
 
    (export  (bbv::pair-nil ::backend ::global ::pair-nil ::pair-nil)))
-
-;*---------------------------------------------------------------------*/
-;*    *cleanup* ...                                                    */
-;*---------------------------------------------------------------------*/
-(define *cleanup*
-   (let ((e (getenv "BIGLOOBBVCLEANUP")))
-      (not e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv ...                                                          */
@@ -86,11 +80,12 @@
 					  (block->block-list regs s)
 					  ".specialize.cfg")))
 				 (b (block->block-list regs
-				       (if *cleanup*
+				       (if *bbv-blocks-cleanup*
 					   (remove-nop!
 					      (remove-goto!
 						 (simplify-branch!
-						    (coalesce! (get-bb-mark) s))))
+						    (coalesce!
+						       (get-bb-mark) s))))
 					   s))))
 			     (verbose 3 " " (length blocks) " -> " (length b))
 			     (verbose 2 "\n")

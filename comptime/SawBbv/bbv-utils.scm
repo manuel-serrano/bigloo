@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Oct 20 14:08:38 2022 (serrano)                */
+;*    Last change :  Fri Oct 28 10:34:38 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -30,9 +30,11 @@
 	    saw_defs
 	    saw_regset
 	    saw_regutils
+	    saw_bbv-config
 	    saw_bbv-types
 	    saw_bbv-specialize
-	    saw_bbv-cache)
+	    saw_bbv-cache
+	    saw_bbv-range)
 
    (export  (type-in?::bool ::type ::pair-nil)
 	    (get-bb-mark)
@@ -41,7 +43,7 @@
 	    (replace ::pair-nil ::obj ::obj)
 	    (block->block-list regs b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)
-	    (replace-block! ::blockS ::blockS)
+	    (replace-block! ::blockS ::blockS #!key debug)
 	    (bbv-ctx-filter-live-in-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
 	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
 	    (live-versions::pair-nil ::pair-nil)))
@@ -162,17 +164,67 @@
    b)
 
 ;*---------------------------------------------------------------------*/
+;*    ctx>=? ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (ctx>=? x::bbv-ctx y::bbv-ctx)
+   
+   (define (bbv-ctxentry>=? x y)
+      (with-access::bbv-ctxentry x ((xtypes types)
+				    (xvalue value)
+				    (xpolarity polarity))
+	 (with-access::bbv-ctxentry y ((ytypes types)
+				       (yvalue value)
+				       (ypolarity polarity))
+	    (cond
+	       ((memq *obj* xtypes)
+		#t)
+	       ((memq *obj* ytypes)
+		#f)
+	       ((not (eq? xpolarity ypolarity))
+		#f)
+	       ((not (every (lambda (t) (memq t ytypes)) xtypes))
+		#f)
+	       ((isa? xvalue bbv-range)
+		(when (isa? yvalue bbv-range)
+		   (with-access::bbv-range xvalue ((xlo lo) (xup up))
+		      (with-access::bbv-range yvalue ((ylo lo) (yup up))
+			 (let ((r (and (<=fx xlo ylo) (>= xup yup))))
+			    (unless r
+			       (tprint "ERROR ctx>=? " (shape x) " " (shape y)))
+			    r)))))
+	       (else #t)))))
+	       
+   (with-access::bbv-ctx x (entries)
+      (every (lambda (ex)
+		(with-access::bbv-ctxentry ex (reg)
+		   (let ((ey (bbv-ctx-get y reg)))
+		      (bbv-ctxentry>=? ex ey))))
+	 entries)))
+
+;*---------------------------------------------------------------------*/
 ;*    replace-block! ...                                               */
 ;*    -------------------------------------------------------------    */
 ;*    Replace one "old" block with a "new" one. Reconnect the preds    */
 ;*    and succs of the old block.                                      */
 ;*---------------------------------------------------------------------*/
-(define (replace-block! old::blockS new::blockS)
+(define (replace-block! old::blockS new::blockS #!key debug)
    (with-trace 'bbv-utils "replace-block!"
       (trace-item "old=" (block-label old) " "
 	 (map block-label (block-succs old)))
       (trace-item "new="(block-label new) " "
 	 (map block-label (block-succs new)))
+      ;; debugging
+      (when (and debug *bbv-debug*)
+	 (with-access::blockS old ((octx ctx))
+	    (with-access::blockS new ((nctx ctx))
+	       (unless (ctx>=? nctx octx)
+		  (tprint "REPLACE-BLOCK-ERROR! " (block-label old)
+		     " -> " (block-label new))
+		  (tprint " octx=" (shape octx))
+		  (tprint " nctx=" (shape nctx))
+		  (error "replace-block!"
+		     (format "Wrong block replacement ~a" (block-label old))
+		     (block-label new))))))
       (with-access::blockS old (succs preds mblock)
 	 ;; mark the replacement
 	 (set! mblock new)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Oct 27 16:39:01 2022 (serrano)                */
+;*    Last change :  Fri Oct 28 07:31:16 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -38,8 +38,7 @@
 	    saw_bbv-config
 	    saw_bbv-cost)
 
-   (export (bbv-block*::blockS ::blockV ::bbv-ctx)
-	   (bbv-block-specialize!::blockS ::blockV ::bbv-ctx ::bbv-queue)))
+   (export (bbv-block*::blockS ::blockV ::bbv-ctx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    new-blockS ...                                                   */
@@ -71,7 +70,7 @@
    (with-trace 'bbv-block*
 	 (format "bbv-block ~a" (with-access::blockV bv (label) label))
       (let* ((queue (instantiate::bbv-queue))
-	     (bs (bbv-block bv ctx queue #t)))
+	     (bs (bbv-block bv ctx queue)))
 	 (let loop ((queue queue))
 	    (with-access::bbv-queue queue (blocks)
 	       (trace-item "queue="
@@ -90,7 +89,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue canmerge::bool)
+(define (bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
    (with-access::blockV bv (label succs preds first merge generic)
       (with-trace 'bbv-block (format "bbv-block ~a~a" label
 				(if merge "!" ""))
@@ -108,16 +107,15 @@
 	       ((bbv-ctx-assoc ctx lvs)
 		=>
 		live-blockS)
-	       ((and merge (>=fx (length lvs) *max-block-merge-versions*))
-		(let ((bs (new-blockS bv ctx)))
-		   (bbv-queue-push! queue bv)
-		   bs))
-	       ((>=fx (length lvs) *max-block-limit*)
+	       ((>=fx (length lvs)
+		   (if merge *max-block-merge-versions* *max-block-limit*))
 		(let ((bs (new-blockS bv ctx)))
 		   (bbv-queue-push! queue bv)
 		   bs))
 	       (else
-		(bbv-block-specialize! bv ctx queue)))))))
+		(let ((bs (new-blockS bv ctx)))
+		   (bbv-block-specialize-ins! bv bs queue)
+		   bs)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge! ...                                             */
@@ -126,100 +124,56 @@
    (with-access::blockV bv (label versions merge)
       (with-trace 'bbv-merge (format "bbv-block-merge! ~a" label)
 	 (let loop ()
-	    (let ((lvs (filter (lambda (bs)
-				  (with-access::blockS bs (label mblock)
-				     (not mblock)))
-			  versions)))
+	    (let ((lvs (blockV-live-versions bv)))
 	       (when (>=fx (length lvs)
 			(if merge *max-block-merge-versions* *max-block-limit*))
 		  (multiple-value-bind (bs1 bs2 nctx)
 		     (bbv-block-merge lvs)
-		     (cond
-			((with-access::blockS bs1 (ctx)
-			    (bbv-ctx-equal? ctx nctx))
-			 (replace-block! bs2 bs1))
-			((with-access::blockS bs2 (ctx)
-			    (bbv-ctx-equal? ctx nctx))
-			 (replace-block! bs1 bs2))
-			(else
-			 (let ((nbs (new-blockS bv nctx)))
-			    (with-trace 'bbv-merge "merge @ bbv-block-merge"
-			       (with-access::blockS bs1 ((ctx1 ctx))
-				  (with-access::blockS bs2 ((ctx2 ctx))
-				     (trace-item "ctx1=" (shape ctx1))
-				     (trace-item "ctx2=" (shape ctx2))
-				     (trace-item "nctx=" (shape nctx)))))
-			    (replace-block! bs1 nbs)
-			    (replace-block! bs2 nbs)))))
+		     (let ((b (bbv-ctx-assoc nctx versions)))
+			(if b
+			    (let ((obs (live-blockS b)))
+			       (debug-merge "obs" obs nctx bs1 bs2)
+			       (cond
+				  ((eq? obs bs1)
+				   (replace-block! bs2 obs :debug #t))
+				  ((eq? obs bs2)
+				   (replace-block! bs1 obs :debug #t))
+				  (else
+				   (replace-block! bs1 obs :debug #t)
+				   (replace-block! bs2 obs :debug #t))))
+			    (let ((nbs (new-blockS bv nctx)))
+			       (with-access::blockS nbs (collapsed)
+				  (set! collapsed #t))
+			       (with-trace 'bbv-merge "merge @ bbv-block-merge"
+				  (with-access::blockS bs1 ((ctx1 ctx))
+				     (with-access::blockS bs2 ((ctx2 ctx))
+					(trace-item "ctx1=" (shape ctx1))
+					(trace-item "ctx2=" (shape ctx2))
+					(trace-item "nctx=" (shape nctx)))))
+			       (debug-merge "nbs" nbs nctx bs1 bs2)
+			       (replace-block! bs1 nbs :debug #t)
+			       (replace-block! bs2 nbs :debug #t)))))
 		  (loop))))
 	 (for-each (lambda (bs)
-		      (with-access::blockS bs (label mblock first)
+		      (with-access::blockS bs (label mblock first ctx)
 			 (when (and (null? first) (not mblock))
 			    (bbv-block-specialize-ins! bv bs queue))))
 	    versions))))
 
-
-(define (bbv-block-merge-old! bv::blockV queue::bbv-queue)
-   (with-access::blockV bv (label versions)
-      (with-trace 'bbv-merge
-	    (format "bbv-block-merge! ~a ~a" label
-	       (filter-map (lambda (bs)
-			     (with-access::blockS bs (label mblock)
-				(unless mblock label)))
-		  versions))
-	 (let ((merges (bbv-block-merge-ctx bv)))
-	    ;; replace all the blockS that are merged into something else
-	    (for-each (lambda (m)
-			 ;; each m is a pair <blockS, ctx> where
-			 ;;   - blocks is the (live) block to be replaced
-			 ;;   - ctx is the context of the new block 
-			 (let* ((bs (car m))
-				(ctx (cdr m))
-				(nbs (bbv-block bv ctx queue #f)))
-			    (trace-item "merge <"
-			       (with-access::blockS bs (label) label)
-			       ", "
-			       (with-access::bbv-ctx ctx (id) id)
-			       "> -> "
-			       (with-access::blockS nbs (label) label))
-			    (unless (eq? bs nbs)
-			       (replace-block! bs nbs))))
-	       merges)
-	    (trace-item "after merge " label ": "
-	       (filter-map (lambda (bs)
-			      (with-access::blockS bs (label mblock ctx)
-				 (unless mblock
-				    (with-access::bbv-ctx ctx (id)
-					  (format "~a@~a" id label)))))
-		  versions))
-	    ;; specialize all the blocks that have been delayed
-	    (for-each (lambda (bs)
-			 (with-access::blockS bs (first mblock label)
-			    (when (and (null? first) (not mblock))
-			       (bbv-block-specialize-ins! bv bs queue))))
-	       versions)))))
-
 ;*---------------------------------------------------------------------*/
-;*    ctx-top ...                                                      */
+;*    debug-merge ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (ctx-top ctx::bbv-ctx)
-   (with-access::bbv-ctx ctx (entries)
-      (duplicate::bbv-ctx ctx
-	 (entries (map (lambda (e)
-			  (duplicate::bbv-ctxentry e
-			     (types (list *obj*))
-			     (value '_)))
-		     entries)))))
-
-;*---------------------------------------------------------------------*/
-;*    bbv-block-specialize! ...                                        */
-;*---------------------------------------------------------------------*/
-(define (bbv-block-specialize!::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
-   (with-access::blockV bv (label)
-      (with-trace 'bbv-specialize (format "bbv-block-specialize! ~a" label)
-	 (trace-item "ctx=" (shape ctx))
-	 (let ((bs (new-blockS bv ctx)))
-	    (bbv-block-specialize-ins! bv bs queue)))))
+(define (debug-merge key bs ctx bs1 bs2)
+   (when *bbv-debug*
+      (with-access::blockS bs (label preds succs)
+	 (with-access::blockS bs1 ((ctx1 ctx)
+				   (lbl1 label))
+	    (with-access::blockS bs2 ((ctx2 ctx)
+				      (lbl2 label))
+	       (tprint key "=" label " " (map block-label preds) " -> " (map block-label succs))
+	       (tprint "  ctx1=" lbl1 " " (shape ctx1))
+	       (tprint "  ctx2=" lbl2 " " (shape ctx2))
+	       (tprint "     ->" (shape ctx) ))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-specialize-ins! ...                                    */
@@ -310,7 +264,7 @@
 	    ((rtl_ins-go? (car oins))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_go fun (to)
-		   (let* ((n (bbv-block to ctx queue #t))
+		   (let* ((n (bbv-block to ctx queue))
 			  (ins (duplicate::rtl_ins/bbv (car oins)
 				  (ctx ctx)
 				  (fun (duplicate::rtl_go fun
@@ -324,14 +278,14 @@
 				 (ctx ctx)
 				 (fun (duplicate::rtl_switch fun
 					 (labels (map (lambda (b)
-							 (bbv-block b ctx queue #t))
+							 (bbv-block b ctx queue))
 						    labels)))))))
 		      (connect! bs ins)
 		      (loop '() (cons ins nins) ctx)))))
 	    ((rtl_ins-ifne? (car oins))
 	     (with-access::rtl_ins (car oins) (fun)
 		(with-access::rtl_ifne fun (then)
-		   (let* ((n (bbv-block then ctx queue #t))
+		   (let* ((n (bbv-block then ctx queue))
 			  (ins (duplicate::rtl_ins/bbv (car oins)
 				  (ctx ctx)
 				  (fun (duplicate::rtl_ifne fun
@@ -429,7 +383,7 @@
 			    (let ((s (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(fun (instantiate::rtl_go
-						(to (bbv-block then pctx queue #t))))
+						(to (bbv-block then pctx queue))))
 					(dest #f)
 					(args '()))))
 			       ;; the next ctx will be ignored...
@@ -461,7 +415,7 @@
 				   (s (duplicate::rtl_ins/bbv i
 					 (ctx ctx)
 					 (fun (duplicate::rtl_ifne fun
-						 (then (bbv-block then pctx queue #t)))))))
+						 (then (bbv-block then pctx queue)))))))
 			       (values s nctx))))))
 		  (else
 		   (error "rtl_ins-specialize-typecheck"
@@ -502,13 +456,13 @@
 	    (cond
 	       ((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
 		(let ((e (bbv-ctx-get ctx (car args))))
-		   (with-access::bbv-ctxentry e (types value)
+		   (with-access::bbv-ctxentry e (types value polarity)
 		      (if (and (bbv-singleton? value))
 			  (values (range->loadi i dest value types)
-			     (extend-ctx ctx dest types #t :value value))
+			     (extend-ctx ctx dest types polarity :value value))
 			  (values (duplicate-ins i ctx)
 			     (alias-ctx
-				(extend-ctx ctx dest types #t :value value)
+				(extend-ctx ctx dest types polarity :value value)
 				dest (car args)))))))
 	       ((and *type-call* (pair? args) (rtl_ins-call? (car args)))
 		(with-access::rtl_ins (car args) (fun args)
@@ -719,7 +673,7 @@
       (with-access::rtl_ins i (fun)
 	 (with-access::rtl_ifne fun (args then)
 	    (let ((nfun (duplicate::rtl_ifne fun
-			   (then (bbv-block then pctx queue #t)))))
+			   (then (bbv-block then pctx queue)))))
 	       (values (duplicate::rtl_ins/bbv i
 			  (ctx ctx)
 			  (fun nfun))
@@ -962,7 +916,7 @@
 		      ((rtl_ins-true? ins)
 		       (with-access::rtl_ifne fun (then)
 			  (let* ((fun (duplicate::rtl_go fun
-					 (to (bbv-block then ctx queue #t))))
+					 (to (bbv-block then ctx queue))))
 				 (ni (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(args '())
@@ -978,7 +932,7 @@
 			     (values ni nctx))))
 		      (else
 		       (let ((fun (duplicate::rtl_ifne fun
-				     (then (bbv-block then pctx queue #t)))))
+				     (then (bbv-block then pctx queue)))))
 			  (values (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
 				     (args (list ins))
@@ -1080,7 +1034,7 @@
 		(s (duplicate::rtl_ins/bbv i
 		      (ctx ctx)
 		      (fun (duplicate::rtl_ifne fun
-			      (then (bbv-block then pctx queue #t)))))))
+			      (then (bbv-block then pctx queue)))))))
 	    (values s nctx))))
    
    (with-trace 'bbv-ins "rtl_ins-specialize-fxovop"

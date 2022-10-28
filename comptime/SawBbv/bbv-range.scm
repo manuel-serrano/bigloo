@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Fri Oct 21 13:52:27 2022 (serrano)                */
+;*    Last change :  Fri Oct 28 11:27:45 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -366,6 +366,19 @@
       (else n)))
 
 ;*---------------------------------------------------------------------*/
+;*    ->range ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (->range n)
+   (cond
+      ((fixnum? n)
+       (cond
+	  ((>fx n (bbv-max-fixnum)) (bbv-max-fixnum))
+	  ((<fx n (bbv-min-fixnum)) (bbv-min-fixnum))
+	  (else n)))
+      ((> n 0) (bbv-max-fixnum))
+      (else (bbv-min-fixnum))))
+
+;*---------------------------------------------------------------------*/
 ;*    +rng ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (+rng x y)
@@ -377,7 +390,7 @@
       ((=fx y (+fx (bbv-min-fixnum) 1)) y)
       ((and (=fx x (-fx (bbv-max-fixnum) 1)) (>fx y 0)) (bbv-max-fixnum))
       ((and (=fx y (-fx (bbv-max-fixnum) 1)) (>fx x 0)) (bbv-max-fixnum))
-      (else (+fx x y))))
+      (else (->range (+ x y)))))
       
 ;*---------------------------------------------------------------------*/
 ;*    -rng ...                                                         */
@@ -390,14 +403,13 @@
       ((=fx y (-fx (bbv-max-fixnum) 1)) y)
       ((and (=fx x (-fx (bbv-min-fixnum) 1)) (<fx y 0)) (bbv-min-fixnum))
       ((and (=fx y (-fx (bbv-min-fixnum) 1)) (<fx x 0)) (bbv-min-fixnum))
-      (else (-fx x y))))
+      (else (->range (- x y)))))
       
 ;*---------------------------------------------------------------------*/
 ;*    *rng ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (*rng x y)
-   (cond
-      (else (*fx x y))))
+   (->range (* x y)))
       
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-add ...                                                */

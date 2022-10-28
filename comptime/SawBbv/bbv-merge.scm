@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Thu Oct 27 11:47:47 2022 (serrano)                */
+;*    Last change :  Fri Oct 28 07:10:18 2022 (serrano)                */
 ;*    Copyright   :  2022 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -37,240 +37,232 @@
 	    saw_bbv-specialize
 	    saw_bbv-range)
 
-   (export  (bbv-block-merge-ctx ::blockV)
-	    (bbv-block-merge ::pair-nil)))
+   (export  (bbv-block-merge ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-block-merge-ctx ...                                          */
+;*    bbv-block-merge ...                                              */
 ;*    -------------------------------------------------------------    */
-;*    Returns a list of <blockS, ctx> where blockS is the block to be  */
-;*    replaced with a block generated for context ctx.                 */
+;*    lvs is a list of blockS. The result is three values. Two         */
+;*    block to be replaced and a ctx of the new block.                 */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block-merge-ctx bv::blockV) 
-   (with-access::blockV bv (label)
-      (with-trace 'bbv-merge (format "bbv-block-merge-ctx block=~a" label)
-	 (let ((lvs (blockV-live-versions bv)))
-	    (when (pair? lvs)
-	       (with-access::blockS (car lvs) (ctx)
-		  (when-trace 'bbv-merge
-		     (for-each (lambda (bs num)
-				  (with-access::blockS bs (ctx)
-				     (trace-item (format "ctx.~a=" num)
-					(shape ctx))))
-			lvs (iota (length lvs))))
-		  (let* ((regs (map bbv-ctxentry-reg (bbv-ctx-entries ctx)))
-			 (rrs (map (lambda (r)
-				      (let ((range (reg-range-merge r lvs)))
-					 (cons r range)))
-				 regs))
-			 (typs (map (lambda (r)
-				       (let ((typ (reg-type-merge r lvs)))
-					  (cons r typ)))
-				  regs)))
-		     (or (merge-ranges lvs regs rrs)
-			 (merge-types lvs regs typs)
-			 (merge-top lvs regs)))))))))
+(define (bbv-block-merge bs::pair-nil)
+   (multiple-value-bind (bs1 bs2)
+      (bbv-block-merge-select bs)
+      (with-access::blockS bs1 ((ctx1 ctx))
+	 (with-access::blockS bs2 ((ctx2 ctx))
+	    (values bs1 bs2 (merge-ctx ctx1 ctx2))))))
 
 ;*---------------------------------------------------------------------*/
-;*    merge-ranges ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (merge-ranges lvs regs rrs)
-   (let ((merge (filter-map (lambda (bs::blockS)
-			       (let ((mctx (bbv-ctx-range-widen bs rrs)))
-				  (when mctx
-				     (with-access::blockS bs (ctx)
-					(with-access::bbv-ctx ctx (id)
-					   (trace-item "mctx(" id ") => "
-					      (shape mctx))))
-				     (cons bs mctx))))
-		   lvs)))
-      (when (pair? merge)
-	 merge)))
-
-;*---------------------------------------------------------------------*/
-;*    merge-types ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (merge-types lvs regs rrs)
-   (let ((merge (filter-map (lambda (bs::blockS)
-			       (let ((mctx (bbv-ctx-type-widen bs rrs)))
-				  (when mctx
-				     (with-access::blockS bs (ctx)
-					(with-access::bbv-ctx ctx (id)
-					   (trace-item "mctx(" id ") => "
-					      (shape mctx))))
-				     (cons bs mctx))))
-		   lvs)))
-      (when (pair? merge)
-	 merge)))
-
-;*---------------------------------------------------------------------*/
-;*    merge-top ...                                                    */
-;*---------------------------------------------------------------------*/
-(define (merge-top lvs regs)
-   (tprint "TOP")
-   (map (lambda (bs::blockS)
-	   (let ((mctx (bbv-ctx-top-widen bs)))
-	      (with-access::blockS bs (ctx)
-		 (with-access::bbv-ctx ctx (id)
-		    (trace-item "mctx(" id ") => "
-		       (shape mctx)))
-		 (cons bs mctx))))
-      lvs))
-
-;*---------------------------------------------------------------------*/
-;*    reg-type-merge ...                                               */
+;*    bbv-block-merge-select ...                                       */
 ;*    -------------------------------------------------------------    */
-;*    Find the smallest type for variable X that is compatible         */
-;*    with all the variable context types.                             */
+;*    Select two versions to merge.                                    */
 ;*---------------------------------------------------------------------*/
-(define (reg-type-merge reg versions::pair-nil)
-   (with-trace 'bbv-merge (format "reg-type-merge ~a" (shape reg))
-      (let ((types (delete-duplicates (reg-types-get reg versions) eq?)))
-	 (trace-item "types=" (map shape types))
-	 types)))
+(define (bbv-block-merge-select bs::pair-nil)
+   (if (and (pair? bs) (pair? (cdr bs)) (null? (cddr bs)))
+       ;; After this test length(bs) > 2. This is assumed in all
+       ;; the strategies implementation
+       (values (car bs) (cadr bs))
+       (case *bbv-merge-strategy*
+	  ((size) (bbv-block-merge-select-strategy-size bs))
+	  ((distance) (bbv-block-merge-select-strategy-distance bs))
+	  ((random) (bbv-block-merge-select-strategy-random bs))
+	  ((first) (bbv-block-merge-select-strategy-first bs))
+	  (else (error "bbv-block-merge-select" "strategy not implemented" *bbv-merge-strategy*)))))
 
 ;*---------------------------------------------------------------------*/
-;*    reg-types-get ...                                                */
+;*    bbv-block-merge-select-strategy-size ...                         */
 ;*    -------------------------------------------------------------    */
-;*    Get all the types of variable X in CTX                           */
+;*    Select the two smallest contexts.                                */
 ;*---------------------------------------------------------------------*/
-(define (reg-types-get reg versions::pair-nil)
-   (append-map (lambda (bs)
-		  (with-access::blockS bs (ctx)
-		     (let ((e (bbv-ctx-get ctx reg)))
-			(with-access::bbv-ctxentry e (polarity types)
-			   (if polarity types (list *obj*))))))
-      versions))
+(define (bbv-block-merge-select-strategy-size bs::pair)
+   
+   (define (range-size r::bbv-range)
+      (with-access::bbv-range r (lo up)
+	 (cond
+	    ((and (>=fx lo -128) (<=fx up 127)) 1)
+	    ((and (>=fx lo 0) (<=fx up 255)) 1)
+	    ((and (>=fx lo -65536) (<=fx up -65535)) 2)
+	    ((and (>=fx lo 0) (<=fx up 536870912)) 3)
+	    (else 4))))
+   
+   (define (entry-size e::bbv-ctxentry)
+      (with-access::bbv-ctxentry e (types polarity value)
+	 (cond
+	    ((not polarity) (length types))
+	    ((eq? (car types) *obj*) 100)
+	    ((isa? value bbv-range) (range-size value))
+	    (else (*fx 10 (length types))))))
+   
+   (define (ctx-size ctx::bbv-ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-size entries))))
+   
+   (define (block-size b::blockS)
+      (with-access::blockS b (ctx)
+	 (ctx-size ctx)))
+   
+   (let ((l (sort (map (lambda (b) (cons (block-size b) b)) bs)
+	       (lambda (x y) (<=fx (car x) (car y))))))
+      (values (cdr (car l)) (cdr (cadr l)))))
+	   
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-distance ...                     */
+;*    -------------------------------------------------------------    */
+;*    Select the two closest contexts.                                 */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-distance bs::pair)
+
+   (define (dist-entry x::bbv-ctxentry y::bbv-ctxentry)
+      (with-access::bbv-ctxentry x ((xpolarity polarity)
+				    (xtypes types)
+				    (xvalue value))
+	 (with-access::bbv-ctxentry y ((ypolarity polarity)
+				       (ytypes types)
+				       (yvalue value))
+	    (cond
+	       ((and (equal? xtypes ytypes) (eq? xpolarity ypolarity))
+		(cond
+		   ((and (isa? xvalue bbv-range) (isa? yvalue bbv-range))
+		    (with-access::bbv-range xvalue ((lo1 lo) (up1 up))
+		       (with-access::bbv-range yvalue ((lo2 lo) (up2 up))
+			  (if (and (=fx lo1 lo2) (=fx up1 up2))
+			      0
+			      1))))
+		   ((or (isa? xvalue bbv-range) (isa? yvalue bbv-range))
+		    3)
+		   (else
+		    2)))
+	       ((not (eq? xpolarity ypolarity))
+		10)
+	       ((not xpolarity)
+		(if (or (every (lambda (t) (memq t ytypes)) xtypes)
+			(every (lambda (t) (memq t xtypes)) ytypes))
+		    4
+		    5))
+	       ((or (memq *obj* xtypes) (memq *obj* ytypes))
+		4)
+	       (else
+		11)))))
+      
+   (define (ctx-dist xctx::bbv-ctx yctx::bbv-ctx)
+      (with-access::bbv-ctx xctx (entries)
+	 (apply +
+	    (map (lambda (e)
+		    (with-access::bbv-ctxentry e (reg)
+		       (dist-entry e (bbv-ctx-get yctx reg))))
+	       entries))))
+   
+   (define (block-dist p::pair)
+      (let ((x (car p))
+	    (y (cdr p)))
+	 (if (eq? x y)
+	     (cons (maxvalfx) p)
+	     (with-access::blockS x ((xctx ctx))
+		(with-access::blockS y ((yctx ctx))
+		   (cons (ctx-dist xctx yctx) p))))))
+   
+   (let ((l (sort (map block-dist
+		     (append-map (lambda (x)
+				    (map (lambda (y) (cons x y)) bs))
+			bs))
+	       (lambda (x y) (<=fx (car x) (car y))))))
+      (values (car (cdar l)) (cdr (cdar l)))))
+   
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-random ...                       */
+;*    -------------------------------------------------------------    */
+;*    Peek two random blocks for merging.                              */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-random bs::pair)
+   (let* ((len (length bs))
+	  (x (random len)))
+      (let loop ()
+	 (let ((y (random len)))
+	    (if (=fx x y)
+		(loop)
+		(values (list-ref bs x) (list-ref bs y)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    reg-range-merge ...                                              */
+;*    bbv-block-merge-select-strategy-first ...                        */
 ;*    -------------------------------------------------------------    */
-;*    Find the smallest range for variable X that is compatible        */
-;*    with all the variable context ranges.                            */
+;*    Peek two first blocks for merging.                               */
 ;*---------------------------------------------------------------------*/
-(define (reg-range-merge reg versions::pair-nil)
-   (with-trace 'bbv-merge (format "reg-range-merge ~a" (shape reg))
-      (let ((ranges (reg-ranges-get reg versions)))
-	 (trace-item "range=" (map shape ranges))
-	 (when (pair? ranges)
-	    (let loop ((o (bbv-max-fixnum))
-		       (u (bbv-min-fixnum))
-		       (r ranges))
-	       (if (null? r)
-		   (let ((range (range-widening o u ranges)))
-		      (trace-item "widening=" (shape range))
-		      range)
-		   (with-access::bbv-range (car r) (lo up)
-		      (loop (min o lo) (max u up) (cdr r)))))))))
+(define (bbv-block-merge-select-strategy-first bs::pair)
+   (values (car bs) (cadr bs)))
 
 ;*---------------------------------------------------------------------*/
-;*    reg-ranges-get ...                                               */
+;*    merge-ctx ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    Get all the ranges of variable X in CTX                          */
+;*    This function merges two bbv ctx and widen the result.           */
+;*    Each ctx is a list of entries. An entry is a register and        */
+;*    a property. Each list has exactly the same list of               */
+;*    registers. So, merging the ctx means merge the register          */
+;*    information.                                                     */
 ;*---------------------------------------------------------------------*/
-(define (reg-ranges-get reg versions::pair-nil)
-   (filter-map (lambda (bs)
-		  (with-access::blockS bs (ctx)
-		     (let ((e (bbv-ctx-get ctx reg)))
-			(with-access::bbv-ctxentry e (polarity value)
-			   (when (and polarity (isa? value bbv-range))
-			      value)))))
-      versions))
-
-;*---------------------------------------------------------------------*/
-;*    bbv-ctx-top-widen ...                                            */
-;*    -------------------------------------------------------------    */
-;*    Widen the register types of a version. Return either a widened   */
-;*    context or #f. The arguments are:                                */
-;*      - bs: the specialized block                                    */
-;*      - tys: a list of <reg, types>                                  */
-;*---------------------------------------------------------------------*/
-(define (bbv-ctx-top-widen bs::blockS)
-   (with-access::blockS bs (ctx)
+(define (merge-ctx ctx1::bbv-ctx ctx2::bbv-ctx)
+   (with-access::bbv-ctx ctx1 (entries)
       (instantiate::bbv-ctx
 	 (entries (map (lambda (e)
-			  (duplicate::bbv-ctxentry e
-			     (types (list *obj*))
-			     (value '_)))
-		     (with-access::bbv-ctx ctx (entries)
-			entries))))))
+			  (with-access::bbv-ctxentry e (reg)
+			     (merge-ctxentry e (bbv-ctx-get ctx2 reg))))
+		     entries)))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-ctx-type-widen ...                                           */
-;*    -------------------------------------------------------------    */
-;*    Widen the register types of a version. Return either a widened   */
-;*    context or #f. The arguments are:                                */
-;*      - bs: the specialized block                                    */
-;*      - tys: a list of <reg, types>                                  */
+;*    merge-ctxentry ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (bbv-ctx-type-widen bs::blockS tys::pair-nil)
-   (with-access::blockS bs (ctx)
-      (let loop ((tys tys)
-		 (mctx (instantiate::bbv-ctx))
-		 (equal #t))
+(define (merge-ctxentry e1::bbv-ctxentry e2::bbv-ctxentry)
+   
+   (define (same-types? types1 types2)
+      (when (=fx (length types1) (length types2))
+	 (every (lambda (t) (memq t types2)) types1)))
+   
+   (define (bbv-ctxentry-top)
+      (duplicate::bbv-ctxentry e1
+	 (types (list *obj*))
+	 (polarity #t)
+	 (value '_)))
+   
+   (define (merge-range range1 range2)
+      (with-access::bbv-range range1 ((lo1 lo) (up1 up))
+	 (with-access::bbv-range range2 ((lo2 lo) (up2 up))
+	    ;; widening
+	    (range-widening (min lo1 lo2) (max up1 up2)
+	       (list range1 range2)))))
+   
+   (define (types-intersection ts1 ts2)
+      ;; intersection of ts1 types and ts2 types
+      (filter (lambda (t) (memq t ts2)) ts1))
+   
+   (with-access::bbv-ctxentry e1 ((polarity1 polarity)
+				  (types1 types)
+				  (value1 value))
+      (with-access::bbv-ctxentry e2 ((polarity2 polarity)
+				     (types2 types)
+				     (value2 value))
 	 (cond
-	    ((pair? tys)
-	     (let* ((rr (car tys))
-		    (reg (car rr))
-		    (typs (cdr rr))
-		    (oe (bbv-ctx-get ctx reg)))
-		(if (and (pair? typs)
-			 (not (pair? (cdr typs)))
-			 (not (memq *obj* typs)))
-		    (loop (cdr tys)
-		       (extend-ctx/entry mctx oe)
-		       equal)
-		    (with-access::bbv-ctxentry oe (value)
-		       (loop (cdr tys)
-			  (let ((ne (duplicate::bbv-ctxentry oe
-				       (types (list *obj*))
-				       (value '_))))
-			     (extend-ctx/entry mctx ne))
-			  #f)))))
-	    (equal
-	     #f)
+	    ((not (eq? polarity1 polarity2))
+	     (bbv-ctxentry-top))
+	    ((not polarity1)
+	     (let ((ts (types-intersection types1 types2)))
+		(if (null? ts)
+		    (bbv-ctxentry-top)
+		    (duplicate::bbv-ctxentry e1
+		       (types ts)
+		       (value '_)))))
+	    ((not (same-types? types1 types2))
+	     (let ((ts (types-intersection types1 types2)))
+		(if (null? ts)
+		    (bbv-ctxentry-top)
+		    (duplicate::bbv-ctxentry e1
+		       (types ts)
+		       (value '_)))))
+	    ((or (not (bbv-range? value1)) (not (bbv-range? value2)))
+	     (duplicate::bbv-ctxentry e1
+		(value '_)))
 	    (else
-	     mctx)))))
-
-;*---------------------------------------------------------------------*/
-;*    bbv-ctx-range-widen ...                                          */
-;*    -------------------------------------------------------------    */
-;*    Widen the register ranges of a version. Return either a widened  */
-;*    context or #f. The arguments are:                                */
-;*      - bs: the specialized block                                    */
-;*      - rrs: a list of <reg, range>                                  */
-;*---------------------------------------------------------------------*/
-(define (bbv-ctx-range-widen bs::blockS rrs::pair-nil)
-   (with-access::blockS bs (ctx)
-      (let loop ((rrs rrs)
-		 (mctx (instantiate::bbv-ctx))
-		 (equal #t))
-	 (cond
-	    ((pair? rrs)
-	     (let* ((rr (car rrs))
-		    (reg (car rr))
-		    (rng (cdr rr))
-		    (oe (bbv-ctx-get ctx reg)))
-		(if (not rng)
-		    (loop (cdr rrs)
-		       (extend-ctx/entry mctx oe)
-		       equal)
-		    (with-access::bbv-ctxentry oe (polarity value)
-		       (cond
-			  ((and polarity (isa? value bbv-range))
-			   (loop (cdr rrs)
-			      (let ((ne (duplicate::bbv-ctxentry oe
-					   (value rng))))
-				 (extend-ctx/entry mctx ne))
-			      #f))
-			  (else
-			   (loop (cdr rrs)
-			      (extend-ctx/entry mctx oe)
-			      equal)))))))
-	    (equal
-	     #f)
-	    (else
-	     mctx)))))
+	     (let ((range (merge-range value1 value2)))
+		(duplicate::bbv-ctxentry e1
+		   (value (or range (fixnum-range))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    range-widening ...                                               */
@@ -320,84 +312,3 @@
 	    (lo no)
 	    (up nu)))))
 
-;*---------------------------------------------------------------------*/
-;*    bbv-block-merge ...                                              */
-;*    -------------------------------------------------------------    */
-;*    lvs is a list of blockS. The result is three values. Two         */
-;*    block to be replaced and a ctx of the new block.                 */
-;*---------------------------------------------------------------------*/
-(define (bbv-block-merge bs::pair-nil)
-   (multiple-value-bind (bs1 bs2)
-      (bbv-block-merge-select bs)
-      (with-access::blockS bs1 ((ctx1 ctx))
-	 (with-access::blockS bs2 ((ctx2 ctx))
-	    (values bs1 bs2 (merge-ctx ctx1 ctx2))))))
-
-;*---------------------------------------------------------------------*/
-;*    bbv-block-merge-select ...                                       */
-;*    -------------------------------------------------------------    */
-;*    Select two versions to merge.                                    */
-;*---------------------------------------------------------------------*/
-(define (bbv-block-merge-select bs::pair-nil)
-   (values (car bs) (cadr bs)))
-
-;*---------------------------------------------------------------------*/
-;*    merge-ctx ...                                                    */
-;*    -------------------------------------------------------------    */
-;*    This function merges two bbv ctx and widen the result.           */
-;*    Each ctx is a list of entries. An entry is a register and        */
-;*    a property. Each list has exactly the same list of               */
-;*    registers. So, merging the ctx means merge the register          */
-;*    information.                                                     */
-;*---------------------------------------------------------------------*/
-(define (merge-ctx ctx1::bbv-ctx ctx2::bbv-ctx)
-   (with-access::bbv-ctx ctx1 (entries)
-      (instantiate::bbv-ctx
-	 (entries (map (lambda (e)
-			  (with-access::bbv-ctxentry e (reg)
-			     (merge-ctxentry e (bbv-ctx-get ctx2 reg))))
-		     entries)))))
-
-;*---------------------------------------------------------------------*/
-;*    merge-ctxentry ...                                               */
-;*---------------------------------------------------------------------*/
-(define (merge-ctxentry e1::bbv-ctxentry e2::bbv-ctxentry)
-   
-   (define (same-types? types1 types2)
-      (when (=fx (length types1) (length types2))
-	 (every (lambda (t) (memq t types2)) types1)))
-   
-   (define (bbv-ctxentry-top)
-      (duplicate::bbv-ctxentry e1
-	 (types (list *obj*))
-	 (polarity #t)
-	 (value '_)))
-   
-   (define (merge-range range1 range2)
-      (with-access::bbv-range range1 ((lo1 lo) (up1 up))
-	 (with-access::bbv-range range2 ((lo2 lo) (up2 up))
-	    ;; widening
-	    (range-widening (min lo1 lo2) (max up1 up2)
-	       (list range1 range2)))))
-   
-   (with-access::bbv-ctxentry e1 ((polarity1 polarity)
-				  (types1 types)
-				  (value1 value))
-      (with-access::bbv-ctxentry e2 ((polarity2 polarity)
-				     (types2 types)
-				     (value2 value))
-	 (cond
-	    ((not (eq? polarity1 polarity2))
-	     (bbv-ctxentry-top))
-	    ((not (same-types? types1 types2))
-	     (bbv-ctxentry-top))
-	    ((not (and (bbv-range? value1) (bbv-range? value2)))
-	     (bbv-ctxentry-top))
-	    ((not polarity1)
-	     (bbv-ctxentry-top))
-	    (else
-	     (let ((range (merge-range value1 value2)))
-		(if (isa? range bbv-range)
-		    (duplicate::bbv-ctxentry e1
-		       (value range))
-		    (bbv-ctxentry-top))))))))
