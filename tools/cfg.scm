@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Fri Oct 28 10:09:31 2022 (serrano)                */
+;*    Last change :  Fri Oct 28 15:15:43 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -209,13 +209,13 @@
       (define (decorate-ctx-entry entry)
 	 (match-case entry
 	    (#(?reg ?type _ ())
-	     (format "~a:~a" reg type))
+	     (format "~a:~a" (escape reg) type))
 	    (#(?reg ?type ?val ())
-	     (format "~a:~a/~a" reg type val))
+	     (format "~a:~a/~a" (escape reg) type val))
 	    (#(?reg ?type ?val ?aliases)
-	     (format "~a:~a[~( )]" reg type aliases))
+	     (format "~a:~a[~( )]" (escape reg) type (map escape aliases)))
 	    (#(?reg ?type ?val ?aliases)
-	     (format "~a:~a/~a[~( )]" reg type val aliases))
+	     (format "~a:~a/~a[~( )]" (escape reg) type val (map escape aliases)))
 	    (else
 	     "")))
       

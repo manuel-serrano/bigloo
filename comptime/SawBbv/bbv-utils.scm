@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Oct 28 10:34:38 2022 (serrano)                */
+;*    Last change :  Fri Oct 28 15:40:47 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -23,6 +23,7 @@
 	    ast_node
 	    type_type
 	    type_cache
+	    type_typeof
 	    tools_shape
 	    tools_speek
 	    backend_backend
@@ -58,7 +59,7 @@
 	 ((eq? x y) #t)
 	 ((eq? x *bint*) (eq? y *long*))
 	 ((eq? x *long*) (eq? y *bint*))
-	 (else #f)))
+	 (else (is-subtype? x y))))
    
    (any (lambda (t) (type-eq? type t)) types))
 
