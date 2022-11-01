@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sun Oct 23 08:01:53 2022 (serrano)                */
+;*    Last change :  Sat Oct 29 07:30:29 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -69,6 +69,7 @@
 	      (metering-mode (default #f))
 	      (cdd-width (default #f))
 	      (focal-plane-xres (default #f))
+	      (focal-plane-yres (default #f))
 	      (focal-plane-units (default #f))
 	      (gps-tag (default #f))
 	      (brightness-value (default #f))
@@ -93,6 +94,7 @@
 	      (rating (default #f))
 	      (rating-percentage (default #f))
 	      (copyright (default #f))
+	      (artist (default #f))
 	      (maker-node (default #f))
 	      (thumbnail (default #f))
 	      (thumbnail-path (default #f))
@@ -188,12 +190,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Get a number according to the specified format.                  */
 ;*---------------------------------------------------------------------*/
-(define (getformat::obj en::bool bytes::bstring o::int fmt::int)
+(define (getformat::obj en::bool bytes o::int fmt::int)
    (case fmt
       ((1 6) 
        ;; FMT_BYTE, FMT_SBYTE
        (char->integer
-	  (if (string? bytes) (string-ref bytes o) (mmap-ref bytes o))))
+	  (if (string? bytes)
+	      (string-ref bytes o)
+	      (mmap-ref bytes (fixnum->elong o)))))
       ((3 8)
        ;; FMT_USHORT, FMT_SSHORT
        (get16u en bytes o))
@@ -214,12 +218,13 @@
        ;; FMT_DOUBLE 64bit
        (exif-error "exif" "Unsupported number format" fmt))
       (else
-       (exif-error "exif" "Unsupported number format" fmt))))
+       0)))
+;*        (exif-error "exif" "Unsupported number format" fmt))))       */
 
 ;*---------------------------------------------------------------------*/
 ;*    getformat/fx ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (getformat/fx::int en::bool bytes::bstring o::int fmt::int)
+(define (getformat/fx::int en::bool bytes o::int fmt::int)
    (let ((res (getformat en bytes o fmt)))
       (cond
 	 ((fixnum? res)
@@ -358,26 +363,71 @@
 		     ((#x1)
 		      ;; TAG_GPS_LATITUDE_REF
 		      (let ((lr (strncpy valptr bcount)))
-			 (tprint "lr=" lr)
+			 (tprint "gps latitude ref")
 			 #unspecified))
 		     ((#x2)
 		      ;; TAG_GPS_LATITUDE
-		      (tprint "lat..." fmt)
 		      (let ((la (strncpy valptr bcount)))
-			 (tprint "la=" (string-for-read la))
+			 (tprint "gps latitude")
 			 #unspecified))
 		     ((#x3)
 		      ;; TAG_GPS_LONGITUDE_REF
-		      (tprint "long...")
 		      (let ((lr (strncpy valptr bcount)))
-			 (tprint "lr=" lr)
+			 (tprint "gps longitude ref")
 			 #unspecified))
 		     ((#x4)
 		      ;; TAG_GPS_LONGITUDE_REF
-		      (tprint "lo...")
-		      (let ((lo (strncpy valptr bcount)))
-			 (tprint "lo=" lo)
-			 #unspecified))
+		      (tprint "tag gps longitude...")
+		      #unspecified)
+		     ((#x5)
+		      ;; TAG_GPS_ALTITUDE_REF
+		      (tprint "tag gps altitude ref")
+		      #unspecified)
+		     ((#x6)
+		      ;; TAG_GPS_ALTITUDE
+		      (tprint "tag gps altitude")
+		      #unspecified)
+		     ((#x7)
+		      ;; TAG_GPS_TIMESPTAMP
+		      (tprint "tag gps timstamp")
+		      #unspecified)
+		     ((#x8)
+		      ;; TAG_GPS_SATELITE
+		      (tprint "tag gps satelite [" (strncpy valptr bcount) "]")
+		      #unspecified)
+		     ((#x9)
+		      ;; TAG_GPS_STATUS
+		      (tprint "tag gps status [" (strncpy valptr bcount) "]")
+		      #unspecified)
+		     ((#xa)
+		      ;; TAG_GPS_MEASURE_EMODE
+		      (tprint "tag gps measure mode [" (strncpy valptr bcount) "]")
+		      #unspecified)
+		     ((#xb)
+		      ;; TAG_GPS_DOP
+		      #unspecified)
+		     ((#xc)
+		      ;; TAG_GPS_SPEED_REF
+		      #unspecified)
+		     ((#xd)
+		      ;; TAG_GPS_SPEED
+		      #unspecified)
+		     ((#xe)
+		      ;; TAG_GPS_TRACK_REF
+		      #unspecified)
+		     ((#xf)
+		      ;; TAG_GPS_TRACK
+		      #unspecified)
+		     ((#x10)
+		      ;; TAG_GPS_IMG_DIRECTION_REF
+		      #unspecified)
+		     ((#x11)
+		      ;; TAG_GPS_IMG_DIRECTION
+		      #unspecified)
+		     ((#x12 #x13 #x14 #x15 #x16 #x17 #x18 #x19 #x1a
+			 #x1b #x1c #x1d #x1e #x1f)
+		      ;; TAG_GPS mix
+		      #unspecified)
 		     ((#xfe)
 		      ;; NEW SUBFILE TYPE
 		      (let ((s (getformat/fx en bytes valptr fmt)))
@@ -398,7 +448,9 @@
 		      'todo)
 		     ((#x103)
 		      ;; COMPRESSION
-		      'todo)
+		      (let ((c (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (jpeg-compress)
+			    (set! jpeg-compress c))))
 		     ((#x106)
 		      ;; TAG_COMPRESS
 		      (let ((c (getformat en bytes valptr fmt)))
@@ -465,6 +517,10 @@
 		      (let ((dt (strncpy valptr 31)))
 			 (with-access::exif exif (date)
 			    (set! date dt))))
+		     ((#x13b)
+		      ;; ARTIST
+		      (with-access::exif exif (artist)
+			 (set! artist (strncpy valptr bcount))))
 		     ((#x14a)
 		      ;; TIFF_SUB_ID
 		      'ignored)
@@ -541,8 +597,8 @@
 		      (let ((fn (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (fnumber)
 			    (set! fnumber fn))))
-		     ((#x8769 #xa005)
-		      ;; TAG_EXIF_OFFSET, TAG_INTEROP_OFFSET
+		     ((#x8769)
+		      ;; TAG_EXIF_OFFSET
 		      (let ((ss (+fx base (elong->fixnum (get32u en bytes valptr)))))
 			 (process-exif-dir! en bytes ss base exif o0)))
 		     ((#x8822)
@@ -578,13 +634,16 @@
 		      ;; OFFSET_TIME_ORIGINAL
 		      (with-access::exif exif (offset-time-original)
 			 (set! offset-time-original (strncpy valptr bcount))))
-		     ((#x9101)
-		      ;; COMPONENT_CONFIGURATION
-		      #unspecified)
 		     ((#x9012)
 		      ;; OFFSET_TIME_DIGITIZED
 		      (with-access::exif exif (offset-time-digitized)
 			 (set! offset-time-digitized (strncpy valptr bcount))))
+		     ((#x9101)
+		      ;; COMPONENT_CONFIGURATION
+		      #unspecified)
+		     ((#x9102)
+		      ;; COMPRESS_BIT_PER_PIXEL
+		      #unspecified)
 		     ((#x9201)
 		      ;; TAG_SHUTTER_SPEED_VALUE
 		      (let ((sv (getformat en bytes valptr fmt)))
@@ -683,11 +742,20 @@
 		      (let ((w (getformat/fx en bytes valptr fmt)))
 			 (with-access::exif exif (eheight)
 			    (set! eheight w))))
+		     ((#xa005)
+		      ;; TAG_INTEROP_OFFSET
+		      #unspecified)
 		     ((#xa20e)
 		      ;; TAG_FOCALPLANEXRES
 		      (let ((r (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (focal-plane-xres)
 			    (set! focal-plane-xres
+			       (if (pair? r) (/ (car r) (cdr r)) r)))))
+		     ((#xa20f)
+		      ;; TAG_FOCALPLANEYRES
+		      (let ((r (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (focal-plane-yres)
+			    (set! focal-plane-yres
 			       (if (pair? r) (/ (car r) (cdr r)) r)))))
 		     ((#xa210)
 		      ;; TAG_FOCALPLANEUNITS
@@ -704,6 +772,9 @@
 		      (let ((sm (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (sensing-method)
 			    (set! sensing-method sm))))
+		     ((#xa300)
+		      ;; FILE_SOURCE
+		      #unspecified)
 		     ((#xa301)
 		      ;; TAG_SCENE_TYPE
 		      #unspecified)
@@ -1049,9 +1120,11 @@
 ;*    read-jpeg-sections ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (read-jpeg-sections exif mm::mmap path)
+   (mmap-read-position-set! mm 0)
    (let ((m (read-jpeg-marker mm)))
       (if (not (eq? m 'M_SOI))
-	  (exif-error "read-jpeg-sections" "Illegal section marker" m)
+	  (exif-error "read-jpeg-sections" "Illegal section marker"
+	     (-elong (mmap-read-position mm) 1))
 	  (let loop ()
 	     (multiple-value-bind (m bytes)
 		(read-jpeg-section mm path)
@@ -1146,7 +1219,8 @@
 	     (voff (get32u en mm (+fx 8 offset))))
 	 (tprint "tag=" tag " " (fixnum->string tag 16)
 	    " typ=" typ " cnt=" cnt " voff=" voff " "
-	    (if (=fx typ 2) (strncpy voff cnt)))))
+	    (if (=fx typ 2)
+		(strncpy voff cnt)))))
 			       
    (define (read-ifd en offset)
       (let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
@@ -1166,12 +1240,59 @@
       (read-ifd en offset)))
 		
 ;*---------------------------------------------------------------------*/
+;*    read-rw2-sections ...                                            */
+;*    -------------------------------------------------------------    */
+;*    https://www.awaresystems.be/imaging/tiff/specification/TIFF6.pdf */
+;*---------------------------------------------------------------------*/
+(define (read-rw2-sections exif mm::mmap path)
+
+   (define (tiff-endianess)
+      ;; big endian
+      (char=? (mmap-ref mm 0) #a077))
+
+   (define (strncpy o max)
+      (let loop ((i 0))
+	 (if (=fx i max)
+	     (mmap-substring mm o (+fx o i))
+	     (let ((c (mmap-ref mm (+fx i o))))
+		(if (char=? c #a000)
+		    (mmap-substring mm o (+fx i o))
+		    (loop (+fx i 1)))))))
+
+   (define (read-entry en offset)
+      (let* ((tag (elong->fixnum (get16u en mm (+fx 0 offset))))
+	     (typ (get16u en mm (+fx 2 offset)))
+	     (cnt (get32u en mm (+fx 4 offset)))
+	     (voff (get32u en mm (+fx 8 offset))))
+	 (tprint "tag=" tag " 0x" (fixnum->string tag 16)
+	    " typ=" typ " cnt=" cnt " voff=" voff " "
+	    (if (=fx typ 2) (strncpy voff cnt)))))
+			       
+   (define (read-ifd en offset)
+      (let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
+		 (offset (+fx offset 2)))
+	 (if (>fx dnum 0)
+	     (begin
+		(read-entry en offset)
+		(loop (-fx dnum 1)
+		   (+fx offset 12)))
+	     (begin
+		(tprint "NEXT=" (get32u en mm offset))
+		(tprint "OFFSET=" offset " " (integer->string offset 16)))))
+      (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0))
+
+   (tprint "RW2 " mm)
+   (let* ((en (tiff-endianess))
+	  (offset (get32u en mm 4)))
+      (read-ifd en offset)))
+		
+;*---------------------------------------------------------------------*/
 ;*    tiff? ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (tiff? mm::mmap)
    ;; 32bit dng is denoted by the #a042 tag
    ;; 64bit dng is denoted by the #a043 tag, which is currently not supported
-   (let ((res (case (mmap-get-char mm)
+   (let ((res (case (mmap-ref mm 0)
 		 ((#a073)
 		  ;; #x49
 		  (and (char=? (mmap-get-char mm) #a073)
@@ -1191,6 +1312,19 @@
       res))
 		
 ;*---------------------------------------------------------------------*/
+;*    rw2? ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (rw2? mm::mmap)
+   (and (char=? (mmap-ref mm 0) #a073)
+	(char=? (mmap-get-char mm) #a073)
+	(char=? (mmap-get-char mm) #a085)
+	(char=? (mmap-get-char mm) #a000)
+	(memq (mmap-get-char mm) '(#a008 #a024))
+	(char=? (mmap-get-char mm) #a000)
+	(char=? (mmap-get-char mm) #a000)
+	(char=? (mmap-get-char mm) #a000)))
+		
+;*---------------------------------------------------------------------*/
 ;*    jpeg-exif ...                                                    */
 ;*    -------------------------------------------------------------    */
 ;*    This is the main function which reads a JPEG image a             */
@@ -1204,9 +1338,13 @@
 	     (exif (instantiate::exif)))
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
-		(if (tiff? mm)
-		    (read-tiff-sections exif mm path)
-		    (read-jpeg-sections exif mm path)))
+		(cond
+		   ((tiff? mm)
+		    (read-tiff-sections exif mm path))
+		   ((rw2? mm)
+		    (read-tiff-sections exif mm path))
+		   (else
+		    (read-jpeg-sections exif mm path))))
 	     (close-mmap mm))
 	  exif)))
 		
