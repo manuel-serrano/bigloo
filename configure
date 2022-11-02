@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Oct 27 10:18:42 2022 (serrano)                */
+#*    Last change :  Wed Nov  2 09:11:34 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3867,7 +3867,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # www/www.json
   date=`date +"%B %Y"`
-  if [ -d www/www.json.in ]; then
+  if [ -f www/www.json.in ]; then
     cat www/www.json.in |
       sed -e "s|@BGL_RELEASE_NUMBER@|$release|" \
           -e "s|@BGL_RELEASE_VERSION@|$version|" \

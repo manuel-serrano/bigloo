@@ -1,17 +1,20 @@
 ${ var doc = require( "hopdoc" ) }
 
-Bigloo - a Practical Scheme Compiler
-------------------------------------
+The Bigloo Programming Language
+-------------------------------
 
-Bigloo is a Scheme implementation devoted to one goal: enabling Scheme
-based programming style where C(++) is usually required. 
+The Bigloo programming is an eager-parenthetical-function programming
+language. It belongs to the Lisp programming language family, and more
+specifically, it is a descendant of the Scheme programming language.
+Its design is governed by one rule: enabling Scheme-based programming
+style where C(++) is usually required.
 
-Bigloo attempts to make Scheme practical by offering features usually
-presented by traditional programming languages but not offered by
-Scheme and functional programming. Bigloo compiles Scheme modules. It
-delivers small and fast stand alone binary executables. Bigloo enables
-full connections between Scheme and C programs or between Scheme and
-Java programs, if you choose the JVM backend.
+Bigloo aims at being a practical programming language and a practical
+programming environment. For it offers features usually presented by
+traditional programming languages but seldom supported by functional
+programming languages. Bigloo compiles modules. It delivers small and
+fast stand alone binary executables. Bigloo enables full connections
+with C programs, or with Java programs, if you choose the JVM backend.
 
 The Bigloo C backend is ported to:
 
@@ -30,18 +33,18 @@ ${<div class="gallery-comment">It helps Bigloo to have projects listed here
 so if you are willing to have you project mentioned on that page
 please send a mail to manuel serrano at inria fr for inclusion.</div>}
 
-### Example 1: Scheme and C
+### Example 1: Bigloo and C
 
-Bigloo makes it easy to share Scheme code and C code. In that example,
-the result of the `fib` Scheme function operating on Scheme fixnum numbers 
-will be passed to the standard `printf` C function. This example also
-give a flavor of Bigloo's module.
+Bigloo makes it easy to share code with C. In that example, the result
+of the `fib` Bigloo function operating on Bigloo fixnum numbers will
+be passed to the standard `printf` C function. This example also give
+a flavor of Bigloo's module.
 
 ```scheme
 ${doc.include( "./fib.scm" )}
 ```
 
-This Scheme program can be turned into a binary executable with:
+This Bigloo program can be turned into a binary executable with:
 
 ```shell
 $ bigloo fib.scm -o fib

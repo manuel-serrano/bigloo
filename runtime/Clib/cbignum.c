@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Tue Dec  7 08:41:40 2021 (serrano)                */
-/*    Copyright   :  2003-21 Manuel Serrano                            */
+/*    Last change :  Wed Nov  2 17:32:39 2022 (serrano)                */
+/*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -461,12 +461,10 @@ bgl_bignum_abs(obj_t x) {
 static obj_t
 bignum_add_pos_pos_aux(const mp_limb_t *x, const int size_x,
 		       const mp_limb_t *y, const int size_y) {
-   obj_t z = make_bignum(size_x);
+   obj_t z = make_bignum(size_x + 1);
    const int carry = mpn_add(BXLIMBS(z), x, size_x, y, size_y);
    
    if (carry) {
-      BXLIMBS(z) = (mp_limb_t *)GC_REALLOC((obj_t)BXLIMBS(z),
-					   (size_x + 1)*sizeof(mp_limb_t));
       BXLIMBS(z)[size_x] = carry;
       BXSIZ(z) = BXALLOC(z) = size_x + 1;
    } else
@@ -500,28 +498,34 @@ static obj_t
 bignum_add_pos_neg_aux(const mp_limb_t *x, const int size_x,
 		       const mp_limb_t *y, const int size_y) {
    int count;
-   obj_t z = make_bignum(size_x);
-   const int borrow = mpn_sub(BXLIMBS(z), x, size_x, y, size_y);
+   int inc = 0;
+
+   while (1) {
+      obj_t z = make_bignum(size_x + inc);
+      const int borrow = mpn_sub(BXLIMBS(z), x, size_x, y, size_y);
    
-   assert(borrow == 0);
+      assert(borrow == 0);
    
-   count = size_x - 1;
-   while (count > 0 && BXLIMBS(z)[count] == 0)
-      count--;
-   count ++;
+      count = size_x - 1;
+      while (count > 0 && BXLIMBS(z)[count] == 0)
+	 count--;
+      count ++;
    
-   if (count != size_x) {
-      BXLIMBS(z) = (mp_limb_t *)GC_REALLOC((obj_t)BXLIMBS(z),
-					   count * sizeof(mp_limb_t));
-      BXALLOC(z) = count;
+      if (count != size_x) {
+	 if (inc == 0) {
+	    inc = count;
+	    continue;
+	 }
+	 BXALLOC(z) = count;
+      }
+   
+      if (count == 1 && BXLIMBS(z)[0] == 0)
+	 BXSIZ(z) = 0;
+      else
+	 BXSIZ(z) = count;
+   
+      return z;
    }
-   
-   if (count == 1 && BXLIMBS(z)[0] == 0)
-      BXSIZ(z) = 0;
-   else
-      BXSIZ(z) = count;
-   
-   return z;
 }
 
 /*---------------------------------------------------------------------*/

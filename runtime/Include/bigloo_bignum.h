@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jul 26 08:58:25 2017                          */
 /*    Last change :  Mon Dec  6 09:55:15 2021 (serrano)                */
-/*    Copyright   :  2017-21 Manuel Serrano                            */
+/*    Copyright   :  2017-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo BIGNUMs                                                   */
 /*=====================================================================*/
