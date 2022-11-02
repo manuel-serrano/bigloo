@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Nov  2 17:32:39 2022 (serrano)                */
+/*    Last change :  Wed Nov  2 19:15:59 2022 (serrano)                */
 /*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -50,13 +50,16 @@ bgl_init_bignum() {
 #define POSITIVE(x) (SIZ(x) > 0)
 #define NEGATIVE(x) (SIZ(x) < 0)
 
+#define BIGNUM_ALLOC_SIZE(sz) \
+   (BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *))
+
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    make_bignum ...                                                  */
 /*---------------------------------------------------------------------*/
 static obj_t
 make_bignum(size_t sz) {
-   obj_t o = GC_MALLOC_ATOMIC(BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *));
+   obj_t o = GC_MALLOC_ATOMIC(BIGNUM_ALLOC_SIZE(sz));
    
    o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0);
    o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
@@ -66,7 +69,7 @@ make_bignum(size_t sz) {
 }
 
 #define MAKE_STACK_BIGNUM(o, sz) \
-   (o = alloca(BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *)), \
+   (o = alloca(BIGNUM_ALLOC_SIZE(sz)), \
       o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0), \
       o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d), \
       o->bignum.mpz._mp_alloc = sz, \
@@ -461,10 +464,11 @@ bgl_bignum_abs(obj_t x) {
 static obj_t
 bignum_add_pos_pos_aux(const mp_limb_t *x, const int size_x,
 		       const mp_limb_t *y, const int size_y) {
-   obj_t z = make_bignum(size_x + 1);
+   obj_t z = make_bignum(size_x);
    const int carry = mpn_add(BXLIMBS(z), x, size_x, y, size_y);
    
    if (carry) {
+      z = BREF(GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + 1)));
       BXLIMBS(z)[size_x] = carry;
       BXSIZ(z) = BXALLOC(z) = size_x + 1;
    } else
@@ -498,34 +502,27 @@ static obj_t
 bignum_add_pos_neg_aux(const mp_limb_t *x, const int size_x,
 		       const mp_limb_t *y, const int size_y) {
    int count;
-   int inc = 0;
-
-   while (1) {
-      obj_t z = make_bignum(size_x + inc);
-      const int borrow = mpn_sub(BXLIMBS(z), x, size_x, y, size_y);
+   obj_t z = make_bignum(size_x);
+   const int borrow = mpn_sub(BXLIMBS(z), x, size_x, y, size_y);
    
-      assert(borrow == 0);
+   assert(borrow == 0);
    
-      count = size_x - 1;
-      while (count > 0 && BXLIMBS(z)[count] == 0)
-	 count--;
-      count ++;
+   count = size_x - 1;
+   while (count > 0 && BXLIMBS(z)[count] == 0)
+      count--;
+   count ++;
    
-      if (count != size_x) {
-	 if (inc == 0) {
-	    inc = count;
-	    continue;
-	 }
-	 BXALLOC(z) = count;
-      }
-   
-      if (count == 1 && BXLIMBS(z)[0] == 0)
-	 BXSIZ(z) = 0;
-      else
-	 BXSIZ(z) = count;
-   
-      return z;
+   if (count != size_x) {
+      z = BREF(GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + count)));
+      BXALLOC(z) = count;
    }
+   
+   if (count == 1 && BXLIMBS(z)[0] == 0)
+      BXSIZ(z) = 0;
+   else
+      BXSIZ(z) = count;
+   
+   return z;
 }
 
 /*---------------------------------------------------------------------*/
