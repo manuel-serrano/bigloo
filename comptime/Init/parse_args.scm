@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Oct 25 08:44:09 2022 (serrano)                */
+;*    Last change :  Thu Nov  3 11:06:06 2022 (serrano)                */
 ;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -939,6 +939,8 @@
        (set! *pass* 'narrow))
       (("-tlift" (help "Stop after the type lifting stage"))
        (set! *pass* 'tlift))
+      (("-reduce0" (help "Stop after the early reduction stage"))
+       (set! *pass* 'reduce0))
       (("-dataflow" (help "Stop after the type dataflow stage"))
        (set! *pass* 'dataflow))
       (("-dataflow+" (help "Stop after the second type dataflow stage"))

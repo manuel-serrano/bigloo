@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Wed Nov  2 12:23:20 2022 (serrano)                */
+;*    Last change :  Thu Nov  3 10:53:42 2022 (serrano)                */
 ;*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -53,18 +53,18 @@
       ((?id (? expand-g-number?) (expand-g-number? y))
        (apply op x))
       ((?id (and ?a (? fixnum?)) (and ?b (? symbol?)))
-       (let ((nx `(if (fixnum? ,b)
+       (let ((nx `(if (c-fixnum? ,b)
 		      (,(fx id) ,a ,b)
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? fixnum?)))
-       (let ((nx `(if (fixnum? ,a)
+       (let ((nx `(if (c-fixnum? ,a)
 		      (,(fx id) ,a ,b)
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
       ((?id ?a (and ?b (? flonum?)))
        (let ((nx (if (symbol? a)
-		     `(if (flonum? ,a)
+		     `(if (c-flonum? ,a)
 			  (,(symbol-append id 'fl) ,a ,b)
 			  (,(symbol-append '|2| id) ,a ,b))
 		     (let ((tmp (gensym 'a)))
@@ -72,7 +72,7 @@
 	  (e nx e)))
       ((?id (and ?a (? flonum?)) ?b)
        (let ((nx (if (symbol? b)
-		     `(if (flonum? ,b)
+		     `(if (c-flonum? ,b)
 			  (,(symbol-append id 'fl) ,a ,b)
 			  (,(symbol-append '|2| id) ,a ,b))
 		     (let ((tmp (gensym 'b)))
@@ -80,7 +80,7 @@
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))
        (let ((nx (if (ov id)
-		     `(if (and (fixnum? ,a) (fixnum? ,b))
+		     `(if (and (c-fixnum? ,a) (c-fixnum? ,b))
 			  (,(fx id) ,a ,b)
 			  ((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))
 		     `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))))

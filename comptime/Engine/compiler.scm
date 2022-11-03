@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Oct 25 05:29:47 2022 (serrano)                */
+;*    Last change :  Thu Nov  3 11:05:14 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -380,6 +380,7 @@
 		   (set! *optim-dataflow-types?* #f)
 		   (begin
 		      (set! ast (profile reduce- (reduce-walk! ast "Reduce0" #t)))
+		      (stop-on-pass 'reduce0 (lambda () (write-ast ast)))
 		      (set! ast (profile dataflow (dataflow-walk! ast "Dataflow"))))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)

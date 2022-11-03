@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /tmp/BGL/bigloo-4.4b/recette/object.scm                          */
+;*    serrano/prgm/project/bigloo/bigloo/recette/object.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Sun Feb  7 11:09:30 2021 (serrano)                */
+;*    Last change :  Thu Nov  3 12:06:24 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -401,7 +401,7 @@
    (test "virtual.4" (virtual-4-x (instantiate::virtual-4)) 'virtual-4-x)
    (test "virtual.5" (virtual-3-x (instantiate::virtual-3)) 'virtual-3-x)
    (test "virtual.5b" (try (virtual-4-x (instantiate::virtual-3))
-			   (lambda (esc obj proc msg)
+			 (lambda (esc obj proc msg)
 			      (esc #f)))
 	 #f)
    (test "virtual.6" (virtual-3-a (instantiate::virtual-3)) 'virtual-3-a)

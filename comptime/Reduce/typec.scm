@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Jun 16 17:12:13 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 11:06:44 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -365,7 +365,7 @@
 	    ((and (pair? args)
 		  (null? (cdr args))
 		  (type? typec)
-		  (not (side-effect? (car args))))
+		  (or (not (side-effect? (car args))) (var? (car args))))
 	     (check-type node typec (get-type (car args) #f)))
 	    ((isa-of node)
 	     =>
