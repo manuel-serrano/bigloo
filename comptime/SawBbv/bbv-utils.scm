@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Oct 28 15:40:47 2022 (serrano)                */
+;*    Last change :  Thu Nov  3 16:05:39 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -61,7 +61,7 @@
 	 ((eq? x *long*) (eq? y *bint*))
 	 (else (is-subtype? x y))))
    
-   (any (lambda (t) (type-eq? type t)) types))
+   (any (lambda (t) (type-eq? t type)) types))
 
 ;*---------------------------------------------------------------------*/
 ;*    *label* ...                                                      */
