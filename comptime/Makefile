@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Nov  4 18:47:14 2022 (serrano)                */
+#*    Last change :  Fri Nov  4 19:15:38 2022 (serrano)                */
 #*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -669,7 +669,7 @@ doboot.static: $(O_OBJECTS) $(G_OBJECTS)
 .PHONY: hostboot
 
 hostboot: 
-	$(MAKE) SCMOBJSUFFIX="%.o" LDBOOTFLAGS="-lib-version $(RELEASE) -libgc-version $(RELEASE) $(LDBOOTFLAGS)" EXTRA_LD_OPT=-g
+	$(MAKE) SCMOBJSUFFIX="%.o" LDBOOTFLAGS="-lib-version $(RELEASE) -libgc-version $(RELEASE) $(LDBOOTFLAGS)" EXTRA_LD_OPT=-g LDRPATHOPT=-L
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
