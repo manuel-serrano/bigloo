@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Nov  3 16:05:39 2022 (serrano)                */
+;*    Last change :  Thu Nov  3 18:01:58 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -45,6 +45,7 @@
 	    (block->block-list regs b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)
 	    (replace-block! ::blockS ::blockS #!key debug)
+	    (assert-block ::blockS ::obj)
 	    (bbv-ctx-filter-live-in-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
 	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
 	    (live-versions::pair-nil ::pair-nil)))
@@ -136,10 +137,11 @@
 	 (map block-label (block-succs new)))
       (with-access::blockS b (succs first)
 	 (set! succs (replace succs old new))
-	 (with-access::block old (preds)
+	 (with-access::blockS old (preds)
 	    (set! preds (remq! b preds)))
 	 (with-access::block new (preds)
-	    (set! preds (cons b preds)))
+	    (unless (memq b preds)
+	       (set! preds (cons b preds))))
 	 (for-each (lambda (ins)
 		      (cond
 			 ((rtl_ins-ifeq? ins)
@@ -163,6 +165,69 @@
 				(set! labels (replace labels old new)))))))
 	    first)))
    b)
+
+;*---------------------------------------------------------------------*/
+;*    replace-block! ...                                               */
+;*    -------------------------------------------------------------    */
+;*    Replace one "old" block with a "new" one. Reconnect the preds    */
+;*    the old block but disconnect the succs of the old block.         */
+;*---------------------------------------------------------------------*/
+(define (replace-block! old::blockS new::blockS #!key debug)
+   (with-trace 'bbv-utils "replace-block!"
+      (trace-item "old=" (block-label old) " "
+	 (map block-label (block-succs old)))
+      (trace-item "new="(block-label new) " "
+	 (map block-label (block-succs new)))
+      ;; debugging
+      (when (and debug *bbv-debug*)
+	 (with-access::blockS old ((octx ctx))
+	    (with-access::blockS new ((nctx ctx))
+	       (unless (ctx>=? nctx octx)
+		  (tprint "REPLACE-BLOCK-ERROR! " (block-label old)
+		     " -> " (block-label new))
+		  (tprint " octx=" (shape octx))
+		  (tprint " nctx=" (shape nctx))
+		  (error "replace-block!"
+		     (format "Wrong block replacement ~a" (block-label old))
+		     (block-label new))))))
+      (with-access::blockS old (succs preds mblock)
+	 ;; mark the replacement
+	 (set! mblock new)
+	 (for-each (lambda (b)
+		      (with-access::blockS b (preds)
+			 (set! preds
+			    (filter! (lambda (n) (not (eq? n old))) preds))))
+	    succs)
+	 (for-each (lambda (b)
+		      (with-access::blockS b (succs first)
+			 (set! succs (replace succs old new))
+			 (for-each (lambda (ins)
+				      (cond
+					 ((rtl_ins-ifeq? ins)
+					  (with-access::rtl_ins ins (fun)
+					     (with-access::rtl_ifeq fun (then)
+						(when (eq? then old)
+						   (set! then new)))))
+					 ((rtl_ins-ifne? ins)
+					  (with-access::rtl_ins ins (fun)
+					     (with-access::rtl_ifne fun (then)
+						(when (eq? then old)
+						   (set! then new)))))
+					 ((rtl_ins-go? ins)
+					  (with-access::rtl_ins ins (fun)
+					     (with-access::rtl_go fun (to)
+						(when (eq? to old)
+						   (set! to new)))))
+					 ((rtl_ins-switch? ins)
+					  (with-access::rtl_ins ins (fun)
+					     (with-access::rtl_switch fun (labels)
+						(set! labels (replace labels old new)))))))
+			    first)))
+	    preds)
+	 (with-access::blockS new ((npreds preds))
+	    (set! npreds (delete-duplicates! (append preds npreds) eq?)))
+	 (assert-block new "replace-block!")
+	 new)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ctx>=? ...                                                       */
@@ -203,65 +268,69 @@
 	 entries)))
 
 ;*---------------------------------------------------------------------*/
-;*    replace-block! ...                                               */
+;*    assert-block ...                                                 */
 ;*    -------------------------------------------------------------    */
-;*    Replace one "old" block with a "new" one. Reconnect the preds    */
-;*    and succs of the old block.                                      */
+;*    A debug fonction that tests the consistency of the preds,        */
+;*    succs, and branch instructions.                                  */
 ;*---------------------------------------------------------------------*/
-(define (replace-block! old::blockS new::blockS #!key debug)
-   (with-trace 'bbv-utils "replace-block!"
-      (trace-item "old=" (block-label old) " "
-	 (map block-label (block-succs old)))
-      (trace-item "new="(block-label new) " "
-	 (map block-label (block-succs new)))
-      ;; debugging
-      (when (and debug *bbv-debug*)
-	 (with-access::blockS old ((octx ctx))
-	    (with-access::blockS new ((nctx ctx))
-	       (unless (ctx>=? nctx octx)
-		  (tprint "REPLACE-BLOCK-ERROR! " (block-label old)
-		     " -> " (block-label new))
-		  (tprint " octx=" (shape octx))
-		  (tprint " nctx=" (shape nctx))
-		  (error "replace-block!"
-		     (format "Wrong block replacement ~a" (block-label old))
-		     (block-label new))))))
-      (with-access::blockS old (succs preds mblock)
-	 ;; mark the replacement
-	 (set! mblock new)
-	 (for-each (lambda (b)
-		      (with-access::blockS b (preds)
-			 (set! preds (replace preds old new))))
-	    succs)
-	 (for-each (lambda (b)
-		      (with-access::blockS b (succs first)
-			 (set! succs (replace succs old new))
-			 (for-each (lambda (ins)
-				      (cond
-					 ((rtl_ins-ifeq? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_ifeq fun (then)
-						(when (eq? then old)
-						   (set! then new)))))
-					 ((rtl_ins-ifne? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_ifne fun (then)
-						(when (eq? then old)
-						   (set! then new)))))
-					 ((rtl_ins-go? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_go fun (to)
-						(when (eq? to old)
-						   (set! to new)))))
-					 ((rtl_ins-switch? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_switch fun (labels)
-						(set! labels (replace labels old new)))))))
-			    first)))
-	    preds)
-	 (with-access::blockS new ((npreds preds))
-	    (set! npreds (delete-duplicates! (append preds npreds) eq?)))
-	 new)))
+(define (assert-block b::blockS stage)
+   (with-access::blockS b (preds succs first label)
+      ;; check that b in the preds.succs
+      (let ((l (filter (lambda (p)
+			  (with-access::blockS p (succs)
+			     (not (memq b succs))))
+		  preds)))
+	 (when (pair? l)
+	    (tprint (shape b))
+	    (tprint "preds...")
+	    (for-each (lambda (b) (tprint (shape b))) l)
+	    (error stage 
+	       (format "predecessors not pointing to ~a" label)
+	       (map block-label l))))
+      ;; check that b in the succs.preds
+      (let ((l (filter (lambda (p)
+			  (with-access::blockS p (preds)
+			     (not (memq b preds))))
+		  succs)))
+	 (when (pair? l)
+	    (tprint (shape b))
+	    (tprint "succs...")
+	    (for-each (lambda (b) (tprint (shape b))) l)
+	    (error stage
+	       (format "successors not pointing to ~a" label)
+	       (map block-label l))))
+      ;; check that the instructions are in the succs
+      (let ((l '()))
+	 (for-each (lambda (ins)
+		      (cond
+			 ((rtl_ins-ifeq? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_ifeq fun (then)
+				(unless (memq then succs)
+				   (set! l (cons then l))))))
+			 ((rtl_ins-ifne? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_ifne fun (then)
+				(unless (memq then succs)
+				   (set! l (cons then l))))))
+			 ((rtl_ins-go? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_go fun (to)
+				(unless (memq to succs)
+				   (set! l (cons to l))))))
+			 ((rtl_ins-switch? ins)
+			  (with-access::rtl_ins ins (fun)
+			     (with-access::rtl_switch fun (labels)
+				(for-each (lambda (lbl)
+					     (unless (memq lbl succs)
+						(set! l (cons lbl l))))
+				   labels))))))
+	    first)
+	 (when (pair? l)
+	    (tprint (shape b))
+	    (error stage
+	       (format "instruction target not in succs of " label)
+	       (map block-label l))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-filter-live-in-regs ...                                  */
@@ -324,6 +393,6 @@
 ;*---------------------------------------------------------------------*/
 (define (live-versions versions)
    (filter (lambda (v)
-	      (with-access::blockS (cdr v) (mblock)
+	      (with-access::blockS (cdr v) (mblock preds)
 		 (not mblock)))
       versions))

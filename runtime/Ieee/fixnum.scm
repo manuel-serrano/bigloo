@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Mon Aug 29 09:03:50 2022 (serrano)                */
+;*    Last change :  Fri Nov  4 11:06:20 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1864,10 +1864,14 @@
 (define-inline (+bx z1 z2) ($+bx z1 z2))
 
 (define-inline (+fx/ov z1 z2)
-   ($let ((res::long 0))
-      (if ($+fx/ov z1 z2 res)
-	  (+bx (fixnum->bignum z1) (fixnum->bignum z2))
-	  res)))
+   (cond-expand
+      (bigloo-c
+       ($let ((res::long 0))
+	  (if ($+fx/ov z1 z2 res)
+	      (+bx (fixnum->bignum z1) (fixnum->bignum z2))
+	      res)))
+      (else
+       (+fx-safe z1 z2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    - ...                                                            */
@@ -1892,10 +1896,14 @@
 (define-inline (-bx z1 z2) ($-bx z1 z2))
 
 (define-inline (-fx/ov z1 z2)
-   ($let ((res::long 0))
-      (if ($-fx/ov z1 z2 res)
-	  (-bx (fixnum->bignum z1) (fixnum->bignum z2))
-	  res)))
+   (cond-expand
+      (bigloo-c
+       ($let ((res::long 0))
+	  (if ($-fx/ov z1 z2 res)
+	      (-bx (fixnum->bignum z1) (fixnum->bignum z2))
+	      res)))
+      (else
+       (-fx-safe z1 z2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    * ...                                                            */
@@ -1920,10 +1928,14 @@
 (define-inline (*bx z1 z2) ($*bx z1 z2))
 
 (define-inline (*fx/ov z1 z2)
-   ($let ((res::long 0))
-      (if ($*fx/ov z1 z2 res)
-	  (*bx (fixnum->bignum z1) (fixnum->bignum z2))
-	  res)))
+   (cond-expand
+      (bigloo-c
+       ($let ((res::long 0))
+	  (if ($*fx/ov z1 z2 res)
+	      (*bx (fixnum->bignum z1) (fixnum->bignum z2))
+	      res)))
+      (else
+       (*fx-safe z1 z2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    / ...                                                            */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Oct 28 07:31:16 2022 (serrano)                */
+;*    Last change :  Thu Nov  3 17:12:22 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -114,7 +114,12 @@
 		   bs))
 	       (else
 		(let ((bs (new-blockS bv ctx)))
+		   (when *bbv-debug*
+		      (tprint "new=" (block-label bs)
+			 " parent=" label " lvs=" (map block-label lvs)))
 		   (bbv-block-specialize-ins! bv bs queue)
+		   (when *bbv-debug*
+		      (assert-block bs "bbv-block"))
 		   bs)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -132,7 +137,6 @@
 		     (let ((b (bbv-ctx-assoc nctx versions)))
 			(if b
 			    (let ((obs (live-blockS b)))
-			       (debug-merge "obs" obs nctx bs1 bs2)
 			       (cond
 				  ((eq? obs bs1)
 				   (replace-block! bs2 obs :debug #t))
@@ -140,7 +144,10 @@
 				   (replace-block! bs1 obs :debug #t))
 				  (else
 				   (replace-block! bs1 obs :debug #t)
-				   (replace-block! bs2 obs :debug #t))))
+				   (replace-block! bs2 obs :debug #t)))
+			       (when *bbv-debug*
+				  (debug-merge "obs" obs nctx bs1 bs2)
+				  (assert-block obs "bbv-block-merge!")))
 			    (let ((nbs (new-blockS bv nctx)))
 			       (with-access::blockS nbs (collapsed)
 				  (set! collapsed #t))
@@ -150,9 +157,11 @@
 					(trace-item "ctx1=" (shape ctx1))
 					(trace-item "ctx2=" (shape ctx2))
 					(trace-item "nctx=" (shape nctx)))))
-			       (debug-merge "nbs" nbs nctx bs1 bs2)
 			       (replace-block! bs1 nbs :debug #t)
-			       (replace-block! bs2 nbs :debug #t)))))
+			       (replace-block! bs2 nbs :debug #t)
+			       (when *bbv-debug*
+				  (debug-merge "nbs" nbs nctx bs1 bs2)
+				  (assert-block nbs "bbv-block-merge!"))))))
 		  (loop))))
 	 (for-each (lambda (bs)
 		      (with-access::blockS bs (label mblock first ctx)
@@ -164,16 +173,29 @@
 ;*    debug-merge ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (debug-merge key bs ctx bs1 bs2)
-   (when *bbv-debug*
-      (with-access::blockS bs (label preds succs)
-	 (with-access::blockS bs1 ((ctx1 ctx)
-				   (lbl1 label))
-	    (with-access::blockS bs2 ((ctx2 ctx)
-				      (lbl2 label))
-	       (tprint key "=" label " " (map block-label preds) " -> " (map block-label succs))
-	       (tprint "  ctx1=" lbl1 " " (shape ctx1))
-	       (tprint "  ctx2=" lbl2 " " (shape ctx2))
-	       (tprint "     ->" (shape ctx) ))))))
+   (with-access::blockS bs (label preds succs parent)
+      (with-access::blockS bs1 ((ctx1 ctx)
+				(lbl1 label)
+				(preds1 preds)
+				(succs1 succs))
+	 (with-access::blockS bs2 ((ctx2 ctx)
+				   (lbl2 label)
+				   (preds2 preds)
+				   (succs2 succs))
+	    (tprint key "=" label "[" (block-label parent) "]"
+	       " preds: " (map block-label preds)
+	       " succs:" (map block-label succs))
+	    (tprint "  lvs: "
+	       (map block-label (blockV-live-versions parent)))
+	    (tprint "  bs1: " lbl1 " "
+	       (map block-label preds1) " -> " (map block-label succs1)
+	       " " (shape ctx1))
+	    (tprint "  bs2: " lbl2 " "
+	       (map block-label preds2) " -> " (map block-label succs2)
+	       " " (shape ctx2))
+	    (tprint "     => " (shape ctx))
+	    (tprint "        "
+	       (map block-label preds) " -> " (map block-label succs))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-specialize-ins! ...                                    */
@@ -186,23 +208,36 @@
 	    (let ((nfirst (bbv-ins first bs ctx queue)))
 	       (with-access::blockS bs (first)
 		  (set! first nfirst)
+		  (when *bbv-debug*
+		     (assert-block bs "bbv-block-specialize-ins!"))
 		  bs))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ins ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (bbv-ins first bs::blockS ctx::bbv-ctx queue::bbv-queue)
+
+   (define (debug-connect msg bs n)
+      (when *bbv-debug*
+	 (with-access::blockS n (preds succs)
+	    (tprint msg " " 
+	       (block-label bs) " to " (block-label n)
+	       " " (map block-label preds)
+	       " -> " (map (lambda (b) (if (isa? b block) (block-label b) '-))
+			 succs)))))
    
    (define (connect! bs::blockS ins::rtl_ins)
       (cond
 	 ((rtl_ins-ifne? ins)
 	  (with-access::rtl_ins ins (fun)
 	     (let ((n (rtl_ifne-then fun)))
+		(debug-connect "connect.ifne" bs n)
 		(block-succs-set! bs (list #unspecified n))
 		(block-preds-set! n (cons bs (block-preds n))))))
 	 ((rtl_ins-go? ins)
 	  (with-access::rtl_ins ins (fun)
 	     (let ((n (rtl_go-to fun)))
+		(debug-connect "connect.go" bs n)
 		(if (pair? (block-succs bs))
 		    (set-car! (block-succs bs) n)
 		    (block-succs-set! bs (list n)))

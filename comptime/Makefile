@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Oct 25 05:24:42 2022 (serrano)                */
+#*    Last change :  Fri Nov  4 16:39:34 2022 (serrano)                */
 #*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -503,7 +503,7 @@ bigloo.$(SHAREDSUFFIX):
 #*    file.                                                            */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking..."
+	@ echo "Linking...bigloo$(EXE_SUFFIX)"
 	if [ "$(LDRPATHOPT) " != " " ]; then \
 	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
 	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
@@ -527,8 +527,9 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 #*    bigloo.new                                                       */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(NEW_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking..."
-	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS) $(G_OBJECTS)
+	@ echo "Linking bigloo.new..."
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ \
+              $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -536,10 +537,10 @@ $(BIGLOO_DEST).$(NEW_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 #*    bigloo.$(SHAREDSUFFIX)                                           */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking..."
+	@ echo "Linking bigloo.$(SHAREDSUFFIX)..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $@ \
-                    $(O_OBJECTS) $(G_OBJECTS) \
-                    -ldopt $(CSTRIPFLAGS)
+              $(O_OBJECTS) $(G_OBJECTS) \
+              -ldopt $(CSTRIPFLAGS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
