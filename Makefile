@@ -303,14 +303,17 @@ dohostboot:
 	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre2 clean; \
 	  $(MAKE) -C pcre2 boot; \
+	  $(MAKE) -C pcre2 install; \
         fi
 	if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre clean; \
 	  $(MAKE) -C pcre boot; \
+	  $(MAKE) -C pcre install; \
         fi
 	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libunistring clean; \
 	  $(MAKE) -C libunistring boot; \
+	  $(MAKE) -C libunistring install; \
         fi
 	@ mkdir -p bin
 	$(MAKE) -C runtime hostboot BBFLAGS="-w"
