@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Nov  4 19:15:38 2022 (serrano)                */
+#*    Last change :  Fri Nov  4 21:23:21 2022 (serrano)                */
 #*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -511,7 +511,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 	          $(O_OBJECTS) $(G_OBJECTS); \
         else \
 	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
-	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
+	          -copt "$(EXTRA_LD_OPT)" \
 	          -o $(BIGLOO_DEST).aux \
 	          $(O_OBJECTS) $(G_OBJECTS); \
         fi
@@ -540,7 +540,7 @@ $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking bigloo.$(SHAREDSUFFIX)..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $@ \
               $(O_OBJECTS) $(G_OBJECTS) \
-              -ldopt $(CSTRIPFLAGS)
+              $(LDCSTRIPFLAGS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -669,7 +669,7 @@ doboot.static: $(O_OBJECTS) $(G_OBJECTS)
 .PHONY: hostboot
 
 hostboot: 
-	$(MAKE) SCMOBJSUFFIX="%.o" LDBOOTFLAGS="-lib-version $(RELEASE) -libgc-version $(RELEASE) $(LDBOOTFLAGS)" EXTRA_LD_OPT=-g LDRPATHOPT=-L
+	$(MAKE) SCMOBJSUFFIX="%.o" LDBOOTFLAGS="-lib-version $(RELEASE) -libgc-version $(RELEASE) $(LDBOOTFLAGS)"
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
