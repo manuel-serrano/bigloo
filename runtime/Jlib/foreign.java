@@ -3562,7 +3562,6 @@ public final class foreign
 
    public static date bgl_seconds_to_gmtdate(long sec)
       {
-	 System.out.println( "bgl_seconds_to_gmtdate not implemented using local time" );
 	 return bgl_seconds_to_date( sec );
       }
 
@@ -4341,6 +4340,10 @@ public final class foreign
       return p.getRef();
    }
 
+   public static Object bgl_weakptr_data(weakptr p) {
+      return p.getData();
+   }
+
    public static void bgl_weakptr_data_set(weakptr p, Object o){
       p.setData(o);
    }
@@ -4415,8 +4418,8 @@ public final class foreign
 
    public static int OBJECT_TYPE = 0;
 
-   public static Object BGL_AS_OBJECT(Object o) {
-      return o;
+   public static bigloo.object BGL_AS_OBJECT(Object o) {
+      return (bigloo.object)o;
    }
    
    public static Object BGL_OBJECT_WIDENING_SET(object o, Object v)
@@ -5360,7 +5363,7 @@ public final class foreign
 	 return stack_trace.get(depth);
       }
 
-   public static Object init_trace_stacksp()
+   public static Object init_trace_stacksp(bgldynamic env)
       {
 	 return unspecified.unspecified;
       }

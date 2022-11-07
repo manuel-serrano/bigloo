@@ -13,7 +13,7 @@ public class weakptr extends obj {
   }
 
   public Object getData(){
-    Object d = ref.get();
+    Object d = data.get();
     return d == null ? unspecified.unspecified : d;
   }
 
@@ -22,7 +22,7 @@ public class weakptr extends obj {
   }
 
   public Object getRef(){
-    Object d = data.get();
+    Object d = ref.get();
     return d == null ? unspecified.unspecified : d;
   }
 
