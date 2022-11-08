@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sat Oct 29 07:30:29 2022 (serrano)                */
+;*    Last change :  Sun Nov  6 20:33:17 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -516,7 +516,7 @@
 		      ;; TAG_DATE_TIME
 		      (let ((dt (strncpy valptr 31)))
 			 (with-access::exif exif (date)
-			    (set! date dt))))
+			    (set! date (parse-exif-date dt)))))
 		     ((#x13b)
 		      ;; ARTIST
 		      (with-access::exif exif (artist)
