@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Jan  5 07:36:59 2022 (serrano)                */
+;*    Last change :  Sat Jun 25 10:38:06 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -67,55 +67,58 @@
       (trace cgen "cgen global: " (shape global) #\Newline)
       (trace (cgen 2) "*void-kont*: " *void-kont* #\Newline)
       (trace (cgen 2) "*return-kont*: " *return-kont* #\Newline)
-      (set! *the-current-global* global)
-      (let ((sh (shape global)))
-	 (assert (sh) (string? (global-name global))))
-      (let* ((sfun (widen!::sfun/C (global-value global)
-		      (label (instantiate::clabel
-				(loc (sfun-loc (global-value global)))
-				(name (global-name global))))
-		      (integrated #t)))
-	     (loc  (sfun-loc sfun))
-	     (cop  (node->cop (sfun-body sfun)
-			      (if (eq? (global-type global) *void*)
-				  *void-kont*
-				  *return-kont*)
-			      #f)))
-	 (reset-bdb-loc!)
-	 (newline *c-port*)
-	 (newline *c-port*)
-	 (display "/* " *c-port*)
-	 (display
-	    (pregexp-replace* "[*]/" (symbol->string! (shape global)) "*|")
-	    *c-port*)
-	 (display " */" *c-port*)
-	 ;; we have to emit a dummy location otherwise gdb get confused
-	 ;; with the function arguments! Thus all functions looks like
-	 ;; starting at the module definition site instead of there correct
-	 ;; definition site
-	 (emit-bdb-loc #f)
-	 ;; we have to reset the loc because we must not emit location
-	 ;; before the first c expression otherwise gdb get confused
-	 (reset-bdb-loc!)
-	 (clabel-body-set! (sfun/C-label sfun) cop)
-	 (global->c global)
-	 (let ((cop (block-kont (sfun/C-label sfun) loc)))
-	    ;; we define a local variable that acts as a temporary variable
-	    (display "{" *c-port*)
-	    ;; when compiling for debugging, we have to insert a dummy
-	    ;; statement otherwise gdb get confused
-	    (if (and (> *bdb-debug* 0) (location? loc))
-		(begin
-		   (emit-bdb-loc loc)
-		   (display "{ obj_t ___ = BUNSPEC; } /* bdb dummy init stmt */"
-			    *c-port*)))
-	    ;; we now may emit the body
-	    (emit-cop cop)
-	    ;; emit the current location before the closing bracket
-	    (emit-bdb-loc (get-current-bdb-loc))
-	    (fprint *c-port* "\n}"))
-	 (no-bdb-newline)
-	 (leave-function))))
+      (let ((glob *the-current-global*))
+	 (set! *the-current-global* global)
+	 (let ((sh (shape global)))
+	    (assert (sh) (string? (global-name global))))
+	 (let* ((sfun (widen!::sfun/C (global-value global)
+			 (label (instantiate::clabel
+				   (type *unspec*)
+				   (loc (sfun-loc (global-value global)))
+				   (name (global-name global))))
+			 (integrated #t)))
+		(loc  (sfun-loc sfun))
+		(cop  (node->cop (sfun-body sfun)
+			 (if (eq? (global-type global) *void*)
+			     *void-kont*
+			     *return-kont*)
+			 #f)))
+	    (reset-bdb-loc!)
+	    (newline *c-port*)
+	    (newline *c-port*)
+	    (display "/* " *c-port*)
+	    (display
+	       (pregexp-replace* "[*]/" (symbol->string! (shape global)) "*|")
+	       *c-port*)
+	    (display " */" *c-port*)
+	    ;; we have to emit a dummy location otherwise gdb get confused
+	    ;; with the function arguments! Thus all functions looks like
+	    ;; starting at the module definition site instead of there correct
+	    ;; definition site
+	    (emit-bdb-loc #f)
+	    ;; we have to reset the loc because we must not emit location
+	    ;; before the first c expression otherwise gdb get confused
+	    (reset-bdb-loc!)
+	    (clabel-body-set! (sfun/C-label sfun) cop)
+	    (global->c global)
+	    (let ((cop (block-kont (sfun/C-label sfun) loc)))
+	       ;; we define a local variable that acts as a temporary variable
+	       (display "{" *c-port*)
+	       ;; when compiling for debugging, we have to insert a dummy
+	       ;; statement otherwise gdb get confused
+	       (if (and (> *bdb-debug* 0) (location? loc))
+		   (begin
+		      (emit-bdb-loc loc)
+		      (display "{ obj_t ___ = BUNSPEC; } /* bdb dummy init stmt */"
+			 *c-port*)))
+	       ;; we now may emit the body
+	       (emit-cop cop)
+	       ;; emit the current location before the closing bracket
+	       (emit-bdb-loc (get-current-bdb-loc))
+	       (fprint *c-port* "\n}"))
+	    (no-bdb-newline)
+	    (set! *the-current-global* glob)
+	    (leave-function)))))
   
 ;*---------------------------------------------------------------------*/
 ;*    *the-current-global* ...                                         */
@@ -135,7 +138,7 @@
 		(string-append
 		 name
 		 (if (null? (sfun-args value))
-		     "()"
+		     "(void)"
 		     (string-append
 		      "("
 		      (let loop ((args (sfun-args value)))
@@ -152,28 +155,81 @@
    (no-bdb-newline))
 
 ;*---------------------------------------------------------------------*/
+;*    arg-type ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (arg-type a)
+   (cond
+      ((type? a) a)
+      ((variable? a) (variable-type a))
+      (else "arg-type@cgen" "wrong argument" (shape a))))
+
+;*---------------------------------------------------------------------*/
 ;*    capply-tailcallable? ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    Generalized C tail calls requires the caller and the callee      */
 ;*    to have the same number of arguments.                            */
 ;*---------------------------------------------------------------------*/
 (define (capply-tailcallable? cop::capply)
-   (let ((sfun (global-value *the-current-global*)))
-      (=fx (length (sfun-args sfun)) 2)))
+   (let* ((caller (global-value *the-current-global*))
+	  (formals (sfun-args caller)))
+      (when (=fx (length formals) 2)
+	 (and (eq? (arg-type (car formals)) *obj*)
+	      (eq? (arg-type (cadr formals)) *obj*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfuncall-tailcallable? ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (cfuncall-tailcallable? cop::cfuncall)
-   (let ((sfun (global-value *the-current-global*)))
-      (=fx (length (sfun-args sfun)) (length (cfuncall-args cop)))))
+   
+   (define (fun-args callee actuals)
+      (cond
+	 ((sfun? callee) (sfun-args callee))
+	 ((cfun? callee) (cfun-args-type callee))
+	 (else actuals)))
+   
+   (with-access::cfuncall cop (fun args)
+      (let ((caller (global-value *the-current-global*))
+	    (callee (variable-value (varc-variable fun))))
+	 (let loop ((actuals (fun-args callee args))
+		    (formals (sfun-args caller)))
+	    (cond
+	       ((null? actuals)
+		(null? formals))
+	       ((null? formals)
+		#f)
+	       ((eq? (arg-type (car actuals)) (arg-type (car formals)))
+		(loop (cdr actuals) (cdr formals)))
+	       (else
+		#f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    capp-tailcallable? ...                                           */
+;*    -------------------------------------------------------------    */
+;*    A tail call is tail callable is the caller and the callee        */
+;*    have the same arguments (number and types).                      */
 ;*---------------------------------------------------------------------*/
 (define (capp-tailcallable? cop::capp)
-   (let ((sfun (global-value *the-current-global*)))
-      (=fx (length (sfun-args sfun)) (length (capp-args cop)))))
+
+   (define (fun-args callee)
+      (cond
+	 ((sfun? callee) (sfun-args callee))
+	 ((cfun? callee) (cfun-args-type callee))
+	 (else '())))
+   
+   (with-access::capp cop (fun)
+      (let ((caller (global-value *the-current-global*))
+	    (callee (variable-value (varc-variable fun))))
+	 (let loop ((actuals (fun-args callee))
+		    (formals (sfun-args caller)))
+	    (cond
+	       ((null? actuals)
+		(null? formals))
+	       ((null? formals)
+		#f)
+	       ((eq? (arg-type (car actuals)) (arg-type (car formals)))
+		(loop (cdr actuals) (cdr formals)))
+	       (else
+		#f))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    *return-kont* ...                                                */
@@ -181,6 +237,7 @@
 (define *return-kont*
    (lambda (cop)
       (instantiate::creturn
+	 (type *unspec*)
 	 (loc (cop-loc cop))
 	 (tail (when *c-tail-call*
 		  (or (and (isa? cop capply) (capply-tailcallable? cop))
@@ -195,10 +252,12 @@
 	 (value (cond
 		   ((csetq? cop)
 		    (instantiate::csequence
-		       (loc    (cop-loc cop))
+		       (type *unspec*) 
+		       (loc (cop-loc cop))
 		       (c-exp? #t)
 		       (cops (list cop
 				(instantiate::catom
+				   (type *unspec*)
 				   (value #unspecified))))))
 		   (else
 		    cop))))))
@@ -213,14 +272,18 @@
 ;*---------------------------------------------------------------------*/
 (define *void-kont*
    (lambda (cop)
-      (instantiate::cvoid (value cop))))
+      (instantiate::cvoid
+	 (type *void*)
+	 (value cop))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *stop-kont* ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define *stop-kont*
    (lambda (cop)
-      (instantiate::stop (value cop))))
+      (instantiate::stop
+	 (type *_*)
+	 (value cop))))
 
 ;*---------------------------------------------------------------------*/
 ;*    block-kont ...                                                   */
@@ -231,6 +294,7 @@
        cop)
       (else
        (instantiate::cblock
+	  (type (cop-type cop))
 	  (body cop)
 	  (loc  loc)))))
 
@@ -252,16 +316,21 @@
       (if (cfail? cop)
 	  cop
 	  (kont (instantiate::csetq
-		   (var (instantiate::varc (variable var)))
+		   (type (variable-type var))
+		   (var (instantiate::varc
+			   (type (variable-type var))
+			   (variable var)))
 		   (value (cond
 			     ((csetq? cop)
 			      (instantiate::csequence
+				 (type *unspec*)
 				 (loc (cop-loc cop))
 				 (c-exp? #t)
 				 (cops (list cop
-					       (instantiate::catom
-						  (loc (cop-loc cop))
-						  (value #unspecified))))))
+					  (instantiate::catom
+					     (type *unspec*)
+					     (loc (cop-loc cop))
+					     (value #unspecified))))))
 			     (else
 			      cop)))
 		   (loc loc))))))
@@ -278,13 +347,16 @@
    (trace (cgen 3)
 	  "(node->cop node::literal kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::atom node (value loc)
+   (with-access::atom node (value loc type)
       (kont (instantiate::catom
+	       (type type)
 	       (value value)
 	       (loc   loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    No longer used.                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::patch kont inpushexit)
    (trace (cgen 3)
@@ -294,20 +366,25 @@
       (with-access::genpatchid patchid ((gindex index))
 	 (with-access::var value (variable)
 	    (instantiate::csequence
+	       (type *obj*)
 	       (loc loc)
 	       (cops (list (instantiate::cpragma
+			      (type *obj*)
 			      (loc loc)
 			      (format (format "BGL_PATCHABLE_CONSTANT_~a($1, $2, $3)"
 					 (if (eq? type *obj*)
 					     (bigloo-config 'elong-size)
 					     32)))
 			      (args (list (instantiate::catom
+					     (type *long*)
 					     (value index)
 					     (loc loc))
 				       (instantiate::catom
+					  (type *long*)
 					  (value gindex)
 					  (loc loc))
 				       (instantiate::varc
+					  (type (variable-type variable))
 					  (variable variable)
 					  (loc loc)))))
 			(node->cop value kont inpushexit))))))))
@@ -322,6 +399,7 @@
    (with-access::genpatchid node (index loc)
       (kont
 	 (instantiate::catom
+	    (type *long*)
 	    (value index)
 	    (loc loc)))))
 
@@ -339,13 +417,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::var kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::var kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
+      "(node->cop node::var kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
    (trace (cgen 4) "(node->cop node::var kont): " (shape node) #\Newline
-	  "  var-variable-name: " (variable-name (var-variable node))
-	  #\Newline)
+      "  var-variable-name: " (variable-name (var-variable node))
+      #\Newline)
    (with-access::var node (variable loc)
       (kont (instantiate::varc
+	       (type (variable-type variable))
 	       (variable variable)
 	       (loc      loc)))))
 
@@ -370,10 +449,13 @@
 	 (cond
 	    ((null? exp)
 	     (kont (instantiate::nop
+		      (type *void*)
 		      (loc loc))))
 	    ((null? (cdr exp))
 	     (let ((cop (node->cop (car exp) kont inpushexit)))
-		(instantiate::stop (value cop))))
+		(instantiate::stop
+		   (type *_*)
+		   (value cop))))
 	    (else
 	     (let ((inpushexit (or inpushexit (is-push-exit? (car exp)))))
 		(let loop ((exp exp)
@@ -381,6 +463,7 @@
 		   (if (null? (cdr exp))
 		       (let ((cop (node->cop (car exp) kont inpushexit)))
 			  (instantiate::csequence
+			     (type (cop-type cop))
 			     (loc  (cop-loc cop))
 			     (cops (reverse! (cons cop new)))))
 		       (if (not (side-effect? (car exp)))
@@ -412,12 +495,13 @@
    (trace (cgen 3)
 	  "(extern->cop node::extern kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::extern node (expr* loc)
-      (node-args->cop expr*
+   (with-access::extern node (expr* loc type)
+      (node-args->cop type expr*
 	 args-safe
 	 loc
 	 (lambda (new-args)
 	    (kont (instantiate::cpragma
+		     (type type)
 		     (loc loc)
 		     (format format)
 		     (args new-args))))
@@ -445,7 +529,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::private kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::getfield kont): " (shape node) #\Newline
+	  "(node->cop node::private kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::private node (c-format)
       (extern->cop c-format #t node kont inpushexit)))
@@ -457,8 +541,8 @@
    (trace (cgen 3)
 	  "(node->cop node::cast kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::cast node (arg type loc)
-      (node-args->cop (list arg)
+   (with-access::cast node (arg type loc type)
+      (node-args->cop type (list arg)
 	 #t
 	 loc
 	 (lambda (new-args)
@@ -479,6 +563,7 @@
       (let ((var (var-variable (setq-var node))))
 	 (if (and (var? value) (eq? var (var-variable value)))
 	     (kont (*void-kont* (instantiate::catom
+				   (type *unspec*)
 				   (loc loc)
 				   (value #unspecified))))
 	     (node->cop value (make-setq-kont var loc kont) inpushexit)))))
@@ -488,38 +573,46 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::conditional kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::conditional kont): " (shape node) #\Newline
-	  "  loc: " (node-loc node) #\Newline
-	  "  kont: " kont #\Newline)
-   (with-access::conditional node (test true false loc)
+      "(node->cop node::conditional kont): " (shape node) #\Newline
+      "  loc: " (node-loc node) #\Newline
+      "  kont: " kont #\Newline)
+   (with-access::conditional node (test true false loc type)
       (let* ((aux   (make-local-svar/name (gensym 'test) *bool*))
 	     (ctest (node->cop (node-setq aux test) *id-kont* inpushexit)))
 	 (if (and (csetq? ctest) (eq? (varc-variable (csetq-var ctest)) aux))
 	     (instantiate::cif
+		(type type)
 		(test (csetq-value ctest))
 		(true (block-kont (node->cop true kont inpushexit) loc))
 		(false (block-kont (node->cop false kont inpushexit) loc))
 		(loc   loc))
 	     (instantiate::cblock
+		(type type)
 		(loc loc)
 		(body
-		 (instantiate::csequence
-		    (loc loc)
-		    (cops
-		     (list
-		      (instantiate::local-var
-			 (vars (list aux))
-			 (loc  loc))
-		      ctest
-		      (instantiate::cif
-			 (test (instantiate::varc
-				  (variable aux)
-				  (loc loc)))
-			 (false (block-kont (node->cop false kont inpushexit)
-				   loc))
-			 (true (block-kont (node->cop true kont inpushexit)
-				  loc))
-			 (loc  loc)))))))))))
+		   (instantiate::csequence
+		      (type type)
+		      (loc loc)
+		      (cops
+			 (list
+			    (instantiate::local-var
+			       (type *obj*)
+			       (vars (list aux))
+			       (loc  loc))
+			    ctest
+			    (instantiate::cif
+			       (type type)
+			       (test (instantiate::varc
+					(type (variable-type aux))
+					(variable aux)
+					(loc loc)))
+			       (false (block-kont
+					 (node->cop false kont inpushexit)
+					 loc))
+			       (true (block-kont
+					(node->cop true kont inpushexit)
+					loc))
+			       (loc  loc)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::fail ...                                             */
@@ -528,13 +621,14 @@
    (trace (cgen 3)
 	  "(node->cop node::fail kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::fail node (proc msg obj loc)
-      (node-args->cop (list proc msg obj)
+   (with-access::fail node (proc msg obj loc type)
+      (node-args->cop type (list proc msg obj)
 	 #f
 	 loc
 	 (lambda (new-args)
 	    (*fail-kont*
 	       (instantiate::cfail
+		  (type *obj*)
 		  (loc loc)
 		  (proc (car new-args))
 		  (msg (cadr new-args))
@@ -548,7 +642,7 @@
    (trace (cgen 3)
       "(node->cop node::switch kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
-   (with-access::switch node (clauses test item-type loc)
+   (with-access::switch node (clauses test item-type loc type)
       (let ((cclauses (map (lambda (clause)
 			     (cons (car clause)
 				(node->cop (cdr clause) kont inpushexit)))
@@ -557,20 +651,26 @@
 		(cop (node->cop (node-setq aux test) *id-kont* inpushexit)))
 	    (if (and (csetq? cop) (eq? (varc-variable (csetq-var cop)) aux))
 		(instantiate::cswitch
+		   (type type)
 		   (loc  loc)
 		   (test (csetq-value cop))
 		   (clauses cclauses))
 		(instantiate::cblock
+		   (type type)
 		   (loc loc)
 		   (body (instantiate::csequence
+			    (type type)
 			    (loc loc)
 			    (cops (list (instantiate::local-var
+					   (type *obj*)
 					   (loc  loc)
 					   (vars (list aux)))
 				     cop
 				     (instantiate::cswitch
+					(type type)
 					(loc  loc)
 					(test (instantiate::varc
+						 (type (variable-type aux))
 						 (loc loc)
 						 (variable aux)))
 					(clauses cclauses))))))))))))
@@ -582,7 +682,7 @@
    (trace (cgen 3)
 	  "(node->cop node::let-fun kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::let-fun node (body locals loc)
+   (with-access::let-fun node (body locals loc type)
       ;; local function are open-coded on their first call site.
       ;; So, the compilation of `let-fun' construction is just
       ;; the declaration of all local functions' formals (and
@@ -592,19 +692,22 @@
 		 (all-formals '()))
 	 (if (null? locals)
 	     (block-kont
-	      (bdb-let-var
-	       (instantiate::csequence
-		  (loc loc)
-		  (cops (list (instantiate::local-var
-				 (loc loc)
-				 (vars all-formals))
-			      (node->cop body kont inpushexit))))
-	       loc)
-	      #f)
+		(bdb-let-var
+		   (instantiate::csequence
+		      (type type)
+		      (loc loc)
+		      (cops (list (instantiate::local-var
+				     (type *obj*)
+				     (loc loc)
+				     (vars all-formals))
+			       (node->cop body kont inpushexit))))
+		   loc)
+		#f)
 	     (let ((local (car locals)))
 		(set-variable-name! local)
 		(let* ((fun (widen!::sfun/C (local-value local)
 			       (label (instantiate::clabel
+					 (type *void*)
 					 (loc  (sfun-loc (local-value local)))
 					 (name (local-name local))))
 			       (integrated #f)))
@@ -653,7 +756,8 @@
 					 (type *obj*))))
 				(set-variable-name! d)
 				d))
-		       (alloc (instantiate::cpragma 
+		       (alloc (instantiate::cpragma
+				 (type *_*)
 				 (loc loc)
 				 (format (format (car sa) (variable-name decl)))
 				 (args (map (lambda (a)
@@ -686,7 +790,8 @@
 					    (type *obj*))))
 				   (set-variable-name! d)
 				   d))
-			  (alloc (instantiate::cpragma 
+			  (alloc (instantiate::cpragma
+				    (type *_*)
 				    (loc loc)
 				    (format (format (car sa) (variable-name decl)))
 				    (args (map (lambda (a)
@@ -713,7 +818,8 @@
 				      (type *cell*))))
 			     (set-variable-name! d)
 			     d))
-		    (alloc (instantiate::cpragma 
+		    (alloc (instantiate::cpragma
+			      (type *_*)
 			      (loc loc)
 			      (format (format "struct bgl_cell ~a"
 					 (variable-name decl)))
@@ -727,6 +833,7 @@
       (for-each (lambda (x) (set-variable-name! (car x))) bindings)
       (let ((alloca (append-map alloca bindings))
 	    (decls (instantiate::local-var
+		      (type *obj*)
 		      (loc loc)
 		      (vars (map car bindings))))
 	    (sets  (map (lambda (x)
@@ -735,10 +842,12 @@
 		      bindings))
 	    (body  (let ((cop (node->cop body kont inpushexit)))
 		      (instantiate::stop
+			 (type *_*)
 			 (value cop)))))
 	 (block-kont
 	    (bdb-let-var
 	       (instantiate::csequence
+		  (type (cop-type body))
 		  (loc loc)
 		  (cops (append alloca (cons decls (append sets (list body))))))
 	       loc)
@@ -750,8 +859,9 @@
 (define (bdb-let-var cop loc)
    (if (and (>fx *bdb-debug* 0) (location? loc))
        (instantiate::bdb-block
+	  (type (cop-type cop))
 	  (body cop)
-	  (loc  loc))
+	  (loc loc))
        cop))
    
 ;*---------------------------------------------------------------------*/
@@ -761,26 +871,32 @@
    (trace (cgen 3)
 	  "(node->cop node::set-ex-it kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::set-ex-it node (var body onexit loc)
+   (with-access::set-ex-it node (var body onexit loc type)
       (let ((exit (var-variable var)))
 	 (set-variable-name! exit)
 	 (instantiate::csequence
+	    (type type)
 	    (loc loc)
 	    (cops (list
-		   (instantiate::cpragma
-		      (loc    loc)
-		      (format "jmp_buf_t jmpbuf")
-		      (args '()))
+		     (instantiate::cpragma
+			(type *_*)
+			(loc loc)
+			(format "jmp_buf_t jmpbuf")
+			(args '()))
 		   (instantiate::local-var
+		      (type *obj*)
 		      (loc loc)
 		      (vars (list (var-variable var))))
 		   (instantiate::cset-ex-it
+		      (type type)
 		      (loc loc)
 		      (exit (instantiate::varc
+			       (type (variable-type exit))
 			       (loc loc)
 			       (variable exit)))
 		      (jump-value (node->cop onexit kont inpushexit))
 		      (body (instantiate::csequence
+			       (type (node-type body))
 			       (loc loc)
 			       (cops
 				(list
@@ -805,9 +921,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::jump-ex-it kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::jump-ex-it kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
-   (with-access::jump-ex-it node (exit value loc)
+      "(node->cop node::jump-ex-it kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
+   (with-access::jump-ex-it node (exit value loc type)
       (let* ((vaux  (make-local-svar/name 'aux *obj*))
 	     (vcop  (node->cop (node-setq vaux value) *id-kont* inpushexit))
 	     (exit  exit)
@@ -817,66 +933,86 @@
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux)
 		  (csetq? ecop) (eq? (varc-variable (csetq-var ecop)) eaux))
 	     (*exit-kont*
-	      (instantiate::cjump-ex-it
-		 (loc loc)
-		 (exit (csetq-value ecop))
-		 (value (csetq-value vcop)))))
+		(instantiate::cjump-ex-it
+		   (type type)
+		   (loc loc)
+		   (exit (csetq-value ecop))
+		   (value (csetq-value vcop)))))
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux))
 	     (instantiate::cblock
+		(type type)
 		(loc loc)
 		(body (instantiate::csequence
+			 (type type)
 			 (loc loc)
 			 (cops (list (instantiate::local-var
+					(type *obj*)
 					(loc loc)
 					(vars (list eaux)))
-				       (instantiate::csequence
-					  (loc loc)
-					  (cops (list ecop)))
-				       (*exit-kont*
-					(instantiate::cjump-ex-it
-					   (loc loc)
-					   (exit (instantiate::varc
-						    (loc loc)
-						    (variable eaux)))
-					   (value (csetq-value vcop))))))))))
+				  (instantiate::csequence
+				     (type *obj*)
+				     (loc loc)
+				     (cops (list ecop)))
+				  (*exit-kont*
+				     (instantiate::cjump-ex-it
+					(type type)
+					(loc loc)
+					(exit (instantiate::varc
+						 (type (variable-type eaux))
+						 (loc loc)
+						 (variable eaux)))
+					(value (csetq-value vcop))))))))))
 	    ((and (csetq? ecop) (eq? (varc-variable (csetq-var ecop)) eaux))
 	     (instantiate::cblock
+		(type type)
 		(loc loc)
 		(body (instantiate::csequence
+			 (type type)
 			 (loc loc)
 			 (cops (list (instantiate::local-var
+					(type *obj*)
 					(loc loc)
 					(vars (list vaux)))
-				     (instantiate::csequence
+				  (instantiate::csequence
+				     (type *obj*)
+				     (loc loc)
+				     (cops (list vcop)))
+				  (*exit-kont*
+				     (instantiate::cjump-ex-it
+					(type type)
 					(loc loc)
-					(cops (list vcop)))
-				     (*exit-kont*
-				      (instantiate::cjump-ex-it
-					 (loc loc)
-					 (exit (csetq-value ecop))
-					 (value (instantiate::varc
-						   (loc loc)
-						   (variable vaux)))))))))))
+					(exit (csetq-value ecop))
+					(value (instantiate::varc
+						  (type (variable-type vaux))
+						  (loc loc)
+						  (variable vaux)))))))))))
 	    (else
 	     (instantiate::cblock
+		(type type)
 		(loc loc)
 		(body (instantiate::csequence
+			 (type type)
 			 (loc loc)
 			 (cops
-			  (list
-			   (instantiate::local-var
-			      (loc loc)
-			      (vars (list eaux vaux)))
-			   (instantiate::csequence
-			      (loc loc)
-			      (cops (list ecop vcop)))
-			   (*exit-kont*
-			    (instantiate::cjump-ex-it
-			       (loc loc)
-			       (exit (instantiate::varc
-					(variable eaux)))
-			       (value (instantiate::varc
-					 (variable vaux)))))))))))))))
+			    (list
+			       (instantiate::local-var
+				  (type *obj*)
+				  (loc loc)
+				  (vars (list eaux vaux)))
+			       (instantiate::csequence
+				  (type *obj*)
+				  (loc loc)
+				  (cops (list ecop vcop)))
+			       (*exit-kont*
+				  (instantiate::cjump-ex-it
+				     (type type)
+				     (loc loc)
+				     (exit (instantiate::varc
+					      (type (variable-type eaux))
+					      (variable eaux)))
+				     (value (instantiate::varc
+					       (type (variable-type vaux))
+					       (variable vaux)))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::retblock ...                                         */
@@ -885,10 +1021,12 @@
    (with-access::retblock node (body loc)
       (let* ((local (make-local-svar (gensym '__retval) (node-type node)))
 	     (label (instantiate::clabel
+		       (type *void*)
 		       (loc loc)
 		       (used? #t)
 		       (name (symbol->string (gensym '__return)))
 		       (body (kont (instantiate::varc
+				      (type (variable-type local))
 				      (loc loc)
 				      (variable local))))))
 	     (retkont (make-setq-kont local loc (lambda (c) c))))
@@ -896,11 +1034,14 @@
 	    (local local)
 	    (label label))
 	 (instantiate::cblock
+	    (type *void*)
 	    (loc loc)
 	    (body (instantiate::csequence
+		     (type *void*)
 		     (loc loc)
 		     (cops (list
 			      (instantiate::local-var
+				 (type *obj*)
 				 (loc loc)
 				 (vars (list local)))
 			      (node->cop body retkont inpushexit)
@@ -916,9 +1057,11 @@
 			 (make-setq-kont local loc 
 			    (lambda (c)
 			       (instantiate::csequence
+				  (type *void*)
 				  (loc loc)
 				  (cops (list c
 					   (instantiate::cgoto
+					      (type *void*)
 					      (loc loc)
 					      (label label))))))))
 		      kont)))
@@ -929,8 +1072,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::make-box kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::make-box kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
+      "(node->cop node::make-box kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
    
    (define (simple-app? value)
       (when (app? value)
@@ -939,36 +1082,44 @@
 	       (with-access::variable (var-variable fun) (value)
 		  (with-access::fun value (side-effect)
 		     (or (not side-effect))))))))
-
+   
    (define (simple-expr? value)
       (or (var? value) (atom? value) (kwote? value) (simple-app? value)))
    
    (with-access::make-box node (value loc stackable)
       (if (simple-expr? value)
 	  (node->cop value
-		     (lambda (v) (kont (instantiate::cmake-box
-					  (loc loc)
-					  (value v)
-					  (stackable stackable))))
-		      inpushexit)
+	     (lambda (v)
+		(kont
+		   (instantiate::cmake-box
+		      (type *cell*)
+		      (loc loc)
+		      (value v)
+		      (stackable stackable))))
+	     inpushexit)
 	  (let* ((aux  (make-local-svar/name 'cellval *obj*))
 		 (cval (node->cop (node-setq aux value) *id-kont* inpushexit)))
 	     (instantiate::cblock
+		(type *cell*)
 		(loc loc)
 		(body (instantiate::csequence
+			 (type *cell*)
 			 (loc loc)
 			 (cops (list
-				(instantiate::local-var
-				   (loc loc)
-				   (vars (list aux)))
-				cval
-				(kont
-				 (instantiate::cmake-box
-				    (loc loc)
-				    (value (instantiate::varc
-					      (loc loc)
-					      (variable aux)))
-				    (stackable stackable))))))))))))
+				  (instantiate::local-var
+				     (type *obj*)
+				     (loc loc)
+				     (vars (list aux)))
+				  cval
+				  (kont
+				     (instantiate::cmake-box
+					(type *cell*)
+					(loc loc)
+					(value (instantiate::varc
+						  (type (variable-type aux))
+						  (loc loc)
+						  (variable aux)))
+					(stackable stackable))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::box-ref ...                                          */
@@ -980,6 +1131,7 @@
    (with-access::box-ref node (var loc)
       (kont (node->cop var
 	       (lambda (v) (instantiate::cbox-ref
+			      (type (cop-type v))
 			      (loc loc)
 			      (var v)))
 	        inpushexit))))
@@ -991,12 +1143,14 @@
    (trace (cgen 3)
 	  "(node->cop node::box-set! kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::box-set! node (var value loc)
+   (with-access::box-set! node (var value loc type)
       (let ((v (var-variable var)))
 	 (node->cop value
 	    (lambda (vl) (kont (instantiate::cbox-set!
+				  (type type)
 				  (loc loc)
 				  (var (instantiate::varc
+					  (type (variable-type v))
 					  (loc loc)
 					  (variable v)))
 				  (value vl))))
@@ -1007,8 +1161,8 @@
 ;*---------------------------------------------------------------------*/
 (define (node-setq::setq variable::variable value::node)
    (instantiate::setq
-      (loc (node-loc value))
       (type *unspec*)
+      (loc (node-loc value))
       (var (instantiate::ref
 	      (loc #f)
 	      (type (variable-type variable))
@@ -1036,24 +1190,29 @@
 ;*---------------------------------------------------------------------*/
 ;*    node-args->cop ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (node-args->cop args args-safe loc kont inpushexit)
-   (let loop ((old-actuals  args)
-	      (new-actuals  '())
-	      (aux          (make-local-svar/name 'aux *obj*))
-	      (auxs         '())
-	      (exps         '()))
+(define (node-args->cop type args args-safe loc kont inpushexit)
+   (let loop ((old-actuals args)
+	      (new-actuals '())
+	      (aux (make-local-svar/name 'aux *obj*))
+	      (auxs '())
+	      (exps '()))
       (if (null? old-actuals)
 	  (if (null? auxs)
 	      (kont (reverse! new-actuals))
 	      (instantiate::cblock
+		 (type type)
 		 (body (instantiate::csequence
+			  (type type)
 			  (loc loc)
 			  (cops (list
-				 (instantiate::local-var
-				    (vars auxs)
-				    (loc  loc))
-				 (instantiate::csequence (cops exps))
-				 (kont (reverse! new-actuals))))))))
+				   (instantiate::local-var
+				      (type *obj*)
+				      (vars auxs)
+				      (loc  loc))
+				   (instantiate::csequence
+				      (type type)
+				      (cops exps))
+				   (kont (reverse! new-actuals))))))))
 	  (let ((cop (node->cop (node-setq aux (car old-actuals))
 			*id-kont* inpushexit)))
 	     (if (and (csetq? cop)
@@ -1063,19 +1222,20 @@
 			  (varc? (csetq-value cop))
 			  (cpragma? (csetq-value cop))))
 		 (loop (cdr old-actuals)
-		       (cons (csetq-value cop) new-actuals)
-		       aux
-		       auxs
-		       exps)
+		    (cons (csetq-value cop) new-actuals)
+		    aux
+		    auxs
+		    exps)
 		 (begin
 		    (local-type-set! aux (get-type (car old-actuals) #f))
 		    (loop (cdr old-actuals)
-			  (cons (instantiate::varc
-				   (variable aux)
-				   (loc      loc))
-				new-actuals)
-			  (make-local-svar/name 'aux *obj*)
-			  (cons aux auxs)
-			  (cons cop exps))))))))
+		       (cons (instantiate::varc
+				(type (variable-type aux))
+				(variable aux)
+				(loc loc))
+			  new-actuals)
+		       (make-local-svar/name 'aux *obj*)
+		       (cons aux auxs)
+		       (cons cop exps))))))))
    
    

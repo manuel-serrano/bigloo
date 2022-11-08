@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Dec  8 12:09:27 2021 (serrano)                */
-;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 11:06:06 2022 (serrano)                */
+;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -43,7 +43,6 @@
 ;*---------------------------------------------------------------------*/
 (define *extended-done?* #f)
 (define *libraries* '())
-(define *trace-level* 0)
 (define *user-load-path* (list "." (bigloo-config 'library-directory)))
 (define *force-saw* #unspecified)
 (define *error-localization-opt* #unspecified)
@@ -124,9 +123,11 @@
       ;; we start the trace if the level is > 0
       (when (>fx *trace-level* 0)
 	 (let ((passes (trace get-pass-names)))
-	    (if (memq *pass* passes)
-		(start-trace *trace-level* *pass*)
-		(warning "parse-args" "No trace for this pass -- " *pass*))
+	    (cond
+	       ((memq *pass* passes)
+		(start-trace *trace-level* *pass*))
+	       ((not (eq? *pass* 'ld))
+		(warning "parse-args" "No trace for this pass -- " *pass*)))
 	    (for-each (lambda (pass)
 			 (if (not (memq pass passes))
 			     (warning "parse-args"
@@ -146,6 +147,7 @@
 	  (register-srfi! 'bigloo-jvm))
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
+	  (when *saw* (register-srfi! 'bigloo-saw))
 	  (register-srfi! 'bigloo-c)))
       ;; and we are done for the arguments parsing
       pres))
@@ -381,6 +383,12 @@
        (set! *arithmetic-overflow* #f))
       (("-fno-arithmetic-overflow" (help "Enable arithmetic overflow checks"))
        (set! *arithmetic-overflow* #t))
+      (("-fno-arithmetic-overflow" (help "Enable arithmetic overflow checks"))
+       (set! *arithmetic-overflow* #t))
+      (("-farithmetic-new-overflow" (help "Enable the new overflow arithmetic checks"))
+       (set! *arithmetic-new-overflow* #t))
+      (("-fno-arithmetic-new-overflow" (help "Disable the new overflow arithmetic checks"))
+       (set! *arithmetic-new-overflow* #f))
       ;; case sensitivity
       (("-fcase-sensitive" (help "Case sensitive reader (default)"))
        (bigloo-case-sensitivity-set! 'sensitive))
@@ -399,11 +407,16 @@
       ;; optimization
       (("-O?opt" (help "-O[0..6]" "Optimization modes"))
        (parse-optim-args opt))
-      ;; fix arithmetic tagging
+      ;; fixnum arithmetic tagging
       (("-ftagged-fxop" (help "Enable tagged fix-ops optimization"))
        (set! *optim-tagged-fxop?* #t))
       (("-fno-tagged-fxop" (help "Disable tagged fix-ops optimization"))
        (set! *optim-tagged-fxop?* #f))
+      ;; flonum arithmetic specialization
+      (("-ffloop" (help "Enable flonum specialization"))
+       (set! *optim-specialize-flonum?* #t))
+      (("-fno-flop" (help "Disable flonum specialization"))
+       (set! *optim-specialize-flonum?* #f))
       ;; cfa optimizations
       (("-fcfa" (help "Enable CFA"))
        (set! *optim-cfa?* #t))
@@ -530,6 +543,10 @@
        (set! *saw-bbv?* #t))
       (("-fno-saw-bbv" (help "Disable saw basic-blocks versionning"))
        (set! *saw-bbv?* #f))
+      (("-fsaw-bbv-fun" ?name (help "Apply bbv on this very function"))
+       (set! *saw-bbv?* #t)
+       (set! *saw-bbv-functions*
+	  (cons (string->symbol name) *saw-bbv-functions*)))
       (("-fsaw-regalloc-msize" ?size (help "Set the register allocation body size limit"))
        (set! *saw-register-allocation?* #t)
        (set! *saw-register-allocation-max-size* (string->integer size)))
@@ -865,7 +882,9 @@
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")
       ;; traces
-      (("-t" (help "-t[2|3|4]" "Generate a trace file (*)"))
+      (("-t" (help "-t[1|2|3|4]" "Generate a trace file (*)"))
+       (set! *trace-level* 1))
+      (("-t1")
        (set! *trace-level* 1))
       (("-t2")
        (set! *trace-level* 2))
@@ -920,6 +939,8 @@
        (set! *pass* 'narrow))
       (("-tlift" (help "Stop after the type lifting stage"))
        (set! *pass* 'tlift))
+      (("-reduce0" (help "Stop after the early reduction stage"))
+       (set! *pass* 'reduce0))
       (("-dataflow" (help "Stop after the type dataflow stage"))
        (set! *pass* 'dataflow))
       (("-dataflow+" (help "Stop after the second type dataflow stage"))
@@ -932,6 +953,8 @@
        (set! *pass* 'user))
       (("-fxop" (help "Stop after the fx-ops optimization"))
        (set! *pass* 'fxop))
+      (("-flop" (help "Stop after the flonum specialization optimization"))
+       (set! *pass* 'flop))
       (("-coerce" (help "Stop after the type coercing stage"))
        (set! *pass* 'coerce))
       (("-effect" (help "Stop after the effect stage"))
@@ -1294,6 +1317,7 @@
    (set! *optim-O-macro?* #t)
    (set! *optim-dataflow?* #t)
    (set! *optim-symbol-case* #t)
+   (set! *optim-specialize-flonum?* #t)
    (if (> (string-length string) 0)
        (case (string-ref string 0)
 	  ((#\0)

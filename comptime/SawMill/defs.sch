@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.3a)
-;; Inria -- Sophia Antipolis     Thu Mar 3 14:56:16 CET 2016 
+;; Bigloo (4.5a)
+;; Inria -- Sophia Antipolis     Mon Jul 4 03:24:13 PM CEST 2022 
 ;; (bigloo -classgen SawMill/defs.scm)
 ;; ==========================================================
 
@@ -11,7 +11,7 @@
 ;; rtl_reg
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_reg::rtl_reg type1484::type var1485::obj onexpr?1486::obj name1487::obj key1488::obj hardware1489::obj)
+    (inline make-rtl_reg::rtl_reg type1506::type var1507::obj onexpr?1508::obj name1509::obj key1510::obj hardware1511::obj)
     (inline rtl_reg?::bool ::obj)
     (rtl_reg-nil::rtl_reg)
     (inline rtl_reg-hardware::obj ::rtl_reg)
@@ -27,7 +27,7 @@
 ;; rtl_fun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_fun::rtl_fun loc1482::obj)
+    (inline make-rtl_fun::rtl_fun loc1503::obj)
     (inline rtl_fun?::bool ::obj)
     (rtl_fun-nil::rtl_fun)
     (inline rtl_fun-loc::obj ::rtl_fun)
@@ -36,7 +36,7 @@
 ;; rtl_last
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_last::rtl_last loc1479::obj)
+    (inline make-rtl_last::rtl_last loc1501::obj)
     (inline rtl_last?::bool ::obj)
     (rtl_last-nil::rtl_last)
     (inline rtl_last-loc::obj ::rtl_last)
@@ -45,7 +45,7 @@
 ;; rtl_return
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_return::rtl_return loc1476::obj type1477::type)
+    (inline make-rtl_return::rtl_return loc1498::obj type1499::type)
     (inline rtl_return?::bool ::obj)
     (rtl_return-nil::rtl_return)
     (inline rtl_return-type::type ::rtl_return)
@@ -56,7 +56,7 @@
 ;; rtl_jumpexit
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_jumpexit::rtl_jumpexit loc1474::obj)
+    (inline make-rtl_jumpexit::rtl_jumpexit loc1496::obj)
     (inline rtl_jumpexit?::bool ::obj)
     (rtl_jumpexit-nil::rtl_jumpexit)
     (inline rtl_jumpexit-loc::obj ::rtl_jumpexit)
@@ -65,16 +65,36 @@
 ;; rtl_fail
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_fail::rtl_fail loc1472::obj)
+    (inline make-rtl_fail::rtl_fail loc1494::obj)
     (inline rtl_fail?::bool ::obj)
     (rtl_fail-nil::rtl_fail)
     (inline rtl_fail-loc::obj ::rtl_fail)
     (inline rtl_fail-loc-set! ::rtl_fail ::obj))))
 
+;; rtl_retblock
+(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
+  (export
+    (inline make-rtl_retblock::rtl_retblock loc1490::obj)
+    (inline rtl_retblock?::bool ::obj)
+    (rtl_retblock-nil::rtl_retblock)
+    (inline rtl_retblock-loc::obj ::rtl_retblock)
+    (inline rtl_retblock-loc-set! ::rtl_retblock ::obj))))
+
+;; rtl_ret
+(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
+  (export
+    (inline make-rtl_ret::rtl_ret loc1486::obj to1487::block)
+    (inline rtl_ret?::bool ::obj)
+    (rtl_ret-nil::rtl_ret)
+    (inline rtl_ret-to::block ::rtl_ret)
+    (inline rtl_ret-to-set! ::rtl_ret ::block)
+    (inline rtl_ret-loc::obj ::rtl_ret)
+    (inline rtl_ret-loc-set! ::rtl_ret ::obj))))
+
 ;; rtl_notseq
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_notseq::rtl_notseq loc1470::obj)
+    (inline make-rtl_notseq::rtl_notseq loc1483::obj)
     (inline rtl_notseq?::bool ::obj)
     (rtl_notseq-nil::rtl_notseq)
     (inline rtl_notseq-loc::obj ::rtl_notseq)
@@ -83,7 +103,7 @@
 ;; rtl_if
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_if::rtl_if loc1468::obj)
+    (inline make-rtl_if::rtl_if loc1481::obj)
     (inline rtl_if?::bool ::obj)
     (rtl_if-nil::rtl_if)
     (inline rtl_if-loc::obj ::rtl_if)
@@ -92,7 +112,7 @@
 ;; rtl_select
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_select::rtl_select loc1463::obj type1464::type patterns1465::obj)
+    (inline make-rtl_select::rtl_select loc1477::obj type1478::type patterns1479::obj)
     (inline rtl_select?::bool ::obj)
     (rtl_select-nil::rtl_select)
     (inline rtl_select-patterns::obj ::rtl_select)
@@ -105,7 +125,7 @@
 ;; rtl_switch
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_switch::rtl_switch loc1458::obj type1459::type patterns1460::obj labels1461::obj)
+    (inline make-rtl_switch::rtl_switch loc1472::obj type1473::type patterns1474::obj labels1475::obj)
     (inline rtl_switch?::bool ::obj)
     (rtl_switch-nil::rtl_switch)
     (inline rtl_switch-labels::obj ::rtl_switch)
@@ -120,7 +140,7 @@
 ;; rtl_ifeq
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_ifeq::rtl_ifeq loc1455::obj then1456::block)
+    (inline make-rtl_ifeq::rtl_ifeq loc1468::obj then1469::block)
     (inline rtl_ifeq?::bool ::obj)
     (rtl_ifeq-nil::rtl_ifeq)
     (inline rtl_ifeq-then::block ::rtl_ifeq)
@@ -131,7 +151,7 @@
 ;; rtl_ifne
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_ifne::rtl_ifne loc1452::obj then1453::block)
+    (inline make-rtl_ifne::rtl_ifne loc1465::obj then1466::block)
     (inline rtl_ifne?::bool ::obj)
     (rtl_ifne-nil::rtl_ifne)
     (inline rtl_ifne-then::block ::rtl_ifne)
@@ -142,7 +162,7 @@
 ;; rtl_go
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_go::rtl_go loc1447::obj to1448::block)
+    (inline make-rtl_go::rtl_go loc1462::obj to1463::block)
     (inline rtl_go?::bool ::obj)
     (rtl_go-nil::rtl_go)
     (inline rtl_go-to::block ::rtl_go)
@@ -153,7 +173,7 @@
 ;; rtl_pure
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_pure::rtl_pure loc1445::obj)
+    (inline make-rtl_pure::rtl_pure loc1459::obj)
     (inline rtl_pure?::bool ::obj)
     (rtl_pure-nil::rtl_pure)
     (inline rtl_pure-loc::obj ::rtl_pure)
@@ -162,7 +182,7 @@
 ;; rtl_nop
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_nop::rtl_nop loc1443::obj)
+    (inline make-rtl_nop::rtl_nop loc1457::obj)
     (inline rtl_nop?::bool ::obj)
     (rtl_nop-nil::rtl_nop)
     (inline rtl_nop-loc::obj ::rtl_nop)
@@ -171,7 +191,7 @@
 ;; rtl_mov
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_mov::rtl_mov loc1441::obj)
+    (inline make-rtl_mov::rtl_mov loc1453::obj)
     (inline rtl_mov?::bool ::obj)
     (rtl_mov-nil::rtl_mov)
     (inline rtl_mov-loc::obj ::rtl_mov)
@@ -180,7 +200,7 @@
 ;; rtl_loadi
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_loadi::rtl_loadi loc1436::obj constant1437::atom)
+    (inline make-rtl_loadi::rtl_loadi loc1450::obj constant1451::atom)
     (inline rtl_loadi?::bool ::obj)
     (rtl_loadi-nil::rtl_loadi)
     (inline rtl_loadi-constant::atom ::rtl_loadi)
@@ -191,7 +211,7 @@
 ;; rtl_loadg
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_loadg::rtl_loadg loc1432::obj var1433::global)
+    (inline make-rtl_loadg::rtl_loadg loc1445::obj var1447::global)
     (inline rtl_loadg?::bool ::obj)
     (rtl_loadg-nil::rtl_loadg)
     (inline rtl_loadg-var::global ::rtl_loadg)
@@ -202,7 +222,7 @@
 ;; rtl_loadfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_loadfun::rtl_loadfun loc1429::obj var1430::global)
+    (inline make-rtl_loadfun::rtl_loadfun loc1441::obj var1442::global)
     (inline rtl_loadfun?::bool ::obj)
     (rtl_loadfun-nil::rtl_loadfun)
     (inline rtl_loadfun-var::global ::rtl_loadfun)
@@ -213,7 +233,7 @@
 ;; rtl_globalref
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_globalref::rtl_globalref loc1425::obj var1426::global)
+    (inline make-rtl_globalref::rtl_globalref loc1437::obj var1438::global)
     (inline rtl_globalref?::bool ::obj)
     (rtl_globalref-nil::rtl_globalref)
     (inline rtl_globalref-var::global ::rtl_globalref)
@@ -224,7 +244,7 @@
 ;; rtl_getfield
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_getfield::rtl_getfield loc1419::obj name1420::bstring objtype1421::type type1422::type)
+    (inline make-rtl_getfield::rtl_getfield loc1431::obj name1432::bstring objtype1433::type type1434::type)
     (inline rtl_getfield?::bool ::obj)
     (rtl_getfield-nil::rtl_getfield)
     (inline rtl_getfield-type::type ::rtl_getfield)
@@ -239,7 +259,7 @@
 ;; rtl_valloc
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_valloc::rtl_valloc loc1415::obj type1416::type vtype1417::type)
+    (inline make-rtl_valloc::rtl_valloc loc1426::obj type1428::type vtype1429::type)
     (inline rtl_valloc?::bool ::obj)
     (rtl_valloc-nil::rtl_valloc)
     (inline rtl_valloc-vtype::type ::rtl_valloc)
@@ -252,7 +272,7 @@
 ;; rtl_vref
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_vref::rtl_vref loc1411::obj type1412::type vtype1413::type)
+    (inline make-rtl_vref::rtl_vref loc1422::obj type1423::type vtype1424::type)
     (inline rtl_vref?::bool ::obj)
     (rtl_vref-nil::rtl_vref)
     (inline rtl_vref-vtype::type ::rtl_vref)
@@ -265,7 +285,7 @@
 ;; rtl_vlength
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_vlength::rtl_vlength loc1403::obj type1406::type vtype1407::type)
+    (inline make-rtl_vlength::rtl_vlength loc1418::obj type1419::type vtype1420::type)
     (inline rtl_vlength?::bool ::obj)
     (rtl_vlength-nil::rtl_vlength)
     (inline rtl_vlength-vtype::type ::rtl_vlength)
@@ -278,7 +298,7 @@
 ;; rtl_instanceof
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_instanceof::rtl_instanceof loc1400::obj type1401::type)
+    (inline make-rtl_instanceof::rtl_instanceof loc1415::obj type1416::type)
     (inline rtl_instanceof?::bool ::obj)
     (rtl_instanceof-nil::rtl_instanceof)
     (inline rtl_instanceof-type::type ::rtl_instanceof)
@@ -289,7 +309,7 @@
 ;; rtl_makebox
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_makebox::rtl_makebox loc1398::obj)
+    (inline make-rtl_makebox::rtl_makebox loc1413::obj)
     (inline rtl_makebox?::bool ::obj)
     (rtl_makebox-nil::rtl_makebox)
     (inline rtl_makebox-loc::obj ::rtl_makebox)
@@ -298,7 +318,7 @@
 ;; rtl_boxref
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_boxref::rtl_boxref loc1396::obj)
+    (inline make-rtl_boxref::rtl_boxref loc1410::obj)
     (inline rtl_boxref?::bool ::obj)
     (rtl_boxref-nil::rtl_boxref)
     (inline rtl_boxref-loc::obj ::rtl_boxref)
@@ -307,7 +327,7 @@
 ;; rtl_effect
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_effect::rtl_effect loc1394::obj)
+    (inline make-rtl_effect::rtl_effect loc1407::obj)
     (inline rtl_effect?::bool ::obj)
     (rtl_effect-nil::rtl_effect)
     (inline rtl_effect-loc::obj ::rtl_effect)
@@ -316,7 +336,7 @@
 ;; rtl_storeg
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_storeg::rtl_storeg loc1391::obj var1392::global)
+    (inline make-rtl_storeg::rtl_storeg loc1404::obj var1405::global)
     (inline rtl_storeg?::bool ::obj)
     (rtl_storeg-nil::rtl_storeg)
     (inline rtl_storeg-var::global ::rtl_storeg)
@@ -327,7 +347,7 @@
 ;; rtl_setfield
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_setfield::rtl_setfield loc1386::obj name1387::bstring objtype1388::type type1389::type)
+    (inline make-rtl_setfield::rtl_setfield loc1399::obj name1400::bstring objtype1401::type type1402::type)
     (inline rtl_setfield?::bool ::obj)
     (rtl_setfield-nil::rtl_setfield)
     (inline rtl_setfield-type::type ::rtl_setfield)
@@ -342,7 +362,7 @@
 ;; rtl_vset
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_vset::rtl_vset loc1381::obj type1382::type vtype1383::type)
+    (inline make-rtl_vset::rtl_vset loc1395::obj type1396::type vtype1397::type)
     (inline rtl_vset?::bool ::obj)
     (rtl_vset-nil::rtl_vset)
     (inline rtl_vset-vtype::type ::rtl_vset)
@@ -355,7 +375,7 @@
 ;; rtl_boxset
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_boxset::rtl_boxset loc1379::obj)
+    (inline make-rtl_boxset::rtl_boxset loc1392::obj)
     (inline rtl_boxset?::bool ::obj)
     (rtl_boxset-nil::rtl_boxset)
     (inline rtl_boxset-loc::obj ::rtl_boxset)
@@ -364,7 +384,7 @@
 ;; rtl_new
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_new::rtl_new loc1374::obj type1376::type constr1377::pair-nil)
+    (inline make-rtl_new::rtl_new loc1388::obj type1389::type constr1390::pair-nil)
     (inline rtl_new?::bool ::obj)
     (rtl_new-nil::rtl_new)
     (inline rtl_new-constr::pair-nil ::rtl_new)
@@ -377,7 +397,7 @@
 ;; rtl_call
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_call::rtl_call loc1371::obj var1372::global)
+    (inline make-rtl_call::rtl_call loc1385::obj var1386::global)
     (inline rtl_call?::bool ::obj)
     (rtl_call-nil::rtl_call)
     (inline rtl_call-var::global ::rtl_call)
@@ -388,7 +408,7 @@
 ;; rtl_apply
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_apply::rtl_apply loc1369::obj)
+    (inline make-rtl_apply::rtl_apply loc1382::obj)
     (inline rtl_apply?::bool ::obj)
     (rtl_apply-nil::rtl_apply)
     (inline rtl_apply-loc::obj ::rtl_apply)
@@ -397,7 +417,7 @@
 ;; rtl_lightfuncall
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_lightfuncall::rtl_lightfuncall loc1363::obj name1364::symbol funs1365::pair-nil rettype1366::obj)
+    (inline make-rtl_lightfuncall::rtl_lightfuncall loc1377::obj name1378::symbol funs1379::pair-nil rettype1380::obj)
     (inline rtl_lightfuncall?::bool ::obj)
     (rtl_lightfuncall-nil::rtl_lightfuncall)
     (inline rtl_lightfuncall-rettype::obj ::rtl_lightfuncall)
@@ -412,7 +432,7 @@
 ;; rtl_funcall
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_funcall::rtl_funcall loc1361::obj)
+    (inline make-rtl_funcall::rtl_funcall loc1374::obj)
     (inline rtl_funcall?::bool ::obj)
     (rtl_funcall-nil::rtl_funcall)
     (inline rtl_funcall-loc::obj ::rtl_funcall)
@@ -421,7 +441,7 @@
 ;; rtl_pragma
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_pragma::rtl_pragma loc1358::obj format1359::bstring)
+    (inline make-rtl_pragma::rtl_pragma loc1371::obj format1372::bstring)
     (inline rtl_pragma?::bool ::obj)
     (rtl_pragma-nil::rtl_pragma)
     (inline rtl_pragma-format::bstring ::rtl_pragma)
@@ -432,7 +452,7 @@
 ;; rtl_cast
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_cast::rtl_cast loc1354::obj totype1355::type fromtype1356::type)
+    (inline make-rtl_cast::rtl_cast loc1367::obj totype1368::type fromtype1369::type)
     (inline rtl_cast?::bool ::obj)
     (rtl_cast-nil::rtl_cast)
     (inline rtl_cast-fromtype::type ::rtl_cast)
@@ -445,7 +465,7 @@
 ;; rtl_cast_null
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_cast_null::rtl_cast_null loc1351::obj type1352::type)
+    (inline make-rtl_cast_null::rtl_cast_null loc1364::obj type1365::type)
     (inline rtl_cast_null?::bool ::obj)
     (rtl_cast_null-nil::rtl_cast_null)
     (inline rtl_cast_null-type::type ::rtl_cast_null)
@@ -456,7 +476,7 @@
 ;; rtl_protect
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_protect::rtl_protect loc1348::obj)
+    (inline make-rtl_protect::rtl_protect loc1361::obj)
     (inline rtl_protect?::bool ::obj)
     (rtl_protect-nil::rtl_protect)
     (inline rtl_protect-loc::obj ::rtl_protect)
@@ -465,7 +485,7 @@
 ;; rtl_protected
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_protected::rtl_protected loc1345::obj)
+    (inline make-rtl_protected::rtl_protected loc1358::obj)
     (inline rtl_protected?::bool ::obj)
     (rtl_protected-nil::rtl_protected)
     (inline rtl_protected-loc::obj ::rtl_protected)
@@ -474,7 +494,7 @@
 ;; rtl_ins
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-rtl_ins::rtl_ins loc1339::obj %spill1340::pair-nil dest1341::obj fun1342::rtl_fun args1343::pair-nil)
+    (inline make-rtl_ins::rtl_ins loc1352::obj %spill1353::pair-nil dest1354::obj fun1355::rtl_fun args1356::pair-nil)
     (inline rtl_ins?::bool ::obj)
     (rtl_ins-nil::rtl_ins)
     (inline rtl_ins-args::pair-nil ::rtl_ins)
@@ -491,11 +511,11 @@
 ;; block
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-block::block label1334::int preds1335::pair-nil succs1336::pair-nil first1337::pair)
+    (inline make-block::block label1347::int preds1348::pair-nil succs1349::pair-nil first1350::pair-nil)
     (inline block?::bool ::obj)
     (block-nil::block)
-    (inline block-first::pair ::block)
-    (inline block-first-set! ::block ::pair)
+    (inline block-first::pair-nil ::block)
+    (inline block-first-set! ::block ::pair-nil)
     (inline block-succs::pair-nil ::block)
     (inline block-succs-set! ::block ::pair-nil)
     (inline block-preds::pair-nil ::block)
@@ -506,7 +526,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; rtl_reg
-(define-inline (make-rtl_reg::rtl_reg type1484::type var1485::obj onexpr?1486::obj name1487::obj key1488::obj hardware1489::obj) (instantiate::rtl_reg (type type1484) (var var1485) (onexpr? onexpr?1486) (name name1487) (key key1488) (hardware hardware1489)))
+(define-inline (make-rtl_reg::rtl_reg type1506::type var1507::obj onexpr?1508::obj name1509::obj key1510::obj hardware1511::obj) (instantiate::rtl_reg (type type1506) (var var1507) (onexpr? onexpr?1508) (name name1509) (key key1510) (hardware hardware1511)))
 (define-inline (rtl_reg?::bool obj::obj) ((@ isa? __object) obj (@ rtl_reg saw_defs)))
 (define (rtl_reg-nil::rtl_reg) (class-nil (@ rtl_reg saw_defs)))
 (define-inline (rtl_reg-hardware::obj o::rtl_reg) (-> |#!bigloo_wallow| o hardware))
@@ -523,21 +543,21 @@
 (define-inline (rtl_reg-type-set! o::rtl_reg v::type) (set! (-> |#!bigloo_wallow| o type) v))
 
 ;; rtl_fun
-(define-inline (make-rtl_fun::rtl_fun loc1482::obj) (instantiate::rtl_fun (loc loc1482)))
+(define-inline (make-rtl_fun::rtl_fun loc1503::obj) (instantiate::rtl_fun (loc loc1503)))
 (define-inline (rtl_fun?::bool obj::obj) ((@ isa? __object) obj (@ rtl_fun saw_defs)))
 (define (rtl_fun-nil::rtl_fun) (class-nil (@ rtl_fun saw_defs)))
 (define-inline (rtl_fun-loc::obj o::rtl_fun) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_fun-loc-set! o::rtl_fun v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_last
-(define-inline (make-rtl_last::rtl_last loc1479::obj) (instantiate::rtl_last (loc loc1479)))
+(define-inline (make-rtl_last::rtl_last loc1501::obj) (instantiate::rtl_last (loc loc1501)))
 (define-inline (rtl_last?::bool obj::obj) ((@ isa? __object) obj (@ rtl_last saw_defs)))
 (define (rtl_last-nil::rtl_last) (class-nil (@ rtl_last saw_defs)))
 (define-inline (rtl_last-loc::obj o::rtl_last) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_last-loc-set! o::rtl_last v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_return
-(define-inline (make-rtl_return::rtl_return loc1476::obj type1477::type) (instantiate::rtl_return (loc loc1476) (type type1477)))
+(define-inline (make-rtl_return::rtl_return loc1498::obj type1499::type) (instantiate::rtl_return (loc loc1498) (type type1499)))
 (define-inline (rtl_return?::bool obj::obj) ((@ isa? __object) obj (@ rtl_return saw_defs)))
 (define (rtl_return-nil::rtl_return) (class-nil (@ rtl_return saw_defs)))
 (define-inline (rtl_return-type::type o::rtl_return) (-> |#!bigloo_wallow| o type))
@@ -546,35 +566,51 @@
 (define-inline (rtl_return-loc-set! o::rtl_return v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_jumpexit
-(define-inline (make-rtl_jumpexit::rtl_jumpexit loc1474::obj) (instantiate::rtl_jumpexit (loc loc1474)))
+(define-inline (make-rtl_jumpexit::rtl_jumpexit loc1496::obj) (instantiate::rtl_jumpexit (loc loc1496)))
 (define-inline (rtl_jumpexit?::bool obj::obj) ((@ isa? __object) obj (@ rtl_jumpexit saw_defs)))
 (define (rtl_jumpexit-nil::rtl_jumpexit) (class-nil (@ rtl_jumpexit saw_defs)))
 (define-inline (rtl_jumpexit-loc::obj o::rtl_jumpexit) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_jumpexit-loc-set! o::rtl_jumpexit v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_fail
-(define-inline (make-rtl_fail::rtl_fail loc1472::obj) (instantiate::rtl_fail (loc loc1472)))
+(define-inline (make-rtl_fail::rtl_fail loc1494::obj) (instantiate::rtl_fail (loc loc1494)))
 (define-inline (rtl_fail?::bool obj::obj) ((@ isa? __object) obj (@ rtl_fail saw_defs)))
 (define (rtl_fail-nil::rtl_fail) (class-nil (@ rtl_fail saw_defs)))
 (define-inline (rtl_fail-loc::obj o::rtl_fail) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_fail-loc-set! o::rtl_fail v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
+;; rtl_retblock
+(define-inline (make-rtl_retblock::rtl_retblock loc1490::obj) (instantiate::rtl_retblock (loc loc1490)))
+(define-inline (rtl_retblock?::bool obj::obj) ((@ isa? __object) obj (@ rtl_retblock saw_defs)))
+(define (rtl_retblock-nil::rtl_retblock) (class-nil (@ rtl_retblock saw_defs)))
+(define-inline (rtl_retblock-loc::obj o::rtl_retblock) (-> |#!bigloo_wallow| o loc))
+(define-inline (rtl_retblock-loc-set! o::rtl_retblock v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
+
+;; rtl_ret
+(define-inline (make-rtl_ret::rtl_ret loc1486::obj to1487::block) (instantiate::rtl_ret (loc loc1486) (to to1487)))
+(define-inline (rtl_ret?::bool obj::obj) ((@ isa? __object) obj (@ rtl_ret saw_defs)))
+(define (rtl_ret-nil::rtl_ret) (class-nil (@ rtl_ret saw_defs)))
+(define-inline (rtl_ret-to::block o::rtl_ret) (-> |#!bigloo_wallow| o to))
+(define-inline (rtl_ret-to-set! o::rtl_ret v::block) (set! (-> |#!bigloo_wallow| o to) v))
+(define-inline (rtl_ret-loc::obj o::rtl_ret) (-> |#!bigloo_wallow| o loc))
+(define-inline (rtl_ret-loc-set! o::rtl_ret v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
+
 ;; rtl_notseq
-(define-inline (make-rtl_notseq::rtl_notseq loc1470::obj) (instantiate::rtl_notseq (loc loc1470)))
+(define-inline (make-rtl_notseq::rtl_notseq loc1483::obj) (instantiate::rtl_notseq (loc loc1483)))
 (define-inline (rtl_notseq?::bool obj::obj) ((@ isa? __object) obj (@ rtl_notseq saw_defs)))
 (define (rtl_notseq-nil::rtl_notseq) (class-nil (@ rtl_notseq saw_defs)))
 (define-inline (rtl_notseq-loc::obj o::rtl_notseq) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_notseq-loc-set! o::rtl_notseq v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_if
-(define-inline (make-rtl_if::rtl_if loc1468::obj) (instantiate::rtl_if (loc loc1468)))
+(define-inline (make-rtl_if::rtl_if loc1481::obj) (instantiate::rtl_if (loc loc1481)))
 (define-inline (rtl_if?::bool obj::obj) ((@ isa? __object) obj (@ rtl_if saw_defs)))
 (define (rtl_if-nil::rtl_if) (class-nil (@ rtl_if saw_defs)))
 (define-inline (rtl_if-loc::obj o::rtl_if) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_if-loc-set! o::rtl_if v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_select
-(define-inline (make-rtl_select::rtl_select loc1463::obj type1464::type patterns1465::obj) (instantiate::rtl_select (loc loc1463) (type type1464) (patterns patterns1465)))
+(define-inline (make-rtl_select::rtl_select loc1477::obj type1478::type patterns1479::obj) (instantiate::rtl_select (loc loc1477) (type type1478) (patterns patterns1479)))
 (define-inline (rtl_select?::bool obj::obj) ((@ isa? __object) obj (@ rtl_select saw_defs)))
 (define (rtl_select-nil::rtl_select) (class-nil (@ rtl_select saw_defs)))
 (define-inline (rtl_select-patterns::obj o::rtl_select) (-> |#!bigloo_wallow| o patterns))
@@ -585,7 +621,7 @@
 (define-inline (rtl_select-loc-set! o::rtl_select v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_switch
-(define-inline (make-rtl_switch::rtl_switch loc1458::obj type1459::type patterns1460::obj labels1461::obj) (instantiate::rtl_switch (loc loc1458) (type type1459) (patterns patterns1460) (labels labels1461)))
+(define-inline (make-rtl_switch::rtl_switch loc1472::obj type1473::type patterns1474::obj labels1475::obj) (instantiate::rtl_switch (loc loc1472) (type type1473) (patterns patterns1474) (labels labels1475)))
 (define-inline (rtl_switch?::bool obj::obj) ((@ isa? __object) obj (@ rtl_switch saw_defs)))
 (define (rtl_switch-nil::rtl_switch) (class-nil (@ rtl_switch saw_defs)))
 (define-inline (rtl_switch-labels::obj o::rtl_switch) (-> |#!bigloo_wallow| o labels))
@@ -598,7 +634,7 @@
 (define-inline (rtl_switch-loc-set! o::rtl_switch v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_ifeq
-(define-inline (make-rtl_ifeq::rtl_ifeq loc1455::obj then1456::block) (instantiate::rtl_ifeq (loc loc1455) (then then1456)))
+(define-inline (make-rtl_ifeq::rtl_ifeq loc1468::obj then1469::block) (instantiate::rtl_ifeq (loc loc1468) (then then1469)))
 (define-inline (rtl_ifeq?::bool obj::obj) ((@ isa? __object) obj (@ rtl_ifeq saw_defs)))
 (define (rtl_ifeq-nil::rtl_ifeq) (class-nil (@ rtl_ifeq saw_defs)))
 (define-inline (rtl_ifeq-then::block o::rtl_ifeq) (-> |#!bigloo_wallow| o then))
@@ -607,7 +643,7 @@
 (define-inline (rtl_ifeq-loc-set! o::rtl_ifeq v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_ifne
-(define-inline (make-rtl_ifne::rtl_ifne loc1452::obj then1453::block) (instantiate::rtl_ifne (loc loc1452) (then then1453)))
+(define-inline (make-rtl_ifne::rtl_ifne loc1465::obj then1466::block) (instantiate::rtl_ifne (loc loc1465) (then then1466)))
 (define-inline (rtl_ifne?::bool obj::obj) ((@ isa? __object) obj (@ rtl_ifne saw_defs)))
 (define (rtl_ifne-nil::rtl_ifne) (class-nil (@ rtl_ifne saw_defs)))
 (define-inline (rtl_ifne-then::block o::rtl_ifne) (-> |#!bigloo_wallow| o then))
@@ -616,7 +652,7 @@
 (define-inline (rtl_ifne-loc-set! o::rtl_ifne v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_go
-(define-inline (make-rtl_go::rtl_go loc1447::obj to1448::block) (instantiate::rtl_go (loc loc1447) (to to1448)))
+(define-inline (make-rtl_go::rtl_go loc1462::obj to1463::block) (instantiate::rtl_go (loc loc1462) (to to1463)))
 (define-inline (rtl_go?::bool obj::obj) ((@ isa? __object) obj (@ rtl_go saw_defs)))
 (define (rtl_go-nil::rtl_go) (class-nil (@ rtl_go saw_defs)))
 (define-inline (rtl_go-to::block o::rtl_go) (-> |#!bigloo_wallow| o to))
@@ -625,28 +661,28 @@
 (define-inline (rtl_go-loc-set! o::rtl_go v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_pure
-(define-inline (make-rtl_pure::rtl_pure loc1445::obj) (instantiate::rtl_pure (loc loc1445)))
+(define-inline (make-rtl_pure::rtl_pure loc1459::obj) (instantiate::rtl_pure (loc loc1459)))
 (define-inline (rtl_pure?::bool obj::obj) ((@ isa? __object) obj (@ rtl_pure saw_defs)))
 (define (rtl_pure-nil::rtl_pure) (class-nil (@ rtl_pure saw_defs)))
 (define-inline (rtl_pure-loc::obj o::rtl_pure) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_pure-loc-set! o::rtl_pure v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_nop
-(define-inline (make-rtl_nop::rtl_nop loc1443::obj) (instantiate::rtl_nop (loc loc1443)))
+(define-inline (make-rtl_nop::rtl_nop loc1457::obj) (instantiate::rtl_nop (loc loc1457)))
 (define-inline (rtl_nop?::bool obj::obj) ((@ isa? __object) obj (@ rtl_nop saw_defs)))
 (define (rtl_nop-nil::rtl_nop) (class-nil (@ rtl_nop saw_defs)))
 (define-inline (rtl_nop-loc::obj o::rtl_nop) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_nop-loc-set! o::rtl_nop v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_mov
-(define-inline (make-rtl_mov::rtl_mov loc1441::obj) (instantiate::rtl_mov (loc loc1441)))
+(define-inline (make-rtl_mov::rtl_mov loc1453::obj) (instantiate::rtl_mov (loc loc1453)))
 (define-inline (rtl_mov?::bool obj::obj) ((@ isa? __object) obj (@ rtl_mov saw_defs)))
 (define (rtl_mov-nil::rtl_mov) (class-nil (@ rtl_mov saw_defs)))
 (define-inline (rtl_mov-loc::obj o::rtl_mov) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_mov-loc-set! o::rtl_mov v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_loadi
-(define-inline (make-rtl_loadi::rtl_loadi loc1436::obj constant1437::atom) (instantiate::rtl_loadi (loc loc1436) (constant constant1437)))
+(define-inline (make-rtl_loadi::rtl_loadi loc1450::obj constant1451::atom) (instantiate::rtl_loadi (loc loc1450) (constant constant1451)))
 (define-inline (rtl_loadi?::bool obj::obj) ((@ isa? __object) obj (@ rtl_loadi saw_defs)))
 (define (rtl_loadi-nil::rtl_loadi) (class-nil (@ rtl_loadi saw_defs)))
 (define-inline (rtl_loadi-constant::atom o::rtl_loadi) (-> |#!bigloo_wallow| o constant))
@@ -655,7 +691,7 @@
 (define-inline (rtl_loadi-loc-set! o::rtl_loadi v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_loadg
-(define-inline (make-rtl_loadg::rtl_loadg loc1432::obj var1433::global) (instantiate::rtl_loadg (loc loc1432) (var var1433)))
+(define-inline (make-rtl_loadg::rtl_loadg loc1445::obj var1447::global) (instantiate::rtl_loadg (loc loc1445) (var var1447)))
 (define-inline (rtl_loadg?::bool obj::obj) ((@ isa? __object) obj (@ rtl_loadg saw_defs)))
 (define (rtl_loadg-nil::rtl_loadg) (class-nil (@ rtl_loadg saw_defs)))
 (define-inline (rtl_loadg-var::global o::rtl_loadg) (-> |#!bigloo_wallow| o var))
@@ -664,7 +700,7 @@
 (define-inline (rtl_loadg-loc-set! o::rtl_loadg v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_loadfun
-(define-inline (make-rtl_loadfun::rtl_loadfun loc1429::obj var1430::global) (instantiate::rtl_loadfun (loc loc1429) (var var1430)))
+(define-inline (make-rtl_loadfun::rtl_loadfun loc1441::obj var1442::global) (instantiate::rtl_loadfun (loc loc1441) (var var1442)))
 (define-inline (rtl_loadfun?::bool obj::obj) ((@ isa? __object) obj (@ rtl_loadfun saw_defs)))
 (define (rtl_loadfun-nil::rtl_loadfun) (class-nil (@ rtl_loadfun saw_defs)))
 (define-inline (rtl_loadfun-var::global o::rtl_loadfun) (-> |#!bigloo_wallow| o var))
@@ -673,7 +709,7 @@
 (define-inline (rtl_loadfun-loc-set! o::rtl_loadfun v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_globalref
-(define-inline (make-rtl_globalref::rtl_globalref loc1425::obj var1426::global) (instantiate::rtl_globalref (loc loc1425) (var var1426)))
+(define-inline (make-rtl_globalref::rtl_globalref loc1437::obj var1438::global) (instantiate::rtl_globalref (loc loc1437) (var var1438)))
 (define-inline (rtl_globalref?::bool obj::obj) ((@ isa? __object) obj (@ rtl_globalref saw_defs)))
 (define (rtl_globalref-nil::rtl_globalref) (class-nil (@ rtl_globalref saw_defs)))
 (define-inline (rtl_globalref-var::global o::rtl_globalref) (-> |#!bigloo_wallow| o var))
@@ -682,7 +718,7 @@
 (define-inline (rtl_globalref-loc-set! o::rtl_globalref v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_getfield
-(define-inline (make-rtl_getfield::rtl_getfield loc1419::obj name1420::bstring objtype1421::type type1422::type) (instantiate::rtl_getfield (loc loc1419) (name name1420) (objtype objtype1421) (type type1422)))
+(define-inline (make-rtl_getfield::rtl_getfield loc1431::obj name1432::bstring objtype1433::type type1434::type) (instantiate::rtl_getfield (loc loc1431) (name name1432) (objtype objtype1433) (type type1434)))
 (define-inline (rtl_getfield?::bool obj::obj) ((@ isa? __object) obj (@ rtl_getfield saw_defs)))
 (define (rtl_getfield-nil::rtl_getfield) (class-nil (@ rtl_getfield saw_defs)))
 (define-inline (rtl_getfield-type::type o::rtl_getfield) (-> |#!bigloo_wallow| o type))
@@ -695,7 +731,7 @@
 (define-inline (rtl_getfield-loc-set! o::rtl_getfield v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_valloc
-(define-inline (make-rtl_valloc::rtl_valloc loc1415::obj type1416::type vtype1417::type) (instantiate::rtl_valloc (loc loc1415) (type type1416) (vtype vtype1417)))
+(define-inline (make-rtl_valloc::rtl_valloc loc1426::obj type1428::type vtype1429::type) (instantiate::rtl_valloc (loc loc1426) (type type1428) (vtype vtype1429)))
 (define-inline (rtl_valloc?::bool obj::obj) ((@ isa? __object) obj (@ rtl_valloc saw_defs)))
 (define (rtl_valloc-nil::rtl_valloc) (class-nil (@ rtl_valloc saw_defs)))
 (define-inline (rtl_valloc-vtype::type o::rtl_valloc) (-> |#!bigloo_wallow| o vtype))
@@ -706,7 +742,7 @@
 (define-inline (rtl_valloc-loc-set! o::rtl_valloc v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_vref
-(define-inline (make-rtl_vref::rtl_vref loc1411::obj type1412::type vtype1413::type) (instantiate::rtl_vref (loc loc1411) (type type1412) (vtype vtype1413)))
+(define-inline (make-rtl_vref::rtl_vref loc1422::obj type1423::type vtype1424::type) (instantiate::rtl_vref (loc loc1422) (type type1423) (vtype vtype1424)))
 (define-inline (rtl_vref?::bool obj::obj) ((@ isa? __object) obj (@ rtl_vref saw_defs)))
 (define (rtl_vref-nil::rtl_vref) (class-nil (@ rtl_vref saw_defs)))
 (define-inline (rtl_vref-vtype::type o::rtl_vref) (-> |#!bigloo_wallow| o vtype))
@@ -717,7 +753,7 @@
 (define-inline (rtl_vref-loc-set! o::rtl_vref v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_vlength
-(define-inline (make-rtl_vlength::rtl_vlength loc1403::obj type1406::type vtype1407::type) (instantiate::rtl_vlength (loc loc1403) (type type1406) (vtype vtype1407)))
+(define-inline (make-rtl_vlength::rtl_vlength loc1418::obj type1419::type vtype1420::type) (instantiate::rtl_vlength (loc loc1418) (type type1419) (vtype vtype1420)))
 (define-inline (rtl_vlength?::bool obj::obj) ((@ isa? __object) obj (@ rtl_vlength saw_defs)))
 (define (rtl_vlength-nil::rtl_vlength) (class-nil (@ rtl_vlength saw_defs)))
 (define-inline (rtl_vlength-vtype::type o::rtl_vlength) (-> |#!bigloo_wallow| o vtype))
@@ -728,7 +764,7 @@
 (define-inline (rtl_vlength-loc-set! o::rtl_vlength v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_instanceof
-(define-inline (make-rtl_instanceof::rtl_instanceof loc1400::obj type1401::type) (instantiate::rtl_instanceof (loc loc1400) (type type1401)))
+(define-inline (make-rtl_instanceof::rtl_instanceof loc1415::obj type1416::type) (instantiate::rtl_instanceof (loc loc1415) (type type1416)))
 (define-inline (rtl_instanceof?::bool obj::obj) ((@ isa? __object) obj (@ rtl_instanceof saw_defs)))
 (define (rtl_instanceof-nil::rtl_instanceof) (class-nil (@ rtl_instanceof saw_defs)))
 (define-inline (rtl_instanceof-type::type o::rtl_instanceof) (-> |#!bigloo_wallow| o type))
@@ -737,28 +773,28 @@
 (define-inline (rtl_instanceof-loc-set! o::rtl_instanceof v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_makebox
-(define-inline (make-rtl_makebox::rtl_makebox loc1398::obj) (instantiate::rtl_makebox (loc loc1398)))
+(define-inline (make-rtl_makebox::rtl_makebox loc1413::obj) (instantiate::rtl_makebox (loc loc1413)))
 (define-inline (rtl_makebox?::bool obj::obj) ((@ isa? __object) obj (@ rtl_makebox saw_defs)))
 (define (rtl_makebox-nil::rtl_makebox) (class-nil (@ rtl_makebox saw_defs)))
 (define-inline (rtl_makebox-loc::obj o::rtl_makebox) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_makebox-loc-set! o::rtl_makebox v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_boxref
-(define-inline (make-rtl_boxref::rtl_boxref loc1396::obj) (instantiate::rtl_boxref (loc loc1396)))
+(define-inline (make-rtl_boxref::rtl_boxref loc1410::obj) (instantiate::rtl_boxref (loc loc1410)))
 (define-inline (rtl_boxref?::bool obj::obj) ((@ isa? __object) obj (@ rtl_boxref saw_defs)))
 (define (rtl_boxref-nil::rtl_boxref) (class-nil (@ rtl_boxref saw_defs)))
 (define-inline (rtl_boxref-loc::obj o::rtl_boxref) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_boxref-loc-set! o::rtl_boxref v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_effect
-(define-inline (make-rtl_effect::rtl_effect loc1394::obj) (instantiate::rtl_effect (loc loc1394)))
+(define-inline (make-rtl_effect::rtl_effect loc1407::obj) (instantiate::rtl_effect (loc loc1407)))
 (define-inline (rtl_effect?::bool obj::obj) ((@ isa? __object) obj (@ rtl_effect saw_defs)))
 (define (rtl_effect-nil::rtl_effect) (class-nil (@ rtl_effect saw_defs)))
 (define-inline (rtl_effect-loc::obj o::rtl_effect) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_effect-loc-set! o::rtl_effect v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_storeg
-(define-inline (make-rtl_storeg::rtl_storeg loc1391::obj var1392::global) (instantiate::rtl_storeg (loc loc1391) (var var1392)))
+(define-inline (make-rtl_storeg::rtl_storeg loc1404::obj var1405::global) (instantiate::rtl_storeg (loc loc1404) (var var1405)))
 (define-inline (rtl_storeg?::bool obj::obj) ((@ isa? __object) obj (@ rtl_storeg saw_defs)))
 (define (rtl_storeg-nil::rtl_storeg) (class-nil (@ rtl_storeg saw_defs)))
 (define-inline (rtl_storeg-var::global o::rtl_storeg) (-> |#!bigloo_wallow| o var))
@@ -767,7 +803,7 @@
 (define-inline (rtl_storeg-loc-set! o::rtl_storeg v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_setfield
-(define-inline (make-rtl_setfield::rtl_setfield loc1386::obj name1387::bstring objtype1388::type type1389::type) (instantiate::rtl_setfield (loc loc1386) (name name1387) (objtype objtype1388) (type type1389)))
+(define-inline (make-rtl_setfield::rtl_setfield loc1399::obj name1400::bstring objtype1401::type type1402::type) (instantiate::rtl_setfield (loc loc1399) (name name1400) (objtype objtype1401) (type type1402)))
 (define-inline (rtl_setfield?::bool obj::obj) ((@ isa? __object) obj (@ rtl_setfield saw_defs)))
 (define (rtl_setfield-nil::rtl_setfield) (class-nil (@ rtl_setfield saw_defs)))
 (define-inline (rtl_setfield-type::type o::rtl_setfield) (-> |#!bigloo_wallow| o type))
@@ -780,7 +816,7 @@
 (define-inline (rtl_setfield-loc-set! o::rtl_setfield v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_vset
-(define-inline (make-rtl_vset::rtl_vset loc1381::obj type1382::type vtype1383::type) (instantiate::rtl_vset (loc loc1381) (type type1382) (vtype vtype1383)))
+(define-inline (make-rtl_vset::rtl_vset loc1395::obj type1396::type vtype1397::type) (instantiate::rtl_vset (loc loc1395) (type type1396) (vtype vtype1397)))
 (define-inline (rtl_vset?::bool obj::obj) ((@ isa? __object) obj (@ rtl_vset saw_defs)))
 (define (rtl_vset-nil::rtl_vset) (class-nil (@ rtl_vset saw_defs)))
 (define-inline (rtl_vset-vtype::type o::rtl_vset) (-> |#!bigloo_wallow| o vtype))
@@ -791,14 +827,14 @@
 (define-inline (rtl_vset-loc-set! o::rtl_vset v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_boxset
-(define-inline (make-rtl_boxset::rtl_boxset loc1379::obj) (instantiate::rtl_boxset (loc loc1379)))
+(define-inline (make-rtl_boxset::rtl_boxset loc1392::obj) (instantiate::rtl_boxset (loc loc1392)))
 (define-inline (rtl_boxset?::bool obj::obj) ((@ isa? __object) obj (@ rtl_boxset saw_defs)))
 (define (rtl_boxset-nil::rtl_boxset) (class-nil (@ rtl_boxset saw_defs)))
 (define-inline (rtl_boxset-loc::obj o::rtl_boxset) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_boxset-loc-set! o::rtl_boxset v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_new
-(define-inline (make-rtl_new::rtl_new loc1374::obj type1376::type constr1377::pair-nil) (instantiate::rtl_new (loc loc1374) (type type1376) (constr constr1377)))
+(define-inline (make-rtl_new::rtl_new loc1388::obj type1389::type constr1390::pair-nil) (instantiate::rtl_new (loc loc1388) (type type1389) (constr constr1390)))
 (define-inline (rtl_new?::bool obj::obj) ((@ isa? __object) obj (@ rtl_new saw_defs)))
 (define (rtl_new-nil::rtl_new) (class-nil (@ rtl_new saw_defs)))
 (define-inline (rtl_new-constr::pair-nil o::rtl_new) (-> |#!bigloo_wallow| o constr))
@@ -809,7 +845,7 @@
 (define-inline (rtl_new-loc-set! o::rtl_new v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_call
-(define-inline (make-rtl_call::rtl_call loc1371::obj var1372::global) (instantiate::rtl_call (loc loc1371) (var var1372)))
+(define-inline (make-rtl_call::rtl_call loc1385::obj var1386::global) (instantiate::rtl_call (loc loc1385) (var var1386)))
 (define-inline (rtl_call?::bool obj::obj) ((@ isa? __object) obj (@ rtl_call saw_defs)))
 (define (rtl_call-nil::rtl_call) (class-nil (@ rtl_call saw_defs)))
 (define-inline (rtl_call-var::global o::rtl_call) (-> |#!bigloo_wallow| o var))
@@ -818,14 +854,14 @@
 (define-inline (rtl_call-loc-set! o::rtl_call v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_apply
-(define-inline (make-rtl_apply::rtl_apply loc1369::obj) (instantiate::rtl_apply (loc loc1369)))
+(define-inline (make-rtl_apply::rtl_apply loc1382::obj) (instantiate::rtl_apply (loc loc1382)))
 (define-inline (rtl_apply?::bool obj::obj) ((@ isa? __object) obj (@ rtl_apply saw_defs)))
 (define (rtl_apply-nil::rtl_apply) (class-nil (@ rtl_apply saw_defs)))
 (define-inline (rtl_apply-loc::obj o::rtl_apply) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_apply-loc-set! o::rtl_apply v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_lightfuncall
-(define-inline (make-rtl_lightfuncall::rtl_lightfuncall loc1363::obj name1364::symbol funs1365::pair-nil rettype1366::obj) (instantiate::rtl_lightfuncall (loc loc1363) (name name1364) (funs funs1365) (rettype rettype1366)))
+(define-inline (make-rtl_lightfuncall::rtl_lightfuncall loc1377::obj name1378::symbol funs1379::pair-nil rettype1380::obj) (instantiate::rtl_lightfuncall (loc loc1377) (name name1378) (funs funs1379) (rettype rettype1380)))
 (define-inline (rtl_lightfuncall?::bool obj::obj) ((@ isa? __object) obj (@ rtl_lightfuncall saw_defs)))
 (define (rtl_lightfuncall-nil::rtl_lightfuncall) (class-nil (@ rtl_lightfuncall saw_defs)))
 (define-inline (rtl_lightfuncall-rettype::obj o::rtl_lightfuncall) (-> |#!bigloo_wallow| o rettype))
@@ -838,14 +874,14 @@
 (define-inline (rtl_lightfuncall-loc-set! o::rtl_lightfuncall v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_funcall
-(define-inline (make-rtl_funcall::rtl_funcall loc1361::obj) (instantiate::rtl_funcall (loc loc1361)))
+(define-inline (make-rtl_funcall::rtl_funcall loc1374::obj) (instantiate::rtl_funcall (loc loc1374)))
 (define-inline (rtl_funcall?::bool obj::obj) ((@ isa? __object) obj (@ rtl_funcall saw_defs)))
 (define (rtl_funcall-nil::rtl_funcall) (class-nil (@ rtl_funcall saw_defs)))
 (define-inline (rtl_funcall-loc::obj o::rtl_funcall) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_funcall-loc-set! o::rtl_funcall v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_pragma
-(define-inline (make-rtl_pragma::rtl_pragma loc1358::obj format1359::bstring) (instantiate::rtl_pragma (loc loc1358) (format format1359)))
+(define-inline (make-rtl_pragma::rtl_pragma loc1371::obj format1372::bstring) (instantiate::rtl_pragma (loc loc1371) (format format1372)))
 (define-inline (rtl_pragma?::bool obj::obj) ((@ isa? __object) obj (@ rtl_pragma saw_defs)))
 (define (rtl_pragma-nil::rtl_pragma) (class-nil (@ rtl_pragma saw_defs)))
 (define-inline (rtl_pragma-format::bstring o::rtl_pragma) (-> |#!bigloo_wallow| o format))
@@ -854,7 +890,7 @@
 (define-inline (rtl_pragma-loc-set! o::rtl_pragma v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_cast
-(define-inline (make-rtl_cast::rtl_cast loc1354::obj totype1355::type fromtype1356::type) (instantiate::rtl_cast (loc loc1354) (totype totype1355) (fromtype fromtype1356)))
+(define-inline (make-rtl_cast::rtl_cast loc1367::obj totype1368::type fromtype1369::type) (instantiate::rtl_cast (loc loc1367) (totype totype1368) (fromtype fromtype1369)))
 (define-inline (rtl_cast?::bool obj::obj) ((@ isa? __object) obj (@ rtl_cast saw_defs)))
 (define (rtl_cast-nil::rtl_cast) (class-nil (@ rtl_cast saw_defs)))
 (define-inline (rtl_cast-fromtype::type o::rtl_cast) (-> |#!bigloo_wallow| o fromtype))
@@ -865,7 +901,7 @@
 (define-inline (rtl_cast-loc-set! o::rtl_cast v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_cast_null
-(define-inline (make-rtl_cast_null::rtl_cast_null loc1351::obj type1352::type) (instantiate::rtl_cast_null (loc loc1351) (type type1352)))
+(define-inline (make-rtl_cast_null::rtl_cast_null loc1364::obj type1365::type) (instantiate::rtl_cast_null (loc loc1364) (type type1365)))
 (define-inline (rtl_cast_null?::bool obj::obj) ((@ isa? __object) obj (@ rtl_cast_null saw_defs)))
 (define (rtl_cast_null-nil::rtl_cast_null) (class-nil (@ rtl_cast_null saw_defs)))
 (define-inline (rtl_cast_null-type::type o::rtl_cast_null) (-> |#!bigloo_wallow| o type))
@@ -874,21 +910,21 @@
 (define-inline (rtl_cast_null-loc-set! o::rtl_cast_null v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_protect
-(define-inline (make-rtl_protect::rtl_protect loc1348::obj) (instantiate::rtl_protect (loc loc1348)))
+(define-inline (make-rtl_protect::rtl_protect loc1361::obj) (instantiate::rtl_protect (loc loc1361)))
 (define-inline (rtl_protect?::bool obj::obj) ((@ isa? __object) obj (@ rtl_protect saw_defs)))
 (define (rtl_protect-nil::rtl_protect) (class-nil (@ rtl_protect saw_defs)))
 (define-inline (rtl_protect-loc::obj o::rtl_protect) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_protect-loc-set! o::rtl_protect v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_protected
-(define-inline (make-rtl_protected::rtl_protected loc1345::obj) (instantiate::rtl_protected (loc loc1345)))
+(define-inline (make-rtl_protected::rtl_protected loc1358::obj) (instantiate::rtl_protected (loc loc1358)))
 (define-inline (rtl_protected?::bool obj::obj) ((@ isa? __object) obj (@ rtl_protected saw_defs)))
 (define (rtl_protected-nil::rtl_protected) (class-nil (@ rtl_protected saw_defs)))
 (define-inline (rtl_protected-loc::obj o::rtl_protected) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_protected-loc-set! o::rtl_protected v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; rtl_ins
-(define-inline (make-rtl_ins::rtl_ins loc1339::obj %spill1340::pair-nil dest1341::obj fun1342::rtl_fun args1343::pair-nil) (instantiate::rtl_ins (loc loc1339) (%spill %spill1340) (dest dest1341) (fun fun1342) (args args1343)))
+(define-inline (make-rtl_ins::rtl_ins loc1352::obj %spill1353::pair-nil dest1354::obj fun1355::rtl_fun args1356::pair-nil) (instantiate::rtl_ins (loc loc1352) (%spill %spill1353) (dest dest1354) (fun fun1355) (args args1356)))
 (define-inline (rtl_ins?::bool obj::obj) ((@ isa? __object) obj (@ rtl_ins saw_defs)))
 (define (rtl_ins-nil::rtl_ins) (class-nil (@ rtl_ins saw_defs)))
 (define-inline (rtl_ins-args::pair-nil o::rtl_ins) (-> |#!bigloo_wallow| o args))
@@ -903,11 +939,11 @@
 (define-inline (rtl_ins-loc-set! o::rtl_ins v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; block
-(define-inline (make-block::block label1334::int preds1335::pair-nil succs1336::pair-nil first1337::pair) (instantiate::block (label label1334) (preds preds1335) (succs succs1336) (first first1337)))
+(define-inline (make-block::block label1347::int preds1348::pair-nil succs1349::pair-nil first1350::pair-nil) (instantiate::block (label label1347) (preds preds1348) (succs succs1349) (first first1350)))
 (define-inline (block?::bool obj::obj) ((@ isa? __object) obj (@ block saw_defs)))
 (define (block-nil::block) (class-nil (@ block saw_defs)))
-(define-inline (block-first::pair o::block) (-> |#!bigloo_wallow| o first))
-(define-inline (block-first-set! o::block v::pair) (set! (-> |#!bigloo_wallow| o first) v))
+(define-inline (block-first::pair-nil o::block) (-> |#!bigloo_wallow| o first))
+(define-inline (block-first-set! o::block v::pair-nil) (set! (-> |#!bigloo_wallow| o first) v))
 (define-inline (block-succs::pair-nil o::block) (-> |#!bigloo_wallow| o succs))
 (define-inline (block-succs-set! o::block v::pair-nil) (set! (-> |#!bigloo_wallow| o succs) v))
 (define-inline (block-preds::pair-nil o::block) (-> |#!bigloo_wallow| o preds))

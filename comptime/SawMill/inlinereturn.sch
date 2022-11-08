@@ -2,7 +2,7 @@
 ;; Class accessors
 ;; Bigloo (3.7b)
 ;; Inria -- Sophia Antipolis     Mon Nov 14 18:35:27 CET 2011 
-;; (bigloo.new -classgen SawMill/InlineReturn.scm)
+;; (bigloo.new -classgen SawMill/inlinereturn.scm)
 ;; ==========================================================
 
 ;; The directives

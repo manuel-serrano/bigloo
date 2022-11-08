@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Dec  6 08:11:23 2021 (serrano)                */
-#*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Nov  4 21:07:11 2022 (serrano)                */
+#*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -303,20 +303,24 @@ dohostboot:
 	if [ "$(PCRE2CUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre2 clean; \
 	  $(MAKE) -C pcre2 boot; \
+	  $(MAKE) -C pcre2 install; \
         fi
 	if [ "$(PCRECUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C pcre clean; \
 	  $(MAKE) -C pcre boot; \
+	  $(MAKE) -C pcre install; \
         fi
 	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libunistring clean; \
 	  $(MAKE) -C libunistring boot; \
+	  $(MAKE) -C libunistring install; \
         fi
 	@ mkdir -p bin
 	$(MAKE) -C runtime hostboot BBFLAGS="-w"
 	$(MAKE) -C comptime -i touchall
 	$(MAKE) -C comptime hostboot BBFLAGS="-w -unsafeh"
 	$(MAKE) -C runtime heap-c BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) -C comptime -i touchall
 	$(MAKE) -C comptime BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C runtime clean-quick
 	$(MAKE) -C runtime heap libs BIGLOO=$(BOOTBINDIR)/bigloo

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Tue Dec  7 08:41:40 2021 (serrano)                */
-/*    Copyright   :  2003-21 Manuel Serrano                            */
+/*    Last change :  Fri Nov  4 13:30:44 2022 (serrano)                */
+/*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -50,13 +50,16 @@ bgl_init_bignum() {
 #define POSITIVE(x) (SIZ(x) > 0)
 #define NEGATIVE(x) (SIZ(x) < 0)
 
+#define BIGNUM_ALLOC_SIZE(sz) \
+   (BIGNUM_SIZE + ((sz) * sizeof(mp_limb_t)))
+
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    make_bignum ...                                                  */
 /*---------------------------------------------------------------------*/
 static obj_t
 make_bignum(size_t sz) {
-   obj_t o = GC_MALLOC_ATOMIC(BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *));
+   obj_t o = GC_MALLOC_ATOMIC(BIGNUM_ALLOC_SIZE(sz));
    
    o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0);
    o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
@@ -66,7 +69,7 @@ make_bignum(size_t sz) {
 }
 
 #define MAKE_STACK_BIGNUM(o, sz) \
-   (o = alloca(BIGNUM_SIZE + (sz * sizeof(mp_limb_t)) - sizeof(void *)), \
+   (o = alloca(BIGNUM_ALLOC_SIZE(sz)), \
       o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0), \
       o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d), \
       o->bignum.mpz._mp_alloc = sz, \
@@ -465,12 +468,14 @@ bignum_add_pos_pos_aux(const mp_limb_t *x, const int size_x,
    const int carry = mpn_add(BXLIMBS(z), x, size_x, y, size_y);
    
    if (carry) {
-      BXLIMBS(z) = (mp_limb_t *)GC_REALLOC((obj_t)BXLIMBS(z),
-					   (size_x + 1)*sizeof(mp_limb_t));
+      obj_t o = GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + 1));
+      o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
+      z = BREF(o);
       BXLIMBS(z)[size_x] = carry;
       BXSIZ(z) = BXALLOC(z) = size_x + 1;
-   } else
+   } else {
       BXSIZ(z) = BXALLOC(z) = size_x;
+   }
    
    return z;
 }
@@ -484,10 +489,11 @@ bignum_add_pos_pos_aux(const mp_limb_t *x, const int size_x,
 static obj_t
 bignum_add_pos_pos(const mp_limb_t *x, const int size_x,
 		   const mp_limb_t *y, const int size_y) {
-   if (size_x >= size_y)
+   if (size_x >= size_y) {
       return bignum_add_pos_pos_aux(x, size_x, y, size_y);
-   else
+   } else {
       return bignum_add_pos_pos_aux(y, size_y, x, size_x);
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -511,8 +517,10 @@ bignum_add_pos_neg_aux(const mp_limb_t *x, const int size_x,
    count ++;
    
    if (count != size_x) {
-      BXLIMBS(z) = (mp_limb_t *)GC_REALLOC((obj_t)BXLIMBS(z),
-					   count * sizeof(mp_limb_t));
+      obj_t o = GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + count));
+      o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
+      z = BREF(o);
+
       BXALLOC(z) = count;
    }
    
@@ -610,26 +618,29 @@ bgl_bignum_add(obj_t x, obj_t y) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_bignum_sub(obj_t x, obj_t y) {
-   if (BXPOSITIVE(x))
-      if (BXPOSITIVE(y))
+   if (BXPOSITIVE(x)) {
+      if (BXPOSITIVE(y)) {
 	 return bignum_add_pos_neg(BXLIMBS(x), BXSIZ(x),
 				   BXLIMBS(y), BXSIZ(y));
-      else if (BXNEGATIVE(y))
+      } else if (BXNEGATIVE(y)) {
 	 return bignum_add_pos_pos(BXLIMBS(x), BXSIZ(x),
 				   BXLIMBS(y), -BXSIZ(y));
-      else
+      } else {
 	 return x;
-   else if (BXNEGATIVE(x))
-      if (BXPOSITIVE(y))
+      }
+   } else if (BXNEGATIVE(x)) {
+      if (BXPOSITIVE(y)) {
 	 return bignum_add_neg_neg(BXLIMBS(x), -BXSIZ(x),
 				   BXLIMBS(y), BXSIZ(y));
-      else if (BXNEGATIVE(y))
+      } else if (BXNEGATIVE(y)) {
 	 return bignum_add_pos_neg(BXLIMBS(y), -BXSIZ(y),
 				   BXLIMBS(x), -BXSIZ(x));
-      else
+      } else {
 	 return x;
-   else
+      }
+   } else {
       return bgl_bignum_neg(y);
+   }
 }
 
 /*---------------------------------------------------------------------*/

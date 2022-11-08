@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/srfi18/src/Java/jmutex.java      */
+/*    .../project/bigloo/bigloo/api/srfi18/src/Java/jmutex.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Wed Dec 19 10:52:05 2012 (serrano)                */
-/*    Copyright   :  2005-12 Manuel Serrano                            */
+/*    Last change :  Mon Nov  7 11:37:58 2022 (serrano)                */
+/*    Copyright   :  2005-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
 /*=====================================================================*/
@@ -33,6 +33,14 @@ public class jmutex extends bigloo.mutex {
 
    public jmutex( Object n ) {
       super( n );
+   }
+
+   protected bigloo.mutex create( Object name ) {
+     bigloo.mutex m = new jmutex( name );
+      
+     mutexes = foreign.MAKE_PAIR( m, mutexes );
+      
+     return m;
    }
 
    protected static void mutexes_unlock( Object thread ) {

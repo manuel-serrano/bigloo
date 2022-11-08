@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Mon Sep 27 10:36:50 2021 (serrano)                */
-;*    Copyright   :  2002-21 Manuel Serrano                            */
+;*    Last change :  Sat Apr 16 07:08:14 2022 (serrano)                */
+;*    Copyright   :  2002-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -784,7 +784,13 @@
    (test "cond-expand(or-eval)" (eval '(cond-expand
 					  ((or bigloo bigloo-eval) 5)
 					  (else -1)))
-	 5)
+      5)
+   (test "cond-expand(or-empty)" (eval (cond-expand ((or chicken bigloo)) (else 3)))
+      #unspecified)
+   (test "cond-expand(or-empty2)" (eval (cond-expand ((or chicken gambit)) (else 3)))
+      3)
+   (test "cond-expand(or-empty3)" (eval (cond-expand ((or chicken gambit)) (else)))
+      #unspecified)
    (test "cond-expand(or)" (cond-expand-foo 3) 3)
    (test "cond-expand" (cond-expand ((and bigloo bigloo) 1) (else 2)) 1)
    (test "cond-expand" (cond-expand (xxx 1) (else 2)) 2)

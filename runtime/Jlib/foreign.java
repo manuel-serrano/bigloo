@@ -6,6 +6,11 @@ import java.util.*;
 import java.lang.Runtime;
 import java.net.*;
 import java.util.regex.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+
+
 
 public final class foreign
 {
@@ -3562,7 +3567,6 @@ public final class foreign
 
    public static date bgl_seconds_to_gmtdate(long sec)
       {
-	 System.out.println( "bgl_seconds_to_gmtdate not implemented using local time" );
 	 return bgl_seconds_to_date( sec );
       }
 
@@ -4341,8 +4345,16 @@ public final class foreign
       return p.getRef();
    }
 
+   public static Object bgl_weakptr_data(weakptr p) {
+      return p.getData();
+   }
+
    public static void bgl_weakptr_data_set(weakptr p, Object o){
       p.setData(o);
+   }
+   
+   public static Object bgl_weakptr_data(weakptr p){
+       return p.getData();
    }
 
    public static void bgl_weakptr_ref_set(weakptr p, Object o){
@@ -4415,8 +4427,8 @@ public final class foreign
 
    public static int OBJECT_TYPE = 0;
 
-   public static object BGL_AS_OBJECT(Object o) {
-       return (object)o;
+   public static bigloo.object BGL_AS_OBJECT(Object o) {
+      return (bigloo.object)o;
    }
    
    public static Object BGL_OBJECT_WIDENING_SET(object o, Object v)
@@ -5105,7 +5117,7 @@ public final class foreign
       throw v;
    }
 
-   private static Boolean err_lock = new Boolean( true );
+   private static Lock err_lock = new ReentrantLock();
 
    public static void notify_exception( Throwable e ) throws Throwable {
       if( e instanceof ClassCastException ) {
@@ -5146,10 +5158,13 @@ public final class foreign
    public static Object java_exception_handler(Throwable v, exit tag) {
       if( v instanceof java.lang.StackOverflowError ) {
 	 // abort at once because otherwise the handler will crash too!
-	 synchronized( err_lock ) {
+          err_lock.lock();
+          try {
 	    System.err.println( "*** JVM stack overflow error:" );
 	    v.printStackTrace( new stackwriter( System.err, true ) );
-	 }
+          } finally {
+              err_lock.unlock();
+          }
       } else {
 	 try {
 	    notify_exception( v );
@@ -5233,12 +5248,15 @@ public final class foreign
 	 notify_exception( e );
       } catch( Throwable _t ) {
       } finally {
-	 synchronized( err_lock ) {
+         err_lock.lock();
+	 try {
 	    final stackwriter sw = new stackwriter( System.err, true );
 	    System.err.println();
 	    e.printStackTrace( sw );
 	    sw.flush();
-	 }
+	 } finally {
+            err_lock.unlock();
+         }
       }
 	 
       bigloo_abort();
@@ -5360,7 +5378,7 @@ public final class foreign
 	 return stack_trace.get(depth);
       }
 
-   public static Object init_trace_stacksp()
+   public static Object init_trace_stacksp(bgldynamic env)
       {
 	 return unspecified.unspecified;
       }

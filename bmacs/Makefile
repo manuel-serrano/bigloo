@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Tue Mar 10 17:49:34 2020 (serrano)                */
-#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sat Jul  2 07:02:37 2022 (serrano)                */
+#*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
 #*=====================================================================*/
@@ -116,7 +116,7 @@ POPULATION	= Makefile README $(EMACS_SOURCES) $(OLD_SOURCES) \
 #*---------------------------------------------------------------------*/
 all: $(EMACSBRAND)
 
-emacs22 emacs23 emacs24 emacs25 emacs26 emacs27:
+emacs22 emacs23 emacs24 emacs25 emacs26 emacs27 emacs28:
 	(expr=load-path; \
           for p in . $(LOADPATH); do \
              expr="(cons \"../$$p\" (cons \"$$p\" $$expr))"; \
@@ -183,6 +183,7 @@ install.emacs24: doinstall
 install.emacs25: doinstall
 install.emacs26: doinstall
 install.emacs27: doinstall
+install.emacs28: doinstall
 install.xemacs: doinstall
 
 install.generic:

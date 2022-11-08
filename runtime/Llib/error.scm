@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Dec 31 18:07:14 2021 (serrano)                */
+;*    Last change :  Tue Apr 26 13:57:46 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -717,8 +717,9 @@
 	 (display-circle proc port)
 	 (display #":\n" port)
 	 (display-circle msg port)
-	 (display " -- " port)
-	 (display-circle obj port)
+	 (unless (eq? obj '%no-error-obj)
+	    (display " -- " port)
+	    (display-circle obj port))
 	 (newline port)
 	 (display-trace-stack (or stack (get-trace-stack)) port)
 	 (flush-output-port port))))
@@ -755,8 +756,9 @@
 	    (display-circle proc port)
 	    (newline port)
 	    (display-circle msg port)
-	    (display " -- " port)
-	    (display-circle obj port)
+	    (unless (eq? obj '%no-error-obj)
+	       (display " -- " port)
+	       (display-circle obj port))
 	    (newline port)
 	    (display-trace-stack (or stack (get-trace-stack)) port)
 	    ;; we are now done, we flush

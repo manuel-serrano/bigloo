@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar  7 17:33:01 2019                          */
-;*    Last change :  Thu Mar 14 08:59:26 2019 (serrano)                */
-;*    Copyright   :  2019 Manuel Serrano                               */
+;*    Last change :  Fri Mar 11 19:18:58 2022 (serrano)                */
+;*    Copyright   :  2019-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Midi support (sequencer and tools).                              */
 ;*=====================================================================*/
@@ -595,7 +595,7 @@
       (let ((c (char->integer (read-char ip))))
 	 (if (<=fx c #x7f)
 	     (+fx c acc)
-	     (loop (bit-lsh (+fx acc (bit-and c #x7f)) 7) )))))
+	     (loop (bit-lsh (+fx acc (bit-and c #x7f)) 7))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-stream-peek-byte ...                                      */

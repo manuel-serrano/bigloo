@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/pthread/src/Java/bglpmutex.java      */
+/*    .../bigloo/bigloo/api/pthread/src/Java/bglpmutex.java            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Wed Dec 19 10:40:02 2012 (serrano)                */
-/*    Copyright   :  2005-12 Manuel Serrano                            */
+/*    Last change :  Mon Nov  7 11:37:41 2022 (serrano)                */
+/*    Copyright   :  2005-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
 /*=====================================================================*/
@@ -16,7 +16,6 @@ package bigloo.pthread;
 import java.lang.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.TimeUnit; 
-
 
 import bigloo.*;
 

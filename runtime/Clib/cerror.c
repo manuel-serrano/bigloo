@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Sun Mar 18 07:19:25 2018 (serrano)                */
-/*    Copyright   :  2002-18 Manuel Serrano                            */
+/*    Last change :  Sat Aug 20 10:09:18 2022 (serrano)                */
+/*    Copyright   :  2002-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
 /*=====================================================================*/
@@ -71,7 +71,7 @@ bgl_debug_header( obj_t obj ) {
    fprintf( stderr, "obj=%p\n", obj );
    fprintf( stderr, "  TAG_MASK=%ld ", (((long)obj) & TAG_MASK) );
    switch( (((long)obj) & TAG_MASK) ) {
-      case TAG_STRUCT: fprintf( stderr, "(TAG_STRUCT)\n" ); break;
+      case TAG_POINTER: fprintf( stderr, "(TAG_POINTER)\n" ); break;
       case TAG_INT: fprintf( stderr, "(TAG_INT)\n" ); break;
       case TAG_CNST: fprintf( stderr, "(TAG_CNST)\n" ); break;
 #  if defined( TAG_PAIR) && !defined( KEEP_BACK_PTRS ) && !defined( GC_DEBUG )

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/css_parser.scm      */
+;*    .../project/bigloo/bigloo/api/web/src/Llib/css_parser.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Wed Jan 14 11:12:19 2015 (serrano)                */
-;*    Copyright   :  2005-15 Manuel Serrano                            */
+;*    Last change :  Tue Aug 16 14:13:51 2022 (serrano)                */
+;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
 ;*=====================================================================*/
@@ -32,14 +32,15 @@
 
    (lalr-grammar
       
-      (CDO CDC INCLUDES DASHMATCH STRING IDENT HASH
-	   IMPORT_SYM PAGE_SYM MEDIA_SYM FONT_FACE_SYM CHARSET_SYM
-	   KEYFRAMES_SYM ATKEYWORD IMPORTANT_SYM
-	   EMS EXS CHS REMS LENGTH ANGLE TIME FREQ DIMEN
-	   PERCENTAGE NUMBREC URI NOT_PSEUDO FUNCTION UNICODERANGE RGB NUMBER
-	   COLON SEMI-COLON COMMA
-	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-OPEN PAR-CLO
-	   SLASH * + > ~ - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE S)
+      (CDO CDC INCLUDES DASHMATCH STARMATCH DOLLARMATCH HATMATCH
+	 STRING IDENT HASH
+	 IMPORT_SYM PAGE_SYM MEDIA_SYM FONT_FACE_SYM CHARSET_SYM
+	 KEYFRAMES_SYM ATKEYWORD IMPORTANT_SYM
+	 EMS EXS CHS REMS LENGTH ANGLE TIME FREQ DIMEN
+	 PERCENTAGE NUMBREC URI NOT_PSEUDO FUNCTION UNICODERANGE RGB NUMBER
+	 COLON SEMI-COLON COMMA
+	 BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-OPEN PAR-CLO
+	 SLASH * + > ~ - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE S)
       
       (stylesheet
        ((S* charset? comment* import*)
@@ -343,7 +344,10 @@
       (attrib-left
        ((=) "=")
        ((INCLUDES) (car INCLUDES))
-       ((DASHMATCH) (car DASHMATCH)))
+       ((DASHMATCH) (car DASHMATCH))
+       ((STARMATCH) (car STARMATCH))
+       ((DOLLARMATCH) (car DOLLARMATCH))
+       ((HATMATCH) (car HATMATCH)))
       
       (attrib-right
        ((IDENT) (car IDENT))

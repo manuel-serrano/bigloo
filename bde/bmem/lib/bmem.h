@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/bmem.h        */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/bmem.h           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Sun Dec  5 08:36:05 2021 (serrano)                */
-/*    Copyright   :  2003-21 Manuel Serrano                            */
+/*    Last change :  Sat Mar  5 09:45:04 2022 (serrano)                */
+/*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -235,6 +235,10 @@ extern void *bgl_debug_trace_top( int );
 extern char *bgl_debug_trace_top_name( int );
 extern char *bgl_debug_trace_symbol_name( void * );
 extern char *bgl_debug_trace_symbol_name_json( void * );
+
+#if !BGL_HAVE_BACKTRACE
+typedef int (*backtrace_full_callback)();
+#endif
 
 extern void backtrace_for_each(backtrace_full_callback, int, void *);
 extern int backtrace_alloc_cb(void *, uintptr_t, const char *, int, const char *);

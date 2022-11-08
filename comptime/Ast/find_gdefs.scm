@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/find_gdefs.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Ast/find_gdefs.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 11:21:26 1996                          */

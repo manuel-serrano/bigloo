@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sat Sep  4 15:10:43 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov  4 15:03:46 2022 (serrano)                */
+;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module cfa_approx
    (include "Tools/trace.sch"
-	    "Cfa/set.sch")
+	    "Cfa/set.sch"
+	    "Cfa/cinfo.sch")
    (import  type_type
 	    type_cache
 	    type_coercion
@@ -41,7 +42,6 @@
 	    (union-approx-filter!::approx ::approx ::approx)
 	    (approx-set-type! ::approx ::type)
 	    (approx-set-top! ::approx)
-	    (approx-has-procedure?::bool ::approx)
 	    (approx-check-has-procedure?::bool ::approx)
 	    (make-empty-approx::approx)
 	    (make-type-approx::approx ::type)
@@ -84,20 +84,6 @@
 				   (set! res #t)))
 	 approx)
       res))
-
-;*---------------------------------------------------------------------*/
-;*    approx-has-procedure? ...                                        */
-;*---------------------------------------------------------------------*/
-(define (approx-has-procedure? a::approx)
-   (with-access::approx a (has-procedure?)
-      has-procedure?))
-
-;*---------------------------------------------------------------------*/
-;*    approx-has-procedure?-set! ...                                   */
-;*---------------------------------------------------------------------*/
-(define (approx-has-procedure?-set! a::approx v)
-   (with-access::approx a (has-procedure?)
-      (set! has-procedure? v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    union-approx! ...                                                */
@@ -370,11 +356,11 @@
    (with-access::approx exp (top? type allocs)
       (let* ((keys   (set->vector allocs))
 	     (len    (vector-length keys))
-	     (slen   (if top? (+fx len 1) len))
-	     (struct (make-struct 'approx (+fx 1 slen) #unspecified)))
+	     (slen   (+fx len 2))
+	     (struct (make-struct 'approx slen #unspecified)))
 	 (struct-set! struct 0 (type-id type))
-	 (if top? (struct-set! struct 1 'top))
-	 (let loop ((r (if top? 2 1))
+	 (struct-set! struct 1 (if top? 'top:true 'top:false))
+	 (let loop ((r 2)
 		    (w 0))
 	    (if (=fx w len)
 		struct

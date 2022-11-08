@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Apr  1 19:29:25 2020 (serrano)                */
-/*    Copyright   :  2011-20 Manuel Serrano                            */
+/*    Last change :  Wed Apr 27 09:52:31 2022 (serrano)                */
+/*    Copyright   :  2011-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
 /*    avahi documentation available at:                                */
@@ -27,12 +27,12 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-extern obj_t bgl_avahi_error( char *, char *, obj_t, int );
-extern obj_t bgl_avahi_client_state_to_symbol( AvahiClientState );
-extern obj_t bgl_avahi_entry_group_state_to_symbol( AvahiEntryGroupState );
-extern obj_t bgl_avahi_protocol_to_symbol( AvahiProtocol );
-extern obj_t bgl_avahi_browser_event_to_symbol( AvahiBrowserEvent );
-extern obj_t bgl_avahi_resolver_event_to_symbol( AvahiResolverEvent );
+extern obj_t bgl_avahi_error(char *, char *, obj_t, int);
+extern obj_t bgl_avahi_client_state_to_symbol(AvahiClientState);
+extern obj_t bgl_avahi_entry_group_state_to_symbol(AvahiEntryGroupState);
+extern obj_t bgl_avahi_protocol_to_symbol(AvahiProtocol);
+extern obj_t bgl_avahi_browser_event_to_symbol(AvahiBrowserEvent);
+extern obj_t bgl_avahi_resolver_event_to_symbol(AvahiResolverEvent);
 extern AvahiProtocol bgl_avahi_symbol_to_protocol();
 extern obj_t bgl_avahi_lock();
 extern obj_t bgl_avahi_unlock();
@@ -41,25 +41,27 @@ extern obj_t bgl_avahi_signal();
 /*---------------------------------------------------------------------*/
 /*    Strings                                                          */
 /*---------------------------------------------------------------------*/
-#define BGL_STRING_TO_STRING( o ) \
-   (STRING_LENGTH( o ) == 0 ? 0L : (const char *)(BSTRING_TO_STRING( o )))
+#define BGL_STRING_TO_STRING(o) \
+   (STRING_LENGTH(o) == 0 ? 0L : (const char *)(BSTRING_TO_STRING(o)))
 
 /*---------------------------------------------------------------------*/
 /*    avahi_XXX_poll bigloo object                                     */
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_poll_t BgL_avahizd2pollzd2_bglt
-#define BGL_AVAHI_POLL_BUILTIN( o )		\
+#define BGL_AVAHI_POLL_BUILTIN(o)		\
    (((bgl_avahi_poll_t)CREF(o))->BgL_z42builtinz42)
 
-#define BGL_AVAHI_POLL_CTYPE( o ) \
+#define BGL_AVAHI_POLL_CTYPE(o) \
    (((bgl_avahi_poll_t)CREF(o))->BgL_z42ctypez42)
+#define BGL_AVAHI_POLL_PROCS(o) \
+   (((bgl_avahi_poll_t)CREF(o))->BgL_z52procsz52)
 
 #define bgl_avahi_simple_poll_t BgL_avahizd2simplezd2pollz00_bglt
-#define BGL_AVAHI_SIMPLE_POLL_BUILTIN( o ) \
+#define BGL_AVAHI_SIMPLE_POLL_BUILTIN(o) \
    (((bgl_avahi_simple_poll_t)CREF(o))->BgL_z42builtinz42)
 
 #define bgl_avahi_threaded_poll_t BgL_avahizd2threadedzd2pollz00_bglt
-#define BGL_AVAHI_THREADED_POLL_BUILTIN( o ) \
+#define BGL_AVAHI_THREADED_POLL_BUILTIN(o) \
    (((bgl_avahi_threaded_poll_t)CREF(o))->BgL_z42builtinz42)
 
 /*---------------------------------------------------------------------*/
@@ -67,11 +69,11 @@ extern obj_t bgl_avahi_signal();
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_client_t BgL_avahizd2clientzd2_bglt
 
-#define BGL_AVAHI_CLIENT_BUILTIN( o ) \
+#define BGL_AVAHI_CLIENT_BUILTIN(o) \
    (((bgl_avahi_client_t)CREF(o))->BgL_z42builtinz42)
-#define BGL_AVAHI_CLIENT_PROC( o ) \
+#define BGL_AVAHI_CLIENT_PROC(o) \
    (((bgl_avahi_client_t)CREF(o))->BgL_procz00)
-#define BGL_AVAHI_CLIENT_POLL( o ) \
+#define BGL_AVAHI_CLIENT_POLL(o) \
    (((bgl_avahi_client_t)CREF(o))->BgL_pollz00)
 
 /*---------------------------------------------------------------------*/
@@ -79,11 +81,11 @@ extern obj_t bgl_avahi_signal();
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_entry_group_t BgL_avahizd2entryzd2groupz00_bglt
 
-#define BGL_AVAHI_ENTRY_GROUP_BUILTIN( o ) \
+#define BGL_AVAHI_ENTRY_GROUP_BUILTIN(o) \
    (((bgl_avahi_entry_group_t)CREF(o))->BgL_z42builtinz42)
-#define BGL_AVAHI_ENTRY_GROUP_CLIENT( o ) \
+#define BGL_AVAHI_ENTRY_GROUP_CLIENT(o) \
    (((bgl_avahi_entry_group_t)CREF(o))->BgL_clientz00)
-#define BGL_AVAHI_ENTRY_GROUP_PROC( o ) \
+#define BGL_AVAHI_ENTRY_GROUP_PROC(o) \
    (((bgl_avahi_entry_group_t)CREF(o))->BgL_procz00)
 
 /*---------------------------------------------------------------------*/
@@ -91,31 +93,35 @@ extern obj_t bgl_avahi_signal();
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_service_browser_t BgL_avahizd2servicezd2browserz00_bglt
 
-#define BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) \
+#define BGL_AVAHI_SERVICE_BROWSER_BUILTIN(o) \
    (((bgl_avahi_service_browser_t)CREF(o))->BgL_z42builtinz42)
-#define BGL_AVAHI_SERVICE_BROWSER_CLIENT( o ) \
+#define BGL_AVAHI_SERVICE_BROWSER_CLIENT(o) \
    (((bgl_avahi_service_browser_t)CREF(o))->BgL_clientz00)
-#define BGL_AVAHI_SERVICE_BROWSER_PROC( o ) \
+#define BGL_AVAHI_SERVICE_BROWSER_PROC(o) \
    (((bgl_avahi_service_browser_t)CREF(o))->BgL_procz00)
-#define BGL_AVAHI_SERVICE_BROWSER_TYPE( o ) \
+#define BGL_AVAHI_SERVICE_BROWSER_TYPE(o) \
    (((bgl_avahi_service_browser_t)CREF(o))->BgL_typez00)
-#define BGL_AVAHI_SERVICE_BROWSER_DOMAIN( o ) \
+#define BGL_AVAHI_SERVICE_BROWSER_DOMAIN(o) \
    (((bgl_avahi_service_browser_t)CREF(o))->BgL_domainz00)
+#define BGL_AVAHI_SERVICE_BROWSER_INTERFACE(o) \
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_interfacez00)
+#define BGL_AVAHI_SERVICE_BROWSER_PROTOCOL(o) \
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_protocolz00)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_service_type_browser                                       */
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_service_type_browser_t BgL_avahizd2servicezd2typezd2browserzd2_bglt
 
-#define BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) \
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN(o) \
    (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_z42builtinz42)
-#define BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT( o ) \
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT(o) \
    (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_clientz00)
-#define BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o ) \
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC(o) \
    (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_procz00)
-#define BGL_AVAHI_SERVICE_TYPE_BROWSER_TYPE( o ) \
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_TYPE(o) \
    (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_typez00)
-#define BGL_AVAHI_SERVICE_TYPE_BROWSER_DOMAIN( o ) \
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_DOMAIN(o) \
    (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_domainz00)
 
 /*---------------------------------------------------------------------*/
@@ -123,13 +129,13 @@ extern obj_t bgl_avahi_signal();
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_domain_browser_t BgL_avahizd2domainzd2browserz00_bglt
 
-#define BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) \
+#define BGL_AVAHI_DOMAIN_BROWSER_BUILTIN(o) \
    (((bgl_avahi_domain_browser_t)CREF(o))->BgL_z42builtinz42)
-#define BGL_AVAHI_DOMAIN_BROWSER_CLIENT( o ) \
+#define BGL_AVAHI_DOMAIN_BROWSER_CLIENT(o) \
    (((bgl_avahi_domain_browser_t)CREF(o))->BgL_clientz00)
-#define BGL_AVAHI_DOMAIN_BROWSER_PROC( o ) \
+#define BGL_AVAHI_DOMAIN_BROWSER_PROC(o) \
    (((bgl_avahi_domain_browser_t)CREF(o))->BgL_procz00)
-#define BGL_AVAHI_DOMAIN_BROWSER_DOMAIN( o ) \
+#define BGL_AVAHI_DOMAIN_BROWSER_DOMAIN(o) \
    (((bgl_avahi_domain_browser_t)CREF(o))->BgL_domainz00)
 
 /*---------------------------------------------------------------------*/
@@ -137,21 +143,21 @@ extern obj_t bgl_avahi_signal();
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_service_resolver_t BgL_avahizd2servicezd2resolverz00_bglt
 
-#define BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_z42builtinz42)
-#define BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_CLIENT(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_clientz00)
-#define BGL_AVAHI_SERVICE_RESOLVER_PROC( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_PROC(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_procz00)
-#define BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_TYPE(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_typez00)
-#define BGL_AVAHI_SERVICE_RESOLVER_NAME( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_NAME(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_namez00)
-#define BGL_AVAHI_SERVICE_RESOLVER_DOMAIN( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_DOMAIN(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_domainz00)
-#define BGL_AVAHI_SERVICE_RESOLVER_INTERFACE( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_INTERFACE(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_interfacez00)
-#define BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) \
+#define BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL(o) \
    (((bgl_avahi_service_resolver_t)CREF(o))->BgL_protocolz00)
 
 /*---------------------------------------------------------------------*/
@@ -159,8 +165,8 @@ extern obj_t bgl_avahi_signal();
 /*    bgl_avahi_threaded_pollp ...                                     */
 /*---------------------------------------------------------------------*/
 static bool_t
-bgl_avahi_threaded_pollp( obj_t o ) {
-   return BGL_AVAHI_POLL_CTYPE( (bgl_avahi_poll_t)o ) == 2;
+bgl_avahi_threaded_pollp(obj_t o) {
+   return BGL_AVAHI_POLL_CTYPE((bgl_avahi_poll_t)o) == 2;
 }
 
 /*---------------------------------------------------------------------*/
@@ -174,23 +180,24 @@ bgl_avahi_threaded_pollp( obj_t o ) {
 /*---------------------------------------------------------------------*/
 struct callback_conv {
    void *value;
-   obj_t (*convert)( void * );
+   obj_t (*convert)(void *);
 };
    
 typedef struct callback {
    obj_t proc;
+   obj_t poll;
    int arity;
-   struct callback_conv args[ 1 ];
+   struct callback_conv args[1];
 } *callback_t;
 
 /*---------------------------------------------------------------------*/
 /*    CHECK_PROCEDURE                                                  */
 /*---------------------------------------------------------------------*/
-#define CHECK_PROCEDURE( proc, arity, name ) \
-   if( !PROCEDURE_CORRECT_ARITYP( proc, arity ) ) { \
-      char buf[ 80 ]; \
-      sprintf( buf, "Wrong number of arguments for %s callback (%d expected)", name, arity ); \
-      C_SYSTEM_FAILURE( BGL_ERROR, "avahi", buf, proc ); \
+#define CHECK_PROCEDURE(proc, arity, name) \
+   if (!PROCEDURE_CORRECT_ARITYP(proc, arity)) { \
+      char buf[80]; \
+      sprintf(buf, "Wrong number of arguments for %s callback (%d expected)", name, arity); \
+      C_SYSTEM_FAILURE(BGL_ERROR, "avahi", buf, proc); \
    }
 
 /*---------------------------------------------------------------------*/
@@ -198,15 +205,15 @@ typedef struct callback {
 /*    bgl_avahi_int ...                                                */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_avahi_int( void *x ) {
-   return BINT( (long)x );
+bgl_avahi_int(void *x) {
+   return BINT((long)x);
 }
 
 /*---------------------------------------------------------------------*/
 /*    bgl_avahi_identity                                               */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_avahi_identity( void *x ) {
+bgl_avahi_identity(void *x) {
    return x;
 }
 
@@ -215,21 +222,21 @@ bgl_avahi_identity( void *x ) {
 /*    bgl_avahi_string_to_bstring ...                                  */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_avahi_string_to_bstring( char *s ) {
-   if( s ) {
-      obj_t bs = string_to_bstring( s );
+bgl_avahi_string_to_bstring(char *s) {
+   if (s) {
+      obj_t bs = string_to_bstring(s);
 
-      free( s );
+      free(s);
       return bs;
    } else {
-      return string_to_bstring( "" );
+      return string_to_bstring("");
    }
 }
 
 /*---------------------------------------------------------------------*/
 /*    STRDUP ...                                                       */
 /*---------------------------------------------------------------------*/
-#define STRDUP( v ) ((v == 0) ? v : strdup( v ))
+#define STRDUP(v) ((v == 0) ? v : strdup(v))
 
 /*---------------------------------------------------------------------*/
 /*    callback_t                                                       */
@@ -248,13 +255,13 @@ static int callback_index = 0;
 static void
 enlarge_callback_array() {
    callback_t *ncallbacks;
-   int osize = callback_length * sizeof( callback_t );
+   int osize = callback_length * sizeof(callback_t);
 
    callback_length *= 2;
-   ncallbacks = malloc( osize * 2 );
-   memcpy( ncallbacks, callbacks, osize );
+   ncallbacks = malloc(osize * 2);
+   memcpy(ncallbacks, callbacks, osize);
 
-   free( callbacks );
+   free(callbacks);
    callbacks = ncallbacks;
 }
    
@@ -263,110 +270,116 @@ enlarge_callback_array() {
 /*    bgl_avahi_apply_callback ...                                     */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_apply_callback( callback_t cb ) {
+bgl_avahi_apply_callback(callback_t cb) {
    obj_t proc = cb->proc;
+   obj_t poll = cb->poll;
+
+   if (poll) {
+      BGL_AVAHI_POLL_PROCS(poll) =
+	 bgl_remq_bang(proc, BGL_AVAHI_POLL_PROCS(poll));
+   }
 	 
-   switch( cb->arity ) {
+   switch(cb->arity) {
       case 0:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      BEOA);
 	 break;
 	    
       case 1:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      cb->args[ 0 ].convert( cb->args[ 0 ].value ),
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      cb->args[0].convert(cb->args[0].value),
+	      BEOA);
 	 break;
 	    
       case 2:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      cb->args[ 0 ].convert( cb->args[ 0 ].value ),
-	      cb->args[ 1 ].convert( cb->args[ 1 ].value ),
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      cb->args[0].convert(cb->args[0].value),
+	      cb->args[1].convert(cb->args[1].value),
+	      BEOA);
 	 break;
 	    
       case 6:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      cb->args[ 0 ].convert( cb->args[ 0 ].value ),
-	      cb->args[ 1 ].convert( cb->args[ 1 ].value ),
-	      cb->args[ 2 ].convert( cb->args[ 2 ].value ),
-	      cb->args[ 3 ].convert( cb->args[ 3 ].value ),
-	      cb->args[ 4 ].convert( cb->args[ 4 ].value ),
-	      cb->args[ 5 ].convert( cb->args[ 5 ].value ),
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      cb->args[0].convert(cb->args[0].value),
+	      cb->args[1].convert(cb->args[1].value),
+	      cb->args[2].convert(cb->args[2].value),
+	      cb->args[3].convert(cb->args[3].value),
+	      cb->args[4].convert(cb->args[4].value),
+	      cb->args[5].convert(cb->args[5].value),
+	      BEOA);
 	 break;
 	    
       case 7:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      cb->args[ 0 ].convert( cb->args[ 0 ].value ),
-	      cb->args[ 1 ].convert( cb->args[ 1 ].value ),
-	      cb->args[ 2 ].convert( cb->args[ 2 ].value ),
-	      cb->args[ 3 ].convert( cb->args[ 3 ].value ),
-	      cb->args[ 4 ].convert( cb->args[ 4 ].value ),
-	      cb->args[ 5 ].convert( cb->args[ 5 ].value ),
-	      cb->args[ 6 ].convert( cb->args[ 6 ].value ),
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      cb->args[0].convert(cb->args[0].value),
+	      cb->args[1].convert(cb->args[1].value),
+	      cb->args[2].convert(cb->args[2].value),
+	      cb->args[3].convert(cb->args[3].value),
+	      cb->args[4].convert(cb->args[4].value),
+	      cb->args[5].convert(cb->args[5].value),
+	      cb->args[6].convert(cb->args[6].value),
+	      BEOA);
 	 break;
 	    
       case 8:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      cb->args[ 0 ].convert( cb->args[ 0 ].value ),
-	      cb->args[ 1 ].convert( cb->args[ 1 ].value ),
-	      cb->args[ 2 ].convert( cb->args[ 2 ].value ),
-	      cb->args[ 3 ].convert( cb->args[ 3 ].value ),
-	      cb->args[ 4 ].convert( cb->args[ 4 ].value ),
-	      cb->args[ 5 ].convert( cb->args[ 5 ].value ),
-	      cb->args[ 6 ].convert( cb->args[ 6 ].value ),
-	      cb->args[ 7 ].convert( cb->args[ 7 ].value ),
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      cb->args[0].convert(cb->args[0].value),
+	      cb->args[1].convert(cb->args[1].value),
+	      cb->args[2].convert(cb->args[2].value),
+	      cb->args[3].convert(cb->args[3].value),
+	      cb->args[4].convert(cb->args[4].value),
+	      cb->args[5].convert(cb->args[5].value),
+	      cb->args[6].convert(cb->args[6].value),
+	      cb->args[7].convert(cb->args[7].value),
+	      BEOA);
 	 break;
 	    
       case 11:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      cb->args[ 0 ].convert( cb->args[ 0 ].value ),
-	      cb->args[ 1 ].convert( cb->args[ 1 ].value ),
-	      cb->args[ 2 ].convert( cb->args[ 2 ].value ),
-	      cb->args[ 3 ].convert( cb->args[ 3 ].value ),
-	      cb->args[ 4 ].convert( cb->args[ 4 ].value ),
-	      cb->args[ 5 ].convert( cb->args[ 5 ].value ),
-	      cb->args[ 6 ].convert( cb->args[ 6 ].value ),
-	      cb->args[ 7 ].convert( cb->args[ 7 ].value ),
-	      cb->args[ 8 ].convert( cb->args[ 8 ].value ),
-	      cb->args[ 9 ].convert( cb->args[ 9 ].value ),
-	      cb->args[ 10 ].convert(cb->args[ 10 ].value ),
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      cb->args[0].convert(cb->args[0].value),
+	      cb->args[1].convert(cb->args[1].value),
+	      cb->args[2].convert(cb->args[2].value),
+	      cb->args[3].convert(cb->args[3].value),
+	      cb->args[4].convert(cb->args[4].value),
+	      cb->args[5].convert(cb->args[5].value),
+	      cb->args[6].convert(cb->args[6].value),
+	      cb->args[7].convert(cb->args[7].value),
+	      cb->args[8].convert(cb->args[8].value),
+	      cb->args[9].convert(cb->args[9].value),
+	      cb->args[10].convert(cb->args[10].value),
+	      BEOA);
 	 break;
 	    
       case 12:
-	 PROCEDURE_ENTRY( proc )
-	    ( proc,
-	      cb->args[ 0 ].convert( cb->args[ 0 ].value ),
-	      cb->args[ 1 ].convert( cb->args[ 1 ].value ),
-	      cb->args[ 2 ].convert( cb->args[ 2 ].value ),
-	      cb->args[ 3 ].convert( cb->args[ 3 ].value ),
-	      cb->args[ 4 ].convert( cb->args[ 4 ].value ),
-	      cb->args[ 5 ].convert( cb->args[ 5 ].value ),
-	      cb->args[ 6 ].convert( cb->args[ 6 ].value ),
-	      cb->args[ 7 ].convert( cb->args[ 7 ].value ),
-	      cb->args[ 8 ].convert( cb->args[ 8 ].value ),
-	      cb->args[ 9 ].convert( cb->args[ 9 ].value ),
-	      cb->args[ 10 ].convert(cb->args[ 10 ].value ),
-	      cb->args[ 11 ].convert( cb->args[ 11 ].value ),
-	      BEOA );
+	 PROCEDURE_ENTRY(proc)
+	    (proc,
+	      cb->args[0].convert(cb->args[0].value),
+	      cb->args[1].convert(cb->args[1].value),
+	      cb->args[2].convert(cb->args[2].value),
+	      cb->args[3].convert(cb->args[3].value),
+	      cb->args[4].convert(cb->args[4].value),
+	      cb->args[5].convert(cb->args[5].value),
+	      cb->args[6].convert(cb->args[6].value),
+	      cb->args[7].convert(cb->args[7].value),
+	      cb->args[8].convert(cb->args[8].value),
+	      cb->args[9].convert(cb->args[9].value),
+	      cb->args[10].convert(cb->args[10].value),
+	      cb->args[11].convert(cb->args[11].value),
+	      BEOA);
 	 break;
 
       default:
-	 bgl_avahi_error( "avahi-callback",
+	 bgl_avahi_error("avahi-callback",
 			  "illegal callback",
 			  (obj_t)proc,
-			  AVAHI_ERR_FAILURE );
+			  AVAHI_ERR_FAILURE);
 	 break;
    }
 }   
@@ -379,20 +392,20 @@ void
 bgl_avahi_invoke_callbacks() {
    callback_t *tmpcb;
    int index = callback_index;
-   int size = index * sizeof( callback_t );
+   int size = index * sizeof(callback_t);
    
    bgl_avahi_lock();
 
-   tmpcb = alloca( size );
-   memcpy( tmpcb, callbacks, size );
+   tmpcb = alloca(size);
+   memcpy(tmpcb, callbacks, size);
 
    callback_index = 0;
    
    bgl_avahi_unlock();
    
-   while( index > 0 ) {
-      bgl_avahi_apply_callback( tmpcb[ --index ] );
-      free( tmpcb[ index ] );
+   while (index > 0) {
+      bgl_avahi_apply_callback(tmpcb[--index]);
+      free(tmpcb[index]);
    }
 }
 
@@ -401,20 +414,20 @@ bgl_avahi_invoke_callbacks() {
 /*    bgl_avahi_register_async_callback ...                            */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_register_async_callback( callback_t cb ) {
+bgl_avahi_register_async_callback(callback_t cb) {
    /* signal the callback */
    bgl_avahi_lock();
    
-   if( callback_index == callback_length ) {
-      if( callback_length == 0 ) {
+   if (callback_index == callback_length) {
+      if (callback_length == 0) {
 	 callback_length = INITIAL_MAX_CALLBACK;
-	 callbacks = malloc( sizeof( callback_t ) * callback_length );
+	 callbacks = malloc(sizeof(callback_t) * callback_length);
       } else {
 	 enlarge_callback_array();
       }
    }
 
-   callbacks[ callback_index++ ] = cb;
+   callbacks[callback_index++] = cb;
 
    bgl_avahi_signal();
    bgl_avahi_unlock();
@@ -425,14 +438,14 @@ bgl_avahi_register_async_callback( callback_t cb ) {
 /*    bgl_avahi_call_or_register_callback ...                          */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_call_or_register_callback( bgl_avahi_client_t o, callback_t cb ) {
-   if( bgl_avahi_threaded_pollp( (obj_t)BGL_AVAHI_CLIENT_POLL( o ) ) ){
+bgl_avahi_call_or_register_callback(bgl_avahi_client_t o, callback_t cb) {
+   if (bgl_avahi_threaded_pollp((obj_t)BGL_AVAHI_CLIENT_POLL(o))){
       /* multi-threaded */
-      bgl_avahi_register_async_callback( cb );
+      bgl_avahi_register_async_callback(cb);
    } else {
       /* single-threaded */
-      bgl_avahi_apply_callback( cb );
-      free( cb );
+      bgl_avahi_apply_callback(cb);
+      free(cb);
    }
 }
    
@@ -441,15 +454,16 @@ bgl_avahi_call_or_register_callback( bgl_avahi_client_t o, callback_t cb ) {
 /*    make_callback ...                                                */
 /*---------------------------------------------------------------------*/
 static callback_t
-make_callback( obj_t proc, int arity, char *name ) {
+make_callback(obj_t proc, int arity, char *name, obj_t poll) {
    callback_t cb =
-      malloc( sizeof( struct callback ) +
-	      ((arity - 1) * sizeof( struct callback_conv )) );
+      malloc(sizeof(struct callback) +
+	      ((arity - 1) * sizeof(struct callback_conv)));
 
-   CHECK_PROCEDURE( proc, arity, name );
+   CHECK_PROCEDURE(proc, arity, name);
 
    cb->proc = proc;
    cb->arity = arity;
+   cb->poll = poll;
 
    return cb;
 }
@@ -459,20 +473,20 @@ make_callback( obj_t proc, int arity, char *name ) {
 /*    bgl_avahi_string_list_to_list ...                                */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_avahi_string_list_to_list( AvahiStringList *list ) {
-   obj_t hd = MAKE_PAIR( BNIL, BNIL ), tl = hd;
+bgl_avahi_string_list_to_list(AvahiStringList *list) {
+   obj_t hd = MAKE_PAIR(BNIL, BNIL), tl = hd;
    AvahiStringList *l = list;
    
-   while( l ) {
-      obj_t s = string_to_bstring( avahi_string_list_get_text( l ) );
-      SET_CDR( tl, MAKE_PAIR( s, BNIL ) );
-      tl = CDR( tl );
-      l = avahi_string_list_get_next( l );
+   while (l) {
+      obj_t s = string_to_bstring(avahi_string_list_get_text(l));
+      SET_CDR(tl, MAKE_PAIR(s, BNIL));
+      tl = CDR(tl);
+      l = avahi_string_list_get_next(l);
    }
 
-   avahi_string_list_free( list );
+   avahi_string_list_free(list);
    
-   return CDR( hd );
+   return CDR(hd);
 }
 
 /*---------------------------------------------------------------------*/
@@ -480,14 +494,14 @@ bgl_avahi_string_list_to_list( AvahiStringList *list ) {
 /*    bgl_avahi_list_to_string_list ...                                */
 /*---------------------------------------------------------------------*/
 AvahiStringList *
-bgl_avahi_list_to_string_list( obj_t p ) {
+bgl_avahi_list_to_string_list(obj_t p) {
    // MS: 28 feb 2017
-   // AvahiStringList *l = avahi_string_list_new( "", NULL );
+   // AvahiStringList *l = avahi_string_list_new("", NULL);
    AvahiStringList *l = NULL;
 
-   while( PAIRP( p ) ) {
-      l = avahi_string_list_add( l, BSTRING_TO_STRING( CAR( p ) ) );
-      p = CDR( p );
+   while (PAIRP(p)) {
+      l = avahi_string_list_add(l, BSTRING_TO_STRING(CAR(p)));
+      p = CDR(p);
    }
 
    return l;
@@ -498,16 +512,16 @@ bgl_avahi_list_to_string_list( obj_t p ) {
 /*    bgl_avahi_simple_poll_new ...                                    */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_simple_poll_new( bgl_avahi_simple_poll_t o ) {
+bgl_avahi_simple_poll_new(bgl_avahi_simple_poll_t o) {
    AvahiSimplePoll *simple_poll = avahi_simple_poll_new();
 
-   if( !simple_poll ) {
-      bgl_avahi_error( "avahi-simple-poll",
+   if (!simple_poll) {
+      bgl_avahi_error("avahi-simple-poll",
 		       "Cannot create simple poll object",
 		       (obj_t)o,
-		       AVAHI_ERR_FAILURE );
+		       AVAHI_ERR_FAILURE);
    } else {
-      BGL_AVAHI_SIMPLE_POLL_BUILTIN( o ) = simple_poll;
+      BGL_AVAHI_SIMPLE_POLL_BUILTIN(o) = simple_poll;
    }
 }
 
@@ -516,10 +530,10 @@ bgl_avahi_simple_poll_new( bgl_avahi_simple_poll_t o ) {
 /*    simple_poll_timeout_callback ...                                 */
 /*---------------------------------------------------------------------*/
 static void
-simple_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
-   callback_t cb = make_callback( (obj_t)udata, 0, "timeout" );
-   bgl_avahi_apply_callback( cb );
-   free( cb );
+simple_poll_timeout_callback(AvahiTimeout *e, void *udata) {
+   callback_t cb = (callback_t)udata;
+   bgl_avahi_apply_callback(cb);
+   free(cb);
 }
 
 /*---------------------------------------------------------------------*/
@@ -527,14 +541,15 @@ simple_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
 /*    bgl_avahi_simple_poll_timeout ...                                */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_simple_poll_timeout( AvahiSimplePoll *o, long t, obj_t proc ) {
+bgl_avahi_simple_poll_timeout(AvahiSimplePoll *o, long t, obj_t proc, struct BgL_avahizd2simplezd2pollz00_bgl *poll) {
    struct timeval tv;
-   const AvahiPoll *poll = avahi_simple_poll_get( o );
+   const AvahiPoll *apoll = avahi_simple_poll_get(o);
+   callback_t cb = make_callback(proc, 0, "timeout", (obj_t)poll);
 
-   poll->timeout_new( poll,
-		      avahi_elapse_time( &tv, t, 0 ),
+   apoll->timeout_new(apoll,
+		      avahi_elapse_time(&tv, t, 0),
 		      simple_poll_timeout_callback,
-		      proc );
+		      cb);
 }
 
 /*---------------------------------------------------------------------*/
@@ -542,10 +557,10 @@ bgl_avahi_simple_poll_timeout( AvahiSimplePoll *o, long t, obj_t proc ) {
 /*    bgl_avahi_simple_poll_close ...                                  */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_simple_poll_close( bgl_avahi_simple_poll_t o ) {
-   if( BGL_AVAHI_SIMPLE_POLL_BUILTIN( o ) ) {
-      avahi_simple_poll_free( BGL_AVAHI_SIMPLE_POLL_BUILTIN( o ) );
-      BGL_AVAHI_SIMPLE_POLL_BUILTIN( o ) = 0L;
+bgl_avahi_simple_poll_close(bgl_avahi_simple_poll_t o) {
+   if (BGL_AVAHI_SIMPLE_POLL_BUILTIN(o)) {
+      avahi_simple_poll_free(BGL_AVAHI_SIMPLE_POLL_BUILTIN(o));
+      BGL_AVAHI_SIMPLE_POLL_BUILTIN(o) = 0L;
    }
 }
 
@@ -554,16 +569,16 @@ bgl_avahi_simple_poll_close( bgl_avahi_simple_poll_t o ) {
 /*    bgl_avahi_threaded_poll_new ...                                  */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_threaded_poll_new( bgl_avahi_threaded_poll_t o ) {
+bgl_avahi_threaded_poll_new(bgl_avahi_threaded_poll_t o) {
    AvahiThreadedPoll *threaded_poll = avahi_threaded_poll_new();
 
-   if( !threaded_poll ) {
-      bgl_avahi_error( "avahi-threaded-poll",
+   if (!threaded_poll) {
+      bgl_avahi_error("avahi-threaded-poll",
 		       "Cannot create threaded poll object",
 		       (obj_t)o,
-		       AVAHI_ERR_FAILURE );
+		       AVAHI_ERR_FAILURE);
    } else {
-      BGL_AVAHI_THREADED_POLL_BUILTIN( o ) = threaded_poll;
+      BGL_AVAHI_THREADED_POLL_BUILTIN(o) = threaded_poll;
    }
 }
 
@@ -572,10 +587,8 @@ bgl_avahi_threaded_poll_new( bgl_avahi_threaded_poll_t o ) {
 /*    threaded_poll_timeout_callback ...                               */
 /*---------------------------------------------------------------------*/
 static void
-threaded_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
-   callback_t cb = make_callback( (obj_t)udata, 0, "timeout" );
-   
-   bgl_avahi_register_async_callback( cb );
+threaded_poll_timeout_callback(AvahiTimeout *e, void *udata) {
+   bgl_avahi_register_async_callback((callback_t)udata);
 }
 
 /*---------------------------------------------------------------------*/
@@ -583,14 +596,15 @@ threaded_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
 /*    bgl_avahi_threaded_poll_timeout ...                              */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_threaded_poll_timeout( AvahiThreadedPoll *o, long t, obj_t proc ) {
+bgl_avahi_threaded_poll_timeout(AvahiThreadedPoll *o, long t, obj_t proc, struct BgL_avahizd2threadedzd2pollz00_bgl * poll) {
    struct timeval tv;
-   const AvahiPoll *poll = avahi_threaded_poll_get( o );
+   const AvahiPoll *apoll = avahi_threaded_poll_get(o);
+   callback_t cb = make_callback(proc, 0, "timeout", (obj_t)poll);
 
-   poll->timeout_new( poll,
-		      avahi_elapse_time( &tv, t, 0 ),
+   apoll->timeout_new(apoll,
+		      avahi_elapse_time(&tv, t, 0),
 		      threaded_poll_timeout_callback,
-		      proc );
+		      cb);
 }
 
 /*---------------------------------------------------------------------*/
@@ -598,10 +612,10 @@ bgl_avahi_threaded_poll_timeout( AvahiThreadedPoll *o, long t, obj_t proc ) {
 /*    bgl_avahi_threaded_poll_close ...                                */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_threaded_poll_close( bgl_avahi_threaded_poll_t o ) {
-   if( BGL_AVAHI_THREADED_POLL_BUILTIN( o ) ) {
-      avahi_threaded_poll_free( BGL_AVAHI_THREADED_POLL_BUILTIN( o ) );
-      BGL_AVAHI_THREADED_POLL_BUILTIN( o ) = 0L;
+bgl_avahi_threaded_poll_close(bgl_avahi_threaded_poll_t o) {
+   if (BGL_AVAHI_THREADED_POLL_BUILTIN(o)) {
+      avahi_threaded_poll_free(BGL_AVAHI_THREADED_POLL_BUILTIN(o));
+      BGL_AVAHI_THREADED_POLL_BUILTIN(o) = 0L;
    }
 }
 
@@ -610,22 +624,22 @@ bgl_avahi_threaded_poll_close( bgl_avahi_threaded_poll_t o ) {
 /*    bgl_avahi_client_callback ...                                    */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_client_callback( AvahiClient *client,
+bgl_avahi_client_callback(AvahiClient *client,
 			   AvahiClientState state,
-			   void *udata ) {
+			   void *udata) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_CLIENT_PROC( o ), 2, "client" );
+   callback_t cb = make_callback(BGL_AVAHI_CLIENT_PROC(o), 2, "client", 0);
 
-   if( !BGL_AVAHI_CLIENT_BUILTIN( o ) )
-      BGL_AVAHI_CLIENT_BUILTIN( o ) = client;
+   if (!BGL_AVAHI_CLIENT_BUILTIN(o))
+      BGL_AVAHI_CLIENT_BUILTIN(o) = client;
 
-   cb->args[ 0 ].convert = &bgl_avahi_identity;
-   cb->args[ 0 ].value = o;
+   cb->args[0].convert = &bgl_avahi_identity;
+   cb->args[0].value = o;
    
-   cb->args[ 1 ].convert = (obj_t (*)(void*))&bgl_avahi_client_state_to_symbol;
-   cb->args[ 1 ].value = (void *)state;
+   cb->args[1].convert = (obj_t (*)(void*))&bgl_avahi_client_state_to_symbol;
+   cb->args[1].value = (void *)state;
 
-   bgl_avahi_call_or_register_callback( (bgl_avahi_client_t)o, cb );
+   bgl_avahi_call_or_register_callback((bgl_avahi_client_t)o, cb);
 }
 
 /*---------------------------------------------------------------------*/
@@ -633,28 +647,28 @@ bgl_avahi_client_callback( AvahiClient *client,
 /*    bgl_avahi_client_new ...                                         */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_client_new( bgl_avahi_client_t o ) {
+bgl_avahi_client_new(bgl_avahi_client_t o) {
    int error;
-   bgl_avahi_poll_t bpoll = BGL_AVAHI_CLIENT_POLL( o );
+   bgl_avahi_poll_t bpoll = BGL_AVAHI_CLIENT_POLL(o);
    AvahiClient *client;
    const AvahiPoll *poll;
    
-   if( bgl_avahi_threaded_pollp( (obj_t)bpoll ) ) {
-      poll = avahi_threaded_poll_get( BGL_AVAHI_THREADED_POLL_BUILTIN( bpoll ) );
+   if (bgl_avahi_threaded_pollp((obj_t)bpoll)) {
+      poll = avahi_threaded_poll_get(BGL_AVAHI_THREADED_POLL_BUILTIN(bpoll));
    } else {
-      poll = avahi_simple_poll_get( BGL_AVAHI_SIMPLE_POLL_BUILTIN( bpoll ) );
+      poll = avahi_simple_poll_get(BGL_AVAHI_SIMPLE_POLL_BUILTIN(bpoll));
    }
 
-   client = avahi_client_new( poll, AVAHI_CLIENT_NO_FAIL,
-			      bgl_avahi_client_callback, o, &error );
+   client = avahi_client_new(poll, AVAHI_CLIENT_NO_FAIL,
+			      bgl_avahi_client_callback, o, &error);
 
-   if( !client ) {
-      bgl_avahi_error( "avahi-client-new",
-		       (char *)avahi_strerror( error ),
+   if (!client) {
+      bgl_avahi_error("avahi-client-new",
+		       (char *)avahi_strerror(error),
 		       (obj_t)o,
-		       error );
+		       error);
    } else {
-      BGL_AVAHI_CLIENT_BUILTIN( o ) = client;
+      BGL_AVAHI_CLIENT_BUILTIN(o) = client;
    }
 }
 
@@ -663,9 +677,9 @@ bgl_avahi_client_new( bgl_avahi_client_t o ) {
 /*    bgl_avahi_client_close ...                                       */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_client_close( bgl_avahi_client_t o ) {
-   if( BGL_AVAHI_CLIENT_BUILTIN( o ) ) {
-      avahi_client_free( BGL_AVAHI_CLIENT_BUILTIN( o ) );
+bgl_avahi_client_close(bgl_avahi_client_t o) {
+   if (BGL_AVAHI_CLIENT_BUILTIN(o)) {
+      avahi_client_free(BGL_AVAHI_CLIENT_BUILTIN(o));
    }
 }
 
@@ -674,20 +688,20 @@ bgl_avahi_client_close( bgl_avahi_client_t o ) {
 /*    bgl_avahi_entry_group_callback ...                               */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_entry_group_callback( AvahiEntryGroup *group,
+bgl_avahi_entry_group_callback(AvahiEntryGroup *group,
 				AvahiEntryGroupState state,
-				void *udata ) {
+				void *udata) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_ENTRY_GROUP_PROC( o ), 2, "group" );
+   callback_t cb = make_callback(BGL_AVAHI_ENTRY_GROUP_PROC(o), 2, "group", 0);
 
-   cb->args[ 0 ].convert = &bgl_avahi_identity;
-   cb->args[ 0 ].value = o;
+   cb->args[0].convert = &bgl_avahi_identity;
+   cb->args[0].value = o;
    
-   cb->args[ 1 ].convert = (obj_t (*)(void*))&bgl_avahi_entry_group_state_to_symbol;
-   cb->args[ 1 ].value = (void *)state;
+   cb->args[1].convert = (obj_t (*)(void*))&bgl_avahi_entry_group_state_to_symbol;
+   cb->args[1].value = (void *)state;
 
    bgl_avahi_call_or_register_callback(
-      BGL_AVAHI_ENTRY_GROUP_CLIENT( o ), cb );
+      BGL_AVAHI_ENTRY_GROUP_CLIENT(o), cb);
 }
    
 /*---------------------------------------------------------------------*/
@@ -695,24 +709,24 @@ bgl_avahi_entry_group_callback( AvahiEntryGroup *group,
 /*    bgl_avahi_entry_group_new ...                                    */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_entry_group_new( bgl_avahi_entry_group_t o ) {
+bgl_avahi_entry_group_new(bgl_avahi_entry_group_t o) {
    int error;
    AvahiClient *client =
-      BGL_AVAHI_CLIENT_BUILTIN( BGL_AVAHI_ENTRY_GROUP_CLIENT( o ) );
+      BGL_AVAHI_CLIENT_BUILTIN(BGL_AVAHI_ENTRY_GROUP_CLIENT(o));
    AvahiEntryGroup *group =
       avahi_entry_group_new(
 	 client,
 	 bgl_avahi_entry_group_callback,
-	 o );
+	 o);
 
-   if( !group ) {
-      error = avahi_client_errno( client );
-      bgl_avahi_error( "avahi-entry-group-new",
-		       (char *)avahi_strerror( error ),
+   if (!group) {
+      error = avahi_client_errno(client);
+      bgl_avahi_error("avahi-entry-group-new",
+		       (char *)avahi_strerror(error),
 		       (obj_t)o,
-		       error );
+		       error);
    } else {
-      BGL_AVAHI_ENTRY_GROUP_BUILTIN( o ) = group;
+      BGL_AVAHI_ENTRY_GROUP_BUILTIN(o) = group;
    }
 }
 
@@ -721,9 +735,9 @@ bgl_avahi_entry_group_new( bgl_avahi_entry_group_t o ) {
 /*    bgl_avahi_entry_group_close ...                                  */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_entry_group_close( bgl_avahi_entry_group_t o ) {
-   if( BGL_AVAHI_ENTRY_GROUP_BUILTIN( o ) ) {
-      avahi_entry_group_free( BGL_AVAHI_ENTRY_GROUP_BUILTIN( o ) );
+bgl_avahi_entry_group_close(bgl_avahi_entry_group_t o) {
+   if (BGL_AVAHI_ENTRY_GROUP_BUILTIN(o)) {
+      avahi_entry_group_free(BGL_AVAHI_ENTRY_GROUP_BUILTIN(o));
    }
 }
 
@@ -732,7 +746,7 @@ bgl_avahi_entry_group_close( bgl_avahi_entry_group_t o ) {
 /*    bgl_avahi_service_browser_callback ...                           */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_service_browser_callback( AvahiServiceBrowser *browser,
+bgl_avahi_service_browser_callback(AvahiServiceBrowser *browser,
 				    AvahiIfIndex interface,
 				    AvahiProtocol protocol,
 				    AvahiBrowserEvent event,
@@ -740,39 +754,39 @@ bgl_avahi_service_browser_callback( AvahiServiceBrowser *browser,
 				    const char *type,
 				    const char *domain,
 				    AvahiLookupResultFlags flags,
-				    void *udata ) {
+				    void *udata) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_SERVICE_BROWSER_PROC( o ), 8, "service-browser" );
+   callback_t cb = make_callback(BGL_AVAHI_SERVICE_BROWSER_PROC(o), 8, "service-browser", 0);
 
-   if( !BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) )
-      BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) = browser;
+   if (!BGL_AVAHI_SERVICE_BROWSER_BUILTIN(o))
+      BGL_AVAHI_SERVICE_BROWSER_BUILTIN(o) = browser;
 
-   cb->args[ 0 ].convert = &bgl_avahi_identity;
-   cb->args[ 0 ].value = o;
+   cb->args[0].convert = &bgl_avahi_identity;
+   cb->args[0].value = o;
    
-   cb->args[ 1 ].convert = &bgl_avahi_int;
-   cb->args[ 1 ].value = (void *)interface;
+   cb->args[1].convert = &bgl_avahi_int;
+   cb->args[1].value = (void *)(long)interface;
 
-   cb->args[ 2 ].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
-   cb->args[ 2 ].value = (void *)protocol;
+   cb->args[2].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
+   cb->args[2].value = (void *)(long)protocol;
 
-   cb->args[ 3 ].convert = (obj_t (*)(void*))&bgl_avahi_browser_event_to_symbol;
-   cb->args[ 3 ].value = (void *)event;
+   cb->args[3].convert = (obj_t (*)(void*))&bgl_avahi_browser_event_to_symbol;
+   cb->args[3].value = (void *)event;
 
-   cb->args[ 4 ].convert = (obj_t (*)(void*))bgl_avahi_string_to_bstring;
-   cb->args[ 4 ].value = (void *)STRDUP( name );
+   cb->args[4].convert = (obj_t (*)(void*))bgl_avahi_string_to_bstring;
+   cb->args[4].value = (void *)STRDUP(name);
 
-   cb->args[ 5 ].convert = (obj_t (*)(void*))bgl_avahi_string_to_bstring;
-   cb->args[ 5 ].value = (void *)STRDUP( type );
+   cb->args[5].convert = (obj_t (*)(void*))bgl_avahi_string_to_bstring;
+   cb->args[5].value = (void *)STRDUP(type);
 
-   cb->args[ 6 ].convert = (obj_t (*)(void*))bgl_avahi_string_to_bstring;
-   cb->args[ 6 ].value = (void *)STRDUP( domain );
+   cb->args[6].convert = (obj_t (*)(void*))bgl_avahi_string_to_bstring;
+   cb->args[6].value = (void *)STRDUP(domain);
 
-   cb->args[ 7 ].convert = &bgl_avahi_int;
-   cb->args[ 7 ].value = (void *)flags;
+   cb->args[7].convert = &bgl_avahi_int;
+   cb->args[7].value = (void *)flags;
 
    bgl_avahi_call_or_register_callback(
-       BGL_AVAHI_SERVICE_BROWSER_CLIENT( o ), cb );
+       BGL_AVAHI_SERVICE_BROWSER_CLIENT(o), cb);
 }
    
 /*---------------------------------------------------------------------*/
@@ -780,29 +794,29 @@ bgl_avahi_service_browser_callback( AvahiServiceBrowser *browser,
 /*    bgl_avahi_service_browser_new ...                                */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_browser_new( bgl_avahi_service_browser_t o ) {
+bgl_avahi_service_browser_new(bgl_avahi_service_browser_t o) {
    int error;
    AvahiClient *client =
-      BGL_AVAHI_CLIENT_BUILTIN( BGL_AVAHI_SERVICE_BROWSER_CLIENT( o ) );
+      BGL_AVAHI_CLIENT_BUILTIN(BGL_AVAHI_SERVICE_BROWSER_CLIENT(o));
    AvahiServiceBrowser *browser =
       avahi_service_browser_new(
 	 client,
-	 AVAHI_IF_UNSPEC,
-	 AVAHI_PROTO_UNSPEC,
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_BROWSER_TYPE( o ) ),
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_BROWSER_DOMAIN( o ) ),
+	 BGL_AVAHI_SERVICE_BROWSER_INTERFACE(o),
+	 bgl_avahi_symbol_to_protocol(BGL_AVAHI_SERVICE_BROWSER_PROTOCOL(o)),
+	 BGL_STRING_TO_STRING(BGL_AVAHI_SERVICE_BROWSER_TYPE(o)),
+	 BGL_STRING_TO_STRING(BGL_AVAHI_SERVICE_BROWSER_DOMAIN(o)),
 	 0,
 	 bgl_avahi_service_browser_callback,
-	 o );
+	 o);
 
-   if( !browser ) {
-      error = avahi_client_errno( client );
-      bgl_avahi_error( "avahi-service-browser-new",
-		       (char *)avahi_strerror( error ),
+   if (!browser) {
+      error = avahi_client_errno(client);
+      bgl_avahi_error("avahi-service-browser-new",
+		       (char *)avahi_strerror(error),
 		       (obj_t)o,
-		       error );
+		       error);
    } else {
-      BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) = browser;
+      BGL_AVAHI_SERVICE_BROWSER_BUILTIN(o) = browser;
    }
 }
 
@@ -811,9 +825,9 @@ bgl_avahi_service_browser_new( bgl_avahi_service_browser_t o ) {
 /*    bgl_avahi_service_browser_close ...                              */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_browser_close( bgl_avahi_service_browser_t o ) {
-   if( BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) ) {
-      avahi_service_browser_free( BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) );
+bgl_avahi_service_browser_close(bgl_avahi_service_browser_t o) {
+   if (BGL_AVAHI_SERVICE_BROWSER_BUILTIN(o)) {
+      avahi_service_browser_free(BGL_AVAHI_SERVICE_BROWSER_BUILTIN(o));
    }
 }
 
@@ -822,43 +836,43 @@ bgl_avahi_service_browser_close( bgl_avahi_service_browser_t o ) {
 /*    bgl_avahi_service_type_browser_callback ...                      */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_service_type_browser_callback( AvahiServiceTypeBrowser *browser,
+bgl_avahi_service_type_browser_callback(AvahiServiceTypeBrowser *browser,
 					 AvahiIfIndex interface,
 					 AvahiProtocol protocol,
 					 AvahiBrowserEvent event,
 					 const char *type,
 					 const char *domain,
 					 AvahiLookupResultFlags flags,
-					 void *udata ) {
+					 void *udata) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o ), 7, "type-browser" );
+   callback_t cb = make_callback(BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC(o), 7, "type-browser", 0);
 
-   if( !BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) )
-      BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) = browser;
+   if (!BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN(o))
+      BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN(o) = browser;
 
-   cb->args[ 0 ].convert = &bgl_avahi_identity;
-   cb->args[ 0 ].value = o;
+   cb->args[0].convert = &bgl_avahi_identity;
+   cb->args[0].value = o;
    
-   cb->args[ 1 ].convert = &bgl_avahi_int;
-   cb->args[ 1 ].value = (void *)interface;
+   cb->args[1].convert = &bgl_avahi_int;
+   cb->args[1].value = (void *)(long)interface;
 
-   cb->args[ 2 ].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
-   cb->args[ 2 ].value = (void *)protocol;
+   cb->args[2].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
+   cb->args[2].value = (void *)(long)protocol;
 
-   cb->args[ 3 ].convert = (obj_t (*)(void*))&bgl_avahi_browser_event_to_symbol;
-   cb->args[ 3 ].value = (void *)event;
+   cb->args[3].convert = (obj_t (*)(void*))&bgl_avahi_browser_event_to_symbol;
+   cb->args[3].value = (void *)event;
 
-   cb->args[ 4 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 4 ].value = (void *)STRDUP( type );
+   cb->args[4].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[4].value = (void *)STRDUP(type);
 
-   cb->args[ 5 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 5 ].value = (void *)STRDUP( domain );
+   cb->args[5].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[5].value = (void *)STRDUP(domain);
 
-   cb->args[ 6 ].convert = &bgl_avahi_int;
-   cb->args[ 6 ].value = (void *)flags;
+   cb->args[6].convert = &bgl_avahi_int;
+   cb->args[6].value = (void *)flags;
 
    bgl_avahi_call_or_register_callback(
-      BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT( o ), cb );
+      BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT(o), cb);
 }
    
 /*---------------------------------------------------------------------*/
@@ -866,28 +880,28 @@ bgl_avahi_service_type_browser_callback( AvahiServiceTypeBrowser *browser,
 /*    bgl_avahi_service_type_browser_new ...                           */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_type_browser_new( bgl_avahi_service_type_browser_t o ) {
+bgl_avahi_service_type_browser_new(bgl_avahi_service_type_browser_t o) {
    int error;
-   bgl_avahi_client_t bclient = BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT( o );
-   AvahiClient *client = BGL_AVAHI_CLIENT_BUILTIN( bclient );
+   bgl_avahi_client_t bclient = BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT(o);
+   AvahiClient *client = BGL_AVAHI_CLIENT_BUILTIN(bclient);
    AvahiServiceTypeBrowser *browser =
       avahi_service_type_browser_new(
 	 client,
 	 AVAHI_IF_UNSPEC,
 	 AVAHI_PROTO_UNSPEC,
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_TYPE_BROWSER_DOMAIN( o ) ),
+	 BGL_STRING_TO_STRING(BGL_AVAHI_SERVICE_TYPE_BROWSER_DOMAIN(o)),
 	 0,
 	 bgl_avahi_service_type_browser_callback,
-	 o );
+	 o);
 
-   if( !browser ) {
-      error = avahi_client_errno( client );
-      bgl_avahi_error( "avahi-service-type-browser-new",
-		       (char *)avahi_strerror( error ),
+   if (!browser) {
+      error = avahi_client_errno(client);
+      bgl_avahi_error("avahi-service-type-browser-new",
+		       (char *)avahi_strerror(error),
 		       (obj_t)o,
-		       errno );
+		       errno);
    } else {
-      BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) = browser;
+      BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN(o) = browser;
    }
 }
 
@@ -896,9 +910,9 @@ bgl_avahi_service_type_browser_new( bgl_avahi_service_type_browser_t o ) {
 /*    bgl_avahi_service_type_browser_close ...                         */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_type_browser_close( bgl_avahi_service_type_browser_t o ) {
-   if( BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) ) {
-      avahi_service_type_browser_free( BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) );
+bgl_avahi_service_type_browser_close(bgl_avahi_service_type_browser_t o) {
+   if (BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN(o)) {
+      avahi_service_type_browser_free(BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN(o));
    }
 }
 
@@ -907,36 +921,36 @@ bgl_avahi_service_type_browser_close( bgl_avahi_service_type_browser_t o ) {
 /*    bgl_avahi_domain_browser_callback ...                            */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_domain_browser_callback( AvahiDomainBrowser *browser,
+bgl_avahi_domain_browser_callback(AvahiDomainBrowser *browser,
 				   AvahiIfIndex interface,
 				   AvahiProtocol protocol,
 				   AvahiBrowserEvent event,
 				   const char *domain,
 				   AvahiLookupResultFlags flags,
-				   void *udata ) {
+				   void *udata) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_DOMAIN_BROWSER_PROC( o ), 5, "domain-browser" );
+   callback_t cb = make_callback(BGL_AVAHI_DOMAIN_BROWSER_PROC(o), 5, "domain-browser", 0);
 
-   if( !BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) )
-      BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) = browser;
+   if (!BGL_AVAHI_DOMAIN_BROWSER_BUILTIN(o))
+      BGL_AVAHI_DOMAIN_BROWSER_BUILTIN(o) = browser;
    
-   cb->args[ 0 ].convert = &bgl_avahi_identity;
-   cb->args[ 0 ].value = o;
+   cb->args[0].convert = &bgl_avahi_identity;
+   cb->args[0].value = o;
    
-   cb->args[ 1 ].convert = &bgl_avahi_int;
-   cb->args[ 1 ].value = (void *)interface;
+   cb->args[1].convert = &bgl_avahi_int;
+   cb->args[1].value = (void *)(long)interface;
 
-   cb->args[ 2 ].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
-   cb->args[ 2 ].value = (void *)protocol;
+   cb->args[2].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
+   cb->args[2].value = (void *)(long)protocol;
 
-   cb->args[ 3 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 3 ].value = (void *)STRDUP( domain );
+   cb->args[3].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[3].value = (void *)STRDUP(domain);
 
-   cb->args[ 4 ].convert = &bgl_avahi_int;
-   cb->args[ 4 ].value = (void *)flags;
+   cb->args[4].convert = &bgl_avahi_int;
+   cb->args[4].value = (void *)flags;
 
    bgl_avahi_call_or_register_callback(
-      BGL_AVAHI_DOMAIN_BROWSER_CLIENT( o ), cb );
+      BGL_AVAHI_DOMAIN_BROWSER_CLIENT(o), cb);
 }
    
 /*---------------------------------------------------------------------*/
@@ -944,30 +958,30 @@ bgl_avahi_domain_browser_callback( AvahiDomainBrowser *browser,
 /*    bgl_avahi_domain_browser_new ...                                 */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_domain_browser_new( bgl_avahi_domain_browser_t o,
-			      AvahiDomainBrowserType btype ) {
+bgl_avahi_domain_browser_new(bgl_avahi_domain_browser_t o,
+			      AvahiDomainBrowserType btype) {
    int error;
    AvahiClient *client =
-      BGL_AVAHI_CLIENT_BUILTIN( BGL_AVAHI_DOMAIN_BROWSER_CLIENT( o ) );
+      BGL_AVAHI_CLIENT_BUILTIN(BGL_AVAHI_DOMAIN_BROWSER_CLIENT(o));
    AvahiDomainBrowser *browser =
       avahi_domain_browser_new(
 	 client,
 	 AVAHI_IF_UNSPEC,
 	 AVAHI_PROTO_UNSPEC,
-	 BGL_STRING_TO_STRING( BGL_AVAHI_DOMAIN_BROWSER_DOMAIN( o ) ),
+	 BGL_STRING_TO_STRING(BGL_AVAHI_DOMAIN_BROWSER_DOMAIN(o)),
 	 btype,
 	 0,
 	 bgl_avahi_domain_browser_callback,
-	 o );
+	 o);
 
-   if( !browser ) {
-      error = avahi_client_errno( client );
-      bgl_avahi_error( "avahi-domain-browser-new",
-		       (char *)avahi_strerror( error ),
+   if (!browser) {
+      error = avahi_client_errno(client);
+      bgl_avahi_error("avahi-domain-browser-new",
+		       (char *)avahi_strerror(error),
 		       (obj_t)o,
-		       error );
+		       error);
    } else {
-      BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) = browser;
+      BGL_AVAHI_DOMAIN_BROWSER_BUILTIN(o) = browser;
    }
 }
 
@@ -976,9 +990,9 @@ bgl_avahi_domain_browser_new( bgl_avahi_domain_browser_t o,
 /*    bgl_avahi_domain_browser_close ...                               */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_domain_browser_close( bgl_avahi_domain_browser_t o ) {
-   if( BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) ) {
-      avahi_domain_browser_free( BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) );
+bgl_avahi_domain_browser_close(bgl_avahi_domain_browser_t o) {
+   if (BGL_AVAHI_DOMAIN_BROWSER_BUILTIN(o)) {
+      avahi_domain_browser_free(BGL_AVAHI_DOMAIN_BROWSER_BUILTIN(o));
    }
 }
 
@@ -987,7 +1001,7 @@ bgl_avahi_domain_browser_close( bgl_avahi_domain_browser_t o ) {
 /*    bgl_avahi_service_resolver_callback ...                          */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
+bgl_avahi_service_resolver_callback(AvahiServiceResolver *resolver,
 				     AvahiIfIndex interface,
 				     AvahiProtocol protocol,
 				     AvahiResolverEvent event,
@@ -999,57 +1013,57 @@ bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
 				     uint16_t port,
 				     AvahiStringList *txt,
 				     AvahiLookupResultFlags flags,
-				     void *udata ) {
+				     void *udata) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_SERVICE_RESOLVER_PROC( o ), 12, "service-resolver" );
-   char a[ AVAHI_ADDRESS_STR_MAX ];
+   callback_t cb = make_callback(BGL_AVAHI_SERVICE_RESOLVER_PROC(o), 12, "service-resolver", 0);
+   char a[AVAHI_ADDRESS_STR_MAX];
 
-   if( address ) {
-      avahi_address_snprint( a, sizeof( a ), address );
+   if (address) {
+      avahi_address_snprint(a, sizeof(a), address);
    } else {
-      a[ 0 ] = 0;
+      a[0] = 0;
    }
-   if( !BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) )
-      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
+   if (!BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o))
+      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o) = resolver;
 
-   cb->args[ 0 ].convert = &bgl_avahi_identity;
-   cb->args[ 0 ].value = o;
+   cb->args[0].convert = &bgl_avahi_identity;
+   cb->args[0].value = o;
    
-   cb->args[ 1 ].convert = &bgl_avahi_int;
-   cb->args[ 1 ].value = (void *)interface;
+   cb->args[1].convert = &bgl_avahi_int;
+   cb->args[1].value = (void *)(long)interface;
 
-   cb->args[ 2 ].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
-   cb->args[ 2 ].value = address ? (void *)address->proto : AVAHI_PROTO_UNSPEC;
+   cb->args[2].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
+   cb->args[2].value = address ? (void *)(long)address->proto : (void*)(long)AVAHI_PROTO_UNSPEC;
 
-   cb->args[ 3 ].convert = (obj_t (*)(void*))bgl_avahi_resolver_event_to_symbol;
-   cb->args[ 3 ].value = (void *)event;
+   cb->args[3].convert = (obj_t (*)(void*))bgl_avahi_resolver_event_to_symbol;
+   cb->args[3].value = (void *)event;
 
-   cb->args[ 4 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 4 ].value = (void *)STRDUP( name );
+   cb->args[4].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[4].value = (void *)STRDUP(name);
 
-   cb->args[ 5 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 5 ].value = (void *)STRDUP( type );
+   cb->args[5].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[5].value = (void *)STRDUP(type);
 
-   cb->args[ 6 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 6 ].value = (void *)STRDUP( domain );
+   cb->args[6].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[6].value = (void *)STRDUP(domain);
 
-   cb->args[ 7 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 7 ].value = (void *)STRDUP( hostname );
+   cb->args[7].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[7].value = (void *)STRDUP(hostname);
 
-   cb->args[ 8 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-   cb->args[ 8 ].value = (void *)STRDUP( a );
+   cb->args[8].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[8].value = (void *)STRDUP(a);
 
-   cb->args[ 9 ].convert = &bgl_avahi_int;
-   cb->args[ 9 ].value = (void *)((long)port);
+   cb->args[9].convert = &bgl_avahi_int;
+   cb->args[9].value = (void *)((long)port);
 
-   cb->args[ 10 ].convert = (obj_t (*)(void*))&bgl_avahi_string_list_to_list;
-   cb->args[ 10 ].value = (void *)avahi_string_list_copy( txt );
+   cb->args[10].convert = (obj_t (*)(void*))&bgl_avahi_string_list_to_list;
+   cb->args[10].value = (void *)avahi_string_list_copy(txt);
 
-   cb->args[ 11 ].convert = &bgl_avahi_int;
-   cb->args[ 11 ].value = (void *)flags;
+   cb->args[11].convert = &bgl_avahi_int;
+   cb->args[11].value = (void *)flags;
 
    bgl_avahi_call_or_register_callback(
-      BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ), cb );
+      BGL_AVAHI_SERVICE_RESOLVER_CLIENT(o), cb);
 }
    
 /*---------------------------------------------------------------------*/
@@ -1057,31 +1071,31 @@ bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
 /*    bgl_avahi_service_resolver_new ...                               */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_resolver_new( bgl_avahi_service_resolver_t o ) {
+bgl_avahi_service_resolver_new(bgl_avahi_service_resolver_t o) {
    int error;
    AvahiClient *client =
-      BGL_AVAHI_CLIENT_BUILTIN( BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ) );
+      BGL_AVAHI_CLIENT_BUILTIN(BGL_AVAHI_SERVICE_RESOLVER_CLIENT(o));
    AvahiServiceResolver *resolver =
       avahi_service_resolver_new(
 	 client,
-	 BGL_AVAHI_SERVICE_RESOLVER_INTERFACE( o ),
-	 bgl_avahi_symbol_to_protocol( BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) ),
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_NAME( o ) ),
-	 (const char*)BSTRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) ),
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_DOMAIN( o ) ),
-	 bgl_avahi_symbol_to_protocol( BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) ),
+	 BGL_AVAHI_SERVICE_RESOLVER_INTERFACE(o),
+	 bgl_avahi_symbol_to_protocol(BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL(o)),
+	 BGL_STRING_TO_STRING(BGL_AVAHI_SERVICE_RESOLVER_NAME(o)),
+	 (const char*)BSTRING_TO_STRING(BGL_AVAHI_SERVICE_RESOLVER_TYPE(o)),
+	 BGL_STRING_TO_STRING(BGL_AVAHI_SERVICE_RESOLVER_DOMAIN(o)),
+	 bgl_avahi_symbol_to_protocol(BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL(o)),
 	 0,
 	 bgl_avahi_service_resolver_callback,
-	 o );
+	 o);
 
-   if( !resolver ) {
-      error = avahi_client_errno( client );
-      bgl_avahi_error( "avahi-service-resolver-new",
-		       (char *)avahi_strerror( error ),
+   if (!resolver) {
+      error = avahi_client_errno(client);
+      bgl_avahi_error("avahi-service-resolver-new",
+		       (char *)avahi_strerror(error),
 		       (obj_t)o,
-		       error );
+		       error);
    } else {
-      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
+      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o) = resolver;
    }
 }
 
@@ -1090,8 +1104,11 @@ bgl_avahi_service_resolver_new( bgl_avahi_service_resolver_t o ) {
 /*    bgl_avahi_service_resolver_close ...                             */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_resolver_close( bgl_avahi_service_resolver_t o ) {
-   if( BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) ) {
-      avahi_service_resolver_free( BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) );
+bgl_avahi_service_resolver_close(bgl_avahi_service_resolver_t o) {
+   AvahiServiceResolver *resolver = BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o);
+   
+   if (resolver) {
+      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN(o) = 0L;
+      avahi_service_resolver_free(resolver);
    }
 }

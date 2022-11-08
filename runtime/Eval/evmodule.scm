@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Apr 16 16:14:18 2020 (serrano)                */
-;*    Copyright   :  2006-20 Manuel Serrano                            */
+;*    Last change :  Sat Jun  4 09:33:23 2022 (serrano)                */
+;*    Copyright   :  2006-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -565,8 +565,8 @@
 ;*---------------------------------------------------------------------*/
 (define (evmodule-import! mod ident path set abase loc)
    
-   (define (import-error msg obj)
-      (evcompile-error loc "eval" msg obj))
+   (define (import-error mod msg obj)
+      (evcompile-error loc (format "eval:~a" (evmodule-name mod)) msg obj))
    
    (define (import-module mod2)
       ;; bind imported the macros
@@ -590,7 +590,7 @@
 	 ((evmodule? mod2)
 	  (import-module mod2))
 	 ((not (pair? path))
-	  (import-error
+	  (import-error mod
 	   (format "Cannot find imported module in base \"~a\"" abase)
 	   ident))
 	 (else

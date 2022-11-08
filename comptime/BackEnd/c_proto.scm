@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Fri Apr 19 16:19:24 2019 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue May 10 12:29:26 2022 (serrano)                */
+;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -78,6 +78,7 @@
       (when (pair? pragmas)
 	 (for-each (lambda (p::pragma)
 		      (emit-cop (instantiate::cpragma
+				   (type *_*)
 				   (format (pragma-format p))
 				   (args (pragma-expr* p))
 				   (loc (pragma-loc p)))))
@@ -169,7 +170,7 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-prototype-formal-types types)
    (if (null? types)
-       "()"
+       "(void)"
        (string-append
 	"("
 	(let loop ((types types))
@@ -184,7 +185,7 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-prototype-formals args)
    (if (null? args)
-       "()"
+       "(void)"
        (string-append
 	  "("
 	  (let loop ((args args))
@@ -211,7 +212,7 @@
 		     name
 		     "("
 		     (cond
-			((null? targs) ")")
+			((null? targs) "void)")
 			((<=fx arity -1)
 			 (string-append (type-name-sans-$ (car targs))
 			    ", ...)"))

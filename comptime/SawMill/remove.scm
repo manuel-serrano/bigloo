@@ -40,7 +40,7 @@
       (error 'unlink! "must have only one successor" b) )
       (let ( (s (car succs)) )
      (if (eq? b s)
-         ;; patologic case of (L0 (goto L0))
+         ;; pathological case of (L0 (goto L0))
          (block-first-set! b (list (instantiate::rtl_ins
                       (fun (instantiate::rtl_nop))
                       (args '()) )))

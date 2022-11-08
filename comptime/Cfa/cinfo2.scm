@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/cinfo2.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/cinfo2.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 25 13:50:29 1999                          */
-;*    Last change :  Mon Nov 14 17:46:32 2011 (serrano)                */
-;*    Copyright   :  1999-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov  4 15:46:58 2022 (serrano)                */
+;*    Copyright   :  1999-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The format cfa_info used is to big. Its compilation was          */
 ;*    requiring to many memory. I have simply slit that module.        */
@@ -85,7 +85,9 @@
 	      ;;     ...)
 	      ;; A type error is detected because v is given
 	      ;; an erroneous type.
-	      (seen?::bool (default #f)))
+	      (seen?::bool (default #f))
+	      ;; can tvector?
+	      (tvector?::bool (default #t)))
 	       
 	   ;; pair
 	   (wide-class pre-cons-app::app

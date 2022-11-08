@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Thu Jul  8 11:28:41 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul 19 14:28:45 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -352,6 +352,8 @@
 ;*    make-one-class-conversion ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-one-class-conversion from to check-op coerce-op node)
+   (trace (coerce 2) "make-one-class-conversion: " (shape node) " ("
+	  (shape from) " -> " (shape to) ")" #\Newline)
    (if (and (tclass? to) (type-subclass? from to))
        (do-convert coerce-op node from)
        (let* ((aux   (gensym 'aux))
@@ -418,7 +420,7 @@
 	  (lvtype-node! nnode)
 	  (spread-side-effect! nnode)
 	  nnode)))
-;*                                                                     */
+
 
 
 

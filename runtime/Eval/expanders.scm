@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Thu Jun 17 09:06:34 2021 (serrano)                */
-;*    Copyright   :  2002-21 Manuel Serrano                            */
+;*    Last change :  Sat Aug 27 16:45:39 2022 (serrano)                */
+;*    Copyright   :  2002-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -398,6 +398,7 @@
    
    ;; let
    (install-eval-expander 'let expand-eval-let)
+   (install-eval-expander '$let expand-eval-$let)
    
    ;; let*
    (install-eval-expander 'let* expand-eval-let*)

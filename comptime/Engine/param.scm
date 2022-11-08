@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Dec  8 12:07:55 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Oct 25 05:26:44 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -55,6 +55,7 @@
 	    *warning-default-slot-value*
 	    *profile-library*
 	    *trace-name*
+	    *trace-level*
 	    *trace-write-length*
 	    *additional-traces*
 	    *inlining?*
@@ -92,12 +93,14 @@
 	    *optim-return?*
 	    *optim-return-goto?*
 	    *optim-tagged-fxop?*
+	    *optim-specialize-flonum?*
 	    *optim-stackable?*
 	    *optim-uncell?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
 	    *arithmetic-overflow*
+	    *arithmetic-new-overflow*
 	    *shared-cnst?*
 	    ;; -------------------------------------------------------------
 	    ;; warning, any change about this variable name must be reported
@@ -234,6 +237,7 @@
 	    *saw-no-register-allocation-functions*
 	    *saw-spill*
 	    *saw-bbv?*
+	    *saw-bbv-functions*
 	    *global-tail-call?*
 	    *builtin-allocators*
 	    *eval-options*
@@ -814,6 +818,7 @@
 (define *alloc-shape?* #f)
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
+(define *arithmetic-new-overflow* #t)
 (param-define *shared-cnst?*
    "Shared constant compilation?"
    #t)
@@ -844,6 +849,9 @@
 (param-define *trace-name*
    "Trace file name"
    "trace")
+(param-define *trace-level*
+   "Trace level"
+   0)
 (param-define *trace-write-length*
    "Trace dumping max level"
    80)
@@ -965,6 +973,9 @@
    #f)
 (param-define *optim-tagged-fxop?*
    "Optimize tagged fixnum operations"
+   #f)
+(param-define *optim-specialize-flonum?*
+   "Optimize specialize flonum operations"
    #f)
 (param-define *optim-stackable?*
    "Optimize stackable allocation"
@@ -1136,6 +1147,13 @@
 (param-define *saw-bbv?*
    "Enable/disable saw basic-blocks versionning"
    #f)
+
+;*---------------------------------------------------------------------*/
+;*    *saw-bbv-functions* ...                                          */
+;*---------------------------------------------------------------------*/
+(param-define *saw-bbv-functions*
+   "Optional white list of bbv functions"
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *global-tail-call?* ...                                          */

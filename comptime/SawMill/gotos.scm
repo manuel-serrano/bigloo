@@ -43,7 +43,7 @@
 		    '() )
 		   ((rtl_if? fun)
 		    (_if fun ins succs l) )
-		   (else (error 'add-goto "CARE" ins)) ))))))
+		   (else (error "add-goto" "CARE" ins)) ))))))
 
 ;; creation of a goto instruction
 (define (_goto::rtl_ins b::block) ;()
@@ -81,3 +81,4 @@
 
 (define (_ifne! ins::rtl_ins then::block) ;()
    (rtl_ins-fun-set! ins (instantiate::rtl_ifne (then then))) )
+

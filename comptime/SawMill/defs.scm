@@ -23,6 +23,8 @@
       (class rtl_return::rtl_last type::type)
       (class rtl_jumpexit::rtl_last)
       (class rtl_fail::rtl_last)
+      (class rtl_retblock::rtl_fun)
+      (class rtl_ret::rtl_last to::block)
       ; dest = #f and multiple continuation (last instruction of blocks)
       (class rtl_notseq::rtl_fun)
       (class rtl_if::rtl_notseq)
@@ -70,14 +72,14 @@
 	 (%spill::pair-nil (default '()))
 	 (dest (default #f)) ; ::(or reg #f)
 	 (fun::rtl_fun)
-	 (args::pair-nil) )   ; ::(list (or reg ins))
+	 (args::pair-nil) )  ; ::(list (or reg ins))
       
       ;; Block of instructions
       (final-class block
 	 (label::int (default 0))
 	 (preds::pair-nil (default '()))		; ::(list block)
 	 (succs::pair-nil (default '()))		; ::(list block)
-	 first::pair )				; ::(list ins)
+	 (first::pair-nil (default '())))    	        ; ::(list ins)
 
       (rtl_ins-args*::pair-nil ::rtl_ins)
       
@@ -89,6 +91,14 @@
       (dump-margin ::output-port ::int)
       (dump-ins-rhs o::rtl_ins p m)
       ))
+
+;*---------------------------------------------------------------------*/
+;*    debug-saw ...                                                    */
+;*---------------------------------------------------------------------*/
+(define debug-saw
+   (let ((e (getenv "BIGLOOTRACE")))
+      (when (string? e)
+	 (string-index "bbv" e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-args* ...                                                */
@@ -128,7 +138,6 @@
 	     (display "%" p)
 	     (display hardware p))
 	    (var
-	     (display "!" p)
 	     (display (variable-id var) p))
 	    (else
 	     (display "$" p)
@@ -233,7 +242,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::block p m)
    (with-access::block o (label first)
-      (fprint p "(block " label)
+      (fprint p "(" (typeof o) " " label)
       (with-access::block o (preds succs)
 	 (dump-margin p (+fx m 1))
 	 (fprint p ":preds " (map block-label preds))
@@ -241,26 +250,30 @@
 	 (fprint p ":succs " (map block-label succs)))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
-      (display ")\n" p)))
+      (display "\n )\n" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::rtl_ins p m)
    (with-access::rtl_ins o (%spill fun dest args)
+      (display "[" p)
       (when dest
-	 (display "[" p)
+	 (display "(" p)
 	 (dump dest p m)
 	 (display " <- " p))
       (dump-ins-rhs o p m)
-      (when (pair? %spill)
-	 (display " (" p)
-	 (for-each (lambda (r)
-		      (display (shape r) p)
-		      (display " " p))
-	    %spill)
+      (when dest
 	 (display ")" p))
-      (when dest (display "]" p))))
+      (display " " p)
+      (display " (" p)
+      (when (pair? %spill)
+	 (for-each (lambda (r)
+		       (display (shape r) p)
+		       (display " " p))
+	     %spill))
+      (display ")" p)
+      (display "]" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-ins-rhs ...                                                 */
@@ -283,9 +296,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    show-fun ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (show-fun o p)
+(define (show-fun o dest p)
    (let ((c (symbol->string (class-name (object-class o)))))
-      (display (substring c 4 (string-length c)) p)))
+      (display (substring c 4 (string-length c)) p)
+      (when (and dest debug-saw)
+	 (display " {" p)
+	 (dump dest p 0)
+	 (display "}" p))))
    
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ...                                                     */
@@ -297,14 +314,14 @@
 ;*    dump-fun ::rtl_fun ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_fun dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (dump-args args p))
    
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_loadi ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_loadi dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (atom-value (rtl_loadi-constant o)) p)
    (dump-args args p))
@@ -313,14 +330,14 @@
 ;*    dump-fun ::rtl_mov ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_mov dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (dump-args args p))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_loadg ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_loadg dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (shape (rtl_loadg-var o)) p)
    (dump-args args p))
@@ -329,7 +346,7 @@
 ;*    dump-fun ::rtl_loadfun ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_loadfun dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (shape (rtl_loadfun-var o)) p)
    (dump-args args p))
@@ -338,37 +355,49 @@
 ;*    dump-fun ::rtl_globalref ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_globalref dest args p m)
-   (show-fun o p)
+   (show-fun o dest p)
    (display " " p)
    (display (shape (rtl_globalref-var o)) p)
    (dump-args args p))
+
+;*---------------------------------------------------------------------*/
+;*    dump-fun ::rtl_switch ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (dump-fun o::rtl_switch dest args p m)
+   (with-access::rtl_switch o (labels)
+      (show-fun o dest p)
+      (dump-args args p)
+      (display " " p)
+      (display (map block-label labels) p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_ifeq ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_ifeq dest args p m)
    (with-access::rtl_ifeq o (then)
-      (show-fun o p)
+      (show-fun o dest p)
       (dump-args args p)
-      (display " " p)
-      (display (block-label then) p)))
+      (display " (go " p)
+      (display (block-label then) p)
+      (display ")" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_ifne ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_ifne dest args p m)
    (with-access::rtl_ifne o (then)
-      (show-fun o p)
+      (show-fun o dest p)
       (dump-args args p)
-      (display " " p)
-      (display (block-label then) p)))
+      (display " (go " p)
+      (display (block-label then) p)
+      (display ")" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ::rtl_go ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (dump-fun o::rtl_go dest args p m)
    (with-access::rtl_go o (to)
-      (show-fun o p)
+      (show-fun o dest p)
       (display " " p)
       (display (block-label to) p)
       (dump-args args p)))
@@ -386,6 +415,21 @@
 		     (set! *user-shape?* ou)
 		     (set! *access-shape?* oa)
 		     r))
-	       p)
+	 p)
+      (when (and dest debug-saw)
+	 (display " {" p)
+	 (dump dest p 0)
+	 (display "}" p))
       (dump-args args p)))
+
+;*---------------------------------------------------------------------*/
+;*    dump-fun ::rtl_pragma ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (dump-fun o::rtl_pragma dest args p m)
+   (show-fun o dest p)
+   (display " " p)
+   (display (rtl_pragma-format o) p)
+   (display " " p)
+   (dump-args args p))
+   
 

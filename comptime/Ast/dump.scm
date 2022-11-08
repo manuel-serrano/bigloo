@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Sun Jul 11 09:57:55 2021 (serrano)                */
+;*    Last change :  Thu Nov  3 11:32:08 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -364,7 +364,8 @@
       (location-shape (node-loc node)
 	 `(,sym
 	     ,@(if *access-shape?*
-		   `(side-effect: ,(side-effect? node))
+		   `(side-effect: ,(side-effect? node)
+		       removable?: ,(let-var-removable? node))
 		   '())
 	     ,(map (lambda (b)
 			 `(,(shape (car b)) ,(node->sexp (cdr b))))

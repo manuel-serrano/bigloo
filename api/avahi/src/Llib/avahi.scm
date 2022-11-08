@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/avahi/src/Llib/avahi.scm         */
+;*    .../prgm/project/bigloo/bigloo/api/avahi/src/Llib/avahi.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Fri Dec 13 12:00:32 2013 (serrano)                */
-;*    Copyright   :  2011-20 Manuel Serrano                            */
+;*    Last change :  Wed Apr 27 09:48:14 2022 (serrano)                */
+;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
 ;*=====================================================================*/
@@ -97,7 +97,7 @@
 	    (get (lambda (o::avahi-client)
 		    (if ($avahi-client-nil? (-> o $builtin))
 			"nil"
-			($avahi-client-get-host-name-fqdn (-> o $builtin))))))
+ 			($avahi-client-get-host-name-fqdn (-> o $builtin))))))
 	 (state::symbol
 	    read-only
 	    (get (lambda (o::avahi-client)
@@ -117,7 +117,9 @@
 	 (client::avahi-client read-only)
 	 (proc::procedure read-only)
 	 (type::bstring read-only)
-	 (domain::bstring read-only (default "")))
+	 (domain::bstring read-only (default ""))
+	 (interface::$avahi-if-index read-only (default $avahi-if-unspec))
+	 (protocol::symbol read-only (default 'avahi-proto-unspec)))
 
       (class avahi-service-type-browser::avahi-object
 	 ($builtin::$avahi-service-type-browser read-only (default ($avahi-service-browser-nil)))
@@ -150,6 +152,13 @@
       (%avahi-signal)
       
       (avahi-error ::string ::string ::obj ::int)
+
+      (avahi-poll-quit ::avahi-poll)
+      (avahi-poll-close ::avahi-poll)
+      (avahi-poll-loop ::avahi-poll)
+      (avahi-poll-timeout ::avahi-poll ::long ::procedure)
+      (avahi-poll-lock! ::avahi-poll)
+      (avahi-poll-unlock! ::avahi-poll)
       
       (avahi-simple-poll-close ::avahi-simple-poll)
       (avahi-simple-poll-loop ::avahi-simple-poll)
@@ -194,6 +203,23 @@
       (%avahi-lock! no-trace)
       (%avahi-unlock! no-trace)
       (%avahi-signal no-trace)))
+
+;*---------------------------------------------------------------------*/
+;*    object-display ::avahi-client ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (object-display o::avahi-client . port)
+   (with-output-to-port (if (null? port) (current-output-port) (car port))
+      (lambda ()
+	 (with-access::avahi-client o (hostname domainname state)
+	    (print "#<avahi-client(" state "):" hostname "." domainname)))))
+
+;*---------------------------------------------------------------------*/
+;*    object-display ::avahi-poll ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (object-display o::avahi-poll . port)
+   (with-output-to-port (if (null? port) (current-output-port) (car port))
+      (lambda ()
+	 (print "#<" (class-name (object-class o)) ">"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *avahi-mutex* ...                                                */
@@ -289,6 +315,52 @@
    o)
 
 ;*---------------------------------------------------------------------*/
+;*    avahi-poll-close ...                                             */
+;*---------------------------------------------------------------------*/
+(define (avahi-poll-close o::avahi-poll)
+   (if (isa? o avahi-simple-poll)
+       (avahi-simple-poll-close o)
+       (avahi-threaded-poll-close o)))
+       
+;*---------------------------------------------------------------------*/
+;*    avahi-poll-loop ...                                              */
+;*---------------------------------------------------------------------*/
+(define (avahi-poll-loop o::avahi-poll)
+   (if (isa? o avahi-simple-poll)
+       (avahi-simple-poll-loop o)
+       (avahi-threaded-poll-loop o)))
+       
+;*---------------------------------------------------------------------*/
+;*    avahi-poll-quit ...                                              */
+;*---------------------------------------------------------------------*/
+(define (avahi-poll-quit o::avahi-poll)
+   (if (isa? o avahi-simple-poll)
+       (avahi-simple-poll-quit o)
+       (avahi-threaded-poll-quit o)))
+       
+;*---------------------------------------------------------------------*/
+;*    avahi-poll-timeout ...                                           */
+;*---------------------------------------------------------------------*/
+(define (avahi-poll-timeout o::avahi-poll t::long proc::procedure)
+   (if (isa? o avahi-simple-poll)
+       (avahi-simple-poll-timeout o t proc)
+       (avahi-threaded-poll-timeout o t proc)))
+       
+;*---------------------------------------------------------------------*/
+;*    avahi-poll-lock! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (avahi-poll-lock! o::avahi-poll)
+   (when (isa? o avahi-threaded-poll)
+      (avahi-threaded-poll-lock! o)))
+       
+;*---------------------------------------------------------------------*/
+;*    avahi-poll-unlock! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (avahi-poll-unlock! o::avahi-poll)
+   (when (isa? o avahi-threaded-poll)
+      (avahi-threaded-poll-unlock! o)))
+       
+;*---------------------------------------------------------------------*/
 ;*    avahi-init ::avahi-simple-poll ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-simple-poll)
@@ -321,7 +393,7 @@
    (if (correct-arity? proc 0)
        (with-access::avahi-simple-poll o ($builtin %procs)
 	  (set! %procs (cons proc %procs))
-	  ($bgl-avahi-simple-poll-timeout $builtin t proc))
+	  ($bgl-avahi-simple-poll-timeout $builtin t proc o))
        (avahi-error "avahi-simple-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))
 
@@ -383,7 +455,7 @@
    (if (correct-arity? proc 0)
        (with-access::avahi-threaded-poll o ($builtin %procs)
 	  (set! %procs (cons proc %procs))
-	  ($bgl-avahi-threaded-poll-timeout $builtin t proc))
+	  ($bgl-avahi-threaded-poll-timeout $builtin t proc o))
        (avahi-error "avahi-threaded-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Sat Sep  4 15:17:39 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov  4 09:21:53 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -34,6 +34,7 @@
 	    ast_sexp
 	    ast_env
 	    ast_lvtype
+	    ast_walk
 	    cfa_info
 	    cfa_info2
 	    cfa_info3
@@ -77,12 +78,12 @@
 			     (cond
 				((cfun? fun)
 				 (set-car! (cddr (cfun-args-type fun))
-					   (get-default-type)))
+				    (get-default-type)))
 				((sfun? fun)
 				 (local-type-set! (caddr (sfun-args fun))
-						  (get-default-type))))))))
-		'(vector-set! vector-set-ur! c-vector-set!
-		  $vector-set! $vector-set-ur!))
+				    (get-default-type))))))))
+	 '(vector-set! vector-set-ur! c-vector-set!
+	   $vector-set! $vector-set-ur!))
       (let ((g (find-global 'c-vector?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
@@ -100,33 +101,32 @@
 ;*    unpatch-vector-set! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (unpatch-vector-set!)
-   (if (tvector-optimization?)
-       (begin
-	  (for-each (lambda (set)
-		       (let ((g (find-global set)))
-			  (if (global? g)
-			      (let ((fun (global-value g)))
-				 (cond
-				    ((cfun? fun)
-				     (set-car! (cddr (cfun-args-type fun))
-					       *obj*))
-				    ((sfun? fun)
-				     (local-type-set! (caddr (sfun-args fun))
-						      *obj*)))))))
-		    '(vector-set! c-vector-set! vector-set-ur!))
-	  (let ((g (find-global 'c-vector?)))
-	     (if (global? g)
-		 (let ((f (global-value g)))
-		    (set-car! (cfun-args-type f) *obj*))))
-	  (let ((g (find-global '$vector?)))
-	     (if (global? g)
-		 (let ((f (global-value g)))
-		    (set-car! (cfun-args-type f) *obj*))))
-	  (let ((g (find-global 'vector?)))
-	     (if (global? g)
-		 (let ((f (global-value g)))
-		    (local-type-set! (car (sfun-args f)) *obj*)))))
-       #unspecified))
+   (when (tvector-optimization?)
+      (for-each (lambda (set)
+		   (let ((g (find-global set)))
+		      (if (global? g)
+			  (let ((fun (global-value g)))
+			     (cond
+				((cfun? fun)
+				 (set-car! (cddr (cfun-args-type fun))
+				    *obj*))
+				((sfun? fun)
+				 (local-type-set! (caddr (sfun-args fun))
+				    *obj*)))))))
+	 '(vector-set! c-vector-set! vector-set-ur!))
+      (let ((g (find-global 'c-vector?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(set-car! (cfun-args-type f) *obj*))))
+      (let ((g (find-global '$vector?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(set-car! (cfun-args-type f) *obj*))))
+      (let ((g (find-global 'vector?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(local-type-set! (car (sfun-args f)) *obj*)))))
+   #unspecified)
     
 ;*---------------------------------------------------------------------*/
 ;*    vector->tvector! ...                                             */
@@ -135,10 +135,10 @@
    (if (tvector-optimization?)
        (begin
 	  (trace cfa
-		 "--------------------------------------"
-		 #\Newline "tvector-optimization! :" #\Newline
-		 (shape *make-vector-list*)
-		 #\Newline)
+	     "--------------------------------------"
+	     #\Newline "tvector-optimization! :" #\Newline
+	     (shape *make-vector-list*)
+	     #\Newline)
 	  ;; we setup the inlining 
 	  (inline-setup! 'all)
 	  (multiple-value-bind (vectors tvectors)
@@ -152,7 +152,7 @@
 	     (if (pair? tvectors)
 		 (let ((add-tree (declare-tvectors tvectors)))
 		    (trace (cfa 2)
-			   "additional-body: " (shape add-tree) #\Newline)
+		       "additional-body: " (shape add-tree) #\Newline)
 		    (patch-tree! globals)
 		    (lvtype-ast! add-tree)
 		    add-tree)
@@ -176,7 +176,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-tvectors ...                                                 */
 ;*    -------------------------------------------------------------    */
-;*    We scan all declared vector to find which of them can be         */
+;*    We scan all declared vectors to find which of them can be        */
 ;*    optimized.                                                       */
 ;*---------------------------------------------------------------------*/
 (define (get-tvectors)
@@ -190,10 +190,11 @@
 	     (trace (cfa 1)
 		    "vector: " (shape app) " item-type: " (shape type)
 		    " < " (type-class type) #\Newline)
-	     (if (and (not (eq? type *_*)) (not (sub-type? type *obj*)))
+	     (if (and (not (eq? type *_*))
+		      (not (sub-type? type *obj*)))
 		 (loop (cdr apps) vectors (cons app tvectors))
 		 (loop (cdr apps) (cons app vectors) tvectors))))))
-			   
+
 ;*---------------------------------------------------------------------*/
 ;*    get-vector-item-type ...                                         */
 ;*---------------------------------------------------------------------*/
@@ -299,7 +300,7 @@
    (with-access::kwote/node knode (node value)
       (let* ((approx (cfa! node))
 	     (tv (get-approx-type approx node)))
-	 (if (tvec? tv)
+	 (if (tvec? tv) 
 	     (let* ((knode (shrink! knode))
 		    (n (duplicate::kwote knode
 			  (type (strict-node-type tv (node-type knode)))
@@ -493,7 +494,7 @@
 ;*    patch! ::app ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::app)
-   (with-access::app node (fun args)
+   (with-access::app node (fun args loc)
       (patch*! args)
       (set! fun (patch! fun))
       (let ((v (var-variable fun)))
@@ -534,8 +535,8 @@
    (with-access::app node (args loc)
       (patch*! args)
       (let* ((approx (cfa! (car args)))
-	     (type (approx-type approx)))
-	 (if (eq? type *vector*)
+	     (type (get-approx-type approx (car args))))
+	 (if (or (eq? type *vector*) (isa? type tvec))
 	     (instantiate::literal
 		(loc loc)
 		(type (strict-node-type (get-type-atom #t) *bool*))
@@ -564,16 +565,16 @@
 ;*    patch! ::make-vector-app ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::make-vector-app)
-   (with-access::make-vector-app node (value-approx fun args loc)
+   (with-access::make-vector-app node (value-approx fun args loc tvector?)
       (patch*! args)
       (let* ((type (approx-type value-approx))
 	     (tv   (type-tvector type)))
-	 (if (type? tv)
+	 (if (and (type? tv) tvector?)
 	     (let* ((make-tv   (symbol-append 'make- (type-id tv)))
 		    (new-node  (sexp->node `(,make-tv ,@args)
-					   '()
-					   loc
-					   'value)))
+				  '()
+				  loc
+				  'value)))
 		(node-type-set! new-node tv)
 		(inline-node new-node 1 '()))
 	     node))))
@@ -589,9 +590,9 @@
 	 (if (and (type? tv) (eq? ftype *_*))
 	     (let* ((create-tv (symbol-append 'allocate- (type-id tv)))
 		    (new-node  (sexp->node `(,create-tv ,@expr*)
-					   '()
-					   loc
-					   'value)))
+				  '()
+				  loc
+				  'value)))
 		(let ((n (inline-node new-node 1 '())))
 		   (lvtype-node! n)
 		   n))
@@ -637,10 +638,4 @@
 		 (let* ((tv-set!  (symbol-append (type-id tv) '-set!))
 			(new-node (sexp->node `(,tv-set! ,@expr*) '() loc 'value)))
 		    (inline-node new-node 1 '())))))))
-	    
-
-
-
-
-
 

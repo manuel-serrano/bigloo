@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/avahi/src/Llib/avahi.sch         */
+;*    .../prgm/project/bigloo/bigloo/api/avahi/src/Llib/avahi.sch      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Feb  6 10:39:47 2017 (serrano)                */
-;*    Copyright   :  2011-17 Manuel Serrano                            */
+;*    Last change :  Mon Apr 25 07:20:12 2022 (serrano)                */
+;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
 ;*=====================================================================*/
@@ -113,7 +113,7 @@
 	 (::$avahi-simple-poll)
 	 "avahi_simple_poll_quit")
       (macro $bgl-avahi-simple-poll-timeout::void
-	 (::$avahi-simple-poll ::elong ::procedure)
+	 (::$avahi-simple-poll ::elong ::procedure ::avahi-simple-poll)
 	 "bgl_avahi_simple_poll_timeout")
 
       ;; avahi-threaded-poll
@@ -133,7 +133,7 @@
 	 (::$avahi-threaded-poll)
 	 "avahi_threaded_poll_stop")
       (macro $bgl-avahi-threaded-poll-timeout::void
-	 (::$avahi-threaded-poll ::elong ::procedure)
+	 (::$avahi-threaded-poll ::elong ::procedure ::avahi-threaded-poll)
 	 "bgl_avahi_threaded_poll_timeout")
       (macro $avahi-threaded-poll-lock::void
 	 (::$avahi-threaded-poll)
@@ -161,19 +161,19 @@
 	 "avahi_client_get_state")
       (macro $avahi-client-get-version-string::string
 	 (::$avahi-client)
-	 "avahi_client_get_version_string")
+	 "(char *)avahi_client_get_version_string")
       (macro $avahi-client-get-host-name::string
 	 (::$avahi-client)
-	 "avahi_client_get_host_name")
-      (macro $avahi-client-set-host-name::string
+	 "(char *)avahi_client_get_host_name")
+      (macro $avahi-client-set-host-name::int
 	 (::$avahi-client ::string)
 	 "avahi_client_set_host_name")
       (macro $avahi-client-get-domain-name::string
 	 (::$avahi-client)
-	 "avahi_client_get_domain_name")
+	 "(char *)avahi_client_get_domain_name")
       (macro $avahi-client-get-host-name-fqdn::string
 	 (::$avahi-client)
-	 "avahi_client_get_host_name_fqdn")
+	 "(char *)avahi_client_get_host_name_fqdn")
 
       (type $avahi-client-flag long "AvahiClientFlags")
       (macro $avahi-client-flag-ignore-user-config::$avahi-client-flag

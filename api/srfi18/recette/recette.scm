@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi18/recette/recette.scm       */
+;*    .../project/bigloo/bigloo/api/srfi18/recette/recette.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Thu Oct 15 15:24:45 2015 (serrano)                */
-;*    Copyright   :  2002-15 Manuel Serrano                            */
+;*    Last change :  Mon Nov  7 10:36:05 2022 (serrano)                */
+;*    Copyright   :  2002-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
 ;*=====================================================================*/
@@ -51,7 +51,7 @@
    (let ((provided (with-handler
 		      (lambda (e)
 			 (error-notify e)
-			 (vector res))
+			 res)
 		      (prgm))))
       (if (or (eq? res #unspecified)
 	      (and (procedure? res) (res provided))
@@ -103,7 +103,9 @@
 ;*    thread-name ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-test thread-name
-   (with-access::thread (instantiate::srfi18thread (body (lambda () #f)) (name 'foo))
+   (with-access::thread (instantiate::srfi18thread
+			   (body (lambda () #f))
+			   (name 'foo))
 	 (name)
       name)
    :result 'foo)

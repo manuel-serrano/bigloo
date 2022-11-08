@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/avahi/examples/browse.scm        */
+;*    .../prgm/project/bigloo/bigloo/api/avahi/examples/browse.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 14 14:28:34 2011                          */
-;*    Last change :  Thu Jul 12 14:46:03 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Wed Apr 27 07:23:55 2022 (serrano)                */
+;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Browse an AVAHI server mimicking the avahi-browse.c example.     */
 ;*=====================================================================*/
@@ -32,7 +32,7 @@
 		  (instantiate::avahi-service-type-browser
 		     (client client)
 		     (proc type-browser-callback)))))
-      (avahi-threaded-poll-loop poll)
+      (avahi-poll-loop poll)
       (read)))
 
 ;*---------------------------------------------------------------------*/
@@ -40,7 +40,7 @@
 ;*---------------------------------------------------------------------*/
 (define (client-callback client::avahi-client state::symbol)
    (when (eq? state 'avahi-client-failure)
-      (avahi-threaded-poll-quit (-> client poll))))
+      (avahi-poll-quit (-> client poll))))
 
 ;*---------------------------------------------------------------------*/
 ;*    service-browser-callback ...                                     */
@@ -48,8 +48,8 @@
 (define (service-browser-callback browser::avahi-service-browser
 	   interface protocol event name type domain flags)
    (let* ((client::avahi-client (-> browser client))
-	  (poll::avahi-threaded-poll (-> client poll)))
-      (avahi-threaded-poll-lock! poll)
+	  (poll::avahi-poll (-> client poll)))
+      (avahi-poll-lock! poll)
       (case event
 	 ((avahi-browser-failure)
 	  'todo)
@@ -69,7 +69,7 @@
 	  'todo)
 	 (else
 	  (fprintf (current-error-port) "Unknown browser event \"~a\"\n" event)))
-      (avahi-threaded-poll-unlock! poll)))
+      (avahi-poll-unlock! poll)))
    
 ;*---------------------------------------------------------------------*/
 ;*    type-browser-callback ...                                        */
@@ -77,8 +77,9 @@
 (define (type-browser-callback browser::avahi-service-type-browser
 	   interface protocol event type domain flags)
    (let* ((client::avahi-client (-> browser client))
-	  (poll::avahi-threaded-poll (-> client poll)))
-      (avahi-threaded-poll-lock! poll)
+	  (poll::avahi-poll (-> client poll)))
+      (avahi-poll-lock! poll)
+      
       (case event
 	 ((avahi-browser-failure)
 	  'todo)
@@ -86,14 +87,17 @@
 	  (instantiate::avahi-service-browser
 	     (client client)
 	     (type type)
-	     (proc service-browser-callback)))
+	     (proc service-browser-callback)
+	     (domain domain)
+	     (protocol protocol)
+	     (interface interface)))
 	 ((avahi-browser-remove)
 	  'todo)
 	 ((avahi-browser-all-for-now avahi-browser-cache-exhausted)
 	  'todo)
 	 (else
 	  (fprintf (current-error-port) "Unknown browser event \"~a\"\n" event)))
-      (avahi-threaded-poll-unlock! poll)))
+      (avahi-poll-unlock! poll)))
    
 ;*---------------------------------------------------------------------*/
 ;*    resolver-callback ...                                            */
@@ -102,8 +106,8 @@
 	   interface protocol event name type domain hostname address port
 	   txtlst flags)
    (let* ((client::avahi-client (-> resolver client))
-	  (poll::avahi-threaded-poll (-> client poll)))
-      (avahi-threaded-poll-lock! poll)
+	  (poll::avahi-poll (-> client poll)))
+      (avahi-poll-lock! poll)
       (case event
 	 ((avahi-resolver-failure)
 	  (fprintf (current-error-port) "Failed to resolve service '~a' of type '~a' in domain '~a': ~a\n"
@@ -121,6 +125,6 @@
 	     address
 	     txtlst)))
       (avahi-service-resolver-close resolver)
-      (avahi-threaded-poll-unlock! poll)))
+      (avahi-poll-unlock! poll)))
 
 

@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
+;; Bigloo (4.5a)
+;; Inria -- Sophia Antipolis     Fri 04 Nov 2022 11:40:21 AM CET 
 ;; (bigloo.new -classgen Cfa/cinfo2.scm)
 ;; ==========================================================
 
@@ -11,10 +11,12 @@
 ;; pre-arithmetic-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-arithmetic-app::pre-arithmetic-app loc1639::obj type1640::type side-effect1641::obj key1642::obj fun1643::var args1644::obj spec-types1645::pair)
+    (inline make-pre-arithmetic-app::pre-arithmetic-app loc1693::obj type1694::type side-effect1695::obj key1696::obj fun1697::var args1698::obj stackable1699::obj spec-types1700::pair)
     (inline pre-arithmetic-app?::bool ::obj)
     (pre-arithmetic-app-nil::pre-arithmetic-app)
     (inline pre-arithmetic-app-spec-types::pair ::pre-arithmetic-app)
+    (inline pre-arithmetic-app-stackable::obj ::pre-arithmetic-app)
+    (inline pre-arithmetic-app-stackable-set! ::pre-arithmetic-app ::obj)
     (inline pre-arithmetic-app-args::obj ::pre-arithmetic-app)
     (inline pre-arithmetic-app-args-set! ::pre-arithmetic-app ::obj)
     (inline pre-arithmetic-app-fun::var ::pre-arithmetic-app)
@@ -30,11 +32,13 @@
 ;; arithmetic-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-arithmetic-app::arithmetic-app loc1630::obj type1631::type side-effect1632::obj key1633::obj fun1634::var args1635::obj approx1636::approx spec-types1637::pair)
+    (inline make-arithmetic-app::arithmetic-app loc1683::obj type1684::type side-effect1685::obj key1686::obj fun1687::var args1688::obj stackable1689::obj approx1690::approx spec-types1691::pair)
     (inline arithmetic-app?::bool ::obj)
     (arithmetic-app-nil::arithmetic-app)
     (inline arithmetic-app-spec-types::pair ::arithmetic-app)
     (inline arithmetic-app-approx::approx ::arithmetic-app)
+    (inline arithmetic-app-stackable::obj ::arithmetic-app)
+    (inline arithmetic-app-stackable-set! ::arithmetic-app ::obj)
     (inline arithmetic-app-args::obj ::arithmetic-app)
     (inline arithmetic-app-args-set! ::arithmetic-app ::obj)
     (inline arithmetic-app-fun::var ::arithmetic-app)
@@ -50,10 +54,12 @@
 ;; pre-make-procedure-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-make-procedure-app::pre-make-procedure-app loc1621::obj type1622::type side-effect1623::obj key1624::obj fun1625::var args1626::obj owner1627::variable)
+    (inline make-pre-make-procedure-app::pre-make-procedure-app loc1674::obj type1675::type side-effect1676::obj key1677::obj fun1678::var args1679::obj stackable1680::obj owner1681::variable)
     (inline pre-make-procedure-app?::bool ::obj)
     (pre-make-procedure-app-nil::pre-make-procedure-app)
     (inline pre-make-procedure-app-owner::variable ::pre-make-procedure-app)
+    (inline pre-make-procedure-app-stackable::obj ::pre-make-procedure-app)
+    (inline pre-make-procedure-app-stackable-set! ::pre-make-procedure-app ::obj)
     (inline pre-make-procedure-app-args::obj ::pre-make-procedure-app)
     (inline pre-make-procedure-app-args-set! ::pre-make-procedure-app ::obj)
     (inline pre-make-procedure-app-fun::var ::pre-make-procedure-app)
@@ -69,9 +75,11 @@
 ;; pre-procedure-ref-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-procedure-ref-app::pre-procedure-ref-app loc1612::obj type1613::type side-effect1614::obj key1615::obj fun1616::var args1617::obj)
+    (inline make-pre-procedure-ref-app::pre-procedure-ref-app loc1666::obj type1667::type side-effect1668::obj key1669::obj fun1670::var args1671::obj stackable1672::obj)
     (inline pre-procedure-ref-app?::bool ::obj)
     (pre-procedure-ref-app-nil::pre-procedure-ref-app)
+    (inline pre-procedure-ref-app-stackable::obj ::pre-procedure-ref-app)
+    (inline pre-procedure-ref-app-stackable-set! ::pre-procedure-ref-app ::obj)
     (inline pre-procedure-ref-app-args::obj ::pre-procedure-ref-app)
     (inline pre-procedure-ref-app-args-set! ::pre-procedure-ref-app ::obj)
     (inline pre-procedure-ref-app-fun::var ::pre-procedure-ref-app)
@@ -87,9 +95,11 @@
 ;; pre-procedure-set!-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-procedure-set!-app::pre-procedure-set!-app loc1605::obj type1606::type side-effect1607::obj key1608::obj fun1609::var args1610::obj)
+    (inline make-pre-procedure-set!-app::pre-procedure-set!-app loc1657::obj type1658::type side-effect1659::obj key1660::obj fun1662::var args1663::obj stackable1664::obj)
     (inline pre-procedure-set!-app?::bool ::obj)
     (pre-procedure-set!-app-nil::pre-procedure-set!-app)
+    (inline pre-procedure-set!-app-stackable::obj ::pre-procedure-set!-app)
+    (inline pre-procedure-set!-app-stackable-set! ::pre-procedure-set!-app ::obj)
     (inline pre-procedure-set!-app-args::obj ::pre-procedure-set!-app)
     (inline pre-procedure-set!-app-args-set! ::pre-procedure-set!-app ::obj)
     (inline pre-procedure-set!-app-fun::var ::pre-procedure-set!-app)
@@ -105,7 +115,7 @@
 ;; make-procedure-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-make-procedure-app::make-procedure-app loc1590::obj type1591::type side-effect1592::obj key1593::obj fun1594::var args1595::obj approx1596::approx values-approx1597::vector lost-stamp1598::long X-T?1599::bool X1600::bool T1601::bool owner1602::variable stack-stamp1603::obj)
+    (inline make-make-procedure-app::make-procedure-app loc1641::obj type1642::type side-effect1643::obj key1644::obj fun1645::var args1646::obj stackable1647::obj approx1648::approx values-approx1649::vector lost-stamp1650::long X-T?1651::bool X1652::bool T1653::bool owner1654::variable stack-stamp1655::obj)
     (inline make-procedure-app?::bool ::obj)
     (make-procedure-app-nil::make-procedure-app)
     (inline make-procedure-app-stack-stamp::obj ::make-procedure-app)
@@ -123,6 +133,8 @@
     (inline make-procedure-app-values-approx-set! ::make-procedure-app ::vector)
     (inline make-procedure-app-approx::approx ::make-procedure-app)
     (inline make-procedure-app-approx-set! ::make-procedure-app ::approx)
+    (inline make-procedure-app-stackable::obj ::make-procedure-app)
+    (inline make-procedure-app-stackable-set! ::make-procedure-app ::obj)
     (inline make-procedure-app-args::obj ::make-procedure-app)
     (inline make-procedure-app-args-set! ::make-procedure-app ::obj)
     (inline make-procedure-app-fun::var ::make-procedure-app)
@@ -138,10 +150,12 @@
 ;; procedure-ref-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-procedure-ref-app::procedure-ref-app loc1582::obj type1583::type side-effect1584::obj key1585::obj fun1586::var args1587::obj approx1588::approx)
+    (inline make-procedure-ref-app::procedure-ref-app loc1630::obj type1631::type side-effect1632::obj key1633::obj fun1634::var args1635::obj stackable1636::obj approx1638::approx)
     (inline procedure-ref-app?::bool ::obj)
     (procedure-ref-app-nil::procedure-ref-app)
     (inline procedure-ref-app-approx::approx ::procedure-ref-app)
+    (inline procedure-ref-app-stackable::obj ::procedure-ref-app)
+    (inline procedure-ref-app-stackable-set! ::procedure-ref-app ::obj)
     (inline procedure-ref-app-args::obj ::procedure-ref-app)
     (inline procedure-ref-app-args-set! ::procedure-ref-app ::obj)
     (inline procedure-ref-app-fun::var ::procedure-ref-app)
@@ -157,12 +171,14 @@
 ;; procedure-set!-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-procedure-set!-app::procedure-set!-app loc1572::obj type1573::type side-effect1574::obj key1575::obj fun1577::var args1578::obj approx1579::approx vapprox1580::obj)
+    (inline make-procedure-set!-app::procedure-set!-app loc1620::obj type1621::type side-effect1622::obj key1623::obj fun1624::var args1625::obj stackable1626::obj approx1627::approx vapprox1628::obj)
     (inline procedure-set!-app?::bool ::obj)
     (procedure-set!-app-nil::procedure-set!-app)
     (inline procedure-set!-app-vapprox::obj ::procedure-set!-app)
     (inline procedure-set!-app-vapprox-set! ::procedure-set!-app ::obj)
     (inline procedure-set!-app-approx::approx ::procedure-set!-app)
+    (inline procedure-set!-app-stackable::obj ::procedure-set!-app)
+    (inline procedure-set!-app-stackable-set! ::procedure-set!-app ::obj)
     (inline procedure-set!-app-args::obj ::procedure-set!-app)
     (inline procedure-set!-app-args-set! ::procedure-set!-app ::obj)
     (inline procedure-set!-app-fun::var ::procedure-set!-app)
@@ -178,10 +194,12 @@
 ;; pre-make-vector-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-make-vector-app::pre-make-vector-app loc1564::obj type1565::type side-effect1566::obj key1567::obj fun1568::var args1569::obj owner1570::variable)
+    (inline make-pre-make-vector-app::pre-make-vector-app loc1611::obj type1612::type side-effect1613::obj key1614::obj fun1615::var args1616::obj stackable1617::obj owner1618::variable)
     (inline pre-make-vector-app?::bool ::obj)
     (pre-make-vector-app-nil::pre-make-vector-app)
     (inline pre-make-vector-app-owner::variable ::pre-make-vector-app)
+    (inline pre-make-vector-app-stackable::obj ::pre-make-vector-app)
+    (inline pre-make-vector-app-stackable-set! ::pre-make-vector-app ::obj)
     (inline pre-make-vector-app-args::obj ::pre-make-vector-app)
     (inline pre-make-vector-app-args-set! ::pre-make-vector-app ::obj)
     (inline pre-make-vector-app-fun::var ::pre-make-vector-app)
@@ -197,9 +215,11 @@
 ;; make-vector-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-make-vector-app::make-vector-app loc1551::obj type1552::type side-effect1553::obj key1554::obj fun1555::var args1556::obj approx1557::approx value-approx1558::approx lost-stamp1559::long owner1560::variable stack-stamp1561::obj seen?1562::bool)
+    (inline make-make-vector-app::make-vector-app loc1595::obj type1596::type side-effect1597::obj key1598::obj fun1599::var args1600::obj stackable1602::obj approx1603::approx value-approx1604::approx lost-stamp1605::long owner1606::variable stack-stamp1607::obj seen?1608::bool tvector?1609::bool)
     (inline make-vector-app?::bool ::obj)
     (make-vector-app-nil::make-vector-app)
+    (inline make-vector-app-tvector?::bool ::make-vector-app)
+    (inline make-vector-app-tvector?-set! ::make-vector-app ::bool)
     (inline make-vector-app-seen?::bool ::make-vector-app)
     (inline make-vector-app-seen?-set! ::make-vector-app ::bool)
     (inline make-vector-app-stack-stamp::obj ::make-vector-app)
@@ -210,6 +230,8 @@
     (inline make-vector-app-value-approx::approx ::make-vector-app)
     (inline make-vector-app-approx::approx ::make-vector-app)
     (inline make-vector-app-approx-set! ::make-vector-app ::approx)
+    (inline make-vector-app-stackable::obj ::make-vector-app)
+    (inline make-vector-app-stackable-set! ::make-vector-app ::obj)
     (inline make-vector-app-args::obj ::make-vector-app)
     (inline make-vector-app-args-set! ::make-vector-app ::obj)
     (inline make-vector-app-fun::var ::make-vector-app)
@@ -225,10 +247,12 @@
 ;; pre-cons-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-cons-app::pre-cons-app loc1542::obj type1543::type side-effect1544::obj key1545::obj fun1546::var args1547::obj owner1548::variable)
+    (inline make-pre-cons-app::pre-cons-app loc1585::obj type1586::type side-effect1587::obj key1588::obj fun1589::var args1590::obj stackable1591::obj owner1592::variable)
     (inline pre-cons-app?::bool ::obj)
     (pre-cons-app-nil::pre-cons-app)
     (inline pre-cons-app-owner::variable ::pre-cons-app)
+    (inline pre-cons-app-stackable::obj ::pre-cons-app)
+    (inline pre-cons-app-stackable-set! ::pre-cons-app ::obj)
     (inline pre-cons-app-args::obj ::pre-cons-app)
     (inline pre-cons-app-args-set! ::pre-cons-app ::obj)
     (inline pre-cons-app-fun::var ::pre-cons-app)
@@ -244,10 +268,12 @@
 ;; pre-cons-ref-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-cons-ref-app::pre-cons-ref-app loc1532::obj type1533::type side-effect1534::obj key1535::obj fun1536::var args1537::obj get1538::procedure)
+    (inline make-pre-cons-ref-app::pre-cons-ref-app loc1575::obj type1576::type side-effect1577::obj key1578::obj fun1579::var args1580::obj stackable1582::obj get1583::procedure)
     (inline pre-cons-ref-app?::bool ::obj)
     (pre-cons-ref-app-nil::pre-cons-ref-app)
     (inline pre-cons-ref-app-get::procedure ::pre-cons-ref-app)
+    (inline pre-cons-ref-app-stackable::obj ::pre-cons-ref-app)
+    (inline pre-cons-ref-app-stackable-set! ::pre-cons-ref-app ::obj)
     (inline pre-cons-ref-app-args::obj ::pre-cons-ref-app)
     (inline pre-cons-ref-app-args-set! ::pre-cons-ref-app ::obj)
     (inline pre-cons-ref-app-fun::var ::pre-cons-ref-app)
@@ -263,10 +289,12 @@
 ;; pre-cons-set!-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-cons-set!-app::pre-cons-set!-app loc1522::obj type1523::type side-effect1524::obj key1525::obj fun1526::var args1527::obj get1528::procedure)
+    (inline make-pre-cons-set!-app::pre-cons-set!-app loc1566::obj type1567::type side-effect1568::obj key1569::obj fun1570::var args1571::obj stackable1572::obj get1573::procedure)
     (inline pre-cons-set!-app?::bool ::obj)
     (pre-cons-set!-app-nil::pre-cons-set!-app)
     (inline pre-cons-set!-app-get::procedure ::pre-cons-set!-app)
+    (inline pre-cons-set!-app-stackable::obj ::pre-cons-set!-app)
+    (inline pre-cons-set!-app-stackable-set! ::pre-cons-set!-app ::obj)
     (inline pre-cons-set!-app-args::obj ::pre-cons-set!-app)
     (inline pre-cons-set!-app-args-set! ::pre-cons-set!-app ::obj)
     (inline pre-cons-set!-app-fun::var ::pre-cons-set!-app)
@@ -282,7 +310,7 @@
 ;; cons-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cons-app::cons-app loc1508::obj type1509::type side-effect1510::obj key1511::obj fun1512::var args1513::obj approx1514::approx approxes1515::pair lost-stamp1516::long owner1517::variable stack-stamp1518::obj seen?1519::bool)
+    (inline make-cons-app::cons-app loc1550::obj type1551::type side-effect1552::obj key1553::obj fun1554::var args1555::obj stackable1556::obj approx1557::approx approxes1558::pair lost-stamp1559::long owner1560::variable stack-stamp1561::obj seen?1562::bool)
     (inline cons-app?::bool ::obj)
     (cons-app-nil::cons-app)
     (inline cons-app-seen?::bool ::cons-app)
@@ -295,6 +323,8 @@
     (inline cons-app-approxes::pair ::cons-app)
     (inline cons-app-approx::approx ::cons-app)
     (inline cons-app-approx-set! ::cons-app ::approx)
+    (inline cons-app-stackable::obj ::cons-app)
+    (inline cons-app-stackable-set! ::cons-app ::obj)
     (inline cons-app-args::obj ::cons-app)
     (inline cons-app-args-set! ::cons-app ::obj)
     (inline cons-app-fun::var ::cons-app)
@@ -310,11 +340,13 @@
 ;; cons-ref-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cons-ref-app::cons-ref-app loc1499::obj type1500::type side-effect1501::obj key1502::obj fun1503::var args1504::obj approx1505::approx get1506::procedure)
+    (inline make-cons-ref-app::cons-ref-app loc1540::obj type1541::type side-effect1542::obj key1543::obj fun1544::var args1545::obj stackable1546::obj approx1547::approx get1548::procedure)
     (inline cons-ref-app?::bool ::obj)
     (cons-ref-app-nil::cons-ref-app)
     (inline cons-ref-app-get::procedure ::cons-ref-app)
     (inline cons-ref-app-approx::approx ::cons-ref-app)
+    (inline cons-ref-app-stackable::obj ::cons-ref-app)
+    (inline cons-ref-app-stackable-set! ::cons-ref-app ::obj)
     (inline cons-ref-app-args::obj ::cons-ref-app)
     (inline cons-ref-app-args-set! ::cons-ref-app ::obj)
     (inline cons-ref-app-fun::var ::cons-ref-app)
@@ -330,11 +362,13 @@
 ;; cons-set!-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cons-set!-app::cons-set!-app loc1490::obj type1491::type side-effect1492::obj key1493::obj fun1494::var args1495::obj approx1496::approx get1497::procedure)
+    (inline make-cons-set!-app::cons-set!-app loc1530::obj type1531::type side-effect1532::obj key1533::obj fun1534::var args1535::obj stackable1536::obj approx1537::approx get1538::procedure)
     (inline cons-set!-app?::bool ::obj)
     (cons-set!-app-nil::cons-set!-app)
     (inline cons-set!-app-get::procedure ::cons-set!-app)
     (inline cons-set!-app-approx::approx ::cons-set!-app)
+    (inline cons-set!-app-stackable::obj ::cons-set!-app)
+    (inline cons-set!-app-stackable-set! ::cons-set!-app ::obj)
     (inline cons-set!-app-args::obj ::cons-set!-app)
     (inline cons-set!-app-args-set! ::cons-set!-app ::obj)
     (inline cons-set!-app-fun::var ::cons-set!-app)
@@ -350,10 +384,12 @@
 ;; pre-make-struct-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-make-struct-app::pre-make-struct-app loc1478::obj type1479::type side-effect1480::obj key1481::obj fun1486::var args1487::obj owner1488::variable)
+    (inline make-pre-make-struct-app::pre-make-struct-app loc1521::obj type1522::type side-effect1523::obj key1524::obj fun1525::var args1526::obj stackable1527::obj owner1528::variable)
     (inline pre-make-struct-app?::bool ::obj)
     (pre-make-struct-app-nil::pre-make-struct-app)
     (inline pre-make-struct-app-owner::variable ::pre-make-struct-app)
+    (inline pre-make-struct-app-stackable::obj ::pre-make-struct-app)
+    (inline pre-make-struct-app-stackable-set! ::pre-make-struct-app ::obj)
     (inline pre-make-struct-app-args::obj ::pre-make-struct-app)
     (inline pre-make-struct-app-args-set! ::pre-make-struct-app ::obj)
     (inline pre-make-struct-app-fun::var ::pre-make-struct-app)
@@ -369,9 +405,11 @@
 ;; pre-struct-ref-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-struct-ref-app::pre-struct-ref-app loc1471::obj type1472::type side-effect1473::obj key1474::obj fun1475::var args1476::obj)
+    (inline make-pre-struct-ref-app::pre-struct-ref-app loc1512::obj type1513::type side-effect1514::obj key1515::obj fun1517::var args1518::obj stackable1519::obj)
     (inline pre-struct-ref-app?::bool ::obj)
     (pre-struct-ref-app-nil::pre-struct-ref-app)
+    (inline pre-struct-ref-app-stackable::obj ::pre-struct-ref-app)
+    (inline pre-struct-ref-app-stackable-set! ::pre-struct-ref-app ::obj)
     (inline pre-struct-ref-app-args::obj ::pre-struct-ref-app)
     (inline pre-struct-ref-app-args-set! ::pre-struct-ref-app ::obj)
     (inline pre-struct-ref-app-fun::var ::pre-struct-ref-app)
@@ -387,9 +425,11 @@
 ;; pre-struct-set!-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-struct-set!-app::pre-struct-set!-app loc1464::obj type1465::type side-effect1466::obj key1467::obj fun1468::var args1469::obj)
+    (inline make-pre-struct-set!-app::pre-struct-set!-app loc1504::obj type1505::type side-effect1506::obj key1507::obj fun1508::var args1509::obj stackable1510::obj)
     (inline pre-struct-set!-app?::bool ::obj)
     (pre-struct-set!-app-nil::pre-struct-set!-app)
+    (inline pre-struct-set!-app-stackable::obj ::pre-struct-set!-app)
+    (inline pre-struct-set!-app-stackable-set! ::pre-struct-set!-app ::obj)
     (inline pre-struct-set!-app-args::obj ::pre-struct-set!-app)
     (inline pre-struct-set!-app-args-set! ::pre-struct-set!-app ::obj)
     (inline pre-struct-set!-app-fun::var ::pre-struct-set!-app)
@@ -405,7 +445,7 @@
 ;; make-struct-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-make-struct-app::make-struct-app loc1452::obj type1453::type side-effect1454::obj key1455::obj fun1456::var args1457::obj approx1458::approx value-approx1459::approx lost-stamp1460::long owner1461::variable stack-stamp1462::obj)
+    (inline make-make-struct-app::make-struct-app loc1490::obj type1491::type side-effect1492::obj key1493::obj fun1494::var args1495::obj stackable1496::obj approx1498::approx value-approx1499::approx lost-stamp1500::long owner1501::variable stack-stamp1502::obj)
     (inline make-struct-app?::bool ::obj)
     (make-struct-app-nil::make-struct-app)
     (inline make-struct-app-stack-stamp::obj ::make-struct-app)
@@ -416,6 +456,8 @@
     (inline make-struct-app-value-approx::approx ::make-struct-app)
     (inline make-struct-app-approx::approx ::make-struct-app)
     (inline make-struct-app-approx-set! ::make-struct-app ::approx)
+    (inline make-struct-app-stackable::obj ::make-struct-app)
+    (inline make-struct-app-stackable-set! ::make-struct-app ::obj)
     (inline make-struct-app-args::obj ::make-struct-app)
     (inline make-struct-app-args-set! ::make-struct-app ::obj)
     (inline make-struct-app-fun::var ::make-struct-app)
@@ -431,10 +473,12 @@
 ;; struct-ref-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-struct-ref-app::struct-ref-app loc1444::obj type1445::type side-effect1446::obj key1447::obj fun1448::var args1449::obj approx1450::approx)
+    (inline make-struct-ref-app::struct-ref-app loc1481::obj type1482::type side-effect1483::obj key1484::obj fun1485::var args1486::obj stackable1487::obj approx1488::approx)
     (inline struct-ref-app?::bool ::obj)
     (struct-ref-app-nil::struct-ref-app)
     (inline struct-ref-app-approx::approx ::struct-ref-app)
+    (inline struct-ref-app-stackable::obj ::struct-ref-app)
+    (inline struct-ref-app-stackable-set! ::struct-ref-app ::obj)
     (inline struct-ref-app-args::obj ::struct-ref-app)
     (inline struct-ref-app-args-set! ::struct-ref-app ::obj)
     (inline struct-ref-app-fun::var ::struct-ref-app)
@@ -450,10 +494,12 @@
 ;; struct-set!-app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-struct-set!-app::struct-set!-app loc1436::obj type1437::type side-effect1438::obj key1439::obj fun1440::var args1441::obj approx1442::approx)
+    (inline make-struct-set!-app::struct-set!-app loc1471::obj type1472::type side-effect1473::obj key1474::obj fun1475::var args1476::obj stackable1477::obj approx1478::approx)
     (inline struct-set!-app?::bool ::obj)
     (struct-set!-app-nil::struct-set!-app)
     (inline struct-set!-app-approx::approx ::struct-set!-app)
+    (inline struct-set!-app-stackable::obj ::struct-set!-app)
+    (inline struct-set!-app-stackable-set! ::struct-set!-app ::obj)
     (inline struct-set!-app-args::obj ::struct-set!-app)
     (inline struct-set!-app-args-set! ::struct-set!-app ::obj)
     (inline struct-set!-app-fun::var ::struct-set!-app)
@@ -469,11 +515,13 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; pre-arithmetic-app
-(define-inline (make-pre-arithmetic-app::pre-arithmetic-app loc1639::obj type1640::type side-effect1641::obj key1642::obj fun1643::var args1644::obj spec-types1645::pair) (instantiate::pre-arithmetic-app (loc loc1639) (type type1640) (side-effect side-effect1641) (key key1642) (fun fun1643) (args args1644) (spec-types spec-types1645)))
+(define-inline (make-pre-arithmetic-app::pre-arithmetic-app loc1693::obj type1694::type side-effect1695::obj key1696::obj fun1697::var args1698::obj stackable1699::obj spec-types1700::pair) (instantiate::pre-arithmetic-app (loc loc1693) (type type1694) (side-effect side-effect1695) (key key1696) (fun fun1697) (args args1698) (stackable stackable1699) (spec-types spec-types1700)))
 (define-inline (pre-arithmetic-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-arithmetic-app cfa_info2)))
 (define (pre-arithmetic-app-nil::pre-arithmetic-app) (class-nil (@ pre-arithmetic-app cfa_info2)))
 (define-inline (pre-arithmetic-app-spec-types::pair o::pre-arithmetic-app) (-> |#!bigloo_wallow| o spec-types))
 (define-inline (pre-arithmetic-app-spec-types-set! o::pre-arithmetic-app v::pair) (set! (-> |#!bigloo_wallow| o spec-types) v))
+(define-inline (pre-arithmetic-app-stackable::obj o::pre-arithmetic-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-arithmetic-app-stackable-set! o::pre-arithmetic-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-arithmetic-app-args::obj o::pre-arithmetic-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-arithmetic-app-args-set! o::pre-arithmetic-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-arithmetic-app-fun::var o::pre-arithmetic-app) (-> |#!bigloo_wallow| o fun))
@@ -488,13 +536,15 @@
 (define-inline (pre-arithmetic-app-loc-set! o::pre-arithmetic-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; arithmetic-app
-(define-inline (make-arithmetic-app::arithmetic-app loc1630::obj type1631::type side-effect1632::obj key1633::obj fun1634::var args1635::obj approx1636::approx spec-types1637::pair) (instantiate::arithmetic-app (loc loc1630) (type type1631) (side-effect side-effect1632) (key key1633) (fun fun1634) (args args1635) (approx approx1636) (spec-types spec-types1637)))
+(define-inline (make-arithmetic-app::arithmetic-app loc1683::obj type1684::type side-effect1685::obj key1686::obj fun1687::var args1688::obj stackable1689::obj approx1690::approx spec-types1691::pair) (instantiate::arithmetic-app (loc loc1683) (type type1684) (side-effect side-effect1685) (key key1686) (fun fun1687) (args args1688) (stackable stackable1689) (approx approx1690) (spec-types spec-types1691)))
 (define-inline (arithmetic-app?::bool obj::obj) ((@ isa? __object) obj (@ arithmetic-app cfa_info2)))
 (define (arithmetic-app-nil::arithmetic-app) (class-nil (@ arithmetic-app cfa_info2)))
 (define-inline (arithmetic-app-spec-types::pair o::arithmetic-app) (-> |#!bigloo_wallow| o spec-types))
 (define-inline (arithmetic-app-spec-types-set! o::arithmetic-app v::pair) (set! (-> |#!bigloo_wallow| o spec-types) v))
 (define-inline (arithmetic-app-approx::approx o::arithmetic-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (arithmetic-app-approx-set! o::arithmetic-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (arithmetic-app-stackable::obj o::arithmetic-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (arithmetic-app-stackable-set! o::arithmetic-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (arithmetic-app-args::obj o::arithmetic-app) (-> |#!bigloo_wallow| o args))
 (define-inline (arithmetic-app-args-set! o::arithmetic-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (arithmetic-app-fun::var o::arithmetic-app) (-> |#!bigloo_wallow| o fun))
@@ -509,11 +559,13 @@
 (define-inline (arithmetic-app-loc-set! o::arithmetic-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-make-procedure-app
-(define-inline (make-pre-make-procedure-app::pre-make-procedure-app loc1621::obj type1622::type side-effect1623::obj key1624::obj fun1625::var args1626::obj owner1627::variable) (instantiate::pre-make-procedure-app (loc loc1621) (type type1622) (side-effect side-effect1623) (key key1624) (fun fun1625) (args args1626) (owner owner1627)))
+(define-inline (make-pre-make-procedure-app::pre-make-procedure-app loc1674::obj type1675::type side-effect1676::obj key1677::obj fun1678::var args1679::obj stackable1680::obj owner1681::variable) (instantiate::pre-make-procedure-app (loc loc1674) (type type1675) (side-effect side-effect1676) (key key1677) (fun fun1678) (args args1679) (stackable stackable1680) (owner owner1681)))
 (define-inline (pre-make-procedure-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-make-procedure-app cfa_info2)))
 (define (pre-make-procedure-app-nil::pre-make-procedure-app) (class-nil (@ pre-make-procedure-app cfa_info2)))
 (define-inline (pre-make-procedure-app-owner::variable o::pre-make-procedure-app) (-> |#!bigloo_wallow| o owner))
 (define-inline (pre-make-procedure-app-owner-set! o::pre-make-procedure-app v::variable) (set! (-> |#!bigloo_wallow| o owner) v))
+(define-inline (pre-make-procedure-app-stackable::obj o::pre-make-procedure-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-make-procedure-app-stackable-set! o::pre-make-procedure-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-make-procedure-app-args::obj o::pre-make-procedure-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-make-procedure-app-args-set! o::pre-make-procedure-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-make-procedure-app-fun::var o::pre-make-procedure-app) (-> |#!bigloo_wallow| o fun))
@@ -528,9 +580,11 @@
 (define-inline (pre-make-procedure-app-loc-set! o::pre-make-procedure-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-procedure-ref-app
-(define-inline (make-pre-procedure-ref-app::pre-procedure-ref-app loc1612::obj type1613::type side-effect1614::obj key1615::obj fun1616::var args1617::obj) (instantiate::pre-procedure-ref-app (loc loc1612) (type type1613) (side-effect side-effect1614) (key key1615) (fun fun1616) (args args1617)))
+(define-inline (make-pre-procedure-ref-app::pre-procedure-ref-app loc1666::obj type1667::type side-effect1668::obj key1669::obj fun1670::var args1671::obj stackable1672::obj) (instantiate::pre-procedure-ref-app (loc loc1666) (type type1667) (side-effect side-effect1668) (key key1669) (fun fun1670) (args args1671) (stackable stackable1672)))
 (define-inline (pre-procedure-ref-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-procedure-ref-app cfa_info2)))
 (define (pre-procedure-ref-app-nil::pre-procedure-ref-app) (class-nil (@ pre-procedure-ref-app cfa_info2)))
+(define-inline (pre-procedure-ref-app-stackable::obj o::pre-procedure-ref-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-procedure-ref-app-stackable-set! o::pre-procedure-ref-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-procedure-ref-app-args::obj o::pre-procedure-ref-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-procedure-ref-app-args-set! o::pre-procedure-ref-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-procedure-ref-app-fun::var o::pre-procedure-ref-app) (-> |#!bigloo_wallow| o fun))
@@ -545,9 +599,11 @@
 (define-inline (pre-procedure-ref-app-loc-set! o::pre-procedure-ref-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-procedure-set!-app
-(define-inline (make-pre-procedure-set!-app::pre-procedure-set!-app loc1605::obj type1606::type side-effect1607::obj key1608::obj fun1609::var args1610::obj) (instantiate::pre-procedure-set!-app (loc loc1605) (type type1606) (side-effect side-effect1607) (key key1608) (fun fun1609) (args args1610)))
+(define-inline (make-pre-procedure-set!-app::pre-procedure-set!-app loc1657::obj type1658::type side-effect1659::obj key1660::obj fun1662::var args1663::obj stackable1664::obj) (instantiate::pre-procedure-set!-app (loc loc1657) (type type1658) (side-effect side-effect1659) (key key1660) (fun fun1662) (args args1663) (stackable stackable1664)))
 (define-inline (pre-procedure-set!-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-procedure-set!-app cfa_info2)))
 (define (pre-procedure-set!-app-nil::pre-procedure-set!-app) (class-nil (@ pre-procedure-set!-app cfa_info2)))
+(define-inline (pre-procedure-set!-app-stackable::obj o::pre-procedure-set!-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-procedure-set!-app-stackable-set! o::pre-procedure-set!-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-procedure-set!-app-args::obj o::pre-procedure-set!-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-procedure-set!-app-args-set! o::pre-procedure-set!-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-procedure-set!-app-fun::var o::pre-procedure-set!-app) (-> |#!bigloo_wallow| o fun))
@@ -562,7 +618,7 @@
 (define-inline (pre-procedure-set!-app-loc-set! o::pre-procedure-set!-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; make-procedure-app
-(define-inline (make-make-procedure-app::make-procedure-app loc1590::obj type1591::type side-effect1592::obj key1593::obj fun1594::var args1595::obj approx1596::approx values-approx1597::vector lost-stamp1598::long X-T?1599::bool X1600::bool T1601::bool owner1602::variable stack-stamp1603::obj) (instantiate::make-procedure-app (loc loc1590) (type type1591) (side-effect side-effect1592) (key key1593) (fun fun1594) (args args1595) (approx approx1596) (values-approx values-approx1597) (lost-stamp lost-stamp1598) (X-T? X-T?1599) (X X1600) (T T1601) (owner owner1602) (stack-stamp stack-stamp1603)))
+(define-inline (make-make-procedure-app::make-procedure-app loc1641::obj type1642::type side-effect1643::obj key1644::obj fun1645::var args1646::obj stackable1647::obj approx1648::approx values-approx1649::vector lost-stamp1650::long X-T?1651::bool X1652::bool T1653::bool owner1654::variable stack-stamp1655::obj) (instantiate::make-procedure-app (loc loc1641) (type type1642) (side-effect side-effect1643) (key key1644) (fun fun1645) (args args1646) (stackable stackable1647) (approx approx1648) (values-approx values-approx1649) (lost-stamp lost-stamp1650) (X-T? X-T?1651) (X X1652) (T T1653) (owner owner1654) (stack-stamp stack-stamp1655)))
 (define-inline (make-procedure-app?::bool obj::obj) ((@ isa? __object) obj (@ make-procedure-app cfa_info2)))
 (define (make-procedure-app-nil::make-procedure-app) (class-nil (@ make-procedure-app cfa_info2)))
 (define-inline (make-procedure-app-stack-stamp::obj o::make-procedure-app) (-> |#!bigloo_wallow| o stack-stamp))
@@ -581,6 +637,8 @@
 (define-inline (make-procedure-app-values-approx-set! o::make-procedure-app v::vector) (set! (-> |#!bigloo_wallow| o values-approx) v))
 (define-inline (make-procedure-app-approx::approx o::make-procedure-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (make-procedure-app-approx-set! o::make-procedure-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (make-procedure-app-stackable::obj o::make-procedure-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (make-procedure-app-stackable-set! o::make-procedure-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (make-procedure-app-args::obj o::make-procedure-app) (-> |#!bigloo_wallow| o args))
 (define-inline (make-procedure-app-args-set! o::make-procedure-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (make-procedure-app-fun::var o::make-procedure-app) (-> |#!bigloo_wallow| o fun))
@@ -595,11 +653,13 @@
 (define-inline (make-procedure-app-loc-set! o::make-procedure-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; procedure-ref-app
-(define-inline (make-procedure-ref-app::procedure-ref-app loc1582::obj type1583::type side-effect1584::obj key1585::obj fun1586::var args1587::obj approx1588::approx) (instantiate::procedure-ref-app (loc loc1582) (type type1583) (side-effect side-effect1584) (key key1585) (fun fun1586) (args args1587) (approx approx1588)))
+(define-inline (make-procedure-ref-app::procedure-ref-app loc1630::obj type1631::type side-effect1632::obj key1633::obj fun1634::var args1635::obj stackable1636::obj approx1638::approx) (instantiate::procedure-ref-app (loc loc1630) (type type1631) (side-effect side-effect1632) (key key1633) (fun fun1634) (args args1635) (stackable stackable1636) (approx approx1638)))
 (define-inline (procedure-ref-app?::bool obj::obj) ((@ isa? __object) obj (@ procedure-ref-app cfa_info2)))
 (define (procedure-ref-app-nil::procedure-ref-app) (class-nil (@ procedure-ref-app cfa_info2)))
 (define-inline (procedure-ref-app-approx::approx o::procedure-ref-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (procedure-ref-app-approx-set! o::procedure-ref-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (procedure-ref-app-stackable::obj o::procedure-ref-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (procedure-ref-app-stackable-set! o::procedure-ref-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (procedure-ref-app-args::obj o::procedure-ref-app) (-> |#!bigloo_wallow| o args))
 (define-inline (procedure-ref-app-args-set! o::procedure-ref-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (procedure-ref-app-fun::var o::procedure-ref-app) (-> |#!bigloo_wallow| o fun))
@@ -614,13 +674,15 @@
 (define-inline (procedure-ref-app-loc-set! o::procedure-ref-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; procedure-set!-app
-(define-inline (make-procedure-set!-app::procedure-set!-app loc1572::obj type1573::type side-effect1574::obj key1575::obj fun1577::var args1578::obj approx1579::approx vapprox1580::obj) (instantiate::procedure-set!-app (loc loc1572) (type type1573) (side-effect side-effect1574) (key key1575) (fun fun1577) (args args1578) (approx approx1579) (vapprox vapprox1580)))
+(define-inline (make-procedure-set!-app::procedure-set!-app loc1620::obj type1621::type side-effect1622::obj key1623::obj fun1624::var args1625::obj stackable1626::obj approx1627::approx vapprox1628::obj) (instantiate::procedure-set!-app (loc loc1620) (type type1621) (side-effect side-effect1622) (key key1623) (fun fun1624) (args args1625) (stackable stackable1626) (approx approx1627) (vapprox vapprox1628)))
 (define-inline (procedure-set!-app?::bool obj::obj) ((@ isa? __object) obj (@ procedure-set!-app cfa_info2)))
 (define (procedure-set!-app-nil::procedure-set!-app) (class-nil (@ procedure-set!-app cfa_info2)))
 (define-inline (procedure-set!-app-vapprox::obj o::procedure-set!-app) (-> |#!bigloo_wallow| o vapprox))
 (define-inline (procedure-set!-app-vapprox-set! o::procedure-set!-app v::obj) (set! (-> |#!bigloo_wallow| o vapprox) v))
 (define-inline (procedure-set!-app-approx::approx o::procedure-set!-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (procedure-set!-app-approx-set! o::procedure-set!-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (procedure-set!-app-stackable::obj o::procedure-set!-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (procedure-set!-app-stackable-set! o::procedure-set!-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (procedure-set!-app-args::obj o::procedure-set!-app) (-> |#!bigloo_wallow| o args))
 (define-inline (procedure-set!-app-args-set! o::procedure-set!-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (procedure-set!-app-fun::var o::procedure-set!-app) (-> |#!bigloo_wallow| o fun))
@@ -635,11 +697,13 @@
 (define-inline (procedure-set!-app-loc-set! o::procedure-set!-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-make-vector-app
-(define-inline (make-pre-make-vector-app::pre-make-vector-app loc1564::obj type1565::type side-effect1566::obj key1567::obj fun1568::var args1569::obj owner1570::variable) (instantiate::pre-make-vector-app (loc loc1564) (type type1565) (side-effect side-effect1566) (key key1567) (fun fun1568) (args args1569) (owner owner1570)))
+(define-inline (make-pre-make-vector-app::pre-make-vector-app loc1611::obj type1612::type side-effect1613::obj key1614::obj fun1615::var args1616::obj stackable1617::obj owner1618::variable) (instantiate::pre-make-vector-app (loc loc1611) (type type1612) (side-effect side-effect1613) (key key1614) (fun fun1615) (args args1616) (stackable stackable1617) (owner owner1618)))
 (define-inline (pre-make-vector-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-make-vector-app cfa_info2)))
 (define (pre-make-vector-app-nil::pre-make-vector-app) (class-nil (@ pre-make-vector-app cfa_info2)))
 (define-inline (pre-make-vector-app-owner::variable o::pre-make-vector-app) (-> |#!bigloo_wallow| o owner))
 (define-inline (pre-make-vector-app-owner-set! o::pre-make-vector-app v::variable) (set! (-> |#!bigloo_wallow| o owner) v))
+(define-inline (pre-make-vector-app-stackable::obj o::pre-make-vector-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-make-vector-app-stackable-set! o::pre-make-vector-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-make-vector-app-args::obj o::pre-make-vector-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-make-vector-app-args-set! o::pre-make-vector-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-make-vector-app-fun::var o::pre-make-vector-app) (-> |#!bigloo_wallow| o fun))
@@ -654,9 +718,11 @@
 (define-inline (pre-make-vector-app-loc-set! o::pre-make-vector-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; make-vector-app
-(define-inline (make-make-vector-app::make-vector-app loc1551::obj type1552::type side-effect1553::obj key1554::obj fun1555::var args1556::obj approx1557::approx value-approx1558::approx lost-stamp1559::long owner1560::variable stack-stamp1561::obj seen?1562::bool) (instantiate::make-vector-app (loc loc1551) (type type1552) (side-effect side-effect1553) (key key1554) (fun fun1555) (args args1556) (approx approx1557) (value-approx value-approx1558) (lost-stamp lost-stamp1559) (owner owner1560) (stack-stamp stack-stamp1561) (seen? seen?1562)))
+(define-inline (make-make-vector-app::make-vector-app loc1595::obj type1596::type side-effect1597::obj key1598::obj fun1599::var args1600::obj stackable1602::obj approx1603::approx value-approx1604::approx lost-stamp1605::long owner1606::variable stack-stamp1607::obj seen?1608::bool tvector?1609::bool) (instantiate::make-vector-app (loc loc1595) (type type1596) (side-effect side-effect1597) (key key1598) (fun fun1599) (args args1600) (stackable stackable1602) (approx approx1603) (value-approx value-approx1604) (lost-stamp lost-stamp1605) (owner owner1606) (stack-stamp stack-stamp1607) (seen? seen?1608) (tvector? tvector?1609)))
 (define-inline (make-vector-app?::bool obj::obj) ((@ isa? __object) obj (@ make-vector-app cfa_info2)))
 (define (make-vector-app-nil::make-vector-app) (class-nil (@ make-vector-app cfa_info2)))
+(define-inline (make-vector-app-tvector?::bool o::make-vector-app) (-> |#!bigloo_wallow| o tvector?))
+(define-inline (make-vector-app-tvector?-set! o::make-vector-app v::bool) (set! (-> |#!bigloo_wallow| o tvector?) v))
 (define-inline (make-vector-app-seen?::bool o::make-vector-app) (-> |#!bigloo_wallow| o seen?))
 (define-inline (make-vector-app-seen?-set! o::make-vector-app v::bool) (set! (-> |#!bigloo_wallow| o seen?) v))
 (define-inline (make-vector-app-stack-stamp::obj o::make-vector-app) (-> |#!bigloo_wallow| o stack-stamp))
@@ -669,6 +735,8 @@
 (define-inline (make-vector-app-value-approx-set! o::make-vector-app v::approx) (set! (-> |#!bigloo_wallow| o value-approx) v))
 (define-inline (make-vector-app-approx::approx o::make-vector-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (make-vector-app-approx-set! o::make-vector-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (make-vector-app-stackable::obj o::make-vector-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (make-vector-app-stackable-set! o::make-vector-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (make-vector-app-args::obj o::make-vector-app) (-> |#!bigloo_wallow| o args))
 (define-inline (make-vector-app-args-set! o::make-vector-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (make-vector-app-fun::var o::make-vector-app) (-> |#!bigloo_wallow| o fun))
@@ -683,11 +751,13 @@
 (define-inline (make-vector-app-loc-set! o::make-vector-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-cons-app
-(define-inline (make-pre-cons-app::pre-cons-app loc1542::obj type1543::type side-effect1544::obj key1545::obj fun1546::var args1547::obj owner1548::variable) (instantiate::pre-cons-app (loc loc1542) (type type1543) (side-effect side-effect1544) (key key1545) (fun fun1546) (args args1547) (owner owner1548)))
+(define-inline (make-pre-cons-app::pre-cons-app loc1585::obj type1586::type side-effect1587::obj key1588::obj fun1589::var args1590::obj stackable1591::obj owner1592::variable) (instantiate::pre-cons-app (loc loc1585) (type type1586) (side-effect side-effect1587) (key key1588) (fun fun1589) (args args1590) (stackable stackable1591) (owner owner1592)))
 (define-inline (pre-cons-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-cons-app cfa_info2)))
 (define (pre-cons-app-nil::pre-cons-app) (class-nil (@ pre-cons-app cfa_info2)))
 (define-inline (pre-cons-app-owner::variable o::pre-cons-app) (-> |#!bigloo_wallow| o owner))
 (define-inline (pre-cons-app-owner-set! o::pre-cons-app v::variable) (set! (-> |#!bigloo_wallow| o owner) v))
+(define-inline (pre-cons-app-stackable::obj o::pre-cons-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-cons-app-stackable-set! o::pre-cons-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-cons-app-args::obj o::pre-cons-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-cons-app-args-set! o::pre-cons-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-cons-app-fun::var o::pre-cons-app) (-> |#!bigloo_wallow| o fun))
@@ -702,11 +772,13 @@
 (define-inline (pre-cons-app-loc-set! o::pre-cons-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-cons-ref-app
-(define-inline (make-pre-cons-ref-app::pre-cons-ref-app loc1532::obj type1533::type side-effect1534::obj key1535::obj fun1536::var args1537::obj get1538::procedure) (instantiate::pre-cons-ref-app (loc loc1532) (type type1533) (side-effect side-effect1534) (key key1535) (fun fun1536) (args args1537) (get get1538)))
+(define-inline (make-pre-cons-ref-app::pre-cons-ref-app loc1575::obj type1576::type side-effect1577::obj key1578::obj fun1579::var args1580::obj stackable1582::obj get1583::procedure) (instantiate::pre-cons-ref-app (loc loc1575) (type type1576) (side-effect side-effect1577) (key key1578) (fun fun1579) (args args1580) (stackable stackable1582) (get get1583)))
 (define-inline (pre-cons-ref-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-cons-ref-app cfa_info2)))
 (define (pre-cons-ref-app-nil::pre-cons-ref-app) (class-nil (@ pre-cons-ref-app cfa_info2)))
 (define-inline (pre-cons-ref-app-get::procedure o::pre-cons-ref-app) (-> |#!bigloo_wallow| o get))
 (define-inline (pre-cons-ref-app-get-set! o::pre-cons-ref-app v::procedure) (set! (-> |#!bigloo_wallow| o get) v))
+(define-inline (pre-cons-ref-app-stackable::obj o::pre-cons-ref-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-cons-ref-app-stackable-set! o::pre-cons-ref-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-cons-ref-app-args::obj o::pre-cons-ref-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-cons-ref-app-args-set! o::pre-cons-ref-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-cons-ref-app-fun::var o::pre-cons-ref-app) (-> |#!bigloo_wallow| o fun))
@@ -721,11 +793,13 @@
 (define-inline (pre-cons-ref-app-loc-set! o::pre-cons-ref-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-cons-set!-app
-(define-inline (make-pre-cons-set!-app::pre-cons-set!-app loc1522::obj type1523::type side-effect1524::obj key1525::obj fun1526::var args1527::obj get1528::procedure) (instantiate::pre-cons-set!-app (loc loc1522) (type type1523) (side-effect side-effect1524) (key key1525) (fun fun1526) (args args1527) (get get1528)))
+(define-inline (make-pre-cons-set!-app::pre-cons-set!-app loc1566::obj type1567::type side-effect1568::obj key1569::obj fun1570::var args1571::obj stackable1572::obj get1573::procedure) (instantiate::pre-cons-set!-app (loc loc1566) (type type1567) (side-effect side-effect1568) (key key1569) (fun fun1570) (args args1571) (stackable stackable1572) (get get1573)))
 (define-inline (pre-cons-set!-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-cons-set!-app cfa_info2)))
 (define (pre-cons-set!-app-nil::pre-cons-set!-app) (class-nil (@ pre-cons-set!-app cfa_info2)))
 (define-inline (pre-cons-set!-app-get::procedure o::pre-cons-set!-app) (-> |#!bigloo_wallow| o get))
 (define-inline (pre-cons-set!-app-get-set! o::pre-cons-set!-app v::procedure) (set! (-> |#!bigloo_wallow| o get) v))
+(define-inline (pre-cons-set!-app-stackable::obj o::pre-cons-set!-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-cons-set!-app-stackable-set! o::pre-cons-set!-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-cons-set!-app-args::obj o::pre-cons-set!-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-cons-set!-app-args-set! o::pre-cons-set!-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-cons-set!-app-fun::var o::pre-cons-set!-app) (-> |#!bigloo_wallow| o fun))
@@ -740,7 +814,7 @@
 (define-inline (pre-cons-set!-app-loc-set! o::pre-cons-set!-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cons-app
-(define-inline (make-cons-app::cons-app loc1508::obj type1509::type side-effect1510::obj key1511::obj fun1512::var args1513::obj approx1514::approx approxes1515::pair lost-stamp1516::long owner1517::variable stack-stamp1518::obj seen?1519::bool) (instantiate::cons-app (loc loc1508) (type type1509) (side-effect side-effect1510) (key key1511) (fun fun1512) (args args1513) (approx approx1514) (approxes approxes1515) (lost-stamp lost-stamp1516) (owner owner1517) (stack-stamp stack-stamp1518) (seen? seen?1519)))
+(define-inline (make-cons-app::cons-app loc1550::obj type1551::type side-effect1552::obj key1553::obj fun1554::var args1555::obj stackable1556::obj approx1557::approx approxes1558::pair lost-stamp1559::long owner1560::variable stack-stamp1561::obj seen?1562::bool) (instantiate::cons-app (loc loc1550) (type type1551) (side-effect side-effect1552) (key key1553) (fun fun1554) (args args1555) (stackable stackable1556) (approx approx1557) (approxes approxes1558) (lost-stamp lost-stamp1559) (owner owner1560) (stack-stamp stack-stamp1561) (seen? seen?1562)))
 (define-inline (cons-app?::bool obj::obj) ((@ isa? __object) obj (@ cons-app cfa_info2)))
 (define (cons-app-nil::cons-app) (class-nil (@ cons-app cfa_info2)))
 (define-inline (cons-app-seen?::bool o::cons-app) (-> |#!bigloo_wallow| o seen?))
@@ -755,6 +829,8 @@
 (define-inline (cons-app-approxes-set! o::cons-app v::pair) (set! (-> |#!bigloo_wallow| o approxes) v))
 (define-inline (cons-app-approx::approx o::cons-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (cons-app-approx-set! o::cons-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (cons-app-stackable::obj o::cons-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (cons-app-stackable-set! o::cons-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (cons-app-args::obj o::cons-app) (-> |#!bigloo_wallow| o args))
 (define-inline (cons-app-args-set! o::cons-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (cons-app-fun::var o::cons-app) (-> |#!bigloo_wallow| o fun))
@@ -769,13 +845,15 @@
 (define-inline (cons-app-loc-set! o::cons-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cons-ref-app
-(define-inline (make-cons-ref-app::cons-ref-app loc1499::obj type1500::type side-effect1501::obj key1502::obj fun1503::var args1504::obj approx1505::approx get1506::procedure) (instantiate::cons-ref-app (loc loc1499) (type type1500) (side-effect side-effect1501) (key key1502) (fun fun1503) (args args1504) (approx approx1505) (get get1506)))
+(define-inline (make-cons-ref-app::cons-ref-app loc1540::obj type1541::type side-effect1542::obj key1543::obj fun1544::var args1545::obj stackable1546::obj approx1547::approx get1548::procedure) (instantiate::cons-ref-app (loc loc1540) (type type1541) (side-effect side-effect1542) (key key1543) (fun fun1544) (args args1545) (stackable stackable1546) (approx approx1547) (get get1548)))
 (define-inline (cons-ref-app?::bool obj::obj) ((@ isa? __object) obj (@ cons-ref-app cfa_info2)))
 (define (cons-ref-app-nil::cons-ref-app) (class-nil (@ cons-ref-app cfa_info2)))
 (define-inline (cons-ref-app-get::procedure o::cons-ref-app) (-> |#!bigloo_wallow| o get))
 (define-inline (cons-ref-app-get-set! o::cons-ref-app v::procedure) (set! (-> |#!bigloo_wallow| o get) v))
 (define-inline (cons-ref-app-approx::approx o::cons-ref-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (cons-ref-app-approx-set! o::cons-ref-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (cons-ref-app-stackable::obj o::cons-ref-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (cons-ref-app-stackable-set! o::cons-ref-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (cons-ref-app-args::obj o::cons-ref-app) (-> |#!bigloo_wallow| o args))
 (define-inline (cons-ref-app-args-set! o::cons-ref-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (cons-ref-app-fun::var o::cons-ref-app) (-> |#!bigloo_wallow| o fun))
@@ -790,13 +868,15 @@
 (define-inline (cons-ref-app-loc-set! o::cons-ref-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; cons-set!-app
-(define-inline (make-cons-set!-app::cons-set!-app loc1490::obj type1491::type side-effect1492::obj key1493::obj fun1494::var args1495::obj approx1496::approx get1497::procedure) (instantiate::cons-set!-app (loc loc1490) (type type1491) (side-effect side-effect1492) (key key1493) (fun fun1494) (args args1495) (approx approx1496) (get get1497)))
+(define-inline (make-cons-set!-app::cons-set!-app loc1530::obj type1531::type side-effect1532::obj key1533::obj fun1534::var args1535::obj stackable1536::obj approx1537::approx get1538::procedure) (instantiate::cons-set!-app (loc loc1530) (type type1531) (side-effect side-effect1532) (key key1533) (fun fun1534) (args args1535) (stackable stackable1536) (approx approx1537) (get get1538)))
 (define-inline (cons-set!-app?::bool obj::obj) ((@ isa? __object) obj (@ cons-set!-app cfa_info2)))
 (define (cons-set!-app-nil::cons-set!-app) (class-nil (@ cons-set!-app cfa_info2)))
 (define-inline (cons-set!-app-get::procedure o::cons-set!-app) (-> |#!bigloo_wallow| o get))
 (define-inline (cons-set!-app-get-set! o::cons-set!-app v::procedure) (set! (-> |#!bigloo_wallow| o get) v))
 (define-inline (cons-set!-app-approx::approx o::cons-set!-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (cons-set!-app-approx-set! o::cons-set!-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (cons-set!-app-stackable::obj o::cons-set!-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (cons-set!-app-stackable-set! o::cons-set!-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (cons-set!-app-args::obj o::cons-set!-app) (-> |#!bigloo_wallow| o args))
 (define-inline (cons-set!-app-args-set! o::cons-set!-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (cons-set!-app-fun::var o::cons-set!-app) (-> |#!bigloo_wallow| o fun))
@@ -811,11 +891,13 @@
 (define-inline (cons-set!-app-loc-set! o::cons-set!-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-make-struct-app
-(define-inline (make-pre-make-struct-app::pre-make-struct-app loc1478::obj type1479::type side-effect1480::obj key1481::obj fun1486::var args1487::obj owner1488::variable) (instantiate::pre-make-struct-app (loc loc1478) (type type1479) (side-effect side-effect1480) (key key1481) (fun fun1486) (args args1487) (owner owner1488)))
+(define-inline (make-pre-make-struct-app::pre-make-struct-app loc1521::obj type1522::type side-effect1523::obj key1524::obj fun1525::var args1526::obj stackable1527::obj owner1528::variable) (instantiate::pre-make-struct-app (loc loc1521) (type type1522) (side-effect side-effect1523) (key key1524) (fun fun1525) (args args1526) (stackable stackable1527) (owner owner1528)))
 (define-inline (pre-make-struct-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-make-struct-app cfa_info2)))
 (define (pre-make-struct-app-nil::pre-make-struct-app) (class-nil (@ pre-make-struct-app cfa_info2)))
 (define-inline (pre-make-struct-app-owner::variable o::pre-make-struct-app) (-> |#!bigloo_wallow| o owner))
 (define-inline (pre-make-struct-app-owner-set! o::pre-make-struct-app v::variable) (set! (-> |#!bigloo_wallow| o owner) v))
+(define-inline (pre-make-struct-app-stackable::obj o::pre-make-struct-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-make-struct-app-stackable-set! o::pre-make-struct-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-make-struct-app-args::obj o::pre-make-struct-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-make-struct-app-args-set! o::pre-make-struct-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-make-struct-app-fun::var o::pre-make-struct-app) (-> |#!bigloo_wallow| o fun))
@@ -830,9 +912,11 @@
 (define-inline (pre-make-struct-app-loc-set! o::pre-make-struct-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-struct-ref-app
-(define-inline (make-pre-struct-ref-app::pre-struct-ref-app loc1471::obj type1472::type side-effect1473::obj key1474::obj fun1475::var args1476::obj) (instantiate::pre-struct-ref-app (loc loc1471) (type type1472) (side-effect side-effect1473) (key key1474) (fun fun1475) (args args1476)))
+(define-inline (make-pre-struct-ref-app::pre-struct-ref-app loc1512::obj type1513::type side-effect1514::obj key1515::obj fun1517::var args1518::obj stackable1519::obj) (instantiate::pre-struct-ref-app (loc loc1512) (type type1513) (side-effect side-effect1514) (key key1515) (fun fun1517) (args args1518) (stackable stackable1519)))
 (define-inline (pre-struct-ref-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-struct-ref-app cfa_info2)))
 (define (pre-struct-ref-app-nil::pre-struct-ref-app) (class-nil (@ pre-struct-ref-app cfa_info2)))
+(define-inline (pre-struct-ref-app-stackable::obj o::pre-struct-ref-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-struct-ref-app-stackable-set! o::pre-struct-ref-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-struct-ref-app-args::obj o::pre-struct-ref-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-struct-ref-app-args-set! o::pre-struct-ref-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-struct-ref-app-fun::var o::pre-struct-ref-app) (-> |#!bigloo_wallow| o fun))
@@ -847,9 +931,11 @@
 (define-inline (pre-struct-ref-app-loc-set! o::pre-struct-ref-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; pre-struct-set!-app
-(define-inline (make-pre-struct-set!-app::pre-struct-set!-app loc1464::obj type1465::type side-effect1466::obj key1467::obj fun1468::var args1469::obj) (instantiate::pre-struct-set!-app (loc loc1464) (type type1465) (side-effect side-effect1466) (key key1467) (fun fun1468) (args args1469)))
+(define-inline (make-pre-struct-set!-app::pre-struct-set!-app loc1504::obj type1505::type side-effect1506::obj key1507::obj fun1508::var args1509::obj stackable1510::obj) (instantiate::pre-struct-set!-app (loc loc1504) (type type1505) (side-effect side-effect1506) (key key1507) (fun fun1508) (args args1509) (stackable stackable1510)))
 (define-inline (pre-struct-set!-app?::bool obj::obj) ((@ isa? __object) obj (@ pre-struct-set!-app cfa_info2)))
 (define (pre-struct-set!-app-nil::pre-struct-set!-app) (class-nil (@ pre-struct-set!-app cfa_info2)))
+(define-inline (pre-struct-set!-app-stackable::obj o::pre-struct-set!-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (pre-struct-set!-app-stackable-set! o::pre-struct-set!-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (pre-struct-set!-app-args::obj o::pre-struct-set!-app) (-> |#!bigloo_wallow| o args))
 (define-inline (pre-struct-set!-app-args-set! o::pre-struct-set!-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (pre-struct-set!-app-fun::var o::pre-struct-set!-app) (-> |#!bigloo_wallow| o fun))
@@ -864,7 +950,7 @@
 (define-inline (pre-struct-set!-app-loc-set! o::pre-struct-set!-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; make-struct-app
-(define-inline (make-make-struct-app::make-struct-app loc1452::obj type1453::type side-effect1454::obj key1455::obj fun1456::var args1457::obj approx1458::approx value-approx1459::approx lost-stamp1460::long owner1461::variable stack-stamp1462::obj) (instantiate::make-struct-app (loc loc1452) (type type1453) (side-effect side-effect1454) (key key1455) (fun fun1456) (args args1457) (approx approx1458) (value-approx value-approx1459) (lost-stamp lost-stamp1460) (owner owner1461) (stack-stamp stack-stamp1462)))
+(define-inline (make-make-struct-app::make-struct-app loc1490::obj type1491::type side-effect1492::obj key1493::obj fun1494::var args1495::obj stackable1496::obj approx1498::approx value-approx1499::approx lost-stamp1500::long owner1501::variable stack-stamp1502::obj) (instantiate::make-struct-app (loc loc1490) (type type1491) (side-effect side-effect1492) (key key1493) (fun fun1494) (args args1495) (stackable stackable1496) (approx approx1498) (value-approx value-approx1499) (lost-stamp lost-stamp1500) (owner owner1501) (stack-stamp stack-stamp1502)))
 (define-inline (make-struct-app?::bool obj::obj) ((@ isa? __object) obj (@ make-struct-app cfa_info2)))
 (define (make-struct-app-nil::make-struct-app) (class-nil (@ make-struct-app cfa_info2)))
 (define-inline (make-struct-app-stack-stamp::obj o::make-struct-app) (-> |#!bigloo_wallow| o stack-stamp))
@@ -877,6 +963,8 @@
 (define-inline (make-struct-app-value-approx-set! o::make-struct-app v::approx) (set! (-> |#!bigloo_wallow| o value-approx) v))
 (define-inline (make-struct-app-approx::approx o::make-struct-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (make-struct-app-approx-set! o::make-struct-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (make-struct-app-stackable::obj o::make-struct-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (make-struct-app-stackable-set! o::make-struct-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (make-struct-app-args::obj o::make-struct-app) (-> |#!bigloo_wallow| o args))
 (define-inline (make-struct-app-args-set! o::make-struct-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (make-struct-app-fun::var o::make-struct-app) (-> |#!bigloo_wallow| o fun))
@@ -891,11 +979,13 @@
 (define-inline (make-struct-app-loc-set! o::make-struct-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; struct-ref-app
-(define-inline (make-struct-ref-app::struct-ref-app loc1444::obj type1445::type side-effect1446::obj key1447::obj fun1448::var args1449::obj approx1450::approx) (instantiate::struct-ref-app (loc loc1444) (type type1445) (side-effect side-effect1446) (key key1447) (fun fun1448) (args args1449) (approx approx1450)))
+(define-inline (make-struct-ref-app::struct-ref-app loc1481::obj type1482::type side-effect1483::obj key1484::obj fun1485::var args1486::obj stackable1487::obj approx1488::approx) (instantiate::struct-ref-app (loc loc1481) (type type1482) (side-effect side-effect1483) (key key1484) (fun fun1485) (args args1486) (stackable stackable1487) (approx approx1488)))
 (define-inline (struct-ref-app?::bool obj::obj) ((@ isa? __object) obj (@ struct-ref-app cfa_info2)))
 (define (struct-ref-app-nil::struct-ref-app) (class-nil (@ struct-ref-app cfa_info2)))
 (define-inline (struct-ref-app-approx::approx o::struct-ref-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (struct-ref-app-approx-set! o::struct-ref-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (struct-ref-app-stackable::obj o::struct-ref-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (struct-ref-app-stackable-set! o::struct-ref-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (struct-ref-app-args::obj o::struct-ref-app) (-> |#!bigloo_wallow| o args))
 (define-inline (struct-ref-app-args-set! o::struct-ref-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (struct-ref-app-fun::var o::struct-ref-app) (-> |#!bigloo_wallow| o fun))
@@ -910,11 +1000,13 @@
 (define-inline (struct-ref-app-loc-set! o::struct-ref-app v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; struct-set!-app
-(define-inline (make-struct-set!-app::struct-set!-app loc1436::obj type1437::type side-effect1438::obj key1439::obj fun1440::var args1441::obj approx1442::approx) (instantiate::struct-set!-app (loc loc1436) (type type1437) (side-effect side-effect1438) (key key1439) (fun fun1440) (args args1441) (approx approx1442)))
+(define-inline (make-struct-set!-app::struct-set!-app loc1471::obj type1472::type side-effect1473::obj key1474::obj fun1475::var args1476::obj stackable1477::obj approx1478::approx) (instantiate::struct-set!-app (loc loc1471) (type type1472) (side-effect side-effect1473) (key key1474) (fun fun1475) (args args1476) (stackable stackable1477) (approx approx1478)))
 (define-inline (struct-set!-app?::bool obj::obj) ((@ isa? __object) obj (@ struct-set!-app cfa_info2)))
 (define (struct-set!-app-nil::struct-set!-app) (class-nil (@ struct-set!-app cfa_info2)))
 (define-inline (struct-set!-app-approx::approx o::struct-set!-app) (-> |#!bigloo_wallow| o approx))
 (define-inline (struct-set!-app-approx-set! o::struct-set!-app v::approx) (set! (-> |#!bigloo_wallow| o approx) v))
+(define-inline (struct-set!-app-stackable::obj o::struct-set!-app) (-> |#!bigloo_wallow| o stackable))
+(define-inline (struct-set!-app-stackable-set! o::struct-set!-app v::obj) (set! (-> |#!bigloo_wallow| o stackable) v))
 (define-inline (struct-set!-app-args::obj o::struct-set!-app) (-> |#!bigloo_wallow| o args))
 (define-inline (struct-set!-app-args-set! o::struct-set!-app v::obj) (set! (-> |#!bigloo_wallow| o args) v))
 (define-inline (struct-set!-app-fun::var o::struct-set!-app) (-> |#!bigloo_wallow| o fun))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Sun Jun 20 08:44:10 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Apr 16 08:41:16 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -243,11 +243,11 @@
       (emit-bdb-loc #unspecified)
       (fprint *c-port* "BGL_EXPORTED_DEF obj_t " sym "() {")
       (emit-bdb-loc #unspecified)
-      (fprint *c-port* "obj_t res = " (global-name global) "( 0, \""
-	 (car *src-files*) "\" );")
+      (fprint *c-port* "obj_t res = " (global-name global) "(0, \""
+	 (car *src-files*) "\");")
       (fprint *c-port* "BGL_MVALUES_NUMBER_SET(2);")
-      (fprint *c-port* "BGL_MVALUES_VAL_SET(1,string_to_bstring( \""
-	 (global-module global) "\" ));")
+      (fprint *c-port* "BGL_MVALUES_VAL_SET(1,string_to_bstring(\""
+	 (global-module global) "\"));")
       (fprint *c-port* "return res;")
       (emit-bdb-loc #unspecified)
       (fprint *c-port* "}")

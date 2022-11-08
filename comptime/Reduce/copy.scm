@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Jun 16 17:10:42 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Aug 27 16:44:34 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -288,7 +288,8 @@
 		   " tval=" (shape (node-type val))
 		   " tvar=" (shape (variable-type var))
 		   #\Newline)
-		(if (and (eq? (variable-access var) 'read)
+		(if (and removable?
+			 (eq? (variable-access var) 'read)
 			 (copyable? val var)
 			 (cell-type-less-specific?
 			    (node-type val)

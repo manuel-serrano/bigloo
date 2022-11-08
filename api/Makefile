@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Thu Dec  2 15:42:41 2021 (serrano)                */
-#*    Copyright   :  2005-21 Manuel Serrano                            */
+#*    Last change :  Fri Mar 11 19:13:33 2022 (serrano)                */
+#*    Copyright   :  2005-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
 #*=====================================================================*/
@@ -21,7 +21,7 @@ include ../Makefile.config
 DIRECTORIES= pthread srfi18 fthread mail ssl web multimedia sqlite calendar \
              srfi1 pkgcomp pkglib gstreamer text packrat srfi27 crypto \
              openpgp phone alsa mpg123 flac wav avahi csv phidget upnp libuv \
-             pulseaudio libbacktrace
+             pulseaudio libbacktrace mqtt
 
 #*---------------------------------------------------------------------*/
 #*    Booting on a bare system                                         */
