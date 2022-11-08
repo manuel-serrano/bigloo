@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Sun Apr 24 09:41:22 2022 (serrano)                */
+;*    Last change :  Mon Nov  7 09:37:07 2022 (serrano)                */
 ;*    Copyright   :  2001-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
@@ -90,7 +90,7 @@
 	   (inline MQTT-PROPERTY-SUBSCRIPTION-IDENTIFIER-AVAILABLE)
 	   (inline MQTT-PROPERTY-SHARED-SUBSCRIPT-AVAILABLE)
 	   
-	   (mqtt-control-packet-type-name::bstring ::long)
+	   (mqtt-control-packet-type-name ::long)
 	   (mqtt-connect-reason-code-name::bstring ::long)
 	   (mqtt-disconnect-reason-code-name::bstring ::long)
 

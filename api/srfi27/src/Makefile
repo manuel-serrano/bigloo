@@ -1,5 +1,5 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/srfi27/src/Makefile              */
+#*    serrano/prgm/project/bigloo/bigloo/api/srfi27/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */

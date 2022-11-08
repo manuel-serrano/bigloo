@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Tue Nov  2 17:06:07 2021 (serrano)                */
+;*    Last change :  Thu Nov  3 11:18:51 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
-;*    read-only local variables bound to atom (e.g., bool, number)     */
+;*    read-only local variables bound to atoms (e.g., bools, numbers)  */
 ;*    used in application nodes.                                       */ 
 ;*    -------------------------------------------------------------    */
 ;*    This stage is designed to be used just after the inlining.       */
@@ -25,7 +25,8 @@
 	    effect_effect
 	    engine_param
 	    ast_occur
-	    ast_remove)
+	    ast_remove
+	    type_cache)
    (export  (beta-walk!::obj ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -74,16 +75,24 @@
    (app-fun-set! node (node-beta! (app-fun node) stack))
    (map! (lambda (n)
 	    (if (and (var? n) (local? (var-variable n)))
-		(let ((red (assq (var-variable n) stack)))
-		   (cond
-		      ((not (pair? red))
-		       n)
-		      ((literal? (cdr red))
-		       (duplicate::literal (cdr red)))
-		      ((patch? (cdr red))
-		       (duplicate::patch (cdr red)))
-		      (else
-		       (error "node-beta!" "wrong node" (typeof (cdr red))))))
+		(let loop ((n n))
+		   (let ((red (assq (var-variable n) stack)))
+		      (cond
+			 ((not (pair? red))
+			  n)
+			 ((literal? (cdr red))
+			  (duplicate::literal (cdr red)))
+			 ((closure? (cdr red))
+			  (duplicate::closure (cdr red)))
+			 ((ref? (cdr red))
+			  (let ((m (cdr red)))
+			     (if (and (var? m) (local? (var-variable m)))
+				 (loop (duplicate::ref (cdr red)))
+				 (duplicate::ref (cdr red)))))
+			 ((patch? (cdr red))
+			  (duplicate::patch (cdr red)))
+			 (else
+			  (error "node-beta!" "wrong node" (typeof (cdr red)))))))
 		(node-beta! n stack)))
 	 (app-args node))
    node)
@@ -191,6 +200,14 @@
 ;*    node-beta! ::let-var ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::let-var stack)
+
+   (define (var-type-compatible? x::variable y::variable)
+      (with-access::variable x ((xtype type))
+	 (with-access::variable y ((ytype type))
+	    (or (eq? xtype ytype)
+		(eq? xtype *_*)
+		(and (eq? xtype *long*) (eq? ytype *bint*))))))
+	 
    (with-access::let-var node (bindings body removable?)
       (let loop ((bindings bindings)
 		 (new-stack stack))
@@ -201,15 +218,20 @@
 	     (let* ((binding (car bindings))
 		    (var (car binding))
 		    (val (node-beta! (cdr binding) stack)))
-		(if (and (atom? (cdr binding))
-			 (eq? (local-access (car binding)) 'read)
-			 (let ((val (atom-value (cdr binding))))
-			    (or (and (number? val) (not (bignum? val)))
-				(boolean? val)
-				(char? val)
-				(symbol? val)
-				(keyword? val)
-				(cnst? val))))
+		(if (and removable?
+			 (or (and (atom? (cdr binding))
+				  (let ((val (atom-value (cdr binding))))
+				     (or (and (number? val) (not (bignum? val)))
+					 (boolean? val)
+					 (char? val)
+					 (symbol? val)
+					 (keyword? val)
+					 (cnst? val))))
+			     (and (var? (cdr binding))
+				  (local? (var-variable (cdr binding)))
+				  (eq? (local-access (var-variable (cdr binding))) 'read)
+				  (var-type-compatible? var (var-variable (cdr binding)))))
+			 (eq? (local-access (car binding)) 'read))
 		    (loop (cdr bindings) (cons binding new-stack))
 		    (loop (cdr bindings) new-stack)))))))
 

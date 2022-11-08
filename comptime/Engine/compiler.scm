@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Sep 27 10:32:22 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 11:05:14 2022 (serrano)                */
+;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -69,6 +69,7 @@
 	    integrate_walk
 	    tailc_walk
 	    fxop_walk
+	    flop_walk
 	    coerce_walk
 	    reduce_walk
 	    cnst_walk
@@ -328,6 +329,12 @@
 	    (check-sharing "isa" ast)
 	    (check-type "isa" ast #f #f)
 	    
+	    ;; specialize flonum operations
+	    (set! ast (profile glop (flop-walk! ast)))
+	    (stop-on-pass 'flop (lambda () (write-ast ast)))
+	    (check-sharing "flop" ast)
+	    (check-type "flop" ast #f #f)
+
 	    ;; we perform the inlining pass
 	    (set! ast (profile inline (inline-walk! ast 'all)))
 	    (stop-on-pass 'inline (lambda () (write-ast ast)))
@@ -373,6 +380,7 @@
 		   (set! *optim-dataflow-types?* #f)
 		   (begin
 		      (set! ast (profile reduce- (reduce-walk! ast "Reduce0" #t)))
+		      (stop-on-pass 'reduce0 (lambda () (write-ast ast)))
 		      (set! ast (profile dataflow (dataflow-walk! ast "Dataflow"))))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)

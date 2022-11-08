@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Jul  9 07:34:58 2021 (serrano)                */
-#*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Nov  4 21:23:21 2022 (serrano)                */
+#*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -156,6 +156,11 @@ FXOP_FILE	= walk
 
 FXOP_OBJ	= $(FXOP_FILE:%=Fxop/%.o)
 
+#*--- flop ------------------------------------------------------------*/
+FLOP_FILE	= walk
+
+FLOP_OBJ	= $(FLOP_FILE:%=Flop/%.o)
+
 #*--- coerce ----------------------------------------------------------*/
 COERCE_FILE	= walk pproto coerce app funcall apply convert
 
@@ -232,12 +237,17 @@ BACKEND_FILE    = backend walk init lib cplib cvm bvm \
 BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 
 #*--- SawMill ---------------------------------------------------------*/
-SAW_FILE        = lib defs rtl node2rtl collapse remove InlineReturn \
+SAW_FILE        = lib defs rtl node2rtl collapse remove inlinereturn \
 		  blockorder gotos cast expr woodcutter \
-		  procedures elsewhere regalloc regset regutils \
-                  bbv bbv-types bbv-specialize bbv-cache bbv-utils
+		  procedures elsewhere regalloc regset regutils
 
 SAW_OBJ		= $(SAW_FILE:%=SawMill/%.o)
+
+#*--- SawBbv ----------------------------------------------------------*/
+SAW_BBV_FILE    = bbv bbv-types bbv-specialize bbv-cache bbv-utils \
+                  bbv-range bbv-merge bbv-cost bbv-config
+
+SAW_BBV_OBJ	= $(SAW_BBV_FILE:%=SawBbv/%.o)
 
 #*--- SawC ------------------------------------------------------------*/
 SAW_C_FILE      = compile code
@@ -340,19 +350,20 @@ LIVENESS_OBJ 	= $(LIVENESS_FILE:%=Liveness/%.o)
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
 #*---------------------------------------------------------------------*/
-O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
-                  $(READ_OBJ) $(AST_OBJ) $(BETA_OBJ) $(CC_OBJ) $(FOREIGN_OBJ) \
+O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) $(READ_OBJ) \
+                  $(AST_OBJ) $(BETA_OBJ) $(CC_OBJ) $(FOREIGN_OBJ) \
                   $(HEAP_OBJ) $(MODULE_OBJ) $(TYPE_OBJ) $(EXPAND_OBJ) \
                   $(INLINE_OBJ) $(BIVALUE_OBJ) $(USER_OBJ) $(HGEN_OBJ) \
-                  $(FXOP_OBJ) $(COERCE_OBJ) $(DATAFLOW_OBJ) $(INITFLOW_OBJ) \
-                  $(GLOBALIZE_OBJ) $(CNST_OBJ) $(CFA_OBJ) $(INTEGRATE_OBJ) \
-                  $(TAILC_OBJ) $(CGEN_OBJ) $(TVECTOR_OBJ) $(TSTRUCT_OBJ) \
-                  $(TRACE_OBJ) $(CALLCC_OBJ) $(EVAL_OBJ) $(LIFEXT_OBJ) \
-                  $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
-                  $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
-                  $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  $(STACKABLE_OBJ) $(UNCELL_OBJ) $(LIVENESS_OBJ)
+                  $(FXOP_OBJ) $(FLOP_OBJ) $(COERCE_OBJ) $(DATAFLOW_OBJ) \
+                  $(INITFLOW_OBJ) $(GLOBALIZE_OBJ) $(CNST_OBJ) $(CFA_OBJ) \
+                  $(INTEGRATE_OBJ) $(TAILC_OBJ) $(CGEN_OBJ) $(TVECTOR_OBJ) \
+                  $(TSTRUCT_OBJ) $(TRACE_OBJ) $(CALLCC_OBJ) $(EVAL_OBJ) \
+                  $(LIFEXT_OBJ) $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) \
+                  $(OBJECT_OBJ) $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) \
+                  $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) \
+                  $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) \
+                  $(ISA_OBJ) $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) \
+                  $(LIVENESS_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
@@ -401,9 +412,10 @@ POPULATION	= $(SOURCE_FILES) \
                   Jas/classfile.sch \
                   SawMill/defs.sch SawMill/regalloc.sch SawMill/node2rtl.sch \
                   SawMill/collapse.sch SawMill/remove.sch \
-                  SawMill/InlineReturn.sch SawMill/blockorder.sch \
-                  SawMill/expr.sch SawMill/regset.sch SawMill/bbv-types.sch \
-                  SawMill/bbv-interval.sch SawC/code.sch \
+                  SawMill/inlinereturn.sch SawMill/blockorder.sch \
+                  SawMill/expr.sch SawMill/regset.sch SawMill/bbset.sch \
+                  SawBbv/bbv-types.sch SawBbv/bbv-interval.sch \
+                  SawC/code.sch \
                   SawJvm/funcall.sch SawJvm/code.sch SawJvm/names.sch \
                   Makefile
 
@@ -491,7 +503,7 @@ bigloo.$(SHAREDSUFFIX):
 #*    file.                                                            */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking..."
+	@ echo "Linking...bigloo$(EXE_SUFFIX)"
 	if [ "$(LDRPATHOPT) " != " " ]; then \
 	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
 	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
@@ -499,7 +511,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 	          $(O_OBJECTS) $(G_OBJECTS); \
         else \
 	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
-	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
+	          -copt "$(EXTRA_LD_OPT)" \
 	          -o $(BIGLOO_DEST).aux \
 	          $(O_OBJECTS) $(G_OBJECTS); \
         fi
@@ -515,8 +527,9 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 #*    bigloo.new                                                       */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(NEW_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking..."
-	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS) $(G_OBJECTS)
+	@ echo "Linking bigloo.new..."
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ \
+              $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -524,10 +537,10 @@ $(BIGLOO_DEST).$(NEW_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
 #*    bigloo.$(SHAREDSUFFIX)                                           */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking..."
+	@ echo "Linking bigloo.$(SHAREDSUFFIX)..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $@ \
-                    $(O_OBJECTS) $(G_OBJECTS) \
-                    -ldopt $(CSTRIPFLAGS)
+              $(O_OBJECTS) $(G_OBJECTS) \
+              $(LDCSTRIPFLAGS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -656,7 +669,7 @@ doboot.static: $(O_OBJECTS) $(G_OBJECTS)
 .PHONY: hostboot
 
 hostboot: 
-	$(MAKE) SCMOBJSUFFIX="%.o" LDBOOTFLAGS="-lib-version $(RELEASE) -libgc-version $(RELEASE) -static-bigloo -ldopt $(CSTRIPFLAGS)"
+	$(MAKE) SCMOBJSUFFIX="%.o" LDBOOTFLAGS="-lib-version $(RELEASE) -libgc-version $(RELEASE) $(LDBOOTFLAGS)"
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/

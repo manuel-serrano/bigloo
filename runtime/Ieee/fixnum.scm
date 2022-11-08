@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Fri Nov 26 11:35:04 2021 (serrano)                */
+;*    Last change :  Fri Nov  4 11:06:20 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -143,6 +143,9 @@
 	   (macro c-evenfx?::bool (::long) "EVENP_FX")
 	   (macro c-oddfx?::bool (::long) "ODDP_FX")
 	   (infix macro c-+fx::long (::long ::long) "+")
+	   (macro $+fx/ov::bool (::long ::long ::long) "BGL_ADDFX_OV")
+	   (macro $-fx/ov::bool (::long ::long ::long) "BGL_SUBFX_OV")
+	   (macro $*fx/ov::bool (::long ::long ::long) "BGL_MULFX_OV")
 	   (infix macro c-+elong::elong (::elong ::elong) "+")
 	   (infix macro c-+llong::llong (::llong ::llong) "+")
 	   (infix macro $+s8::int8 (::int8 ::int8) "+")
@@ -840,6 +843,7 @@
  	    (maxu64::uint64 ::uint64 . pair)
 	    (maxbx::bignum ::bignum . pair)
  	    (inline +fx::long ::long ::long)
+ 	    (inline +fx/ov::obj ::bint ::bint)
 	    (inline +elong::elong ::elong ::elong)
 	    (inline +llong::llong ::llong ::llong)
  	    (inline +s8::int8 ::int8 ::int8)
@@ -852,6 +856,7 @@
  	    (inline +u64::uint64 ::uint64 ::uint64)
 	    (inline +bx::bignum ::bignum ::bignum)
  	    (inline -fx::long ::long ::long)
+ 	    (inline -fx/ov::obj ::bint ::bint)
 	    (inline -elong::elong ::elong ::elong)
 	    (inline -llong::llong ::llong ::llong)
  	    (inline -s8::int8 ::int8 ::int8)
@@ -864,6 +869,7 @@
  	    (inline -u64::uint64 ::uint64 ::uint64)
 	    (inline -bx::bignum ::bignum ::bignum)
  	    (inline *fx::long ::long ::long)
+ 	    (inline *fx/ov::obj ::bint ::bint)
 	    (inline *elong::elong ::elong ::elong)
 	    (inline *llong::llong ::llong ::llong)
 	    (inline *s8::int8 ::int8 ::int8)
@@ -1857,6 +1863,16 @@
 
 (define-inline (+bx z1 z2) ($+bx z1 z2))
 
+(define-inline (+fx/ov z1 z2)
+   (cond-expand
+      (bigloo-c
+       ($let ((res::long 0))
+	  (if ($+fx/ov z1 z2 res)
+	      (+bx (fixnum->bignum z1) (fixnum->bignum z2))
+	      res)))
+      (else
+       (+fx-safe z1 z2))))
+
 ;*---------------------------------------------------------------------*/
 ;*    - ...                                                            */
 ;*---------------------------------------------------------------------*/
@@ -1879,6 +1895,16 @@
 
 (define-inline (-bx z1 z2) ($-bx z1 z2))
 
+(define-inline (-fx/ov z1 z2)
+   (cond-expand
+      (bigloo-c
+       ($let ((res::long 0))
+	  (if ($-fx/ov z1 z2 res)
+	      (-bx (fixnum->bignum z1) (fixnum->bignum z2))
+	      res)))
+      (else
+       (-fx-safe z1 z2))))
+
 ;*---------------------------------------------------------------------*/
 ;*    * ...                                                            */
 ;*---------------------------------------------------------------------*/
@@ -1900,6 +1926,16 @@
 (define-inline (*u64 z1 z2) ($*u64 z1 z2))
 
 (define-inline (*bx z1 z2) ($*bx z1 z2))
+
+(define-inline (*fx/ov z1 z2)
+   (cond-expand
+      (bigloo-c
+       ($let ((res::long 0))
+	  (if ($*fx/ov z1 z2 res)
+	      (*bx (fixnum->bignum z1) (fixnum->bignum z2))
+	      res)))
+      (else
+       (*fx-safe z1 z2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    / ...                                                            */

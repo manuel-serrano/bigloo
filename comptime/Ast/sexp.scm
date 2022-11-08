@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Jul  8 11:24:33 2021 (serrano)                */
+;*    Last change :  Thu Nov  3 10:57:14 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -264,7 +264,7 @@
 				(sexp->node alors stack l-alors 'value))))
 			((kwote? test)
 			 (sexp->node alors stack l-alors 'value))
-			((var? test)
+			((test-nestable? test)
 			 (let ((alors (sexp->node alors stack l-alors 'value))
 			       (sinon (sexp->node sinon stack l-sinon 'value)))
 			    (instantiate::conditional
@@ -344,6 +344,15 @@
           (else
 	   (error-sexp->node
 	      "Illegal `define' form" exp (find-location/loc exp loc)))))
+;*--- let & letrec ----------------------------------------------------*/
+      (($let ?bindings . ?expr)
+       (let ((exp (let->node exp stack loc 'value)))
+	  (if (isa? exp let-var)
+	      (with-access::let-var exp (removable?)
+		 (set! removable? #f)
+		 exp)
+	      (error-sexp->node
+		 "illegal `$let' expression, does not produce a let" exp loc))))
 ;*--- a pattern to improve pattern-matching compilation ---------------*/
       ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
        (let* ((let-part (car exp))
@@ -870,3 +879,17 @@
       ((not (list? expr)) #f)
       ((find (lambda (e) (used-in? id e)) expr) #t)
       (else #f)))
+
+;*---------------------------------------------------------------------*/
+;*    test-nestable? ...                                               */
+;*    -------------------------------------------------------------    */
+;*    Returns #t iff expr does not need to be bound to a temporary     */
+;*    inside a condition expression.                                   */
+;*---------------------------------------------------------------------*/
+(define (test-nestable? expr)
+   (or (var? expr)
+       (when (app? expr)
+	  (let ((var (var-variable (app-fun expr))))
+	     (when (global? var)
+		(and (memq 'nesting (global-pragma var))
+		     (memq 'args-safe (global-pragma var))))))))

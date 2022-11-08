@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Tue May 10 08:18:54 2022 (serrano)                */
+;*    Last change :  Sat Jun 25 10:38:06 2022 (serrano)                */
 ;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -529,7 +529,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::private kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::getfield kont): " (shape node) #\Newline
+	  "(node->cop node::private kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::private node (c-format)
       (extern->cop c-format #t node kont inpushexit)))

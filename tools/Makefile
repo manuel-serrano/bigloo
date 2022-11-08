@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/tools/Makefile                       */
+#*    serrano/prgm/project/bigloo/bigloo/tools/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Sun Jul  9 10:27:29 2017 (serrano)                */
-#*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jul  5 09:33:47 2022 (serrano)                */
+#*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build args                                       */
 #*=====================================================================*/
@@ -34,7 +34,7 @@ C_SRC		= $(C_OBJ:%.o=%.c)
 OBJ		= $(C_OBJ) $(SCM_OBJ)
 SRC		= $(C_SRC) $(SCM_SRC)
 
-POPULATION	= $(SRC) basm hglog.scm Makefile
+POPULATION	= $(SRC) basm hglog.scm Makefile cfg.scm
 
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
@@ -91,10 +91,19 @@ license.c: $(LICENSE)
 	@ echo "}" >> $@
 
 #*---------------------------------------------------------------------*/
+#*    cfg ...                                                          */
+#*---------------------------------------------------------------------*/
+.PHONY: bglcfg
+bglcfg: $(BINDIR)/bglcfg
+
+$(BINDIR)/bglcfg: cfg.o
+	$(BIGLOO) cfg.o -o $(BINDIR)/bglcfg
+
+#*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .o .scm
 
 #*---------------------------------------------------------------------*/
 #*    .c.o                                                             */
@@ -102,4 +111,11 @@ license.c: $(LICENSE)
 .c.o:
 	@ echo $*.c:
 	@ $(CC) -c $(CFLAGS) $*.c -o $*.o
+
+#*---------------------------------------------------------------------*/
+#*    .scm.o                                                           */
+#*---------------------------------------------------------------------*/
+.scm.o:
+	@ echo $*.scm:
+	@ $(BIGLOO) -c $(BFLAGS) $*.scm -o $*.o
 

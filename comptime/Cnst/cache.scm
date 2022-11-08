@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cnst/cache.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/cache.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Mon Mar 10 15:20:13 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 11:45:38 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
 ;*=====================================================================*/
@@ -43,6 +43,7 @@
 	    *list->vector*
 	    *vector-tag-set!*
 	    *string->bignum*
+	    *fixnum->bignum*
 	    *list->struct*))
 
 ;*---------------------------------------------------------------------*/
@@ -75,6 +76,7 @@
 (define *vector-tag-set!* #f)
 (define *list->struct* #f)
 (define *string->bignum* #f)
+(define *fixnum->bignum* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    start-cnst-cache! ...                                            */
@@ -134,6 +136,9 @@
 	  (set! *string->bignum*
 		(or (find-global '$string->bignum 'foreign)
 		    (get-global/module '$string->bignum '__bignum)))
+	  (set! *fixnum->bignum*
+		(or (find-global '$fixnum->bignum 'foreign)
+		    (get-global/module '$fixnum->bignum '__bignum)))
 	  #t)
        #t))
 
@@ -141,6 +146,7 @@
 ;*    stop-cnst-cache! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (stop-cnst-cache!)
+   (set! *fixnum->bignum* #f)
    (set! *string->bignum* #f)
    (set! *string->bstring* #f)
    (set! *string->ucs2string* #f)

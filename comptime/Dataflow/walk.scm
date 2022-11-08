@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Wed Jun 16 15:59:33 2021 (serrano)                */
-;*    Copyright   :  2010-21 Manuel Serrano                            */
+;*    Last change :  Sat Aug 27 16:37:31 2022 (serrano)                */
+;*    Copyright   :  2010-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
 ;*    For instance, for an expression such as (if (pair? x) then else),*/
@@ -237,7 +237,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::let-var env)
    (set! let-var-stamp (+fx 1 let-var-stamp))
-   (with-access::let-var node (body bindings)
+   (with-access::let-var node (body bindings removable?)
       (let* ((stamp let-var-stamp)
 	     (env (let loop ((bindings bindings)
 			     (env env))

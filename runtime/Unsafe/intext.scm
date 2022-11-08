@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sat Mar 21 11:52:36 2020 (serrano)                */
+;*    Last change :  Wed Sep 21 10:50:30 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -502,7 +502,23 @@
 	     (hash_ (read-item))
 	     (hash (car hashobj))
 	     (obj (cdr hashobj))
-	     (unserializer (find-class-unserializer hash))
+	     (unserializer (find-class-unserializer hash #f))
+	     (val (unserializer obj unserialize-arg)))
+	 (when (fixnum? defining)
+	    (vector-set! *definitions* defining val))
+	 val))
+   
+   ;; read-custom-debug-object-debug
+   (define (read-custom-object-debug)
+      (let* ((defining (let ((old *defining*))
+			  (set! *defining* #f)
+			  old))
+	     (clazz (read-item))
+	     (hashobj (read-item))
+	     (hash_ (read-item))
+	     (hash (car hashobj))
+	     (obj (cdr hashobj))
+	     (unserializer (find-class-unserializer hash clazz))
 	     (val (unserializer obj unserialize-arg)))
 	 (when (fixnum? defining)
 	    (vector-set! *definitions* defining val))
@@ -588,6 +604,7 @@
 	    ((#\{) (read-structure))
 	    ((#\|) (read-object s))
 	    ((#\O) (read-custom-object))
+	    ((#\G) (read-custom-object-debug))
 	    ((#\f) (read-float s))
 	    ((#\z) (read-bignum s))
 	    ((#\-) (negfx (read-integer s)))
@@ -872,9 +889,13 @@
    ;; print-object
    (define (print-object item mark)
       (let ((v (mark-value mark)))
-	 (if (eq? item v)
-	     (print-object-plain item v)
-	     (print-object-custom item v))))
+	 (cond
+	    ((eq? item v)
+	     (print-object-plain item v))
+	    ((>=fx (bigloo-debug) 1)
+	     (print-object-custom-debug item v))
+	    (else
+	     (print-object-custom item v)))))
 
    ;; print-object-plain
    (define (print-object-plain item o)
@@ -916,6 +937,16 @@
       ;; to apply finalization on the unserialized object
       (!print-markup #\X)
       (!print-markup #\O)
+      (print-item o)
+      (print-fixnum (class-hash (object-class item))))
+   
+   ;; print-object-custom
+   (define (print-object-custom-debug item o)
+      ;; add an extension mark to give a chance to string->obj
+      ;; to apply finalization on the unserialized object
+      (!print-markup #\X)
+      (!print-markup #\G)
+      (print-item (class-name (object-class item)))
       (print-item o)
       (print-fixnum (class-hash (object-class item))))
    
@@ -1534,12 +1565,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    find-class-unserializer ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (find-class-unserializer hash)
+(define (find-class-unserializer hash name)
    (let* ((h (if (=fx hash 0) (class-hash object) hash))
 	  (cell (assv h *class-serialization*)))
       (if (pair? cell)
 	  (caddr cell)
-	  (error "string->obj" "Cannot find class unserializer" hash))))
+	  (error "string->obj"
+	     (if name
+		 (format "Cannot find ~s class unserializer" name)
+		 "Cannot find class unserializer")
+	     hash))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-class-serialization ...                                      */

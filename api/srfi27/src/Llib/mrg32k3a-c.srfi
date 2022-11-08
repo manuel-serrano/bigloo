@@ -3,7 +3,7 @@
 ;
 ; Sebastian.Egner@philips.com, 2002.
 ;
-; This code is a floating point implementation in Scheme of Pierre L'Ecuyer's 
+; This code is a floating point implementation in Scheme of Pierre L'Ecuyer's
 ; MRG32k3a generator. The implementation runs under the Gambit 3.0 Scheme
 ; system. It makes use of Gambit's f64vector. The code is based on Brad
 ; Lucier's code for this generator. Please refer to Brad's original posting
@@ -25,15 +25,14 @@
 ; the actual generator
 
 (define (mrg32k3a-random-m1 state) ; from Brad Lucier
-  (declare (flonum))
-  (let* ((x10 (- (* 1403580.0 (f64vector-ref state 1)) 
-		 (* 810728.0 (f64vector-ref state 2))))
-	 (y10 (- x10 (* (floor (/ x10 4294967087.0)) 4294967087.0)))
-	 (x20 (- (* 527612.0 (f64vector-ref state 3)) 
-		 (* 1370589.0 (f64vector-ref state 5))))
-	 (y20 (- x20 (* (floor (/ x20 4294944443.0)) 4294944443.0)))
-	 (dx (- y10 y20))
-	 (dy (- dx (* (floor (/ dx 4294967087.0)) 4294967087.0))))
+  (let* ((x10 (-fl (*fl 1403580.0 (f64vector-ref state 1))
+         (*fl 810728.0 (f64vector-ref state 2))))
+     (y10 (-fl x10 (*fl (floorfl (/fl x10 4294967087.0)) 4294967087.0)))
+     (x20 (-fl (*fl 527612.0 (f64vector-ref state 3))
+         (*fl 1370589.0 (f64vector-ref state 5))))
+     (y20 (-fl x20 (*fl (floorfl (/fl x20 4294944443.0)) 4294944443.0)))
+     (dx (-fl y10 y20))
+     (dy (-fl dx (*fl (floorfl (/fl dx 4294967087.0)) 4294967087.0))))
     (f64vector-set! state 5 (f64vector-ref state 4))
     (f64vector-set! state 4 (f64vector-ref state 3))
     (f64vector-set! state 3 y20)
@@ -53,20 +52,15 @@
 (define (mrg32k3a-random-range::obj)
   (if (fixnum? 4294967087)
       4294967087
-       536870911)) ; 2^29-1
+      536870911)) ; 2^29-1
 
-(define (mrg32k3a-random-integer state range) ; from Brad Lucier
-  (declare (flonum))
-  (let* ((n (let () (declare (fixnum)) (exact->inexact range)))
-	 (q (floor (/ 4294967087.0 n)))
-	 (qn (* q n)))
-    (do ((x (mrg32k3a-random-m1 state) (mrg32k3a-random-m1 state)))
-	((< x qn) 
-	 (let () 
-	   (declare (fixnum)) 
-	   (inexact->exact (let () (declare (flonum)) (floor (/ x q)))))))))
+(define (mrg32k3a-random-integer::long state range::long) ; from Brad Lucier
+   (let* ((n::double (fixnum->flonum range))
+          (q::double (floorfl (/fl 4294967087.0 n)))
+          (qn::double (*fl q n)))
+      (do ((x::double (mrg32k3a-random-m1 state) (mrg32k3a-random-m1 state)))
+          ((<fl x qn)
+           (flonum->fixnum (floorfl (/fl x q)))))))
 
 (define (mrg32k3a-random-real state)
-  (declare (flonum))
-  (* 0.0000000002328306549295728 (+ 1.0 (mrg32k3a-random-m1 state))))
-
+  (*fl 0.0000000002328306549295728 (+fl 1.0 (mrg32k3a-random-m1 state))))

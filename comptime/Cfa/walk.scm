@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/walk.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/walk.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Sun Jun 26 06:38:00 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov  4 09:42:07 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
 ;*                                                                     */
@@ -32,6 +32,7 @@
 	    ast_var
 	    ast_node
 	    ast_shrinkify
+	    write_ast
 	    cfa_collect
 	    cfa_setup
 	    cfa_iterate
@@ -77,7 +78,15 @@
 	 ;; show approximation results (after dead-code-removal!)
 	 (show-cfa-results globals)
 	 ;; tvector optimization
+	 (let ((d *dest*))
+	    (set! *dest* "/tmp/vec.ast")
+	    (write-ast globals)
+	    (set! *dest* d))
 	 (let ((additional (profile tvect (vector->tvector! globals))))
+	    (let ((d *dest*))
+	    (set! *dest* "/tmp/tvec.ast")
+	    (write-ast globals)
+	    (set! *dest* d))
 	    ;; closure allocations optimization
 	    (profile clo (closure-optimization! globals))
 	    ;; type setting

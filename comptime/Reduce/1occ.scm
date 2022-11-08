@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Jun 16 17:10:01 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Aug 27 16:36:01 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -258,6 +258,7 @@
       ;; compile-type error messages
       (if (and (pair? bindings)
 	       (null? (cdr bindings))
+	       (not (eq? removable? 'never))
 	       (let ((var (caar bindings)))
 		  (and (=fx (local-occurrence var) 1)
 		       (eq? (variable-type var) *bool*)

@@ -22,8 +22,8 @@ public class weakptr extends obj {
   }
 
   public Object getRef(){
-    Object r = ref.get();
-    return r == null ? unspecified.unspecified : r;
+    Object d = ref.get();
+    return d == null ? unspecified.unspecified : d;
   }
 
   public void setRef(Object o){

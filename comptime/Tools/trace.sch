@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tools/trace.sch             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Tools/trace.sch      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 31 08:56:22 1993                          */
-;*    Last change :  Mon Nov 14 14:40:14 2016 (serrano)                */
-;*    Copyright   :  1993-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun 27 14:34:00 2022 (serrano)                */
+;*    Copyright   :  1993-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The tracing macro.                                               */
 ;*=====================================================================*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Feb 12 08:59:30 2020 (serrano)                */
+;*    Last change :  Wed Oct 26 09:18:45 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -51,7 +51,9 @@
 	    (macro $vector-tag-set!::obj (::vector ::int) "VECTOR_TAG_SET")
 	    (macro $vector-tag::int (::vector) "VECTOR_TAG")
 	    ($sort-vector::vector (::vector ::procedure) "sort_vector")
-	    (macro $vector-shrink!::vector (::vector ::long) "BGL_VECTOR_SHRINK"))
+	    (macro $vector-shrink!::vector (::vector ::long) "BGL_VECTOR_SHRINK")
+	    (macro $vector-blit-no-overlap!::vector (::vector ::vector ::long ::long ::long) "BGL_VECTOR_BLIT_NO_OVERLAP")
+	    (macro $vector-blit-overlap!::vector (::vector ::vector ::long ::long ::long) "BGL_VECTOR_BLIT_OVERLAP"))
    
    (java    (class foreign
 	       (method static $vector?::bool (::obj)
@@ -242,12 +244,16 @@
 	  (min     (if (<fx new-len old-len)
 		       new-len
 		       old-len)))
-      (let loop ((i 0))
-	 (if (=fx i min)
-	     new-vec
-	     (begin
-		(vector-set-ur! new-vec i (vector-ref-ur old-vec i))
-		(loop (+fx i 1)))))))
+      (cond-expand
+	 (bigloo-c
+	  ($vector-blit-no-overlap! new-vec old-vec 0 0 min))
+	 (else
+	  (let loop ((i 0))
+	     (if (=fx i min)
+		 new-vec
+		 (begin
+		    (vector-set-ur! new-vec i (vector-ref-ur old-vec i))
+		    (loop (+fx i 1)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-copy3 ...                                                 */
@@ -261,13 +267,17 @@
 		   old-len)))
       (if (or (<fx new-len 0) (>fx start old-len) (>fx stop old-len))
 	  (error "vector-copy" "Illegal indexes" (cons start stop))
-	  (let loop ((r start)
-		     (w 0))
-	     (if (=fx r stop)
-		 new-vec
-		 (begin
-		    (vector-set-ur! new-vec w (vector-ref-ur old-vec r))
-		    (loop (+fx r 1) (+fx w 1))))))))
+	  (cond-expand
+	     (bigloo-c
+	      ($vector-blit-no-overlap! new-vec old-vec 0 start (-fx stop start)))
+	     (else
+	      (let loop ((r start)
+			 (w 0))
+		 (if (=fx r stop)
+		     new-vec
+		     (begin
+			(vector-set-ur! new-vec w (vector-ref-ur old-vec r))
+			(loop (+fx r 1) (+fx w 1))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-copy ...                                                  */
@@ -291,23 +301,29 @@
 ;*    vector-copy! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (vector-copy! target tstart source
-                      #!optional (sstart 0) (send (vector-length source)))
+	   #!optional (sstart 0) (send (vector-length source)))
    (let* ((end (minfx send (vector-length source)))
           (count (-fx end sstart))
           (tend (minfx (+fx tstart count) (vector-length target))))
-      (if (and (eq? target source)
-               (<fx sstart tstart)
-               (<fx tstart (+fx sstart (-fx send sstart))))
-          (let loop ((i  (-fx end 1))
-                     (j (-fx tend 1)))
-             (when (and (>=fx i sstart) (>=fx j tstart))
-                (vector-set-ur! target j (vector-ref-ur source i))
-                (loop (-fx i 1) (-fx j 1))))
-          (let loop ((i sstart)
-                     (j tstart))
-             (when (and (<fx i end) (<fx j tend))
-                (vector-set-ur! target j (vector-ref-ur source i))
-                (loop (+fx i 1) (+fx j 1)))))))
+      (cond-expand
+	 (bigloo-c
+	  (if (eq? target source)
+	      ($vector-blit-overlap! target source tstart sstart (-fx tend tstart))
+	      ($vector-blit-no-overlap! target source tstart sstart (-fx tend tstart))))
+	 (else
+	  (if (and (eq? target source)
+		   (<fx sstart tstart)
+		   (<fx tstart (+fx sstart (-fx send sstart))))
+	      (let loop ((i (-fx end 1))
+			 (j (-fx tend 1)))
+		 (when (and (>=fx i sstart) (>=fx j tstart))
+		    (vector-set-ur! target j (vector-ref-ur source i))
+		    (loop (-fx i 1) (-fx j 1))))
+	      (let loop ((i sstart)
+			 (j tstart))
+		 (when (and (<fx i end) (<fx j tend))
+		    (vector-set-ur! target j (vector-ref-ur source i))
+		    (loop (+fx i 1) (+fx j 1)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-append ...                                                */

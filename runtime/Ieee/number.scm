@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Aug 11 09:17:30 2021 (serrano)                */
+;*    Last change :  Tue Oct 25 07:54:25 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -101,6 +101,9 @@
 	    (inline inexact?::bool z)
 	    (complex?::bool x)
 	    (rational?::bool x)
+	    
+	    (number->flonum::double ::obj)
+	    
 	    (inline flonum->fixnum::long ::double)
 	    (inline fixnum->flonum::double ::long)
 	    (inline flonum->elong::elong ::double)
@@ -156,6 +159,8 @@
 	    (round x)
 	    (exp::double x) 
 	    (log::double x) 
+	    (log2::double x) 
+	    (log10::double x) 
 	    (sin::double x) 
 	    (cos::double x) 
 	    (tan::double x) 
@@ -221,6 +226,8 @@
 	    (round side-effect-free (effect) no-cfa-top)
 	    (exp side-effect-free (effect) no-cfa-top)
 	    (log side-effect-free (effect) no-cfa-top)
+	    (log2 side-effect-free (effect) no-cfa-top)
+	    (log10 side-effect-free (effect) no-cfa-top)
 	    (sin side-effect-free (effect) no-cfa-top)
 	    (cos side-effect-free (effect) no-cfa-top)
 	    (tan side-effect-free (effect) no-cfa-top)
@@ -286,6 +293,18 @@
 ;*---------------------------------------------------------------------*/
 (define (rational? x)
    (real? x))
+
+;*---------------------------------------------------------------------*/
+;*    number->flonum ...                                               */
+;*---------------------------------------------------------------------*/
+(define (number->flonum x)
+   (cond
+      ((fixnum? x) (fixnum->flonum x))
+      ((bignum? x) (bignum->flonum x))
+      (($subelong? x) (elong->flonum ($subelong->elong x)))
+      (($subllong? x) (llong->flonum ($subllong->llong x)))
+      ((flonum? x) x)
+      (else (bigloo-type-error "number->flonum" "number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum->fixnum ...                                               */
@@ -982,6 +1001,30 @@
       ((llong? x) (logfl ($llong->flonum x)))
       ((bignum? x) (logfl ($bignum->flonum x)))
       (else (error "log" "not a number" x))))
+
+;*---------------------------------------------------------------------*/
+;*    log2 ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (log2 x)
+   (cond
+      ((flonum? x) (log2fl x))
+      ((fixnum? x) (log2fl ($fixnum->flonum x)))
+      ((elong? x) (log2fl ($elong->flonum x)))
+      ((llong? x) (log2fl ($llong->flonum x)))
+      ((bignum? x) (log2fl ($bignum->flonum x)))
+      (else (error "log2" "not a number" x))))
+
+;*---------------------------------------------------------------------*/
+;*    log10 ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (log10 x)
+   (cond
+      ((flonum? x) (log10fl x))
+      ((fixnum? x) (log10fl ($fixnum->flonum x)))
+      ((elong? x) (log10fl ($elong->flonum x)))
+      ((llong? x) (log10fl ($llong->flonum x)))
+      ((bignum? x) (log10fl ($bignum->flonum x)))
+      (else (error "log10" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sin ...                                                          */

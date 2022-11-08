@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Mar 27 10:35:16 2022 (serrano)                */
+#*    Last change :  Wed Jun 29 09:51:59 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,12 +36,17 @@ DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
-                  -srfi $(API) -safee -g # -unsafe
+                  -srfi $(API) -safee -g -unsafe
+CAPIFLAGS	= $(CGCTHREADFLAGS)
 #BAPIFLAGS	= -unsafe $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q \
                   -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
+
+# Additional pthread lib for C
+EXTRALIBS	+= $(PTHREADLIBS)
+BIGLOOEXTRALIBS	+= bigloopthread
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -81,7 +86,7 @@ all:
 	  fi
 
 c: build-c
-build-c: api-c
+build-c: api-c_mt
 
 jvm: build-jvm
 build-jvm: api-jvm

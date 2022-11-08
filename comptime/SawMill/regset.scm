@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/SawMill/regset.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/SawMill/regset.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 16 15:37:03 2005                          */
-;*    Last change :  Fri Jul 14 10:39:31 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Thu Jun 30 19:26:07 2022 (serrano)                */
+;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Register sets for regiter allocation                             */
 ;*=====================================================================*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Mon Jan 14 14:00:37 2019 (serrano)                */
+;*    Last change :  Fri Nov  4 16:33:19 2022 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -59,7 +59,7 @@
    (pragma  (eqv? side-effect-free nesting fail-safe)
 	    (eq? side-effect-free nesting fail-safe)
 	    (c-eq? side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (equal? side-effect-free no-cfa-top nesting fail-safe)))
+	    (equal? side-effect-free nesting fail-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    eq? ...                                                          */

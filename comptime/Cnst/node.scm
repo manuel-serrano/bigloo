@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Thu Jul  8 11:29:46 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 11:44:41 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -363,6 +363,11 @@
 		((eq? fun *uint64->buint64*)
 		 (if (uint64? actual-value)
 		     (cnst-alloc-uint64 actual-value loc)
+		     node))
+		((eq? fun *fixnum->bignum*)
+		 (if (fixnum? actual-value)
+		     (or (cnst-alloc-bignum (fixnum->bignum actual-value) loc)
+			 node)
 		     node))
 		(else
 		 node))))))

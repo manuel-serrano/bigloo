@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Sat Mar  5 06:30:51 2022 (serrano)                */
+;*    Last change :  Tue Jul 19 14:28:45 2022 (serrano)                */
 ;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -420,7 +420,7 @@
 	  (lvtype-node! nnode)
 	  (spread-side-effect! nnode)
 	  nnode)))
-;*                                                                     */
+
 
 
 

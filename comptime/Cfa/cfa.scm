@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Wed Oct 13 12:19:59 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov  4 09:52:04 2022 (serrano)                */
+;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
 ;*=====================================================================*/
@@ -27,7 +27,8 @@
 	    cfa_approx
 	    cfa_iterate
 	    cfa_app
-	    cfa_funcall)
+	    cfa_funcall
+	    cfa_type)
    (export  (generic cfa!::approx ::node)
 	    (generic cfa-variable-value-approx value::value)))
 
@@ -89,9 +90,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    cfa-variable-value-approx ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-generic (cfa-variable-value-approx value::value)
-   (tprint "PAS GLOP " (typeof value) " " (shape value))
-   (error "pas" "glop" "glup"))
+(define-generic (cfa-variable-value-approx value::value))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa-variable-value-approx ::svar/Cinfo ...                       */

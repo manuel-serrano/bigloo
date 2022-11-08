@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Sun Aug 25 09:13:25 2019 (serrano)                */
-;*    Copyright   :  2004-19 Manuel Serrano                            */
+;*    Last change :  Sat Aug 27 16:47:58 2022 (serrano)                */
+;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
 ;*=====================================================================*/
@@ -52,6 +52,7 @@
 	    __bit)
    
    (export  (expand-eval-let <expression> <expander>)
+	    (expand-eval-$let <expression> <expander>)
 	    (expand-eval-let* <expression> <expander>)
 	    (expand-eval-letrec <expression> <expander>)
 	    (expand-eval-letrec* <expression> <expander>)
@@ -117,6 +118,20 @@
 		  (else
 		   (expand-error "let" "Illegal `let' form" x)))))
       (evepairify res x)))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-$let ...                                             */
+;*    -------------------------------------------------------------    */
+;*    This form is used by the compiler to ensure that the             */
+;*    introduced variable are never removed by any optimization.       */
+;*    This is meaningless for the interpreter that treats "$let"       */
+;*    as regular "let".                                                */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-$let x e)
+   (let ((nx (if (epair? x)
+		 (econs 'let (cdr x) (cer x))
+		 (cons 'let (cdr x)))))
+      (expand-eval-let nx e)))
 	   
 ;*---------------------------------------------------------------------*/
 ;*    expand-eval-let* ...                                             */
