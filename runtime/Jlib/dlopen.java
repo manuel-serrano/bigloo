@@ -190,7 +190,7 @@ public abstract class dlopen {
       synchronized( dlopen_table ) {
 	 if( !(dlopen_table.contains( filename )) ) {
 	    Object res = dload_inner( filename, init_sym, mod_sym );
-	    dlopen_table.put( filename, new Boolean( true ) );
+	    dlopen_table.put( filename, true );
 	    return res;
 	 } else {
 	    return foreign.BUNSPEC;

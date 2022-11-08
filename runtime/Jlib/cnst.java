@@ -15,7 +15,7 @@ public class cnst extends obj
 
   public static cnst make_cnst( final int value )
   {
-    final Integer key = new Integer( value );
+    final Integer key = value;
     final Object r = table.get( key );
 
     if (r != null)
