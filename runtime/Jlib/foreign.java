@@ -4345,6 +4345,10 @@ public final class foreign
       return p.getRef();
    }
 
+   public static void bgl_weakptr_ref_set(weakptr p, Object o){
+      p.setRef(o);
+   }
+
    public static Object bgl_weakptr_data(weakptr p) {
       return p.getData();
    }
@@ -4353,14 +4357,6 @@ public final class foreign
       p.setData(o);
    }
    
-   public static Object bgl_weakptr_data(weakptr p){
-       return p.getData();
-   }
-
-   public static void bgl_weakptr_ref_set(weakptr p, Object o){
-      p.setRef(o);
-   }
-
    public static weakptr bgl_make_weakptr(Object o, Object r){
       return new weakptr(o, r);
    }
