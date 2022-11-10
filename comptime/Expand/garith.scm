@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Thu Nov  3 10:53:42 2022 (serrano)                */
+;*    Last change :  Thu Nov 10 17:28:57 2022 (serrano)                */
 ;*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -37,12 +37,9 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-g2 x e op)
 
-   (define (ov id)
-      (and *arithmetic-overflow* *arithmetic-new-overflow* (memq id '(+ - *))))
-   
    (define (fx id)
       (cond
-	 ((ov id)
+	 ((and *arithmetic-overflow* *arithmetic-new-overflow* (memq id '(+ - *)))
 	  (symbol-append id 'fx/ov))
 	 ((and *arithmetic-overflow* (memq id '(+ - / *)))
 	  (symbol-append id 'fx-safe))
@@ -79,11 +76,9 @@
 			`(let ((,tmp ,b)) (,id ,a ,tmp))))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))
-       (let ((nx (if (ov id)
-		     `(if (and (c-fixnum? ,a) (c-fixnum? ,b))
-			  (,(fx id) ,a ,b)
-			  ((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))
-		     `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))))
+       (let ((nx `(if (and (c-fixnum? ,a) (c-fixnum? ,b))
+		      (,(fx id) ,a ,b)
+		      ((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) ?b)
        (let* ((tmp (gensym 'b))
