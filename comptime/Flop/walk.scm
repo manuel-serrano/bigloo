@@ -3,20 +3,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Oct 25 07:41:27 2022 (serrano)                */
+;*    Last change :  Wed Nov  9 11:53:27 2022 (serrano)                */
 ;*    Copyright   :  2010-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize flonum operations by propagation ::real type in         */
 ;*    expressions. This optimization replaces generic operations with  */
 ;*    flonum operations and pushes the new types to the surrounding    */
 ;*    expression. Eg.                                                  */
-;*    (2+ a (2+ 1.0 c)) => (+fl (->flonum a) (+fx 1.0 (->flonum c)))   */
-;*    untagging operations. Typically, replaces:                       */
-;*       (let ((z1::long (bint->long e1))                              */
-;*             (z2::long e2))                                          */
-;*          (long->bint (+ z1 z2)))                                    */
-;*    with                                                             */
-;*        ($addfl e1 (long->bint e2))                                  */
+;*    (2+ a (2+ 1.0 c)) => (+fl (->flonum a) (+fl 1.0 (->flonum c)))   */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
