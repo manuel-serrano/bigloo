@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Fri Nov  4 13:30:44 2022 (serrano)                */
+/*    Last change :  Thu Nov 10 06:57:04 2022 (serrano)                */
 /*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -464,13 +464,13 @@ bgl_bignum_abs(obj_t x) {
 static obj_t
 bignum_add_pos_pos_aux(const mp_limb_t *x, const int size_x,
 		       const mp_limb_t *y, const int size_y) {
-   obj_t z = make_bignum(size_x);
+   obj_t z = make_bignum(size_x + 1);
    const int carry = mpn_add(BXLIMBS(z), x, size_x, y, size_y);
    
    if (carry) {
-      obj_t o = GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + 1));
-      o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
-      z = BREF(o);
+/*       obj_t o = GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + 1)); */
+/*       o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);         */
+/*       z = BREF(o);                                                  */
       BXLIMBS(z)[size_x] = carry;
       BXSIZ(z) = BXALLOC(z) = size_x + 1;
    } else {
@@ -514,13 +514,12 @@ bignum_add_pos_neg_aux(const mp_limb_t *x, const int size_x,
    count = size_x - 1;
    while (count > 0 && BXLIMBS(z)[count] == 0)
       count--;
-   count ++;
+   count++;
    
    if (count != size_x) {
-      obj_t o = GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + count));
-      o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
-      z = BREF(o);
-
+/*       obj_t o = GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(count));      */
+/*       o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);         */
+/*       z = BREF(o);                                                  */
       BXALLOC(z) = count;
    }
    
