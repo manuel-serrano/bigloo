@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Tue Oct 23 11:49:02 2018 (serrano)                */
-;*    Copyright   :  2014-18 Manuel Serrano                            */
+;*    Last change :  Fri Nov 11 07:37:09 2022 (serrano)                */
+;*    Copyright   :  2014-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
 ;*    -------------------------------------------------------------    */
@@ -217,6 +217,8 @@
 	 "bgl_uv_fs_open")
       ($uv-fs-close::int (::UvFile ::obj ::UvLoop)
 	 "bgl_uv_fs_close")
+      ($uv-fs-copyfile::int (::bstring ::bstring ::int ::obj ::UvLoop)
+	 "bgl_uv_fs_copyfile")
       ($uv-fs-fstat::obj (::UvFile ::obj ::UvLoop)
 	 "bgl_uv_fs_fstat")
       ($uv-fs-lstat::obj (::string ::obj ::UvLoop)
