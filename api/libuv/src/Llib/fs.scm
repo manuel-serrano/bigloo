@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Jun 29 16:22:05 2018 (serrano)                */
-;*    Copyright   :  2014-18 Manuel Serrano                            */
+;*    Last change :  Fri Nov 11 07:11:05 2022 (serrano)                */
+;*    Copyright   :  2014-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
 ;*=====================================================================*/
@@ -19,8 +19,10 @@
    (import  __libuv_types
 	    __libuv_loop)
    
-   (export  #;(uv-open-input-file ::bstring #!key (bufinfo #t) callback)
-
+   (export  (inline UV_FS_COPYFILE_EXCL::int)
+	    (inline UV_FS_COPYFILE_FICLONE::int)
+	    (inline UV_FS_COPYFILE_FICLONE_FORCE::int)
+	    
             (inline uv-fs-dup::int ::int)
 	    (uv-fs-rename::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
@@ -68,6 +70,8 @@
 	       #!key (mode #o666) callback (loop (uv-default-loop)))
 	    (uv-fs-close ::UvFile
 	       #!key callback (loop (uv-default-loop)))
+	    (uv-fs-copyfile ::bstring ::bstring ::int
+	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-write ::UvFile ::bstring ::int 
 	       #!key
 	       callback (offset 0) (position -1)
@@ -98,7 +102,13 @@
 (define O_SYNC
    (cond-expand (bigloo-c (pragma::long "O_SYNC")) (else #o4010000)))
 
-
+(define-inline (UV_FS_COPYFILE_EXCL)
+   (cond-expand (bigloo-c (pragma::long "UV_FS_COPYFILE_EXCL")) (else 0)))
+(define-inline (UV_FS_COPYFILE_FICLONE)
+   (cond-expand (bigloo-c (pragma::long "UV_FS_COPYFILE_FICLONE")) (else 0)))
+(define-inline (UV_FS_COPYFILE_FICLONE_FORCE)
+   (cond-expand (bigloo-c (pragma::long "UV_FS_COPYFILE_FICLONE_FORCE")) (else 0)))
+ 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    uv-open-input-file ...                                           *} */
 ;* {*---------------------------------------------------------------------*} */
@@ -268,6 +278,13 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-fs-close fd::UvFile #!key callback (loop (uv-default-loop)))
    ($uv-fs-close fd callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-copyfile ...                                               */
+;*---------------------------------------------------------------------*/
+(define (uv-fs-copyfile path::bstring newpath::bstring flags::int
+	   #!key callback (loop (uv-default-loop)))
+   ($uv-fs-copyfile path newpath flags callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-fstat ...                                                  */
