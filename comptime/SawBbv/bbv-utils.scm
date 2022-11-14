@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Nov  3 18:01:58 2022 (serrano)                */
+;*    Last change :  Mon Nov 14 12:05:28 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -274,7 +274,7 @@
 ;*    succs, and branch instructions.                                  */
 ;*---------------------------------------------------------------------*/
 (define (assert-block b::blockS stage)
-   (with-access::blockS b (preds succs first label)
+   (with-access::blockS b (preds succs first label parent)
       ;; check that b in the preds.succs
       (let ((l (filter (lambda (p)
 			  (with-access::blockS p (succs)
@@ -304,33 +304,31 @@
 	 (for-each (lambda (ins)
 		      (cond
 			 ((rtl_ins-ifeq? ins)
-			  (with-access::rtl_ins ins (fun)
-			     (with-access::rtl_ifeq fun (then)
-				(unless (memq then succs)
-				   (set! l (cons then l))))))
+			  (set! l (cons ins l)))
 			 ((rtl_ins-ifne? ins)
 			  (with-access::rtl_ins ins (fun)
 			     (with-access::rtl_ifne fun (then)
 				(unless (memq then succs)
-				   (set! l (cons then l))))))
+				   (set! l (cons ins l))))))
 			 ((rtl_ins-go? ins)
 			  (with-access::rtl_ins ins (fun)
 			     (with-access::rtl_go fun (to)
 				(unless (memq to succs)
-				   (set! l (cons to l))))))
+				   (set! l (cons ins l))))))
 			 ((rtl_ins-switch? ins)
 			  (with-access::rtl_ins ins (fun)
 			     (with-access::rtl_switch fun (labels)
 				(for-each (lambda (lbl)
 					     (unless (memq lbl succs)
-						(set! l (cons lbl l))))
+						(set! l (cons ins l))))
 				   labels))))))
 	    first)
 	 (when (pair? l)
-	    (tprint (shape b))
+	    (tprint "wrong block: " (shape b))
+	    (tprint "parent block: " (shape parent))
 	    (error stage
 	       (format "instruction target not in succs of " label)
-	       (map block-label l))))))
+	       (map shape l))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-filter-live-in-regs ...                                  */
