@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Nov 14 12:28:19 2022 (serrano)                */
+;*    Last change :  Tue Nov 15 07:14:46 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -43,11 +43,11 @@
 ;*    bbv ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (bbv back global params blocks)
-   (when *bbv-debug* (tprint "=== " (shape global)))
    (if (and *saw-bbv?*
 	    (or (null? *saw-bbv-functions*)
 		(memq (global-id global) *saw-bbv-functions*)))
        (with-trace 'bbv (global-id global)
+	  (when *bbv-debug* (tprint "=== " (shape global)))
 	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global))
 	  (when (>=fx *trace-level* 2)

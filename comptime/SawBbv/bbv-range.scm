@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Fri Oct 28 11:27:45 2022 (serrano)                */
+;*    Last change :  Tue Nov 15 06:51:39 2022 (serrano)                */
 ;*    Copyright   :  2022 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -280,8 +280,10 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-range=? left right)
    (cond
-      ((and (=rv (bbv-range-lo left) (bbv-range-lo right))
+      ((and (=rv (bbv-range-lo left) (bbv-range-up left))
+	    (=rv (bbv-range-lo left) (bbv-range-lo right))
 	    (=rv (bbv-range-up left) (bbv-range-up right)))
+	    
        'true)
       ((or (eq? (bbv-range>? left right) 'true)
 	   (eq? (bbv-range<? left right) 'true))
