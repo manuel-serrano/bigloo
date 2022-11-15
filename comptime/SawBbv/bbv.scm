@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Nov  3 17:39:33 2022 (serrano)                */
+;*    Last change :  Tue Nov 15 07:14:46 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -43,11 +43,11 @@
 ;*    bbv ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (bbv back global params blocks)
-   (when *bbv-debug* (tprint "=== " (shape global)))
    (if (and *saw-bbv?*
 	    (or (null? *saw-bbv-functions*)
 		(memq (global-id global) *saw-bbv-functions*)))
        (with-trace 'bbv (global-id global)
+	  (when *bbv-debug* (tprint "=== " (shape global)))
 	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global))
 	  (when (>=fx *trace-level* 2)
@@ -451,9 +451,16 @@
 ;*---------------------------------------------------------------------*/
 (define (normalize-ifeq!::pair b::block)
 
+   (define (side-effect-free? ins)
+      (with-access::rtl_ins ins (args)
+	 (when (and (isa? (car args) rtl_ins) (rtl_ins-call? (car args)))
+	    (when (rtl_call-predicate (car args))
+	       (let ((args (rtl_ins-args* ins)))
+		  (and (pair? args) (null? (cdr args)) (rtl_reg? (car args))))))))
+   
    (define (normalize-block! b::block)
       (with-access::block b (succs first)
-	 (when (and (pair? succs) (pair? (cdr succs)))
+	 (when (pair? succs)
 	    ;; the block ends with either if_eq or if_ne
 	    (let loop ((ins first))
 	       (cond
@@ -461,12 +468,21 @@
 		   (when (null? first)
 		       (error "normalize-ifeq!" "bad block (no instruction)" (shape b))))
 		  ((rtl_ins-ifne? (car ins))
-		   #unspecified)
+		   (if (and (null? (cdr succs)) (side-effect-free? (car ins)))
+		       (with-access::rtl_ins (car ins) (fun args)
+			  (set! fun (instantiate::rtl_nop))
+			  (set! args '()))
+		       #unspecified))
 		  ((rtl_ins-ifeq? (car ins))
 		   ;; replace ifeq with ifne using the following goto
-		   (if (or (null? (cdr ins)) (not (rtl_ins-go? (cadr ins))))
-		       (error "normalize-ifeq!" "bad block" (shape b))
-		       (with-access::rtl_ins (car ins) ((ifeq fun))
+		   (with-access::rtl_ins (car ins) ((ifeq fun) args)
+		      (cond
+			 ((or (null? (cdr ins)) (not (rtl_ins-go? (cadr ins))))
+			  (error "normalize-ifeq!" "bad block" (shape b)))
+			 ((and (null? (cdr succs)) (side-effect-free? (car ins)))
+			  (set! ifeq (instantiate::rtl_nop))
+			  (set! args '()))
+			 (else
 			  (with-access::rtl_ifeq ifeq (then loc)
 			     (with-access::rtl_ins (cadr ins) ((go fun))
 				(with-access::rtl_go go (to)
@@ -475,7 +491,7 @@
 					 (loc loc)
 					 (then to)))
 				   (set! to then)
-				   (set! succs (reverse! succs))))))))
+				   (set! succs (reverse! succs)))))))))
 		  (else
 		   (loop (cdr ins))))))))
 

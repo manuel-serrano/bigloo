@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Nov  3 17:12:22 2022 (serrano)                */
+;*    Last change :  Mon Nov 14 12:12:40 2022 (serrano)                */
 ;*    Copyright   :  2017-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -205,11 +205,13 @@
       (with-access::blockS bs (ctx label)
 	 (with-trace 'bbv-specialize
 	       (format "bbv-block-specialize-ins! ~a" label)
+	    (when *bbv-debug*
+	       (assert-block bs ">>> bbv-block-specialize-ins!"))
 	    (let ((nfirst (bbv-ins first bs ctx queue)))
 	       (with-access::blockS bs (first)
 		  (set! first nfirst)
 		  (when *bbv-debug*
-		     (assert-block bs "bbv-block-specialize-ins!"))
+		     (assert-block bs "<<< bbv-block-specialize-ins!"))
 		  bs))))))
 
 ;*---------------------------------------------------------------------*/
