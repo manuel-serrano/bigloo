@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct 22 11:07:08 1997                          */
-#*    Last change :  Tue Nov 15 10:24:04 2022 (serrano)                */
+#*    Last change :  Wed Nov 16 13:17:17 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if the underlying is MacOSX >= 10.3                        */
 #*=====================================================================*/
@@ -35,7 +35,8 @@ done
 #*---------------------------------------------------------------------*/
 #*    OS detection                                                     */
 #*---------------------------------------------------------------------*/
-file1=actest1$USER
+base1=actest1$USER
+file1=$TMP/actest1$USER
 
 if( test -f $file1.c ); then
    rm -f $file1.c || exit $?
@@ -56,4 +57,5 @@ eval "$BUILDSH $CC -dynamiclib -single_module $file1.o -o $file1.dylib -lc" 2>&1
 /bin/rm $file1.* && echo "no"
 
 /bin/rm $file1.*
+/bin/rm -f $base1.o
 echo "yes" 

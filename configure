@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Nov  4 18:16:32 2022 (serrano)                */
+#*    Last change :  Wed Nov 16 13:22:17 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -5362,7 +5362,7 @@ if [ "$summary" = "yes" ]; then
   $echo
   $echo "Implementation details:"
   $echo "  tuning...................... $mode $tuning"
-  $echo "  cc.......................... $cc"
+  $echo "  cc.......................... $cc ($coflags)"
   if [ $bglnantagging != "0" ]; then
     $echo "  nan tagging................. $bglnantagging"
   else
