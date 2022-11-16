@@ -375,13 +375,8 @@
 (define (mrg32k3a-random-power state k) ; n = m-max^k, k >= 1
   (if (= k 1)
       (mrg32k3a-random-integer state mrg32k3a-m-max)
-      (let* ((a (mrg32k3a-random-power state (- k 1)))
-	     (b mrg32k3a-m-max)
-	     (v (* a b))
-	     (w (mrg32k3a-random-integer state mrg32k3a-m-max)))
-	 (tprint "a= " a " b=" b)
-	 (tprint "v=" v " w=" w " => " (+ v w))
-	 (+  v w))))
+      (+ (* (mrg32k3a-random-power state (- k 1)) mrg32k3a-m-max)
+         (mrg32k3a-random-integer state mrg32k3a-m-max))))
 
 (define (mrg32k3a-random-large state n) ; n > m-max
   (do ((k 2 (+ k 1))
@@ -431,7 +426,7 @@
      (lambda (i j)
        (set! state (mrg32k3a-pseudo-randomize-state i j)))
      (lambda ()
-	(lambda (n)
+       (lambda (n)
          (cond
           ((not (and (integer? n) (exact? n) (positive? n)))
            (error "range must be exact positive integer" n))           
