@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/ccoptim                     */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/ccoptim              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Mon May 16 14:41:23 2016 (serrano)                */
+#*    Last change :  Tue Nov 15 10:24:22 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler optimization option                      */
 #*=====================================================================*/
@@ -31,9 +31,9 @@ while : ; do
   shift
 done
 
-file1=$TMP/actest1$USER
-file2=$TMP/actest2$USER
-aout=$TMP/Xactest$USER
+file1=actest1$USER
+file2=actest2$USER
+aout=Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    On some archiecture (e.g., alpha, Mac PPC, etc.) cc -O3 option   */

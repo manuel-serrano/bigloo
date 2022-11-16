@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Thu Nov 10 06:57:04 2022 (serrano)                */
+/*    Last change :  Tue Nov 15 19:40:53 2022 (serrano)                */
 /*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -466,7 +466,7 @@ bignum_add_pos_pos_aux(const mp_limb_t *x, const int size_x,
 		       const mp_limb_t *y, const int size_y) {
    obj_t z = make_bignum(size_x + 1);
    const int carry = mpn_add(BXLIMBS(z), x, size_x, y, size_y);
-   
+
    if (carry) {
 /*       obj_t o = GC_REALLOC(CREF(z), BIGNUM_ALLOC_SIZE(size_x + 1)); */
 /*       o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);         */
