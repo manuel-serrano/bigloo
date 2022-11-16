@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Tue Nov 15 10:24:22 2022 (serrano)                */
+#*    Last change :  Wed Nov 16 13:16:08 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler optimization option                      */
 #*=====================================================================*/
@@ -31,9 +31,11 @@ while : ; do
   shift
 done
 
-file1=actest1$USER
-file2=actest2$USER
-aout=Xactest$USER
+base1=actest1$USER
+base2=actest2$USER
+file1=$TMP/$base1
+file2=$TMP/$base2
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    On some archiecture (e.g., alpha, Mac PPC, etc.) cc -O3 option   */
@@ -198,5 +200,6 @@ fi
 
 \rm -f $file1.*
 \rm -f $file2.*
+\rm -f $base1.o $base2.o
 echo "-O"
 exit 0

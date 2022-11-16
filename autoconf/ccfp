@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Tue Nov 15 10:19:39 2022 (serrano)                */
+#*    Last change :  Wed Nov 16 13:15:10 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler frame pointer option                     */
 #*=====================================================================*/
@@ -31,8 +31,9 @@ while : ; do
   shift
 done
 
-file1=actest10$USER
-aout=Xactest$USER
+base=actest10$USER
+file1=$TMP/$base
+aout=$TMP/$base
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -64,6 +65,7 @@ compile="$CC $CFLAGS $cflags $file1.c -c"
 
 if eval "$BUILDSH $compile"; then
    \rm -f $file1.*
+   \rm -f $base.o
    echo $cflags
    exit 0
 fi
@@ -73,10 +75,12 @@ compile="$CC $CFLAGS $cflags $file1.c -c"
 
 if eval "$BUILDSH $compile"; then
    \rm -f $file1.*
+   \rm -f $base.o
    echo $cflags
    exit 0
 fi
 
 \rm -f $file1.*
+\rm -f $base.o
 echo ""
 
