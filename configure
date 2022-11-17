@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov 17 09:15:59 2022 (serrano)                */
+#*    Last change :  Thu Nov 17 08:10:57 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -17,8 +17,8 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.5a
-buildrelease=4.4c
+release=4.5b
+buildrelease=4.5a
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 biglooftp=ftp://ftp-sop.inria.fr/indes/fp/Bigloo
@@ -267,7 +267,9 @@ libuvconfigureopt=
 #* libuvversion=v1.19.1                                                */
 #* libuvversion=v1.19.2                                                */
 #* libuvversion=v1.20.3                                                */
-libuvversion=v1.40.0
+#* libuvversion=v1.40.0                                                */
+#* libuvversion=v1.43.0                                                */
+libuvversion=v1.44.2
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
