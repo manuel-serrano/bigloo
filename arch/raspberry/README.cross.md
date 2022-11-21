@@ -1,4 +1,4 @@
-Raspberry Cross Compilation - 27 mar 2021
+Raspberry Cross Compilation - 21 nov 2022
 =========================================
 
 This note describes how to cross compile and install Bigloo on a
@@ -27,33 +27,36 @@ The three main steps of the cross compilation procedure are:
 The procedure described in these documents has been tested only under
 Debian platforms. However, it should not depend on that specific Linux
 version. Any complete GNU C development kit (gcc, autoconf, automake, libtool,
-...) should work.
+...) should work. You should also have a full qemu installation (on Debian
+it involves qemu-system-arm and qemu-utils packages).
 
 We are assuming that raspbian is the operating system running on the guest.
 
 
 ### Qemu
 
-The cross compilation can be executed with a hardware guest platform
-(i.e., a real raspberry computer) or with the Qemu emulator. This section
-explains how to prepare the emulator if the option is chosen.
+As of November 22, raspios images provide no default login credentials.
+It is then necessary to build a custom image with a default login already
+configured. For that proceed as follow:
 
-A. Download the raspbian image
+A. Install an image on a regular sdcard using the Rapberry rpi-imager
+tool.  After choosing the 32 bit OS, click the setting button (bottom
+right or press ctl-shift-x) to configuer a default login. 
 
 ```shell[:@shell-host]
-(in host) wget https://downloads.raspberrypi.org/raspbian_lite_latest
+dd bs=4M if=/dev/mmcblk0 > raspios.img
 ```
 
-B. Download the raspbian kernel
+B. Convert the image for qemu
+
+```shell[:@shell-host]
+(in host) qemu-img convert -f raw -O qcow2 raspios.img raspios.qcow
+```
+
+C. Download the raspbian kernel
 
 ```shell[:@shell-host]
 (in host) git clone https://github.com/dhruvvyas90/qemu-rpi-kernel.git
-```
-
-C. Convert the image for qemu
-
-```shell[:@shell-host]
-(in host) qemu-img convert -f raw -O qcow2 2019-09-26-raspbian-buster-lite.img 2019-09-26-raspbian-buster-lite.qcow
 ```
 
 D. Run qemu
@@ -61,15 +64,14 @@ D. Run qemu
 From the directory containing the img file:
 
 ```shell[:@shell-host]
-(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22
-   
+(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-5.10.63-bullseye -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda raspios.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22
 ```
 
-The default user is, which owns sudo priviliges:
+Log-in using the credentials given at step A.
 
 ```
-usename: pi
-password: raspberry
+usename: STEP-A-USERNAME
+password: STEP-A-PASSWOWRD
 ```
 
 Depending on the qemu version, the command above might not configure
@@ -80,7 +82,7 @@ command to run qemu:
 Run qemu (alt)
 
 ```shell[:@shell-host]
-(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -net tap,ifname=vnet0,script=no,downscript=no
+(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-5.10.63-bullseye -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda raspios.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -net tap,ifname=vnet0,script=no,downscript=no
 ```
    
 The port forwarding 2022:22 can be changed, but if you do so, you will

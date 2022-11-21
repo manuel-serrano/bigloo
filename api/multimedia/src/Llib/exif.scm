@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sun Nov  6 20:33:17 2022 (serrano)                */
+;*    Last change :  Mon Nov 21 17:19:40 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -995,7 +995,7 @@
 		      'ignored)
 		     (else
 		      ;; TAG_UNKNOWN
-		      (tprint "TAG_UNKNOWN: " (integer->string tag 16))
+		      '(tprint "TAG_UNKNOWN: " (integer->string tag 16))
 		      'unknown)))
 	       (loop (+fx de 1)))))
       (when (< (+ start 2 4 (*fx 12 dnum)) (string-length bytes))
