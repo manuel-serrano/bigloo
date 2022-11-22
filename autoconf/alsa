@@ -72,6 +72,7 @@ cat > $file.c <<EOF
  *  This extra small demo sends a random samples to your speakers.
  */
 
+#include <stdio.h>
 #include <alsa/asoundlib.h>
 
 static char *device = "default";                        /* playback device */

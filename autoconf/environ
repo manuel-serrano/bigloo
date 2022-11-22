@@ -52,9 +52,7 @@ fi
 cat > $file.c <<EOF
 #include <unistd.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
+int main( int argc, char *argv[] )
 {
    extern char **environ;
    return (environ != 0) && (&execv != 0);
