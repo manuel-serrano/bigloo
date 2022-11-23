@@ -1265,9 +1265,8 @@ public final class foreign
    public static Object SAFE_MINUS_FX(int n1, int n2)
       {
 	 int x = n1 - n2;
-	 if (Integer_signum(n1) == Integer_signum(n2) &&
-	     Integer_signum(n1) != Integer_signum(x) &&
-	     Integer_signum(x) != 0)
+	 if (Integer_signum(n1) != Integer_signum(n2) &&
+	     Integer_signum(n1) != Integer_signum(x))
 	    return MINUS_BIGNUM(new bignum(n1), new bignum(n2));
 	 else
 	    return new bint(x);
@@ -1276,9 +1275,8 @@ public final class foreign
    public static Object SAFE_MINUS_ELONG(long n1, long n2)
       {
 	 long x = n1 - n2;
-	 if (Long_signum(n1) == Long_signum(n2) &&
-	     Long_signum(n1) != Long_signum(x) &&
-	     Long_signum(x) != 0)
+	 if (Long_signum(n1) != Long_signum(n2) &&
+	     Long_signum(n1) != Long_signum(x))
 	    return MINUS_BIGNUM(new bignum(n1), new bignum(n2));
 	 else
 	    return new belong(x);
@@ -1287,14 +1285,14 @@ public final class foreign
    public static Object SAFE_MINUS_LLONG(long n1, long n2)
       {
 	 long x = n1 - n2;
-	 if (Long_signum(n1) == Long_signum(n2) &&
-	     Long_signum(n1) != Long_signum(x) &&
-	     Long_signum(x) != 0)
+	 if (Long_signum(n1) != Long_signum(n2) &&
+	     Long_signum(n1) != Long_signum(x))
 	    return MINUS_BIGNUM(new bignum(n1), new bignum(n2));
 	 else
 	    return new bllong(x);
       }
 
+    
    public static int MUL_FX(int n1, int n2)
       {
 	 return (n1 * n2);
