@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Mon Nov 21 17:19:40 2022 (serrano)                */
+;*    Last change :  Tue Nov 22 09:33:26 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -15,7 +15,6 @@
 ;*           /-gdiplus-constant-property-item-                         */
 ;*           descriptions?redirectedfrom=MSDN                          */
 ;*=====================================================================*/
-;; 
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
@@ -683,11 +682,6 @@
 				   (else "???"))))
 			 (with-access::exif exif (metering-mode)
 			    (set! metering-mode mm))))
-		     ((#x920a)
-		      ;; TAG_FOCALLENGTH
-		      (let ((fl (getformat en bytes valptr fmt)))
-			 (with-access::exif exif (focal-length)
-			    (set! focal-length fl))))
 		     ((#x9208)
 		      ;; TAG_LIGHTSOURCE
 		      (let* ((fl (getformat/fx en bytes valptr fmt))
@@ -700,6 +694,11 @@
 			     (f (not (=fx (bit-and fl 7) 0))))
 			 (with-access::exif exif (flash)
 			    (set! flash f))))
+		     ((#x920a)
+		      ;; TAG_FOCALLENGTH
+		      (let ((fl (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (focal-length)
+			    (set! focal-length fl))))
 		     ((#x9286)
 		      ;; TAG_USERCOMMENT
 		      (with-access::exif exif (%commentpos
