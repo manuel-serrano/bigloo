@@ -1266,7 +1266,8 @@ public final class foreign
       {
 	 int x = n1 - n2;
 	 if (Integer_signum(n1) != Integer_signum(n2) &&
-	     Integer_signum(n1) != Integer_signum(x))
+	     Integer_signum(n1) != Integer_signum(x) &&
+             Integer_signum(n1) != 0)
 	    return MINUS_BIGNUM(new bignum(n1), new bignum(n2));
 	 else
 	    return new bint(x);
@@ -1276,7 +1277,8 @@ public final class foreign
       {
 	 long x = n1 - n2;
 	 if (Long_signum(n1) != Long_signum(n2) &&
-	     Long_signum(n1) != Long_signum(x))
+	     Long_signum(n1) != Long_signum(x) &&
+             Long_signum(n1) != 0)
 	    return MINUS_BIGNUM(new bignum(n1), new bignum(n2));
 	 else
 	    return new belong(x);
@@ -1286,7 +1288,8 @@ public final class foreign
       {
 	 long x = n1 - n2;
 	 if (Long_signum(n1) != Long_signum(n2) &&
-	     Long_signum(n1) != Long_signum(x))
+	     Long_signum(n1) != Long_signum(x) &&
+             Long_signum(n1) != 0)
 	    return MINUS_BIGNUM(new bignum(n1), new bignum(n2));
 	 else
 	    return new bllong(x);
