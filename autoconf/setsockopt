@@ -77,7 +77,7 @@ cat > $file.c <<EOF
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    int s = socket( AF_INET, SOCK_STREAM, 0 );
    int sock_opt = 1;
 

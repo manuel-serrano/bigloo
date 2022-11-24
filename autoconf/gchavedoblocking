@@ -74,7 +74,7 @@ int check_addr( long a1, long a2 ) {
     return a1 > a2;
 }
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    GC_init();
    if( check_addr( &GC_do_blocking, &main ) ) puts( "yes" ); else puts( "yes" );
    return 0;

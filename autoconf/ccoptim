@@ -85,6 +85,8 @@ fi
 #*    allocations. We try to detect this in the Bigloo configuration.  */
 #*---------------------------------------------------------------------*/
 cat > $file2.c <<EOF
+extern int failure_then_exit(int);
+extern int foo(int);
 int gcc3xxx_bug( int x ) {
    /* This function is badly compiled, the value of x is not restored */
    /* after the call to foo. This is supposed to be fixed             */

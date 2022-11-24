@@ -72,7 +72,7 @@ cat > $file.c <<EOF
 #include <winsock2.h>
 #endif
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    printf( "%d\n", (socklen_t)argc );
    return 0;
 }
