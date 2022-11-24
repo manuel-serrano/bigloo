@@ -68,10 +68,12 @@ cat > $file.c <<EOF
 #ifdef _MINGW_VER
 #include <winsock2.h>
 #endif
+#include <stdio.h>
+extern int gethostbyname(const char *);
+extern int getsockname(long, long, long);
+extern int accept(long, long, long);
 
-main( argc, argv )
-int   argc;
-char *argv[];
+int main( int argc, char *argv[] )
 {
    printf( "%d\n", gethostbyname( "toto" ) );
    printf( "%8x\n", getsockname( 0L, 0L, 0L ) );

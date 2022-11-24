@@ -61,9 +61,8 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.txt <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
+#include <stdlib.h>
+int main( int argc, char *argv[] )
 {
    exit( 0 );
 }

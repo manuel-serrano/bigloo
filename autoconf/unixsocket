@@ -77,7 +77,7 @@ cat > $file.c <<EOF
 #include <stdlib.h>
 #include <string.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    int s;
    struct sockaddr_un saddr;
 
@@ -85,6 +85,7 @@ main( int argc, char *argv[] ) {
 
    strcpy( saddr.sun_path, "/tmp/foo" );
    connect( s, (struct sockaddr *)&saddr, sizeof( saddr ) );
+   return 0;
 }
 EOF
 
