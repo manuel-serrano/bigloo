@@ -73,7 +73,7 @@ __malloc void *foo() {
   return malloc( 10 );
 }
 
-__noreturn stop() {
+__noreturn void stop() {
   exit( 0 );
 }
 

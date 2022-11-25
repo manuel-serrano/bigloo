@@ -75,8 +75,9 @@ cat > $file.c <<EOF
 #ifdef BGL_ANDROID
 #  include <linux/in.h>
 #endif
+#include <arpa/inet.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    int status;
    struct addrinfo hints;
    struct addrinfo *res, *rp;       

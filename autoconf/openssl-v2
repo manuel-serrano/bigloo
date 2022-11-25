@@ -68,6 +68,7 @@ cat > $file.c <<EOF
 #include <openssl/bio.h>
 
 static SSL_CTX *ctx;
+const SSL_METHOD *SSLv2_server_method(void);
 
 int main( int argc, char *argv[] ) {
     BIO *sbio;

@@ -81,8 +81,9 @@ cat > $file.c <<EOF
 #endif
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    return (inet_pton( AF_INET, "127.0.0.1", (void *)argv ) > 0);
 }
 EOF

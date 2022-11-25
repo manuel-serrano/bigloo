@@ -70,7 +70,7 @@ cat > $file.c <<EOF
 #include <stdio.h>
 extern GC_start_blocking();
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    GC_init();
    if( GC_start_blocking() ) puts( "yes" ); else puts( "yes" );
    return 0;
