@@ -70,7 +70,7 @@ From the directory containing the img file:
 Log-in using the credentials given at step A.
 
 ```
-usename: STEP-A-USERNAME
+slogin -p 2022 STEP-A-USERNAME@localhost
 password: STEP-A-PASSWOWRD
 ```
 
