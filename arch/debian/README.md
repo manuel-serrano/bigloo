@@ -65,7 +65,7 @@ example:
 4. Building Debian packages with Qemu
 -------------------------------------
 
-The file bigloo/arch/raspian/README.cross.md contains informations on
+The file bigloo/arch/raspberry/README.cross.md contains informations on
 how to prepare an ARM image suitable for the Qemu emulator and how to
 spawn the emulator so that it can be used to build a Debian package
 on the emulated architecture.
