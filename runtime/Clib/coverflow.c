@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/coverflow.c      */
+/*    serrano/prgm/project/bigloo/4.5a/runtime/Clib/coverflow.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Sat Aug 27 17:00:51 2022                          */
-/*    Last change :  Sat Aug 27 17:44:30 2022 (serrano)                */
+/*    Last change :  Thu Dec  1 16:39:43 2022 (serrano)                */
 /*    Copyright   :  2022 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Handling overflow in arithmetic when the C compiler does not     */
@@ -49,11 +49,12 @@ bool_t bgl_mull_overflow(long x, long y, long *res) {
    } else {
       long z = x * y;
 
-      if (z / y == x && z % y == 0)
+      if (z / y == x && z % y == 0) {
 	 *res = BINT(z);
-      return 0;
-   } else {
-      return 1;
+         return 0;
+      } else {
+         return 1;
+      }
    }
 }
 #endif
