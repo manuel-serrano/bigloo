@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  2 08:02:08 2022 (serrano)                */
+#*    Last change :  Fri Dec  2 09:03:14 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3192,6 +3192,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   if [ "$clocklib " != " " ]; then
     extralibs="-l$clocklib $extralibs"
+    ldcomplibs="-l$clocklib $ldcomplibs"
   fi
   
   # Where to find the socket api
