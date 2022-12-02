@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Sat Mar  5 09:47:11 2022 (serrano)                */
+/*    Last change :  Fri Dec  2 09:50:50 2022 (serrano)                */
 /*    Copyright   :  2003-22 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -242,12 +242,14 @@ linecountcmp(const void *p1, const void *p2) {
 /*---------------------------------------------------------------------*/
 static void
 file_dump_typenums(file_alloc_t *file, long i) {
+   long j;
+   
    if (file->lines[i].typecount >= 1) {
       if (file->lines[i].typenums[0] >= 0) {
 	 fprintf(stderr, "%s", all_types[file->lines[i].typenums[0]].name);
       }
    }
-   for (int j = file->lines[i].typecount - 1; j >= 1; j--) {
+   for (j = file->lines[i].typecount - 1; j >= 1; j--) {
       if (file->lines[i].typenums[j] >= 0) {
 	 fprintf(stderr, ", %s", all_types[file->lines[i].typenums[j]].name);
       }
@@ -262,8 +264,9 @@ void
 file_dump_alloc_size(const char *filename, void *data) {
    file_alloc_t *file = (file_alloc_t *)data;
    int show = 0;
+   long i;
 
-   for (long i = 0; i < file->size && !show; i++) {
+   for (i = 0; i < file->size && !show; i++) {
       if (file->lines[i].size > DUMP_LINE_SIZE_THRESHOLD) show = 1;
    }
 
@@ -275,7 +278,7 @@ file_dump_alloc_size(const char *filename, void *data) {
       }
       qsort(file->lines, file->size, sizeof(line_alloc_t), linesizecmp);
 
-      for (long i = 0; i < file->size; i++) {
+      for (i = 0; i < file->size; i++) {
 	 if (file->lines[i].size > DUMP_LINE_SIZE_THRESHOLD) {
 	    fprintf(stderr, "   %6ld: %8.2fMB %5.2f%% [%8ld] (", file->lines[i].lineno,
 		    (double)(file->lines[i].size) / (1024. * 1024.),
@@ -296,8 +299,9 @@ void
 file_dump_alloc_count(const char *filename, void *data) {
    file_alloc_t *file = (file_alloc_t *)data;
    int show = 0;
+   long i;
 
-   for (long i = 0; i < file->size && !show; i++) {
+   for (i = 0; i < file->size && !show; i++) {
       if (file->lines[i].count > DUMP_LINE_COUNT_THRESHOLD) show = 1;
    }
 
@@ -305,7 +309,7 @@ file_dump_alloc_count(const char *filename, void *data) {
       fprintf(stderr, "%s:\n", file->filename);
       qsort(file->lines, file->size, sizeof(line_alloc_t), linecountcmp);
 
-      for (long i = 0; i < file->size; i++) {
+      for (i = 0; i < file->size; i++) {
 	 if (file->lines[i].size > DUMP_LINE_COUNT_THRESHOLD) {
 	    fprintf(stderr, "   %6ld: %8ld (", file->lines[i].lineno,
 		    file->lines[i].count);
@@ -323,10 +327,11 @@ file_dump_alloc_count(const char *filename, void *data) {
 void
 dump_types_cnt() {
    long sum;
+   long i;
 
    qsort(all_types, types_number, sizeof(struct type), typecmp);
    
-   for (long i = 0; i < types_number; i++) {
+   for (i = 0; i < types_number; i++) {
       sum += all_types[i].cnt;
    }
 
@@ -337,7 +342,7 @@ dump_types_cnt() {
       fprintf(stderr, "types: %ld\n", sum);
    }
 
-   for (long i = 0; i < types_number; i++) {
+   for (i = 0; i < types_number; i++) {
       if ((all_types[i].cnt * 100 / sum) >= 1 ||
 	  ((double)(all_types[i].size)) / (1024. * 1024.) >= 1) {
 	 fprintf(stderr, "   %-20s: %8.2fMB %5.2f%% [%8ld]\n",
