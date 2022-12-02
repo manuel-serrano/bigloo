@@ -20,5 +20,5 @@ It will generate two Homebrew formulas:
   * bigloo-latest.rb
   * bigloo-unstabe.rb
   
-Thes have to be pushed on the official Bigloo homebrew git directory
+These have to be pushed on the official Bigloo homebrew git directory
 (`git@gitlab.inria.fr:mserrano/hopbrew.git`).
