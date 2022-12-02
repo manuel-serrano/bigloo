@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov 17 08:10:57 2022 (serrano)                */
+#*    Last change :  Fri Dec  2 08:02:08 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3187,6 +3187,13 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     haveresolvzxfr=0;
   fi
 
+  # clock_getres availability
+  clocklib=`$autoconf clocklib` || exit 1
+
+  if [ "$clocklib " != " " ]; then
+    extralibs="-l$clocklib $extralibs"
+  fi
+  
   # Where to find the socket api
   socketlibs=`$autoconf socket --lib="$socketlibs"` || exit 1
   socklen=`$autoconf socklen --lib="$socketlibs"` || exit 1
