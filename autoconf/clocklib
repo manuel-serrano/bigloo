@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Fri Dec  2 08:06:53 2022 (serrano)                */
+#*    Last change :  Fri Dec  2 09:25:00 2022 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host clock_lib posix function (used by the GC).    */
 #*=====================================================================*/
@@ -79,18 +79,18 @@ displayClock(clockid_t clock, const char *name, bool showRes)
         exit(EXIT_FAILURE);
     }
 
-    printf("%-15s: %10jd.%03ld (", name,
+    fprintf(stderr, "%-15s: %10jd.%03ld (", name,
             (intmax_t) ts.tv_sec, ts.tv_nsec / 1000000);
 
     long days = ts.tv_sec / SECS_IN_DAY;
     if (days > 0)
-        printf("%ld days + ", days);
+        fprintf(stderr, "%ld days + ", days);
 
-    printf("%2dh %2dm %2ds",
+    fprintf(stderr, "%2dh %2dm %2ds",
             (int) (ts.tv_sec % SECS_IN_DAY) / 3600,
             (int) (ts.tv_sec % 3600) / 60,
             (int) ts.tv_sec % 60);
-    printf(")\n");
+    fprintf(stderr, ")\n");
 
     if (clock_getres(clock, &ts) == -1) {
         perror("clock_getres");
@@ -98,7 +98,7 @@ displayClock(clockid_t clock, const char *name, bool showRes)
     }
 
     if (showRes)
-        printf("     resolution: %10jd.%09ld\n",
+        fprintf(stderr, "     resolution: %10jd.%09ld\n",
                 (intmax_t) ts.tv_sec, ts.tv_nsec);
 }
 
