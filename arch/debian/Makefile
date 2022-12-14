@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:41:50 2010                          */
-#*    Last change :  Wed Feb 12 09:20:17 2020 (serrano)                */
-#*    Copyright   :  2010-20 Manuel Serrano                            */
+#*    Last change :  Wed Dec 14 13:03:20 2022 (serrano)                */
+#*    Copyright   :  2010-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles debian specific files                  */
 #*=====================================================================*/
@@ -19,7 +19,7 @@ include ../../Makefile.config
 #*    Variables                                                        */
 #*---------------------------------------------------------------------*/
 POPULATION = Makefile makedeb.sh.in makedebremote.sh.in \
-  changelog.in control.in postinst.in rules.in README README.md
+  changelog.in control.in postinst.in rules.in README.md
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
