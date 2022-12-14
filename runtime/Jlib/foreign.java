@@ -4170,55 +4170,55 @@ public final class foreign
    
    public static void BGL_SU8VECTOR_COPY(u8vector t, int ts, u8vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
    public static void BGL_SU8VECTOR_COPY(s8vector t, int ts, s8vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
  
    
    public static void BGL_SU16VECTOR_COPY(u16vector t, int ts, u16vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
    public static void BGL_SU16VECTOR_COPY(s16vector t, int ts, s16vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
  
    public static void BGL_SU32VECTOR_COPY(u32vector t, int ts, u32vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
    public static void BGL_SU32VECTOR_COPY(s32vector t, int ts, s32vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);  
+      System.arraycopy(s.objs, ss, t.objs, ts, len);  
    }
   
    public static void BGL_SU64VECTOR_COPY(u64vector t, int ts, u64vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
    public static void BGL_SU64VECTOR_COPY(s64vector t, int ts, s64vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
     
    public static void BGL_F32VECTOR_COPY(f32vector t, int ts, f32vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
    
    public static void BGL_F64VECTOR_COPY(f64vector t, int ts, f64vector s, int ss, int se ) {
       int len = se - ss;
-      System.arrayCopy(s.obj, ss, t.obj, ts, len);
+      System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
-   
+    
    //////
    // TVECTOR
    //////
