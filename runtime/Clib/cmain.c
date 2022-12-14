@@ -45,6 +45,7 @@ extern void bgl_init_objects();
 extern obj_t bigloo_exit_apply( obj_t );
 extern void *bgl_callcc_get_top_of_stack( void * );
 extern void bgl_end_io();
+extern void GC_set_max_heap_size( long );
 extern void GC_set_all_interior_pointers( int );
 extern obj_t bgl_signal( int, obj_t );
 
@@ -146,6 +147,7 @@ _bigloo_main( int argc,
 	      int (*libinit)(int, char *[], char *[]),
 	      long uheapsize ) {
    long  mega_size;
+   long  maxheap_size;
    char *env_size;
    obj_t cons;
    long  i;
@@ -175,6 +177,10 @@ _bigloo_main( int argc,
       return 1;
    }
    heap_size = MegToByte( mega_size );
+   if( (env_size = getenv( "BIGLOOMAXHEAP" )) ) {
+      maxheap_size = atoi( env_size );
+      GC_set_max_heap_size(maxheap_size * 1024*  1024);
+   }
 #endif
 
    if( !INIT_ALLOCATION( heap_size ) ) {
