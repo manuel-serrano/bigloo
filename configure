@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  2 09:03:14 2022 (serrano)                */
+#*    Last change :  Fri Dec 16 09:50:14 2022 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -5108,6 +5108,7 @@ for file in makedeb.sh makedebremote.sh; do
   cat $deb.in \
      | sed -e "s|#!/bin/sh||" \
            -e "s|@VERSION@|$release|" \
+           -e "s|@MINOR@|$version|" \
            -e "s|@APIS@|$apis|" \
      >> $deb  
   chmod a+rx $deb
