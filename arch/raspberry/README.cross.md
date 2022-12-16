@@ -128,14 +128,14 @@ I. Add hop in the sudoers list (as "pi" user)
 J. Expand the image size
 
 ```shell[:@shell-host]
-(in host) qemu-img resize 2019-09-26-raspbian-buster-lite.qcow +16G
-(in host) cp 2019-09-26-raspbian-buster-lite.qcow 2019-09-26-raspbian-buster-lite16GB.qcow
+(in host) qemu-img resize raspios.qcow +16G
+(in host) cp raspios.qcow raspios16GB.qcow
 ```
 
 Boot qemu with a second disk
    
 ```shell[:@shell-host]
-(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -hdb 2019-09-26-raspbian-buster-lite16GB.qcow
+(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda raspios.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -hdb raspios16GB.qcow
 ```
 
 Resize the partition from guest
