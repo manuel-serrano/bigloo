@@ -1,18 +1,18 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    .../project/bigloo/bigloo/arch/debian/makedebremote.sh.in        */
+#*    .../prgm/project/bigloo/4.5a/arch/debian/makedebremote.sh.in     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Thu Jan 23 07:29:28 2020 (serrano)                */
-#*    Copyright   :  2012-20 Manuel Serrano                            */
+#*    Last change :  Fri Dec 16 09:50:55 2022 (serrano)                */
+#*    Copyright   :  2012-22 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages on a remote machine   */
 #*=====================================================================*/
 
 # configuration and variables
 version=@VERSION@
-minor=
+minor=@MINOR@
 
 user=$USER
 host=
