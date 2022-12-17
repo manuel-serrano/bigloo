@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Tue Nov 22 09:33:26 2022 (serrano)                */
+;*    Last change :  Sun Dec  4 06:38:54 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -1222,7 +1222,7 @@
 		(strncpy voff cnt)))))
 			       
    (define (read-ifd en offset)
-      (let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
+      '(let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
 		 (offset (+fx offset 2)))
 	 (if (>fx dnum 0)
 	     (begin
