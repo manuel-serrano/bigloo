@@ -1,4 +1,4 @@
-Raspberry Cross Compilation - 21 nov 2022
+Raspberry Cross Compilation - 16 Dec 2022
 =========================================
 
 This note describes how to cross compile and install Bigloo on a
@@ -39,9 +39,9 @@ As of November 22, raspios images provide no default login credentials.
 It is then necessary to build a custom image with a default login already
 configured. For that proceed as follow:
 
-A. Install an image on a regular sdcard using the Rapberry rpi-imager
+A. Install an image on a regular sdcard using the Rapberry `rpi-imager`
 tool.  After choosing the 32 bit OS, click the setting button (bottom
-right or press ctl-shift-x) to configuer a default login. 
+right or press ctl-shift-x) to configure a default login. 
 
 ```shell[:@shell-host]
 dd bs=4M if=/dev/mmcblk0 > raspios.img
@@ -101,6 +101,24 @@ or
 (in guest) sudo update-rc.d ssh enable 2
 ```
 
+On the local host, to ease the connection to the running raspios within qemu,
+it might be found useful to configure `ssh` for a fast loggin. For that
+add the following lines to the `$HOME/.ssh/config` file:
+
+```
+Host=raspios
+Hostname=localhost
+Port=2022
+User=pi
+Compression=no
+```
+
+to login:
+
+```
+slogin raspios
+```
+
 F. Create the hop user
    
 ```shell[:@shell-guest]
@@ -117,6 +135,16 @@ H. Copy personnal public key
 
 ```shell[:@shell-guest]
 (in guest) cat > ~/.ssh/authorized_keys
+```
+
+Another entry could be added to `$HOME/.ssh/config` for an even faster access:
+
+```
+Host=rpi
+Hostname=localhost
+Port=2022
+User=hop
+Compression=no
 ```
 
 I. Add hop in the sudoers list (as "pi" user)

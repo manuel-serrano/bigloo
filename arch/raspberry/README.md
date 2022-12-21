@@ -1,4 +1,4 @@
-Bigloo on Raspberry PI - 28 Mar 2021
+Bigloo on Raspberry PI - 16 Dec 2022
 ====================================
 
 The easiest way to get Bigloo running on a Raspberry PI is to compile
@@ -19,42 +19,20 @@ II. Preparing the SD card
 
 An SD with at *4GB* is required to install Linux + Bigloo.
 
-  1. Download the lastest [Raspbian] image from [Rasberrypi.org]. Normally
-     the "lite" version should be prefered.
-	 
-  2. Discover the SD card volume
-  
-```shell
-(in host) lsblk -p
-```
-     Let's assume that the SD card device is `/dev/mmcblk0`
-
-  3. Copy the image to the SD card. As of March 2020, the image is 
-  named `2020-02-13-raspbian-buster-lite.img`
-  
-```shell
-(in host) dd bs=4M if=2020-02-13-raspbian-buster-lite.img of=/dev/mmcblk0 status=progress conv=fsync
-```
-
-For extra information, see [Raspdoc].
-
-1. Download the Raspian image
-
-```shell
-(in host) https://downloads.raspberrypi.org/raspbian_lite_latest
-```
-
-2. Copy it into the SD card
-
-    (in host) sudo dd bs=4M if=2019-09-26-raspbian-buster-lite.img of=/dev/mmcblk0 status=progress conv=fsync
- 
+  1. As of November 22, raspios images provide no default login credentials.
+     It is then necessary to build a custom image with a default login already
+     configured. For that it is needed to use the `rpi-imager` tool 
+	 available at [Rasberrypi.org]. After choosing the 32 bit OS, click the 
+	 setting button (bottom right or press ctl-shift-x) to configure a 
+	 default login. In the following of this document, USER and PASSWORD 
+	 refer to the default login use here.
  
 III. Pre-Linux configuration
 ---------------------------
 
   4. Boot the (rpi) with the newly prepared SD card
   
-  5. Log as "pi", password "raspberry"
+  5. Log as "USER", password "PASSWORD"
   
   6. Expand the partition to use the whole SD card:
   
@@ -65,7 +43,7 @@ III. Pre-Linux configuration
 
   7. Reboot the device
   
-  8. Change pi password
+  8. To change USER password
   
 ```shell
 (rpi) `sudo raspi-config`, `1 Change User Password`

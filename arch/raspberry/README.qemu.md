@@ -28,28 +28,29 @@ Extra information that be found at [1].
 
 2. Download the Raspbian image
 
+As of November 22, raspios images provide no default login credentials.
+It is then necessary to build a custom image with a default login already
+configured. For that proceed as follow:
+
+Install an image on a regular sdcard using the Rapberry `rpi-imager`
+tool.  After choosing the 32 bit OS, click the setting button (bottom
+right or press ctl-shift-x) to configure a default login. 
+
 ```shell[:@shell-host]
-(in host) wget https://downloads.raspberrypi.org/raspbian_lite_latest
+dd bs=4M if=/dev/mmcblk0 > raspios.img
 ```
 
-3. Rename an unzip
+3. Expand the image size
 
 ```shell[:@shell-host]
-(in host) mv raspbian_lite_latest 2020-02-13-raspbian-buster-lite.zip
-(in host) unzip 2020-02-13-raspbian-buster-lite.zip
-```
-
-4. Expand the image size
-
-```shell[:@shell-host]
-(in host) qemu-img resize -f raw 2020-02-13-raspbian-buster-lite.img +16G
+(in host) qemu-img resize -f raw raspios.img +16G
 ```
 
 5. Alternatively (why ?) the qemu image can be converted in qcow format:
 
 ```shell[:@shell-host]
-(in host) qemu-img convert -f raw -O qcow2 2020-02-13-raspbian-buster-lite.img 2020-02-13-raspbian-buster-lite.qcow
-(in host) qemu-img resize 2020-02-13-raspbian-buster-lite.qcow +16G
+(in host) qemu-img convert -f raw -O qcow2 raspios.img raspios.qcow
+(in host) qemu-img resize raspios.qcow +16G
 ```
 
 
@@ -59,13 +60,13 @@ Extra information that be found at [1].
 1. Default executing using the raw image
 
 ```shell[:@shell-host]
-(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -drive "file=2020-02-13-raspbian-buster-lite.img,media=disk,format=raw" -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -net tap,ifname=vnet0,script=no,downscript=no
+(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -drive "file=raspios.img,media=disk,format=raw" -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -net tap,ifname=vnet0,script=no,downscript=no
 ```
 
 2. Default execution (using qcow)
 
 ```shell[:@shell-host]
-(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2020-02-13-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -net tap,ifname=vnet0,script=no,downscript=no
+(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda raspios.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -net tap,ifname=vnet0,script=no,downscript=no
 ```
 
 3. Alternative execution (without network interface) (using qcow)
@@ -73,8 +74,9 @@ Extra information that be found at [1].
 If you don't need the network interface:
 
 ```shell[:@shell-host]
-(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2020-02-13-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22
+(in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda raspios.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22
 ```
+
 
 4. Raspbian configuration
 -------------------------
@@ -153,6 +155,7 @@ Compression=no
 EOF
 ```
 
+
 5. Raspbian toolchain
 ---------------------
 
@@ -163,6 +166,7 @@ Before installing Bigloo, the following packages should be installed:
 (in guest) sudo apt dist-upgrade
 (in guest) sudo apt install -y dh-make libssl1.1 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring2 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10 alsa-utils
 ```
+
 
 6. Building Bigloo
 ------------------
@@ -177,6 +181,7 @@ Debian packages can be built using the build debian procedure
 described in `../debian/REAME.md`, section "To build the debian packages 
 on a remote machine via ssh".
 
+
 7. Misc
 -------
 
@@ -184,7 +189,7 @@ It is possible to mount the Raspbian disk of the qemu image directly
 from the host:
 
 ```shell[:@shell-host]
-(in host) export RPI_FS=$PWD/2020-02-13-raspbian-buster-lite.img
+(in host) export RPI_FS=$PWD/raspios.img
 (in host) SECTOR1=$( fdisk -l $RPI_FS | grep FAT32 | awk '{ print $2 }' )
 (in host) SECTOR2=$( fdisk -l $RPI_FS | grep Linux | awk '{ print $2 }' )
 (in host) OFFSET1=$(( SECTOR1 * 512 ))
