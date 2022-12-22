@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Dec 22 12:35:16 2022 (serrano)                */
+;*    Last change :  Thu Dec 22 15:34:00 2022 (serrano)                */
 ;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
@@ -40,7 +40,8 @@
 	       %inbufp::string
 	       (%head::long (default 0))
 	       (%tail::long (default 0))
-	       (%empty::bool (default #t)))
+	       (%empty::bool (default #t))
+	       (%started::bool (default #f)))
 
 	    (class musicportbuffer::musicbuffer
 	       (port::input-port read-only)
@@ -365,10 +366,14 @@
 			(with-access::musicstatus %status (playlistid)
 			   (onevent o 'playlist playlistid)))))
 	       ;; wait for the buffer to be full before playing
-	       (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %empty)
+	       (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %empty %started)
 		  (synchronize %bmutex
-		      (unless (and (>=fx %head %tail) (not %empty))
-			 (condition-variable-wait! %bcondv %bmutex))))
+		     (when (not %started)
+			;;(unless (and (=fx %head %tail) (not %empty))
+			(tprint "wait.1 %head=" %head " %tail=" %tail
+			   " %empty=" %empty " %started=" %started)
+			(condition-variable-wait! %bcondv %bmutex)
+			(set! %started #t))))
 	       (musicdecoder-decode d o buffer))
 	    (begin
 	       (musicbuffer-close buffer)
@@ -547,9 +552,10 @@
 ;*    musicbuffer-abort! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (musicbuffer-abort! b::musicbuffer)
-   (with-access::musicbuffer b (%bmutex %bcondv url %eof %empty)
+   (with-access::musicbuffer b (%bmutex %bcondv url %eof %empty %started)
       (synchronize %bmutex
 	 (set! %empty #t)
+	 (set! %started #f)
 	 (set! %eof #t)
 	 (condition-variable-broadcast! %bcondv))))
 
@@ -593,7 +599,7 @@
 ;*    musicbuffer-fill! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (musicbuffer-fill! buffer::musicportbuffer o::musicbuf)
-   (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %inbuf %inlen %eof %empty %seek readsz port url)
+   (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %inbuf %inlen %eof %empty %started %seek readsz port url)
       
       (define inlen %inlen)
       
@@ -610,8 +616,8 @@
 	    (if (=fx nhead inlen)
 		(set! %head 0)
 		(set! %head nhead))
-	    (when %empty
-	       ;; buffer was empty
+	    (when (and (not %started) (=fx %head 0))
+	       ;; buffer was empty but is not full
 	       (synchronize %bmutex
 		  (set! %empty #f)
 		  (condition-variable-broadcast! %bcondv)))))
@@ -635,6 +641,8 @@
 		;; buffer full
 		(synchronize %bmutex
 		   (when (and (=fx %head %tail) (not %empty))
+		      (tprint "wait.2 %head=" %head " %tail=" %tail
+			   " %empty=" %empty)
 		      (condition-variable-wait! %bcondv %bmutex)))
 		(loop))
 	       (else
@@ -656,11 +664,12 @@
 ;*    musicbuffer-fill! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (musicbuffer-fill! buffer::musicmmapbuffer o::musicbuf)
-   (with-access::musicmmapbuffer buffer (%head %empty %inbufp %eof mmap url %inlen)
+   (with-access::musicmmapbuffer buffer (%head %empty %started %inbufp %eof mmap url %inlen)
       (set! %inbufp (mmap->string mmap))
       (set! %head 0)
       (set! %eof #t)
       (set! %empty (=fx %inlen 0))
+      (set! %started #t)
       (with-access::musicbuf o (onevent)
 	 (onevent o 'loaded url))))
 
@@ -805,7 +814,7 @@
 ;*    musicbuffer-seek ::musicportbuffer ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (musicbuffer-seek buffer::musicportbuffer offset)
-   (with-access::musicportbuffer buffer (%seek port %tail %head %empty
+   (with-access::musicportbuffer buffer (%seek port %tail %head %empty %started
 					  %bmutex %bcondv %eof)
       ;; only ports that support seek have a position length
       (when (>fx (input-port-length port) 0)
@@ -813,6 +822,7 @@
 	    (synchronize %bmutex
 	       ;; mark the seek position
 	       (set! %empty #t)
+	       (set! %started #f)
 	       (set! %seek (if (llong? offset) (llong->fixnum offset) offset))
 	       (set! %head %tail)
 	       (condition-variable-broadcast! %bcondv)))
