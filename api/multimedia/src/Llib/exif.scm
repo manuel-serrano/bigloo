@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sun Nov  6 20:33:17 2022 (serrano)                */
+;*    Last change :  Sun Dec  4 06:38:54 2022 (serrano)                */
 ;*    Copyright   :  2004-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -15,7 +15,6 @@
 ;*           /-gdiplus-constant-property-item-                         */
 ;*           descriptions?redirectedfrom=MSDN                          */
 ;*=====================================================================*/
-;; 
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
@@ -683,11 +682,6 @@
 				   (else "???"))))
 			 (with-access::exif exif (metering-mode)
 			    (set! metering-mode mm))))
-		     ((#x920a)
-		      ;; TAG_FOCALLENGTH
-		      (let ((fl (getformat en bytes valptr fmt)))
-			 (with-access::exif exif (focal-length)
-			    (set! focal-length fl))))
 		     ((#x9208)
 		      ;; TAG_LIGHTSOURCE
 		      (let* ((fl (getformat/fx en bytes valptr fmt))
@@ -700,6 +694,11 @@
 			     (f (not (=fx (bit-and fl 7) 0))))
 			 (with-access::exif exif (flash)
 			    (set! flash f))))
+		     ((#x920a)
+		      ;; TAG_FOCALLENGTH
+		      (let ((fl (getformat en bytes valptr fmt)))
+			 (with-access::exif exif (focal-length)
+			    (set! focal-length fl))))
 		     ((#x9286)
 		      ;; TAG_USERCOMMENT
 		      (with-access::exif exif (%commentpos
@@ -995,7 +994,7 @@
 		      'ignored)
 		     (else
 		      ;; TAG_UNKNOWN
-		      (tprint "TAG_UNKNOWN: " (integer->string tag 16))
+		      '(tprint "TAG_UNKNOWN: " (integer->string tag 16))
 		      'unknown)))
 	       (loop (+fx de 1)))))
       (when (< (+ start 2 4 (*fx 12 dnum)) (string-length bytes))
@@ -1223,7 +1222,7 @@
 		(strncpy voff cnt)))))
 			       
    (define (read-ifd en offset)
-      (let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
+      '(let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
 		 (offset (+fx offset 2)))
 	 (if (>fx dnum 0)
 	     (begin
