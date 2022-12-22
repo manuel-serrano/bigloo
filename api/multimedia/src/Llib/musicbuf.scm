@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Apr 17 10:11:32 2021 (serrano)                */
-;*    Copyright   :  2011-21 Manuel Serrano                            */
+;*    Last change :  Thu Dec 22 12:35:16 2022 (serrano)                */
+;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
 ;*=====================================================================*/
@@ -367,7 +367,7 @@
 	       ;; wait for the buffer to be full before playing
 	       (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %empty)
 		  (synchronize %bmutex
-		      (unless (and (=fx %head %tail) (not %empty))
+		      (unless (and (>=fx %head %tail) (not %empty))
 			 (condition-variable-wait! %bcondv %bmutex))))
 	       (musicdecoder-decode d o buffer))
 	    (begin
