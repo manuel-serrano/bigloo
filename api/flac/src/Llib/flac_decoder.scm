@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Fri Mar 26 07:53:09 2021 (serrano)                */
-;*    Copyright   :  2011-21 Manuel Serrano                            */
+;*    Last change :  Thu Dec 29 09:17:54 2022 (serrano)                */
+;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC decoder                                                     */
 ;*=====================================================================*/
@@ -56,6 +56,12 @@
 	  (bigloo-debug)
 	  0)
       1))
+
+;*---------------------------------------------------------------------*/
+;*    musicbuf-debug ...                                               */
+;*---------------------------------------------------------------------*/
+(define musicbuf-debug
+   (string? (getenv "MUSICBUF_DEBUG")))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-checksum-debug ...                                          */
@@ -185,6 +191,8 @@
 			((<fx p %rate)
 			 ;; not full
 			 (synchronize %bmutex
+			    (when musicbuf-debug
+			       (tprint "bcast, decode not full " url))
 			    (condition-variable-broadcast! %bcondv))
 			 (when (and (<=fx p %last-percentage) (<fx %rate %rate-max))
 			    (set! %rate (+fx %rate 10))))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/url.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/url.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Thu Dec 14 16:09:24 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Thu Dec 29 18:00:26 2022 (serrano)                */
+;*    Copyright   :  2005-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
 ;*=====================================================================*/
@@ -316,7 +316,7 @@
 ;*    url-path-encode ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (url-path-encode str)
-   (url-path-encode/set str "# \"'`&=%?:\n^[]\\<>;,{|}()~$!+"))
+   (url-path-encode/set str "# \"'`&=%?:\n^[]\\<>;,{|}()~$!+@"))
 
 ;*---------------------------------------------------------------------*/
 ;*    uri-encode ...                                                   */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Dec 22 12:35:16 2022 (serrano)                */
+;*    Last change :  Thu Dec 29 08:44:35 2022 (serrano)                */
 ;*    Copyright   :  2011-22 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
@@ -103,6 +103,12 @@
    (if (>fx ($compiler-debug) 0)
        (bigloo-debug)
        0))
+
+;*---------------------------------------------------------------------*/
+;*    musicbuf-debug ...                                               */
+;*---------------------------------------------------------------------*/
+(define musicbuf-debug
+   (string? (getenv "MUSICBUF_DEBUG")))
 
 ;*---------------------------------------------------------------------*/
 ;*    *error-sleep-duration* ...                                       */
@@ -247,6 +253,8 @@
 	    (music-volume-set! o volume))))
    
    (define (prepare-next-buffer o buffer url::bstring)
+      (when musicbuf-debug
+	 (tprint "prepare-next-buffer " url))
       (with-handler
 	 (lambda (e)
 	    ;; ignore this error because if the URL cannot be opened
@@ -272,6 +280,8 @@
 			      buf)))))))))
    
    (define (open-port-buffer o::musicbuf d::musicdecoder url::bstring next::pair-nil)
+      (when musicbuf-debug
+	 (tprint "open-port-buffer " url))
       (let ((ip (open-file url o)))
 	 (if (input-port? ip)
 	     (with-access::musicbuf o (inbuf %buffer mkthread)
@@ -322,8 +332,8 @@
       (with-access::musicbuf o (%amutex %nextbuffer)
 	 (synchronize %amutex
 	    (when (isa? %nextbuffer musicportbuffer)
-	       (with-access::musicportbuffer %nextbuffer ((u url) %nexttail %tail)
-		  (if (eq? u url)
+	       (with-access::musicportbuffer %nextbuffer ((nexturl url) %nexttail %tail)
+		  (if (eq? nexturl url)
 		      (let ((buf %nextbuffer))
 			 (set! %tail %nexttail)
 			 (set! %nextbuffer #f)
@@ -349,33 +359,38 @@
 	 (sleep *error-sleep-duration*)))
    
    (define (play-url o::musicbuf d::musicdecoder n::int urls::pair pid::int notify::bool)
-      (let ((buffer (open-buffer o d urls)))
-	 (unwind-protect
-	    (begin
-	       (musicdecoder-reset! d)
-	       (with-access::musicbuf o (%amutex %!pid %buffer %decoder %usecnt)
-		  (synchronize %amutex
-		     (set! %buffer buffer)
-		     (set! %decoder d)
-		     (set! %!pid pid)
-		     (set! %usecnt (+fx 1 %usecnt))
-		     (update-song-status! o n pid (car urls)))
-		  (when notify
-		     (with-access::musicbuf o (%status onevent)
-			(with-access::musicstatus %status (playlistid)
-			   (onevent o 'playlist playlistid)))))
-	       ;; wait for the buffer to be full before playing
-	       (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %empty)
-		  (synchronize %bmutex
-		      (unless (and (>=fx %head %tail) (not %empty))
-			 (condition-variable-wait! %bcondv %bmutex))))
-	       (musicdecoder-decode d o buffer))
-	    (begin
-	       (musicbuffer-close buffer)
-	       (with-access::musicbuf o (%amutex %acondv %usecnt)
-		  (synchronize %amutex
-		     (set! %usecnt (-fx %usecnt 1))
-		     (condition-variable-broadcast! %acondv)))))))
+      (when musicbuf-debug
+	 (tprint "play-url " (car urls)))
+      (let ((%%url-tbr (car urls)))
+	 (let ((buffer (open-buffer o d urls)))
+	    (unwind-protect
+	       (begin
+		  (musicdecoder-reset! d)
+		  (with-access::musicbuf o (%amutex %!pid %buffer %decoder %usecnt)
+		     (synchronize %amutex
+			(set! %buffer buffer)
+			(set! %decoder d)
+			(set! %!pid pid)
+			(set! %usecnt (+fx 1 %usecnt))
+			(update-song-status! o n pid (car urls)))
+		     (when notify
+			(with-access::musicbuf o (%status onevent)
+			   (with-access::musicstatus %status (playlistid)
+			      (onevent o 'playlist playlistid)))))
+		  ;; wait for the buffer to be full before playing
+		  (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %empty)
+		     (synchronize %bmutex
+			(when %empty
+			   (when musicbuf-debug
+			      (tprint "waiting empty..." %head " " %tail " " %%url-tbr))
+			   (condition-variable-wait! %bcondv %bmutex))))
+		  (musicdecoder-decode d o buffer))
+	       (begin
+		  (musicbuffer-close buffer)
+		  (with-access::musicbuf o (%amutex %acondv %usecnt)
+		     (synchronize %amutex
+			(set! %usecnt (-fx %usecnt 1))
+			(condition-variable-broadcast! %acondv))))))))
    
    (define (play-urls urls n)
       (with-access::musicbuf o (%amutex %!pid %decoder %status)
@@ -551,6 +566,8 @@
       (synchronize %bmutex
 	 (set! %empty #t)
 	 (set! %eof #t)
+	 (when musicbuf-debug
+	    (tprint "bcast musicbuffer-abort! " url))
 	 (condition-variable-broadcast! %bcondv))))
 
 ;*---------------------------------------------------------------------*/
@@ -595,7 +612,9 @@
 (define-method (musicbuffer-fill! buffer::musicportbuffer o::musicbuf)
    (with-access::musicportbuffer buffer (%bmutex %bcondv %head %tail %inbuf %inlen %eof %empty %seek readsz port url)
       
-      (define inlen %inlen)
+      (define %inlen
+	 ;; %inlen is a constant so read it once
+	 (with-access::musicportbuffer buffer (%inlen) %inlen))
       
       (define (timed-read sz)
 	 (read-fill-string! %inbuf %head sz port))
@@ -603,24 +622,28 @@
       (define (set-eof!)
 	 (synchronize %bmutex
 	    (set! %eof #t)
+	    (when musicbuf-debug
+	       (tprint "bcast set-eof! " url))
 	    (condition-variable-broadcast! %bcondv)))
       
       (define (inc-head! i)
 	 (let ((nhead (+fx %head i)))
-	    (if (=fx nhead inlen)
+	    (if (=fx nhead %inlen)
 		(set! %head 0)
 		(set! %head nhead))
-	    (when %empty
+	    (when (and %empty (=fx %head %tail))
 	       ;; buffer was empty
 	       (synchronize %bmutex
 		  (set! %empty #f)
+		  (when musicbuf-debug
+		     (tprint "bcast inc-head! " url))
 		  (condition-variable-broadcast! %bcondv)))))
       
       (with-handler
 	 (lambda (e)
 	    (when (>=fx (musicbuffer-debug) 1) (exception-notify e))
 	    (set-eof!)
-	    (music-error-set! o e))
+	    (music-error-set! o e)) 
 	 (let loop ()
 	    (cond
 	       (%eof
@@ -635,13 +658,15 @@
 		;; buffer full
 		(synchronize %bmutex
 		   (when (and (=fx %head %tail) (not %empty))
+		      (when musicbuf-debug
+			 (tprint "waiting full..." %head " " %tail " " url))
 		      (condition-variable-wait! %bcondv %bmutex)))
 		(loop))
 	       (else
 		(let* ((s (minfx readsz
 			     (if (<fx %head %tail)
 				 (-fx %tail %head)
-				 (-fx inlen %head))))
+				 (-fx %inlen %head))))
 		       (i (timed-read s)))
 		   (cond
 		      ((eof-object? i)
@@ -660,7 +685,7 @@
       (set! %inbufp (mmap->string mmap))
       (set! %head 0)
       (set! %eof #t)
-      (set! %empty (=fx %inlen 0))
+      (set! %empty #f)
       (with-access::musicbuf o (onevent)
 	 (onevent o 'loaded url))))
 
@@ -815,6 +840,8 @@
 	       (set! %empty #t)
 	       (set! %seek (if (llong? offset) (llong->fixnum offset) offset))
 	       (set! %head %tail)
+	       (when musicbuf-debug
+		  (tprint "bcast seek"))
 	       (condition-variable-broadcast! %bcondv)))
 	 ;; the seek succeeded
 	 #t)))
