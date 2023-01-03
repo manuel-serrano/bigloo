@@ -51,12 +51,14 @@
 	    (macro c-socket-output::output-port (::socket) "SOCKET_OUTPUT")
 	    (c-socket-startup::void () "socket_startup")
 	    (c-socket-cleanup::void () "socket_cleanup")
-	    ($make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring)
+	    ($make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring ::symbol)
 					 "bgl_make_client_socket")
-	    ($make-unix-socket::socket (::bstring ::int ::bstring ::bstring)
-					 "bgl_make_unix_socket")
-	    ($make-server-socket::socket (::obj ::int ::int ::bool)
+	    ($make-client-unix-socket::socket (::bstring ::int ::bstring ::bstring)
+					 "bgl_make_client_unix_socket")
+	    ($make-server-socket::socket (::obj ::int ::int ::obj)
 					 "bgl_make_server_socket")
+            ($make-server-unix-socket::socket (::bstring ::int)
+                                         "bgl_make_server_unix_socket")
 	    ($socket-accept::obj (::socket ::bool ::bstring ::bstring)
 				 "bgl_socket_accept")
 	    ($socket-accept-many::long (::socket ::bool ::vector ::vector ::vector)
@@ -93,12 +95,12 @@
 		   "BGL_DATAGRAM_SOCKET_SERVERP")
 	    (macro $datagram-socket-client?::bool (::obj)
 		   "BGL_DATAGRAM_SOCKET_CLIENTP")
-	    ($make-datagram-server-socket::datagram-socket (::int)
+	    ($make-datagram-server-socket::datagram-socket (::int ::symbol)
 	       "bgl_make_datagram_server_socket")
 	    ($make-datagram-unbound-socket::datagram-socket (::symbol)
 	       "bgl_make_datagram_unbound_socket")
 
-	    ($make-datagram-client-socket::datagram-socket (::bstring ::int ::bool)
+	    ($make-datagram-client-socket::datagram-socket (::bstring ::int ::bool ::symbol)
 	       "bgl_make_datagram_client_socket")
 	    (macro $datagram-socket-hostname::obj (::datagram-socket)
 		   "BGL_DATAGRAM_SOCKET_HOSTNAME")
@@ -118,9 +120,9 @@
    (java    (class foreign
 	       (method static c-socket?::bool (::obj)
 		  "SOCKETP")
-	       (method static $make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring)
+	       (method static $make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring ::symbol)
 		  "bgl_make_client_socket")
-	       (method static $make-server-socket::socket (::obj ::int ::int ::bool)
+	       (method static $make-server-socket::socket (::obj ::int ::int ::symbol)
 		  "bgl_make_server_socket")
 	       
 	       (method static c-socket-hostname::obj (::socket)
@@ -178,11 +180,11 @@
 		  "BGL_DATAGRAM_SOCKET_SERVERP")
 	       (method static $datagram-socket-client?::bool (::obj)
 		   "BGL_DATAGRAM_SOCKET_CLIENTP")
-	       (method static $make-datagram-server-socket::datagram-socket (::int)
+	       (method static $make-datagram-server-socket::datagram-socket (::int ::symbol)
 		  "bgl_make_datagram_server_socket")
 	       (method static $make-datagram-unbound-socket::datagram-socket (::symbol)
 		  "bgl_make_datagram_unbound_socket")
-	       (method static $make-datagram-client-socket::datagram-socket (::bstring ::int ::bool)
+	       (method static $make-datagram-client-socket::datagram-socket (::bstring ::int ::bool ::symbol)
 		  "bgl_make_datagram_client_socket")
 	       (method static $datagram-socket-hostname::obj (::datagram-socket)
 		  "BGL_DATAGRAM_SOCKET_HOSTNAME")
@@ -224,7 +226,7 @@
 					(inbuf #t) (outbuf #t)
 					(timeout 0))
 	    (make-server-socket::socket #!optional (port 0)
-					#!key (name #f) (backlog 5) (ipv6 #f))
+					#!key (name #f) (backlog 5) (domain 'inet))
 	    (socket-accept::obj ::socket #!key (inbuf #t) (outbuf #t) (errp #t))
 	    (socket-accept-many::obj ::socket ::vector
 				     #!key (inbufs #t) (outbufs #t) (errp #t))
@@ -242,9 +244,9 @@
 	    (inline datagram-socket?::bool ::obj)
 	    (inline datagram-socket-server?::bool ::obj)
 	    (inline datagram-socket-client?::bool ::obj)
-	    (inline make-datagram-server-socket::datagram-socket #!optional (port 0))
-	    (inline make-datagram-unbound-socket::datagram-socket #!optional (family::symbol 'inet))
-	    (inline make-datagram-client-socket::datagram-socket ::bstring ::int #!optional broadcast)
+	    (inline make-datagram-server-socket::datagram-socket #!optional (port 0) (domain 'inet))
+	    (inline make-datagram-unbound-socket::datagram-socket #!optional (domain::symbol 'inet))
+	    (inline make-datagram-client-socket::datagram-socket ::bstring ::int #!optional broadcast (domain::symbol 'inet))
 	    (inline datagram-socket-hostname::obj ::datagram-socket)
 	    (inline datagram-socket-host-address::obj ::datagram-socket)
 	    (inline datagram-socket-port-number::bint ::datagram-socket)
@@ -382,11 +384,11 @@
    (let ((inbuf (get-port-buffer "make-client-socket" inbuf 512))
 	 (outbuf (get-port-buffer "make-client-socket" outbuf 1024)))
       (case domain
-	 ((inet)
-	  ($make-client-socket host port timeout inbuf outbuf))
+	 ((inet inet6 unspec)
+	  ($make-client-socket host port timeout inbuf outbuf domain))
 	 ((unix local)
 	  (cond-expand
-	     (bigloo-c ($make-unix-socket host timeout inbuf outbuf))
+	     (bigloo-c ($make-client-unix-socket host timeout inbuf outbuf))
 	     (else (error "make-client-socket" "Unsupported domain" domain))))
 	 (else
 	  (error "make-client-socket" "Unknown socket domain" domain)))))
@@ -394,9 +396,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-server-socket ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (make-server-socket::socket #!optional (port 0) #!key (name #f) (backlog 5) (ipv6 #f))
+(define (make-server-socket::socket #!optional (port 0) #!key (name #f) (backlog 5) (domain 'inet))
    (%socket-init!)
-   ($make-server-socket name port backlog ipv6))
+   (case domain
+      ((inet inet6)
+       ($make-server-socket name port backlog domain))
+      ((unix local)
+       (cond-expand
+          (bigloo-c ($make-server-unix-socket name backlog))
+          (else
+           (error "make-server-socket" "Unsupported domain" domain))))
+      (else
+       (error "make-server-socket" "Unsupported domain" domain))))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-accept ...                                                */
@@ -591,23 +602,35 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-server-socket ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-datagram-server-socket #!optional (port 0))
+(define-inline (make-datagram-server-socket #!optional (port 0) (domain 'inet))
    (%socket-init!)
-   ($make-datagram-server-socket port))
+   (case domain
+      ((inet inet6)
+       ($make-datagram-server-socket port domain))
+      (else
+       (error "make-datagram-server-socket" "Unsupported domain" domain))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-unbound-socket ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-datagram-unbound-socket #!optional (family::symbol 'inet))
-   (%socket-init!) 
-   ($make-datagram-unbound-socket family))
+(define-inline (make-datagram-unbound-socket #!optional (domain::symbol 'inet))
+   (%socket-init!)
+   (case domain
+      ((inet inet6)
+       ($make-datagram-unbound-socket domain))
+      (else
+       (error "make-datagram-unbound-socket" "Unsupported domain" domain))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-client-socket ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-datagram-client-socket hostname port #!optional broadcast)
+(define-inline (make-datagram-client-socket hostname port #!optional broadcast (domain::symbol 'inet))
    (%socket-init!)
-   ($make-datagram-client-socket hostname port broadcast))
+   (case domain
+      ((inet inet6 unspec)
+       ($make-datagram-client-socket hostname port broadcast domain))
+      (else
+       (error "make-datagram-client-socket" "Unsupported domain" domain))))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-close ...                                        */

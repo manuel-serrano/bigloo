@@ -656,8 +656,8 @@ BGL_RUNTIME_DEF obj_t
 bgl_make_ssl_client_socket( obj_t hostname, int port, int ms, 
                             int protocol, obj_t cert, obj_t pkey,
                             obj_t ca_list, obj_t accepted_certs,
-			    obj_t inbuf, obj_t outbuf ) {
-   obj_t sock = bgl_make_client_socket( hostname, port, ms, inbuf, outbuf );
+			    obj_t inbuf, obj_t outbuf, obj_t domain ) {
+  obj_t sock = bgl_make_client_socket( hostname, port, ms, inbuf, outbuf, domain );
    
    return bgl_client_socket_use_ssl( sock,
 				     protocol, cert, pkey,
@@ -701,8 +701,8 @@ socket_server_enable_ssl( obj_t serv, obj_t s ) {
 BGL_RUNTIME_DEF obj_t
 bgl_make_ssl_server_socket( obj_t hostname, int port, int protocol, 
                             obj_t cert, obj_t pkey, obj_t ca_list,
-                            obj_t accepted_certs, int backlog, bool_t ipv6 ) {
-   obj_t serv = bgl_make_server_socket( hostname, port, backlog, ipv6 );
+                            obj_t accepted_certs, int backlog, obj_t domain ) {
+   obj_t serv = bgl_make_server_socket( hostname, port, backlog, domain );
    obj_t data = BNIL;
    /* data is (proto cert pkey ca_list acceptedcerts) */
    data = MAKE_PAIR( accepted_certs, data );

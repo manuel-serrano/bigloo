@@ -46,7 +46,7 @@ Returns @code{#t} if an only if obj is a SSL socket (either client or server).
 Returns @code{#f} otherwise.
 @end deffn
 
-@deffn {SSL library procedure} make-ssl-client-socket hostname port-number #!key (buffer #t) (timeout 0) (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f)
+@deffn {SSL library procedure} make-ssl-client-socket hostname port-number #!key (buffer #t) (timeout 0) (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f) (domain 'inet)
 @cindex unbufferized socket port
 
 @code{make-ssl-client-socket} returns a new client socket object. This
@@ -104,6 +104,15 @@ If @var{accepted-certs} is a list, the peer (server) certificate must
 match one of the given certificates. Otherwise, an @code{&io-error} 
 will be raised.
 
+The optional @var{domain} argument specifies the protocol used by the socket.
+The supported domains are:
+
+@itemize @bullet
+@item @code{inet}: IPv4 Internet protocols.
+@item @code{inet6}: IPv6 Internet protocols.
+@item @code{unspec}: uses IPv4 or IPv6 as determined by getaddrinfo.
+@end itemize
+
 If the connection cannot be established, an @code{&io-error} is raised
 (see @ref{Errors Assertions and Traces}).
 
@@ -143,7 +152,7 @@ Returns an SSL socket built from a socket obtained by @code{make-client-socket}
 returned socket may or may not be @code{eq?} to @var{socket}.
 @end deffn
 
-@deffn {SSL library procedure} make-ssl-server-socket #!key (port 0) (name #f) (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f)
+@deffn {SSL library procedure} make-ssl-server-socket #!key (port 0) (name #f) (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f) (domain 'inet)
 @cindex unbufferized socket port
 
 @code{make-ssl-server-socket} returns a new server socket object which
@@ -198,6 +207,14 @@ certificate is accepted (aside from eventual certificate validation).
 If @var{accepted-certs} is a list, the peer (client) certificate must
 match one of the given certificates. Otherwise, an @code{&io-error} 
 will be raised when accepting the client socket.
+
+The optional @var{domain} argument specifies the protocol used by the socket.
+The supported domains are:
+
+@itemize @bullet
+@item @code{inet}: IPv4 Internet protocols.
+@item @code{inet6}: IPv6 Internet protocols.
+@end itemize
 
 If the connection cannot be established, an @code{&io-error} is raised
 (see @ref{Errors Assertions and Traces}).

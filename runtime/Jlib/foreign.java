@@ -5917,7 +5917,8 @@ public final class foreign
 						int port,
 						int timeo,
 						byte[] inbuf,
-						byte[] outbuf )
+						byte[] outbuf,
+                                                symbol family)
       {
 	 return new client_socket(hostname, port, inbuf, outbuf );
       }
@@ -5925,7 +5926,7 @@ public final class foreign
    public static socket bgl_make_server_socket(Object name,
 					       int port,
 					       int backlog,
-					       boolean ipv6)
+					       symbol family)
       {
 	 return new server_socket(name, port);
       }
@@ -6038,12 +6039,14 @@ public final class foreign
 
    public static datagram_socket bgl_make_datagram_client_socket( byte[] hostname,
 								  int port,
-								  boolean bcast ) {
-      return new datagram_client_socket( hostname, port, bcast );
+								  boolean bcast,
+                                                                  symbol family ) {
+       return new datagram_client_socket( hostname, port, bcast, family );
    }
 
-   public static datagram_socket bgl_make_datagram_server_socket( int port ) {
-      return new datagram_server_socket( port );
+   public static datagram_socket bgl_make_datagram_server_socket( int port,
+                                                                  symbol family ) {
+       return new datagram_server_socket( port, family );
    }
 
    public static datagram_socket bgl_make_datagram_unbound_socket( symbol family ) {

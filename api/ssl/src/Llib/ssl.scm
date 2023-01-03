@@ -77,13 +77,13 @@
 	   ($ssl-socket?::bool (::obj) "bgl_ssl_socketp")
 	   ($ssl-client-make-socket::obj (::bstring ::int ::int ::int
 					    ::obj ::obj ::pair-nil
-					    ::obj ::bstring ::bstring)
+					    ::obj ::bstring ::bstring ::symbol)
 	      "bgl_make_ssl_client_socket")
 	   ($ssl-client-socket-use-ssl!::socket (::socket ::int ::obj ::obj
 						   ::pair-nil ::obj)
 	      "bgl_client_socket_use_ssl")
 	   ($ssl-server-make-socket::obj (::obj ::int ::int ::obj ::obj
-					    ::pair-nil ::obj ::int ::bool)
+					    ::pair-nil ::obj ::int ::symbol)
 	      "bgl_make_ssl_server_socket")
 
 	   ($bgl-secure-context-init!::obj (::secure-context)
@@ -273,7 +273,7 @@
       
       (class $ssl-client
 	 (constructor make-socket (::bstring ::int ::int ::int ::obj ::obj
-				     ::pair-nil ::obj ::bstring ::bstring))
+				     ::pair-nil ::obj ::bstring ::bstring ::symbol))
 	 (method static socket-use-ssl!::socket (::socket ::int ::obj ::obj
 						   ::pair-nil ::obj)
 	    "bgl_client_socket_use_ssl")
@@ -291,7 +291,7 @@
       
       (class $ssl-server
 	 (constructor make-socket (::obj ::int ::int ::obj ::obj
-				     ::pair-nil ::obj ::int ::bool))
+				     ::pair-nil ::obj ::int ::symbol))
 	 (method static socket?::bool (::obj)
 	    "bgl_ssl_server_socketp")
 	 "bigloo.ssl.ssl_server_socket"))
@@ -325,7 +325,8 @@
 	      (inbuf #t) (outbuf #t)
 	      (timeout 0) (protocol 'sslv23)
 	      (cert #f) (pkey #f)
-	      (CAs '()) (accepted-certs #f))
+	      (CAs '()) (accepted-certs #f)
+              (domain 'inet))
 	   
 	   (client-socket-use-ssl! ::socket
 	      #!key
@@ -338,7 +339,7 @@
 	      (name #f) (protocol 'sslv23)
 	      (cert #f) (pkey #f)
 	      (CAs '()) (accepted-certs #f)
-	      (backlog 5) (ipv6 #f))
+	      (backlog 5) (domain 'inet))
 	   
 	   (%make-certificate::obj ::$certificate)
 	   (%make-private-key::obj ::$private-key)
@@ -583,7 +584,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sanity-args-checks ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (sanity-args-checks func cert pkey CAs accepted-certs)
+(define (sanity-args-checks func cert pkey CAs accepted-certs domain)
    (unless (or (not cert) (isa? cert certificate))
       (error func "Invalid certificate" cert))
    (unless (or (not pkey) (isa? pkey private-key))
@@ -598,7 +599,13 @@
 	   (and (isa? pkey private-key) (not (isa? cert certificate))))
        (error func
 	      "pkey and cert must be both #f or both set"
-	      (list pkey cert))))
+	      (list pkey cert)))
+   (when (and (eq? func 'make-ssl-client-socket)
+              (not (memq domain '(inet inet6 unspec))))
+      (error func "Unsupported domain" domain))
+   (when (and (eq? func 'make-ssl-server-socket)
+              (not (memq domain '(inet inet6))))
+      (error func "Unsupported domain" domain)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-ssl-client-socket ...                                       */
@@ -609,8 +616,9 @@
 	   (timeout 0)
 	   (protocol 'sslv23)
 	   (cert #f) (pkey #f)
-	   (CAs '()) (accepted-certs #f))
-   (sanity-args-checks 'make-ssl-client-socket cert pkey CAs accepted-certs)
+	   (CAs '()) (accepted-certs #f)
+           (domain 'inet))
+   (sanity-args-checks 'make-ssl-client-socket cert pkey CAs accepted-certs domain)
    (%socket-init!)
    ($ssl-client-make-socket hostname port timeout
       (ssl-protocols->integer protocol)
@@ -621,7 +629,8 @@
 	 c-default-io-bufsiz)
       (get-port-buffer 'make-ssl-client-socket
 	 outbuf
-	 c-default-io-bufsiz)))
+	 c-default-io-bufsiz)
+      domain))
 
 ;*---------------------------------------------------------------------*/
 ;*    client-socket-use-ssl! ...                                       */
@@ -630,7 +639,7 @@
 	   (protocol 'sslv23)
 	   (cert #f) (pkey #f)
 	   (CAs '()) (accepted-certs #f))
-   (sanity-args-checks 'client-socket-use-ssl! cert pkey CAs accepted-certs)
+   (sanity-args-checks 'client-socket-use-ssl! cert pkey CAs accepted-certs 'unspec)
    (%socket-init!)
    ($ssl-client-socket-use-ssl! s
       (ssl-protocols->integer protocol)
@@ -653,12 +662,12 @@
 	   (cert #f) (pkey #f)
 	   (CAs '()) (accepted-certs #f)
 	   (backlog 5)
-	   (ipv6 #f))
-   (sanity-args-checks 'make-ssl-server-socket cert pkey CAs accepted-certs)
+	   (domain 'inet))
+   (sanity-args-checks 'make-ssl-server-socket cert pkey CAs accepted-certs domain)
    (%socket-init!)
    ($ssl-server-make-socket name port (ssl-protocols->integer protocol)
       cert pkey
-      CAs accepted-certs backlog ipv6))
+      CAs accepted-certs backlog domain))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-protocols->integer ...                                       */
