@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/R5rs/syntax.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/R5rs/syntax.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Sun Nov 18 14:00:36 2012 (serrano)                */
-;*    Copyright   :  2002-12 Dorai Sitaram, Manuel Serrano             */
+;*    Last change :  Tue Jan  3 15:57:15 2023 (serrano)                */
+;*    Copyright   :  2002-23 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
 ;*    -------------------------------------------------------------    */
@@ -41,7 +41,10 @@
 	    __evenv
 	    __macro)
 
-   (import  __r4_output_6_10_3 __r4_numbers_6_5 __r4_ports_6_10_1 __r4_numbers_6_5_flonum_dtoa)
+   (import  __r4_output_6_10_3
+	    __r4_numbers_6_5
+	    __r4_ports_6_10_1
+	    __r4_numbers_6_5_flonum_dtoa)
 
    (export  (install-syntax-expander ::symbol ::procedure)
 	    (syntax-rules->expander ::symbol ::pair-nil ::pair-nil)
@@ -472,6 +475,16 @@
 ;*    hygiene-value ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (hygiene-value x)
+   ;; new version proposed by Joe Donaldson, 3 Jan 2023
+   (if (not (symbol? x))
+       x
+       (let ((s (symbol->string x)))
+	  (let loop ((s s))
+             (if (substring-at? s hygiene-prefix 0)
+                 (loop (substring s hygiene-prefix-len (string-length s)))
+                 (string->symbol s))))))
+
+(define (hygiene-value-TBR3jan2023 x)
    (if (not (symbol? x))
        x
        (let ((s (symbol->string x)))
