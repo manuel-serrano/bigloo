@@ -4,9 +4,9 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec 16 09:50:14 2022 (serrano)                */
+#*    Last change :  Wed Jan  4 07:38:16 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
-#*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -446,7 +446,7 @@ pcre2src=$PCRE2SRC
 pcre2configureopt=
 
 if [ "$pcre2src " = " " ]; then
-  pcre2version=10.36
+  pcre2version=10.42
   pcre2src=pcre2/pcre2-$pcre2version.tgz
 fi  
 
