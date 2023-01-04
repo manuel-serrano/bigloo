@@ -28,10 +28,14 @@ public class datagram_client_socket extends datagram_socket {
    
    public datagram_client_socket( final byte[] hostname,
 				  final int port,
-				  final boolean broadcast ) {
+				  final boolean broadcast,
+                                  final symbol family) {
       super();
 
       try {
+          // FIXME
+          // java provides no way to force the address family
+          // at runtime, so we ignore for now.
 	 ip = InetAddress.getByName( new String( hostname ) );
 	 
 	 socket = new DatagramSocket();

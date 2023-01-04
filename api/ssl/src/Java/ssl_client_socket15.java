@@ -39,7 +39,8 @@ public class ssl_client_socket extends client_socket {
 			    Object caList,
 			    Object acceptedCerts,
 			    byte[] inbuf,
-			    byte[] outbuf ) {
+			    byte[] outbuf,
+                            symbol domain) {
       super();
       
       try {
