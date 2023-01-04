@@ -68,7 +68,7 @@
 ;*    get-syntax-expander ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (get-syntax-expander f)
-   (let* ((id (hygiene-value f))
+   (let* ((id (hygiene-value* f))
 	  (c (synchronize syntax-mutex (assq id syntaxes))))
       (when (pair? c)
 	 (cdr c))))
@@ -472,10 +472,11 @@
       (substring-at? s hygiene-prefix 0)))
    
 ;*---------------------------------------------------------------------*/
-;*    hygiene-value ...                                                */
+;*    hygiene-value* ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (hygiene-value x)
-   ;; new version proposed by Joe Donaldson, 3 Jan 2023
+(define (hygiene-value* x)
+   ;; remove all hygiene mark prefixes. This is only required for
+   ;; obtaining the id used when looking up syntax-rules macros.
    (if (not (symbol? x))
        x
        (let ((s (symbol->string x)))
@@ -484,7 +485,10 @@
                  (loop (substring s hygiene-prefix-len (string-length s)))
                  (string->symbol s))))))
 
-(define (hygiene-value-TBR3jan2023 x)
+;*---------------------------------------------------------------------*/
+;*    hygiene-value ...                                                */
+;*---------------------------------------------------------------------*/
+(define (hygiene-value x)
    (if (not (symbol? x))
        x
        (let ((s (symbol->string x)))
