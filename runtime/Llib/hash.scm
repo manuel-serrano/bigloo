@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Tue Jun 21 08:51:03 2022 (serrano)                */
+;*    Last change :  Tue Jan 10 16:27:12 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -151,6 +151,9 @@
 (define default-hashtable-bucket-length 128)
 (define default-max-bucket-length 10)
 
+(define (OPEN-STRING-HASHTABLE-THRESHOLD)
+   (*fx 8 (*fx 1024 1024)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    make-hashtable ...                                               */
 ;*---------------------------------------------------------------------*/
@@ -767,7 +770,9 @@
 		;; replace
 		(vector-set! buckets (+fx off3 1) val)
 		(vector-set! buckets (+fx off3 2) hash))
-	       ((>=fx i 5)
+	       ((and (>=fx i 5)
+		     (<fx (%hashtable-max-bucket-len t)
+			(OPEN-STRING-HASHTABLE-THRESHOLD)))
 		;; too long sequence
 		(open-string-hashtable-rehash! t)
 		(open-string-hashtable-put/hash! t key val hash))
