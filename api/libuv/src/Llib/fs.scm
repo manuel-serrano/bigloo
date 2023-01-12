@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Nov 11 07:11:05 2022 (serrano)                */
-;*    Copyright   :  2014-22 Manuel Serrano                            */
+;*    Last change :  Wed Jan 11 16:24:33 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
 ;*=====================================================================*/
@@ -22,8 +22,10 @@
    (export  (inline UV_FS_COPYFILE_EXCL::int)
 	    (inline UV_FS_COPYFILE_FICLONE::int)
 	    (inline UV_FS_COPYFILE_FICLONE_FORCE::int)
-	    
+
+	    (inline uv-fs-stat-cb-vector-props::vector)
             (inline uv-fs-dup::int ::int)
+	    
 	    (uv-fs-rename::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-ftruncate::int ::UvFile ::int64
@@ -45,7 +47,7 @@
 	    (uv-fs-stat ::bstring
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-lstat ::bstring
-	       #!key callback (loop (uv-default-loop)))
+	       #!key callback vector (loop (uv-default-loop)))
 	    (uv-fs-link::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-symlink::int ::bstring ::bstring
@@ -123,6 +125,15 @@
 ;* 	  (error "uv-open-input-file" "wrong callback arity" callback)) */
 ;* 	 (else                                                         */
 ;* 	  ($uv-open-input-file name buf callback)))))                  */
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-stat-cb-vector-props ...                                   */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-fs-stat-cb-vector-props)
+   '#("ctime" "mtime" "atime" "birthtime"
+      "flags" "blocks" "blksize" "size"
+      "ino" "rdev" "gid" "uid" "nlink"
+      "mode" "dev"))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-dup ...                                                    */
@@ -295,8 +306,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-lstat ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-lstat path::bstring #!key callback (loop (uv-default-loop)))
-   ($uv-fs-lstat path callback loop))
+(define (uv-fs-lstat path::bstring #!key callback vector (loop (uv-default-loop)))
+   ($uv-fs-lstat path callback vector loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-stat ...                                                   */

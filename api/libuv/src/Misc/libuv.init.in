@@ -4,8 +4,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Fri Nov  1 09:21:10 2019 (serrano)                */
-;*    Copyright   :  2001-19 Manuel Serrano                            */
+;*    Last change :  Wed Jan 11 17:00:45 2023 (serrano)                */
+;*    Copyright   :  2001-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The LIBUV init file.                                             */
 ;*=====================================================================*/
@@ -14,7 +14,7 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'libuv
-   :srfi '(libuv)
+   :srfi '(libuv libuv-vec)
    :basename "bigloolibuv"
    :module-init '__libuv_loop
    :module-eval '__libuv_makelib)

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Nov 11 07:28:46 2022 (serrano)                */
-/*    Copyright   :  2014-22 Manuel Serrano                            */
+/*    Last change :  Wed Jan 11 15:38:00 2023 (serrano)                */
+/*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
 /*=====================================================================*/
@@ -78,6 +78,51 @@ gc_unmark(obj_t obj) {
    BGL_MUTEX_LOCK(bgl_uv_mutex);
    gc_marks = bgl_remq(obj, gc_marks);
    BGL_MUTEX_UNLOCK(bgl_uv_mutex);
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_fs_pools ...                                                  */
+/*---------------------------------------------------------------------*/
+static uv_fs_t **uv_fs_req_pool = 0L;
+static obj_t *uv_fs_obj_pool = 0L;
+static long uv_fs_req_idx = 0;
+static long uv_fs_pool_size = 0;
+
+/*---------------------------------------------------------------------*/
+/*    uv_fs_t *                                                        */
+/*    get_uv_fs_t ...                                                  */
+/*---------------------------------------------------------------------*/
+uv_fs_t *
+alloc_uv_fs_t() {
+   uv_fs_t *res;
+   
+   BGL_MUTEX_LOCK(bgl_uv_mutex);
+   if (uv_fs_req_idx == uv_fs_pool_size) {
+      uv_fs_pool_size += 10;
+
+      uv_fs_req_pool = malloc(sizeof(uv_fs_t *) * uv_fs_pool_size);
+      uv_fs_obj_pool = (obj_t *)GC_REALLOC((obj_t)uv_fs_obj_pool, sizeof(obj_t) * uv_fs_pool_size);
+
+      for (long i = uv_fs_req_idx; i < uv_fs_pool_size; i++) {
+	 uv_fs_req_pool[i] = (uv_fs_t *)malloc(sizeof(uv_fs_t));
+	 uv_fs_req_pool[i]->data = (void *)i;
+      }
+   }
+
+   res = uv_fs_req_pool[uv_fs_req_idx++];
+   BGL_MUTEX_UNLOCK(bgl_uv_mutex);
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    free_uv_fs_t ...                                                 */
+/*---------------------------------------------------------------------*/
+void
+free_uv_fs_t(uv_fs_t *req) {
+   uv_fs_obj_pool[(long)(req->data)] = BUNSPEC;
+   uv_fs_req_pool[--uv_fs_req_idx] = req;
+   uv_fs_req_cleanup(req);
 }
 
 /*---------------------------------------------------------------------*/
@@ -717,7 +762,7 @@ uv_init_stat() {
       _ctime = string_to_symbol("ctime");
    }
 }
-   
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_uv_fstat ...                                                 */
@@ -778,6 +823,51 @@ bgl_uv_fstat(uv_stat_t buf) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_fstat_vec ...                                             */
+/*    -------------------------------------------------------------    */
+/*    Fill the vector passed as argument with the stat values. The     */
+/*    vector must be _at least_ as large to store all values.          */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_fstat_vec(uv_stat_t buf, obj_t vec) {
+#if (PTR_ALIGNMENT >= 3)   
+   VECTOR_SET(vec, 0, BINT(buf.st_ctim.tv_sec)); // ctime
+   VECTOR_SET(vec, 1, BINT(buf.st_mtim.tv_sec)); // mtime
+   VECTOR_SET(vec, 2, BINT(buf.st_atim.tv_sec)); // atime
+   VECTOR_SET(vec, 3, BINT(buf.st_gen)); // gen
+   VECTOR_SET(vec, 4, BINT(buf.st_flags)); // flags
+   VECTOR_SET(vec, 5, BINT(buf.st_blocks)); // blocks
+   VECTOR_SET(vec, 6, BINT(buf.st_blksize)); // blksize
+   VECTOR_SET(vec, 7, BINT(buf.st_size)); // size
+   VECTOR_SET(vec, 8, BINT(buf.st_ino)); // ino
+   VECTOR_SET(vec, 9, BINT(buf.st_rdev)); // rdev
+   VECTOR_SET(vec, 10, BINT(buf.st_gid)); // gid
+   VECTOR_SET(vec, 11, BINT(buf.st_uid)); // uid
+   VECTOR_SET(vec, 12, BINT(buf.st_nlink)); // nlink
+   VECTOR_SET(vec, 13, BINT(buf.st_mode)); // mode
+   VECTOR_SET(vec, 14, BINT(buf.st_dev)); // dev
+#else
+   VECTOR_SET(vec, 0, ELONG_TO_BELONG(buf.st_ctim.tv_sec)); // ctime
+   VECTOR_SET(vec, 1, ELONG_TO_BELONG(buf.st_mtim.tv_sec)); // mtime
+   VECTOR_SET(vec, 2, ELONG_TO_BELONG(buf.st_atim.tv_sec)); // atime
+   VECTOR_SET(vec, 3, BGL_INT64_TO_BINT64(buf.st_gen)); // gen
+   VECTOR_SET(vec, 4, BGL_INT64_TO_BINT64(buf.st_flags)); // flags
+   VECTOR_SET(vec, 5, BGL_INT64_TO_BINT64(buf.st_blocks)); // blocks
+   VECTOR_SET(vec, 6, BGL_INT64_TO_BINT64(buf.st_blksize)); // blksize
+   VECTOR_SET(vec, 7, BGL_INT64_TO_BINT64(buf.st_size)); // size
+   VECTOR_SET(vec, 8, BGL_INT64_TO_BINT64(buf.st_ino)); // ino
+   VECTOR_SET(vec, 9, BGL_INT64_TO_BINT64(buf.st_rdev)); // rdev
+   VECTOR_SET(vec, 10, BGL_INT64_TO_BINT64(buf.st_gid)); // gid
+   VECTOR_SET(vec, 11, BGL_INT64_TO_BINT64(buf.st_uid)); // uid
+   VECTOR_SET(vec, 12, BGL_INT64_TO_BINT64(buf.st_nlink)); // nlink
+   VECTOR_SET(vec, 13, BGL_INT64_TO_BINT64(buf.st_mode)); // mode
+   VECTOR_SET(vec, 14, BGL_INT64_TO_BINT64(buf.st_dev)); // dev
+#endif
+   return vec;
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bgl_uv_fs_fstat_cb ...                                           */
 /*---------------------------------------------------------------------*/
@@ -798,6 +888,24 @@ bgl_uv_fs_fstat_cb(uv_fs_t *req) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_fs_fstat_vec_cb ...                                       */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_fs_fstat_vec_cb(uv_fs_t *req) {
+   obj_t v = uv_fs_obj_pool[(long)(req->data)];
+   obj_t p = VECTOR_REF(v, 0);
+
+   if (req->result < 0) {
+      PROCEDURE_ENTRY(p)(p, BINT(req->result), BEOA);
+   } else {
+      PROCEDURE_ENTRY(p)(p, bgl_uv_fstat_vec(req->statbuf, v), BEOA);
+   }
+
+   free_uv_fs_t(req);
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_uv_fs_fstat ...                                              */
 /*---------------------------------------------------------------------*/
@@ -810,7 +918,7 @@ bgl_uv_fs_fstat(obj_t port, obj_t proc, bgl_uv_loop_t bloop) {
       uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
       req->data = proc;
       gc_mark(proc);
-      
+
       uv_fs_fstat(loop, req, fd, &bgl_uv_fs_fstat_cb);
       
       return BUNSPEC;
@@ -835,15 +943,22 @@ bgl_uv_fs_fstat(obj_t port, obj_t proc, bgl_uv_loop_t bloop) {
 /*    bgl_uv_fs_lstat ...                                              */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_uv_fs_lstat(char *path, obj_t proc, bgl_uv_loop_t bloop) {
+bgl_uv_fs_lstat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
 
    if (bgl_check_fs_cb(proc, 1, "uv_fs_lstat")) {
-      uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
-      req->data = proc;
-      gc_mark(proc);
-      
-      uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);
+      if (VECTORP(vec)) {
+	 uv_fs_t *req = alloc_uv_fs_t();
+
+	 VECTOR_SET(vec, 0, proc);
+	 uv_fs_obj_pool[(long)(req->data)] = vec;
+	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
+      } else {
+	 uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
+	 req->data = proc;
+	 gc_mark(proc);
+	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);
+      }
       
       return BUNSPEC;
    } else {
@@ -852,6 +967,11 @@ bgl_uv_fs_lstat(char *path, obj_t proc, bgl_uv_loop_t bloop) {
       if (uv_fs_lstat(loop, &req, path, 0L) < 0) {
 	 uv_fs_req_cleanup(&req);
 	 return BINT(req.result);
+      } else if (VECTORP(vec)) {
+	 bgl_uv_fstat_vec(req.statbuf, vec);
+	 uv_fs_req_cleanup(&req);
+
+	 return vec;
       } else {
 	 obj_t res = bgl_uv_fstat(req.statbuf);
 

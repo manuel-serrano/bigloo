@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Sat Mar  5 09:53:00 2022 (serrano)                */
-#*    Copyright   :  2003-22 Manuel Serrano                            */
+#*    Last change :  Thu Jan 12 13:36:55 2023 (serrano)                */
+#*    Copyright   :  2003-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -80,7 +80,7 @@ $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_u.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS=$(BACKTRACELIBS)
+           EXTRALIBS=$(LIBBACKTRACELIBS)
 
 $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
@@ -91,7 +91,7 @@ $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_s.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS=$(BACKTRACELIBS)
+           EXTRALIBS=$(LIBBACKTRACELIBS)
 
 $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
@@ -102,7 +102,7 @@ $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_u_mt.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS=$(BACKTRACELIBS)
+           EXTRALIBS=$(LIBBACKTRACELIBS)
 
 $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	$(MAKE) bigloo-shared-lib \
@@ -113,7 +113,7 @@ $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_s_mt.$(SHAREDSUFFIX) \
 	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
-           EXTRALIBS=$(BACKTRACELIBS)
+           EXTRALIBS=$(LIBBACKTRACELIBS)
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:
