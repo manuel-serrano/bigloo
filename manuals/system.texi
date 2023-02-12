@@ -462,11 +462,24 @@ Deletes the directory named @var{string}. The directory must be empty
 in order to be deleted. The result of this procedure is unspecified.
 @end deffn
 
+@deffn {bigloo procedure} directory-length string
+If file @var{string} exists and is a directory, the function 
+@code{directory-length} returns the number of entries contained in @var{string}.
+@end deffn
+
 @deffn {bigloo procedure} directory->list string
 @deffnx {bigloo procedure} directory->path-list string
 If file @var{string} exists and is a directory, the function 
 @code{directory->list} returns the list of files in @var{string}.
 The function @code{directory->path-list} returns a list of files
+whose dirname is @var{string}.
+@end deffn
+
+@deffn {bigloo procedure} directory->vector string
+@deffnx {bigloo procedure} directory->path-vector string
+If file @var{string} exists and is a directory, the function 
+@code{directory->vector} returns a vector of files in @var{string}.
+The function @code{directory->path-vector} returns a vector of files
 whose dirname is @var{string}.
 @end deffn
 

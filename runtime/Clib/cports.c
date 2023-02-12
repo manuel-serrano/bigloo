@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon May 23 18:12:28 2022 (serrano)                */
+/*    Last change :  Sat Feb 11 09:00:50 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2163,6 +2163,52 @@ bgl_directoryp(char *name) {
    ((f[ 0 ] != '.') || ((f[ 1 ] != 0) && ((f[ 1 ] != '.') || f[ 2 ] != 0)))
 
 /*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    directory_length ...                                             */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF long
+bgl_directory_length(char *name) {
+   long res = 0;
+#if !defined(_MSC_VER) && !defined(_MINGW_VER)
+   DIR *dir;
+   struct dirent *dirent;
+
+   if ((dir = opendir(name))) {
+      while ((dirent = readdir(dir))) {
+	 char *fname = dirent->d_name;
+
+	 if (REGULAR_FILE_NAMEP(fname)) 
+	    res++;
+      }
+      closedir(dir);
+   }
+#else
+   char *const path = (char *)GC_MALLOC(strlen(name) + 2 + 1);
+
+   strcpy(path, name);
+   strcat(path, "\\*");
+
+   {
+      WIN32_FIND_DATA find_data;
+      HANDLE hSearch = FindFirstFile(path, &find_data);
+
+      if (hSearch != INVALID_HANDLE_VALUE) {
+         BOOL keep_going;
+
+         do {
+	    if (REGULAR_FILE_NAMEP(find_data.cFileName)) 
+               res++;
+            keep_going= FindNextFile(hSearch, &find_data);
+         } while (keep_going);
+
+         FindClose(hSearch);
+      }
+   }
+#endif
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    directory_to_list ...                                            */
 /*---------------------------------------------------------------------*/
@@ -2183,7 +2229,7 @@ bgl_directory_to_list(char *name) {
       closedir(dir);
    }
 #else
-   char *const path = (char *)malloc(strlen(name) + 2 + 1);
+   char *const path = (char *)GC_MALLOC(strlen(name) + 2 + 1);
 
    strcpy(path, name);
    strcat(path, "\\*");
@@ -2198,7 +2244,7 @@ bgl_directory_to_list(char *name) {
          do {
 	    if (REGULAR_FILE_NAMEP(find_data.cFileName)) 
                res = MAKE_PAIR(string_to_bstring(find_data.cFileName), res);
-            keep_going= FindNextFile(hSearch, &find_data);
+            keep_going = FindNextFile(hSearch, &find_data);
          } while (keep_going);
 
          FindClose(hSearch);
@@ -2260,7 +2306,7 @@ bgl_directory_to_path_list(char *name, int len, char sep) {
 	       
 	       res = MAKE_PAIR(bs, res);
 	    }
-            keep_going= FindNextFile(hSearch, &find_data);
+            keep_going = FindNextFile(hSearch, &find_data);
          } while (keep_going);
 
          FindClose(hSearch);
@@ -2268,6 +2314,174 @@ bgl_directory_to_path_list(char *name, int len, char sep) {
    }
 #endif
    return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    directory_to_vector ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_directory_to_vector(char *name) {
+#if !defined(_MSC_VER) && !defined(_MINGW_VER)
+   DIR *dir;
+
+   if (dir = opendir(name)) {
+      struct dirent *dirent;
+      obj_t vec;
+      long vlen = 32;
+      obj_t *buf = alloca(sizeof(obj_t) * vlen);
+      long i = 0;
+      
+      while ((dirent = readdir(dir))) {
+	 char *fname = dirent->d_name;
+
+	 if (REGULAR_FILE_NAMEP(fname)) {
+	    if (i == vlen) {
+	       obj_t *nbuf = alloca(sizeof(obj_t) * vlen * 2);
+	       memcpy(nbuf, buf, sizeof(obj_t) * vlen);
+	       vlen *= 2;
+	       buf = nbuf;
+	    }
+	    buf[i++] = string_to_bstring(fname);
+	 }
+      }
+
+      closedir(dir);
+      vec = create_vector(i);
+      memcpy(&(VECTOR_REF(vec, 0)), buf, sizeof(obj_t) * i);
+      return vec;
+   } else {
+      return create_vector(0);
+   }
+#else
+   char *const path = (char *)alloca(strlen(name) + 2 + 1);
+
+   strcpy(path, name);
+   strcat(path, "\\*");
+
+   {
+      WIN32_FIND_DATA find_data;
+      HANDLE hSearch = FindFirstFile(path, &find_data);
+      obj_t vec;
+      long i = 0;
+      
+      if (hSearch != INVALID_HANDLE_VALUE) {
+         BOOL keep_going;
+
+         do {
+	    if (REGULAR_FILE_NAMEP(find_data.cFileName)) 
+               vlen++;
+            keep_going = FindNextFile(hSearch, &find_data);
+         } while (keep_going);
+
+	 vec = create_vector(vlen);
+	 hSearch = FindFirstFile(path, &find_data);
+
+         do {
+	    if (REGULAR_FILE_NAMEP(find_data.cFileName)) 
+               VECTOR_SET(vec, i++, string_to_bstring(find_data.cFileName));
+            keep_going = FindNextFile(hSearch, &find_data);
+         } while (keep_going);
+
+         FindClose(hSearch);
+      } else {
+	 vec = create_vector(0);
+      }
+
+      return vec;
+   }
+#endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    directory_to_path_vector ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_directory_to_path_vector(char *name, int len, char sep) {
+#if !defined(_MSC_VER) && !defined(_MINGW_VER)
+   DIR *dir;
+
+   if (dir = opendir(name)) {
+      struct dirent *dirent;
+      obj_t vec;
+      long vlen = 32;
+      obj_t *buf = alloca(sizeof(obj_t) * vlen);
+      long i = 0;
+      
+      while ((dirent = readdir(dir))) {
+	 char *fname = dirent->d_name;
+
+	 if (REGULAR_FILE_NAMEP(fname)) {
+	    obj_t bs = make_string_sans_fill(strlen(fname) + len + 1);
+	    char *s = BSTRING_TO_STRING(bs);
+	    
+	    strcpy(s, name);
+	    s[len] = sep;
+	    strcpy(s + len + 1, fname);
+	    
+	    if (i == vlen) {
+	       obj_t *nbuf = alloca(sizeof(obj_t) * vlen * 2);
+	       memcpy(nbuf, buf, sizeof(obj_t) * vlen);
+	       vlen *= 2;
+	       buf = nbuf;
+	    }
+	    buf[i++] = string_to_bstring(fname);
+	 }
+      }
+
+      closedir(dir);
+      vec = create_vector(i);
+      memcpy(&(VECTOR_REF(vec, 0)), buf, sizeof(obj_t) * i);
+      return vec;
+   } else {
+      return create_vector(0);
+   }
+#else
+   char *const path = (char *)GC_MALLOC(strlen(name) + 2 + 1);
+
+   strcpy(path, name);
+   strcat(path, "\\*");
+
+   {
+      WIN32_FIND_DATA find_data;
+      HANDLE hSearch = FindFirstFile(path, &find_data);
+      obj_t vec;
+      long i = 0;
+
+      if (hSearch != INVALID_HANDLE_VALUE) {
+         BOOL keep_going;
+
+         do {
+	    if (REGULAR_FILE_NAMEP(find_data.cFileName)) 
+               vlen++;
+            keep_going = FindNextFile(hSearch, &find_data);
+         } while (keep_going);
+
+	 vec = create_vector(vlen);
+	 hSearch = FindFirstFile(path, &find_data);
+
+         do {
+	    if (REGULAR_FILE_NAMEP(find_data.cFileName)) {
+	       obj_t bs = make_string_sans_fill(strlen(fname) + len + 1);
+	       char *s = BSTRING_TO_STRING(bs);
+	       strcpy(s, name);
+	       s[ len ] = sep;
+	       strcpy(s + len + 1, fname);
+	       
+               VECTOR_SET(vec, i++, bs);
+	    }
+            keep_going = FindNextFile(hSearch, &find_data);
+         } while (keep_going);
+
+         FindClose(hSearch);
+      } else {
+	 vec = create_vector(0);
+      }
+
+      return vec;
+   }
+#endif
 }
 
 /*---------------------------------------------------------------------*/

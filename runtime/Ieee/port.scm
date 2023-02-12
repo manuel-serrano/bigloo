@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri Feb 18 08:54:26 2022 (serrano)                */
+;*    Last change :  Sat Feb 11 09:04:30 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -189,9 +189,13 @@
 		   "bgl_output_port_buffer_set")
 	    
 	    ($directory?::bool (::string) "bgl_directoryp")
-	    ($directory->list::obj (::string) "bgl_directory_to_list")
-	    ($directory->path-list::obj (::string ::int ::char)
-					"bgl_directory_to_path_list")
+	    ($directory-length::long (::string) "bgl_directory_length")
+	    ($directory->list::pair-nil (::string) "bgl_directory_to_list")
+	    ($directory->path-list::pair-nil (::string ::int ::char)
+	       "bgl_directory_to_path_list")
+	    ($directory->vector::vector (::string) "bgl_directory_to_vector")
+	    ($directory->path-vector::vector (::string ::int ::char)
+					"bgl_directory_to_path_vector")
 	    ($modification-time::elong (::string) "bgl_last_modification_time")
 	    ($change-time::elong (::string) "bgl_last_change_time")
 	    ($access-time::elong (::string) "bgl_last_access_time")
@@ -378,6 +382,8 @@
 	       
 	       (method static $directory?::bool (::string)
 		  "bgl_directoryp")
+	       (method static $directory-length::long (::string)
+		  "bgl_directory_length")
 	       (method static $directory->list::obj (::string)
 		  "bgl_directory_to_list")
 	       (method static $modification-time::elong (::string)
@@ -507,8 +513,11 @@
 	    (inline output-port-truncate::bool ::output-port ::long)
 	    (copy-file ::string ::string)
 	    (inline directory?::bool ::string)
+	    (inline directory-length ::string)
 	    (inline directory->list ::string)
 	    (directory->path-list ::bstring)
+	    (inline directory->vector::vector ::string)
+	    (directory->path-vector::vector ::bstring)
 	    (inline file-modification-time::elong ::string)
 	    (inline file-change-time::elong ::string)
 	    (inline file-access-time::elong ::string)
@@ -1539,6 +1548,12 @@
    ($directory? string))
 
 ;*---------------------------------------------------------------------*/
+;*    directory-length ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (directory-length string)
+   ($directory-length string))
+
+;*---------------------------------------------------------------------*/
 ;*    directory->list ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (directory->list string)
@@ -1558,14 +1573,43 @@
 	      ($directory->path-list dir (-fx l 1) (file-separator)))
 	     (else
 	      (map! (lambda (f) (string-append dir f))
-		    (directory->list dir)))))
+		 (directory->list dir)))))
 	 (else
 	  (cond-expand
 	     (bigloo-c
 	      ($directory->path-list dir l (file-separator)))
 	     (else
 	      (map! (lambda (f) (make-file-name dir f))
-		    (directory->list dir))))))))
+		 (directory->list dir))))))))
+	   
+;*---------------------------------------------------------------------*/
+;*    directory->vector ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (directory->vector string)
+   ($directory->vector string))
+
+;*---------------------------------------------------------------------*/
+;*    directory->path-vector ...                                       */
+;*---------------------------------------------------------------------*/
+(define (directory->path-vector dir)
+   (let ((l (string-length dir)))
+      (cond
+	 ((=fx l 0)
+	  '#())
+	 ((char=? (string-ref dir (-fx l 1)) (file-separator))
+	  (cond-expand
+	     (bigloo-c
+	      ($directory->path-vector dir (-fx l 1) (file-separator)))
+	     (else
+	      (map! (lambda (f) (string-append dir f))
+		 (directory->list dir)))))
+	 (else
+	  (cond-expand
+	     (bigloo-c
+	      ($directory->path-vector dir l (file-separator)))
+	     (else
+	      (map! (lambda (f) (make-file-name dir f))
+		 (directory->list dir))))))))
 	   
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-modification-time@ ...                               */

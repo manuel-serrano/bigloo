@@ -5525,6 +5525,16 @@ public final class foreign
 	 }
       }
 
+   public static int bgl_directory_length(byte[] name) {
+      {
+	 if( is_resourcep( name ) ) {
+	    return bigloo.input_resource_port.bgl_directory_length( resource_name( name ) );
+	 } else {
+	    final String[] files = (new File(new String(name))).list();
+	    return files.length;
+	 }
+      }
+      
    public static Object bgl_directory_to_list(byte[]name)
       {
 	 if( is_resourcep( name ) ) {

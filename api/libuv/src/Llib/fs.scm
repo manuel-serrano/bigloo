@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Wed Jan 11 16:24:33 2023 (serrano)                */
+;*    Last change :  Sat Feb 11 07:00:41 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -26,59 +26,59 @@
 	    (inline uv-fs-stat-cb-vector-props::vector)
             (inline uv-fs-dup::int ::int)
 	    
-	    (uv-fs-rename::int ::bstring ::bstring
+	    (inline uv-fs-rename::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-ftruncate::int ::UvFile ::int64
+	    (inline uv-fs-ftruncate::int ::UvFile ::int64
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-truncate::int ::bstring ::long
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-chown::int ::bstring ::int ::int
+	    (inline uv-fs-chown::int ::bstring ::int ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-fchown::int ::UvFile ::int ::int
+	    (inline uv-fs-fchown::int ::UvFile ::int ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-lchown::int ::bstring ::int ::int
+	    (inline uv-fs-lchown::int ::bstring ::int ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-chmod::int ::bstring ::int
+	    (inline uv-fs-chmod::int ::bstring ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-fchmod::int ::UvFile ::int
+	    (inline uv-fs-fchmod::int ::UvFile ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-fstat ::UvFile
+	    (inline uv-fs-fstat ::UvFile
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-stat ::bstring
+	    (inline uv-fs-stat ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-lstat ::bstring
+	    (inline uv-fs-lstat ::bstring
 	       #!key callback vector (loop (uv-default-loop)))
-	    (uv-fs-link::int ::bstring ::bstring
+	    (inline uv-fs-link::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-symlink::int ::bstring ::bstring
+	    (inline uv-fs-symlink::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-readlink::obj ::bstring
+	    (inline uv-fs-readlink::obj ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-unlink::obj ::bstring
+	    (inline uv-fs-unlink::obj ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-rmdir::obj ::bstring
+	    (inline uv-fs-rmdir::obj ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-mkdir::obj ::bstring ::int
+	    (inline uv-fs-mkdir::obj ::bstring ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-futime ::UvFile ::double ::double
+	    (inline uv-fs-futime ::UvFile ::double ::double
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-utime ::bstring ::double ::double
+	    (inline uv-fs-utime ::bstring ::double ::double
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-fsync ::UvFile
+	    (inline uv-fs-fsync ::UvFile
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-fdatasync ::UvFile
+	    (inline uv-fs-fdatasync ::UvFile
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-open ::bstring ::obj
 	       #!key (mode #o666) callback (loop (uv-default-loop)))
-	    (uv-fs-close ::UvFile
+	    (inline uv-fs-close ::UvFile
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-copyfile ::bstring ::bstring ::int
+	    (inline uv-fs-copyfile ::bstring ::bstring ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-write ::UvFile ::bstring ::int 
+	    (inline uv-fs-write ::UvFile ::bstring ::int 
 	       #!key
 	       callback (offset 0) (position -1)
 	       (loop::UvLoop (uv-default-loop)))
-	    (uv-fs-read ::UvFile ::bstring ::int 
+	    (inline uv-fs-read ::UvFile ::bstring ::int 
 	       #!key
 	       callback (offset 0) (position -1)
 	       (loop::UvLoop (uv-default-loop)))
@@ -131,7 +131,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-fs-stat-cb-vector-props)
    '#("ctime" "mtime" "atime" "birthtime"
-      "flags" "blocks" "blksize" "size"
+      "gen" "flags" "blocks" "blksize" "size"
       "ino" "rdev" "gid" "uid" "nlink"
       "mode" "dev"))
 
@@ -144,13 +144,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-rename ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-rename old new #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-rename old new #!key callback (loop (uv-default-loop)))
    ($uv-fs-rename old new callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-ftruncate ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-ftruncate file offset #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-ftruncate file offset #!key callback (loop (uv-default-loop)))
    ($uv-fs-ftruncate file offset callback loop))
 
 ;*---------------------------------------------------------------------*/
@@ -181,92 +181,92 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-chown ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-chown path uid gid #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-chown path uid gid #!key callback (loop (uv-default-loop)))
    ($uv-fs-chown path uid gid callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-fchown ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-fchown fd uid gid #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-fchown fd uid gid #!key callback (loop (uv-default-loop)))
    ($uv-fs-fchown fd uid gid callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-lchown ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-lchown path uid gid #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-lchown path uid gid #!key callback (loop (uv-default-loop)))
    ($uv-fs-lchown path uid gid callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-chmod ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-chmod path mode #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-chmod path mode #!key callback (loop (uv-default-loop)))
    ($uv-fs-chmod path mode callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-fchmod ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-fchmod fd mode #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-fchmod fd mode #!key callback (loop (uv-default-loop)))
    ($uv-fs-fchmod fd mode callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-link ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-link old new #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-link old new #!key callback (loop (uv-default-loop)))
    ($uv-fs-link old new callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-symlink ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-symlink old new #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-symlink old new #!key callback (loop (uv-default-loop)))
    ($uv-fs-symlink old new callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-readlink ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-readlink path #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-readlink path #!key callback (loop (uv-default-loop)))
    ($uv-fs-readlink path callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-unlink ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-unlink path #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-unlink path #!key callback (loop (uv-default-loop)))
    ($uv-fs-unlink path callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-rmdir ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-rmdir path #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-rmdir path #!key callback (loop (uv-default-loop)))
    ($uv-fs-rmdir path callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-mkdir ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-mkdir path mod #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-mkdir path mod #!key callback (loop (uv-default-loop)))
    ($uv-fs-mkdir path mod callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-fsync ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-fsync fd::UvFile #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-fsync fd::UvFile #!key callback (loop (uv-default-loop)))
    ($uv-fs-fsync fd callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-fdatasync ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-fdatasync fd::UvFile #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-fdatasync fd::UvFile #!key callback (loop (uv-default-loop)))
    ($uv-fs-fdatasync fd callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-futime ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-futime fd::UvFile atime::double mtime::double
+(define-inline (uv-fs-futime fd::UvFile atime::double mtime::double
 	   #!key callback (loop (uv-default-loop)))
    ($uv-fs-futime fd atime mtime callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-utime ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-utime path::bstring atime::double mtime::double
+(define-inline (uv-fs-utime path::bstring atime::double mtime::double
 	   #!key callback (loop (uv-default-loop)))
    ($uv-fs-utime path atime mtime callback loop))
 
@@ -287,38 +287,38 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-close ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-close fd::UvFile #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-close fd::UvFile #!key callback (loop (uv-default-loop)))
    ($uv-fs-close fd callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-copyfile ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-copyfile path::bstring newpath::bstring flags::int
+(define-inline (uv-fs-copyfile path::bstring newpath::bstring flags::int
 	   #!key callback (loop (uv-default-loop)))
    ($uv-fs-copyfile path newpath flags callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-fstat ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-fstat fd::UvFile #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-fstat fd::UvFile #!key callback (loop (uv-default-loop)))
    ($uv-fs-fstat fd callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-lstat ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-lstat path::bstring #!key callback vector (loop (uv-default-loop)))
+(define-inline (uv-fs-lstat path::bstring #!key callback vector (loop (uv-default-loop)))
    ($uv-fs-lstat path callback vector loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-stat ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-stat path::bstring #!key callback (loop (uv-default-loop)))
+(define-inline (uv-fs-stat path::bstring #!key callback (loop (uv-default-loop)))
    ($uv-fs-stat path callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-write ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-write fd buffer length 
+(define-inline (uv-fs-write fd buffer length 
 	   #!key callback (offset 0) (position -1)
 	   (loop::UvLoop (uv-default-loop)))
    ($uv-fs-write fd buffer offset length position callback loop))
@@ -326,7 +326,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-read ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-read fd buffer length 
+(define-inline (uv-fs-read fd buffer length 
 	   #!key callback (offset 0) (position -1)
 	   (loop::UvLoop (uv-default-loop)))
    ($uv-fs-read fd buffer offset length position callback loop))

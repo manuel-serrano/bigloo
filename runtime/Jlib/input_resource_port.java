@@ -52,6 +52,32 @@ public class input_resource_port extends input_port {
       }
    }
       
+   public static int bgl_directory_length( String name ) {
+      try {
+	 String dir = name.replace( '\\', '/' );
+	 String cname = dir + "/.list";
+	 
+	 if( input_resource_port.exists( cname ) ) {
+	    InputStream in;
+	    int res = 0;
+	    in = foreign.class.getClassLoader().getResourceAsStream( cname );
+	    byte[] o;
+
+	    while( (o = readline( in )) != null ) {
+	       res++
+	    }
+
+	    in.close();
+
+	    return res;
+	 } else {
+	    return 0;
+	 }
+      } catch( Exception _e ) {
+	 return 0;
+      }
+   }
+      
    public static Object bgl_directory_to_list( String name ) {
       try {
 	 String dir = name.replace( '\\', '/' );

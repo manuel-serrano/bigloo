@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Jan 11 15:38:00 2023 (serrano)                */
+/*    Last change :  Sat Feb 11 07:02:52 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -736,7 +736,7 @@ bgl_uv_fs_copyfile(obj_t bpath, obj_t bnewpath, int flags, obj_t proc, bgl_uv_lo
 /*    statbuf ...                                                      */
 /*---------------------------------------------------------------------*/
 static obj_t _dev = BUNSPEC, _mode, _nlink, _uid, _gid, _rdev, _ino, _size;
-static obj_t _blksize, _blocks, _flags, _gen, _atime, _mtime, _ctime;
+static obj_t _blksize, _blocks, _flags, _gen, _atime, _mtime, _ctime, _btime;
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -760,6 +760,7 @@ uv_init_stat() {
       _atime = string_to_symbol("atime");
       _mtime = string_to_symbol("mtime");
       _ctime = string_to_symbol("ctime");
+      _btime = string_to_symbol("btime");
    }
 }
 
@@ -781,6 +782,9 @@ bgl_uv_fstat(uv_stat_t buf) {
       res);
    res = MAKE_PAIR(
       MAKE_PAIR(_atime, ELONG_TO_BELONG(buf.st_atim.tv_sec)),
+      res);
+   res = MAKE_PAIR(
+      MAKE_PAIR(_btime, ELONG_TO_BELONG(buf.st_birthtim.tv_sec)),
       res);
    res = MAKE_PAIR(
       MAKE_PAIR(_gen, BGL_INT64_TO_BINT64(buf.st_gen)),
@@ -835,34 +839,36 @@ bgl_uv_fstat_vec(uv_stat_t buf, obj_t vec) {
    VECTOR_SET(vec, 0, BINT(buf.st_ctim.tv_sec)); // ctime
    VECTOR_SET(vec, 1, BINT(buf.st_mtim.tv_sec)); // mtime
    VECTOR_SET(vec, 2, BINT(buf.st_atim.tv_sec)); // atime
-   VECTOR_SET(vec, 3, BINT(buf.st_gen)); // gen
-   VECTOR_SET(vec, 4, BINT(buf.st_flags)); // flags
-   VECTOR_SET(vec, 5, BINT(buf.st_blocks)); // blocks
-   VECTOR_SET(vec, 6, BINT(buf.st_blksize)); // blksize
-   VECTOR_SET(vec, 7, BINT(buf.st_size)); // size
-   VECTOR_SET(vec, 8, BINT(buf.st_ino)); // ino
-   VECTOR_SET(vec, 9, BINT(buf.st_rdev)); // rdev
-   VECTOR_SET(vec, 10, BINT(buf.st_gid)); // gid
-   VECTOR_SET(vec, 11, BINT(buf.st_uid)); // uid
-   VECTOR_SET(vec, 12, BINT(buf.st_nlink)); // nlink
-   VECTOR_SET(vec, 13, BINT(buf.st_mode)); // mode
-   VECTOR_SET(vec, 14, BINT(buf.st_dev)); // dev
+   VECTOR_SET(vec, 3, BINT(buf.st_birthtim.tv_sec)); // btime
+   VECTOR_SET(vec, 4, BINT(buf.st_gen)); // gen
+   VECTOR_SET(vec, 5, BINT(buf.st_flags)); // flags
+   VECTOR_SET(vec, 6, BINT(buf.st_blocks)); // blocks
+   VECTOR_SET(vec, 7, BINT(buf.st_blksize)); // blksize
+   VECTOR_SET(vec, 8, BINT(buf.st_size)); // size
+   VECTOR_SET(vec, 9, BINT(buf.st_ino)); // ino
+   VECTOR_SET(vec, 10, BINT(buf.st_rdev)); // rdev
+   VECTOR_SET(vec, 11, BINT(buf.st_gid)); // gid
+   VECTOR_SET(vec, 12, BINT(buf.st_uid)); // uid
+   VECTOR_SET(vec, 13, BINT(buf.st_nlink)); // nlink
+   VECTOR_SET(vec, 14, BINT(buf.st_mode)); // mode
+   VECTOR_SET(vec, 15, BINT(buf.st_dev)); // dev
 #else
    VECTOR_SET(vec, 0, ELONG_TO_BELONG(buf.st_ctim.tv_sec)); // ctime
    VECTOR_SET(vec, 1, ELONG_TO_BELONG(buf.st_mtim.tv_sec)); // mtime
    VECTOR_SET(vec, 2, ELONG_TO_BELONG(buf.st_atim.tv_sec)); // atime
-   VECTOR_SET(vec, 3, BGL_INT64_TO_BINT64(buf.st_gen)); // gen
-   VECTOR_SET(vec, 4, BGL_INT64_TO_BINT64(buf.st_flags)); // flags
-   VECTOR_SET(vec, 5, BGL_INT64_TO_BINT64(buf.st_blocks)); // blocks
-   VECTOR_SET(vec, 6, BGL_INT64_TO_BINT64(buf.st_blksize)); // blksize
-   VECTOR_SET(vec, 7, BGL_INT64_TO_BINT64(buf.st_size)); // size
-   VECTOR_SET(vec, 8, BGL_INT64_TO_BINT64(buf.st_ino)); // ino
-   VECTOR_SET(vec, 9, BGL_INT64_TO_BINT64(buf.st_rdev)); // rdev
-   VECTOR_SET(vec, 10, BGL_INT64_TO_BINT64(buf.st_gid)); // gid
-   VECTOR_SET(vec, 11, BGL_INT64_TO_BINT64(buf.st_uid)); // uid
-   VECTOR_SET(vec, 12, BGL_INT64_TO_BINT64(buf.st_nlink)); // nlink
-   VECTOR_SET(vec, 13, BGL_INT64_TO_BINT64(buf.st_mode)); // mode
-   VECTOR_SET(vec, 14, BGL_INT64_TO_BINT64(buf.st_dev)); // dev
+   VECTOR_SET(vec, 3, ELONG_TO_BELONG(buf.st_birthtim.tv_sec)); // btime
+   VECTOR_SET(vec, 4, BGL_INT64_TO_BINT64(buf.st_gen)); // gen
+   VECTOR_SET(vec, 5, BGL_INT64_TO_BINT64(buf.st_flags)); // flags
+   VECTOR_SET(vec, 6, BGL_INT64_TO_BINT64(buf.st_blocks)); // blocks
+   VECTOR_SET(vec, 7, BGL_INT64_TO_BINT64(buf.st_blksize)); // blksize
+   VECTOR_SET(vec, 8, BGL_INT64_TO_BINT64(buf.st_size)); // size
+   VECTOR_SET(vec, 9, BGL_INT64_TO_BINT64(buf.st_ino)); // ino
+   VECTOR_SET(vec, 10, BGL_INT64_TO_BINT64(buf.st_rdev)); // rdev
+   VECTOR_SET(vec, 11, BGL_INT64_TO_BINT64(buf.st_gid)); // gid
+   VECTOR_SET(vec, 12, BGL_INT64_TO_BINT64(buf.st_uid)); // uid
+   VECTOR_SET(vec, 13, BGL_INT64_TO_BINT64(buf.st_nlink)); // nlink
+   VECTOR_SET(vec, 14, BGL_INT64_TO_BINT64(buf.st_mode)); // mode
+   VECTOR_SET(vec, 15, BGL_INT64_TO_BINT64(buf.st_dev)); // dev
 #endif
    return vec;
 }
