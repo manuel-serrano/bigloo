@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Sat Feb 11 07:00:41 2023 (serrano)                */
+;*    Last change :  Mon Feb 13 07:12:01 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -133,7 +133,8 @@
    '#("ctime" "mtime" "atime" "birthtime"
       "gen" "flags" "blocks" "blksize" "size"
       "ino" "rdev" "gid" "uid" "nlink"
-      "mode" "dev"))
+      "mode" "dev"
+      "ctime-ns" "mtime-ns" "atime-ns" "birthtime-ns"))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-dup ...                                                    */

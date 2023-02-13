@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sat Feb 11 07:02:52 2023 (serrano)                */
+/*    Last change :  Mon Feb 13 07:10:21 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -737,6 +737,7 @@ bgl_uv_fs_copyfile(obj_t bpath, obj_t bnewpath, int flags, obj_t proc, bgl_uv_lo
 /*---------------------------------------------------------------------*/
 static obj_t _dev = BUNSPEC, _mode, _nlink, _uid, _gid, _rdev, _ino, _size;
 static obj_t _blksize, _blocks, _flags, _gen, _atime, _mtime, _ctime, _btime;
+static obj_t _atimeNS, _mtimeNS, _ctimeNS, _btimeNS;
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -761,6 +762,10 @@ uv_init_stat() {
       _mtime = string_to_symbol("mtime");
       _ctime = string_to_symbol("ctime");
       _btime = string_to_symbol("btime");
+      _atimeNS = string_to_symbol("atime-ns");
+      _mtimeNS = string_to_symbol("mtime-ns");
+      _ctimeNS = string_to_symbol("ctime-ns");
+      _btimeNS = string_to_symbol("btime-ns");
    }
 }
 
@@ -822,6 +827,18 @@ bgl_uv_fstat(uv_stat_t buf) {
    res = MAKE_PAIR(
       MAKE_PAIR(_dev, BGL_INT64_TO_BINT64(buf.st_dev)),
       res);
+   res = MAKE_PAIR(
+      MAKE_PAIR(_ctimeNS, ELONG_TO_BELONG(buf.st_ctim.tv_nsec)),
+      res);
+   res = MAKE_PAIR(
+      MAKE_PAIR(_mtimeNS, ELONG_TO_BELONG(buf.st_mtim.tv_nsec)),
+      res);
+   res = MAKE_PAIR(
+      MAKE_PAIR(_atimeNS, ELONG_TO_BELONG(buf.st_atim.tv_nsec)),
+      res);
+   res = MAKE_PAIR(
+      MAKE_PAIR(_btimeNS, ELONG_TO_BELONG(buf.st_birthtim.tv_nsec)),
+      res);
 
    return res;
 }
@@ -852,6 +869,10 @@ bgl_uv_fstat_vec(uv_stat_t buf, obj_t vec) {
    VECTOR_SET(vec, 13, BINT(buf.st_nlink)); // nlink
    VECTOR_SET(vec, 14, BINT(buf.st_mode)); // mode
    VECTOR_SET(vec, 15, BINT(buf.st_dev)); // dev
+   VECTOR_SET(vec, 16, BINT(buf.st_ctim.tv_nsec)); // ctimeNS
+   VECTOR_SET(vec, 17, BINT(buf.st_mtim.tv_nsec)); // mtimeNS
+   VECTOR_SET(vec, 18, BINT(buf.st_atim.tv_nsec)); // atimeNS
+   VECTOR_SET(vec, 19, BINT(buf.st_birthtim.tv_nsec)); // birthtimeNS
 #else
    VECTOR_SET(vec, 0, ELONG_TO_BELONG(buf.st_ctim.tv_sec)); // ctime
    VECTOR_SET(vec, 1, ELONG_TO_BELONG(buf.st_mtim.tv_sec)); // mtime
@@ -869,6 +890,10 @@ bgl_uv_fstat_vec(uv_stat_t buf, obj_t vec) {
    VECTOR_SET(vec, 13, BGL_INT64_TO_BINT64(buf.st_nlink)); // nlink
    VECTOR_SET(vec, 14, BGL_INT64_TO_BINT64(buf.st_mode)); // mode
    VECTOR_SET(vec, 15, BGL_INT64_TO_BINT64(buf.st_dev)); // dev
+   VECTOR_SET(vec, 16, ELONG_TO_BELONG(buf.st_ctim.tv_nsec)); // ctimeNS
+   VECTOR_SET(vec, 17, ELONG_TO_BELONG(buf.st_mtim.tv_nsec)); // mtimeNS
+   VECTOR_SET(vec, 18, ELONG_TO_BELONG(buf.st_atim.tv_nsec)); // atimeNS
+   VECTOR_SET(vec, 19, ELONG_TO_BELONG(buf.st_birthtim.tv_nsec)); // birthtimeNS
 #endif
    return vec;
 }
