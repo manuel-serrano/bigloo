@@ -1,6 +1,6 @@
 diff -Naur gc-8.2.2.orig/alloc.c gc-8.2.2/alloc.c
 --- gc-8.2.2.orig/alloc.c	2022-08-26 20:44:49.000000000 +0200
-+++ gc-8.2.2/alloc.c	2022-10-27 10:32:42.575361081 +0200
++++ gc-8.2.2/alloc.c	2023-02-14 08:31:32.751106137 +0100
 @@ -771,6 +771,40 @@
      RESTORE_CANCEL(cancel_state);
  }
@@ -59,9 +59,24 @@ diff -Naur gc-8.2.2.orig/alloc.c gc-8.2.2/alloc.c
  #   ifndef NO_CLOCK
        if (GC_print_stats)
          GET_TIME(start_time);
+@@ -1150,7 +1194,13 @@
+         GC_reclaimed_bytes_before_gc += (word)GC_bytes_found;
+ #   endif
+     GC_bytes_found = 0;
+-#   if defined(LINUX) && defined(__ELF__) && !defined(SMALL_CONFIG)
++/*---------------------------------------------------------------------*/
++/*    Bigloo start (14 feb 2023)                                       */
++/*---------------------------------------------------------------------*/
++#   if 0 && defined(LINUX) && defined(__ELF__) && !defined(SMALL_CONFIG)
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop (14 feb 2023)                                        */
++/*---------------------------------------------------------------------*/
+         if (GETENV("GC_PRINT_ADDRESS_MAP") != 0) {
+           GC_print_address_map();
+         }
 diff -Naur gc-8.2.2.orig/Makefile.am gc-8.2.2/Makefile.am
 --- gc-8.2.2.orig/Makefile.am	2022-08-26 20:44:49.000000000 +0200
-+++ gc-8.2.2/Makefile.am	2022-10-27 10:35:08.278948879 +0200
++++ gc-8.2.2/Makefile.am	2023-02-14 08:25:46.080487161 +0100
 @@ -68,11 +68,18 @@
  else
  
@@ -84,7 +99,7 @@ diff -Naur gc-8.2.2.orig/Makefile.am gc-8.2.2/Makefile.am
  # ---------------------------------
 diff -Naur gc-8.2.2.orig/Makefile.in gc-8.2.2/Makefile.in
 --- gc-8.2.2.orig/Makefile.in	2022-08-26 20:45:06.000000000 +0200
-+++ gc-8.2.2/Makefile.in	2022-10-27 11:01:03.159736219 +0200
++++ gc-8.2.2/Makefile.in	2023-02-14 08:25:46.084487144 +0100
 @@ -263,13 +263,20 @@
  	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
  	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@

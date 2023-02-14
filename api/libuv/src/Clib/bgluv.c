@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Feb 13 20:53:31 2023 (serrano)                */
+/*    Last change :  Tue Feb 14 08:03:02 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -95,7 +95,7 @@ static long uv_fs_pool_size = 0;
 uv_fs_t *
 alloc_uv_fs_t() {
    uv_fs_t *res;
-   
+
    BGL_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_fs_req_idx == uv_fs_pool_size) {
       uv_fs_pool_size += 10;
@@ -569,7 +569,7 @@ bgl_check_fs_cb(obj_t proc, int arity, char *fun) {
       if (PROCEDURE_CORRECT_ARITYP(proc, arity)) {
 	 return 1;
       } else {
-	 C_SYSTEM_FAILURE(BGL_TYPE_ERROR, fun,
+	 C_SYSTEM_FAILURE(BGL_ERROR, fun,
 			   "wrong callback arity", proc);
 	 return -1;
       }
@@ -920,23 +920,6 @@ bgl_uv_fs_fstat_cb(uv_fs_t *req) {
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_uv_fs_fstat_proc_cb ...                                      */
-/*---------------------------------------------------------------------*/
-static void
-bgl_uv_fs_fstat_proc_cb(uv_fs_t *req) {
-   obj_t p = uv_fs_obj_pool[(long)(req->data)];
-
-   if (req->result < 0) {
-      PROCEDURE_ENTRY(p)(p, BINT(req->result), BEOA);
-   } else {
-      PROCEDURE_ENTRY(p)(p, bgl_uv_fstat(req->statbuf), BEOA);
-   }
-
-   free_uv_fs_t(req);
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
 /*    bgl_uv_fs_fstat_vec_cb ...                                       */
 /*---------------------------------------------------------------------*/
 static void
@@ -945,12 +928,17 @@ bgl_uv_fs_fstat_vec_cb(uv_fs_t *req) {
    obj_t p = VECTOR_REF(v, 0);
 
    if (req->result < 0) {
-      PROCEDURE_ENTRY(p)(p, BINT(req->result), BEOA);
+      obj_t status = BINT(req->result);
+      
+      free_uv_fs_t(req);
+      PROCEDURE_ENTRY(p)(p, status, BEOA);
    } else {
-      PROCEDURE_ENTRY(p)(p, bgl_uv_fstat_vec(req->statbuf, v), BEOA);
+      obj_t vec = bgl_uv_fstat_vec(req->statbuf, v);
+      
+      free_uv_fs_t(req);
+      PROCEDURE_ENTRY(p)(p, vec, BEOA);
    }
 
-   free_uv_fs_t(req);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1002,13 +990,11 @@ bgl_uv_fs_lstat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
 	 uv_fs_obj_pool[(long)(req->data)] = vec;
 	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
       } else {
-/* 	 uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));            */
-/* 	 req->data = proc;                                             */
-/* 	 gc_mark(proc);                                                */
-/* 	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);            */
-	 uv_fs_t *req = alloc_uv_fs_t();
-	 uv_fs_obj_pool[(long)(req->data)] = proc;
-	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_proc_cb);
+	 uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
+	 req->data = proc;
+	 gc_mark(proc);
+
+	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);
       }
       
       return BUNSPEC;
@@ -1022,13 +1008,13 @@ bgl_uv_fs_lstat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
 	 bgl_uv_fstat_vec(req.statbuf, vec);
 	 uv_fs_req_cleanup(&req);
 
-	 return vec;
+	 return BUNSPEC;
       } else {
 	 obj_t res = bgl_uv_fstat(req.statbuf);
 
 	 uv_fs_req_cleanup(&req);
 
-	 return res;
+	 return BUNSPEC;
       }
    }
 }
@@ -1041,7 +1027,7 @@ obj_t
 bgl_uv_fs_stat(char *path, obj_t proc, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
 
-   if (bgl_check_fs_cb(proc, 1, "uv_fs_lstat")) {
+   if (bgl_check_fs_cb(proc, 1, "uv_fs_stat")) {
       uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
       req->data = proc;
       gc_mark(proc);

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/loop.scm          */
+;*    .../prgm/project/bigloo/bigloo/api/libuv/src/Llib/loop.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Wed Mar  1 10:13:51 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Tue Feb 14 10:38:14 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV loops                                                      */
 ;*=====================================================================*/
@@ -42,7 +42,7 @@
 ;*    gc-loops ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define gc-loops '())
-(define %uv-mutex (make-mutex))
+(define %uv-mutex (make-spinlock))
 
 ;*---------------------------------------------------------------------*/
 ;*    %uv-init ::UvLoop ...                                            */
