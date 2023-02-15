@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Feb 14 08:03:02 2023 (serrano)                */
+/*    Last change :  Wed Feb 15 07:19:42 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -927,18 +927,12 @@ bgl_uv_fs_fstat_vec_cb(uv_fs_t *req) {
    obj_t v = uv_fs_obj_pool[(long)(req->data)];
    obj_t p = VECTOR_REF(v, 0);
 
-   if (req->result < 0) {
-      obj_t status = BINT(req->result);
-      
-      free_uv_fs_t(req);
-      PROCEDURE_ENTRY(p)(p, status, BEOA);
-   } else {
-      obj_t vec = bgl_uv_fstat_vec(req->statbuf, v);
-      
-      free_uv_fs_t(req);
-      PROCEDURE_ENTRY(p)(p, vec, BEOA);
+   if (req->result >= 0) {
+      bgl_uv_fstat_vec(req->statbuf, v);
    }
-
+      
+   free_uv_fs_t(req);
+   PROCEDURE_ENTRY(p)(p, BINT(req->result), v, BEOA);
 }
 
 /*---------------------------------------------------------------------*/
@@ -982,20 +976,21 @@ obj_t
 bgl_uv_fs_lstat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
 
-   if (bgl_check_fs_cb(proc, 1, "uv_fs_lstat")) {
-      if (VECTORP(vec)) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+   if (bgl_check_fs_cb(proc, 2, "uv_fs_lstat")) {
+      uv_fs_t *req = alloc_uv_fs_t();
 
-	 VECTOR_SET(vec, 0, proc);
-	 uv_fs_obj_pool[(long)(req->data)] = vec;
-	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
-      } else {
-	 uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
-	 req->data = proc;
-	 gc_mark(proc);
+      VECTOR_SET(vec, 0, proc);
+      uv_fs_obj_pool[(long)(req->data)] = vec;
+      
+      uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
+      
+      return BUNSPEC;
+   } else if (bgl_check_fs_cb(proc, 1, "uv_fs_lstat")) {
+      uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
+      req->data = proc;
+      gc_mark(proc);
 
-	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);
-      }
+      uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);
       
       return BUNSPEC;
    } else {

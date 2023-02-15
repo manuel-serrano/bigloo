@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Tue Feb 14 10:38:14 2023 (serrano)                */
+;*    Last change :  Tue Feb 14 20:03:00 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV loops                                                      */
@@ -50,7 +50,8 @@
 (define-method (%uv-init o::UvLoop)
    (with-access::UvLoop o ($builtin)
       (when ($uv_handle_nilp $builtin)
-	 (set! $builtin ($uv-handle-t ($uv_loop_new))))
+	 (set! $builtin ($uv-handle-t ($uv_loop_new)))
+	 ($uv-loop-data-set! $builtin o))
       o))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Wed Jan 11 16:25:19 2023 (serrano)                */
+;*    Last change :  Tue Feb 14 20:01:14 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -67,6 +67,8 @@
       
       (macro $uv_loop_new::$uv_loop_t () "uv_loop_new")
       (macro $uv_default_loop::$uv_loop_t () "uv_default_loop")
+      (macro $uv-loop-data-set!::obj (::$uv_loop_t ::obj) "BGL_UV_LOOP_DATA_SET")
+      (macro $uv-loop-data-get::obj (::$uv_loop_t) "BGL_UV_LOOP_DATA_GET")
       
       (macro $uv-run::int (::$uv_loop_t ::int) "uv_run")
       (macro $uv-stop::void (::$uv_loop_t) "uv_stop")
