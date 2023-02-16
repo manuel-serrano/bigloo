@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Feb 15 07:19:42 2023 (serrano)                */
+/*    Last change :  Thu Feb 16 20:19:19 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -940,11 +940,20 @@ bgl_uv_fs_fstat_vec_cb(uv_fs_t *req) {
 /*    bgl_uv_fs_fstat ...                                              */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_uv_fs_fstat(obj_t port, obj_t proc, bgl_uv_loop_t bloop) {
+bgl_uv_fs_fstat(obj_t port, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
    int fd = ((bgl_uv_file_t)COBJECT(port))->BgL_fdz00;
 
-   if (bgl_check_fs_cb(proc, 1, "uv_fs_fstat")) {
+   if (bgl_check_fs_cb(proc, 2, "uv_fs_lstat")) {
+      uv_fs_t *req = alloc_uv_fs_t();
+
+      VECTOR_SET(vec, 0, proc);
+      uv_fs_obj_pool[(long)(req->data)] = vec;
+      
+      uv_fs_fstat(loop, req, fd, &bgl_uv_fs_fstat_vec_cb);
+      
+      return BUNSPEC;
+   } else if (bgl_check_fs_cb(proc, 1, "uv_fs_fstat")) {
       uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
       req->data = proc;
       gc_mark(proc);
@@ -958,6 +967,11 @@ bgl_uv_fs_fstat(obj_t port, obj_t proc, bgl_uv_loop_t bloop) {
       if (uv_fs_fstat(loop, &req, fd, 0L) < 0) {
 	 uv_fs_req_cleanup(&req);
 	 return BINT(req.result);
+      } else if (VECTORP(vec)) {
+	 bgl_uv_fstat_vec(req.statbuf, vec);
+	 uv_fs_req_cleanup(&req);
+
+	 return BUNSPEC;
       } else {
 	 obj_t res = bgl_uv_fstat(req.statbuf);
 
@@ -1019,10 +1033,19 @@ bgl_uv_fs_lstat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
 /*    bgl_uv_fs_stat ...                                               */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_uv_fs_stat(char *path, obj_t proc, bgl_uv_loop_t bloop) {
+bgl_uv_fs_stat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
 
-   if (bgl_check_fs_cb(proc, 1, "uv_fs_stat")) {
+   if (bgl_check_fs_cb(proc, 2, "uv_fs_lstat")) {
+      uv_fs_t *req = alloc_uv_fs_t();
+
+      VECTOR_SET(vec, 0, proc);
+      uv_fs_obj_pool[(long)(req->data)] = vec;
+      
+      uv_fs_stat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
+      
+      return BUNSPEC;
+   } else if (bgl_check_fs_cb(proc, 1, "uv_fs_stat")) {
       uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
       req->data = proc;
       gc_mark(proc);
@@ -1036,7 +1059,12 @@ bgl_uv_fs_stat(char *path, obj_t proc, bgl_uv_loop_t bloop) {
       if (uv_fs_stat(loop, &req, path, 0L) < 0) {
 	 uv_fs_req_cleanup(&req);
 	 return BINT(req.result);
-      } else {
+      } else if (VECTORP(vec)) {
+	 bgl_uv_fstat_vec(req.statbuf, vec);
+	 uv_fs_req_cleanup(&req);
+
+	 return BUNSPEC;
+       } else {
 	 obj_t res = bgl_uv_fstat(req.statbuf);
 
 	 uv_fs_req_cleanup(&req);

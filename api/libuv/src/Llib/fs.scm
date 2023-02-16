@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Mon Feb 13 07:12:01 2023 (serrano)                */
+;*    Last change :  Thu Feb 16 20:18:32 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -43,9 +43,9 @@
 	    (inline uv-fs-fchmod::int ::UvFile ::int
 	       #!key callback (loop (uv-default-loop)))
 	    (inline uv-fs-fstat ::UvFile
-	       #!key callback (loop (uv-default-loop)))
+	       #!key callback vector (loop (uv-default-loop)))
 	    (inline uv-fs-stat ::bstring
-	       #!key callback (loop (uv-default-loop)))
+	       #!key callback vector (loop (uv-default-loop)))
 	    (inline uv-fs-lstat ::bstring
 	       #!key callback vector (loop (uv-default-loop)))
 	    (inline uv-fs-link::int ::bstring ::bstring
@@ -301,8 +301,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-fstat ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-fs-fstat fd::UvFile #!key callback (loop (uv-default-loop)))
-   ($uv-fs-fstat fd callback loop))
+(define-inline (uv-fs-fstat fd::UvFile #!key callback vector (loop (uv-default-loop)))
+   ($uv-fs-fstat fd callback vector loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-lstat ...                                                  */
@@ -313,8 +313,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-stat ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-fs-stat path::bstring #!key callback (loop (uv-default-loop)))
-   ($uv-fs-stat path callback loop))
+(define-inline (uv-fs-stat path::bstring #!key callback vector (loop (uv-default-loop)))
+   ($uv-fs-stat path callback vector loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-write ...                                                  */
