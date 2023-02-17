@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Thu Feb 16 20:18:32 2023 (serrano)                */
+;*    Last change :  Fri Feb 17 15:10:18 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -81,6 +81,10 @@
 	    (inline uv-fs-read ::UvFile ::bstring ::int 
 	       #!key
 	       callback (offset 0) (position -1)
+	       (loop::UvLoop (uv-default-loop)))
+	    (inline uv-fs-read2 ::UvFile ::bstring ::int 
+	       #!key
+	       callback (offset 0) (position -1) arg0 arg1
 	       (loop::UvLoop (uv-default-loop)))
 	    (uv-fs-flags::int ::symbol)))
 
@@ -331,6 +335,14 @@
 	   #!key callback (offset 0) (position -1)
 	   (loop::UvLoop (uv-default-loop)))
    ($uv-fs-read fd buffer offset length position callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-read2 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-fs-read2 fd buffer length 
+	   #!key callback (offset 0) (position -1) arg0 arg1
+	   (loop::UvLoop (uv-default-loop)))
+   ($uv-fs-read2 fd buffer offset length position callback arg0 arg1 loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-flags ...                                                  */
