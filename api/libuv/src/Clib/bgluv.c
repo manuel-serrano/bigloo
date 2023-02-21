@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Feb 17 10:42:02 2023 (serrano)                */
+/*    Last change :  Tue Feb 21 12:02:35 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -948,23 +948,29 @@ bgl_uv_fs_fstat(obj_t port, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
    int fd = ((bgl_uv_file_t)COBJECT(port))->BgL_fdz00;
 
-   if (bgl_check_fs_cb(proc, 2, "uv_fs_lstat")) {
-      uv_fs_t *req = alloc_uv_fs_t();
+   if (PROCEDUREP(proc)) {
+      if (PROCEDURE_CORRECT_ARITYP(proc, 2)) {
+	 uv_fs_t *req = alloc_uv_fs_t();
 
-      VECTOR_SET(vec, 0, proc);
-      uv_fs_obj_pool[(long)(req->data)] = vec;
+	 VECTOR_SET(vec, 0, proc);
+	 uv_fs_obj_pool[(long)(req->data)] = vec;
        
-      uv_fs_fstat(loop, req, fd, &bgl_uv_fs_fstat_vec_cb);
+	 uv_fs_fstat(loop, req, fd, &bgl_uv_fs_fstat_vec_cb);
       
-      return BUNSPEC;
-   } else if (bgl_check_fs_cb(proc, 1, "uv_fs_fstat")) {
-      uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
-      req->data = proc;
-      gc_mark(proc);
-
-      uv_fs_fstat(loop, req, fd, &bgl_uv_fs_fstat_cb);
-      
-      return BUNSPEC;
+	 return BUNSPEC;
+      } else if (PROCEDURE_CORRECT_ARITYP(proc, 1)) {
+	 uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
+	 req->data = proc;
+	 gc_mark(proc);
+	 
+	 uv_fs_fstat(loop, req, fd, &bgl_uv_fs_fstat_cb);
+	 
+	 return BUNSPEC;
+      } else {
+	 C_SYSTEM_FAILURE(BGL_ERROR, "bgl_uv_fs_fstat",
+			  "wrong callback arity", proc);
+	 return BUNSPEC;
+      }
    } else {
       uv_fs_t req;
 
@@ -994,23 +1000,29 @@ obj_t
 bgl_uv_fs_lstat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
 
-   if (bgl_check_fs_cb(proc, 2, "uv_fs_lstat")) {
-      uv_fs_t *req = alloc_uv_fs_t();
+   if (PROCEDUREP(proc)) {
+      if (PROCEDURE_CORRECT_ARITYP(proc, 2)) {
+	 uv_fs_t *req = alloc_uv_fs_t();
 
-      VECTOR_SET(vec, 0, proc);
-      uv_fs_obj_pool[(long)(req->data)] = vec;
+	 VECTOR_SET(vec, 0, proc);
+	 uv_fs_obj_pool[(long)(req->data)] = vec;
       
-      uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
+	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
       
-      return BUNSPEC;
-   } else if (bgl_check_fs_cb(proc, 1, "uv_fs_lstat")) {
-      uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
-      req->data = proc;
-      gc_mark(proc);
+	 return BUNSPEC;
+      } else if (PROCEDURE_CORRECT_ARITYP(proc, 1)) {
+	 uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
+	 req->data = proc;
+	 gc_mark(proc);
 
-      uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);
-      
-      return BUNSPEC;
+	 uv_fs_lstat(loop, req, path, &bgl_uv_fs_fstat_cb);
+	 
+	 return BUNSPEC;
+      } else {
+	 C_SYSTEM_FAILURE(BGL_ERROR, "bgl_uv_fs_lstat",
+			  "wrong callback arity", proc);
+	 return BUNSPEC;
+      }
    } else {
       uv_fs_t req;
 
@@ -1040,23 +1052,28 @@ obj_t
 bgl_uv_fs_stat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
 
-   if (bgl_check_fs_cb(proc, 2, "uv_fs_lstat")) {
-      uv_fs_t *req = alloc_uv_fs_t();
+   if (PROCEDUREP(proc)) {
+      if (PROCEDURE_CORRECT_ARITYP(proc, 2)) {
+	 uv_fs_t *req = alloc_uv_fs_t();
 
-      VECTOR_SET(vec, 0, proc);
-      uv_fs_obj_pool[(long)(req->data)] = vec;
+	 VECTOR_SET(vec, 0, proc);
+	 uv_fs_obj_pool[(long)(req->data)] = vec;
       
-      uv_fs_stat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
+	 uv_fs_stat(loop, req, path, &bgl_uv_fs_fstat_vec_cb);
       
-      return BUNSPEC;
-   } else if (bgl_check_fs_cb(proc, 1, "uv_fs_stat")) {
-      uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
-      req->data = proc;
-      gc_mark(proc);
+	 return BUNSPEC;
+      } else if (PROCEDURE_CORRECT_ARITYP(proc, 1)) {
+	 uv_fs_t *req = (uv_fs_t *)malloc(sizeof(uv_fs_t));
+	 req->data = proc;
+	 gc_mark(proc);
       
-      uv_fs_stat(loop, req, path, &bgl_uv_fs_fstat_cb);
+	 uv_fs_stat(loop, req, path, &bgl_uv_fs_fstat_cb);
       
-      return BUNSPEC;
+	 return BUNSPEC;
+      } else {C_SYSTEM_FAILURE(BGL_ERROR, "bgl_uv_fs_stat",
+			       "wrong callback arity", proc);
+	 return BUNSPEC;
+      }
    } else {
       uv_fs_t req;
 
@@ -1068,7 +1085,7 @@ bgl_uv_fs_stat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
 	 uv_fs_req_cleanup(&req);
 
 	 return BUNSPEC;
-       } else {
+      } else {
 	 obj_t res = bgl_uv_fstat(req.statbuf);
 
 	 uv_fs_req_cleanup(&req);
@@ -1211,7 +1228,7 @@ bgl_uv_fs_futime(obj_t port, double atime, double mtime, obj_t proc, bgl_uv_loop
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
-/*    bgl_uv_fs_utime ...                                             */
+/*    bgl_uv_fs_utime ...                                              */
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_utime(char *path, double atime, double mtime, obj_t proc, bgl_uv_loop_t bloop) {
@@ -1263,10 +1280,9 @@ bgl_uv_fs_write(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
       iov = uv_buf_init(&(STRING_REF(buffer, offset)), length);
       
       if (bgl_check_fs_cb(proc, 1, "uv_fs_write")) {
-	 uv_fs_t *req = malloc(sizeof(uv_fs_t));
+	 uv_fs_t *req = alloc_uv_fs_t();
 
-	 req->data = proc; 
-	 gc_mark(proc);
+	 uv_fs_obj_pool[(long)(req->data)] = proc;
 
 	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb);
       } else {
