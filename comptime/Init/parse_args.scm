@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Dec 14 12:45:06 2022 (serrano)                */
-;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 23 08:27:15 2023 (serrano)                */
+;*    Copyright   :  1992-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -165,14 +165,15 @@
 			  (print "   - " (car var))
 			  (print "     " (cdr var)))
 		       (print "   - " (car var) ": " (cdr var))))
-		(cons `("TMPDIR" . ,(format "temporary directory (default \"~a\")"
-					   (os-tmp)))
-		      '(("BIGLOOLIB" . "libraries' directory")
-			("BIGLOOHEAP" . "the initial heap size in megabytes (4 MB by default)")
-			("BIGLOOMAXHEAP" . "the maxium heap size in megabytes (unlimited by default)")
-			("BIGLOOSTACKDEPTH" . "the error stack depth printing")
-			("BIGLOOLIVEPROCESS" . "the maximum number of Bigloo live processes")
-			("BIGLOOTRACE" . "list of active traces"))))
+	 (cons `("TMPDIR" . ,(format "temporary directory (default \"~a\")"
+				(os-tmp)))
+	    '(("BIGLOOLIB" . "libraries' directory")
+	      ("BIGLOOHEAP" . "the initial heap size in megabytes (4 MB by default)")
+	      ("BIGLOOMAXHEAP" . "the maxium heap size in megabytes (unlimited by default)")
+	      ("BIGLOOSTACKDEPTH" . "the error stack depth printing")
+	      ("BIGLOOLIVEPROCESS" . "the maximum number of Bigloo live processes")
+	      ("BIGLOOTRACE" . "list of active traces")
+	      ("BIGLOOGCTHREADS" . "Max GC threads number"))))
       (newline)
       (print "Runtime Command file:")
       (print "   - ~/.bigloorc"))
@@ -200,11 +201,11 @@
 	     (newline)
 	     (print (bigloo-license))))
       (compiler-exit 0))
-
+   
    (bigloo-warning-set! 2)
    
    (pass-args-parse (lib-dir jvm default) default args
-       
+      
 ;*--- misc ------------------------------------------------------------*/
       (section "Misc")
       ;; preliminary test
@@ -253,7 +254,7 @@
       ;; with modules
       (("-with" ?module (help "Import addition module"))
        (set! *early-with-modules* (cons (string->symbol module)
-					*early-with-modules*)))
+				     *early-with-modules*)))
       ;; multiple-include
       (("-multiple-inclusion" (help "Enables multiple inclusions of the Bigloo includes"))
        (set! *include-multiple* #t))
@@ -306,8 +307,8 @@
        (set! *user-load-path* (cons dir *user-load-path*)))
       ;; library path
       (pass lib-dir
-       (("-lib-dir" ?dir (help "Set lib-path to DIR"))
-	(process-lib-dir-parameter dir)))
+	 (("-lib-dir" ?dir (help "Set lib-path to DIR"))
+	  (process-lib-dir-parameter dir)))
       (("-L" ?name (help "Set additional library path"))
        (set! *lib-dir* (cons name *lib-dir*))
        (bigloo-library-path-set! (cons name (bigloo-library-path))))
@@ -327,10 +328,10 @@
        (set! *target-language* 'native))
       ;; jvm code generation
       (pass jvm
-	    (("-jvm" (help "Compile module to JVM .class files"))
-	     (set! *heap-name* *heap-jvm-name*)
-	     (set! *obj-suffix* '("class"))
-	     (set! *target-language* 'jvm)))
+	 (("-jvm" (help "Compile module to JVM .class files"))
+	  (set! *heap-name* *heap-jvm-name*)
+	  (set! *obj-suffix* '("class"))
+	  (set! *target-language* 'jvm)))
       ;; Bigloo Assembly code generation
       (("-saw" (help "Cut the AST in the saw-mill"))
        (set! *force-saw* #t))
@@ -346,14 +347,14 @@
       (("-snow" (help "Compiles a snow source code"))
        (set! *src-suffix* (cons "snow" *src-suffix*))
        (set! the-remaining-args (cons* "-extend" "snow"
-				       "-library" "snow"
-				       the-remaining-args)))
+				   "-library" "snow"
+				   the-remaining-args)))
       ;; scmpkg
       ((("-scmpkg" "-spi") (help "Compiles a ScmPkg source code"))
        (set! *src-suffix* (cons "spi" *src-suffix*))
        (set! the-remaining-args (cons* "-extend" "pkgcomp"
-				       "-library" "pkgcomp"
-				       the-remaining-args)))
+				   "-library" "pkgcomp"
+				   the-remaining-args)))
       ;; nil
       (("-nil" (help "Evaluate '() as #f in `if' expression"))
        (set! *nil* #f))
@@ -403,8 +404,8 @@
       ;; benchmarking
       (("-Obench" (help "Benchmarking mode"))
        (do-parse-args `("-O6" "-unsafe"
-			     "-copt" ,*cflags-optim*
-			     "-static-all-bigloo"))) 
+			  "-copt" ,*cflags-optim*
+			  "-static-all-bigloo"))) 
       ;; optimization
       (("-O?opt" (help "-O[0..6]" "Optimization modes"))
        (parse-optim-args opt))
@@ -554,11 +555,11 @@
       (("-fsaw-regalloc-fun" ?name (help "Allocate registers on this very function"))
        (set! *saw-register-allocation?* #t)
        (set! *saw-register-allocation-functions*
-	     (cons (string->symbol name) *saw-register-allocation-functions*)))
+	  (cons (string->symbol name) *saw-register-allocation-functions*)))
       (("-fno-saw-regalloc-fun" ?name (help "Don't allocate registers on this very function"))
        (set! *saw-register-allocation?* #t)
        (set! *saw-no-register-allocation-functions*
-	     (cons (string->symbol name) *saw-no-register-allocation-functions*)))
+	  (cons (string->symbol name) *saw-no-register-allocation-functions*)))
       (("-fsaw-regalloc-onexpr" (help "Allocate registers on expressions"))
        (set! *saw-register-allocation-onexpression?* #t))
       (("-fno-saw-regalloc-onexpr" (help "Don't allocate registers on expressions"))
@@ -777,22 +778,22 @@
        (set! *static-bigloo?* #t))
       ;; static all Bigloo library
       (("-static-all-bigloo"
-	(help "Link with static version of all bigloo libraries"))
+	  (help "Link with static version of all bigloo libraries"))
        (register-srfi! 'static-all-bigloo)
        (register-srfi! 'static-bigloo)
        (set! *static-bigloo?* #t)
        (set! *static-all-bigloo?* #t))
       ;; double libraries inclusions
       (("-ld-libs1"
-	(help "Add once user libraries when linking"))
+	  (help "Add once user libraries when linking"))
        (set! *double-ld-libs?* #f))
       (("-ld-libs2"
-	(help "Add twice user libraries when linking (default)"))
+	  (help "Add twice user libraries when linking (default)"))
        (set! *double-ld-libs?* #t))
       ;; C library linking
       (("-l?library" (help "Link with host library"))
        (set! *bigloo-user-lib* (cons (string-append "-l" library)
-				     *bigloo-user-lib*)))
+				  *bigloo-user-lib*)))
       ;; main generation
       (("-auto-link-main" (help "Enable main generation when needed for linking"))
        (set! *auto-link-main* #t))
@@ -850,7 +851,7 @@
        (set! *optim-jvm-inlining* (+fx 1 *optim-jvm-inlining*)))
       (("-fjvm-constr-inlining" (help "Enable JVM back-end inlining for constructors"))
        (set! *optim-jvm-constructor-inlining*
-	     (+fx 1 *optim-jvm-constructor-inlining*)))
+	  (+fx 1 *optim-jvm-constructor-inlining*)))
       (("-fno-jvm-inlining" (help "Disable JVM back-end inlining"))
        (set! *optim-jvm-inlining* 0))
       (("-fno-jvm-constr-inlining" (help "Disable JVM back-end inlining for constructors"))
@@ -1078,19 +1079,19 @@
 	   (set! *target-language* '.net))
 	  (else
 	   (error "parse-args" "Unknown target" lang))))
-
+      
 ;*--- end bigloo arg parsing  --------------------------------------*/
       ((("--")
         (help "--" "end bigloo arg parsing"))
        (set! *rest-args*  (append *rest-args* (reverse! the-remaining-args)))
        (set! the-remaining-args '()))
-
+      
       
 ;*--- Unknown arguments -----------------------------------------------*/
       (("-?dummy")
        (set! *rest-args* (cons (string-append "-" dummy) *rest-args*)))
       
-     
+      
 ;*--- The source file -------------------------------------------------*/
       (else
        (let ((suf (suffix else)))

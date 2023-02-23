@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu Sep 12 14:04:14 2019 (serrano)                */
-;*    Copyright   :  2005-19 Manuel Serrano                            */
+;*    Last change :  Tue Feb 21 16:54:10 2023 (serrano)                */
+;*    Copyright   :  2005-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
