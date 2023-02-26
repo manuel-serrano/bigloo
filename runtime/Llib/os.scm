@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Mar 14 14:53:53 2019 (serrano)                */
+;*    Last change :  Fri Feb 24 15:03:30 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -48,7 +48,8 @@
 	    __evenv
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
-	    __r4_input_6_10_2)
+	    __r4_input_6_10_2
+	    __r5_control_features_6_4)
    
    (extern  ($signal::obj (::int ::obj) "bgl_signal")
 	    (macro $sigsetmask::int (::int) "BGL_SIGSETMASK")
@@ -1031,27 +1032,28 @@
 		  "")))
       (if (not (string? flib))
 	  (err "Can't find library" lib)
-	  (let* ((ini (if (not init) "" init))
-		 (val (%dload flib ini mod)))
-	     (case val
-		((__dload_noarch)
-		 (err "Not supported on this architecture" flib))
-		((__dload_error)
-		 (proc-err flib (%dload-error) flib))
-		((__dload_noinit)
-		 (cond
-		    ((and (equal? init %dload-init-sym) (not module))
-		     (warning (string-append "dynamic-load: " flib)
-			"Cannot find library init entry point -- "
-			init))
-		    ((not init)
-		     #unspecified)
-		    (else
-		     (proc-err flib
-			"Cannot find library init entry point"
-			init))))
-		(else
-		 val))))))
+	  (let ((ini (if (not init) "" init)))
+	     (multiple-value-bind (val mod)
+		(%dload flib ini mod)
+		(case val
+		   ((__dload_noarch)
+		    (err "Not supported on this architecture" flib))
+		   ((__dload_error)
+		    (proc-err flib (%dload-error) flib))
+		   ((__dload_noinit)
+		    (cond
+		       ((and (equal? init %dload-init-sym) (not module))
+			(warning (string-append "dynamic-load: " flib)
+			   "Cannot find library init entry point -- "
+			   init))
+		       ((not init)
+			(values #unspecified mod))
+		       (else
+			(proc-err flib
+			   "Cannot find library init entry point"
+			   init))))
+		   (else
+		    (values val mod))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-unload ...                                               */
