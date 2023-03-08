@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Dec  2 09:50:50 2022 (serrano)                */
-/*    Copyright   :  2003-22 Manuel Serrano                            */
+/*    Last change :  Wed Mar  8 08:19:34 2023 (serrano)                */
+/*    Copyright   :  2003-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -369,9 +369,6 @@ alloc_dump_statistics() {
    hashtable_foreach(file_allocs, file_dump_alloc_size);
 
    dump_types_cnt();
-/*                                                                     */
-/*    fprintf(stderr, "\n\n\nallocation count: %l\n\n", 0);            */
-/*    hashtable_foreach(file_allocs, file_dump_alloc_count);           */
 }
 
 /*---------------------------------------------------------------------*/
