@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Feb 17 15:10:18 2023 (serrano)                */
+;*    Last change :  Sat Mar 11 08:22:05 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -77,6 +77,14 @@
 	    (inline uv-fs-write ::UvFile ::bstring ::int 
 	       #!key
 	       callback (offset 0) (position -1)
+	       (loop::UvLoop (uv-default-loop)))
+	    (inline uv-fs-write2 ::UvFile ::bstring ::int 
+	       #!key
+	       callback (offset 0) (position -1) arg0 arg1
+	       (loop::UvLoop (uv-default-loop)))
+	    (inline uv-fs-write3 ::UvFile ::bstring ::int 
+	       #!key
+	       callback (offset 0) (position -1) arg0 arg1 arg2
 	       (loop::UvLoop (uv-default-loop)))
 	    (inline uv-fs-read ::UvFile ::bstring ::int 
 	       #!key
@@ -327,6 +335,22 @@
 	   #!key callback (offset 0) (position -1)
 	   (loop::UvLoop (uv-default-loop)))
    ($uv-fs-write fd buffer offset length position callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-write2 ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-fs-write2 fd buffer length 
+	   #!key callback (offset 0) (position -1) arg0 arg1
+	   (loop::UvLoop (uv-default-loop)))
+   ($uv-fs-write2 fd buffer offset length position callback arg0 arg1 loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-write3 ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-fs-write3 fd buffer length 
+	   #!key callback (offset 0) (position -1) arg0 arg1 arg2
+	   (loop::UvLoop (uv-default-loop)))
+   ($uv-fs-write3 fd buffer offset length position callback arg0 arg1 arg2 loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-read ...                                                   */
