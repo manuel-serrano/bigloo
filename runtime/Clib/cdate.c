@@ -3,10 +3,11 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Tue Mar 28 13:29:58 2023 (serrano)                */
+/*    Last change :  Tue Mar 28 14:37:09 2023 (serrano)                */
 /*    Copyright   :  2003-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
+/*    See http://www.catb.org/esr/time-programming/#_improvements      */
 /*=====================================================================*/
 #include <string.h>
 #include <bigloo.h>
