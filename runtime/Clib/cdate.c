@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Thu Mar 26 14:26:00 2020 (serrano)                */
-/*    Copyright   :  2003-20 Manuel Serrano                            */
+/*    Last change :  Tue Mar 28 13:29:58 2023 (serrano)                */
+/*    Copyright   :  2003-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*=====================================================================*/
@@ -230,7 +230,7 @@ bgl_milliseconds_to_date( BGL_LONGLONG_T msec ) {
 
 #if( BGL_HAVE_LOCALTIME_R )
    localtime_r( &sec, &(date->date.tm) );
-#else   
+#else
    BGL_MUTEX_LOCK( date_mutex );
    tm_date( localtime( &sec ), date );
    BGL_MUTEX_UNLOCK( date_mutex );

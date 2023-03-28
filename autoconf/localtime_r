@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Jul 28 09:40:44 2021 (serrano)                */
+#*    Last change :  Tue Mar 28 14:03:21 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if localtime_r exists                                      */
 #*=====================================================================*/
@@ -54,13 +54,13 @@ cat > $file.c <<EOF
 #include <ctype.h>
 #include <sys/time.h>
 
-int main( int argc, char *argv[] ) {
+int main(int argc, char *argv[]) {
    time_t sec = 1445367545;
    struct tm res;
 
-   localtime_r( &sec, &res );
+   localtime_r(&sec, &res);
 
-   return res.tm_hour != 20 ? 0 : 1;
+   return (res.tm_hour == 20) ? 0 : 1;
 }
 EOF
 
