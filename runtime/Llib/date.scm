@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Thu Mar 26 14:29:39 2020 (serrano)                */
-;*    Copyright   :  2003-22 Manuel Serrano                            */
+;*    Last change :  Wed Mar 29 09:30:57 2023 (serrano)                */
+;*    Copyright   :  2003-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -118,7 +118,7 @@
 	       
 	       (method static $date-integer->second::elong (::long) "bgl_integer_to_seconds")
 	       (method static $date-nanosecond::llong (::date) "BGL_DATE_NANOSECOND")
-	       (method static $date-millisecond::llong (::date) "BGL_DATE_MILLISECOND")
+	       (method static $date-millisecond::long (::date) "BGL_DATE_MILLISECOND")
 	       (method static $date-second::int (::date) "BGL_DATE_SECOND")
 	       (method static $date-minute::int (::date) "BGL_DATE_MINUTE")
 	       (method static $date-hour::int (::date) "BGL_DATE_HOUR")
@@ -151,7 +151,7 @@
 	    (inline integer->second::elong ::long)
 	    
 	    (inline date-nanosecond::llong ::date)
-	    (inline date-millisecond::llong ::date)
+	    (inline date-millisecond::long ::date)
 	    (inline date-second::int ::date)
 	    (inline date-minute::int ::date)
 	    (inline date-hour::int ::date)
