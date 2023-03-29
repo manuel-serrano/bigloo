@@ -4390,11 +4390,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   
   if [ "$libbacktracelibs " != "no " ]; then
     if [ "$customlibbacktrace " = "yes " ]; then
-      ldcompshared="-llibbacktrace $ldcompshared" >> $makefile_cfg
+      ldcompshared="-lbacktrace $ldcompshared" >> $makefile_cfg
       ldcompstatic="$libbacktracebuildpath/libbacktrace.a $ldcompstatic" >> $makefile_cfg
     else
-      ldcompshared="-llibbacktrace $ldcompshared" >> $makefile_cfg
-      ldcompstatic="-llibbacktrace $ldcompstatic" >> $makefile_cfg
+      ldcompshared="-lbacktrace $ldcompshared" >> $makefile_cfg
+      ldcompstatic="-lbacktrace $ldcompstatic" >> $makefile_cfg
     fi
   fi
   
