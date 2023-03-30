@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Apr 26 13:57:46 2022 (serrano)                */
+;*    Last change :  Thu Mar 30 07:24:02 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -782,7 +782,10 @@
 (define (open-for-error fname)
    (cond
       ((file-exists? fname)
-       (open-input-file fname))
+       (unless (directory? fname)
+	  (with-handler
+	     (lambda (e) #f)
+	     (open-input-file fname))))
       ((string=? fname "stdin")
        (open-input-string (input-port-buffer (current-input-port))))
       ((string-prefix? "string://" fname)
