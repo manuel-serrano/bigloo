@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sat Mar 11 08:22:49 2023 (serrano)                */
+;*    Last change :  Sun Apr  2 12:30:36 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -257,6 +257,8 @@
 	 "bgl_uv_fs_read")
       ($uv-fs-read2::int (::UvFile ::bstring ::long ::long ::int64 ::obj ::obj ::obj ::UvLoop)
 	 "bgl_uv_fs_read2")
+      ($uv-fs-read3::int (::UvFile ::bstring ::long ::long ::int64 ::obj ::obj ::obj ::obj ::UvLoop)
+	 "bgl_uv_fs_read3")
       (macro $uv-guess-handle::int (::int)
 	     "uv_guess_handle")
       
