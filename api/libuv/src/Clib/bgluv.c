@@ -1,29 +1,27 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/api/libuv/src/Clib/bgluv-good.c        */
+/*    .../prgm/project/bigloo/bigloo/api/libuv/src/Clib/bgluv.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Apr  3 08:49:13 2023 (serrano)                */
+/*    Last change :  Mon Apr  3 09:13:06 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
 /*=====================================================================*/
 #include <bigloo.h>
-
 #include <uv.h>
-
 #include "bgluv.h"
 
 /*---------------------------------------------------------------------*/
 /*    Thread local storage declarations                                */
 /*---------------------------------------------------------------------*/
-#if BGL_HAS_THREAD_LOCALSTORAGE
+#if BGL_HAS_THREAD_LOCALSTORAGE 
 #  define UV_TLS_DECL BGL_THREAD_DECL
 #  define UV_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m)
 #else
 #  define UV_TLS_DECL static
-#  define UV_MUTEX_LOCK_TLS(m) BGL_MUTEX_LOCK(m)
+#  define UV_MUTEX_LOCK(m) BGL_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m) BGL_MUTEX_UNLOCK(m)
 #endif
 
