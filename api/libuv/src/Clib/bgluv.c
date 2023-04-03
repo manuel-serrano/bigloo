@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/api/libuv/src/Clib/bgluv.c        */
+/*    .../project/bigloo/bigloo/api/libuv/src/Clib/bgluv-good.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Apr  3 08:05:50 2023 (serrano)                */
+/*    Last change :  Mon Apr  3 08:49:13 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -110,7 +110,7 @@ UV_TLS_DECL long uv_fs_pool_size = 0;
 /*---------------------------------------------------------------------*/
 uv_fs_t *
 alloc_uv_fs_t() {
-   uv_fs_t *res;
+   uv_fs_t *req;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_fs_req_idx == uv_fs_pool_size) {
@@ -128,9 +128,9 @@ alloc_uv_fs_t() {
       }
    }
 
-   res = uv_fs_req_pool[uv_fs_req_idx++];
+   req = uv_fs_req_pool[uv_fs_req_idx++];
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
-   return res;
+   return req;
 }
 
 /*---------------------------------------------------------------------*/
@@ -139,8 +139,14 @@ alloc_uv_fs_t() {
 /*---------------------------------------------------------------------*/
 void
 free_uv_fs_t(uv_fs_t *req) {
-   uv_fs_obj_pool[(long)(req->data)] = BUNSPEC;
+   long idx = (long)(req->data);
+   
+   uv_fs_obj_pool[idx] = BUNSPEC;
+   
+   UV_MUTEX_LOCK(bgl_uv_mutex);
    uv_fs_req_pool[--uv_fs_req_idx] = req;
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
+   
    uv_fs_req_cleanup(req);
 }
 
@@ -150,10 +156,16 @@ free_uv_fs_t(uv_fs_t *req) {
 /*---------------------------------------------------------------------*/
 void
 free_uv_fs2_t(uv_fs_t *req) {
-   uv_fs_obj_pool[(long)(req->data)] = BUNSPEC;
-   uv_fs_obj_pool0[(long)(req->data)] = BUNSPEC;
-   uv_fs_obj_pool1[(long)(req->data)] = BUNSPEC;
+   long idx = (long)(req->data);
+   
+   uv_fs_obj_pool[idx] = BUNSPEC;
+   uv_fs_obj_pool0[idx] = BUNSPEC;
+   uv_fs_obj_pool1[idx] = BUNSPEC;
+   
+   UV_MUTEX_LOCK(bgl_uv_mutex);
    uv_fs_req_pool[--uv_fs_req_idx] = req;
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
+   
    uv_fs_req_cleanup(req);
 }
 
@@ -163,11 +175,17 @@ free_uv_fs2_t(uv_fs_t *req) {
 /*---------------------------------------------------------------------*/
 void
 free_uv_fs3_t(uv_fs_t *req) {
-   uv_fs_obj_pool[(long)(req->data)] = BUNSPEC;
-   uv_fs_obj_pool0[(long)(req->data)] = BUNSPEC;
-   uv_fs_obj_pool1[(long)(req->data)] = BUNSPEC;
-   uv_fs_obj_pool2[(long)(req->data)] = BUNSPEC;
+   long idx = (long)(req->data);
+   
+   uv_fs_obj_pool[idx] = BUNSPEC;
+   uv_fs_obj_pool0[idx] = BUNSPEC;
+   uv_fs_obj_pool1[idx] = BUNSPEC;
+   uv_fs_obj_pool2[idx] = BUNSPEC;
+   
+   UV_MUTEX_LOCK(bgl_uv_mutex);
    uv_fs_req_pool[--uv_fs_req_idx] = req;
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
+   
    uv_fs_req_cleanup(req);
 }
 
@@ -1270,6 +1288,7 @@ bgl_uv_fs_utime(char *path, double atime, double mtime, obj_t proc, bgl_uv_loop_
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_fs_rw_cb(uv_fs_t *req) {
+   long idx = (long)(req->data);
    obj_t proc = uv_fs_obj_pool[(long)(req->data)];
    
    free_uv_fs_t(req);
@@ -1282,9 +1301,10 @@ bgl_uv_fs_rw_cb(uv_fs_t *req) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_fs_rw2_cb(uv_fs_t *req) {
-   obj_t proc = uv_fs_obj_pool[(long)(req->data)];
-   obj_t arg0 = uv_fs_obj_pool0[(long)(req->data)];
-   obj_t arg1 = uv_fs_obj_pool1[(long)(req->data)];
+   long idx = (long)(req->data);
+   obj_t proc = uv_fs_obj_pool[idx];
+   obj_t arg0 = uv_fs_obj_pool0[idx];
+   obj_t arg1 = uv_fs_obj_pool1[idx];
    
    free_uv_fs2_t(req);
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, BEOA);
@@ -1296,10 +1316,11 @@ bgl_uv_fs_rw2_cb(uv_fs_t *req) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_fs_rw3_cb(uv_fs_t *req) {
-   obj_t proc = uv_fs_obj_pool[(long)(req->data)];
-   obj_t arg0 = uv_fs_obj_pool0[(long)(req->data)];
-   obj_t arg1 = uv_fs_obj_pool1[(long)(req->data)];
-   obj_t arg2 = uv_fs_obj_pool2[(long)(req->data)];
+   long idx = (long)(req->data);
+   obj_t proc = uv_fs_obj_pool[idx];
+   obj_t arg0 = uv_fs_obj_pool0[idx];
+   obj_t arg1 = uv_fs_obj_pool1[idx];
+   obj_t arg2 = uv_fs_obj_pool2[idx];
    
    free_uv_fs3_t(req);
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, arg2, BEOA);
@@ -1361,10 +1382,11 @@ bgl_uv_fs_write2(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
       
       if (bgl_check_fs_cb(proc, 3, "uv_fs_write")) {
 	 uv_fs_t *req = alloc_uv_fs_t();
+	 long idx = (long)(req->data);
 
-	 uv_fs_obj_pool[(long)(req->data)] = proc;
-	 uv_fs_obj_pool0[(long)(req->data)] = arg0;
-	 uv_fs_obj_pool1[(long)(req->data)] = arg1;
+	 uv_fs_obj_pool[idx] = proc;
+	 uv_fs_obj_pool0[idx] = arg0;
+	 uv_fs_obj_pool1[idx] = arg1;
 
 	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
       } else {
@@ -1399,11 +1421,12 @@ bgl_uv_fs_write3(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
       
       if (bgl_check_fs_cb(proc, 4, "uv_fs_write")) {
 	 uv_fs_t *req = alloc_uv_fs_t();
+	 long idx = (long)(req->data);
 
-	 uv_fs_obj_pool[(long)(req->data)] = proc;
-	 uv_fs_obj_pool0[(long)(req->data)] = arg0;
-	 uv_fs_obj_pool1[(long)(req->data)] = arg1;
-	 uv_fs_obj_pool2[(long)(req->data)] = arg2;
+	 uv_fs_obj_pool[idx] = proc;
+	 uv_fs_obj_pool0[idx] = arg0;
+	 uv_fs_obj_pool1[idx] = arg1;
+	 uv_fs_obj_pool2[idx] = arg2;
 
 	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
       } else {
@@ -1474,10 +1497,11 @@ bgl_uv_fs_read2(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
 
       if (bgl_check_fs_cb(proc, 3, "uv_fs_read")) {
 	 uv_fs_t *req = alloc_uv_fs_t();
-
-	 uv_fs_obj_pool[(long)(req->data)] = proc;
-	 uv_fs_obj_pool0[(long)(req->data)] = arg0;
-	 uv_fs_obj_pool1[(long)(req->data)] = arg1;
+	 long idx = (long)(req->data);
+	 
+	 uv_fs_obj_pool[idx] = proc;
+	 uv_fs_obj_pool0[idx] = arg0;
+	 uv_fs_obj_pool1[idx] = arg1;
 
 	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
       } else {
@@ -1512,11 +1536,12 @@ bgl_uv_fs_read3(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
 
       if (bgl_check_fs_cb(proc, 4, "uv_fs_read")) {
 	 uv_fs_t *req = alloc_uv_fs_t();
+	 long idx = (long)(req->data);
 
-	 uv_fs_obj_pool[(long)(req->data)] = proc;
-	 uv_fs_obj_pool0[(long)(req->data)] = arg0;
-	 uv_fs_obj_pool1[(long)(req->data)] = arg1;
-	 uv_fs_obj_pool2[(long)(req->data)] = arg2;
+	 uv_fs_obj_pool[idx] = proc;
+	 uv_fs_obj_pool0[idx] = arg0;
+	 uv_fs_obj_pool1[idx] = arg1;
+	 uv_fs_obj_pool2[idx] = arg2;
 
 	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
       } else {
