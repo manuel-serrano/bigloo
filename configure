@@ -50,7 +50,7 @@ apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone ava
 bee=partial # "partial" or "full"
 
 #*--- build directory -------------------------------------------------*/
-buildtmp=$TMPDIR
+buildtmp=$tmpdir
 
 #*--- C back-end user configure ---------------------------------------*/
 nativebackend=yes # set to "no" not to install the native (C) back-end
@@ -1722,7 +1722,8 @@ if [ $bootmethod = "source" ]; then
   fi
 
   if [ $? != 0 ]; then
-    echo "command failed \"wget $ftp/bigloo-$buildrelease -o $TMPDIR/bigloo-$buildrelease.tar.gz\""
+    echo "command failed \"wget $biglooftp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
+    rm -f download/bigloo-$buildrelease.tar.gz
     wget --help > /dev/null 2> /dev/null
     
     if [ $? != 0 ]; then
@@ -4390,11 +4391,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   
   if [ "$libbacktracelibs " != "no " ]; then
     if [ "$customlibbacktrace " = "yes " ]; then
-      ldcompshared="-llibbacktrace $ldcompshared" >> $makefile_cfg
+      ldcompshared="-lbacktrace $ldcompshared" >> $makefile_cfg
       ldcompstatic="$libbacktracebuildpath/libbacktrace.a $ldcompstatic" >> $makefile_cfg
     else
-      ldcompshared="-llibbacktrace $ldcompshared" >> $makefile_cfg
-      ldcompstatic="-llibbacktrace $ldcompstatic" >> $makefile_cfg
+      ldcompshared="-lbacktrace $ldcompshared" >> $makefile_cfg
+      ldcompstatic="-lbacktrace $ldcompstatic" >> $makefile_cfg
     fi
   fi
   
