@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Mar  8 11:58:11 2023 (serrano)                */
+#*    Last change :  Mon Apr  3 16:04:27 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -50,7 +50,11 @@ apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone ava
 bee=partial # "partial" or "full"
 
 #*--- build directory -------------------------------------------------*/
-buildtmp=$tmpdir
+buildtmp=$TMPDIR
+
+if [ "$buildtmp " = " " ]; then
+  buildtmp=$tmpdir
+fi  
 
 #*--- C back-end user configure ---------------------------------------*/
 nativebackend=yes # set to "no" not to install the native (C) back-end

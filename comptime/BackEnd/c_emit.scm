@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Sat Apr 16 08:41:16 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr  3 15:34:57 2023 (serrano)                */
+;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -349,11 +349,13 @@
        (display (untrigraph (string-for-read value)) *c-port*)
        (display #\" *c-port*))
       ((fixnum? value)
-       (display "((" *c-port*)
-       (display (string-sans-$ (type-name *long*)) *c-port*)
-       (display ")" *c-port*)
        (display value *c-port*)
-       (display ")" *c-port*))
+       (display "L" *c-port*))
+;*        (display "((" *c-port*)                                      */
+;*        (display (string-sans-$ (type-name *long*)) *c-port*)        */
+;*        (display ")" *c-port*)                                       */
+;*        (display value *c-port*)                                     */
+;*        (display ")" *c-port*))                                      */
       ((flonum? value)
        (cond
 	  ((nanfl? value)
