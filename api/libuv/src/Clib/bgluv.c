@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Apr  2 12:31:09 2023 (serrano)                */
+/*    Last change :  Mon Apr  3 08:05:50 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -13,6 +13,19 @@
 #include <uv.h>
 
 #include "bgluv.h"
+
+/*---------------------------------------------------------------------*/
+/*    Thread local storage declarations                                */
+/*---------------------------------------------------------------------*/
+#if BGL_HAS_THREAD_LOCALSTORAGE
+#  define UV_TLS_DECL BGL_THREAD_DECL
+#  define UV_MUTEX_LOCK(m)
+#  define UV_MUTEX_UNLOCK(m)
+#else
+#  define UV_TLS_DECL static
+#  define UV_MUTEX_LOCK_TLS(m) BGL_MUTEX_LOCK(m)
+#  define UV_MUTEX_UNLOCK(m) BGL_MUTEX_UNLOCK(m)
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    type alias                                                       */
@@ -55,7 +68,7 @@ extern obj_t bgl_uv_new_file(int, obj_t);
 /*    obj_t                                                            */
 /*    gc_marks ...                                                     */
 /*---------------------------------------------------------------------*/
-obj_t gc_marks = BNIL;
+UV_TLS_DECL obj_t gc_marks = BNIL;
 static obj_t bgl_uv_fstat(uv_stat_t);
 
 /*---------------------------------------------------------------------*/
@@ -64,9 +77,9 @@ static obj_t bgl_uv_fstat(uv_stat_t);
 /*---------------------------------------------------------------------*/
 static void
 gc_mark(obj_t obj) {
-   BGL_MUTEX_LOCK(bgl_uv_mutex);
+   UV_MUTEX_LOCK(bgl_uv_mutex);
    gc_marks = MAKE_PAIR(obj, gc_marks);
-   BGL_MUTEX_UNLOCK(bgl_uv_mutex);
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
 
 /*---------------------------------------------------------------------*/
@@ -75,21 +88,21 @@ gc_mark(obj_t obj) {
 /*---------------------------------------------------------------------*/
 void
 gc_unmark(obj_t obj) {
-   BGL_MUTEX_LOCK(bgl_uv_mutex);
+   UV_MUTEX_LOCK(bgl_uv_mutex);
    gc_marks = bgl_remq(obj, gc_marks);
-   BGL_MUTEX_UNLOCK(bgl_uv_mutex);
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
 
 /*---------------------------------------------------------------------*/
 /*    uv_fs_pools ...                                                  */
 /*---------------------------------------------------------------------*/
-static uv_fs_t **uv_fs_req_pool = 0L;
-static obj_t *uv_fs_obj_pool = 0L;
-static obj_t *uv_fs_obj_pool0 = 0L;
-static obj_t *uv_fs_obj_pool1 = 0L;
-static obj_t *uv_fs_obj_pool2 = 0L;
-static long uv_fs_req_idx = 0;
-static long uv_fs_pool_size = 0;
+UV_TLS_DECL uv_fs_t **uv_fs_req_pool = 0L;
+UV_TLS_DECL obj_t *uv_fs_obj_pool = 0L;
+UV_TLS_DECL obj_t *uv_fs_obj_pool0 = 0L;
+UV_TLS_DECL obj_t *uv_fs_obj_pool1 = 0L;
+UV_TLS_DECL obj_t *uv_fs_obj_pool2 = 0L;
+UV_TLS_DECL long uv_fs_req_idx = 0;
+UV_TLS_DECL long uv_fs_pool_size = 0;
 
 /*---------------------------------------------------------------------*/
 /*    uv_fs_t *                                                        */
@@ -99,7 +112,7 @@ uv_fs_t *
 alloc_uv_fs_t() {
    uv_fs_t *res;
 
-   BGL_MUTEX_LOCK(bgl_uv_mutex);
+   UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_fs_req_idx == uv_fs_pool_size) {
       uv_fs_pool_size += 10;
 
@@ -116,7 +129,7 @@ alloc_uv_fs_t() {
    }
 
    res = uv_fs_req_pool[uv_fs_req_idx++];
-   BGL_MUTEX_UNLOCK(bgl_uv_mutex);
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
    return res;
 }
 
