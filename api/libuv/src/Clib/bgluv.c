@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Apr  3 09:13:06 2023 (serrano)                */
+/*    Last change :  Mon Apr  3 09:52:28 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -15,14 +15,21 @@
 /*---------------------------------------------------------------------*/
 /*    Thread local storage declarations                                */
 /*---------------------------------------------------------------------*/
-#if BGL_HAS_THREAD_LOCALSTORAGE 
+#if BGL_HAS_THREAD_LOCALSTORAGE
+static obj_t tls_roots = BNIL;
 #  define UV_TLS_DECL BGL_THREAD_DECL
 #  define UV_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m)
+#  define UV_GC_REALLOC_TLS(p, s) \
+   (p = (obj_t *)GC_REALLOC((obj_t)p, s), \
+    BGL_MUTEX_LOCK(bgl_uv_mutex), \
+    tls_roots = MAKE_PAIR(tls_roots, (obj_t)p),	\
+    BGL_MUTEX_UNLOCK(bgl_uv_mutex), p)
 #else
 #  define UV_TLS_DECL static
 #  define UV_MUTEX_LOCK(m) BGL_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m) BGL_MUTEX_UNLOCK(m)
+#  define UV_GC_REALLOC_TLS(p, s) (p = (obj_t *)GC_REALLOC((obj_t)p, s))
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -115,10 +122,10 @@ alloc_uv_fs_t() {
       uv_fs_pool_size += 10;
 
       uv_fs_req_pool = malloc(sizeof(uv_fs_t *) * uv_fs_pool_size);
-      uv_fs_obj_pool = (obj_t *)GC_REALLOC((obj_t)uv_fs_obj_pool, sizeof(obj_t) * uv_fs_pool_size);
-      uv_fs_obj_pool0 = (obj_t *)GC_REALLOC((obj_t)uv_fs_obj_pool0, sizeof(obj_t) * uv_fs_pool_size);
-      uv_fs_obj_pool1 = (obj_t *)GC_REALLOC((obj_t)uv_fs_obj_pool1, sizeof(obj_t) * uv_fs_pool_size);
-      uv_fs_obj_pool2 = (obj_t *)GC_REALLOC((obj_t)uv_fs_obj_pool2, sizeof(obj_t) * uv_fs_pool_size);
+      UV_GC_REALLOC_TLS(uv_fs_obj_pool, sizeof(obj_t) * uv_fs_pool_size);
+      UV_GC_REALLOC_TLS(uv_fs_obj_pool0, sizeof(obj_t) * uv_fs_pool_size);
+      UV_GC_REALLOC_TLS(uv_fs_obj_pool1, sizeof(obj_t) * uv_fs_pool_size);
+      UV_GC_REALLOC_TLS(uv_fs_obj_pool2, sizeof(obj_t) * uv_fs_pool_size);
 
       for (long i = uv_fs_req_idx; i < uv_fs_pool_size; i++) {
 	 uv_fs_req_pool[i] = (uv_fs_t *)malloc(sizeof(uv_fs_t));
