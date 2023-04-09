@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Apr  3 09:52:28 2023 (serrano)                */
+/*    Last change :  Sun Apr  9 06:45:45 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -121,7 +121,7 @@ alloc_uv_fs_t() {
    if (uv_fs_req_idx == uv_fs_pool_size) {
       uv_fs_pool_size += 10;
 
-      uv_fs_req_pool = malloc(sizeof(uv_fs_t *) * uv_fs_pool_size);
+      uv_fs_req_pool = realloc(uv_fs_req_pool, sizeof(uv_fs_t *) * uv_fs_pool_size);
       UV_GC_REALLOC_TLS(uv_fs_obj_pool, sizeof(obj_t) * uv_fs_pool_size);
       UV_GC_REALLOC_TLS(uv_fs_obj_pool0, sizeof(obj_t) * uv_fs_pool_size);
       UV_GC_REALLOC_TLS(uv_fs_obj_pool1, sizeof(obj_t) * uv_fs_pool_size);
