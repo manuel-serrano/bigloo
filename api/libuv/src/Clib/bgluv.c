@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Apr  9 06:45:45 2023 (serrano)                */
+/*    Last change :  Sun Apr  9 06:50:08 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -111,9 +111,9 @@ UV_TLS_DECL long uv_fs_pool_size = 0;
 
 /*---------------------------------------------------------------------*/
 /*    uv_fs_t *                                                        */
-/*    get_uv_fs_t ...                                                  */
+/*    alloc_uv_fs_t ...                                                */
 /*---------------------------------------------------------------------*/
-uv_fs_t *
+static uv_fs_t *
 alloc_uv_fs_t() {
    uv_fs_t *req;
 
@@ -142,7 +142,7 @@ alloc_uv_fs_t() {
 /*    void                                                             */
 /*    free_uv_fs_t ...                                                 */
 /*---------------------------------------------------------------------*/
-void
+static void
 free_uv_fs_t(uv_fs_t *req) {
    long idx = (long)(req->data);
    
@@ -159,7 +159,7 @@ free_uv_fs_t(uv_fs_t *req) {
 /*    void                                                             */
 /*    free_uv_fs2_t ...                                                */
 /*---------------------------------------------------------------------*/
-void
+static void
 free_uv_fs2_t(uv_fs_t *req) {
    long idx = (long)(req->data);
    
@@ -178,7 +178,7 @@ free_uv_fs2_t(uv_fs_t *req) {
 /*    void                                                             */
 /*    free_uv_fs3_t ...                                                */
 /*---------------------------------------------------------------------*/
-void
+static void
 free_uv_fs3_t(uv_fs_t *req) {
    long idx = (long)(req->data);
    
@@ -212,7 +212,7 @@ bgl_uv_process_title_init() {
 /*    uv_close is automatically on an active handle, as those          */
 /*    involved in a uv_listen action.                                  */
 /*---------------------------------------------------------------------*/
-void
+static void
 bgl_uv_close_cb(uv_handle_t *handle) {
    obj_t o = (obj_t)handle->data;
    bgl_uv_handle_t h = (bgl_uv_handle_t)(PAIRP(o) ? CAR(o) : o);
@@ -225,7 +225,7 @@ bgl_uv_close_cb(uv_handle_t *handle) {
 /*    void                                                             */
 /*    bgl_uv_handle_cb ...                                             */
 /*---------------------------------------------------------------------*/
-void
+static void
 bgl_uv_handle_cb(uv_handle_t *handle, int status) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
    obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
@@ -251,7 +251,7 @@ bgl_uv_timer_new(BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop) {
 /*    void                                                             */
 /*    bgl_uv_timer_cb ...                                              */
 /*---------------------------------------------------------------------*/
-void
+static void
 bgl_uv_timer_cb(uv_handle_t *handle) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
    obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
@@ -266,7 +266,7 @@ bgl_uv_timer_cb(uv_handle_t *handle) {
 /*    void                                                             */
 /*    bgl_uv_fs_event_cb ...                                           */
 /*---------------------------------------------------------------------*/
-void
+static void
 bgl_uv_fs_event_cb(uv_handle_t *handle, char *path, int events, int status) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
    obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
@@ -294,7 +294,7 @@ bgl_uv_fs_event_new(BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop) {
 /*    void                                                             */
 /*    bgl_uv_fs_poll_cb ...                                            */
 /*---------------------------------------------------------------------*/
-void
+static void
 bgl_uv_fs_poll_cb(uv_handle_t *handle, int status, const uv_stat_t* prev, const uv_stat_t* curr) {
    bgl_uv_fs_poll_t o = (bgl_uv_fs_poll_t)handle->data;
    obj_t p = ((bgl_uv_fs_poll_t)COBJECT(o))->BgL_cbz00;
@@ -345,7 +345,7 @@ bgl_uv_fs_poll_getpath(uv_fs_poll_t *o) {
 /*    void                                                             */
 /*    bgl_uv_poll_cb ...                                               */
 /*---------------------------------------------------------------------*/
-void
+static void
 bgl_uv_poll_cb(uv_handle_t *handle, int status, int state) {
    bgl_uv_poll_t o = (bgl_uv_poll_t)handle->data;
    obj_t p = ((bgl_uv_poll_t)COBJECT(o))->BgL_cbz00;
