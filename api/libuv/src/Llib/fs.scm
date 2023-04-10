@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Sun Apr  2 12:30:13 2023 (serrano)                */
+;*    Last change :  Mon Apr 10 05:51:27 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -68,10 +68,15 @@
 	       #!key callback (loop (uv-default-loop)))
 	    (inline uv-fs-fdatasync ::UvFile
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-open ::bstring ::obj
+	    (inline uv-fs-open ::bstring ::obj
 	       #!key (mode #o666) callback (loop (uv-default-loop)))
+	    (inline uv-fs-open4 ::bstring ::obj
+	       #!key (mode #o666) callback arg0 arg1 arg2 arg3
+	       (loop (uv-default-loop)))
 	    (inline uv-fs-close ::UvFile
 	       #!key callback (loop (uv-default-loop)))
+	    (inline uv-fs-close2 ::UvFile
+	       #!key callback arg0 arg1 (loop (uv-default-loop)))
 	    (inline uv-fs-copyfile ::bstring ::bstring ::int
 	       #!key callback (loop (uv-default-loop)))
 	    (inline uv-fs-write ::UvFile ::bstring ::int 
@@ -290,22 +295,36 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-open ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (uv-fs-open path flags #!key (mode #o666) callback (loop (uv-default-loop)))
-   (cond
-      ((integer? flags)
-       ($uv-fs-open path flags mode callback loop))
-      ((symbol? flags)
-       ($uv-fs-open path (uv-fs-flags flags) mode callback loop))
-      ((string? flags)
-       ($uv-fs-open path (uv-fs-flags (string->symbol flags)) mode callback loop))
-      (else
-       (error "uv-fs-open" "Wrong flags" flags))))
+(define-inline (uv-fs-open path flags #!key (mode #o666) callback (loop (uv-default-loop)))
+   (let ((f (cond
+	       ((integer? flags) flags)
+	       ((symbol? flags) (uv-fs-flags flags))
+	       ((string? flags) (uv-fs-flags (string->symbol flags)))
+	       (else (error "uv-fs-open" "Wrong flags" flags)))))
+      ($uv-fs-open path f mode callback loop)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-open4 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-fs-open4 path flags #!key (mode #o666) callback arg0 arg1 arg2 arg3 (loop (uv-default-loop)))
+   (let ((f (cond
+	       ((integer? flags) flags)
+	       ((symbol? flags) (uv-fs-flags flags))
+	       ((string? flags) (uv-fs-flags (string->symbol flags)))
+	       (else (error "uv-fs-open" "Wrong flags" flags)))))
+      ($uv-fs-open4 path f mode callback arg0 arg1 arg2 arg3 loop)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-close ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-fs-close fd::UvFile #!key callback (loop (uv-default-loop)))
    ($uv-fs-close fd callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-close2 ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-fs-close2 fd::UvFile #!key callback arg0 arg1 (loop (uv-default-loop)))
+   ($uv-fs-close2 fd callback arg0 arg1 loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-copyfile ...                                               */

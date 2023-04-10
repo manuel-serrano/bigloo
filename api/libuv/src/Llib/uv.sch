@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sun Apr  2 12:30:36 2023 (serrano)                */
+;*    Last change :  Mon Apr 10 06:15:24 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -217,8 +217,12 @@
 	 "bgl_uv_fs_fchmod")
       ($uv-fs-open::obj (::bstring ::int ::int ::obj ::UvLoop)
 	 "bgl_uv_fs_open")
+      ($uv-fs-open4::obj (::bstring ::int ::int ::obj ::obj ::obj ::obj ::obj ::UvLoop)
+	 "bgl_uv_fs_open4")
       ($uv-fs-close::int (::UvFile ::obj ::UvLoop)
 	 "bgl_uv_fs_close")
+      ($uv-fs-close2::int (::UvFile ::obj ::obj ::obj ::UvLoop)
+	 "bgl_uv_fs_close2")
       ($uv-fs-copyfile::int (::bstring ::bstring ::int ::obj ::UvLoop)
 	 "bgl_uv_fs_copyfile")
       ($uv-fs-fstat::obj (::UvFile ::obj ::obj ::UvLoop)
