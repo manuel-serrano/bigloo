@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Tue Apr 11 07:47:23 2023 (serrano)                */
+;*    Last change :  Tue Apr 11 14:05:19 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -358,7 +358,7 @@
 ;*    uv-udp-recv-start ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-udp-recv-start o::UvUdp #!key onalloc callback (loop (uv-default-loop)))
-   ($uv-udp-recv-start o onalloc callback loop))
+   ($uv-udp-recv-start o onalloc callback))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-recv-stop ...                                             */

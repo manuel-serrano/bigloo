@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Apr  3 09:13:06 2023 (serrano)                */
+/*    Last change :  Tue Apr 11 13:47:20 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -21,9 +21,10 @@ static obj_t tls_roots = BNIL;
 #  define UV_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m)
 #  define UV_GC_REALLOC_TLS(p, s) \
-   (p = (void *)GC_REALLOC((obj_t)p, s), \
+   (tls_roots = bgl_remq_bang((obj_t)p, tls_roots), \
+    p = (void *)GC_REALLOC((obj_t)p, s), \
     BGL_MUTEX_LOCK(bgl_uv_mutex), \
-    tls_roots = MAKE_PAIR(tls_roots, (obj_t)p),	\
+    tls_roots = MAKE_PAIR((obj_t)p, tls_roots), \
     BGL_MUTEX_UNLOCK(bgl_uv_mutex), p)
 #else
 #  define UV_TLS_DECL static
@@ -98,7 +99,7 @@ gc_unmark(obj_t obj) {
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
 
-UV_TLS_DECL bgl_uv_stream_t *stream_pool = 0L;
+UV_TLS_DECL obj_t *stream_pool = 0L;
 UV_TLS_DECL long stream_pool_size = 0;
 
 /*---------------------------------------------------------------------*/
@@ -2198,20 +2199,17 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
 	 uv_os_fd_t fd;
-	 int r;
 
 	 stream->BgL_z52allocz52 = BUNSPEC;
 	 stream->BgL_z52procaz52 = proca;
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT(-1);
 
-	 if ((r = uv_read_start(s, bgl_uv_alloc_cb, bgl_uv_read_cb)) == 0) {
-	    uv_fileno((uv_handle_t *)s, &fd);
-	    int idx = fd_to_idx(fd);
-	    stream_pool[idx] = stream;
-	 }
+	 uv_fileno((uv_handle_t *)s, &fd);
+	 int idx = fd_to_idx(fd);
+	 stream_pool[idx] = obj;
 
-	 return r;
+	 return uv_read_start(s, bgl_uv_alloc_cb, bgl_uv_read_cb);
       }
    }
 }
@@ -2631,7 +2629,7 @@ bgl_uv_udp_recv_cb(uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf,
 /*    bgl_uv_udp_recv_start ...                                        */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop) {
+bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc) {
    if (!PROCEDUREP(proca) || (!PROCEDURE_CORRECT_ARITYP(proca, 2))) {
       C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-udp_recv-start",
 			"wrong onalloc", proca);
@@ -2642,6 +2640,7 @@ bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop) 
       } else {
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
 	 uv_udp_t *s = (uv_udp_t *)(stream->BgL_z42builtinz42);
+	 uv_os_fd_t fd;
 	 int r;
 
 	 stream->BgL_z52allocz52 = BUNSPEC;
@@ -2649,14 +2648,11 @@ bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop) 
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT(-1);
 
-	 if ((r = uv_udp_recv_start(s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb)) == 0) {
-	    uv_os_fd_t fd;
-	    uv_fileno((uv_handle_t *)s, &fd);
-	    int idx = fd_to_idx(fd);
-	    stream_pool[idx] = stream;
-	 }
+	 uv_fileno((uv_handle_t *)s, &fd);
+	 int idx = fd_to_idx(fd);
+	 stream_pool[idx] = obj;
 
-	 return r;
+	 return uv_udp_recv_start(s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb);
       }
    }
 }
