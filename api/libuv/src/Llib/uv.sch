@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Tue Apr 11 14:04:57 2023 (serrano)                */
+;*    Last change :  Tue Apr 11 14:33:29 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -325,9 +325,9 @@
 	 "bgl_uv_read_start")
       ($uv-read-stop::int (::UvHandle)
 	 "bgl_uv_read_stop")
-      ($uv-shutdown::int (::UvStream ::obj ::UvLoop)
+      ($uv-shutdown::int (::UvStream ::obj)
 	 "bgl_uv_shutdown")
-      ($uv-listen::int (::UvStream ::int ::obj ::UvLoop)
+      ($uv-listen::int (::UvStream ::int ::obj)
 	 "bgl_uv_listen")
       (macro $uv-accept::int (::$uv_stream_t ::$uv_stream_t)
 	     "uv_accept")

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Apr 11 13:47:20 2023 (serrano)                */
+/*    Last change :  Tue Apr 11 14:38:40 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -99,7 +99,18 @@ gc_unmark(obj_t obj) {
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
 
-UV_TLS_DECL obj_t *stream_pool = 0L;
+/*---------------------------------------------------------------------*/
+/*    uv_stream_data ...                                               */
+/*---------------------------------------------------------------------*/
+typedef struct uv_stream_data {
+   obj_t proc;
+   obj_t alloc;
+   obj_t obj;
+   obj_t offset;
+   obj_t allocobj;
+} uv_stream_data_t;
+
+UV_TLS_DECL uv_stream_data_t *stream_pool = 0L;
 UV_TLS_DECL long stream_pool_size = 0;
 
 /*---------------------------------------------------------------------*/
@@ -110,7 +121,7 @@ static int
 fd_to_idx(int fd) {
    if (fd >= stream_pool_size) {
       stream_pool_size = fd + 10;
-      UV_GC_REALLOC_TLS(stream_pool, sizeof(bgl_uv_stream_t) * stream_pool_size);
+      UV_GC_REALLOC_TLS(stream_pool, sizeof(uv_stream_data_t) * stream_pool_size);
    }
 
    return fd;
@@ -122,7 +133,11 @@ fd_to_idx(int fd) {
 /*---------------------------------------------------------------------*/
 static void
 free_stream_cb_t(int idx) {
-   stream_pool[idx] = 0L;
+/*    stream_pool[idx].obj = 0L;                                       */
+/*    stream_pool[idx].proc = 0L;                                      */
+/*    stream_pool[idx].alloc = 0L;                                     */
+   stream_pool[idx].offset = BINT(-1);
+   stream_pool[idx].allocobj = 0L;
 }
    
 /*---------------------------------------------------------------------*/
@@ -272,6 +287,7 @@ free_uv_fs5_t(uv_fs_t *req) {
 /*---------------------------------------------------------------------*/
 typedef struct uv_shutdown_data {
    obj_t proc;
+   obj_t obj;
 } uv_shutdown_data_t;
 
 UV_TLS_DECL uv_shutdown_t **uv_shutdown_req_pool = 0L;
@@ -313,7 +329,8 @@ static void
 free_uv_shutdown_t(uv_shutdown_t *req) {
    long idx = (long)(req->data);
    
-   uv_req_data_pool[idx].proc = BUNSPEC;
+   uv_shutdown_data_pool[idx].proc = BUNSPEC;
+   uv_shutdown_data_pool[idx].obj = BUNSPEC;
    
    UV_MUTEX_LOCK(bgl_uv_mutex);
    uv_shutdown_req_pool[--uv_shutdown_idx] = req;
@@ -340,8 +357,9 @@ bgl_uv_process_title_init() {
 /*---------------------------------------------------------------------*/
 void
 bgl_uv_close_cb(uv_handle_t *handle) {
-   obj_t o = (obj_t)handle->data;
-   bgl_uv_handle_t h = (bgl_uv_handle_t)(PAIRP(o) ? CAR(o) : o);
+   obj_t o = (obj_t)(handle->data);
+   bgl_uv_handle_t h =
+      (bgl_uv_handle_t)(INTEGERP(o) ? stream_pool[CINT(o)].obj : CAR(o));
    obj_t p = ((bgl_uv_handle_t)COBJECT(h))->BgL_z52onclosez52;
 
    if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, BEOA);
@@ -2131,15 +2149,15 @@ bgl_uv_write2(obj_t obj, char *buffer, long offset, long length, obj_t sendhandl
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
-   obj_t obj = (obj_t)stream->data;
-   bgl_uv_stream_t sobj = (bgl_uv_stream_t)COBJECT(obj);
-   obj_t p = sobj->BgL_z52proccz52;
-   obj_t allocobj = sobj->BgL_z52allocz52;
-   obj_t offset = sobj->BgL_z52offsetz52;
+   long idx = CINT(stream->data);
+   uv_stream_data_t *data = &(stream_pool[idx]);
+   obj_t p = data->proc;
+   obj_t allocobj = data->allocobj;
+   obj_t offset = data->offset;
    int c = 0;
    obj_t pendingsym = BFALSE;
 
-   sobj->BgL_z52allocz52 = BUNSPEC;
+   data->allocobj = BUNSPEC;
 
    if ((stream->type == UV_NAMED_PIPE)) {
       if (uv_pipe_pending_count((uv_pipe_t*)stream) > 0) {
@@ -2165,19 +2183,20 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_alloc_cb(uv_handle_t *hdl, size_t ssize, uv_buf_t *buf) {
-   bgl_uv_stream_t stream = (bgl_uv_stream_t)hdl->data;
-   obj_t p = ((bgl_uv_stream_t)COBJECT(stream))->BgL_z52procaz52;
-   obj_t allocobj = PROCEDURE_ENTRY(p)(p, stream, BINT(ssize));
+   long idx = CINT(hdl->data);
+   uv_stream_data_t *data = &(stream_pool[idx]);
+   
+   obj_t p = data->alloc;
+   obj_t allocobj = PROCEDURE_ENTRY(p)(p, data->obj, BINT(ssize));
    obj_t chunk = BGL_MVALUES_VAL(1);
    obj_t offset = BGL_MVALUES_VAL(2);
 
    if (!STRINGP(chunk)) {
-      C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-read-start, onalloc",
-			"string",
-			chunk);
+      C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-read-start, onalloc", "string", chunk);
    }
-   ((bgl_uv_stream_t)COBJECT(stream))->BgL_z52allocz52 = allocobj;
-   ((bgl_uv_stream_t)COBJECT(stream))->BgL_z52offsetz52 = offset;
+
+   data->allocobj = allocobj;
+   data->offset = offset;
 
    *buf = uv_buf_init(&(STRING_REF(chunk, CINT(offset))), ssize);
 }
@@ -2200,14 +2219,14 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
 	 uv_os_fd_t fd;
 
-	 stream->BgL_z52allocz52 = BUNSPEC;
-	 stream->BgL_z52procaz52 = proca;
-	 stream->BgL_z52proccz52 = procc;
-	 stream->BgL_z52offsetz52 = BINT(-1);
-
 	 uv_fileno((uv_handle_t *)s, &fd);
 	 int idx = fd_to_idx(fd);
-	 stream_pool[idx] = obj;
+
+	 s->data = BINT(idx);
+	 stream_pool[idx].obj = obj;
+	 stream_pool[idx].proc = procc;
+	 stream_pool[idx].alloc = proca;
+	 stream_pool[idx].offset = BINT(-1);
 
 	 return uv_read_start(s, bgl_uv_alloc_cb, bgl_uv_read_cb);
       }
@@ -2320,11 +2339,9 @@ bgl_uv_tcp_connect(obj_t obj, char *addr, int port, int family, obj_t proc, bgl_
 /*---------------------------------------------------------------------*/
 static void
 uv_listen_cb(uv_stream_t *handle, int status) {
-   obj_t data = (obj_t)handle->data;
-   obj_t p, obj;
-
-   obj = CAR(data);
-   p = CDR(data);
+   long idx = CINT(handle->data);
+   obj_t p = stream_pool[idx].proc;
+   obj_t obj = stream_pool[idx].obj;
 
    PROCEDURE_ENTRY(p)(p, obj, BINT(status), BEOA);
 }
@@ -2340,8 +2357,14 @@ bgl_uv_listen(obj_t obj, int backlog, obj_t proc, bgl_uv_loop_t bloop) {
 			"wrong callback", proc);
    } else {
       uv_stream_t *s = STREAM_BUILTIN(obj);
+      uv_os_fd_t fd;
 
-      s->data = MAKE_PAIR(obj, proc);
+      uv_fileno((uv_handle_t *)s, &fd);
+      int idx = fd_to_idx(fd);
+      
+      s->data = BINT(idx);
+      stream_pool[idx].obj = obj;
+      stream_pool[idx].proc = proc;
 
       return uv_listen(s, backlog, uv_listen_cb);
    }
@@ -2605,13 +2628,14 @@ static void
 bgl_uv_udp_recv_cb(uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf,
 		    const struct sockaddr* addr,
 		    unsigned flags) {
-   obj_t obj = (obj_t)handle->data;
-   bgl_uv_udp_t sobj = (bgl_uv_udp_t)COBJECT(obj);
-   obj_t p = sobj->BgL_z52proccz52;
-   obj_t allocobj = sobj->BgL_z52allocz52;
-   obj_t offset = sobj->BgL_z52offsetz52;
+   long idx = CINT(handle->data);
+   uv_stream_data_t *data = &(stream_pool[idx]);
+   obj_t sobj = data->obj;
+   obj_t p = data->proc;
+   obj_t allocobj = data->allocobj;
+   obj_t offset = data->offset;
 
-   sobj->BgL_z52allocz52 = BUNSPEC;
+   data->allocobj = BUNSPEC;
 
    if (PROCEDUREP(p)) {
       if (nread > 0) {
@@ -2641,16 +2665,14 @@ bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc) {
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
 	 uv_udp_t *s = (uv_udp_t *)(stream->BgL_z42builtinz42);
 	 uv_os_fd_t fd;
-	 int r;
-
-	 stream->BgL_z52allocz52 = BUNSPEC;
-	 stream->BgL_z52procaz52 = proca;
-	 stream->BgL_z52proccz52 = procc;
-	 stream->BgL_z52offsetz52 = BINT(-1);
 
 	 uv_fileno((uv_handle_t *)s, &fd);
 	 int idx = fd_to_idx(fd);
-	 stream_pool[idx] = obj;
+
+	 s->data = BINT(idx);
+	 stream_pool[idx].obj = obj;
+	 stream_pool[idx].proc = procc;
+	 stream_pool[idx].alloc = proca;
 
 	 return uv_udp_recv_start(s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb);
       }
@@ -2699,12 +2721,9 @@ bgl_uv_shutdown_cb(uv_shutdown_t* req, int status) {
    long idx = (long)req->data;
    uv_shutdown_data_t *data = &(uv_shutdown_data_pool[idx]);
    obj_t proc = data->proc;
-   obj_t handle = req->handle->data;
-   uv_os_fd_t fd;
+   obj_t handle = data->obj;
    
-   uv_fileno((uv_handle_t *)req->handle, &fd);
-   free_stream_cb_t(fd_to_idx(fd));
-   
+   free_stream_cb_t(idx);
    free_uv_shutdown_t(req);
    
    PROCEDURE_ENTRY(proc)(proc, BINT(status), handle, BEOA);
@@ -2723,15 +2742,11 @@ bgl_uv_shutdown(obj_t obj, obj_t proc) {
       uv_stream_t *s = STREAM_BUILTIN(obj);
       uv_shutdown_t *req = alloc_uv_shutdown_t();
       long idx = (long)(req->data);
-      int r;
 
       uv_shutdown_data_pool[idx].proc = proc;
+      uv_shutdown_data_pool[idx].obj = obj;
 
-      if (r = uv_shutdown(req, s, bgl_uv_shutdown_cb)) {
-	 free_uv_shutdown_t(req);
-      }
-
-      return r;
+      return uv_shutdown(req, s, bgl_uv_shutdown_cb);
    }
 }
 

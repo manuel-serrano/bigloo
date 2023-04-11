@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/handle.scm        */
+;*    .../prgm/project/bigloo/bigloo/api/libuv/src/Llib/handle.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Wed Mar  1 10:30:41 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Tue Apr 11 15:16:18 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV handles                                                    */
 ;*=====================================================================*/
@@ -59,7 +59,8 @@
 			   (let ((r (callback)))
 			      (uv-pop-gcmark! o callback)
 			      r))))
-      (when ($uv_handle_nilp $builtin) ($bgl_uv_close_cb $builtin))
+      (when ($uv_handle_nilp $builtin)
+	 ($bgl_uv_close_cb $builtin))
       (unless closed
 	 (set! closed #t)
 	 ($uv-handle-close $builtin $BGL_UV_CLOSE_CB))))

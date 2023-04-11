@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Tue Apr 11 14:05:19 2023 (serrano)                */
+;*    Last change :  Tue Apr 11 14:28:18 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -33,12 +33,12 @@
 	    (uv-stream-write2 ::UvStream ::bstring ::long ::long ::obj
 	       #!key callback (loop (uv-default-loop)))
 	    (inline uv-stream-read-start ::UvStream 
-	       #!key onalloc callback (loop (uv-default-loop)))
+	       #!key onalloc callback)
 	    (inline uv-stream-read-stop ::UvStream)
-	    (uv-stream-shutdown ::UvStream
-	       #!key callback (loop (uv-default-loop)))
-	    (uv-listen ::UvStream ::int
-	       #!key callback (loop (uv-default-loop)))
+	    (inline uv-stream-shutdown ::UvStream
+	       #!key callback)
+	    (inline uv-listen ::UvStream ::int
+	       #!key callback)
 	    (uv-accept ::UvStream ::UvStream)
 	    (uv-closing?::bool ::UvStream)
 	    (uv-writable?::bool ::UvStream)
@@ -59,7 +59,7 @@
 	    (uv-udp-send::obj ::UvUdp ::bstring ::long ::long ::long ::bstring
 	       #!key (family 4) callback (loop (uv-default-loop)))
 	    (inline uv-udp-recv-start ::UvUdp
-	       #!key onalloc callback (loop (uv-default-loop)))
+	       #!key onalloc callback)
 	    (inline uv-udp-recv-stop::int ::UvUdp)
 	    (uv-udp-set-ttl handle::UvUdp ::int)
 	    (uv-udp-set-multicast-ttl handle::UvUdp ::int)
@@ -184,7 +184,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-stream-read-start o::UvStream #!key onalloc callback (loop (uv-default-loop)))
+(define-inline (uv-stream-read-start o::UvStream #!key onalloc callback)
    ($uv-read-start o onalloc callback))
 
 ;*---------------------------------------------------------------------*/
@@ -196,22 +196,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-shutdown ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-shutdown handle #!key callback (loop (uv-default-loop)))
-   (let ((r ($uv-shutdown handle callback loop)))
-      (when (=fx r 0)
-	 (uv-push-gcmark! handle callback)
-	 (uv-push-gcmark! loop handle))
-      r))
+(define-inline (uv-stream-shutdown handle #!key callback)
+   ($uv-shutdown handle callback))
    
 ;*---------------------------------------------------------------------*/
 ;*    uv-listen ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (uv-listen handle backlog #!key callback (loop (uv-default-loop)))
-   (let ((r ($uv-listen handle backlog callback loop)))
-      (when (=fx r 0)
-	 (uv-push-gcmark! handle callback)
-	 (uv-push-gcmark! loop handle))
-      r))
+(define-inline (uv-listen handle backlog #!key callback)
+   ($uv-listen handle backlog callback))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-accept ...                                                    */
@@ -357,7 +349,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-recv-start ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-udp-recv-start o::UvUdp #!key onalloc callback (loop (uv-default-loop)))
+(define-inline (uv-udp-recv-start o::UvUdp #!key onalloc callback)
    ($uv-udp-recv-start o onalloc callback))
 
 ;*---------------------------------------------------------------------*/
