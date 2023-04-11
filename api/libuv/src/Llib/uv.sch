@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Mon Apr 10 06:15:24 2023 (serrano)                */
+;*    Last change :  Tue Apr 11 07:46:16 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -321,10 +321,10 @@
 	 "bgl_uv_write")
       ($uv-write2::int (::UvHandle ::string ::long ::long ::obj ::procedure ::UvLoop)
 	 "bgl_uv_write2")
-      ($uv-read-start::int (::UvHandle ::procedure ::procedure ::UvLoop)
+      ($uv-read-start::int (::UvHandle ::procedure ::procedure)
 	 "bgl_uv_read_start")
-      ($uv-read-stop::int (::$uv_stream_t)
-	 "uv_read_stop")
+      ($uv-read-stop::int (::UvHandle)
+	 "bgl_uv_read_stop")
       ($uv-shutdown::int (::UvStream ::obj ::UvLoop)
 	 "bgl_uv_shutdown")
       ($uv-listen::int (::UvStream ::int ::obj ::UvLoop)
@@ -395,8 +395,8 @@
 	 "bgl_uv_udp_bind")
       ($uv-udp-recv-start::int (::UvHandle ::procedure ::procedure ::UvLoop)
 	 "bgl_uv_udp_recv_start")
-      (macro $uv-udp-recv-stop::int (::$uv_udp_t)
-	     "uv_udp_recv_stop")
+      ($uv-udp-recv-stop::int (::UvHandle)
+	 "bgl_uv_udp_recv_stop")
       
       ($uv-udp-send::int (::$uv_udp_t ::bstring ::long ::long ::long ::string ::int ::obj ::UvLoop)
 	 "bgl_uv_udp_send")

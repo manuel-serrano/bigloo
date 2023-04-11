@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Thu Feb 15 05:23:06 2018 (serrano)                */
-;*    Copyright   :  2014-18 Manuel Serrano                            */
+;*    Last change :  Tue Apr 11 07:47:23 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
 ;*=====================================================================*/
@@ -32,9 +32,9 @@
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-stream-write2 ::UvStream ::bstring ::long ::long ::obj
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-stream-read-start ::UvStream 
+	    (inline uv-stream-read-start ::UvStream 
 	       #!key onalloc callback (loop (uv-default-loop)))
-	    (uv-stream-read-stop ::UvStream)
+	    (inline uv-stream-read-stop ::UvStream)
 	    (uv-stream-shutdown ::UvStream
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-listen ::UvStream ::int
@@ -58,9 +58,9 @@
 	    (uv-udp-getsockname::obj ::UvUdp)
 	    (uv-udp-send::obj ::UvUdp ::bstring ::long ::long ::long ::bstring
 	       #!key (family 4) callback (loop (uv-default-loop)))
-	    (uv-udp-recv-start ::UvUdp
+	    (inline uv-udp-recv-start ::UvUdp
 	       #!key onalloc callback (loop (uv-default-loop)))
-	    (uv-udp-recv-stop::int ::UvUdp)
+	    (inline uv-udp-recv-stop::int ::UvUdp)
 	    (uv-udp-set-ttl handle::UvUdp ::int)
 	    (uv-udp-set-multicast-ttl handle::UvUdp ::int)
 	    (uv-udp-set-multicast-loop ::UvUdp ::bool)
@@ -184,23 +184,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-read-start o::UvStream #!key onalloc callback (loop (uv-default-loop)))
-   (let ((r ($uv-read-start o onalloc callback loop)))
-      (when (=fx r 0)
-	 (with-access::UvStream o (%callback)
-	    (set! %callback callback))
-	 (uv-push-gcmark! loop o))
-      r))
+(define-inline (uv-stream-read-start o::UvStream #!key onalloc callback (loop (uv-default-loop)))
+   ($uv-read-start o onalloc callback))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-stop ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-read-stop o::UvStream)
-   (with-access::UvStream o ($builtin loop)
-      (with-access::UvStream o (%callback)
-	 (set! %callback #f))
-      (uv-pop-gcmark! loop o)
-      ($uv-read-stop ($uv-stream-t $builtin))))
+(define-inline (uv-stream-read-stop o::UvStream)
+   ($uv-read-stop o))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-shutdown ...                                           */
@@ -366,20 +357,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-recv-start ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (uv-udp-recv-start o::UvUdp #!key onalloc callback (loop (uv-default-loop)))
-   (with-access::UvUdp o (%procm)
-      (set! %procm (cons callback %procm))
-      (uv-push-gcmark! loop o)
-      ($uv-udp-recv-start o onalloc callback loop)))
+(define-inline (uv-udp-recv-start o::UvUdp #!key onalloc callback (loop (uv-default-loop)))
+   ($uv-udp-recv-start o onalloc callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-recv-stop ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (uv-udp-recv-stop handle)
-   (with-access::UvUdp handle ($builtin %procm loop)
-      (set! %procm '())
-      (uv-pop-gcmark! loop handle)
-      ($uv-udp-recv-stop ($uv-udp-t $builtin))))
+(define-inline (uv-udp-recv-stop o::UvUdp)
+   ($uv-udp-recv-stop o))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-getsockname ...                                           */
