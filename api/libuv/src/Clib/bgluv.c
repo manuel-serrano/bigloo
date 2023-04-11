@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Apr 11 07:40:05 2023 (serrano)                */
+/*    Last change :  Mon Apr  3 09:13:06 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -264,6 +264,59 @@ free_uv_fs5_t(uv_fs_t *req) {
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
    
    uv_fs_req_cleanup(req);
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_shutdown_pools ...                                            */
+/*---------------------------------------------------------------------*/
+typedef struct uv_shutdown_data {
+   obj_t proc;
+} uv_shutdown_data_t;
+
+UV_TLS_DECL uv_shutdown_t **uv_shutdown_req_pool = 0L;
+UV_TLS_DECL uv_shutdown_data_t *uv_shutdown_data_pool = 0L;
+UV_TLS_DECL long uv_shutdown_idx = 0;
+UV_TLS_DECL long uv_shutdown_pool_size = 0;
+
+/*---------------------------------------------------------------------*/
+/*    uv_shutdown_t *                                                  */
+/*    alloc_uv_shutdown_t ...                                          */
+/*---------------------------------------------------------------------*/
+static uv_shutdown_t *
+alloc_uv_shutdown_t() {
+   uv_shutdown_t *req;
+
+   UV_MUTEX_LOCK(bgl_uv_mutex);
+   if (uv_shutdown_idx == uv_shutdown_pool_size) {
+      uv_shutdown_pool_size += 10;
+
+      uv_shutdown_req_pool = realloc(uv_shutdown_req_pool, sizeof(uv_shutdown_t *) * uv_shutdown_pool_size);
+      UV_GC_REALLOC_TLS(uv_shutdown_data_pool, sizeof(uv_shutdown_data_t) * uv_shutdown_pool_size);
+
+      for (long i = uv_shutdown_idx; i < uv_shutdown_pool_size; i++) {
+	 uv_shutdown_req_pool[i] = (uv_shutdown_t *)malloc(sizeof(uv_shutdown_t));
+	 uv_shutdown_req_pool[i]->data = (void *)i;
+      }
+   }
+
+   req = uv_shutdown_req_pool[uv_shutdown_idx++];
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
+   return req;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    free_uv_shutdown_t ...                                           */
+/*---------------------------------------------------------------------*/
+static void
+free_uv_shutdown_t(uv_shutdown_t *req) {
+   long idx = (long)(req->data);
+   
+   uv_req_data_pool[idx].proc = BUNSPEC;
+   
+   UV_MUTEX_LOCK(bgl_uv_mutex);
+   uv_shutdown_req_pool[--uv_shutdown_idx] = req;
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
 
 /*---------------------------------------------------------------------*/
@@ -885,7 +938,7 @@ bgl_uv_fs_open(obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloop
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_uv_fs_open_cb ...                                            */
+/*    bgl_uv_fs_open4_cb ...                                           */
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_fs_open4_cb(uv_fs_t* req) {
@@ -2152,10 +2205,9 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT(-1);
 
-	 if (r = uv_read_start(s, bgl_uv_alloc_cb, bgl_uv_read_cb) == 0) {
+	 if ((r = uv_read_start(s, bgl_uv_alloc_cb, bgl_uv_read_cb)) == 0) {
 	    uv_fileno((uv_handle_t *)s, &fd);
 	    int idx = fd_to_idx(fd);
-	    //fprintf(stderr, "IDX=%d\n", fd_to_idx(fd));
 	    stream_pool[idx] = stream;
 	 }
 
@@ -2174,7 +2226,7 @@ bgl_uv_read_stop(obj_t obj) {
    uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
    uv_os_fd_t fd;
    
-   int idx = uv_fileno((uv_handle_t *)s, &fd);
+   uv_fileno((uv_handle_t *)s, &fd);
    free_stream_cb_t(fd_to_idx(fd));
    
    return uv_read_stop(s);
@@ -2597,7 +2649,7 @@ bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop) 
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT(-1);
 
-	 if (r = uv_udp_recv_start(s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb) == 0) {
+	 if ((r = uv_udp_recv_start(s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb)) == 0) {
 	    uv_os_fd_t fd;
 	    uv_fileno((uv_handle_t *)s, &fd);
 	    int idx = fd_to_idx(fd);
@@ -2648,10 +2700,18 @@ bgl_uv_udp_getsockname(uv_udp_t *handle) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_shutdown_cb(uv_shutdown_t* req, int status) {
-   obj_t p = (obj_t)req->data;
+   long idx = (long)req->data;
+   uv_shutdown_data_t *data = &(uv_shutdown_data_pool[idx]);
+   obj_t proc = data->proc;
    obj_t handle = req->handle->data;
-   free(req);
-   PROCEDURE_ENTRY(p)(p, BINT(status), handle, BEOA);
+   uv_os_fd_t fd;
+   
+   uv_fileno((uv_handle_t *)req->handle, &fd);
+   free_stream_cb_t(fd_to_idx(fd));
+   
+   free_uv_shutdown_t(req);
+   
+   PROCEDURE_ENTRY(proc)(proc, BINT(status), handle, BEOA);
 }
    
 /*---------------------------------------------------------------------*/
@@ -2659,19 +2719,20 @@ bgl_uv_shutdown_cb(uv_shutdown_t* req, int status) {
 /*    bgl_uv_shutdown ...                                              */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_shutdown(obj_t obj, obj_t proc, bgl_uv_loop_t bloop) {
+bgl_uv_shutdown(obj_t obj, obj_t proc) {
    if (!(PROCEDUREP(proc) && (PROCEDURE_CORRECT_ARITYP(proc, 2)))) {
       C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-shutdown",
 			"wrong callback", proc);
    } else {
       uv_stream_t *s = STREAM_BUILTIN(obj);
-      uv_shutdown_t *req = malloc(sizeof(uv_shutdown_t));
+      uv_shutdown_t *req = alloc_uv_shutdown_t();
+      long idx = (long)(req->data);
       int r;
 
-      req->data = proc;
+      uv_shutdown_data_pool[idx].proc = proc;
 
       if (r = uv_shutdown(req, s, bgl_uv_shutdown_cb)) {
-	 free(req);
+	 free_uv_shutdown_t(req);
       }
 
       return r;
