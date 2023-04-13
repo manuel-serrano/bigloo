@@ -130,6 +130,19 @@ cleanup function.
 @end smalllisp
 @end deffn
 
+@c -- thread-name* --
+@deffn {Bigloo function} thread-name @var{thread}
+@deffnx {Bigloo function} thread-name-set! @var{thread} @var{fun}
+Associates a name to a thread. If the platform does not support
+thread native name, the function is without effect.
+
+@smalllisp
+(let ((t (instantiate::thread (body (lambda () (print (thread-name (current-thread))))))))
+   (thread-name-set! t ``my-thread'')
+   (thread-start! t)) @print{} my-thread
+@end smalllisp
+@end deffn
+
 @c -- thread-parameter* --
 @deffn {Bigloo function} thread-parameter @var{ident}
 @deffnx {Bigloo function} thread-parameter-set! @var{ident} @var{value}

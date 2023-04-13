@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Aug 25 09:10:10 2019 (serrano)                */
-;*    Copyright   :  2004-19 Manuel Serrano                            */
+;*    Last change :  Thu Apr 13 07:41:11 2023 (serrano)                */
+;*    Copyright   :  2004-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
 ;*    This is simply an implementation of lock and synchronization     */
@@ -172,7 +172,8 @@
 	       (%specific::obj (default #unspecified))
 	       (%cleanup::obj (default #f))
 	       (end-result::obj (default #unspecified))
-	       (end-exception::obj (default #unspecified)))
+	       (end-exception::obj (default #unspecified))
+	       (%name::bstring (default "bigloo")))
 	    
 	    ;; dynamic env (per thread env)
             (inline dynamic-env?::bool ::obj)
@@ -199,6 +200,8 @@
 	    (generic thread-specific-set!::obj ::thread ::obj)
 	    (generic thread-cleanup::obj ::thread)
 	    (generic thread-cleanup-set!::obj ::thread ::obj)
+	    (generic thread-name::bstring ::thread)
+	    (generic thread-name-set!::obj ::thread ::bstring)
 	    (inline make-thread::thread ::procedure #!optional (name (gensym 'thread)))
 	    (generic %user-current-thread ::thread)
 	    (generic %user-thread-yield! ::thread)
@@ -421,6 +424,16 @@
 (define-generic (thread-cleanup-set! th::thread v::obj))
 
 ;*---------------------------------------------------------------------*/
+;*    thread-name ::thread ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (thread-name th::thread))
+
+;*---------------------------------------------------------------------*/
+;*    thread-name-set! ::thread ...                                    */
+;*---------------------------------------------------------------------*/
+(define-generic (thread-name-set! th::thread v::bstring))
+
+;*---------------------------------------------------------------------*/
 ;*    make-thread ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (make-thread body #!optional (name (gensym 'thread)))
@@ -570,6 +583,18 @@
 ;*---------------------------------------------------------------------*/
 (define-method (thread-cleanup-set! th::nothread v)
    (with-access::nothread th (%cleanup) (set! %cleanup v)))
+
+;*---------------------------------------------------------------------*/
+;*    thread-name ::nothread ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (thread-name th::nothread)
+   (with-access::nothread th (%name) %name))
+
+;*---------------------------------------------------------------------*/
+;*    thread-name-set! ::nothread ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (thread-name-set! th::nothread v)
+   (with-access::nothread th (%name) (set! %name v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex? ...                                                       */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Tue Apr 11 14:33:29 2023 (serrano)                */
+;*    Last change :  Tue Apr 11 18:59:24 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -54,6 +54,7 @@
       (macro $uv-handle-has-ref?::bool (::$uv_handle_t) "uv_has_ref")
       (macro $uv-handle-close::void (::$uv_handle_t ::$uv_close_cb) "uv_close")
       (macro $uv-handle-active?::bool (::$uv_handle_t) "uv_is_active")
+      ($bgl-uv-stream-close::void (::UvStream ::$uv_close_cb) "bgl_uv_stream_close")
       
       ($bgl_uv_close_cb::$uv_close_cb (::$uv_handle_t) "bgl_uv_close_cb")
       (macro $BGL_UV_CLOSE_CB::$uv_close_cb "(uv_close_cb)&bgl_uv_close_cb")
@@ -317,9 +318,9 @@
       
       (infix macro $uv-stream-write-queue-size::long (::$uv_stream_t) "->write_queue_size")
       (infix macro $uv-stream-fd::long (::$uv_stream_t) "->io_watcher.fd")
-      ($uv-write::int (::UvHandle ::string ::long ::long ::procedure ::UvLoop)
+      ($uv-write::int (::UvHandle ::string ::long ::long ::procedure)
 	 "bgl_uv_write")
-      ($uv-write2::int (::UvHandle ::string ::long ::long ::obj ::procedure ::UvLoop)
+      ($uv-write2::int (::UvHandle ::string ::long ::long ::obj ::procedure)
 	 "bgl_uv_write2")
       ($uv-read-start::int (::UvHandle ::procedure ::procedure)
 	 "bgl_uv_read_start")

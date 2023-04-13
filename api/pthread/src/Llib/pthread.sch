@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/pthread/src/Llib/pthread.sch     */
+;*    .../project/bigloo/bigloo/api/pthread/src/Llib/pthread.sch       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar  5 14:48:55 2005                          */
-;*    Last change :  Tue Apr 17 16:49:13 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Thu Apr 13 07:48:10 2023 (serrano)                */
+;*    Copyright   :  2005-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The native interfaces for threads                                */
 ;*=====================================================================*/
@@ -43,6 +43,8 @@
 	   (macro $pthread-specific-set!::void (::$pthread ::obj) "BGLPTH_THREAD_SPECIFIC_SET")
 	   (macro $pthread-cleanup::obj (::$pthread) "BGLPTH_THREAD_CLEANUP")
 	   (macro $pthread-cleanup-set!::void (::$pthread ::obj) "BGLPTH_THREAD_CLEANUP_SET")
+	   (macro $pthread-name::obj (::$pthread) "bglpth_thread_getname")
+	   (macro $pthread-name-set!::void (::$pthread ::obj) "bglpth_thread_setname")
 	   (macro $pthread-term-sig::int "BGL_PTHREAD_TERM_SIG")))
 
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/pthread/src/Llib/pthread.scm     */
+;*    .../project/bigloo/bigloo/api/pthread/src/Llib/pthread.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Thu Aug  3 08:52:55 2017 (serrano)                */
-;*    Copyright   :  2002-20 Manuel Serrano                            */
+;*    Last change :  Thu Apr 13 07:45:20 2023 (serrano)                */
+;*    Copyright   :  2002-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -198,6 +198,28 @@
 	     ($pthread-cleanup-set! $builtin p)
 	     p)
 	  (error "thread-cleanup-set!" "Illegal procedure arity" p))))
+
+;*---------------------------------------------------------------------*/
+;*    thread-name ::pthread ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (thread-name t::pthread)
+   (cond-expand
+      (bigloo-c
+       (with-access::pthread t ($builtin)
+	  ($pthread-name $builtin)))
+      (else
+       "bigloo")))
+
+;*---------------------------------------------------------------------*/
+;*    thread-name-set! ::pthread ...                                   */
+;*---------------------------------------------------------------------*/
+(define-method (thread-name-set! t::pthread v)
+   (cond-expand
+      (bigloo-c
+       (with-access::pthread t ($builtin)
+	  ($pthread-name-set! $builtin v)))
+      (else
+       #unspecified)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $pthread-nil ...                                                 */

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Apr  3 16:04:27 2023 (serrano)                */
+#*    Last change :  Thu Apr 13 07:23:22 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -204,6 +204,7 @@ pthreadtimedlock=1
 pthreadcancel=
 pthreadtermsig=15
 pthreadlocalstorage=
+pthreadsetname=
 
 #*--- openssl library (left blank for autoconfiguration) --------------*/
 openssllibs=
@@ -529,6 +530,7 @@ while : ; do
       bee="full";
       havebdb=1;
       pthreadlocalstorage=;
+      pthreadsetname=;
       bglreservedtagging=0;
       action="all";;
 
@@ -2187,6 +2189,11 @@ else
     pthreadlocalstorage=`$autoconf pthreadlocalstorage --lib="$pthreadlibs"` || exit 1;
   fi
 
+  # pthread setname
+  if [ "$pthreadlibs" != "no" -a "$pthreadsetname " = " " ]; then
+    pthreadsetname=`$autoconf pthreadsetname --lib="$pthreadlibs"` || exit 1;
+  fi
+
   # pthread kill
   if [ "$pthreadlibs" != "no" ]; then
     pthreadkill=`$autoconf pthreadkill --lib="$pthreadlibs"` || exit 1;
@@ -3808,6 +3815,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_LOCKF@|$lockf|" \
               -e "s|@BGL_PTHREAD_TERM_SIG@|$pthreadtermsig|" \
               -e "s|@BGL_HAS_THREAD_LOCALSTORAGE@|$pthreadhastls|" \
+              -e "s|@BGL_HAS_THREAD_SETNAME@|$pthreadsetname|" \
               -e "s|@BGL_THREAD_DECL@|$pthreaddecl|" \
               -e "s|@BGL_HEAP_DEBUG_COPT@||" \
               -e "s|@BGL_HAVE_MIXER@|$havemixer|" \
@@ -5215,6 +5223,11 @@ else
     $echo "  support for thread local storage ..... yes" >> $configurelog
   else
     $echo "  support for thread local storage ..... no" >> $configurelog
+  fi
+  if [ "$pthreadsetname " = "1 " ]; then
+    $echo "  support for thread setname ........... yes" >> $configurelog
+  else
+    $echo "  support for thread setname ........... no" >> $configurelog
   fi
 fi
 if [ "$openssllibs" = "no" ]; then

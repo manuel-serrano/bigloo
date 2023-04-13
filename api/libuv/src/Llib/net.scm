@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Tue Apr 11 14:28:18 2023 (serrano)                */
+;*    Last change :  Tue Apr 11 18:42:29 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -28,10 +28,10 @@
 	    
 	    (uv-stream-write-queue-size::long o::UvStream)
 	    (uv-stream-fd::long o::UvStream)
-	    (uv-stream-write ::UvStream ::bstring ::long ::long
-	       #!key callback (loop (uv-default-loop)))
-	    (uv-stream-write2 ::UvStream ::bstring ::long ::long ::obj
-	       #!key callback (loop (uv-default-loop)))
+	    (inline uv-stream-write ::UvStream ::bstring ::long ::long
+	       #!key callback)
+	    (inline uv-stream-write2 ::UvStream ::bstring ::long ::long ::obj
+	       #!key callback)
 	    (inline uv-stream-read-start ::UvStream 
 	       #!key onalloc callback)
 	    (inline uv-stream-read-stop ::UvStream)
@@ -101,16 +101,17 @@
 ;*    uv-close ::UvStream ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (uv-close o::UvStream #!optional callback)
-   (if (procedure? callback)
-       (let ((cb callback))
-	  (set! callback
-	     (lambda ()
-		(with-access::UvStream o (loop)
-		   (uv-pop-gcmark! loop o))
-		(cb))))
-       (with-access::UvStream o (loop)
-	  (uv-pop-gcmark! loop o)))
-   (call-next-method))
+;*    (if (procedure? callback)                                        */
+;*        (let ((cb callback))                                         */
+;* 	  (set! callback                                               */
+;* 	     (lambda ()                                                */
+;* 		(with-access::UvStream o (loop)                        */
+;* 		   (uv-pop-gcmark! loop o))                            */
+;* 		(cb))))                                                */
+;*        (with-access::UvStream o (loop)                              */
+;* 	  (uv-pop-gcmark! loop o)))                                    */
+   ($bgl-uv-stream-close o callback)
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-getaddrinfo ...                                               */
@@ -154,32 +155,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-write o::UvStream buf offset len #!key callback (loop (uv-default-loop)))
-   (letrec ((cb (lambda (status)
-		   ;; make sure buf is referenced to prevent
-		   ;; premature collection
-		   (unless (eq? buf cb)
-		      (uv-pop-gcmark! o cb)
-		      (callback status)))))
-      (let ((r ($uv-write o buf offset len cb loop)))
-	 (when (=fx r 0)
-	    (uv-push-gcmark! o cb))
-	 r)))
+(define-inline (uv-stream-write o::UvStream buf offset len #!key callback)
+   ($uv-write o buf offset len callback))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write2 ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-write2 o::UvStream buf offset len handle::obj #!key callback (loop (uv-default-loop)))
-   (letrec ((cb (lambda (status)
-		   ;; make sure buf is referenced to prevent
-		   ;; premature collection
-		   (unless (eq? buf cb)
-		      (uv-pop-gcmark! o cb)
-		      (callback status)))))
-      (let ((r ($uv-write2 o buf offset len handle cb loop)))
-	 (when (=fx r 0)
-	    (uv-push-gcmark! o cb))
-	 r)))
+(define-inline (uv-stream-write2 o::UvStream buf offset len handle::obj #!key callback)
+   ($uv-write2 o buf offset len handle callback))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */

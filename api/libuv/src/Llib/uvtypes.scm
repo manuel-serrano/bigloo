@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Tue Oct 23 11:30:19 2018 (serrano)                */
-;*    Copyright   :  2014-18 Manuel Serrano                            */
+;*    Last change :  Wed Apr 12 07:04:23 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
 ;*=====================================================================*/
@@ -39,11 +39,12 @@
 
 	   (class UvStream::UvHandle
 	      (loop::UvLoop read-only)
-	      (%alloc::obj (default #f))
-	      (%offset::obj (default 0))
-	      (%proca (default #f))
-	      (%procc (default #f))
-	      (%callback (default #f)))
+	      (%data::void* (default $void*_nil)))
+;* 	      (%alloc::obj (default #f))                               */
+;* 	      (%offset::obj (default 0))                               */
+;* 	      (%proca (default #f))                                    */
+;* 	      (%procc (default #f))                                    */
+;* 	      (%callback (default #f)))                                */
 
 	   (class UvTcp::UvStream)
 	   
