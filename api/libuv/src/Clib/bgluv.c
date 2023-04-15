@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Apr 11 17:48:39 2023 (serrano)                */
+/*    Last change :  Thu Apr 13 08:46:15 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------*/
 /*    Thread local storage declarations                                */
 /*---------------------------------------------------------------------*/
-#if 0 && BGL_HAS_THREAD_LOCALSTORAGE
+#if BGL_HAS_THREAD_LOCALSTORAGE
 static obj_t tls_roots = BNIL;
 #  define UV_TLS_DECL BGL_THREAD_DECL
 #  define UV_MUTEX_LOCK(m)
@@ -173,7 +173,7 @@ assert_stream_data(obj_t obj) {
    }
 }
 
-static obj_t P = BNIL;
+/* static obj_t P = BNIL;                                              */
 
 /*---------------------------------------------------------------------*/
 /*    static uv_stream_data_t *                                        */
@@ -184,27 +184,27 @@ alloc_stream_data_t() {
    uv_stream_data_t *data;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
-   data = (void *)GC_MALLOC(sizeof(uv_stream_data_t));
+/*    data = (void *)GC_MALLOC(sizeof(uv_stream_data_t));              */
 
-/* #if defined(DBG)                                                    */
-/*    fprintf(stderr, "+++ alloc_stream_data_t idx=%d/%d\n", uv_stream_pool_idx, uv_stream_pool_size); */
-/* #endif                                                              */
+#if defined(DBG)
+   fprintf(stderr, "+++ alloc_stream_data_t idx=%d/%d\n", uv_stream_pool_idx, uv_stream_pool_size);
+#endif
 
-/*    if (uv_stream_pool_idx >= uv_stream_pool_size) {                 */
-/*       uv_stream_pool_size += 10;                                    */
-/*                                                                     */
-/*       uv_stream_pool = realloc(uv_stream_pool, sizeof(uv_stream_data_t *) * uv_stream_pool_size); */
-/*       UV_GC_EXTEND_TLS(uv_stream_data_pool, sizeof(uv_stream_data_t), uv_stream_pool_size - 10, uv_stream_pool_size); */
-/*                                                                     */
-/*       for (long i = uv_stream_pool_idx; i < uv_stream_pool_size; i++) { */
-/* 	 uv_stream_data_pool[i].index = i;                             */
-/* 	 uv_stream_pool[i] = &(uv_stream_data_pool[i]);                */
-/*       }                                                             */
-/*    }                                                                */
-/*                                                                     */
-/*    data = uv_stream_pool[uv_stream_pool_idx++];                     */
+   if (uv_stream_pool_idx >= uv_stream_pool_size) {
+      uv_stream_pool_size += 10;
+
+      uv_stream_pool = realloc(uv_stream_pool, sizeof(uv_stream_data_t *) * uv_stream_pool_size);
+      UV_GC_EXTEND_TLS(uv_stream_data_pool, sizeof(uv_stream_data_t), uv_stream_pool_size - 10, uv_stream_pool_size);
+
+      for (long i = uv_stream_pool_idx; i < uv_stream_pool_size; i++) {
+	 uv_stream_data_pool[i].index = i;
+	 uv_stream_pool[i] = &(uv_stream_data_pool[i]);
+      }
+   }
+
+   data = uv_stream_pool[uv_stream_pool_idx++];
    
-   P = MAKE_PAIR((obj_t)data, P);
+/*    P = MAKE_PAIR((obj_t)data, P);                                   */
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 
    return data;
@@ -243,24 +243,23 @@ free_stream_data_t(uv_stream_data_t *data) {
    assert_stream_data(data->obj);
    STREAM_DATA(data->obj) = 0L;
 
-/* #if defined(DBG)                                                    */
-/*    fprintf(stderr, "!!! free_stream_data_t idx=%d %p\n", data->index, data); */
-/* #endif                                                              */
-/*                                                                     */
-/*    data->obj = 0L;                                                  */
-/*    data->proc = 0L;                                                 */
-/*    data->alloc = 0L;                                                */
-/*    data->offset = BINT(-1);                                         */
-/*    data->allocobj = BUNSPEC;                                        */
-/*    data->close = 0L;                                                */
-/*    data->listen = 0L;                                               */
+#if defined(DBG)
+   fprintf(stderr, "!!! free_stream_data_t idx=%d %p\n", data->index, data);
+#endif
+
+   data->obj = 0L;
+   data->proc = 0L;
+   data->alloc = 0L;
+   data->offset = BINT(-1);
+   data->allocobj = BUNSPEC;
+   data->close = 0L;
+   data->listen = 0L;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
-/*    uv_stream_pool[--uv_stream_pool_idx] = data;                     */
-/*    UV_MUTEX_UNLOCK(bgl_uv_mutex);                                   */
+   uv_stream_pool[--uv_stream_pool_idx] = data;
    
-   P = bgl_remq_bang((obj_t)data, P);
-   GC_FREE((obj_t)data);
+/*    P = bgl_remq_bang((obj_t)data, P);                               */
+/*    GC_FREE((obj_t)data);                                            */
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
    
@@ -462,8 +461,7 @@ bgl_uv_process_title_init() {
 void
 bgl_uv_close_cb(uv_handle_t *handle) {
    obj_t o = (obj_t)(handle->data);
-   bgl_uv_handle_t h = (bgl_uv_handle_t)CAR(o);
-
+   bgl_uv_handle_t h = (bgl_uv_handle_t)(PAIRP( o ) ? CAR( o ) : o);
    obj_t p = ((bgl_uv_handle_t)COBJECT(h))->BgL_z52onclosez52;
 
    if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, BEOA);
@@ -471,7 +469,7 @@ bgl_uv_close_cb(uv_handle_t *handle) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    bgl_uv_close_cb ...                                              */
+/*    bgl_uv_stream_close_cb ...                                       */
 /*    -------------------------------------------------------------    */
 /*    The data argument can either be a handle, or a pair when         */
 /*    uv_close is automatically on an active handle, as those          */
