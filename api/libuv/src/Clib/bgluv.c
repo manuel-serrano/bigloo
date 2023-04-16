@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sat Apr 15 08:27:20 2023 (serrano)                */
+/*    Last change :  Sun Apr 16 08:05:57 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -17,15 +17,16 @@
 /*---------------------------------------------------------------------*/
 #if BGL_HAS_THREAD_LOCALSTORAGE
 static obj_t tls_roots = BNIL;
+static void *tls_tmp;
 #  define UV_TLS_DECL BGL_THREAD_DECL
 #  define UV_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m)
 #  define UV_GC_EXTEND_TLS(p, sz, ol, nl) \
-   (tls_roots = bgl_remq_bang((obj_t)p, tls_roots), \
-    p = gc_extend((obj_t)p, sz, ol, nl),   \
-    BGL_MUTEX_LOCK(bgl_uv_mutex), \
-    tls_roots = MAKE_PAIR((obj_t)p, tls_roots), \
-    BGL_MUTEX_UNLOCK(bgl_uv_mutex), p)
+   (BGL_MUTEX_LOCK(bgl_uv_mutex), \
+    tls_tmp = gc_extend((obj_t)p, sz, ol, nl), \
+    tls_roots = MAKE_PAIR(tls_tmp, tls_roots), \
+    BGL_MUTEX_UNLOCK(bgl_uv_mutex), \
+    p = tls_tmp)
 #else
 #  define UV_TLS_DECL static
 #  define UV_MUTEX_LOCK(m) BGL_MUTEX_LOCK(m)
@@ -33,8 +34,36 @@ static obj_t tls_roots = BNIL;
 #  define UV_GC_EXTEND_TLS(p, sz, ol, nl) (p = gc_extend((obj_t)p, sz, ol, nl))
 #endif
 
-//#define DBG
+// #define DBG
 
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    gc_replace ...                                                   */
+/*    -------------------------------------------------------------    */
+/*    MS 16apr2023: don't change this function. It ensures that        */
+/*    at no moment the pointer "n" is dangling and thus potentially    */
+/*    collected (and the pointers it contains) by the GC. Changing     */
+/*    this function is very dangerous because there seems to be        */
+/*    very mysterious interaction between the GC and the C             */
+/*    optimizations that make some data incorrectly collected.         */
+/*---------------------------------------------------------------------*/
+static obj_t
+gc_replace(void *n, void *o, obj_t lst) {
+   obj_t l = lst;
+   lst = MAKE_PAIR(n, lst);
+   return lst;
+loop:   
+   if (NULLP(l)) {
+      return lst;
+   } else if (o == CAR(l)) {
+      SET_CDR(l, CDR(l));
+      return lst;
+   } else {
+      l = CDR(l);
+      goto loop;
+   }
+}
+   
 /*---------------------------------------------------------------------*/
 /*    void *                                                           */
 /*    gc_extend ...                                                    */
@@ -121,6 +150,10 @@ gc_unmark(obj_t obj) {
 /*---------------------------------------------------------------------*/
 /*    uv_stream_pools ...                                              */
 /*---------------------------------------------------------------------*/
+typedef enum uv_stream_state {
+   FREE = 0, LOCKED = 1, READING = 2, CLOSING = 3
+} uv_stream_state_t;
+
 typedef struct uv_stream_data {
    obj_t obj;
    obj_t proc;
@@ -130,12 +163,24 @@ typedef struct uv_stream_data {
    obj_t close;
    obj_t listen;
    long index;
+   uv_stream_state_t state;
 } uv_stream_data_t;
 
 UV_TLS_DECL uv_stream_data_t **uv_stream_pool = 0L;
 UV_TLS_DECL uv_stream_data_t *uv_stream_data_pool = 0L;
 UV_TLS_DECL long uv_stream_pool_idx = 0;
 UV_TLS_DECL long uv_stream_pool_size = 0;
+
+/*---------------------------------------------------------------------*/
+/*    ABORT ...                                                        */
+/*---------------------------------------------------------------------*/
+#if defined(DBG)
+#define ABORT() \
+   fprintf(stderr, "*** ABORT: %s:%d\n", __FILE__, __LINE__); \
+   exit(1/0)
+#else
+#define ABORT()
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -148,32 +193,36 @@ assert_stream_data(obj_t obj) {
       
       if (data->index < 0) {
 	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t index: %p %d\n", data, data->index);
-	 exit(0);
+	 ABORT();
       }
 
       if (data->proc && !PROCEDUREP(data->proc)) {
-	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t procedure: %p %d\n", data, data->proc);
-	 exit(0);
+	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t procedure: data=%p (idx=%d:%d) proc=%p\n", data, data->index, data->state, data->proc);
+	 ABORT();
       }
 	 
       if (data->alloc && !PROCEDUREP(data->alloc)) {
 	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t alloc: %p %d\n", data, data->alloc);
-	 exit(0);
+	 ABORT();
       }
 	 
       if (data != STREAM_DATA(data->obj)) {
 	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t data->obj: idx=%d data=%p data->obj=%p\n", data->index, data, data->obj);
-	 exit(0);
+	 ABORT();
       }
       
       if (((uv_stream_data_t *)STREAM_DATA(data->obj))->obj != data->obj) {
 	 fprintf(stderr, "assert_stream_dataL bad uv_stream_data_t obj->data: idx=%d data=%p data->obj=%p\n", data->index, data, data->obj);
-	 exit(0);
+	 ABORT();
+      }
+
+      if (data->state == FREE) {
+	 fprintf(stderr, "!!! %s:%d Bad stream_data state (%d)!\n",
+		 __FILE__, __LINE__, data->state);
+	 ABORT();
       }
    }
 }
-
-/* static obj_t P = BNIL;                                              */
 
 /*---------------------------------------------------------------------*/
 /*    static uv_stream_data_t *                                        */
@@ -184,7 +233,6 @@ alloc_stream_data_t() {
    uv_stream_data_t *data;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
-/*    data = (void *)GC_MALLOC(sizeof(uv_stream_data_t));              */
 
 #if defined(DBG)
    fprintf(stderr, "+++ alloc_stream_data_t idx=%d/%d\n", uv_stream_pool_idx, uv_stream_pool_size);
@@ -204,7 +252,6 @@ alloc_stream_data_t() {
 
    data = uv_stream_pool[uv_stream_pool_idx++];
    
-/*    P = MAKE_PAIR((obj_t)data, P);                                   */
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 
    return data;
@@ -216,15 +263,20 @@ alloc_stream_data_t() {
 /*---------------------------------------------------------------------*/
 static uv_stream_data_t *
 get_stream_data_t(obj_t obj) {
-#if defined(DBG)
-   fprintf(stderr, "### get_stream_data obj=%p data=%p\n", obj, STREAM_DATA(obj));
-   assert_stream_data(obj);
-#endif
-
    if (!STREAM_DATA(obj)) {
       uv_stream_data_t *data = alloc_stream_data_t();
       STREAM_DATA(obj) = data;
       data->obj = obj;
+
+#if defined(DBG)
+      if (data->state != FREE) {
+	 fprintf(stderr, "!!! get_stream_data: bad stream_data state (%d)!\n",
+		 data->state);
+	 ABORT();
+      }
+#endif
+      
+      data->state = LOCKED;
       return data;
    } else {
 #if defined(DBG)
@@ -244,7 +296,7 @@ free_stream_data_t(uv_stream_data_t *data) {
    STREAM_DATA(data->obj) = 0L;
 
 #if defined(DBG)
-   fprintf(stderr, "!!! free_stream_data_t idx=%d %p\n", data->index, data);
+   fprintf(stderr, "!!! free_stream_data_t data=%p idx=%d:%d\n", data, data->index, data->state);
 #endif
 
    data->obj = 0L;
@@ -254,12 +306,10 @@ free_stream_data_t(uv_stream_data_t *data) {
    data->allocobj = BUNSPEC;
    data->close = 0L;
    data->listen = 0L;
+   data->state = FREE;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    uv_stream_pool[--uv_stream_pool_idx] = data;
-   
-/*    P = bgl_remq_bang((obj_t)data, P);                               */
-/*    GC_FREE((obj_t)data);                                            */
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
    
@@ -481,15 +531,22 @@ bgl_uv_stream_close_cb(uv_handle_t *hdl) {
    uv_stream_data_t *data = STREAM_DATA(obj);
 
 #if defined(DBG)
-   fprintf(stderr, "<<< bgl_uv_stream_close_cb: data=%p index=%d\n", data, data ? data->index : -1);
+   fprintf(stderr, "<<< bgl_uv_stream_close_cb: data=%p index=%d:%d\n", data, data ? data->index : -1, data? data->state : -1);
 #endif
 
    if (data) {
       obj_t p = data->close;
-   
-      free_stream_data_t(data);
 
-      if (p) PROCEDURE_ENTRY(p)(p, BEOA);
+      if (data->state == LOCKED) {
+	 free_stream_data_t(data);
+	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
+      } else {
+	 data->state = CLOSING;
+	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
+	 if (data->state != FREE) {
+	    free_stream_data_t(data);
+	 }
+      }
    }
 }
 
@@ -506,7 +563,8 @@ bgl_uv_stream_close(obj_t obj, obj_t proc) {
    data->proc = 0L;
 
 #if defined(DBG)
-   fprintf(stderr, ">>> bgl_uv_stream_close idx=%d o=%p proc=%p data=%p index=%d\n", data->index, obj, proc, data, data ? data->index : 1);
+   fprintf(stderr, ">>> bgl_uv_stream_close data=%p idx=%d:%d o=%p proc=%p\n",
+	   data, data ? data->index : -1, data ? data->state : -1, obj, proc);
 #endif
 
    if (PROCEDUREP(proc)) {
@@ -2315,6 +2373,7 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
    obj_t offset = data->offset;
    int c = 0;
    obj_t pendingsym = BFALSE;
+   uv_stream_state_t state = data->state;
 
 #if defined(DBG)
    assert_stream_data(obj);
@@ -2330,15 +2389,16 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
    }
 
 #if defined(DBG)
-   fprintf(stderr, "~~~ bgl_uv_read_cb idx=%d stream=%p data=%p proc=%p alloc=%p allocobj=%p nread=%d %s\n", data->index, stream, data, p, data->alloc, allocobj, nread, nread < 0 ? uv_strerror(nread) : "");
+   fprintf(stderr, "~~~>>> bgl_uv_read_cb idx=%d stream=%p data=%p proc=%p alloc=%p allocobj=%p nread=%d %s\n", data->index, stream, data, p, data->alloc, allocobj, nread, nread < 0 ? uv_strerror(nread) : "");
 
    if (nread == -105) {
       fprintf(stderr, "alloc error data->obj=%p obj=%p\n", data->obj, obj);
-      exit(0);
+      ABORT();
    }
 #endif
 
-   if (p) {
+   if (p && state != CLOSING) {
+      data->state = READING;
       if (nread >= 0) {
 	 PROCEDURE_ENTRY(p)(p, BTRUE, allocobj, offset, BINT(nread), pendingsym, BEOA);
       } else if (nread == UV_EOF) {
@@ -2346,9 +2406,16 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
       } else {
 	 PROCEDURE_ENTRY(p)(p, BFALSE, allocobj, BINT(-1), BINT(nread), pendingsym, BEOA);
       }
+
+      if (data->state == CLOSING) {
+	 free_stream_data_t(data);
+      } else {
+	 data->state = state;
+      }
    }
 
 #if defined(DBG)
+   fprintf(stderr, "~~~<<< bgl_uv_read_cb idx=%d stream=%p data=%p proc=%p alloc=%p allocobj=%p nread=%d %s\n", data->index, stream, data, p, data->alloc, allocobj, nread, nread < 0 ? uv_strerror(nread) : "");
    assert_stream_data(obj);
 #endif
 }
@@ -2420,7 +2487,16 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
 	 uv_stream_data_t *data = get_stream_data_t(obj);
 
 #if defined(DBG)
-	 fprintf(stderr, ">>> read_start idx=%d data=%p hdl=%p obj=%p old-proc=%p procc=%p alloc=%p\n", data->index, data, s, obj, data->proc, procc, proca);
+	 fprintf(stderr, ">>> read_start data=%p idx=%d:%d hdl=%p obj=%p old-proc=%p procc=%p alloc=%p\n", data, data->index, data->state, s, obj, data->proc, procc, proca);
+
+	 if (data->state == READING) {
+	    return;
+	 }
+	 
+	 if (data->state != LOCKED) {
+	    fprintf(stderr, "bgl_uv_read_start, bad data state\n");
+	    ABORT();
+	 }
 #endif
 
 	 data->proc = procc;
