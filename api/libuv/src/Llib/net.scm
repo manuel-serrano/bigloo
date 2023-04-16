@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Tue Apr 11 18:42:29 2023 (serrano)                */
+;*    Last change :  Sat Apr 15 08:34:42 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -236,17 +236,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-close ::UvTcp ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (uv-close o::UvTcp #!optional callback)
-   (if (procedure? callback)
-       (let ((cb callback))
-	  (set! callback
-	     (lambda ()
-		(synchronize tcp-mutex
-		   (set! tcp-servers (remq! o tcp-servers)))
-		(cb))))
-       (synchronize tcp-mutex
-	  (set! tcp-servers (remq! o tcp-servers))))
-   (call-next-method))
+;* (define-method (uv-close o::UvTcp #!optional callback)              */
+;*    (if (procedure? callback)                                        */
+;*        (let ((cb callback))                                         */
+;* 	  (set! callback                                               */
+;* 	     (lambda ()                                                */
+;* 		(synchronize tcp-mutex                                 */
+;* 		   (set! tcp-servers (remq! o tcp-servers)))           */
+;* 		(cb))))                                                */
+;*        (synchronize tcp-mutex                                       */
+;* 	  (set! tcp-servers (remq! o tcp-servers))))                   */
+;*    (call-next-method))                                              */
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-tcp-open ...                                                  */
@@ -308,17 +308,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-close ::UvUdp ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (uv-close o::UvUdp #!optional callback)
-   (if (procedure? callback)
-       (let ((cb callback))
-	  (set! callback
-	     (lambda ()
-		(synchronize udp-mutex
-		   (set! udp-servers (remq! o udp-servers)))
-		(cb))))
-       (synchronize udp-mutex
-	  (set! udp-servers (remq! o udp-servers))))
-   (call-next-method))
+;* (define-method (uv-close o::UvUdp #!optional callback)              */
+;*    (if (procedure? callback)                                        */
+;*        (let ((cb callback))                                         */
+;* 	  (set! callback                                               */
+;* 	     (lambda ()                                                */
+;* 		(synchronize udp-mutex                                 */
+;* 		   (set! udp-servers (remq! o udp-servers)))           */
+;* 		(cb))))                                                */
+;*        (synchronize udp-mutex                                       */
+;* 	  (set! udp-servers (remq! o udp-servers))))                   */
+;*    (call-next-method))                                              */
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-bind ...                                                  */

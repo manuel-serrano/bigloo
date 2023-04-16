@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu Apr 13 08:46:15 2023 (serrano)                */
+/*    Last change :  Sat Apr 15 08:27:20 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -510,7 +510,7 @@ bgl_uv_stream_close(obj_t obj, obj_t proc) {
 #endif
 
    if (PROCEDUREP(proc)) {
-      if (PROCEDURE_CORRECT_ARITYP(proc, 1)) {
+      if (PROCEDURE_CORRECT_ARITYP(proc, 0)) {
 	 data->close = proc;
 	 uv_close((uv_handle_t *)s, bgl_uv_stream_close_cb);
       } else {
@@ -2337,13 +2337,9 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
       exit(0);
    }
 #endif
-   
+
    if (p) {
       if (nread >= 0) {
-	 if (CINT(offset) < 0) {
-	    fprintf(stderr, "wrong offset %d\n", offset);
-	    exit(0);
-	 }
 	 PROCEDURE_ENTRY(p)(p, BTRUE, allocobj, offset, BINT(nread), pendingsym, BEOA);
       } else if (nread == UV_EOF) {
 	 PROCEDURE_ENTRY(p)(p, BEOF, allocobj, BINT(-1), BINT(-1), pendingsym, BEOA);

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Tue Apr 11 18:59:24 2023 (serrano)                */
+;*    Last change :  Sat Apr 15 08:36:55 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -54,7 +54,7 @@
       (macro $uv-handle-has-ref?::bool (::$uv_handle_t) "uv_has_ref")
       (macro $uv-handle-close::void (::$uv_handle_t ::$uv_close_cb) "uv_close")
       (macro $uv-handle-active?::bool (::$uv_handle_t) "uv_is_active")
-      ($bgl-uv-stream-close::void (::UvStream ::$uv_close_cb) "bgl_uv_stream_close")
+      ($bgl-uv-stream-close::void (::UvStream ::obj) "bgl_uv_stream_close")
       
       ($bgl_uv_close_cb::$uv_close_cb (::$uv_handle_t) "bgl_uv_close_cb")
       (macro $BGL_UV_CLOSE_CB::$uv_close_cb "(uv_close_cb)&bgl_uv_close_cb")
