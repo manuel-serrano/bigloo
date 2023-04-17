@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Apr 16 08:05:57 2023 (serrano)                */
+/*    Last change :  Mon Apr 17 07:01:27 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------*/
 /*    Thread local storage declarations                                */
 /*---------------------------------------------------------------------*/
+#define ROOTS_INCREMENT 64
+
 #if BGL_HAS_THREAD_LOCALSTORAGE
 static obj_t tls_roots = BNIL;
 static void *tls_tmp;
@@ -36,34 +38,6 @@ static void *tls_tmp;
 
 // #define DBG
 
-/*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
-/*    gc_replace ...                                                   */
-/*    -------------------------------------------------------------    */
-/*    MS 16apr2023: don't change this function. It ensures that        */
-/*    at no moment the pointer "n" is dangling and thus potentially    */
-/*    collected (and the pointers it contains) by the GC. Changing     */
-/*    this function is very dangerous because there seems to be        */
-/*    very mysterious interaction between the GC and the C             */
-/*    optimizations that make some data incorrectly collected.         */
-/*---------------------------------------------------------------------*/
-static obj_t
-gc_replace(void *n, void *o, obj_t lst) {
-   obj_t l = lst;
-   lst = MAKE_PAIR(n, lst);
-   return lst;
-loop:   
-   if (NULLP(l)) {
-      return lst;
-   } else if (o == CAR(l)) {
-      SET_CDR(l, CDR(l));
-      return lst;
-   } else {
-      l = CDR(l);
-      goto loop;
-   }
-}
-   
 /*---------------------------------------------------------------------*/
 /*    void *                                                           */
 /*    gc_extend ...                                                    */
@@ -239,10 +213,10 @@ alloc_stream_data_t() {
 #endif
 
    if (uv_stream_pool_idx >= uv_stream_pool_size) {
-      uv_stream_pool_size += 10;
+      uv_stream_pool_size += ROOTS_INCREMENT;
 
       uv_stream_pool = realloc(uv_stream_pool, sizeof(uv_stream_data_t *) * uv_stream_pool_size);
-      UV_GC_EXTEND_TLS(uv_stream_data_pool, sizeof(uv_stream_data_t), uv_stream_pool_size - 10, uv_stream_pool_size);
+      UV_GC_EXTEND_TLS(uv_stream_data_pool, sizeof(uv_stream_data_t), uv_stream_pool_size - ROOTS_INCREMENT, uv_stream_pool_size);
 
       for (long i = uv_stream_pool_idx; i < uv_stream_pool_size; i++) {
 	 uv_stream_data_pool[i].index = i;
@@ -336,10 +310,10 @@ alloc_uv_fs_t() {
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_fs_req_idx == uv_fs_pool_size) {
-      uv_fs_pool_size += 10;
+      uv_fs_pool_size += ROOTS_INCREMENT;
 
       uv_fs_req_pool = realloc(uv_fs_req_pool, sizeof(uv_fs_t *) * uv_fs_pool_size);
-      UV_GC_EXTEND_TLS(uv_fs_data_pool, sizeof(uv_fs_data_t), uv_fs_pool_size - 10, uv_fs_pool_size);
+      UV_GC_EXTEND_TLS(uv_fs_data_pool, sizeof(uv_fs_data_t), uv_fs_pool_size - ROOTS_INCREMENT, uv_fs_pool_size);
 
       for (long i = uv_fs_req_idx; i < uv_fs_pool_size; i++) {
 	 uv_fs_req_pool[i] = (uv_fs_t *)malloc(sizeof(uv_fs_t));
@@ -398,10 +372,10 @@ alloc_uv_write_t() {
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_write_req_idx == uv_write_pool_size) {
-      uv_write_pool_size += 10;
+      uv_write_pool_size += ROOTS_INCREMENT;
 
       uv_write_req_pool = realloc(uv_write_req_pool, sizeof(uv_write_t *) * uv_write_pool_size);
-      UV_GC_EXTEND_TLS(uv_write_data_pool, sizeof(uv_write_data_t), uv_write_pool_size - 10, uv_write_pool_size);
+      UV_GC_EXTEND_TLS(uv_write_data_pool, sizeof(uv_write_data_t), uv_write_pool_size - ROOTS_INCREMENT, uv_write_pool_size);
 
       for (long i = uv_write_req_idx; i < uv_write_pool_size; i++) {
 	 uv_write_req_pool[i] = (uv_write_t *)malloc(sizeof(uv_write_t));
@@ -458,10 +432,10 @@ alloc_uv_shutdown_t() {
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_shutdown_idx == uv_shutdown_pool_size) {
-      uv_shutdown_pool_size += 10;
+      uv_shutdown_pool_size += ROOTS_INCREMENT;
 
       uv_shutdown_req_pool = realloc(uv_shutdown_req_pool, sizeof(uv_shutdown_t *) * uv_shutdown_pool_size);
-      UV_GC_EXTEND_TLS(uv_shutdown_data_pool, sizeof(uv_shutdown_data_t), uv_shutdown_pool_size - 10, uv_shutdown_pool_size);
+      UV_GC_EXTEND_TLS(uv_shutdown_data_pool, sizeof(uv_shutdown_data_t), uv_shutdown_pool_size - ROOTS_INCREMENT, uv_shutdown_pool_size);
 
       for (long i = uv_shutdown_idx; i < uv_shutdown_pool_size; i++) {
 	 uv_shutdown_req_pool[i] = (uv_shutdown_t *)malloc(sizeof(uv_shutdown_t));
