@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Wed Apr 12 07:04:23 2023 (serrano)                */
+;*    Last change :  Mon Apr 17 08:25:00 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -28,6 +28,7 @@
 	      (%onclose (default #f))
 	      (%gcmarkshead::pair-nil (default '()))
 	      (%gcmarkstail::pair-nil (default '()))
+	      (%gcmark::obj (default #f))
 	      (closed::bool (default #f)))
 
 	   (class UvLoop::UvHandle
@@ -40,11 +41,6 @@
 	   (class UvStream::UvHandle
 	      (loop::UvLoop read-only)
 	      (%data::void* (default $void*_nil)))
-;* 	      (%alloc::obj (default #f))                               */
-;* 	      (%offset::obj (default 0))                               */
-;* 	      (%proca (default #f))                                    */
-;* 	      (%procc (default #f))                                    */
-;* 	      (%callback (default #f)))                                */
 
 	   (class UvTcp::UvStream)
 	   
