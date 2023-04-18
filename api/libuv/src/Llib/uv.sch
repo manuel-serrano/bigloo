@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sat Apr 15 08:36:55 2023 (serrano)                */
+;*    Last change :  Mon Apr 17 12:19:34 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -318,9 +318,11 @@
       
       (infix macro $uv-stream-write-queue-size::long (::$uv_stream_t) "->write_queue_size")
       (infix macro $uv-stream-fd::long (::$uv_stream_t) "->io_watcher.fd")
-      ($uv-write::int (::UvHandle ::string ::long ::long ::procedure)
+      ($uv-write::int (::UvHandle ::string ::long ::long ::procedure
+			 ::obj ::obj ::obj ::obj ::obj)
 	 "bgl_uv_write")
-      ($uv-write2::int (::UvHandle ::string ::long ::long ::obj ::procedure)
+      ($uv-write2::int (::UvHandle ::string ::long ::long ::obj ::procedure
+			  ::obj ::obj ::obj ::obj ::obj)
 	 "bgl_uv_write2")
       ($uv-read-start::int (::UvHandle ::procedure ::procedure)
 	 "bgl_uv_read_start")

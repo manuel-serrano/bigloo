@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Sat Apr 15 08:34:42 2023 (serrano)                */
+;*    Last change :  Mon Apr 17 12:18:26 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -29,9 +29,9 @@
 	    (uv-stream-write-queue-size::long o::UvStream)
 	    (uv-stream-fd::long o::UvStream)
 	    (inline uv-stream-write ::UvStream ::bstring ::long ::long
-	       #!key callback)
+	       #!key callback arg0 arg1 arg2 arg3 arg4)
 	    (inline uv-stream-write2 ::UvStream ::bstring ::long ::long ::obj
-	       #!key callback)
+	       #!key callback arg0 arg1 arg2 arg3 arg4)
 	    (inline uv-stream-read-start ::UvStream 
 	       #!key onalloc callback)
 	    (inline uv-stream-read-stop ::UvStream)
@@ -155,14 +155,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-stream-write o::UvStream buf offset len #!key callback)
-   ($uv-write o buf offset len callback))
+(define-inline (uv-stream-write o::UvStream buf offset len
+		  #!key callback arg0 arg1 arg2 arg3 arg4)
+   ($uv-write o buf offset len callback arg0 arg1 arg2 arg3 arg4))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write2 ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-stream-write2 o::UvStream buf offset len handle::obj #!key callback)
-   ($uv-write2 o buf offset len handle callback))
+(define-inline (uv-stream-write2 o::UvStream buf offset len handle::obj
+		  #!key callback arg0 arg1 arg2 arg3 arg4)
+   ($uv-write2 o buf offset len handle callback arg0 arg1 arg2 arg3 arg4))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */

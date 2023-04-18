@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Apr 17 07:01:27 2023 (serrano)                */
+/*    Last change :  Mon Apr 17 12:20:17 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -2265,13 +2265,41 @@ bgl_uv_inet_pton(char *addr, int family) {
 /*    static void                                                      */
 /*    bgl_uv_write_cb ...                                              */
 /*---------------------------------------------------------------------*/
-static long CNT = 0;
 static void
 bgl_uv_write_cb(uv_write_t *req, int status) {
    long idx = (long)(req->data);
-   obj_t p = uv_write_data_pool[idx].proc;
+   uv_write_data_t *data = &(uv_write_data_pool[idx]);
+   obj_t p = data->proc;
 
-   PROCEDURE_ENTRY(p)(p, BINT(status), BEOA);
+   switch (PROCEDURE_ARITY(p)) {
+      case 1:
+      case -2:
+	 PROCEDURE_ENTRY(p)(p, BINT(status), BEOA);
+	 break;
+      case 2:
+      case -3:
+	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], BEOA);
+	 break;
+      case 3:
+      case -4:
+	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], BEOA);
+	 break;
+      case 4:
+      case -5:
+	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], BEOA);
+	 break;
+      case 5:
+      case -6:
+	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], data->arg[3], BEOA);
+	 break;
+      case 6:
+      case -1:
+      case -7:
+	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], data->arg[3], data->arg[4], BEOA);
+	 break;
+      default:
+	 C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-stream-write", "wrong callback", p);
+   }
 
    free_uv_write_t(req);
 }
@@ -2281,10 +2309,11 @@ bgl_uv_write_cb(uv_write_t *req, int status) {
 /*    bgl_uv_write ...                                                 */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_write(obj_t obj, char *buffer, long offset, long length, obj_t proc) {
-   if (!(PROCEDUREP(proc) && (PROCEDURE_CORRECT_ARITYP(proc, 1)))) {
+bgl_uv_write(obj_t obj, char *buffer, long offset, long length, obj_t proc,
+	     obj_t arg0, obj_t arg1, obj_t arg2, obj_t arg3, obj_t arg4) {
+   if (!(PROCEDUREP(proc))) {
       C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-stream-write",
-			"wrong callback", proc);
+		       "wrong callback", proc);
    } else {
       uv_stream_t *handle = STREAM_BUILTIN(obj);
       uv_write_t *req = alloc_uv_write_t();
@@ -2293,7 +2322,12 @@ bgl_uv_write(obj_t obj, char *buffer, long offset, long length, obj_t proc) {
       int r;
 
       uv_write_data_pool[idx].proc = proc;
-
+      uv_write_data_pool[idx].arg[0] = arg0;
+      uv_write_data_pool[idx].arg[1] = arg1;
+      uv_write_data_pool[idx].arg[2] = arg2;
+      uv_write_data_pool[idx].arg[3] = arg3;
+      uv_write_data_pool[idx].arg[4] = arg4;
+      
       iov = uv_buf_init(buffer + offset, length);
 
       if (r = uv_write(req, handle, &iov, 1, bgl_uv_write_cb)) {
@@ -2309,8 +2343,9 @@ bgl_uv_write(obj_t obj, char *buffer, long offset, long length, obj_t proc) {
 /*    bgl_uv_write2 ...                                                */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_write2(obj_t obj, char *buffer, long offset, long length, obj_t sendhandle, obj_t proc) {
-   if (!(PROCEDUREP(proc) && (PROCEDURE_CORRECT_ARITYP(proc, 1)))) {
+bgl_uv_write2(obj_t obj, char *buffer, long offset, long length, obj_t sendhandle, obj_t proc,
+	      obj_t arg0, obj_t arg1, obj_t arg2, obj_t arg3, obj_t arg4) {
+   if (!(PROCEDUREP(proc))) {
       C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-stream-write",
 			"wrong callback", proc);
    } else {
@@ -2323,6 +2358,11 @@ bgl_uv_write2(obj_t obj, char *buffer, long offset, long length, obj_t sendhandl
       int r;
 
       uv_write_data_pool[idx].proc = proc;
+      uv_write_data_pool[idx].arg[0] = arg0;
+      uv_write_data_pool[idx].arg[1] = arg1;
+      uv_write_data_pool[idx].arg[2] = arg2;
+      uv_write_data_pool[idx].arg[3] = arg3;
+      uv_write_data_pool[idx].arg[4] = arg4;
 
       iov = uv_buf_init(buffer + offset, length);
 
