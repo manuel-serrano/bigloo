@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Mar 30 07:24:02 2023 (serrano)                */
+;*    Last change :  Sun Apr 30 13:02:01 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -1039,11 +1039,11 @@
 		 (display num port)
 		 (display ")" port))
 		(loc
-		 (display ", " port)
 		 (multiple-value-bind (file lnum lpoint lstring)
 		    (location-line-num loc)
 		    ;; file name
-		    (when file
+		    (when (and file (not (equal? file ".")))
+		       (display ", " port)
 		       (display (filename file num
 				   (if (string? nm)
 				       (-fx (-fx 80 4) (string-length nm))
@@ -1051,6 +1051,8 @@
 			  port))
 		    ;; line num
 		    (cond
+		       ((and (fixnum? lpoint) (=fx lpoint 0))
+			#unspecified)
 		       (lnum
 			(display ":" port)
 			(display lnum port))

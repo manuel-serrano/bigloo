@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Wed Apr 20 17:23:26 2022 (serrano)                */
+/*    Last change :  Wed Apr 19 13:47:11 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -290,7 +290,7 @@ va_generic_entry(obj_t proc, ...) {
       optional = BNIL;
 
    va_end(argl);
-   
+
 #define CALL(proc) ((obj_t (*)())PROCEDURE_VA_ENTRY(proc))      
    switch(arity) {
       case -1  : return CALL(proc)(proc, optional);
