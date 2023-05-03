@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Feb 11 09:00:50 2023 (serrano)                */
+/*    Last change :  Wed May  3 16:16:29 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1045,7 +1045,11 @@ bgl_output_port_timeout_set(obj_t port, long timeout) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_file_to_output_port(FILE *f, obj_t buf) {
-   return bgl_make_output_port(string_to_bstring("<c-port>"),
+   static obj_t port_name = 0L;
+
+   if (!port_name) port_name = string_to_bstring("<c-port>");
+   
+   return bgl_make_output_port(port_name,
 				(bgl_stream_t)_FILENO(f),
 				_STREAM_TYPE,
 				KINDOF_FILE, 
@@ -1136,12 +1140,16 @@ bgl_append_output_file(obj_t name, obj_t buf) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_open_output_string(obj_t buf) {
-   obj_t port = bgl_make_output_port(string_to_bstring("string"),
-				      (bgl_stream_t)0,
-				      BGL_STREAM_TYPE_CHANNEL,
-				      KINDOF_STRING,
-				      buf,
-				      strwrite, strseek, 0);
+   static obj_t port_name = 0L;
+
+   if (!port_name) port_name = string_to_bstring("string");
+
+   obj_t port = bgl_make_output_port(port_name,
+				     (bgl_stream_t)0,
+				     BGL_STREAM_TYPE_CHANNEL,
+				     KINDOF_STRING,
+				     buf,
+				     strwrite, strseek, 0);
    PORT_CHANNEL(port) = port;
    OUTPUT_PORT(port).bufmode = BGL_IOEBF;
    OUTPUT_PORT(port).sysflush = get_output_string;
@@ -1155,12 +1163,14 @@ bgl_open_output_string(obj_t buf) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_open_output_procedure(obj_t proc, obj_t flush, obj_t close, obj_t buf) {
-   obj_t port = bgl_make_output_port(string_to_bstring("procedure"),
-				      (bgl_stream_t)0,
-				      BGL_STREAM_TYPE_CHANNEL,
-				      KINDOF_PROCEDURE,
-				      make_string_sans_fill(0),
-				      procwrite, 0L, 0L);
+   static obj_t port_name = 0L;
+   if (!port_name) port_name = string_to_bstring("procedure");
+   obj_t port = bgl_make_output_port(port_name,
+				     (bgl_stream_t)0,
+				     BGL_STREAM_TYPE_CHANNEL,
+				     KINDOF_PROCEDURE,
+				     make_string_sans_fill(0),
+				     procwrite, 0L, 0L);
    /* MS, 9 apri 2009: used to be create_vector(5)! */
    obj_t udata = create_vector(4);
    
@@ -1665,11 +1675,11 @@ bgl_file_to_input_port(FILE *file) {
 BGL_RUNTIME_DEF obj_t
 bgl_open_input_substring_bang(obj_t buffer, long offset, long end) {
    obj_t port;
+   static obj_t port_name = 0L;
 
-   port = bgl_make_input_port(string_to_bstring("[string]"),
-			       0L,
-			       KINDOF_STRING,
-			       buffer);
+   if (!port_name) port_name = string_to_bstring("[string]");
+
+   port = bgl_make_input_port(port_name, 0L, KINDOF_STRING, buffer);
 
 #if (defined(RGC_0))
    STRING_SET(buffer, end, '\0');
@@ -1757,7 +1767,10 @@ bgl_reopen_input_c_string(obj_t port, char *c_string) {
 BGL_RUNTIME_DEF obj_t
 bgl_open_input_procedure(obj_t fun, obj_t buffer) {
    if (PROCEDURE_CORRECT_ARITYP(fun, 0)) {
-      obj_t port = bgl_make_input_port(string_to_bstring("[procedure]"),
+      static obj_t port_name = 0L;
+
+      if (!port_name) port_name = string_to_bstring("[procedure]");
+      obj_t port = bgl_make_input_port(port_name, 
 					0L,
 					KINDOF_PROCEDURE,
 					buffer);
