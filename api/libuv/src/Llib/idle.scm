@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/idle.scm          */
+;*    .../prgm/project/bigloo/bigloo/api/libuv/src/Llib/idle.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Wed Mar  1 10:23:10 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Thu May  4 18:52:26 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV idle callback                                              */
 ;*=====================================================================*/
@@ -38,8 +38,8 @@
 	  (error "uv-idle-start" "wrong callback" o)
 	  (begin
 	     ;; store in the loop for the GC
-	     (uv-push-gcmark! loop o)
-	     (uv-push-gcmark! o cb)
+	     (uv-push-gcmark! loop o "uv-idle-start")
+	     (uv-push-gcmark! o cb "uv-idle-start")
 	     ;; force Bigloo to add the extern clause for bgl_uv_idle_cb
 	     (when (uv-gcmarks-empty? loop) ($bgl_uv_idle_cb $uv_idle_nil 0))
 	     ($uv_idle_start ($uv-idle-t $builtin) $BGL_UV_IDLE_CB)))))

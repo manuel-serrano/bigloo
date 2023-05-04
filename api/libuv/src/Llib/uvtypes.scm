@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Mon Apr 17 08:25:00 2023 (serrano)                */
+;*    Last change :  Thu May  4 18:53:01 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -159,7 +159,7 @@
 
 	   (uv-handle-type-symbol ::int)
 	   (uv-guess-handle::symbol ::int)
-	   (inline uv-push-gcmark! ::UvHandle o)
+	   (inline uv-push-gcmark! ::UvHandle o msg)
 	   (uv-pop-gcmark! ::UvHandle o)
 	   (uv-gcmarks-empty?::bool o::UvHandle))
 
@@ -267,7 +267,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-push-gcmark! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-push-gcmark! o::UvHandle val)
+(define-inline (uv-push-gcmark! o::UvHandle val msg)
    (with-access::UvHandle o (%gcmarkshead %gcmarkstail)
       (if (null? %gcmarkstail)
 	  (begin

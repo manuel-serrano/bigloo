@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu May  4 14:48:04 2023 (serrano)                */
+/*    Last change :  Thu May  4 18:49:21 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -2612,7 +2612,6 @@ bgl_uv_tcp_connectX(obj_t obj, struct sockaddr *address, obj_t proc, bgl_uv_loop
       gc_mark(proc);
 
       r = uv_tcp_connect(req, handle, address, bgl_connect_cb);
-
       if (r != 0) {
 	 free(req);
       }

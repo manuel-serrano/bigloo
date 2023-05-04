@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Mon Apr 17 12:18:26 2023 (serrano)                */
+;*    Last change :  Thu May  4 18:45:06 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -101,15 +101,6 @@
 ;*    uv-close ::UvStream ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (uv-close o::UvStream #!optional callback)
-;*    (if (procedure? callback)                                        */
-;*        (let ((cb callback))                                         */
-;* 	  (set! callback                                               */
-;* 	     (lambda ()                                                */
-;* 		(with-access::UvStream o (loop)                        */
-;* 		   (uv-pop-gcmark! loop o))                            */
-;* 		(cb))))                                                */
-;*        (with-access::UvStream o (loop)                              */
-;* 	  (uv-pop-gcmark! loop o)))                                    */
    ($bgl-uv-stream-close o callback)
    #t)
 
@@ -225,8 +216,8 @@
 (define (uv-tcp-connect handle host port #!key (family::int 4) callback (loop (uv-default-loop)))
    (let ((r ($uv-tcp-connect handle host port family callback loop)))
       (when (=fx r 0)
-	 (uv-push-gcmark! handle callback)
-	 (uv-push-gcmark! loop handle))
+	 (uv-push-gcmark! handle callback "uv-tcp-connect")
+	 (uv-push-gcmark! loop handle "uv-tcp-connect"))
       r))
 
 ;*---------------------------------------------------------------------*/

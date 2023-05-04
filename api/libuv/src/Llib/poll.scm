@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/poll.scm          */
+;*    .../prgm/project/bigloo/bigloo/api/libuv/src/Llib/poll.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Fri Apr 21 15:10:27 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Thu May  4 18:52:41 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fspoll                                                     */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
       (with-access::UvLoop loop (%mutex)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC
-	    (uv-push-gcmark! loop o)
+	    (uv-push-gcmark! loop o "uv-poll-start")
 	    ;; force Bigloo to add the extern clause for bgl_uv_poll_cb
 	    (when (uv-gcmarks-empty? loop)
 	       ($bgl_uv_poll_cb $uv_poll_nil 0 0))))

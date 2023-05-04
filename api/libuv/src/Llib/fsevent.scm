@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/fsevent.scm       */
+;*    .../project/bigloo/bigloo/api/libuv/src/Llib/fsevent.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Wed Mar  1 10:25:49 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Thu May  4 18:51:49 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fsevent                                                    */
 ;*=====================================================================*/
@@ -39,7 +39,7 @@
       (with-access::UvLoop loop (%mutex)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC
-	    (uv-push-gcmark! loop o)
+	    (uv-push-gcmark! loop o "uv-fs-event-start")
 	    ;; force Bigloo to add the extern clause for bgl_uv_fs_event_cb
 	    (when (uv-gcmarks-empty? loop)
 	       ($bgl_uv_fs_event_cb $uv_fs_event_nil $string-nil 0 0))))

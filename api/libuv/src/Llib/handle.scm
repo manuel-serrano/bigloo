@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Tue Apr 11 15:16:18 2023 (serrano)                */
+;*    Last change :  Thu May  4 18:52:09 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV handles                                                    */
@@ -54,7 +54,7 @@
       (when (procedure? callback)
 	 (unless (correct-arity? callback 0)
 	    (error "uv-close" "wrong procedure arity" callback))
-	 (uv-push-gcmark! o callback)
+	 (uv-push-gcmark! o callback "uv-close")
 	 (set! %onclose (lambda ()
 			   (let ((r (callback)))
 			      (uv-pop-gcmark! o callback)

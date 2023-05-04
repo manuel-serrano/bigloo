@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Tue Oct 23 11:28:15 2018 (serrano)                */
-;*    Copyright   :  2014-18 Manuel Serrano                            */
+;*    Last change :  Thu May  4 18:52:50 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV timers                                                     */
 ;*=====================================================================*/
@@ -39,7 +39,7 @@
    (with-access::UvTimer o ($builtin loop repeat ref)
       (set! repeat r)
       ;; store in the loop for the GC
-      (uv-push-gcmark! loop o)
+      (uv-push-gcmark! loop o "uv-timer-start")
       ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
       (when (uv-gcmarks-empty? loop) ($bgl_uv_timer_cb $uv_timer_nil))
       ($uv_timer_start ($uv-timer-t $builtin) $BGL_UV_TIMER_CB t r)))

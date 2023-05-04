@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/async.scm         */
+;*    .../prgm/project/bigloo/bigloo/api/libuv/src/Llib/async.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Wed Mar  1 10:18:21 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Thu May  4 18:51:32 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV asyncs                                                     */
 ;*=====================================================================*/
@@ -29,7 +29,7 @@
       (with-access::UvLoop loop (%mutex)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC
-	    (uv-push-gcmark! loop o)))
+	    (uv-push-gcmark! loop o "%uv-init")))
       o))
 
 ;*---------------------------------------------------------------------*/
