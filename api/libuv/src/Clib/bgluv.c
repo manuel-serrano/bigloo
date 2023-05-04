@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed May  3 07:45:33 2023 (serrano)                */
+/*    Last change :  Thu May  4 14:48:04 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -213,10 +213,15 @@ alloc_stream_data_t() {
 #endif
 
    if (uv_stream_pool_idx >= uv_stream_pool_size) {
-      uv_stream_pool_size += ROOTS_INCREMENT;
+      long ol = uv_stream_pool_size;
+      if (!uv_stream_pool_size) {
+	 uv_stream_pool_size = ROOTS_INCREMENT;
+      } else {
+	 uv_stream_pool_size *= 2;
+      }
 
       uv_stream_pool = realloc(uv_stream_pool, sizeof(uv_stream_data_t *) * uv_stream_pool_size);
-      UV_GC_EXTEND_TLS(uv_stream_data_pool, sizeof(uv_stream_data_t), uv_stream_pool_size - ROOTS_INCREMENT, uv_stream_pool_size);
+      UV_GC_EXTEND_TLS(uv_stream_data_pool, sizeof(uv_stream_data_t), ol, uv_stream_pool_size);
 
       for (long i = uv_stream_pool_idx; i < uv_stream_pool_size; i++) {
 	 uv_stream_data_pool[i].index = i;
@@ -310,10 +315,16 @@ alloc_uv_fs_t() {
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_fs_req_idx == uv_fs_pool_size) {
-      uv_fs_pool_size += ROOTS_INCREMENT;
+      long ol = uv_fs_pool_size;
+
+      if (!uv_fs_pool_size) {
+	 uv_fs_pool_size = ROOTS_INCREMENT;
+      } else {
+	 uv_fs_pool_size *= 2;
+      }
 
       uv_fs_req_pool = realloc(uv_fs_req_pool, sizeof(uv_fs_t *) * uv_fs_pool_size);
-      UV_GC_EXTEND_TLS(uv_fs_data_pool, sizeof(uv_fs_data_t), uv_fs_pool_size - ROOTS_INCREMENT, uv_fs_pool_size);
+      UV_GC_EXTEND_TLS(uv_fs_data_pool, sizeof(uv_fs_data_t), ol, uv_fs_pool_size);
 
       for (long i = uv_fs_req_idx; i < uv_fs_pool_size; i++) {
 	 uv_fs_req_pool[i] = (uv_fs_t *)malloc(sizeof(uv_fs_t));
@@ -372,10 +383,14 @@ alloc_uv_write_t() {
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_write_req_idx == uv_write_pool_size) {
-      uv_write_pool_size += ROOTS_INCREMENT;
-
+      long ol = uv_write_pool_size;
+      if (!uv_write_pool_size) {
+	 uv_write_pool_size = ROOTS_INCREMENT;
+      } else {
+	 uv_write_pool_size *= 2;
+      }
       uv_write_req_pool = realloc(uv_write_req_pool, sizeof(uv_write_t *) * uv_write_pool_size);
-      UV_GC_EXTEND_TLS(uv_write_data_pool, sizeof(uv_write_data_t), uv_write_pool_size - ROOTS_INCREMENT, uv_write_pool_size);
+      UV_GC_EXTEND_TLS(uv_write_data_pool, sizeof(uv_write_data_t), ol, uv_write_pool_size);
 
       for (long i = uv_write_req_idx; i < uv_write_pool_size; i++) {
 	 uv_write_req_pool[i] = (uv_write_t *)malloc(sizeof(uv_write_t));
@@ -432,10 +447,16 @@ alloc_uv_shutdown_t() {
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
    if (uv_shutdown_idx == uv_shutdown_pool_size) {
-      uv_shutdown_pool_size += ROOTS_INCREMENT;
+      long ol = uv_shutdown_pool_size;
 
+      if (!uv_shutdown_pool_size) {
+	 uv_shutdown_pool_size = ROOTS_INCREMENT;
+      } else {
+	 uv_shutdown_pool_size *= 2;
+      }
+      
       uv_shutdown_req_pool = realloc(uv_shutdown_req_pool, sizeof(uv_shutdown_t *) * uv_shutdown_pool_size);
-      UV_GC_EXTEND_TLS(uv_shutdown_data_pool, sizeof(uv_shutdown_data_t), uv_shutdown_pool_size - ROOTS_INCREMENT, uv_shutdown_pool_size);
+      UV_GC_EXTEND_TLS(uv_shutdown_data_pool, sizeof(uv_shutdown_data_t), ol, uv_shutdown_pool_size);
 
       for (long i = uv_shutdown_idx; i < uv_shutdown_pool_size; i++) {
 	 uv_shutdown_req_pool[i] = (uv_shutdown_t *)malloc(sizeof(uv_shutdown_t));
