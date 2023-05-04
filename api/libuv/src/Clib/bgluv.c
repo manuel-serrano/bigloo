@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Apr 17 12:20:17 2023 (serrano)                */
+/*    Last change :  Wed May  3 07:45:33 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -2416,9 +2416,9 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
       if (nread >= 0) {
 	 PROCEDURE_ENTRY(p)(p, BTRUE, allocobj, offset, BINT(nread), pendingsym, BEOA);
       } else if (nread == UV_EOF) {
-	 PROCEDURE_ENTRY(p)(p, BEOF, allocobj, BINT(-1), BINT(-1), pendingsym, BEOA);
+	 PROCEDURE_ENTRY(p)(p, BEOF, allocobj, offset, BINT(-1), pendingsym, BEOA);
       } else {
-	 PROCEDURE_ENTRY(p)(p, BFALSE, allocobj, BINT(-1), BINT(nread), pendingsym, BEOA);
+	 PROCEDURE_ENTRY(p)(p, BFALSE, allocobj, offset, BINT(nread), pendingsym, BEOA);
       }
 
       if (data->state == CLOSING) {
@@ -2487,7 +2487,6 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
 #if defined(DBG)
    assert_stream_data(obj);
 #endif
-
    if (!PROCEDUREP(proca) || (!PROCEDURE_CORRECT_ARITYP(proca, 2))) {
       C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-read-start",
 			"wrong onalloc", proca);
