@@ -274,7 +274,7 @@ resource identifier, or a symbol amongst:
 
 All other symbols trigger an error.
 
-Bigloo defines the @code{cond-expand} @code{gerlimit} keyword, which enables
+Bigloo defines the @code{cond-expand} @code{rlimit} keyword, which enables
 applications to use the two functions conditionally.
 
 @smalllisp @noindent
@@ -283,7 +283,7 @@ applications to use the two functions conditionally.
   (cons soft hard)) @result{} (#e1024 . #e1048576)
 (setrlimit 'NOFILE #e256 #e1048576) @result{#t}
 (cond-expand
-   (getrlimit 'supported)
+   (rlimit 'supported)
    (else 'unsupported)) @result{} supported
 @end smalllisp
 @end deffn
