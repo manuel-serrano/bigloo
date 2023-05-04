@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sat Jun 12 18:03:37 2021 (serrano)                */
-/*    Copyright   :  2002-21 Manuel Serrano                            */
+/*    Last change :  Thu May  4 09:09:04 2023 (serrano)                */
+/*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -66,15 +66,15 @@ extern obj_t bgl_stack_overflow_error();
 /*    Signal mutex                                                     */
 /*---------------------------------------------------------------------*/
 static obj_t signal_mutex = BUNSPEC;
-DEFINE_STRING( signal_mutex_name, _1, "signal-mutex", 12 );
+DEFINE_STRING(signal_mutex_name, _1, "signal-mutex", 12);
 static obj_t getuid_mutex = BUNSPEC;
-DEFINE_STRING( getuid_mutex_name, _2, "getuid-mutex", 12 );
+DEFINE_STRING(getuid_mutex_name, _2, "getuid-mutex", 12);
 
 /*---------------------------------------------------------------------*/
 /*    thread or process sigprocmask                                    */
 /*---------------------------------------------------------------------*/
 #if HAVE_SIGPROCMASK
-extern int (*bgl_sigprocmask)( int, const sigset_t *, sigset_t * );
+extern int (*bgl_sigprocmask)(int, const sigset_t *, sigset_t *);
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -82,11 +82,11 @@ extern int (*bgl_sigprocmask)( int, const sigset_t *, sigset_t * );
 /*---------------------------------------------------------------------*/
 void
 bgl_init_signal() {
-   if( signal_mutex == BUNSPEC ) {
-      signal_mutex = bgl_make_mutex( signal_mutex_name );
+   if (signal_mutex == BUNSPEC) {
+      signal_mutex = bgl_make_mutex(signal_mutex_name);
    }
-   if( getuid_mutex == BUNSPEC ) {
-      getuid_mutex = bgl_make_mutex( getuid_mutex_name );
+   if (getuid_mutex == BUNSPEC) {
+      getuid_mutex = bgl_make_mutex(getuid_mutex_name);
    }
 }
           
@@ -94,17 +94,17 @@ bgl_init_signal() {
 /*    signal_handler ...                                               */
 /*---------------------------------------------------------------------*/
 static obj_t
-signal_handler( int num ) {
+signal_handler(int num) {
    obj_t handler = BGL_SIG_HANDLERS()[ num ];
 
    /* Re-install the signal handler because some OS (such as Solaris) */
    /* de-install it when the signal is raised.                        */
 #if !BGL_HAVE_SIGACTION
-   signal( num, (void (*)(int))(signal_handler) );
+   signal(num, (void (*)(int))(signal_handler));
 #endif
 
-   if( PROCEDUREP( handler ) ) {
-      return ((obj_t (*)())PROCEDURE_ENTRY(handler))( handler, BINT( num ), BEOA );
+   if (PROCEDUREP(handler)) {
+      return ((obj_t (*)())PROCEDURE_ENTRY(handler))(handler, BINT(num), BEOA);
    } else {
       return BUNSPEC;
    }
@@ -118,17 +118,17 @@ signal_handler( int num ) {
 /*---------------------------------------------------------------------*/
 #if BGL_HAVE_GETRLIMIT
 static int
-stackov_heuristic_getrlimitp( siginfo_t *siginfo ) {
+stackov_heuristic_getrlimitp(siginfo_t *siginfo) {
    struct rlimit rlimit;
    const obj_t env = BGL_CURRENT_DYNAMIC_ENV();
-#if( defined( STACK_GROWS_DOWN ) )
-   long stksz = BGL_ENV_STACK_BOTTOM( env ) - (char *)siginfo->si_addr;
+#if (defined(STACK_GROWS_DOWN))
+   long stksz = BGL_ENV_STACK_BOTTOM(env) - (char *)siginfo->si_addr;
 #else
-   long stksz = (char *)siginfo->si_addr - BGL_ENV_STACK_BOTTOM( env );
+   long stksz = (char *)siginfo->si_addr - BGL_ENV_STACK_BOTTOM(env);
 #endif   
    long delta;
 
-   getrlimit( RLIMIT_STACK, &rlimit );
+   getrlimit(RLIMIT_STACK, &rlimit);
 
    delta = rlimit.rlim_cur - stksz;
 
@@ -142,8 +142,8 @@ stackov_heuristic_getrlimitp( siginfo_t *siginfo ) {
 /*---------------------------------------------------------------------*/
 static int
 stackov_heuristic_sbrk() {
-#if !defined( _BGL_WIN32_VER )
-   return ( (long)sbrk( 8192 ) == -1 );
+#if !defined(_BGL_WIN32_VER)
+   return ((long)sbrk(8192) == -1);
 #else
    return 0;
 #endif   
@@ -155,28 +155,28 @@ stackov_heuristic_sbrk() {
 /*---------------------------------------------------------------------*/
 #if BGL_HAVE_SIGINFO
 static void
-stackov_handler( int sig, siginfo_t *siginfo, void *ucontext ) {
+stackov_handler(int sig, siginfo_t *siginfo, void *ucontext) {
 #if BGL_HAVE_GETRLIMIT
-   if( stackov_heuristic_getrlimitp( siginfo ) ) {
+   if (stackov_heuristic_getrlimitp(siginfo)) {
       bgl_stack_overflow_error();
    } else
 #endif      
-   if( stackov_heuristic_sbrk() ) {
+   if (stackov_heuristic_sbrk()) {
       bgl_stack_overflow_error();
    } else {
       /* re-execute the instruction that caused the trap */
       /* to raise the sigsegv normal error handling      */
-      signal( SIGSEGV , SIG_DFL) ;
+      signal(SIGSEGV , SIG_DFL) ;
    }
 }
 #else
-stackov_handler( int sig ) {
-   if( stackov_heuristic_sbrk() ) {
+stackov_handler(int sig) {
+   if (stackov_heuristic_sbrk()) {
       bgl_stack_overflow_error();
    } else {
       /* re-execute the instruction that caused the trap */
       /* to raise the sigsegv normal error handling      */
-      signal( SIGSEGV , SIG_DFL) ;
+      signal(SIGSEGV , SIG_DFL) ;
    }
 }
 #endif
@@ -185,32 +185,32 @@ stackov_handler( int sig ) {
 /*    bgl_signal ...                                                   */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_signal( int sig, obj_t obj ) {
-   BGL_MUTEX_LOCK( signal_mutex );
+bgl_signal(int sig, obj_t obj) {
+   BGL_MUTEX_LOCK(signal_mutex);
 
    /* store the obj in the signal table */
-   if( obj != BUNSPEC ) {
+   if (obj != BUNSPEC) {
       BGL_SIG_HANDLERS()[ sig ] = obj;
    }
    
-   if( PROCEDUREP( obj ) || obj == BUNSPEC ) {
+   if (PROCEDUREP(obj) || obj == BUNSPEC) {
 #if BGL_HAVE_SIGACTION
       {
 	 struct sigaction sigact;
-	 sigemptyset( &(sigact.sa_mask) );
-	 sigact.sa_handler = (void (*)( int ))signal_handler;
+	 sigemptyset(&(sigact.sa_mask));
+	 sigact.sa_handler = (void (*)(int))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
 
-	 if( sig == SIGSEGV ) {
+	 if (sig == SIGSEGV) {
 	    /* create an alternate stack for SEGV */
 	    sigact.sa_flags |= SA_ONSTACK;
 	    stack_t ss;
 
 	    ss.ss_flags = 0L;
-	    ss.ss_sp = malloc( SIGSTKSZ );
+	    ss.ss_sp = malloc(SIGSTKSZ);
 	    ss.ss_size = SIGSTKSZ;
 
-	    if( obj == BUNSPEC ) {
+	    if (obj == BUNSPEC) {
 	       /* this is a fake stack overflow detection (see cmain.c) */
 #if BGL_HAVE_SIGINFO
 	       sigact.sa_flags |= SA_SIGINFO;
@@ -221,28 +221,28 @@ bgl_signal( int sig, obj_t obj ) {
 #endif	    	    
 	    }
 	    
-	    sigaltstack( &ss, 0L );
+	    sigaltstack(&ss, 0L);
 	 }
 
-	 sigaction( sig, &sigact, NULL );
+	 sigaction(sig, &sigact, NULL);
       }
 #else
-      if( obj != BUNSPEC ) {
-	 signal( (int)sig, (void (*)( int ))signal_handler );
+      if (obj != BUNSPEC) {
+	 signal((int)sig, (void (*)(int))signal_handler);
       }
 #endif      
       
    } else {
-      if( obj == BTRUE ) {
-	 signal( (int)sig, SIG_IGN );
+      if (obj == BTRUE) {
+	 signal((int)sig, SIG_IGN);
       } else {
-	 if( obj == BFALSE ) {
-	    signal( (int)sig, SIG_DFL );
+	 if (obj == BFALSE) {
+	    signal((int)sig, SIG_DFL);
 	 }
       }
    }
    
-   BGL_MUTEX_UNLOCK( signal_mutex );
+   BGL_MUTEX_UNLOCK(signal_mutex);
    
    return BUNSPEC;
 }
@@ -252,7 +252,7 @@ bgl_signal( int sig, obj_t obj ) {
 /*    bgl_get_signal_handler ...                                       */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_get_signal_handler( int sig ) {
+bgl_get_signal_handler(int sig) {
    return BGL_SIG_HANDLERS()[ sig ];
 }
 
@@ -268,8 +268,8 @@ bgl_restore_signal_handlers() {
 #if 0 && HAVE_SIGPROCMASK
    sigset_t set;
 
-   sigemptyset( &set );
-   bgl_sigprocmask( SIG_SETMASK, &set, 0 );
+   sigemptyset(&set);
+   bgl_sigprocmask(SIG_SETMASK, &set, 0);
 #endif
 }
 
@@ -278,15 +278,15 @@ bgl_restore_signal_handlers() {
 /*    bgl_sigsetmask ...                                               */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
-bgl_sigsetmask( int set ) {
+bgl_sigsetmask(int set) {
 #if HAVE_SIGPROCMASK
-   if( !set ) {
+   if (!set) {
       sigset_t mask;
-      bgl_sigprocmask( SIG_SETMASK, 0, &mask );
+      bgl_sigprocmask(SIG_SETMASK, 0, &mask);
       
-      return bgl_sigprocmask( SIG_UNBLOCK, &mask, 0 );
+      return bgl_sigprocmask(SIG_UNBLOCK, &mask, 0);
    } else {
-      return bgl_sigprocmask( SIG_SETMASK, (const sigset_t *)&set, 0 );
+      return bgl_sigprocmask(SIG_SETMASK, (const sigset_t *)&set, 0);
    }
 #else
    return 0;
@@ -298,14 +298,14 @@ bgl_sigsetmask( int set ) {
 /*---------------------------------------------------------------------*/
 char *
 c_date() {
-#if( defined( sony_news ) )
+#if (defined(sony_news))
    long now;
 #else      
    time_t now;
 #endif
 
-   now = time( 0L );
-   return ctime( &now );
+   now = time(0L);
+   return ctime(&now);
 }
       
 /*---------------------------------------------------------------------*/
@@ -313,10 +313,10 @@ c_date() {
 /*    bgl_last_modification_time ...                                   */
 /*---------------------------------------------------------------------*/
 long
-bgl_last_modification_time( char *file ) {
+bgl_last_modification_time(char *file) {
    struct stat _stati;
 
-   if( lstat( file, &_stati ) )
+   if (lstat(file, &_stati))
       return -1;
    else
       return (long)(_stati.st_mtime);
@@ -327,10 +327,10 @@ bgl_last_modification_time( char *file ) {
 /*    bgl_last_change_time ...                                         */
 /*---------------------------------------------------------------------*/
 long
-bgl_last_change_time( char *file ) {
+bgl_last_change_time(char *file) {
    struct stat _stati;
 
-   if( lstat( file, &_stati ) )
+   if (lstat(file, &_stati))
       return -1;
    else
       return (long)(_stati.st_ctime);
@@ -341,10 +341,10 @@ bgl_last_change_time( char *file ) {
 /*    bgl_last_access_time ...                                         */
 /*---------------------------------------------------------------------*/
 long
-bgl_last_access_time( char *file ) {
+bgl_last_access_time(char *file) {
    struct stat _stati;
 
-   if( lstat( file, &_stati ) )
+   if (lstat(file, &_stati))
       return -1;
    else
       return (long)(_stati.st_atime);
@@ -355,14 +355,14 @@ bgl_last_access_time( char *file ) {
 /*    bgl_utime ...                                                    */
 /*---------------------------------------------------------------------*/
 int
-bgl_utime( char *file, long atime, long mtime ) {
+bgl_utime(char *file, long atime, long mtime) {
    struct utimbuf buf = { .actime = (time_t)atime, .modtime= (time_t)mtime };
-   int r = utime( file, &buf );
+   int r = utime(file, &buf);
    
-   if( r < 0 ) {
-      C_SYSTEM_FAILURE( BGL_ERROR, "file-times-set!",
-			strerror( errno ),
-			string_to_bstring( file ) );
+   if (r < 0) {
+      C_SYSTEM_FAILURE(BGL_ERROR, "file-times-set!",
+			strerror(errno),
+			string_to_bstring(file));
    }
    return r;
 }
@@ -372,10 +372,10 @@ bgl_utime( char *file, long atime, long mtime ) {
 /*    bgl_file_size ...                                                */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
-bgl_file_size( char *file ) {
+bgl_file_size(char *file) {
    struct stat _stati;
 
-   if( stat( file, &_stati ) )
+   if (stat(file, &_stati))
       return -1;
    else
       return (long)_stati.st_size;
@@ -386,10 +386,10 @@ bgl_file_size( char *file ) {
 /*    bgl_file_uid ...                                                 */
 /*---------------------------------------------------------------------*/
 long
-bgl_file_uid( char *file ) {
+bgl_file_uid(char *file) {
    struct stat _stati;
 
-   if( lstat( file, &_stati ) )
+   if (lstat(file, &_stati))
       return -1;
    else
       return _stati.st_uid;
@@ -400,10 +400,10 @@ bgl_file_uid( char *file ) {
 /*    bgl_file_gid ...                                                 */
 /*---------------------------------------------------------------------*/
 long
-bgl_file_gid( char *file ) {
+bgl_file_gid(char *file) {
    struct stat _stati;
 
-   if( lstat( file, &_stati ) )
+   if (lstat(file, &_stati))
       return -1;
    else
       return _stati.st_gid;
@@ -414,10 +414,10 @@ bgl_file_gid( char *file ) {
 /*    bgl_file_mode ...                                                */
 /*---------------------------------------------------------------------*/
 long
-bgl_file_mode( char *file ) {
+bgl_file_mode(char *file) {
    struct stat _stati;
 
-   if( stat( file, &_stati ) )
+   if (stat(file, &_stati))
       return -1;
    else
       return _stati.st_mode;
@@ -428,62 +428,62 @@ bgl_file_mode( char *file ) {
 /*    bgl_file_type ...                                                */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_file_type( char *file ) {
+bgl_file_type(char *file) {
    struct stat _stati;
 
-   if( lstat( file, &_stati ) ) {
-      return string_to_symbol( "does-not-exist" );
+   if (lstat(file, &_stati)) {
+      return string_to_symbol("does-not-exist");
    }
 
-#if( defined( S_ISLNK ) )
-   if( S_ISLNK( _stati.st_mode ) ) {
-      return string_to_symbol( "link" );
+#if (defined(S_ISLNK))
+   if (S_ISLNK(_stati.st_mode)) {
+      return string_to_symbol("link");
    }
 #endif   
 
-#if( defined( S_ISREG ) )
-   if( S_ISREG( _stati.st_mode ) ) {
+#if (defined(S_ISREG))
+   if (S_ISREG(_stati.st_mode)) {
       static obj_t reg = 0L;
 
-      if( !reg ) reg = string_to_symbol( "regular" );
+      if (!reg) reg = string_to_symbol("regular");
       return reg;
    }
 #endif   
 
-#if( defined( S_ISDIR ) )
-   if( S_ISDIR( _stati.st_mode ) ) {
+#if (defined(S_ISDIR))
+   if (S_ISDIR(_stati.st_mode)) {
       static obj_t dir = 0L;
 
-      if( !dir ) dir = string_to_symbol( "directory" );
+      if (!dir) dir = string_to_symbol("directory");
       return dir;
    }
 #endif   
 
-#if( defined( S_ISBLK ) )
-   if( S_ISBLK( _stati.st_mode ) ) {
-      return string_to_symbol( "block" );
+#if (defined(S_ISBLK))
+   if (S_ISBLK(_stati.st_mode)) {
+      return string_to_symbol("block");
    }
 #endif   
 
-#if( defined( S_ISCHR ) )
-   if( S_ISCHR( _stati.st_mode ) ) {
-      return string_to_symbol( "character" );
+#if (defined(S_ISCHR))
+   if (S_ISCHR(_stati.st_mode)) {
+      return string_to_symbol("character");
    }
 #endif   
 
-#if( defined( S_ISFIFO ) )
-   if( S_ISFIFO( _stati.st_mode ) ) {
-      return string_to_symbol( "fifo" );
+#if (defined(S_ISFIFO))
+   if (S_ISFIFO(_stati.st_mode)) {
+      return string_to_symbol("fifo");
    }
 #endif   
 
-#if( defined( S_ISSOCK ) )
-   if( S_ISSOCK( _stati.st_mode ) ) {
-      return string_to_symbol( "socket" );
+#if (defined(S_ISSOCK))
+   if (S_ISSOCK(_stati.st_mode)) {
+      return string_to_symbol("socket");
    }
 #endif
 
-   return string_to_symbol( "unknown" );
+   return string_to_symbol("unknown");
 }
 
 /*---------------------------------------------------------------------*/
@@ -492,16 +492,16 @@ bgl_file_type( char *file ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 int
-bgl_chmod( char *file, int read, int write, int exec ) {
+bgl_chmod(char *file, int read, int write, int exec) {
 # ifndef _BGL_WIN32_VER
-    return chmod( file,
+    return chmod(file,
                   (read ? S_IRUSR : 0) |
                   (write ? S_IWUSR : 0) |
-                  (exec ? S_IXUSR : 0) );
+                  (exec ? S_IXUSR : 0));
 # else
-    return _chmod( file,
+    return _chmod(file,
                    (read ? S_IREAD : 0) |
-                   (write ? S_IWRITE : 0) );
+                   (write ? S_IWRITE : 0));
 # endif
 }
 		 
@@ -510,15 +510,15 @@ bgl_chmod( char *file, int read, int write, int exec ) {
 /*    bgl_setenv ...                                                   */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
-bgl_setenv( char *id, char *val ) {
-   size_t l1 = strlen( id ), l2 = strlen( val );
-   char *s = malloc( l1 + l2 + 2 );
+bgl_setenv(char *id, char *val) {
+   size_t l1 = strlen(id), l2 = strlen(val);
+   char *s = malloc(l1 + l2 + 2);
    
-   strcpy( s, id );
+   strcpy(s, id);
    s[ l1 ] = '=';
-   strcpy( &s[ l1 + 1 ], val );
+   strcpy(&s[ l1 + 1 ], val);
 
-   return putenv( s );
+   return putenv(s);
 }
 
 /*---------------------------------------------------------------------*/
@@ -526,16 +526,16 @@ bgl_setenv( char *id, char *val ) {
 /*    bgl_time ...                                                     */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_time( obj_t thunk ) {
+bgl_time(obj_t thunk) {
 #ifdef _MINGW_VER
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
    
-   BGL_ENV_MVALUES_NUMBER_SET( env, 4 );
-   BGL_ENV_MVALUES_VAL_SET( env, 1, 0 );
-   BGL_ENV_MVALUES_VAL_SET( env, 2, 0 );
-   BGL_ENV_MVALUES_VAL_SET( env, 3, 0 );
+   BGL_ENV_MVALUES_NUMBER_SET(env, 4);
+   BGL_ENV_MVALUES_VAL_SET(env, 1, 0);
+   BGL_ENV_MVALUES_VAL_SET(env, 2, 0);
+   BGL_ENV_MVALUES_VAL_SET(env, 3, 0);
 
-   return PROCEDURE_ENTRY( thunk )( thunk, BEOA );
+   return PROCEDURE_ENTRY(thunk)(thunk, BEOA);
 #else   
    static long ctick = 0;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
@@ -543,19 +543,19 @@ bgl_time( obj_t thunk ) {
    clock_t t1, t2;
    obj_t res;
 
-   if( !ctick ) ctick = sysconf( _SC_CLK_TCK );
+   if (!ctick) ctick = sysconf(_SC_CLK_TCK);
 
-   t1 = times( &buf1 );
-   res = PROCEDURE_ENTRY( thunk )( thunk, BEOA );
-   t2 = times( &buf2 );
+   t1 = times(&buf1);
+   res = PROCEDURE_ENTRY(thunk)(thunk, BEOA);
+   t2 = times(&buf2);
       
-   BGL_ENV_MVALUES_NUMBER_SET( env, 4 );
+   BGL_ENV_MVALUES_NUMBER_SET(env, 4);
 
-#  define BTICK( v ) BINT( (v) * 1000 / ctick )
-   BGL_ENV_MVALUES_VAL_SET( env, 1, BTICK( t2 - t1 ) );
-   BGL_ENV_MVALUES_VAL_SET( env, 2, BTICK( buf2.tms_stime - buf1.tms_stime ) );
-   BGL_ENV_MVALUES_VAL_SET( env, 3, BTICK( (buf2.tms_cutime - buf1.tms_cutime)
-					   + (buf2.tms_utime - buf1.tms_utime) ) );
+#  define BTICK(v) BINT((v) * 1000 / ctick)
+   BGL_ENV_MVALUES_VAL_SET(env, 1, BTICK(t2 - t1));
+   BGL_ENV_MVALUES_VAL_SET(env, 2, BTICK(buf2.tms_stime - buf1.tms_stime));
+   BGL_ENV_MVALUES_VAL_SET(env, 3, BTICK((buf2.tms_cutime - buf1.tms_cutime)
+					   + (buf2.tms_utime - buf1.tms_utime)));
 #  undef BTICK   
 
    return res;
@@ -580,17 +580,17 @@ bgl_getuid() {
 /*    bgl_setuid ...                                                   */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
-bgl_setuid( uid_t uid ) {
+bgl_setuid(uid_t uid) {
 #if BGL_HAVE_GETUID
-   if( !setuid( uid ) ) {
+   if (!setuid(uid)) {
       return uid;
    } else {
-      C_SYSTEM_FAILURE( BGL_ERROR, "setuid", strerror( errno ), BINT( uid ) );
+      C_SYSTEM_FAILURE(BGL_ERROR, "setuid", strerror(errno), BINT(uid));
       return uid;
    }
 #else
-      C_SYSTEM_FAILURE( BGL_ERROR, "setuid",
-			"operation not supported", BINT( uid ) );
+      C_SYSTEM_FAILURE(BGL_ERROR, "setuid",
+			"operation not supported", BINT(uid));
       return uid;
 #endif
 }
@@ -613,17 +613,17 @@ bgl_getgid() {
 /*    bgl_setgid ...                                                   */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
-bgl_setgid( gid_t gid ) {
+bgl_setgid(gid_t gid) {
 #if BGL_HAVE_GETGID
-   if( !setgid( gid ) ) {
+   if (!setgid(gid)) {
       return gid;
    } else {
-      C_SYSTEM_FAILURE( BGL_ERROR, "setgid", strerror( errno ), BINT( gid ) );
+      C_SYSTEM_FAILURE(BGL_ERROR, "setgid", strerror(errno), BINT(gid));
       return gid;
    }
 #else
-      C_SYSTEM_FAILURE( BGL_ERROR, "setgid",
-			"operation not supported", BINT( gid ) );
+      C_SYSTEM_FAILURE(BGL_ERROR, "setgid",
+			"operation not supported", BINT(gid));
       return gid;
 #endif
 }
@@ -634,28 +634,28 @@ bgl_setgid( gid_t gid ) {
 /*---------------------------------------------------------------------*/
 #if BGL_HAVE_GETUID
 static obj_t
-passwd2list( struct passwd *pw ) {
-   if( !pw ) {
+passwd2list(struct passwd *pw) {
+   if (!pw) {
       return BFALSE;
    } else {
       obj_t res;
 
       /* the shell */
-      res = MAKE_PAIR( string_to_bstring( pw->pw_shell ), BNIL );
+      res = MAKE_PAIR(string_to_bstring(pw->pw_shell), BNIL);
       /* the home directory */
-      res = MAKE_PAIR( string_to_bstring( pw->pw_dir ), res );
+      res = MAKE_PAIR(string_to_bstring(pw->pw_dir), res);
       /* the real name */
 #if BGL_HAVE_GECOS
-      res = MAKE_PAIR( string_to_bstring( pw->pw_gecos ), res );
+      res = MAKE_PAIR(string_to_bstring(pw->pw_gecos), res);
 #endif   
       /* the group id */
-      res = MAKE_PAIR( BINT( pw->pw_gid ), res );
+      res = MAKE_PAIR(BINT(pw->pw_gid), res);
       /* the user id */
-      res = MAKE_PAIR( BINT( pw->pw_uid ), res );
+      res = MAKE_PAIR(BINT(pw->pw_uid), res);
       /* the password */
-      res = MAKE_PAIR( string_to_bstring( pw->pw_passwd ), res );
+      res = MAKE_PAIR(string_to_bstring(pw->pw_passwd), res);
       /* the name */
-      res = MAKE_PAIR( string_to_bstring( pw->pw_name ), res );
+      res = MAKE_PAIR(string_to_bstring(pw->pw_name), res);
 
       return res;
    }
@@ -667,15 +667,15 @@ passwd2list( struct passwd *pw ) {
 /*    bgl_getpwnam ...                                                 */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_getpwnam( char *name ) {
+bgl_getpwnam(char *name) {
 #if BGL_HAVE_GETUID
    struct passwd *pw;
    obj_t res;
 
-   BGL_MUTEX_LOCK( getuid_mutex );
-   pw = getpwnam( name );
-   res = passwd2list( pw );
-   BGL_MUTEX_UNLOCK( getuid_mutex );
+   BGL_MUTEX_LOCK(getuid_mutex);
+   pw = getpwnam(name);
+   res = passwd2list(pw);
+   BGL_MUTEX_UNLOCK(getuid_mutex);
 
    return res;
 #else
@@ -688,15 +688,15 @@ bgl_getpwnam( char *name ) {
 /*    bgl_getpwuid ...                                                 */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_getpwuid( uid_t uid ) {
+bgl_getpwuid(uid_t uid) {
 #if BGL_HAVE_GETUID
    struct passwd *pw;
    obj_t res;
    
-   BGL_MUTEX_LOCK( getuid_mutex );
-   pw = getpwuid( uid );
-   res = passwd2list( pw );
-   BGL_MUTEX_UNLOCK( getuid_mutex );
+   BGL_MUTEX_LOCK(getuid_mutex);
+   pw = getpwuid(uid);
+   res = passwd2list(pw);
+   BGL_MUTEX_UNLOCK(getuid_mutex);
 
    return res;
 #else
@@ -709,17 +709,17 @@ bgl_getpwuid( uid_t uid ) {
 /*    bgl_make_symlink ...                                             */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
-bgl_symlink( char *s1, char *s2 ) {
+bgl_symlink(char *s1, char *s2) {
 #if BGL_HAVE_SYMLINK   
-   if( symlink( s1, s2 ) ) {
-      C_SYSTEM_FAILURE( BGL_IO_ERROR, "make-symlink", strerror( errno ),
-			string_to_bstring( s2 ) );
+   if (symlink(s1, s2)) {
+      C_SYSTEM_FAILURE(BGL_IO_ERROR, "make-symlink", strerror(errno),
+			string_to_bstring(s2));
    }
 
    return 0;
 #else
-   C_SYSTEM_FAILURE( BGL_IO_ERROR, "make-symlink", "Not supported",
-		     string_to_bstring( s2 ) );
+   C_SYSTEM_FAILURE(BGL_IO_ERROR, "make-symlink", "Not supported",
+		     string_to_bstring(s2));
    return 1;
 #endif   
 }
@@ -731,39 +731,39 @@ bgl_symlink( char *s1, char *s2 ) {
 BGL_RUNTIME_DEF obj_t
 bgl_getgroups() {
 #if BGL_HAVE_GETGROUPS
-   int ngroups = getgroups( 0, 0L );
+   int ngroups = getgroups(0, 0L);
 
-  if( ngroups == -1 ) {
-     C_SYSTEM_FAILURE( BGL_IO_ERROR, "getgroups", strerror( errno ), BFALSE );
+  if (ngroups == -1) {
+     C_SYSTEM_FAILURE(BGL_IO_ERROR, "getgroups", strerror(errno), BFALSE);
   } else {
-     gid_t* groups = alloca( sizeof( gid_t ) * ngroups );
+     gid_t* groups = alloca(sizeof(gid_t) * ngroups);
 
-     ngroups = getgroups( ngroups, groups );
+     ngroups = getgroups(ngroups, groups);
 
-     if( ngroups == -1 ) {
-	C_SYSTEM_FAILURE( BGL_IO_ERROR, "getgroups", strerror( errno ), BFALSE );
+     if (ngroups == -1) {
+	C_SYSTEM_FAILURE(BGL_IO_ERROR, "getgroups", strerror(errno), BFALSE);
      } else {
-	obj_t res = create_vector( ngroups + 1 );
+	obj_t res = create_vector(ngroups + 1);
 	gid_t egid = getegid();
 	int seen_egid = 0;
 	int i;
 
-	for( i = 0; i < ngroups; i++ ) {
-	   VECTOR_SET( res, i, BINT( groups[ i ] ) );
-	   if( groups[ i ] == egid ) seen_egid = 1;
+	for (i = 0; i < ngroups; i++) {
+	   VECTOR_SET(res, i, BINT(groups[ i ]));
+	   if (groups[ i ] == egid) seen_egid = 1;
 	}
 	
-	if( seen_egid ) {
-	   VECTOR( res ).length--;
+	if (seen_egid) {
+	   VECTOR(res).length--;
 	} else {
-	   VECTOR_SET( res, i, BINT( egid ) );
+	   VECTOR_SET(res, i, BINT(egid));
 	}
 
 	return res;
      }
   }
 #else
-      return create_vector( 0 );
+      return create_vector(0);
 #endif
 }
 
@@ -773,19 +773,19 @@ bgl_getgroups() {
 /*---------------------------------------------------------------------*/
 #if BGL_HAVE_IOCTL
 static int
-dev2fd( obj_t port ) {
-   if( INTEGERP( port ) ) {
-      return CINT( port );
+dev2fd(obj_t port) {
+   if (INTEGERP(port)) {
+      return CINT(port);
    }
-   if( INPUT_PORTP( port ) && PORT( port ).kindof == KINDOF_FILE ) {
+   if (INPUT_PORTP(port) && PORT(port).kindof == KINDOF_FILE) {
 #if POSIX_FILE_OPS
-      return PORT_FD( port );
+      return PORT_FD(port);
 #else
-      return fileno( PORT_FILE( p ) );
+      return fileno(PORT_FILE(p));
 #endif
    }
 
-   C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ioctl", "port or integer expected", port );
+   C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "ioctl", "port or integer expected", port);
    return -1;
 }
 #endif
@@ -795,49 +795,82 @@ dev2fd( obj_t port ) {
 /*    bgl_ioctl ...                                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-bgl_ioctl( obj_t dev, long request, long val ) {
+bgl_ioctl(obj_t dev, long request, long val) {
 #if BGL_HAVE_IOCTL
    unsigned long req = (unsigned long)request;
-   int res = ioctl( dev2fd( dev ), req, (unsigned long)val );
+   int res = ioctl(dev2fd(dev), req, (unsigned long)val);
 	 
-   if( !res ) {
+   if (!res) {
       return 1;
    } else {
-      C_SYSTEM_FAILURE( BGL_IO_ERROR, "ioctl", strerror( errno ), dev );
+      C_SYSTEM_FAILURE(BGL_IO_ERROR, "ioctl", strerror(errno), dev);
       return 0;
    }
 #else
-   C_SYSTEM_FAILURE( BGL_ERROR, "ioctl", "ioctl not supported by architecture", dev );
+   C_SYSTEM_FAILURE(BGL_ERROR, "ioctl", "ioctl not supported by architecture", dev);
    return 0;
 #endif   
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_getrlimit ...                                                */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_getrlimit(long resource) {
+   struct rlimit lim;
+   obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+   if (!getrlimit(resource, &lim)) {
+      BGL_ENV_MVALUES_NUMBER_SET(env, 2);
+      BGL_ENV_MVALUES_VAL_SET(env, 1, ELONG_TO_BELONG(lim.rlim_max));
+      return ELONG_TO_BELONG(lim.rlim_cur);
+   } else {
+      BGL_ENV_MVALUES_NUMBER_SET(env, 2);
+      BGL_ENV_MVALUES_VAL_SET(env, 1, ELONG_TO_BELONG(-1));
+      return ELONG_TO_BELONG(-1);
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_setrlimit ...                                                */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_setrlimit(long resource, long soft, long hard) {
+   struct rlimit lim = { rlim_cur: soft, rlim_max: hard };
+   if (!setrlimit(resource, &lim)) {
+      return BTRUE;
+   } else {
+      return BFALSE;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    bits conversions (see bigloo.h for GCC versions).                */
 /*---------------------------------------------------------------------*/
-#if( !defined( __GNUC__ ) )
+#if (!defined(__GNUC__))
 
 BGL_RUNTIME_DEF BGL_LONGLONG_T
-DOUBLE_TO_LLONG_BITS( double dd ) {
-   __DOUBLE_TO_LLONG_BITS( dd );
+DOUBLE_TO_LLONG_BITS(double dd) {
+   __DOUBLE_TO_LLONG_BITS(dd);
    return result;
 }
 
 BGL_RUNTIME_DEF double
-LLONG_BITS_TO_DOUBLE( BGL_LONGLONG_T ll ) {
-   __LLONG_BITS_TO_DOUBLE( ll );
+LLONG_BITS_TO_DOUBLE(BGL_LONGLONG_T ll) {
+   __LLONG_BITS_TO_DOUBLE(ll);
    return result;
 }
 
 BGL_RUNTIME_DEF int
-FLOAT_TO_INT_BITS( float f ) {
-   __FLOAT_TO_INT_BITS( f );
+FLOAT_TO_INT_BITS(float f) {
+   __FLOAT_TO_INT_BITS(f);
    return result;
 }
 
 BGL_RUNTIME_DEF float
-INT_BITS_TO_FLOAT( int i ) {
-   __INT_BITS_TO_FLOAT( i );
+INT_BITS_TO_FLOAT(int i) {
+   __INT_BITS_TO_FLOAT(i);
    return result;
 }
 

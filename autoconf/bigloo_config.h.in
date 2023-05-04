@@ -525,7 +525,7 @@
 #define BGL_GC_HAVE_BLOCKING @GC_HAVE_BLOCKING@
 #define BGL_GC_HAVE_DO_BLOCKING @GC_HAVE_DO_BLOCKING@
 
-#if( BGL_GC_BUMP_ALLOC && defined( BGL_GC_THREADS ) && !BGL_HAS_THREAD_LOCALSTORAGE )
+#if (BGL_GC_BUMP_ALLOC && defined (BGL_GC_THREADS) && !BGL_HAS_THREAD_LOCALSTORAGE)
 #  undef BGL_GC_BUMP_ALLOC
 #  define BGL_GC_BUMP_ALLOC 0
 #endif
@@ -538,15 +538,15 @@
 /*---------------------------------------------------------------------*/
 /*    Machine dependent declarations                                   */
 /*---------------------------------------------------------------------*/
-#if( !defined( SIGBUS ) && defined( SIGSEGV ) )
+#if (!defined (SIGBUS) && defined (SIGSEGV))
 #  define SIGBUS SIGSEGV
 #endif
 
-#if defined( sony_news )
+#if defined (sony_news)
 #  include <news/machparam.h>
 #endif
 
-#if defined( _MSC_VER ) || defined( _MINGW_VER )
+#if defined (_MSC_VER) || defined (_MINGW_VER)
 #  include <direct.h>
 #  include <io.h>
 #  include <string.h>
@@ -556,17 +556,17 @@
 #  define execl _execl
 #  define getcwd _getcwd
 /* SECOND ARG = UNIX MODE to make directory 0700 --> OWNER RWX GROUP --- OTHERS --- */
-#  define mkdir( a, b ) _mkdir( (a) )
+#  define mkdir (a, b) _mkdir ((a))
 #  define rmdir _rmdir
 #endif
 
-#if defined( _MSC_VER )
+#if defined (_MSC_VER)
 #  define strtoll strtol
 #  define strtoull strtoul
 #  define alloca _alloca
 #endif
 
-#if defined( _MINGW_VER )
+#if defined (_MINGW_VER)
 #  include <malloc.h>
 #  include <process.h>
 #endif
@@ -574,58 +574,58 @@
 /*---------------------------------------------------------------------*/
 /*    bcopy                                                            */
 /*---------------------------------------------------------------------*/
-#if( !HAVE_BCOPY )
-#  define bcopy( _src_, _dst_, _len_ ) memcpy( _dst_, _src_, _len_ )
-#  define bzero( _dest_, _len_ ) memset( _dest_, 0, _len_ )
+#if (!HAVE_BCOPY)
+#  define bcopy(_src_, _dst_, _len_) memcpy(_dst_, _src_, _len_)
+#  define bzero(_dest_, _len_) memset(_dest_, 0, _len_)
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    SIGPIPE                                                          */
 /*---------------------------------------------------------------------*/
-#if( !HAVE_SIGPIPE )
+#if (!HAVE_SIGPIPE)
 #  define SIGPIPE -1
 #endif
    
 /*---------------------------------------------------------------------*/
 /*    sigsetmask                                                       */
 /*---------------------------------------------------------------------*/
-#if( HAVE_SIGPROCMASK )
-BGL_RUNTIME_DECL int bgl_sigsetmask( int );
-#  define BGL_SIGSETMASK( _int_ ) bgl_sigsetmask( _int_ )
+#if (HAVE_SIGPROCMASK)
+BGL_RUNTIME_DECL int bgl_sigsetmask (int);
+#  define BGL_SIGSETMASK(_int_) bgl_sigsetmask(_int_)
 #else
-#  if( HAVE_SIGSETMASK )
-#    define BGL_SIGSETMASK( _int_ ) sigsetmask( _int_ )
+#  if (HAVE_SIGSETMASK)
+#    define BGL_SIGSETMASK(_int_) sigsetmask(_int_)
 #  else
-#    define BGL_SIGSETMASK( _int_ )
+#    define BGL_SIGSETMASK(_int_)
 #  endif
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    getcwd                                                           */
 /*---------------------------------------------------------------------*/
-#if( !HAVE_GETCWD )
-#  if( HAVE_GETWD )
-#    define getcwd( _path_, _int_ ) getwd( _path_ )
+#if (!HAVE_GETCWD)
+#  if (HAVE_GETWD)
+#    define getcwd(_path_, _int_) getwd(_path_)
 #  else
-#    define getcwd( _path_, _int_ ) ((char *)getenv( "PWD" ))
+#    define getcwd(_path_, _int_) ((char *)getenv("PWD"))
 #  endif
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    likely                                                           */
 /*---------------------------------------------------------------------*/
-#if( !BGL_HAVE_LIKELY )
+#if (!BGL_HAVE_LIKELY)
 #  define BGL_LIKELY(x) (x)
 #  define BGL_UNLIKELY(x) (x)
 #else
-#  define BGL_LIKELY(x) __builtin_expect( x, 1 )
-#  define BGL_UNLIKELY(x) __builtin_expect( x, 0 )
+#  define BGL_LIKELY(x) __builtin_expect(x, 1)
+#  define BGL_UNLIKELY(x) __builtin_expect(x, 0)
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    gccattrs                                                         */
 /*---------------------------------------------------------------------*/
-#if ( !BGL_HAVE_GCCATTRS )
+#if  (!BGL_HAVE_GCCATTRS)
 #  define BGL_NOINLINE
 #else
 #  define BGL_NOINLINE __attribute__((noinline))
@@ -634,25 +634,25 @@ BGL_RUNTIME_DECL int bgl_sigsetmask( int );
 /*---------------------------------------------------------------------*/
 /*    The allocations.                                                 */
 /*---------------------------------------------------------------------*/
-#if( !BGL_HAVE_ALLOCA )
-#  define alloca( sz ) GC_MALLOC( sz )
+#if (!BGL_HAVE_ALLOCA)
+#  define alloca(sz) GC_MALLOC(sz)
 #else
 #  if BGL_HAVE_ALLOCAH
 #    include <alloca.h>
 #  endif
 #endif
 
-#if( !defined( __GNUC__ ) || (BGL_GC != BGL_BOEHM_GC && BGL_GC != BGL_SAW_GC) )
+#if (!defined (__GNUC__) || (BGL_GC != BGL_BOEHM_GC && BGL_GC != BGL_SAW_GC))
 extern union scmobj * an_object;
 #  define AN_OBJECT union scmobj *an_object;
 #else
 #  define AN_OBJECT 
 #endif
 
-#if( !defined( BGL_FUNCTION_BEGIN) )
+#if (!defined (BGL_FUNCTION_BEGIN))
 #  define BGL_FUNCTION_BEGIN AN_OBJECT
 #endif
-#if( !defined( BGL_FUNCTION_END ) )
+#if (!defined (BGL_FUNCTION_END))
 #  define BGL_FUNCTION_END
 #endif
 
@@ -671,7 +671,7 @@ extern union scmobj * an_object;
 /*---------------------------------------------------------------------*/
 /*    BGL_ECONNEREST                                                   */
 /*---------------------------------------------------------------------*/
-#if( defined( WSAECONNRESET ) )
+#if (defined (WSAECONNRESET))
 #  define BGL_ECONNRESET WSAECONNRESET
 #else
 #  define BGL_ECONNRESET ECONNRESET
@@ -680,44 +680,44 @@ extern union scmobj * an_object;
 /*---------------------------------------------------------------------*/
 /*    BGL_UTF8_LOCALE_COMPARE3 ...                                     */
 /*---------------------------------------------------------------------*/
-#if( BGL_HAVE_UNISTRING )
-#  define BGL_UTF8_STRING_LOCALE_COMPARE3( s1, s2 ) \
-   bgl_strcoll( s1, s2 )
+#if (BGL_HAVE_UNISTRING)
+#  define BGL_UTF8_STRING_LOCALE_COMPARE3(s1, s2) \
+   bgl_strcoll(s1, s2)
 #else
-#  define BGL_UTF8_STRING_LOCALE_COMPARE3( s1, s2 ) \
-   strcoll( BSTRING_TO_STRING( s1 ), BSTRING_TO_STRING( s2 ) )
+#  define BGL_UTF8_STRING_LOCALE_COMPARE3(s1, s2) \
+   strcoll(BSTRING_TO_STRING(s1), BSTRING_TO_STRING(s2))
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    regex include                                                    */
 /*---------------------------------------------------------------------*/
-#if( BGL_HAVE_REGEX )
+#if (BGL_HAVE_REGEX)
 #  include <regex.h>
 #endif   
    
 /*---------------------------------------------------------------------*/
 /*    GMP include                                                      */
 /*---------------------------------------------------------------------*/
-#if( BGL_HAVE_GMP )
+#if (BGL_HAVE_GMP)
 #  include <gmp.h>
 #endif   
 
 /*---------------------------------------------------------------------*/
 /*    stdint                                                           */
 /*---------------------------------------------------------------------*/
-#if( BGL_HAVE_STDINT )
+#if (BGL_HAVE_STDINT)
 #  include <stdint.h>
 #else
-#  if( BGL_HAVE_UNISTDINT )
+#  if (BGL_HAVE_UNISTDINT)
 #    include <unistdint.h>
 #  else
-#    if( !BGL_HAVE_STDLIBINT && !BGL_HAVE_UNISTDINT )
+#    if (!BGL_HAVE_STDLIBINT && !BGL_HAVE_UNISTDINT)
 /* int8 */   
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
    
 /* int16 */   
-#      if( sizeof( short ) >= 2 )
+#      if (sizeof (short) >= 2)
 typedef short int16_t;
 typedef unsigned short uint16_t;
 #      else   
@@ -726,7 +726,7 @@ typedef unsigned int uint16_t;
 #      endif
    
 /* int32 */   
-#      if( sizeof( int ) == 4 )
+#      if (sizeof (int) == 4)
 typedef int int32_t;
 typedef unsigned int uint32_t;
 #      else
@@ -735,11 +735,11 @@ typedef unsigned long uint32_t;
 #      endif
    
 /* int64 */   
-#      if( sizeof( long ) == 8 )
+#      if (sizeof (long) == 8)
 typedef long int64_t;
 typedef unsigned long uint64_t;
 #      else   
-#        if( BGL_HAVE_LONGLONG )    
+#        if (BGL_HAVE_LONGLONG)    
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
 #        else
@@ -756,12 +756,12 @@ typedef unsigned long uint64_t;
 /*    LONG LONG constants                                              */
 /*---------------------------------------------------------------------*/
 #if BGL_HAVE_LONGLONG
-#  if defined( LLONG_MAX )
+#  if defined (LLONG_MAX)
 #    define BGL_LONGLONG_MAX LLONG_MAX
 #  else
 #    define BGL_LONGLONG_MAX ((BGL_LONGLONG_T) (~0ULL >> 1))
 #  endif
-#  if defined( LLONG_MIN )
+#  if defined (LLONG_MIN)
 #    define BGL_LONGLONG_MIN LLONG_MIN
 #  else
 #    define BGL_LONGLONG_MIN ((BGL_LONGLONG_T) ((~0ULL >> 1) + 1ULL))
@@ -784,8 +784,15 @@ typedef unsigned long uint64_t;
 /*---------------------------------------------------------------------*/
 /*    syslog                                                           */
 /*---------------------------------------------------------------------*/
-#if( BGL_HAVE_SYSLOG )
+#if (BGL_HAVE_SYSLOG)
 #  include <syslog.h>
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    rlimit                                                           */
+/*---------------------------------------------------------------------*/
+#if (BGL_HAVE_GETRLIMIT)
+#  include <sys/resource.h>
 #endif
 
 #endif

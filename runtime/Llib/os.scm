@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Fri Feb 24 15:03:30 2023 (serrano)                */
+;*    Last change :  Thu May  4 09:10:23 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -134,6 +134,22 @@
 	    (macro $syslog-log-notice::int "LOG_NOTICE")
 	    (macro $syslog-log-info::int "LOG_INFO")
 	    (macro $syslog-log-debug::int "LOG_DEBUG")
+	    ($getrlimit::obj (::long) "bgl_getrlimit")
+	    ($setrlimit!::bool (::long ::long ::long) "bgl_setrlimit")
+	    (macro $rlimit-core::int "RLIMIT_CORE")
+	    (macro $rlimit-cpu::int "RLIMIT_CPU")
+	    (macro $rlimit-data::int "RLIMIT_DATA")
+	    (macro $rlimit-fsize::int "RLIMIT_FSIZE")
+	    (macro $rlimit-locks::int "RLIMIT_LOCKS")
+	    (macro $rlimit-memlock::int "RLIMIT_MEMLOCK")
+	    (macro $rlimit-msgqueue::int "RLIMIT_MSGQUEUE")
+	    (macro $rlimit-nice::int "RLIMIT_NICE")
+	    (macro $rlimit-nofile::int "RLIMIT_NOFILE")
+	    (macro $rlimit-nproc::int "RLIMIT_NPROC")
+	    (macro $rlimit-rss::int "RLIMIT_RSS")
+	    (macro $rlimit-rttime::int "RLIMIT_RTTIME")
+	    (macro $rlimit-sigpending::int "RLIMIT_SIGPENDING")
+	    (macro $rlimit-stack::int "RLIMIT_STACK")
 
 	    ($bgl-dlsym::custom (::bstring ::bstring ::bstring) "bgl_dlsym")
 	    ($bgl-dlsym-get::obj (::custom) "bgl_dlsym_get")
@@ -290,7 +306,9 @@
 	    (inline closelog)
 	    (syslog-option::int . opts)
 	    (syslog-facility::int ::symbol)
-	    (syslog-level::int ::symbol)))
+	    (syslog-level::int ::symbol)
+	    (getrlimit::obj ::obj)
+	    (setrlimit!::bool ::obj ::elong ::elong)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Variables setup ...                                              */
@@ -1365,3 +1383,53 @@
 	  (else (error "syslog-level" "unknown level" lvl))))
       (else
        0)))
+
+;*---------------------------------------------------------------------*/
+;*    limit-resource-no ...                                            */
+;*---------------------------------------------------------------------*/
+(define (limit-resource-no r id)
+   
+   (define (symbol->resource r)
+      (cond-expand
+	 (bigloo-c
+	  (case r
+	     ((CORE) $rlimit-core)
+	     ((CPU) $rlimit-cpu)
+	     ((DATA) $rlimit-data)
+	     ((FSIZE) $rlimit-fsize)
+	     ((LOCKS) $rlimit-locks)
+	     ((MEMLOCK) $rlimit-memlock)
+	     ((MSGQUEUE) $rlimit-msgqueue)
+	     ((NICE) $rlimit-nice)
+	     ((NOFILE) $rlimit-nofile)
+	     ((NPROC) $rlimit-nproc)
+	     ((RSS) $rlimit-rss)
+	     ((RTTIME) $rlimit-rttime)
+	     ((SIGPENDING) $rlimit-sigpending)
+	     ((STACK) $rlimit-stack)
+	     (else (error id "illegal limit resource" r))))
+	 (else
+	  (else (error id "limit unsupported" r)))))
+   
+   (cond
+      ((fixnum? r) r)
+      ((symbol? r) (symbol->resource r))
+      (else (bigloo-type-error id "integer-or-symbol" r))))
+
+;*---------------------------------------------------------------------*/
+;*    getrlimit ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (getrlimit r)
+   (cond-expand
+      (bigloo-c ($getrlimit (limit-resource-no r "getrlimit")))
+      (else (values -1 -1))))
+
+;*---------------------------------------------------------------------*/
+;*    setrlimit! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (setrlimit! r soft hard)
+   (cond-expand
+      (bigloo-c ($setrlimit! (limit-resource-no r "setrlimit!") soft hard))
+      (else -1)))
+
+

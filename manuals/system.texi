@@ -239,6 +239,48 @@ Example.
 @end smalllisp
 @end deffn
 
+@deffn {bigloo procedure} getrlimit resource
+@deffnx {bigloo procedure} setrlimit! resource soft hard
+
+Get/set system limits. Only suppported by the C backend!
+
+The function @code{getrlimit} expects as argument a resource and it
+returns two values: a soft and a hard limit. Both values are @code{elong}.
+
+The function @code{setrlimit!} accepts a resource, a soft limit, and a
+hard limit.  The soft and hard limits are @code{elong} values.  It
+returns a boolean, which is @code{#t} if the limit has been changed, and
+@code{#f} otherwise.
+
+A resource is either a fixnum, which must correspond to a native
+resource identifier, or a symbol amongst:
+
+@itemize @bullet
+@item @code{CORE}
+@item @code{CPU}
+@item @code{DATA}
+@item @code{FSIZE}
+@item @code{LOCKS}
+@item @code{MEMLOCK}
+@item @code{MSGQUEUE}
+@item @code{NICE}
+@item @code{NOFILE}
+@item @code{NPROC}
+@item @code{RSS}
+@item @code{RTTIME}
+@item @code{SIGPENDING}
+@item @code{STACK}
+@end itemize
+
+All other symbols trigger an error.
+
+@smalllisp @noindent
+(multiple-value-bind (soft hard)
+  (getrlimit 'NOFILE)
+  (cons soft hard)) @result{} (#e1024 . #e1048576)
+(setrlimit 'NOFILE #e256 #e1048576) @result{#t}
+@end smalllisp
+@end deffn
 
 @c -- File name ------------------------------------------------------ @c
 @node Files, Process, Operating System Interface, System Programming
