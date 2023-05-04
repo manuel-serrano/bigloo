@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Sat Apr 16 06:56:58 2022 (serrano)                */
-;*    Copyright   :  2001-22 Manuel Serrano                            */
+;*    Last change :  Thu May  4 10:06:40 2023 (serrano)                */
+;*    Copyright   :  2001-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -121,7 +121,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    The list of supported srfi by the interpreter                    */
 ;*    -------------------------------------------------------------    */
-;*    The four initial supported srfi are:                             */
+;*    The initial supported srfis are:                                 */
 ;*       - srfi-0                                                      */
 ;*       - srfi-xxx                                                    */
 ;*       - ...                                                         */
@@ -150,7 +150,8 @@
 		     srfi-10
 		     srfi-22
 		     srfi-28
-		     srfi-30))))
+		     srfi-30
+		     getrlimit))))
       (if $configure-auto-finalizer
 	  (cons* 'bigloo-finalizer 'bigloo-weakptr l)
 	  l)))
