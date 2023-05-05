@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Mon Apr 17 12:19:34 2023 (serrano)                */
+;*    Last change :  Fri May  5 07:49:23 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -36,6 +36,8 @@
 
       (macro $uv-version::string () "(char *)uv_version_string")
 
+      ($bgl-uv-init::void () "bgl_uv_init")
+      
       ;; uv-state
       (type $uv_stat_t void* "uv_stat_t *")
       (macro $uv-stat-nil::$uv_stat_t "0L")
