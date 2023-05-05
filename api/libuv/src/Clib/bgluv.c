@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri May  5 07:54:44 2023 (serrano)                */
+/*    Last change :  Fri May  5 20:00:20 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -179,7 +179,6 @@ gc_unmark(obj_t obj) {
 	 pool##_roots = (type **)GC_MALLOC(sizeof(type *) * pool##_size); \
 	 pool = malloc(sizeof(type *) * pool##_size);			\
 	 GC_roots = MAKE_PAIR((obj_t)pool##_roots, GC_roots);		\
-	    fprintf(stderr, "init " #pool "\n"); \
       } else {								\
 	 pool##_size *= 2;						\
 	 type **new_roots = (type **)GC_REALLOC((void *)pool##_roots, sizeof(type *) * pool##_size); \
@@ -187,7 +186,6 @@ gc_unmark(obj_t obj) {
 	 if (new_roots != pool##_roots) {				\
 	    GC_roots = gc_replace(GC_roots, pool##_roots, new_roots);	\
 	    pool##_roots = new_roots;					\
-	    fprintf(stderr, "extend " #pool " size=%d\n", pool##_size);		\
 	 }								\
       }									\
       for (long i = pool##_idx; i < pool##_size; i++) {			\
