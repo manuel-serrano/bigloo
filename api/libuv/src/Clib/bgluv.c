@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu May  4 18:49:21 2023 (serrano)                */
+/*    Last change :  Fri May  5 07:27:33 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -26,7 +26,7 @@ static void *tls_tmp;
 #  define UV_GC_EXTEND_TLS(p, sz, ol, nl) \
    (BGL_MUTEX_LOCK(bgl_uv_mutex), \
     tls_tmp = gc_extend((obj_t)p, sz, ol, nl), \
-    tls_roots = MAKE_PAIR(tls_tmp, tls_roots), \
+    tls_roots = gc_replace(tls_roots, p, tls_tmp), /*MAKE_PAIR(tls_tmp, tls_roots),*/ \
     BGL_MUTEX_UNLOCK(bgl_uv_mutex), \
     p = tls_tmp)
 #else
@@ -51,6 +51,29 @@ gc_extend(void *p, long szof, long ol, long nl) {
    }
 
    return np;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    gc_replace ...                                                   */
+/*---------------------------------------------------------------------*/
+obj_t
+gc_replace(obj_t roots, void *old, void *new) {
+   if (NULLP(roots)) {
+      return MAKE_PAIR(new, BNIL);
+   } else {
+      obj_t aux = roots;
+
+      while (!NULLP(aux)) {
+	 if (CAR(aux) == old) {
+	    SET_CAR(aux, new);
+	    return roots;
+	 } else {
+	    aux = CDR(aux);
+	 }
+      }
+      return MAKE_PAIR(new, roots);
+   }
 }
 
 /*---------------------------------------------------------------------*/
