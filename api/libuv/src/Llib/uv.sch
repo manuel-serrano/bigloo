@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Fri May  5 07:49:23 2023 (serrano)                */
+;*    Last change :  Sat May  6 07:35:36 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -166,11 +166,10 @@
       (macro $uv_idle_nil::$uv_idle_t "0L")
       
       ($bgl_uv_idle_new::$uv_idle_t (::UvIdle ::UvLoop) "bgl_uv_idle_new")
-      (macro $uv_idle_start::void (::$uv_idle_t ::$uv_idle_cb) "uv_idle_start")
-      (macro $uv_idle_stop::void (::$uv_idle_t) "uv_idle_stop")
+      (macro $uv_idle_start::void (::obj ::obj) "bgl_uv_idle_start")
+      (macro $uv_idle_stop::void (::obj) "bgl_uv_idle_stop")
       
       ($bgl_uv_idle_cb::$uv_idle_cb (::$uv_idle_t ::int) "bgl_uv_handle_cb")
-      (macro $BGL_UV_IDLE_CB::$uv_idle_cb "(uv_idle_cb)&bgl_uv_handle_cb")
       
       ;; check
       (type $uv_check_t void* "uv_check_t *")

@@ -45,6 +45,7 @@ typedef struct BgL_uvwatcherz00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
 } *BgL_uvwatcherz00_bglt;
 
 typedef struct BgL_uvstreamz00_bgl {
@@ -127,6 +128,7 @@ typedef struct BgL_uvtimerz00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
    uint64_t BgL_repeatz00;
    bool_t BgL_refz00;
 } *BgL_uvtimerz00_bglt;
@@ -142,6 +144,7 @@ typedef struct BgL_uvidlez00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
 } *BgL_uvidlez00_bglt;
 
 typedef struct BgL_uvasyncz00_bgl {
@@ -155,6 +158,7 @@ typedef struct BgL_uvasyncz00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
 } *BgL_uvasyncz00_bglt;
 
 typedef struct BgL_uvpollz00_bgl {
@@ -168,6 +172,7 @@ typedef struct BgL_uvpollz00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
    int BgL_fdz00;
 } *BgL_uvpollz00_bglt;
 
@@ -189,6 +194,7 @@ typedef struct BgL_uvfseventz00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
 } *BgL_uvfseventz00_bglt;
 
 typedef struct BgL_uvfspollz00_bgl {
@@ -202,6 +208,7 @@ typedef struct BgL_uvfspollz00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
 } *BgL_uvfspollz00_bglt;
 
 typedef struct BgL_uvcheckz00_bgl {
@@ -215,6 +222,7 @@ typedef struct BgL_uvcheckz00_bgl {
    bool_t BgL_closedz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
+   void * BgL_z52dataz52;
 } *BgL_uvcheckz00_bglt;
 
 typedef struct BgL_uvprocessz00_bgl {

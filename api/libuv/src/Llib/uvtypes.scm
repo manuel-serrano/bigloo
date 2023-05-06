@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Thu May  4 18:53:01 2023 (serrano)                */
+;*    Last change :  Sat May  6 07:31:19 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -36,7 +36,8 @@
 
 	   (abstract-class UvWatcher::UvHandle
 	      (loop::UvLoop read-only)
-	      (cb::procedure (default list)))
+	      (cb::procedure (default list))
+	      (%data::void* (default $void*_nil)))
 
 	   (class UvStream::UvHandle
 	      (loop::UvLoop read-only)

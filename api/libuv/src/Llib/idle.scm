@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Thu May  4 18:52:26 2023 (serrano)                */
+;*    Last change :  Sat May  6 07:44:40 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV idle callback                                              */
@@ -19,7 +19,7 @@
    (import __libuv_types)
    
    (export (uv-idle-start ::UvIdle)
-	   (uv-idle-stop ::UvIdle)))
+	   (inline uv-idle-stop ::UvIdle)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %uv-init ::UvIdle ...                                            */
@@ -33,26 +33,14 @@
 ;*    uv-idle-start ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (uv-idle-start o::UvIdle)
-   (with-access::UvIdle o ($builtin loop cb %gcmarks)
+   (with-access::UvIdle o ($builtin cb)
       (if (not (and (procedure? cb) (correct-arity? cb 1)))
 	  (error "uv-idle-start" "wrong callback" o)
-	  (begin
-	     ;; store in the loop for the GC
-	     (uv-push-gcmark! loop o "uv-idle-start")
-	     (uv-push-gcmark! o cb "uv-idle-start")
-	     ;; force Bigloo to add the extern clause for bgl_uv_idle_cb
-	     (when (uv-gcmarks-empty? loop) ($bgl_uv_idle_cb $uv_idle_nil 0))
-	     ($uv_idle_start ($uv-idle-t $builtin) $BGL_UV_IDLE_CB)))))
+	  ($uv_idle_start o cb))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-idle-stop ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-idle-stop o::UvIdle)
-   (with-access::UvIdle o ($builtin loop cb)
-      (with-access::UvLoop loop (%mutex)
-	 (synchronize %mutex
-	    ;; remove in the loop for the GC
-	    (uv-pop-gcmark! loop o)))
-      ($uv_idle_stop ($uv-idle-t $builtin))
-      (uv-pop-gcmark! o cb)))
+(define-inline (uv-idle-stop o::UvIdle)
+   ($uv_idle_stop o)))
       

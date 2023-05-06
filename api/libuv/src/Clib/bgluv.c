@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri May  5 20:00:20 2023 (serrano)                */
+/*    Last change :  Sat May  6 07:35:29 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -36,9 +36,10 @@ static obj_t GC_roots = BNIL;
 /*    request pools                                                    */
 /*---------------------------------------------------------------------*/
 #define UV_STREAM_POOL_INDEX 0
-#define UV_FS_POOL_INDEX 1
-#define UV_WRITE_POOL_INDEX 2
-#define UV_SHUTDOWN_POOL_INDEX 3
+#define UV_WATCHER_POOL_INDEX 1
+#define UV_FS_POOL_INDEX 2
+#define UV_WRITE_POOL_INDEX 3
+#define UV_SHUTDOWN_POOL_INDEX 4
 
 #define REQ_POOL_SIZE (UV_SHUTDOWN_POOL_INDEX + 1)
 
@@ -139,6 +140,10 @@ extern obj_t bgl_uv_pop_gcmark(bgl_uv_handle_t, obj_t);
 #define STREAM_BUILTIN(o) \
    ((uv_stream_t *)(((bgl_uv_stream_t)(COBJECT((obj_t)o)))->BgL_z42builtinz42))
 #define STREAM_DATA(o) \
+   ((bgl_uv_stream_t)(COBJECT((obj_t)o)))->BgL_z52dataz52
+#define WATCHER_BUILTIN(o) \
+   ((uv_watcher_t *)(((bgl_uv_watcher_t)(COBJECT((obj_t)o)))->BgL_z42builtinz42))
+#define WATCHER_DATA(o) \
    ((bgl_uv_stream_t)(COBJECT((obj_t)o)))->BgL_z52dataz52
    
 /*---------------------------------------------------------------------*/
@@ -337,6 +342,89 @@ get_stream_data_t(obj_t obj) {
       assert_stream_data(obj);
 #endif
       return STREAM_DATA(obj);
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_watcher_pool ...                                              */
+/*---------------------------------------------------------------------*/
+typedef struct uv_watcher_data {
+   obj_t obj;
+   obj_t proc;
+} uv_watcher_data_t;
+
+UV_TLS_DECL uv_watcher_data_t **uv_watcher_data_pool_roots = 0L;
+UV_TLS_DECL uv_watcher_data_t **uv_watcher_data_pool = 0L;
+UV_TLS_DECL long uv_watcher_data_pool_idx = 0;
+UV_TLS_DECL long uv_watcher_data_pool_size = 0;
+
+/*---------------------------------------------------------------------*/
+/*    static uv_watcher_data_t *                                       */
+/*    alloc_watcher_data ...                                           */
+/*---------------------------------------------------------------------*/
+static uv_watcher_data_t *
+alloc_watcher_data_t() {
+   uv_watcher_data_t *data;
+
+   UV_MUTEX_LOCK(bgl_uv_mutex);
+
+#if defined(DBG)
+   fprintf(stderr, "+++ alloc_watcher_data_t idx=%d/%d\n", uv_watcher_pool_idx, uv_watcher_pool_size);
+#endif
+
+   if (uv_watcher_data_pool_idx == uv_watcher_data_pool_size) {
+      UV_EXTEND_POOL(uv_watcher_data_pool, uv_watcher_data_t);
+   }
+
+   data = uv_watcher_data_pool[uv_watcher_data_pool_idx++];
+   
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
+
+   return data;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    free_watcher_data_t ...                                          */
+/*---------------------------------------------------------------------*/
+static void
+free_watcher_data_t(uv_watcher_data_t *data) {
+   WATCHER_DATA(data->obj) = 0L;
+
+#if defined(DBG)
+   fprintf(stderr, "!!! free_watcher_data_t data=%p idx=%d:%d\n", data, data->index, data->state);
+#endif
+
+   data->obj = 0L;
+   data->proc = 0L;
+
+   UV_MUTEX_LOCK(bgl_uv_mutex);
+   uv_watcher_data_pool[--uv_watcher_data_pool_idx] = data;
+   UV_MUTEX_UNLOCK(bgl_uv_mutex);
+}
+
+/*---------------------------------------------------------------------*/
+/*    static uv_watcher_data_t *                                       */
+/*    get_watcher_data_t ...                                           */
+/*---------------------------------------------------------------------*/
+static uv_watcher_data_t *
+get_watcher_data_t(obj_t obj) {
+   if (!WATCHER_DATA(obj)) {
+      uv_watcher_data_t *data = alloc_watcher_data_t();
+      WATCHER_DATA(obj) = data;
+      data->obj = obj;
+
+#if defined(DBG)
+      if (data->state != FREE) {
+	 fprintf(stderr, "!!! get_watcher_data: bad watcher_data state (%d)!\n",
+		 data->state);
+	 ABORT();
+      }
+#endif
+      
+      return data;
+   } else {
+      return WATCHER_DATA(obj);
    }
 }
 
@@ -628,6 +716,50 @@ bgl_uv_handle_cb(uv_handle_t *handle, int status) {
    obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
 
    if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BINT(status), BEOA);
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_idle_cb ...                                               */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_idle_cb(uv_idle_t *handle) {
+   uv_watcher_data_t *data = (uv_watcher_data_t *)handle->data;
+   obj_t o = data->obj;
+   obj_t p = data->proc;
+
+   if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BINT(0), BEOA);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_idle_start ...                                            */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_idle_start(obj_t obj, obj_t proc) {
+   bgl_uv_watcher_t watcher = (bgl_uv_watcher_t)COBJECT(obj);
+   uv_idle_t *w = (uv_idle_t *)(watcher->BgL_z42builtinz42);
+   uv_watcher_data_t *data = get_watcher_data_t(obj);
+
+   data->obj = obj;
+   data->proc = proc;
+
+   return uv_idle_start(w, bgl_uv_idle_cb);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_idle_stop ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_idle_stop(obj_t obj) {
+   bgl_uv_watcher_t watcher = (bgl_uv_watcher_t)COBJECT(obj);
+   uv_idle_t *w = (uv_idle_t *)(watcher->BgL_z42builtinz42);
+   uv_watcher_data_t *data = get_watcher_data_t(obj);
+
+   free_watcher_data_t(data);
+   
+   return uv_idle_stop(w);
 }
 
 /*---------------------------------------------------------------------*/
