@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sat May  6 07:35:29 2023 (serrano)                */
+/*    Last change :  Sat May  6 08:54:39 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -144,7 +144,7 @@ extern obj_t bgl_uv_pop_gcmark(bgl_uv_handle_t, obj_t);
 #define WATCHER_BUILTIN(o) \
    ((uv_watcher_t *)(((bgl_uv_watcher_t)(COBJECT((obj_t)o)))->BgL_z42builtinz42))
 #define WATCHER_DATA(o) \
-   ((bgl_uv_stream_t)(COBJECT((obj_t)o)))->BgL_z52dataz52
+   ((bgl_uv_watcher_t)(COBJECT((obj_t)o)))->BgL_z52dataz52
    
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -351,6 +351,7 @@ get_stream_data_t(obj_t obj) {
 typedef struct uv_watcher_data {
    obj_t obj;
    obj_t proc;
+   obj_t close;
 } uv_watcher_data_t;
 
 UV_TLS_DECL uv_watcher_data_t **uv_watcher_data_pool_roots = 0L;
@@ -394,7 +395,6 @@ free_watcher_data_t(uv_watcher_data_t *data) {
 #if defined(DBG)
    fprintf(stderr, "!!! free_watcher_data_t data=%p idx=%d:%d\n", data, data->index, data->state);
 #endif
-
    data->obj = 0L;
    data->proc = 0L;
 
@@ -724,11 +724,11 @@ bgl_uv_handle_cb(uv_handle_t *handle, int status) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_uv_idle_cb(uv_idle_t *handle) {
-   uv_watcher_data_t *data = (uv_watcher_data_t *)handle->data;
-   obj_t o = data->obj;
+   obj_t o = handle->data;
+   uv_watcher_data_t *data = WATCHER_DATA(o);
    obj_t p = data->proc;
-
-   if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BINT(0), BEOA);
+   
+   if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BEOA);
 }
 
 /*---------------------------------------------------------------------*/
@@ -741,7 +741,6 @@ bgl_uv_idle_start(obj_t obj, obj_t proc) {
    uv_idle_t *w = (uv_idle_t *)(watcher->BgL_z42builtinz42);
    uv_watcher_data_t *data = get_watcher_data_t(obj);
 
-   data->obj = obj;
    data->proc = proc;
 
    return uv_idle_start(w, bgl_uv_idle_cb);

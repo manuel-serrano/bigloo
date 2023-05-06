@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Sat May  6 07:44:40 2023 (serrano)                */
+;*    Last change :  Sat May  6 08:55:14 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV idle callback                                              */
@@ -33,7 +33,7 @@
 ;*    uv-idle-start ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (uv-idle-start o::UvIdle)
-   (with-access::UvIdle o ($builtin cb)
+   (with-access::UvIdle o ($builtin cb %data)
       (if (not (and (procedure? cb) (correct-arity? cb 1)))
 	  (error "uv-idle-start" "wrong callback" o)
 	  ($uv_idle_start o cb))))
@@ -42,5 +42,5 @@
 ;*    uv-idle-stop ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-idle-stop o::UvIdle)
-   ($uv_idle_stop o)))
+   ($uv_idle_stop o))
       
