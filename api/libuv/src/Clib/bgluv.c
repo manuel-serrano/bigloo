@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sat May  6 08:54:39 2023 (serrano)                */
+/*    Last change :  Sun May  7 06:44:27 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -17,11 +17,13 @@
 /*---------------------------------------------------------------------*/
 #define ROOTS_INCREMENT 64
 
-#if BGL_HAS_THREAD_LOCALSTORAGE
+#if BGL_HAS_THREAD_LOCALSTORAGE && 0
+#  define UV_HAS_THREAD_LOCALSTORAGE 1
 #  define UV_TLS_DECL BGL_THREAD_DECL
 #  define UV_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m)
 #else
+#  define UV_HAS_THREAD_LOCALSTORAGE 0
 #  define UV_TLS_DECL static
 #  define UV_MUTEX_LOCK(m) BGL_MUTEX_LOCK(m)
 #  define UV_MUTEX_UNLOCK(m) BGL_MUTEX_UNLOCK(m)
@@ -62,30 +64,6 @@ extern obj_t bgl_uv_new_file(int, obj_t);
 #else
 #define ABORT()
 #endif
-
-/*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bgl_uv_init ...                                                  */
-/*---------------------------------------------------------------------*/
-void
-bgl_uv_init() {
-   GC_add_roots(&GC_roots, &GC_roots + 1);
-}
-
-/*---------------------------------------------------------------------*/
-/*    void *                                                           */
-/*    gc_extend ...                                                    */
-/*---------------------------------------------------------------------*/
-static void *
-gc_extend(void *p, long szof, long ol, long nl) {
-   void *np = GC_MALLOC(szof * nl);
-
-   if (p && p != np) {
-      memcpy(np, p, szof * ol);
-   }
-
-   return np;
-}
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
@@ -148,9 +126,10 @@ extern obj_t bgl_uv_pop_gcmark(bgl_uv_handle_t, obj_t);
    
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    gc_marks ...                                                     */
+/*    GC_marks ...                                                     */
 /*---------------------------------------------------------------------*/
-UV_TLS_DECL obj_t gc_marks = BNIL;
+UV_TLS_DECL obj_t GC_marks = BNIL;
+
 static obj_t bgl_uv_fstat(uv_stat_t);
 
 /*---------------------------------------------------------------------*/
@@ -160,7 +139,7 @@ static obj_t bgl_uv_fstat(uv_stat_t);
 static void
 gc_mark(obj_t obj) {
    UV_MUTEX_LOCK(bgl_uv_mutex);
-   gc_marks = MAKE_PAIR(obj, gc_marks);
+   GC_marks = MAKE_PAIR(obj, GC_marks);
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
 
@@ -171,7 +150,7 @@ gc_mark(obj_t obj) {
 void
 gc_unmark(obj_t obj) {
    UV_MUTEX_LOCK(bgl_uv_mutex);
-   gc_marks = bgl_remq(obj, gc_marks);
+   GC_marks = bgl_remq_bang(obj, GC_marks);
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
 }
 
@@ -194,7 +173,7 @@ gc_unmark(obj_t obj) {
 	 }								\
       }									\
       for (long i = pool##_idx; i < pool##_size; i++) {			\
-	 pool[i] = pool##_roots[i] = (type *)GC_MALLOC(sizeof(type)); \
+	 pool[i] = pool##_roots[i] = (type *)GC_MALLOC_UNCOLLECTABLE(sizeof(type)); \
       }									\
    }
 
@@ -269,13 +248,13 @@ assert_stream_data(obj_t obj) {
 /*    alloc_stream_data ...                                            */
 /*---------------------------------------------------------------------*/
 static uv_stream_data_t *
-alloc_stream_data_t() {
+alloc_stream_data() {
    uv_stream_data_t *data;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
 
 #if defined(DBG)
-   fprintf(stderr, "+++ alloc_stream_data_t idx=%d/%d\n", uv_stream_pool_idx, uv_stream_pool_size);
+   fprintf(stderr, "+++ alloc_stream_data idx=%d/%d\n", uv_stream_pool_idx, uv_stream_pool_size);
 #endif
 
    if (uv_stream_data_pool_idx == uv_stream_data_pool_size) {
@@ -291,15 +270,15 @@ alloc_stream_data_t() {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    free_stream_data_t ...                                           */
+/*    free_stream_data ...                                             */
 /*---------------------------------------------------------------------*/
 static void
-free_stream_data_t(uv_stream_data_t *data) {
+free_stream_data(uv_stream_data_t *data) {
    assert_stream_data(data->obj);
    STREAM_DATA(data->obj) = 0L;
 
 #if defined(DBG)
-   fprintf(stderr, "!!! free_stream_data_t data=%p idx=%d:%d\n", data, data->index, data->state);
+   fprintf(stderr, "!!! free_stream_data data=%p idx=%d:%d\n", data, data->index, data->state);
 #endif
 
    data->obj = 0L;
@@ -318,12 +297,12 @@ free_stream_data_t(uv_stream_data_t *data) {
 
 /*---------------------------------------------------------------------*/
 /*    static uv_stream_data_t *                                        */
-/*    get_stream_data_t ...                                            */
+/*    get_stream_data ...                                              */
 /*---------------------------------------------------------------------*/
 static uv_stream_data_t *
-get_stream_data_t(obj_t obj) {
+get_stream_data(obj_t obj) {
    if (!STREAM_DATA(obj)) {
-      uv_stream_data_t *data = alloc_stream_data_t();
+      uv_stream_data_t *data = alloc_stream_data();
       STREAM_DATA(obj) = data;
       data->obj = obj;
 
@@ -364,7 +343,7 @@ UV_TLS_DECL long uv_watcher_data_pool_size = 0;
 /*    alloc_watcher_data ...                                           */
 /*---------------------------------------------------------------------*/
 static uv_watcher_data_t *
-alloc_watcher_data_t() {
+alloc_watcher_data() {
    uv_watcher_data_t *data;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
@@ -380,20 +359,19 @@ alloc_watcher_data_t() {
    data = uv_watcher_data_pool[uv_watcher_data_pool_idx++];
    
    UV_MUTEX_UNLOCK(bgl_uv_mutex);
-
    return data;
 }
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    free_watcher_data_t ...                                          */
+/*    free_watcher_data ...                                            */
 /*---------------------------------------------------------------------*/
 static void
-free_watcher_data_t(uv_watcher_data_t *data) {
+free_watcher_data(uv_watcher_data_t *data) {
    WATCHER_DATA(data->obj) = 0L;
 
 #if defined(DBG)
-   fprintf(stderr, "!!! free_watcher_data_t data=%p idx=%d:%d\n", data, data->index, data->state);
+   fprintf(stderr, "!!! free_watcher_data data=%p idx=%d:%d\n", data, data->index, data->state);
 #endif
    data->obj = 0L;
    data->proc = 0L;
@@ -405,12 +383,12 @@ free_watcher_data_t(uv_watcher_data_t *data) {
 
 /*---------------------------------------------------------------------*/
 /*    static uv_watcher_data_t *                                       */
-/*    get_watcher_data_t ...                                           */
+/*    get_watcher_data ...                                             */
 /*---------------------------------------------------------------------*/
 static uv_watcher_data_t *
-get_watcher_data_t(obj_t obj) {
+get_watcher_data(obj_t obj) {
    if (!WATCHER_DATA(obj)) {
-      uv_watcher_data_t *data = alloc_watcher_data_t();
+      uv_watcher_data_t *data = alloc_watcher_data();
       WATCHER_DATA(obj) = data;
       data->obj = obj;
 
@@ -617,6 +595,31 @@ free_uv_shutdown_t(uv_shutdown_t *req) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
+/*    bgl_uv_loop_init ...                                             */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_loop_init(obj_t o) {
+   static int init = 0;
+   
+   BGL_MUTEX_LOCK(bgl_uv_mutex);
+
+   if (!init) {
+      init = 1;
+      GC_add_roots(&GC_roots, &GC_roots + 1);
+#if !UV_HAS_THREAD_LOCALSTORAGE
+      GC_add_roots(&GC_marks, &GC_marks + 1);
+#endif      
+   }
+   
+#if UV_HAS_THREAD_LOCALSTORAGE
+   GC_add_roots(&GC_marks, &GC_marks + 1);
+#endif
+   
+   BGL_MUTEX_UNLOCK(bgl_uv_mutex);
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    bgl_uv_process_title_init ...                                    */
 /*---------------------------------------------------------------------*/
 void
@@ -663,13 +666,13 @@ bgl_uv_stream_close_cb(uv_handle_t *hdl) {
       obj_t p = data->close;
 
       if (data->state == LOCKED) {
-	 free_stream_data_t(data);
+	 free_stream_data(data);
 	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
       } else {
 	 data->state = CLOSING;
 	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
 	 if (data->state != FREE) {
-	    free_stream_data_t(data);
+	    free_stream_data(data);
 	 }
       }
    }
@@ -683,7 +686,7 @@ void
 bgl_uv_stream_close(obj_t obj, obj_t proc) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
    uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
-   uv_stream_data_t *data = get_stream_data_t(obj);
+   uv_stream_data_t *data = get_stream_data(obj);
 
    data->proc = 0L;
 
@@ -739,7 +742,7 @@ int
 bgl_uv_idle_start(obj_t obj, obj_t proc) {
    bgl_uv_watcher_t watcher = (bgl_uv_watcher_t)COBJECT(obj);
    uv_idle_t *w = (uv_idle_t *)(watcher->BgL_z42builtinz42);
-   uv_watcher_data_t *data = get_watcher_data_t(obj);
+   uv_watcher_data_t *data = get_watcher_data(obj);
 
    data->proc = proc;
 
@@ -754,9 +757,9 @@ int
 bgl_uv_idle_stop(obj_t obj) {
    bgl_uv_watcher_t watcher = (bgl_uv_watcher_t)COBJECT(obj);
    uv_idle_t *w = (uv_idle_t *)(watcher->BgL_z42builtinz42);
-   uv_watcher_data_t *data = get_watcher_data_t(obj);
+   uv_watcher_data_t *data = get_watcher_data(obj);
 
-   free_watcher_data_t(data);
+   free_watcher_data(data);
    
    return uv_idle_stop(w);
 }
@@ -2363,6 +2366,7 @@ bgl_uv_getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *res) {
    gc_unmark(p);
 
    if (status) {
+      free(req);
       PROCEDURE_ENTRY(p)(p, BINT(status), BEOA);
    } else {
       char *addr;
@@ -2401,6 +2405,7 @@ bgl_uv_getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *res) {
       }
 
       uv_freeaddrinfo(res);
+      free(req);
 
       PROCEDURE_ENTRY(p)(p, acc, BEOA);
    }
@@ -2616,7 +2621,7 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
       }
 
       if (data->state == CLOSING) {
-	 free_stream_data_t(data);
+	 free_stream_data(data);
       } else {
 	 data->state = state;
       }
@@ -2692,7 +2697,7 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
       } else {
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
-	 uv_stream_data_t *data = get_stream_data_t(obj);
+	 uv_stream_data_t *data = get_stream_data(obj);
 
 #if defined(DBG)
 	 fprintf(stderr, ">>> read_start data=%p idx=%d:%d hdl=%p obj=%p old-proc=%p procc=%p alloc=%p\n", data, data->index, data->state, s, obj, data->proc, procc, proca);
@@ -2727,9 +2732,9 @@ int
 bgl_uv_read_stop(obj_t obj) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
    uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
-   uv_stream_data_t *data = get_stream_data_t(obj);
+   uv_stream_data_t *data = get_stream_data(obj);
 
-   free_stream_data_t(data);
+   free_stream_data(data);
 #if defined(DBG)
    fprintf(stderr, ">>> read_stop idx=%d proc=%p\n", data->index, data->proc);
 #endif   
@@ -2849,7 +2854,7 @@ bgl_uv_listen(obj_t obj, int backlog, obj_t proc, bgl_uv_loop_t bloop) {
    } else {
       bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
       uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
-      uv_stream_data_t *data = get_stream_data_t(obj);
+      uv_stream_data_t *data = get_stream_data(obj);
 
       data->listen = proc;
 
@@ -3154,7 +3159,7 @@ bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc) {
       } else {
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
-	 uv_stream_data_t *data = get_stream_data_t(obj);
+	 uv_stream_data_t *data = get_stream_data(obj);
 	 
 	 data->obj = obj;
 	 data->proc = procc;
@@ -3173,9 +3178,9 @@ int
 bgl_uv_udp_recv_stop(obj_t obj) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
    uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
-   uv_stream_data_t *data = get_stream_data_t(obj);
+   uv_stream_data_t *data = get_stream_data(obj);
    
-   free_stream_data_t(data);
+   free_stream_data(data);
    
    return uv_udp_recv_stop((uv_udp_t *)s);
 }

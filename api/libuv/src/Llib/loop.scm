@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Tue Feb 14 20:03:00 2023 (serrano)                */
+;*    Last change :  Sun May  7 08:56:59 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV loops                                                      */
@@ -72,6 +72,7 @@
       (unwind-protect
 	 (begin
 	    (set! gc-loops (cons loop gc-loops))
+	    ($uv_loop_init loop)
 	    ($uv-run ($uv-loop-t $builtin) (or mode $UV_RUN_DEFAULT)))
 	 (synchronize %uv-mutex
 	    (set! gc-loops (remq! loop gc-loops))))))

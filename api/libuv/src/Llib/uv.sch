@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sat May  6 07:35:36 2023 (serrano)                */
+;*    Last change :  Sun May  7 08:46:54 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -67,8 +67,10 @@
       
       (macro $uv_loop_nil::$uv_loop_t "0L")
       (macro $uv_loop_nilp::bool (::$uv_loop_t) "((uv_loop_t *)0L) == ")
-      
+
       (macro $uv_loop_new::$uv_loop_t () "uv_loop_new")
+      ($uv_loop_init::void (::obj) "bgl_uv_loop_init")
+      
       (macro $uv_default_loop::$uv_loop_t () "uv_default_loop")
       (macro $uv-loop-data-set!::obj (::$uv_loop_t ::obj) "BGL_UV_LOOP_DATA_SET")
       (macro $uv-loop-data-get::obj (::$uv_loop_t) "BGL_UV_LOOP_DATA_GET")
@@ -166,8 +168,8 @@
       (macro $uv_idle_nil::$uv_idle_t "0L")
       
       ($bgl_uv_idle_new::$uv_idle_t (::UvIdle ::UvLoop) "bgl_uv_idle_new")
-      (macro $uv_idle_start::void (::obj ::obj) "bgl_uv_idle_start")
-      (macro $uv_idle_stop::void (::obj) "bgl_uv_idle_stop")
+      ($uv_idle_start::int (::obj ::obj) "bgl_uv_idle_start")
+      ($uv_idle_stop::int (::obj) "bgl_uv_idle_stop")
       
       ($bgl_uv_idle_cb::$uv_idle_cb (::$uv_idle_t ::int) "bgl_uv_handle_cb")
       
