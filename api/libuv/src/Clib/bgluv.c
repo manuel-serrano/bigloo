@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun May  7 10:02:20 2023 (serrano)                */
+/*    Last change :  Sun May  7 21:48:00 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -3215,7 +3215,7 @@ bgl_uv_shutdown_cb(uv_shutdown_t* req, int status) {
 
    PROCEDURE_ENTRY(proc)(proc, BINT(status), obj, BEOA);
    
-   free_uv_shutdown_t(req);
+   free_uv_shutdown(req);
 }
    
 /*---------------------------------------------------------------------*/
@@ -3239,7 +3239,7 @@ bgl_uv_shutdown(obj_t obj, obj_t proc) {
       fprintf(stderr, "!!! shutdown\n");
 #endif      
       if (uv_shutdown(req, s, bgl_uv_shutdown_cb)) {
-	 free_uv_shutdown_t(req);
+	 free_uv_shutdown(req);
       }
    }
 }
