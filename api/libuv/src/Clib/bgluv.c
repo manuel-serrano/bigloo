@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun May  7 06:44:27 2023 (serrano)                */
+/*    Last change :  Sun May  7 10:02:20 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------*/
 #define ROOTS_INCREMENT 64
 
-#if BGL_HAS_THREAD_LOCALSTORAGE && 0
+#if BGL_HAS_THREAD_LOCALSTORAGE
 #  define UV_HAS_THREAD_LOCALSTORAGE 1
 #  define UV_TLS_DECL BGL_THREAD_DECL
 #  define UV_MUTEX_LOCK(m)
@@ -551,10 +551,10 @@ UV_TLS_DECL long uv_shutdown_data_pool_size = 0;
 
 /*---------------------------------------------------------------------*/
 /*    uv_shutdown_t *                                                  */
-/*    alloc_uv_shutdown_t ...                                          */
+/*    alloc_uv_shutdown ...                                            */
 /*---------------------------------------------------------------------*/
 static uv_shutdown_t *
-alloc_uv_shutdown_t() {
+alloc_uv_shutdown() {
    uv_shutdown_t *req;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
@@ -579,10 +579,10 @@ alloc_uv_shutdown_t() {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    free_uv_shutdown_t ...                                           */
+/*    free_uv_shutdown ...                                             */
 /*---------------------------------------------------------------------*/
 static void
-free_uv_shutdown_t(uv_shutdown_t *req) {
+free_uv_shutdown(uv_shutdown_t *req) {
    uv_shutdown_data_t *data = (uv_shutdown_data_t *)(req->data);
    
    data->proc = BUNSPEC;
@@ -666,8 +666,8 @@ bgl_uv_stream_close_cb(uv_handle_t *hdl) {
       obj_t p = data->close;
 
       if (data->state == LOCKED) {
-	 free_stream_data(data);
 	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
+	 free_stream_data(data);
       } else {
 	 data->state = CLOSING;
 	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
@@ -3213,9 +3213,9 @@ bgl_uv_shutdown_cb(uv_shutdown_t* req, int status) {
    obj_t proc = data->proc;
    obj_t obj = data->obj;
 
-   free_uv_shutdown_t(req);
-   
    PROCEDURE_ENTRY(proc)(proc, BINT(status), obj, BEOA);
+   
+   free_uv_shutdown_t(req);
 }
    
 /*---------------------------------------------------------------------*/
@@ -3229,7 +3229,7 @@ bgl_uv_shutdown(obj_t obj, obj_t proc) {
 			"wrong callback", proc);
    } else {
       uv_stream_t *s = STREAM_BUILTIN(obj);
-      uv_shutdown_t *req = alloc_uv_shutdown_t();
+      uv_shutdown_t *req = alloc_uv_shutdown();
       uv_shutdown_data_t *data = (uv_shutdown_data_t *)(req->data);
 
       data->proc = proc;
@@ -3238,7 +3238,9 @@ bgl_uv_shutdown(obj_t obj, obj_t proc) {
 #if defined(DBG)
       fprintf(stderr, "!!! shutdown\n");
 #endif      
-      return uv_shutdown(req, s, bgl_uv_shutdown_cb);
+      if (uv_shutdown(req, s, bgl_uv_shutdown_cb)) {
+	 free_uv_shutdown_t(req);
+      }
    }
 }
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Thu May  4 18:11:59 2023 (serrano)                */
+/*    Last change :  Sun May  7 12:03:40 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -29,10 +29,12 @@ static long prev_heapsz, prev_use;
 /*---------------------------------------------------------------------*/
 static void
 gcollect_verbose(unsigned long heapsz, unsigned long use) {
-   fprintf(stderr, "gc %5ld, hsize=%8luKB (%7d), usize=%8luKB (%7d)\n",
+   fprintf(stderr, "gc %5ld: heap=%8.2fMB (%+8.2f), live=%8.2fMB (%+8.2f)\n",
 	   gcnum++,
-	   heapsz / 1024, (heapsz - prev_heapsz) / 1024,
-	   use / 1024, (use - prev_use) / 1024);
+	   (double)heapsz / (1024. * 1024.),
+	   (double)(heapsz - prev_heapsz) / (1024. * 1024.),
+	   (double)use / (1024. * 1024.),
+	   (double)((long)use - (long)prev_use) / (1024. * 1024.));
    prev_heapsz = heapsz;
    prev_use = use;
 }
