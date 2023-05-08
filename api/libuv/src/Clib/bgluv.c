@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun May  7 21:48:00 2023 (serrano)                */
+/*    Last change :  Mon May  8 06:41:46 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -63,6 +63,23 @@ extern obj_t bgl_uv_new_file(int, obj_t);
    exit(1/0)
 #else
 #define ABORT()
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    TRACES                                                           */
+/*---------------------------------------------------------------------*/
+#if defined(DBG)
+static long trw = 0 , trw2 = 0, trw3 = 0, tclose = 0, tidle = 0;
+
+#  define TRACECB(_c) \
+   --_c, fprintf(stderr, "<<< %s:%d rw=%d rw2=%d rw3=%d close=%d idle=%d\n", \
+		    __FILE__, __LINE__, trw, trw2, trw3, tclose, tidle); 
+#  define TRACECA(_c) \
+   ++_c, fprintf(stderr, ">> %s:%d rw=%d rw2=%d rw3=%d close=%d idle=%d\n", \
+		 __FILE__, __LINE__, trw, trw2, trw3, tclose, tidle);
+#else
+#  define TRACECB(_c) 
+#  define TRACECA(_c)
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -676,6 +693,7 @@ bgl_uv_stream_close_cb(uv_handle_t *hdl) {
 	 }
       }
    }
+   TRACECB(tclose);
 }
 
 /*---------------------------------------------------------------------*/
@@ -698,6 +716,7 @@ bgl_uv_stream_close(obj_t obj, obj_t proc) {
    if (PROCEDUREP(proc)) {
       if (PROCEDURE_CORRECT_ARITYP(proc, 0)) {
 	 data->close = proc;
+	 TRACECA(tclose);
 	 uv_close((uv_handle_t *)s, bgl_uv_stream_close_cb);
       } else {
 	 C_SYSTEM_FAILURE(BGL_ERROR, "bgl_uv_stream_close",
@@ -705,6 +724,7 @@ bgl_uv_stream_close(obj_t obj, obj_t proc) {
       }
    } else {
       data->close = 0L;
+      TRACECA(tclose);
       uv_close((uv_handle_t *)s, bgl_uv_stream_close_cb);
    }
 }
@@ -746,6 +766,7 @@ bgl_uv_idle_start(obj_t obj, obj_t proc) {
 
    data->proc = proc;
 
+   TRACECA(tidle);
    return uv_idle_start(w, bgl_uv_idle_cb);
 }
 
@@ -761,6 +782,7 @@ bgl_uv_idle_stop(obj_t obj) {
 
    free_watcher_data(data);
    
+   TRACECB(tidle);
    return uv_idle_stop(w);
 }
 
@@ -1156,9 +1178,10 @@ static void
 bgl_uv_fs_rw_cb(uv_fs_t *req) {
    uv_fs_data_t *data = (uv_fs_data_t *)req->data;
    obj_t proc = data->proc;
-   
+
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), BEOA);
    free_uv_fs_t(req);
+   TRACECB(trw);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1175,6 +1198,7 @@ bgl_uv_fs_rw2_cb(uv_fs_t *req) {
    
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, BEOA);
    free_uv_fs_t(req);
+   TRACECB(trw2);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1192,6 +1216,7 @@ bgl_uv_fs_rw3_cb(uv_fs_t *req) {
    
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, arg2, BEOA);
    free_uv_fs_t(req);
+   TRACECB(trw3);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1436,6 +1461,7 @@ bgl_uv_fs_close2(obj_t port, obj_t proc, obj_t arg0, obj_t arg1, bgl_uv_loop_t b
       data->arg[0] = arg0;
       data->arg[1] = arg1;
 
+      TRACECA(trw2);
       if (!(r = uv_fs_close(loop, req, fd, &bgl_uv_fs_rw2_cb) >= 0)) { 
 	 free_uv_fs_t(req);
       }
@@ -1992,6 +2018,7 @@ bgl_uv_fs_write(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
 
 	 data->proc = proc;
 
+	 TRACECA(trw);
 	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb);
       } else {
 	 uv_fs_t req;
@@ -2031,6 +2058,7 @@ bgl_uv_fs_write2(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
 	 data->arg[0] = arg0;
 	 data->arg[1] = arg1;
 
+	 TRACECA(trw2);
 	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
       } else {
 	 uv_fs_t req;
@@ -2071,6 +2099,7 @@ bgl_uv_fs_write3(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
 	 data->arg[1] = arg1;
 	 data->arg[2] = arg2;
 
+	 TRACECA(trw3);
 	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
       } else {
 	 uv_fs_t req;
@@ -2108,6 +2137,7 @@ bgl_uv_fs_read(obj_t obj, obj_t buffer, long offset, long length, int64_t positi
 
 	 data->proc = proc;
 
+	 TRACECA(trw);
 	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb);
       } else {
 	 uv_fs_t req;
@@ -2147,6 +2177,7 @@ bgl_uv_fs_read2(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
 	 data->arg[0] = arg0;
 	 data->arg[1] = arg1;
 
+	 TRACECA(trw2);
 	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
       } else {
 	 uv_fs_t req;
@@ -2187,6 +2218,7 @@ bgl_uv_fs_read3(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
 	 data->arg[1] = arg1;
 	 data->arg[2] = arg2;
 
+	 TRACECA(trw3);
 	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
       } else {
 	 uv_fs_t req;
