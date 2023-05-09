@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon May  8 07:21:00 2023 (serrano)                */
+/*    Last change :  Tue May  9 09:59:24 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -71,20 +71,20 @@ extern obj_t bgl_uv_new_file(int, obj_t);
 /*    TRACES                                                           */
 /*---------------------------------------------------------------------*/
 #if defined(DBG_TRACE)
-static long tcnt = 0, trw = 0 , trw2 = 0, trw3 = 0, tclose = 0, tidle = 0, tconn = 0, tread = 0, trecv = 0, tstream = 0;
+static long tcnt = 0, trw = 0 , trw2 = 0, trw3 = 0, tclose = 0, tidle = 0, tconn = 0, tread = 0, trecv = 0, tstream = 0, ttimer = 0;
 
 #  define TRACECB(_c) \
    (--_c,		   \
       (tcnt++ % DBG_TRACE_FREQ == 0) \
-      ? fprintf(stderr, "- %4d: %07d rw=%d rw2=%d rw3=%d clo=%d idl=%d con=%d rs=%d rcv=%d stm=%d\n", \
-		__LINE__, tcnt, trw, trw2, trw3, tclose, tidle, tconn, tread, trecv, tstream) \
+      ? fprintf(stderr, "- %4d: %07d rw=%d rw2=%d rw3=%d clo=%d idl=%d con=%d rs=%d rcv=%d stm=%d tmt=%d\n", \
+		__LINE__, tcnt, trw, trw2, trw3, tclose, tidle, tconn, tread, trecv, tstream, ttimer) \
       : 0)
 
 #  define TRACECA(_c) \
    (++_c,		   \
       (tcnt++ % DBG_TRACE_FREQ == 0) \
-      ? fprintf(stderr, "+ %4d: %07d rw=%d rw2=%d rw3=%d clo=%d idl=%d con=%d rs=%d rcv=%d stm=%d\n", \
-		__LINE__, tcnt, trw, trw2, trw3, tclose, tidle, tconn, tread, trecv, tstream) \
+      ? fprintf(stderr, "+ %4d: %07d rw=%d rw2=%d rw3=%d clo=%d idl=%d con=%d rs=%d rcv=%d stm=%d tmt=%d\n", \
+		__LINE__, tcnt, trw, trw2, trw3, tclose, tidle, tconn, tread, trecv, tstream, ttimer) \
       : 0)
 #else
 #  define TRACECB(_c) 
@@ -817,7 +817,6 @@ uv_timer_t *
 bgl_uv_timer_new(BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop) {
    uv_timer_t *new = (uv_timer_t *)GC_MALLOC(sizeof(uv_timer_t));
    new->data = o;
-   new->close_cb = &bgl_uv_close_cb;
 
    uv_timer_init(LOOP_BUILTIN(loop), new);
    return new;
@@ -828,14 +827,52 @@ bgl_uv_timer_new(BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop) {
 /*    bgl_uv_timer_cb ...                                              */
 /*---------------------------------------------------------------------*/
 void
-bgl_uv_timer_cb(uv_handle_t *handle) {
-   bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
-   obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
-   bgl_uv_loop_t l = ((BgL_uvwatcherz00_bglt)COBJECT(o))->BgL_loopz00;
+bgl_uv_timer_cb(uv_timer_t *handle) {
+   obj_t o = handle->data;
+   bgl_uv_watcher_t watcher = (bgl_uv_watcher_t)COBJECT(o);
+   uv_watcher_data_t *data = WATCHER_DATA(o);
 
-   bgl_uv_pop_gcmark((bgl_uv_handle_t)l, (obj_t)o);
+   if (data) {
+      obj_t p = data->proc;
+      if (uv_timer_get_repeat((uv_timer_t *)(watcher->BgL_z42builtinz42)) == 0) {
+	 free_watcher_data(data);
+	 TRACECB(ttimer);
+      }
 
-   if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BEOA);
+      if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BEOA);
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_timer_start ...                                           */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_timer_start(obj_t obj, obj_t proc, uint64_t timeout, uint64_t repeat) {
+   bgl_uv_watcher_t watcher = (bgl_uv_watcher_t)COBJECT(obj);
+   uv_timer_t *w = (uv_timer_t *)(watcher->BgL_z42builtinz42);
+   uv_watcher_data_t *data = get_watcher_data(obj);
+
+   data->proc = proc;
+
+   TRACECA(ttimer);
+   return uv_timer_start(w, bgl_uv_timer_cb, timeout, repeat);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_timer_stop ...                                            */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_timer_stop(obj_t obj) {
+   bgl_uv_watcher_t watcher = (bgl_uv_watcher_t)COBJECT(obj);
+   uv_timer_t *w = (uv_timer_t *)(watcher->BgL_z42builtinz42);
+   uv_watcher_data_t *data = get_watcher_data(obj);
+
+   free_watcher_data(data);
+   
+   TRACECB(ttimer);
+   return uv_timer_stop(w);
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sun May  7 08:46:54 2023 (serrano)                */
+;*    Last change :  Tue May  9 09:57:17 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -152,8 +152,8 @@
       (macro $uv_timer_nil::$uv_timer_t "0L")
       
       ($bgl_uv_timer_new::$uv_timer_t (::UvTimer ::UvLoop) "bgl_uv_timer_new")
-      (macro $uv_timer_start::void (::$uv_timer_t ::$uv_timer_cb ::uint64 ::uint64) "uv_timer_start")
-      (macro $uv_timer_stop::void (::$uv_timer_t) "uv_timer_stop")
+      ($uv_timer_start::void (::obj ::obj ::uint64 ::uint64) "bgl_uv_timer_start")
+      ($uv_timer_stop::void (::obj) "bgl_uv_timer_stop")
       
       ($bgl_uv_timer_cb::$uv_timer_cb (::$uv_timer_t) "bgl_uv_timer_cb")
       (macro $BGL_UV_TIMER_CB::$uv_timer_cb "(uv_timer_cb)&bgl_uv_timer_cb")

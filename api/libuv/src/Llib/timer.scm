@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Thu May  4 18:52:50 2023 (serrano)                */
+;*    Last change :  Tue May  9 09:50:06 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV timers                                                     */
@@ -36,21 +36,16 @@
 ;*    uv-timer-start ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (uv-timer-start o::UvTimer t::uint64 r::uint64)
-   (with-access::UvTimer o ($builtin loop repeat ref)
+   (with-access::UvTimer o (cb repeat ref)
       (set! repeat r)
-      ;; store in the loop for the GC
-      (uv-push-gcmark! loop o "uv-timer-start")
-      ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
-      (when (uv-gcmarks-empty? loop) ($bgl_uv_timer_cb $uv_timer_nil))
-      ($uv_timer_start ($uv-timer-t $builtin) $BGL_UV_TIMER_CB t r)))
+      ($uv_timer_start o cb t r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-timer-stop ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (uv-timer-stop o::UvTimer)
-   (with-access::UvTimer o ($builtin count loop)
-      (uv-pop-gcmark! loop o)
-      ($uv_timer_stop ($uv-timer-t $builtin))))
+   (with-access::UvTimer o (loop)
+      ($uv_timer_stop o)))
       
 ;*---------------------------------------------------------------------*/
 ;*    uv-ref ::UvTimer ...                                             */
