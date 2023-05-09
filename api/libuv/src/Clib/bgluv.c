@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon May  8 06:41:46 2023 (serrano)                */
+/*    Last change :  Mon May  8 07:21:00 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -32,7 +32,9 @@
 static obj_t GC_roots = BNIL;
 
 // #define DBG
-
+//#define DBG_TRACE 
+//#define DBG_CNT
+#define DBG_TRACE_FREQ 100
 
 /*---------------------------------------------------------------------*/
 /*    request pools                                                    */
@@ -68,18 +70,37 @@ extern obj_t bgl_uv_new_file(int, obj_t);
 /*---------------------------------------------------------------------*/
 /*    TRACES                                                           */
 /*---------------------------------------------------------------------*/
-#if defined(DBG)
-static long trw = 0 , trw2 = 0, trw3 = 0, tclose = 0, tidle = 0;
+#if defined(DBG_TRACE)
+static long tcnt = 0, trw = 0 , trw2 = 0, trw3 = 0, tclose = 0, tidle = 0, tconn = 0, tread = 0, trecv = 0, tstream = 0;
 
 #  define TRACECB(_c) \
-   --_c, fprintf(stderr, "<<< %s:%d rw=%d rw2=%d rw3=%d close=%d idle=%d\n", \
-		    __FILE__, __LINE__, trw, trw2, trw3, tclose, tidle); 
+   (--_c,		   \
+      (tcnt++ % DBG_TRACE_FREQ == 0) \
+      ? fprintf(stderr, "- %4d: %07d rw=%d rw2=%d rw3=%d clo=%d idl=%d con=%d rs=%d rcv=%d stm=%d\n", \
+		__LINE__, tcnt, trw, trw2, trw3, tclose, tidle, tconn, tread, trecv, tstream) \
+      : 0)
+
 #  define TRACECA(_c) \
-   ++_c, fprintf(stderr, ">> %s:%d rw=%d rw2=%d rw3=%d close=%d idle=%d\n", \
-		 __FILE__, __LINE__, trw, trw2, trw3, tclose, tidle);
+   (++_c,		   \
+      (tcnt++ % DBG_TRACE_FREQ == 0) \
+      ? fprintf(stderr, "+ %4d: %07d rw=%d rw2=%d rw3=%d clo=%d idl=%d con=%d rs=%d rcv=%d stm=%d\n", \
+		__LINE__, tcnt, trw, trw2, trw3, tclose, tidle, tconn, tread, trecv, tstream) \
+      : 0)
 #else
 #  define TRACECB(_c) 
 #  define TRACECA(_c)
+#endif
+
+#if defined(DBG_CNT)
+static long kcnt = 0, klisten = 0, kshutdown = 0, kopen = 0, kclose = 0;
+#  define TRACECNT(_c) \
+      (++_c, \
+	 (kcnt++ % DBG_TRACE_FREQ == 0) \
+	 ? fprintf(stderr, "# %4d: %07d ltw=%d sh=%d op=%d cl=%d\n", \
+		   __LINE__, kcnt, klisten, kshutdown, kopen, kclose)	\
+	  : 0)
+#else
+#  define TRACECNT(_c) 0
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -294,6 +315,7 @@ free_stream_data(uv_stream_data_t *data) {
    assert_stream_data(data->obj);
    STREAM_DATA(data->obj) = 0L;
 
+   TRACECB(tstream);
 #if defined(DBG)
    fprintf(stderr, "!!! free_stream_data data=%p idx=%d:%d\n", data, data->index, data->state);
 #endif
@@ -323,6 +345,7 @@ get_stream_data(obj_t obj) {
       STREAM_DATA(obj) = data;
       data->obj = obj;
 
+      TRACECA(tstream);
 #if defined(DBG)
       if (data->state != FREE) {
 	 fprintf(stderr, "!!! get_stream_data: bad stream_data state (%d)!\n",
@@ -439,10 +462,10 @@ UV_TLS_DECL long uv_fs_data_pool_size = 0;
 
 /*---------------------------------------------------------------------*/
 /*    uv_fs_t *                                                        */
-/*    alloc_uv_fs_t ...                                                */
+/*    alloc_uv_fs ...                                                  */
 /*---------------------------------------------------------------------*/
 static uv_fs_t *
-alloc_uv_fs_t() {
+alloc_uv_fs() {
    uv_fs_t *req;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
@@ -468,10 +491,10 @@ alloc_uv_fs_t() {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    free_uv_fs_t ...                                                 */
+/*    free_uv_fs ...                                                   */
 /*---------------------------------------------------------------------*/
 static void
-free_uv_fs_t(uv_fs_t *req) {
+free_uv_fs(uv_fs_t *req) {
    uv_fs_data_t *data = (uv_fs_data_t *)(req->data);
 
    data->proc = BUNSPEC;
@@ -505,10 +528,10 @@ UV_TLS_DECL long uv_write_data_pool_size = 0;
 
 /*---------------------------------------------------------------------*/
 /*    uv_write_t *                                                     */
-/*    alloc_uv_write_t ...                                             */
+/*    alloc_uv_write ...                                               */
 /*---------------------------------------------------------------------*/
 static uv_write_t *
-alloc_uv_write_t() {
+alloc_uv_write() {
    uv_write_t *req;
 
    UV_MUTEX_LOCK(bgl_uv_mutex);
@@ -534,10 +557,10 @@ alloc_uv_write_t() {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    free_uv_write_t ...                                              */
+/*    free_uv_write ...                                                */
 /*---------------------------------------------------------------------*/
 static void
-free_uv_write_t(uv_write_t *req) {
+free_uv_write(uv_write_t *req) {
    uv_write_data_t *data = (uv_write_data_t *)(req->data);
 
    data->proc = BUNSPEC;
@@ -1101,10 +1124,10 @@ bgl_uv_exepath() {
    uv_loop_t *loop = LOOP_BUILTIN(bloop); \
    int r; \
    if (bgl_check_fs_cb(proc, 1, #name)) { \
-      uv_fs_t *req = alloc_uv_fs_t(); \
+      uv_fs_t *req = alloc_uv_fs(); \
       ((uv_fs_data_t *)(req->data))->proc = proc; \
       if (!(r = name(loop, req, obj, &bgl_uv_fs_cb) >= 0)) { \
-        free_uv_fs_t(req); \
+        free_uv_fs(req); \
       } \
       return r; \
    } else { \
@@ -1121,10 +1144,10 @@ bgl_uv_exepath() {
    uv_loop_t *loop = LOOP_BUILTIN(bloop); \
    int r; \
    if (bgl_check_fs_cb(proc, 1, #name)) { \
-      uv_fs_t *req = alloc_uv_fs_t(); \
+      uv_fs_t *req = alloc_uv_fs(); \
       ((uv_fs_data_t *)(req->data))->proc = proc; \
       if (!(r = name(loop, req, obj, arg, &bgl_uv_fs_cb) >= 0)) { \
-        free_uv_fs_t(req); \
+        free_uv_fs(req); \
       } \
       return r; \
    } else { \
@@ -1141,10 +1164,10 @@ bgl_uv_exepath() {
    uv_loop_t *loop = LOOP_BUILTIN(bloop); \
    int r; \
    if (bgl_check_fs_cb(proc, 1, #name)) { \
-      uv_fs_t *req = alloc_uv_fs_t(); \
+      uv_fs_t *req = alloc_uv_fs(); \
       ((uv_fs_data_t *)(req->data))->proc = proc; \
       if (!(r = name(loop, req, obj, arg0, arg1, &bgl_uv_fs_cb) >= 0)) { \
-        free_uv_fs_t(req); \
+        free_uv_fs(req); \
       } \
       return r; \
    } else { \
@@ -1167,7 +1190,7 @@ bgl_uv_fs_cb(uv_fs_t *req) {
    obj_t proc = data->proc;
 
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), BEOA);
-   free_uv_fs_t(req);
+   free_uv_fs(req);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1180,7 +1203,7 @@ bgl_uv_fs_rw_cb(uv_fs_t *req) {
    obj_t proc = data->proc;
 
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), BEOA);
-   free_uv_fs_t(req);
+   free_uv_fs(req);
    TRACECB(trw);
 }
 
@@ -1197,7 +1220,7 @@ bgl_uv_fs_rw2_cb(uv_fs_t *req) {
    obj_t arg1 = data->arg[1];
    
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, BEOA);
-   free_uv_fs_t(req);
+   free_uv_fs(req);
    TRACECB(trw2);
 }
 
@@ -1215,7 +1238,7 @@ bgl_uv_fs_rw3_cb(uv_fs_t *req) {
    obj_t arg2 = data->arg[2];
    
    PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, arg2, BEOA);
-   free_uv_fs_t(req);
+   free_uv_fs(req);
    TRACECB(trw3);
 }
 
@@ -1326,7 +1349,7 @@ bgl_uv_fs_open_cb(uv_fs_t* req) {
    }
    
    PROCEDURE_ENTRY(proc)(proc, obj, BEOA);
-   free_uv_fs_t(req);
+   free_uv_fs(req);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1339,19 +1362,25 @@ bgl_uv_fs_open(obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloop
    char *path = BSTRING_TO_STRING(bpath);
 
    if (bgl_check_fs_cb(proc, 1, "uv-fs-open")) {
-      uv_fs_t *req = alloc_uv_fs_t();
+      uv_fs_t *req = alloc_uv_fs();
       uv_fs_data_t *data = (uv_fs_data_t *)(req->data);
       
       data->proc = proc;
 
-      uv_fs_open(loop, req, path, flags, mode, bgl_uv_fs_open_cb);
+      if (uv_fs_open(loop, req, path, flags, mode, bgl_uv_fs_open_cb) < 0) {
+	 free_uv_fs(req);
+      } else {
+	 TRACECNT(kopen);
+      }
 
       return BUNSPEC;
    } else {
       uv_fs_t req;
       obj_t res;
 
-      uv_fs_open(loop, &req, path, flags, mode, 0L);
+      if (uv_fs_open(loop, &req, path, flags, mode, 0L) >= 0) {
+	 TRACECNT(kopen);
+      }
 
       if (req.result <= 0) {
 	 res = BINT(req.result);
@@ -1388,7 +1417,7 @@ bgl_uv_fs_open4_cb(uv_fs_t* req) {
    }
    
    PROCEDURE_ENTRY(proc)(proc, obj, arg0, arg1, arg2, arg3, BEOA);
-   free_uv_fs_t(req);
+   free_uv_fs(req);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1401,7 +1430,7 @@ bgl_uv_fs_open4(obj_t bpath, int flags, int mode, obj_t proc, obj_t arg0, obj_t 
    char *path = BSTRING_TO_STRING(bpath);
 
    if (bgl_check_fs_cb(proc, 5, "uv-fs-open4")) {
-      uv_fs_t *req = alloc_uv_fs_t();
+      uv_fs_t *req = alloc_uv_fs();
       uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
       data->proc = proc;
@@ -1411,7 +1440,11 @@ bgl_uv_fs_open4(obj_t bpath, int flags, int mode, obj_t proc, obj_t arg0, obj_t 
       data->arg[3] = arg3;
       data->arg[4] = bpath;
       
-      uv_fs_open(loop, req, path, flags, mode, bgl_uv_fs_open4_cb);
+      if (uv_fs_open(loop, req, path, flags, mode, bgl_uv_fs_open4_cb) < 0) {
+	 free_uv_fs(req);
+      } else {
+	 TRACECNT(kopen);
+      }
 
       return BUNSPEC;
    } else {
@@ -1440,7 +1473,8 @@ int
 bgl_uv_fs_close(obj_t port, obj_t proc, bgl_uv_loop_t bloop) {
    int fd = ((bgl_uv_file_t)COBJECT(port))->BgL_fdz00;
 
-   BGL_UV_FS_WRAPPER0(uv_fs_close, fd)
+   BGL_UV_FS_WRAPPER0(uv_fs_close, fd);
+   TRACECNT(kclose);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1454,16 +1488,18 @@ bgl_uv_fs_close2(obj_t port, obj_t proc, obj_t arg0, obj_t arg1, bgl_uv_loop_t b
    uv_loop_t *loop = LOOP_BUILTIN(bloop); 
    int r; 
    if (bgl_check_fs_cb(proc, 3, "uv-fs-close2")) { 
-      uv_fs_t *req = alloc_uv_fs_t(); 
+      uv_fs_t *req = alloc_uv_fs(); 
       uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
       data->proc = proc;
       data->arg[0] = arg0;
       data->arg[1] = arg1;
 
-      TRACECA(trw2);
       if (!(r = uv_fs_close(loop, req, fd, &bgl_uv_fs_rw2_cb) >= 0)) { 
-	 free_uv_fs_t(req);
+	 free_uv_fs(req);
+      } else {
+	 TRACECA(trw2);
+	 TRACECNT(kclose);
       }
       
       return r; 
@@ -1692,7 +1728,7 @@ bgl_uv_fs_fstat_vec_cb(uv_fs_t *req) {
    }
       
    PROCEDURE_ENTRY(p)(p, BINT(req->result), v, BEOA);
-   free_uv_fs_t(req);
+   free_uv_fs(req);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1706,7 +1742,7 @@ bgl_uv_fs_fstat(obj_t port, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
 
    if (PROCEDUREP(proc)) {
       if (PROCEDURE_CORRECT_ARITYP(proc, 2)) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
@@ -1759,7 +1795,7 @@ bgl_uv_fs_lstat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
 
    if (PROCEDUREP(proc)) {
       if (PROCEDURE_CORRECT_ARITYP(proc, 2)) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
@@ -1812,7 +1848,7 @@ bgl_uv_fs_stat(char *path, obj_t proc, obj_t vec, bgl_uv_loop_t bloop) {
 
    if (PROCEDUREP(proc)) {
       if (PROCEDURE_CORRECT_ARITYP(proc, 2)) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
@@ -2013,7 +2049,7 @@ bgl_uv_fs_write(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
       iov = uv_buf_init(&(STRING_REF(buffer, offset)), length);
       
       if (bgl_check_fs_cb(proc, 1, "uv-fs-write")) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
@@ -2051,7 +2087,7 @@ bgl_uv_fs_write2(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
       iov = uv_buf_init(&(STRING_REF(buffer, offset)), length);
       
       if (bgl_check_fs_cb(proc, 3, "uv-fs-write2")) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
@@ -2091,7 +2127,7 @@ bgl_uv_fs_write3(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
       iov = uv_buf_init(&(STRING_REF(buffer, offset)), length);
       
       if (bgl_check_fs_cb(proc, 4, "uv-fs-write3")) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
@@ -2122,6 +2158,7 @@ bgl_uv_fs_read(obj_t obj, obj_t buffer, long offset, long length, int64_t positi
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
    int fd = ((bgl_uv_file_t)COBJECT(obj))->BgL_fdz00;
    int len = 0;
+   int r;
 
    if (length + offset > STRING_LENGTH(buffer)) {
       C_SYSTEM_FAILURE(BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-read",
@@ -2132,16 +2169,20 @@ bgl_uv_fs_read(obj_t obj, obj_t buffer, long offset, long length, int64_t positi
       iov = uv_buf_init((void *)&(STRING_REF(buffer, offset)), length);
 
       if (bgl_check_fs_cb(proc, 1, "uv-fs-read")) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
 
-	 TRACECA(trw);
-	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb);
+	 r = uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb);
+	 if (r == -1) {
+	    free_uv_fs(req);
+	 } else {
+	    TRACECA(trw);
+	 }
+	 return r;
       } else {
 	 uv_fs_t req;
-	 int r;
 
 	 r = uv_fs_read(loop, &req, fd < 0 ? 0 : fd, &iov, 1, position, 0L);
 	 uv_fs_req_cleanup(&req);
@@ -2160,6 +2201,7 @@ bgl_uv_fs_read2(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
    int fd = ((bgl_uv_file_t)COBJECT(obj))->BgL_fdz00;
    int len = 0;
+   int r;
 
    if (length + offset > STRING_LENGTH(buffer)) {
       C_SYSTEM_FAILURE(BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-read",
@@ -2170,18 +2212,22 @@ bgl_uv_fs_read2(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
       iov = uv_buf_init((void *)&(STRING_REF(buffer, offset)), length);
 
       if (bgl_check_fs_cb(proc, 3, "uv-fs-read2")) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 	 
 	 data->proc = proc;
 	 data->arg[0] = arg0;
 	 data->arg[1] = arg1;
 
-	 TRACECA(trw2);
-	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
+	 r = uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
+	 if (r == -1) {
+	    free_uv_fs(req);
+	 } else {
+	    TRACECA(trw2);
+	 }
+	 return r;
       } else {
 	 uv_fs_t req;
-	 int r;
 
 	 r = uv_fs_read(loop, &req, fd, &iov, 1, position, 0L);
 	 uv_fs_req_cleanup(&req);
@@ -2200,6 +2246,7 @@ bgl_uv_fs_read3(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
    uv_loop_t *loop = LOOP_BUILTIN(bloop);
    int fd = ((bgl_uv_file_t)COBJECT(obj))->BgL_fdz00;
    int len = 0;
+   int r;
 
    if (length + offset > STRING_LENGTH(buffer)) {
       C_SYSTEM_FAILURE(BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-read",
@@ -2210,7 +2257,7 @@ bgl_uv_fs_read3(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
       iov = uv_buf_init((void *)&(STRING_REF(buffer, offset)), length);
 
       if (bgl_check_fs_cb(proc, 4, "uv-fs-read3")) {
-	 uv_fs_t *req = alloc_uv_fs_t();
+	 uv_fs_t *req = alloc_uv_fs();
 	 uv_fs_data_t *data = (uv_fs_data_t *)req->data;
 
 	 data->proc = proc;
@@ -2218,11 +2265,16 @@ bgl_uv_fs_read3(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
 	 data->arg[1] = arg1;
 	 data->arg[2] = arg2;
 
-	 TRACECA(trw3);
-	 uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
+	 r = uv_fs_read(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
+	 if (r == -1) {
+	    free_uv_fs(req);
+	 } else {
+	    TRACECA(trw3);
+	 }
+
+	 return r;
       } else {
 	 uv_fs_t req;
-	 int r;
 
 	 r = uv_fs_read(loop, &req, fd, &iov, 1, position, 0L);
 	 uv_fs_req_cleanup(&req);
@@ -2532,7 +2584,7 @@ bgl_uv_write_cb(uv_write_t *req, int status) {
 	 C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-stream-write", "wrong callback", p);
    }
 
-   free_uv_write_t(req);
+   free_uv_write(req);
 }
 
 /*---------------------------------------------------------------------*/
@@ -2547,7 +2599,7 @@ bgl_uv_write(obj_t obj, char *buffer, long offset, long length, obj_t proc,
 		       "wrong callback", proc);
    } else {
       uv_stream_t *handle = STREAM_BUILTIN(obj);
-      uv_write_t *req = alloc_uv_write_t();
+      uv_write_t *req = alloc_uv_write();
       uv_write_data_t *data = (uv_write_data_t *)(req->data);
       uv_buf_t iov;
       int r;
@@ -2562,7 +2614,7 @@ bgl_uv_write(obj_t obj, char *buffer, long offset, long length, obj_t proc,
       iov = uv_buf_init(buffer + offset, length);
 
       if (r = uv_write(req, handle, &iov, 1, bgl_uv_write_cb)) {
-	 free_uv_write_t(req);
+	 free_uv_write(req);
       }
 
       return r;
@@ -2583,7 +2635,7 @@ bgl_uv_write2(obj_t obj, char *buffer, long offset, long length, obj_t sendhandl
       uv_stream_t *handle = STREAM_BUILTIN(obj);
       uv_stream_t *sendhdl =
 	 (sendhandle == BFALSE ? 0L : STREAM_BUILTIN(sendhandle));
-      uv_write_t *req = alloc_uv_write_t();
+      uv_write_t *req = alloc_uv_write();
       uv_write_data_t *data = (uv_write_data_t *)(req->data);
       uv_buf_t iov;
       int r;
@@ -2598,7 +2650,7 @@ bgl_uv_write2(obj_t obj, char *buffer, long offset, long length, obj_t sendhandl
       iov = uv_buf_init(buffer + offset, length);
 
       if (r = uv_write2(req, handle, &iov, 1, sendhdl, bgl_uv_write_cb)) {
-	 free_uv_write_t(req);
+	 free_uv_write(req);
       }
 
       return r;
@@ -2618,7 +2670,7 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
    obj_t offset = data->offset;
    int c = 0;
    obj_t pendingsym = BFALSE;
-   uv_stream_state_t state = data->state;
+   uv_stream_state_t prev_state = data->state;
 
 #if defined(DBG)
    assert_stream_data(obj);
@@ -2642,7 +2694,7 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
    }
 #endif
 
-   if (p && state != CLOSING) {
+   if (p && prev_state != CLOSING) {
       data->state = READING;
       if (nread >= 0) {
 	 PROCEDURE_ENTRY(p)(p, BTRUE, allocobj, offset, BINT(nread), pendingsym, BEOA);
@@ -2653,9 +2705,12 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
       }
 
       if (data->state == CLOSING) {
+	 TRACECB(tread);
 	 free_stream_data(data);
+      } else if (data->state == FREE) {
+	 TRACECB(tread);
       } else {
-	 data->state = state;
+	 data->state = prev_state;
       }
    }
 
@@ -2729,6 +2784,9 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
       } else {
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+#if defined(DBG_TRACE)
+	 int need_trace = !STREAM_DATA(obj);
+#endif	 
 	 uv_stream_data_t *data = get_stream_data(obj);
 
 #if defined(DBG)
@@ -2751,6 +2809,9 @@ bgl_uv_read_start(obj_t obj, obj_t proca, obj_t procc) {
 #if defined(DBG)
 	 assert_stream_data(obj);
 #endif	 
+#if defined(DBG_TRACE)
+	 if (need_trace) TRACECA(tread);
+#endif	 
 	 return uv_read_start(s, bgl_uv_alloc_cb, bgl_uv_read_cb);
       }
    }
@@ -2770,6 +2831,7 @@ bgl_uv_read_stop(obj_t obj) {
 #if defined(DBG)
    fprintf(stderr, ">>> read_stop idx=%d proc=%p\n", data->index, data->proc);
 #endif   
+   TRACECB(tread);
    return uv_read_stop(s);
 }
 
@@ -2801,7 +2863,8 @@ bgl_connect_cb(uv_connect_t *req, int status) {
    gc_unmark(p);
 
    free(req);
-   
+
+   TRACECB(tconn);
    PROCEDURE_ENTRY(p)(p, BINT(status), handle, BEOA);
 }
 
@@ -2824,6 +2887,7 @@ bgl_uv_tcp_connectX(obj_t obj, struct sockaddr *address, obj_t proc, bgl_uv_loop
       
       gc_mark(proc);
 
+      TRACECA(tconn);
       r = uv_tcp_connect(req, handle, address, bgl_connect_cb);
       if (r != 0) {
 	 free(req);
@@ -2887,10 +2951,17 @@ bgl_uv_listen(obj_t obj, int backlog, obj_t proc, bgl_uv_loop_t bloop) {
       bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
       uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
       uv_stream_data_t *data = get_stream_data(obj);
+      int r;
 
       data->listen = proc;
 
-      return uv_listen(s, backlog, uv_listen_cb);
+      r = uv_listen(s, backlog, uv_listen_cb);
+
+      if (r < 0) {
+	 fprintf(stderr, "LISTEN ERROR...\n");
+	 TRACECNT(klisten);
+	 free_stream_data(data);
+      }
    }
 }
 
@@ -3197,6 +3268,7 @@ bgl_uv_udp_recv_start(obj_t obj, obj_t proca, obj_t procc) {
 	 data->proc = procc;
 	 data->alloc = proca;
 
+	 TRACECA(trecv);
 	 return uv_udp_recv_start((uv_udp_t *)s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb);
       }
    }
@@ -3211,7 +3283,8 @@ bgl_uv_udp_recv_stop(obj_t obj) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)COBJECT(obj);
    uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
    uv_stream_data_t *data = get_stream_data(obj);
-   
+
+   TRACECB(trecv);
    free_stream_data(data);
    
    return uv_udp_recv_stop((uv_udp_t *)s);
@@ -3245,6 +3318,7 @@ bgl_uv_shutdown_cb(uv_shutdown_t* req, int status) {
    obj_t proc = data->proc;
    obj_t obj = data->obj;
 
+   TRACECNT(kshutdown);
    PROCEDURE_ENTRY(proc)(proc, BINT(status), obj, BEOA);
    
    free_uv_shutdown(req);
