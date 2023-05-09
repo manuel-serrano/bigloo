@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Sun May  7 12:03:40 2023 (serrano)                */
+/*    Last change :  Tue May  9 07:52:53 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -48,7 +48,7 @@ bgl_gc_verbose_set(bool_t verbose) {
 #if((BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM)
    extern void GC_add_gc_hook(void (*f)());
    
-   if(verbose) {
+   if (verbose) {
       fprintf(stderr, "bgl_gc_verbose on...\n");
       gcnum = 1;
       GC_add_gc_hook(&gcollect_verbose);

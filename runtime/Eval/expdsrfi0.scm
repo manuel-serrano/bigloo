@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Thu May  4 10:17:02 2023 (serrano)                */
+;*    Last change :  Tue May  9 09:00:48 2023 (serrano)                */
 ;*    Copyright   :  2001-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -151,7 +151,8 @@
 		     srfi-22
 		     srfi-28
 		     srfi-30
-		     rlimit))))
+		     rlimit
+		     gc))))
       (if $configure-auto-finalizer
 	  (cons* 'bigloo-finalizer 'bigloo-weakptr l)
 	  l)))

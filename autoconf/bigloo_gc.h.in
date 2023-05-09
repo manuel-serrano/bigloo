@@ -26,6 +26,7 @@
      BGL_RUNTIME_DECL obj_t GC_realloc(obj_t, size_t);
      BGL_RUNTIME_DECL void GC_free(obj_t);
      BGL_RUNTIME_DECL void GC_gcollect();
+     BGL_RUNTIME_DECL void GC_gcollect_and_unmap();
      extern obj_t GC_malloc_atomic(size_t);
      extern obj_t GC_malloc_uncollectable(size_t);
 #if (BGL_GC_VERSION < 700)
@@ -103,6 +104,7 @@
 #  define GC_REALLOC GC_realloc
 #  define GC_FREE GC_free
 #  define GC_COLLECT() GC_gcollect()
+#  define GC_COLLECT_AND_UNMAP() GC_gcollect_and_unmap()
 
 #  if (!defined(GC_REGISTER_DISPLACEMENT))
 #    define GC_REGISTER_DISPLACEMENT(o) GC_register_displacement(o)
@@ -181,6 +183,7 @@
 #    define INIT_ALLOCATION(size) init_heap(size)
 #    define FREE_ALLOCATION() free_heap()
 #    define GC_COLLECT() 
+#    define GC_COLLECT_AND_UNMAP() 
 #  else
      --> error "Unknown garbage collector type"
 #  endif                
