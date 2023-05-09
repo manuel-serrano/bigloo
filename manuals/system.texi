@@ -62,10 +62,16 @@ returning the integer @var{int}.
 
 @deffn {bigloo procedure} gc-verbose-set! bool
 Enable/disable GC traces.
+
+Bigloo defines the @code{cond-expand} @code{gc} keyword, which enables
+applications to use this function.
 @end deffn
 
 @deffn {bigloo procedure} gc
 Force a garbage collection.
+
+Bigloo defines the @code{cond-expand} @code{gc} keyword, which enables
+applications to use this function.
 @end deffn
 
 @deffn {bigloo procedure} signal n proc
