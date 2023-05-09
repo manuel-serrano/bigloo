@@ -56,6 +56,9 @@ public final class foreign
    /////
    // INTERNAL
    /////
+   public static void GC_gcollect() {
+   }
+   
    public static void print(String msg)
       {
 	 System.out.println(msg);
