@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Sun May 10 12:22:21 2020 (serrano)                */
-/*    Copyright   :  2004-21 Manuel Serrano                            */
+/*    Last change :  Sat May 13 08:01:34 2023 (serrano)                */
+/*    Copyright   :  2004-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -31,12 +31,12 @@ extern void bglpth_setup_bmem();
 static void
 bglpth_setup_signal() {
 #if HAVE_SIGPROCMASK
-   extern void bgl_sigprocmask_register( int (*)(int, const sigset_t *, sigset_t *) );
+   extern void bgl_sigprocmask_register(int (*)(int, const sigset_t *, sigset_t *));
    extern int GC_pthread_sigmask();
-#if defined( GC_NO_PTHREAD_SIGMASK )
-   bgl_sigprocmask_register( &pthread_sigmask );
-#else   
-   bgl_sigprocmask_register( &GC_pthread_sigmask );
+#if defined(GC_NO_PTHREAD_SIGMASK)
+   bgl_sigprocmask_register(&pthread_sigmask);
+#else
+   bgl_sigprocmask_register(&GC_pthread_sigmask);
 #endif   
 #endif
 }
@@ -47,7 +47,7 @@ bglpth_setup_signal() {
 /*---------------------------------------------------------------------*/
 static void
 bglpth_setup_gc() {
-#if( BGL_GC == BGL_BOEHM_GC && BGL_GC_HAVE_BLOCKING )
+#if (BGL_GC == BGL_BOEHM_GC && BGL_GC_HAVE_BLOCKING)
    extern void GC_start_blocking();
    extern void GC_end_blocking();
 
@@ -55,11 +55,11 @@ bglpth_setup_gc() {
    bgl_gc_stop_blocking = &GC_end_blocking;
 #endif
 
-#if( BGL_GC == BGL_BOEHM_GC && BGL_GC_HAVE_DO_BLOCKING )
-#if( BGL_GC_VERSION == 731 \
+#if (BGL_GC == BGL_BOEHM_GC && BGL_GC_HAVE_DO_BLOCKING)
+#if (BGL_GC_VERSION == 731 \
    || BGL_GC_VERSION == 722 \
    || BGL_GC_VERSION == 710 \
-   || BGL_GC_VERSION == 700 || BGL_GC_VERSION == 707 )
+   || BGL_GC_VERSION == 700 || BGL_GC_VERSION == 707)
    extern void *GC_do_blocking();
 #endif
    
@@ -75,10 +75,10 @@ bglpth_setup_gc() {
 /*---------------------------------------------------------------------*/
 BGL_EXPORTED_DEF
 void
-bglpth_setup( int argc, char *argv, char **env ) {
+bglpth_setup(int argc, char *argv, char **env) {
    static int pth_init = 0;
 
-   if( !pth_init ) {
+   if (!pth_init) {
       pth_init = 1;
       
 #ifdef PTW32_VERSION

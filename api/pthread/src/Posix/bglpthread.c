@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Thu Apr 13 07:50:55 2023 (serrano)                */
+/*    Last change :  Sat May 13 08:54:10 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -328,6 +328,22 @@ bglpth_thread_terminate(bglpthread_t t) {
       return 0;
    }
 
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bglpth_thread_kill ...                                           */
+/*---------------------------------------------------------------------*/
+int
+bglpth_thread_kill(bglpthread_t t, int sig) {
+   int r = pthread_kill(t->pthread, sig);
+   if (r) {
+      FAILURE(string_to_bstring("thread-kill!"),
+	      string_to_bstring("Cannot send signal"),
+	      string_to_bstring(strerror(r)));
+
+   }
+   return r;
 }
 
 /*---------------------------------------------------------------------*/

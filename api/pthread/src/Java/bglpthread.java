@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/pthread/src/Java/bglpthread.java     */
+/*    .../bigloo/bigloo/api/pthread/src/Java/bglpthread.java           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Oct 24 14:11:20 2016 (serrano)                */
-/*    Copyright   :  2002-16 Manuel Serrano                            */
+/*    Last change :  Sat May 13 08:41:15 2023 (serrano)                */
+/*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
 /*=====================================================================*/
@@ -108,6 +108,12 @@ public class bglpthread extends Thread {
    public static boolean terminate( bglpthread thread ) {
       thread.interrupt();
       return true;
+   }
+
+   // send a signal
+   public static int kill( bglpthread thread, int n ) {
+      // not implemented
+      return -1;
    }
 
    // Returns the current thread

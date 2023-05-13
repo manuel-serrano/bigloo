@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Thu Apr 13 07:41:11 2023 (serrano)                */
+;*    Last change :  Sat May 13 08:38:08 2023 (serrano)                */
 ;*    Copyright   :  2004-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -196,6 +196,7 @@
 	    (generic thread-start-joinable! ::thread)
 	    (generic thread-join! ::thread . timeout)
 	    (generic thread-terminate! ::thread)
+	    (generic thread-kill!::obj ::thread ::int)
 	    (generic thread-specific::obj ::thread)
 	    (generic thread-specific-set!::obj ::thread ::obj)
 	    (generic thread-cleanup::obj ::thread)
@@ -404,6 +405,11 @@
 (define-generic (thread-terminate! th::thread))
 
 ;*---------------------------------------------------------------------*/
+;*    thread-kill! ::thread ...                                        */
+;*---------------------------------------------------------------------*/
+(define-generic (thread-kill! th::thread n::int))
+
+;*---------------------------------------------------------------------*/
 ;*    thread-specific ::thread ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-generic (thread-specific th::thread))
@@ -559,6 +565,12 @@
    (with-access::nothread th (%cleanup)
       (when (procedure? %cleanup) (%cleanup))
       (exit 0)))
+
+;*---------------------------------------------------------------------*/
+;*    thread-kill! ::nothread ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (thread-kill! th::nothread n::int)
+   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-specific ::nothread ...                                   */

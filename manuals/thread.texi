@@ -161,6 +161,7 @@ used, more details will be given in the specific sections below.
 @deffnx {Bigloo function} thread-start-joinable! @var{thread}
 @deffnx {SRFI-18 function} thread-join! @var{thread} [@var{timeout}]
 @deffnx {SRFI-18 function} thread-terminate! @var{thread}
+@deffnx {SRFI-18 function} thread-kill! @var{thread} @var{signum}
 @deffnx {SRFI-18 function} thread-yield!
 @deffnx {SRFI-18 function} thread-sleep! @var{timeout}
 @end deffn

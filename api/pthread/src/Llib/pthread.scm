@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Thu Apr 13 07:45:20 2023 (serrano)                */
+;*    Last change :  Sat May 13 08:40:16 2023 (serrano)                */
 ;*    Copyright   :  2002-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -165,6 +165,13 @@
       (when ($pthread-terminate! $builtin)
 	 (set! end-exception (instantiate::terminated-thread-exception)))
       t))
+
+;*---------------------------------------------------------------------*/
+;*    thread-kill! ::pthread ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (thread-kill! t::pthread n::int)
+   (with-access::pthread t ($builtin end-exception)
+      ($pthread-kill! $builtin n)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-specific ::pthread ...                                    */

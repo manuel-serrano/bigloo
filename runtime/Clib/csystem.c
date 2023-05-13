@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Thu May  4 09:09:04 2023 (serrano)                */
+/*    Last change :  Sat May 13 06:54:58 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -95,14 +95,13 @@ bgl_init_signal() {
 /*---------------------------------------------------------------------*/
 static obj_t
 signal_handler(int num) {
-   obj_t handler = BGL_SIG_HANDLERS()[ num ];
+   obj_t handler = BGL_SIG_HANDLERS()[num];
 
    /* Re-install the signal handler because some OS (such as Solaris) */
    /* de-install it when the signal is raised.                        */
 #if !BGL_HAVE_SIGACTION
    signal(num, (void (*)(int))(signal_handler));
 #endif
-
    if (PROCEDUREP(handler)) {
       return ((obj_t (*)())PROCEDURE_ENTRY(handler))(handler, BINT(num), BEOA);
    } else {
@@ -187,12 +186,11 @@ stackov_handler(int sig) {
 obj_t
 bgl_signal(int sig, obj_t obj) {
    BGL_MUTEX_LOCK(signal_mutex);
-
    /* store the obj in the signal table */
    if (obj != BUNSPEC) {
-      BGL_SIG_HANDLERS()[ sig ] = obj;
+      BGL_SIG_HANDLERS()[sig] = obj;
    }
-   
+
    if (PROCEDUREP(obj) || obj == BUNSPEC) {
 #if BGL_HAVE_SIGACTION
       {
