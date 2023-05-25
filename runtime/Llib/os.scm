@@ -1409,7 +1409,7 @@
 	     ((STACK) $rlimit-stack)
 	     (else (error id "illegal limit resource" r))))
 	 (else
-	  (else (error id "limit unsupported" r)))))
+	  (error id "limit unsupported" r))))
    
    (cond
       ((fixnum? r) r)

@@ -64,7 +64,7 @@ public class input_resource_port extends input_port {
 	    byte[] o;
 
 	    while( (o = readline( in )) != null ) {
-	       res++
+              res++;
 	    }
 
 	    in.close();
@@ -103,6 +103,36 @@ public class input_resource_port extends input_port {
 	 return bigloo.foreign.BNIL;
       }
    }
+
+   public static Object bgl_directory_to_vector( String name ) {
+      try {
+	 String dir = name.replace( '\\', '/' );
+	 String cname = dir + "/.list";
+	 
+	 if( input_resource_port.exists( cname ) ) {
+	    InputStream in;
+            int len = bgl_directory_length( name );
+	    Object[] res = bigloo.foreign.make_vector(len, bigloo.foreign.BUNSPEC);
+            
+	    in = foreign.class.getClassLoader().getResourceAsStream( cname );
+	    byte[] o;
+
+            int i = 0;
+	    while( (o = readline( in )) != null ) {
+               res[i] = o;
+	       i++;
+	    }
+
+	    in.close();
+
+	    return res;
+	 } else {
+            return bigloo.foreign.make_vector0();
+	 }
+      } catch( Exception _e ) {
+	 return bigloo.foreign.make_vector0();
+      }
+   } 
 
    public static boolean bgl_directoryp( String name ) {
       String dir = name.replace( '\\', '/' );
