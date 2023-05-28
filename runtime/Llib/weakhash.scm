@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Sep 27 08:03:36 2021 (serrano)                */
+;*    Last change :  Sun May 28 07:02:26 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -740,41 +740,58 @@
 ;*    weak-keys-hashtable-expand! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (weak-keys-hashtable-expand! table)
+   ;; force a collection
+   (gc)
+   ;; and recount
    (let* ((old-bucks (%hashtable-buckets table))
 	  (len (vector-length old-bucks))
-	  (new-len (*fx 2 len))
-	  (max-len (%hashtable-max-length table))
-	  (count 0))
-      ;; enlarge the max-bucket-len
-      (let ((nmax (* (%hashtable-max-bucket-len table)
-		     (%hashtable-bucket-expansion table))))
-	 (%hashtable-max-bucket-len-set! table
-	    (if (flonum? nmax) (flonum->fixnum nmax) nmax)))
-      ;; re-construct the buckets
-      (if (or (<fx max-len 0) (<=fx new-len max-len))
-	  (let ((new-bucks (make-vector new-len '())))
-	     (%hashtable-buckets-set! table new-bucks)
-	     (let loop ((i 0))
-		(cond
-		   ((<fx i len)
-		    (for-each (lambda (cell)
-				 (let ((key (weakptr-data cell)))
-				    (if (eq? key #unspecified)
-					(set! count (+fx count 1))
-					(let* ((n (table-get-hashnumber table key))
-					       (h (remainderfx n new-len)))
-					   (vector-set-ur! new-bucks
-					      h (cons cell (vector-ref new-bucks h)))))))
-		       (vector-ref-ur old-bucks i))
-		    (loop (+fx i 1)))
-		   ((>fx count 0)
-		    (%hashtable-size-set! table
-		       (-fx (%hashtable-size table) count))))))
-	  (error "hashtable-put!"
-	     (format "Hashtable too large (new-len=~a/~a, size=~a)"
-		new-len max-len
-		(hashtable-size table))
-	     table))))
+	  (max-bucket-len (%hashtable-max-bucket-len table)))
+      (let loop ((i 0)
+		 (size 0)
+		 (expand #f))
+	 (cond
+	    ((<fx i len)
+	     (let ((count 0))
+		(vector-set-ur! old-bucks i
+		   (filter (lambda (cell)
+			      (let ((key (weakptr-data cell)))
+				 (unless (eq? key #unspecified)
+				    (set! count (+fx count 1))
+				    key)))
+		      (vector-ref-ur old-bucks i)))
+		(loop (+fx i 1) (+fx size count)
+		   (or expand (>fx count max-bucket-len)))))
+	    (expand
+	     (let* ((new-len (*fx 2 len))
+		    (max-len (%hashtable-max-length table)))
+		;; enlarge the max-bucket-len
+		(let ((nmax (* (%hashtable-max-bucket-len table)
+			       (%hashtable-bucket-expansion table))))
+		   (%hashtable-max-bucket-len-set! table
+		      (if (flonum? nmax) (flonum->fixnum nmax) nmax)))
+		;; re-construct the buckets
+		(if (or (<fx max-len 0) (<=fx new-len max-len))
+		    (let ((new-bucks (make-vector new-len '())))
+		       (%hashtable-buckets-set! table new-bucks)
+		       (let loop ((i 0))
+			  (cond
+			     ((<fx i len)
+			      (for-each (lambda (cell)
+					   (let ((key (weakptr-data cell)))
+					      (let* ((n (table-get-hashnumber
+							   table key))
+						     (h (remainderfx n new-len)))
+						 (vector-set-ur! new-bucks
+						    h (cons cell (vector-ref new-bucks h))))))
+				 (vector-ref-ur old-bucks i))
+			      (loop (+fx i 1)))
+			     (else
+			      (%hashtable-size-set! table size)))))
+		    (error "hashtable-put!"
+		       (format "Hashtable too large (new-len=~a/~a, size=~a)"
+			  new-len max-len
+			  (hashtable-size table))
+		       table))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    weak-old-hashtable-expand! ...                                   */

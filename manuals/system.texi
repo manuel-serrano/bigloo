@@ -67,8 +67,9 @@ Bigloo defines the @code{cond-expand} @code{gc} keyword, which enables
 applications to use this function.
 @end deffn
 
-@deffn {bigloo procedure} gc
-Force a garbage collection.
+@deffn {bigloo procedure} gc [:finalize #t]
+Force a garbage collection. If @var{finalize} is non-false, invoke
+the finalizers.
 
 Bigloo defines the @code{cond-expand} @code{gc} keyword, which enables
 applications to use this function.

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Tue May  9 05:53:14 2023 (serrano)                */
+;*    Last change :  Sun May 28 06:51:37 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -133,6 +133,9 @@
 	    
 	    (macro $GC-collect::void ()
 		   "GC_COLLECT")
+
+	    (macro $GC-finalize::void ()
+		   "GC_invoke_finalizers")
 
 	    (macro %exit::obj (::obj)
 		   "BIGLOO_EXIT")
@@ -283,7 +286,8 @@
 	    
 	    (time::obj ::procedure)
 	    (gc-verbose-set! ::bool)
-	    (inline gc)
+	    (gc #!key (finalize #t))
+	    (inline gc-finalize)
 
 	    (inline make-cell::cell ::obj)
 	    (inline cell? ::obj)
@@ -714,9 +718,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    gc ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (gc)
+(define (gc #!key (finalize #t))
    (cond-expand
-      (bigloo-c ($GC-collect))
+      (bigloo-c (begin ($GC-collect) (when finalize ($GC-finalize))))
+      (else #f)))
+
+;*---------------------------------------------------------------------*/
+;*    gc-finalize ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (gc-finalize)
+   (cond-expand
+      (bigloo-c ($GC-finalize))
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
