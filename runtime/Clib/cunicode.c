@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Sun May 28 16:58:39 2023 (serrano)                */
+/*    Last change :  Sun May 28 19:55:16 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -620,7 +620,7 @@ BGL_RUNTIME_DEF
 obj_t
 utf8_string_to_ucs2_string(obj_t butf8) {
    int len = STRING_LENGTH(butf8);
-   ucs2_t *aux = (ucs2_t *)malloc(len * sizeof(ucs2_t));
+   ucs2_t *aux = (ucs2_t *)alloca(len * sizeof(ucs2_t));
    char *cutf8 = BSTRING_TO_STRING(butf8);
    int read, write;
    obj_t string;
@@ -654,7 +654,6 @@ utf8_string_to_ucs2_string(obj_t butf8) {
 	 
 	 aux[write] = (ucs2_t)(zzzzzz | (yyyy << 6) | (hi << 10));
       } else if ((byte <= 0xbf) || (byte >= 0xfd)) {
-	 free(aux);
 	 C_FAILURE("utf8-string->ucs2-string",
 		    "Illegal first byte",
 		    BINT(byte));
@@ -666,7 +665,6 @@ utf8_string_to_ucs2_string(obj_t butf8) {
 	    unsigned char next = cutf8[read++];
                
 	    if ((next <= 0x7f) || (next > 0xbf)) {
-	       free(aux);
 	       C_FAILURE("utf8-string->ucs2-string",
 			  "Illegal following byte",
 			  BINT(next));
@@ -689,14 +687,12 @@ utf8_string_to_ucs2_string(obj_t butf8) {
       }
    }
          
-   string  = GC_MALLOC_ATOMIC(UCS2_STRING_SIZE + (len * sizeof(ucs2_t)));
+   string  = GC_MALLOC_ATOMIC(UCS2_STRING_SIZE + ((write + 1) * sizeof(ucs2_t)));
    cstring = (&(string->ucs2_string.char0));
 
    string->ucs2_string.header = MAKE_HEADER(UCS2_STRING_TYPE, 0);
    string->ucs2_string.length = write;
    ucs2cpy(cstring, aux, write);
                 
-   free(aux);
-   
    return BUCS2STRING(string);
 }
