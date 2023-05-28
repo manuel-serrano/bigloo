@@ -75,6 +75,13 @@ Bigloo defines the @code{cond-expand} @code{gc} keyword, which enables
 applications to use this function.
 @end deffn
 
+@deffn {bigloo procedure} gc-finalize
+Force a garbage collection finalization.
+
+Bigloo defines the @code{cond-expand} @code{gc} keyword, which enables
+applications to use this function.
+@end deffn
+
 @deffn {bigloo procedure} signal n proc
 Provides a signal handler for the operating system dependent signal
 @var{n}. @var{proc} is a procedure of one argument.

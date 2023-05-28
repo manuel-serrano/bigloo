@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Aug 21 08:15:50 2022 (serrano)                */
+/*    Last change :  Sun May 28 08:49:55 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2481,9 +2481,6 @@ BGL_RUNTIME_DECL bool_t bgl_output_port_truncate(obj_t, long);
 BGL_RUNTIME_DECL bool_t bgl_port_isatty(obj_t);
 BGL_RUNTIME_DECL obj_t bgl_reset_output_port_error(obj_t);
 					
-BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string(obj_t);
-BGL_RUNTIME_DECL obj_t make_ucs2_string(int, ucs2_t);
-   
 BGL_RUNTIME_DECL obj_t bgl_find_runtime_type(obj_t);
    
 BGL_RUNTIME_DECL obj_t cobj_to_foreign(obj_t, void *);
