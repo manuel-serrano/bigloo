@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Sun May 28 08:40:34 2023 (serrano)                */
+/*    Last change :  Sun May 28 16:58:39 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -258,8 +258,7 @@ ucs2_strcicmp(obj_t bst1, obj_t bst2) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t       
-ucs2_string_lt(obj_t bst1, obj_t bst2)
-{
+ucs2_string_lt(obj_t bst1, obj_t bst2) {
    ucs2_t *st1 = BUCS2_STRING_TO_UCS2_STRING(bst1);
    ucs2_t *st2 = BUCS2_STRING_TO_UCS2_STRING(bst2);
    int l1, l2;
@@ -488,7 +487,7 @@ utf8_size(ucs2_t ucs2) {
 /*    ucs2_to_utf8_string ...                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-ucs2_to_utf8_string(ucs2_t *cucs2, int len) {
+ucs2_to_utf8_string(ucs2_t *cucs2, long len) {
    int utf8_len = 0;
    int read, write;
    obj_t result;
