@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Sun May 28 19:55:16 2023 (serrano)                */
+/*    Last change :  Fri Jun  2 14:09:44 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -503,98 +503,105 @@ ucs2_to_utf8_string(ucs2_t *cucs2, long len) {
    cresult = BSTRING_TO_USTRING(result);
 
    /* and we fill it */
-   for (read = 0, write = 0; read < len; read++) {
-      ucs2_t ucs2 = cucs2[read];
-      int ulen  = utf8_size(ucs2);
+   if (utf8_len == len) {
+      /* an ascii string */
+      for (read = 0; read < len; read++) {
+	 cresult[read] = (unsigned char)cucs2[read];
+      }
+      cresult[read] = 0;
+   } else { 
+      for (read = 0, write = 0; read < len; read++) {
+	 ucs2_t ucs2 = cucs2[read];
+	 int ulen  = utf8_size(ucs2);
 
-      switch(ulen) {
-	 case 1:
-	    cresult[write++] = (unsigned char)ucs2;
-	    break;
+	 switch(ulen) {
+	    case 1:
+	       cresult[write++] = (unsigned char)ucs2;
+	       break;
 	    
-	 case 4: 
-	    if (read < len - 1) {
-	       /* www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.4 */
-	       ucs2_t nu = cucs2[read + 1];
+	    case 4: 
+	       if (read < len - 1) {
+		  /* www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.4 */
+		  ucs2_t nu = cucs2[read + 1];
 
-	       if ((nu >= 0xdc00) && (nu <= 0xdfff)) {
-		  read++;
-		  int zzzzzz = (nu & 0x3f);
-		  int yyyy = (nu & 0x3ff) >> 6;
+		  if ((nu >= 0xdc00) && (nu <= 0xdfff)) {
+		     read++;
+		     int zzzzzz = (nu & 0x3f);
+		     int yyyy = (nu & 0x3ff) >> 6;
+		     int xx = ucs2 & 3;
+		     int wwww = (ucs2 >> 2) & 0xf;
+		     int vvvv = (ucs2 >> 6) & 0xf;
+		     int uuuuu = vvvv + 1;
+
+		     cresult[write + 3] =
+			(unsigned char)(zzzzzz + 0x80);
+		     cresult[write + 2] =
+			(unsigned char)((xx << 4) | yyyy) + 0x80;
+		     cresult[write + 1] =
+			(unsigned char)(((uuuuu & 3) << 4) | wwww) + 0x80;
+		     cresult[write] =
+			(unsigned char)(0xf0 | (uuuuu >> 2));
+
+		     utf8_len -= 4;
+		     write += ulen;
+		     break;
+		  }
+	       } 
+
+	       if ((ucs2 >= 0xd800) && (ucs2 <= 0xdbff)) {
+		  /* See http://en.wikipedia.org/wiki/UTF-8, section   */
+		  /* Invalid code points.                              */
+		  /* We encode, half utf16 #xdc00-#dbff with the       */
+		  /* illegal code point #xf8, and 3 following bytes.   */
+		  /* This allows an application to implement a correct */
+		  /* utf8 string-append.                               */
 		  int xx = ucs2 & 3;
 		  int wwww = (ucs2 >> 2) & 0xf;
 		  int vvvv = (ucs2 >> 6) & 0xf;
 		  int uuuuu = vvvv + 1;
 
 		  cresult[write + 3] =
-		     (unsigned char)(zzzzzz + 0x80);
+		     (unsigned char)(0x80 | (uuuuu >> 2));
 		  cresult[write + 2] =
-		     (unsigned char)((xx << 4) | yyyy) + 0x80;
+		     (unsigned char)(xx << 4) + 0x80;
 		  cresult[write + 1] =
 		     (unsigned char)(((uuuuu & 3) << 4) | wwww) + 0x80;
 		  cresult[write] =
-		     (unsigned char)(0xf0 | (uuuuu >> 2));
+		     (unsigned char)0xf8;
+	       
+		  write += ulen;
+		  break;
+	       } else {
+		  int nu = ucs2;
+		  int zzzzzz = (nu & 0x3f);
+		  int yyyy = (nu & 0x3ff) >> 6;
 
-		  utf8_len -= 4;
+		  cresult[write + 3] =
+		     (unsigned char)(zzzzzz + 0x80);
+		  cresult[write + 2] =
+		     (unsigned char)(yyyy + 0x80);
+		  cresult[write + 1] =
+		     (unsigned char)0x80;
+		  cresult[write] =
+		     (unsigned char)0xfc;
+
 		  write += ulen;
 		  break;
 	       }
-	    } 
-
-	    if ((ucs2 >= 0xd800) && (ucs2 <= 0xdbff)) {
-	       /* See http://en.wikipedia.org/wiki/UTF-8, section   */
-	       /* Invalid code points.                              */
-	       /* We encode, half utf16 #xdc00-#dbff with the       */
-	       /* illegal code point #xf8, and 3 following bytes.   */
-	       /* This allows an application to implement a correct */
-	       /* utf8 string-append.                               */
-	       int xx = ucs2 & 3;
-	       int wwww = (ucs2 >> 2) & 0xf;
-	       int vvvv = (ucs2 >> 6) & 0xf;
-	       int uuuuu = vvvv + 1;
-
-	       cresult[write + 3] =
-		  (unsigned char)(0x80 | (uuuuu >> 2));
-	       cresult[write + 2] =
-		  (unsigned char)(xx << 4) + 0x80;
-	       cresult[write + 1] =
-		  (unsigned char)(((uuuuu & 3) << 4) | wwww) + 0x80;
-	       cresult[write] =
-		  (unsigned char)0xf8;
 	       
+	    case 3:
+	       cresult[write + 2] = (unsigned char)(0x80 + (ucs2 & 0x3f));
+	       ucs2 >>= 6;
+	       
+	    default:
+	       cresult[write + 1] = (unsigned char)(0x80 + (ucs2 & 0x3f));
+	       ucs2 >>= 6;
+	       cresult[write] = (unsigned char)(0xff - (0xff >> ulen) + ucs2);
 	       write += ulen;
-	       break;
-	    } else {
-	       int nu = ucs2;
-	       int zzzzzz = (nu & 0x3f);
-	       int yyyy = (nu & 0x3ff) >> 6;
-
-	       cresult[write + 3] =
-		  (unsigned char)(zzzzzz + 0x80);
-	       cresult[write + 2] =
-		  (unsigned char)(yyyy + 0x80);
-	       cresult[write + 1] =
-		  (unsigned char)0x80;
-	       cresult[write] =
-		  (unsigned char)0xfc;
-
-	       write += ulen;
-	       break;
-	    }
-	       
-	 case 3:
-	    cresult[write + 2] = (unsigned char)(0x80 + (ucs2 & 0x3f));
-	    ucs2 >>= 6;
-	       
-	 default:
-	    cresult[write + 1] = (unsigned char)(0x80 + (ucs2 & 0x3f));
-	    ucs2 >>= 6;
-	    cresult[write] = (unsigned char)(0xff - (0xff >> ulen) + ucs2);
-	    write += ulen;
+	 }
       }
+      result = bgl_string_shrink(result, utf8_len);
    }
-
-   result = bgl_string_shrink(result, utf8_len);
    
    return result;
 }

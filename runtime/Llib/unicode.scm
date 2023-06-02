@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Apr 16 15:16:52 2021 (serrano)                */
+;*    Last change :  Fri Jun  2 14:17:55 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -1328,7 +1328,7 @@
 	  (nlen (utf8->8bits-length str len)))
       (if (=fx len nlen)
 	  (string-copy str)
-	  (utf8->8bits-fill! (make-string nlen) str len table))))
+	  (utf8->8bits-fill! ($make-string/wo-fill nlen) str len table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->8bits! ...                                                 */
@@ -1338,7 +1338,7 @@
 	  (nlen (utf8->8bits-length str len)))
       (if (=fx len nlen)
 	  str
-	  (utf8->8bits-fill! (make-string nlen) str len table))))
+	  (utf8->8bits-fill! ($make-string/wo-fill nlen) str len table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->iso-latin ...                                              */
