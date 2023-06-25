@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jun 23 14:31:05 2023 (serrano)                */
+;*    Last change :  Sun Jun 25 09:07:09 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -739,30 +739,37 @@
 ;*    notify-&error/location-loc ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (notify-&error/location-loc err fname line loc string col)
-   (with-access::&error err (proc msg obj stack)
-      (let ((port (current-error-port)))
-	 ;; we flush error-port
-	 (flush-output-port port)
-	 (newline port)
-	 (let* ((space-string (if (>fx col 0) (make-string col #\space) ""))
-		(l (string-length string))
-		(n-col (if (>=fx col l) l col)))
-	    ;; we ajust tabulation in space string.
-	    (fix-tabulation! n-col string space-string)
-	    ;; we now print the error message
-	    (print-cursor fname line loc string space-string)
-	    ;; we display the error message
-	    (display "*** ERROR:" port)
-	    (display-circle proc port)
-	    (newline port)
-	    (display-circle msg port)
-	    (unless (eq? obj '%no-error-obj)
-	       (display " -- " port)
-	       (display-circle obj port))
-	    (newline port)
-	    (display-trace-stack (or stack (get-trace-stack)) port)
-	    ;; we are now done, we flush
-	    (flush-output-port port)))))
+   (let ((len (string-length string)))
+      (if (>fx len 256)
+	  (let* ((ncol 60)
+		 (nstring (substring string (-fx col ncol) (+fx col 10))))
+	     (notify-&error/location-loc err fname line loc
+		(string-append "..." nstring "...")
+		(+fx ncol 3)))
+	  (with-access::&error err (proc msg obj stack)
+	     (let ((port (current-error-port)))
+		;; we flush error-port
+		(flush-output-port port)
+		(newline port)
+		(let* ((space-string (if (>fx col 0) (make-string col #\space) ""))
+		       (l (string-length string))
+		       (n-col (if (>=fx col l) l col)))
+		   ;; we ajust tabulation in space string.
+		   (fix-tabulation! n-col string space-string)
+		   ;; we now print the error message
+		   (print-cursor fname line loc string space-string)
+		   ;; we display the error message
+		   (display "*** ERROR:" port)
+		   (display-circle proc port)
+		   (newline port)
+		   (display-circle msg port)
+		   (unless (eq? obj '%no-error-obj)
+		      (display " -- " port)
+		      (display-circle obj port))
+		   (newline port)
+		   (display-trace-stack (or stack (get-trace-stack)) port)
+		   ;; we are now done, we flush
+		   (flush-output-port port)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/loc ...                                            */
@@ -772,7 +779,7 @@
        (notify-&error err)
        (multiple-value-bind (file lnum lpoint lstring)
 	  (location-line-num `(at ,fname ,loc))
-	  (if (or (not lnum) (>=fx (string-length lstring) 1024))
+	  (if (not lnum)
 	      (notify-&error/location-no-loc err)
 	      (notify-&error/location-loc err fname lnum loc lstring lpoint)))))
 
