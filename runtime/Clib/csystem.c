@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sat May 13 06:54:58 2023 (serrano)                */
+/*    Last change :  Tue Jun 27 19:02:53 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -816,6 +816,7 @@ bgl_ioctl(obj_t dev, long request, long val) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_getrlimit(long resource) {
+#if BGL_HAVE_GETRLIMIT
    struct rlimit lim;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
    if (!getrlimit(resource, &lim)) {
@@ -827,6 +828,9 @@ bgl_getrlimit(long resource) {
       BGL_ENV_MVALUES_VAL_SET(env, 1, ELONG_TO_BELONG(-1));
       return ELONG_TO_BELONG(-1);
    }
+#else
+   return ELONG_TO_BELONG(-2);
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
