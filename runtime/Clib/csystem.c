@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Tue Jun 27 19:02:53 2023 (serrano)                */
+/*    Last change :  Tue Jun 27 19:10:37 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -839,12 +839,16 @@ bgl_getrlimit(long resource) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_setrlimit(long resource, long soft, long hard) {
+#if BGL_HAVE_GETRLIMIT
    struct rlimit lim = { rlim_cur: soft, rlim_max: hard };
    if (!setrlimit(resource, &lim)) {
       return BTRUE;
    } else {
       return BFALSE;
    }
+#else
+   return BFALSE;
+#endif
 }
 
 /*---------------------------------------------------------------------*/
