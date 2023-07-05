@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr 13 07:23:22 2023 (serrano)                */
+#*    Last change :  Wed Jul  5 18:04:41 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3317,6 +3317,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Is sigaction available
   getrlimit=`$autoconf getrlimit` || exit 1
+  getrlimitfull=`$autoconf getrlimitfull` || exit 1
 
   # Is setenv available for us
   setenv=`$autoconf setenv` || exit 1
@@ -3710,6 +3711,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_SIGACTION@|$sigaction|" \
               -e "s|@HAVE_SIGINFO@|$siginfo|" \
               -e "s|@HAVE_GETRLIMIT@|$getrlimit|" \
+              -e "s|@HAVE_GETRLIMIT_FULL@|$getrlimitfull|" \
               -e "s|@BGL_HAVE_SELECT@|$select|" \
               -e "s|@BGL_HAVE_FCNTL@|$fcntl|" \
               -e "s|@HAVE_TERMIO@|$termio|" \

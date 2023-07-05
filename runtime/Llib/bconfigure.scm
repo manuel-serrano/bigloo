@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Sun Dec  5 07:11:41 2021 (serrano)                */
-;*    Copyright   :  2000-21 Manuel Serrano                            */
+;*    Last change :  Wed Jul  5 17:54:39 2023 (serrano)                */
+;*    Copyright   :  2000-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -109,6 +109,7 @@
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
 	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
 	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG")
+	   (macro $configure-have-getrlimit::bool "BGL_HAVE_GETRLIMIT")
 	   (macro $configure-have-overflow::bool "BGL_HAVE_OVERFLOW")
 	   (macro $configure-class-display-min-size::long "BGL_CLASS_DISPLAY_MIN_SIZE")
 	   (macro $configure-os-class::string "OS_CLASS")
@@ -188,6 +189,7 @@
 	      (field static nan-tagging::bool "BGL_NAN_TAGGING")
 	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
 	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
+	      (field static have-getrlimit::bool "BGL_HAVE_GETRLIMIT")
 	      (field static have-overflow::bool "BGL_HAVE_OVERFLOW")
 	      (field static class-display-min-size::int "BGL_CLASS_DISPLAY_MIN_SIZE")
 	      (field static os-class::string "BGL_OS_CLASS")
@@ -279,6 +281,7 @@
      (nan-tagging . ,$configure-nan-tagging)
      (have-unistring . ,$configure-have-unistring)
      (have-syslog . ,$configure-have-syslog)
+     (have-getrlimit . ,$configure-have-getrlimit)
      (have-overflow . ,$configure-have-overflow)
      (class-display-min-size . ,$configure-class-display-min-size)
      (os-class . ,$configure-os-class)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu May  4 09:10:23 2023 (serrano)                */
+;*    Last change :  Wed Jul  5 18:04:22 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -1391,7 +1391,7 @@
    
    (define (symbol->resource r)
       (cond-expand
-	 (bigloo-c
+	 ((and bigloo-c (config have-getrlimit #t))
 	  (case r
 	     ((CORE) $rlimit-core)
 	     ((CPU) $rlimit-cpu)
@@ -1421,15 +1421,19 @@
 ;*---------------------------------------------------------------------*/
 (define (getrlimit r)
    (cond-expand
-      (bigloo-c ($getrlimit (limit-resource-no r "getrlimit")))
-      (else (values -1 -1))))
+      ((and bigloo-c (config have-getrlimit #t))
+       ($getrlimit (limit-resource-no r "getrlimit")))
+      (else
+       (values -1 -1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    setrlimit! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (setrlimit! r soft hard)
    (cond-expand
-      (bigloo-c ($setrlimit! (limit-resource-no r "setrlimit!") soft hard))
-      (else -1)))
+      ((and bigloo-c (config have-getrlimit #t))
+       ($setrlimit! (limit-resource-no r "setrlimit!") soft hard))
+      (else
+       -1)))
 
 

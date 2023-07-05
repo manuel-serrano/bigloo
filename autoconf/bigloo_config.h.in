@@ -210,6 +210,9 @@
 #undef BGL_HAVE_GETRLIMIT
 #define BGL_HAVE_GETRLIMIT @HAVE_GETRLIMIT@
 
+#undef BGL_HAVE_GETRLIMIT_FULL
+#define BGL_HAVE_GETRLIMIT_FULL @HAVE_GETRLIMIT_FULL@
+
 #undef HAVE_SETENV
 #define HAVE_SETENV @HAVE_SETENV@
 
@@ -793,6 +796,50 @@ typedef unsigned long uint64_t;
 /*---------------------------------------------------------------------*/
 #if (BGL_HAVE_GETRLIMIT)
 #  include <sys/resource.h>
+#  if (!BGL_HAVE_GETRLIMIT_FULL)
+#    if (!defined(RLIMIT_CORE))
+#      define RLIMIT_CORE -1
+#    endif
+#    if (!defined(RLIMIT_CPU))
+#      define RLIMIT_CPU -1
+#    endif
+#    if (!defined(RLIMIT_DATA))
+#      define RLIMIT_DATA -1
+#    endif
+#    if (!defined(RLIMIT_FSIZE))
+#      define RLIMIT_FSIZE -1
+#    endif
+#    if (!defined(RLIMIT_LOCKS))
+#      define RLIMIT_LOCKS -1
+#    endif
+#    if (!defined(RLIMIT_MEMLOCK))
+#      define RLIMIT_MEMLOCK -1
+#    endif
+#    if (!defined(RLIMIT_MSGQUEUE))
+#      define RLIMIT_MSGQUEUE -1
+#    endif
+#    if (!defined(RLIMIT_NICE))
+#      define RLIMIT_NICE -1
+#    endif
+#    if (!defined(RLIMIT_NOFILE))
+#      define RLIMIT_NOFILE -1
+#    endif
+#    if (!defined(RLIMIT_NPROC))
+#      define RLIMIT_NPROC -1
+#    endif
+#    if (!defined(RLIMIT_RSS))
+#      define RLIMIT_RSS -1
+#    endif
+#    if (!defined(RLIMIT_RTTIME))
+#      define RLIMIT_RTTIME -1
+#    endif
+#    if (!defined(RLIMIT_SIGPENDING))
+#      define RLIMIT_SIGPENDING -1
+#    endif
+#    if (!defined(RLIMIT_STACK))
+#      define RLIMIT_STACK -1
+#    endif
+#  endif
 #endif
 
 #endif
