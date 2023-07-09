@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Thu May  4 18:45:06 2023 (serrano)                */
+;*    Last change :  Sun Jul  9 07:49:15 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -29,16 +29,16 @@
 	    (uv-stream-write-queue-size::long o::UvStream)
 	    (uv-stream-fd::long o::UvStream)
 	    (inline uv-stream-write ::UvStream ::bstring ::long ::long
-	       #!key callback arg0 arg1 arg2 arg3 arg4)
+	       #!key loop callback arg0 arg1 arg2 arg3 arg4)
 	    (inline uv-stream-write2 ::UvStream ::bstring ::long ::long ::obj
-	       #!key callback arg0 arg1 arg2 arg3 arg4)
+	       #!key loop callback arg0 arg1 arg2 arg3 arg4)
 	    (inline uv-stream-read-start ::UvStream 
-	       #!key onalloc callback)
+	       #!key loop onalloc callback)
 	    (inline uv-stream-read-stop ::UvStream)
 	    (inline uv-stream-shutdown ::UvStream
-	       #!key callback)
+	       #!key loop callback)
 	    (inline uv-listen ::UvStream ::int
-	       #!key callback)
+	       #!key loop callback)
 	    (uv-accept ::UvStream ::UvStream)
 	    (uv-closing?::bool ::UvStream)
 	    (uv-writable?::bool ::UvStream)
@@ -59,7 +59,7 @@
 	    (uv-udp-send::obj ::UvUdp ::bstring ::long ::long ::long ::bstring
 	       #!key (family 4) callback (loop (uv-default-loop)))
 	    (inline uv-udp-recv-start ::UvUdp
-	       #!key onalloc callback)
+	       #!key loop onalloc callback)
 	    (inline uv-udp-recv-stop::int ::UvUdp)
 	    (uv-udp-set-ttl handle::UvUdp ::int)
 	    (uv-udp-set-multicast-ttl handle::UvUdp ::int)
@@ -147,20 +147,23 @@
 ;*    uv-stream-write ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-stream-write o::UvStream buf offset len
-		  #!key callback arg0 arg1 arg2 arg3 arg4)
+		  #!key loop callback arg0 arg1 arg2 arg3 arg4)
+   ;; loop is kept for backward compatibility but it is unused
    ($uv-write o buf offset len callback arg0 arg1 arg2 arg3 arg4))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write2 ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-stream-write2 o::UvStream buf offset len handle::obj
-		  #!key callback arg0 arg1 arg2 arg3 arg4)
+		  #!key loop callback arg0 arg1 arg2 arg3 arg4)
+   ;; loop is kept for backward compatibility but it is unused
    ($uv-write2 o buf offset len handle callback arg0 arg1 arg2 arg3 arg4))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-stream-read-start o::UvStream #!key onalloc callback)
+(define-inline (uv-stream-read-start o::UvStream #!key loop onalloc callback)
+   ;; loop is kept for backward compatibility but it is unused
    ($uv-read-start o onalloc callback))
 
 ;*---------------------------------------------------------------------*/
@@ -172,13 +175,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-shutdown ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-stream-shutdown handle #!key callback)
+(define-inline (uv-stream-shutdown handle #!key loop callback)
+   ;; loop is kept for backward compatibility but it is unused
    ($uv-shutdown handle callback))
    
 ;*---------------------------------------------------------------------*/
 ;*    uv-listen ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-listen handle backlog #!key callback)
+(define-inline (uv-listen handle backlog #!key loop callback)
+   ;; loop is kept for backward compatibility but it is unused
    ($uv-listen handle backlog callback))
 
 ;*---------------------------------------------------------------------*/
@@ -325,7 +330,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-recv-start ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (uv-udp-recv-start o::UvUdp #!key onalloc callback)
+(define-inline (uv-udp-recv-start o::UvUdp #!key loop onalloc callback)
+   ;; loop is kept for backward compatibility but it is unused
    ($uv-udp-recv-start o onalloc callback))
 
 ;*---------------------------------------------------------------------*/
