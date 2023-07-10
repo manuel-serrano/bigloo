@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pcre                        */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/pcre                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Wed Oct 11 11:49:22 2017 (serrano)                */
-#*    Copyright   :  2007-17 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 13:56:46 2023 (serrano)                */
+#*    Copyright   :  2007-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if PCRE is available.                                      */
 #*=====================================================================*/
@@ -156,6 +156,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

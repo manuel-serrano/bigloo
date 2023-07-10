@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pthreadkill                 */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/pthreadkill          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Jul 13 08:56:56 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 13:58:49 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host pthread kill library (Android only).          */
 #*=====================================================================*/
@@ -71,7 +71,7 @@ if eval "$BUILDSH $compile"; then
    echo "PTHREAD_KILL"
    \rm -f $file.*
    \rm -f $aout
-   \rm -f $aout*
+   \rm -rf $aout*
 
    exit 0
 fi
@@ -97,7 +97,7 @@ if eval "$BUILDSH $compile"; then
    echo "TKILL"
    \rm -f $file.*
    \rm -f $aout
-   \rm -f $aout*
+   \rm -rf $aout*
 
    exit 0
 fi
@@ -124,6 +124,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

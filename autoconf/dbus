@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/dbus                        */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/dbus                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Nov  3 16:45:42 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 14:02:30 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host sqlite library.                               */
 #*=====================================================================*/
@@ -84,7 +84,7 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0
  

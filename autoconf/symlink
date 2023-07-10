@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/symlink                     */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/symlink              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Feb 13 10:17:05 2012 (serrano)                */
+#*    Last change :  Mon Jul 10 13:53:30 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if symlink exist.                                          */
 #*=====================================================================*/
@@ -63,7 +63,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    \rm -f $file.*

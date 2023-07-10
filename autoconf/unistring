@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/unistring                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/unistring            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Sat Jun  6 11:00:17 2015 (serrano)                */
+#*    Last change :  Mon Jul 10 13:53:01 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host unistring library.                            */
 #*=====================================================================*/
@@ -77,7 +77,7 @@ if eval "$BUILDSH $compile"; then
    ret_code=$?
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    if [ $ret_code = 0 ]; then
      echo "$unistringlib"
    else

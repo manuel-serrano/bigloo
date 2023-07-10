@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pthreadcondvtimedwait       */
+#*    .../project/bigloo/bigloo/autoconf/pthreadcondvtimedwait         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 16 14:45:00 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 13:40:20 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if pthread_cond_timedwait posix compliance.                */
 #*=====================================================================*/
@@ -101,4 +101,4 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*

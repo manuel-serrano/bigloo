@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Sep 29 08:44:44 2019 (serrano)                */
+#*    Last change :  Mon Jul 10 13:54:07 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if sigaction exists. Return 0, 1.                          */
 #*=====================================================================*/
@@ -66,7 +66,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    echo 0

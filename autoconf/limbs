@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Mon May 27 20:06:36 2019 (serrano)                */
+#*    Last change :  Mon Jul 10 14:00:19 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Detect if current C complier support long long integer.          */
 #*=====================================================================*/
@@ -86,7 +86,7 @@ if eval "$BUILDSH $compile"; then
    ret_code=$?
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    exit $ret_code
 else
    \rm -f $file.*

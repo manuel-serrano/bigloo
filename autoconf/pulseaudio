@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pulseaudio                  */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/pulseaudio           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Mon Jan 25 15:22:11 2016 (serrano)                */
-#*    Copyright   :  2007-16 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 13:58:13 2023 (serrano)                */
+#*    Copyright   :  2007-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if PULSEAUDIO is available.                                */
 #*=====================================================================*/
@@ -170,6 +170,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

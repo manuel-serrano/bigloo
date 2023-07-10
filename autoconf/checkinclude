@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/checkinclude                */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/checkinclude         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue May 27 06:50:25 2008                          */
-#*    Last change :  Tue Sep  8 10:32:50 2009 (serrano)                */
-#*    Copyright   :  2008-09 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 14:02:09 2023 (serrano)                */
+#*    Copyright   :  2008-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check a C include                                                */
 #*=====================================================================*/
@@ -68,7 +68,7 @@ compile="$CC $cflags $file.c -o $aout >/dev/null"
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    \rm -f $file.*

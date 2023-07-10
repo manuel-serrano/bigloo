@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/sigchld                     */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/sigchld              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 16 14:42:48 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 13:56:07 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Does the current os supports SIGCHLD signal?                     */
 #*=====================================================================*/
@@ -82,6 +82,6 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*
 
 exit 0

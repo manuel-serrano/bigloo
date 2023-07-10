@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/alignment                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/alignment            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue May  3 08:03:25 2011 (serrano)                */
+#*    Last change :  Mon Jul 10 13:37:47 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the alignment on the current architecture                   */
 #*=====================================================================*/
@@ -68,7 +68,7 @@ EOF
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
-   \rm -f $file.*
+   \rm -rf $file.*
    eval "$HOSTSH $aout"
 else
    ret_code=$?
@@ -77,4 +77,4 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*

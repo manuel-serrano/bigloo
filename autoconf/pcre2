@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Thu Apr  8 10:42:31 2021 (serrano)                */
-#*    Copyright   :  2007-21 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 13:59:10 2023 (serrano)                */
+#*    Copyright   :  2007-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if PCRE2 is available.                                     */
 #*=====================================================================*/
@@ -115,6 +115,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

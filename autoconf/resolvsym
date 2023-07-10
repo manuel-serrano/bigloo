@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/resolvsym                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/resolvsym            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Mon Feb  6 10:19:53 2017 (serrano)                */
+#*    Last change :  Mon Jul 10 13:57:07 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host resolv symbols.                               */
 #*=====================================================================*/
@@ -145,7 +145,7 @@ if eval "$BUILDSH $compile"; then
    ret_code=$?
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    if [ $ret_code = 0 ]; then
      echo "1"
    else

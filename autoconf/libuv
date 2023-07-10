@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/libuv                       */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/libuv                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Tue May  6 11:37:17 2014 (serrano)                */
-#*    Copyright   :  2007-14 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 14:00:32 2023 (serrano)                */
+#*    Copyright   :  2007-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if LIBUV is available.                                     */
 #*=====================================================================*/
@@ -80,6 +80,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

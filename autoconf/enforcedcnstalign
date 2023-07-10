@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/enforcedcnstalign           */
+#*    .../prgm/project/bigloo/bigloo/autoconf/enforcedcnstalign        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 16 14:42:17 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 14:02:47 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the constant alignment on the current architecture          */
 #*=====================================================================*/
@@ -109,4 +109,4 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*
