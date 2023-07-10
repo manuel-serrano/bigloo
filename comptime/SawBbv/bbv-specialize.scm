@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Nov 14 12:12:40 2022 (serrano)                */
-;*    Copyright   :  2017-22 Manuel Serrano                            */
+;*    Last change :  Tue Jul  4 18:18:17 2023 (serrano)                */
+;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
 ;*=====================================================================*/
@@ -1053,9 +1053,9 @@
 		   (rhs (cadr args))
 		   (subcall (duplicate::rtl_call fun
 			       (var (cond
-				       ((eq? var *$-fx/ov*) *-fx*)
-				       ((eq? var *$+fx/ov*) *+fx*)
-				       ((eq? var *$*fx/ov*) **fx*)
+				       ((eq? var *$-fx/ov*) *$-fx/w-ov*)
+				       ((eq? var *$+fx/ov*) *$+fx/w-ov*)
+				       ((eq? var *$*fx/ov*) *$*fx/w-ov*)
 				       (else (error "fx/ov" "unknown op" (shape var))))))))
 	       (values (duplicate::rtl_ins/bbv ins
 			  (dest reg)

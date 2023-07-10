@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jul  5 18:04:41 2023 (serrano)                */
+#*    Last change :  Mon Jul 10 13:44:57 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -177,7 +177,7 @@ unistringsrc=$UNISTRINGSRC
 unistringconfigureopt=
 
 if [ "$unistringsrc " = " " ]; then
-  unistringversion=0.9.10
+  unistringversion=1.1
   unistringsrc=libunistring/libunistring-$unistringversion.tgz
 fi  
 
@@ -300,7 +300,8 @@ customgc=yes
 #gccustom=gc-7.6.2
 #gccustom=gc-8.0.2
 #gccustom=gc-8.0.4
-gccustom=gc-8.2.2
+#gccustom=gc-8.2.2
+gccustom=gc-8.2.4
 gcversion=
 gcbump=0
 cgcflags=

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Nov 16 06:57:36 2022 (serrano)                */
+;*    Last change :  Tue Jul  4 18:21:00 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -146,6 +146,9 @@
 	   (macro $+fx/ov::bool (::bint ::bint ::bint) "BGL_ADDFX_OV")
 	   (macro $-fx/ov::bool (::bint ::bint ::bint) "BGL_SUBFX_OV")
 	   (macro $*fx/ov::bool (::bint ::long ::bint) "BGL_MULFX_OV")
+	   (macro $+fx/w-ov::bool (::bint ::bint ::bint) "BGL_ADDFX_SANS_OV")
+	   (macro $-fx/w-ov::bool (::bint ::bint ::bint) "BGL_SUBFX_SANS_OV")
+	   (macro $*fx/w-ov::bool (::bint ::long ::bint) "BGL_MULFX_SANS_OV")
 	   (infix macro c-+elong::elong (::elong ::elong) "+")
 	   (infix macro c-+llong::llong (::llong ::llong) "+")
 	   (infix macro $+s8::int8 (::int8 ::int8) "+")

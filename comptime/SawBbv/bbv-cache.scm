@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Mon Oct 24 13:10:07 2022 (serrano)                */
-;*    Copyright   :  2017-22 Manuel Serrano                            */
+;*    Last change :  Tue Jul  4 18:20:23 2023 (serrano)                */
+;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    *<fx* *<=fx* *>=fx* *>fx* *=fx* *-fx* *+fx* **fx*
             *-fx-safe* *+fx-safe* **fx-safe*
             *$-fx/ov* *$+fx/ov* *$*fx/ov* 
+            *$-fx/w-ov* *$+fx/w-ov* *$*fx/w-ov* 
 	    *<fl* *<=fl* *>=fl* *>fl* *=fl* *-fl* *+fl*
 	    *2-*
 	    *2+*
@@ -54,6 +55,10 @@
 (define *$-fx/ov* #f)
 (define *$+fx/ov* #f)
 (define *$*fx/ov* #f)
+
+(define *$-fx/w-ov* #f)
+(define *$+fx/w-ov* #f)
+(define *$*fx/w-ov* #f)
 
 (define *<fl* #f)
 (define *<=fl* #f)
@@ -93,6 +98,9 @@
       (set! *$-fx/ov* (get-global/module '$-fx/ov 'foreign))
       (set! *$+fx/ov* (get-global/module '$+fx/ov 'foreign))
       (set! *$*fx/ov* (get-global/module '$*fx/ov 'foreign))
+      (set! *$-fx/w-ov* (get-global/module '$-fx/w-ov 'foreign))
+      (set! *$+fx/w-ov* (get-global/module '$+fx/w-ov 'foreign))
+      (set! *$*fx/w-ov* (get-global/module '$*fx/w-ov 'foreign))
       (set! *<fl* (get-global/module 'c-<fl 'foreign))
       (set! *<=fl* (get-global/module 'c-<=fl 'foreign))
       (set! *>fl* (get-global/module 'c->fl 'foreign))
