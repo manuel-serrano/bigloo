@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/rdynamic                    */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/rdynamic             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Feb 17 16:23:55 2015 (serrano)                */
+#*    Last change :  Mon Jul 10 13:58:08 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if rdynamic option is supported                            */
 #*=====================================================================*/
@@ -79,7 +79,7 @@ EOF
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
-   rm -f $aout*
+   rm -rf $aout*
    echo "$rflags"
 else
    \rm -f $file.*

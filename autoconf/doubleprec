@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/doubleprec                  */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/doubleprec           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 16 14:49:15 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 14:02:42 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the double precision on the current architecture            */
 #*=====================================================================*/
@@ -83,4 +83,4 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*

@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pthreadspinlock             */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/pthreadspinlock      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Dec  9 17:52:34 2012 (serrano)                */
+#*    Last change :  Mon Jul 10 13:55:04 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host pthread timedlock library.                    */
 #*=====================================================================*/
@@ -89,6 +89,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

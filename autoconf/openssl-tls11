@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/openssl-tls11               */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/openssl-tls11        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Oct 19 07:51:46 2015 (serrano)                */
+#*    Last change :  Mon Jul 10 13:56:42 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -93,6 +93,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

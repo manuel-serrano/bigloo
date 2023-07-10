@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/openssl-dtls                */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/openssl-dtls         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sat Sep  5 06:19:08 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 13:59:35 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -93,6 +93,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

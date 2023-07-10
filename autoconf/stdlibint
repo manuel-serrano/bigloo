@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/stdlibint                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/stdlibint            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Sep  6 20:55:30 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 13:57:26 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Does the architecture supports stdint?                           */
 #*=====================================================================*/
@@ -70,7 +70,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    echo 0

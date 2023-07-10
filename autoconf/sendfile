@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/sendfile                    */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/sendfile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Christian Loitsch                                 */
 #*    Creation    :  Wed Apr 16 12:11:17 2003                          */
-#*    Last change :  Mon May 16 14:42:57 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 13:55:31 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if sendfile exists.                                        */
 #*=====================================================================*/
@@ -80,13 +80,13 @@ EOF
 if eval "$BUILDSH $compile"; then
    if eval "$HOSTSH $aout"; then
      rm -f $file.*
-     rm -f $aout*
+     rm -rf $aout*
 
      echo "BGL_SENDFILE_LINUX"
      exit 0
    fi
    rm -f $file.*
-   rm -f $aout*
+   rm -rf $aout*
 else
   rm -f $file.*
 fi
@@ -126,13 +126,13 @@ EOF
 if eval "$BUILDSH $compile"; then
    if eval "$HOSTSH $aout"; then
      rm -f $file.*
-     rm -f $aout*
+     rm -rf $aout*
 
      echo "BGL_SENDFILE_BSD"
      exit 0
    fi
    rm -f $file.*
-   rm -f $aout*
+   rm -rf $aout*
 else
   rm -f $file.*
 fi

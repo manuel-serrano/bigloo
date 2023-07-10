@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Apr 20 13:06:40 2022 (serrano)                */
+#*    Last change :  Mon Jul 10 13:59:46 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if mustail annotation is supported 0, 1.                   */
 #*=====================================================================*/
@@ -80,6 +80,6 @@ fi
 
 \rm -f $file.*
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*
 
 exit 0

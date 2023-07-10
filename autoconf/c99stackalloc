@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sat Dec  7 18:44:10 2019 (serrano)                */
+#*    Last change :  Mon Jul 10 14:01:52 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if C99 stack allocation is supported                       */
 #*=====================================================================*/
@@ -68,7 +68,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    \rm -f $file.*

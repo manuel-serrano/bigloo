@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/ccdiv0                      */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/ccdiv0               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Mon Nov 23 14:18:30 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 14:01:58 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if the C compiler supports static 0 divisions              */
 #*=====================================================================*/
@@ -62,10 +62,10 @@ EOF
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
-   \rm -f $aout*
+   \rm -rf $aout*
    echo "1"
 else
    \rm -f $file.*
-   \rm -f $aout*
+   \rm -rf $aout*
    echo "0"
 fi

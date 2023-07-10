@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Thu Dec  2 13:37:54 2021 (serrano)                */
+#*    Last change :  Mon Jul 10 14:04:01 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host libbacktrace library.                         */
 #*=====================================================================*/
@@ -71,7 +71,7 @@ if eval "$BUILDSH $compile"; then
    ret_code=$?
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    if [ $ret_code = 0 ]; then
      echo "$libbacktracelib"
    else

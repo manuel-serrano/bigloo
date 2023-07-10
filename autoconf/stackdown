@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/stackdown                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/stackdown            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 16 14:41:41 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 13:42:32 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the ptr size on the current architecture                    */
 #*=====================================================================*/
@@ -88,4 +88,4 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*

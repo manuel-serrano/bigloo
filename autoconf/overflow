@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/overflow                    */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/overflow             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Feb 24 08:44:00 2017 (serrano)                */
+#*    Last change :  Mon Jul 10 13:55:18 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if fast overflow check is available                        */
 #*=====================================================================*/
@@ -66,7 +66,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    \rm -f $file.*

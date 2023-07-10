@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/mpg123                      */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/mpg123               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Tue Jun 28 15:45:35 2011 (serrano)                */
-#*    Copyright   :  2007-11 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 13:59:49 2023 (serrano)                */
+#*    Copyright   :  2007-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if MPG123 is available.                                    */
 #*=====================================================================*/
@@ -161,6 +161,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0
