@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Jul 11 15:20:39 2023 (serrano)                */
+#*    Last change :  Tue Jul 11 15:27:21 2023 (serrano)                */
 #*    Copyright   :  1998-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -458,7 +458,7 @@ distrib: Tools/date.scm Tools/license.scm
 	$(MAKE) .afile
 	$(MAKE) .jfile
 	$(MAKE) dist-updates
-	$(MAKE) dist-bigloo.exe EFLAGS="$(EFLAGS) -stdc" CSRCSUFFIX="%.c"
+	$(MAKE) dist-bigloo.exe CSRCSUFFIX="%.c"
 
 #*---------------------------------------------------------------------*/
 #*    bigloo.plain and bigloo.new                                      */
