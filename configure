@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 10 13:44:57 2023 (serrano)                */
+#*    Last change :  Mon Jul 10 17:06:31 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -352,7 +352,7 @@ sharedlibrarygcfthclosed='-l$(GCLIB)_fth-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
 # the legal value for that variable is `yes' or `no'
-sharedcompiler=no
+sharedcompiler=
 sharedbde=no
 
 #*--- forced OS -------------------------------------------------------*/
@@ -1242,7 +1242,7 @@ while : ; do
       echo "   --no-pcre2 (disable prce2 library support)" >&2;
       echo "   --no-ldpreload" >&2;
       echo "   --sharedbde=yes|no [default no] (link Bde tools against shared libraries)" >&2;
-      echo "   --sharedcompiler=yes|no [default no] (link Bigloo against shared libraries)" >&2;
+      echo "   --sharedcompiler=yes|no [os dependent] (link Bigloo against shared libraries)" >&2;
       echo "" >&2;
       echo "JVM configuration:"  >&2;
       echo "   --java=file" >&2;
@@ -2018,6 +2018,13 @@ case $hostos in
     ;;
 esac
 $echo >> $configurelog
+
+#*---------------------------------------------------------------------*/
+#*    default configuration                                            */
+#*---------------------------------------------------------------------*/
+if [ "$sharedcompiler " = " " ]; then
+  sharedcompiler=no
+fi
 
 #*---------------------------------------------------------------------*/
 #*    C tool chain                                                     */
@@ -3013,6 +3020,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # C compiler nan and infinity
   ccdiv0=`$autoconf ccdiv0` || exit 1
 
+  # strict std C required
+  stdc=`$autoconf stdc` || exit 1
+
   # C compiler sse and math operations on x86-32 architecture
   if [ "$alignment " = "2 " ]; then
     cflags="$cflags `$autoconf ccssex86`"
@@ -3654,6 +3664,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
               -e "s|@BGL_CCDIV0@|$ccdiv0|" \
+              -e "s|@BGL_STRICT_STDC@|$stdc|" \
               -e "s|@HAVE_STDINT@|$stdint|" \
               -e "s|@HAVE_STDLIBINT@|$stdlibint|" \
               -e "s|@HAVE_UNISTDINT@|$unistdint|" \

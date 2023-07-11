@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Jul  5 17:54:39 2023 (serrano)                */
+;*    Last change :  Tue Jul 11 15:04:19 2023 (serrano)                */
 ;*    Copyright   :  2000-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -60,6 +60,7 @@
 	   (macro $configure-c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	   (macro $configure-c-compiler-rpath::string "C_COMPILER_RPATH")
 	   (macro $configure-c-flags::string "C_FLAGS")
+	   (macro $configure-c-strict-stdc::bool "BGL_STRICT_STDC")
 	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
 	   (macro $configure-c-nan-flag::string "C_NANFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
@@ -141,6 +142,7 @@
 	      (field static c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	      (field static c-compiler-rpath::string "C_COMPILER_RPATH")
 	      (field static c-flags::string "C_FLAGS")
+	      (field static c-strict-stdc::bool "STRICT_STDCC")
 	      (field static c-pic-flag::string "C_PICFLAGS")
 	      (field static c-nan-flag::string "C_NANFLAGS")
 	      (field static c-strip-flag::string "C_STRIP_FLAGS")
@@ -230,6 +232,7 @@
      (c-compiler-optim-flag . ,$configure-c-compiler-optim-flag)
      (c-compiler-rpath . ,$configure-c-compiler-rpath)
      (c-flags . ,$configure-c-flags)
+     (strict-stdc . ,$configure-c-strict-stdc)
      (c-pic-flag . ,$configure-c-pic-flag)
      (c-nan-flag . ,$configure-c-nan-flag)
      (c-strip-flag . ,$configure-c-strip-flag)
