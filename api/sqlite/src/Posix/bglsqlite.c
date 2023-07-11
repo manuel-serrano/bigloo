@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Jul 11 17:35:16 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 19:36:57 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SQLITE support                                                   */
@@ -115,7 +115,7 @@ sqlite_apply( obj_t proc, int argc, char **argv ) {
 
 
 	 case 1:
-	    return BGL_PROCEDURE_CALL1( proc, ARG( 0 ), BEOA );
+	    return BGL_PROCEDURE_CALL1( proc, ARG( 0 ) );
 
 	 case 2:
 	    return BGL_PROCEDURE_CALL2( proc,

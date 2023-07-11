@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Jul 11 17:40:59 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 19:36:29 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -1213,7 +1213,7 @@ bgl_info_callback( const SSL *ssl, int where, int ret ) {
 	 BGL_PROCEDURE_CALL1( cb, BINT( 0 ) );
       }
       if( where & SSL_CB_HANDSHAKE_DONE ) {
-	 BGL_PROCEDURE_CALL1( cb )( cb, BINT( 1 ) );
+	 BGL_PROCEDURE_CALL1( cb, BINT( 1 ) );
       }
    }
 }

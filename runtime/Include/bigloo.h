@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jul 11 16:56:02 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 17:48:40 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1237,39 +1237,39 @@ typedef obj_t (*function_t)();
 
 #if !BGL_STRICT_STDC
 #  define BGL_PROCEDURE_CALL0(fun) \
-   PROCEDURE_ENTRY(proc)(proc, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, BEOA)
 #  define BGL_PROCEDURE_CALL1(fun, a0) \
-   PROCEDURE_ENTRY(proc)(proc, a0, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, BEOA)
 #  define BGL_PROCEDURE_CALL2(fun, a0, a1) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, BEOA)
 #  define BGL_PROCEDURE_CALL3(fun, a0, a1, a2) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, BEOA)
 #  define BGL_PROCEDURE_CALL4(fun, a0, a1, a2, a3) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, BEOA)
 #  define BGL_PROCEDURE_CALL5(fun, a0, a1, a2, a3, a4) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, BEOA)
 #  define BGL_PROCEDURE_CALL6(fun, a0, a1, a2, a3, a4, a5) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, BEOA) 
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, BEOA) 
 #  define BGL_PROCEDURE_CALL7(fun, a0, a1, a2, a3, a4, a5, a6) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, BEOA)
 #  define BGL_PROCEDURE_CALL8(fun, a0, a1, a2, a3, a4, a5, a6, a7) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, BEOA)
 #  define BGL_PROCEDURE_CALL9(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, BEOA)
 #  define BGL_PROCEDURE_CALL10(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, BEOA)
 #  define BGL_PROCEDURE_CALL11(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, BEOA)
 #  define BGL_PROCEDURE_CALL12(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 ) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, BEOA)
 #  define BGL_PROCEDURE_CALL13(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 ) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, BEOA)
 #  define BGL_PROCEDURE_CALL14(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13 ) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, BEOA)
 #  define BGL_PROCEDURE_CALL15(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14 ) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, BEOA)
 #  define BGL_PROCEDURE_CALL16(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15 ) \
-   PROCEDURE_ENTRY(proc)(proc, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA)
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA)
 #else
 #  define BGL_PROCEDURE_CALL0(fun) \
    (VA_PROCEDUREP(fun)					 \

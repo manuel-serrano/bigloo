@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Jul 11 17:25:59 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 19:37:23 2023 (serrano)                */
 /*    Copyright   :  2011-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -306,7 +306,7 @@ bgl_avahi_apply_callback(callback_t cb) {
 	     cb->args[2].convert(cb->args[2].value),
 	     cb->args[3].convert(cb->args[3].value),
 	     cb->args[4].convert(cb->args[4].value),
-	     cb->args[5].convert(cb->args[5].value))
+	     cb->args[5].convert(cb->args[5].value));
 	 break;
 	    
       case 7:
@@ -364,7 +364,7 @@ bgl_avahi_apply_callback(callback_t cb) {
 	     cb->args[8].convert(cb->args[8].value),
 	     cb->args[9].convert(cb->args[9].value),
 	     cb->args[10].convert(cb->args[10].value),
-	     cb->args[11].convert(cb->args[11].value),)
+	     cb->args[11].convert(cb->args[11].value));
 	 break;
 
       default:
