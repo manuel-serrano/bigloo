@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Jul 11 15:42:32 2023 (serrano)                */
+#*    Last change :  Tue Jul 11 16:10:26 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if strict C generation is required.                        */
 #*=====================================================================*/
@@ -83,12 +83,11 @@ EOF
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
-   \rm -f $file.*
-   rm -f $aout
-   rm -f $aout*
-   echo 1
+  $aout
+  echo $?
+  \rm -f $file.*
+  rm -rf $aout*
 else
-   echo 0
+   echo 1
 fi
 
-exit 0
