@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Jul 11 15:11:20 2023 (serrano)                */
+#*    Last change :  Tue Jul 11 15:42:32 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if strict C generation is required.                        */
 #*=====================================================================*/
@@ -74,7 +74,7 @@ long foo(obj_t x, ...) {
 }
 
 int main(int argc, char *argv[]) {
-   obj_t (*f)(obj_t, obj_t, obj_t, obj_t) = (obj_t (*)(obj_t, obj_t, obj_t, obj_t))&foo;
+   long (*f)(obj_t, obj_t, obj_t, obj_t, obj_t) = (long (*)(obj_t, obj_t, obj_t, obj_t, obj_t))&foo;
    return f(OBJ_T(1), OBJ_T(2), OBJ_T(3), OBJ_T(4), OBJ_T(-10)) != 10;
 }
 EOF
