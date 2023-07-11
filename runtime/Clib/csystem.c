@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Tue Jun 27 19:10:37 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 17:09:12 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -103,7 +103,7 @@ signal_handler(int num) {
    signal(num, (void (*)(int))(signal_handler));
 #endif
    if (PROCEDUREP(handler)) {
-      return ((obj_t (*)())PROCEDURE_ENTRY(handler))(handler, BINT(num), BEOA);
+      return BGL_PROCEDURE_CALL1(handler, BINT(num));
    } else {
       return BUNSPEC;
    }
@@ -533,7 +533,7 @@ bgl_time(obj_t thunk) {
    BGL_ENV_MVALUES_VAL_SET(env, 2, 0);
    BGL_ENV_MVALUES_VAL_SET(env, 3, 0);
 
-   return PROCEDURE_ENTRY(thunk)(thunk, BEOA);
+   return BGL_PROCEDURE_CALL0(thunk);
 #else   
    static long ctick = 0;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
@@ -544,7 +544,7 @@ bgl_time(obj_t thunk) {
    if (!ctick) ctick = sysconf(_SC_CLK_TCK);
 
    t1 = times(&buf1);
-   res = PROCEDURE_ENTRY(thunk)(thunk, BEOA);
+   res = BGL_PROCEDURE_CALL0(thunk);
    t2 = times(&buf2);
       
    BGL_ENV_MVALUES_NUMBER_SET(env, 4);

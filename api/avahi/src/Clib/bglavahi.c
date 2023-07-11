@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Apr 27 09:52:31 2022 (serrano)                */
-/*    Copyright   :  2011-22 Manuel Serrano                            */
+/*    Last change :  Tue Jul 11 17:25:59 2023 (serrano)                */
+/*    Copyright   :  2011-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
 /*    avahi documentation available at:                                */
@@ -281,98 +281,90 @@ bgl_avahi_apply_callback(callback_t cb) {
 	 
    switch(cb->arity) {
       case 0:
-	 PROCEDURE_ENTRY(proc)
-	    (proc,
-	      BEOA);
+	 BGL_PROCEDURE_CALL0
+	    (proc);
 	 break;
 	    
       case 1:
-	 PROCEDURE_ENTRY(proc)
+	 BGL_PROCEDURE_CALL1
 	    (proc,
-	      cb->args[0].convert(cb->args[0].value),
-	      BEOA);
+	     cb->args[0].convert(cb->args[0].value));
 	 break;
 	    
       case 2:
-	 PROCEDURE_ENTRY(proc)
+	 BGL_PROCEDURE_CALL2
 	    (proc,
-	      cb->args[0].convert(cb->args[0].value),
-	      cb->args[1].convert(cb->args[1].value),
-	      BEOA);
+	     cb->args[0].convert(cb->args[0].value),
+	     cb->args[1].convert(cb->args[1].value));
 	 break;
 	    
       case 6:
-	 PROCEDURE_ENTRY(proc)
+	 BGL_PROCEDURE_CALL6
 	    (proc,
-	      cb->args[0].convert(cb->args[0].value),
-	      cb->args[1].convert(cb->args[1].value),
-	      cb->args[2].convert(cb->args[2].value),
-	      cb->args[3].convert(cb->args[3].value),
-	      cb->args[4].convert(cb->args[4].value),
-	      cb->args[5].convert(cb->args[5].value),
-	      BEOA);
+	     cb->args[0].convert(cb->args[0].value),
+	     cb->args[1].convert(cb->args[1].value),
+	     cb->args[2].convert(cb->args[2].value),
+	     cb->args[3].convert(cb->args[3].value),
+	     cb->args[4].convert(cb->args[4].value),
+	     cb->args[5].convert(cb->args[5].value))
 	 break;
 	    
       case 7:
-	 PROCEDURE_ENTRY(proc)
+	 BGL_PROCEDURE_CALL7
 	    (proc,
-	      cb->args[0].convert(cb->args[0].value),
-	      cb->args[1].convert(cb->args[1].value),
-	      cb->args[2].convert(cb->args[2].value),
-	      cb->args[3].convert(cb->args[3].value),
-	      cb->args[4].convert(cb->args[4].value),
-	      cb->args[5].convert(cb->args[5].value),
-	      cb->args[6].convert(cb->args[6].value),
-	      BEOA);
+	     cb->args[0].convert(cb->args[0].value),
+	     cb->args[1].convert(cb->args[1].value),
+	     cb->args[2].convert(cb->args[2].value),
+	     cb->args[3].convert(cb->args[3].value),
+	     cb->args[4].convert(cb->args[4].value),
+	     cb->args[5].convert(cb->args[5].value),
+	     cb->args[6].convert(cb->args[6].value));
 	 break;
 	    
       case 8:
-	 PROCEDURE_ENTRY(proc)
+	 BGL_PROCEDURE_CALL8
 	    (proc,
-	      cb->args[0].convert(cb->args[0].value),
-	      cb->args[1].convert(cb->args[1].value),
-	      cb->args[2].convert(cb->args[2].value),
-	      cb->args[3].convert(cb->args[3].value),
-	      cb->args[4].convert(cb->args[4].value),
-	      cb->args[5].convert(cb->args[5].value),
-	      cb->args[6].convert(cb->args[6].value),
-	      cb->args[7].convert(cb->args[7].value),
-	      BEOA);
+	     cb->args[0].convert(cb->args[0].value),
+	     cb->args[1].convert(cb->args[1].value),
+	     cb->args[2].convert(cb->args[2].value),
+	     cb->args[3].convert(cb->args[3].value),
+	     cb->args[4].convert(cb->args[4].value),
+	     cb->args[5].convert(cb->args[5].value),
+	     cb->args[6].convert(cb->args[6].value),
+	     cb->args[7].convert(cb->args[7].value));
 	 break;
 	    
       case 11:
-	 PROCEDURE_ENTRY(proc)
+	 BGL_PROCEDURE_CALL11
 	    (proc,
-	      cb->args[0].convert(cb->args[0].value),
-	      cb->args[1].convert(cb->args[1].value),
-	      cb->args[2].convert(cb->args[2].value),
-	      cb->args[3].convert(cb->args[3].value),
-	      cb->args[4].convert(cb->args[4].value),
-	      cb->args[5].convert(cb->args[5].value),
-	      cb->args[6].convert(cb->args[6].value),
-	      cb->args[7].convert(cb->args[7].value),
-	      cb->args[8].convert(cb->args[8].value),
-	      cb->args[9].convert(cb->args[9].value),
-	      cb->args[10].convert(cb->args[10].value),
-	      BEOA);
+	     cb->args[0].convert(cb->args[0].value),
+	     cb->args[1].convert(cb->args[1].value),
+	     cb->args[2].convert(cb->args[2].value),
+	     cb->args[3].convert(cb->args[3].value),
+	     cb->args[4].convert(cb->args[4].value),
+	     cb->args[5].convert(cb->args[5].value),
+	     cb->args[6].convert(cb->args[6].value),
+	     cb->args[7].convert(cb->args[7].value),
+	     cb->args[8].convert(cb->args[8].value),
+	     cb->args[9].convert(cb->args[9].value),
+	     cb->args[10].convert(cb->args[10].value));
 	 break;
 	    
       case 12:
-	 PROCEDURE_ENTRY(proc)
+	 BGL_PROCEDURE_CALL12
 	    (proc,
-	      cb->args[0].convert(cb->args[0].value),
-	      cb->args[1].convert(cb->args[1].value),
-	      cb->args[2].convert(cb->args[2].value),
-	      cb->args[3].convert(cb->args[3].value),
-	      cb->args[4].convert(cb->args[4].value),
-	      cb->args[5].convert(cb->args[5].value),
-	      cb->args[6].convert(cb->args[6].value),
-	      cb->args[7].convert(cb->args[7].value),
-	      cb->args[8].convert(cb->args[8].value),
-	      cb->args[9].convert(cb->args[9].value),
-	      cb->args[10].convert(cb->args[10].value),
-	      cb->args[11].convert(cb->args[11].value),
-	      BEOA);
+	     cb->args[0].convert(cb->args[0].value),
+	     cb->args[1].convert(cb->args[1].value),
+	     cb->args[2].convert(cb->args[2].value),
+	     cb->args[3].convert(cb->args[3].value),
+	     cb->args[4].convert(cb->args[4].value),
+	     cb->args[5].convert(cb->args[5].value),
+	     cb->args[6].convert(cb->args[6].value),
+	     cb->args[7].convert(cb->args[7].value),
+	     cb->args[8].convert(cb->args[8].value),
+	     cb->args[9].convert(cb->args[9].value),
+	     cb->args[10].convert(cb->args[10].value),
+	     cb->args[11].convert(cb->args[11].value),)
 	 break;
 
       default:

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed May  3 16:16:29 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 17:07:44 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -416,7 +416,7 @@ bgl_proc_read(obj_t port, char *b, long l) {
       /* invoke the procedure to fill the buffer */
       //obj_t proc = CREF(port)->input_port.port.name;
       obj_t proc = CREF(port)->input_procedure_port.proc;
-      obj_t nbuf = PROCEDURE_ENTRY(proc)(proc, BEOA);
+      obj_t nbuf = BGL_PROCEDURE_CALL0(proc);
 
       if (STRINGP(nbuf)) {
 	 buf = CREF(port)->input_procedure_port.pbuffer = nbuf;
@@ -732,7 +732,7 @@ invoke_flush_hook(obj_t fhook, obj_t port, size_t slen, bool_t err) {
    /* have to release the lock because if an error occurs while      */
    /* invoking the user hook, the port mutex will be blocked forever */
    BGL_MUTEX_UNLOCK(OUTPUT_PORT(port).mutex);
-   s = PROCEDURE_ENTRY(fhook)(fhook, port, BINT(slen), BEOA);
+   s = BGL_PROCEDURE_CALL2(fhook, port, BINT(slen));
    BGL_MUTEX_LOCK(OUTPUT_PORT(port).mutex);
    
    if (STRINGP(s)) {
@@ -1273,7 +1273,7 @@ bgl_close_output_port(obj_t port) {
 
       if (PROCEDUREP(chook)) {
 	 if (PROCEDURE_ARITY(chook) == 1) {
-	    PROCEDURE_ENTRY(chook)(chook, port, BEOA);
+	    BGL_PROCEDURE_CALL1(chook, port);
 	 } else {
 	    C_SYSTEM_FAILURE(
 	       BGL_IO_PORT_ERROR, "close-output-port",
@@ -1839,7 +1839,7 @@ bgl_close_input_port(obj_t port) {
 	 
 	 if (PROCEDUREP(chook)) {
 	    if (PROCEDURE_ARITY(chook) == 1) {
-	       PROCEDURE_ENTRY(chook)(chook, port, BEOA);
+	       BGL_PROCEDURE_CALL1(chook, port);
 	    } else {
 	       C_SYSTEM_FAILURE(BGL_IO_PORT_ERROR,
 				 "close-input-port",
@@ -3040,7 +3040,7 @@ procwrite(obj_t port, void *str, size_t sz) {
    STRING_SET(buf, sz, '\0');
    STRING_LENGTH(buf) = sz;
    
-   PROCEDURE_ENTRY(proc)(proc, buf, BEOA);
+   BGL_PROCEDURE_CALL1(proc, buf);
    
    STRING_LENGTH(buf) = len;
 
@@ -3055,7 +3055,7 @@ static obj_t
 procflush(obj_t port) {
    obj_t flush = VECTOR_REF(PORT(port).userdata, 2);
 
-   return PROCEDURE_ENTRY(flush)(flush, BEOA);
+   return BGL_PROCEDURE_CALL0(flush);
 }
 
 /*---------------------------------------------------------------------*/
@@ -3066,7 +3066,7 @@ static int
 procclose(obj_t port) {
    obj_t close = VECTOR_REF(PORT(port).userdata, 3);
 
-   PROCEDURE_ENTRY(close)(close, BEOA);
+   BGL_PROCEDURE_CALL0(close);
 
    return 0;
 }

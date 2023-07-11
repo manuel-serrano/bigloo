@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Sat May 13 08:54:10 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 17:34:43 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -134,7 +134,7 @@ bglpth_thread_cleanup(void *arg) {
    
    /* invoke user cleanup */
    if (PROCEDUREP(cleanup)) {
-      PROCEDURE_ENTRY(cleanup)(cleanup, self->bglthread, BEOA);
+      BGL_PROCEDURE_CALL1(cleanup, self->bglthread);
    }
 }
 
@@ -179,7 +179,7 @@ bglpth_thread_run(void *arg) {
    pthread_mutex_unlock(&(self->mutex));
 
    /* enter the user code */
-   PROCEDURE_ENTRY(thunk)(thunk, BEOA);
+   BGL_PROCEDURE_CALL0(thunk);
    pthread_cleanup_pop(1);
 
    /* returns self so the GC is does not collect self (and the */

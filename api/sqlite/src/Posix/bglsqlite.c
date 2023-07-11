@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/sqlite/src/Posix/bglsqlite.c     */
+/*    .../project/bigloo/bigloo/api/sqlite/src/Posix/bglsqlite.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Nov 22 10:41:23 2011 (serrano)                */
-/*    Copyright   :  2005-11 Manuel Serrano                            */
+/*    Last change :  Tue Jul 11 17:35:16 2023 (serrano)                */
+/*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SQLITE support                                                   */
 /*=====================================================================*/
@@ -111,121 +111,106 @@ sqlite_apply( obj_t proc, int argc, char **argv ) {
        || (argc >= PROCEDURE_ARITY( proc ) ) ) {
       switch( argc ) {
 	 case 0:
-	    return PROCEDURE_ENTRY( proc )( proc, BEOA );
+	    return BGL_PROCEDURE_CALL0( proc );
 
 
 	 case 1:
-	    return PROCEDURE_ENTRY( proc )( proc, ARG( 0 ), BEOA );
+	    return BGL_PROCEDURE_CALL1( proc, ARG( 0 ), BEOA );
 
 	 case 2:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL2( proc,
+					ARG( 0 ), ARG( 1 ) );
 
 	 case 3:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL3( proc,
+					ARG( 0 ), ARG( 1 ), ARG( 2 ) );
 
 	 case 4:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL4( proc,
+					ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					ARG( 3 ) );
 
 	 case 5:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL5( proc,
+					ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					ARG( 3 ), ARG( 4 ) );
 
 	 case 6:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL6( proc,
+					ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					ARG( 3 ), ARG( 4 ), ARG( 5 ) );
 
 	 case 7:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL7( proc,
+					ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					ARG( 6 ) );
 
 	 case 8:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL8( proc,
+					ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					ARG( 6 ), ARG( 7 ) );
 
 	 case 9:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL9( proc,
+					ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					ARG( 6 ), ARG( 7 ), ARG( 8 ) );
 
 	 case 10:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    ARG( 9 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL10( proc,
+					 ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					 ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					 ARG( 6 ), ARG( 7 ), ARG( 8 ),
+					 ARG( 9 ) );
 
 	 case 11:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    ARG( 9 ), ARG( 10 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL11( proc,
+					 ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					 ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					 ARG( 6 ), ARG( 7 ), ARG( 8 ),
+					 ARG( 9 ), ARG( 10 ) );
 
 	 case 12:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    ARG( 9 ), ARG( 10 ), ARG( 11 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL12( proc,
+					 ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					 ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					 ARG( 6 ), ARG( 7 ), ARG( 8 ),
+					 ARG( 9 ), ARG( 10 ), ARG( 11 ) );
 
 	 case 13:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    ARG( 9 ), ARG( 10 ), ARG( 11 ),
-					    ARG( 12 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL13( proc,
+					 ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					 ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					 ARG( 6 ), ARG( 7 ), ARG( 8 ),
+					 ARG( 9 ), ARG( 10 ), ARG( 11 ),
+					 ARG( 12 ) );
 
 	 case 14:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    ARG( 9 ), ARG( 10 ), ARG( 11 ),
-					    ARG( 12 ), ARG( 13 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL14( proc,
+					 ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					 ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					 ARG( 6 ), ARG( 7 ), ARG( 8 ),
+					 ARG( 9 ), ARG( 10 ), ARG( 11 ),
+					 ARG( 12 ), ARG( 13 ) );
 
 	 case 15:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    ARG( 9 ), ARG( 10 ), ARG( 11 ),
-					    ARG( 12 ), ARG( 13 ), ARG( 14 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL15( proc,
+					 ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					 ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					 ARG( 6 ), ARG( 7 ), ARG( 8 ),
+					 ARG( 9 ), ARG( 10 ), ARG( 11 ),
+					 ARG( 12 ), ARG( 13 ), ARG( 14 ) );
 
 	 case 16:
-	    return PROCEDURE_ENTRY( proc )( proc,
-					    ARG( 0 ), ARG( 1 ), ARG( 2 ),
-					    ARG( 3 ), ARG( 4 ), ARG( 5 ),
-					    ARG( 6 ), ARG( 7 ), ARG( 8 ),
-					    ARG( 9 ), ARG( 10 ), ARG( 11 ),
-					    ARG( 12 ), ARG( 13 ), ARG( 14 ),
-					    ARG( 15 ),
-					    BEOA );
+	    return BGL_PROCEDURE_CALL16( proc,
+					 ARG( 0 ), ARG( 1 ), ARG( 2 ),
+					 ARG( 3 ), ARG( 4 ), ARG( 5 ),
+					 ARG( 6 ), ARG( 7 ), ARG( 8 ),
+					 ARG( 9 ), ARG( 10 ), ARG( 11 ),
+					 ARG( 12 ), ARG( 13 ), ARG( 14 ),
+					 ARG( 15 ) );
 
 	 default: {
 	    obj_t lst = BNIL;
