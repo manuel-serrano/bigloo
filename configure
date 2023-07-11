@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 10 17:06:31 2023 (serrano)                */
+#*    Last change :  Tue Jul 11 16:43:10 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1945,7 +1945,9 @@ case $hostos in
       sharedsuffix="dylib"
       ldlibs="$ldlibs \$(GCCLOSELIB) -lc"
       ldsonameopt="-install_name ~a"
-      sharedcompiler=yes
+      if [ "$sharedcompiler " = " " ]; then
+        sharedcompiler=yes
+      fi
       sharedbde=yes
       ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
       #customgmp=yes
