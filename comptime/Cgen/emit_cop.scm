@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Tue Jul 11 15:51:47 2023 (serrano)                */
+;*    Last change :  Tue Jul 11 16:04:50 2023 (serrano)                */
 ;*    Copyright   :  1996-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -324,7 +324,7 @@
 		p)))))
 
    (define (fun-cast-va-strict actuals)
-      "(obj_t (*)(obj_t, ...)")
+      "(obj_t (*)(obj_t, ...))")
 
    (define (fun-l-cast actuals)
       (format "(obj_t (*)(~(, )))"
