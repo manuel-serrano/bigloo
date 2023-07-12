@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Tue Jul 11 16:04:50 2023 (serrano)                */
+;*    Last change :  Wed Jul 12 13:25:51 2023 (serrano)                */
 ;*    Copyright   :  1996-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -332,7 +332,8 @@
 	    (reverse! (cdr (reverse actuals))))))
 	     
    (define (out-call op cast actuals)
-      (if (eq? (cfuncall-type cop) *obj*)
+      (if (or (eq? (cfuncall-type cop) *obj*)
+	      (equal? "obj_t" (type-name (cfuncall-type cop))))
 	  (begin
 	     (display "(" *c-port*)
 	     (display (cast actuals) *c-port*)
