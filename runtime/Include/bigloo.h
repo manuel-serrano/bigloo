@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Jul 12 08:18:56 2023 (serrano)                */
+/*    Last change :  Wed Jul 12 12:44:51 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1332,13 +1332,13 @@ typedef obj_t (*function_t)();
     ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, BEOA) \
     : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13))
 #  define BGL_PROCEDURE_CALL15(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) \
-   (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, BEOA) 
-: ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14))
+   (VA_PROCEDUREP(fun) \
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14))
 #  define BGL_PROCEDURE_CALL16(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA) 
-: ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15))
 #endif
 
 #define PROCEDURE_ENTRY(fun) (obj_t)(PROCEDURE(fun).entry)

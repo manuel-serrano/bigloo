@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Jul 11 17:02:40 2023 (serrano)                */
+/*    Last change :  Wed Jul 12 12:56:21 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -510,7 +510,7 @@ opt_generic_entry(obj_t proc, ...) {
 #define CALL(proc) ((obj_t (*)())PROCEDURE_VA_ENTRY(proc))
    res = CALL(proc)(proc, args);
 
-#if (__APPLE__ == 1)
+#if (__APPLE__ == 1  && __APPLE_CC__ >= 6000)
    free(CVECTOR(args));
 #endif
 
