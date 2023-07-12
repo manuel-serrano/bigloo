@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jul 11 17:48:40 2023 (serrano)                */
+/*    Last change :  Wed Jul 12 08:18:56 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1272,73 +1272,73 @@ typedef obj_t (*function_t)();
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA)
 #else
 #  define BGL_PROCEDURE_CALL0(fun) \
-   (VA_PROCEDUREP(fun)					 \
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(BEOA)	\
-    : ((obj_t (*)())PROCEDURE_ENTRY(fun))())
+   (VA_PROCEDUREP(fun) \
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, BEOA)	\
+    : ((obj_t (*)(obj_t))PROCEDURE_ENTRY(fun))(fun))
 #  define BGL_PROCEDURE_CALL1(fun, a0) \
-   (VA_PROCEDUREP(fun)					     \
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, BEOA)	\
-    : ((obj_t (*)(obj_t))PROCEDURE_ENTRY(fun))(a0))
+   (VA_PROCEDUREP(fun) \
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0))
 #  define BGL_PROCEDURE_CALL2(fun, a0, a1) \
    (VA_PROCEDUREP(fun)						 \
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, BEOA)	\
-    : ((obj_t (*)(obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, BEOA)	\
+    : ((obj_t (*)(obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1))
 #  define BGL_PROCEDURE_CALL3(fun, a0, a1, a2) \
    (VA_PROCEDUREP(fun)						     \
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, BEOA)	\
-    : ((obj_t (*)(obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2))
 #  define BGL_PROCEDURE_CALL4(fun, a0, a1, a2, a3) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3))
 #  define BGL_PROCEDURE_CALL5(fun, a0, a1, a2, a3, a4) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4))
 #  define BGL_PROCEDURE_CALL6(fun, a0, a1, a2, a3, a4, a5) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5))
 #  define BGL_PROCEDURE_CALL7(fun, a0, a1, a2, a3, a4, a5, a6)		\
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6))
 #  define BGL_PROCEDURE_CALL8(fun, a0, a1, a2, a3, a4, a5, a6, a7)		\
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7))
 #  define BGL_PROCEDURE_CALL9(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8)	\
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8))
 #  define BGL_PROCEDURE_CALL10(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9))
 #  define BGL_PROCEDURE_CALL11(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10))
 #  define BGL_PROCEDURE_CALL12(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11))
 #  define BGL_PROCEDURE_CALL13(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12))
 #  define BGL_PROCEDURE_CALL14(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, BEOA) \
-    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13))
 #  define BGL_PROCEDURE_CALL15(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, BEOA) 
-: ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, BEOA) 
+: ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14))
 #  define BGL_PROCEDURE_CALL16(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) \
    (VA_PROCEDUREP(fun)							\
-    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA) 
-: ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15))
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA) 
+: ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15))
 #endif
 
 #define PROCEDURE_ENTRY(fun) (obj_t)(PROCEDURE(fun).entry)
