@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Sat Apr 16 07:08:14 2022 (serrano)                */
-;*    Copyright   :  2002-22 Manuel Serrano                            */
+;*    Last change :  Wed Jul 12 16:49:41 2023 (serrano)                */
+;*    Copyright   :  2002-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -349,6 +349,25 @@
       (cond
 	 (x 111)
 	 (else 222))))
+
+;*---------------------------------------------------------------------*/
+;*    bug-data-flow-lub2 ...                                           */
+;*---------------------------------------------------------------------*/
+(define (bug-data-flow-lub2 s newest-d)
+   (define check-date?
+      (if (getenv "foo") list cons))
+   (let ((date1 #f))
+      (if (= s 4)
+	  (begin
+	     (set! date1 "tutu")
+	     (if (check-date? date1 newest-d)
+		 #t
+		 (set! date1 #f)))
+	  (begin
+	     (set! date1 "toto")
+	     (set! date1 #f)))
+      (when date1
+	 4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-vital ...                                                   */
@@ -939,5 +958,6 @@
    (test "cnst.6" (int8? (car (list '#!rest))) #f)
    (test "cnst.7" (int8? #s8:1) #t)
    (test "cnst.8" (int8? (car (list #s8:1))) #t)
-   (test "cnst.9" (eq? (car (list #!optional)) #!optional) #t))
+   (test "cnst.9" (eq? (car (list #!optional)) #!optional) #t)
+   (test "lub" (bug-data-flow-lub2 3 #f) #f))
      
