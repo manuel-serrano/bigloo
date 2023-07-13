@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jul 13 13:29:59 2023 (serrano)                */
+;*    Last change :  Thu Jul 13 17:13:57 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -133,7 +133,7 @@
       (with-trace 'bbv-merge (format "bbv-block-merge! ~a" label)
 	 (let loop ()
 	    (let ((lvs (blockV-live-versions bv)))
-	       (when (>=fx (length lvs)
+	       (when (>fx (length lvs)
 			(if merge *max-block-merge-versions* *max-block-limit*))
 		  (multiple-value-bind (bs1 bs2 nctx)
 		     (bbv-block-merge lvs)

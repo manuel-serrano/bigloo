@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jul 13 15:42:50 2023 (serrano)                */
+;*    Last change :  Thu Jul 13 17:08:53 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -46,7 +46,7 @@
    (if (and *saw-bbv?*
 	    (or (null? *saw-bbv-functions*)
 		(memq (global-id global) *saw-bbv-functions*))
-	    (>fx *max-block-merge-versions* 1))
+	    (>=fx *max-block-merge-versions* 1))
        (with-trace 'bbv (global-id global)
 	  (when *bbv-debug* (tprint "=== " (shape global)))
 	  (start-bbv-cache!)
