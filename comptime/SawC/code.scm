@@ -276,14 +276,24 @@
 	      (display ")") )
        (gen-Xfuncall "" args #t) ) )
 
+(define (typename o)
+   (cond
+      ((isa? o rtl_reg)
+       (type-name (rtl_reg-type o)))
+      ((isa? o rtl_ins)
+       (if (rtl_ins-dest o)
+	   (typename (rtl_ins-dest o))
+	   "obj_t"))
+      (else
+       "obj_t")))
+       
 (define (gen-Xfuncall type args eoa?);()
    (when *stdc*
       (display
 	 (if eoa?
 	     "((obj_t (*)(obj_t, ...))"
 	     (format "((obj_t (*)(~(, )))"
-		(map (lambda (a) (type-name (rtl_reg-type a)))
-		   args)))))
+		(map typename args)))))
    (display* "PROCEDURE_" type "ENTRY(")
    (gen-reg (car args))
    (display (if *stdc* "))(" ")("))
