@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jul 11 16:43:10 2023 (serrano)                */
+#*    Last change :  Wed Jul 12 17:46:13 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3840,6 +3840,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BOOTBINDIR@|$bootdir/bin|" \
 	      -e "s|@BGLBUILDBINDIR@|$buildbindir|" \
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
+	      -e "s|@BGLBUILDLIBDIRS@|$buildlibdirs|" \
 	      -e "s|@BGLBUILDLIBUVLIBDIR@|$buildlibuvlibdir|" \
 	      -e "s|@BGLBUILDLIBUNISTRINGLIBDIR@|$buildlibunistringlibdir|" \
 	      -e "s|@BGLBUILDLIBBACKTRACELIBDIR@|$buildlibbacktracelibdir|" \

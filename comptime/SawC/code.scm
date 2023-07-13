@@ -277,9 +277,16 @@
        (gen-Xfuncall "" args #t) ) )
 
 (define (gen-Xfuncall type args eoa?);()
+   (when *stdc*
+      (display
+	 (if eoa?
+	     "((obj_t (*)(obj_t, ...))"
+	     (format "((obj_t (*)(~(, )))"
+		(map (lambda (a) (type-name (rtl_reg-type a)))
+		   args)))))
    (display* "PROCEDURE_" type "ENTRY(")
    (gen-reg (car args))
-   (display ")(")
+   (display (if *stdc* "))(" ")("))
    (gen-args args)
    (if eoa? (display ", BEOA"))
    (display ")") )

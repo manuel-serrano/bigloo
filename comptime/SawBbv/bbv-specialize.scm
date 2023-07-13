@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul  4 18:18:17 2023 (serrano)                */
+;*    Last change :  Thu Jul 13 11:02:51 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -41,29 +41,6 @@
    (export (bbv-block*::blockS ::blockV ::bbv-ctx)))
 
 ;*---------------------------------------------------------------------*/
-;*    new-blockS ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (new-blockS bv::blockV ctx::bbv-ctx)
-   (let* ((lbl (genlabel))
-	  (bs (instantiate::blockS
-		 (ctx ctx)
-		 (parent bv)
-		 (label lbl)
-		 (first '()))))
-      (with-access::blockV bv (versions)
-	 (set! versions (cons bs versions))
-	 bs)))
-
-;*---------------------------------------------------------------------*/
-;*    live-blockS ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (live-blockS b::blockS)
-   (with-access::blockS b (mblock)
-      (if mblock
-	  (live-blockS mblock)
-	  b)))
-
-;*---------------------------------------------------------------------*/
 ;*    bbv-block* ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block*::blockS bv::blockV ctx::bbv-ctx)
@@ -85,6 +62,29 @@
 				   (bbv-block-merge! bv queue))
 			 blocks)
 		      (loop queue))))))))
+
+;*---------------------------------------------------------------------*/
+;*    new-blockS ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (new-blockS bv::blockV ctx::bbv-ctx)
+   (let* ((lbl (genlabel))
+	  (bs (instantiate::blockS
+		 (ctx ctx)
+		 (parent bv)
+		 (label lbl)
+		 (first '()))))
+      (with-access::blockV bv (versions)
+	 (set! versions (cons bs versions))
+	 bs)))
+
+;*---------------------------------------------------------------------*/
+;*    live-blockS ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (live-blockS b::blockS)
+   (with-access::blockS b (mblock)
+      (if mblock
+	  (live-blockS mblock)
+	  b)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
