@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jul 13 11:02:51 2023 (serrano)                */
+;*    Last change :  Thu Jul 13 13:29:59 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -79,6 +79,9 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    live-blockS ...                                                  */
+;*    -------------------------------------------------------------    */
+;*    If "b" is dead (because it has been merged), this function       */
+;*    returns the live block into which it has been merged.            */
 ;*---------------------------------------------------------------------*/
 (define (live-blockS b::blockS)
    (with-access::blockS b (mblock)

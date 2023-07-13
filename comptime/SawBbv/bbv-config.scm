@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Fri Oct 28 07:04:42 2022 (serrano)                */
-;*    Copyright   :  2022 Manuel Serrano                               */
+;*    Last change :  Thu Jul 13 15:36:33 2023 (serrano)                */
+;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
 ;*=====================================================================*/
@@ -61,7 +61,11 @@
 ;*    basic-block versioning configuration                             */
 ;*---------------------------------------------------------------------*/
 ;; the maximum number of block versions
-(define *max-block-merge-versions* 3)
+(define *max-block-merge-versions*
+   (let ((e (getenv "BIGLOOBBVVERSIONLIMIT")))
+      (if (string? e)
+	  (string->integer e)
+	  3)))
 (define *max-block-limit* 6)
 
 
