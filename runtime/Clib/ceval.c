@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/ceval.c                 */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/ceval.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep 24 10:20:30 1993                          */
-/*    Last change :  Mon Jul 31 09:33:21 2006 (serrano)                */
+/*    Last change :  Tue Jul 11 17:05:47 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Quelques petites fonctions pour l'interprete (principalement     */
 /*    des fonctions de debug et de trace)                              */
@@ -24,8 +24,8 @@ bgl_init_eval_cnst() {
 /*    funcall_0 ...                                                    */
 /*---------------------------------------------------------------------*/
 obj_t
-eval_funcall_0( obj_t fun ) {
-   return PROCEDURE_ENTRY( fun )( fun, BEOA );
+eval_funcall_0(obj_t fun) {
+   return BGL_PROCEDURE_CALL0(fun);
 }
 
 /*---------------------------------------------------------------------*/
@@ -33,8 +33,8 @@ eval_funcall_0( obj_t fun ) {
 /*    funcall_1 ...                                                    */
 /*---------------------------------------------------------------------*/
 obj_t
-eval_funcall_1( obj_t fun, obj_t a0 ) {
-   return PROCEDURE_ENTRY( fun )( fun, a0, BEOA );
+eval_funcall_1(obj_t fun, obj_t a0) {
+   return BGL_PROCEDURE_CALL1(fun, a0);
 }
        
 /*---------------------------------------------------------------------*/
@@ -42,8 +42,8 @@ eval_funcall_1( obj_t fun, obj_t a0 ) {
 /*    funcall_2 ...                                                    */
 /*---------------------------------------------------------------------*/
 obj_t
-eval_funcall_2( obj_t fun, obj_t a0, obj_t a1 ) {
-   return PROCEDURE_ENTRY( fun )( fun, a0, a1, BEOA );
+eval_funcall_2(obj_t fun, obj_t a0, obj_t a1) {
+   return BGL_PROCEDURE_CALL2(fun, a0, a1);
 }
        
 /*---------------------------------------------------------------------*/
@@ -51,8 +51,8 @@ eval_funcall_2( obj_t fun, obj_t a0, obj_t a1 ) {
 /*    funcall_3 ...                                                    */
 /*---------------------------------------------------------------------*/
 obj_t
-eval_funcall_3( obj_t fun, obj_t a0, obj_t a1, obj_t a2 ) {
-   return PROCEDURE_ENTRY( fun )( fun, a0, a1, a2, BEOA );
+eval_funcall_3(obj_t fun, obj_t a0, obj_t a1, obj_t a2) {
+   return BGL_PROCEDURE_CALL3(fun, a0, a1, a2);
 }
 
 /*---------------------------------------------------------------------*/
@@ -60,8 +60,8 @@ eval_funcall_3( obj_t fun, obj_t a0, obj_t a1, obj_t a2 ) {
 /*    funcall_4 ...                                                    */
 /*---------------------------------------------------------------------*/
 obj_t
-eval_funcall_4( obj_t fun, obj_t a0, obj_t a1, obj_t a2, obj_t a3 ) {
-   return PROCEDURE_ENTRY( fun )( fun, a0, a1, a2, a3, BEOA );
+eval_funcall_4(obj_t fun, obj_t a0, obj_t a1, obj_t a2, obj_t a3) {
+   return BGL_PROCEDURE_CALL4(fun, a0, a1, a2, a3);
 }
 
 /*---------------------------------------------------------------------*/
@@ -70,6 +70,6 @@ eval_funcall_4( obj_t fun, obj_t a0, obj_t a1, obj_t a2, obj_t a3 ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-eval_apply( obj_t fun, obj_t list ) {
-   return apply( fun, list );
+eval_apply(obj_t fun, obj_t list) {
+   return apply(fun, list);
 }

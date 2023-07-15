@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Wed Nov  2 14:57:09 2022 (serrano)                */
+/*    Last change :  Thu Jun  1 18:31:56 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -134,7 +134,6 @@ string_append(obj_t s1, obj_t s2) {
 
    memcpy(&(string->string.char0), &STRING_REF(s1, 0), l1);
    memcpy(&((char *)(&(string->string.char0)))[l1], &STRING_REF(s2, 0), l2 + 1);
-   //((char *)(&(string->string.char0)))[l12] = '\0';
 	
    return BSTRING(string);
 }
@@ -159,7 +158,6 @@ string_append_3(obj_t s1, obj_t s2, obj_t s3) {
    memcpy(&(string->string.char0), &STRING_REF(s1, 0), l1);
    memcpy(&((char *)(&(string->string.char0)))[l1], &STRING_REF(s2, 0), l2);
    memcpy(&((char *)(&(string->string.char0)))[l1 + l2], &STRING_REF(s3, 0), l3 + 1);
-   // ((char *)(&(string->string.char0)))[l123] = '\0';
 	
    return BSTRING(string);
 }

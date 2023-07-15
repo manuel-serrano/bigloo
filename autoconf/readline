@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/readline                    */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/readline             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Sep  7 09:04:39 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 13:54:39 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if readline exits. Return 1 or 0.                          */
 #*=====================================================================*/
@@ -120,7 +120,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    if [ "$readlineopt " = " " ]; then
       echo "$readline"
    else
@@ -130,7 +130,7 @@ else
   if eval "$BUILDSH $compilet"; then
      \rm -f $file.*
      rm -f $aout
-     rm -f $aout*
+     rm -rf $aout*
      if [ "$readlineopt " = " " ]; then
         echo "$termcap $readline $termcap"
      else
@@ -140,7 +140,7 @@ else
      if eval "$BUILDSH $compilea"; then
         \rm -f $file.*
         rm -f $aout
-        rm -f $aout*
+        rm -rf $aout*
         if [ "$readlineopt " = " " ]; then
            echo "/usr/lib/readline.a"
         else
@@ -150,7 +150,7 @@ else
         if eval "$BUILDSH $compileat"; then
            \rm -f $file.*
            rm -f $aout
-           rm -f $aout*
+           rm -rf $aout*
            if [ "$readlineopt " = " " ]; then
               echo "$termcap /usr/lib/readline.a $termcap"
            else
@@ -159,7 +159,7 @@ else
         else
            \rm -f $file.*
            rm -f $aout
-           rm -f $aout*
+           rm -rf $aout*
         fi
      fi
   fi

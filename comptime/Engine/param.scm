@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Oct 25 05:26:44 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul 11 15:12:01 2023 (serrano)                */
+;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -419,7 +419,7 @@
 ;; The C production type
 (param-define *stdc*
    "Shall we produce ISO C?"
-   #f)
+   (bigloo-config 'strict-stdc))
 ;; the CC option
 (param-define *cc-options*
    "cc options"

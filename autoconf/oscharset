@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/oscharset                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/oscharset            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan  1 05:48:37 2009                          */
-#*    Last change :  Mon Nov 23 14:19:03 2009 (serrano)                */
-#*    Copyright   :  2009 Manuel Serrano                               */
+#*    Last change :  Mon Jul 10 13:56:13 2023 (serrano)                */
+#*    Copyright   :  2009-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Test the current OS filesystem charset.                          */
 #*=====================================================================*/
@@ -74,7 +74,7 @@ if eval "$BUILDSH $compile"; then
    host_locale=`eval "$HOSTSH $aout"`
    res=$?;
 
-   rm -f $aout*
+   rm -rf $aout*
 
    if [ $res != 0 ]; then
      exit 1

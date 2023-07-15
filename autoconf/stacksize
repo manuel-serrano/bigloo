@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/stacksize                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/stacksize            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr  5 08:43:23 2002                          */
-#*    Last change :  Sat Sep  5 06:14:03 2009 (serrano)                */
-#*    Copyright   :  2002-20 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 13:57:32 2023 (serrano)                */
+#*    Copyright   :  2002-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if the stack is large enough for compiling Bigloo.         */
 #*=====================================================================*/
@@ -100,6 +100,6 @@ if eval "$BUILDSH $compile"; then
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*
 
 echo $status

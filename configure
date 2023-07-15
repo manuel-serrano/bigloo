@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr 13 07:23:22 2023 (serrano)                */
+#*    Last change :  Wed Jul 12 17:46:13 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -177,7 +177,7 @@ unistringsrc=$UNISTRINGSRC
 unistringconfigureopt=
 
 if [ "$unistringsrc " = " " ]; then
-  unistringversion=0.9.10
+  unistringversion=1.1
   unistringsrc=libunistring/libunistring-$unistringversion.tgz
 fi  
 
@@ -300,7 +300,8 @@ customgc=yes
 #gccustom=gc-7.6.2
 #gccustom=gc-8.0.2
 #gccustom=gc-8.0.4
-gccustom=gc-8.2.2
+#gccustom=gc-8.2.2
+gccustom=gc-8.2.4
 gcversion=
 gcbump=0
 cgcflags=
@@ -351,7 +352,7 @@ sharedlibrarygcfthclosed='-l$(GCLIB)_fth-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
 # the legal value for that variable is `yes' or `no'
-sharedcompiler=no
+sharedcompiler=
 sharedbde=no
 
 #*--- forced OS -------------------------------------------------------*/
@@ -1241,7 +1242,7 @@ while : ; do
       echo "   --no-pcre2 (disable prce2 library support)" >&2;
       echo "   --no-ldpreload" >&2;
       echo "   --sharedbde=yes|no [default no] (link Bde tools against shared libraries)" >&2;
-      echo "   --sharedcompiler=yes|no [default no] (link Bigloo against shared libraries)" >&2;
+      echo "   --sharedcompiler=yes|no [os dependent] (link Bigloo against shared libraries)" >&2;
       echo "" >&2;
       echo "JVM configuration:"  >&2;
       echo "   --java=file" >&2;
@@ -1944,7 +1945,9 @@ case $hostos in
       sharedsuffix="dylib"
       ldlibs="$ldlibs \$(GCCLOSELIB) -lc"
       ldsonameopt="-install_name ~a"
-      sharedcompiler=yes
+      if [ "$sharedcompiler " = " " ]; then
+        sharedcompiler=yes
+      fi
       sharedbde=yes
       ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
       #customgmp=yes
@@ -2017,6 +2020,13 @@ case $hostos in
     ;;
 esac
 $echo >> $configurelog
+
+#*---------------------------------------------------------------------*/
+#*    default configuration                                            */
+#*---------------------------------------------------------------------*/
+if [ "$sharedcompiler " = " " ]; then
+  sharedcompiler=no
+fi
 
 #*---------------------------------------------------------------------*/
 #*    C tool chain                                                     */
@@ -3012,6 +3022,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # C compiler nan and infinity
   ccdiv0=`$autoconf ccdiv0` || exit 1
 
+  # strict std C required
+  stdc=`$autoconf stdc` || exit 1
+
   # C compiler sse and math operations on x86-32 architecture
   if [ "$alignment " = "2 " ]; then
     cflags="$cflags `$autoconf ccssex86`"
@@ -3317,6 +3330,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Is sigaction available
   getrlimit=`$autoconf getrlimit` || exit 1
+  getrlimitfull=`$autoconf getrlimitfull` || exit 1
 
   # Is setenv available for us
   setenv=`$autoconf setenv` || exit 1
@@ -3652,6 +3666,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
               -e "s|@BGL_CCDIV0@|$ccdiv0|" \
+              -e "s|@BGL_STRICT_STDC@|$stdc|" \
               -e "s|@HAVE_STDINT@|$stdint|" \
               -e "s|@HAVE_STDLIBINT@|$stdlibint|" \
               -e "s|@HAVE_UNISTDINT@|$unistdint|" \
@@ -3710,6 +3725,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_SIGACTION@|$sigaction|" \
               -e "s|@HAVE_SIGINFO@|$siginfo|" \
               -e "s|@HAVE_GETRLIMIT@|$getrlimit|" \
+              -e "s|@HAVE_GETRLIMIT_FULL@|$getrlimitfull|" \
               -e "s|@BGL_HAVE_SELECT@|$select|" \
               -e "s|@BGL_HAVE_FCNTL@|$fcntl|" \
               -e "s|@HAVE_TERMIO@|$termio|" \
@@ -3824,6 +3840,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BOOTBINDIR@|$bootdir/bin|" \
 	      -e "s|@BGLBUILDBINDIR@|$buildbindir|" \
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
+	      -e "s|@BGLBUILDLIBDIRS@|$buildlibdirs|" \
 	      -e "s|@BGLBUILDLIBUVLIBDIR@|$buildlibuvlibdir|" \
 	      -e "s|@BGLBUILDLIBUNISTRINGLIBDIR@|$buildlibunistringlibdir|" \
 	      -e "s|@BGLBUILDLIBBACKTRACELIBDIR@|$buildlibbacktracelibdir|" \

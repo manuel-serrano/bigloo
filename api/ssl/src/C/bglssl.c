@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Sep 12 14:07:21 2019 (serrano)                */
-/*    Copyright   :  2005-20 Manuel Serrano                            */
+/*    Last change :  Tue Jul 11 19:36:29 2023 (serrano)                */
+/*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -1210,10 +1210,10 @@ bgl_info_callback( const SSL *ssl, int where, int ret ) {
 
    if( PROCEDUREP( cb ) ) {
       if( where & SSL_CB_HANDSHAKE_START ) {
-	 PROCEDURE_ENTRY( cb )( cb, BINT( 0 ), BEOA );
+	 BGL_PROCEDURE_CALL1( cb, BINT( 0 ) );
       }
       if( where & SSL_CB_HANDSHAKE_DONE ) {
-	 PROCEDURE_ENTRY( cb )( cb, BINT( 1 ), BEOA );
+	 BGL_PROCEDURE_CALL1( cb, BINT( 1 ) );
       }
    }
 }
@@ -1242,7 +1242,7 @@ bgl_select_sni_context_callback( SSL *ssl, int *ad, void* arg ) {
 	    C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ssl-connection",
 			      "wrong callback arity", proc );
 	 } else {
-	    obj_t ret = PROCEDURE_ENTRY( proc )( proc, c, bsrv, BEOA );
+	    obj_t ret = BGL_PROCEDURE_CALL2( proc, c, bsrv );
 
 	    if( ret != BFALSE ) {
 	       secure_context sc = (secure_context)ret;
@@ -1779,11 +1779,9 @@ bgl_new_session_callback( SSL *ssl, SSL_SESSION *sess ) {
 	 unsigned int sidlen;
 	 const char *sid = BGL_SSL_SESSION_get_id( sess, sidlen );
 
-	 PROCEDURE_ENTRY( cb )
-	 ( cb,
-	   string_to_bstring_len( (char *)sid, sidlen ),
-	   serialized,
-	   BEOA );
+	 BGL_PROCEDURE_CALL2( cb,
+			      string_to_bstring_len( (char *)sid, sidlen ),
+			      serialized );
 	 return 0;
       }
    }

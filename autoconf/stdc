@@ -1,0 +1,93 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/stdc                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Tue Jul 11 16:10:26 2023 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check if strict C generation is required.                        */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdarg.h>
+#include <stdio.h>
+
+typedef long *obj_t;
+#define OBJ_T(x) ((obj_t)x)
+#define LONG(x) ((long)x)
+
+long foo(obj_t x, ...) {
+   va_list argl;
+   long res;
+   long r;
+
+   va_start(argl, x);
+
+   res = LONG(x);
+
+   while ((r = LONG(va_arg(argl, long))) > 0) {
+      res += r;
+   }
+
+   return res;
+}
+
+int main(int argc, char *argv[]) {
+   long (*f)(obj_t, obj_t, obj_t, obj_t, obj_t) = (long (*)(obj_t, obj_t, obj_t, obj_t, obj_t))&foo;
+   return f(OBJ_T(1), OBJ_T(2), OBJ_T(3), OBJ_T(4), OBJ_T(-10)) != 10;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+  $aout
+  echo $?
+  \rm -f $file.*
+  rm -rf $aout*
+else
+   echo 1
+fi
+

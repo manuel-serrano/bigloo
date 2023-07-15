@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Tue Jul 19 14:28:45 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jul  9 09:15:45 2023 (serrano)                */
+;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -100,13 +100,14 @@
 ;*    type-warning/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (type-warning/location loc function from to)
-   (user-warning/location loc
-			  function
-			  "Type error"
-			  (bigloo-type-error-msg
-			   ""
-			   (shape to)
-			   (shape from))))
+   (when *warning-types*
+      (user-warning/location loc
+	 function
+	 "Type error"
+	 (bigloo-type-error-msg
+	    ""
+	    (shape to)
+	    (shape from)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    runtime-type-error/id ...                                        */

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Oct 20 11:14:54 2022 (serrano)                */
-/*    Copyright   :  2016-22 Manuel Serrano                            */
+/*    Last change :  Sun May 28 08:46:25 2023 (serrano)                */
+/*    Copyright   :  2016-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -45,7 +45,12 @@ BGL_RUNTIME_DECL bool_t bigloo_string_cilt(obj_t, obj_t);
 BGL_RUNTIME_DECL bool_t bigloo_string_cile(obj_t, obj_t);
 BGL_RUNTIME_DECL bool_t bigloo_string_cigt(obj_t, obj_t);
 BGL_RUNTIME_DECL bool_t bigloo_string_cige(obj_t, obj_t);
-					
+
+BGL_RUNTIME_DECL obj_t ucs2_to_utf8_string(ucs2_t *, long);
+BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string(obj_t);
+BGL_RUNTIME_DECL obj_t make_ucs2_string(int, ucs2_t);
+   
+
 #if(BGL_HAVE_UNISTRING)
 BGL_RUNTIME_DECL int bgl_strcoll(obj_t, obj_t);
 #endif					
@@ -70,14 +75,7 @@ struct bgl_ucs2_string {
 #define STRING(o) (CSTRING(o)->string)
 #define UCS2_STRING(o)  (CUCS2STRING(o)->ucs2_string)
 
-/* #if(!defined(TAG_STRING))                                           */
-/* #  define STRING_SIZE (sizeof(struct { header_t header; long length; }) + 1) */
-/* #else                                                               */
-/* #  define STRING_SIZE (sizeof(struct { long length; }) + 1)         */
-/* #endif                                                              */
-
 #define STRING_SIZE (sizeof(struct bgl_string))
-
 #define UCS2_STRING_SIZE (sizeof(struct bgl_ucs2_string))
 
 /*---------------------------------------------------------------------*/

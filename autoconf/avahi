@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/avahi                       */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/avahi                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Fri May 25 06:51:15 2012 (serrano)                */
-#*    Copyright   :  2007-12 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 14:01:40 2023 (serrano)                */
+#*    Copyright   :  2007-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if AVAHI is available.                                     */
 #*=====================================================================*/
@@ -252,6 +252,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Fri Dec  2 09:25:00 2022 (serrano)                */
+#*    Last change :  Mon Jul 10 14:02:21 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host clock_lib posix function (used by the GC).    */
 #*=====================================================================*/
@@ -127,7 +127,7 @@ if eval "$BUILDSH $compilesans"; then
    ret_code=$?
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    if [ $ret_code = 0 ]; then
      echo ""
      exit 0
@@ -139,7 +139,7 @@ if eval "$BUILDSH $compileavec"; then
    ret_code=$?
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    if [ $ret_code = 0 ]; then
      echo "$clocklib"
      exit 0

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/hash.scm         */
+;*    serrano/prgm/project/bigloo/bigloo/hash-bad.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Tue Jan 10 16:27:12 2023 (serrano)                */
+;*    Last change :  Fri Jun  2 08:14:11 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -70,7 +70,8 @@
 	    (c-pointer-hashnumber::long (::obj ::long) "bgl_pointer_hashnumber")
 	    (foreign-hash-number::long (::foreign) "bgl_foreign_hash_number")
 	    (macro elong-hash-number::long (::elong) "(long)")
-	    (macro llong-hash-number::long (::llong) "(long)"))
+	    (macro llong-hash-number::long (::llong) "(long)")
+	    (macro $strlen::long (::string) "strlen"))
    
    (java    (class foreign
 	       (method static $string-hash::long (::string ::int ::int)
@@ -119,6 +120,7 @@
 	    (hashtable-get::obj ::struct ::obj)
 	    (string-hashtable-get::obj ::struct ::bstring)
 	    (open-string-hashtable-get::obj ::struct ::bstring)
+	    ($open-string-hashtable-get::obj ::struct ::string)
 	    (hashtable-put! ::struct ::obj ::obj)
 	    (string-hashtable-put!::obj ::struct ::bstring ::obj)
 	    (open-string-hashtable-put!::obj ::struct ::bstring ::obj)
@@ -730,6 +732,32 @@
 		      (if (>=fx noff size)
 			  (loop (remainderfx noff size) (+fx i 1))
 			  (loop noff (+fx i 1))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    $open-string-hashtable-get ...                                   */
+;*    -------------------------------------------------------------    */
+;*    Same as OPEN-STRING-HASHTABLE-GET but KEY is a C string.         */
+;*---------------------------------------------------------------------*/
+(define ($open-string-hashtable-get t key)
+   (cond-expand
+      (bigloo-c
+       (let* ((size (%hashtable-max-bucket-len t))
+	      (buckets (%hashtable-buckets t))
+	      (len ($strlen key))
+	      (hash ($string-hash key 0 len)))
+	  (let loop ((off (remainderfx hash size))
+		     (i 1))
+	     (let ((off3 (*fx off 3)))
+		(when (vector-ref buckets off3)
+		   (if ($memcmp (vector-ref buckets off3) key len)
+		       (when (vector-ref buckets (+fx off3 2))
+			  (vector-ref buckets (+fx off3 1)))
+		       (let ((noff (+fx off (*fx i i))))
+			  (if (>=fx noff size)
+			      (loop (remainderfx noff size) (+fx i 1))
+			      (loop noff (+fx i 1))))))))))
+      (else
+       (open-string-hashtable-get t key))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-put! ...                                               */

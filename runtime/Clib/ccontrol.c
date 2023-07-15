@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Wed Apr 19 13:47:11 2023 (serrano)                */
+/*    Last change :  Wed Jul 12 12:56:21 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -142,7 +142,7 @@ static obj_t
 generic_entry1(obj_t proc, obj_t a1) {
    obj_t p = PROCEDURE_REF(proc, 3);
 
-   return PROCEDURE_ENTRY(p)(p, a1);
+   return BGL_PROCEDURE_CALL1(p, a1);
 }
 
 /*---------------------------------------------------------------------*/
@@ -153,7 +153,7 @@ static obj_t
 generic_entry2(obj_t proc, obj_t a1, obj_t a2) {
    obj_t p = PROCEDURE_REF(proc, 3);
 
-   return PROCEDURE_ENTRY(p)(p, a1, a2);
+   return BGL_PROCEDURE_CALL2(p, a1, a2);
 }
 
 /*---------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ static obj_t
 generic_entry3(obj_t proc, obj_t a1, obj_t a2, obj_t a3) {
    obj_t p = PROCEDURE_REF(proc, 3);
 
-   return PROCEDURE_ENTRY(p)(p, a1, a2, a3);
+   return BGL_PROCEDURE_CALL3(p, a1, a2, a3);
 }
 
 /*---------------------------------------------------------------------*/
@@ -175,7 +175,7 @@ static obj_t
 generic_entry4(obj_t proc, obj_t a1, obj_t a2, obj_t a3, obj_t a4) {
    obj_t p = PROCEDURE_REF(proc, 3);
 
-   return PROCEDURE_ENTRY(p)(p, a1, a2, a3, a4);
+   return BGL_PROCEDURE_CALL4(p, a1, a2, a3, a4);
 }
 
 /*---------------------------------------------------------------------*/
@@ -186,7 +186,7 @@ static obj_t
 generic_entry5(obj_t proc, obj_t a1, obj_t a2, obj_t a3, obj_t a4, obj_t a5) {
    obj_t p = PROCEDURE_REF(proc, 3);
 
-   return PROCEDURE_ENTRY(p)(p, a1, a2, a3, a4, a5);
+   return BGL_PROCEDURE_CALL5(p, a1, a2, a3, a4, a5);
 }
 
 /*---------------------------------------------------------------------*/
@@ -510,7 +510,7 @@ opt_generic_entry(obj_t proc, ...) {
 #define CALL(proc) ((obj_t (*)())PROCEDURE_VA_ENTRY(proc))
    res = CALL(proc)(proc, args);
 
-#if (__APPLE__ == 1)
+#if (__APPLE__ == 1  && __APPLE_CC__ >= 6000)
    free(CVECTOR(args));
 #endif
 

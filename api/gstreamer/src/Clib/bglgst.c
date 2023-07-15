@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/gstreamer/src/Clib/bglgst.c      */
+/*    .../project/bigloo/bigloo/api/gstreamer/src/Clib/bglgst.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Wed Feb 13 15:07:26 2013 (serrano)                */
-/*    Copyright   :  2007-13 Manuel Serrano                            */
+/*    Last change :  Tue Jul 11 17:33:17 2023 (serrano)                */
+/*    Copyright   :  2007-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
 /*=====================================================================*/
@@ -152,7 +152,7 @@ bgl_gst_init( obj_t args ) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_gst_finalize( obj_t obj, obj_t proc ) {
-   PROCEDURE_ENTRY( proc )( proc, obj, BEOA );
+   BGL_PROCEDURE_CALL1(proc, obj);
 }
 
 /*---------------------------------------------------------------------*/
@@ -434,43 +434,38 @@ bgl_gst_invoke_callbacks() {
 
       switch( cb->arity ) {
 	 case 0:
-	    PROCEDURE_ENTRY( proc )
-	       ( proc,
-		 BEOA );
+	    BGL_PROCEDURE_CALL0
+	       ( proc );
 	    break;
 	    
 	 case 1:
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL1
 	       ( proc,
-		 convert( cb->args[ 0 ], BTRUE ),
-		 BEOA );
+		 convert( cb->args[ 0 ], BTRUE ) );
 	    break;
 	    
 	 case 2:
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL2
 	       ( proc,
 		 convert( cb->args[ 0 ], BTRUE ),
-		 convert( cb->args[ 1 ], BTRUE ),
-		 BEOA );
+		 convert( cb->args[ 1 ], BTRUE ) );
 	    break;
 	    
 	 case 3:
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL3
 	       ( proc,
 		 convert( cb->args[ 0 ], BTRUE ),
 		 convert( cb->args[ 1 ], BTRUE ),
-		 convert( cb->args[ 2 ], BTRUE ),
-		 BEOA );
+		 convert( cb->args[ 2 ], BTRUE ) );
 	    break;
 	    
 	 case 4:
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL4
 	       ( proc,
 		 convert( cb->args[ 0 ], BTRUE ),
 		 convert( cb->args[ 1 ], BTRUE ),
 		 convert( cb->args[ 2 ], BTRUE ),
-		 convert( cb->args[ 3 ], BTRUE ),
-		 BEOA );
+		 convert( cb->args[ 3 ], BTRUE ) );
 	    break;
       }
 
@@ -820,9 +815,8 @@ closure_marshal( GClosure *closure,
    switch( n_param_values ) {
       case 0: {
 	 if( bglgst_use_threadsp() ) {
-	    PROCEDURE_ENTRY( proc )
-	       ( proc,
-		 BEOA );
+	    BGL_PROCEDURE_CALL0
+	       ( proc );
 	 } else {
 	    bgl_gst_register_async_callback( cb );
 	 }
@@ -831,10 +825,9 @@ closure_marshal( GClosure *closure,
 
       case 1: {
 	 if( bglgst_use_threadsp() ) {
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL1
 	       ( proc,
-		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),
-		 BEOA );
+		 bgl_g_value_to_obj( param_values + 0, 1, 1 ) );
 	 } else {
 	    cb->args[ 0 ] = bgl_g_value_markandcopy( param_values + 0 );
 	    bgl_gst_register_async_callback( cb );
@@ -844,11 +837,10 @@ closure_marshal( GClosure *closure,
 
       case 2: {
 	 if( bglgst_use_threadsp() ) {
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL2
 	       ( proc,
 		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),
-		 bgl_g_value_to_obj( param_values + 1, 1, 1 ),
-		 BEOA );
+		 bgl_g_value_to_obj( param_values + 1, 1, 1 ) );
 	 } else {
 	    cb->args[ 0 ] = bgl_g_value_markandcopy( param_values + 0 );
 	    cb->args[ 1 ] = bgl_g_value_markandcopy( param_values + 1 );
@@ -859,12 +851,11 @@ closure_marshal( GClosure *closure,
 
       case 3: {
 	 if( bglgst_use_threadsp() ) {
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL3
 	       ( proc,
 		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),
 		 bgl_g_value_to_obj( param_values + 1, 1, 1 ),
-		 bgl_g_value_to_obj( param_values + 2, 1, 1 ),
-		 BEOA );
+		 bgl_g_value_to_obj( param_values + 2, 1, 1 ) );
 	 } else {
 	    cb->args[ 0 ] = bgl_g_value_markandcopy( param_values + 0 );
 	    cb->args[ 1 ] = bgl_g_value_markandcopy( param_values + 1 );
@@ -876,13 +867,12 @@ closure_marshal( GClosure *closure,
 
       case 4: {
 	 if( bglgst_use_threadsp() ) {
-	    PROCEDURE_ENTRY( proc )
+	    BGL_PROCEDURE_CALL4
 	       ( proc,
 		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),
 		 bgl_g_value_to_obj( param_values + 1, 1, 1 ),
 		 bgl_g_value_to_obj( param_values + 2, 1, 1 ),
-		 bgl_g_value_to_obj( param_values + 3, 1, 1 ),
-		 BEOA );
+		 bgl_g_value_to_obj( param_values + 3, 1, 1 ) );
 	 } else {
 	    cb->args[ 0 ] = bgl_g_value_markandcopy( param_values + 0 );
 	    cb->args[ 1 ] = bgl_g_value_markandcopy( param_values + 1 );
@@ -1444,9 +1434,7 @@ static GstPadProbeReturn
 buffer_probe_call( GstPad *pad, GstPadProbeInfo *info, gpointer data ) {
    obj_t proc = (obj_t)data;
    GstBuffer *buffer = (GstBuffer *)info->data;
-   return (CBOOL (PROCEDURE_ENTRY( proc )( proc,
-					   bgl_gst_buffer_new( buffer, BFALSE ),
-					   BEOA )))
+   return (CBOOL (BGL_PROCEDURE_CALL1( proc, bgl_gst_buffer_new( buffer, BFALSE ) )));
       ? GST_PAD_PROBE_OK
       : GST_PAD_PROBE_DROP;
 }

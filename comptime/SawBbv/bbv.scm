@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Nov 15 07:14:46 2022 (serrano)                */
-;*    Copyright   :  2017-22 Manuel Serrano                            */
+;*    Last change :  Tue Jul  4 18:04:20 2023 (serrano)                */
+;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Basic Blocks versioning experiment.                              */
+;*    Basic Blocks Versioning experiment.                              */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

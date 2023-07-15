@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/phidget                     */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/phidget              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Nov 11 08:21:35 2013 (serrano)                */
+#*    Last change :  Mon Jul 10 13:56:52 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host phidget library.                              */
 #*=====================================================================*/
@@ -80,7 +80,7 @@ if eval "$BUILDSH $compile"; then
    echo "$phidgetlib"
    \rm -f $file.*
    \rm -f $aout
-   \rm -f $aout*
+   \rm -rf $aout*
    exit 0
 else
    phidgetlib="-framework Phidget21 -F/Library/Frameworks"
@@ -90,7 +90,7 @@ else
      echo "$phidgetlib"
      \rm -f $file.*
      \rm -f $aout
-     \rm -f $aout*
+     \rm -rf $aout*
      exit 0
    else
      echo ""

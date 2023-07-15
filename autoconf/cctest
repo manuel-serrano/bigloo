@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/cctest                      */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/cctest               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Mon Nov 23 14:20:29 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 14:02:04 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler                                          */
 #*=====================================================================*/
@@ -90,10 +90,10 @@ EOF
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile" > /dev/null; then
    \rm -f $file.*
-   \rm -f $aout*
+   \rm -rf $aout*
    echo $cc
 else
    \rm -f $file.*
-   \rm -f $aout*
+   \rm -rf $aout*
    echo ""
 fi

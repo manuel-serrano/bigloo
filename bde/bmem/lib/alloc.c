@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Mar  8 08:19:34 2023 (serrano)                */
+/*    Last change :  Fri Jun 16 15:14:07 2023 (serrano)                */
 /*    Copyright   :  2003-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -32,6 +32,7 @@ static long long alloc_size = 0;
 
 extern void gc_alloc_size_add(int size);
 extern long gc_alloc_size();
+extern unsigned long gc_number;
 
 static long alloc_typenum = -1;
 
@@ -362,10 +363,11 @@ void
 alloc_dump_statistics() {
    fprintf(stderr, "\n\n===================================================\n");
    if (bmem_color) {
-      fprintf(stderr, "[0m[1;32mallocation size:[0m %.2fMB\n\n", (double)alloc_size / (1024. * 1024.));
+      fprintf(stderr, "[0m[1;32mallocation size:[0m %.2fMB\n", (double)alloc_size / (1024. * 1024.));
    } else {
-      fprintf(stderr, "allocation size: %.2fMB\n\n", (double)alloc_size / (1024. * 1024.));
+      fprintf(stderr, "allocation size: %.2fMB\n", (double)alloc_size / (1024. * 1024.));
    }
+   fprintf(stderr, "gc count: %lu\n\n", gc_number);
    hashtable_foreach(file_allocs, file_dump_alloc_size);
 
    dump_types_cnt();

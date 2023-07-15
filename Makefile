@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Nov  4 21:07:11 2022 (serrano)                */
-#*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jul 11 15:27:19 2023 (serrano)                */
+#*    Copyright   :  1998-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -481,7 +481,7 @@ distrib: ChangeLog
            cd $(BUILDDIRNAME) && \
            cat $(BOOTDIR)/Makefile.config | sed 's/BFEATUREFLAGS=.*/BFEATUREFLAGS=-srfi enable-gmp/' | sed 's/BOOTFLAGS=.*/BOOTFLAGS=/' > Makefile.config \
            && cp $(BOOTDIR)/Makefile.buildconfig Makefile.buildconfig \
-           && $(MAKE) true-distrib)
+           && $(MAKE) EFLAGS="$(EFLAGS) -stdc" true-distrib)
 	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo-$(RELEASE)
 
 true-distrib: $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz

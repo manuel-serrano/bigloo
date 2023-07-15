@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sat May 13 06:54:58 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 17:09:12 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -103,7 +103,7 @@ signal_handler(int num) {
    signal(num, (void (*)(int))(signal_handler));
 #endif
    if (PROCEDUREP(handler)) {
-      return ((obj_t (*)())PROCEDURE_ENTRY(handler))(handler, BINT(num), BEOA);
+      return BGL_PROCEDURE_CALL1(handler, BINT(num));
    } else {
       return BUNSPEC;
    }
@@ -533,7 +533,7 @@ bgl_time(obj_t thunk) {
    BGL_ENV_MVALUES_VAL_SET(env, 2, 0);
    BGL_ENV_MVALUES_VAL_SET(env, 3, 0);
 
-   return PROCEDURE_ENTRY(thunk)(thunk, BEOA);
+   return BGL_PROCEDURE_CALL0(thunk);
 #else   
    static long ctick = 0;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
@@ -544,7 +544,7 @@ bgl_time(obj_t thunk) {
    if (!ctick) ctick = sysconf(_SC_CLK_TCK);
 
    t1 = times(&buf1);
-   res = PROCEDURE_ENTRY(thunk)(thunk, BEOA);
+   res = BGL_PROCEDURE_CALL0(thunk);
    t2 = times(&buf2);
       
    BGL_ENV_MVALUES_NUMBER_SET(env, 4);
@@ -816,6 +816,7 @@ bgl_ioctl(obj_t dev, long request, long val) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_getrlimit(long resource) {
+#if BGL_HAVE_GETRLIMIT
    struct rlimit lim;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
    if (!getrlimit(resource, &lim)) {
@@ -827,6 +828,9 @@ bgl_getrlimit(long resource) {
       BGL_ENV_MVALUES_VAL_SET(env, 1, ELONG_TO_BELONG(-1));
       return ELONG_TO_BELONG(-1);
    }
+#else
+   return ELONG_TO_BELONG(-2);
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -835,12 +839,16 @@ bgl_getrlimit(long resource) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_setrlimit(long resource, long soft, long hard) {
+#if BGL_HAVE_GETRLIMIT
    struct rlimit lim = { rlim_cur: soft, rlim_max: hard };
    if (!setrlimit(resource, &lim)) {
       return BTRUE;
    } else {
       return BFALSE;
    }
+#else
+   return BFALSE;
+#endif
 }
 
 /*---------------------------------------------------------------------*/

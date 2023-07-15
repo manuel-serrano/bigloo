@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pthreadtimedjoin            */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/pthreadtimedjoin     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Apr 17 17:12:39 2012 (serrano)                */
+#*    Last change :  Mon Jul 10 13:57:00 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host pthread timedjoin library.                    */
 #*=====================================================================*/
@@ -99,6 +99,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

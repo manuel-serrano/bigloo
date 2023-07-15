@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/nbprocs                     */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/nbprocs              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 16 14:44:46 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 13:59:40 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the number of processors.                                  */
 #*=====================================================================*/
@@ -98,5 +98,5 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*
 rm -f $file.*

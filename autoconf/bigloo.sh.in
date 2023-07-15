@@ -10,8 +10,8 @@
 #*    Bigloo wrapper                                                   */
 #*=====================================================================*/
 
-LD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$LD_LIBRARY_PATH
-DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
+LD_LIBRARY_PATH=@BGLBUILDLIBDIRS@:$LD_LIBRARY_PATH
+DYLD_LIBRARY_PATH=@BGLBUILDLIBDIRS@:$DYLD_LIBRARY_PATH
 
 export LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH

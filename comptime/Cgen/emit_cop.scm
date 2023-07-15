@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Mon Apr  3 15:33:05 2023 (serrano)                */
+;*    Last change :  Wed Jul 12 13:25:51 2023 (serrano)                */
 ;*    Copyright   :  1996-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -323,13 +323,17 @@
 		(vector-set! cfuncall-casts largs p)
 		p)))))
 
+   (define (fun-cast-va-strict actuals)
+      "(obj_t (*)(obj_t, ...))")
+
    (define (fun-l-cast actuals)
       (format "(obj_t (*)(~(, )))"
 	 (map (lambda (a) (type-name (cop-type a)))
 	    (reverse! (cdr (reverse actuals))))))
 	     
    (define (out-call op cast actuals)
-      (if (eq? (cfuncall-type cop) *obj*)
+      (if (or (eq? (cfuncall-type cop) *obj*)
+	      (equal? "obj_t" (type-name (cfuncall-type cop))))
 	  (begin
 	     (display "(" *c-port*)
 	     (display (cast actuals) *c-port*)
@@ -392,6 +396,36 @@
 			    (emit-cop (car actuals))
 			    (display ", " *c-port*)
 			    (loop (cdr actuals)))))))
+	    (emit-regular-cfuncall/strict-fx (cop)
+	       (let ((actuals (reverse! (cdr (reverse (cfuncall-args cop))))))
+		  (out-call "PROCEDURE_ENTRY" fun-cast actuals)
+		  (if (null? actuals)
+		      (display "()" *c-port*)
+		      (let loop ((actuals actuals))
+			 (if (null? (cdr actuals))
+			     (begin
+				(emit-cop (car actuals))
+				(display ")" *c-port*)
+				#t)
+			     (begin
+				(emit-cop (car actuals))
+				(display ", " *c-port*)
+				(loop (cdr actuals))))))))
+	    (emit-regular-cfuncall/strict-va (cop)
+	       (let ((actuals (cfuncall-args cop)))
+		  (out-call "PROCEDURE_ENTRY" fun-cast-va-strict actuals)
+		  (let loop ((actuals actuals))
+		     ;; actuals are never empty because there is always
+		     ;; the function and EOA.
+		     (if (null? (cdr actuals))
+			 (begin
+			    (emit-cop (car actuals))
+			    (display ")" *c-port*)
+			    #t)
+			 (begin
+			    (emit-cop (car actuals))
+			    (display ", " *c-port*)
+			    (loop (cdr actuals)))))))
 	    (emit-regular-cfuncall/oeoa (cop)
 	       (let ((actuals (cfuncall-args cop)))
 		  (out-call "PROCEDURE_ENTRY" fun-cast actuals)
@@ -412,9 +446,9 @@
 		  (display "(VA_PROCEDUREP( " *c-port*)
 		  (emit-cop (cfuncall-fun cop))
 		  (display " ) ? " *c-port*)
-		  (emit-regular-cfuncall/eoa cop)
+		  (emit-regular-cfuncall/strict-va cop)
 		  (display " : " *c-port*)
-		  (emit-regular-cfuncall/oeoa cop)
+		  (emit-regular-cfuncall/strict-fx cop)
 		  (display " )" *c-port*)
 		  #t)))
       (emit-bdb-loc (cop-loc cop))

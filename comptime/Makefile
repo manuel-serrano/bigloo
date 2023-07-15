@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Nov  4 21:23:21 2022 (serrano)                */
-#*    Copyright   :  1998-2022 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jul 11 15:27:21 2023 (serrano)                */
+#*    Copyright   :  1998-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */

@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/gstreameraudio              */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/gstreameraudio       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jan 11 08:05:48 2008                          */
-#*    Last change :  Fri Dec  9 12:31:00 2011 (serrano)                */
-#*    Copyright   :  2008-11 Manuel Serrano                            */
+#*    Last change :  Mon Jul 10 14:00:51 2023 (serrano)                */
+#*    Copyright   :  2008-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if gstreameraudio is available                             */
 #*=====================================================================*/
@@ -79,6 +79,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

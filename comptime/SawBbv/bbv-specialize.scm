@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Nov 14 12:12:40 2022 (serrano)                */
-;*    Copyright   :  2017-22 Manuel Serrano                            */
+;*    Last change :  Thu Jul 13 11:02:51 2023 (serrano)                */
+;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
 ;*=====================================================================*/
@@ -41,29 +41,6 @@
    (export (bbv-block*::blockS ::blockV ::bbv-ctx)))
 
 ;*---------------------------------------------------------------------*/
-;*    new-blockS ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (new-blockS bv::blockV ctx::bbv-ctx)
-   (let* ((lbl (genlabel))
-	  (bs (instantiate::blockS
-		 (ctx ctx)
-		 (parent bv)
-		 (label lbl)
-		 (first '()))))
-      (with-access::blockV bv (versions)
-	 (set! versions (cons bs versions))
-	 bs)))
-
-;*---------------------------------------------------------------------*/
-;*    live-blockS ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (live-blockS b::blockS)
-   (with-access::blockS b (mblock)
-      (if mblock
-	  (live-blockS mblock)
-	  b)))
-
-;*---------------------------------------------------------------------*/
 ;*    bbv-block* ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block*::blockS bv::blockV ctx::bbv-ctx)
@@ -85,6 +62,29 @@
 				   (bbv-block-merge! bv queue))
 			 blocks)
 		      (loop queue))))))))
+
+;*---------------------------------------------------------------------*/
+;*    new-blockS ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (new-blockS bv::blockV ctx::bbv-ctx)
+   (let* ((lbl (genlabel))
+	  (bs (instantiate::blockS
+		 (ctx ctx)
+		 (parent bv)
+		 (label lbl)
+		 (first '()))))
+      (with-access::blockV bv (versions)
+	 (set! versions (cons bs versions))
+	 bs)))
+
+;*---------------------------------------------------------------------*/
+;*    live-blockS ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (live-blockS b::blockS)
+   (with-access::blockS b (mblock)
+      (if mblock
+	  (live-blockS mblock)
+	  b)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
@@ -1053,9 +1053,9 @@
 		   (rhs (cadr args))
 		   (subcall (duplicate::rtl_call fun
 			       (var (cond
-				       ((eq? var *$-fx/ov*) *-fx*)
-				       ((eq? var *$+fx/ov*) *+fx*)
-				       ((eq? var *$*fx/ov*) **fx*)
+				       ((eq? var *$-fx/ov*) *$-fx/w-ov*)
+				       ((eq? var *$+fx/ov*) *$+fx/w-ov*)
+				       ((eq? var *$*fx/ov*) *$*fx/w-ov*)
 				       (else (error "fx/ov" "unknown op" (shape var))))))))
 	       (values (duplicate::rtl_ins/bbv ins
 			  (dest reg)

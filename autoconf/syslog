@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/syslog                      */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/syslog               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Oct  2 16:48:46 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 13:53:23 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if SYSLOG exits. Return 0, 1.                              */
 #*=====================================================================*/
@@ -66,7 +66,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    echo 0

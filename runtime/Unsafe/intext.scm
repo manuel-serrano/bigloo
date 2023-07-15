@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Sep 21 10:50:30 2022 (serrano)                */
+;*    Last change :  Sat Jun 10 07:37:58 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -1441,7 +1441,7 @@
 ;*---------------------------------------------------------------------*/
 (define *string->procedure*
    (lambda (string)
-      (error "string->obj" "Cannott intern procedure item" (excerpt string))))
+      (error "string->obj" "Cannot intern procedure item" (excerpt string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn register-procedure-serialization!@ ...                    */

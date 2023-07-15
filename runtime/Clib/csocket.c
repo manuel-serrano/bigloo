@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Feb 15 15:57:59 2023 (serrano)                */
+/*    Last change :  Tue Jul 11 17:53:43 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2304,7 +2304,7 @@ socket_close(obj_t sock) {
 
       if (PROCEDUREP(chook)) {
 	 if (PROCEDURE_ARITY(chook) == 1) {
-	    PROCEDURE_ENTRY(chook)(chook, sock, BEOA);
+	    BGL_PROCEDURE_CALL1(chook, sock);
 	 } else {
 	    C_SYSTEM_FAILURE(BGL_IO_PORT_ERROR,
 			      "socket-close",
@@ -3072,7 +3072,7 @@ bgl_datagram_socket_close(obj_t sock) {
 
       if (PROCEDUREP(chook)) {
 	 if (PROCEDURE_ARITY(chook) == 1) {
-	    PROCEDURE_ENTRY(chook)(chook, sock, BEOA);
+	    BGL_PROCEDURE_CALL1(chook, sock);
 	 } else {
 	    C_SYSTEM_FAILURE(BGL_ERROR,
 			      "datagram-socket-close",

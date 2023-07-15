@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/bcopy                       */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/bcopy                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Sep 23 11:26:56 2010 (serrano)                */
+#*    Last change :  Mon Jul 10 14:01:44 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the ptr size on the current architecture                    */
 #*=====================================================================*/
@@ -68,7 +68,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    \rm -f $file.*

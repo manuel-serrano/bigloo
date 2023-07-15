@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Nov  1 18:44:16 2020 (serrano)                */
+#*    Last change :  Mon Jul 10 13:58:55 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host pthread cancel library.                       */
 #*=====================================================================*/
@@ -87,6 +87,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

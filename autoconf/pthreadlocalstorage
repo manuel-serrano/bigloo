@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Apr 12 07:59:46 2019 (serrano)                */
+#*    Last change :  Mon Jul 10 13:58:40 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if the host supports pthread local storage.                */
 #*=====================================================================*/
@@ -104,6 +104,6 @@ fi
 
 \rm -f $file.*
 \rm -f $aout
-\rm -f $aout*
+\rm -rf $aout*
 
 exit 0

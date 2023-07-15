@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Fri Nov  4 09:42:07 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  4 10:57:52 2023 (serrano)                */
+;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
 ;*                                                                     */
@@ -78,15 +78,15 @@
 	 ;; show approximation results (after dead-code-removal!)
 	 (show-cfa-results globals)
 	 ;; tvector optimization
-	 (let ((d *dest*))
-	    (set! *dest* "/tmp/vec.ast")
-	    (write-ast globals)
-	    (set! *dest* d))
+;* 	 (let ((d *dest*))                                             */
+;* 	    (set! *dest* "/tmp/vec.ast")                               */
+;* 	    (write-ast globals)                                        */
+;* 	    (set! *dest* d))                                           */
 	 (let ((additional (profile tvect (vector->tvector! globals))))
-	    (let ((d *dest*))
-	    (set! *dest* "/tmp/tvec.ast")
-	    (write-ast globals)
-	    (set! *dest* d))
+;* 	    (let ((d *dest*))                                          */
+;* 	    (set! *dest* "/tmp/tvec.ast")                              */
+;* 	    (write-ast globals)                                        */
+;* 	    (set! *dest* d))                                           */
 	    ;; closure allocations optimization
 	    (profile clo (closure-optimization! globals))
 	    ;; type setting

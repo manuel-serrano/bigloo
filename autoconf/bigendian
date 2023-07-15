@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/bigendian                   */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/bigendian            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 16 14:42:27 2016 (serrano)                */
+#*    Last change :  Mon Jul 10 14:01:48 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the ptr size on the current architecture                    */
 #*=====================================================================*/
@@ -76,4 +76,4 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*

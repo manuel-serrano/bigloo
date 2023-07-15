@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 10 11:15:20 2013                          */
-/*    Last change :  Thu Feb 23 08:20:51 2023 (serrano)                */
+/*    Last change :  Mon Jul 10 15:53:22 2023 (serrano)                */
 /*    Copyright   :  2013-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The GC interface                                                 */
@@ -16,7 +16,7 @@
 /*    bgl_gc_init                                                      */
 /*---------------------------------------------------------------------*/
 GC_API void bgl_gc_init() {
-   static init = 0;
+   static char init = 0;
 
    if (!init) {
  #ifdef GC_THREADS

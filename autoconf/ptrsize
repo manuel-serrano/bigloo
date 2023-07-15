@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/ptrsize                     */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/ptrsize              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Sep  7 09:03:09 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 13:58:17 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the ptr size on the current architecture                    */
 #*=====================================================================*/
@@ -67,4 +67,4 @@ else
 fi
 
 rm -f $aout
-rm -f $aout*
+rm -rf $aout*

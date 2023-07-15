@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/mixer                       */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/mixer                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Oct 28 19:54:35 2009 (serrano)                */
+#*    Last change :  Mon Jul 10 13:59:56 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check mixer support                                              */
 #*=====================================================================*/
@@ -142,7 +142,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    \rm -f $file.*

@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/getgid                      */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/getgid               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Jul  7 18:51:57 2013 (serrano)                */
+#*    Last change :  Mon Jul 10 14:03:19 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Does the architecture supports user manipulation?                */
 #*=====================================================================*/
@@ -68,7 +68,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    echo 0

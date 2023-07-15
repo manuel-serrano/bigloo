@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/setenv                      */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/setenv               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Sep  1 10:21:52 2010 (serrano)                */
+#*    Last change :  Mon Jul 10 13:55:58 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if setenv exits. Return 0, 1.                             */
 #*=====================================================================*/
@@ -63,7 +63,7 @@ EOF
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
-   rm -f $aout*
+   rm -rf $aout*
    echo 1
 else
    echo 0
