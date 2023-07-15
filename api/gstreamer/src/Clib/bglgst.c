@@ -1434,7 +1434,7 @@ static GstPadProbeReturn
 buffer_probe_call( GstPad *pad, GstPadProbeInfo *info, gpointer data ) {
    obj_t proc = (obj_t)data;
    GstBuffer *buffer = (GstBuffer *)info->data;
-   return (CBOOL (BGL_PROCEDURE_CALL1( proc, bgl_gst_buffer_new( buffer, BFALSE ) )));
+   return (CBOOL (BGL_PROCEDURE_CALL1( proc, bgl_gst_buffer_new( buffer, BFALSE ) )))
       ? GST_PAD_PROBE_OK
       : GST_PAD_PROBE_DROP;
 }

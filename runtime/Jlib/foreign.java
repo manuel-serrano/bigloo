@@ -6596,7 +6596,7 @@ public final class foreign
    
    public static boolean rgc_buffer_eof_p(input_port p)
       {
-	 return ((p.buffer.length == p.forward) && (p.forward == p.bufpos));
+         return p.eof && (p.matchstop == p.bufpos);
       }
 
    public static boolean rgc_buffer_eof2_p(input_port p, int forward, int bufpos)
