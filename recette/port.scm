@@ -625,6 +625,13 @@
 		   '("dump" "input.txt" "jm.txt" "trap.txt"))
 		#t #f))
 	 #t)
+   (test "directory->vector"
+         (let ((lst (vector->list (directory->vector "misc"))))
+	    (if (every (lambda (f)
+			  (member f lst))
+		   '("dump" "input.txt" "jm.txt" "trap.txt"))
+		#t #f))
+	 #t)
    (test "flush-output-string-port"
 	 (let ((outp (open-output-string)))
 	    (display "this is some text" outp)

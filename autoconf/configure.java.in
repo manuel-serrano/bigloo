@@ -48,6 +48,7 @@ public class configure {
   public static final byte[] C_COMPILER = "@C_COMPILER@".getBytes();
   public static final byte[] C_LD = "@C_LD@".getBytes();
   public static final byte[] C_FLAGS = "@C_FLAGS@".getBytes();
+  public static final boolean STRICT_STDCC = (@BGL_STRICT_STDC@ == 1);  
   public static final byte[] C_PICFLAGS = "@C_PICFLAGS@".getBytes();
   public static final byte[] C_NANFLAGS = "@C_NANFLAGS@".getBytes();
   public static final byte[] C_COMPILER_O_OPTION = "@C_COMPILER_O_OPTION@".getBytes();
@@ -94,6 +95,7 @@ public class configure {
   public static final byte[] BGL_REGEXP_FAMILY = "@BGL_REGEXP_FAMILY@".getBytes();
   public static final boolean BGL_HAVE_UNISTRING = false;
   public static final boolean BGL_HAVE_SYSLOG = false;
+  public static final boolean BGL_HAVE_GETRLIMIT = (@HAVE_GETRLIMIT@ == 1);
   public static final boolean BGL_HAVE_OVERFLOW = false;
   public static final byte[] BGL_OS_CLASS = "@OS_CLASS@".getBytes();
   public static final byte[] BGL_OS_NAME = "@OS_NAME@".getBytes();

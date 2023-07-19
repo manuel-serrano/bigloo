@@ -5528,7 +5528,7 @@ public final class foreign
 	 }
       }
 
-   public static int bgl_directory_length(byte[] name) {
+   public static int bgl_directory_length(byte[] name) 
       {
 	 if( is_resourcep( name ) ) {
 	    return bigloo.input_resource_port.bgl_directory_length( resource_name( name ) );
@@ -5554,6 +5554,25 @@ public final class foreign
 	    }
 	 
 	    return result;
+	 }
+      }
+
+   public static Object bgl_directory_to_vector(byte[]name)
+      {
+	 if( is_resourcep( name ) ) {
+	    return bigloo.input_resource_port.bgl_directory_to_vector( resource_name( name ) );
+	 } else {
+	    final String[] files = (new File(new String(name))).list();            
+	    if (files != null) {
+	       final int file_count = files.length;
+               Object[] result = make_vector(file_count, bigloo.foreign.BUNSPEC);
+               
+	       for (int i = 0; i < file_count; ++i)
+                  result[i] = files[i].getBytes();
+               return result;
+	    } else {
+	       return make_vector0();  
+            }
 	 }
       }
 
@@ -6577,7 +6596,7 @@ public final class foreign
    
    public static boolean rgc_buffer_eof_p(input_port p)
       {
-	 return ((p.buffer.length == p.forward) && (p.forward == p.bufpos));
+         return p.eof && (p.matchstop == p.bufpos);
       }
 
    public static boolean rgc_buffer_eof2_p(input_port p, int forward, int bufpos)

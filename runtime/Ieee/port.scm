@@ -386,6 +386,8 @@
 		  "bgl_directory_length")
 	       (method static $directory->list::obj (::string)
 		  "bgl_directory_to_list")
+               (method static $directory->vector::obj (::string)
+		  "bgl_directory_to_vector")
 	       (method static $modification-time::elong (::string)
 		  "bgl_last_modification_time")
 	       (method static $change-time::elong (::string)
