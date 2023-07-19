@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Jul 13 08:09:28 2023 (serrano)                */
+;*    Last change :  Fri Jul 14 10:44:41 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -622,8 +622,6 @@
 ;*    type-error ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (type-error fname loc proc type obj)
-   (tprint "TERROR fname=" fname " loc=" loc " proc=" proc " type=" type
-      " obj=" (typeof obj))
    (let* ((ty (cond
 		 ((string? type) type)
 		 ((symbol? type) (symbol->string type))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Wed Jul  5 18:04:22 2023 (serrano)                */
+;*    Last change :  Wed Jul 19 09:32:33 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -1408,8 +1408,7 @@
 	     ((SIGPENDING) $rlimit-sigpending)
 	     ((STACK) $rlimit-stack)
 	     (else (error id "illegal limit resource" r))))
-	 (else
-	  (error id "limit unsupported" r))))
+	 (else (error id "limit unsupported" r))))
    
    (cond
       ((fixnum? r) r)
