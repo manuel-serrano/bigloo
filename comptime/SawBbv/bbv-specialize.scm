@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jul 13 17:13:57 2023 (serrano)                */
+;*    Last change :  Wed Jul 19 12:41:14 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -497,7 +497,7 @@
 	       ((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
 		(let ((e (bbv-ctx-get ctx (car args))))
 		   (with-access::bbv-ctxentry e (types value polarity)
-		      (if (and (bbv-singleton? value))
+		      (if (bbv-singleton? value)
 			  (values (range->loadi i dest value types)
 			     (extend-ctx ctx dest types polarity :value value))
 			  (values (duplicate-ins i ctx)
@@ -533,7 +533,24 @@
 			 (values (duplicate-ins i ctx)
 			    (extend-ctx ctx dest (list type) #t))))))
 	       (else
-		(values (duplicate-ins i ctx) ctx)))))))
+		(with-access::rtl_reg dest (type)
+		   (values (duplicate-ins i ctx)
+		      (extend-ctx ctx dest (list (if (eq? type *obj*) (rtl_ins-type i) type)) #t)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-type ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-type i::rtl_ins)
+   (with-access::rtl_ins i (fun args)
+      (cond
+	 ((isa? fun rtl_mov)
+	  (rtl_ins-type (car args)))
+	 ((isa? fun rtl_call)
+	  (with-access::rtl_call fun (var)
+	     (with-access::variable var (value type)
+		type)))
+	 (else
+	  *obj*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadi ...                                     */
