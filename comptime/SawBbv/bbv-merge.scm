@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Fri Oct 28 07:10:18 2022 (serrano)                */
-;*    Copyright   :  2022 Manuel Serrano                               */
+;*    Last change :  Thu Jul 13 11:42:47 2023 (serrano)                */
+;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 ;*    bbv-block-merge ...                                              */
 ;*    -------------------------------------------------------------    */
 ;*    lvs is a list of blockS. The result is three values. Two         */
-;*    block to be replaced and a ctx of the new block.                 */
+;*    blocks to be replaced and a ctx of the new block.                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge bs::pair-nil)
    (multiple-value-bind (bs1 bs2)
