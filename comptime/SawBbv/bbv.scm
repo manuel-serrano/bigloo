@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jul 13 17:08:53 2023 (serrano)                */
+;*    Last change :  Thu Jul 20 08:16:11 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -90,14 +90,16 @@
 						       (get-bb-mark)
 						       (gc! s)))))
 					   s))))
-			     (verbose 3 " " (length blocks) " -> " (length b))
+			     (verbose 3 " "
+				(length blocks) " -> " (length b))
 			     (verbose 2 "\n")
 			     (when (>=fx *trace-level* 1)
 				(dump-blocks global params
 				   (block->block-list regs s) ".bbv.cfg"))
 			     (map! (lambda (b) (shrink! b)) b)
 			     b))
-		      ;; don't shrink, otherwise dump could no longer be used
+		      ;; don't shrink, otherwise dump could no longer
+		      ;; be used
 		      (unless (or (>=fx *compiler-debug* 1)
 				  (>=fx *trace-level* 1))
 			 (for-each (lambda (r) (shrink! r)) regs)))))))

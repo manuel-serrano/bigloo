@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jul 19 12:41:14 2023 (serrano)                */
+;*    Last change :  Thu Jul 20 07:38:57 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -1111,6 +1111,27 @@
 				(let ((nctx (extend-ctx ctx reg
 					       (list *long*) #t
 					       :value range)))
+				   
+				   (values (fx-ov->fx var call reg ctx nctx)
+				      nctx))
+				(default call ifne reg))))
+			((eq? var *$-fx/ov*)
+			 (let ((range (bbv-range-sub intl intr)))
+			    (if (bbv-range-fixnum? range)
+				(let ((nctx (extend-ctx ctx reg
+					       (list *long*) #t
+					       :value range)))
+				   
+				   (values (fx-ov->fx var call reg ctx nctx)
+				      nctx))
+				(default call ifne reg))))
+			((eq? var *$*fx/ov*)
+			 (let ((range (bbv-range-mul intl intr)))
+			    (if (bbv-range-fixnum? range)
+				(let ((nctx (extend-ctx ctx reg
+					       (list *long*) #t
+					       :value range)))
+				   
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default call ifne reg))))

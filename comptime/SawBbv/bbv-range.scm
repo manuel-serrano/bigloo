@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Tue Nov 15 06:51:39 2022 (serrano)                */
-;*    Copyright   :  2022 manuel serrano                               */
+;*    Last change :  Thu Jul 20 07:53:52 2023 (serrano)                */
+;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
 ;*=====================================================================*/
@@ -215,7 +215,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-singleton? rng)
    (and (isa? rng bbv-range)
-	(=fx (bbv-range-up rng) (bbv-range-lo rng))
+	(eq? (bbv-range-up rng) (bbv-range-lo rng))
 	(> (bbv-range-up rng) (+fx (bbv-min-fixnum) 1))
 	(< (bbv-range-up rng) (-fx (bbv-max-fixnum) 1))))
 
@@ -372,40 +372,21 @@
 ;*---------------------------------------------------------------------*/
 (define (->range n)
    (cond
-      ((fixnum? n)
-       (cond
-	  ((>fx n (bbv-max-fixnum)) (bbv-max-fixnum))
-	  ((<fx n (bbv-min-fixnum)) (bbv-min-fixnum))
-	  (else n)))
-      ((> n 0) (bbv-max-fixnum))
-      (else (bbv-min-fixnum))))
+      ((fixnum? n) n)
+      ((bignum? n) (if (> n 0) +inf.0 -inf.0))
+      (else n)))
 
 ;*---------------------------------------------------------------------*/
 ;*    +rng ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (+rng x y)
-   (cond
-      ((=fx x (bbv-max-fixnum)) (bbv-max-fixnum))
-      ((=fx y (bbv-max-fixnum)) (bbv-max-fixnum))
-      ((=fx x (bbv-min-fixnum)) (+fx (bbv-min-fixnum) 1))
-      ((=fx x (+fx (bbv-min-fixnum) 1)) x)
-      ((=fx y (+fx (bbv-min-fixnum) 1)) y)
-      ((and (=fx x (-fx (bbv-max-fixnum) 1)) (>fx y 0)) (bbv-max-fixnum))
-      ((and (=fx y (-fx (bbv-max-fixnum) 1)) (>fx x 0)) (bbv-max-fixnum))
-      (else (->range (+ x y)))))
+   (->range (+ x y)))
       
 ;*---------------------------------------------------------------------*/
 ;*    -rng ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (-rng x y)
-   (cond
-      ((=fx x (bbv-min-fixnum)) (bbv-min-fixnum))
-      ((=fx y (bbv-min-fixnum)) (bbv-min-fixnum))
-      ((=fx x (-fx (bbv-max-fixnum) 1)) x)
-      ((=fx y (-fx (bbv-max-fixnum) 1)) y)
-      ((and (=fx x (-fx (bbv-min-fixnum) 1)) (<fx y 0)) (bbv-min-fixnum))
-      ((and (=fx y (-fx (bbv-min-fixnum) 1)) (<fx x 0)) (bbv-min-fixnum))
-      (else (->range (- x y)))))
+   (+rng x (- y)))
       
 ;*---------------------------------------------------------------------*/
 ;*    *rng ...                                                         */
@@ -417,13 +398,13 @@
 ;*    bbv-range-add ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-add left::bbv-range right::bbv-range)
-   (let ((ri (bbv-range-lo right))
-	 (ra (bbv-range-up right))
-	 (li (bbv-range-lo left))
-	 (la (bbv-range-up left)))
+   (let ((rl (bbv-range-lo right))
+	 (ru (bbv-range-up right))
+	 (ll (bbv-range-lo left))
+	 (lu (bbv-range-up left)))
       (instantiate::bbv-range
-	 (lo (+rng li ri))
-	 (up (+rng la ra)))))
+	 (lo (+rng ll rl))
+	 (up (+rng lu ru)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-sub ...                                                */

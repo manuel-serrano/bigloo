@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Tue Jul  4 18:21:00 2023 (serrano)                */
+;*    Last change :  Thu Jul 20 07:20:43 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -146,9 +146,9 @@
 	   (macro $+fx/ov::bool (::bint ::bint ::bint) "BGL_ADDFX_OV")
 	   (macro $-fx/ov::bool (::bint ::bint ::bint) "BGL_SUBFX_OV")
 	   (macro $*fx/ov::bool (::bint ::long ::bint) "BGL_MULFX_OV")
-	   (macro $+fx/w-ov::bool (::bint ::bint ::bint) "BGL_ADDFX_SANS_OV")
-	   (macro $-fx/w-ov::bool (::bint ::bint ::bint) "BGL_SUBFX_SANS_OV")
-	   (macro $*fx/w-ov::bool (::bint ::long ::bint) "BGL_MULFX_SANS_OV")
+	   (macro $+fx/w-ov::bint (::bint ::bint) "BGL_ADDFX_SANS_OV")
+	   (macro $-fx/w-ov::bint (::bint ::bint) "BGL_SUBFX_SANS_OV")
+	   (macro $*fx/w-ov::bint (::bint ::bint) "BGL_MULFX_SANS_OV")
 	   (infix macro c-+elong::elong (::elong ::elong) "+")
 	   (infix macro c-+llong::llong (::llong ::llong) "+")
 	   (infix macro $+s8::int8 (::int8 ::int8) "+")
@@ -1869,10 +1869,10 @@
 (define-inline (+fx/ov z1 z2)
    (cond-expand
       (bigloo-c
-       ($let ((res::bint 0))
-	  (if ($+fx/ov z1 z2 res)
+       ($let ((tmp::bint 0))
+	  (if ($+fx/ov z1 z2 tmp)
 	      (+bx (fixnum->bignum z1) (fixnum->bignum z2))
-	      res)))
+	      tmp)))
       (else
        (+fx-safe z1 z2))))
 
@@ -1901,10 +1901,10 @@
 (define-inline (-fx/ov z1 z2)
    (cond-expand
       (bigloo-c
-       ($let ((res::bint 0))
-	  (if ($-fx/ov z1 z2 res)
+       ($let ((tmp::bint 0))
+	  (if ($-fx/ov z1 z2 tmp)
 	      (-bx (fixnum->bignum z1) (fixnum->bignum z2))
-	      res)))
+	      tmp)))
       (else
        (-fx-safe z1 z2))))
 
@@ -1933,10 +1933,10 @@
 (define-inline (*fx/ov z1 z2)
    (cond-expand
       (bigloo-c
-       ($let ((res::bint 0))
-	  (if ($*fx/ov z1 z2 res)
+       ($let ((tmp::bint 0))
+	  (if ($*fx/ov z1 z2 tmp)
 	      (*bx (fixnum->bignum z1) (fixnum->bignum z2))
-	      res)))
+	      tmp)))
       (else
        (*fx-safe z1 z2))))
 
@@ -2244,11 +2244,11 @@
 				       (if (,=op r ,0op)
 					   n
 					   (gcd2 n r)))))))
-		 (let loop ((result (gcd2 (,absop (car ,x)) (,absop (cadr ,x))))
+		 (let loop ((tmp (gcd2 (,absop (car ,x)) (,absop (cadr ,x))))
 			    (left (cddr ,x)))
 		    (if (pair? left)
-			(loop (gcd2 result (,absop (car left))) (cdr left))
-			result)))))))
+			(loop (gcd2 tmp (,absop (car left))) (cdr left))
+			tmp)))))))
 
 (define (gcd . x) (gcdop || x 0))
 
@@ -2273,11 +2273,11 @@
   (cond ((null? x) (fixnum->bignum 0))
 	((null? (cdr x)) (absbx (car x)))
 	(else
-	 (let loop ((result ($gcdbx (absbx (car x)) (absbx (cadr x))))
+	 (let loop ((tmp ($gcdbx (absbx (car x)) (absbx (cadr x))))
 		    (left (cddr x)))
 	   (if (pair? left)
-	       (loop ($gcdbx result (absbx (car left))) (cdr left))
-	       result)))))
+	       (loop ($gcdbx tmp (absbx (car left))) (cdr left))
+	       tmp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lcmop ...                                                        */
@@ -2298,11 +2298,11 @@
 					 ((,=op (,remainderop m n) ,0op) m)
 					 ((,=op (,remainderop n m) ,0op) n)
 					 (else (,*op (,/op m (,gcdop m n)) n)))))))
-		 (let loop ((result (lcm2 (car ,x) (cadr ,x)))
+		 (let loop ((tmp (lcm2 (car ,x) (cadr ,x)))
 			    (left (cddr ,x)))
 		    (if (pair? left)
-			(loop (lcm2 result (car left)) (cdr left))
-			result)))))))
+			(loop (lcm2 tmp (car left)) (cdr left))
+			tmp)))))))
 
 (define (lcm . x) (lcmop || x 0 1))
 
@@ -2328,11 +2328,11 @@
   (cond ((null? x) (fixnum->bignum 1))
 	((null? (cdr x)) (absbx (car x)))
 	(else
-	 (let loop ((result ($lcmbx (car x) (cadr x)))
+	 (let loop ((tmp ($lcmbx (car x) (cadr x)))
 		    (left (cddr x)))
 	   (if (pair? left)
-	       (loop ($lcmbx result (car left)) (cdr left))
-	       result)))))
+	       (loop ($lcmbx tmp (car left)) (cdr left))
+	       tmp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptfx ...                                                       */
