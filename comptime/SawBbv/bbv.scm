@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jul 20 08:16:11 2023 (serrano)                */
+;*    Last change :  Thu Jul 20 11:33:45 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -82,14 +82,15 @@
 					  (block->block-list regs s)
 					  ".specialize.cfg")))
 				 (b (block->block-list regs
-				       (if *bbv-blocks-cleanup*
-					   (remove-nop!
-					      (remove-goto!
-						 (simplify-branch!
-						    (coalesce!
-						       (get-bb-mark)
-						       (gc! s)))))
-					   s))))
+				       (assert-context! 
+					  (if *bbv-blocks-cleanup*
+					      (remove-nop!
+						 (remove-goto!
+						    (simplify-branch!
+						       (coalesce!
+							  (get-bb-mark)
+							  (gc! s)))))
+					      s)))))
 			     (verbose 3 " "
 				(length blocks) " -> " (length b))
 			     (verbose 2 "\n")
@@ -663,15 +664,13 @@
 	 (else
 	  (with-access::block (car bs) (first succs preds label)
 	     (when *bbv-debug* (assert-block (car bs) "remove-nop!"))
-	     ;; (when (memq label '(5 148 415 1132 1123 448 606 1129))
-	     (when (memq label '(415))
-		(let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
-		   (if (pair? f)
-		       ;; prune the instructions
-		       (set! first f)
-		       ;; remove the block
-		       (let ((n (car succs)))
-			  (replace-block! (car bs) n)))))
+	     (let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
+		(if (pair? f)
+		    ;; prune the instructions
+		    (set! first f)
+		    ;; remove the block
+		    (let ((n (car succs)))
+		       (replace-block! (car bs) n))))
 	     (loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -711,6 +710,37 @@
 		      (set! fun (instantiate::rtl_nop)))))
 	     (loop (append succs (cdr bs))
 		(bbset-cons (car bs) acc)))))))
+
+;*---------------------------------------------------------------------*/
+;*    assert-context! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (assert-context! b::block)
+
+   (define (assert-ins i::rtl_ins)
+      (instantiate::rtl_nop))
+   
+   (assert-blocks b "before assert!")
+   (if *bbv-assert*
+       (let loop ((bs (list b))
+		  (acc (make-empty-bbset)))
+	  (cond
+	     ((null? bs)
+	      b)
+	     ((bbset-in? (car bs) acc)
+	      (loop (cdr bs) acc))
+	     (else
+	      (with-access::block (car bs) (first succs preds label)
+		 (when *bbv-debug* (assert-block (car bs) "assert-context!"))
+		 (let loop ((first first)
+			    (acc '()))
+		    (if (null? first)
+			(set! first (reverse! acc))
+			(loop (cdr first)
+			   (cons* (car first)
+			      (assert-ins (car first))
+			      acc))))
+		 (loop (append succs (cdr bs)) (bbset-cons (car bs) acc))))))
+       b))
 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    relink-block! ...                                                *} */

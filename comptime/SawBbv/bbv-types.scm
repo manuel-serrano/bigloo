@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jul 20 08:40:44 2023 (serrano)                */
+;*    Last change :  Thu Jul 20 11:48:05 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -451,7 +451,8 @@
 	    (display " " p)
 	    (dump-ctx ctx p)
 	    (display "]" p)
-	    ;; (display* " ;; fun=" (typeof fun))
+	    (display " ;;")
+	    ;; (display* " fun=" (typeof fun))
 	    (display* " def=" (map shape (regset->list def)))
 	    (display* " in=" (map shape (regset->list in)))
 	    (display* " out=" (map shape (regset->list out)))))))

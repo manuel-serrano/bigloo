@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Thu Jul 13 15:36:33 2023 (serrano)                */
+;*    Last change :  Thu Jul 20 11:30:24 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -14,6 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module saw_bbv-config
    (export *bbv-debug*
+	   *bbv-assert*
 	   *bbv-blocks-cleanup*
 	   *bbv-merge-strategy*
 	   *max-block-merge-versions*
@@ -32,6 +33,17 @@
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
 	 (else (error "bbv-blocks-debug" "unknown value" e)))))
+
+;*---------------------------------------------------------------------*/
+;*    *bbv-blocks-assert* ...                                           */
+;*---------------------------------------------------------------------*/
+(define *bbv-assert*
+   (let ((e (getenv "BIGLOOBBVASSERT")))
+      (cond
+	 ((not e) #f)
+	 ((string=? e "false") #f)
+	 ((string=? e "true") #t)
+	 (else (error "bbv-blocks-assert" "unknown value" e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bbv-blocks-cleanup* ...                                         */

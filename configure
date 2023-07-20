@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul 20 07:05:11 2023 (serrano)                */
+#*    Last change :  Thu Jul 20 11:43:06 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1960,6 +1960,12 @@ case $hostos in
       #custompcre2=yes
       libbacktrace=no
       #customlibbacktrace=yes
+
+      # as of 20jul2023, gmp is not working on M2 architecture, disable it
+      # for now
+      if [ "$gmpversion " = " " ]; then
+	gmpversion="no"
+      fi
       
       if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
         if [ "$threadsupport " = "no " ]; then
