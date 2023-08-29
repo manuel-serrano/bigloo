@@ -209,6 +209,8 @@ gc/gc-8.0.4_mt
 gc/gc-8.2.2
 gc/gc-8.2.2_fth
 gc/gc-8.2.2_mt
+gc/gc-8.2.4_fth
+gc/gc-8.2.4_mt
 gc/preinst
 
 # libuv
