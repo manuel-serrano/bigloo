@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul 20 11:43:06 2023 (serrano)                */
+#*    Last change :  Wed Sep 13 17:14:43 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -780,6 +780,9 @@ while : ; do
     --no-ldpreload)
       ldpreload="no";;
 
+    --no-c-musttail)
+      musttail="0";;
+
     --force-hostos=*)
       hostos="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -1205,6 +1208,7 @@ while : ; do
       echo "   --cfpflags=fp_flags" >&2;
       echo "   --cwarningflags=warning_flags" >&2;
       echo "   --cpicflags=pic_flags" >&2;
+      echo "   --no-c-musttail (disable C tail call annotations)" >&2;
       echo "   --ldlibs=ld_libs" >&2;
       echo "   --ldcomplibs=ld_compiler_libs" >&2;
       echo "   --ldflags=ld_flags" >&2;
@@ -3107,7 +3111,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   window=`$autoconf winreg` || exit 1
 
   # Does the C compiler supports musttail annotation?
-  musttail=`$autoconf musttail`
+  if [ "$musttail " = " " ]; then
+    musttail=`$autoconf musttail`
+  fi
 
   # Does the system have sigpipe?
   sigpipe=`$autoconf sigpipe` || exit 1
