@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jul 11 17:53:43 2023 (serrano)                */
+/*    Last change :  Wed Sep 13 23:31:46 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1612,7 +1612,7 @@ bgl_make_client_socket(obj_t hostname, int port, int timeo, obj_t inb, obj_t out
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bgl_make_client_unix_socket ...                                         */
+/*    bgl_make_client_unix_socket ...                                  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_make_client_unix_socket(obj_t path, int timeo, obj_t inb, obj_t outb) {
@@ -1672,12 +1672,17 @@ bgl_make_client_unix_socket(obj_t path, int timeo, obj_t inb, obj_t outb) {
 #endif   
 }
 
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_bind_by_hostname ...                                         */
+/*---------------------------------------------------------------------*/
 static int
 bgl_bind_by_hostname(char* msg, int socket, obj_t hostname, int port, int fam) {
   struct sockaddr_storage address;
   struct hostent *hp;
   int assigned_port = 0;
   socklen_t len = 0;
+  long sizeof_sockaddr;
   
   /* Locate the host IP address */
   if ((hostname != BFALSE) && !(hp = bglhostbyname(hostname, 0,  fam))) {
@@ -1707,15 +1712,17 @@ bgl_bind_by_hostname(char* msg, int socket, obj_t hostname, int port, int fam) {
 
    if (fam == AF_INET) {
      struct sockaddr_in* ipv4_address = (struct sockaddr_in*)&address;
+     sizeof_sockaddr = sizeof(struct sockaddr_in);
      ipv4_address->sin_family = fam;
      ipv4_address->sin_port = htons(port);
    } else if (fam == AF_INET6) {
      struct sockaddr_in6* ipv6_address = (struct sockaddr_in6*)&address;
+     sizeof_sockaddr = sizeof(struct sockaddr_in6);
      ipv6_address->sin6_family = fam;
      ipv6_address->sin6_port = htons(port);
    }
 
-   if (bind(socket, (struct sockaddr *)&address, sizeof(address)) < 0) {
+   if (bind(socket, (struct sockaddr *)&address, sizeof_sockaddr) < 0) {
       close(socket);
       system_error(msg, BINT(port));
    }
