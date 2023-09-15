@@ -35,6 +35,7 @@ done
 #*    The autodetection ELisp expression                               */
 #*---------------------------------------------------------------------*/
 expr="(cond \
+        ((string-match \"GNU Emacs 29\" (emacs-version)) (kill-emacs 29)) \
         ((string-match \"GNU Emacs 28\" (emacs-version)) (kill-emacs 28)) \
         ((string-match \"GNU Emacs 27\" (emacs-version)) (kill-emacs 27)) \
         ((string-match \"GNU Emacs 26\" (emacs-version)) (kill-emacs 26)) \
@@ -78,10 +79,14 @@ else
                 else
                   if [ "$version" = "28" ]; then
                       echo "emacs28"
+                  else
+                    if [ "$version" = "29" ]; then
+                        echo "emacs29"  
+                    fi
                   fi
-                fi
+                fi    
               fi
-            fi    
+            fi
           fi
         fi
       fi
