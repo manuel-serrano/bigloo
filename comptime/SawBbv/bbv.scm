@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jul 20 11:33:45 2023 (serrano)                */
+;*    Last change :  Thu Jul 20 13:00:30 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -716,8 +716,10 @@
 ;*---------------------------------------------------------------------*/
 (define (assert-context! b::block)
 
-   (define (assert-ins i::rtl_ins)
-      (instantiate::rtl_nop))
+   (define (assert-ins i::rtl_ins/bbv)
+      (with-access::rtl_ins/bbv i (ctx)
+	 (tprint "CTX=" (shape ctx))
+	 (instantiate::rtl_nop)))
    
    (assert-blocks b "before assert!")
    (if *bbv-assert*
@@ -772,7 +774,8 @@
 	  (if (and (pair? *src-files*) (string? (car *src-files*)))
 	      (prefix (car *src-files*))
 	      "./a.out")))
-   (define filename (format "~a-~a~a" oname (global-id global) suffix))
+   (define filename
+      (string-replace (format "~a-~a~a" oname (global-id global) suffix) #\/ #\_))
    (define name (prefix filename))
       
    (define (dump-blocks port)
