@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon Nov 14 12:05:28 2022 (serrano)                */
-;*    Copyright   :  2017-22 Manuel Serrano                            */
+;*    Last change :  Wed Sep 27 15:18:30 2023 (serrano)                */
+;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
 ;*=====================================================================*/
@@ -48,7 +48,8 @@
 	    (assert-block ::blockS ::obj)
 	    (bbv-ctx-filter-live-in-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
 	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
-	    (live-versions::pair-nil ::pair-nil)))
+	    (live-versions::pair-nil ::pair-nil)
+	    (dump-blocks ::global ::pair-nil ::pair-nil ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-in? ...                                                     */
@@ -178,56 +179,57 @@
 	 (map block-label (block-succs old)))
       (trace-item "new="(block-label new) " "
 	 (map block-label (block-succs new)))
-      ;; debugging
-      (when (and debug *bbv-debug*)
-	 (with-access::blockS old ((octx ctx))
-	    (with-access::blockS new ((nctx ctx))
-	       (unless (ctx>=? nctx octx)
-		  (tprint "REPLACE-BLOCK-ERROR! " (block-label old)
-		     " -> " (block-label new))
-		  (tprint " octx=" (shape octx))
-		  (tprint " nctx=" (shape nctx))
-		  (error "replace-block!"
-		     (format "Wrong block replacement ~a" (block-label old))
-		     (block-label new))))))
-      (with-access::blockS old (succs preds mblock)
-	 ;; mark the replacement
-	 (set! mblock new)
-	 (for-each (lambda (b)
-		      (with-access::blockS b (preds)
-			 (set! preds
-			    (filter! (lambda (n) (not (eq? n old))) preds))))
-	    succs)
-	 (for-each (lambda (b)
-		      (with-access::blockS b (succs first)
-			 (set! succs (replace succs old new))
-			 (for-each (lambda (ins)
-				      (cond
-					 ((rtl_ins-ifeq? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_ifeq fun (then)
-						(when (eq? then old)
-						   (set! then new)))))
-					 ((rtl_ins-ifne? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_ifne fun (then)
-						(when (eq? then old)
-						   (set! then new)))))
-					 ((rtl_ins-go? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_go fun (to)
-						(when (eq? to old)
-						   (set! to new)))))
-					 ((rtl_ins-switch? ins)
-					  (with-access::rtl_ins ins (fun)
-					     (with-access::rtl_switch fun (labels)
-						(set! labels (replace labels old new)))))))
-			    first)))
-	    preds)
-	 (with-access::blockS new ((npreds preds))
-	    (set! npreds (delete-duplicates! (append preds npreds) eq?)))
-	 (assert-block new "replace-block!")
-	 new)))
+      (unless (eq? old new)
+	 ;; debugging
+	 (when (and debug *bbv-debug*)
+	    (with-access::blockS old ((octx ctx))
+	       (with-access::blockS new ((nctx ctx))
+		  (unless (ctx>=? nctx octx)
+		     (tprint "REPLACE-BLOCK-ERROR! " (block-label old)
+			" -> " (block-label new))
+		     (tprint " octx=" (shape octx))
+		     (tprint " nctx=" (shape nctx))
+		     (error "replace-block!"
+			(format "Wrong block replacement ~a" (block-label old))
+			(block-label new))))))
+	 (with-access::blockS old (succs preds mblock)
+	    ;; mark the replacement
+	    (set! mblock new)
+	    (for-each (lambda (b)
+			 (with-access::blockS b (preds)
+			    (set! preds
+			       (filter! (lambda (n) (not (eq? n old))) preds))))
+	       succs)
+	    (for-each (lambda (b)
+			 (with-access::blockS b (succs first)
+			    (set! succs (replace succs old new))
+			    (for-each (lambda (ins)
+					 (cond
+					    ((rtl_ins-ifeq? ins)
+					     (with-access::rtl_ins ins (fun)
+						(with-access::rtl_ifeq fun (then)
+						   (when (eq? then old)
+						      (set! then new)))))
+					    ((rtl_ins-ifne? ins)
+					     (with-access::rtl_ins ins (fun)
+						(with-access::rtl_ifne fun (then)
+						   (when (eq? then old)
+						      (set! then new)))))
+					    ((rtl_ins-go? ins)
+					     (with-access::rtl_ins ins (fun)
+						(with-access::rtl_go fun (to)
+						   (when (eq? to old)
+						      (set! to new)))))
+					    ((rtl_ins-switch? ins)
+					     (with-access::rtl_ins ins (fun)
+						(with-access::rtl_switch fun (labels)
+						   (set! labels (replace labels old new)))))))
+			       first)))
+	       preds)
+	    (with-access::blockS new ((npreds preds))
+	       (set! npreds (delete-duplicates! (append preds npreds) eq?)))
+	    (assert-block new "replace-block!")
+	    new))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ctx>=? ...                                                       */
@@ -394,3 +396,35 @@
 	      (with-access::blockS (cdr v) (mblock preds)
 		 (not mblock)))
       versions))
+
+;*---------------------------------------------------------------------*/
+;*    dump-blocks ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (dump-blocks global params blocks suffix)
+
+   (define oname
+      (if (string? *dest*)
+	  *dest*
+	  (if (and (pair? *src-files*) (string? (car *src-files*)))
+	      (prefix (car *src-files*))
+	      "./a.out")))
+   (define filename (format "~a-~a~a" oname (global-id global) suffix))
+   (define name (prefix filename))
+      
+   (define (dump-blocks port)
+      (let* ((id (global-id global)))
+	 (fprint port ";; -*- mode: bee -*-")
+	 (fprint port ";; *** " id ":")
+	 (fprint port ";; " (map shape params))
+	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
+	    filename name name name)
+	 (for-each (lambda (b)
+		      (dump b port 0)
+		      (newline port))
+	    blocks)
+	 id))
+   
+   (if oname
+       (call-with-output-file filename dump-blocks)
+       (dump-blocks (current-error-port))))
+

@@ -300,9 +300,9 @@
    (let ((c (symbol->string (class-name (object-class o)))))
       (display (substring c 4 (string-length c)) p)
       (when (and dest debug-saw)
-	 (display " {" p)
+	 (display " #;(" p)
 	 (dump dest p 0)
-	 (display "}" p))))
+	 (display ")" p))))
    
 ;*---------------------------------------------------------------------*/
 ;*    dump-fun ...                                                     */
@@ -417,9 +417,9 @@
 		     r))
 	 p)
       (when (and dest debug-saw)
-	 (display " {" p)
+	 (display " #;(" p)
 	 (dump dest p 0)
-	 (display "}" p))
+	 (display ")" p))
       (dump-args args p)))
 
 ;*---------------------------------------------------------------------*/

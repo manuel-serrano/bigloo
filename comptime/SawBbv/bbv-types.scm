@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jul 20 11:48:05 2023 (serrano)                */
+;*    Last change :  Wed Sep 27 15:23:36 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -45,6 +45,7 @@
 	       (versions::pair-nil (default '()))
 	       (generic::obj (default #unspecified))
 	       (%mark::long (default -1))
+	       (%cnt::long (default -1))
 	       (merge::obj (default #unspecified)))
 
 	    ;; specialized block
@@ -59,7 +60,8 @@
 
 	    ;; block queue
 	    (class bbv-queue
-	       (blocks::pair-nil (default '())))
+	       (blocks::pair-nil (default '()))
+	       (last::pair-nil (default '())))
 	    
 	    ;; block context
 	    (class bbv-ctx
@@ -77,7 +79,10 @@
 	       (aliases::pair-nil (default '()))
 	       (initval::obj (default #unspecified)))
 
-	    (bbv-queue-push! ::bbv-queue ::blockV)
+	    (bbv-queue-length::long ::bbv-queue)
+	    (bbv-queue-empty? ::bbv-queue)
+	    (bbv-queue-push! ::bbv-queue ::blockS)
+	    (bbv-queue-pop!::blockS ::bbv-queue)
 	    
 	    (blockV-live-versions::pair-nil ::blockV)
 	    
@@ -165,13 +170,47 @@
 	 (map shape aliases))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-queue-push! ...                                              */
+;*    bbv-queue-length ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (bbv-queue-push! queue::bbv-queue bv::blockV)
+(define (bbv-queue-length queue::bbv-queue)
    (with-access::bbv-queue queue (blocks)
-      (unless (memq bv blocks)
-	 (set! blocks (cons bv blocks)))))
+      (length blocks)))
+   
+;*---------------------------------------------------------------------*/
+;*    bbv-queue-empty? ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bbv-queue-empty? queue::bbv-queue)
+   (with-access::bbv-queue queue (blocks)
+      (null? blocks)))
+   
+;*---------------------------------------------------------------------*/
+;*    bbv-queue-push! ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Push at the tail of the queue                                    */
+;*---------------------------------------------------------------------*/
+(define (bbv-queue-push! queue::bbv-queue version::blockS)
+   (with-access::bbv-queue queue (blocks last)
+      (let ((nlast (cons version '())))
+	 (if (pair? last)
+	     (set-cdr! last nlast)
+	     (set! blocks nlast))
+	 (set! last nlast))))
 
+;*---------------------------------------------------------------------*/
+;*    bbv-queue-pop! ...                                               */
+;*    -------------------------------------------------------------    */
+;*    Pop at the head of the queue                                     */
+;*---------------------------------------------------------------------*/
+(define (bbv-queue-pop!::blockS queue::bbv-queue)
+   (with-access::bbv-queue queue (blocks last)
+      (if (pair? blocks)
+	  (let ((b (car blocks)))
+	     (set! blocks (cdr blocks))
+	     (when (null? blocks)
+		(set! last '()))
+	     b)
+	  (error "bbv-queue-pop!" "Illegal empty queue" queue))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    blockV-live-versions ...                                         */
 ;*---------------------------------------------------------------------*/

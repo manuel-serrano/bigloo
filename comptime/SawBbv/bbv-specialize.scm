@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jul 20 07:38:57 2023 (serrano)                */
+;*    Last change :  Wed Sep 27 15:27:55 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -44,29 +44,208 @@
 ;*    bbv-block* ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block*::blockS bv::blockV ctx::bbv-ctx)
-   (with-trace 'bbv-block*
-	 (format "bbv-block ~a" (with-access::blockV bv (label) label))
-      (let* ((queue (instantiate::bbv-queue))
-	     (bs (bbv-block bv ctx queue)))
-	 (let loop ((queue queue))
-	    (with-access::bbv-queue queue (blocks)
-	       (trace-item "queue="
-		  (map (lambda (b)
-			  (with-access::blockV b (label)
-			     label))
-		     blocks))
-	       (if (null? blocks)
-		   (live-blockS bs)
-		   (let ((queue (instantiate::bbv-queue)))
-		      (for-each (lambda (bv)
-				   (bbv-block-merge! bv queue))
-			 blocks)
-		      (loop queue))))))))
+   (with-trace 'bbv-block
+	 (format "bbv-block* ~a" (with-access::blockV bv (label) label))
+      (let ((queue (instantiate::bbv-queue))
+	    (bs (new-blockS bv ctx)))
+	 (block-specialize! bs queue)
+	 (let loop ((n 0))
+	    (trace-item "loop(" n ") queue-length=" (bbv-queue-length queue))
+	    (if (bbv-queue-empty? queue)
+		bs
+		(let ((bs (bbv-queue-pop! queue)))
+		   (with-access::blockS bs ((bv parent))
+		      (when (block-need-merge? bv)
+			 (block-merge! bv queue)))
+		   (unless (block-merged? bs)
+		      (block-specialize! bs queue))
+		   (loop (+fx n 1))))))))
+
+;*---------------------------------------------------------------------*/
+;*    block-specialize! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (block-specialize!::blockS bs::blockS queue::bbv-queue)
+   (with-trace 'bbv-block
+	 (with-access::blockS bs (label parent)
+	    (with-access::blockV parent ((plabel label))
+	       (format "block-specialize! ~a(~a)" label plabel)))
+      (with-access::blockS bs ((bv parent) first ctx)
+	 (with-access::blockV bv ((pfirst first))
+	    (set! first (ins-specialize! pfirst bs ctx queue))
+	    bs))))
+
+;*---------------------------------------------------------------------*/
+;*    block-merge! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (block-merge! bv::blockV queue)
+   (with-trace 'bbv-block "block-merge!"
+      (let ((lvs (blockV-live-versions bv)))
+	 (multiple-value-bind (bs1 bs2 mctx)
+	    (bbv-block-merge lvs)
+	    (let ((mbs (new-blockS bv mctx)))
+	       (cond
+		  ((eq? bs1 mbs)
+		   (mark-merged! bs2 mbs))
+		  ((eq? bs2 mbs)
+		   (mark-merged! bs1 mbs))
+		  (else
+		   (mark-merged! bs1 mbs)
+		   (mark-merged! bs2 mbs)
+		   (bbv-queue-push! queue mbs))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    ins-specialize! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (ins-specialize! first bs::blockS ctx::bbv-ctx queue::bbv-queue)
+
+   (define (debug-connect msg bs n)
+      (when *bbv-debug*
+	 (with-access::blockS n (preds succs)
+	    (tprint msg " " 
+	       (block-label bs) " to " (block-label n)
+	       " " (map block-label preds)
+	       " -> " (map (lambda (b) (if (isa? b block) (block-label b) '-))
+			 succs)))))
+   
+   (define (connect! bs::blockS ins::rtl_ins)
+      (cond
+	 ((rtl_ins-ifne? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (let ((n (rtl_ifne-then fun)))
+		(debug-connect "connect.ifne" bs n)
+		(block-succs-set! bs (list #unspecified n))
+		(block-preds-set! n (cons bs (block-preds n))))))
+	 ((rtl_ins-go? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (let ((n (rtl_go-to fun)))
+		(debug-connect "connect.go" bs n)
+		(if (pair? (block-succs bs))
+		    (set-car! (block-succs bs) n)
+		    (block-succs-set! bs (list n)))
+		(block-preds-set! n (cons bs (block-preds n))))))
+	 ((rtl_ins-switch? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (block-succs-set! bs (rtl_switch-labels fun))
+	     (for-each (lambda (n)
+			  (block-preds-set! n (cons bs (block-preds n))))
+		(rtl_switch-labels fun))))))
+   
+   (with-trace 'ins-specialize! "bbv-ins"
+      (let loop ((oins first)
+		 (nins '())
+		 (ctx ctx))
+	 (when (pair? oins)
+	    (trace-item "ins=" (shape (car oins)) " " (length (cdr oins))
+	       " " (with-access::rtl_ins (car oins) (fun) (typeof fun)))
+	    (trace-item "ctx=" (shape ctx)))
+	 (cond
+	    ((null? oins)
+	     (reverse! nins))
+	    ((rtl_ins-specializer (car oins))
+	     =>
+	     (lambda (specialize)
+		;; instruction specialization
+		(multiple-value-bind (ins nctx)
+		   (specialize (car oins) ctx queue)
+		   (with-access::rtl_ins ins (args)
+		      (set! args (map (lambda (i)
+					 (if (isa? i rtl_ins)
+					     (car (bbv-ins (list i) bs ctx queue))
+					     i))
+				    args))
+		      (let ((ctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
+			 (cond
+			    ((rtl_ins-br? ins)
+			     (connect! bs ins)
+			     (loop (cdr oins) (cons ins nins) ctx))
+			    ((rtl_ins-go? ins)
+			     (connect! bs ins)
+			     (loop '() (cons ins nins) ctx))
+			    ((rtl_ins-ifne? ins)
+			     (connect! bs ins)
+			     (loop (cdr oins) (cons ins nins) ctx))
+			    (else
+			     (loop (cdr oins) (cons ins nins) ctx))))))))
+	    ((rtl_ins-last? (car oins))
+	     ;; a return, fail, ...
+	     (with-access::rtl_ins (car oins) (args)
+		(let ((args (map (lambda (i)
+				    (if (isa? i rtl_ins)
+					(car (bbv-ins (list i) bs ctx queue))
+					i))
+			       args)))
+		   (loop '()
+		      (cons (duplicate-ins/args (car oins) args ctx) nins)
+		      ctx))))
+	    ((rtl_ins-go? (car oins))
+	     (with-access::rtl_ins (car oins) (fun)
+		(with-access::rtl_go fun (to)
+		   (let* ((n (bbv-block to ctx queue))
+			  (ins (duplicate::rtl_ins/bbv (car oins)
+				  (ctx ctx)
+				  (fun (duplicate::rtl_go fun
+					  (to n))))))
+		      (connect! bs ins)
+		      (loop '() (cons ins nins) ctx)))))
+	    ((rtl_ins-switch? (car oins))
+	     (with-access::rtl_ins (car oins) (fun)
+		(with-access::rtl_switch fun (labels)
+		   (let ((ins (duplicate::rtl_ins/bbv (car oins)
+				 (ctx ctx)
+				 (fun (duplicate::rtl_switch fun
+					 (labels (map (lambda (b)
+							 (bbv-block b ctx queue))
+						    labels)))))))
+		      (connect! bs ins)
+		      (loop '() (cons ins nins) ctx)))))
+	    ((rtl_ins-ifne? (car oins))
+	     (with-access::rtl_ins (car oins) (fun)
+		(with-access::rtl_ifne fun (then)
+		   (let* ((n (bbv-block then ctx queue))
+			  (ins (duplicate::rtl_ins/bbv (car oins)
+				  (ctx ctx)
+				  (fun (duplicate::rtl_ifne fun
+					  (then n))))))
+		      (connect! bs ins)
+		      (loop (cdr oins) (cons ins nins) ctx)))))
+	    (else
+	     (with-access::rtl_ins (car oins) (args)
+		(let ((args (map (lambda (i)
+				    (if (isa? i rtl_ins)
+					(car (bbv-ins (list i) bs ctx queue))
+					i))
+			       args)))
+		   (loop (cdr oins)
+		      (cons (duplicate-ins/args (car oins) args ctx) nins)
+		      (bbv-ctx-extend-live-out-regs ctx (car oins))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    block-need-merge? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (block-need-merge?::bool bv::blockV)
+   (with-access::blockV bv (merge)
+      (>=fx (length (blockV-live-versions bv))
+	 (if merge *max-block-merge-versions* *max-block-limit*))))
+
+;*---------------------------------------------------------------------*/
+;*    mark-merged! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (mark-merged! bs::blockS mbs::blockS)
+   (with-access::blockS bs (mblock)
+      (set! mblock mbs)
+      (replace-block! bs mbs)))
+
+;*---------------------------------------------------------------------*/
+;*    block-merged? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (block-merged?::bool bs::blockS)
+   (with-access::blockS bs (mblock)
+      mblock))
 
 ;*---------------------------------------------------------------------*/
 ;*    new-blockS ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (new-blockS bv::blockV ctx::bbv-ctx)
+(define (new-blockS::blockS bv::blockV ctx::bbv-ctx)
    (let* ((lbl (genlabel))
 	  (bs (instantiate::blockS
 		 (ctx ctx)
@@ -90,9 +269,59 @@
 	  b)))
 
 ;*---------------------------------------------------------------------*/
+;*    bbv-block ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (bbv-block b::block ctx::bbv-ctx queue::bbv-queue)
+   (with-trace 'bbv-block
+	 (with-access::block b (label)
+	    (format "bbv-block ~a ~a" label (typeof b)))
+      (trace-item "ctx=" (shape ctx))
+      (let ((bv (if (isa? b blockV) b (with-access::blockS b (parent) parent))))
+	 (with-access::blockV bv (preds first label)
+	    (trace-item "parent=" label)
+	    (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
+	       (cond
+		  ((bbv-ctx-assoc ctx (blockV-live-versions bv))
+		   =>
+		   (lambda (b)
+		      (let ((obs (live-blockS b)))
+			 (with-access::blockS obs (label)
+			    (trace-item "<- old=" label)
+			    obs))))
+		  (else
+		   (let ((nbs (new-blockS bv ctx)))
+		      (with-access::blockS nbs (label)
+			 (trace-item "<- new=" label)
+			 (bbv-queue-push! queue nbs)
+			 nbs)))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    bbv-block* ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (TBR-bbv-block*::blockS bv::blockV ctx::bbv-ctx)
+   (with-trace 'bbv-block*
+	 (format "bbv-block ~a" (with-access::blockV bv (label) label))
+      (let* ((queue (instantiate::bbv-queue))
+	     (bs (bbv-block bv ctx queue)))
+	 (let loop ((queue queue))
+	    (with-access::bbv-queue queue (blocks)
+	       (trace-item "queue="
+		  (map (lambda (b)
+			  (with-access::blockV b (label)
+			     label))
+		     blocks))
+	       (if (null? blocks)
+		   (live-blockS bs)
+		   (let ((queue (instantiate::bbv-queue)))
+		      (for-each (lambda (bv)
+				   (bbv-block-merge! bv queue))
+			 blocks)
+		      (loop queue))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-block ::blockV ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
+(define (TBR-bbv-block::blockS bv::blockV ctx::bbv-ctx queue::bbv-queue)
    (with-access::blockV bv (label succs preds first merge generic)
       (with-trace 'bbv-block (format "bbv-block ~a~a" label
 				(if merge "!" ""))
@@ -254,7 +483,8 @@
 			  (block-preds-set! n (cons bs (block-preds n))))
 		(rtl_switch-labels fun))))))
    
-   (with-trace 'bbv-ins "bbv-ins"
+   (with-trace 'bbv-ins
+	 (with-access::blockS bs (label) (format "bbv-ins (~a)" label))
       (let loop ((oins first)
 		 (nins '())
 		 (ctx ctx))
@@ -669,7 +899,7 @@
 					       (car args) value types)))
 				(fun (instantiate::rtl_mov))
 				(dest (car args)))))
-		   (values (duplicate::rtl_ins i
+		   (values (duplicate::rtl_ins/bbv i
 			      (args (cons loadi (cdr args))))
 		      ctx))
 		(values i ctx))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jul 20 11:33:45 2023 (serrano)                */
+;*    Last change :  Wed Sep 27 15:15:11 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -35,7 +35,8 @@
 	    saw_bbv-specialize
 	    saw_bbv-cache
 	    saw_bbv-utils
-	    saw_bbv-merge)
+	    saw_bbv-merge
+	    saw_bbv-liveness)
 
    (export  (bbv::pair-nil ::backend ::global ::pair-nil ::pair-nil)))
 
@@ -67,7 +68,7 @@
 	     (let ((blocks (normalize-ifeq! (car blocks))))
 		(when (>=fx *trace-level* 2)
 		   (dump-blocks global params blocks ".ifeq.cfg"))
-		(let ((regs (liveness! back blocks params)))
+		(let ((regs (bbv-liveness! back blocks params)))
 		   ;; liveness also widen each block into a blockV
 		   (mark-merge! (car blocks))
 		   (when (>=fx *trace-level* 2)
@@ -132,60 +133,6 @@
 		      (set! merge #f)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    widen-bbv! ...                                                   */
-;*    -------------------------------------------------------------    */
-;*    Widen the blocks and instructions for preparing the register     */
-;*    allocation.                                                      */
-;*---------------------------------------------------------------------*/
-(define (widen-bbv! o regs::pair-nil)
-   
-   (define (get-args o)
-      (filter rtl_reg/ra? (rtl_ins-args* o)))
-   
-   (define (args-widen-bbv! o)
-      (when (rtl_ins? o)
-	 (with-access::rtl_ins o (args fun)
-	    (widen!::rtl_ins/bbv o
-	       (def (make-empty-regset regs))
-	       (in (list->regset (get-args o) regs))
-	       (out (make-empty-regset regs)))
-	    (for-each args-widen-bbv! args))))
-
-   (define (overflow-def o)
-      ;; return the register assigned in special overflow operations
-      (when (rtl_ins-fxovop? o)
-	 ;; these special instructions assigned (so "define") their
-	 ;; third arguments
-	 (with-access::rtl_ins o (fun args)
-	    (with-access::rtl_ifne fun (then)
-	       (let ((call (car args)))
-		  (with-access::rtl_ins (car args) (args)
-		     (caddr args)))))))
-   
-   (define (ins-widen-bbv! o)
-      (with-access::rtl_ins o (dest args fun)
-	 (widen!::rtl_ins/bbv o
-	    (def (cond
-		    ((overflow-def o)
-		     =>
-		     (lambda (reg)
-			(list->regset (list reg) regs)))
-		    ((or (not dest) (rtl_reg-onexpr? dest))
-		     (make-empty-regset regs))
-		    (else
-		     (list->regset (list dest) regs))))
-	    (in (list->regset (get-args o) regs))
-	    (out (make-empty-regset regs)))
-	 (for-each args-widen-bbv! args)))
-   
-   (define (block-widen-bbv! o)
-      (widen!::blockV o)
-      (with-access::block o (first)
-	 (for-each ins-widen-bbv! first)))
-
-   (for-each block-widen-bbv! o))
-
-;*---------------------------------------------------------------------*/
 ;*    reorder-succs! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (reorder-succs! blocks)
@@ -201,70 +148,6 @@
 				    (rtl_ins-switch? (car (last-pair first))))
 			   (set! succs (cons n (remq! n succs))))))
 		  (loop (cdr bs))))))))
-
-;*---------------------------------------------------------------------*/
-;*    liveness! ...                                                    */
-;*    -------------------------------------------------------------    */
-;*    Computes the liveness of a list of blocks. Returns the           */
-;*    list of used registers.                                          */
-;*    -------------------------------------------------------------    */
-;*    This function implements a fix point interation to find the      */
-;*    maximal solution of the equations:                               */
-;*       in[ n ] = use[ n ] U (out[ n ] - def[ n ])                    */
-;*      out[ n ] = Union(succ[ n ]) in[ s ]                            */
-;*---------------------------------------------------------------------*/
-(define (liveness! back blocks params)
-   
-   (define (rtl_ins/bbv-in i)
-      (with-access::rtl_ins/bbv i (in)
-	 in))
-   
-   (define (liveness-block! block)
-      (with-access::block block (succs first)
-	 (let loop ((inss (reverse first))
-		    (succ (map (lambda (b) (car (block-first b))) succs))
-		    (t #f))
-	    (if (pair? inss)
-		(with-access::rtl_ins/bbv (car inss) (out fun in def)
-		   (let ((u (cond
-			       ((rtl_ins? succ)
-				(regset-union! out (rtl_ins/bbv-in succ)))
-			       ((pair? succ)
-				(regset-union*! out (map rtl_ins/bbv-in succ)))
-			       (else
-				#f))))
-		      (regset-for-each
-			 (lambda (r)
-			    (when (not (regset-member? r def))
-			       (set! u (or (regset-add! in r) u))))
-			 out)
-		      (loop (cdr inss) (car inss) (or t u))))
-		t))))
-   
-   (with-trace 'bbv "liveness"
-      (let* ((cregs (collect-registers! blocks))
-	     (hregs (append-map! collect-register! (backend-registers back)))
-	     (pregs (filter rtl_reg/ra? params))
-	     (regs (append hregs cregs)))
-	 ;; pre widen the instructions
-	 (widen-bbv! blocks regs)
-	 ;; add the argument of the function to the IN set of the
-	 ;; first instruction of the first block
-	 (when (pair? blocks)
-	    (let ((inss (block-first (car blocks))))
-	       (when (pair? inss)
-		  (let ((ins (car inss)))
-		     (with-access::rtl_ins/bbv ins (in)
-			(for-each (lambda (a) (regset-add! in a)) pregs))))))
-	 ;; fix-point iteration
-	 (let loop ((i 0))
-	    (let liip ((bs blocks)
-		       (t #f))
-	       (if (null? bs)
-		   (if t
-		       (loop (+fx i 1))
-		       regs)
-		   (liip (cdr bs) (or (liveness-block! (car bs)) t))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    assert-blocks ...                                                */
@@ -760,35 +643,3 @@
 ;* 		(loop (append preds (cdr bs))                          */
 ;* 		   (+ cost (block-cost (car bs)))                      */
 ;* 		   (bbset-cons (car bs) acc))))))))                    */
-
-;*---------------------------------------------------------------------*/
-;*    dump-blocks ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (dump-blocks global params blocks suffix)
-
-   (define oname
-      (if (string? *dest*)
-	  *dest*
-	  (if (and (pair? *src-files*) (string? (car *src-files*)))
-	      (prefix (car *src-files*))
-	      "./a.out")))
-   (define filename (format "~a-~a~a" oname (global-id global) suffix))
-   (define name (prefix filename))
-      
-   (define (dump-blocks port)
-      (let* ((id (global-id global)))
-	 (fprint port ";; -*- mode: bee -*-")
-	 (fprint port ";; *** " id ":")
-	 (fprint port ";; " (map shape params))
-	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
-	    filename name name name)
-	 (for-each (lambda (b)
-		      (dump b port 0)
-		      (newline port))
-	    blocks)
-	 id))
-   
-   (if oname
-       (call-with-output-file filename dump-blocks)
-       (dump-blocks (current-error-port))))
-
