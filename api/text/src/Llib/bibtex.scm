@@ -185,6 +185,8 @@
        (list 'CHAR (the-coord (the-port)) "\303\271"))
       ((or "{\\`U}" "\\`U")
        (list 'CHAR (the-coord (the-port)) "\303\231"))
+      ("\\%"
+       (list 'CHAR (the-coord (the-port)) "%"))
       ;; latex commands
       ((: #\\ (or alpha (in "$&%#_{}")) (* (or alpha digit)))
        (let ((s (the-substring 1 (the-length))))

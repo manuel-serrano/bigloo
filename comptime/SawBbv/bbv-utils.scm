@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Wed Sep 27 15:18:30 2023 (serrano)                */
+;*    Last change :  Thu Sep 28 11:16:17 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -408,7 +408,9 @@
 	  (if (and (pair? *src-files*) (string? (car *src-files*)))
 	      (prefix (car *src-files*))
 	      "./a.out")))
-   (define filename (format "~a-~a~a" oname (global-id global) suffix))
+   (define filename
+      (string-replace (format "~a-~a~a" oname (global-id global) suffix)
+	 #\/ #\_))
    (define name (prefix filename))
       
    (define (dump-blocks port)

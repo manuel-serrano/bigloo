@@ -599,8 +599,10 @@
 ;*---------------------------------------------------------------------*/
 (define (assert-context! b::block)
 
-   (define (assert-ins i::rtl_ins)
-      (instantiate::rtl_nop))
+   (define (assert-ins i::rtl_ins/bbv)
+      (with-access::rtl_ins/bbv i (ctx)
+	 (tprint "CTX=" (shape ctx))
+	 (instantiate::rtl_nop)))
    
    (assert-blocks b "before assert!")
    (if *bbv-assert*
@@ -643,3 +645,4 @@
 ;* 		(loop (append preds (cdr bs))                          */
 ;* 		   (+ cost (block-cost (car bs)))                      */
 ;* 		   (bbset-cons (car bs) acc))))))))                    */
+      (string-replace (format "~a-~a~a" oname (global-id global) suffix) #\/ #\_))
