@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Wed Sep 27 15:15:11 2023 (serrano)                */
+;*    Last change :  Thu Sep 28 11:17:07 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -627,22 +627,3 @@
 		 (loop (append succs (cdr bs)) (bbset-cons (car bs) acc))))))
        b))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    relink-block! ...                                                *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (relink-block! b::blockS)                                   */
-;*    (let loop ((bs (list b))                                         */
-;* 	      (cost 0)                                                 */
-;* 	      (acc (make-empty-bbset)))                                */
-;*       (cond                                                         */
-;* 	 ((null? bs)                                                   */
-;* 	  cost)                                                        */
-;* 	 ((bbset-in? (car bs) acc)                                     */
-;* 	  0)                                                           */
-;* 	 (else                                                         */
-;* 	  (let ((b (car bs)))                                          */
-;* 	     (with-access::blockS b (preds)                            */
-;* 		(loop (append preds (cdr bs))                          */
-;* 		   (+ cost (block-cost (car bs)))                      */
-;* 		   (bbset-cons (car bs) acc))))))))                    */
-      (string-replace (format "~a-~a~a" oname (global-id global) suffix) #\/ #\_))
