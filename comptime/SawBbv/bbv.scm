@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Fri Oct  6 09:27:29 2023 (serrano)                */
+;*    Last change :  Fri Oct  6 09:40:20 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -116,7 +116,7 @@
 ;*    loop heads.                                                      */
 ;*---------------------------------------------------------------------*/
 (define (mark-merge! block::blockV)
-   (with-trace 'bbv "mark-widener!"
+   (with-trace 'bbv "mark-merge!"
       (let loop ((block block)
 		 (stack '()))
 	 (with-access::blockV block (merge label succs)

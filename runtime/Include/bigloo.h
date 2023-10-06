@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Jul 12 12:44:51 2023 (serrano)                */
+/*    Last change :  Fri Oct  6 11:52:37 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2548,6 +2548,7 @@ BGL_RUNTIME_DECL void bgl_init_module_debug_object(char *);
 BGL_RUNTIME_DECL void bgl_init_module_debug_end(char *);
    
 BGL_RUNTIME_DECL obj_t the_failure(obj_t, obj_t, obj_t);
+BGL_RUNTIME_DECL obj_t bgl_typeof(obj_t);
 BGL_RUNTIME_DECL obj_t bgl_system_failure(int, obj_t, obj_t, obj_t);
 
 BGL_RUNTIME_DECL obj_t bgl_make_procedure(obj_t, int, int);

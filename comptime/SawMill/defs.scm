@@ -15,6 +15,7 @@
 	 (onexpr? (default #f))
 	 (name read-only (default (gensym)))
 	 (key read-only (default (gensym)))
+	 (debugname (default #f))
 	 (hardware read-only (default #f)) )
       ;; Functions
       (class rtl_fun (loc (default #f)))

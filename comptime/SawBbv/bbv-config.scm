@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Fri Oct  6 08:49:51 2023 (serrano)                */
+;*    Last change :  Fri Oct  6 09:43:22 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -36,15 +36,13 @@
 	 (else (error "bbv-blocks-debug" "unknown value" e)))))
 
 ;*---------------------------------------------------------------------*/
-;*    *bbv-blocks-assert* ...                                           */
+;*    *bbv-blocks-assert* ...                                          */
 ;*---------------------------------------------------------------------*/
 (define *bbv-assert*
    (let ((e (getenv "BIGLOOBBVASSERT")))
-      (cond
-	 ((not e) #f)
-	 ((string=? e "false") #f)
-	 ((string=? e "true") #t)
-	 (else (error "bbv-blocks-assert" "unknown value" e)))))
+      (if (not e)
+	  0
+	  (string->integer e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bbv-blocks-cleanup* ...                                         */

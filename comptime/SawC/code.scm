@@ -148,8 +148,9 @@
    (display (make-typed-declaration (rtl_reg-type reg) (reg_name reg))) )
 
 (define (reg_name reg) ;()
-   (string-append (if (SawCIreg-var reg) "V" "R")
-		  (integer->string (SawCIreg-index reg)) ))
+   (or (rtl_reg-debugname reg)
+       (string-append (if (SawCIreg-var reg) "V" "R")
+	  (integer->string (SawCIreg-index reg)) )))
 
 (define (declare-regs l) ;()
    (for-each (lambda (r)
@@ -233,8 +234,9 @@
        (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg)) ))
 
 (define (gen-reg/dest reg) ;()
-   (display (if (SawCIreg-var reg) "V" "R"))
-   (display (SawCIreg-index reg)) )
+   (if (rtl_reg-debugname reg)
+       (display (rtl_reg-debugname reg))
+       (display* (if (SawCIreg-var reg) "V" "R") (SawCIreg-index reg))))
 
 ;;
 ;; Special cases of gen-expr
