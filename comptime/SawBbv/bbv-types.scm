@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Sep 27 15:23:36 2023 (serrano)                */
+;*    Last change :  Fri Oct  6 08:16:18 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -45,7 +45,6 @@
 	       (versions::pair-nil (default '()))
 	       (generic::obj (default #unspecified))
 	       (%mark::long (default -1))
-	       (%cnt::long (default -1))
 	       (merge::obj (default #unspecified)))
 
 	    ;; specialized block
@@ -55,9 +54,10 @@
 	       (%blacklist::obj (default '()))
 	       (ctx::bbv-ctx read-only)
 	       (parent::blockV read-only)
+	       (cnt::long (default 0))
 	       (mblock::obj (default #f))
 	       (collapsed::bool (default #f)))
-
+	    
 	    ;; block queue
 	    (class bbv-queue
 	       (blocks::pair-nil (default '()))
@@ -102,6 +102,8 @@
 	    (generic bbv-hash ::obj)
 	    (generic bbv-equal?::bool ::obj ::obj)
 
+	    (generic block-preds-update! ::block ::pair-nil)
+	    
 	    (rtl_ins-last?::bool i::rtl_ins)
 	    (rtl_ins-nop?::bool i::rtl_ins)
 	    (rtl_ins-mov?::bool i::rtl_ins)
@@ -217,8 +219,8 @@
 (define (blockV-live-versions bv::blockV)
    (with-access::blockV bv (versions)
       (filter (lambda (bs)
-		 (with-access::blockS bs (mblock)
-		    (not mblock)))
+		 (with-access::blockS bs (mblock cnt)
+		    (and (not mblock) (>fx cnt 0))))
 	 versions)))
 
 ;*---------------------------------------------------------------------*/
@@ -1126,4 +1128,21 @@
    (when (isa? y rtl_cast_null)
       (bbv-equal? (rtl_cast_null-type x) (rtl_cast_null-type y))))
 
-   
+;*---------------------------------------------------------------------*/
+;*    block-preds-update! ...                                          */
+;*    -------------------------------------------------------------    */
+;*    Set the PREDS field and update CNT accordingly.                  */
+;*---------------------------------------------------------------------*/
+(define-generic (block-preds-update! b::block val::pair-nil)
+   (with-access::block b (preds)
+      (set! preds val)))
+
+;*---------------------------------------------------------------------*/
+;*    block-preds-update! ...                                          */
+;*    -------------------------------------------------------------    */
+;*    Set the PREDS field and update CNT accordingly.                  */
+;*---------------------------------------------------------------------*/
+(define-method (block-preds-update! b::blockS val::pair-nil)
+   (with-access::blockS b (preds cnt)
+      (set! preds val)
+      (set! cnt (length preds))))

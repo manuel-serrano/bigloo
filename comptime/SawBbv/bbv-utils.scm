@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Sep 28 11:16:51 2023 (serrano)                */
+;*    Last change :  Fri Oct  6 08:44:41 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -48,7 +48,6 @@
 	    (assert-block ::blockS ::obj)
 	    (bbv-ctx-filter-live-in-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
 	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
-	    (live-versions::pair-nil ::pair-nil)
 	    (dump-blocks ::global ::pair-nil ::pair-nil ::bstring)))
 
 ;*---------------------------------------------------------------------*/
@@ -139,10 +138,10 @@
       (with-access::blockS b (succs first)
 	 (set! succs (replace succs old new))
 	 (with-access::blockS old (preds)
-	    (set! preds (remq! b preds)))
+	    (block-preds-update! old (remq! b preds)))
 	 (with-access::block new (preds)
 	    (unless (memq b preds)
-	       (set! preds (cons b preds))))
+	       (block-preds-update! new (cons b preds))))
 	 (for-each (lambda (ins)
 		      (cond
 			 ((rtl_ins-ifeq? ins)
@@ -171,7 +170,7 @@
 ;*    replace-block! ...                                               */
 ;*    -------------------------------------------------------------    */
 ;*    Replace one "old" block with a "new" one. Reconnect the preds    */
-;*    the old block but disconnect the succs of the old block.         */
+;*    of the old block but disconnect the succs of the old block.      */
 ;*---------------------------------------------------------------------*/
 (define (replace-block! old::blockS new::blockS #!key debug)
    (with-trace 'bbv-utils "replace-block!"
@@ -196,8 +195,9 @@
 	    ;; mark the replacement
 	    (set! mblock new)
 	    (for-each (lambda (b)
-			 (with-access::blockS b (preds)
-			    (set! preds
+			 (with-access::blockS b (preds cnt)
+			    (set! cnt (-fx cnt 1))
+			    (block-preds-update! b 
 			       (filter! (lambda (n) (not (eq? n old))) preds))))
 	       succs)
 	    (for-each (lambda (b)
@@ -226,8 +226,9 @@
 						   (set! labels (replace labels old new)))))))
 			       first)))
 	       preds)
-	    (with-access::blockS new ((npreds preds))
-	       (set! npreds (delete-duplicates! (append preds npreds) eq?)))
+	    (with-access::blockS new ((npreds preds) cnt)
+	       (block-preds-update! new
+		  (delete-duplicates! (append preds npreds) eq?)))
 	    (assert-block new "replace-block!")
 	    new))))
 
@@ -387,15 +388,6 @@
 						    (list type) #t)))))
 	       out)
 	    nctx))))
-
-;*---------------------------------------------------------------------*/
-;*    live-versions ...                                                */
-;*---------------------------------------------------------------------*/
-(define (live-versions versions)
-   (filter (lambda (v)
-	      (with-access::blockS (cdr v) (mblock preds)
-		 (not mblock)))
-      versions))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-blocks ...                                                  */
