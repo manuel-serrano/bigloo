@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Oct  6 08:16:18 2023 (serrano)                */
+;*    Last change :  Fri Oct  6 09:35:23 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -79,6 +79,8 @@
 	       (aliases::pair-nil (default '()))
 	       (initval::obj (default #unspecified)))
 
+	    (get-bb-mark)
+	    
 	    (bbv-queue-length::long ::bbv-queue)
 	    (bbv-queue-empty? ::bbv-queue)
 	    (bbv-queue-push! ::bbv-queue ::blockS)
@@ -170,6 +172,18 @@
 		(map (lambda (t) (string-append "!" (shape t))) types)))
 	 (format "~s" (shape value))
 	 (map shape aliases))))
+
+;*---------------------------------------------------------------------*/
+;*    *bb-mark* ...                                                    */
+;*---------------------------------------------------------------------*/
+(define *bb-mark* -1)
+
+;*---------------------------------------------------------------------*/
+;*    get-bb-mark ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (get-bb-mark)
+   (set! *bb-mark* (+fx 1 *bb-mark*))
+   *bb-mark*)
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-queue-length ...                                             */

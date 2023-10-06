@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Oct  6 08:44:41 2023 (serrano)                */
+;*    Last change :  Fri Oct  6 09:28:02 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -35,20 +35,18 @@
 	    saw_bbv-types
 	    saw_bbv-specialize
 	    saw_bbv-cache
-	    saw_bbv-range)
+	    saw_bbv-range
+	    saw_bbv-debug)
 
    (export  (type-in?::bool ::type ::pair-nil)
-	    (get-bb-mark)
 	    (set-max-label! blocks::pair-nil)
 	    (genlabel)
 	    (replace ::pair-nil ::obj ::obj)
 	    (block->block-list regs b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)
 	    (replace-block! ::blockS ::blockS #!key debug)
-	    (assert-block ::blockS ::obj)
 	    (bbv-ctx-filter-live-in-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
-	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)
-	    (dump-blocks ::global ::pair-nil ::pair-nil ::bstring)))
+	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-in? ...                                                     */
@@ -82,18 +80,6 @@
 		   (when (>fx label *label*)
 		      (set! *label* label))))
       blocks))
-
-;*---------------------------------------------------------------------*/
-;*    *bb-mark* ...                                                    */
-;*---------------------------------------------------------------------*/
-(define *bb-mark* -1)
-
-;*---------------------------------------------------------------------*/
-;*    get-bb-mark ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (get-bb-mark)
-   (set! *bb-mark* (+fx 1 *bb-mark*))
-   *bb-mark*)
 
 ;*---------------------------------------------------------------------*/
 ;*    replace ...                                                      */
@@ -271,69 +257,6 @@
 	 entries)))
 
 ;*---------------------------------------------------------------------*/
-;*    assert-block ...                                                 */
-;*    -------------------------------------------------------------    */
-;*    A debug fonction that tests the consistency of the preds,        */
-;*    succs, and branch instructions.                                  */
-;*---------------------------------------------------------------------*/
-(define (assert-block b::blockS stage)
-   (with-access::blockS b (preds succs first label parent)
-      ;; check that b in the preds.succs
-      (let ((l (filter (lambda (p)
-			  (with-access::blockS p (succs)
-			     (not (memq b succs))))
-		  preds)))
-	 (when (pair? l)
-	    (tprint (shape b))
-	    (tprint "preds...")
-	    (for-each (lambda (b) (tprint (shape b))) l)
-	    (error stage 
-	       (format "predecessors not pointing to ~a" label)
-	       (map block-label l))))
-      ;; check that b in the succs.preds
-      (let ((l (filter (lambda (p)
-			  (with-access::blockS p (preds)
-			     (not (memq b preds))))
-		  succs)))
-	 (when (pair? l)
-	    (tprint (shape b))
-	    (tprint "succs...")
-	    (for-each (lambda (b) (tprint (shape b))) l)
-	    (error stage
-	       (format "successors not pointing to ~a" label)
-	       (map block-label l))))
-      ;; check that the instructions are in the succs
-      (let ((l '()))
-	 (for-each (lambda (ins)
-		      (cond
-			 ((rtl_ins-ifeq? ins)
-			  (set! l (cons ins l)))
-			 ((rtl_ins-ifne? ins)
-			  (with-access::rtl_ins ins (fun)
-			     (with-access::rtl_ifne fun (then)
-				(unless (memq then succs)
-				   (set! l (cons ins l))))))
-			 ((rtl_ins-go? ins)
-			  (with-access::rtl_ins ins (fun)
-			     (with-access::rtl_go fun (to)
-				(unless (memq to succs)
-				   (set! l (cons ins l))))))
-			 ((rtl_ins-switch? ins)
-			  (with-access::rtl_ins ins (fun)
-			     (with-access::rtl_switch fun (labels)
-				(for-each (lambda (lbl)
-					     (unless (memq lbl succs)
-						(set! l (cons ins l))))
-				   labels))))))
-	    first)
-	 (when (pair? l)
-	    (tprint "wrong block: " (shape b))
-	    (tprint "parent block: " (shape parent))
-	    (error stage
-	       (format "instruction target not in succs of " label)
-	       (map shape l))))))
-
-;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-filter-live-in-regs ...                                  */
 ;*    -------------------------------------------------------------    */
 ;*    Filter out non-live registers from the environment.              */
@@ -388,39 +311,4 @@
 						    (list type) #t)))))
 	       out)
 	    nctx))))
-
-;*---------------------------------------------------------------------*/
-;*    dump-blocks ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (dump-blocks global params blocks suffix)
-
-   (define oname
-      (if (string? *dest*)
-	  *dest*
-	  (if (and (pair? *src-files*) (string? (car *src-files*)))
-	      (prefix (car *src-files*))
-	      "./a.out")))
-   
-   (define filename
-      (string-replace (format "~a-~a~a" oname (global-id global) suffix)
-	 #\/ #\_))
-   
-   (define name (prefix filename))
-      
-   (define (dump-blocks port)
-      (let* ((id (global-id global)))
-	 (fprint port ";; -*- mode: bee -*-")
-	 (fprint port ";; *** " id ":")
-	 (fprint port ";; " (map shape params))
-	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
-	    filename name name name)
-	 (for-each (lambda (b)
-		      (dump b port 0)
-		      (newline port))
-	    blocks)
-	 id))
-   
-   (if oname
-       (call-with-output-file filename dump-blocks)
-       (dump-blocks (current-error-port))))
 

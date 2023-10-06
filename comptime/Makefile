@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Sep 27 15:15:26 2023 (serrano)                */
+#*    Last change :  Fri Oct  6 09:26:35 2023 (serrano)                */
 #*    Copyright   :  1998-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -245,7 +245,8 @@ SAW_OBJ		= $(SAW_FILE:%=SawMill/%.o)
 
 #*--- SawBbv ----------------------------------------------------------*/
 SAW_BBV_FILE    = bbv bbv-types bbv-specialize bbv-cache bbv-utils \
-                  bbv-range bbv-merge bbv-cost bbv-config bbv-liveness
+                  bbv-range bbv-merge bbv-cost bbv-config bbv-liveness \
+                  bbv-optim bbv-debug
 
 SAW_BBV_OBJ	= $(SAW_BBV_FILE:%=SawBbv/%.o)
 
