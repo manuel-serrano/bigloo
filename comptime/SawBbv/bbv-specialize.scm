@@ -82,8 +82,12 @@
       (let ((lvs (blockV-live-versions bv)))
 	 (multiple-value-bind (bs1 bs2 mctx)
 	    (bbv-block-merge lvs)
+	    ;; Find an already existing block for mctx, if such a block
+	    ;; exists, get its representant (i.e., the block it might had
+	    ;; already been merge into). If no such block exists, create
+	    ;; a fresh new one
 	    (let* ((old (bbv-ctx-assoc mctx (blockV-live-versions bv)))
-		   (mbs (or old (new-blockS bv mctx))))
+		   (mbs (if old (live-blockS old) (new-blockS bv mctx))))
 	       (trace-item "blockV=" (blockV-label bv)
 		  " -> " (blockS-label mbs) (if old "* [" " [")
 		  (length lvs) "] " (blockS-%merge-info mbs))
