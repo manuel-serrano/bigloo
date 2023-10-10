@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Tue Jul  5 09:33:47 2022 (serrano)                */
-#*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Oct  9 07:25:58 2023 (serrano)                */
+#*    Copyright   :  1996-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build args                                       */
 #*=====================================================================*/
@@ -39,6 +39,8 @@ POPULATION	= $(SRC) basm hglog.scm Makefile cfg.scm
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
+all: $(BINDIR)/bglcfg
+
 pop:
 	@ echo $(POPULATION:%=tools/%)
 
@@ -72,16 +74,16 @@ distrib:
 	@ $(MAKE) clean
 
 #*---------------------------------------------------------------------*/
-#*    $(BIN)/copyright                                                 */
+#*    $(BINDIR)/copyright                                              */
 #*---------------------------------------------------------------------*/
 .PHONY: copyright
-copyright: $(BIN)/copyright
+copyright: $(BINDIR)/copyright
 
-$(BIN)/copyright: copyright.o license.o
-	@ $(CC) -o $(BIN)/copyright $(CFLAGS) copyright.o license.o
+$(BINDIR)/copyright: copyright.o license.o
+	@ $(CC) -o $(BINDIR)/copyright $(CFLAGS) copyright.o license.o
 
-$(BIN)/libcversion: libcversion.o
-	@ $(CC) -o $(BIN)/libcversion $(CFLAGS) libcversion.o
+$(BINDIR)/libcversion: libcversion.o
+	@ $(CC) -o $(BINDIR)/libcversion $(CFLAGS) libcversion.o
 
 license.c: $(LICENSE)
 	@- $(RM) -f $@

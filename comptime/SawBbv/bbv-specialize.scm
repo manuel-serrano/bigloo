@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Oct  6 08:17:12 2023 (serrano)                */
+;*    Last change :  Mon Oct  9 07:59:01 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -78,19 +78,30 @@
 ;*    block-merge-some! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (block-merge-some! bv::blockV queue)
-   (with-trace 'bbv-block "block-merge-some!"
+   (with-trace 'bbv-block-merge "block-merge-some!"
       (let ((lvs (blockV-live-versions bv)))
 	 (multiple-value-bind (bs1 bs2 mctx)
 	    (bbv-block-merge lvs)
-	    (let ((mbs (new-blockS bv mctx)))
+	    (let* ((old (bbv-ctx-assoc mctx (blockV-live-versions bv)))
+		   (mbs (or old (new-blockS bv mctx))))
+	       (trace-item "blockV=" (blockV-label bv)
+		  " -> " (blockS-label mbs) (if old "* [" " [")
+		  (length lvs) "] " (blockS-%merge-info mbs))
 	       (cond
 		  ((eq? bs1 mbs)
+		   (unless (blockS-%merge-info mbs)
+		      (blockS-%merge-info-set! mbs 'merge-target))
 		   (block-merge! bs2 mbs))
 		  ((eq? bs2 mbs)
+		   (unless (blockS-%merge-info mbs)
+		      (blockS-%merge-info-set! mbs 'merge-target))
 		   (block-merge! bs1 mbs))
 		  (else
 		   (block-merge! bs1 mbs)
 		   (block-merge! bs2 mbs)
+		   (unless (blockS-%merge-info mbs)
+		      (blockS-%merge-info-set! mbs
+			 (if old 'merge-target 'merge-new)))
 		   (bbv-queue-push! queue mbs))))))))
    
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Oct  6 09:35:23 2023 (serrano)                */
+;*    Last change :  Mon Oct  9 07:54:52 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -52,6 +52,7 @@
 	       (%mark::long (default -1))
 	       (%hash::obj (default #f))
 	       (%blacklist::obj (default '()))
+	       (%merge-info::obj (default #f))
 	       (ctx::bbv-ctx read-only)
 	       (parent::blockV read-only)
 	       (cnt::long (default 0))
@@ -540,7 +541,7 @@
    (define (lbl n)
       (if (isa? n block) (block-label n) (typeof n)))
    
-   (with-access::blockS o (label collapsed first parent preds succs)
+   (with-access::blockS o (label collapsed first parent preds succs %merge-info)
       (fprint p "(blockS " label)
       (dump-margin p (+fx m 1))
       (fprint p ":parent " (block-label parent))
@@ -552,6 +553,9 @@
       (fprint p ":preds " (map lbl preds))
       (dump-margin p (+fx m 1))
       (fprint p ":succs " (map lbl succs))
+      (dump-margin p (+fx m 1))
+      (fprint p ":merge-info " %merge-info)
+      (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))
 
