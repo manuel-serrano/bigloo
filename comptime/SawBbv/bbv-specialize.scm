@@ -86,11 +86,9 @@
 	    ;; exists, get its representant (i.e., the block it might had
 	    ;; already been merge into). If no such block exists, create
 	    ;; a fresh new one
-	    (let* ((old (bbv-ctx-assoc mctx (blockV-live-versions bv)))
-		   (mbs (if old (live-blockS old) (new-blockS bv mctx))))
+	    (let ((mbs (bbv-block bv mctx queue)))
 	       (trace-item "blockV=" (blockV-label bv)
-		  " -> " (blockS-label mbs) (if old "* [" " [")
-		  (length lvs) "] " (blockS-%merge-info mbs))
+		  " -> " (blockS-label mbs) " [" (length lvs) "] " (blockS-%merge-info mbs))
 	       (cond
 		  ((eq? bs1 mbs)
 		   (unless (blockS-%merge-info mbs)
@@ -101,12 +99,12 @@
 		      (blockS-%merge-info-set! mbs 'merge-target))
 		   (block-merge! bs1 mbs))
 		  (else
-		   (block-merge! bs1 mbs)
-		   (block-merge! bs2 mbs)
 		   (unless (blockS-%merge-info mbs)
 		      (blockS-%merge-info-set! mbs
-			 (if old 'merge-target 'merge-new)))
-		   (bbv-queue-push! queue mbs))))))))
+			 (with-access::blockS mbs (cnt)
+			    (if (=fx cnt 0) 'merge-new 'merge-target))))
+		   (block-merge! bs1 mbs)
+		   (block-merge! bs2 mbs))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ins-specialize! ...                                              */
