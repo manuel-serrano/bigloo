@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Fri Feb 18 07:37:21 2022 (serrano)                */
-;*    Copyright   :  2014-22 Manuel Serrano                            */
+;*    Last change :  Wed Oct 11 15:21:39 2023 (serrano)                */
+;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
 ;*=====================================================================*/
@@ -26,8 +26,7 @@
                                                      (cons (cons key value)
                                                         (cell-ref obj)))))
               (object-return (lambda (obj)  (cell-ref obj)))
-              (parse-error (lambda (msg arg1 arg2) (error "json-parse"
-                                                      msg (list arg1 arg2))))
+              (parse-error #f)
 	      (undefined #t) reviver expr
 	      constant-alloc string-alloc)
            (read-json #!optional (port::input-port (current-input-port)))))
@@ -172,6 +171,14 @@
 (define *eot* (cons 1 2))
 
 ;*---------------------------------------------------------------------*/
+;*    json-parse-error ...                                             */
+;*---------------------------------------------------------------------*/
+(define (json-parse-error err msg obj fname loc)
+   (if err
+       (err msg obj (format "~a:~a" fname loc))
+       (error/location "parse-json" msg obj fname loc)))
+   
+;*---------------------------------------------------------------------*/
 ;*    json-parse ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (json-parse o::input-port #!key
@@ -183,8 +190,7 @@
                                                   (cons (cons key value)
                                                      (cell-ref obj)))))
            (object-return (lambda (obj)  (cell-ref obj)))
-           (parse-error (lambda (msg arg1 arg2) (error "json-parse"
-                                                   msg (list arg1 arg2))))
+           (parse-error #f)
            (undefined #t) reviver expr
 	   constant-alloc string-alloc)
    
@@ -217,18 +223,22 @@
       (let ((token (read-token)))
 	 (if (eq? (car token) type)
 	     token
-	     (parse-error (format "token \"~a\" expected" type)
+	     (json-parse-error
+		parse-error (format "token \"~a\" expected" type)
+		(car token)
 		(caddr token)
 		(cadddr token)))))
 
    (define (parse-token-error token)
       (if (eq? (car token) 'ERROR)
-	  (parse-error
+	  (json-parse-error
+	     parse-error
 	     (format "wrong token: \"~a\"" (cadr token))
-	     (caddr token) (cadddr token))
-	  (parse-error
+	     (car token) (caddr token) (cadddr token))
+	  (json-parse-error
+	     parse-error
 	     (format "wrong ~a token: \"~a\"" (car token) (cadr token))
-	     (caddr token) (cadddr token))))
+	     (car token) (caddr token) (cadddr token))))
    
    (define (parse-array array)
       (let ((val (parse-text 'ANGLE-CLO)))
@@ -246,8 +256,9 @@
 			     (array-set array i val)
 			     (loop (+fx i 1))))
 			 (else
-			  (parse-error "syntax error"
-			     (caddr token) (cadddr token))))))))))
+			  (json-parse-error
+			     parse-error "syntax error"
+			     (car token) (caddr token) (cadddr token))))))))))
    
    (define (parse-object object)
       (let loop ()
@@ -293,7 +304,7 @@
    (check-procedure object-alloc 0 :object-alloc)
    (check-procedure object-set 3 :object-set)
    (check-procedure object-return 1 :object-return)
-   (check-procedure parse-error 3 :parse-error)
+   (when (procedure? parse-error) (check-procedure parse-error 3 :parse-error))
    (when reviver (check-procedure reviver 3 :reviver))
 
    (let ((val (parse-text #f)))

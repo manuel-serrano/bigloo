@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Oct  6 11:52:37 2023 (serrano)                */
+/*    Last change :  Wed Oct 11 14:13:40 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -515,11 +515,13 @@ typedef union bgl_stream {
    void *channel;
    FILE *file;
    int fd;
+   obj_t mmap;
 } bgl_stream_t;
 
 #define BGL_STREAM_TYPE_FD 1
 #define BGL_STREAM_TYPE_FILE 2
 #define BGL_STREAM_TYPE_CHANNEL 3
+#define BGL_STREAM_TYPE_MMAP 4
 
 /* debug traces */
 struct bgl_dframe {              
@@ -670,6 +672,16 @@ union scmobj {
       /* offset */
       long offset;
    } input_string_port;
+	 
+   /* mmap input ports */
+   struct input_mmap_port {
+      /* common port */
+      struct input_port iport;
+      /* offset */
+      long offset;
+      /* end */
+      long end;
+   } input_mmap_port;
 	 
    /* procedure input ports */
    struct input_procedure_port {
@@ -1543,6 +1555,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #define PORT_FILE(o) (PORT(o).stream.file)
 #define PORT_FD(o) (PORT(o).stream.fd)
 #define PORT_CHANNEL(o) (PORT(o).stream.channel)
+#define PORT_MMAP(o) (PORT(o).stream.mmap)
 
 /*---------------------------------------------------------------------*/
 /*    Output-ports                                                     */
@@ -1630,6 +1643,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #define KINDOF_BZIP2     BINT(11)
 #define KINDOF_TIMEOUT   BINT(12)
 #define KINDOF_DATAGRAM  BINT(13)
+#define KINDOF_MMAP      BINT(14)
 #define KINDOF_UNUSED    BINT(20)
 
 #define PORT_IS_OS(o) (PORT(o).kindof < KINDOF_VIRTUAL)
@@ -1639,6 +1653,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #define INPUT_PROCEDURE_PORT_SIZE (sizeof(struct input_procedure_port))
 #define INPUT_GZIP_PORT_SIZE (sizeof(struct input_gzip_port))
 #define INPUT_STRING_PORT_SIZE (sizeof(struct input_string_port))
+#define INPUT_MMAP_PORT_SIZE (sizeof(struct input_mmap_port))
 
 #define INPUT_GZIP_PORT(o) CREF(o)->input_gzip_port
 #define INPUT_PROCEDURE_PORT(o) CREF(o)->input_procedure_port
@@ -1650,6 +1665,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #define INPUT_STRING_PORTP(o) (INPUT_PORTP(o) && INPUT_PORT_ON_STRINGP(o))
 #define INPUT_PROCEDURE_PORTP(o) (INPUT_PORTP(o) && INPUT_PORT_ON_PROCP(o))
 #define INPUT_GZIP_PORTP(o) (INPUT_PORTP(o) && INPUT_PORT_ON_GZIPP(o))
+#define INPUT_MMAP_PORTP(o) (INPUT_PORTP(o) && INPUT_PORT_ON_MMAPP(o))
 
 #define EOF_OBJECTP(o) (o == BEOF)
 
@@ -1669,6 +1685,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #define INPUT_PORT_ON_PROCP(o) (PORT(o).kindof == KINDOF_PROCEDURE)
 #define INPUT_PORT_ON_GZIPP(o) (PORT(o).kindof == KINDOF_GZIP)
 #define INPUT_PORT_ON_SOCKETP(o) (PORT(o).kindof == KINDOF_SOCKET)
+#define INPUT_PORT_ON_MMAPP(o) (PORT(o).kindof == KINDOF_MMAP)
 
 #define BGL_INPUT_GZIP_PORT_INPUT_PORT(o) ((obj_t)(INPUT_GZIP_PORT(o).gzip))
    

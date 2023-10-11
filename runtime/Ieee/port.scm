@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sat Feb 11 09:04:30 2023 (serrano)                */
+;*    Last change :  Wed Oct 11 14:03:04 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -38,6 +38,7 @@
 	    __bignum
 	    __rgc
 	    __bit
+	    __mmap
 	    
 	    __r4_vectors_6_8
 	    __r4_strings_6_7
@@ -64,6 +65,8 @@
 		   "INPUT_PROCEDURE_PORTP")
 	    (macro c-input-gzip-port?::bool (::obj)
 		   "INPUT_GZIP_PORTP")
+	    (macro $input-mmap-port?::bool (::obj)
+		   "INPUT_MMAP_PORTP")
 	    (macro c-output-port?::bool (::obj)
 		   "OUTPUT_PORTP")
 	    (macro c-output-string-port?::bool (::obj)
@@ -96,6 +99,7 @@
 	    ($reopen-input-c-string::obj (::input-port ::string) "bgl_reopen_input_c_string")
 	    ($open-input-substring::input-port (::bstring ::long ::long) "bgl_open_input_substring")
 	    ($open-input-substring!::input-port (::bstring ::long ::long) "bgl_open_input_substring_bang")
+	    ($open-input-mmap::input-port (::mmap ::bstring ::long ::long) "bgl_open_input_mmap")
 	    ($open-input-procedure::input-port (::procedure ::bstring) "bgl_open_input_procedure")
 	    ($input-port-timeout-set!::bool (::input-port ::long) "bgl_input_port_timeout_set")
 	    ($output-port-timeout-set!::bool (::output-port ::long) "bgl_output_port_timeout_set")
@@ -263,6 +267,8 @@
 		  "bgl_open_input_substring")
 	       (method static $open-input-substring!::input-port (::bstring ::int ::int)
 		  "bgl_open_input_substring_bang")
+	       (method static $open-input-mmap::obj (::mmap ::bstring ::long ::long)
+		  "bgl_open_input_mmap")
 	       (method static $open-input-procedure::obj (::procedure ::bstring)
 		  "bgl_open_input_procedure")
 	       (method static $input-port-timeout-set!::bool (::input-port ::long)
@@ -424,6 +430,7 @@
 	    (inline input-string-port? ::obj)
 	    (inline input-procedure-port? ::obj)
 	    (inline input-gzip-port? ::obj)
+	    (inline input-mmap-port? ::obj)
 	    (inline output-port? ::obj)
 	    (inline port?::bool ::obj)
 	    (inline output-string-port? ::obj)
@@ -454,6 +461,8 @@
 	       #!optional (start 0) (end (string-length string)))
 	    (open-input-string!::input-port string::bstring
 	       #!optional (start 0) (end (string-length string)))
+	    (open-input-mmap::input-port mmap::mmap
+	       #!optional (start 0) (end (elong->fixnum (mmap-length mmap))))
 	    (open-input-procedure ::procedure #!optional (bufinfo #t))
 	    (open-input-gzip-port ::input-port  #!optional (bufinfo #t))
 	    
@@ -621,6 +630,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (input-gzip-port? obj)
    (c-input-gzip-port? obj))
+
+;*---------------------------------------------------------------------*/
+;*    input-mmap-port? ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (input-mmap-port? obj)
+   ($input-mmap-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port? ...                                                 */
@@ -1112,6 +1127,27 @@
        (error "open-input-string!" "End offset out of bounds" end))
       (else
        ($open-input-substring! string start end))))
+
+;*---------------------------------------------------------------------*/
+;*    open-input-mmap ...                                              */
+;*---------------------------------------------------------------------*/
+(define (open-input-mmap mmap::mmap
+	   #!optional (start 0) (end (elong->fixnum (mmap-length mmap))))
+   (cond
+      ((<fx start 0)
+       (error "open-input-mmap" "Illegal start offset" start))
+      ((>fx start (elong->fixnum (mmap-length mmap)))
+       (error "open-input-mmap" "Start offset out of bounds" start))
+      ((>fx start end)
+       (error "open-input-mmap" "Start offset greater than end" start))
+      ((>fx end (elong->fixnum (mmap-length mmap)))
+       (error "open-input-mmap" "End offset out of bounds" end))
+      (else
+       (let ((buffer (get-port-buffer "open-input-file" #f
+			(if (<fx (-fx end start) c-default-io-bufsiz)
+			    (-fx end start)
+			    c-default-io-bufsiz))))
+	  ($open-input-mmap mmap buffer start end)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-procedure ...                                         */

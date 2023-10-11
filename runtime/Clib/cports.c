@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Jul 11 17:07:44 2023 (serrano)                */
+/*    Last change :  Wed Oct 11 14:05:41 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -438,6 +438,58 @@ bgl_proc_read(obj_t port, char *b, long l) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static long                                                      */
+/*    bgl_input_mmap_read ...                                          */
+/*---------------------------------------------------------------------*/
+static long
+bgl_input_mmap_read(obj_t port, char *ptr, long sz) {
+#if HAVE_MMAP
+#define INPUT_MMAP_PORT(o) CREF(o)->input_mmap_port
+   obj_t mm = PORT_MMAP(port);
+   
+   long available = INPUT_MMAP_PORT(port).end - INPUT_MMAP_PORT(port).offset;
+
+   if (available > 0) {
+      long n =  available > sz ? sz : available;
+
+      memcpy(ptr, &(BGL_MMAP(mm).map[INPUT_MMAP_PORT(port).offset]), n);
+
+      INPUT_MMAP_PORT(port).offset += n;
+	     
+      if (n == available) {
+	 INPUT_PORT(port).eof = 1;
+      }
+      return n;
+   } else {
+      return 0;
+   }
+#else
+   return 0;
+#endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_input_mmap_seek ...                                          */
+/*---------------------------------------------------------------------*/
+static void
+bgl_input_mmap_seek(obj_t port, long pos) {
+   if (pos >= 0 && pos < BGL_INPUT_PORT_BUFSIZ(port)) {
+      INPUT_PORT(port).filepos = pos;
+      INPUT_PORT(port).matchstart = pos;
+      INPUT_PORT(port).matchstop = pos;
+      INPUT_PORT(port).forward = pos;
+   } else if (pos == BGL_INPUT_PORT_BUFSIZ(port)) {
+      INPUT_PORT(port).eof = 1;
+   } else {
+      C_SYSTEM_FAILURE(BGL_IO_PORT_ERROR,
+			"set-input-port-position!",
+			"illegal seek offset",
+			port);
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    timeout_set_port_blocking ...                                    */
 /*---------------------------------------------------------------------*/
@@ -692,6 +744,7 @@ strseek(void *port, long offset, int whence) {
    OUTPUT_PORT(port).ptr = (char *)&STRING_REF(buf, offset);
    return offset;
 }
+
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -1307,6 +1360,9 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
       case (long)KINDOF_STRING:
 	 new_input_port = GC_MALLOC(INPUT_STRING_PORT_SIZE);
 	 break;
+      case (long)KINDOF_MMAP:
+	 new_input_port = GC_MALLOC(INPUT_MMAP_PORT_SIZE);
+	 break;
       default:
 	 new_input_port = GC_MALLOC(INPUT_PORT_SIZE);
    }
@@ -1385,6 +1441,14 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
       case (long)KINDOF_STRING:
 	 new_input_port->port.sysclose = 0;
 	 new_input_port->input_port.sysread = bgl_eof_read;
+	 break;
+
+      case (long)KINDOF_MMAP:
+	 new_input_port->port.sysclose = 0;
+	 new_input_port->port.name = BGL_MMAP(name).name;
+	 new_input_port->input_port.sysseek = bgl_input_mmap_seek;
+	 new_input_port->input_port.sysread = bgl_input_mmap_read;
+	 new_input_port->port.stream.mmap = name;
 	 break;
 	 
       default:
@@ -1732,6 +1796,20 @@ bgl_open_input_c_string(char *c_string) {
    obj_t buffer = string_to_bstring_len(c_string, bufsiz);
 
    return bgl_open_input_substring(buffer, 0, bufsiz);
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_open_input_mmap ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_open_input_mmap(obj_t mmap, obj_t buffer, long offset, long end) {
+   obj_t port = bgl_make_input_port(mmap, 0L, KINDOF_MMAP, buffer);
+
+   CREF(port)->input_mmap_port.offset = offset;
+   CREF(port)->input_mmap_port.end = end;
+   
+   return port;
 }
 
 /*---------------------------------------------------------------------*/

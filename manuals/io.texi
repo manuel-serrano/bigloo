@@ -387,6 +387,20 @@ The file name may contain user authentication such as:
 
 @end deffn
 
+@deffn {bigloo procedure} open-input-mmap mmap [start 0] [end]
+@var{mmap} must be a mmap, and @var{start} and @var{end} must be
+exact integers satisfying:
+
+@smallexample
+  0 <= START <= END <= (mmap-length STRING)
+@end smallexample
+
+The optional argument @var{end} defaults to @code{(mmap-length STRING)}.
+
+Returns an @code{input-port} able to deliver characters from
+@var{mmap}.
+@end deffn
+
 @deffn {bigloo procedure} open-input-procedure procedure [buffer #t]
 Returns an @code{input-port} able to deliver characters from
 @var{procedure}. Each time a character has to be read, the @var{procedure}
