@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Wed Oct 11 15:21:39 2023 (serrano)                */
+;*    Last change :  Thu Oct 12 13:22:30 2023 (serrano)                */
 ;*    Copyright   :  2014-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -175,7 +175,7 @@
 ;*---------------------------------------------------------------------*/
 (define (json-parse-error err msg obj fname loc)
    (if err
-       (err msg obj (format "~a:~a" fname loc))
+       (err msg obj `(at ,fname ,loc))
        (error/location "parse-json" msg obj fname loc)))
    
 ;*---------------------------------------------------------------------*/
