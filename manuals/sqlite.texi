@@ -138,6 +138,45 @@ leave the database in a inconsistent state that prevent transactions to
 be rolled back.
 @end deffn
 
+@deffn {bigloo sqlite function} sqlite-get @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
+Similar to @code{sqlite-eval} but the callback is invoked with two
+arguments: an array of column names and an array of values.
+@end deffn
+
+@deffn {bigloo sqlite function} sqlite-for-each @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
+The function @code{sqlite-for-each} invokes a SQLite command built by
+implicitly invoking @code{sqlite-format} on @var{string} and the optional
+@var{arg} arguments. The function @var{procedure} is applied to all
+the elements statisfying the request. It accepts two vectors. The
+first one is the name of the table column, the second the values.
+The function @var{sqlite-for-each} does not return any value.
+
+Note: user callback (@var{procedure}) @b{must not} exit. That is they must
+not invoke a function create by @code{bind-exit}. Exiting from a callback will
+leave the database in a inconsistent state that prevent transactions to
+be rolled back.
+
+Example:
+
+@smalllisp
+(module example
+   (library sqlite))
+
+(define *db* (instantiate::sqlite))
+
+(sqlite-exec *db* "CREATE TABLE foo (x INTEGER, y INTEGER)")
+(for-each (lambda (x)
+		(sqlite-exec *db*  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
+	     (iota 10))
+(sqlite-map *db* 
+  (lambda (keys vals) (print keys vals))
+  "SELECT * FROM foo")
+   @print{} #("x" "y") #(0 0)
+            #("x" "y") #(1 1)
+            ...
+@end smalllisp
+@end deffn
+
 @deffn {bigloo sqlite function} sqlite-map @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
 The function @code{sqlite-map} invokes a SQLite command built by
 implicitly invoking @code{sqlite-format} on @var{string} and the optional

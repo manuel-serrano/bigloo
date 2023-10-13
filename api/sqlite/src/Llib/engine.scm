@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/src/Llib/engine.scm       */
+;*    .../project/bigloo/bigloo/api/sqlite/src/Llib/engine.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 18:35:10 2007                          */
-;*    Last change :  Fri Aug  7 19:49:50 2015 (serrano)                */
-;*    Copyright   :  2007-15 Manuel Serrano                            */
+;*    Last change :  Fri Oct 13 15:14:18 2023 (serrano)                */
+;*    Copyright   :  2007-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple SQLTINY evaluator                                         */
 ;*=====================================================================*/
@@ -723,7 +723,7 @@
 ;*---------------------------------------------------------------------*/
 (define (compile-expr expr env obj builtin)
    (match-case expr
-      ((or #t (? integer?) (? string?))
+      ((or (? integer?) (? string?))
        (lambda (rows) expr))
       ((colref ?table-name ?col-name)
        (multiple-value-bind (i j)

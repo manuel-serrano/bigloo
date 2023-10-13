@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/src/Llib/sqltiny.scm      */
+;*    .../project/bigloo/bigloo/api/sqlite/src/Llib/sqltiny.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Fri Aug  7 19:37:45 2015 (serrano)                */
-;*    Copyright   :  2007-15 Manuel Serrano                            */
+;*    Last change :  Thu Oct 12 17:23:10 2023 (serrano)                */
+;*    Copyright   :  2007-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
 ;*=====================================================================*/
@@ -45,7 +45,9 @@
 	   ($sqltiny-close ::$sqltiny ::obj)
 	   ($sqltiny-exec::obj ::$sqltiny ::bstring ::obj)
 	   ($sqltiny-eval::obj ::$sqltiny ::procedure ::bstring ::obj)
+	   ($sqltiny-get::obj ::$sqltiny ::procedure ::bstring ::obj)
 	   ($sqltiny-map::pair-nil ::$sqltiny ::procedure ::bstring ::obj)
+	   ($sqltiny-for-each::pair-nil ::$sqltiny ::procedure ::bstring ::obj)
 	   ($sqltiny-dump-table ::obj ::$sqltiny ::bstring ::output-port)))
 
 ;*---------------------------------------------------------------------*/
@@ -148,13 +150,19 @@
 ;*    $sqltiny-exec ...                                                */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-exec builtin cmd obj)
-   (let ((p (lambda (res) (when (pair? res) (caar res)))))
-      (sqltiny-do builtin cmd obj p)))
+   (error "sqltiny" "sqlite-exec not supported" #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqltiny-eval ...                                                */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-eval builtin proc cmd obj)
+   (let ((p (lambda (res) (when (pair? res) (apply proc (car res))))))
+      (sqltiny-do builtin cmd obj p)))
+
+;*---------------------------------------------------------------------*/
+;*    $sqltiny-get ...                                                 */
+;*---------------------------------------------------------------------*/
+(define ($sqltiny-get builtin proc cmd obj)
    (let ((p (lambda (res) (when (pair? res) (apply proc (car res))))))
       (sqltiny-do builtin cmd obj p)))
 
@@ -167,6 +175,12 @@
 		   (map (lambda (r) (apply proc r)) res)
 		   '()))))
       (sqltiny-do builtin cmd obj p)))
+
+;*---------------------------------------------------------------------*/
+;*    $sqltiny-for-each ...                                            */
+;*---------------------------------------------------------------------*/
+(define ($sqltiny-for-each builtin proc cmd obj)
+   (error "sqltiny" "sqlite-for-each not supported" #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqltiny-portable-parse ...                                       */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Oct 11 14:13:40 2023 (serrano)                */
+/*    Last change :  Thu Oct 12 17:50:10 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1272,16 +1272,48 @@ typedef obj_t (*function_t)();
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, BEOA)
 #  define BGL_PROCEDURE_CALL11(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) \
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, BEOA)
-#  define BGL_PROCEDURE_CALL12(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 ) \
+#  define BGL_PROCEDURE_CALL12(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) \
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, BEOA)
-#  define BGL_PROCEDURE_CALL13(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 ) \
+#  define BGL_PROCEDURE_CALL13(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) \
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, BEOA)
-#  define BGL_PROCEDURE_CALL14(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13 ) \
+#  define BGL_PROCEDURE_CALL14(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) \
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, BEOA)
-#  define BGL_PROCEDURE_CALL15(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14 ) \
+#  define BGL_PROCEDURE_CALL15(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14) \
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, BEOA)
-#  define BGL_PROCEDURE_CALL16(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15 ) \
+#  define BGL_PROCEDURE_CALL16(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) \
    PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA)
+#  define BGL_PROCEDURE_CALL17(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, BEOA)
+#  define BGL_PROCEDURE_CALL18(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, BEOA)
+#  define BGL_PROCEDURE_CALL19(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, BEOA)
+#  define BGL_PROCEDURE_CALL20(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, BEOA)
+#  define BGL_PROCEDURE_CALL21(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, BEOA)
+#  define BGL_PROCEDURE_CALL22(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, BEOA)
+#  define BGL_PROCEDURE_CALL23(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, BEOA)
+#  define BGL_PROCEDURE_CALL24(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, BEOA)
+#  define BGL_PROCEDURE_CALL25(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, BEOA)
+#  define BGL_PROCEDURE_CALL26(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, BEOA)
+#  define BGL_PROCEDURE_CALL27(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, BEOA)
+#  define BGL_PROCEDURE_CALL28(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, BEOA)
+#  define BGL_PROCEDURE_CALL29(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, BEOA)
+#  define BGL_PROCEDURE_CALL30(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, BEOA)
+#  define BGL_PROCEDURE_CALL31(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, BEOA)
+#  define BGL_PROCEDURE_CALL32(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31) \
+   PROCEDURE_ENTRY(fun)(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, BEOA)
 #else
 #  define BGL_PROCEDURE_CALL0(fun) \
    (VA_PROCEDUREP(fun) \
@@ -1351,6 +1383,70 @@ typedef obj_t (*function_t)();
    (VA_PROCEDUREP(fun)							\
     ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, BEOA) \
     : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15))
+#  define BGL_PROCEDURE_CALL17(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16))
+#  define BGL_PROCEDURE_CALL18(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17))
+#  define BGL_PROCEDURE_CALL19(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18))
+#  define BGL_PROCEDURE_CALL20(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19))
+#  define BGL_PROCEDURE_CALL21(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20))
+#  define BGL_PROCEDURE_CALL22(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21))
+#  define BGL_PROCEDURE_CALL23(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22))
+#  define BGL_PROCEDURE_CALL24(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23))
+#  define BGL_PROCEDURE_CALL25(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24))
+#  define BGL_PROCEDURE_CALL26(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25))
+#  define BGL_PROCEDURE_CALL27(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26))
+#  define BGL_PROCEDURE_CALL28(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27))
+#  define BGL_PROCEDURE_CALL29(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28))
+#  define BGL_PROCEDURE_CALL30(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29))
+#  define BGL_PROCEDURE_CALL31(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30))
+#  define BGL_PROCEDURE_CALL32(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31) \
+   (VA_PROCEDUREP(fun)							\
+    ? ((obj_t (*)(obj_t, ...))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, BEOA) \
+    : ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_ENTRY(fun))(fun, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31))
 #endif
 
 #define PROCEDURE_ENTRY(fun) (obj_t)(PROCEDURE(fun).entry)

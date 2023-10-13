@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/src/Llib/sqlite.sch       */
+;*    .../project/bigloo/bigloo/api/sqlite/src/Llib/sqlite.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 10 14:23:34 2005                          */
-;*    Last change :  Thu Feb  8 09:19:49 2007 (serrano)                */
-;*    Copyright   :  2005-07 Manuel Serrano                            */
+;*    Last change :  Thu Oct 12 17:25:49 2023 (serrano)                */
+;*    Copyright   :  2005-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The native interfaces of SQLITE                                  */
 ;*=====================================================================*/
@@ -23,4 +23,6 @@
     ($sqlite-close::void (::$sqlite ::obj) "bgl_sqlite_close")
     ($sqlite-exec::obj (::$sqlite ::string ::obj) "bgl_sqlite_exec")
     ($sqlite-eval::obj (::$sqlite ::procedure ::string ::obj) "bgl_sqlite_eval")
-    ($sqlite-map::pair-nil (::$sqlite ::procedure ::string ::obj) "bgl_sqlite_map")))
+    ($sqlite-get::obj (::$sqlite ::procedure ::string ::obj) "bgl_sqlite_get")
+    ($sqlite-map::pair-nil (::$sqlite ::procedure ::string ::obj) "bgl_sqlite_map")
+    ($sqlite-for-each::pair-nil (::$sqlite ::procedure ::string ::obj) "bgl_sqlite_for_each")))

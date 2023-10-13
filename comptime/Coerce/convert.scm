@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Sun Jul  9 09:15:45 2023 (serrano)                */
+;*    Last change :  Fri Oct 13 07:36:56 2023 (serrano)                */
 ;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -229,7 +229,6 @@
 			   (coerce! node #unspecified from #f)
 			   (instantiate::literal (type to) (value "")))))))
 	  (else
-	   (tprint "e.1 " (shape node))
 	   (type-error/location loc (current-function) from to))))
       (else
        (type-error/location loc (current-function) from to))))
