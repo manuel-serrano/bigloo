@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Oct 12 17:26:20 2023 (serrano)                */
+/*    Last change :  Fri Oct 13 18:01:20 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SQLITE support                                                   */
@@ -98,14 +98,17 @@ bgl_sqlite_exec(sqlite3 *db, char *str, obj_t odb) {
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);
+     char *m = (char *)GC_MALLOC_ATOMIC(strlen(msg) + 1);
      
      sprintf(buf, "sqlite-exec:%s", str);
+     strcpy(m, msg);
+     
      sqlite3_free(msg);
 
      if (rc == SQLITE_LOCKED || rc == SQLITE_BUSY) {
-	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, m, odb);
      } else {
-	C_SYSTEM_FAILURE(BGL_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_ERROR, buf, m, odb);
      }
   }
   
@@ -458,14 +461,17 @@ bgl_sqlite_eval(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);
+     char *m = (char *)GC_MALLOC_ATOMIC(strlen(msg) + 1);
      
      sprintf(buf, "sqlite-eval:%s", str);
+     strcpy(m, msg);
+     
      sqlite3_free(msg);
      
      if (rc == SQLITE_LOCKED || rc == SQLITE_BUSY) {
-	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, m, odb);
      } else {
-	C_SYSTEM_FAILURE(BGL_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_ERROR, buf, m, odb);
      }
   }
   
@@ -499,14 +505,17 @@ bgl_sqlite_get(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
 
   if (rc != SQLITE_OK && rc != SQLITE_ABORT) {
      char *buf = (char *)alloca(strlen(str) + strlen(msg) + 17);
+     char *m = (char *)GC_MALLOC_ATOMIC(strlen(msg) + 1);
      
      sprintf(buf, "sqlite-get:%s -- ", str, msg);
+     strcpy(m, msg);
+
      sqlite3_free(msg);
      
      if (rc == SQLITE_LOCKED || rc == SQLITE_BUSY) {
-	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, m, odb);
      } else {
-	C_SYSTEM_FAILURE(BGL_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_ERROR, buf, m, odb);
      }
   }
   
@@ -538,14 +547,17 @@ bgl_sqlite_map(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);
+     char *m = (char *)GC_MALLOC_ATOMIC(strlen(msg) + 1);
      
      sprintf(buf, "sqlite-map:%s", str);
+     strcpy(m, msg);
+
      sqlite3_free(msg);
 
      if (rc == SQLITE_LOCKED || rc == SQLITE_BUSY) {
-	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, m, odb);
      } else {
-	C_SYSTEM_FAILURE(BGL_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_ERROR, buf, m, odb);
      }
   }
   
@@ -580,14 +592,35 @@ bgl_sqlite_for_each(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);
-     sprintf(buf, "sqlite-for_each:%s", *str);
+     char *m = (char *)GC_MALLOC_ATOMIC(strlen(msg) + 1);
+     
+     strcpy(m, msg);
+     
      sqlite3_free(msg);
 
      if (rc == SQLITE_LOCKED || rc == SQLITE_BUSY) {
-	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_IO_TIMEOUT_ERROR, buf, m, odb);
      } else {
-	C_SYSTEM_FAILURE(BGL_ERROR, buf, msg, odb);
+	C_SYSTEM_FAILURE(BGL_ERROR, buf, m, odb);
      }
+  }
+  
+  return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_sqlite_run ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_sqlite_run(sqlite3 *db, char *str, obj_t odb) {
+  char *msg;
+  int status;
+
+  status = sqlite3_exec(db, str, 0L, 0L, &msg);
+
+  if (status != SQLITE_OK) {
+     return string_to_bstring(msg);
   }
   
   return BUNSPEC;

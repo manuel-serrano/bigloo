@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/recette/recette.scm       */
+;*    .../project/bigloo/bigloo/api/sqlite/recette/recette.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Wed Nov 16 10:22:44 2011 (serrano)                */
-;*    Copyright   :  2002-11 Manuel Serrano                            */
+;*    Last change :  Fri Oct 13 16:47:18 2023 (serrano)                */
+;*    Copyright   :  2002-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of Sqlite.               */
 ;*=====================================================================*/
@@ -120,7 +120,7 @@
 ;*---------------------------------------------------------------------*/
 (define-test insert
    (for-each (lambda (x)
-		(sqlite-exec *db*  "INSERT INTO gee VALUES(~A, ~A)" x (* x x)))
+		(sqlite-exec *db* "INSERT INTO gee VALUES(~A, ~A)" x (* x x)))
 	     (iota 10)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Thu Oct 12 17:23:56 2023 (serrano)                */
+;*    Last change :  Fri Oct 13 19:07:34 2023 (serrano)                */
 ;*    Copyright   :  2005-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
@@ -42,13 +42,15 @@
 	    (%setup-sqltiny! ::sqltiny)
 	    (%setup-sqlite! ::sqlite)
 	    
-	    (generic sqlite-close ::%sqlite)
+	    (sqlite-config . args)
 	    
+	    (generic sqlite-close ::%sqlite)
 	    (generic sqlite-exec ::%sqlite ::bstring . o)
 	    (generic sqlite-eval ::%sqlite ::procedure ::bstring . o)
 	    (generic sqlite-get ::%sqlite ::procedure ::bstring . o)
 	    (generic sqlite-map::pair-nil ::%sqlite ::procedure ::bstring . o)
-	    (generic sqlite-for-each::pair-nil ::%sqlite ::procedure ::bstring . o)
+	    (generic sqlite-for-each::obj ::%sqlite ::procedure ::bstring . o)
+	    (generic sqlite-run::obj ::%sqlite ::bstring . o)
 	    
 	    (sqlite-table-informations ::%sqlite ::bstring)
 	    (sqlite-table-number-of-rows ::%sqlite ::bstring)
@@ -111,6 +113,50 @@
 (define (%setup-sqltiny! o::sqltiny)
    (with-access::sqltiny o ($builtin path sync)
       (set! $builtin ($sqltiny-open path sync))))
+
+;*---------------------------------------------------------------------*/
+;*    sqlite-config ...                                                */
+;*---------------------------------------------------------------------*/
+(define (sqlite-config . args)
+   (cond-expand
+      ((and bigloo-c (not sqltiny))
+       (for-each (lambda (arg)
+		    (let ((cfg (case arg
+				  ((SQLITE_CONFIG_MULTITHREAD) $SQLITE_CONFIG_MULTITHREAD)
+				  ((SQLITE_CONFIG_SINGLETHREAD) $SQLITE_CONFIG_SINGLETHREAD)
+				  ((SQLITE_CONFIG_MULTITHREAD) $SQLITE_CONFIG_MULTITHREAD)
+				  ((SQLITE_CONFIG_SERIALIZED) $SQLITE_CONFIG_SERIALIZED)
+				  ((SQLITE_CONFIG_MALLOC) $SQLITE_CONFIG_MALLOC)
+				  ((SQLITE_CONFIG_GETMALLOC) $SQLITE_CONFIG_GETMALLOC)
+				  ((SQLITE_CONFIG_SCRATCH) $SQLITE_CONFIG_SCRATCH)
+				  ((SQLITE_CONFIG_PAGECACHE) $SQLITE_CONFIG_PAGECACHE)
+				  ((SQLITE_CONFIG_HEAP) $SQLITE_CONFIG_HEAP)
+				  ((SQLITE_CONFIG_MEMSTATUS) $SQLITE_CONFIG_MEMSTATUS)
+				  ((SQLITE_CONFIG_MUTEX) $SQLITE_CONFIG_MUTEX)
+				  ((SQLITE_CONFIG_GETMUTEX) $SQLITE_CONFIG_GETMUTEX)
+				  ((SQLITE_CONFIG_LOOKASIDE) $SQLITE_CONFIG_LOOKASIDE)
+				  ((SQLITE_CONFIG_PCACHE) $SQLITE_CONFIG_PCACHE)
+				  ((SQLITE_CONFIG_GETPCACHE) $SQLITE_CONFIG_GETPCACHE)
+				  ((SQLITE_CONFIG_LOG) $SQLITE_CONFIG_LOG)
+				  ((SQLITE_CONFIG_URI) $SQLITE_CONFIG_URI)
+				  ((SQLITE_CONFIG_PCACHE2) $SQLITE_CONFIG_PCACHE2)
+				  ((SQLITE_CONFIG_GETPCACHE2) $SQLITE_CONFIG_GETPCACHE2)
+				  ((SQLITE_CONFIG_COVERING_INDEX_SCAN) $SQLITE_CONFIG_COVERING_INDEX_SCAN)
+				  ((SQLITE_CONFIG_SQLLOG) $SQLITE_CONFIG_SQLLOG)
+				  ((SQLITE_CONFIG_MMAP_SIZE) $SQLITE_CONFIG_MMAP_SIZE)
+				  ((SQLITE_CONFIG_WIN32_HEAPSIZE) $SQLITE_CONFIG_WIN32_HEAPSIZE)
+				  ((SQLITE_CONFIG_PCACHE_HDRSZ) $SQLITE_CONFIG_PCACHE_HDRSZ)
+				  ((SQLITE_CONFIG_PMASZ) $SQLITE_CONFIG_PMASZ)
+				  ((SQLITE_CONFIG_STMTJRNL_SPILL) $SQLITE_CONFIG_STMTJRNL_SPILL)
+				  ((SQLITE_CONFIG_SMALL_MALLOC) $SQLITE_CONFIG_SMALL_MALLOC)
+				  ((SQLITE_CONFIG_SORTERREF_SIZE) $SQLITE_CONFIG_SORTERREF_SIZE)
+				  ((SQLITE_CONFIG_MEMDB_MAXSIZE) $SQLITE_CONFIG_MEMDB_MAXSIZE)
+				  
+				  (else (error "sqlite-config" "illegal configuration" arg)))))
+		       ($sqlite-config cfg)))
+	  args))
+      (else
+       #unspecified)))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-close ...                                                 */
@@ -208,7 +254,7 @@
 		       ($sqlite-get $builtin p fmt o)
 		       ($sqlite-get $builtin p (apply sqlite-format fmt args) o)))
 		(when exc (raise exc))))
-	  (error "sqlite-for-each" "wrong callback arity" p)))))
+	  (error "sqlite-get" "wrong callback arity" p)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-map ...                                                   */
@@ -253,8 +299,23 @@
 		   (if (null? args)
 		       ($sqlite-for-each $builtin p fmt o)
 		       ($sqlite-for-each $builtin p (apply sqlite-format fmt args) o)))
-		(when exc (raise exc))))
-	  (error "sqlite-for-each" "wrong callback arity" p)))))
+		(when exc (raise exc)))
+	     (error "sqlite-for-each" "wrong callback arity" p))))))
+
+;*---------------------------------------------------------------------*/
+;*    sqlite-run ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-generic (sqlite-run o::%sqlite fmt::bstring . args)
+   (with-access::sqltiny o ($builtin)
+      (apply sqlite-get o (lambda (x y) #unspecified fmt args))))
+
+(cond-expand
+   ((and bigloo-c (not sqltiny))
+    (define-method (sqlite-run o::sqlite fmt::bstring . args)
+       (with-access::sqlite o ($builtin)
+	  (if (null? args)
+	      ($sqlite-run $builtin fmt o)
+	      ($sqlite-run $builtin (apply sqlite-format fmt args) o))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-table-informations ...                                    */
@@ -269,7 +330,10 @@
 ;*---------------------------------------------------------------------*/
 (define (sqlite-table-number-of-rows db name)
    (sqlite-eval db
-      (lambda (x) (string->integer x))
+      (lambda (x)
+	 (if (string? x)
+	     (string->integer x)
+	     0))
       (format "SELECT MAX(rowid) FROM ~A" name)))
 
 ;*---------------------------------------------------------------------*/
