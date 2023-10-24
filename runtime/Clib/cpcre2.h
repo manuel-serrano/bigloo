@@ -18,6 +18,7 @@ static obj_t javascript_symbol = BUNSPEC;
 static obj_t caseless_symbol = BUNSPEC;
 static obj_t multiline_symbol = BUNSPEC;
 static obj_t noraise_symbol = BUNSPEC;
+static obj_t anchored_symbol = BUNSPEC;
 
 static pcre2_general_context *pcre2_context = 0L;
 
@@ -46,6 +47,7 @@ bgl_pcre2_options_init() {
       caseless_symbol = string_to_symbol("CASELESS");
       multiline_symbol = string_to_symbol("MULTILINE");
       noraise_symbol = string_to_symbol("NORAISE");
+      anchored_symbol = string_to_symbol("ANCHORED");
    }
 }
 
@@ -69,6 +71,8 @@ bgl_pcre2_options(obj_t args) {
 	    options |= PCRE2_MATCH_UNSET_BACKREF;
 	 } else if (CAR(args) == multiline_symbol) {
 	    options |= PCRE2_MULTILINE | PCRE_NEWLINE_ANY;
+	 } else if (CAR(args) == anchored_symbol) {
+	    options |= PCRE2_ANCHORED;
 	 } else if (CAR(args) == noraise_symbol) {
 	    options |= PCRE_BGLNORAISE;
 	 } else {
@@ -211,12 +215,30 @@ bgl_charmatch(obj_t re, char *string, bool_t stringp, int beg, int len) {
    char c = BGL_REGEXP_CHAR(re);
 
    while (beg < len) {
-      if (string[ beg++ ] == c) {
+      if (string[beg++] == c) {
 	 obj_t p = stringp ?
 	    make_string(1, c) : MAKE_PAIR(BINT(beg - 1), BINT(beg));
 
 	 return MAKE_PAIR(p, BNIL);
       }
+   }
+
+   return BFALSE;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    bgl_charmatch_anchored ...                                       */
+/*---------------------------------------------------------------------*/
+static obj_t
+bgl_charmatch_anchored(obj_t re, char *string, bool_t stringp, int beg, int len) {
+   char c = BGL_REGEXP_CHAR(re);
+
+   if (string[beg] == c) {
+      obj_t p = stringp ?
+	 make_string(1, c) : MAKE_PAIR(BINT(beg), BINT(beg+1));
+
+      return MAKE_PAIR(p, BNIL);
    }
 
    return BFALSE;
@@ -231,7 +253,7 @@ bgl_charmatch_n(obj_t re, char *string, obj_t vres, int beg, int len, int offset
    char c = BGL_REGEXP_CHAR(re);
 
    while (beg < len) {
-      if (string[ offset + beg++ ] == c) {
+      if (string[offset + beg++] == c) {
 	 if ((VECTOR_LENGTH(vres) & ~1) > 0) {
 	    VECTOR_SET(vres, 0, BINT(beg - 1));
 	    VECTOR_SET(vres, 1, BINT(beg));
@@ -240,6 +262,28 @@ bgl_charmatch_n(obj_t re, char *string, obj_t vres, int beg, int len, int offset
 	 } else {
 	    return 0;
 	 }
+      }
+   }
+
+   return -1;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static long                                                      */
+/*    bgl_charmatch_anchored_n ...                                     */
+/*---------------------------------------------------------------------*/
+static long
+bgl_charmatch_anchored_n(obj_t re, char *string, obj_t vres, int beg, int len, int offset) {
+   char c = BGL_REGEXP_CHAR(re);
+
+   if (string[offset + beg] == c) {
+      if ((VECTOR_LENGTH(vres) & ~1) > 0) {
+	 VECTOR_SET(vres, 0, BINT(beg));
+	 VECTOR_SET(vres, 1, BINT(beg+1));
+
+	 return 1;
+      } else {
+	 return 0;
       }
    }
 
@@ -295,9 +339,14 @@ bgl_regcomp(obj_t pat, obj_t optargs, bool_t finalize) {
 
    if (CHAR_REGEXP(pat, options)) {
       BGL_REGEXP_PREG(re) = (void *)char_compile(BSTRING_TO_STRING(pat), options);
-	   
-      BGL_REGEXP(re).match = bgl_charmatch;
-      BGL_REGEXP(re).match_n = bgl_charmatch_n;
+
+      if ((PCRE2_ANCHORED & options) == PCRE2_ANCHORED) {
+	 BGL_REGEXP(re).match = bgl_charmatch_anchored;
+	 BGL_REGEXP(re).match_n = bgl_charmatch_anchored_n;
+      } else {
+	 BGL_REGEXP(re).match = bgl_charmatch;
+	 BGL_REGEXP(re).match_n = bgl_charmatch_n;
+      }
       BGL_REGEXP(re).free = bgl_charfree;
       BGL_REGEXP(re).capturecount = 1;
       
@@ -305,8 +354,13 @@ bgl_regcomp(obj_t pat, obj_t optargs, bool_t finalize) {
    } else if (CHAR_ESCAPE_REGEXP(pat, options)) {
       BGL_REGEXP_PREG(re) = (void *)char_compile(BSTRING_TO_STRING(pat) + 1, options);
 
-      BGL_REGEXP(re).match = bgl_charmatch;
-      BGL_REGEXP(re).match_n = bgl_charmatch_n;
+      if ((PCRE2_ANCHORED & options) == PCRE2_ANCHORED) {
+	 BGL_REGEXP(re).match = bgl_charmatch_anchored;
+	 BGL_REGEXP(re).match_n = bgl_charmatch_anchored_n;
+      } else {
+	 BGL_REGEXP(re).match = bgl_charmatch;
+	 BGL_REGEXP(re).match_n = bgl_charmatch_n;
+      }
       BGL_REGEXP(re).free = bgl_charfree;
       BGL_REGEXP(re).capturecount = 1;
       
