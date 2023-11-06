@@ -64,6 +64,15 @@
 	  (reorder-succs! blocks)
 	  (when (>=fx *trace-level* 2)
 	     (dump-blocks global params blocks ".reorder.cfg"))
+	  ;; replace the possible go instruction that follows an error call
+	  (fail! (car blocks))
+	  (when (>=fx *trace-level* 2)
+	     (dump-blocks global params blocks ".failure.cfg"))
+	  ;; there are several form of type checks, normalize them to ease
+	  ;; the bbv algorithm
+	  (normalize-typecheck! (car blocks))
+	  (when (>=fx *trace-level* 2)
+	     (dump-blocks global params blocks ".typecheck.cfg"))
 	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
 	     (when (>=fx *trace-level* 2)
 		(dump-blocks global params blocks ".goto.cfg"))
@@ -260,6 +269,91 @@
 		(loop (append succs (cdr bs)) (cons (car bs) acc))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    fail! ...                                                        */
+;*    -------------------------------------------------------------    */
+;*    Replace the possible last go instruction of blocks invoking      */
+;*    the ERROR function.                                              */
+;*---------------------------------------------------------------------*/
+(define (fail!::pair b::block)
+
+   (define (fail-block! b::block)
+      (with-access::block b (succs first)
+	 (when (and (pair? succs) (rtl_ins-error? (car first)))
+	    (let* ((lp (last-pair first))
+		   (last (car lp)))
+	       (let ((fail (instantiate::rtl_ins
+			      (dest #f)
+			      (fun (instantiate::rtl_fail
+				      (loc (rtl_ins-loc last))))
+			      (args '()))))
+		  (when (null? (cdr succs))
+		     (set! succs '()))
+		  (if (rtl_ins-go? last)
+		      (set-car! lp fail)
+		      (set-cdr! lp (list fail))))))))
+
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  (reverse acc))
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (fail-block! (car bs))
+	  (with-access::block (car bs) (succs)
+	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+   
+;*---------------------------------------------------------------------*/
+;*    normalize-typecheck! ...                                         */
+;*    -------------------------------------------------------------    */
+;*    Replace the possible last go instruction of blocks invoking      */
+;*    the ERROR function.                                              */
+;*---------------------------------------------------------------------*/
+(define (normalize-typecheck!::pair b::block)
+
+   (define (rtl_ins-typecheck? i::rtl_ins)
+      (when (rtl_ins-ifne? i)
+	 (with-access::rtl_ins i (args)
+	    (when (and (isa? (car args) rtl_ins) (rtl_ins-mov? (car args)))
+	       (let loop ((j (car args)))
+		  (cond
+		     ((rtl_ins-mov? j)
+		      (with-access::rtl_ins j (args)
+			 (loop (car args))))
+		     ((rtl_ins-call? j)
+		      (when (rtl_call-predicate j)
+			 (let ((args (rtl_ins-args* i)))
+			    (when (and (pair? args) (null? (cdr args)) (rtl_reg? (car args)))
+			       j))))
+		     (else
+		      #f)))))))
+   
+   (define (normalize-ins! i::rtl_ins)
+      (let ((call (rtl_ins-typecheck? i)))
+	 (when call
+	    (with-access::rtl_ins i (args dest)
+	       (with-access::rtl_ins call ((cdest dest))
+		  (set! cdest dest)
+		  (set-car! args call))))))
+	     
+   (define (normalize-block! b::block)
+      (with-access::block b (succs first)
+	 (for-each normalize-ins! first)))
+
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  (reverse acc))
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (normalize-block! (car bs))
+	  (with-access::block (car bs) (succs)
+	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+   
+;*---------------------------------------------------------------------*/
 ;*    normalize-goto! ...                                              */
 ;*    -------------------------------------------------------------    */
 ;*    returns a list of blocks (those that follow* the argument).      */
@@ -274,7 +368,7 @@
 	 (when (pair? succs)
 	    (let* ((lp (last-pair first))
 		   (last (car lp)))
-	       (unless (rtl_ins-go? last)
+	       (unless (or (rtl_ins-go? last) (rtl_ins-fail? last))
 		  (let ((go (instantiate::rtl_ins
 			       (dest #f)
 			       (fun (instantiate::rtl_go

@@ -111,6 +111,7 @@
 	    (rtl_ins-nop?::bool i::rtl_ins)
 	    (rtl_ins-mov?::bool i::rtl_ins)
 	    (rtl_ins-go?::bool i::rtl_ins)
+	    (rtl_ins-fail?::bool i::rtl_ins)
 	    (rtl_ins-switch? i::rtl_ins)
 	    (rtl_ins-br?::bool i::rtl_ins)
 	    (rtl_ins-ifeq?::bool i::rtl_ins)
@@ -124,6 +125,7 @@
 	    (rtl_ins-false?::bool i::rtl_ins)
 	    (rtl_ins-return? i::rtl_ins)
 	    (rtl_ins-fxovop?::bool i::rtl_ins)
+	    (rtl_ins-error?::bool i::rtl_ins)
 	    
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)
@@ -588,6 +590,13 @@
       (isa? fun rtl_go)))
 
 ;*---------------------------------------------------------------------*/
+;*    rtl_ins-fail? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-fail? i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (isa? fun rtl_fail)))
+
+;*---------------------------------------------------------------------*/
 ;*    rtl_ins-switch? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-switch? i::rtl_ins)
@@ -695,6 +704,15 @@
 	    (rtl_call-fxovop? (car args))))))
 
 ;*---------------------------------------------------------------------*/
+;*    rtl_ins-error? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-error? i)
+   (when (rtl_ins-call? i)
+      (with-access::rtl_ins i (fun)
+	 (with-access::rtl_call fun (var)
+	    (eq? var *error*)))))
+
+;*---------------------------------------------------------------------*/
 ;*    rtl_ins-bool? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-bool? i::rtl_ins)
@@ -721,6 +739,7 @@
    (with-access::rtl_ins i (fun)
       (with-access::rtl_call fun (var)
 	 (let ((val (variable-value var)))
+	    (tprint "val=" (shape var) " tof=" (shape (fun-predicate-of val)))
 	    (fun-predicate-of val)))))
 
 ;*---------------------------------------------------------------------*/

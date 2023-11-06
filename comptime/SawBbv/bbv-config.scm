@@ -87,7 +87,7 @@
    (let ((e (getenv "BIGLOOBBVVERSIONLIMIT")))
       (if (string? e)
 	  (string->integer e)
-	  3)))
+	  4)))
 (define *max-block-limit* 6)
 
 

@@ -58,6 +58,8 @@
        (bb num preds succs ins #f merge #f 0 (get-color 0) (merge-bgcolor minfo)))
       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
        (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor minfo)))
+      ((SawDone ?num :preds ?preds :succs ?succs . ?ins)
+       (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor 'default)))
       (else
        (error "list->bb" "bad block syntax" l))))
 

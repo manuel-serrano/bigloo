@@ -50,14 +50,27 @@
 	    (bs (new-blockS bv ctx :cnt 1)))
 	 (block-specialize! bs queue)
 	 (let loop ((n 0))
-	    (trace-item "loop(" n ") queue-length=" (bbv-queue-length queue))
+	    (trace-item "loop(" n ") queue="
+	       (map (lambda (bs)
+		       (with-access::blockS bs (label) label))
+		  (with-access::bbv-queue queue (blocks)
+			blocks)))
 	    (if (bbv-queue-empty? queue)
 		bs
 		(let ((bs (bbv-queue-pop! queue)))
-		   (with-access::blockS bs ((bv parent))
+		   (with-access::blockS bs ((bv parent) (plabel label))
+		      (with-access::blockV bv (label versions)
+			 (trace-item "bs=" label
+			    " parent=" plabel
+			    " versions=" (map (lambda (b)
+						 (with-access::blockS b (label)
+						    label))
+					    versions)))
 		      (when (block-need-merge? bv)
+			 (trace-item "need-merge")
 			 (block-merge-some! bv queue)))
 		   (unless (block-merged? bs)
+		      (trace-item "need-specialize")
 		      (block-specialize! bs queue))
 		   (loop (+fx n 1))))))))
 
@@ -515,8 +528,6 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-typecheck? ...                                           */
-;*    -------------------------------------------------------------    */
-;*    Returns the type checked by the instruction or false.            */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-typecheck? i::rtl_ins)
    (when (rtl_ins-ifne? i)
