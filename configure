@@ -1986,6 +1986,9 @@ case $hostos in
         exit 1
       fi
 
+      # as of November 2023, MacOSX 23.0.0, clang version 14.0.0, musttail
+      # crashes so we disable it by default
+      musttail="0"
       tuning="MacOS X"
     fi
 
