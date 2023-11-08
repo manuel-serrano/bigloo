@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Fri Oct  6 09:43:22 2023 (serrano)                */
+;*    Last change :  Wed Nov  8 16:27:34 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -88,7 +88,7 @@
       (if (string? e)
 	  (string->integer e)
 	  4)))
-(define *max-block-limit* 6)
+(define *max-block-limit* *max-block-merge-versions*)
 
 
 ;; various optimizations
