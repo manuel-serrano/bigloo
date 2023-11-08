@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Oct  9 07:59:01 2023 (serrano)                */
+;*    Last change :  Tue Nov  7 12:46:27 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -338,34 +338,6 @@
 			 (bbv-queue-push! queue nbs)
 			 nbs)))))))))
    
-;*---------------------------------------------------------------------*/
-;*    debug-merge ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (debug-merge key bs ctx bs1 bs2)
-   (with-access::blockS bs (label preds succs parent)
-      (with-access::blockS bs1 ((ctx1 ctx)
-				(lbl1 label)
-				(preds1 preds)
-				(succs1 succs))
-	 (with-access::blockS bs2 ((ctx2 ctx)
-				   (lbl2 label)
-				   (preds2 preds)
-				   (succs2 succs))
-	    (tprint key "=" label "[" (block-label parent) "]"
-	       " preds: " (map block-label preds)
-	       " succs:" (map block-label succs))
-	    (tprint "  lvs: "
-	       (map block-label (blockV-live-versions parent)))
-	    (tprint "  bs1: " lbl1 " "
-	       (map block-label preds1) " -> " (map block-label succs1)
-	       " " (shape ctx1))
-	    (tprint "  bs2: " lbl2 " "
-	       (map block-label preds2) " -> " (map block-label succs2)
-	       " " (shape ctx2))
-	    (tprint "     => " (shape ctx))
-	    (tprint "        "
-	       (map block-label preds) " -> " (map block-label succs))))))
-
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ins ...                                                      */
 ;*---------------------------------------------------------------------*/

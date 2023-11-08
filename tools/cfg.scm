@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Mon Oct  9 07:20:43 2023 (serrano)                */
+;*    Last change :  Tue Nov  7 19:50:28 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -39,6 +39,12 @@
    (main main))
 
 ;*---------------------------------------------------------------------*/
+;*    global parameters ...                                            */
+;*---------------------------------------------------------------------*/
+(define fontsize "")
+(define compact #f)
+
+;*---------------------------------------------------------------------*/
 ;*    bb ...                                                           */
 ;*---------------------------------------------------------------------*/
 (define-struct bb lbl-num preds succs instrs parent merge collapsed cost color bgcolor)
@@ -48,6 +54,8 @@
 ;*---------------------------------------------------------------------*/
 (define (list->bb l)
    (match-case l
+      (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :collapsed ?collapsed :preds ?preds :succs ?succs :merge-info ?minfo :color ?color . ?ins)
+       (bb num preds succs ins parent merge collapsed 0 color (merge-bgcolor minfo)))
       ((blockS ?num :parent ?parent :merge ?merge :collapsed ?collapsed :cost ?cost :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
        (bb num preds succs ins parent merge collapsed cost (get-color parent) (merge-bgcolor minfo)))
       (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :collapsed ?collapsed :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
@@ -58,6 +66,8 @@
        (bb num preds succs ins #f merge #f 0 (get-color 0) (merge-bgcolor minfo)))
       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
        (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor minfo)))
+      ((SawDone ?num :preds ?preds :succs ?succs :color ?color . ?ins)
+       (bb num preds succs ins #f #f #f 0 color (merge-bgcolor 'default)))
       ((SawDone ?num :preds ?preds :succs ?succs . ?ins)
        (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor 'default)))
       (else
@@ -89,12 +99,29 @@
 	     new))))
 
 ;*---------------------------------------------------------------------*/
+;*    rand ...                                                         */
+;*    -------------------------------------------------------------    */
+;*    A non random random generator (for reproducibility).             */
+;*---------------------------------------------------------------------*/
+(define (rand)
+   (if (=fx cnt 1)
+       (set! cnt (-fx (vector-length seed) 1))
+       (set! cnt (-fx cnt 1)))
+   (vector-ref seed cnt))
+
+(define-macro (make-seed num)
+   `',(list->vector (map (lambda (i) (random 155)) (iota num))))
+
+(define seed (make-seed 1024))
+(define cnt 1)
+
+;*---------------------------------------------------------------------*/
 ;*    gennewcolor ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (gennewcolor)
-   (let ((r (+fx 100 (random 155)))
-	 (g (+fx 100 (random 155)))
-	 (b (+fx 100 (random 155))))
+   (let ((r (+fx 100 (rand)))
+	 (g (+fx 100 (rand)))
+	 (b (+fx 100 (rand))))
       (format "#~02x~02x~02x" r g b)))
 
 ;*---------------------------------------------------------------------*/
@@ -122,7 +149,7 @@
 	  "}\n"))
    
    (define (gen-node id label)
-      `("  " ,id " [fontname = \"Courier New\" shape = \"none\" label = "
+      `("  " ,id " [" ,fontsize " fontname = \"Courier New\" shape = \"none\" label = "
 	  ,@label
 	  " ];\n"))
 
@@ -172,13 +199,19 @@
    (define (escape obj)
       (cond
 	 ((string? obj)
-	  (apply string-append
-	     (map (lambda (c)
-		     (cond ((char=? c #\<) "&lt;")
-			   ((char=? c #\>) "&gt;")
-			   ((char=? c #\&) "&amp;")
-			   (else (string c))))
-		(string->list obj))))
+	  (cond
+	     ((string=? obj "<-")
+	      "&larr;")
+	     ((string=? obj "fail")
+	      "<b><font color=\"red\">fail</font></b>")
+	     (else
+	      (apply string-append
+		 (map (lambda (c)
+			 (cond ((char=? c #\<) "&lt;")
+			       ((char=? c #\>) "&gt;")
+			       ((char=? c #\&) "&amp;")
+			       (else (string c))))
+		    (string->list obj))))))
 	 ((symbol? obj)
 	  (escape (symbol->string obj)))
 	 ((pair? obj)
@@ -220,13 +253,21 @@
       (define (decorate-ctx-entry entry)
 	 (match-case entry
 	    (#(?reg ?type _ ())
-	     (format "~a:~a" (escape reg) type))
+	     (if compact
+		 (format "~a:~(,)" (escape reg) type)
+		 (format "~a:~a" (escape reg) type)))
 	    (#(?reg ?type ?val ())
-	     (format "~a:~a/~a" (escape reg) type val))
+	     (if compact
+		 (format "~a:~(,)/~a" (escape reg) type val)
+		 (format "~a:~a/~a" (escape reg) type val)))
 	    (#(?reg ?type ?val ?aliases)
-	     (format "~a:~a[~( )]" (escape reg) type (map escape aliases)))
+	     (if compact
+		 (format "~a:~(,)" (escape reg) type)
+		 (format "~a:~a[~( )]" (escape reg) type (map escape aliases))))
 	    (#(?reg ?type ?val ?aliases)
-	     (format "~a:~a/~a[~( )]" (escape reg) type val (map escape aliases)))
+	     (if compact
+		 (format "~a:~(,)/~a" (escape reg) type val)
+		 (format "~a:~a/~a[~( )]" (escape reg) type val (map escape aliases))))
 	    (else
 	     "")))
       
@@ -238,7 +279,7 @@
 		      (gen-table #f
 			 (gen-row
 			    (gen-col #f
-			       (list (format "<font color=\"blue\"><i>;; ~( )</i></font>"
+			       (list (format "<font color=\"blue\"><i>~( )</i></font>"
 					(map decorate-ctx-entry ctx)))))
 			 :color "blue"
 			 :bgcolor (bb-bgcolor bb)
@@ -321,8 +362,16 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main args)
-   (if (pair? (cdr args))
-       (dump-cfg (cadr args)
-	  (call-with-input-file (cadr args) port->sexp-list))
-       (dump-cfg "stdin"
-	  (port->sexp-list (current-input-port)))))
+   (let ((file #f))
+      (args-parse (cdr args)
+	 ((("-f" "--font") ?fs (help "font size"))
+	  (set! fontsize (format "fontsize = ~a" fs)))
+	 ((("-c" "--compact") (help "compact display"))
+	  (set! compact #t))
+	 (else
+	  (set! file else)))
+      (if (string? file)
+	  (dump-cfg file
+	     (call-with-input-file file port->sexp-list))
+	  (dump-cfg "stdin"
+	     (port->sexp-list (current-input-port))))))

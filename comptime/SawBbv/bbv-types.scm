@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Oct  9 07:54:52 2023 (serrano)                */
+;*    Last change :  Wed Nov  8 16:16:44 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -739,7 +739,6 @@
    (with-access::rtl_ins i (fun)
       (with-access::rtl_call fun (var)
 	 (let ((val (variable-value var)))
-	    (tprint "val=" (shape var) " tof=" (shape (fun-predicate-of val)))
 	    (fun-predicate-of val)))))
 
 ;*---------------------------------------------------------------------*/
