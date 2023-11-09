@@ -33,7 +33,8 @@
 	    *$int->long*
 	    *long->bint*
 	    *vector-bound-check*
-	    *error*))
+	    *error*
+	    *number?*))
 
 ;*---------------------------------------------------------------------*/
 ;*    The cache registers definition                                   */
@@ -78,6 +79,7 @@
 (define *long->bint* #f)
 (define *vector-bound-check* #f)
 (define *error* #f)
+(define *number?* #f)
 (define *type-norms* #f)
 
 ;*---------------------------------------------------------------------*/
@@ -117,7 +119,8 @@
       (set! *$int->long* (get-global/module '$int->long 'foreign))
       (set! *long->bint* (get-global/module '$long->bint 'foreign))
       (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))
-      (set! *error* (get-global/module 'error '__error))))
+      (set! *error* (get-global/module 'error '__error))
+      (set! *number?* (get-global/module 'number? '__r4_numbers_6_5))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stop-bbv-cache! ...                                              */
@@ -156,4 +159,5 @@
    (set! *long->bint* #f)
    (set! *vector-bound-check* #f)
    (set! *error* #f)
+   (set! *number?* #f)
    (set! *type-norms* #f))

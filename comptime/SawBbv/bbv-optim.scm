@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Fri Oct  6 09:38:01 2023 (serrano)                */
+;*    Last change :  Thu Nov  9 17:26:54 2023 (serrano)                */
 ;*    Copyright   :  2023 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -115,7 +115,7 @@
       ;; is a block explicitly jumping to its successor
       (with-access::block b (first)
 	 (every (lambda (i) (or (rtl_ins-nop? i) (rtl_ins-go? i))) first)))
-   
+
    (assert-blocks b "before simplify-branch!")
    (let loop ((bs (list b))
 	      (acc (make-empty-bbset)))
@@ -126,48 +126,48 @@
 	  (loop (cdr bs) acc))
 	 (else
 	  (with-access::blockS (car bs) (preds succs first label)
-	     (if (pair? preds)
-		 (begin
-		    (when *bbv-debug* (assert-block (car bs) "simplify-branch!"))
-		    (if (=fx (length succs) 1)
-			(if (=fx (length (block-preds (car succs))) 1)
-			    ;; collapse the two blocks
-			    (let ((s (car succs)))
-			       (for-each (lambda (ns)
-					    (block-preds-set! ns
-					       (replace (block-preds ns) s (car bs))))
-				  (block-succs s))
-			       (set! succs (block-succs s))
-			       (let ((lp (last-pair first)))
-				  (if (rtl_ins-go? (car lp))
-				      (let ((rev (reverse! (cdr (reverse first)))))
-					 (set! first (append! rev (block-first s))))
-				      (set! first
-					 (append first
-					    (list-copy (block-first s))))))
-			       (loop bs acc))
-			    (loop (cons (car succs) (cdr bs))
-			       (bbset-cons (car bs) acc)))
-			(let liip ((ss succs)
-				   (nsuccs '()))
-			   (if (null? ss)
-			       (loop (append (reverse nsuccs) (cdr bs))
-				  (bbset-cons (car bs) acc))
-			       (let ((s (car ss)))
-				  (when (goto-block? s)
-				     (let ((t (car (block-succs s))))
-					(when *bbv-debug*
-					   (tprint "simplify(" (block-label (car bs))
-					      "): " (block-label s)
-					      " preds: " (map block-label (block-preds s))
-					      " => " (block-label t)))
-					(redirect-block! (car bs) s t)
-					(when (=fx (length (block-preds s)) 1)
-					   (block-preds-set! t
-					      (remq s (block-preds t)))
-					   (block-preds-set! s '()))))
-				  (liip (cdr ss) (cons s nsuccs)))))))
-		 (loop (cdr bs) acc)))))))
+	     (when *bbv-debug*
+		(assert-block (car bs) "simplify-branch!"))
+	     (if (=fx (length succs) 1)
+		 (if (=fx (length (block-preds (car succs))) 1)
+		     ;; collapse the two blocks
+		     (let ((s (car succs)))
+			(for-each (lambda (ns)
+				     (block-preds-set! ns
+					(replace (block-preds ns) s (car bs))))
+			   (block-succs s))
+			(set! succs (block-succs s))
+			(let ((lp (last-pair first)))
+			   (if (rtl_ins-go? (car lp))
+			       (let ((rev (reverse! (cdr (reverse first)))))
+				  (set! first (append! rev (block-first s))))
+			       (set! first
+				  (append first
+				     (list-copy (block-first s))))))
+			(assert-blocks s "simplify-branch!.1")
+			(loop bs acc))
+		     (loop (cons (car succs) (cdr bs))
+			(bbset-cons (car bs) acc)))
+		 (let liip ((ss succs)
+			    (nsuccs '()))
+		    (if (null? ss)
+			(loop (append (reverse nsuccs) (cdr bs))
+			   (bbset-cons (car bs) acc))
+			(let ((s (car ss)))
+			   (if (goto-block? s)
+			       (let ((t (car (block-succs s))))
+				  (when *bbv-debug*
+				     (tprint "simplify(" (block-label (car bs))
+					"): " (block-label s)
+					" preds: " (map block-label (block-preds s))
+					" => " (block-label t)))
+				  (redirect-block! (car bs) s t)
+				  (block-preds-set! t
+				     (remq s (block-preds t)))
+				  (assert-blocks s "before simplify-branch!.2a")
+				  (assert-blocks t "before simplify-branch!.2b")
+				  (liip (cdr ss) nsuccs))
+			       (liip (cdr ss) (cons s nsuccs))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coalesce! ...                                                    */

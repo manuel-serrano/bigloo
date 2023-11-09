@@ -172,7 +172,7 @@
 	 (format "[~( )]"
 	    (if polarity
 		(map shape types)
-		(map (lambda (t) (string-append "!" (shape t))) types)))
+		(map (lambda (t) (format "!~a" (shape t))) types)))
 	 (format "~s" (shape value))
 	 (map shape aliases))))
 
@@ -739,7 +739,10 @@
    (with-access::rtl_ins i (fun)
       (with-access::rtl_call fun (var)
 	 (let ((val (variable-value var)))
-	    (fun-predicate-of val)))))
+	    (cond
+	       ((fun-predicate-of val) => (lambda (t) t))
+	       ((eq? var *number?*) 'number)
+	       (else #f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_call-values ...                                              */

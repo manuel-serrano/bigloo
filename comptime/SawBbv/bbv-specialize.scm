@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Nov  7 12:46:27 2023 (serrano)                */
+;*    Last change :  Thu Nov  9 12:40:28 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -36,7 +36,8 @@
 	    saw_bbv-range
 	    saw_bbv-merge
 	    saw_bbv-config
-	    saw_bbv-cost)
+	    saw_bbv-cost
+	    saw_bbv-debug)
 
    (export (bbv-block*::blockS ::blockV ::bbv-ctx)))
 
@@ -85,6 +86,8 @@
       (with-access::blockS bs ((bv parent) first ctx)
 	 (with-access::blockV bv ((pfirst first))
 	    (set! first (ins-specialize! pfirst bs ctx queue))
+	    (when *bbv-debug*
+	       (assert-block bs "block-specialize!"))
 	    bs))))
 
 ;*---------------------------------------------------------------------*/
@@ -117,7 +120,9 @@
 			 (with-access::blockS mbs (cnt)
 			    (if (=fx cnt 0) 'merge-new 'merge-target))))
 		   (block-merge! bs1 mbs)
-		   (block-merge! bs2 mbs))))))))
+		   (block-merge! bs2 mbs)))
+	       (when *bbv-debug*
+		  (assert-block mbs "block-merge-some!")))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ins-specialize! ...                                              */
@@ -225,7 +230,7 @@
 		      (connect! bs ins)
 		      (loop '() (cons ins nins) ctx)))))
 	    ((rtl_ins-ifne? (car oins))
-	     (with-access::rtl_ins (car oins) (fun)
+	     (with-access::rtl_ins (car oins) (fun args)
 		(with-access::rtl_ifne fun (then)
 		   (let* ((n (bbv-block then ctx queue))
 			  (ins (duplicate::rtl_ins/bbv (car oins)
@@ -257,12 +262,16 @@
 ;*    block-merge! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (block-merge! bs::blockS mbs::blockS)
-   (with-access::blockS bs (mblock cnt succs)
-      (set! mblock mbs)
-      (set! cnt 0)
-      (replace-block! bs mbs)
-      (when *bbv-blocks-gc*
-	 (for-each collect-block! succs))))
+   (with-trace 'bbv-block-merge
+	 (format "block-merge! ~a -> ~a"
+	    (with-access::blockS bs (label) label)
+	    (with-access::blockS mbs (label) label))
+      (with-access::blockS bs (mblock cnt succs)
+	 (set! mblock mbs)
+	 (set! cnt 0)
+	 (replace-block! bs mbs)
+	 (when *bbv-blocks-gc*
+	    (for-each collect-block! succs)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    collect-block! ...                                               */
@@ -270,6 +279,8 @@
 ;*    Collect the unreachable specialized blocks.                      */
 ;*---------------------------------------------------------------------*/
 (define (collect-block! bs::blockS)
+   (when *bbv-debug*
+      (assert-block bs "collect-block!"))
    (with-access::blockS bs (label succs cnt)
       (with-trace 'bbv-gc (format "collect-block! ~a (~a)" label cnt)
 	 (when (>fx cnt 0)
@@ -496,6 +507,7 @@
       ((rtl_ins-return-specialize? i) rtl_ins-specialize-return)
       ((rtl_ins-vlen? i) rtl_ins-specialize-vlen)
       ((rtl_ins-vector-bound-check? i) rtl_ins-specialize-vector-bound-check)
+      ((rtl_ins-resolved-ifne? i) rtl_ins-specialize-resolved-ifne)
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -509,6 +521,14 @@
 	       (let ((args (rtl_ins-args* i)))
 		  (and (pair? args) (null? (cdr args)) (rtl_reg? (car args)))))))))
 
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-resolved-ifne? ...                                       */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-resolved-ifne? i::rtl_ins)
+   (when (rtl_ins-ifne? i)
+      (with-access::rtl_ins i (args)
+	 (and (isa? (car args) rtl_ins) (rtl_ins-loadi? (car args))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-typecheck ...                                 */
 ;*---------------------------------------------------------------------*/
@@ -636,7 +656,9 @@
 				   (with-access::atom constant (value type)
 				      (values (duplicate-ins i ctx)
 					 (extend-ctx ctx dest (list *bint*) #t
-					    :value (if (fixnum? value) (fixnum->range value) (fixnum-range)))))))
+					    :value (if (fixnum? value)
+						       (fixnum->range value)
+						       (fixnum-range)))))))
 			     (values (duplicate-ins i ctx)
 				(extend-ctx ctx dest (list type) #t)))))))
 	       ((and *type-loadi* (pair? args) (rtl_ins-loadi? (car args)))
@@ -745,6 +767,14 @@
 			      (fixnum-range))))
 		      ((rtl_ins-loadi? (car args))
 		       (new-value-loadi (car args)))
+		      ((rtl_ins-vlen? (car args))
+		       (with-access::rtl_ins (car args) (dest)
+			  (multiple-value-bind (i vctx)
+			     (rtl_ins-specialize-vlen (car args) ctx queue)
+			     (let ((e (bbv-ctx-get vctx dest)))
+				(if (bbv-ctxentry? e)
+				    (bbv-ctxentry-value e)
+				    (vlen-range))))))
 		      (else
 		       (fixnum-range))))
 		  (else
@@ -885,7 +915,32 @@
 				  :value (bbv-range-lt (vlen-range) vl)))
 			 (nctx ctx))
 		      (dup-ifne i pctx nctx)))))))))
- 
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-specialize-resolved-ifne ...                             */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-specialize-resolved-ifne i::rtl_ins ctx queue::bbv-queue)
+   (with-access::rtl_ins i (args)
+      (with-access::rtl_ins (car args) (fun)
+	 (with-access::rtl_loadi fun (constant)
+	    (with-access::rtl_ins i (fun)
+	       (with-access::rtl_ifne fun (then)
+		  (if (eq? constant #f)
+		      (let* ((fun (duplicate::rtl_nop fun))
+			     (ni (duplicate::rtl_ins/bbv i
+				    (ctx ctx)
+				    (args '())
+				    (fun fun))))
+			 (values ni ctx))
+		      (with-access::rtl_ifne fun (then)
+			 (let* ((fun (duplicate::rtl_go fun
+					(to (bbv-block then ctx queue))))
+				(ni (duplicate::rtl_ins/bbv i
+				       (ctx ctx)
+				       (args '())
+				       (fun fun))))
+			    (values ni ctx))))))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-fxcmp? ...                                               */
 ;*---------------------------------------------------------------------*/
@@ -906,13 +961,11 @@
 		  (and (=fx (length args) 2)
 		       (or (eq? var *<fx*) (eq? var *<=fx*)
 			   (eq? var *>fx*) (eq? var *>=fx*)
-			   (eq? var *=fx*))
-		       (or (reg? (car args)) (rtl_ins-loadi? (car args)))
-		       (or (reg? (cadr args)) (rtl_ins-loadi? (cadr args)))))))))
+			   (eq? var *=fx*))))))))
    
    (with-access::rtl_ins i (dest fun args)
       (cond
-;* 	 ((isa? fun rtl_call) (rtl_call-fxcmp? i))                     */
+	 ((isa? fun rtl_call) (rtl_call-fxcmp? i))
 	 ((isa? fun rtl_ifne) (rtl_call-fxcmp? (car args)))
 	 (else #f))))
    
@@ -1100,13 +1153,12 @@
 					(fun fun))))
 			     (values ni pctx))))
 		      ((rtl_ins-false? ins)
-		       (with-access::rtl_ifne fun (then)
-			  (let* ((fun (duplicate::rtl_nop fun))
-				 (ni (duplicate::rtl_ins/bbv i
-					(ctx ctx)
-					(args '())
-					(fun fun))))
-			     (values ni nctx))))
+		       (let* ((fun (duplicate::rtl_nop fun))
+			      (ni (duplicate::rtl_ins/bbv i
+				     (ctx ctx)
+				     (args '())
+				     (fun fun))))
+			  (values ni nctx)))
 		      (else
 		       (let ((fun (duplicate::rtl_ifne fun
 				     (then (bbv-block then pctx queue)))))
@@ -1229,9 +1281,8 @@
 			 (let ((range (bbv-range-add intl intr)))
 			    (if (bbv-range-fixnum? range)
 				(let ((nctx (extend-ctx ctx reg
-					       (list *long*) #t
+					       (list *bint*) #t
 					       :value range)))
-				   
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default call ifne reg))))
@@ -1239,7 +1290,7 @@
 			 (let ((range (bbv-range-sub intl intr)))
 			    (if (bbv-range-fixnum? range)
 				(let ((nctx (extend-ctx ctx reg
-					       (list *long*) #t
+					       (list *bint*) #t
 					       :value range)))
 				   
 				   (values (fx-ov->fx var call reg ctx nctx)
@@ -1249,7 +1300,7 @@
 			 (let ((range (bbv-range-mul intl intr)))
 			    (if (bbv-range-fixnum? range)
 				(let ((nctx (extend-ctx ctx reg
-					       (list *long*) #t
+					       (list *bint*) #t
 					       :value range)))
 				   
 				   (values (fx-ov->fx var call reg ctx nctx)

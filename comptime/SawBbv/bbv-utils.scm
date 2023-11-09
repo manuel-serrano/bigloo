@@ -38,7 +38,7 @@
 	    saw_bbv-range
 	    saw_bbv-debug)
 
-   (export  (type-in?::bool ::type ::pair-nil)
+   (export  (type-in?::bool ::obj ::pair-nil)
 	    (set-max-label! blocks::pair-nil)
 	    (genlabel)
 	    (replace ::pair-nil ::obj ::obj)
@@ -56,8 +56,9 @@
    (define (type-eq? x y)
       (cond
 	 ((eq? x y) #t)
-	 ((eq? x *bint*) (eq? y *long*))
-	 ((eq? x *long*) (eq? y *bint*))
+	 ((eq? x *bint*) (or (eq? y *long*) (eq? y 'number)))
+	 ((eq? x *long*) (or (eq? y *bint*) (eq? y 'number)))
+	 ((or (eq? x 'number) (eq? y 'number)) #f)
 	 (else (is-subtype? x y))))
    
    (any (lambda (t) (type-eq? t type)) types))
@@ -164,6 +165,9 @@
 	 (map block-label (block-succs old)))
       (trace-item "new="(block-label new) " "
 	 (map block-label (block-succs new)))
+      (when *bbv-debug*
+	 (assert-block old "replace-block.old!")
+	 (assert-block new "replace-block.new!"))
       (unless (eq? old new)
 	 ;; debugging
 	 (when (and debug *bbv-debug*)
@@ -177,7 +181,7 @@
 		     (error "replace-block!"
 			(format "Wrong block replacement ~a" (block-label old))
 			(block-label new))))))
-	 (with-access::blockS old (succs preds mblock)
+	 (with-access::blockS old ((old-succs succs) (old-preds preds) mblock)
 	    ;; mark the replacement
 	    (set! mblock new)
 	    (for-each (lambda (b)
@@ -185,7 +189,7 @@
 			    (set! cnt (-fx cnt 1))
 			    (block-preds-update! b 
 			       (filter! (lambda (n) (not (eq? n old))) preds))))
-	       succs)
+	       old-succs)
 	    (for-each (lambda (b)
 			 (with-access::blockS b (succs first)
 			    (set! succs (replace succs old new))
@@ -211,11 +215,11 @@
 						(with-access::rtl_switch fun (labels)
 						   (set! labels (replace labels old new)))))))
 			       first)))
-	       preds)
+	       old-preds)
 	    (with-access::blockS new ((npreds preds) cnt)
 	       (block-preds-update! new
-		  (delete-duplicates! (append preds npreds) eq?)))
-	    (assert-block new "replace-block!")
+		  (delete-duplicates! (append old-preds npreds) eq?)))
+	    (assert-block new "replace-block!.replaced")
 	    new))))
 
 ;*---------------------------------------------------------------------*/

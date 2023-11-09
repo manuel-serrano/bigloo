@@ -96,12 +96,13 @@
 				 (b (block->block-list regs
 				       (assert-context! 
 					  (if *bbv-blocks-cleanup*
-					      (remove-nop!
-						 (remove-goto!
-						    (simplify-branch!
-						       (coalesce!
-							  (get-bb-mark)
-							  (gc! s)))))
+					      (simplify-branch!
+						 (remove-nop!
+						    (remove-goto!
+						       (simplify-branch!
+							  (coalesce!
+							     (get-bb-mark)
+							     (gc! s))))))
 					      s)))))
 			     (verbose 3 " "
 				(length blocks) " -> " (length b))
@@ -186,21 +187,22 @@
    
    (define (collect! b setm)
       (let loop ((bs (list b))
-		 (set (make-empty-bbset)))
+		 (set '()))
 	 (cond
 	    ((null? bs)
 	     set)
-	    ((bbset-in? (car bs) set)
+	    ((memq (car bs) set)
 	     (loop (cdr bs) set))
 	    (else
-	     (with-access::blockS (car bs) (succs parent)
+	     (with-access::blockS (car bs) (succs parent preds)
+		(set! preds (filter (lambda (b) (bbset-in? b setm)) preds))
 		(with-access::blockV parent (versions)
 		   (set! versions
 		      (filter (lambda (b) (bbset-in? b setm)) versions)))
 		(loop (append succs (cdr bs))
-		   (bbset-cons (car bs) set)))))))
+		   (cons (car bs) set)))))))
    
-   (collect! b (mark b ))
+   (collect! b (mark b))
    b)
 
 ;*---------------------------------------------------------------------*/
