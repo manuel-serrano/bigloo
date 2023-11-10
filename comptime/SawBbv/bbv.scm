@@ -285,8 +285,9 @@
 		   (last (car lp)))
 	       (let ((fail (instantiate::rtl_ins
 			      (dest #f)
-			      (fun (instantiate::rtl_fail
-				      (loc (rtl_ins-loc last))))
+			      (fun (instantiate::rtl_pragma
+				      (loc (rtl_ins-loc last))
+				      (format "exit(0)")))
 			      (args '()))))
 		  (when (null? (cdr succs))
 		     (set! succs '()))
@@ -320,6 +321,8 @@
 	    (when (and (isa? (car args) rtl_ins) (rtl_ins-mov? (car args)))
 	       (let loop ((j (car args)))
 		  (cond
+		     ((not (isa? j rtl_ins))
+		      #f)
 		     ((rtl_ins-mov? j)
 		      (with-access::rtl_ins j (args)
 			 (loop (car args))))

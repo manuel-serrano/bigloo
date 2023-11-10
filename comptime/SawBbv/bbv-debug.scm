@@ -129,7 +129,6 @@
       (let* ((id (global-id global)))
 	 (fprint port ";; -*- mode: bee -*-")
 	 (fprint port ";; *** " id ":")
-	 (fprint port ";; " (map shape params))
 	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
 	    filename name name name)
 	 (fprintf port ";; ~a\n" (command-line))

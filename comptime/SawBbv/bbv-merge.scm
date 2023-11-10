@@ -109,7 +109,7 @@
    (define (block-size b::blockS)
       (with-access::blockS b (ctx)
 	 (ctx-size ctx)))
-   
+
    (let ((l (sort (map (lambda (b) (cons (block-size b) b)) bs)
 	       (lambda (x y) (<=fx (car x) (car y))))))
       (values (cdr (car l)) (cdr (cadr l)))))
@@ -235,7 +235,7 @@
       (with-access::bbv-range range1 ((lo1 lo) (up1 up))
 	 (with-access::bbv-range range2 ((lo2 lo) (up2 up))
 	    ;; widening
-	    (range-widening (min lo1 lo2) (max up1 up2)
+	    (range-widening (minrv lo1 lo2) (maxrv up1 up2)
 	       (list range1 range2)))))
    
    (define (types-intersection ts1 ts2)
@@ -271,7 +271,7 @@
 		   (value '_)))
 	       (else
 		(let ((range (merge-range value1 value2)))
-		   (trace-item "merge-3 " (shape value1) " " (shape value2)
+		   (trace-item "merge-range " (shape value1) " " (shape value2)
 		      " -> " (shape range))
 		   (duplicate::bbv-ctxentry e1
 		      (value (or range (fixnum-range)))))))))))
@@ -283,53 +283,60 @@
 
    (define widening #f)
 
-   (define (all-lo-positive? ranges)
-      (every (lambda (r)
-		(with-access::bbv-range r (lo)
-		   (>= lo 0)))
-	 ranges))
-
-   (define (all-up-negative? ranges)
-      (every (lambda (r)
-		(with-access::bbv-range r (up)
-		   (<= up 0)))
-	 ranges))
-		
+   (define (low-widening-vlen v)
+      (if (< (bbv-vlen-offset v) -10)
+	  (bbv-min-fixnum)
+	  v))
+   
+   (define (up-widening-vlen v)
+      (if (> (bbv-vlen-offset v) 10)
+	  (bbv-max-fixnum)
+	  v))
+   
    (define (low-widening v)
       (set! widening #t)
       (cond
+	 ((bbv-vlen? v) (low-widening-vlen v))
 	 ((>fx v 1) (/fx v 2))
 	 ((=fx v 1) 0)
-	 ((=fx v 0) (if (all-lo-positive? ranges) 0 -1))
+	 ((=fx v 0) v)
 	 ((>fx v -16) (*fx v 2))
 	 ((>fx v -255) -255)
+	 ((>=fx v (+fx (bbv-min-fixnum) 1)) v)
 	 (else (bbv-min-fixnum))))
 
+   (define (low-widening-vlen v)
+      (if (< (bbv-vlen-offset v) -10)
+	  (bbv-min-fixnum)
+	  v))
+   
    (define (up-widening v)
       (set! widening #t)
       (cond
+	 ((bbv-vlen? v) (up-widening-vlen v))
 	 ((<fx v -1) (/fx v 2))
 	 ((=fx v -1) 0)
-	 ((=fx v 0) (if (all-up-negative? ranges) 0 1))
+	 ((=fx v 0) v)
 	 ((<fx v 16) (*fx v 2))
 	 ((<fx v 255) 255)
 	 ((<fx v 65535) 65535)
+	 ((<=fx v (-fx (bbv-max-fixnum) 1)) (-fx (bbv-max-fixnum) 1))
 	 (else (bbv-max-fixnum))))
    
    (let ((nl (if (every (lambda (r)
 			   (with-access::bbv-range r (lo)
-			      (= l lo)))
+			      (=rv l lo)))
 		    ranges)
 		 l
 		 (low-widening l)))
 	 (nu (if (every (lambda (r)
 			   (with-access::bbv-range r (up)
-			      (= u up)))
+			      (=rv u up)))
 		    ranges)
 		 u
 		 (up-widening u))))
       (cond
-	 ((and (= nl l) (= nu u))
+	 ((and (=rv nl l) (=rv nu u) (not widening))
 	  (car ranges))
 	 (else
 	  (instantiate::bbv-range

@@ -18,6 +18,7 @@
 	   *bbv-blocks-cleanup*
 	   *bbv-blocks-gc*
 	   *bbv-merge-strategy*
+	   *bbv-optim-vlength*
 	   *max-block-merge-versions*
 	   *max-block-limit*
 	   *type-call*
@@ -80,6 +81,17 @@
 	 (else (error "bbv-merge-strategy" "unknown strategy" e)))))
 
 ;*---------------------------------------------------------------------*/
+;*    *bbv-optim-vlength* ...                                          */
+;*---------------------------------------------------------------------*/
+(define *bbv-optim-vlength*
+   (let ((e (getenv "BIGLOOBBVVLENGTH")))
+      (cond
+	 ((not e) #f)
+	 ((string=? e "false") #f)
+	 ((string=? e "true") #t)
+	 (else (error "bbv-optim-vlength" "unknown value" e)))))
+
+;*---------------------------------------------------------------------*/
 ;*    basic-block versioning configuration                             */
 ;*---------------------------------------------------------------------*/
 ;; the maximum number of block versions
@@ -89,7 +101,6 @@
 	  (string->integer e)
 	  4)))
 (define *max-block-limit* *max-block-merge-versions*)
-
 
 ;; various optimizations
 (define *type-call* #t)
