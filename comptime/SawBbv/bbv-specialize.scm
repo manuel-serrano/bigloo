@@ -69,10 +69,16 @@
 			 (with-access::blockS bs (ctx)
 			    (trace-item "ctx=" (shape ctx))))
 		      (when (block-need-merge? bv)
-			 (trace-item "need-merge...")
+			 (trace-item "need-merge [" (block-label bv) "]...")
+			 (when *bbv-debug*
+			    (for-each (lambda (b)
+					 (with-access::blockS b (label ctx)
+					    (trace-item label ": " (shape ctx))))
+			       (blockV-versions bv)))
 			 (block-merge-some! bv queue)))
 		   (unless (block-merged? bs)
-		      (trace-item "need-specialize")
+		      (with-access::blockS bs ((bv parent))
+			 (trace-item "need-specialize [" (block-label bv) "]..."))
 		      (block-specialize! bs queue))
 		   (loop (+fx n 1))))))))
 
@@ -133,7 +139,7 @@
    (define (debug-connect msg bs n)
       (when *bbv-debug*
 	 (with-access::blockS n (preds succs)
-	    (tprint msg " " 
+	    (trace-item msg " " 
 	       (block-label bs) " to " (block-label n)
 	       " " (map block-label preds)
 	       " -> " (map (lambda (b) (if (isa? b block) (block-label b) '-))

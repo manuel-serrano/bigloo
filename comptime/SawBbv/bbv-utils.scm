@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Oct  6 09:28:02 2023 (serrano)                */
+;*    Last change :  Fri Nov 10 23:53:32 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -219,7 +219,8 @@
 	    (with-access::blockS new ((npreds preds) cnt)
 	       (block-preds-update! new
 		  (delete-duplicates! (append old-preds npreds) eq?)))
-	    (assert-block new "replace-block!.replaced")
+	    (when *bbv-debug*
+	       (assert-block new "replace-block!.replaced"))
 	    new))))
 
 ;*---------------------------------------------------------------------*/
