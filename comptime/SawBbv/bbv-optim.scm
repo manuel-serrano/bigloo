@@ -75,7 +75,7 @@
 ;*---------------------------------------------------------------------*/
 (define (remove-goto! b::block)
    
-   (define (goto-block? b succs)
+   (define (goto-block? b succs next)
       ;; is a block explicitly jumping to its successor
       (when (pair? succs)
 	 (with-access::block b (first)
@@ -84,7 +84,8 @@
 		  (when (rtl_ins-go? i)
 		     (with-access::rtl_ins i (fun)
 			(with-access::rtl_go fun (to)
-			   (eq? to (car succs))))))))))
+			   (when (eq? to (car succs))
+			      (eq? to next))))))))))
    
    (assert-blocks b "before goto!")
    
@@ -98,7 +99,8 @@
 	 (else
 	  (when *bbv-debug* (assert-block (car bs) "remote-goto!"))
 	  (with-access::block (car bs) (succs)
-	     (when (and (goto-block? (car bs) succs)
+	     (when (and (pair? (cdr bs))
+			(goto-block? (car bs) succs (cadr bs))
 			(not (bbset-in? (car succs) acc)))
 		(with-access::block (car bs) (first label)
 		   (with-access::rtl_ins (car (last-pair first)) (fun)
@@ -116,7 +118,9 @@
       (with-access::block b (first)
 	 (every (lambda (i) (or (rtl_ins-nop? i) (rtl_ins-go? i))) first)))
 
-   (assert-blocks b "before simplify-branch!")
+   (when *bbv-debug*
+      (assert-blocks b "before simplify-branch!"))
+   
    (let loop ((bs (list b))
 	      (acc (make-empty-bbset)))
       (cond
@@ -144,7 +148,8 @@
 			       (set! first
 				  (append first
 				     (list-copy (block-first s))))))
-			(assert-blocks s "simplify-branch!.1")
+			(when *bbv-debug*
+			   (assert-blocks s "simplify-branch!.1"))
 			(loop bs acc))
 		     (loop (cons (car succs) (cdr bs))
 			(bbset-cons (car bs) acc)))
@@ -164,8 +169,9 @@
 				  (redirect-block! (car bs) s t)
 				  (block-preds-set! t
 				     (remq s (block-preds t)))
-				  (assert-blocks s "before simplify-branch!.2a")
-				  (assert-blocks t "before simplify-branch!.2b")
+				  (when *bbv-debug*
+				     (assert-blocks s "before simplify-branch!.2a")
+				     (assert-blocks t "before simplify-branch!.2b"))
 				  (liip (cdr ss) nsuccs))
 			       (liip (cdr ss) (cons s nsuccs))))))))))))
 
