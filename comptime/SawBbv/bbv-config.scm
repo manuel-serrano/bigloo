@@ -98,7 +98,7 @@
 (define *bbv-optim-vlength*
    (let ((e (getenv "BIGLOOBBVVLENGTH")))
       (cond
-	 ((not e) #t)
+	 ((not e) #f)
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
 	 (else (error "bbv-optim-vlength" "unknown value" e)))))

@@ -285,7 +285,7 @@ static int __builtin_ssubl_overflow(long x, long y, long *res) {
 #if TAG_INT == 0
 #   define BGL_ADDFX_SANS_OV(x, y) ((obj_t)(((long)(x)) + ((long)(y))))
 #   define BGL_SUBFX_SANS_OV(x, y) ((obj_t)(((long)(x)) - ((long)(y))))
-#   define BGL_MULFX_SANS_OV(x, y) ((obj_t)(CINT(x) * ((long)(y))))
+#   define BGL_MULFX_SANS_OV(x, y) ((obj_t)(((long)(x)) * ((long)(y))))
 #else
 #   define BGL_ADDFX_SANS_OV(x, y) (BINT(CINT(x) + CINT(y)))
 #   define BGL_SUBFX_SANS_OV(x, y) (BINT(CINT(x) - CINT(y)))

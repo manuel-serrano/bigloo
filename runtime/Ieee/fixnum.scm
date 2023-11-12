@@ -148,7 +148,7 @@
 	   (macro $*fx/ov::bool (::bint ::long ::bint) "BGL_MULFX_OV")
 	   (macro $+fx/w-ov::bint (::bint ::bint) "BGL_ADDFX_SANS_OV")
 	   (macro $-fx/w-ov::bint (::bint ::bint) "BGL_SUBFX_SANS_OV")
-	   (macro $*fx/w-ov::bint (::bint ::bint) "BGL_MULFX_SANS_OV")
+	   (macro $*fx/w-ov::bint (::bint ::long) "BGL_MULFX_SANS_OV")
 	   (infix macro c-+elong::elong (::elong ::elong) "+")
 	   (infix macro c-+llong::llong (::llong ::llong) "+")
 	   (infix macro $+s8::int8 (::int8 ::int8) "+")

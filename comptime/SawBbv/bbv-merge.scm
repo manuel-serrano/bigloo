@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Thu Nov  9 15:36:09 2023 (serrano)                */
+;*    Last change :  Sun Nov 12 19:43:19 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -297,6 +297,7 @@
       (set! widening #t)
       (cond
 	 ((bbv-vlen? v) (low-widening-vlen v))
+	 ((not (fixnum? v)) v)
 	 ((>fx v 1) (/fx v 2))
 	 ((=fx v 1) 0)
 	 ((=fx v 0) v)
@@ -314,6 +315,7 @@
       (set! widening #t)
       (cond
 	 ((bbv-vlen? v) (up-widening-vlen v))
+	 ((not (fixnum? v)) v)
 	 ((<fx v -1) (/fx v 2))
 	 ((=fx v -1) 0)
 	 ((=fx v 0) v)
