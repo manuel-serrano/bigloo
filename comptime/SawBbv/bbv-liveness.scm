@@ -117,11 +117,13 @@
    
    (define (args-widen-bbv! o)
       (when (rtl_ins? o)
-	 (with-access::rtl_ins o (args fun)
+	 (with-access::rtl_ins o (args fun dest)
 	    (widen!::rtl_ins/bbv o
 	       (def (make-empty-regset regs))
 	       (in (list->regset (get-args o) regs))
-	       (out (make-empty-regset regs)))
+	       (out (if dest
+			(list->regset (list dest) regs)
+			(make-empty-regset regs))))
 	    (for-each args-widen-bbv! args))))
 
    (define (overflow-def o)

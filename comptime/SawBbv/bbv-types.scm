@@ -52,7 +52,7 @@
 	       (%mark::long (default -1))
 	       (%hash::obj (default #f))
 	       (%blacklist::obj (default '()))
-	       (%merge-info::obj (default #f))
+	       (%merge-info::pair-nil (default '()))
 	       (ctx::bbv-ctx read-only)
 	       (parent::blockV read-only)
 	       (cnt::long (default 0))
@@ -79,6 +79,8 @@
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '()))
 	       (initval::obj (default #unspecified)))
+
+	    (blockS-%merge-info-add! b::blockS lbl val)
 
 	    (get-bb-mark)
 	    
@@ -130,6 +132,15 @@
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)
 	    (rtl_call-values i::rtl_ins)))
+
+;*---------------------------------------------------------------------*/
+;*    blockS-%merge-info-add! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (blockS-%merge-info-add! b::blockS lbl val)
+   (with-access::blockS b (%merge-info)
+      (let ((c (assq lbl %merge-info)))
+	 (unless (pair? c)
+	    (set! %merge-info (cons (cons lbl val) %merge-info))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::blockV ...                                        */
@@ -239,15 +250,6 @@
 		 (with-access::blockS bs (mblock cnt)
 		    (and (not mblock) (>fx cnt 0))))
 	 versions)))
-
-;*---------------------------------------------------------------------*/
-;*    shape ::bbv-ctx ...                                              */
-;*---------------------------------------------------------------------*/
-(define-method (shape ctx::bbv-ctx)
-   (with-access::bbv-ctx ctx (entries)
-      (call-with-output-string
-	 (lambda (op)
-	    (fprintf op "~s" (map shape entries))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    params->ctx ...                                                  */
@@ -542,6 +544,12 @@
    
    (define (lbl n)
       (if (isa? n block) (block-label n) (typeof n)))
+
+   (define (dump-merge-info mi)
+      (cond
+	 ((assq 'merge-target mi) 'merge-target)
+	 ((assq 'merge-new mi) 'merge-new)
+	 (else #f)))
    
    (with-access::blockS o (label collapsed first parent preds succs %merge-info)
       (fprint p "(blockS " label)
@@ -556,7 +564,7 @@
       (dump-margin p (+fx m 1))
       (fprint p ":succs " (map lbl succs))
       (dump-margin p (+fx m 1))
-      (fprint p ":merge-info " %merge-info)
+      (fprint p ":merge-info " (dump-merge-info %merge-info))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))
@@ -1185,3 +1193,4 @@
    (with-access::blockS b (preds cnt)
       (set! preds val)
       (set! cnt (length preds))))
+

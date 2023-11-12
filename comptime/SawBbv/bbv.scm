@@ -55,7 +55,7 @@
 	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global))
 	  (when (>=fx *trace-level* 2)
-	     (dump-blocks global params blocks ".plain.cfg"))
+	     (dump-cfg global params blocks ".plain.cfg"))
 	  (set-max-label! blocks)
 	  ;; After the reorder-succs! pass, the succs list order is meaningful.
 	  ;; The first successor is the target of the last go instruction
@@ -63,36 +63,38 @@
 	  ;; of the conditional branch of the instruction.
 	  (reorder-succs! blocks)
 	  (when (>=fx *trace-level* 2)
-	     (dump-blocks global params blocks ".reorder.cfg"))
+	     (dump-cfg global params blocks ".reorder.cfg"))
 	  ;; replace the possible go instruction that follows an error call
 	  (fail! (car blocks))
 	  (when (>=fx *trace-level* 2)
-	     (dump-blocks global params blocks ".failure.cfg"))
+	     (dump-cfg global params blocks ".failure.cfg"))
 	  ;; there are several form of type checks, normalize them to ease
 	  ;; the bbv algorithm
 	  (normalize-typecheck! (car blocks))
 	  (when (>=fx *trace-level* 2)
-	     (dump-blocks global params blocks ".typecheck.cfg"))
+	     (dump-cfg global params blocks ".typecheck.cfg"))
 	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
 	     (when (>=fx *trace-level* 2)
-		(dump-blocks global params blocks ".goto.cfg"))
+		(dump-cfg global params blocks ".goto.cfg"))
 	     (let ((blocks (normalize-ifeq! (car blocks))))
 		(when (>=fx *trace-level* 2)
-		   (dump-blocks global params blocks ".ifeq.cfg"))
+		   (dump-cfg global params blocks ".ifeq.cfg"))
 		(let ((regs (bbv-liveness! back blocks params)))
 		   ;; liveness also widen each block into a blockV
 		   (mark-merge! (car blocks))
 		   (when (>=fx *trace-level* 2)
-		      (dump-blocks global params blocks ".liveness.cfg"))
+		      (dump-cfg global params blocks ".liveness.cfg"))
 		   (unwind-protect
 		      (if (null? blocks)
 			  '()
 			  (let* ((s (bbv-block* (car blocks)
 				       (params->ctx params)))
 				 (_ (when (>=fx *trace-level* 2)
-				       (dump-blocks global params
+				       (dump-cfg global params
 					  (block->block-list regs s)
 					  ".specialize.cfg")))
+				 (__ (when *bbv-log*
+					(log-blocks global params blocks)))
 				 (b (block->block-list regs
 				       (assert-context! 
 					  (if *bbv-blocks-cleanup*
@@ -108,7 +110,7 @@
 				(length blocks) " -> " (length b))
 			     (verbose 2 "\n")
 			     (when (>=fx *trace-level* 1)
-				(dump-blocks global params
+				(dump-cfg global params
 				   (block->block-list regs s) ".bbv.cfg"))
 			     (map! (lambda (b) (shrink! b)) b)
 			     b))

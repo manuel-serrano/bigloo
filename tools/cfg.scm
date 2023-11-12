@@ -262,10 +262,6 @@
 		 (format "~a:~a/~a" (escape reg) type val)))
 	    (#(?reg ?type ?val ?aliases)
 	     (if compact
-		 (format "~a:~(,)" (escape reg) type)
-		 (format "~a:~a[~( )]" (escape reg) type (map escape aliases))))
-	    (#(?reg ?type ?val ?aliases)
-	     (if compact
 		 (format "~a:~(,)/~a" (escape reg) type val)
 		 (format "~a:~a/~a[~( )]" (escape reg) type val (map escape aliases))))
 	    (else

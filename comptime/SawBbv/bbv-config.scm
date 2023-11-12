@@ -14,6 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module saw_bbv-config
    (export *bbv-debug*
+	   *bbv-log*
 	   *bbv-assert*
 	   *bbv-blocks-cleanup*
 	   *bbv-blocks-gc*
@@ -26,7 +27,7 @@
 	   *type-loadg*))
 
 ;*---------------------------------------------------------------------*/
-;*    *bbv-blocks-debug* ...                                           */
+;*    *bbv-debug* ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define *bbv-debug*
    (let ((e (getenv "BIGLOOBBVDEBUG")))
@@ -34,7 +35,18 @@
 	 ((not e) #f)
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
-	 (else (error "bbv-blocks-debug" "unknown value" e)))))
+	 (else (error "bbv-debug" "unknown value" e)))))
+
+;*---------------------------------------------------------------------*/
+;*    *bbv-log* ...                                                    */
+;*---------------------------------------------------------------------*/
+(define *bbv-log*
+   (let ((e (getenv "BIGLOOBBVLOG")))
+      (cond
+	 ((not e) #f)
+	 ((string=? e "false") #f)
+	 ((string=? e "true") #t)
+	 (else (error "bbv-log" "unknown value" e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bbv-blocks-assert* ...                                          */

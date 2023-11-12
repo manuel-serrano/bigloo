@@ -39,7 +39,8 @@
 	    saw_bbv-cache
 	    saw_bbv-range)
 
-   (export  (dump-blocks ::global ::pair-nil ::pair-nil ::bstring)
+   (export  (dump-cfg ::global ::pair-nil ::pair-nil ::bstring)
+	    (log-blocks ::global ::pair-nil ::pair-nil)
 	    (assert-block ::blockS ::obj)
 	    (assert-blocks ::blockS ::obj)
 	    (assert-context! b::block)))
@@ -108,9 +109,9 @@
 	       (map shape l))))))
 
 ;*---------------------------------------------------------------------*/
-;*    dump-blocks ...                                                  */
+;*    dump-cfg ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (dump-blocks global params blocks suffix)
+(define (dump-cfg global params blocks suffix)
 
    (define oname
       (if (string? *dest*)
@@ -125,7 +126,7 @@
    
    (define name (prefix filename))
       
-   (define (dump-blocks port)
+   (define (dump-cfg port)
       (let* ((id (global-id global)))
 	 (fprint port ";; -*- mode: bee -*-")
 	 (fprint port ";; *** " id ":")
@@ -139,8 +140,105 @@
 	 id))
    
    (if oname
-       (call-with-output-file filename dump-blocks)
-       (dump-blocks (current-error-port))))
+       (call-with-output-file filename dump-cfg)
+       (dump-cfg (current-error-port))))
+
+;*---------------------------------------------------------------------*/
+;*    make-margins ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-macro (make-margins n)
+   `',(apply vector (map (lambda (n) (make-string n #\space)) (iota n))))
+
+;*---------------------------------------------------------------------*/
+;*    log-blocks ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (log-blocks global::global params::pair-nil bv::pair-nil)
+
+   (define (sort-blocks b)
+      (sort (lambda (x y) (<= (block-label x) (block-label y))) b))
+
+   (define margins
+      (make-margins 12))
+
+   (define (log-label block #!optional prefix)
+      (if prefix
+	  (string-append prefix (integer->string (block-label block)))
+	  (integer->string (block-label block))))
+   
+   (define (paddingl n str)
+      (if str
+	  (let ((len (string-length str)))
+	     (if (<fx len n)
+		 (string-append (vector-ref margins (-fx n len)) str)
+		 str))
+	  (vector-ref margins n)))
+
+   (define (paddingr n str)
+      (if str
+	  (let ((len (string-length str)))
+	     (if (<fx len n)
+		 (string-append str (vector-ref margins (-fx n len)))
+		 str))
+	  (vector-ref margins n)))
+      
+   (define (log-entry e)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases)
+	 (format "~a:[~( ) ~a ~( )]"
+	    (shape reg)
+	    (if polarity
+		(map shape types)
+		(map (lambda (t) (format "!~a" (shape t))) types))
+	    (shape value)
+	    (map shape aliases))))
+   
+   (define (log-ctx ctx)
+      (with-access::bbv-ctx ctx (id entries)
+	 ;;(format "~4d ~( )" id (map log-entry entries))
+	 (format "~( )" (map log-entry entries))))
+   
+   (define (log-merge mblock info)
+      (let ((into (assq 'merge-info info))
+	    (mtgt (assq 'merge-target info))
+	    (mnew (assq 'merge-new info))
+	    (spec (assq 'merge-spec info))
+	    (crea (assq 'creator info)))
+	 (string-append
+	    ;; creator
+	    (paddingr 7 (if crea (log-label (cdr crea) "<-")))
+	    ;; merge
+	    (paddingr 10 (cond
+			   (mnew
+			    (format "!~a+~a"
+			       (block-label (cadr mnew))
+			       (block-label (cadr (cdr mnew)))))
+			   ((and mtgt (pair? (cddr mtgt)))
+			    (format "!~a+~a"
+			       (block-label (cadr mtgt))
+			       (block-label (cadr (cdr mtgt)))))
+			   (mtgt
+			    (format "!~a"
+			       (block-label (cadr mtgt)))))))))
+
+   (define (print-bs b::blockS)
+      (with-access::blockS b (versions %merge-info ctx mblock)
+	 (print " "
+	    (paddingl 4 (log-label b))
+	    (paddingr 6 (if mblock (log-label mblock "->")))
+	    " " (log-merge mblock %merge-info)
+	    " " (log-ctx ctx))))
+      
+   (define (print-bv b::blockV)
+      (with-access::blockV b (label versions)
+	 (print "-----------------------------------------------------------")
+	 (print "{" label "}")
+	 (for-each print-bs (sort-blocks versions))))
+      
+   ;; sort the blocks according to the parent label
+   (with-output-to-port (current-error-port)
+      (lambda ()
+	 (print "==== " (shape global) " " (map shape params))
+	 (for-each print-bv (sort-blocks bv))
+	 (newline))))
 
 ;*---------------------------------------------------------------------*/
 ;*    assert-blocks ...                                                */
