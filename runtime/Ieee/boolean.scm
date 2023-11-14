@@ -29,12 +29,12 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-boolean?::bool (::obj) "BOOLEANP")
+   (extern  (macro $boolean?::bool (::obj) "BOOLEANP")
 	    (macro btrue::bbool "BTRUE")
 	    (macro bfalse::bbool "BFALSE"))
    
    (java    (class foreign
-	       (method static c-boolean?::bool (::obj) "BOOLEANP")
+	       (method static $boolean?::bool (::obj) "BOOLEANP")
 	       (field static btrue::bbool "BTRUE")
 	       (field static bfalse::bbool "BFALSE")))
     
@@ -42,7 +42,7 @@
 	    (inline boolean?::bool ::obj))
    
    (pragma  (not side-effect-free nesting)
-	    (c-boolean? (predicate-of bbool) no-cfa-top nesting)
+	    ($boolean? (predicate-of bbool) no-cfa-top nesting)
 	    (boolean? no-cfa-top side-effect-free nesting)))
 
 ;*---------------------------------------------------------------------*/
@@ -55,5 +55,5 @@
 ;*    boolean? ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (boolean? obj)
-   (c-boolean? obj))
+   ($boolean? obj))
    

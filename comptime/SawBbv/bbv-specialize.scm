@@ -909,11 +909,13 @@
 		       (dup-ifne i ctx ctx)))
 		  ((not (bbv-range? vl))
 		   (dup-ifne i ctx ctx))
-		  ((and (bbv-range<? va vl) (bbv-range>=? va (vlen-range)))
+		  ((and (eq? (bbv-range< va vl) #t)
+			(eq? (bbv-range>= va (vlen-range)) #t))
 		   (values (duplicate::rtl_ins/bbv i (fun (true)) (args '()))
 		      (extend-ctx ctx (car args) (list *vector*) #t
 			 :value (bbv-range-lt va vl))))
-		  ((or (bbv-range>=? va vl) (bbv-range<? va (vlen-range)))
+		  ((or (eq? (bbv-range> va vl) #t)
+		       (eq? (bbv-range< va (vlen-range)) #t))
 		   (values (duplicate::rtl_ins/bbv i (fun (false)) (args '()))
 		      ctx))
 		  (else
@@ -1040,11 +1042,11 @@
    
    (define (resolve/op i op intl intr)
       (case op
-	 ((<) (bbv-range<? intl intr))
-	 ((<=) (bbv-range<=? intl intr))
-	 ((>) (bbv-range>? intl intr))
-	 ((>=) (bbv-range>=? intl intr))
-	 ((=) (bbv-range=? intl intr))
+	 ((<) (bbv-range< intl intr))
+	 ((<=) (bbv-range<= intl intr))
+	 ((>) (bbv-range> intl intr))
+	 ((>=) (bbv-range>= intl intr))
+	 ((=) (bbv-range= intl intr))
 	 (else #f)))
    
    (define (test-ctxs-ref reg intl intr op ctx::bbv-ctx)
@@ -1143,7 +1145,7 @@
 		   (lambda (val)
 		      (trace-item "resolve/op.val=" val)
 		      (case val
-			 ((true)
+			 ((#t)
 			  (multiple-value-bind (ctx+ ctx-)
 			     (specialize/op op lhs (or intl (fixnum-range))
 				rhs (or intr (fixnum-range)) ctx)
@@ -1154,7 +1156,7 @@
 					(fun (true))
 					(args '()))
 				ctx+ ctx-)))
-			 ((false)
+			 ((#f)
 			  (multiple-value-bind (ctx+ ctx-)
 			     (specialize/op op lhs (or intl (fixnum-range))
 				rhs (or intr (fixnum-range)) ctx)

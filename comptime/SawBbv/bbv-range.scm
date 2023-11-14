@@ -41,13 +41,10 @@
 	   (inline bbv-min-fixnum::long)
 	   (inline bbv-range?::bool ::obj)
 	   (=rv::bool ::obj ::obj)
-	   (<rv::bool ::obj ::obj)
-	   (<=rv::bool ::obj ::obj)
-	   (>rv::bool ::obj ::obj)
-	   (>=rv::bool ::obj ::obj)
 	   (minrv::obj ::obj ::obj)
 	   (maxrv::obj ::obj ::obj)
 	   (bbv-range-fixnum?::bool ::bbv-range)
+	   (empty-range::bbv-range)
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
 	   (vlen-range::bbv-range)
@@ -55,11 +52,11 @@
 	   (rtl-range::obj ::obj ::bbv-ctx)
 	   (range-type?::bool ::obj)
 	   (bbv-singleton?::bool ::obj)
-	   (bbv-range<? ::bbv-range ::bbv-range)
-	   (bbv-range<=? ::bbv-range ::bbv-range)
-	   (bbv-range>? ::bbv-range ::bbv-range)
-	   (bbv-range>=? ::bbv-range ::bbv-range)
-	   (bbv-range=? ::bbv-range ::bbv-range)
+	   (bbv-range<::obj ::bbv-range ::bbv-range)
+	   (bbv-range<=::obj ::bbv-range ::bbv-range)
+	   (bbv-range>::obj ::bbv-range ::bbv-range)
+	   (bbv-range>=::obj ::bbv-range ::bbv-range)
+	   (bbv-range=::obj ::bbv-range ::bbv-range)
 	   (bbv-range-lt::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-lte::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-gt::bbv-range ::bbv-range ::bbv-range)
@@ -96,12 +93,15 @@
 ;*---------------------------------------------------------------------*/
 (define (=rv x y)
    (define (=vlen x y)
-      (and (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	   (=fx (bbv-vlen-offset x) (bbv-vlen-offset y))))
+      (cond
+	 ((eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
+	  (=fx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+	 (else
+	  #unspecified)))
    (cond
       ((and (fixnum? x) (fixnum? y)) (=fx x y))
       ((and (bbv-vlen? x) (bbv-vlen? y)) (=vlen x y))
-      (else #f)))
+      (else #unspecified)))
 
 (define (>rv x y)
    (define (>vlen x y)
@@ -135,6 +135,9 @@
 (define (<=rv x y)
    (>=rv y x))
 
+;*---------------------------------------------------------------------*/
+;*    minrv ...                                                        */
+;*---------------------------------------------------------------------*/
 (define (minrv x y)
    (cond
       ((and (number? x) (number? y))
@@ -143,38 +146,15 @@
        (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
 	   (duplicate::bbv-vlen x
 	      (offset (min (bbv-vlen-offset x) (bbv-vlen-offset y))))
-	   (min (bbv-vlen-offset x) (bbv-vlen-offset y))))
-      ((and (bbv-vlen? x) (number? y))
-       (cond
-	  ((< (bbv-vlen-offset x) y) x)
-;* 	  ((= y (bbv-max-fixnum)) x)                                   */
-	  (else (min (bbv-vlen-offset x) y))))
-      ((and (number? x) (bbv-vlen? y))
-       (minrv y x))
+	   (minfx (bbv-vlen-offset x) (bbv-vlen-offset y))))
+      ((bbv-vlen? x)
+       (min (bbv-vlen-offset x) y))
       (else
-       -inf.0)))
+       (minrv y x))))
 
 ;*---------------------------------------------------------------------*/
-;*    minrvlo ...                                                      */
-;*    -------------------------------------------------------------    */
-;*    Used for computing the lower bound of an interval comparison     */
+;*    maxrv ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (minrvlo x y)
-   (cond
-      ((and (number? x) (number? y))
-       (min x y))
-      ((and (bbv-vlen? x) (bbv-vlen? y))
-       (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	   (duplicate::bbv-vlen x
-	      (offset (min (bbv-vlen-offset x) (bbv-vlen-offset y))))
-	   (min (bbv-vlen-offset x) (bbv-vlen-offset y))))
-      ((and (bbv-vlen? x) (number? y))
-       y)
-      ((and (number? x) (bbv-vlen? y))
-       (minrv y x))
-      (else
-       -inf.0)))
-
 (define (maxrv x y)
    (cond
       ((and (number? x) (number? y))
@@ -183,41 +163,11 @@
        (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
 	   (duplicate::bbv-vlen x
 	      (offset (max (bbv-vlen-offset x) (bbv-vlen-offset y))))
-	   (max (- (bbv-max-fixnum) (bbv-vlen-offset x))
-	      (- (bbv-max-fixnum) (bbv-vlen-offset y)))))
-      ((and (bbv-vlen? x) (number? y))
-       (cond
-	  ((> (- (bbv-max-fixnum) (bbv-vlen-offset x)) y) x)
-;* 	  ((> y 0) (if (> (- (bbv-max-fixnum) (bbv-vlen-offset x)) y) x y)) */
-;* 	  ((> (bbv-vlen-offset x) y) x)                                */
-	  (else (bbv-max-fixnum))))
-      ((and (number? x) (bbv-vlen? y))
-       (maxrv y x))
+	   (maxfx (bbv-vlen-offset x) (bbv-vlen-offset y))))
+      ((bbv-vlen? x)
+       (max (bbv-vlen-offset x) y))
       (else
-       +inf.0)))
-
-;*---------------------------------------------------------------------*/
-;*    maxrvlo ...                                                      */
-;*    -------------------------------------------------------------    */
-;*    Used for computing the lower bound of an interval comparison     */
-;*---------------------------------------------------------------------*/
-(define (maxrvlo x y)
-   ;; use
-   (cond
-      ((and (number? x) (number? y))
-       (max x y))
-      ((and (bbv-vlen? x) (bbv-vlen? y))
-       (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	   (duplicate::bbv-vlen x
-	      (offset (max (bbv-vlen-offset x) (bbv-vlen-offset y))))
-	   (max (- (bbv-max-fixnum) (bbv-vlen-offset x))
-	      (- (bbv-max-fixnum) (bbv-vlen-offset y)))))
-      ((and (bbv-vlen? x) (number? y))
-       y)
-      ((and (number? x) (bbv-vlen? y))
-       (maxrv y x))
-      (else
-       +inf.0)))
+       (maxrv y x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer boundaries ...                                           */
@@ -319,6 +269,20 @@
    
    (with-access::bbv-range e (lo up)
       (format "[~a..~a]" (str lo) (str up))))
+
+;*---------------------------------------------------------------------*/
+;*    *empty-range* ...                                                */
+;*---------------------------------------------------------------------*/
+(define *empty-range*
+   (instantiate::bbv-range
+      (lo -inf.0)
+      (up +inf.0)))
+
+;*---------------------------------------------------------------------*/
+;*    empty-range ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (empty-range)
+   *empty-range*)
 
 ;*---------------------------------------------------------------------*/
 ;*    *fixnum-range* ...                                               */
@@ -424,62 +388,68 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-singleton? rng)
    (and (isa? rng bbv-range)
-	(=rv (bbv-range-up rng) (bbv-range-lo rng))
+	(eq? (=rv (bbv-range-up rng) (bbv-range-lo rng)) #t)
 	(>rv (bbv-range-up rng) (+ (bbv-min-fixnum) 1))
 	(<rv (bbv-range-up rng) (- (bbv-max-fixnum) 1))))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-range<? ...                                                  */
+;*    bbv-range< ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (bbv-range<? left right)
+(define (bbv-range<::obj left right)
    (cond
-      ((<rv (bbv-range-up left) (bbv-range-lo right)) 'true)
-      ((>=rv (bbv-range-lo left) (bbv-range-up right)) 'false)
-      (else #f)))
+      ((eq? (<rv (bbv-range-up left) (bbv-range-lo right)) #t) #t)
+      ((eq? (>=rv (bbv-range-lo left) (bbv-range-up right)) #f) #f)
+      (else #unspecified)))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-range<=? ...                                                 */
+;*    bbv-range<= ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (bbv-range<=? left right)
+(define (bbv-range<=::obj left right)
    (cond
-      ((<=rv (bbv-range-up left) (bbv-range-lo right)) 'true)
-      ((>rv (bbv-range-lo left) (bbv-range-up right)) 'false)
-      (else #f)))
+      ((eq? (<=rv (bbv-range-up left) (bbv-range-lo right)) #t) #t)
+      ((eq? (>rv (bbv-range-lo left) (bbv-range-up right)) #f) #f)
+      (else #unspecified)))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-range>? ...                                                  */
+;*    bbv-range> ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (bbv-range>? left right)
+(define (bbv-range>::obj left right)
    (cond
-      ((>rv (bbv-range-lo left) (bbv-range-up right)) 'true)
-      ((<=rv (bbv-range-up left) (bbv-range-lo right)) 'false)
-      (else #f)))
+      ((eq? (>rv (bbv-range-lo left) (bbv-range-up right)) #t) #t)
+      ((eq? (<=rv (bbv-range-up left) (bbv-range-lo right)) #f) #f)
+      (else #unspecified)))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-range>=? ...                                                 */
+;*    bbv-range>= ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (bbv-range>=? left right)
+(define (bbv-range>=::obj left right)
    (cond
-      ((>=rv (bbv-range-lo left) (bbv-range-up right)) 'true)
-      ((<rv (bbv-range-up left) (bbv-range-lo right)) 'false)
-      (else #f)))
-      
+      ((eq? (>=rv (bbv-range-lo left) (bbv-range-up right)) #t) #t)
+      ((eq? (<rv (bbv-range-up left) (bbv-range-lo right)) #f) #f)
+      (else #unspecified)))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-range=? ...                                                  */
+;*    bbv-range= ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (bbv-range=? left right)
+(define (bbv-range=::obj left right)
    (cond
-      ((and (=rv (bbv-range-lo left) (bbv-range-up left))
-	    (=rv (bbv-range-lo left) (bbv-range-lo right))
-	    (=rv (bbv-range-up left) (bbv-range-up right)))
-	    
-       'true)
-      ((or (eq? (bbv-range>? left right) 'true)
-	   (eq? (bbv-range<? left right) 'true))
-       'false)
+      ((and (eq? (=rv (bbv-range-lo left) (bbv-range-lo right)) #t)
+	    (eq? (=rv (bbv-range-up left) (bbv-range-up right)) #t))
+       #t)
+      ((and (eq? (=rv (bbv-range-lo left) (bbv-range-lo right)) #f)
+	    (eq? (=rv (bbv-range-up left) (bbv-range-up right)) #f))
+       #f)
       (else
-       #f)))
+       #unspecified)))
+
+;*---------------------------------------------------------------------*/
+;*    normalize-range ...                                              */
+;*---------------------------------------------------------------------*/
+(define (normalize-range r)
+   (with-access::bbv-range r (lo up)
+      (if (and (number? lo) (number? up) (> lo up))
+	  (empty-range)
+	  r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-lt ...                                                 */
@@ -493,15 +463,14 @@
 	 ;; [ll..lu] < [rl..ru] => [ll..max(ll,min(lu, ru-1)]
 	 (let ((res (instantiate::bbv-range
 		       (lo ll)
-		       (up (maxrv ll (minrv lu (-- ru)))))))
+		       (up (minrv lu (-- ru))))))
 	    (trace-item (shape left) " < " (shape right))
 	    (trace-item "    ll=" ll)
 	    (trace-item "    ru=" ru)
 	    (trace-item "  --ru=" (-- ru))
 	    (trace-item " minrv=" (minrv lu (-- ru)))
-	    (trace-item " maxrv=" (maxrv ll (minrv lu (-- ru))))
 	    (trace-item "     =>" (shape res))
-	    res))))
+	    (normalize-range res)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-lte ...                                                */
@@ -512,9 +481,10 @@
 	 (rl (bbv-range-lo right))
 	 (ru (bbv-range-up right)))
       ;; [30..X] <= [Y..?] => [ll..max(ll,min(X, Y))]
-      (instantiate::bbv-range
-	 (lo ll)
-	 (up (maxrv ll (minrv lu ru))))))
+      (let ((res (instantiate::bbv-range
+		    (lo ll)
+		    (up (minrv lu ru)))))
+	 (normalize-range res))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-gt ...                                                 */
@@ -525,9 +495,10 @@
 	 (rl (bbv-range-lo right))
 	 (ru (bbv-range-up right)))
       ;; [ll..lu] > [rl..ru] => [min(lu,max(ll,rl++))..lu]
-      (instantiate::bbv-range
-	 (lo (minrvlo lu (maxrvlo ll (++ rl))))
-	 (up lu))))
+      (let ((res (instantiate::bbv-range
+		    (lo (maxrv ll (++ rl)))
+		    (up lu))))
+	 (normalize-range res))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-gte ...                                                */
@@ -540,16 +511,15 @@
 	    (ru (bbv-range-up right)))
 	 ;; [ll..lu] >= [rl..ru] => [min(lu,max(ll,rl))..lu]
 	 (let ((res (instantiate::bbv-range
-		       (lo (minrvlo lu (maxrvlo ll rl)))
+		       (lo (maxrv ll rl))
 		       (up lu))))
 	    (trace-item (shape left) " >= " (shape right))
 	    (trace-item "    lu=" lu)
 	    (trace-item "    ll=" ll)
 	    (trace-item "    rl=" rl)
-	    (trace-item " maxrv=" (maxrvlo ll rl))
-	    (trace-item " minrv=" (minrvlo lu (maxrv ll rl)))
+	    (trace-item " maxrv=" (maxrv ll rl))
 	    (trace-item "     =>" (shape res))
-	    res))))
+	    (normalize-range res)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-eq ...                                                 */
@@ -583,11 +553,13 @@
       ((and (number? x) (number? y))
        (->range (+ x y)))
       ((and (bbv-vlen? x) (fixnum? y))
-       (duplicate::bbv-vlen x
-	  (offset (+fx (bbv-vlen-offset x) y))))
+       (let ((no (+fx (bbv-vlen-offset x) y)))
+	  (if (<=fx no 0)
+	      (duplicate::bbv-vlen x
+		 (offset no))
+	      +inf.0)))
       ((and (fixnum? x) (bbv-vlen? y))
-       (duplicate::bbv-vlen y
-	  (offset (+fx x (bbv-vlen-offset y)))))
+       (+rv y x def))
       (else
        def)))
       
@@ -599,11 +571,16 @@
       ((and (number? y) (number? y))
        (+rv x (- y) def))
       ((and (bbv-vlen? x) (fixnum? y))
-       (duplicate::bbv-vlen x
-	  (offset (-fx (bbv-vlen-offset x) y))))
+       (let ((no (-fx (bbv-vlen-offset x) y)))
+	  (if (<=fx no 0)
+	      (duplicate::bbv-vlen x
+		 (offset no))
+	      +inf.0)))
       ((and (fixnum? x) (bbv-vlen? y))
-       (duplicate::bbv-vlen y
-	  (offset (-fx x (bbv-vlen-offset x)))))
+       (let ((no (-fx y (bbv-vlen-offset x))))
+	  (if (>=fx no 0)
+	      (-fx no (bbv-min-fixnum))
+	      +inf.0)))
       (else
        def)))
       
@@ -614,6 +591,20 @@
    (cond
       ((and (number? x) (number? y))
        (->range (* x y)))
+      ((and (bbv-vlen? x) (fixnum? y))
+       (let ((no (*fx (bbv-vlen-offset x) y)))
+	  (if (<fx no 0)
+	      (duplicate::bbv-vlen x
+		 (offset no))
+	      (bbv-max-fixnum))))
+      ((and (bbv-vlen? x) (fixnum? y))
+       (let ((no (*fx (bbv-vlen-offset x) y)))
+	  (if (<fx no 0)
+	      (duplicate::bbv-vlen y
+		 (offset no))
+	      +inf.0)))
+      ((and (fixnum? x) (bbv-vlen? y))
+       (*rv y x def))
       (else
        def)))
       

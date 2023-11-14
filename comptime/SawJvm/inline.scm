@@ -156,7 +156,7 @@
 ;;;
 ;;; BOOLEAN
 ;;;
-(define-inline-call c-boolean? ; "INTEGERP"
+(define-inline-call $boolean? ; "INTEGERP"
    (code! me '(instanceof bbool)) )
 
 (define-inline-predicate $obj->bool ; "CBOOL"
@@ -228,10 +228,10 @@
 ;;;
 ;;; INTEGER
 ;;;
-(define-inline-call c-fixnum? ; "INTEGERP"
+(define-inline-call $fixnum? ; "INTEGERP"
    (code! me '(instanceof bint)) )
 
-(define-inline-call c-elong? ; "ELONGP"
+(define-inline-call $elong? ; "ELONGP"
    (code! me '(instanceof belong)) )
 
 (define-inline-call char->integer ; "CHAR_TO_INT"
@@ -272,56 +272,56 @@
       (code! me '(iconst_1))
       (code! me l2) ))
 
-(define-inline-call c-=fx ; "EQ_FX"
+(define-inline-call $=fx ; "EQ_FX"
    (compute-boolean me 'if_icmpeq) )
 
-(define-inline-call c-<fx ; "LT_FX"
+(define-inline-call $<fx ; "LT_FX"
    (compute-boolean me 'if_icmplt) )
 
-(define-inline-call c-<=fx ; "LE_FX"
+(define-inline-call $<=fx ; "LE_FX"
    (compute-boolean me 'if_icmple) )
 
-(define-inline-call c->fx ; "GT_FX"
+(define-inline-call $>fx ; "GT_FX"
    (compute-boolean me 'if_icmpgt) )
 
-(define-inline-call c->=fx ; "GE_FX"
+(define-inline-call $>=fx ; "GE_FX"
    (compute-boolean me 'if_icmpge) )
 
-(define-inline-predicate c-=fx ; "EQ_FX"
+(define-inline-predicate $=fx ; "EQ_FX"
    (branch me (if on? 'if_icmpeq 'if_icmpne) lab) )
 
-(define-inline-predicate c-<fx ; "LT_FX"
+(define-inline-predicate $<fx ; "LT_FX"
    (branch me (if on? 'if_icmplt 'if_icmpge) lab) )
 
-(define-inline-predicate c-<=fx ; "LE_FX"
+(define-inline-predicate $<=fx ; "LE_FX"
    (branch me (if on? 'if_icmple 'if_icmpgt) lab) )
 
-(define-inline-predicate c->fx ; "GT_FX"
+(define-inline-predicate $>fx ; "GT_FX"
    (branch me (if on? 'if_icmpgt 'if_icmple) lab) )
 
-(define-inline-predicate c->=fx ; "GE_FX"
+(define-inline-predicate $>=fx ; "GE_FX"
    (branch me (if on? 'if_icmpge 'if_icmplt) lab) )
 
-(define-inline-predicate c-evenfx? ; "EVENP_FX"
+(define-inline-predicate $evenfx? ; "EVENP_FX"
    (code! me '(iconst_1))
    (code! me '(iand))
    (branch me (if on? 'ifeq 'ifne) lab) )
 
-(define-inline-predicate c-oddfx? ; "ODDP_FX"
+(define-inline-predicate $oddfx? ; "ODDP_FX"
    (code! me '(iconst_1))
    (code! me '(iand))
    (branch me (if on? 'ifne 'ifeq) lab) )
 
-(define-inline-call c-+fx (code! me '(iadd))) ; "PLUS_FX"
-(define-inline-call c--fx (code! me '(isub))) ; "MINUS_FX"
-(define-inline-call c-*fx (code! me '(imul))) ; "MUL_FX"
-(define-inline-call c-/fx (code! me '(idiv))) ; "DIV_FX"
-(define-inline-call c-quotientfx (code! me '(idiv))) ; "QUOTIENT_FX"
-(define-inline-call c-remainderfx (code! me '(irem))) ; "REMAINDER_FX"
-(define-inline-call c-bitor (code! me '(ior))) ; "BITOR"
-(define-inline-call c-bitand (code! me '(iand))) ;"BITAND"
-(define-inline-call c-bitxor (code! me '(ixor))) ; "BITXOR"
-(define-inline-call c-bitnot ; "BITNOT"
+(define-inline-call $+fx (code! me '(iadd))) ; "PLUS_FX"
+(define-inline-call $-fx (code! me '(isub))) ; "MINUS_FX"
+(define-inline-call $*fx (code! me '(imul))) ; "MUL_FX"
+(define-inline-call $/fx (code! me '(idiv))) ; "DIV_FX"
+(define-inline-call $quotientfx (code! me '(idiv))) ; "QUOTIENT_FX"
+(define-inline-call $remainderfx (code! me '(irem))) ; "REMAINDER_FX"
+(define-inline-call $bitor (code! me '(ior))) ; "BITOR"
+(define-inline-call $bitand (code! me '(iand))) ;"BITAND"
+(define-inline-call $bitxor (code! me '(ixor))) ; "BITXOR"
+(define-inline-call $bitnot ; "BITNOT"
    (code! me '(iconst_1))
    (code! me '(ineg))
    (code! me '(ixor)) )
@@ -329,7 +329,7 @@
 ;;;
 ;;; FLOAT
 ;;;
-(define-inline-call c-flonum? ; "REALP"
+(define-inline-call $flonum? ; "REALP"
    (code! me '(instanceof real)) )
 
 (define-inline-call $real->double ; "REAL_TO_DOUBLE"
@@ -353,31 +353,31 @@
 (define-inline-call  $flonum->llong ; "FLONUM_TO_LLONG"
    (code! me '(d2l)) )
 
-(define-inline-predicate c-=fl ; "EQ_FL"
+(define-inline-predicate $=fl ; "EQ_FL"
    (code! me '(dcmpg))
    (branch me (if on? 'ifeq 'ifne) lab) )
 
-(define-inline-predicate c-<fl ; "LT_FL"
+(define-inline-predicate $<fl ; "LT_FL"
    (code! me '(dcmpl))
    (branch me (if on? 'iflt 'ifge) lab) )
 
-(define-inline-predicate c-<=fl ; "LE_FL"
+(define-inline-predicate $<=fl ; "LE_FL"
    (code! me '(dcmpl))
    (branch me (if on? 'ifle 'ifgt) lab) )
 
-(define-inline-predicate c->fl ; "GT_FL"
+(define-inline-predicate $>fl ; "GT_FL"
    (code! me '(dcmpg))
    (branch me (if on? 'ifgt 'ifle) lab) )
 
-(define-inline-predicate c->=fl ; "GE_FL"
+(define-inline-predicate $>=fl ; "GE_FL"
    (code! me '(dcmpg))
    (branch me (if on? 'ifge 'iflt) lab) )
 
-(define-inline-call c-+fl (code! me '(dadd))) ; "PLUS_FL"
-(define-inline-call c--fl (code! me '(dsub))) ; "MINUS_FL"
-(define-inline-call c-*fl (code! me '(dmul))) ; "MUL_FL"
-(define-inline-call c-/fl (code! me '(ddiv))) ; "DIV_FL"
-(define-inline-call c-negfl (code! me '(dneg))) ; "NEG_FL"
+(define-inline-call $+fl (code! me '(dadd))) ; "PLUS_FL"
+(define-inline-call $-fl (code! me '(dsub))) ; "MINUS_FL"
+(define-inline-call $*fl (code! me '(dmul))) ; "MUL_FL"
+(define-inline-call $/fl (code! me '(ddiv))) ; "DIV_FL"
+(define-inline-call $negfl (code! me '(dneg))) ; "NEG_FL"
 
 ;;;
 ;;; CONSTANTS

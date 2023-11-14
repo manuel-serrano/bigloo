@@ -52,10 +52,10 @@
    ;; then we start the 1-occurrence reduction. 
    (set! *removed* 0)
    ;; prepare the predicate beta reduction
-   (set! *c-fixnum?* (find-global 'c-fixnum? 'foreign))
-   (set! *c-flonum?* (find-global 'c-flonum? 'foreign))
+   (set! *$fixnum?* (find-global '$fixnum? 'foreign))
+   (set! *$flonum?* (find-global '$flonum? 'foreign))
    (set! *c-string-length* (find-global '$string-length 'foreign))
-   (set! *predicates* (list *c-fixnum?* *c-flonum?*))
+   (set! *predicates* (list *$fixnum?* *$flonum?*))
    ;; start reducing
    (for-each (lambda (global)
 		(let* ((fun  (global-value global))
@@ -64,8 +64,8 @@
 		   #unspecified))
 	     globals)
    ;; clean the local cache
-   (set! *c-fixnum?* #unspecified)
-   (set! *c-flonum?* #unspecified)
+   (set! *$fixnum?* #unspecified)
+   (set! *$flonum?* #unspecified)
    (set! *c-string-length* #unspecified)
    (set! *predicates* '())
    ;; display statistics
@@ -80,8 +80,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    Predicate optimization                                           */
 ;*---------------------------------------------------------------------*/
-(define *c-fixnum?* #unspecified)
-(define *c-flonum?* #unspecified)
+(define *$fixnum?* #unspecified)
+(define *$flonum?* #unspecified)
 (define *c-string-length* #unspecified)
 (define *predicates* '())
 
@@ -464,7 +464,7 @@
 	 (cond
 	    ((eq? atype *obj*)
 	     node)
-	    ((eq? vfun *c-fixnum?*)
+	    ((eq? vfun *$fixnum?*)
 	     (set! *removed* (+fx *removed* 1))
 	     (instantiate::literal
 		(type type)
@@ -472,7 +472,7 @@
 		(value (or (eq? atype *bint*)
 			   (eq? atype *int*)
 			   (eq? atype *long*)))))
-	    ((eq? vfun *c-flonum?*)
+	    ((eq? vfun *$flonum?*)
 	     (set! *removed* (+fx *removed* 1))
 	     (instantiate::literal
 		(type type)

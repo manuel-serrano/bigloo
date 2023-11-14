@@ -286,7 +286,7 @@
       ((eq? type 'long)
        `(labels ((,else-name () ,@else-body))
 	   (let ((,aux ,(e value e)))
-	      (if (c-fixnum? ,aux)
+	      (if ($fixnum? ,aux)
 		  ,case-form
 		  (,else-name)))))
       ((eq? type 'uint32)

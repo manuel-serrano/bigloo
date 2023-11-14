@@ -130,7 +130,7 @@
 			     (or (=fx i lobj1)
 				 (and (cmp (get obj1 i) (get obj2 i))
 				      (test (+fx i 1)))))))))))
-      ((c-flonum? obj1)
+      (($flonum? obj1)
        #f)
       (($struct? obj1)
        (let ((lobj1 (struct-length obj1)))

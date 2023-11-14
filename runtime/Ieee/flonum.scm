@@ -33,44 +33,43 @@
 	    __evenv)
    
    (extern  (macro $modf::double (::double ::void*) "modf")
-	    (macro c-flonum?::bool (::obj) "REALP")
-	    (macro $flonum?::bool (::obj) "FLONUMP")
-	    (infix macro c-=fl::bool (::double ::double) "==")
-	    (infix macro c-<fl::bool (::double ::double) "<")
-	    (infix macro c-<=fl::bool (::double ::double) "<=")
-	    (infix macro c->fl::bool (::double ::double) ">")
-	    (infix macro c->=fl::bool (::double ::double) ">=")
-	    (infix macro c-+fl::double (::double ::double) "+")
-	    (infix macro c--fl::double (::double ::double) "-")
-	    (infix macro c-*fl::double (::double ::double) "*")
-	    (infix macro c-/fl::double (::double ::double) "/")
-	    (macro c-negfl::double (::double) "NEG")
-	    (macro c-floor::double (::double) "floor")
-	    (macro c-ceiling::double (::double) "ceil")
-	    (macro c-fmod::double (::double ::double) "fmod")
-	    (macro c-exp::double (::double) "exp")
-	    (macro c-log::double (::double) "log")
-	    (macro c-log2::double (::double) "log2")
-	    (macro c-log10::double (::double) "log10")
-	    (macro c-sin::double (::double) "sin")
-	    (macro c-cos::double (::double) "cos")
-	    (macro c-tan::double (::double) "tan")
-	    (macro c-asin::double (::double) "asin")
-	    (macro c-acos::double (::double) "acos")
-	    (macro c-atan::double (::double) "atan")
-	    (macro c-atan2::double (::double ::double) "atan2")
-	    (macro c-sqrt::double (::double) "sqrt")
-	    (macro c-pow::double (::double ::double) "pow")
+	    (macro $flonum?::bool (::obj) "REALP")
+	    (infix macro $=fl::bool (::double ::double) "==")
+	    (infix macro $<fl::bool (::double ::double) "<")
+	    (infix macro $<=fl::bool (::double ::double) "<=")
+	    (infix macro $>fl::bool (::double ::double) ">")
+	    (infix macro $>=fl::bool (::double ::double) ">=")
+	    (infix macro $+fl::double (::double ::double) "+")
+	    (infix macro $-fl::double (::double ::double) "-")
+	    (infix macro $*fl::double (::double ::double) "*")
+	    (infix macro $/fl::double (::double ::double) "/")
+	    (macro $negfl::double (::double) "NEG")
+	    (macro $floor::double (::double) "floor")
+	    (macro $ceiling::double (::double) "ceil")
+	    (macro $fmod::double (::double ::double) "fmod")
+	    (macro $exp::double (::double) "exp")
+	    (macro $log::double (::double) "log")
+	    (macro $log2::double (::double) "log2")
+	    (macro $log10::double (::double) "log10")
+	    (macro $sin::double (::double) "sin")
+	    (macro $cos::double (::double) "cos")
+	    (macro $tan::double (::double) "tan")
+	    (macro $asin::double (::double) "asin")
+	    (macro $acos::double (::double) "acos")
+	    (macro $atan::double (::double) "atan")
+	    (macro $atan2::double (::double ::double) "atan2")
+	    (macro $sqrt::double (::double) "sqrt")
+	    (macro $pow::double (::double ::double) "pow")
 	    (macro strtod::double (::string ::long) "strtod")
 	    (macro $strtod::double (::string) "STRTOD")
-	    (macro c-absfl::double (::double) "fabs")
-	    (macro c-maxfl::double (::double ::double) "BGL_FL_MAX2")
-	    (macro c-minfl::double (::double ::double) "BGL_FL_MIN2")
+	    (macro $absfl::double (::double) "fabs")
+	    (macro $maxfl::double (::double ::double) "BGL_FL_MAX2")
+	    (macro $minfl::double (::double ::double) "BGL_FL_MIN2")
 	    (macro $signbit::long (::double) "BGL_SIGNBIT")
-	    (macro c-roundfl::double (::double) "BGL_FL_ROUND")
-	    (macro c-isfinite::bool (::double) "BGL_IS_FINITE")
-	    (macro c-isinf::bool (::double) "BGL_IS_INF")
-	    (macro c-isnan::bool (::double) "BGL_IS_NAN")
+	    (macro $roundfl::double (::double) "BGL_FL_ROUND")
+	    (macro $isfinite::bool (::double) "BGL_IS_FINITE")
+	    (macro $isinf::bool (::double) "BGL_IS_INF")
+	    (macro $isnan::bool (::double) "BGL_IS_NAN")
 	    (%ieee-string->double::double (::bstring)
 					  "bgl_ieee_string_to_double")
 	    (%double->ieee-string::bstring (::double)
@@ -86,81 +85,79 @@
 	    (macro $randomfl::double () "RANDOMFL"))
    
    (java    (class foreign
-	       (method static c-flonum?::bool (::obj)
-		  "REALP")
 	       (method static $flonum?::bool (::obj)
 		  "REALP")
-	       (method static c-=fl::bool (::double ::double)
+	       (method static $=fl::bool (::double ::double)
 		  "EQ_FL")
-	       (method static c-<fl::bool (::double ::double)
+	       (method static $<fl::bool (::double ::double)
 		  "LT_FL")
-	       (method static c-<=fl::bool (::double ::double)
+	       (method static $<=fl::bool (::double ::double)
 		  "LE_FL")
-	       (method static c->fl::bool (::double ::double)
+	       (method static $>fl::bool (::double ::double)
 		  "GT_FL")
-	       (method static c->=fl::bool (::double ::double)
+	       (method static $>=fl::bool (::double ::double)
 		  "GE_FL")
-	       (method static c-+fl::double (::double ::double)
+	       (method static $+fl::double (::double ::double)
 		  "PLUS_FL")
-	       (method static c--fl::double (::double ::double)
+	       (method static $-fl::double (::double ::double)
 		  "MINUS_FL")
-	       (method static c-*fl::double (::double ::double)
+	       (method static $*fl::double (::double ::double)
 		  "MUL_FL")
-	       (method static c-/fl::double (::double ::double)
+	       (method static $/fl::double (::double ::double)
 		  "DIV_FL")
-	       (method static c-negfl::double (::double)
+	       (method static $negfl::double (::double)
 		  "NEG_FL")
-	       (method static c-fmod::double (::double ::double)
+	       (method static $fmod::double (::double ::double)
 		  "fmod")
-	       (method static c-floor::double (::double)
+	       (method static $floor::double (::double)
 		  "floor")
-	       (method static c-ceiling::double (::double)
+	       (method static $ceiling::double (::double)
 		  "ceil")
-	       (method static c-exp::double (::double)
+	       (method static $exp::double (::double)
 		  "exp")
-	       (method static c-log::double (::double)
+	       (method static $log::double (::double)
 		  "log")
-	       (method static c-log2::double (::double)
+	       (method static $log2::double (::double)
 		  "log2")
-	       (method static c-log10::double (::double)
+	       (method static $log10::double (::double)
 		  "log10")
-	       (method static c-sin::double (::double)
+	       (method static $sin::double (::double)
 		  "sin")
-	       (method static c-cos::double (::double)
+	       (method static $cos::double (::double)
 		  "cos")
-	       (method static c-tan::double (::double)
+	       (method static $tan::double (::double)
 		  "tan")
-	       (method static c-asin::double (::double)
+	       (method static $asin::double (::double)
 		  "asin")
-	       (method static c-acos::double (::double)
+	       (method static $acos::double (::double)
 		  "acos")
-	       (method static c-atan::double (::double)
+	       (method static $atan::double (::double)
 		  "atan")
-	       (method static c-atan2::double (::double ::double)
+	       (method static $atan2::double (::double ::double)
 		  "atan2")
-	       (method static c-sqrt::double (::double)
+	       (method static $sqrt::double (::double)
 		  "sqrt")
-	       (method static c-pow::double (::double ::double)
+	       (method static $pow::double (::double ::double)
 		  "pow")
 	       (method static strtod::double (::string ::long)
 		  "strtod")
 	       (method static $strtod::double (::string)
 		  "strtod")
-	       (method static c-absfl::double (::double)
+	       (method static $absfl::double (::double)
 		  "abs")
-	       (method static c-maxfl::double (::double ::double)
+	       (method static $maxfl::double (::double ::double)
 		  "max")
-	       (method static c-minfl::double (::double ::double)
+	       (method static $minfl::double (::double ::double)
 		  "min")
 	       (method static $signbit::long (::double)
 		  "BGL_SIGNBIT")
-	       (method static c-roundfl::double (::double)
+	       (method static $roundfl::double (::double)
 		  "round")
-	       (method static c-isfinite::bool (::double)
+	       (method static $isfinite::bool (::double)
 		  "isfinite")
-	       (method static c-isinf::bool (::double)
+	       (method static $isinf::bool (::double)
 		  "isinf")
-	       (method static c-isnan::bool (::double)
+	       (method static $isnan::bool (::double)
 		  "isnan")
 	       (method static %ieee-string->double::double (::bstring)
 		  "bgl_ieee_string_to_double")
@@ -242,38 +239,38 @@
 	    (inline int-bits->float::float ::int)
 	    (inline randomfl::double))
    
-   (pragma  (c-flonum? no-alloc side-effect-free (predicate-of real) no-cfa-top nesting fail-safe)
+   (pragma  ($flonum? no-alloc side-effect-free (predicate-of real) no-cfa-top nesting fail-safe)
 	    ($flonum? no-alloc side-effect-free (predicate-of real) no-cfa-top nesting fail-safe)
 	    (real? no-alloc side-effect-free no-cfa-top nesting fail-safe)
-	    (c-=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c->fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c->=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-<fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-<=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-+fl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c--fl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-*fl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-/fl side-effect-free no-cfa-top nesting args-safe)
-	    (c-negfl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-exp side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-log side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-log2 side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-log10 side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-sin side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-cos side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-tan side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-asin side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-acos side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-atan side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-sqrt side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-absfl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-minfl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-maxfl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($>fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($>=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($<fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($<=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($+fl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($-fl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($*fl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($/fl side-effect-free no-cfa-top nesting args-safe)
+	    ($negfl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($exp side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($log side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($log2 side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($log10 side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($sin side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($cos side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($tan side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($asin side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($acos side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($atan side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($sqrt side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($absfl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($minfl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($maxfl side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    ($signbit side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-roundfl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-isnan no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-isinf no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-isfinite no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($roundfl side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($isnan no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($isinf no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($isfinite no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (flonum? no-alloc (predicate-of real) no-cfa-top nesting fail-safe)
  	    (real? no-alloc side-effect-free no-cfa-top nesting fail-safe)
 	    (=fl no-alloc side-effect-free no-cfa-top nesting fail-safe)
@@ -318,45 +315,45 @@
 ;*    real? ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (real? obj)
-   (if (c-fixnum? obj)
+   (if ($fixnum? obj)
        #t
-       (c-flonum? obj)))
+       ($flonum? obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (flonum? obj)
-   (c-flonum? obj))
+   ($flonum? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    =fl ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (=fl r1 r2)
-   (c-=fl r1 r2))
+   ($=fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    <fl ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (<fl r1 r2)
-   (c-<fl r1 r2))
+   ($<fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    >fl ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (>fl r1 r2)
-   (c->fl r1 r2))
+   ($>fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    <=fl ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (<=fl r1 r2)
-   (c-<=fl r1 r2))
+   ($<=fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    >=fl ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (>=fl r1 r2)
-   (c->=fl r1 r2))
+   ($>=fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    zerofl? ...                                                      */
@@ -380,19 +377,19 @@
 ;*    opfl ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (+fl r1 r2)
-   (c-+fl r1 r2))
+   ($+fl r1 r2))
 (define-inline (-fl r1 r2)
-   (c--fl r1 r2))
+   ($-fl r1 r2))
 (define-inline (*fl r1 r2)
-   (c-*fl r1 r2))
+   ($*fl r1 r2))
 (define-inline (/fl r1 r2)
-   (c-/fl r1 r2))
+   ($/fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    negfl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (negfl r1)
-   (c-negfl r1))
+   ($negfl r1))
     
 ;*---------------------------------------------------------------------*/
 ;*    maxfl ...                                                        */
@@ -408,13 +405,13 @@
 ;*    max-2fl ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (max-2fl r1 r2)
-   (c-maxfl r1 r2))
+   ($maxfl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    min-2fl ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (min-2fl r1 r2)
-   (c-minfl r1 r2))
+   ($minfl r1 r2))
    
 ;*---------------------------------------------------------------------*/
 ;*    minfl ...                                                        */
@@ -430,19 +427,19 @@
 ;*    absfl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (absfl r)
-   (c-absfl r))
+   ($absfl r))
 
 ;*---------------------------------------------------------------------*/
 ;*    floorfl ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (floorfl r)
-   (c-floor r))
+   ($floor r))
 
 ;*---------------------------------------------------------------------*/
 ;*    ceilingfl ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (ceilingfl r)
-   (c-ceiling r))
+   ($ceiling r))
 
 ;*---------------------------------------------------------------------*/
 ;*    truncatefl ...                                                   */
@@ -456,74 +453,74 @@
 ;*    roundfl ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (roundfl r)
-   (c-roundfl r))
+   ($roundfl r))
 
 ;*---------------------------------------------------------------------*/
 ;*    remainderfl ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (remainderfl n1 n2)
-   (c-fmod n1 n2))
+   ($fmod n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    expfl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (expfl x)
-   (c-exp x))
+   ($exp x))
 
 ;*---------------------------------------------------------------------*/
 ;*    logfl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (logfl x)
-   (c-log x))
+   ($log x))
  
 ;*---------------------------------------------------------------------*/
 ;*    log2fl ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (log2fl x)
-   (c-log2 x))
+   ($log2 x))
  
 ;*---------------------------------------------------------------------*/
 ;*    log10fl ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (log10fl x)
-   (c-log10 x))
+   ($log10 x))
  
 ;*---------------------------------------------------------------------*/
 ;*    sinfl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (sinfl x)
-   (c-sin x))
+   ($sin x))
 
 ;*---------------------------------------------------------------------*/
 ;*    cosfl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (cosfl x)
-   (c-cos x))
+   ($cos x))
 
 ;*---------------------------------------------------------------------*/
 ;*    tanfl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (tanfl x)
-   (c-tan x))
+   ($tan x))
 
 ;*---------------------------------------------------------------------*/
 ;*    asinfl ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (asinfl x)
-   (c-asin x))
+   ($asin x))
 
 ;*---------------------------------------------------------------------*/
 ;*    acosfl ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (acosfl x)
-   (c-acos x))
+   ($acos x))
 
 ;*---------------------------------------------------------------------*/
 ;*    atanfl ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (atanfl x . y)
    (if (null? y)
-       (c-atan x)
+       ($atan x)
        (let ((y (car y)))
 	  (atan-2fl x y))))
 
@@ -531,7 +528,7 @@
 ;*    atan-1fl ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (atan-1fl x)
-   (c-atan x))
+   ($atan x))
 
 ;*---------------------------------------------------------------------*/
 ;*    atan-2fl ...                                                     */
@@ -549,13 +546,13 @@
 	     ;; registers allocation bug in gcc 2.96
 	     (the_failure proc msg obj)
 	     0.0)
-	  (c-atan2 x y))))
+	  ($atan2 x y))))
 
 ;*---------------------------------------------------------------------*/
 ;*    atan-2fl-ur ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (atan-2fl-ur x y)
-   (c-atan2 x y))
+   ($atan2 x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqrtfl ...                                                       */
@@ -568,19 +565,19 @@
 	  (begin
 	     (error proc msg obj)
 	     0.0))
-       (c-sqrt r)))
+       ($sqrt r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqrtfl-ur ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (sqrtfl-ur r)
-   (c-sqrt r))
+   ($sqrt r))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptfl ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (exptfl r1 r2)
-   (c-pow r1 r2))
+   ($pow r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    signbitfl ...                                                    */
@@ -611,19 +608,19 @@
 ;*    finitefl? ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (finitefl? r)
-   (c-isfinite r))
+   ($isfinite r))
 
 ;*---------------------------------------------------------------------*/
 ;*    infinitefl? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (infinitefl? r)
-   (c-isinf r))
+   ($isinf r))
 
 ;*---------------------------------------------------------------------*/
 ;*    nanfl? ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (nanfl? r)
-   (c-isnan r))
+   ($isnan r))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->real ...                                                 */

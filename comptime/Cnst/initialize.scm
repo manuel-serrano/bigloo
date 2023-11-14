@@ -96,13 +96,13 @@
 			   (open-input-string!
 			      ,(global-id (var-variable var-string)))))
 		       (labels ((loop (i::long)
-				      (if (c-=fx i -1)
+				      (if ($=fx i -1)
 					  #unspecified
 					  (begin
 					     (cnst-table-set!
 					      i
 					      ((@ read __reader) cport))
-					     (let ((aux::int (c--fx i 1)))
+					     (let ((aux::int ($-fx i 1)))
 						(loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
 	 (cons sexp (get-cnst-sexp))))
@@ -161,13 +161,13 @@
 			      ,(global-id
 				  (var-variable var-string)))))
 		       (labels ((loop (i::int)
-				   (if (c-=fx i -1)
+				   (if ($=fx i -1)
 				       #unspecified
 				       (begin
 					  (cnst-table-set!
 					     i
 					     ($vector-ref-ur cnst-tmp i))
-					  (let ((aux::int (c--fx i 1)))
+					  (let ((aux::int ($-fx i 1)))
 					     (loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
 	 (cons sexp (get-cnst-sexp))))

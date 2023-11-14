@@ -55,7 +55,7 @@
 ;*---------------------------------------------------------------------*/
 (define (init-cond-cache!)
    (set! *$eq* (find-global 'c-eq? 'foreign))
-   (set! *$=fx* (find-global 'c-=fx 'foreign)))
+   (set! *$=fx* (find-global '$=fx 'foreign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    reset-cond-cache! ...                                            */
