@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Thu Jul 20 07:53:52 2023 (serrano)                */
+;*    Last change :  Tue Nov 14 12:07:57 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -552,6 +552,12 @@
    (cond
       ((and (number? x) (number? y))
        (->range (+ x y)))
+      ((and (bbv-vlen? x) (bbv-vlen? y) )
+       (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
+	   (let ((no (+fx (bbv-vlen-offset x) (bbv-vlen-offset y) )))
+	      (duplicate::bbv-vlen x
+		 (offset no))
+	      (+fx (bbv-max-fixnum) no))))
       ((and (bbv-vlen? x) (fixnum? y))
        (let ((no (+fx (bbv-vlen-offset x) y)))
 	  (if (<=fx no 0)
@@ -570,6 +576,13 @@
    (cond
       ((and (number? y) (number? y))
        (+rv x (- y) def))
+      ((and (bbv-vlen? x) (bbv-vlen? y) )
+       (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
+	   (let ((no (-fx (bbv-vlen-offset x) (bbv-vlen-offset y) )))
+	      (if (<=fx no 0)
+		  (duplicate::bbv-vlen x
+		     (offset no))
+		  +inf.0))))
       ((and (bbv-vlen? x) (fixnum? y))
        (let ((no (-fx (bbv-vlen-offset x) y)))
 	  (if (<=fx no 0)
