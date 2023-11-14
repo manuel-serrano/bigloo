@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Tue Nov  7 19:50:28 2023 (serrano)                */
+;*    Last change :  Tue Nov 14 15:11:35 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -66,6 +66,8 @@
        (bb num preds succs ins #f merge #f 0 (get-color 0) (merge-bgcolor minfo)))
       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
        (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor minfo)))
+      (((or block blockS blockV SawDone) ?num :merge ?- :preds ?preds :succs ?succs . ?ins)
+       (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor 'default)))
       ((SawDone ?num :preds ?preds :succs ?succs :color ?color . ?ins)
        (bb num preds succs ins #f #f #f 0 color (merge-bgcolor 'default)))
       ((SawDone ?num :preds ?preds :succs ?succs . ?ins)

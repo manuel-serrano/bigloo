@@ -52,6 +52,8 @@
 	    (map block-label bs)))
    (multiple-value-bind (bs1 bs2)
       (bbv-block-merge-select bs)
+      (trace-item "bs1=" (block-label bs1))
+      (trace-item "bs2=" (block-label bs2))
       (with-access::blockS bs1 ((ctx1 ctx))
 	 (with-access::blockS bs2 ((ctx2 ctx))
 	    (trace-item "ctx1=" (shape ctx1))
@@ -303,7 +305,7 @@
 	 ((=fx v 0) v)
 	 ((>fx v -16) (*fx v 2))
 	 ((>fx v -255) -255)
-	 ((>=fx v (+fx (bbv-min-fixnum) 1)) v)
+	 ((>=fx v (+fx (bbv-min-fixnum) 1)) (+fx (bbv-min-fixnum) 1))
 	 (else (bbv-min-fixnum))))
 
    (define (low-widening-vlen v)

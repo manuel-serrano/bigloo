@@ -571,7 +571,7 @@
 			    (let ((s (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(fun (instantiate::rtl_go
-						(to (bbv-block then pctx queue))))
+						(to (bbv-block then pctx queue :creator bs))))
 					(dest #f)
 					(args '()))))
 			       ;; the next ctx will be ignored...
@@ -603,7 +603,9 @@
 				   (s (duplicate::rtl_ins/bbv i
 					 (ctx ctx)
 					 (fun (duplicate::rtl_ifne fun
-						 (then (bbv-block then pctx queue)))))))
+						 (then (bbv-block then pctx queue :creator bs)))))))
+			       (trace-item "pctx.2=" (shape pctx))
+			       (trace-item "nctx.2=" (shape nctx))
 			       (values s nctx))))))
 		  (else
 		   (error "rtl_ins-specialize-typecheck"
@@ -720,12 +722,13 @@
       (with-access::rtl_ins i (dest args fun)
 	 (with-access::rtl_loadi fun (constant)
 	    (with-access::atom constant (value type)
-	       (let ((s (duplicate::rtl_ins/bbv i
-			   (ctx ctx)
-			   (fun (duplicate::rtl_loadi fun))))
-		     (v (if (fixnum? value) (fixnum->range value) '_)))
-		  (values s
-		     (extend-ctx ctx dest (list type) #t :value v))))))))
+	       (let* ((s (duplicate::rtl_ins/bbv i
+			    (ctx ctx)
+			    (fun (duplicate::rtl_loadi fun))))
+		      (v (if (fixnum? value) (fixnum->range value) '_))
+		      (nctx (extend-ctx ctx dest (list type) #t :value v)))
+		  (trace-item "load.i " (shape nctx))
+		  (values s nctx)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadg ...                                     */
@@ -737,9 +740,10 @@
 	    (with-access::variable var (type)
 	       (let ((s (duplicate::rtl_ins/bbv i
 			   (ctx ctx)
-			   (fun (duplicate::rtl_loadg fun)))))
-		  (values s
-		     (extend-ctx ctx dest (list type) #t))))))))
+			   (fun (duplicate::rtl_loadg fun))))
+		     (nctx (extend-ctx ctx dest (list type) #t)))
+		  (trace-item "load.g " (shape nctx))
+		  (values s nctx)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-call-specialize? ...                                     */
@@ -850,11 +854,12 @@
 ;*    rtl_ins-specialize-vlen ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specialize-vlen i::rtl_ins bs ctx queue::bbv-queue)
-   (with-access::rtl_ins i (dest args)
-      (let ((range (rtl-range i ctx)))
-	 (values i
-	    (extend-ctx ctx dest (list *long*) #t
-	       :value range)))))
+   (with-trace 'bbv-ins "rtl_ins-specialize-vlen"
+      (with-access::rtl_ins i (dest args)
+	 (let* ((range (rtl-range i ctx))
+		(nctx (extend-ctx ctx dest (list *long*) #t :value range)))
+	    (trace-item "nctx=" (shape nctx))
+	    (values i nctx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-vector-bound-check? ...                                  */
@@ -886,43 +891,47 @@
       (with-access::rtl_ins i (fun)
 	 (with-access::rtl_ifne fun (args then)
 	    (let ((nfun (duplicate::rtl_ifne fun
-			   (then (bbv-block then pctx queue)))))
+			   (then (bbv-block then pctx queue :creator bs)))))
 	       (values (duplicate::rtl_ins/bbv i
 			  (ctx ctx)
 			  (fun nfun))
 		  nctx)))))
-   
-   (with-access::rtl_ins i (args fun)
-      (with-access::rtl_ins (car args) (fun args)
-	 (with-access::rtl_call fun (var)
-	    (let* ((a (bbv-ctx-get ctx (car args)))
-		   (l (bbv-ctx-get ctx (cadr args)))
-		   (va (bbv-ctxentry-value a))
-		   (vl (bbv-ctxentry-value l)))
-	       (cond
-		  ((not (bbv-range? va))
-		   (if (bbv-range? vl)
-		       (let ((pctx (extend-ctx ctx (car args) (list *vector*) #t
-				      :value vl))
-			     (nctx ctx))
-			  (dup-ifne i pctx nctx))
-		       (dup-ifne i ctx ctx)))
-		  ((not (bbv-range? vl))
-		   (dup-ifne i ctx ctx))
-		  ((and (eq? (bbv-range< va vl) #t)
-			(eq? (bbv-range>= va (vlen-range)) #t))
-		   (values (duplicate::rtl_ins/bbv i (fun (true)) (args '()))
-		      (extend-ctx ctx (car args) (list *vector*) #t
-			 :value (bbv-range-lt va vl))))
-		  ((or (eq? (bbv-range> va vl) #t)
-		       (eq? (bbv-range< va (vlen-range)) #t))
-		   (values (duplicate::rtl_ins/bbv i (fun (false)) (args '()))
-		      ctx))
-		  (else
-		   (let ((pctx (extend-ctx ctx (car args) (list *bint*) #t
-				  :value (bbv-range-lt (vlen-range) vl)))
-			 (nctx ctx))
-		      (dup-ifne i pctx nctx)))))))))
+
+   (with-trace 'bbv-ins "rtl_ins-specialize-vector-bound-check"
+      (with-access::rtl_ins i (args fun)
+	 (with-access::rtl_ins (car args) (fun args)
+	    (with-access::rtl_call fun (var)
+	       (let* ((a (bbv-ctx-get ctx (car args)))
+		      (l (bbv-ctx-get ctx (cadr args)))
+		      (va (bbv-ctxentry-value a))
+		      (vl (bbv-ctxentry-value l)))
+		  (cond
+		     ((not (bbv-range? va))
+		      (if (bbv-range? vl)
+			  (let ((pctx (extend-ctx ctx (car args) (list *vector*) #t
+					 :value vl))
+				(nctx ctx))
+			     (trace-item "pctx.1=" (shape pctx))
+			     (dup-ifne i pctx nctx))
+			  (dup-ifne i ctx ctx)))
+		     ((not (bbv-range? vl))
+		      (dup-ifne i ctx ctx))
+		     ((and (eq? (bbv-range< va vl) #t)
+			   (eq? (bbv-range>= va (vlen-range)) #t))
+		      (let ((nctx (extend-ctx ctx (car args) (list *vector*) #t
+				     :value (bbv-range-lt va vl))))
+			 (trace-item "nctx=" (shape nctx))
+		      (values (duplicate::rtl_ins/bbv i (fun (true)) (args '())) nctx)))
+		     ((or (eq? (bbv-range> va vl) #t)
+			  (eq? (bbv-range< va (vlen-range)) #t))
+		      (values (duplicate::rtl_ins/bbv i (fun (false)) (args '()))
+			 ctx))
+		     (else
+		      (let ((pctx (extend-ctx ctx (car args) (list *bint*) #t
+				     :value (bbv-range-lt (vlen-range) vl)))
+			    (nctx ctx))
+			 (trace-item "pctx.2=" (shape pctx))
+			 (dup-ifne i pctx nctx))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-resolved-ifne ...                             */
@@ -942,7 +951,7 @@
 			 (values ni ctx))
 		      (with-access::rtl_ifne fun (then)
 			 (let* ((fun (duplicate::rtl_go fun
-					(to (bbv-block then ctx queue))))
+					(to (bbv-block then ctx queue :creator bs))))
 				(ni (duplicate::rtl_ins/bbv i
 				       (ctx ctx)
 				       (args '())
@@ -1067,32 +1076,45 @@
 				 (intr- (bbv-range-gte intl intr)))
 			      (trace-item "<.intr+=" (shape intr+))
 			      (trace-item "<.intr-=" (shape intr-))
-			      (values (extend-ctx ctx reg types #t :value intr+)
-				 (extend-ctx ctx reg types #t :value intr-))))
+			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
+				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+				 (trace-item "ctx+.1=" (shape ctx+))
+				 (trace-item "ctx-.1=" (shape ctx-))
+				 (values ctx+ ctx-))))
 			  ((<=)
 			   (let ((intr+ (bbv-range-lte intl intr))
 				 (intr- (bbv-range-gt intl intr)))
 			      (trace-item "<=.intr+=" (shape intr+))
 			      (trace-item "<=.intr-=" (shape intr-))
-			      (values (extend-ctx ctx reg types #t :value intr+)
-				 (extend-ctx ctx reg types #t :value intr-))))
+			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
+				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+				 (trace-item "ctx+.1=" (shape ctx+))
+				 (trace-item "ctx-.1=" (shape ctx-))
+				 (values ctx+ ctx-))))
 			  ((>)
 			   (let ((intr+ (bbv-range-gt intl intr))
 				 (intr- (bbv-range-lte intl intr)))
 			      (trace-item ">.intr+=" (shape intr+))
 			      (trace-item ">.intr-=" (shape intr-))
-			      (values (extend-ctx ctx reg types #t :value intr+)
-				 (extend-ctx ctx reg types #t :value intr-))))
+			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
+				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+				 (trace-item "ctx+.1=" (shape ctx+))
+				 (trace-item "ctx-.1=" (shape ctx-))
+				 (values ctx+ ctx-))))
 			  ((>=)
 			   (let ((intr+ (bbv-range-gte intl intr))
 				 (intr- (bbv-range-lt intl intr)))
 			      (trace-item ">=.intr+=" (shape intr+))
 			      (trace-item ">=.intr-=" (shape intr-))
-			      (values (extend-ctx ctx reg types #t :value intr+)
-				 (extend-ctx ctx reg types #t :value intr-))))
+			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
+				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+				 (trace-item "ctx+.1=" (shape ctx+))
+				 (trace-item "ctx-.1=" (shape ctx-))
+				 (values ctx+ ctx-))))
 			  ((=)
-			   (values (extend-ctx ctx reg types #t :value intl)
-			      ctx))
+			   (let ((ctx+ (extend-ctx ctx reg types #t :value intl)))
+			      (trace-item "ctx+.1=" (shape ctx+))
+			      (values ctx+ ctx)))
 			  ((!=)
 			   (values ctx ctx))
 			  (else
@@ -1186,7 +1208,7 @@
 	 (cond
 	    ((isa? fun rtl_ifne)
 	     (with-access::rtl_ifne fun (then)
-		(multiple-value-bind (ins pctx nctx)
+		(multiple-value-bind (ins ctx+ ctx-)
 		   (specialize-call (car args) ctx)
 		   (cond
 		      ((rtl_ins-true? ins)
@@ -1197,22 +1219,22 @@
 					(ctx ctx)
 					(args '())
 					(fun fun))))
-			     (values ni pctx))))
+			     (values ni ctx+))))
 		      ((rtl_ins-false? ins)
 		       (let* ((fun (duplicate::rtl_nop fun))
 			      (ni (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
 				     (args '())
 				     (fun fun))))
-			  (values ni nctx)))
+			  (values ni ctx-)))
 		      (else
 		       (let ((fun (duplicate::rtl_ifne fun
-				     (then (bbv-block then pctx queue :creator bs)))))
+				     (then (bbv-block then ctx+ queue :creator bs)))))
 			  (values (duplicate::rtl_ins/bbv i
 				     (ctx ctx)
 				     (args (list ins))
 				     (fun fun))
-			     nctx)))))))
+			     ctx-)))))))
 	    ((isa? fun rtl_call)
 	     (multiple-value-bind (ins pctx nctx)
 		(specialize-call i ctx)
@@ -1282,11 +1304,13 @@
 			    (else
 			     (error "fxovop-ctx" "wrong operator" (shape fun))))))
 	       (with-access::bbv-range intv (lo up)
-		  (let ((intx (instantiate::bbv-range
-				 (lo (maxrv lo (bbv-min-fixnum)))
-				 (up (minrv up (bbv-max-fixnum))))))
-		     (extend-ctx ctx reg (list *bint*) #t
-			:value intx)))))))
+		  (let* ((intx (instantiate::bbv-range
+				  (lo (maxrv lo (bbv-min-fixnum)))
+				  (up (minrv up (bbv-max-fixnum)))))
+			 (nctx (extend-ctx ctx reg (list *bint*) #t
+				  :value intx)))
+		     (trace-item "nctx=" (shape nctx))
+		     nctx))))))
    
    (define (fx-ov->fx var ins reg ctx nctx)
       (with-access::rtl_ins ins (dest fun args)
@@ -1314,6 +1338,8 @@
 		      (ctx ctx)
 		      (fun (duplicate::rtl_ifne fun
 			      (then (bbv-block then pctx queue :creator bs)))))))
+	    (trace-item "pctx=" (shape pctx))
+	    (trace-item "nctx=" (shape nctx))
 	    (values s nctx))))
    
    (with-trace 'bbv-ins "rtl_ins-specialize-fxovop"
@@ -1327,6 +1353,8 @@
 		      (intr (rtl-range rhs ctx)))
 		  (with-access::rtl_call fun (var)
 		     (cond
+			((or (not (bbv-range? intl)) (not (bbv-range? intr)))
+			 (default call ifne reg '_))
 			((eq? var *$+fx/ov*)
 			 (let ((range (bbv-range-add intl intr)))
 			    (trace-item "+fx/ov "
@@ -1336,6 +1364,7 @@
 				(let ((nctx (extend-ctx ctx reg
 					       (list *bint*) #t
 					       :value range)))
+				   (trace-item "nctx.2=" (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default call ifne reg (fixnum-range)))))
@@ -1345,7 +1374,7 @@
 				(let ((nctx (extend-ctx ctx reg
 					       (list *bint*) #t
 					       :value range)))
-				   
+				   (trace-item "nctx.3=" (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default call ifne reg (fixnum-range)))))
@@ -1355,7 +1384,7 @@
 				(let ((nctx (extend-ctx ctx reg
 					       (list *bint*) #t
 					       :value range)))
-				   
+				   (trace-item "nctx.4=" (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default call ifne reg (fixnum-range)))))
@@ -1410,82 +1439,89 @@
 					 (ctx ctx))))
 			  (ctx nctx))
 		  nctx)))))
-   
-   (with-access::rtl_ins i (dest fun args)
-      (with-access::rtl_call fun (var)
-	 (let* ((lhs (car args))
-		(rhs (cadr args))
-		(intl (rtl-range lhs ctx))
-		(intr (rtl-range rhs ctx)))
-	    (cond
-	       ((not (and (bbv-range? intl) (bbv-range? intr)))
-		(values (duplicate::rtl_ins/bbv i
-			   (ctx ctx))
-		   ctx))
-	       ((eq? var *-fx*)
-		(let ((range (bbv-range-sub intl intr)))
-		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest (list *long*) #t
-				      :value range)))
+
+   (with-trace 'bbv-ins "rtl_ins-specialize-fxop"
+      (with-access::rtl_ins i (dest fun args)
+	 (with-access::rtl_call fun (var)
+	    (let* ((lhs (car args))
+		   (rhs (cadr args))
+		   (intl (rtl-range lhs ctx))
+		   (intr (rtl-range rhs ctx)))
+	       (cond
+		  ((not (and (bbv-range? intl) (bbv-range? intr)))
+		   (values (duplicate::rtl_ins/bbv i
+			      (ctx ctx))
+		      ctx))
+		  ((eq? var *-fx*)
+		   (let ((range (bbv-range-sub intl intr)))
+		      (if (bbv-range-fixnum? range)
+			  (let ((nctx (extend-ctx ctx dest (list *long*) #t
+					 :value range)))
+			     (trace-item "nctx.1=" (shape nctx))
+			     (values (duplicate::rtl_ins/bbv i
+					(ctx nctx))
+				nctx))
 			  (values (duplicate::rtl_ins/bbv i
-				     (ctx nctx))
-			     nctx))
-		       (values (duplicate::rtl_ins/bbv i
-				  (ctx ctx))
-			  ctx))))
-	       ((eq? var *-fx-safe*)
-		(let ((range (bbv-range-sub intl intr)))
-		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
-				      :value range)))
-			  (values (fx-safe->fx var i ctx nctx)
-			     nctx))
-		       (values (duplicate::rtl_ins/bbv i
-				  (ctx ctx))
-			  ctx))))
-	       ((eq? var *+fx*)
-		(let ((range (bbv-range-add intl intr)))
-		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest (list *long*) #t
-				      :value range)))
-			  (values i nctx))
-		       (values (duplicate::rtl_ins/bbv i
-				  (ctx ctx))
-			  ctx))))
-	       ((eq? var *+fx-safe*)
-		(let ((range (bbv-range-add intl intr)))
-		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
-				      :value range)))
-			  (values (fx-safe->fx var i ctx nctx)
-			     nctx))
-		       (values (duplicate::rtl_ins/bbv i
-				  (ctx ctx))
-			  ctx))))
-	       ((eq? var *2-*)
-		(let ((range (bbv-range-sub intl intr)))
-		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
-				      :value range)))
-			  (values (2->fx var i ctx nctx)
-			     nctx))
-		       (values (duplicate::rtl_ins/bbv i
-				  (ctx ctx))
-			  ctx))))
-	       ((eq? var *2+*)
-		(let ((range (bbv-range-add intl intr)))
-		   (if (bbv-range-fixnum? range)
-		       (let ((nctx (extend-ctx ctx dest (list *bint*) #t
-				      :value range)))
-			  (values (2->fx var i ctx nctx)
-			     nctx))
-		       (values (duplicate::rtl_ins/bbv i
-				  (ctx ctx))
-			  ctx))))
-	       (else
-		(values (duplicate::rtl_ins/bbv i
-			   (ctx ctx))
-		   ctx)))))))
+				     (ctx ctx))
+			     ctx))))
+		  ((eq? var *-fx-safe*)
+		   (let ((range (bbv-range-sub intl intr)))
+		      (if (bbv-range-fixnum? range)
+			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
+					 :value range)))
+			     (trace-item "nctx.2=" (shape nctx))
+			     (values (fx-safe->fx var i ctx nctx)
+				nctx))
+			  (values (duplicate::rtl_ins/bbv i
+				     (ctx ctx))
+			     ctx))))
+		  ((eq? var *+fx*)
+		   (let ((range (bbv-range-add intl intr)))
+		      (if (bbv-range-fixnum? range)
+			  (let ((nctx (extend-ctx ctx dest (list *long*) #t
+					 :value range)))
+			     (trace-item "nctx.3=" (shape nctx))
+			     (values i nctx))
+			  (values (duplicate::rtl_ins/bbv i
+				     (ctx ctx))
+			     ctx))))
+		  ((eq? var *+fx-safe*)
+		   (let ((range (bbv-range-add intl intr)))
+		      (if (bbv-range-fixnum? range)
+			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
+					 :value range)))
+			     (trace-item "nctx.4=" (shape nctx))
+			     (values (fx-safe->fx var i ctx nctx)
+				nctx))
+			  (values (duplicate::rtl_ins/bbv i
+				     (ctx ctx))
+			     ctx))))
+		  ((eq? var *2-*)
+		   (let ((range (bbv-range-sub intl intr)))
+		      (if (bbv-range-fixnum? range)
+			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
+					 :value range)))
+			     (trace-item "nctx.5=" (shape nctx))
+			     (values (2->fx var i ctx nctx)
+				nctx))
+			  (values (duplicate::rtl_ins/bbv i
+				     (ctx ctx))
+			     ctx))))
+		  ((eq? var *2+*)
+		   (let ((range (bbv-range-add intl intr)))
+		      (if (bbv-range-fixnum? range)
+			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
+					 :value range)))
+			     (trace-item "nctx.6=" (shape nctx))
+			     (values (2->fx var i ctx nctx)
+				nctx))
+			  (values (duplicate::rtl_ins/bbv i
+				     (ctx ctx))
+			     ctx))))
+		  (else
+		   (values (duplicate::rtl_ins/bbv i
+			      (ctx ctx))
+		      ctx))))))))
    
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    rtl_ins-specialize ...                                           *} */

@@ -183,13 +183,20 @@
       
    (define (log-entry e)
       (with-access::bbv-ctxentry e (reg types polarity value aliases)
-	 (format "~a:[~( ) ~a ~( )]"
-	    (shape reg)
-	    (if polarity
-		(map shape types)
-		(map (lambda (t) (format "!~a" (shape t))) types))
-	    (shape value)
-	    (map shape aliases))))
+	 (if (pair? aliases)
+	     (format "~a:[~( ) ~a ~( )]"
+		(shape reg)
+		(if polarity
+		    (map shape types)
+		    (map (lambda (t) (format "!~a" (shape t))) types))
+		(shape value)
+		(map shape aliases))
+	     (format "~a:[~( ) ~a]"
+		(shape reg)
+		(if polarity
+		    (map shape types)
+		    (map (lambda (t) (format "!~a" (shape t))) types))
+		(shape value)))))
    
    (define (log-ctx ctx)
       (with-access::bbv-ctx ctx (id entries)
