@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Tue Sep 20 10:30:21 2022 (serrano)                */
+;*    Last change :  Wed Nov 15 08:11:41 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -240,7 +240,9 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'ude-font-lock-face-7)
    (list "\(\\(<[^> \t\n]+>\\)[ \n\t)]"
 	 1
-	 'ude-font-lock-face-12))
+	 'ude-font-lock-face-12)
+   (cons "#;"
+	 'font-lock-comment-face))
   "The Bee font-lock specification."
   :group 'bee)
 

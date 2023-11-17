@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Sun Nov 12 19:43:19 2023 (serrano)                */
+;*    Last change :  Wed Nov 15 08:52:11 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -89,12 +89,13 @@
    (define (range-size r::bbv-range)
       (with-access::bbv-range r (lo up)
 	 (cond
-	    ((or (not (fixnum? lo)) (not (fixnum? up))) 5)
+	    ((and (isa? lo bbv-vlen) (isa? up bbv-vlen)) 4)
+	    ((or (not (fixnum? lo)) (not (fixnum? up))) 6)
 	    ((and (>=fx lo -128) (<=fx up 127)) 1)
 	    ((and (>=fx lo 0) (<=fx up 255)) 1)
 	    ((and (>=fx lo -65536) (<=fx up -65535)) 2)
 	    ((and (>=fx lo 0) (<=fx up 536870912)) 3)
-	    (else 4))))
+	    (else 5))))
    
    (define (entry-size e::bbv-ctxentry)
       (with-access::bbv-ctxentry e (types polarity value)

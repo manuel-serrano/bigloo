@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Sun Nov 12 16:51:50 2023 (serrano)                */
+;*    Last change :  Wed Nov 15 07:10:33 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -61,13 +61,11 @@
 		(let ((bs (bbv-queue-pop! queue)))
 		   (with-access::blockS bs ((bv parent) label)
 		      (with-access::blockV bv ((plabel label) versions)
-			 (trace-item "pop {" plabel "} " label
+			 (trace-item "pop {" plabel "}->" label
 			    " versions=" (map (lambda (b)
 						 (with-access::blockS b (label)
 						    label))
-					    versions))
-			 (with-access::blockS bs (ctx)
-			    (trace-item "ctx=" (shape ctx))))
+					    versions)))
 		      (when (block-need-merge? bv)
 			 (trace-item "need-merge {" (block-label bv) "}...")
 			 (when *bbv-debug*
@@ -87,8 +85,10 @@
 ;*---------------------------------------------------------------------*/
 (define (block-specialize!::blockS bs::blockS queue::bbv-queue)
    (with-trace 'bbv-block
-	 (format "block-specialize! {~a} ~a"
-	    (block-label (blockS-parent bs)) (block-label bs))
+	 (format "block-specialize! {~a}->~a succs: ~a"
+	    (block-label (blockS-parent bs))
+	    (block-label bs)
+	    (map block-label (block-succs (blockS-parent bs))))
       (with-access::blockS bs ((bv parent) first ctx)
 	 (trace-item "ctx=" (shape ctx))
 	 (with-access::blockV bv ((pfirst first))
@@ -167,14 +167,18 @@
 			  (block-preds-update! n (cons bs (block-preds n))))
 		(rtl_switch-labels fun))))))
    
-   (with-trace 'ins-specialize! "ins-specialize!"
+   (with-trace 'bbv-ins "ins-specialize!"
       (let loop ((oins first)
 		 (nins '())
 		 (ctx ctx))
 	 (when (pair? oins)
-	    (trace-item "ins=" (shape (car oins)) " " (length (cdr oins))
+	    (trace-item "{" (block-label (blockS-parent bs))
+	       "}->" (block-label bs)
+	       " ins=" (shape (car oins)) " " (length (cdr oins))
 	       " " (with-access::rtl_ins (car oins) (fun) (typeof fun)))
-	    (trace-item "ctx=" (shape ctx)))
+	    (trace-item "{" (block-label (blockS-parent bs))
+	       "}->" (block-label bs)
+	       " ctx=" (shape ctx)))
 	 (cond
 	    ((null? oins)
 	     (reverse! nins))
@@ -1343,6 +1347,7 @@
 	    (values s nctx))))
    
    (with-trace 'bbv-ins "rtl_ins-specialize-fxovop"
+      (trace-item "i=" (shape i))
       (with-access::rtl_ins i (dest (ifne fun) args)
 	 (let ((call (car args)))
 	    (with-access::rtl_ins (car args) (args fun)
@@ -1370,6 +1375,9 @@
 				(default call ifne reg (fixnum-range)))))
 			((eq? var *$-fx/ov*)
 			 (let ((range (bbv-range-sub intl intr)))
+			    (trace-item "-fx/ov "
+			       (shape intl) " " (shape intr)
+			       " -> " (shape range))
 			    (if (bbv-range-fixnum? range)
 				(let ((nctx (extend-ctx ctx reg
 					       (list *bint*) #t

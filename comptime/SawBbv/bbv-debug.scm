@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Thu Nov  9 12:36:10 2023 (serrano)                */
+;*    Last change :  Wed Nov 15 07:05:22 2023 (serrano)                */
 ;*    Copyright   :  2023 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -130,9 +130,13 @@
       (let* ((id (global-id global)))
 	 (fprint port ";; -*- mode: bee -*-")
 	 (fprint port ";; *** " id ":")
+	 (fprintf port ";; BIGLOOBBVVLENGTH=\"~a\" BIGLOOBBVVERSIONLIMIT=\"~a\" BIGLOOBBVSTRATEGY=\"~a\" ~( )\n"
+	    (or (getenv "BIGLOOBBVVLENGTH") "false")
+	    (or (getenv "BIGLOOBBVVERSIONLIMIT") "4")
+	    (or (getenv "BIGLOOBBVSTRATEGY") "size")
+	    (command-line))
 	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
 	    filename name name name)
-	 (fprintf port ";; ~a\n" (command-line))
 	 (for-each (lambda (b)
 		      (dump b port 0)
 		      (newline port))

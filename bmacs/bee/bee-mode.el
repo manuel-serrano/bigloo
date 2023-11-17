@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bmacs/bee/bee-mode.el                */
+;*    serrano/prgm/project/bigloo/bigloo/bmacs/bee/bee-mode.el         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon Dec  3 16:04:40 2012 (serrano)                */
+;*    Last change :  Wed Nov 15 08:30:10 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee mode declaration.                                        */
 ;*=====================================================================*/
@@ -163,7 +163,37 @@
   (make-local-variable 'comment-indent-function)
   (setq comment-indent-function 'bee-comment-indent)
   (make-local-variable 'parse-sexp-ignore-comments)
-  (setq parse-sexp-ignore-comments t))
+  (setq parse-sexp-ignore-comments t)
+  (setq-local syntax-propertize-function #'bee-syntax-propertize))
+
+;*---------------------------------------------------------------------*/
+;*    bee-syntax-propertize ...                                        */
+;*---------------------------------------------------------------------*/
+(defun bee-syntax-propertize (beg end)
+  (goto-char beg)
+  (bee-syntax-propertize-sexp-comment (point) end)
+  (funcall
+   (syntax-propertize-rules
+    ("\\(#\\);" (1 (prog1 "< cn"
+                     (bee-syntax-propertize-sexp-comment (point) end)))))
+   (point) end))
+
+;*---------------------------------------------------------------------*/
+;*    bee-syntax-propertize-sexp-comment ...                           */
+;*---------------------------------------------------------------------*/
+(defun bee-syntax-propertize-sexp-comment (_ end)
+  (let ((state (syntax-ppss)))
+    (when (eq 2 (nth 7 state))
+      ;; It's a sexp-comment.  Tell parse-partial-sexp where it ends.
+      (condition-case nil
+          (progn
+            (goto-char (+ 2 (nth 8 state)))
+            ;; FIXME: this doesn't handle the case where the sexp
+            ;; itself contains a #; comment.
+            (forward-sexp 1)
+            (put-text-property (1- (point)) (point)
+                               'syntax-table (string-to-syntax "> cn")))
+        (scan-error (goto-char end))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bee-compile ...                                                  */
