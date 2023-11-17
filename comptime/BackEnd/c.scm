@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sun Jun 20 09:24:33 2021 (serrano)                */
-;*    Copyright   :  2003-21 Manuel Serrano                            */
+;*    Last change :  Fri Nov 17 17:21:24 2023 (serrano)                */
+;*    Copyright   :  2003-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -108,6 +108,15 @@
       (cc-compiler result #f)))
 
 ;*---------------------------------------------------------------------*/
+;*    module->id ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (module->id mod)
+   (let ((name (string-upcase (symbol->string! mod))))
+      (if (bigloo-need-mangling? name)
+	  (bigloo-mangle name)
+	  name)))
+
+;*---------------------------------------------------------------------*/
 ;*    c-walk ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (c-walk me::cvm)
@@ -145,43 +154,52 @@
    (fprint *c-port* "#endif")
    
    ;; we emit the generated type for the used classes
-   (for-each-type!
-      (lambda (t) (type-occurrence-set! t 0)))
-   (for-each-global!
-      (lambda (global)
-	 (cond
-	    ((and (eq? (global-module global) *module*)
-		  (>fx (global-occurrence global) 0))
-	     (type-increment-global! global))
-	    ((require-prototype? global)
-	     (type-increment-global! global)
-	     (type-occurrence-increment! (global-type global))
-	     (when (sfun? (global-value global))
-		(for-each (lambda (a)
-			     (cond
-				((type? a)
-				 (type-occurrence-increment! a))
-				((local? a)
-				 (type-occurrence-increment! (local-type a)))))
-		   (sfun-args (global-value global))))))))
-   (let ((fixpoint #f))
-      (let loop ()
-	 (unless fixpoint
-	    (set! fixpoint #t)
-	    (for-each (lambda (t::tclass)
-			 (when (>fx (type-occurrence t) 0)
-			    (with-access::tclass t (slots)
-			       (for-each (lambda (t::slot)
-					    (with-access::slot t (type)
-					       (when (=fx (type-occurrence type) 0)
-						  (type-occurrence-increment! type)
-						  (set! fixpoint #f))))
-				  slots))))
-	       (get-class-list)))))
-   (let ((classes (filter (lambda (t)
-			     (>fx (type-occurrence t) 0))
-		     (get-class-list))))
-      (emit-class-types classes *c-port*))
+   (let ((name (module->id *module*)))
+      (fprintf *c-port* "#ifndef BGL_MODULE_TYPE_DEFINITIONS\n" name)
+      (fprintf *c-port* "#define BGL_MODULE_TYPE_DEFINITIONS\n" name)
+      (fprintf *c-port* "#ifndef BGL_~a_TYPE_DEFINITIONS\n" name)
+      (fprintf *c-port* "#define BGL_~a_TYPE_DEFINITIONS\n" name)
+      (for-each-type!
+	 (lambda (t) (type-occurrence-set! t 0)))
+      (for-each-global!
+	 (lambda (global)
+	    (cond
+	       ((and (eq? (global-module global) *module*)
+		     (>fx (global-occurrence global) 0))
+		(type-increment-global! global))
+	       ((require-prototype? global)
+		(type-increment-global! global)
+		(type-occurrence-increment! (global-type global))
+		(when (sfun? (global-value global))
+		   (for-each (lambda (a)
+				(cond
+				   ((type? a)
+				    (type-occurrence-increment! a))
+				   ((local? a)
+				    (type-occurrence-increment! (local-type a)))))
+		      (sfun-args (global-value global))))))))
+      (let ((fixpoint #f))
+	 (let loop ()
+	    (unless fixpoint
+	       (set! fixpoint #t)
+	       (for-each (lambda (t::tclass)
+			    (when (>fx (type-occurrence t) 0)
+			       (with-access::tclass t (slots)
+				  (for-each (lambda (t::slot)
+					       (with-access::slot t (type)
+						  (when (=fx (type-occurrence type) 0)
+						     (type-occurrence-increment! type)
+						     (set! fixpoint #f))))
+				     slots))))
+		  (get-class-list)))))
+      (let ((classes (filter (lambda (t)
+				(>fx (type-occurrence t) 0))
+			(get-class-list))))
+	 (emit-class-types classes *c-port*))
+      
+      (fprintf *c-port* "#endif // BGL_~a_TYPE_DEFINITIONS\n" name)
+      (fprintf *c-port* "#endif // BGL_MODULE_TYPE_DEFINITIONS\n" name)
+      (newline *c-port*))
    
    ;; we declare prototypes, first, we print the prototype of variables
    (emit-prototypes)

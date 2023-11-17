@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Fri Nov 17 12:02:02 2023 (serrano)                */
+;*    Last change :  Fri Nov 17 17:20:57 2023 (serrano)                */
 ;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `C generation' pass.                                         */
@@ -38,9 +38,9 @@
 				(eq? (global-module (tclass-holder c))
 				   *module*)))
 		   (get-class-list))))
-      (let ((name (source->id *module*)))
+      (let ((name (module->id *module*)))
 	 (newline *c-port*)
-	 (fprintf *c-port* "#if !defined(~a_H)\n" name)
+	 (fprintf *c-port* "#ifndef ~a_H\n" name)
 	 (fprintf *c-port* "#define ~a_H\n" name)
 	 (emit-class-types clist *c-port*)
 	 (newline *c-port*)
@@ -48,9 +48,9 @@
    (stop-emission!))
 
 ;*---------------------------------------------------------------------*/
-;*    source->id ...                                                   */
+;*    module->id ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (source->id mod)
+(define (module->id mod)
    (let ((name (string-upcase (symbol->string! mod))))
       (if (bigloo-need-mangling? name)
 	  (bigloo-mangle name)
