@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Fri Nov 17 17:20:57 2023 (serrano)                */
+;*    Last change :  Fri Nov 17 19:24:00 2023 (serrano)                */
 ;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `C generation' pass.                                         */
@@ -40,11 +40,11 @@
 		   (get-class-list))))
       (let ((name (module->id *module*)))
 	 (newline *c-port*)
-	 (fprintf *c-port* "#ifndef ~a_H\n" name)
-	 (fprintf *c-port* "#define ~a_H\n" name)
+	 (fprintf *c-port* "#ifndef __BGL_~a_H\n" name)
+	 (fprintf *c-port* "#define __BGL_~a_H\n" name)
 	 (emit-class-types clist *c-port*)
 	 (newline *c-port*)
-	 (fprintf *c-port* "#endif // ~a_H\n" name)))
+	 (fprintf *c-port* "#endif // __BGL_~a_H\n" name)))
    (stop-emission!))
 
 ;*---------------------------------------------------------------------*/

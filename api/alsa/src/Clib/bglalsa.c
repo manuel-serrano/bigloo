@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Mon Mar  4 08:22:36 2019 (serrano)                */
-/*    Copyright   :  2011-19 Manuel Serrano                            */
+/*    Last change :  Fri Nov 17 19:22:13 2023 (serrano)                */
+/*    Copyright   :  2011-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
 /*=====================================================================*/
@@ -12,6 +12,13 @@
 #include <bigloo.h>
 #include "bglalsa.h"
 #include "bglpcm.h"
+
+#if defined(__XXXALSA_CONTROL_H)
+int yyy = 3;
+#else
+int yyy = 3333;
+#endif
+
 #include "bglctl.h"
 #include "bglmixer.h"
 #include "bglrawmidi.h"
