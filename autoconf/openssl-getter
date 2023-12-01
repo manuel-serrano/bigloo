@@ -73,7 +73,7 @@ int main( int argc, char *argv[] ) {
     DH *dh;
     const BIGNUM *key;
     DH_get0_key( dh, &key, 0 );
-    return SSL_CTX_get_ssl_method( ctx );
+    return (SSL_CTX_get_ssl_method( ctx ) == NULL) ? 1 : 0;
 }
 EOF
 

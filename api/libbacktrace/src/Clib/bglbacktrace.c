@@ -191,7 +191,6 @@ bgl_backtrace_foreach(void *proc) {
    if (env) {
       struct backtrace_state *bt_state = libbacktrace_get_state(env);
       backtrace_full(bt_state, 0, backtrace_foreach_cb, cbe, proc);
-      return BUNSPEC;
    }
 }
 
