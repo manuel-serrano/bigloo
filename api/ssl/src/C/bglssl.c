@@ -1743,7 +1743,7 @@ bgl_ssl_connection_clear_pending( ssl_connection ssl ) {
 /*    bgl_get_session_callback ...                                     */
 /*---------------------------------------------------------------------*/
 static SSL_SESSION *
-bgl_get_session_callback( SSL *ssl, unsigned char *key, int len, int *copy ) {
+bgl_get_session_callback( SSL *ssl, const unsigned char *key, int len, int *copy ) {
    ssl_connection c = (ssl_connection)(SSL_get_app_data( ssl ));
    SSL_SESSION *sess = CCON( c )->BgL_z42nextzd2sessionz90;
    
@@ -2308,7 +2308,7 @@ bgl_ssl_connection_get_peer_certificate( ssl_connection ssl ) {
       }
 
       STACK_OF(ASN1_OBJECT) *eku =
-	 (ASN1_OBJECT *)X509_get_ext_d2i( peer_cert, NID_ext_key_usage, NULL, NULL );
+	 (STACK_OF(ASN1_OBJECT) *)X509_get_ext_d2i( peer_cert, NID_ext_key_usage, NULL, NULL );
       if( eku != NULL ) {
 	 char buf[ 256 ];
 	 int len = sk_ASN1_OBJECT_num( eku );
