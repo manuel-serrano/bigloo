@@ -90,6 +90,12 @@ INCLUDES	= $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/root_certs.h \
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
+ifeq ($(JAVA_VERSION), 20)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
+ifeq ($(JAVA_VERSION), 19)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+else
 ifeq ($(JAVA_VERSION), 18)
   JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
 else
@@ -131,6 +137,8 @@ ifeq ($(JAVA_VERSION), 1.6)
 else
 ifeq ($(JAVA_VERSION), 1.5)
   JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+endif
+endif
 endif
 endif
 endif
