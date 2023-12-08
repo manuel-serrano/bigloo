@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Dec  8 08:45:35 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 08:59:27 2023 (serrano)                */
 /*    Copyright   :  2004-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -184,10 +184,10 @@ bgl_create_condvar(obj_t name) {
 /*---------------------------------------------------------------------*/
 static obj_t
 bgl_condvar_init_default(obj_t cv) {
-   BGL_CONDVAR(cv).syswait = &bgl_act2_default;
-   BGL_CONDVAR(cv).systimedwait = &bgl_act3long_default;
-   BGL_CONDVAR(cv).syssignal = &bgl_act_default;
-   BGL_CONDVAR(cv).sysbroadcast = &bgl_act_default;
+   BGL_CONDVAR(cv).syswait = (int (*)(obj_t, obj_t))&bgl_act2_default;
+   BGL_CONDVAR(cv).systimedwait = (int (*)(obj_t, obj_t, long))&bgl_act3long_default;
+   BGL_CONDVAR(cv).syssignal = (int (*)(obj_t))&bgl_act_default;
+   BGL_CONDVAR(cv).sysbroadcast = (int (*)(obj_t))&bgl_act_default;
 
    return cv;
 }

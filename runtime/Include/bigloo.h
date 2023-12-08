@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  8 07:52:04 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 08:52:54 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -885,7 +885,7 @@ union scmobj {
       /* native matching routines */
       union scmobj *(*match)();
       long (*match_n)();
-      union scmobj *(*free)();
+      union scmobj *(*free)(union scmobj *);
 #  if (BGL_REGEXP_TYPE == BGL_REGEXP_pcre)
       /* pcre regular expression */
       void *study;
@@ -956,13 +956,13 @@ union scmobj {
       /* a name (mainly for debug) */
       union scmobj *name;
       /* OS wait primitive */
-      int (*syswait)();
+      int (*syswait)(union scmobj *, union scmobj *);
       /* OS timed wait primitive */
-      int (*systimedwait)();
+      int (*systimedwait)(union scmobj *, union scmobj *, long);
       /* OS signal primitive */
-      int (*syssignal)();
+      int (*syssignal)(union scmobj *);
       /* OS broadcast primitive */
-      int (*sysbroadcast)();
+      int (*sysbroadcast)(union scmobj *);
       /* actual OS condition variable */
       void *condvar;
    } condvar;

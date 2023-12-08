@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Sat Apr 16 08:29:23 2022 (serrano)                */
-/*    Copyright   :  2021-22 Manuel Serrano                            */
+/*    Last change :  Fri Dec  8 08:52:23 2023 (serrano)                */
+/*    Copyright   :  2021-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
 /*=====================================================================*/
@@ -304,7 +304,7 @@ bgl_charfree(obj_t re) {
 /*    bgl_pcre2_regcomp_finalize ...                                   */
 /*---------------------------------------------------------------------*/
 static void
-bgl_pcre2_regcomp_finalize(obj_t re, obj_t _) {
+bgl_pcre2_regcomp_finalize(void *re, void *_) {
    BGL_REGEXP(BREF(re)).free(BREF(re));
 }
 
