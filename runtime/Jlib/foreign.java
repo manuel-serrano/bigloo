@@ -6339,7 +6339,12 @@ public final class foreign
       {
 	 return BFALSE;
       }
-   
+    
+   public static boolean INPUT_MMAP_PORTP(Object o)
+      {
+	 return false;
+      }
+
    public static Object bgl_open_input_procedure(procedure p, byte[] b)
       {
 	 return new input_procedure_port( p, b );
