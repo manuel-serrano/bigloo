@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Tue Jul 11 17:00:50 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 09:47:51 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -330,7 +330,7 @@ call_cc(obj_t proc) {
 			     c_constant_string_to_string("illegal arity"),
 			     BINT(PROCEDURE_ARITY(proc)));
       } else {
-	 obj_t val = PROCEDURE_ENTRY(proc)(proc, continuation, BEOA);
+	 obj_t val = BGL_PROCEDURE_CALL1(proc, continuation);
 
 	 POP_ENV_EXIT(env);
 	 return val;

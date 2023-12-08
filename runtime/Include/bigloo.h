@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  8 08:52:54 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 09:35:24 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -642,9 +642,9 @@ union scmobj {
       /* RGC fill barrier */
       long fillbarrier;
       /* OS read primitive */
-      long (*sysread)();
+      long (*sysread)(union scmobj *, char *, long);
       /* OS seek primitive */
-      void (*sysseek)();
+      void (*sysseek)(union scmobj *, long);
       /* optional use seek function */
       union scmobj *userseek;
       /* EOF reached */

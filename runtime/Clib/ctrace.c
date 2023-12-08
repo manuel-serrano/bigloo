@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Tue Jul 11 17:09:26 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 09:48:32 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Execution traces (mainly for error reporting)                    */
 /*=====================================================================*/
@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------*/
 /*    Stack registrations                                              */
 /*---------------------------------------------------------------------*/
-static void default_init_trace();
+static void default_init_trace(obj_t);
 static obj_t default_get_trace_stack(int);
 static void default_walk_trace_stack(obj_t);
 static obj_t no_get_trace_stack(int);

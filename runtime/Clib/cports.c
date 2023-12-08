@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Oct 11 14:05:41 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 09:36:57 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -132,7 +132,7 @@
 /*---------------------------------------------------------------------*/
 struct bgl_input_timeout {
    struct timeval timeout;
-   long (*sysread)();
+   long (*sysread)(obj_t, char *, long);
    int (*sysclose)(obj_t);
 };
    
@@ -2640,7 +2640,7 @@ force_unlock_output_mutex_proc(obj_t env) {
 /*    On entrance, op.mutex is already locked.                         */
 /*---------------------------------------------------------------------*/
 static long
-copyfile(obj_t op, void *ip, long sz, long (*sysread)()) {
+copyfile(obj_t op, void *ip, long sz, long (*sysread)(obj_t, char *, long)) {
    long rsz = 0, o;
    obj_t exitd_top = BGL_EXITD_TOP_AS_OBJ();
    obj_t proc = MAKE_FX_PROCEDURE(force_unlock_output_mutex_proc, 0, 1);
