@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Fri Dec  8 17:23:10 2023 (serrano)                */
+;*    Last change :  Fri Dec  8 17:43:06 2023 (serrano)                */
 ;*    Copyright   :  2011-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
@@ -214,8 +214,8 @@
 	 "avahi_entry_group_reset")
       (macro $avahi-entry-group-add-service-subtype::int
 	 (::$avahi-entry-group ::$avahi-if-index ::$avahi-protocol
-	    ::$avahi-publish-flags ::string ::string ::string)
-	 "BGL_AVAHI_ENTRY_GROUP_ADD_SERVICE_SUBTYPE")
+	    ::$avahi-publish-flags ::string ::string ::string ::string)
+	 "avahi_entry_group_add_service_subtype")
       (macro $avahi-entry-group-add-service-strlst::int
 	 (::$avahi-entry-group ::$avahi-if-index ::$avahi-protocol
 	    ::$avahi-publish-flags ::string ::string ::string ::string ::int
@@ -223,9 +223,8 @@
 	 "avahi_entry_group_add_service_strlst")
       (macro $avahi-entry-group-add-service::int
 	 (::$avahi-entry-group ::$avahi-if-index ::$avahi-protocol
-	    ::$avahi-publish-flags ::string ::string ::string ::string ::int
-	    ::string)
-	 "avahi_entry_group_add_service")
+	    ::$avahi-publish-flags ::string ::string ::string ::string ::int)
+	 "BGL_AVAHI_ENTRY_GROUP_ADD_SERVICE")
 
       (type $avahi-entry-group-state long "AvahiEntryGroupState")
       (macro $avahi-entry-group-state-uncommited::$avahi-entry-group-state
