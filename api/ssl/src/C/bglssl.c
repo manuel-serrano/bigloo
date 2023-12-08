@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri Dec  8 12:02:49 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 13:56:53 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -618,14 +618,14 @@ socket_enable_ssl(obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    PORT(ip).userdata = drag;
    PORT(ip).chook = ssl_input_close_hook;
    PORT(ip).sysclose = 0L;
-   INPUT_PORT(ip).sysread = &sslread;
+   INPUT_PORT(ip).sysread = (long (*)(void *, char *, long))&sslread;
    
    PORT(op).userdata = (void *)(long)PORT_FD(op);
    PORT(op).stream.channel = (obj_t)ssl;
    OUTPUT_PORT(op).stream_type = BGL_STREAM_TYPE_CHANNEL;
    PORT(op).sysclose = 0L;
    PORT(op).chook = ssl_output_close_hook;
-   OUTPUT_PORT(op).syswrite = &sslwrite;
+   OUTPUT_PORT(op).syswrite = (ssize_t (*)(void *, void *, size_t))&sslwrite;
    OUTPUT_PORT(op).sysflush = 0L;
 
    SOCKET(s).userdata = drag;
