@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  8 18:47:44 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 18:56:45 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -883,7 +883,7 @@ union scmobj {
       /* the native regular expression */
       void *preg;
       /* native matching routines */
-      union scmobj *(*match)(union scmobj *, char *, bool_t, int, int);
+      union scmobj *(*match)(union scmobj *, char *, bool_t, int, int, int);
       long (*match_n)(union scmobj *, char *, obj_t, int, int, int);
       union scmobj *(*free)(union scmobj *);
 #  if (BGL_REGEXP_TYPE == BGL_REGEXP_pcre)

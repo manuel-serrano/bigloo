@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
-/*    Last change :  Sat Apr 24 16:31:28 2021 (serrano)                */
-/*    Copyright   :  2019-21 Manuel Serrano                            */
+/*    Last change :  Fri Dec  8 18:58:31 2023 (serrano)                */
+/*    Copyright   :  2019-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
 /*=====================================================================*/
@@ -208,11 +208,11 @@ char_compile(char *string, int options) {
 /*    bgl_charmatch ...                                                */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_charmatch(obj_t re, char *string, bool_t stringp, int beg, int len) {
+bgl_charmatch(obj_t re, char *string, bool_t stringp, int beg, int len, int offset) {
    char c = BGL_REGEXP_CHAR(re);
 
    while (beg < len) {
-      if (string[ beg++ ] == c) {
+      if (string[ ofset + beg++ ] == c) {
 	 obj_t p = stringp ?
 	    make_string(1, c) : MAKE_PAIR(BINT(beg - 1), BINT(beg));
 
@@ -228,10 +228,10 @@ bgl_charmatch(obj_t re, char *string, bool_t stringp, int beg, int len) {
 /*    bgl_charmatch_anchored ...                                       */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_charmatch_anchored(obj_t re, char *string, bool_t stringp, int beg, int len) {
+bgl_charmatch_anchored(obj_t re, char *string, bool_t stringp, int beg, int len, int offset) {
    char c = BGL_REGEXP_CHAR(re);
 
-   if (string[ beg ] == c) {
+   if (string[ offset + beg ] == c) {
       obj_t p = stringp ?
 	 make_string(1, c) : MAKE_PAIR(BINT(beg), BINT(beg+1));
 
