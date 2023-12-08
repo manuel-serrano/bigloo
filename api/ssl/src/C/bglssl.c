@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri Dec  8 14:18:04 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 19:21:05 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -3037,7 +3037,7 @@ bgl_ssl_sign_sign(ssl_sign sign, obj_t key_pem, long offset, long kplen) {
       EVP_PKEY_free(pkey);
       BIO_free(bp);
 
-      return string_to_bstring_len(md_value, md_len);
+      return string_to_bstring_len((char *)md_value, md_len);
    }
 }
 
@@ -3115,7 +3115,7 @@ bgl_ssl_verify_final(ssl_verify verify,
       BIO *bp = BIO_new(BIO_s_mem());
       X509 *x509 = NULL;
       int r = 0;
-      char *key_pem = &(STRING_REF(kpem, koffset));
+      char *key_pem = (char *)&(STRING_REF(kpem, koffset));
       char *sig = &(STRING_REF(spem, soffset));
 
       if (!bp) {
@@ -3169,7 +3169,7 @@ bgl_ssl_verify_final(ssl_verify verify,
 	 }
       }
 
-      r = EVP_VerifyFinal(CVERIFY(verify)->BgL_z42mdzd2ctxz90, (char *)sig, slen, pkey);
+      r = EVP_VerifyFinal(CVERIFY(verify)->BgL_z42mdzd2ctxz90, (const unsigned char *)sig, slen, pkey);
 
       if (!r) {
 	 ERR_clear_error();

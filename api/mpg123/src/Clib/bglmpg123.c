@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Fri Dec  8 17:09:49 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 19:28:32 2023 (serrano)                */
 /*    Copyright   :  2011-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
@@ -64,7 +64,7 @@ bgl_mpg123_decode(obj_t o, char *inbuf, long offset, long insz, char *outbuf, lo
    int ret;
    mpg123_handle *m = BGL_HANDLE_BUILTIN(o);
 
-   ret = mpg123_decode(m, insz ? inbuf + offset : 0L, insz, outbuf, outsz, &size);
+   ret = mpg123_decode(m, insz ? (const unsigned char *)(inbuf + offset) : 0L, insz, outbuf, outsz, &size);
 
    BGL_HANDLE_SIZE(o) = size;
    
