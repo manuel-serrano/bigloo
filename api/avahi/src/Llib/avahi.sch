@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Fri Dec  8 17:16:17 2023 (serrano)                */
+;*    Last change :  Fri Dec  8 17:23:10 2023 (serrano)                */
 ;*    Copyright   :  2011-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
@@ -214,8 +214,8 @@
 	 "avahi_entry_group_reset")
       (macro $avahi-entry-group-add-service-subtype::int
 	 (::$avahi-entry-group ::$avahi-if-index ::$avahi-protocol
-	    ::$avahi-publish-flags ::string ::string ::string ::string)
-	 "avahi_entry_group_add_service_subtype")
+	    ::$avahi-publish-flags ::string ::string ::string)
+	 "BGL_AVAHI_ENTRY_GROUP_ADD_SERVICE_SUBTYPE")
       (macro $avahi-entry-group-add-service-strlst::int
 	 (::$avahi-entry-group ::$avahi-if-index ::$avahi-protocol
 	    ::$avahi-publish-flags ::string ::string ::string ::string ::int
@@ -372,6 +372,6 @@
 	 "avahi_string_list_free")
       )
 
-   (pragma $string-null side-effect-free nesting))
+   (pragma ($string-null side-effect-free nesting)))
     
 

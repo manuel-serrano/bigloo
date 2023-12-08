@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Apr 27 09:48:14 2022 (serrano)                */
-;*    Copyright   :  2011-22 Manuel Serrano                            */
+;*    Last change :  Fri Dec  8 17:31:00 2023 (serrano)                */
+;*    Copyright   :  2011-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
 ;*=====================================================================*/
@@ -626,8 +626,7 @@
 		type
 		(or domain ($string-null))
 		(or host ($string-null))
-		port
-		($string-null)))))))
+		port))))))
 	   
 ;*---------------------------------------------------------------------*/
 ;*    avahi-entry-group-state->symbol ...                              */
