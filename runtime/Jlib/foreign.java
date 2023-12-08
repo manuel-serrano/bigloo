@@ -6720,8 +6720,10 @@ public final class foreign
       } catch( Exception e ) {
 	 String msg = e.getMessage();
 
-	 final stackwriter sw = new stackwriter( System.out, true );
-	 e.printStackTrace( sw );
+         // Commenting out the following stack trace printing to reduce noisy and confusing
+         // ouput. If debugging problems, uncomment.
+	 // final stackwriter sw = new stackwriter( System.out, true );
+	 // e.printStackTrace( sw );
 	 
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    (e instanceof java.net.SocketTimeoutException ?
