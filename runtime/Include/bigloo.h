@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  8 09:35:24 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 11:18:11 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -600,7 +600,7 @@ union scmobj {
       /* a user date (see SSL sockets) */
       void *userdata;
       /* OS close primitive */
-      int (*sysclose)();
+      int (*sysclose)(void *);
    } port;
 
    /* output ports */
@@ -618,11 +618,11 @@ union scmobj {
       /* buffering mode */
       int bufmode;
       /* OS write primitive */
-      ssize_t (*syswrite)();
+      ssize_t (*syswrite)(union scmobj *, void *, size_t);
       /* OS flush primitive */
-      union scmobj *(*sysflush)();
+      union scmobj *(*sysflush)(union scmobj *);
       /* OS seek primitive */
-      long (*sysseek)();
+      long (*sysseek)(union scmobj *, long);
       /* flush use hook */
       union scmobj *fhook;
       /* flush buffer */
@@ -842,7 +842,7 @@ union scmobj {
       /* close hook */
       union scmobj *chook;
       /* the server accept procedure */
-      union scmobj *(*accept)();
+      union scmobj *(*accept)(union scmobj *, union scmobj *);
       /* user data */
       void *userdata; 
    } socket;

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Sep 13 23:31:46 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 11:32:30 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1406,7 +1406,7 @@ set_socket_io_ports(int s, obj_t sock, const char *who, obj_t inb, obj_t outb) {
    SOCKET(sock).input = bgl_make_input_port(name, fs, KINDOF_SOCKET, inb);
    INPUT_PORT(SOCKET(sock).input).sysread = &bgl_read;
    INPUT_PORT(SOCKET(sock).input).sysseek = &bgl_input_socket_seek;
-   PORT(SOCKET(sock).input).sysclose = &bgl_sclose_rd;
+   PORT(SOCKET(sock).input).sysclose = (int (*)(void *))&bgl_sclose_rd;
 
    /* Create output port */
    SOCKET(sock).output = bgl_make_output_port(sock,
@@ -2068,8 +2068,8 @@ bgl_socket_accept(obj_t serv, bool_t errp, obj_t inb, obj_t outb) {
    obj_t hname;
 
    while(BAD_SOCKET(new_s = (int)accept(SOCKET(serv).fd,
-					   (struct sockaddr *)&sin,
-					   (socklen_t *)&len))) {
+					(struct sockaddr *)&sin,
+					(socklen_t *)&len))) {
       if (errno == EINTR)
 	 continue;
 
@@ -2990,7 +2990,7 @@ bgl_make_datagram_server_socket(int portnum, obj_t family) {
 			   make_string_sans_fill(0));
    INPUT_PORT(sock->datagram_socket.port).sysread = bgl_read;
    INPUT_PORT(sock->datagram_socket.port).sysseek = bgl_input_socket_seek;
-   PORT(sock->datagram_socket.port).sysclose = bgl_sclose_rd;
+   PORT(sock->datagram_socket.port).sysclose = (int (*)(void *))&bgl_sclose_rd;
 
    return BREF(sock);
 #endif
@@ -3041,7 +3041,7 @@ bgl_make_datagram_unbound_socket(obj_t family) {
 			   make_string_sans_fill(0));
    INPUT_PORT(sock->datagram_socket.port).sysread = bgl_read;
    INPUT_PORT(sock->datagram_socket.port).sysseek = bgl_input_socket_seek;
-   PORT(sock->datagram_socket.port).sysclose = bgl_sclose_rd;
+   PORT(sock->datagram_socket.port).sysclose = (int (*)(void *))&bgl_sclose_rd;
 
    return BREF(sock);
 }

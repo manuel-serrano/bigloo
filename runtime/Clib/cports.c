@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec  8 09:36:57 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 11:19:56 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -133,13 +133,13 @@
 struct bgl_input_timeout {
    struct timeval timeout;
    long (*sysread)(obj_t, char *, long);
-   int (*sysclose)(obj_t);
+   int (*sysclose)(void *);
 };
    
 struct bgl_output_timeout {
    struct timeval timeout;
-   ssize_t (*syswrite)();
-   int (*sysclose)(obj_t);
+   ssize_t (*syswrite)(obj_t, void *, size_t);
+   int (*sysclose)(void *);
 };
    
 /*---------------------------------------------------------------------*/
@@ -865,7 +865,7 @@ output_flush(obj_t port, unsigned char *str, size_t slen, int is_read_flush, boo
 
 	 /* this is an exensible buffer, that we increase iff it is full */
 	 if ((slen > 0) || (cnt == 0)) {
-	    ssize_t (*syswrite)(void *, void *, size_t) =
+	    ssize_t (*syswrite)(obj_t, void *, size_t) =
 	       OUTPUT_PORT(port).syswrite;
 	    long n = syswrite(port, str, slen);
 
@@ -993,7 +993,7 @@ bgl_make_output_port(obj_t name,
    new_output_port->port.chook = BUNSPEC;
    new_output_port->port.userdata = BUNSPEC;
    new_output_port->port.timeout = 0L;
-   new_output_port->port.sysclose = close;
+   new_output_port->port.sysclose = (int (*)(void *))close;
    new_output_port->output_port.sysseek = seek;
    new_output_port->output_port.syswrite = write;
    new_output_port->output_port.sysflush = 0L;
@@ -1230,7 +1230,7 @@ bgl_open_output_procedure(obj_t proc, obj_t flush, obj_t close, obj_t buf) {
    PORT_CHANNEL(port) = port;
    OUTPUT_PORT(port).bufmode = BGL_IONB;
    OUTPUT_PORT(port).sysflush = procflush;
-   PORT(port).sysclose = procclose;
+   PORT(port).sysclose = (int (*)(void *))procclose;
    PORT(port).userdata = udata;
    VECTOR_SET(udata, 0, proc);
    VECTOR_SET(udata, 1, buf);
@@ -1313,13 +1313,13 @@ bgl_close_output_port(obj_t port) {
       if (PORT(port).sysclose) {
 	 switch(OUTPUT_PORT(port).stream_type) {
 	    case BGL_STREAM_TYPE_FD: 
-	       PORT(port).sysclose(PORT_FD(port));
+	       PORT(port).sysclose((void *)((long)PORT_FD(port)));
 	       break;
 	    case BGL_STREAM_TYPE_FILE: 
-	       PORT(port).sysclose(PORT_FILE(port));
+	       PORT(port).sysclose((void *)PORT_FILE(port));
 	       break;
 	    case BGL_STREAM_TYPE_CHANNEL: 
-	       PORT(port).sysclose(PORT_CHANNEL(port));
+	       PORT(port).sysclose((void *)PORT_CHANNEL(port));
 	       break;
 	 }
       }
@@ -1398,7 +1398,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 
 #if (HAVE_PIPE)
       case (long)KINDOF_PIPE:
-	 new_input_port->port.sysclose = pclose;
+	 new_input_port->port.sysclose = (int (*)(void *))pclose;
 	 new_input_port->input_port.sysread = bgl_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
@@ -1406,7 +1406,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 	 break;
 
       case (long)KINDOF_PROCPIPE:
-	 new_input_port->port.sysclose = fclose;
+	 new_input_port->port.sysclose = (int (*)(void *))fclose;
 	 new_input_port->input_port.sysread = bgl_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
@@ -1422,7 +1422,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 	 break;
 
       case (long)KINDOF_FILE:
-	 new_input_port->port.sysclose = fclose;
+	 new_input_port->port.sysclose = (int (*)(void *))fclose;
 	 new_input_port->input_port.sysread = bgl_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
@@ -1908,7 +1908,7 @@ bgl_close_input_port(obj_t port) {
 	 obj_t chook = PORT_CHOOK(port);
 
 	 if (PORT(port).sysclose) {
-	    PORT(port).sysclose(PORT_FILE(port));
+	    PORT(port).sysclose((void *)PORT_FILE(port));
 	 }
 	 
 	 INPUT_PORT(port).eof = 1;
