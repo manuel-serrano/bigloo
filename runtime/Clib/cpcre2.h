@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Apr  7 13:48:10 2021                          */
-/*    Last change :  Fri Dec  8 18:58:52 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 19:06:27 2023 (serrano)                */
 /*    Copyright   :  2021-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE2 binding                                             */
@@ -211,7 +211,7 @@ char_compile(char *string, int options) {
 /*    bgl_charmatch ...                                                */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_charmatch(obj_t re, char *string, bool_t stringp, int beg, int len, offset) {
+bgl_charmatch(obj_t re, char *string, bool_t stringp, int beg, int len, int offset) {
    char c = BGL_REGEXP_CHAR(re);
 
    while (beg < len) {
