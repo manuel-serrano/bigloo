@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Jul 12 13:25:51 2023 (serrano)                */
+;*    Last change :  Fri Dec  8 18:16:54 2023 (serrano)                */
 ;*    Copyright   :  1996-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -344,7 +344,10 @@
 	  (begin
 	     (display "((" *c-port*)
 	     (display (type-name (cfuncall-type cop)) *c-port*)
-	     (display "(*)())" *c-port*)
+	     (display (format "(*)(~(, )))"
+			 (map (lambda (a) (type-name (cop-type a)))
+			    (reverse! (cdr (reverse actuals)))))
+		*c-port*)
 	     (display op *c-port*)
 	     (display "(" *c-port*)
 	     (emit-cop (cfuncall-fun cop))
