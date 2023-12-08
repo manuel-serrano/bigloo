@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Jul 11 19:37:23 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 17:12:15 2023 (serrano)                */
 /*    Copyright   :  2011-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -33,7 +33,7 @@ extern obj_t bgl_avahi_entry_group_state_to_symbol(AvahiEntryGroupState);
 extern obj_t bgl_avahi_protocol_to_symbol(AvahiProtocol);
 extern obj_t bgl_avahi_browser_event_to_symbol(AvahiBrowserEvent);
 extern obj_t bgl_avahi_resolver_event_to_symbol(AvahiResolverEvent);
-extern AvahiProtocol bgl_avahi_symbol_to_protocol();
+extern AvahiProtocol bgl_avahi_symbol_to_protocol(obj_t);
 extern obj_t bgl_avahi_lock();
 extern obj_t bgl_avahi_unlock();
 extern obj_t bgl_avahi_signal();
@@ -470,7 +470,7 @@ bgl_avahi_string_list_to_list(AvahiStringList *list) {
    AvahiStringList *l = list;
    
    while (l) {
-      obj_t s = string_to_bstring(avahi_string_list_get_text(l));
+      obj_t s = string_to_bstring((char *)avahi_string_list_get_text(l));
       SET_CDR(tl, MAKE_PAIR(s, BNIL));
       tl = CDR(tl);
       l = avahi_string_list_get_next(l);

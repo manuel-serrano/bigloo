@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue May  9 09:59:24 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 14:28:33 2023 (serrano)                */
 /*    Copyright   :  2014-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -249,27 +249,27 @@ assert_stream_data(obj_t obj) {
       uv_stream_data_t *data = (uv_stream_data_t *)STREAM_DATA(obj);
       
       if (data->index < 0) {
-	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t index: %p %d\n", data, data->index);
+	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t index: %p %ld\n", data, data->index);
 	 ABORT();
       }
 
       if (data->proc && !PROCEDUREP(data->proc)) {
-	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t procedure: data=%p (idx=%d:%d) proc=%p\n", data, data->index, data->state, data->proc);
+	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t procedure: data=%p (idx=%ld:%d) proc=%p\n", data, data->index, data->state, data->proc);
 	 ABORT();
       }
 	 
       if (data->alloc && !PROCEDUREP(data->alloc)) {
-	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t alloc: %p %d\n", data, data->alloc);
+	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t alloc: %p %ld\n", data, data->alloc);
 	 ABORT();
       }
 	 
       if (data != STREAM_DATA(data->obj)) {
-	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t data->obj: idx=%d data=%p data->obj=%p\n", data->index, data, data->obj);
+	 fprintf(stderr, "assert_stream_data: bad uv_stream_data_t data->obj: idx=%ld data=%p data->obj=%p\n", data->index, data, data->obj);
 	 ABORT();
       }
       
       if (((uv_stream_data_t *)STREAM_DATA(data->obj))->obj != data->obj) {
-	 fprintf(stderr, "assert_stream_dataL bad uv_stream_data_t obj->data: idx=%d data=%p data->obj=%p\n", data->index, data, data->obj);
+	 fprintf(stderr, "assert_stream_dataL bad uv_stream_data_t obj->data: idx=%ld data=%p data->obj=%p\n", data->index, data, data->obj);
 	 ABORT();
       }
 
@@ -682,7 +682,7 @@ bgl_uv_close_cb(uv_handle_t *handle) {
    bgl_uv_handle_t h = (bgl_uv_handle_t)(PAIRP(o) ? CAR(o) : o);
    obj_t p = ((bgl_uv_handle_t)COBJECT(h))->BgL_z52onclosez52;
 
-   if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, BEOA);
+   if (PROCEDUREP(p)) BGL_PROCEDURE_CALL0(p);
 }
 
 /*---------------------------------------------------------------------*/
@@ -706,11 +706,11 @@ bgl_uv_stream_close_cb(uv_handle_t *hdl) {
       obj_t p = data->close;
 
       if (data->state == LOCKED) {
-	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
+	 if (p) BGL_PROCEDURE_CALL0(p);
 	 free_stream_data(data);
       } else {
 	 data->state = CLOSING;
-	 if (p) PROCEDURE_ENTRY(p)(p, BEOA);
+	 if (p) BGL_PROCEDURE_CALL0(p);
 	 if (data->state != FREE) {
 	    free_stream_data(data);
 	 }
@@ -761,7 +761,7 @@ bgl_uv_handle_cb(uv_handle_t *handle, int status) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
    obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
 
-   if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BINT(status), BEOA);
+   if (PROCEDUREP(p)) BGL_PROCEDURE_CALL2(p, o, BINT(status));
 }
 
 /*---------------------------------------------------------------------*/
@@ -774,7 +774,7 @@ bgl_uv_idle_cb(uv_idle_t *handle) {
    uv_watcher_data_t *data = WATCHER_DATA(o);
    obj_t p = data->proc;
    
-   if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BEOA);
+   if (PROCEDUREP(p)) BGL_PROCEDURE_CALL1(p, o);
 }
 
 /*---------------------------------------------------------------------*/
@@ -839,7 +839,7 @@ bgl_uv_timer_cb(uv_timer_t *handle) {
 	 TRACECB(ttimer);
       }
 
-      if (PROCEDUREP(p)) PROCEDURE_ENTRY(p)(p, o, BEOA);
+      if (PROCEDUREP(p)) BGL_PROCEDURE_CALL1(p, o);
    }
 }
 
@@ -885,7 +885,7 @@ bgl_uv_fs_event_cb(uv_handle_t *handle, char *path, int events, int status) {
    obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
 
    if (PROCEDUREP(p)) {
-      PROCEDURE_ENTRY(p)(p, o, string_to_bstring(path), BINT(events), BINT(status), BEOA);
+      BGL_PROCEDURE_CALL4(p, o, string_to_bstring(path), BINT(events), BINT(status));
    }
 }
 
@@ -916,9 +916,7 @@ bgl_uv_fs_poll_cb(uv_handle_t *handle, int status, const uv_stat_t* prev, const 
    if (status < 0) { status = -1; }
    
    if (PROCEDUREP(p)) {
-      PROCEDURE_ENTRY(p)(p, o, BINT(status),
-			    bgl_uv_fstat(*prev), bgl_uv_fstat(*curr),
-			    BEOA);
+      BGL_PROCEDURE_CALL4(p, o, BINT(status), bgl_uv_fstat(*prev), bgl_uv_fstat(*curr));
    }
 }
 
@@ -967,7 +965,7 @@ bgl_uv_poll_cb(uv_handle_t *handle, int status, int state) {
    if (status < 0) { status = -1; }
    
    if (PROCEDUREP(p)) {
-      PROCEDURE_ENTRY(p)(p, o, BINT(status), bgl_uv_events_to_list(state), BEOA);
+      BGL_PROCEDURE_CALL3(p, o, BINT(status), bgl_uv_events_to_list(state));
    }
 }
 
@@ -1025,7 +1023,7 @@ bgl_uv_async_cb(uv_async_t *handle) {
    obj_t p = ((bgl_uv_watcher_t)COBJECT(o))->BgL_cbz00;
 
    if (PROCEDUREP(p)) {
-      PROCEDURE_ENTRY(p)(p, o, BEOA);
+      BGL_PROCEDURE_CALL1(p, o);
    }
 }
 
@@ -1226,7 +1224,7 @@ bgl_uv_fs_cb(uv_fs_t *req) {
    uv_fs_data_t *data = (uv_fs_data_t *)req->data;
    obj_t proc = data->proc;
 
-   PROCEDURE_ENTRY(proc)(proc, BINT(req->result), BEOA);
+   BGL_PROCEDURE_CALL1(proc, BINT(req->result));
    free_uv_fs(req);
 }
 
@@ -1239,7 +1237,7 @@ bgl_uv_fs_rw_cb(uv_fs_t *req) {
    uv_fs_data_t *data = (uv_fs_data_t *)req->data;
    obj_t proc = data->proc;
 
-   PROCEDURE_ENTRY(proc)(proc, BINT(req->result), BEOA);
+   BGL_PROCEDURE_CALL1(proc, BINT(req->result));
    free_uv_fs(req);
    TRACECB(trw);
 }
@@ -1256,7 +1254,7 @@ bgl_uv_fs_rw2_cb(uv_fs_t *req) {
    obj_t arg0 = data->arg[0];
    obj_t arg1 = data->arg[1];
    
-   PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, BEOA);
+   BGL_PROCEDURE_CALL3(proc, BINT(req->result), arg0, arg1);
    free_uv_fs(req);
    TRACECB(trw2);
 }
@@ -1274,7 +1272,7 @@ bgl_uv_fs_rw3_cb(uv_fs_t *req) {
    obj_t arg1 = data->arg[1];
    obj_t arg2 = data->arg[2];
    
-   PROCEDURE_ENTRY(proc)(proc, BINT(req->result), arg0, arg1, arg2, BEOA);
+   BGL_PROCEDURE_CALL4(proc, BINT(req->result), arg0, arg1, arg2);
    free_uv_fs(req);
    TRACECB(trw3);
 }
@@ -1385,7 +1383,7 @@ bgl_uv_fs_open_cb(uv_fs_t* req) {
       obj = bgl_uv_new_file(req->result, name);
    }
    
-   PROCEDURE_ENTRY(proc)(proc, obj, BEOA);
+   BGL_PROCEDURE_CALL1(proc, obj);
    free_uv_fs(req);
 }
 
@@ -1453,7 +1451,7 @@ bgl_uv_fs_open4_cb(uv_fs_t* req) {
       obj = bgl_uv_new_file(req->result, name);
    }
    
-   PROCEDURE_ENTRY(proc)(proc, obj, arg0, arg1, arg2, arg3, BEOA);
+   BGL_PROCEDURE_CALL5(proc, obj, arg0, arg1, arg2, arg3);
    free_uv_fs(req);
 }
 
@@ -1740,9 +1738,9 @@ bgl_uv_fs_fstat_cb(uv_fs_t *req) {
    gc_unmark(p);
 
    if (req->result < 0) {
-      PROCEDURE_ENTRY(p)(p, BINT(req->result), BEOA);
+      BGL_PROCEDURE_CALL1(p, BINT(req->result));
    } else {
-      PROCEDURE_ENTRY(p)(p, bgl_uv_fstat(req->statbuf), BEOA);
+      BGL_PROCEDURE_CALL1(p, bgl_uv_fstat(req->statbuf));
    }
 
    uv_fs_req_cleanup(req);
@@ -1764,7 +1762,7 @@ bgl_uv_fs_fstat_vec_cb(uv_fs_t *req) {
       bgl_uv_fstat_vec(req->statbuf, v);
    }
       
-   PROCEDURE_ENTRY(p)(p, BINT(req->result), v, BEOA);
+   BGL_PROCEDURE_CALL2(p, BINT(req->result), v);
    free_uv_fs(req);
 }
 
@@ -1956,9 +1954,9 @@ bgl_uv_fs_readlink_cb(uv_fs_t *req) {
    gc_unmark(p);
 
    if (req->result < 0) {
-      PROCEDURE_ENTRY(p)(p, BINT(req->result), BEOA);
+      BGL_PROCEDURE_CALL1(p, BINT(req->result));
    } else {
-      PROCEDURE_ENTRY(p)(p, string_to_bstring((char *)req->ptr), BEOA);
+      BGL_PROCEDURE_CALL1(p, string_to_bstring((char *)req->ptr));
    }
 
    uv_fs_req_cleanup(req);
@@ -2488,7 +2486,7 @@ bgl_uv_getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *res) {
 
    if (status) {
       free(req);
-      PROCEDURE_ENTRY(p)(p, BINT(status), BEOA);
+      BGL_PROCEDURE_CALL1(p, BINT(status));
    } else {
       char *addr;
       obj_t acc = BNIL;
@@ -2528,7 +2526,7 @@ bgl_uv_getaddrinfo_cb(uv_getaddrinfo_t *req, int status, struct addrinfo *res) {
       uv_freeaddrinfo(res);
       free(req);
 
-      PROCEDURE_ENTRY(p)(p, acc, BEOA);
+      BGL_PROCEDURE_CALL1(p, acc);
    }
 }
 
@@ -2594,28 +2592,28 @@ bgl_uv_write_cb(uv_write_t *req, int status) {
    switch (PROCEDURE_ARITY(p)) {
       case 1:
       case -2:
-	 PROCEDURE_ENTRY(p)(p, BINT(status), BEOA);
+	 BGL_PROCEDURE_CALL1(p, BINT(status));
 	 break;
       case 2:
       case -3:
-	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], BEOA);
+	 BGL_PROCEDURE_CALL2(p, BINT(status), data->arg[0]);
 	 break;
       case 3:
       case -4:
-	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], BEOA);
+	 BGL_PROCEDURE_CALL3(p, BINT(status), data->arg[0], data->arg[1]);
 	 break;
       case 4:
       case -5:
-	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], BEOA);
+	 BGL_PROCEDURE_CALL4(p, BINT(status), data->arg[0], data->arg[1], data->arg[2]);
 	 break;
       case 5:
       case -6:
-	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], data->arg[3], BEOA);
+	 BGL_PROCEDURE_CALL5(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], data->arg[3]);
 	 break;
       case 6:
       case -1:
       case -7:
-	 PROCEDURE_ENTRY(p)(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], data->arg[3], data->arg[4], BEOA);
+	 BGL_PROCEDURE_CALL6(p, BINT(status), data->arg[0], data->arg[1], data->arg[2], data->arg[3], data->arg[4]);
 	 break;
       default:
 	 C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-stream-write", "wrong callback", p);
@@ -2734,11 +2732,11 @@ bgl_uv_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
    if (p && prev_state != CLOSING) {
       data->state = READING;
       if (nread >= 0) {
-	 PROCEDURE_ENTRY(p)(p, BTRUE, allocobj, offset, BINT(nread), pendingsym, BEOA);
+	 BGL_PROCEDURE_CALL5(p, BTRUE, allocobj, offset, BINT(nread), pendingsym);
       } else if (nread == UV_EOF) {
-	 PROCEDURE_ENTRY(p)(p, BEOF, allocobj, offset, BINT(-1), pendingsym, BEOA);
+	 BGL_PROCEDURE_CALL5(p, BEOF, allocobj, offset, BINT(-1), pendingsym);
       } else {
-	 PROCEDURE_ENTRY(p)(p, BFALSE, allocobj, offset, BINT(nread), pendingsym, BEOA);
+	 BGL_PROCEDURE_CALL5(p, BFALSE, allocobj, offset, BINT(nread), pendingsym);
       }
 
       if (data->state == CLOSING) {
@@ -2774,7 +2772,7 @@ bgl_uv_alloc_cb(uv_handle_t *hdl, size_t ssize, uv_buf_t *buf) {
    obj_t p = data->alloc;
 
    if (p) {
-      obj_t allocobj = PROCEDURE_ENTRY(p)(p, obj, BINT(ssize));
+      obj_t allocobj = BGL_PROCEDURE_CALL2(p, obj, BINT(ssize));
       obj_t chunk = BGL_MVALUES_VAL(1);
       obj_t offset = BGL_MVALUES_VAL(2);
 
@@ -2902,7 +2900,7 @@ bgl_connect_cb(uv_connect_t *req, int status) {
    free(req);
 
    TRACECB(tconn);
-   PROCEDURE_ENTRY(p)(p, BINT(status), handle, BEOA);
+   BGL_PROCEDURE_CALL2(p, BINT(status), handle);
 }
 
 /*---------------------------------------------------------------------*/
@@ -2971,7 +2969,7 @@ uv_listen_cb(uv_stream_t *handle, int status) {
    obj_t p = data->listen;
 
    if (p) {
-      PROCEDURE_ENTRY(p)(p, obj, BINT(status), BEOA);
+      BGL_PROCEDURE_CALL2(p, obj, BINT(status));
    }
 }
 
@@ -3217,7 +3215,7 @@ bgl_uv_udp_send_cb(uv_udp_send_t *req, int status) {
    obj_t proc = (obj_t)req->data;
    gc_unmark(proc);
    
-   PROCEDURE_ENTRY(proc)(proc, BINT(status), BEOA);
+   BGL_PROCEDURE_CALL1(proc, BINT(status));
 
    free(req);
 }
@@ -3274,11 +3272,11 @@ bgl_uv_udp_recv_cb(uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf,
 
    if (PROCEDUREP(p)) {
       if (nread > 0) {
-	 PROCEDURE_ENTRY(p)(p, BTRUE, allocobj, offset, BINT(nread), bgl_address((struct sockaddr *)addr), BEOA);
+	 BGL_PROCEDURE_CALL5(p, BTRUE, allocobj, offset, BINT(nread), bgl_address((struct sockaddr *)addr));
       } else if (nread == UV_EOF) {
-	 PROCEDURE_ENTRY(p)(p, BEOF, allocobj, BINT(-1), BINT(-1), BNIL, BEOA);
+	 BGL_PROCEDURE_CALL5(p, BEOF, allocobj, BINT(-1), BINT(-1), BNIL);
       } else {
-	 PROCEDURE_ENTRY(p)(p, BFALSE, allocobj, BINT(-1), BINT(nread), BNIL, BEOA);
+	 BGL_PROCEDURE_CALL5(p, BFALSE, allocobj, BINT(-1), BINT(nread), BNIL);
       }
    }
 }
@@ -3356,7 +3354,7 @@ bgl_uv_shutdown_cb(uv_shutdown_t* req, int status) {
    obj_t obj = data->obj;
 
    TRACECNT(kshutdown);
-   PROCEDURE_ENTRY(proc)(proc, BINT(status), obj, BEOA);
+   BGL_PROCEDURE_CALL2(proc, BINT(status), obj);
    
    free_uv_shutdown(req);
 }
@@ -3480,7 +3478,7 @@ static void process_exit_cb(uv_process_t *handle, int64_t status, int term) {
    obj_t p = ((bgl_uv_process_t)COBJECT(o))->BgL_z42onexitz42;
 
    if (PROCEDUREP(p)) {
-      PROCEDURE_ENTRY(p)(p, o, BGL_INT64_TO_BINT64(status), BINT(term));
+      BGL_PROCEDURE_CALL3(p, o, BGL_INT64_TO_BINT64(status), BINT(term));
    }
 }
 
@@ -3556,7 +3554,7 @@ bgl_work_queue_cb(uv_work_t *req) {
    bgl_uv_work_t w = (bgl_uv_work_t)req->data;
    obj_t p = ((bgl_uv_work_t)COBJECT(w))->BgL_z52workzd2cbz80;
 
-   PROCEDURE_ENTRY(p)(p, BEOA);
+   BGL_PROCEDURE_CALL0(p);
 }
 
 /*---------------------------------------------------------------------*/
@@ -3568,7 +3566,7 @@ bgl_after_queue_cb(uv_work_t *req, int status) {
    bgl_uv_work_t w = (bgl_uv_work_t)req->data;
    obj_t p = ((bgl_uv_work_t)COBJECT(w))->BgL_z52afterzd2cbz80;
 
-   PROCEDURE_ENTRY(p)(p, BINT(status), BEOA);
+   BGL_PROCEDURE_CALL1(p, BINT(status));
 }
 
 /*---------------------------------------------------------------------*/

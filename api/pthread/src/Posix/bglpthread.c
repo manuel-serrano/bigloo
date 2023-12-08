@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Jul 11 17:34:43 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 14:11:46 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -57,7 +57,7 @@ static obj_t bglpth_single_thread_denv = 0L;
 #endif
 
 #if (BGL_HAVE_PTHREAD_TIMEDJOIN)
-extern int pthread_timedjoin_np();
+extern int pthread_timedjoin_np(pthread_t, void **, const struct timespec *);
 #endif
 
 /*---------------------------------------------------------------------*/

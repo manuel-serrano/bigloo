@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Apr 25 07:20:12 2022 (serrano)                */
-;*    Copyright   :  2011-22 Manuel Serrano                            */
+;*    Last change :  Fri Dec  8 17:16:17 2023 (serrano)                */
+;*    Copyright   :  2011-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
 ;*=====================================================================*/
@@ -370,6 +370,8 @@
       (macro $avahi-string-list-free::void
 	 (::$avahi-string-list)
 	 "avahi_string_list_free")
-      ))
+      )
+
+   (pragma $string-null side-effect-free nesting))
     
 

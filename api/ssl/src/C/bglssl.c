@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri Dec  8 13:56:53 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 14:18:04 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -1127,10 +1127,10 @@ bgl_advertise_next_proto_callback(SSL *ssl,
 
    if (!STRINGP(CCON(c)->BgL_npnzd2protoszd2)) {
       // No initialization - no NPN protocols
-      *data = "";
+      *data = (unsigned char *)"";
       *len = 0;
    } else {
-      *data = BSTRING_TO_STRING(CCON(c)->BgL_npnzd2protoszd2);
+      *data = (unsigned char *)BSTRING_TO_STRING(CCON(c)->BgL_npnzd2protoszd2);
       *len = STRING_LENGTH(CCON(c)->BgL_npnzd2protoszd2);
    }
 
@@ -1242,7 +1242,7 @@ bgl_select_sni_context_callback(SSL *ssl, int *ad, void* arg) {
 	    C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "ssl-connection",
 			      "wrong callback arity", proc);
 	 } else {
-	    obj_t ret = BGL_PROCEDURE_CALL2(proc, c, bsrv);
+	    obj_t ret = BGL_PROCEDURE_CALL2(proc, (obj_t)c, bsrv);
 
 	    if (ret != BFALSE) {
 	       secure_context sc = (secure_context)ret;
@@ -1767,7 +1767,7 @@ bgl_new_session_callback(SSL *ssl, SSL_SESSION *sess) {
       return 0;
    } else {
       obj_t serialized = make_string(size, 0);
-      unsigned char *pserialized = BSTRING_TO_STRING(serialized);
+      unsigned char *pserialized = (unsigned char *)BSTRING_TO_STRING(serialized);
       obj_t cb = CCON(c)->BgL_newsessionzd2callbackzd2;
    
       i2d_SSL_SESSION(sess, &pserialized);
@@ -1777,7 +1777,7 @@ bgl_new_session_callback(SSL *ssl, SSL_SESSION *sess) {
 			   "wrong callback arity", cb);
       } else {
 	 unsigned int sidlen;
-	 const char *sid = BGL_SSL_SESSION_get_id(sess, sidlen);
+	 const unsigned char *sid = BGL_SSL_SESSION_get_id(sess, sidlen);
 
 	 BGL_PROCEDURE_CALL2(cb,
 			      string_to_bstring_len((char *)sid, sidlen),
@@ -1839,7 +1839,7 @@ bgl_ssl_connection_get_session(ssl_connection ssl) {
 	 
 	 i2d_SSL_SESSION(sess, &p);
 
-	 return string_to_bstring_len(sbuf, slen);
+	 return string_to_bstring_len((char *)sbuf, slen);
       }
 
       return BUNSPEC;
@@ -2569,7 +2569,7 @@ bgl_dh_check_pub_key(DH *dh, BIGNUM *key) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BIGNUM *
 bgl_bn_bin2bn(char *s, int len) {
-   return BN_bin2bn(s, len, 0);
+   return BN_bin2bn((unsigned char *)s, len, 0);
 }
 
 /*---------------------------------------------------------------------*/
@@ -2870,7 +2870,7 @@ bgl_ssl_hash_digest(ssl_hash hash) {
       BGL_EVP_MD_CTX_free(CHASH(hash)->BgL_z42mdzd2ctxz90);
       CHASH(hash)->BgL_z42mdzd2ctxz90 = 0L;
 
-      return string_to_bstring_len(md_value, md_len);
+      return string_to_bstring_len((char *)md_value, md_len);
    }
 }
 
@@ -2948,7 +2948,7 @@ bgl_ssl_hmac_digest(ssl_hmac hmac) {
       BGL_HMAC_CTX_free(CHMAC(hmac)->BgL_z42mdzd2ctxz90);
       CHMAC(hmac)->BgL_z42mdzd2ctxz90 = 0L;
 
-      return string_to_bstring_len(md_value, md_len);
+      return string_to_bstring_len((char *)md_value, md_len);
    }
 }
    
@@ -3169,7 +3169,7 @@ bgl_ssl_verify_final(ssl_verify verify,
 	 }
       }
 
-      r = EVP_VerifyFinal(CVERIFY(verify)->BgL_z42mdzd2ctxz90, sig, slen, pkey);
+      r = EVP_VerifyFinal(CVERIFY(verify)->BgL_z42mdzd2ctxz90, (char *)sig, slen, pkey);
 
       if (!r) {
 	 ERR_clear_error();
@@ -3352,7 +3352,7 @@ bgl_cipher_final(ssl_cipher cipher) {
       obj_t obj = make_string(size, ' ');
       int r;
 
-      r = EVP_CipherFinal_ex(ctx, BSTRING_TO_STRING(obj), &size);
+      r = EVP_CipherFinal_ex(ctx, (unsigned char *)BSTRING_TO_STRING(obj), &size);
 
       BGL_EVP_CIPHER_CTX_reset(ctx);
       BGL_EVP_CIPHER_CTX_free(ctx);
@@ -3378,7 +3378,7 @@ bgl_pkcs5_pbkdf2_hmac_sha1(obj_t pass, obj_t salt, int iter, int keylen) {
    char errbuf[ 121 ];
 
    int r = PKCS5_PBKDF2_HMAC_SHA1(
-      &(STRING_REF(pass, 0)), STRING_LENGTH(pass),
+      (const char *)&(STRING_REF(pass, 0)), STRING_LENGTH(pass),
       &(STRING_REF(salt, 0)), STRING_LENGTH(salt),
       iter, keylen, &(STRING_REF(obj, 0)));
 
