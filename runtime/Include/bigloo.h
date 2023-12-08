@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  8 11:18:11 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 13:27:05 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -618,11 +618,11 @@ union scmobj {
       /* buffering mode */
       int bufmode;
       /* OS write primitive */
-      ssize_t (*syswrite)(union scmobj *, void *, size_t);
+      ssize_t (*syswrite)(void *, void *, size_t);
       /* OS flush primitive */
-      union scmobj *(*sysflush)(union scmobj *);
+      union scmobj *(*sysflush)(void *);
       /* OS seek primitive */
-      long (*sysseek)(union scmobj *, long);
+      long (*sysseek)(void *, long, int);
       /* flush use hook */
       union scmobj *fhook;
       /* flush buffer */
@@ -642,9 +642,9 @@ union scmobj {
       /* RGC fill barrier */
       long fillbarrier;
       /* OS read primitive */
-      long (*sysread)(union scmobj *, char *, long);
+      long (*sysread)(void *, char *, long);
       /* OS seek primitive */
-      void (*sysseek)(union scmobj *, long);
+      void (*sysseek)(void *, long);
       /* optional use seek function */
       union scmobj *userseek;
       /* EOF reached */

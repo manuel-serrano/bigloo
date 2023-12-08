@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec  8 11:19:56 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 13:29:20 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -132,13 +132,13 @@
 /*---------------------------------------------------------------------*/
 struct bgl_input_timeout {
    struct timeval timeout;
-   long (*sysread)(obj_t, char *, long);
+   long (*sysread)(void *, char *, long);
    int (*sysclose)(void *);
 };
    
 struct bgl_output_timeout {
    struct timeval timeout;
-   ssize_t (*syswrite)(obj_t, void *, size_t);
+   ssize_t (*syswrite)(void *, void *, size_t);
    int (*sysclose)(void *);
 };
    
@@ -751,7 +751,7 @@ strseek(void *port, long offset, int whence) {
 /*    flush_string ...                                                 */
 /*---------------------------------------------------------------------*/
 #define flush_string(port, s, l, err) { \
-   ssize_t (*_syswrite)(obj_t, void *, size_t) = OUTPUT_PORT(port).syswrite; \
+   ssize_t (*_syswrite)(void *, void *, size_t) = OUTPUT_PORT(port).syswrite; \
    long _n; \
    char *_str = s; \
    size_t _slen = l; \
@@ -865,7 +865,7 @@ output_flush(obj_t port, unsigned char *str, size_t slen, int is_read_flush, boo
 
 	 /* this is an exensible buffer, that we increase iff it is full */
 	 if ((slen > 0) || (cnt == 0)) {
-	    ssize_t (*syswrite)(obj_t, void *, size_t) =
+	    ssize_t (*syswrite)(void *, void *, size_t) =
 	       OUTPUT_PORT(port).syswrite;
 	    long n = syswrite(port, str, slen);
 
@@ -994,7 +994,7 @@ bgl_make_output_port(obj_t name,
    new_output_port->port.userdata = BUNSPEC;
    new_output_port->port.timeout = 0L;
    new_output_port->port.sysclose = (int (*)(void *))close;
-   new_output_port->output_port.sysseek = seek;
+   new_output_port->output_port.sysseek = (long (*)(void *, long, int))seek;
    new_output_port->output_port.syswrite = write;
    new_output_port->output_port.sysflush = 0L;
    new_output_port->output_port.fhook = BUNSPEC;
@@ -1081,7 +1081,7 @@ bgl_output_port_timeout_set(obj_t port, long timeout) {
 	    PORT(port).timeout = (FILE *)to;
 	 }
 	 
-	 OUTPUT_PORT(port).syswrite = &syswrite_with_timeout;
+	 OUTPUT_PORT(port).syswrite = (ssize_t (*)(void *, void *, size_t))&syswrite_with_timeout;
 	 timeout_set_port_blocking("output-port-timeout-set!", fd, 0);
 
 	 return 1;
@@ -1205,7 +1205,7 @@ bgl_open_output_string(obj_t buf) {
 				     strwrite, strseek, 0);
    PORT_CHANNEL(port) = port;
    OUTPUT_PORT(port).bufmode = BGL_IOEBF;
-   OUTPUT_PORT(port).sysflush = get_output_string;
+   OUTPUT_PORT(port).sysflush = (obj_t (*)(void *))get_output_string;
 
    return port;
 }
@@ -1229,7 +1229,7 @@ bgl_open_output_procedure(obj_t proc, obj_t flush, obj_t close, obj_t buf) {
    
    PORT_CHANNEL(port) = port;
    OUTPUT_PORT(port).bufmode = BGL_IONB;
-   OUTPUT_PORT(port).sysflush = procflush;
+   OUTPUT_PORT(port).sysflush = (obj_t (*)(void *))procflush;
    PORT(port).sysclose = (int (*)(void *))procclose;
    PORT(port).userdata = udata;
    VECTOR_SET(udata, 0, proc);
@@ -1390,7 +1390,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
    switch((long) kindof) {
       case (long)KINDOF_CONSOLE:
 	 new_input_port->port.sysclose = 0;
-	 new_input_port->input_port.sysread = bgl_console_read;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *, long))bgl_console_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
 #endif	 
@@ -1399,7 +1399,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 #if (HAVE_PIPE)
       case (long)KINDOF_PIPE:
 	 new_input_port->port.sysclose = (int (*)(void *))pclose;
-	 new_input_port->input_port.sysread = bgl_read;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *, long))bgl_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
 #endif	 
@@ -1407,7 +1407,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 
       case (long)KINDOF_PROCPIPE:
 	 new_input_port->port.sysclose = (int (*)(void *))fclose;
-	 new_input_port->input_port.sysread = bgl_read;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *, long))bgl_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
 #endif	 
@@ -1423,7 +1423,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 
       case (long)KINDOF_FILE:
 	 new_input_port->port.sysclose = (int (*)(void *))fclose;
-	 new_input_port->input_port.sysread = bgl_read;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *, long))bgl_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
 #endif	 
@@ -1432,7 +1432,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
       case (long)KINDOF_PROCEDURE:
       case (long)KINDOF_GZIP:
 	 new_input_port->port.sysclose = 0;
-	 new_input_port->input_port.sysread = bgl_proc_read;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *, long))bgl_proc_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
 #endif
@@ -1440,20 +1440,20 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 
       case (long)KINDOF_STRING:
 	 new_input_port->port.sysclose = 0;
-	 new_input_port->input_port.sysread = bgl_eof_read;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *, long))bgl_eof_read;
 	 break;
 
       case (long)KINDOF_MMAP:
 	 new_input_port->port.sysclose = 0;
 	 new_input_port->port.name = BGL_MMAP(name).name;
-	 new_input_port->input_port.sysseek = bgl_input_mmap_seek;
-	 new_input_port->input_port.sysread = bgl_input_mmap_read;
+	 new_input_port->input_port.sysseek = (void (*)(void *, long))bgl_input_mmap_seek;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *,long))bgl_input_mmap_read;
 	 new_input_port->port.stream.mmap = name;
 	 break;
 	 
       default:
 	 new_input_port->port.sysclose = 0;
-	 new_input_port->input_port.sysread = bgl_read;
+	 new_input_port->input_port.sysread = (long (*)(void *, char *, long))bgl_read;
 #if (defined(RGC_0))
 	 STRING_SET(new_input_port->input_port.buf, 0, '\0');
 #endif
@@ -1542,7 +1542,7 @@ bgl_input_port_timeout_set(obj_t port, long timeout) {
 	    PORT(port).timeout = (FILE *)to;
 	 }
 
-	 INPUT_PORT(port).sysread = &sysread_with_timeout;
+	 INPUT_PORT(port).sysread = (long (*)(void *, char *, long))&sysread_with_timeout;
 	 timeout_set_port_blocking("input-port-timeout-set!",
 				    fileno(PORT_FILE(port)),
 				    0);
@@ -1657,7 +1657,7 @@ bgl_open_input_file(obj_t name, obj_t buffer) {
 	  BGL_INPUT_PORT_LENGTH_SET(port, bgl_file_size(cname));
 
 	  /* file seek */
-	  INPUT_PORT(port).sysseek = &bgl_input_file_seek;
+	  INPUT_PORT(port).sysseek = (void (*)(void *, long))(&bgl_input_file_seek);
 	  
 	  return port;
        }
@@ -1689,7 +1689,7 @@ bgl_open_input_descriptor(int fd, obj_t buffer) {
       }
 
       /* file seek */
-      INPUT_PORT(port).sysseek = &bgl_input_file_seek;
+      INPUT_PORT(port).sysseek = (void (*)(void *, long))(&bgl_input_file_seek);
 	  
       return port;
    }
@@ -1753,7 +1753,7 @@ bgl_open_input_substring_bang(obj_t buffer, long offset, long end) {
    CREF(port)->input_port.length = end;
    CREF(port)->input_port.matchstart = offset;
    CREF(port)->input_port.matchstop = offset;
-   CREF(port)->input_port.sysseek = &bgl_input_string_seek;
+   CREF(port)->input_port.sysseek = (void (*)(void *, long))(&bgl_input_string_seek);
    CREF(port)->input_string_port.offset = offset;
 
    return port;
@@ -1956,18 +1956,18 @@ bgl_input_port_seek(obj_t port, long pos) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_output_port_filepos(obj_t port) {
-   long (*sysseek)() = OUTPUT_PORT(port).sysseek;
+   long (*sysseek)(void *, long, int) = OUTPUT_PORT(port).sysseek;
    unsigned char *buf = &STRING_REF(BGL_OUTPUT_PORT_BUFFER(port), 0);
    long bufsz = (unsigned char *)(OUTPUT_PORT(port).ptr) - buf;
 
    if (sysseek) {
       switch(OUTPUT_PORT(port).stream_type) {
 	 case BGL_STREAM_TYPE_FD: 
-	    return bufsz + (long)sysseek(PORT_FD(port), 0, SEEK_CUR);
+	    return bufsz + sysseek(((void *)(long)PORT_FD(port)), 0, SEEK_CUR);
 	 case BGL_STREAM_TYPE_FILE: 
-	    return bufsz + (long)sysseek(PORT_FILE(port), 0, SEEK_CUR);
+	    return bufsz + sysseek(PORT_FILE(port), 0, SEEK_CUR);
 	 case BGL_STREAM_TYPE_CHANNEL: 
-	    return bufsz + (long)sysseek(PORT_CHANNEL(port), 0, SEEK_CUR);
+	    return bufsz + sysseek(PORT_CHANNEL(port), 0, SEEK_CUR);
 	 default:
 	    return bufsz;
       }
@@ -1982,12 +1982,12 @@ bgl_output_port_filepos(obj_t port) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_output_port_seek(obj_t port, long pos) {
-   long (*sysseek)() = OUTPUT_PORT(port).sysseek;
+   long (*sysseek)(void *, long, int) = OUTPUT_PORT(port).sysseek;
 
    if (sysseek) {
       switch(OUTPUT_PORT(port).stream_type) {
 	 case BGL_STREAM_TYPE_FD: 
-	    return sysseek(PORT_FD(port), pos, SEEK_SET) < 0 ? BFALSE : BTRUE;
+	    return sysseek((void *)((long)PORT_FD(port)), pos, SEEK_SET) < 0 ? BFALSE : BTRUE;
 	 case BGL_STREAM_TYPE_FILE: 
 	    return sysseek(PORT_FILE(port), pos, SEEK_SET) < 0 ? BFALSE : BTRUE;
 	 case BGL_STREAM_TYPE_CHANNEL: 
@@ -2640,7 +2640,7 @@ force_unlock_output_mutex_proc(obj_t env) {
 /*    On entrance, op.mutex is already locked.                         */
 /*---------------------------------------------------------------------*/
 static long
-copyfile(obj_t op, void *ip, long sz, long (*sysread)(obj_t, char *, long)) {
+copyfile(obj_t op, void *ip, long sz, long (*sysread)(void *, char *, long)) {
    long rsz = 0, o;
    obj_t exitd_top = BGL_EXITD_TOP_AS_OBJ();
    obj_t proc = MAKE_FX_PROCEDURE(force_unlock_output_mutex_proc, 0, 1);
