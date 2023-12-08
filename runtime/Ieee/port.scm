@@ -269,6 +269,8 @@
 		  "bgl_open_input_substring_bang")
 	       (method static $open-input-mmap::obj (::mmap ::bstring ::long ::long)
 		  "bgl_open_input_mmap")
+               (method static $input-mmap-port?::bool (::obj)
+		   "INPUT_MMAP_PORTP")
 	       (method static $open-input-procedure::obj (::procedure ::bstring)
 		  "bgl_open_input_procedure")
 	       (method static $input-port-timeout-set!::bool (::input-port ::long)
