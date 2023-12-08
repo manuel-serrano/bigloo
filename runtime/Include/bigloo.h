@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Nov  8 16:10:44 2023 (serrano)                */
+/*    Last change :  Fri Dec  8 07:52:04 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -934,16 +934,16 @@ union scmobj {
       /* a name (mainly for debug) */
       union scmobj *name;
       /* OS lock primitive */
-      int (*syslock)();
+      int (*syslock)(void *);
       /* OS try lock primitive */
-      int (*systrylock)();
+      int (*systrylock)(void *);
       /* OS timed lock primitive */
-      int (*systimedlock)();
+      int (*systimedlock)(void *, long);
       /* OS unlock primitive */
-      int (*sysunlock)();
+      int (*sysunlock)(void *);
       /* prelock function */
-      int (*syslockprelock)();
-      union scmobj *(*sysstate)();
+      int (*syslockprelock)(void *, void *);
+      union scmobj *(*sysstate)(void *);
       /* the mutex backend (underlying mutex platform) */
       union scmobj *backend;
       /* actual OS mutex */
