@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Dec  2 08:02:29 2022 (serrano)                */
-#*    Copyright   :  1997-2022 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Dec  8 08:15:24 2023 (serrano)                */
+#*    Copyright   :  1997-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -55,7 +55,8 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   openssl-tls12 openssl-tls13 openssl-rand \
                   openssl-v2 openssl-v3 \
                   openssl-v23 openssl-getter \
-                  stdint stdlibint unistdint maemo.arm android \
+                  stdint stdlibint unistdint stdc stdcwarning \
+                  maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
                   gstreamer gstreameraudio \
                   alsa pulseaudio mpg123 flac pcre pcrefreestudy pcre2 avahi \

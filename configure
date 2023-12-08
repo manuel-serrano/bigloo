@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Sep 13 17:14:43 2023 (serrano)                */
+#*    Last change :  Fri Dec  8 08:20:49 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -3040,6 +3040,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # strict std C required
   stdc=`$autoconf stdc` || exit 1
 
+  # if the C compiler complains about non prototyped calls, use strict stdc mode
+  if [ "$stdc " = "0 " ]; then
+    stdc=`$autoconf stdcwarning` || exit 1
+  fi
+  
   # C compiler sse and math operations on x86-32 architecture
   if [ "$alignment " = "2 " ]; then
     cflags="$cflags `$autoconf ccssex86`"
