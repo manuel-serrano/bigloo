@@ -1008,7 +1008,7 @@
 (define (filter-map f l0 . l)
    (cond
       ((null? l)
-       (filter-map-2 f l))
+       (filter-map-2 f l0))
       (else
        (let loop ((l (cons l0 l)))
 	  (if (null? (car l))
