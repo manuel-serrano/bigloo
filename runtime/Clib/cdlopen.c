@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Fri Dec  8 09:50:00 2023 (serrano)                */
+/*    Last change :  Sat Dec  9 15:39:27 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -348,7 +348,7 @@ bgl_dlsym(obj_t filename, obj_t name, obj_t symbol) {
 
       CUSTOM_IDENTIFIER_SET(res, (char *)(name));
       CUSTOM_TO_STRING(res) = dlsym_to_string;
-      CUSTOM_OUTPUT(res) = dlsym_output;
+      CUSTOM_OUTPUT(res) = (obj_t (*)(obj_t, void *))dlsym_output;
       obj->addr = addr;
 
       return res;
