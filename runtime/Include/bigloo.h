@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  8 18:56:45 2023 (serrano)                */
+/*    Last change :  Sat Dec  9 13:26:46 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -904,13 +904,13 @@ union scmobj {
       /* finalization function */
       int (*final)();
       /* equality test */
-      int (*equal)();
+      int (*equal)(union scmobj *, union scmobj *);
       /* hashing function */
-      long (*hash)();
+      long (*hash)(union scmobj *);
       /* to_string converter */
-      char *(*to_string)();
+      char *(*to_string)(union scmobj *, char *, int);
       /* output function */
-      union scmobj *(*output)();
+      union scmobj *(*output)(union scmobj *, void *);
    } custom;
 
    /* dates */

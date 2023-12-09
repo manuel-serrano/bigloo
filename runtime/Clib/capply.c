@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 20 11:26:29 1992                          */
-/*    Last change :  Fri Dec  8 13:00:58 2023 (serrano)                */
+/*    Last change :  Sat Dec  9 13:24:19 2023 (serrano)                */
 /*    Copyright   :  2006-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo APPLY                                                     */
@@ -52,8 +52,7 @@ opt_apply(obj_t proc, obj_t args_list) {
    }
 
    /* jump to the function */
-#define CALL(proc) ((obj_t (*)())PROCEDURE_VA_ENTRY(proc))
-   return CALL(proc)(proc, args);
+   return ((obj_t (*)(obj_t, ...))PROCEDURE_VA_ENTRY(proc))(proc, args);
 }
 
 /*---------------------------------------------------------------------*/

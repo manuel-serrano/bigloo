@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  8 11:00:08 2023 (serrano)                */
+#*    Last change :  Sat Dec  9 13:35:59 2023 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -188,6 +188,11 @@ libbacktraceforce=no
 customlibbacktrace=
 libbacktracesrc=$LIBBACKTRACESRC
 libbacktraceconfigureopt=--enable-shared
+
+#* if [ "$libbacktracesrc " = " " ]; then                              */
+#*   libbacktraceversion=d0f5e95                                       */
+#*   libbacktracesrc=libbacktrace/libbacktrace-$libbacktraceversion.tgz */
+#* fi                                                                  */
 
 if [ "$libbacktracesrc " = " " ]; then
   libbacktraceversion=d0f5e95

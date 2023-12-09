@@ -1,6 +1,6 @@
 diff -Naur gc-8.2.4.orig/alloc.c gc-8.2.4/alloc.c
 --- gc-8.2.4.orig/alloc.c	2023-05-26 20:56:18.000000000 +0200
-+++ gc-8.2.4/alloc.c	2023-07-10 15:54:35.906146477 +0200
++++ gc-8.2.4/alloc.c	2023-12-09 13:25:34.861222286 +0100
 @@ -771,6 +771,40 @@
      RESTORE_CANCEL(cancel_state);
  }
@@ -8,8 +8,8 @@ diff -Naur gc-8.2.4.orig/alloc.c gc-8.2.4/alloc.c
 +/*---------------------------------------------------------------------*/
 +/*    Bigloo profiling 13Apr2003: start                                */
 +/*---------------------------------------------------------------------*/
-+static void (*GC_gcollect_hook)() = 0;
-+void GC_add_gc_hook( void (*f)() ) {
++static void (*GC_gcollect_hook)(unsigned long, unsigned long) = 0;
++void GC_add_gc_hook(void (*f)(unsigned long, unsigned long)) {
 +   GC_gcollect_hook = f;
 +}
 +/*---------------------------------------------------------------------*/
@@ -74,17 +74,18 @@ diff -Naur gc-8.2.4.orig/alloc.c gc-8.2.4/alloc.c
          if (GETENV("GC_PRINT_ADDRESS_MAP") != 0) {
            GC_print_address_map();
          }
-@@ -1237,6 +1287,17 @@
+@@ -1237,6 +1287,18 @@
                            COMMA_IF_USE_MUNMAP((unsigned long)
                                                GC_unmapped_bytes));
  
 +/*---------------------------------------------------------------------*/
 +/*    Bigloo profiling 13Apr2003: start                                */
 +/*---------------------------------------------------------------------*/
-+    if (GC_gcollect_hook)
-+       GC_gcollect_hook(GC_heapsize,
++    if (GC_gcollect_hook) {
++       GC_gcollect_hook((unsigned long)GC_heapsize,
 +			(unsigned long)(GC_atomic_in_use) +
 +			(unsigned long)(GC_composite_in_use));
++    }
 +/*---------------------------------------------------------------------*/
 +/*    Bigloo profiling 13Apr2003: start                                */
 +/*---------------------------------------------------------------------*/
@@ -94,7 +95,7 @@ diff -Naur gc-8.2.4.orig/alloc.c gc-8.2.4/alloc.c
      GC_is_full_gc = FALSE;
 diff -Naur gc-8.2.4.orig/alloc.c.orig gc-8.2.4/alloc.c.orig
 --- gc-8.2.4.orig/alloc.c.orig	1970-01-01 01:00:00.000000000 +0100
-+++ gc-8.2.4/alloc.c.orig	2023-05-26 20:56:18.000000000 +0200
++++ gc-8.2.4/alloc.c.orig	2023-12-09 13:20:38.189213912 +0100
 @@ -0,0 +1,1817 @@
 +/*
 + * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
@@ -1915,7 +1916,7 @@ diff -Naur gc-8.2.4.orig/alloc.c.orig gc-8.2.4/alloc.c.orig
 +}
 diff -Naur gc-8.2.4.orig/Makefile.am gc-8.2.4/Makefile.am
 --- gc-8.2.4.orig/Makefile.am	2023-05-26 20:56:18.000000000 +0200
-+++ gc-8.2.4/Makefile.am	2023-07-10 15:54:35.910146484 +0200
++++ gc-8.2.4/Makefile.am	2023-12-09 13:20:38.189213912 +0100
 @@ -68,11 +68,18 @@
  else
  
@@ -1938,7 +1939,7 @@ diff -Naur gc-8.2.4.orig/Makefile.am gc-8.2.4/Makefile.am
  # ---------------------------------
 diff -Naur gc-8.2.4.orig/Makefile.in gc-8.2.4/Makefile.in
 --- gc-8.2.4.orig/Makefile.in	2023-05-26 20:57:17.000000000 +0200
-+++ gc-8.2.4/Makefile.in	2023-07-10 15:54:35.910146484 +0200
++++ gc-8.2.4/Makefile.in	2023-12-09 13:20:38.193213912 +0100
 @@ -263,13 +263,20 @@
  	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
  	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
