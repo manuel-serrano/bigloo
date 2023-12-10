@@ -8,10 +8,8 @@ on:
 
 jobs:
   build:
-    matrix:
-        os: [debian-latest, ubuntu-latest]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - run: sudo apt -qq update
