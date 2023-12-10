@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri Oct 13 18:01:20 2023 (serrano)                */
+/*    Last change :  Sun Dec 10 09:15:43 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SQLITE support                                                   */
@@ -507,7 +507,7 @@ bgl_sqlite_get(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
      char *buf = (char *)alloca(strlen(str) + strlen(msg) + 17);
      char *m = (char *)GC_MALLOC_ATOMIC(strlen(msg) + 1);
      
-     sprintf(buf, "sqlite-get:%s -- ", str, msg);
+     sprintf(buf, "sqlite-get:%s -- %s", str, msg);
      strcpy(m, msg);
 
      sqlite3_free(msg);

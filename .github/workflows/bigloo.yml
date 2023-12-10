@@ -22,7 +22,7 @@ jobs:
       - run: pushd /tmp/bigloo-unstable && ./configure --prefix=/usr > /dev/null 2>&1 && make -j 2>&1 > /dev/null && sudo make install > /dev/null && popd
 
       - run: ./configure --prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no
-      - run: hostboot BGLBUILDBINDIR=/usr/bin
+      - run: make hostboot BGLBUILDBINDIR=/usr/bin
       - run: make install-progs > /dev/null
       - run: make -j cibootstrap CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
       - run: make install-sans-docs > /dev/null
