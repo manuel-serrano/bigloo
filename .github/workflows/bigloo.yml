@@ -32,7 +32,7 @@ jobs:
       - run: hostboot BGLBUILDBINDIR=/usr/bin
       - run: make install-progs > /dev/null
       - run: make -j cibootstrap CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
-      - run: - make install-sans-docs > /dev/null
+      - run: make install-sans-docs > /dev/null
 
       - name: fulltest ${{ matrix.os }}
       - run: make fulltest
