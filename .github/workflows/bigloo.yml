@@ -19,22 +19,21 @@ jobs:
 
     steps:
       - name: requirements ${{ matrix.os }}
-        run: sudo apt -qq update
-	run: sudo apt install -y dh-make libssl1.0.2 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring0 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10
-	shell: bash
+      - run: sudo apt -qq update
+      - run: sudo apt install -y dh-make libssl1.0.2 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring0 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10
 
       - name: bigloo-prebootstrap ${{ matrix.os }}
-        run: wget -nv ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz -O /tmp/bigloo-unstable.tar.gz > /dev/null
-        run: pushd /tmp && tar xfz /tmp/bigloo-unstable.tar.gz && popd
-         run pushd /tmp/bigloo-unstable && ./configure --prefix=/usr > /dev/null 2>&1 && make -j 2>&1 > /dev/null && sudo make install > /dev/null && popd
+      - run: wget -nv ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz -O /tmp/bigloo-unstable.tar.gz > /dev/null
+      - run: pushd /tmp && tar xfz /tmp/bigloo-unstable.tar.gz && popd
+      - run pushd /tmp/bigloo-unstable && ./configure --prefix=/usr > /dev/null 2>&1 && make -j 2>&1 > /dev/null && sudo make install > /dev/null && popd
 
       - name: build ${{ matrix.os }}
-        run: ./configure --prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no
-	run: hostboot BGLBUILDBINDIR=/usr/bin
-	run: make install-progs > /dev/null
-	run: make -j cibootstrap CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
-	run: - make install-sans-docs > /dev/null
+      - run: ./configure --prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no
+      - run: hostboot BGLBUILDBINDIR=/usr/bin
+      - run: make install-progs > /dev/null
+      - run: make -j cibootstrap CONFIGUREOPTS="--prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no"
+      - run: - make install-sans-docs > /dev/null
 
       - name: fulltest ${{ matrix.os }}
-        run: make fulltest
+      - run: make fulltest
 
