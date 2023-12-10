@@ -17,7 +17,7 @@ jobs:
 
       - run: wget -nv ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz -O /tmp/bigloo-unstable.tar.gz > /dev/null
       - run: pushd /tmp && tar xfz /tmp/bigloo-unstable.tar.gz && popd
-      - run pushd /tmp/bigloo-unstable && ./configure --prefix=/usr > /dev/null 2>&1 && make -j 2>&1 > /dev/null && sudo make install > /dev/null && popd
+      - run: pushd /tmp/bigloo-unstable && ./configure --prefix=/usr > /dev/null 2>&1 && make -j 2>&1 > /dev/null && sudo make install > /dev/null && popd
 
       - run: ./configure --prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no
       - run: hostboot BGLBUILDBINDIR=/usr/bin
