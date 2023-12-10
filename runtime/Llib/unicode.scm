@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Jun  2 14:17:55 2023 (serrano)                */
+;*    Last change :  Sun Dec 10 06:40:00 2023 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -170,6 +170,7 @@
 	    (inline utf8-char-size::long c::char)
 	    (ascii-string?::bool ::bstring)
 	    (utf8-string?::bool ::bstring #!optional strict::bool)
+	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-normalize-utf16::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
@@ -758,6 +759,183 @@
 		       (loop (+fx r 6))))
 		   (else
 		    #f)))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-encode ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Replace all the occurrences of illegal UTF8 characters with      */
+;*    the UNICODE replacement character EF BF BD.                      */
+;*    -------------------------------------------------------------    */
+;*    Resurrection of this function introduced in 2014 by the commit   */
+;*      c74f1fcbe7001d5fe3d5ca60f40c3262b3739d04                       */
+;*    and later on removed by the commit                               */
+;*      26dd0932b673a29550e9b3ddf4d12e6a388b251f                       */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-encode str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
+   
+   (define (in-range? c minc maxc)
+      (let ((n (char->integer c)))
+	 (and (>=fx n minc) (<=fx n maxc))))
+   
+   (define (string-unicode-fix! s j)
+      ;; Unicode Replacement Character EF BF BD */
+      (string-set! s j #a239)
+      (string-set! s (+fx j 1) #a191)
+      (string-set! s (+fx j 2) #a189))
+   
+   (if (or (>fx end (string-length str))
+	   (<fx start 0)
+	   (>fx start end))
+       (error "utf8-string-encode" "Illegal indexes" (cons start end))
+       (let* ((len (-fx end start))
+	      (res (make-string (*fx 3 len))))
+	  (let loop ((r start)
+		     (w 0))
+	     (if (=fx r end)
+		 (string-shrink! res w)
+		 (let* ((c (string-ref str r))
+			(n (char->integer c)))
+		    (cond
+		       ((<=fx n #x7f)
+			;; 1 byte
+			(string-set! res w c)
+			(loop (+fx r 1) (+fx w 1)))
+		       ((<fx n #xc2)
+			;; error, reserved
+			(string-unicode-fix! res w)
+			(loop (+fx r 1) (+fx w 3)))
+		       ((<fx n #xdf)
+			;; two chars encoding
+			(if (and (<fx (+fx 1 r) len)
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (loop (+fx r 2) (+fx w 2)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       ((and (>=fx n #xd8) (<=fx n #xdb))
+			;; utf16 escape
+			(when (and (<fx r (-fx len 3))
+				   (in-range? (string-ref str (+fx r 1)) #xdc #xdf)
+				   (in-range? (string-ref str (+fx r 2)) #xdc #xdf)
+				   (in-range? (string-ref str (+fx r 3)) #xdc #xdf))
+			   (begin
+			      (string-set! res w c)
+			      (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			      (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
+			      (string-set! res (+fx w 3) (string-ref str (+fx r 3)))
+			      (loop (+fx r 4) (+fx w 4)))
+			   (begin
+			      (string-unicode-fix! res w)
+			      (loop (+fx r 1) (+fx w 3)))))
+		       ((<=fx n #xdf)
+			;; utf16 error
+			(if (and (<fx (+fx 1 r) len)
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (loop (+fx r 2) (+fx w 2)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       ((<=fx n #xef)
+			;; 3 bytes sequence
+			(if (and (<fx r (-fx len 2))
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
+			       (loop (+fx r 3) (+fx w 3)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       ((=fx n #xf0)
+			;; 4 bytes sequence special1
+			(if (and (<fx r (-fx len 3))
+				 (in-range? (string-ref str (+fx r 1)) #x90 #xbf)
+				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
+			       (string-set! res (+fx w 3) (string-ref str (+fx r 3)))
+			       (loop (+fx r 4) (+fx w 4)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       ((or (=fx n #xf4)
+			    (and (or (=fx n #xf8) (=fx n #xfc)) (not strict)))
+			;; 4 bytes sequence special2
+			(if (and (<fx r (-fx len 3))
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
+			       (string-set! res (+fx w 3) (string-ref str (+fx r 3)))
+			       (loop (+fx r 4) (+fx w 4)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       ((<=fx n #xf7)
+			;; 4 bytes sequence
+			(if (and (<fx r (-fx len 3))
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
+			       (string-set! res (+fx w 3) (string-ref str (+fx r 3)))
+			       (loop (+fx r 4) (+fx w 4)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       ((<=fx n #xfb)
+			(if (and (<fx r (-fx len 4))
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 4)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
+			       (string-set! res (+fx w 3) (string-ref str (+fx r 3)))
+			       (string-set! res (+fx w 4) (string-ref str (+fx r 4)))
+			       (loop (+fx r 5) (+fx w 5)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       ((<=fx n #xfd)
+			(if (and (<fx r (-fx len 5))
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 4)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 5)) #x80 #xbf))
+			    (begin
+			       (string-set! res w c)
+			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
+			       (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
+			       (string-set! res (+fx w 3) (string-ref str (+fx r 3)))
+			       (string-set! res (+fx w 4) (string-ref str (+fx r 4)))
+			       (string-set! res (+fx w 5) (string-ref str (+fx r 5)))
+			       (loop (+fx r 6) (+fx w 6)))
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
+		       (else
+			#f))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-normalize-utf16 ...                                         */
