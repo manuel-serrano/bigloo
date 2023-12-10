@@ -149,6 +149,7 @@ api/libuv/src/Misc/libuv.init
 # libbacktrace
 api/libbacktrace/src/Misc/libbacktrace.init
 libbacktrace/libbacktrace-d0f5e95
+libbacktrace/libbacktrace-14818b7
 libbacktrace/home
 
 # mpg123
@@ -209,7 +210,8 @@ gc/gc-8.0.4_mt
 gc/gc-8.2.2
 gc/gc-8.2.2_fth
 gc/gc-8.2.2_mt
-gc/gc-8.2.4_fth
+gc/gc-8.2.4
+gc/gc-8.2.4_mt
 gc/gc-8.2.4_mt
 gc/preinst
 
@@ -221,6 +223,7 @@ libuv/libuv-v1.20.3/
 libuv/libuv-v1.40.0/
 libuv/libuv-v1.43.0/
 libuv/libuv-v1.44.2/
+libuv/libuv-v1.47.0/
 
 # xlib
 xlib/include/
