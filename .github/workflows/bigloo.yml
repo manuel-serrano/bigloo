@@ -19,6 +19,8 @@ jobs:
       - run: pushd /tmp && tar xfz /tmp/bigloo-unstable.tar.gz && popd
       - run: pushd /tmp/bigloo-unstable && ./configure --prefix=/usr > /dev/null 2>&1 && make -j 2>&1 > /dev/null && sudo make install > /dev/null && popd
 
+      - run: pwd
+      - run: ls -l
       - run: ./configure --prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no
       - run: hostboot BGLBUILDBINDIR=/usr/bin
       - run: make install-progs > /dev/null

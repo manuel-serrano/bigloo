@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Thu Jun  1 18:31:56 2023 (serrano)                */
+/*    Last change :  Sun Dec 10 08:41:54 2023 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -264,7 +264,7 @@ integer_to_string_padding(long x, long padding, long radix) {
    int bits = (x <= 0 ? 1 : 0);
    long ax = BGL_LABS(x);
    unsigned long axx = (unsigned long)ax;
-   char fmt[10];
+   char fmt[30];
 
    switch (radix) {
       case 2 :
