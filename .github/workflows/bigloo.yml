@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - run: sudo apt -qq update
-      - run: sudo apt install -y dh-make libssl1.0.2 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring0 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10
+      - run: sudo apt install -y dh-make libssl1.1 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring0 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10
 
       - run: wget -nv ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-unstable.tar.gz -O /tmp/bigloo-unstable.tar.gz > /dev/null
       - run: pushd /tmp && tar xfz /tmp/bigloo-unstable.tar.gz && popd
