@@ -13,10 +13,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    strategy:
-      matrix:
-        node-version: [18.x]
-
     steps:
       - name: requirements ${{ matrix.os }}
       - run: sudo apt -qq update
