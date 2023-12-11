@@ -67,9 +67,9 @@ decomposed as follows:
   6. install everything:
  `make install-sans-docs`
  
-You can also the check the `.travis.yml` script used for the continuous
-integration. It shows how to compile, run, and test, the current Bigloo
-version.
+You can also the check the `.github/workflows/bigloo.yml` script used
+for the continuous integration. It shows how to compile, run, and
+test, the current Bigloo version.
  
 See the `doc` directory for extra hints and information about the Bigloo
 installation process.

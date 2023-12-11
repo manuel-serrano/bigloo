@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Wed Nov 15 07:22:07 2023 (serrano)                */
+;*    Last change :  Mon Dec 11 07:44:53 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -359,7 +359,7 @@
 		     (vec v)
 		     (offset 0))))
 	  (instantiate::bbv-range
-	     (lo val)
+	     (lo 0) ;; MS: 11dec2023
 	     (up val)))
        *vlen-range*))
 
@@ -373,45 +373,55 @@
 ;*    rtl-range ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (rtl-range i ctx)
-   (cond
-      ((isa? i rtl_reg)
-       (let ((e (bbv-ctx-get ctx i)))
-	  (when e
-	     (with-access::bbv-ctxentry e (types value polarity)
-		(when (and polarity (any range-type? types))
-		   (when (bbv-range? value)
-		      value))))))
-      ((rtl_ins-mov? i)
-       (rtl-range (car (rtl_ins-args i)) ctx))
-      ((rtl_ins-call? i)
-       (with-access::rtl_ins i (fun)
-	  (with-access::rtl_call fun (var)
+   (with-trace 'bbv-range (format "bbv-range (~a)" (shape i))
+      (cond
+	 ((isa? i rtl_reg)
+	  (trace-item "rtl_reg=" (shape i))
+	  (trace-item "ctx=" (shape ctx))
+	  (let ((e (bbv-ctx-get ctx i)))
+	     (when e
+		(with-access::bbv-ctxentry e (types value polarity)
+		   (trace-item "value=" (shape value))
+		   (trace-item "types=" (shape types))
+		   (trace-item "polarity=" polarity)
+		   (when (and polarity (any range-type? types))
+		      (when (bbv-range? value)
+			 value))))))
+	 ((rtl_ins-mov? i)
+	  (trace-item "rtl_mov")
+	  (rtl-range (car (rtl_ins-args i)) ctx))
+	 ((rtl_ins-call? i)
+	  (trace-item "rtl_call")
+	  (with-access::rtl_ins i (fun)
+	     (with-access::rtl_call fun (var)
+		(cond
+		   ((eq? var *int->long*)
+		    (rtl-range (car (rtl_ins-args i)) ctx))
+		   ((eq? var *bint->long*)
+		    (rtl-range (car (rtl_ins-args i)) ctx))
+		   (else
+		    #f)))))
+	 ((rtl_ins-loadi? i)
+	  (trace-item "rtl_loadi")
+	  (with-access::rtl_ins i (fun)
+	     (with-access::rtl_loadi fun (constant)
+		(with-access::atom constant (value)
+		   (when (fixnum? value)
+		      (fixnum->range value))))))
+	 ((rtl_ins-vlen? i)
+	  (trace-item "rtl_vlen")
+	  (with-access::rtl_ins i (dest args)
 	     (cond
-		((eq? var *int->long*)
-		 (rtl-range (car (rtl_ins-args i)) ctx))
-		((eq? var *bint->long*)
-		 (rtl-range (car (rtl_ins-args i)) ctx))
+		((not (rtl_reg? (car args)))
+		 (vlen-range))
+		((bbv-ctx-get ctx (car args))
+		 =>
+		 (lambda (e)
+		    (vlen->range (car args))))
 		(else
-		 #f)))))
-      ((rtl_ins-loadi? i)
-       (with-access::rtl_ins i (fun)
-	  (with-access::rtl_loadi fun (constant)
-	     (with-access::atom constant (value)
-		(when (fixnum? value)
-		   (fixnum->range value))))))
-      ((rtl_ins-vlen? i)
-       (with-access::rtl_ins i (dest args)
-	  (cond
-	     ((not (rtl_reg? (car args)))
-	      (vlen-range))
-	     ((bbv-ctx-get ctx (car args))
-	      =>
-	      (lambda (e)
-		 (vlen->range (car args))))
-	     (else
-	      (vlen-range)))))
-      (else
-       #f)))
+		 (vlen-range)))))
+	 (else
+	  #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-singleton? ...                                               */
