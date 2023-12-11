@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Dec 11 07:44:53 2023 (serrano)                */
+;*    Last change :  Mon Dec 11 13:21:45 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -160,6 +160,26 @@
        (minrv y x))))
 
 ;*---------------------------------------------------------------------*/
+;*    minrv-up ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (minrv-up x y)
+   (cond
+      ((and (bbv-vlen? x) (not (bbv-vlen? y)))
+       (cond
+	  ((< y 0)
+	   (duplicate::bbv-vlen x
+	      (offset (min (bbv-vlen-offset x) y))))
+	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))
+	   x)
+	  (else
+	   (duplicate::bbv-vlen x
+	      (offset y)))))
+      ((and (not (bbv-vlen? x)) (bbv-vlen? y))
+       (minrv-up y x))
+      (else
+       (minrv y x))))
+
+;*---------------------------------------------------------------------*/
 ;*    minvlen ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (minvlen x y)
@@ -188,6 +208,26 @@
 	   y)
 	  (else
 	   x)))
+      (else
+       (maxrv y x))))
+
+;*---------------------------------------------------------------------*/
+;*    maxrv-lo ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (maxrv-lo x y)
+   (cond
+      ((and (bbv-vlen? x) (not (bbv-vlen? y)))
+       (cond
+	  ((< y 0)
+	   (duplicate::bbv-vlen x
+	      (offset (max (bbv-vlen-offset x) y))))
+	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))
+	   x)
+	  (else
+	   (duplicate::bbv-vlen x
+	      (offset y)))))
+      ((and (not (bbv-vlen? x)) (bbv-vlen? y))
+       (maxrv-lo y x))
       (else
        (maxrv y x))))
 
@@ -504,12 +544,12 @@
 	 ;; [ll..lu] < [rl..ru] => [ll..max(ll,min(lu, ru-1)]
 	 (let ((res (instantiate::bbv-range
 		       (lo (minvlen ll (-- ru)))
-		       (up (minrv lu (-- ru))))))
+		       (up (minrv-up lu (-- ru))))))
 	    (trace-item (shape left) " < " (shape right))
 	    (trace-item "    ll=" ll)
 	    (trace-item "    ru=" ru)
 	    (trace-item "  --ru=" (-- ru))
-	    (trace-item " minrv=" (minrv lu (-- ru)))
+	    (trace-item " minrv=" (minrv-up lu (-- ru)))
 	    (trace-item "     =>" (shape res))
 	    res))))
 
@@ -524,7 +564,7 @@
       ;; [30..X] <= [Y..?] => [ll..max(ll,min(X, Y))]
       (let ((res (instantiate::bbv-range
 		    (lo (minvlen ll ru))
-		    (up (minrv lu ru)))))
+		    (up (minrv-up lu ru)))))
 	 res)))
 
 ;*---------------------------------------------------------------------*/
@@ -537,7 +577,7 @@
 	 (ru (bbv-range-up right)))
       ;; [ll..lu] > [rl..ru] => [min(lu,max(ll,rl++))..lu]
       (let ((res (instantiate::bbv-range
-		    (lo (maxrv ll (++ rl)))
+		    (lo (maxrv-lo ll (++ rl)))
 		    (up (maxvlen lu (++ rl))))))
 	 res)))
 
@@ -552,7 +592,7 @@
 	    (ru (bbv-range-up right)))
 	 ;; [ll..lu] >= [rl..ru] => [min(lu,max(ll,rl))..lu]
 	 (let ((res (instantiate::bbv-range
-		       (lo (maxrv ll rl))
+		       (lo (maxrv-lo ll rl))
 		       (up (maxvlen lu rl)))))
 	    (trace-item (shape left) " >= " (shape right))
 	    (trace-item "    lu=" lu)

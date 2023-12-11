@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Dec 11 07:44:14 2023 (serrano)                */
+;*    Last change :  Mon Dec 11 08:47:57 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -167,18 +167,16 @@
 			  (block-preds-update! n (cons bs (block-preds n))))
 		(rtl_switch-labels fun))))))
    
-   (with-trace 'bbv-ins "ins-specialize!"
+   (with-trace 'bbv-ins (format "ins-specialize! {~a}->~a"
+			   (block-label (blockS-parent bs))
+			   (block-label bs))
       (let loop ((oins first)
 		 (nins '())
 		 (ctx ctx))
 	 (when (pair? oins)
-	    (trace-item "{" (block-label (blockS-parent bs))
-	       "}->" (block-label bs)
-	       " ins=" (shape (car oins)) " " (length (cdr oins))
+	    (trace-item "ins=" (shape (car oins)) 
 	       " " (with-access::rtl_ins (car oins) (fun) (typeof fun)))
-	    (trace-item "{" (block-label (blockS-parent bs))
-	       "}->" (block-label bs)
-	       " ctx=" (shape ctx)))
+	    (trace-item "ctx=" (shape ctx)))
 	 (cond
 	    ((null? oins)
 	     (reverse! nins))
@@ -188,25 +186,27 @@
 		;; instruction specialization
 		(multiple-value-bind (ins nctx)
 		   (specialize (car oins) bs ctx queue)
+		   (trace-item "nctx=" (shape nctx))
 		   (with-access::rtl_ins ins (args)
 		      (set! args (map (lambda (i)
 					 (if (isa? i rtl_ins)
 					     (car (ins-specialize! (list i) bs ctx queue))
 					     i))
 				    args))
-		      (let ((ctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
+		      (let ((lctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
+			 (trace-item "lctx=" (shape lctx))
 			 (cond
 			    ((rtl_ins-br? ins)
 			     (connect! bs ins)
-			     (loop (cdr oins) (cons ins nins) ctx))
+			     (loop (cdr oins) (cons ins nins) lctx))
 			    ((rtl_ins-go? ins)
 			     (connect! bs ins)
-			     (loop '() (cons ins nins) ctx))
+			     (loop '() (cons ins nins) lctx))
 			    ((rtl_ins-ifne? ins)
 			     (connect! bs ins)
-			     (loop (cdr oins) (cons ins nins) ctx))
+			     (loop (cdr oins) (cons ins nins) lctx))
 			    (else
-			     (loop (cdr oins) (cons ins nins) ctx))))))))
+			     (loop (cdr oins) (cons ins nins) lctx))))))))
 	    ((rtl_ins-last? (car oins))
 	     ;; a return, fail, ...
 	     (with-access::rtl_ins (car oins) (args)
@@ -310,17 +310,20 @@
 ;*    new-blockS ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (new-blockS::blockS bv::blockV ctx::bbv-ctx #!key (cnt 0) creator)
-   (let* ((lbl (genlabel))
-	  (bs (instantiate::blockS
-		 (ctx ctx)
-		 (parent bv)
-		 (label lbl)
-		 (cnt cnt)
-		 (first '())
-		 (%merge-info (if creator `((creator . ,creator)) '())))))
-      (with-access::blockV bv (versions)
-	 (set! versions (cons bs versions))
-	 bs)))
+   (with-trace 'bbv-block "new-blockS"
+      (let* ((lbl (genlabel))
+	     (bs (instantiate::blockS
+		    (ctx ctx)
+		    (parent bv)
+		    (label lbl)
+		    (cnt cnt)
+		    (first '())
+		    (%merge-info (if creator `((creator . ,creator)) '())))))
+	 (trace-item "lbl=" lbl)
+	 (trace-item "ctx=" (shape ctx))
+	 (with-access::blockV bv (versions)
+	    (set! versions (cons bs versions))
+	    bs))))
 
 ;*---------------------------------------------------------------------*/
 ;*    live-blockS ...                                                  */
@@ -522,6 +525,7 @@
 	 (let ((ctx (unalias-ctx ctx dest)))
 	    (cond
 	       ((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
+		(trace-item "rtl_ins-specialize-mov.1")
 		(let ((e (bbv-ctx-get ctx (car args))))
 		   (with-access::bbv-ctxentry e (types value polarity)
 		      (if (bbv-singleton? value)
@@ -532,6 +536,7 @@
 				(extend-ctx ctx dest types polarity :value value)
 				dest (car args)))))))
 	       ((and *type-call* (pair? args) (rtl_ins-call? (car args)))
+		(trace-item "rtl_ins-specialize-mov.2")
 		(with-access::rtl_ins (car args) (fun (fargs args))
 		   (with-access::rtl_call fun (var)
 		      (with-access::global var (value type)
@@ -559,6 +564,7 @@
 						(extend-ctx ctx dest
 						   (list type) #t))))))))))))
 	       ((and *type-loadi* (pair? args) (rtl_ins-loadi? (car args)))
+		(trace-item "rtl_ins-specialize-mov.3")
 		(with-access::rtl_ins (car args) (fun)
 		   (with-access::rtl_loadi fun (constant)
 		      (with-access::atom constant (value type)
@@ -566,12 +572,14 @@
 			    (extend-ctx ctx dest (list type) #t :value
 			       (if (fixnum? value) (fixnum->range value) '_)))))))
 	       ((and *type-loadg* (pair? args) (rtl_ins-loadg? (car args)))
+		(trace-item "rtl_ins-specialize-mov.4")
 		(with-access::rtl_ins (car args) (fun)
 		   (with-access::rtl_loadg fun (var)
 		      (with-access::variable var (value type)
 			 (values (duplicate-ins i ctx)
 			    (extend-ctx ctx dest (list type) #t))))))
 	       (else
+		(trace-item "rtl_ins-specialize-mov.5")
 		(with-access::rtl_reg dest (type)
 		   (values (duplicate-ins i ctx)
 		      (extend-ctx ctx dest (list (if (eq? type *obj*) (rtl_ins-type i) type)) #t)))))))))
@@ -731,10 +739,11 @@
 ;*    rtl_ins-specialize-vlen ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specialize-vlen i::rtl_ins bs ctx queue::bbv-queue)
-   (with-trace 'bbv-ins "rtl_ins-specialize-vlen"
+   (with-trace 'bbv-ins (format "rtl_ins-specialize-vlen (~a)" (shape i))
       (with-access::rtl_ins i (dest args)
 	 (let* ((range (rtl-range i ctx))
 		(nctx (extend-ctx ctx dest (list *long*) #t :value range)))
+	    (trace-item "range=" range)
 	    (trace-item "nctx=" (shape nctx))
 	    (values i nctx)))))
 
@@ -955,8 +964,10 @@
 				 (intr- (bbv-range-gte intl intr)))
 			      (trace-item "<.intr+=" (shape intr+))
 			      (trace-item "<.intr-=" (shape intr-))
-			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
-				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+			      (let ((ctx+ (unless (empty-range? intr+)
+					     (extend-ctx ctx reg types #t :value intr+)))
+				    (ctx- (unless (empty-range? intr-)
+					     (extend-ctx ctx reg types #t :value intr-))))
 				 (trace-item "ctx+.1=" (shape ctx+))
 				 (trace-item "ctx-.1=" (shape ctx-))
 				 (values ctx+ ctx-))))
@@ -965,8 +976,10 @@
 				 (intr- (bbv-range-gt intl intr)))
 			      (trace-item "<=.intr+=" (shape intr+))
 			      (trace-item "<=.intr-=" (shape intr-))
-			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
-				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+			      (let ((ctx+ (unless (empty-range? intr+)
+					     (extend-ctx ctx reg types #t :value intr+)))
+				    (ctx- (unless (empty-range? intr-)
+					     (extend-ctx ctx reg types #t :value intr-))))
 				 (trace-item "ctx+.1=" (shape ctx+))
 				 (trace-item "ctx-.1=" (shape ctx-))
 				 (values ctx+ ctx-))))
@@ -975,8 +988,10 @@
 				 (intr- (bbv-range-lte intl intr)))
 			      (trace-item ">.intr+=" (shape intr+))
 			      (trace-item ">.intr-=" (shape intr-))
-			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
-				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+			      (let ((ctx+ (unless (empty-range? intr+)
+					     (extend-ctx ctx reg types #t :value intr+)))
+				    (ctx- (unless (empty-range? intr-)
+					     (extend-ctx ctx reg types #t :value intr-))))
 				 (trace-item "ctx+.1=" (shape ctx+))
 				 (trace-item "ctx-.1=" (shape ctx-))
 				 (values ctx+ ctx-))))
@@ -985,8 +1000,10 @@
 				 (intr- (bbv-range-lt intl intr)))
 			      (trace-item ">=.intr+=" (shape intr+))
 			      (trace-item ">=.intr-=" (shape intr-))
-			      (let ((ctx+ (extend-ctx ctx reg types #t :value intr+))
-				    (ctx- (extend-ctx ctx reg types #t :value intr-)))
+			      (let ((ctx+ (unless (empty-range? intr+)
+					     (extend-ctx ctx reg types #t :value intr+)))
+				    (ctx- (unless (empty-range? intr-)
+					     (extend-ctx ctx reg types #t :value intr-))))
 				 (trace-item "ctx+.1=" (shape ctx+))
 				 (trace-item "ctx-.1=" (shape ctx-))
 				 (values ctx+ ctx-))))
@@ -1007,11 +1024,17 @@
 	    ((and (reg? lhs) (reg? rhs))
 	     (multiple-value-bind (lctx+ lctx-)
 		(test-ctxs-ref (reg lhs) intl intr op ctx)
-		(multiple-value-bind (rctx+ _)
-		   (test-ctxs-ref (reg rhs) intr intl (inv-op op) lctx+)
-		   (multiple-value-bind (_ rctx-)
-		      (test-ctxs-ref (reg rhs) intr intl (inv-op op) lctx-)
-		      (values rctx+ rctx-)))))
+		(cond
+		   ((not lctx+)
+		    (values lctx+ lctx-))
+		   ((not lctx-)
+		    (values lctx+ lctx-))
+		   (else
+		    (multiple-value-bind (rctx+ _)
+		       (test-ctxs-ref (reg rhs) intr intl (inv-op op) lctx+)
+		       (multiple-value-bind (_ rctx-)
+			  (test-ctxs-ref (reg rhs) intr intl (inv-op op) lctx-)
+			  (values rctx+ rctx-)))))))
 	    ((and (isa? lhs rtl_ins) (rtl_ins-mov? lhs))
 	     (with-access::rtl_ins lhs (args)
 		(specialize/op op (car args) intl rhs intr ctx)))
@@ -1078,7 +1101,21 @@
 				(specialize/op op lhs intl rhs intr ctx)
 				(trace-item "resolve/op.unknown.ctx+=" (shape ctx+))
 				(trace-item "resolve/op.unknown.ctx-=" (shape ctx-))
-				(values (duplicate::rtl_ins/bbv i) ctx+ ctx-))))))
+				(cond
+				   ((not ctx+)
+				    (values (duplicate::rtl_ins/bbv i
+					       (ctx ctx-)
+					       (fun (false))
+					       (args '()))
+				       ctx ctx-))
+				   ((not ctx-)
+				    (values (duplicate::rtl_ins/bbv i
+					       (ctx ctx+)
+					       (fun (true))
+					       (args '()))
+				       ctx+ ctx))
+				   (else
+				    (values (duplicate::rtl_ins/bbv i) ctx+ ctx-))))))))
 		     (else
 		      (multiple-value-bind (ctx+ ctx-)
 			 (specialize/op op lhs intl rhs intr ctx)
@@ -1369,7 +1406,9 @@
 			  (let ((nctx (extend-ctx ctx dest (list *long*) #t
 					 :value range)))
 			     (trace-item "nctx.3=" (shape nctx))
-			     (values i nctx))
+			     (values (duplicate::rtl_ins/bbv i
+					(ctx nctx))
+				nctx))
 			  (values (duplicate::rtl_ins/bbv i
 				     (ctx ctx))
 			     ctx))))

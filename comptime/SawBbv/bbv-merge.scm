@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Wed Nov 15 08:52:11 2023 (serrano)                */
+;*    Last change :  Mon Dec 11 12:23:40 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -46,21 +46,21 @@
 ;*    blocks to be replaced and a ctx of the new block.                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge bs::pair-nil)
-   (with-trace 'bbv-block-merge
+   (with-trace 'bbv-merge
 	 (format "bbv-block-merge [~a] ~( )"
 	    (block-label (blockS-parent (car bs)))
-	    (map block-label bs)))
-   (multiple-value-bind (bs1 bs2)
-      (bbv-block-merge-select bs)
-      (trace-item "bs1=" (block-label bs1))
-      (trace-item "bs2=" (block-label bs2))
-      (with-access::blockS bs1 ((ctx1 ctx))
-	 (with-access::blockS bs2 ((ctx2 ctx))
-	    (trace-item "ctx1=" (shape ctx1))
-	    (trace-item "ctx2=" (shape ctx2))
-	    (let ((mctx (merge-ctx ctx1 ctx2)))
-	       (trace-item "mctx=" (shape mctx))
-	       (values bs1 bs2 mctx))))))
+	    (map block-label bs))
+      (multiple-value-bind (bs1 bs2)
+	 (bbv-block-merge-select bs)
+	 (trace-item "bs1=" (block-label bs1))
+	 (trace-item "bs2=" (block-label bs2))
+	 (with-access::blockS bs1 ((ctx1 ctx))
+	    (with-access::blockS bs2 ((ctx2 ctx))
+	       (trace-item "ctx1=" (shape ctx1))
+	       (trace-item "ctx2=" (shape ctx2))
+	       (let ((mctx (merge-ctx ctx1 ctx2)))
+		  (trace-item "mctx=" (shape mctx))
+		  (values bs1 bs2 mctx)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select ...                                       */
@@ -223,10 +223,21 @@
 ;*    merge-ctxentry ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (merge-ctxentry e1::bbv-ctxentry e2::bbv-ctxentry)
+
+   (define (eq-type? x y)
+      (or (eq? x y)
+	  (and (eq? x *long*) (eq? y *bint*))
+	  (and (eq? x *bint*) (eq? y *long*))))
    
    (define (same-types? types1 types2)
       (when (=fx (length types1) (length types2))
-	 (every (lambda (t) (memq t types2)) types1)))
+	 (every (lambda (t)
+		   (let loop ((types2 types2))
+		      (cond
+			 ((null? types2) #f)
+			 ((eq-type? t (car types2)) #t)
+			 (else (loop (cdr types2))))))
+	    types1)))
    
    (define (bbv-ctxentry-top)
       (duplicate::bbv-ctxentry e1
@@ -245,7 +256,7 @@
       ;; intersection of ts1 types and ts2 types
       (filter (lambda (t) (memq t ts2)) ts1))
    
-   (with-trace 'bbv-interval "merge-ctxentry"
+   (with-trace 'bbv-merge "merge-ctxentry"
       (with-access::bbv-ctxentry e1 ((polarity1 polarity)
 				     (types1 types)
 				     (value1 value))
@@ -254,8 +265,10 @@
 					(value2 value))
 	    (cond
 	       ((not (eq? polarity1 polarity2))
+		(trace-item "polarities differ")
 		(bbv-ctxentry-top))
 	       ((not polarity1)
+		(trace-item "merge-range.not polarity")
 		(let ((ts (types-intersection types1 types2)))
 		   (if (null? ts)
 		       (bbv-ctxentry-top)
@@ -263,6 +276,8 @@
 			  (types ts)
 			  (value '_)))))
 	       ((not (same-types? types1 types2))
+		(trace-item "not same types types1="
+		   (map shape types1) " " (map shape types2))
 		(let ((ts (types-intersection types1 types2)))
 		   (if (null? ts)
 		       (bbv-ctxentry-top)
@@ -270,6 +285,8 @@
 			  (types ts)
 			  (value '_)))))
 	       ((or (not (bbv-range? value1)) (not (bbv-range? value2)))
+		(trace-item "not both ranges value1=" (shape value1)
+		   " value2=" (shape value2))
 		(duplicate::bbv-ctxentry e1
 		   (value '_)))
 	       (else
@@ -283,9 +300,9 @@
 ;*    range-widening ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (range-widening l u ranges)
-
+   
    (define widening #f)
-
+   
    (define (low-widening-vlen v)
       (if (< (bbv-vlen-offset v) -10)
 	  (bbv-min-fixnum)
@@ -308,7 +325,7 @@
 	 ((>fx v -255) -255)
 	 ((>=fx v (+fx (bbv-min-fixnum) 1)) (+fx (bbv-min-fixnum) 1))
 	 (else (bbv-min-fixnum))))
-
+   
    (define (low-widening-vlen v)
       (if (< (bbv-vlen-offset v) -10)
 	  (bbv-min-fixnum)
@@ -329,7 +346,7 @@
 	 (else (bbv-max-fixnum))))
    
    (let ((nl (if (every (lambda (r)
-			   (with-access::bbv-range r (lo)
+			   (with-access::bbv-range r (lo up)
 			      (=rv l lo)))
 		    ranges)
 		 l
@@ -343,6 +360,16 @@
       (cond
 	 ((and (=rv nl l) (=rv nu u) (not widening))
 	  (car ranges))
+	 ((every (lambda (r)
+		    (with-access::bbv-range (car ranges) ((up0 up))
+		       (with-access::bbv-range r (up)
+			  (and (bbv-vlen? up0)
+			       (bbv-vlen? up)
+			       (eq? (bbv-vlen-vec up0) (bbv-vlen-vec up))))))
+	     ranges)
+	  (instantiate::bbv-range
+	     (lo l)
+	     (up nu)))
 	 (else
 	  (instantiate::bbv-range
 	     (lo nl)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Nov  8 16:16:44 2023 (serrano)                */
+;*    Last change :  Mon Dec 11 11:29:14 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -493,9 +493,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::rtl_ins/bbv p m)
 
-   (define (dump-ctx ctx p)
+   (define (dump-ctx ctx in p)
       (with-access::bbv-ctx ctx (entries)
-	 (display (map shape entries) p)))
+	 (display (filter-map (lambda (e)
+				 (with-access::bbv-ctxentry e (reg)
+				    (when (or (not (isa? reg rtl_reg/ra))
+					      (regset-member? reg in))
+				       (shape e))))
+		     entries)
+	    p)))
 
    (with-access::rtl_ins/bbv o (%spill fun dest args def in out ctx)
       (with-output-to-port p
@@ -509,7 +515,7 @@
 	    (when dest
 	       (display ")" p))
 	    (display " " p)
-	    (dump-ctx ctx p)
+	    (dump-ctx ctx in p)
 	    (display "]" p)
 	    (display " ;;")
 	    ;; (display* " fun=" (typeof fun))
