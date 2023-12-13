@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Wed Dec 13 07:31:27 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 13:03:25 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -476,6 +476,19 @@
 	 ((rtl_ins-mov? i)
 	  (trace-item "rtl_mov")
 	  (rtl-range (car (rtl_ins-args i)) ctx))
+	 ((rtl_ins-strlen? i)
+	  ;; similar to vlen
+	  (trace-item "rtl_strlen")
+	  (with-access::rtl_ins i (dest args)
+	     (cond
+		((not (rtl_reg? (car args)))
+		 (vlen-range))
+		((bbv-ctx-get ctx (car args))
+		 =>
+		 (lambda (e)
+		    (vlen->range (car args))))
+		(else
+		 (vlen-range)))))
 	 ((rtl_ins-call? i)
 	  (trace-item "rtl_call")
 	  (with-access::rtl_ins i (fun)

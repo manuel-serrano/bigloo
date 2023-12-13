@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Dec 13 09:52:02 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 12:21:32 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -120,6 +120,7 @@
 	    (rtl_ins-ifne?::bool i::rtl_ins)
 	    (rtl_ins-call?::bool i::rtl_ins)
 	    (rtl_ins-vlen?::bool i::rtl_ins)
+	    (rtl_ins-strlen?::bool i::rtl_ins)
 	    (rtl_ins-loadi?::bool i::rtl_ins)
 	    (rtl_ins-loadg?::bool i::rtl_ins)
 	    (rtl_ins-bool?::bool i::rtl_ins)
@@ -520,7 +521,6 @@
 	    (dump-ctx ctx in p)
 	    (display "]" p)
 	    (display " ;;")
-	    ;; (display* " fun=" (typeof fun))
 	    (display* " def=" (map shape (regset->list def)))
 	    (display* " in=" (map shape (regset->list in)))
 	    (display* " out=" (map shape (regset->list out)))))))
@@ -573,10 +573,6 @@
       (fprint p ":succs " (map lbl succs))
       (dump-margin p (+fx m 1))
       (fprint p ":merge-info " (dump-merge-info %merge-info))
-      (dump-margin p (+fx m 1))
-      (display ":context " p)
-      (dump-ctx ctx (with-access::rtl_ins/bbv (car first) (in) in) p)
-      (newline)
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))
@@ -656,6 +652,16 @@
 (define (rtl_ins-vlen? i::rtl_ins)
    (with-access::rtl_ins i (fun)
       (isa? fun rtl_vlength)))
+   
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-strlen? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-strlen? i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (when (isa? fun rtl_call)
+	 (with-access::rtl_call fun (var)
+	    (tprint "ICI " (eq? var *string-length*) " " (shape var))
+	    (eq? var *string-length*)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-loadi? ...                                               */

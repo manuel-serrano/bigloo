@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Tue Jul  4 18:20:23 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 12:42:04 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -33,6 +33,8 @@
 	    *$int->long*
 	    *long->bint*
 	    *vector-bound-check*
+	    *string-bound-check*
+	    *string-length*
 	    *error*
 	    *number?*))
 
@@ -78,6 +80,8 @@
 (define *$int->long* #f)
 (define *long->bint* #f)
 (define *vector-bound-check* #f)
+(define *string-bound-check* #f)
+(define *string-length* #f)
 (define *error* #f)
 (define *number?* #f)
 (define *type-norms* #f)
@@ -119,6 +123,8 @@
       (set! *$int->long* (get-global/module '$int->long 'foreign))
       (set! *long->bint* (get-global/module '$long->bint 'foreign))
       (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))
+      (set! *string-bound-check* (get-global/module '$string-bound-check? 'foreign))
+      (set! *string-length* (get-global/module '$string-length 'foreign))
       (set! *error* (get-global/module 'error '__error))
       (set! *number?* (get-global/module 'number? '__r4_numbers_6_5))))
 
@@ -158,6 +164,8 @@
    (set! *$int->long* #f)
    (set! *long->bint* #f)
    (set! *vector-bound-check* #f)
+   (set! *string-bound-check* #f)
+   (set! *string-length* #f)
    (set! *error* #f)
    (set! *number?* #f)
    (set! *type-norms* #f))
