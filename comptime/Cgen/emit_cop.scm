@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Fri Dec  8 18:16:54 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 11:46:47 2023 (serrano)                */
 ;*    Copyright   :  1996-2023 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -331,7 +331,7 @@
 	 (map (lambda (a) (type-name (cop-type a)))
 	    (reverse! (cdr (reverse actuals))))))
 	     
-   (define (out-call op cast actuals)
+   (define (out-call op cast actuals eoa?)
       (if (or (eq? (cfuncall-type cop) *obj*)
 	      (equal? "obj_t" (type-name (cfuncall-type cop))))
 	  (begin
@@ -346,7 +346,9 @@
 	     (display (type-name (cfuncall-type cop)) *c-port*)
 	     (display (format "(*)(~(, )))"
 			 (map (lambda (a) (type-name (cop-type a)))
-			    (reverse! (cdr (reverse actuals)))))
+			    (if eoa?
+				actuals
+				(reverse! (cdr (reverse actuals))))))
 		*c-port*)
 	     (display op *c-port*)
 	     (display "(" *c-port*)
@@ -371,7 +373,7 @@
 			    (loop (cdr actuals)))))))
 	    (emit-light-cfuncall (cop)
                (let ((actuals (cfuncall-args cop)))
-		  (out-call "PROCEDURE_L_ENTRY" fun-l-cast actuals)
+		  (out-call "PROCEDURE_L_ENTRY" fun-l-cast actuals #f)
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because there is always
 		     ;; the function and EOA.
@@ -386,7 +388,7 @@
 			    (loop (cdr actuals)))))))
 	    (emit-regular-cfuncall/eoa (cop)
 	       (let ((actuals (cfuncall-args cop)))
-		  (out-call "PROCEDURE_ENTRY" fun-cast actuals)
+		  (out-call "PROCEDURE_ENTRY" fun-cast actuals #t)
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because there is always
 		     ;; the function and EOA.
@@ -401,7 +403,7 @@
 			    (loop (cdr actuals)))))))
 	    (emit-regular-cfuncall/strict-fx (cop)
 	       (let ((actuals (reverse! (cdr (reverse (cfuncall-args cop))))))
-		  (out-call "PROCEDURE_ENTRY" fun-cast actuals)
+		  (out-call "PROCEDURE_ENTRY" fun-cast actuals #f)
 		  (if (null? actuals)
 		      (display "()" *c-port*)
 		      (let loop ((actuals actuals))
@@ -416,7 +418,7 @@
 				(loop (cdr actuals))))))))
 	    (emit-regular-cfuncall/strict-va (cop)
 	       (let ((actuals (cfuncall-args cop)))
-		  (out-call "PROCEDURE_ENTRY" fun-cast-va-strict actuals)
+		  (out-call "PROCEDURE_ENTRY" fun-cast-va-strict actuals #t)
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because there is always
 		     ;; the function and EOA.
@@ -431,7 +433,7 @@
 			    (loop (cdr actuals)))))))
 	    (emit-regular-cfuncall/oeoa (cop)
 	       (let ((actuals (cfuncall-args cop)))
-		  (out-call "PROCEDURE_ENTRY" fun-cast actuals)
+		  (out-call "PROCEDURE_ENTRY" fun-cast actuals #t)
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because there is always
 		     ;; the function and EOA.

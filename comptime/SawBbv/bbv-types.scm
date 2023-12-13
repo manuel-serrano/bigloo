@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Dec 11 11:29:14 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 09:52:02 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -489,20 +489,22 @@
       (vector id (map shape entries))))
 
 ;*---------------------------------------------------------------------*/
+;*    dump-ctx ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (dump-ctx ctx in p)
+   (with-access::bbv-ctx ctx (entries)
+      (display (filter-map (lambda (e)
+			      (with-access::bbv-ctxentry e (reg)
+				 (when (or (not (isa? reg rtl_reg/ra))
+					   (regset-member? reg in))
+				    (shape e))))
+		  entries)
+	 p)))
+
+;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (dump o::rtl_ins/bbv p m)
-
-   (define (dump-ctx ctx in p)
-      (with-access::bbv-ctx ctx (entries)
-	 (display (filter-map (lambda (e)
-				 (with-access::bbv-ctxentry e (reg)
-				    (when (or (not (isa? reg rtl_reg/ra))
-					      (regset-member? reg in))
-				       (shape e))))
-		     entries)
-	    p)))
-
    (with-access::rtl_ins/bbv o (%spill fun dest args def in out ctx)
       (with-output-to-port p
 	 (lambda ()
@@ -557,7 +559,7 @@
 	 ((assq 'merge-new mi) 'merge-new)
 	 (else #f)))
    
-   (with-access::blockS o (label collapsed first parent preds succs %merge-info)
+   (with-access::blockS o (label collapsed first parent ctx preds succs %merge-info)
       (fprint p "(blockS " label)
       (dump-margin p (+fx m 1))
       (fprint p ":parent " (block-label parent))
@@ -571,6 +573,10 @@
       (fprint p ":succs " (map lbl succs))
       (dump-margin p (+fx m 1))
       (fprint p ":merge-info " (dump-merge-info %merge-info))
+      (dump-margin p (+fx m 1))
+      (display ":context " p)
+      (dump-ctx ctx (with-access::rtl_ins/bbv (car first) (in) in) p)
+      (newline)
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))

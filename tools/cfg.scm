@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Tue Nov 14 15:11:35 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 09:55:09 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -47,33 +47,71 @@
 ;*---------------------------------------------------------------------*/
 ;*    bb ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define-struct bb lbl-num preds succs instrs parent merge collapsed cost color bgcolor)
+(define-struct bb lbl-num preds succs instrs parent merge collapsed cost color bgcolor ctx)
 
 ;*---------------------------------------------------------------------*/
 ;*    list->bb ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (list->bb l)
-   (match-case l
-      (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :collapsed ?collapsed :preds ?preds :succs ?succs :merge-info ?minfo :color ?color . ?ins)
-       (bb num preds succs ins parent merge collapsed 0 color (merge-bgcolor minfo)))
-      ((blockS ?num :parent ?parent :merge ?merge :collapsed ?collapsed :cost ?cost :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
-       (bb num preds succs ins parent merge collapsed cost (get-color parent) (merge-bgcolor minfo)))
-      (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :collapsed ?collapsed :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
-       (bb num preds succs ins parent merge collapsed 0 (get-color parent) (merge-bgcolor minfo)))
-      (((or block blockS blockV SawDone) ?num :parent ?parent :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
-       (bb num preds succs ins parent #f #f 0 (get-color parent) (merge-bgcolor minfo)))
-      (((or block blockS blockV SawDone) ?num :merge ?merge :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
-       (bb num preds succs ins #f merge #f 0 (get-color 0) (merge-bgcolor minfo)))
-      (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs :merge-info ?minfo . ?ins)
-       (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor minfo)))
-      (((or block blockS blockV SawDone) ?num :merge ?- :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor 'default)))
-      ((SawDone ?num :preds ?preds :succs ?succs :color ?color . ?ins)
-       (bb num preds succs ins #f #f #f 0 color (merge-bgcolor 'default)))
-      ((SawDone ?num :preds ?preds :succs ?succs . ?ins)
-       (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor 'default)))
-      (else
-       (error "list->bb" "bad block syntax" l))))
+
+   (define (err l)
+      (error "list->bb" "bad block syntax" l))
+
+   (define (false l)
+      #f)
+   
+   (define (zero l)
+      0)
+   
+   (define (get l key default)
+      (let ((val (memq key l)))
+	 (if (pair? val)
+	     (cadr val)
+	     (default l))))
+
+   (define (get-ins l)
+      (let loop ((l (cddr l)))
+	 (cond
+	    ((null? l) '())
+	    ((not (keyword? (car l))) l)
+	    (else (loop (cddr l))))))
+	     
+
+   (let* ((num (cadr l))
+	  (preds (get l :preds err))
+	  (succs (get l :succs err))
+	  (ins (get-ins l))
+	  (parent (get l :parent false))
+	  (merge (get l :merge false))
+	  (collapsed (get l :collapsed false))
+	  (cost (get l :cost zero))
+	  (color (get l :color (lambda (l) (get-color parent))))
+	  (bgcolor (merge-bgcolor (get l :minfo (lambda (l) 'default))))
+	  (ctx (get l :context false)))
+      (bb num preds succs ins parent merge collapsed cost color bgcolor ctx)))
+;*    (match-case l                                                    */
+;*       (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :collapsed ?collapsed :preds ?preds :succs ?succs :merge-info ?minfo :color ?color :context ?ctx . ?ins) */
+;*        (bb num preds succs ins parent merge collapsed 0 color (merge-bgcolor minfo) ctx)) */
+;*       (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :collapsed ?collapsed :preds ?preds :succs ?succs :merge-info ?minfo :color ?color :context ?ctx . ?ins) */
+;*        (bb num preds succs ins parent merge collapsed 0 color (merge-bgcolor minfo) ctx)) */
+;*       ((blockS ?num :parent ?parent :merge ?merge :collapsed ?collapsed :cost ?cost :preds ?preds :succs ?succs :merge-info ?minfo :context ?ctx . ?ins) */
+;*        (bb num preds succs ins parent merge collapsed cost (get-color parent) (merge-bgcolor minfo) ctx)) */
+;*       (((or block blockS blockV SawDone) ?num :parent ?parent :merge ?merge :collapsed ?collapsed :preds ?preds :succs ?succs :merge-info ?minfo :context ?ctx . ?ins) */
+;*        (bb num preds succs ins parent merge collapsed 0 (get-color parent) (merge-bgcolor minfo))) */
+;*       (((or block blockS blockV SawDone) ?num :parent ?parent :preds ?preds :succs ?succs :merge-info ?minfo . ?ins) */
+;*        (bb num preds succs ins parent #f #f 0 (get-color parent) (merge-bgcolor minfo))) */
+;*       (((or block blockS blockV SawDone) ?num :merge ?merge :preds ?preds :succs ?succs :merge-info ?minfo . ?ins) */
+;*        (bb num preds succs ins #f merge #f 0 (get-color 0) (merge-bgcolor minfo))) */
+;*       (((or block blockS blockV SawDone) ?num :preds ?preds :succs ?succs :merge-info ?minfo . ?ins) */
+;*        (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor minfo))) */
+;*       (((or block blockS blockV SawDone) ?num :merge ?- :preds ?preds :succs ?succs . ?ins) */
+;*        (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor 'default))) */
+;*       ((SawDone ?num :preds ?preds :succs ?succs :color ?color . ?ins) */
+;*        (bb num preds succs ins #f #f #f 0 color (merge-bgcolor 'default))) */
+;*       ((SawDone ?num :preds ?preds :succs ?succs . ?ins)            */
+;*        (bb num preds succs ins #f #f #f 0 (get-color 0) (merge-bgcolor 'default))) */
+;*       (else                                                         */
+;*        (error "list->bb" "bad block syntax" l))))                   */
 
 ;*---------------------------------------------------------------------*/
 ;*    *colors* ...                                                     */
@@ -167,9 +205,9 @@
       `("<table border=\"0\" cellborder=\"0\" cellspacing=\""
 	  ,cellspacing
 	  "\" cellpadding=\"0\""
-	  ,@(if bgcolor `(" bgcolor=\"" ,bgcolor "\"") '())
-	  ,@(if color `(" color=\"" ,color "\"") '())
-	  ,@(if id `(" port=\"" ,id "\"") '())
+	  ,@(if bgcolor (list (format " bgcolor=\"~a\"" bgcolor)) '())
+	  ,@(if color (list (format " color=\"~a\"" color)) '())
+	  ,@(if id (list (format " port=\"~a\"" id)) '())
 	  ">"
 	  ,@content
 	  "</table>"))
@@ -344,12 +382,22 @@
 	       (gen-html-label
 		  (gen-table #f
 		     (cons head
+;* 			(gen-row                                       */
+;* 			   (gen-col #f                                 */
+;* 			      (gen-table #f                            */
+;* 				 (gen-row                              */
+;* 				    (gen-col #f                        */
+;* 				       (list (format "<font color=\"blue\"><i>~( )</i></font>" */
+;* 						(map decorate-ctx-entry (bb-ctx bb)))))) */
+;* 				 :color "orange"                       */
+;* 				 :bgcolor (bb-bgcolor bb)              */
+;* 				 :cellspacing 2)))                     */
 			(let loop ((lst instrs))
 			   (if (pair? lst)
 			       (let ((rest (cdr lst)))
 				  (append
-				     (decorate-ctx (car lst))
 				     (decorate-instr (car lst) (null? rest))
+				     (decorate-ctx (car lst))
 				     (loop rest)))
 			       '())))))))))
    

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Dec 11 09:52:23 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 08:32:59 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -99,7 +99,7 @@
 				    (__ (when *bbv-log*
 					   (log-blocks global params blocks)))
 				    (b (block->block-list regs
-					  (assert-context! 
+					  (assert-context!
 					     (if *bbv-blocks-cleanup*
 						 (simplify-branch!
 						    (remove-nop!

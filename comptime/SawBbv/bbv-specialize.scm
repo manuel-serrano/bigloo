@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Dec 12 14:44:31 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 07:25:05 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -185,7 +185,7 @@
 	     (lambda (specialize)
 		;; instruction specialization
 		(multiple-value-bind (ins nctx)
-		   (specialize (car oins) bs ctx queue)
+		   (specialize (car oins) nins bs ctx queue)
 		   (trace-item "nctx=" (shape nctx))
 		   (with-access::rtl_ins ins (args)
 		      (set! args (map (lambda (i)
@@ -418,7 +418,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-typecheck ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-typecheck i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-typecheck i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
 
    (define (min-value x y)
       (cond
@@ -519,7 +519,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-mov ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-mov i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-mov i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    (with-trace 'bbv-ins "rtl_ins-specialize-mov"
       (with-access::rtl_ins i (dest args fun)
 	 (let ((ctx (unalias-ctx ctx dest)))
@@ -602,7 +602,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadi ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-loadi i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-loadi i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    (with-trace 'bbv-ins "rtl_ins-specialize-loadi"
       (with-access::rtl_ins i (dest args fun)
 	 (with-access::rtl_loadi fun (constant)
@@ -618,7 +618,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadg ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-loadg i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-loadg i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    (with-trace 'bbv-ins "rtl_ins-specialize-loadg"
       (with-access::rtl_ins i (dest args fun)
 	 (with-access::rtl_loadg fun (var)
@@ -641,7 +641,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-call ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-call i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-call i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    
    (define (new-value-loadi i)
       (with-access::rtl_ins i (dest fun args)
@@ -678,7 +678,7 @@
 			 ((rtl_ins-vlen? (car args))
 			  (with-access::rtl_ins (car args) (dest)
 			     (multiple-value-bind (i vctx)
-				(rtl_ins-specialize-vlen (car args) bs ctx queue)
+				(rtl_ins-specialize-vlen (car args) ins bs ctx queue)
 				(let ((e (bbv-ctx-get vctx dest)))
 				   (if (bbv-ctxentry? e)
 				       (bbv-ctxentry-value e)
@@ -696,7 +696,7 @@
 	 ((rtl_ins-call? i) (new-value-call i))
 	 ((rtl_ins-loadi? i) (new-value-loadi i))
 	 (else '_)))
-   
+
    (with-trace 'bbv-ins "rtl_ins-specialize-call"
       (with-access::rtl_ins i (dest fun)
 	 (with-access::rtl_call fun (var)
@@ -720,7 +720,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-return ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-return i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-return i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    (with-access::rtl_ins i (args dest)
       (let ((e (bbv-ctx-get ctx (car args))))
 	 (with-access::bbv-ctxentry e (types value)
@@ -738,14 +738,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-vlen ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-vlen i::rtl_ins bs ctx queue::bbv-queue)
-   (with-trace 'bbv-ins (format "rtl_ins-specialize-vlen (~a)" (shape i))
-      (with-access::rtl_ins i (dest args)
+(define (rtl_ins-specialize-vlen i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
+   (with-trace 'bbv-ins "rtl_ins-specialize-vlen"
+      (with-access::rtl_ins/bbv i (dest args)
 	 (let* ((range (rtl-range i ctx))
 		(nctx (extend-ctx ctx dest (list *long*) #t :value range)))
 	    (trace-item "range=" range)
 	    (trace-item "nctx=" (shape nctx))
-	    (values i nctx)))))
+	    (values (duplicate::rtl_ins/bbv i) nctx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-vector-bound-check? ...                                  */
@@ -763,7 +763,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-vector-bound-check ...                        */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-vector-bound-check i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-vector-bound-check i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    
    (define (true)
       (instantiate::rtl_loadi
@@ -785,12 +785,16 @@
 
    (with-trace 'bbv-ins "rtl_ins-specialize-vector-bound-check"
       (with-access::rtl_ins i (args fun)
+	 (trace-item "i=" (shape i))
+	 (trace-item "ctx=" (shape ctx))
 	 (with-access::rtl_ins (car args) (fun args)
 	    (with-access::rtl_call fun (var)
 	       (let* ((a (bbv-ctx-get ctx (car args)))
 		      (l (bbv-ctx-get ctx (cadr args)))
 		      (va (bbv-ctxentry-value a))
 		      (vl (bbv-ctxentry-value l)))
+		  (trace-item "a=" (shape a))
+		  (trace-item "l=" (shape l))
 		  (cond
 		     ((not (bbv-range? va))
 		      (if (bbv-range? vl)
@@ -802,6 +806,36 @@
 			  (dup-ifne i ctx ctx)))
 		     ((not (bbv-range? vl))
 		      (dup-ifne i ctx ctx))
+		     ((eq? (bbv-range< va vl) #t)
+		      (trace-item "in bound" (shape ctx))
+		      (with-access::rtl_ins/bbv i (fun in out args)
+			 (with-access::rtl_ifne fun (then)
+			    (let* ((fun (duplicate::rtl_go fun
+					   (to (bbv-block then ctx queue :creator bs))))
+				   (vlenreg (bbv-ctxentry-reg l))
+				   (ni (duplicate::rtl_ins/bbv i
+					  (ctx ctx)
+					  (args '())
+					  (fun fun))))
+			       (when (rtl_reg? vlenreg)
+				  ;; update the liveness property so that
+				  ;; the previous vlength instruction can be
+				  ;; removed too
+				  (unless (regset-member? vlenreg out)
+				     (let ((inset (duplicate-regset in)))
+					(regset-remove! inset vlenreg)
+					(with-access::rtl_ins/bbv ni (in)
+					   (set! in inset))
+					(when (and (pair? ins) (rtl_ins-vlen? (car ins)))
+					   (with-access::rtl_ins/bbv (car ins) (dest out fun args)
+					      (when (eq? dest vlenreg)
+						 (let ((outset (duplicate-regset out)))
+						    (regset-remove! outset dest)
+						    (set! out outset))
+						 (set! fun (instantiate::rtl_nop))
+						 (set! args '())
+						 (tprint "REMOVE...." (shape vlenreg))))))))
+			       (values ni ctx)))))
 		     ((and (eq? (bbv-range< va vl) #t)
 			   (eq? (bbv-range>= va (vlen-range)) #t))
 		      (let ((nctx (extend-ctx ctx (car args) (list *vector*) #t
@@ -822,7 +856,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-resolved-ifne ...                             */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-resolved-ifne i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-resolved-ifne i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    (with-access::rtl_ins i (args)
       (with-access::rtl_ins (car args) (fun)
 	 (with-access::rtl_loadi fun (constant)
@@ -837,7 +871,8 @@
 			 (values ni ctx))
 		      (with-access::rtl_ifne fun (then)
 			 (let* ((fun (duplicate::rtl_go fun
-					(to (bbv-block then ctx queue :creator bs))))
+					(to (bbv-block then ctx queue
+					       :creator bs))))
 				(ni (duplicate::rtl_ins/bbv i
 				       (ctx ctx)
 				       (args '())
@@ -875,7 +910,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxcmp ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxcmp i::rtl_ins bs ctx::bbv-ctx queue::bbv-queue)
+(define (rtl_ins-specialize-fxcmp i::rtl_ins ins::pair-nil bs ctx::bbv-ctx queue::bbv-queue)
    
    (define (true)
       (instantiate::rtl_loadi
@@ -1204,7 +1239,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxovop ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxovop i::rtl_ins bs ctx::bbv-ctx queue::bbv-queue)
+(define (rtl_ins-specialize-fxovop i::rtl_ins ins::pair-nil bs ctx::bbv-ctx queue::bbv-queue)
    
    (define (fxovop-ctx ctx reg i::rtl_ins)
       (with-access::rtl_ins i (fun args)
@@ -1251,7 +1286,7 @@
 			  (ctx nctx))
 		  nctx)))))
    
-   (define (default call fun reg value)
+   (define (default i call fun reg value)
       (with-access::rtl_ifne fun (then)
 	 (let* ((pctx (extend-ctx ctx reg (list *bint*) #f :value value))
 		(nctx (fxovop-ctx ctx reg call))
@@ -1276,7 +1311,7 @@
 		  (with-access::rtl_call fun (var)
 		     (cond
 			((or (not (bbv-range? intl)) (not (bbv-range? intr)))
-			 (default call ifne reg '_))
+			 (default i call ifne reg '_))
 			((eq? var *$+fx/ov*)
 			 (let ((range (bbv-range-add intl intr)))
 			    (trace-item "+fx/ov "
@@ -1289,7 +1324,7 @@
 				   (trace-item "nctx.2=" (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
-				(default call ifne reg (fixnum-range)))))
+				(default i call ifne reg (fixnum-range)))))
 			((eq? var *$-fx/ov*)
 			 (let ((range (bbv-range-sub intl intr)))
 			    (trace-item "-fx/ov "
@@ -1302,7 +1337,7 @@
 				   (trace-item "nctx.3=" (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
-				(default call ifne reg (fixnum-range)))))
+				(default i call ifne reg (fixnum-range)))))
 			((eq? var *$*fx/ov*)
 			 (let ((range (bbv-range-mul intl intr)))
 			    (if (bbv-range-fixnum? range)
@@ -1312,14 +1347,14 @@
 				   (trace-item "nctx.4=" (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
-				(default call ifne reg (fixnum-range)))))
+				(default i call ifne reg (fixnum-range)))))
 			(else
-			 (default call ifne reg '_))))))))))
+			 (default i call ifne reg '_))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-fxop ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize-fxop i::rtl_ins bs ctx queue::bbv-queue)
+(define (rtl_ins-specialize-fxop i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    
    (define (fx-safe->fx var i ctx nctx)
       (with-access::rtl_ins i (dest fun args)
@@ -1338,7 +1373,7 @@
 					 (ctx ctx))))
 			  (ctx nctx))
 		  nctx)))))
-
+   
    (define (2->fx var i ctx nctx)
       (with-access::rtl_ins i (dest fun args)
 	 (with-access::rtl_call fun (var)
@@ -1364,7 +1399,7 @@
 					 (ctx ctx))))
 			  (ctx nctx))
 		  nctx)))))
-
+   
    (with-trace 'bbv-ins "rtl_ins-specialize-fxop"
       (with-access::rtl_ins i (dest fun args)
 	 (with-access::rtl_call fun (var)
