@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Dec 11 13:21:45 2023 (serrano)                */
+;*    Last change :  Tue Dec 12 13:56:28 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -40,9 +40,9 @@
 	   (inline bbv-max-fixnum::long)
 	   (inline bbv-min-fixnum::long)
 	   (inline bbv-range?::bool ::obj)
-	   (=rv::bool ::obj ::obj)
-	   (minrv::obj ::obj ::obj)
-	   (maxrv::obj ::obj ::obj)
+	   (=rv::obj ::obj ::obj)
+	   (minrv::obj ::obj ::obj #!optional (unspecified #unspecified))
+	   (maxrv::obj ::obj ::obj #!optional (unspecified #unspecified))
 	   (bbv-range-fixnum?::bool ::bbv-range)
 	   (empty-range?::bool ::bbv-range)
 	   (fixnum-range::bbv-range)
@@ -61,7 +61,6 @@
 	   (bbv-range-lte::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-gt::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-gte::bbv-range ::bbv-range ::bbv-range)
-	   (bbv-range-eq::bool ::bbv-range ::bbv-range)
 	   (bbv-range-add::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-sub::bbv-range ::bbv-range ::bbv-range)
 	   (bbv-range-mul::bbv-range ::bbv-range ::bbv-range)
@@ -89,155 +88,199 @@
    (with-access::bbv-vlen o (offset) offset))
 
 ;*---------------------------------------------------------------------*/
-;*    binoprv ...                                                      */
+;*    =rv ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (=rv x y)
-   (define (=vlen x y)
-      (cond
-	 ((eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	  (=fx (bbv-vlen-offset x) (bbv-vlen-offset y)))
-	 (else
-	  #f)))
    (cond
-      ((and (fixnum? x) (fixnum? y)) (=fx x y))
-      ((and (bbv-vlen? x) (bbv-vlen? y)) (=vlen x y))
-      (else #f)))
+      ((and (number? x) (number? y))
+       (= x y))
+      ((and (bbv-vlen? x) (bbv-vlen? y) (eq? (bbv-vlen-vec x) (bbv-vlen-vec y)))
+       (=fx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+      ((and (fixnum? x) (bbv-vlen? y))
+       (if (<fx x (bbv-vlen-offset y)) #f #unspecified))
+      ((and (bbv-vlen? x) (fixnum? y))
+       (if (>fx (bbv-vlen-offset x) y) #f #unspecified))
+      (else
+       #unspecified)))
 
+;*---------------------------------------------------------------------*/
+;*    >rv ...                                                          */
+;*---------------------------------------------------------------------*/
 (define (>rv x y)
-   (define (>vlen x y)
-      (when (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	 (>fx (bbv-vlen-offset x) (bbv-vlen-offset y))))
-   (define (>vlenfx x y)
-      (>fx (bbv-vlen-offset x) y))
    (cond
-      ((and (fixnum? x) (fixnum? y)) (>fx x y))
-      ((and (bbv-vlen? x) (bbv-vlen? y)) (>vlen x y))
-      ((and (bbv-vlen? x) (fixnum? y)) (>vlenfx x y))
-      ((and (fixnum? x) (bbv-vlen? y)) #f)
-      (else #f)))
-	 
-(define (>=rv x y)
-   (define (>=vlen x y)
-      (when (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	 (>=fx (bbv-vlen-offset x) (bbv-vlen-offset y))))
-   (define (>=vlenfx x y)
-      (>=fx (bbv-vlen-offset x) y))
-   (cond
-      ((and (fixnum? x) (fixnum? y)) (>=fx x y))
-      ((and (bbv-vlen? x) (bbv-vlen? y)) (>=vlen x y))
-      ((and (bbv-vlen? x) (fixnum? y)) (>=vlenfx x y))
-      ((and (fixnum? x) (bbv-vlen? y)) #f)
-      (else #f)))
+      ((and (number? x) (number? y))
+       (> x y))
+      ((and (bbv-vlen? x) (bbv-vlen? y) (eq? (bbv-vlen-vec x) (bbv-vlen-vec y)))
+       (>fx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+      ((and (bbv-vlen? x) (fixnum? y))
+       (if (>fx (bbv-vlen-offset x) y) #t #unspecified))
+      ((and (fixnum? x) (bbv-vlen? y))
+       (>fx x (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
+      (else
+       #unspecified)))
 
+;*---------------------------------------------------------------------*/
+;*    >=rv ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (>=rv x y)
+   (cond
+      ((and (number? x) (number? y))
+       (>= x y))
+      ((and (bbv-vlen? x) (bbv-vlen? y) (eq? (bbv-vlen-vec x) (bbv-vlen-vec y)))
+       (>=fx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+      ((and (bbv-vlen? x) (fixnum? y))
+       (if (>=fx (bbv-vlen-offset x) y) #t #unspecified))
+      ((and (fixnum? x) (bbv-vlen? y))
+       (>=fx x (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
+      (else
+       #unspecified)))
+
+;*---------------------------------------------------------------------*/
+;*    <rv ...                                                          */
+;*---------------------------------------------------------------------*/
 (define (<rv x y)
    (>rv y x))
 
+;*---------------------------------------------------------------------*/
+;*    <=rv ...                                                         */
+;*---------------------------------------------------------------------*/
 (define (<=rv x y)
    (>=rv y x))
 
 ;*---------------------------------------------------------------------*/
 ;*    minrv ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (minrv x y)
-   (cond
-      ((and (number? x) (number? y))
-       (min x y))
-      ((and (bbv-vlen? x) (bbv-vlen? y))
-       (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	   (duplicate::bbv-vlen x
-	      (offset (min (bbv-vlen-offset x) (bbv-vlen-offset y))))
-	   (minfx (bbv-vlen-offset x) (bbv-vlen-offset y))))
-      ((bbv-vlen? x)
-       (cond
-	  ((< y 0)
-	   (duplicate::bbv-vlen x
-	      (offset (min (bbv-vlen-offset x) y))))
-	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))
-	   x)
-	  (else
-	   y)))
-      (else
-       (minrv y x))))
+(define (minrv x y #!optional (unspecified #unspecified))
+   (case (<=rv x y)
+      ((#t) x)
+      ((#f) y)
+      (else unspecified)))
+;*    (cond                                                            */
+;*       ((and (number? x) (number? y))                                */
+;*        (min x y))                                                   */
+;*       ((and (bbv-vlen? x) (bbv-vlen? y))                            */
+;*        (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))                  */
+;* 	   (duplicate::bbv-vlen x                                      */
+;* 	      (offset (min (bbv-vlen-offset x) (bbv-vlen-offset y))))  */
+;* 	   (minfx (bbv-vlen-offset x) (bbv-vlen-offset y))))           */
+;*       ((bbv-vlen? x)                                                */
+;*        (cond                                                        */
+;* 	  ((< y 0)                                                     */
+;* 	   (duplicate::bbv-vlen x                                      */
+;* 	      (offset (min (bbv-vlen-offset x) y))))                   */
+;* 	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))               */
+;* 	   x)                                                          */
+;* 	  (else                                                        */
+;* 	   y)))                                                        */
+;*       (else                                                         */
+;*        (minrv y x))))                                               */
 
 ;*---------------------------------------------------------------------*/
 ;*    minrv-up ...                                                     */
+;*    -------------------------------------------------------------    */
+;*    Return a conservative approximation of the min of X and Y. The   */
+;*    result could be (bbv-max-fixnum).                                */
 ;*---------------------------------------------------------------------*/
-(define (minrv-up x y)
-   (cond
-      ((and (bbv-vlen? x) (not (bbv-vlen? y)))
-       (cond
-	  ((< y 0)
-	   (duplicate::bbv-vlen x
-	      (offset (min (bbv-vlen-offset x) y))))
-	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))
-	   x)
-	  (else
-	   (duplicate::bbv-vlen x
-	      (offset y)))))
-      ((and (not (bbv-vlen? x)) (bbv-vlen? y))
-       (minrv-up y x))
-      (else
-       (minrv y x))))
+(define (minrv-up x y #!optional (unspecified #unspecified))
+   (let ((m (minrv x y)))
+      (if (not (eq? m #unspecified))
+	  m
+	  (let loop ((x x)
+		     (y y))
+	     (cond
+		((and (bbv-vlen? x) (fixnum? y))
+		 (duplicate::bbv-vlen x
+		    (offset (minfx (bbv-vlen-offset x) y))))
+		((and (bbv-vlen? x) (bbv-vlen? y))
+		 (minfx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+		((bbv-vlen? y)
+		 (loop y x))
+		(else
+		 unspecified))))))
 
-;*---------------------------------------------------------------------*/
-;*    minvlen ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (minvlen x y)
-   (if (isa? x bbv-vlen)
-       (minrv x y)
-       x))
+;* {*---------------------------------------------------------------------*} */
+;* {*    minvlen ...                                                      *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (minvlen x y)                                               */
+;*    (if (isa? x bbv-vlen)                                            */
+;*        (minrv x y)                                                  */
+;*        x))                                                          */
 
 ;*---------------------------------------------------------------------*/
 ;*    maxrv ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (maxrv x y)
-   (cond
-      ((and (number? x) (number? y))
-       (max x y))
-      ((and (bbv-vlen? x) (bbv-vlen? y))
-       (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))
-	   (duplicate::bbv-vlen x
-	      (offset (max (bbv-vlen-offset x) (bbv-vlen-offset y))))
-	   (maxfx (bbv-vlen-offset x) (bbv-vlen-offset y))))
-      ((bbv-vlen? x)
-       (cond
-	  ((< y 0)
-	   (duplicate::bbv-vlen x
-	      (offset (max (bbv-vlen-offset x) y))))
-	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))
-	   y)
-	  (else
-	   x)))
-      (else
-       (maxrv y x))))
+(define (maxrv x y #!optional (unspecified #unspecified))
+   (case (>=rv x y)
+      ((#t) x)
+      ((#f) y)
+      (else unspecified)))
+
+;*    (cond                                                            */
+;*       ((and (number? x) (number? y))                                */
+;*        (max x y))                                                   */
+;*       ((and (bbv-vlen? x) (bbv-vlen? y))                            */
+;*        (if (eq? (bbv-vlen-vec x) (bbv-vlen-vec y))                  */
+;* 	   (duplicate::bbv-vlen x                                      */
+;* 	      (offset (max (bbv-vlen-offset x) (bbv-vlen-offset y))))  */
+;* 	   (maxfx (bbv-vlen-offset x) (bbv-vlen-offset y))))           */
+;*       ((bbv-vlen? x)                                                */
+;*        (cond                                                        */
+;* 	  ((< y 0)                                                     */
+;* 	   (duplicate::bbv-vlen x                                      */
+;* 	      (offset (max (bbv-vlen-offset x) y))))                   */
+;* 	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))               */
+;* 	   y)                                                          */
+;* 	  (else                                                        */
+;* 	   x)))                                                        */
+;*       (else                                                         */
+;*        (maxrv y x))))                                               */
 
 ;*---------------------------------------------------------------------*/
 ;*    maxrv-lo ...                                                     */
+;*    -------------------------------------------------------------    */
+;*    Return a conservative approximation of the max of X and Y. The   */
+;*    result could be (bbv-min-fixnum).                                */
 ;*---------------------------------------------------------------------*/
-(define (maxrv-lo x y)
-   (cond
-      ((and (bbv-vlen? x) (not (bbv-vlen? y)))
-       (cond
-	  ((< y 0)
-	   (duplicate::bbv-vlen x
-	      (offset (max (bbv-vlen-offset x) y))))
-	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))
-	   x)
-	  (else
-	   (duplicate::bbv-vlen x
-	      (offset y)))))
-      ((and (not (bbv-vlen? x)) (bbv-vlen? y))
-       (maxrv-lo y x))
-      (else
-       (maxrv y x))))
+(define (maxrv-lo x y #!optional (unspecified #unspecified))
+   (let ((m (maxrv x y)))
+      (if (not (eq? m #unspecified))
+	  m
+	  (let loop ((x x)
+		     (y y))
+	     (cond
+		((and (bbv-vlen? x) (fixnum? y))
+		 (duplicate::bbv-vlen x
+		    (offset (maxfx (bbv-vlen-offset x) y))))
+		((and (bbv-vlen? x) (bbv-vlen? y))
+		 (maxfx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+		((bbv-vlen? y)
+		 (loop y x))
+		(else
+		 unspecified))))))
 
-;*---------------------------------------------------------------------*/
-;*    maxvlen ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (maxvlen x y)
-   (if (isa? x bbv-vlen)
-       (maxrv x y)
-       x))
+;*    (cond                                                            */
+;*       ((and (bbv-vlen? x) (not (bbv-vlen? y)))                      */
+;*        (cond                                                        */
+;* 	  ((< y 0)                                                     */
+;* 	   (duplicate::bbv-vlen x                                      */
+;* 	      (offset (max (bbv-vlen-offset x) y))))                   */
+;* 	  ((>= y (- (bbv-max-vlen) (bbv-vlen-offset x)))               */
+;* 	   x)                                                          */
+;* 	  (else                                                        */
+;* 	   (duplicate::bbv-vlen x                                      */
+;* 	      (offset y)))))                                           */
+;*       ((and (not (bbv-vlen? x)) (bbv-vlen? y))                      */
+;*        (maxrv-lo y x))                                              */
+;*       (else                                                         */
+;*        (maxrv y x))))                                               */
+;*                                                                     */
+;* {*---------------------------------------------------------------------*} */
+;* {*    maxvlen ...                                                      *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (maxvlen x y)                                               */
+;*    (if (isa? x bbv-vlen)                                            */
+;*        (maxrv x y)                                                  */
+;*        x))                                                          */
 
 ;*---------------------------------------------------------------------*/
 ;*    integer boundaries ...                                           */
@@ -541,10 +584,10 @@
 	    (lu (bbv-range-up left))
 	    (rl (bbv-range-lo right))
 	    (ru (bbv-range-up right)))
-	 ;; [ll..lu] < [rl..ru] => [ll..max(ll,min(lu, ru-1)]
+	 ;; [ll..lu] < [rl..ru] => [ll...min(lu, ru-1)]
 	 (let ((res (instantiate::bbv-range
-		       (lo (minvlen ll (-- ru)))
-		       (up (minrv-up lu (-- ru))))))
+		       (lo ll)
+		       (up (minrv-up lu (-- ru) (bbv-max-fixnum))))))
 	    (trace-item (shape left) " < " (shape right))
 	    (trace-item "    ll=" ll)
 	    (trace-item "    ru=" ru)
@@ -561,10 +604,10 @@
 	 (lu (bbv-range-up left))
 	 (rl (bbv-range-lo right))
 	 (ru (bbv-range-up right)))
-      ;; [30..X] <= [Y..?] => [ll..max(ll,min(X, Y))]
+      ;; [ll..lu] <= [rl..ru] => [ll...min(lu, ru)]
       (let ((res (instantiate::bbv-range
-		    (lo (minvlen ll ru))
-		    (up (minrv-up lu ru)))))
+		    (lo ll)
+		    (up (minrv-up lu ru lu)))))
 	 res)))
 
 ;*---------------------------------------------------------------------*/
@@ -575,10 +618,10 @@
 	 (lu (bbv-range-up left))
 	 (rl (bbv-range-lo right))
 	 (ru (bbv-range-up right)))
-      ;; [ll..lu] > [rl..ru] => [min(lu,max(ll,rl++))..lu]
+      ;; [ll..lu] > [rl..ru] => [max(ll, rl+1)..lu]
       (let ((res (instantiate::bbv-range
-		    (lo (maxrv-lo ll (++ rl)))
-		    (up (maxvlen lu (++ rl))))))
+		    (lo (maxrv-lo ll (++ rl) ll))
+		    (up lu))))
 	 res)))
 
 ;*---------------------------------------------------------------------*/
@@ -590,10 +633,10 @@
 	    (lu (bbv-range-up left))
 	    (rl (bbv-range-lo right))
 	    (ru (bbv-range-up right)))
-	 ;; [ll..lu] >= [rl..ru] => [min(lu,max(ll,rl))..lu]
+	 ;; [ll..lu] >= [rl..ru] => [max(ll, rl)..lu]
 	 (let ((res (instantiate::bbv-range
-		       (lo (maxrv-lo ll rl))
-		       (up (maxvlen lu rl)))))
+		       (lo (maxrv-lo ll rl ll))
+		       (up lu))))
 	    (trace-item (shape left) " >= " (shape right))
 	    (trace-item "    lu=" lu)
 	    (trace-item "    ll=" ll)
@@ -601,21 +644,6 @@
 	    (trace-item " maxrv=" (maxrv ll rl))
 	    (trace-item "     =>" (shape res))
 	    res))))
-
-;*---------------------------------------------------------------------*/
-;*    bbv-range-eq ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (bbv-range-eq left::bbv-range right::bbv-range)
-   (let* ((rl (bbv-range-lo right))
-	  (ru (bbv-range-up right))
-	  (ll (bbv-range-lo left))
-	  (lu (bbv-range-up left))
-	  (oi (maxrv rl ll))
-	  (oa (minrv ru lu)))
-      (when (<=rv oi oa)
-	 (instantiate::bbv-range
-	    (lo oi)
-	    (up oa)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ->range ...                                                      */

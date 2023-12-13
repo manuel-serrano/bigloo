@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Mon Dec 11 12:23:40 2023 (serrano)                */
+;*    Last change :  Tue Dec 12 13:56:37 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -249,7 +249,8 @@
       (with-access::bbv-range range1 ((lo1 lo) (up1 up))
 	 (with-access::bbv-range range2 ((lo2 lo) (up2 up))
 	    ;; widening
-	    (range-widening (minrv lo1 lo2) (maxrv up1 up2)
+	    (range-widening (minrv lo1 lo2 (bbv-min-fixnum))
+	       (maxrv up1 up2 (bbv-max-fixnum))
 	       (list range1 range2)))))
    
    (define (types-intersection ts1 ts2)
@@ -347,18 +348,18 @@
    
    (let ((nl (if (every (lambda (r)
 			   (with-access::bbv-range r (lo up)
-			      (=rv l lo)))
+			      (eq? (=rv l lo) #t)))
 		    ranges)
 		 l
 		 (low-widening l)))
 	 (nu (if (every (lambda (r)
 			   (with-access::bbv-range r (up)
-			      (=rv u up)))
+			      (eq? (=rv u up) #t)))
 		    ranges)
 		 u
 		 (up-widening u))))
       (cond
-	 ((and (=rv nl l) (=rv nu u) (not widening))
+	 ((and (eq? (=rv nl l) #t) (eq? (=rv nu u) #t) (not widening))
 	  (car ranges))
 	 ((every (lambda (r)
 		    (with-access::bbv-range (car ranges) ((up0 up))
