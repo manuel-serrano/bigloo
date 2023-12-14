@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Thu Nov  9 17:26:54 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 18:06:21 2023 (serrano)                */
 ;*    Copyright   :  2023 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -75,7 +75,7 @@
 ;*---------------------------------------------------------------------*/
 (define (remove-goto! b::block)
    
-   (define (goto-block? b succs next)
+   (define (fallthrough-block? b succs next)
       ;; is a block explicitly jumping to its successor
       (when (pair? succs)
 	 (with-access::block b (first)
@@ -86,9 +86,22 @@
 			(with-access::rtl_go fun (to)
 			   (when (eq? to (car succs))
 			      (eq? to next))))))))))
+
+   (define (goto-block? b succs)
+      ;; is a block jumping to its successor and the succssor has
+      ;; only b as predecessor
+      (when (pair? succs)
+	 (with-access::block b (first)
+	    (when (pair? first)
+	       (let ((i (car (last-pair first))))
+		  (when (rtl_ins-go? i)
+		     (with-access::rtl_ins i (fun)
+			(with-access::rtl_go fun (to)
+			   (when (eq? to (car succs))
+			      (null? (cdr succs)))))))))))
    
    (assert-blocks b "before goto!")
-   
+
    (let loop ((bs (list b))
 	      (acc (make-empty-bbset)))
       (cond
@@ -97,10 +110,11 @@
 	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (when *bbv-debug* (assert-block (car bs) "remote-goto!"))
+	  (when *bbv-debug* (assert-block (car bs) "remove-goto!"))
 	  (with-access::block (car bs) (succs)
-	     (when (and (pair? (cdr bs))
-			(goto-block? (car bs) succs (cadr bs))
+	     (when (and (or (and (pair? (cdr bs))
+				 (fallthrough-block? (car bs) succs (cadr bs)))
+			    (goto-block? (car bs) succs))
 			(not (bbset-in? (car succs) acc)))
 		(with-access::block (car bs) (first label)
 		   (with-access::rtl_ins (car (last-pair first)) (fun)

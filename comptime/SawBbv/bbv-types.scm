@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Dec 13 12:21:32 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 18:07:54 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -97,6 +97,7 @@
 	    (bbv-ctx-assoc ::bbv-ctx ::pair-nil)
 	    (bbv-ctx-get ::bbv-ctx ::rtl_reg)
 	    (extend-ctx/entry ::bbv-ctx ::bbv-ctxentry)
+	    (extend-ctx/entry* ctx::bbv-ctx . entries)
 	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
 	       #!key (value '_))
 	    (extend-ctx* ctx::bbv-ctx regs::pair ::pair ::bool
@@ -345,6 +346,19 @@
    
    (duplicate::bbv-ctx ctx
       (entries (extend-entries ctx entry))))
+
+;*---------------------------------------------------------------------*/
+;*    extend-ctx/entry* ...                                            */
+;*    -------------------------------------------------------------    */
+;*    Extend CTX with ENTRIES.                                         */
+;*    the CTX, the former entry is replaced with the new one.          */
+;*---------------------------------------------------------------------*/
+(define (extend-ctx/entry* ctx::bbv-ctx . entries)
+   (let loop ((entries entries)
+	      (ctx ctx))
+      (if (null? entries)
+	  ctx
+	  (loop (cdr entries) (extend-ctx/entry ctx (car entries))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx ...                                                   */
@@ -660,7 +674,6 @@
    (with-access::rtl_ins i (fun)
       (when (isa? fun rtl_call)
 	 (with-access::rtl_call fun (var)
-	    (tprint "ICI " (eq? var *string-length*) " " (shape var))
 	    (eq? var *string-length*)))))
    
 ;*---------------------------------------------------------------------*/

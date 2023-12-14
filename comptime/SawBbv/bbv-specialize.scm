@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Dec 13 12:24:07 2023 (serrano)                */
+;*    Last change :  Wed Dec 13 17:18:32 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -67,7 +67,7 @@
 						    label))
 					    versions)))
 		      (when (block-need-merge? bv)
-			 (trace-item "need-merge {" (block-label bv) "}...")
+			 (trace-item "need-merge #" (block-label bv) "...")
 			 (when *bbv-debug*
 			    (for-each (lambda (b)
 					 (with-access::blockS b (label ctx)
@@ -76,7 +76,7 @@
 			 (block-merge-some! bv queue)))
 		   (unless (block-merged? bs)
 		      (with-access::blockS bs ((bv parent))
-			 (trace-item "need-specialize {" (block-label bv) "}..."))
+			 (trace-item "need-specialize #" (block-label bv) "..."))
 		      (block-specialize! bs queue))
 		   (loop (+fx n 1))))))))
 
@@ -85,7 +85,7 @@
 ;*---------------------------------------------------------------------*/
 (define (block-specialize!::blockS bs::blockS queue::bbv-queue)
    (with-trace 'bbv-block
-	 (format "block-specialize! {~a}->~a succs: ~a"
+	 (format "block-specialize! #~a->#~a succs: ~a"
 	    (block-label (blockS-parent bs))
 	    (block-label bs)
 	    (map block-label (block-succs (blockS-parent bs))))
@@ -111,7 +111,7 @@
 	    ;; a fresh new one
 	    (let ((mbs (bbv-block bv mctx queue)))
 	       (trace-item "blockV=" (blockV-label bv)
-		  " -> " (blockS-label mbs) " {" (length lvs) "} "
+		  " -> #" (blockS-label mbs) " {" (length lvs) "} "
 		  (blockS-%merge-info mbs))
 	       (cond
 		  ((eq? bs1 mbs)
@@ -138,8 +138,8 @@
    (define (debug-connect msg bs n)
       (when *bbv-debug*
 	 (with-access::blockS n (preds succs)
-	    (trace-item msg " " 
-	       (block-label bs) " to " (block-label n)
+	    (trace-item msg " #" 
+	       (block-label bs) " to #" (block-label n)
 	       " " (map block-label preds)
 	       " -> " (map (lambda (b) (if (isa? b block) (block-label b) '-))
 			 succs)))))
@@ -167,9 +167,10 @@
 			  (block-preds-update! n (cons bs (block-preds n))))
 		(rtl_switch-labels fun))))))
    
-   (with-trace 'bbv-ins (format "ins-specialize! {~a}->~a"
+   (with-trace 'bbv-ins (format "ins-specialize! #~a->#~a [@~a]"
 			   (block-label (blockS-parent bs))
-			   (block-label bs))
+			   (block-label bs)
+			   (gendebugid))
       (let loop ((oins first)
 		 (nins '())
 		 (ctx ctx))
@@ -190,7 +191,7 @@
 		   (with-access::rtl_ins ins (args)
 		      (set! args (map (lambda (i)
 					 (if (isa? i rtl_ins)
-					     (car (ins-specialize! (list i) bs ctx queue))
+					     (car (loop (list i) '() ctx))
 					     i))
 				    args))
 		      (let ((lctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
@@ -212,7 +213,7 @@
 	     (with-access::rtl_ins (car oins) (args)
 		(let ((args (map (lambda (i)
 				    (if (isa? i rtl_ins)
-					(car (ins-specialize! (list i) bs ctx queue))
+					(car (loop (list i) '() ctx))
 					i))
 			       args)))
 		   (loop '()
@@ -253,12 +254,9 @@
 	     (with-access::rtl_ins (car oins) (args)
 		(let ((args (map (lambda (i)
 				    (if (isa? i rtl_ins)
-					(car (ins-specialize! (list i) bs ctx queue))
+					(car (loop (list i) '() ctx))
 					i))
 			       args)))
-		(tprint "I=" (shape (car oins)))
-		(tprint "CTX=" (shape (bbv-ctx-extend-live-out-regs ctx (car oins))))
-		   
 		   (loop (cdr oins)
 		      (cons (duplicate-ins/args (car oins) args ctx) nins)
 		      (bbv-ctx-extend-live-out-regs ctx (car oins))))))))))
@@ -322,7 +320,7 @@
 		    (cnt cnt)
 		    (first '())
 		    (%merge-info (if creator `((creator . ,creator)) '())))))
-	 (trace-item "lbl=" lbl)
+	 (trace-item "lbl=#" lbl)
 	 (trace-item "ctx=" (shape ctx))
 	 (with-access::blockV bv (versions)
 	    (set! versions (cons bs versions))
@@ -344,7 +342,7 @@
 ;*    bbv-block ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block b::block ctx::bbv-ctx queue::bbv-queue #!key creator)
-   (with-trace 'bbv-block (format "bbv-block ~a" (block-label b))
+   (with-trace 'bbv-block (format "bbv-block #~a" (block-label b))
       (trace-item "ctx=" (shape ctx))
       (let ((bv (if (isa? b blockV) b (with-access::blockS b (parent) parent))))
 	 (with-access::blockV bv (first label)
@@ -788,10 +786,10 @@
 			  (fun nfun))
 		  nctx)))))
 
-   (with-trace 'bbv-ins "rtl_ins-specialize-vector-bound-check"
-      (tprint "LA..." (shape i))
+   (with-trace 'bbv-ins
+	 (format "rtl_ins-specialize-vector-bound-check [@~a]" (gendebugid))
       (with-access::rtl_ins i (args fun)
-	 (trace-item "i=" (shape i))
+	 (trace-item "ins=" (shape i))
 	 (trace-item "ctx=" (shape ctx))
 	 (with-access::rtl_ins (car args) (fun args)
 	    (with-access::rtl_call fun (var)
@@ -803,6 +801,7 @@
 		  (trace-item "l=" (shape l))
 		  (cond
 		     ((not (bbv-range? va))
+		      (trace-item "not bbv-range? va")
 		      (if (bbv-range? vl)
 			  (let ((pctx (extend-ctx ctx (car args) (list *vector*) #t
 					 :value vl))
@@ -811,6 +810,7 @@
 			     (dup-ifne i pctx nctx))
 			  (dup-ifne i ctx ctx)))
 		     ((not (bbv-range? vl))
+		      (trace-item "not bbv-range? vl")
 		      (dup-ifne i ctx ctx))
 		     ((eq? (bbv-range< va vl) #t)
 		      (trace-item "in bound" (shape ctx))
@@ -843,17 +843,20 @@
 						 (set! fun (instantiate::rtl_nop))
 						 (set! args '())))))))
 			       (values ni ctx)))))
-		     ((and (eq? (bbv-range< va vl) #t)
-			   (eq? (bbv-range>= va (vlen-range)) #t))
-		      (let ((nctx (extend-ctx ctx (car args) (list *vector*) #t
-				     :value (bbv-range-lt va vl))))
-			 (trace-item "nctx=" (shape nctx))
-		      (values (duplicate::rtl_ins/bbv i (fun (true)) (args '())) nctx)))
+;* 		     ((and (eq? (bbv-range< va vl) #t)                 */
+;* 			   (eq? (bbv-range>= va (vlen-range)) #t))     */
+;* 		      (trace-item "bbv-range>va and bbvrange>=va")     */
+;* 		      (let ((nctx (extend-ctx ctx (car args) (list *vector*) #t */
+;* 				     :value (bbv-range-lt va vl))))    */
+;* 			 (trace-item "nctx=" (shape nctx))             */
+;* 		      (values (duplicate::rtl_ins/bbv i (fun (true)) (args '())) nctx))) */
 		     ((or (eq? (bbv-range> va vl) #t)
 			  (eq? (bbv-range< va (vlen-range)) #t))
+		      (trace-item "bbv-range>va or bbvrange <va")
 		      (values (duplicate::rtl_ins/bbv i (fun (false)) (args '()))
 			 ctx))
 		     (else
+		      (trace-item "bound-checke.else")
 		      (let ((pctx (extend-ctx ctx (car args) (list *bint*) #t
 				     :value (bbv-range-lt (vlen-range) vl)))
 			    (nctx ctx))
@@ -970,10 +973,239 @@
    
    (define (inv-op op)
       (case op
-	 ((<) '>=)
-	 ((<=) '>)
-	 ((>) '<=)
-	 ((>=) '<)
+	 ((<) '>)
+	 ((<=) '>=)
+	 ((>) '<)
+	 ((>=) '<=)
+	 ((=) '!=)
+	 (else op)))
+   
+   (define (resolve/op i op intl intr)
+      (case op
+	 ((<) (bbv-range< intl intr))
+	 ((<=) (bbv-range<= intl intr))
+	 ((>) (bbv-range> intl intr))
+	 ((>=) (bbv-range>= intl intr))
+	 ((=) (bbv-range= intl intr))
+	 (else #unspecified)))
+
+   (define (narrowing/op reg intr inte op+ op- ctx::bbv-ctx)
+      (let* ((inte+ (op+ intr inte))
+	     (inte- (op- intr inte))
+	     (ctx+ (unless (empty-range? inte+)
+		      (extend-ctx ctx reg (list *bint*) #t :value inte+)))
+	     (ctx- (unless (empty-range? inte-)
+		      (extend-ctx ctx reg (list *bint*) #t :value inte-))))
+	 (values ctx+ ctx-)))
+   
+   (define (narrowing reg intr inte op ctx::bbv-ctx)
+      (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp/narrowing [@~a]"
+			      (gendebugid))
+	 (trace-item "op=" op)
+	 (trace-item "reg=" (shape reg))
+	 (trace-item "ctx=" (shape ctx))
+	 (if (or (not (bbv-range? intr)) (not (bbv-range? inte)))
+	     (values ctx ctx)
+	     (case op
+		((<)
+		 (narrowing/op reg intr inte bbv-range-lt bbv-range-gte ctx))
+		((<=)
+		 (narrowing/op reg intr inte bbv-range-lte bbv-range-gt ctx))
+		((>)
+		 (narrowing/op reg intr inte bbv-range-gt bbv-range-lte ctx))
+		((>=)
+		 (narrowing/op reg intr inte bbv-range-gte bbv-range-lt ctx))
+		((=)
+		 (narrowing/op reg intr inte bbv-range-eq bbv-range-neq ctx))
+		((!=)
+		 (narrowing/op reg intr inte bbv-range-neq bbv-range-eq ctx))
+		(else
+		 (values ctx ctx))))))
+   
+   (define (specialize/op op lhs rhs intl intr ctx::bbv-ctx)
+      (with-trace 'bbv-ins
+	    (format "rtl_ins-specialize-fxcmp/op ~a [@~a]" op (gendebugid))
+	 (cond
+	    ((and (isa? lhs rtl_ins) (rtl_ins-mov? lhs))
+	     (with-access::rtl_ins lhs (args)
+		(specialize/op op (car args) intl rhs intr ctx)))
+	    ((and (isa? rhs rtl_ins) (rtl_ins-mov? rhs))
+	     (with-access::rtl_ins rhs (args)
+		(specialize/op op lhs intl (car args) intr ctx)))
+	    ((and (reg? lhs) (reg? rhs))
+	     ;; two registers comparison
+	     (let ((lreg (reg lhs))
+		   (rreg (reg rhs)))
+		(multiple-value-bind (lctx+ lctx-)
+		   (narrowing lreg intl intr op ctx)
+		   (trace-item "lctx+=" (shape lctx+))
+		   (trace-item "lctx-=" (shape lctx-))
+		   (multiple-value-bind (rctx+ rctx-)
+		      (narrowing rreg intr intl (inv-op op) ctx)
+		      (trace-item "rctx+=" (shape rctx+))
+		      (trace-item "rctx-=" (shape rctx-))
+		      (let ((lreg+ (bbv-ctx-get lctx+ lreg))
+			    (lreg- (bbv-ctx-get lctx- lreg))
+			    (rreg+ (bbv-ctx-get rctx+ rreg))
+			    (rreg- (bbv-ctx-get rctx- rreg)))
+			 (values
+			    (extend-ctx/entry* ctx lreg+ rreg+)
+			    (extend-ctx/entry* ctx lreg- rreg-)))))))
+	    ((reg? lhs)
+	     ;; single register comparison
+	     (narrowing (reg lhs) intl intr op ctx))
+	    ((reg? rhs)
+	     ;; single register comparison
+	     (narrowing (reg rhs) intr intl (inv-op op) ctx))
+	    (else
+	     ;; no register involed
+	     (values ctx ctx)))))
+   
+   (define (specialize-call i::rtl_ins ctx::bbv-ctx)
+      (with-trace 'bbv-ins
+	    (format "rtl_ins-specialize-fxcmp/call ~a [@~a]"
+	       (shape i) (gendebugid))
+	 (trace-item "ctx=" (shape ctx))
+	 (with-access::rtl_ins i (fun args)
+	    (with-access::rtl_call fun (var)
+	       (let* ((lhs (car args))
+		      (rhs (cadr args))
+		      (intl (rtl-range lhs ctx))
+		      (intr (rtl-range rhs ctx))
+		      (op (fxcmp-op i)))
+		  (trace-item "op=" op)
+		  (trace-item "lhs=" (shape lhs))
+		  (trace-item "rhs=" (shape rhs))
+		  (trace-item "intl=" (shape intl))
+		  (trace-item "intr=" (shape intr))
+		  (case (resolve/op i op intl intr)
+		     ((#t)
+		      (trace-item "resolve/op.true")
+		      (values (duplicate::rtl_ins/bbv i
+				 (ctx ctx)
+				 (fun (true))
+				 (args '()))
+			 ctx ctx))
+		     ((#f)
+		      (trace-item "resolve/op.false")
+		      (values (duplicate::rtl_ins/bbv i
+				 (ctx ctx)
+				 (fun (false))
+				 (args '()))
+			 ctx ctx))
+		     (else
+		      (multiple-value-bind (ctx+ ctx-)
+			 (specialize/op op lhs rhs intl intr ctx)
+			 (trace-item "resolve/op.unspecified+=" (shape ctx+))
+			 (trace-item "resolve/op.unspecified-=" (shape ctx-))
+			 (values (duplicate::rtl_ins/bbv i)
+			    ctx+ ctx-)))))))))
+
+   (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp [@~a]" (gendebugid))
+      (trace-item "ins=" (shape i))
+      (with-access::rtl_ins i (dest fun args)
+	 (cond
+	    ((isa? fun rtl_ifne)
+	     (with-access::rtl_ifne fun (then)
+		(multiple-value-bind (ins ctx+ ctx-)
+		   (specialize-call (car args) ctx)
+		   (trace-item "ctx+=" (shape ctx+))
+		   (trace-item "ctx-=" (shape ctx-))
+		   (cond
+		      ((rtl_ins-true? ins)
+		       (with-access::rtl_ifne fun (then)
+			  (let* ((fun (duplicate::rtl_go fun
+					 (to (bbv-block then ctx+ queue
+						:creator bs))))
+				 (ni (duplicate::rtl_ins/bbv i
+					(ctx ctx)
+					(args '())
+					(fun fun))))
+			     (values ni ctx+))))
+		      ((rtl_ins-false? ins)
+		       (let* ((fun (duplicate::rtl_nop fun))
+			      (ni (duplicate::rtl_ins/bbv i
+				     (ctx ctx)
+				     (args '())
+				     (fun fun))))
+			  (values ni ctx-)))
+		      (else
+		       (let ((fun (duplicate::rtl_ifne fun
+				     (then (bbv-block then ctx+ queue
+					      :creator bs)))))
+			  (values (duplicate::rtl_ins/bbv i
+				     (ctx ctx)
+				     (args (list ins))
+				     (fun fun))
+			     ctx-)))))))
+	    ((isa? fun rtl_call)
+	     (multiple-value-bind (ins ctx+ ctx-)
+		(specialize-call i ctx)
+		(cond
+		   ((rtl_ins-true? ins) (values ins ctx+))
+		   ((rtl_ins-false? ins) (values ins ctx-))
+		   (else (values ins ctx)))))
+	    (else
+	     (error "rtl_ins-specialize-fxcmp"
+		"Should not be here" (shape i)))))))
+
+(define (rtl_ins-specialize-fxcmp-TBR114dec2023 i::rtl_ins ins::pair-nil bs ctx::bbv-ctx queue::bbv-queue)
+   
+   (define (true)
+      (instantiate::rtl_loadi
+	 (constant (instantiate::literal (type *bool*) (value #t)))))
+   
+   (define (false)
+      (instantiate::rtl_loadi
+	 (constant (instantiate::literal (type *bool*) (value #f)))))
+
+   (define (rtl_bint->long? a)
+      (when (isa? a rtl_ins)
+	 (with-access::rtl_ins a (fun)
+	    (when (isa? fun rtl_call)
+	       (with-access::rtl_call fun (var)
+		  (eq? var *bint->long*))))))
+
+   (define (rtl_$int->long? a)
+      (when (isa? a rtl_ins)
+	 (with-access::rtl_ins a (fun)
+	    (when (isa? fun rtl_call)
+	       (with-access::rtl_call fun (var)
+		  (eq? var *$int->long*))))))
+   
+   (define (reg? a)
+      (or (rtl_reg? a)
+	  (and (rtl_ins? a)
+	       (with-access::rtl_ins a (fun args dest)
+		  (when (isa? fun rtl_call)
+		     (with-access::rtl_call fun (var)
+			(if (eq? var *bint->long*)
+			    (rtl_reg? (car args))
+			    (rtl_reg? dest))))))))
+   
+   (define (reg a)
+      (cond
+	 ((rtl_reg? a) a)
+	 ((rtl_bint->long? a) (car (rtl_ins-args a)))
+	 ((rtl_$int->long? a) (car (rtl_ins-args a)))
+	 (else (rtl_ins-dest a))))
+   
+   (define (fxcmp-op i)
+      (with-access::rtl_ins i (fun)
+	 (with-access::rtl_call fun (var)
+	    (cond
+	       ((eq? var *<fx*) '<)
+	       ((eq? var *<=fx*) '<=)
+	       ((eq? var *>fx*) '>)
+	       ((eq? var *>=fx*) '>=)
+	       ((eq? var *=fx*) '=)))))
+   
+   (define (inv-op op)
+      (case op
+	 ((<) '>)
+	 ((<=) '>=)
+	 ((>) '<)
+	 ((>=) '<=)
 	 ((=) '!=)
 	 (else op)))
    
@@ -987,7 +1219,9 @@
 	 (else #f)))
    
    (define (test-ctxs-ref reg intl intr op ctx::bbv-ctx)
-      (with-trace 'bbv-ins (format "text-ctxs-ref ~a" op)
+      (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp/text-ctxs-ref [@~a]"
+			      (gendebugid))
+	 (trace-item "op=" op)
 	 (trace-item "reg=" (shape reg))
 	 (trace-item "intl=" (shape intl))
 	 (trace-item "intr=" (shape intr))
@@ -997,13 +1231,12 @@
 	     (let ((e (bbv-ctx-get ctx reg)))
 		(if (not e)
 		    (values ctx ctx)
-		    ;;(let ((types (bbv-ctxentry-types e)))
-		    ;; the arguments of fx operations are _always_ fixnums
 		    (let ((types (list *bint*)))
 		       (case op
 			  ((<)
 			   (let ((intr+ (bbv-range-lt intl intr))
 				 (intr- (bbv-range-gte intl intr)))
+			      (trace-item "reg=" (shape reg))
 			      (trace-item "<.intr+=" (shape intr+))
 			      (trace-item "<.intr-=" (shape intr-))
 			      (let ((ctx+ (unless (empty-range? intr+)
@@ -1016,6 +1249,7 @@
 			  ((<=)
 			   (let ((intr+ (bbv-range-lte intl intr))
 				 (intr- (bbv-range-gt intl intr)))
+			      (trace-item "reg=" (shape reg))
 			      (trace-item "<=.intr+=" (shape intr+))
 			      (trace-item "<=.intr-=" (shape intr-))
 			      (let ((ctx+ (unless (empty-range? intr+)
@@ -1028,6 +1262,7 @@
 			  ((>)
 			   (let ((intr+ (bbv-range-gt intl intr))
 				 (intr- (bbv-range-lte intl intr)))
+			      (trace-item "reg=" (shape reg))
 			      (trace-item ">.intr+=" (shape intr+))
 			      (trace-item ">.intr-=" (shape intr-))
 			      (let ((ctx+ (unless (empty-range? intr+)
@@ -1040,6 +1275,7 @@
 			  ((>=)
 			   (let ((intr+ (bbv-range-gte intl intr))
 				 (intr- (bbv-range-lt intl intr)))
+			      (trace-item "reg=" (shape reg))
 			      (trace-item ">=.intr+=" (shape intr+))
 			      (trace-item ">=.intr-=" (shape intr-))
 			      (let ((ctx+ (unless (empty-range? intr+)
@@ -1051,6 +1287,7 @@
 				 (values ctx+ ctx-))))
 			  ((=)
 			   (let ((ctx+ (extend-ctx ctx reg types #t :value intl)))
+			      (trace-item "reg=" (shape reg))
 			      (trace-item "ctx+.1=" (shape ctx+))
 			      (values ctx+ ctx)))
 			  ((!=)
@@ -1059,7 +1296,7 @@
 			   (values ctx ctx)))))))))
    
    (define (specialize/op op lhs intl rhs intr ctx::bbv-ctx)
-      (with-trace 'bbv-ins (format "specialize/op@fxcmp ~a" op)
+      (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp/op ~a [@a]" op (gendebugid))
 	 (trace-item "lhs=" (shape lhs) " intl=" (shape intl))
 	 (trace-item "rhs=" (shape rhs) " intr=" (shape intr))
 	 (cond
@@ -1091,7 +1328,7 @@
 	     (values ctx ctx)))))
    
    (define (specialize-call i::rtl_ins ctx::bbv-ctx)
-      (with-trace 'bbv-ins (format "specialize-call@fxcmp ~a" (shape i))
+      (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp/call ~a [@~a]" (shape i) (gendebugid))
 	 (with-access::rtl_ins i (fun args)
 	    (with-access::rtl_call fun (var)
 	       (let* ((lhs (car args))
@@ -1165,7 +1402,7 @@
 			 (trace-item "default.ctx-=" (shape ctx-))
 			 (values (duplicate::rtl_ins/bbv i) ctx+ ctx-)))))))))
 
-   (with-trace 'bbv-ins "rtl_ins-specialize-fxcmp"
+   (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp [@~a]" (gendebugid))
       (trace-item "i=" (shape i))
       (with-access::rtl_ins i (dest fun args)
 	 (cond
@@ -1173,11 +1410,15 @@
 	     (with-access::rtl_ifne fun (then)
 		(multiple-value-bind (ins ctx+ ctx-)
 		   (specialize-call (car args) ctx)
+		   (trace-item "ins=" (shape ins))
+		   (trace-item "istrue=" (rtl_ins-true? ins) " isfalse=" (rtl_ins-false? ins))
+		   (trace-item "ctx+=" (shape ctx+))
+		   (trace-item "ctx-=" (shape ctx-))
 		   (cond
 		      ((rtl_ins-true? ins)
 		       (with-access::rtl_ifne fun (then)
 			  (let* ((fun (duplicate::rtl_go fun
-					 (to (bbv-block then ctx queue :creator bs))))
+					 (to (bbv-block then ctx+ queue :creator bs))))
 				 (ni (duplicate::rtl_ins/bbv i
 					(ctx ctx)
 					(args '())

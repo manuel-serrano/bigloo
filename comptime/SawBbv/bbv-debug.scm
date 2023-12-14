@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Wed Nov 15 07:05:22 2023 (serrano)                */
+;*    Last change :  Thu Dec 14 13:19:55 2023 (serrano)                */
 ;*    Copyright   :  2023 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -39,11 +39,24 @@
 	    saw_bbv-cache
 	    saw_bbv-range)
 
-   (export  (dump-cfg ::global ::pair-nil ::pair-nil ::bstring)
+   (export  (gendebugid)
+	    (dump-cfg ::global ::pair-nil ::pair-nil ::bstring)
 	    (log-blocks ::global ::pair-nil ::pair-nil)
 	    (assert-block ::blockS ::obj)
 	    (assert-blocks ::blockS ::obj)
 	    (assert-context! b::block)))
+
+;*---------------------------------------------------------------------*/
+;*    debugcnt ...                                                     */
+;*---------------------------------------------------------------------*/
+(define debugcnt 0)
+
+;*---------------------------------------------------------------------*/
+;*    gendebugid ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (gendebugid)
+   (set! debugcnt (+fx debugcnt 1))
+   debugcnt)
 
 ;*---------------------------------------------------------------------*/
 ;*    assert-block ...                                                 */
