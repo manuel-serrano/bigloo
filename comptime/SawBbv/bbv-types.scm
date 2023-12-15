@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Dec 13 18:07:54 2023 (serrano)                */
+;*    Last change :  Fri Dec 15 09:58:46 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -537,7 +537,8 @@
 	    (display " ;;")
 	    (display* " def=" (map shape (regset->list def)))
 	    (display* " in=" (map shape (regset->list in)))
-	    (display* " out=" (map shape (regset->list out)))))))
+	    (display* " out=" (map shape (regset->list out)))
+	    (display* " " (typeof fun))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::blockV ...                                                */

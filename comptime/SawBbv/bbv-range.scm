@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Wed Dec 13 19:09:15 2023 (serrano)                */
+;*    Last change :  Fri Dec 15 07:48:27 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -49,7 +49,7 @@
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
 	   (vlen-range::bbv-range)
-	   (vlen->range::bbv-range ::rtl_reg)
+;* 	   (vec->range::bbv-range ::obj)                               */
 	   (rtl-range::obj ::obj ::bbv-ctx)
 	   (range-type?::bool ::obj)
 	   (bbv-singleton?::bool ::obj)
@@ -119,9 +119,17 @@
       ((bbv-vlen-vec-eq? x y)
        (>fx (bbv-vlen-offset x) (bbv-vlen-offset y)))
       ((and (bbv-vlen? x) (fixnum? y))
-       (if (>fx (bbv-vlen-offset x) y) #t #unspecified))
+       (if (>fx (bbv-vlen-offset x) y)
+	   #t
+	   (if (<= (+fx (bbv-max-fixnum) (bbv-vlen-offset x)) y)
+	       #f
+	       #unspecified)))
       ((and (fixnum? x) (bbv-vlen? y))
-       (>fx x (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
+       (if (>fx x (+fx (bbv-max-fixnum) (bbv-vlen-offset y)))
+	   #t
+	   (if (<=fx x (bbv-vlen-offset y))
+	       #f
+	       #unspecified)))
       (else
        #unspecified)))
 
@@ -135,9 +143,17 @@
       ((bbv-vlen-vec-eq? x y)
        (>=fx (bbv-vlen-offset x) (bbv-vlen-offset y)))
       ((and (bbv-vlen? x) (fixnum? y))
-       (if (>=fx (bbv-vlen-offset x) y) #t #unspecified))
+       (if (>=fx (bbv-vlen-offset x) y)
+	   #t
+	   (if (< (+fx (bbv-max-fixnum) (bbv-vlen-offset x)) y)
+	       #f
+	       #unspecified)))
       ((and (fixnum? x) (bbv-vlen? y))
-       (>=fx x (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
+       (if (>=fx x (+fx (bbv-max-fixnum) (bbv-vlen-offset y)))
+	   #t
+	   (if (<fx x (bbv-vlen-offset y))
+	       #f
+	       #unspecified)))
       (else
        #unspecified)))
 
@@ -176,7 +192,8 @@
 		     (y y))
 	     (cond
 		((and (bbv-vlen? x) (fixnum? y))
-		 (minfx (+fx (bbv-max-fixnum) (bbv-vlen-offset x)) y))
+		 (duplicate::bbv-vlen x
+		    (offset (minfx (bbv-vlen-offset x) y))))
 		((and (bbv-vlen? x) (bbv-vlen? y))
 		 (minfx (bbv-vlen-offset x) (bbv-vlen-offset y)))
 		((bbv-vlen? y)
@@ -367,16 +384,47 @@
 (define (vlen-range)
    *vlen-range*)
 
+;* {*---------------------------------------------------------------------*} */
+;* {*    vec->range ...                                                   *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (vec->range vec)                                            */
+;*    (if (rtl_reg? vec)                                               */
+;*        (instantiate::bbv-range                                      */
+;* 	  (lo 0)                                                       */
+;* 	  (up (instantiate::bbv-vlen                                   */
+;* 		 (offset 0)                                            */
+;* 		 (vec vec))))                                          */
+;*        (vlen-range)))                                               */
+
 ;*---------------------------------------------------------------------*/
 ;*    vlen->range ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (vlen->range v)
+(define (vlen->range reg ctx)
+   
+   (define (vlen-low reg ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (let loop ((low 0)
+		    (entries entries))
+	    (if (null? entries)
+		low
+		(with-access::bbv-ctxentry (car entries) (value)
+		   (if (isa? value bbv-range)
+		       (with-access::bbv-range value (lo up)
+			  (if (bbv-vlen? up)
+			      (with-access::bbv-vlen up (vec offset)
+				 (if (eq? vec reg)
+				     (let ((minlen (-fx lo offset)))
+					(loop (maxfx low minlen) (cdr entries)))
+				     (loop low (cdr entries))))
+			      (loop low (cdr entries))))
+		       (loop low (cdr entries))))))))
+	 
    (if *bbv-optim-vlength*
        (let ((val (instantiate::bbv-vlen
-		     (vec v)
+		     (vec reg)
 		     (offset 0))))
 	  (instantiate::bbv-range
-	     (lo 0) ;; MS: 11dec2023
+	     (lo (vlen-low reg ctx))
 	     (up val)))
        *vlen-range*))
 
@@ -390,7 +438,9 @@
 ;*    rtl-range ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (rtl-range i ctx)
-   (with-trace 'bbv-range (format "bbv-range (~a)" (shape i))
+   (with-trace 'bbv-range (format "rtl-range [@~a]" (gendebugid))
+      (trace-item "ins=" (shape i))
+      (trace-item "ctx=" (shape ctx))
       (cond
 	 ((isa? i rtl_reg)
 	  (trace-item "rtl_reg=" (shape i))
@@ -417,7 +467,7 @@
 		((bbv-ctx-get ctx (car args))
 		 =>
 		 (lambda (e)
-		    (vlen->range (car args))))
+		    (vlen->range (car args) ctx)))
 		(else
 		 (vlen-range)))))
 	 ((rtl_ins-call? i)
@@ -426,6 +476,8 @@
 	     (with-access::rtl_call fun (var)
 		(cond
 		   ((eq? var *int->long*)
+		    (rtl-range (car (rtl_ins-args i)) ctx))
+		   ((eq? var *long->bint*)
 		    (rtl-range (car (rtl_ins-args i)) ctx))
 		   ((eq? var *bint->long*)
 		    (rtl-range (car (rtl_ins-args i)) ctx))
@@ -447,7 +499,7 @@
 		((bbv-ctx-get ctx (car args))
 		 =>
 		 (lambda (e)
-		    (vlen->range (car args))))
+		    (vlen->range (car args) ctx)))
 		(else
 		 (vlen-range)))))
 	 (else
@@ -576,6 +628,7 @@
 		       (up (minrv-up xu (-- yu) xu)))))
 	    (trace-item (shape x) " < " (shape y))
 	    (trace-item "    xl=" xl)
+	    (trace-item "    xu=" xu)
 	    (trace-item "    yu=" yu)
 	    (trace-item "  --yu=" (-- yu))
 	    (trace-item " minrv=" (minrv-up xu (-- yu)))

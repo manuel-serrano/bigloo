@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Nov 10 23:53:32 2023 (serrano)                */
+;*    Last change :  Fri Dec 15 08:55:25 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -305,7 +305,7 @@
       (let ((entries (filter (lambda (e)
 				(regset-member? (bbv-ctxentry-reg e) out))
 			(bbv-ctx-entries ctx))))
-	 (let ((nctx (if (=fx (length entries) (length (bbv-ctx-entries ctx)))
+	 (let ((nctx (if (and #f (=fx (length entries) (length (bbv-ctx-entries ctx))))
 			 ctx
 			 (duplicate::bbv-ctx ctx
 			    (entries entries)))))

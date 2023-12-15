@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Wed Dec 13 12:42:04 2023 (serrano)                */
+;*    Last change :  Fri Dec 15 10:44:14 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -22,6 +22,7 @@
    (export  (start-bbv-cache!)
 	    (stop-bbv-cache!)
 	    *<fx* *<=fx* *>=fx* *>fx* *=fx* *-fx* *+fx* **fx*
+            *subfx* *addfx*							
             *-fx-safe* *+fx-safe* **fx-safe*
             *$-fx/ov* *$+fx/ov* *$*fx/ov* 
             *$-fx/w-ov* *$+fx/w-ov* *$*fx/w-ov* 
@@ -51,6 +52,9 @@
 (define *-fx* #f)
 (define *+fx* #f)
 (define **fx* #f)
+
+(define *subfx* #f)
+(define *addfx* #f)
 
 (define *-fx-safe* #f)
 (define *+fx-safe* #f)
@@ -100,6 +104,8 @@
       (set! *-fx* (get-global/module '$-fx 'foreign))
       (set! *+fx* (get-global/module '$+fx 'foreign))
       (set! **fx* (get-global/module '$*fx 'foreign))
+      (set! *subfx* (get-global/module '$subfx 'foreign))
+      (set! *addfx* (get-global/module '$addfx 'foreign))
       (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
       (set! *+fx-safe* (get-global/module '+fx-safe 'foreign))
       (set! **fx-safe* (get-global/module '*fx-safe 'foreign))
@@ -141,6 +147,9 @@
    (set! *-fx* #f)
    (set! *+fx* #f)
    (set! **fx* #f)
+
+   (set! *subfx* #f)
+   (set! *addfx* #f)
    
    (set! *-fx-safe* #f)
    (set! *+fx-safe* #f)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Wed Nov  8 16:27:34 2023 (serrano)                */
+;*    Last change :  Fri Dec 15 07:57:16 2023 (serrano)                */
 ;*    Copyright   :  2022-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -20,6 +20,7 @@
 	   *bbv-blocks-gc*
 	   *bbv-merge-strategy*
 	   *bbv-optim-vlength*
+	   *bbv-optim-bound*
 	   *max-block-merge-versions*
 	   *max-block-limit*
 	   *type-call*
@@ -102,6 +103,17 @@
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
 	 (else (error "bbv-optim-vlength" "unknown value" e)))))
+
+;*---------------------------------------------------------------------*/
+;*    *bbv-optim-bound* ...                                            */
+;*---------------------------------------------------------------------*/
+(define *bbv-optim-bound*
+   (let ((e (or (getenv "BIGLOOBBVBOUND") (getenv "BIGLOOBBVVLENGTH"))))
+      (cond
+	 ((not e) #f)
+	 ((string=? e "false") #f)
+	 ((string=? e "true") #t)
+	 (else (error "bbv-optim-bound" "unknown value" e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    basic-block versioning configuration                             */
