@@ -32,7 +32,7 @@ public class bglpmutex extends bigloo.mutex {
    }
 
    protected Object thread = null;
-   protected String state = "not-abandoned";
+   protected String state = "unlocked";
    
    private Object specific;
 
@@ -57,7 +57,7 @@ public class bglpmutex extends bigloo.mutex {
 	 
          if( m.thread == thread ) {
             m.release_lock();
-            m.state = "abandoned";
+            m.state = "locked";
          }
          w = foreign.CDR( (pair)w );
       }
@@ -69,7 +69,7 @@ public class bglpmutex extends bigloo.mutex {
            if( mutex.tryLock(ms, TimeUnit.MILLISECONDS) ) {
                /* mark mutex owned */
                thread = bglpthread.current_thread();
-               System.out.printf("thread %s is locking%n", thread); 
+               //System.out.printf("thread %s is locking%n", thread); 
                state = null;
                res = 0;
            }
