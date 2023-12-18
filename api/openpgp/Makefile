@@ -79,13 +79,9 @@ install: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
 	    $(MAKE) api-install-c; \
           fi
-	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
-            $(MAKE) api-install-jvm; \
-          fi
 
 uninstall: api-uninstall-init \
-           api-uninstall-c \
-           api-uninstall-jvm
+           api-uninstall-c
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

@@ -34,6 +34,33 @@ ${<div  id="contribs" class="container">
 		 code and exploring the system. </li>
         </ul>
 	   </contribcard>
+
+	   <contribcard title="SRFI-64">
+	     <a href="https://github.com/donaldsonjw/srfi64">SRI-64</a>  --
+		 The srfi library is an implementation of <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> for Bigloo.
+	   </contribcard>
+
+	   <contribcard title="Compressed I/O library">
+	     The <a href="https://github.com/donaldsonjw/compressed_ports">compressed I/O library SRI-64</a> 
+		 mirrors the gzip and deflate procedures included in the standard 
+		 library but also supports output to compress files. The supported 
+		 compression methods are gzip, bzip2, xz, lz4, and zstd. Both the 
+		 native and jvm backends are supported.
+	   </contribcard>
+	</div>
+	   
+    <div class="card-deck mb-3 text-center">
+	   <contribcard title="SRFI-231">
+	     <a href="https://github.com/donaldsonjw/srfi231">SRI-231</a>  --
+		 The srfi library is an implementation of <a href="https://srfi.schemers.org/srfi-231/srfi-231.html">SRFI 231</a> for Bigloo. It supports both the 
+		 native and jvm backends. It supports all of the procedures defined 
+		 by SRFI-231 but does differ from the gambit implementation in a few 
+		 ways. The first is that specialized storage classes for complex
+		 numbers are not supported and that a specialized numeric storage 
+		 class is only compatible with the generic storage class and itself, 
+		 as opposed to all numeric storage classes with inclusive numeric 
+		 ranges. 
+	   </contribcard>
 	   <contribcard title="">
 	   </contribcard>
 	   <contribcard title="">
