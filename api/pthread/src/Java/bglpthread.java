@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Dec 18 16:02:23 2023 (serrano)                */
+/*    Last change :  Mon Dec 18 21:57:50 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
@@ -123,7 +123,6 @@ public class bglpthread extends Thread {
    // Returns the current thread
    public static Object current_thread() {
       Thread t = currentThread();
-
       if( t instanceof bglpthread ) {
 	 return ((bglpthread)t).thread;
       } else {

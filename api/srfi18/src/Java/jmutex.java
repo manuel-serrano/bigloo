@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/api/srfi18/src/Java/jmutex.java        */
+/*    /tmp/BGL2/bigloo-unstable/api/srfi18/src/Java/jmutex.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Dec 18 19:43:49 2023 (serrano)                */
+/*    Last change :  Mon Dec 18 21:58:05 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
@@ -85,12 +85,14 @@ public class jmutex extends bigloo.pthread.bglpmutex {
 
    public int release_lock() {
       Object th = jthread.current_thread();
-
       if( thread == th ) {
 	 /* mark mutex no longer owned */
-	 super.release_lock();
-	 
-	 notifyAll();
+	 try {
+	    super.release_lock();
+	    // notifyAll();
+	 } catch (java.lang.IllegalMonitorStateException e) {
+	    ;
+	 }
       } else {
 	 foreign.fail( "mutex-unlock!",
 		       "mutex not owned by thread",

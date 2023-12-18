@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../bigloo/bigloo/api/pthread/src/Java/bglpmutex.java            */
+/*    .../BGL2/bigloo-unstable/api/pthread/src/Java/bglpmutex.java     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Dec 18 19:43:32 2023 (serrano)                */
+/*    Last change :  Mon Dec 18 21:58:14 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
@@ -24,7 +24,7 @@ import bigloo.*;
 /*---------------------------------------------------------------------*/
 public class bglpmutex extends bigloo.mutex {
    public static Object mutexes = bigloo.foreign.BNIL;
-   private final ReentrantLock mutex;
+   public final ReentrantLock mutex;
     
    protected static void setup() {
       bigloo.mutex.amutex = new bglpmutex( bigloo.foreign.BUNSPEC );
