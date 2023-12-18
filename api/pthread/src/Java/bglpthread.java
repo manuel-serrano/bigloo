@@ -80,8 +80,7 @@ public class bglpthread extends Thread {
    // The thread entry-point
    public void start( Object t, boolean _b ) {
       thread = t;
-      env = new bgldynamic( bgldynamic.abgldynamic.get() );
-      
+      env = new bglpdynamic( bgldynamic.abgldynamic.get() );
       start();
    }
 

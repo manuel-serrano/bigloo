@@ -18,11 +18,19 @@ import bigloo.*;
 /*---------------------------------------------------------------------*/
 /*    bglpdynamic                                                      */
 /*---------------------------------------------------------------------*/
-public class bglpdynamic extends bigloo.bgldynamic {
+public class bglpdynamic extends bigloo.bgldynamic { 
    protected static void setup() {
       bigloo.bgldynamic.abgldynamic = new bglpdynamic();
    }
 
+   public bglpdynamic() {
+       super();
+   }
+    
+   public bglpdynamic (final bgldynamic o) {
+       super(o);
+   }
+    
    public bgldynamic get() {
       Thread t = java.lang.Thread.currentThread();
 

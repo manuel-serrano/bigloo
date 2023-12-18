@@ -367,7 +367,8 @@
       ((=fx sysno $errno-typename-error)
        (raise (typename-error #f #f proc msg obj)))
       ((=fx sysno $errno-index-out-of-bound-error)
-       (raise (index-out-of-bounds-error #f #f proc obj msg -1)))
+       (raise (instantiate::&index-out-of-bounds-error (fname #f) (location #f) (proc proc)
+                 (msg msg) (obj obj) (index -1))))
       (else
        (error proc msg obj))))
 
