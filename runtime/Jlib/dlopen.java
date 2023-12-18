@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Dec 11 15:42:09 2000                          */
-/*    Last change :  Tue Mar 12 10:40:36 2019 (serrano)                */
-/*    Copyright   :  2000-19 Manuel Serrano                            */
+/*    Last change :  Mon Dec 18 12:28:47 2023 (serrano)                */
+/*    Copyright   :  2000-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Dynamic class loading for the Jvm back-end.                      */
 /*=====================================================================*/
@@ -152,9 +152,6 @@ public abstract class dlopen {
 			      final byte[] mod_sym ) {
       bgl_dload_error = NO_ERROR_YET;
 
-      System.out.println( "MS 12mar19: DLOAD_INNER incompatible with the C version" );
-      System.out.println( "should return a multiple value" );
-      
       try {
 	 if( suffix( filename ).equals( "zip" ) ) {
 	    return dloadzip( filename, init_sym, mod_sym );
@@ -175,7 +172,7 @@ public abstract class dlopen {
 	       if( mod_sym.length > 0 ) {
 		  return init_module(new_class);
 	       }
-	       return foreign.BUNSPEC;
+	       return symbol.make_symbol( "__dload_noinit".getBytes() );
 	    }
 	 }
       } catch (final Exception e) {

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../bigloo/bigloo/api/pthread/src/Java/bglpthread.java           */
+/*    .../bigloo-unstable/api/pthread/src/Java/bglpthread.java         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Dec 18 10:10:47 2023 (serrano)                */
+/*    Last change :  Mon Dec 18 16:02:23 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
@@ -20,10 +20,10 @@ import bigloo.*;
 /*    bglpthread                                                       */
 /*---------------------------------------------------------------------*/
 public class bglpthread extends Thread {
-   private Object specific = bigloo.foreign.BUNSPEC;
-   private Object cleanup = bigloo.foreign.BUNSPEC;
-   private Object thread = bigloo.foreign.BUNSPEC;
-   private procedure thunk;
+   public Object specific = bigloo.foreign.BUNSPEC;
+   public Object cleanup = bigloo.foreign.BUNSPEC;
+   public Object thread = bigloo.foreign.BUNSPEC;
+   public procedure thunk;
    public bgldynamic env;
 
    static bglpthread nilthread = new bglpthread();
@@ -95,7 +95,7 @@ public class bglpthread extends Thread {
 	    System.exit( 1 );
 	 }
       } finally {
-          bglpmutex.mutexes_unlock( thread );
+          mutexes_unlock();
 
 	 if( cleanup instanceof procedure ) {
 	    ((procedure)cleanup).funcall1( thread );
@@ -103,6 +103,11 @@ public class bglpthread extends Thread {
       }
    }
 
+   // mutex cleanup
+   public void mutexes_unlock() {
+      bglpmutex.mutexes_unlock(thread);
+   }
+   
    // Terminate a thread
    public static boolean terminate( bglpthread thread ) {
       thread.interrupt();

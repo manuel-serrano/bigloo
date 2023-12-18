@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../bigloo/bigloo/api/pthread/src/Java/bglpmutex.java            */
+/*    .../BGL2/bigloo-unstable/api/pthread/src/Java/bglpmutex.java     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Nov  7 11:37:41 2022 (serrano)                */
-/*    Copyright   :  2005-22 Manuel Serrano                            */
+/*    Last change :  Mon Dec 18 16:19:15 2023 (serrano)                */
+/*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
 /*=====================================================================*/
@@ -23,16 +23,15 @@ import bigloo.*;
 /*    bglpmutex                                                        */
 /*---------------------------------------------------------------------*/
 public class bglpmutex extends bigloo.mutex {
-   private static Object mutexes = bigloo.foreign.BNIL;
-
+   public static Object mutexes = bigloo.foreign.BNIL;
    private final ReentrantLock mutex;
     
    protected static void setup() {
       bigloo.mutex.amutex = new bglpmutex( bigloo.foreign.BUNSPEC );
    }
 
-   protected Object thread = null;
-   protected String state = "unlocked";
+   public Object thread = null;
+   public String state = "unlocked";
    
    private Object specific;
 
@@ -103,11 +102,15 @@ public class bglpmutex extends bigloo.mutex {
       return acquire_lock( ms );
    }
 
-   public int release_lock() {
-       mutex.unlock();
-       /* mark mutex no longer owned */
+   public synchronized int release_lock() {
        thread = null;
        state = "not-abandoned";
+       try {
+	  mutex.unlock();
+       } catch (java.lang.IllegalMonitorStateException e) {
+	  ;
+       }
+       /* mark mutex no longer owned */
        return 0;
    }
 

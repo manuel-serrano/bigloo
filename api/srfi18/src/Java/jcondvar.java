@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/srfi18/src/Java/jcondvar.java        */
+/*    /tmp/BGL2/bigloo-unstable/api/srfi18/src/Java/jcondvar.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Tue Dec 11 18:22:42 2012 (serrano)                */
-/*    Copyright   :  2005-12 Manuel Serrano                            */
+/*    Last change :  Mon Dec 18 15:24:34 2023 (serrano)                */
+/*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Condvar implementation                                           */
 /*=====================================================================*/
@@ -16,16 +16,18 @@ package bigloo.srfi18;
 import java.lang.*;
 import java.util.*;
 import bigloo.*;
+import bigloo.pthread.*;
 
 /*---------------------------------------------------------------------*/
 /*    jcondvar                                                         */
 /*---------------------------------------------------------------------*/
-public class jcondvar extends bigloo.condvar {
+public class jcondvar extends bigloo.pthread.bglpcondvar {
    ArrayList alist = new ArrayList();
    
    protected static void setup() {
       bigloo.condvar.acondvar = new jcondvar( bigloo.foreign.BUNSPEC );
    }
+   
    private Object specific;
    
    public jcondvar( Object n ) {
@@ -42,10 +44,9 @@ public class jcondvar extends bigloo.condvar {
 
    public boolean wait( final jmutex m, final int ms ) {
       boolean res = true;
+      Object th = jthread.current_thread();
       
-      synchronized( this ) {
-	 Object th = jthread.current_thread();
-
+      synchronized( m ) {
 	 /* assertion */
 	 if( m.thread != th ) {
 	    foreign.fail( "condition-variable-wait!",
@@ -74,6 +75,8 @@ public class jcondvar extends bigloo.condvar {
       
       /* release the condvar and re-acquire the lock */
       m.acquire_lock();
+      m.thread = th;
+      System.out.println("jscondvar after wait..." + th.toString());
       
       return res;
    }
@@ -100,19 +103,16 @@ public class jcondvar extends bigloo.condvar {
    }
 
    public boolean cond_signal(boolean b) {
-      synchronized( this ) {
-
-	 if( b ) {
-	    alist.clear();
-	    notifyAll();
-	 } else {
-	    if( alist.size() > 0 ) alist.remove( 0 );
+      if( b ) {
+	 alist.clear();
+	 notifyAll();
+      } else {
+	 if( alist.size() > 0 ) alist.remove( 0 );
 	    
-	    notify();
-	 }
-	 
-	 return true;
+	 notify();
       }
+	 
+      return true;
    }
       
    public boolean broadcast() {

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/api/srfi18/src/Java/jmutex.java        */
+/*    /tmp/BGL2/bigloo-unstable/api/srfi18/src/Java/jmutex.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Nov  7 11:37:58 2022 (serrano)                */
-/*    Copyright   :  2005-22 Manuel Serrano                            */
+/*    Last change :  Mon Dec 18 16:16:13 2023 (serrano)                */
+/*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
 /*=====================================================================*/
@@ -15,24 +15,22 @@
 package bigloo.srfi18;
 import java.lang.*;
 import bigloo.*;
+import bigloo.pthread.*;
 
 /*---------------------------------------------------------------------*/
 /*    jmutex                                                           */
 /*---------------------------------------------------------------------*/
-public class jmutex extends bigloo.mutex {
-   private static Object mutexes = bigloo.foreign.BNIL;
+public class jmutex extends bigloo.pthread.bglpmutex {
    
    protected static void setup() {
       bigloo.mutex.amutex = new jmutex( bigloo.foreign.BUNSPEC );
    }
-
-   protected Object thread = null;
-   protected String state = "not-abandoned";
    
    private Object specific;
 
    public jmutex( Object n ) {
       super( n );
+      state = "not-abandoned";
    }
 
    protected bigloo.mutex create( Object name ) {
@@ -45,16 +43,17 @@ public class jmutex extends bigloo.mutex {
 
    protected static void mutexes_unlock( Object thread ) {
       Object w = mutexes;
-
       while( w instanceof pair ) {
 	 jmutex m = (jmutex)(foreign.CAR( (pair)w ));
-	 
+
 	 if( m.thread == thread ) {
 	    m.release_lock();
 	    m.state = "abandoned";
 	 }
 	 w = foreign.CDR( (pair)w );
       }
+
+      thread = null;
    }
 
    public int acquire_lock( int ms ) {
@@ -79,34 +78,23 @@ public class jmutex extends bigloo.mutex {
 	 /* mark mutex owned */
 	 thread = th;
 	 state = null;
-	 
+
 	 return 0;
       }
    }
 
-   public int acquire_lock() {
-      return acquire_lock( 0 );
-   }
-   
-   public int acquire_timed_lock( int ms ) {
-      return acquire_lock( ms );
-   }
+   public synchronized int release_lock() {
+      Object th = jthread.current_thread();
 
-   public int release_lock() {
-      synchronized( this ) {
-	 Object th = jthread.current_thread();
+      if( thread == th ) {
+	 /* mark mutex no longer owned */
+	 super.release_lock();
 	 
-	 if( thread == th ) {
-	    /* mark mutex no longer owned */
-	    thread = null;
-	    state = "not-abandoned";
-	 
-	    notifyAll();
-	 } else {
-	   foreign.fail( "mutex-unlock!",
-			 "mutex not owned by thread",
-			 this );
-	 }
+	 notifyAll();
+      } else {
+	 foreign.fail( "mutex-unlock!",
+		       "mutex not owned by thread",
+		       this );
       }
       return 0;
    }

@@ -44,7 +44,9 @@ c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX)
 
-jvm: 
+jvm:
+
+jvm.not-implemented:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) recette-jvm$(SCRIPTEXTENSION); \
 	  fi

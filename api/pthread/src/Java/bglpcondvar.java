@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/api/pthread/src/Java/bglpcondvar.java         */
+/*    .../bigloo-unstable/api/pthread/src/Java/bglpcondvar.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Fri Nov 23 17:38:07 2012 (serrano)                */
-/*    Copyright   :  2005-12 Manuel Serrano                            */
+/*    Last change :  Mon Dec 18 15:24:57 2023 (serrano)                */
+/*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Condvar implementation                                           */
 /*=====================================================================*/
@@ -46,10 +46,9 @@ public class bglpcondvar extends bigloo.condvar {
 
    public boolean wait( final bglpmutex m, final int ms ) {
       boolean res = true;
+      Object th = bglpthread.current_thread();
       
-      synchronized( this ) {
-	 Object th = bglpthread.current_thread();
-
+      synchronized( m ) {
 	 /* assertion */
 	 if( m.thread != th ) {
 	    foreign.fail( "condition-variable-wait!",
@@ -70,17 +69,15 @@ public class bglpcondvar extends bigloo.condvar {
 	       }
 	    } else {
 	       wait();
+	       m.acquire_lock();
 	    }
 	 } catch( Exception e ) {
             // the semantics of condition-variable-wait! requires the mutex
             // be locked regardless of whether or not the wait was successful
-             m.acquire_lock(); 
+             m.acquire_lock();
 	    return false;
 	 }
       }
-      
-      /* release the condvar and re-acquire the lock */
-      m.acquire_lock();
       
       return res;
    }
