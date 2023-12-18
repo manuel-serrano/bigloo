@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/mpg123/Makefile                  */
+#*    serrano/prgm/project/bigloo/bigloo/api/mpg123/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:13:31 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Mon Dec 18 11:45:06 2023 (serrano)                */
+#*    Copyright   :  2001-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -45,7 +45,7 @@ build-c:
           fi
 
 build-jvm:
-	@ echo "MPG123 .jvm: Not implemented";
+	@ echo "MPG123 .jvm: not implemented"
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */

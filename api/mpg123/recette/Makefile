@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/mpg123/recette/Makefile          */
+#*    .../prgm/project/bigloo/bigloo/api/mpg123/recette/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Sun Jul  9 10:13:41 2017 (serrano)                */
-#*    Copyright   :  2002-20 Manuel Serrano                            */
+#*    Last change :  Mon Dec 18 11:44:27 2023 (serrano)                */
+#*    Copyright   :  2002-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Gstreamer tests                        */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ POPULATION	= recette.scm Makefile
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
-all: c # jvm dotnet
+all: c # jvm 
 
 c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
@@ -49,16 +49,6 @@ jvm.not-implemented:
 recette-jvm$(SCRIPTEXTENSION): recette.class
 	$(BIGLOO) -jvm $(EFLAGS) $(BFLAGS) recette.class -o recette-jvm$(SCRIPTEXTENSION)
 
-dotnet: 
-
-dotnet.not-implemented:
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) recette-dotnet$(SCRIPTEXTENSION); \
-	  fi
-
-recette-dotnet$(SCRIPTEXTENSION): recette.obj
-	$(BIGLOO) -v -dotnet -dotnet-managed $(EFLAGS) $(BFLAGS) recette.obj -o recette-dotnet$(SCRIPTEXTENSION)
-
 pop:
 	@ echo $(POPULATION:%=mpg123/recette/%)
 
@@ -68,7 +58,6 @@ clean:
 	@- $(RM) -f recette.o
 	@- $(RM) -f JVMMAIN.class *.class recette-jvm$(SCRIPTEXTENSION) 
 	@- $(RM) -f recette.obj recette.il
-	@- $(RM) -f recette-dotnet.exe recette-dotnet$(SCRIPTEXTENSION)
 
 distclean: clean
 

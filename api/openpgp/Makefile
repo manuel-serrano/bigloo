@@ -40,10 +40,7 @@ build-c:
           fi
 
 build-jvm:
-	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
-	    echo "[0m[1;31m>>> JVM[0m"; \
-	    (cd src && $(MAKE) jvm); \
-          fi
+	@ echo "OpenPGP .jvm: not supporte"
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */

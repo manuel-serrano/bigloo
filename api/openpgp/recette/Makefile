@@ -2,7 +2,7 @@
 #*    serrano/prgm/project/bigloo/api/crypto/recette/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Copyright   :  2002-20 Manuel Serrano                            */
+#*    Copyright   :  2002-23 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the tests                                  */
 #*=====================================================================*/
@@ -38,7 +38,7 @@ POPULATION	= recette.scm Makefile \
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
-all: c jvm
+all: c # jvm
 
 c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
