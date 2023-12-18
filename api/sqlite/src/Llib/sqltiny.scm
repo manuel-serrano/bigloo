@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Thu Oct 12 17:23:10 2023 (serrano)                */
+;*    Last change :  Mon Dec 18 10:19:16 2023 (serrano)                */
 ;*    Copyright   :  2007-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
@@ -150,7 +150,9 @@
 ;*    $sqltiny-exec ...                                                */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-exec builtin cmd obj)
-   (error "sqltiny" "sqlite-exec not supported" #f))
+   (let ((l (sqltiny-do builtin cmd obj (lambda (x) (when (pair? x) (car x))))))
+      (when (pair? l)
+	 (car l))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqltiny-eval ...                                                */
