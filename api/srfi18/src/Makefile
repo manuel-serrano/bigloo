@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jan 21 09:03:29 2020 (serrano)                */
+#*    Last change :  Mon Dec 18 12:00:16 2023 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -45,6 +45,9 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 # Additional pthread lib for C
 EXTRALIBS	+= $(PTHREADLIBS)
 BIGLOOEXTRALIBS += bigloopthread
+
+# Additional pthread lib for Java
+JVMAPIBOOTPATH  = .:../../../../../lib/bigloo/$(RELEASE)/bigloo_s.zip:../../../../../lib/bigloo/$(RELEASE)/bigloopthread_s-$(RELEASE).zip
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
