@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/srfi18/src/Java/jthread.java     */
+/*    /tmp/BGL/bigloo-unstable/api/srfi18/src/Java/jthread.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Aug  9 10:57:47 2016 (serrano)                */
-/*    Copyright   :  2002-16 Manuel Serrano                            */
+/*    Last change :  Mon Dec 18 10:10:58 2023 (serrano)                */
+/*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
 /*=====================================================================*/
@@ -15,16 +15,17 @@
 package bigloo.srfi18;
 import java.lang.*;
 import bigloo.*;
+import bigloo.pthread.*;
 
 /*---------------------------------------------------------------------*/
 /*    jthread                                                          */
 /*---------------------------------------------------------------------*/
-public class jthread extends Thread {
+public class jthread extends bigloo.pthread.bglpthread {
    private Object specific = bigloo.foreign.BUNSPEC;
    private Object cleanup = bigloo.foreign.BUNSPEC;
    private Object thread = bigloo.foreign.BUNSPEC;
    private procedure thunk;
-   protected bgldynamic env;
+   //private bgldynamic env;
 
    static jthread nilthread = new jthread();
    
@@ -80,9 +81,8 @@ public class jthread extends Thread {
    // The thread entry-point
    public void start( Object t, boolean b ) {
       thread = t;
-      env = new bgldynamic( bgldynamic.abgldynamic.get() );
-      
-      start();
+      env = new bglpdynamic( bgldynamic.abgldynamic.get() );
+      super.start(); 
    }
 
    // Run the thread

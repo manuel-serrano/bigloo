@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Sat May 13 08:41:15 2023 (serrano)                */
+/*    Last change :  Mon Dec 18 10:10:47 2023 (serrano)                */
 /*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
@@ -24,7 +24,7 @@ public class bglpthread extends Thread {
    private Object cleanup = bigloo.foreign.BUNSPEC;
    private Object thread = bigloo.foreign.BUNSPEC;
    private procedure thunk;
-   protected bgldynamic env;
+   public bgldynamic env;
 
    static bglpthread nilthread = new bglpthread();
    

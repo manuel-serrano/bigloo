@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/srfi18/src/Java/jdynamic.java        */
+/*    /tmp/BGL/bigloo-unstable/api/srfi18/src/Java/jdynamic.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Oct 19 10:42:04 2002                          */
-/*    Last change :  Tue Dec 11 18:16:07 2012 (serrano)                */
-/*    Copyright   :  2002-12 Manuel Serrano                            */
+/*    Last change :  Mon Dec 18 10:11:03 2023 (serrano)                */
+/*    Copyright   :  2002-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Pthread global dynamic environments.                             */
 /*=====================================================================*/
@@ -23,6 +23,14 @@ public class jdynamic extends bigloo.bgldynamic {
       bigloo.bgldynamic.abgldynamic = new jdynamic();
    }
 
+   public jdynamic() {
+      super();
+   }
+    
+   public jdynamic (final bgldynamic o) {
+      super(o);
+   }
+    
    public bgldynamic get() {
       Thread t = java.lang.Thread.currentThread();
 
