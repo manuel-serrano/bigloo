@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Dec 15 07:43:57 2023 (serrano)                */
+;*    Last change :  Mon Dec 18 08:58:11 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -1031,10 +1031,8 @@
    (define (narrowing/op reg intr::bbv-range inte::bbv-range op+ op- ctx::bbv-ctx)
       (let* ((inte+ (op+ intr inte))
 	     (inte- (op- intr inte))
-	     (ctx+ (unless (empty-range? inte+)
-		      (extend-ctx ctx reg (list *bint*) #t :value inte+)))
-	     (ctx- (unless (empty-range? inte-)
-		      (extend-ctx ctx reg (list *bint*) #t :value inte-))))
+	     (ctx+ (extend-ctx ctx reg (list *bint*) #t :value inte+))
+	     (ctx- (extend-ctx ctx reg (list *bint*) #t :value inte-)))
 	 (values ctx+ ctx-)))
    
    (define (narrowing reg intr::bbv-range inte::bbv-range op ctx::bbv-ctx)
