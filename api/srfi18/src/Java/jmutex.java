@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    /tmp/BGL2/bigloo-unstable/api/srfi18/src/Java/jmutex.java        */
+/*    .../project/bigloo/bigloo/api/srfi18/src/Java/jmutex.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Dec 18 16:16:13 2023 (serrano)                */
+/*    Last change :  Mon Dec 18 19:43:49 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
@@ -83,7 +83,7 @@ public class jmutex extends bigloo.pthread.bglpmutex {
       }
    }
 
-   public synchronized int release_lock() {
+   public int release_lock() {
       Object th = jthread.current_thread();
 
       if( thread == th ) {

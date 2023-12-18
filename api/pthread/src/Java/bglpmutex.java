@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../BGL2/bigloo-unstable/api/pthread/src/Java/bglpmutex.java     */
+/*    .../bigloo/bigloo/api/pthread/src/Java/bglpmutex.java            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Dec 18 16:19:15 2023 (serrano)                */
+/*    Last change :  Mon Dec 18 19:43:32 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
@@ -102,7 +102,7 @@ public class bglpmutex extends bigloo.mutex {
       return acquire_lock( ms );
    }
 
-   public synchronized int release_lock() {
+   public int release_lock() {
        thread = null;
        state = "not-abandoned";
        try {
