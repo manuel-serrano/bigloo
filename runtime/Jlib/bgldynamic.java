@@ -34,7 +34,7 @@ public class bgldynamic
    public output_port current_output_port;
    public output_port current_error_port;
    
-   public Object current_display;
+   public Object current_display = unspecified.unspecified;
    
    public int mvalues_number;
    public final Object[] mvalues_values= { unspecified.unspecified,
@@ -58,9 +58,9 @@ public class bgldynamic
    public Object exitd_val;
    public Object error_handler;
    public Object uncaught_exception_handler;
-   public Object error_notifiers;
-   public Object interrupt_notifier;
-   public Object current_thread;
+   public Object error_notifiers = bigloo.foreign.BNIL;
+   public Object interrupt_notifier = bigloo.foreign.BNIL;
+   public Object current_thread = 0;
    public Object debug_alist = bigloo.foreign.BNIL;
    public Object lexical_stack = bigloo.foreign.BNIL;
    public Object bytecode = bigloo.foreign.BUNSPEC;
@@ -95,13 +95,22 @@ public class bgldynamic
 				     unspecified.unspecified),
 			    unspecified.unspecified );
       
-      error_handler = nil.nil;
-
+      //error_handler = nil.nil;
+      error_handler = new pair( unspecified.unspecified, bigloo.foreign.BFALSE );
+      uncaught_exception_handler = bigloo.nil.nil;
+      
       mvalues_number = 1;
 
       current_input_port = o.current_input_port;
       current_output_port = o.current_output_port;
       current_error_port = o.current_error_port;
+
+      current_display = o.current_display;
+
+      interrupt_notifier = o.interrupt_notifier;
+
+      thread_backend = o.thread_backend;
+     
       
       thread_backend = o.thread_backend;
       current_thread = o.current_thread;
