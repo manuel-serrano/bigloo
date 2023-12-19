@@ -415,7 +415,12 @@
 			      (mutex-toggle m #t mutex-toggle)))))))
 	 (thread-join! th1)
 	 (mutex-state m)))
-   :result 'locked)
+   ;; The c and jvm backends provide different results due to the jvm
+   ;; backend closing all mutexes owned by the thread upon exit. See
+   ;; bglpthread::run in Java/bglpthread.java
+   :result (cond-expand
+              (bigloo-c 'locked)
+              (bigloo-jvm 'unlocked)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-timed-lock ...                                             */
