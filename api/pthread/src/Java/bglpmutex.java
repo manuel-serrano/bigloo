@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../BGL2/bigloo-unstable/api/pthread/src/Java/bglpmutex.java     */
+/*    .../bigloo/bigloo/api/pthread/src/Java/bglpmutex.java            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Dec 18 21:58:14 2023 (serrano)                */
+/*    Last change :  Wed Dec 20 07:45:38 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
@@ -56,7 +56,7 @@ public class bglpmutex extends bigloo.mutex {
 	 
          if( m.thread == thread ) {
             m.release_lock();
-            m.state = "locked";
+            m.state = "unlocked";
          }
          w = foreign.CDR( (pair)w );
       }
@@ -69,7 +69,7 @@ public class bglpmutex extends bigloo.mutex {
                /* mark mutex owned */
                thread = bglpthread.current_thread();
                //System.out.printf("thread %s is locking%n", thread); 
-               state = null;
+               state = "locked";
                res = 0;
            }
            
@@ -87,7 +87,7 @@ public class bglpmutex extends bigloo.mutex {
            mutex.lock();
            /* mark mutex owned */
            thread = bglpthread.current_thread();
-           state = null;
+           state = "locked";
            res = 0;
        } catch( Exception e ) {
            foreign.fail( "mutex-lock!", 
@@ -103,14 +103,10 @@ public class bglpmutex extends bigloo.mutex {
    }
 
    public int release_lock() {
-       thread = null;
-       state = "not-abandoned";
-       try {
-	  mutex.unlock();
-       } catch (java.lang.IllegalMonitorStateException e) {
-	  ;
-       }
+       mutex.unlock();
        /* mark mutex no longer owned */
+       thread = null;
+       state = "unlocked";
        return 0;
    }
 
