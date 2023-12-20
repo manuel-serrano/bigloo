@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../bigloo-unstable/api/pthread/src/Java/bglpcondvar.java        */
+/*    .../bigloo/bigloo/api/pthread/src/Java/bglpcondvar.java          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Mon Dec 18 15:24:57 2023 (serrano)                */
+/*    Last change :  Wed Dec 20 12:51:39 2023 (serrano)                */
 /*    Copyright   :  2005-23 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Condvar implementation                                           */
@@ -50,7 +50,7 @@ public class bglpcondvar extends bigloo.condvar {
       
       synchronized( m ) {
 	 /* assertion */
-	 if( m.thread != th ) {
+	 if( m.thread != th  && !(m.thread == null && th == bigloo.foreign.BFALSE) ) {
 	    foreign.fail( "condition-variable-wait!",
 			  "mutex not owned by current thread",
 			  m );
