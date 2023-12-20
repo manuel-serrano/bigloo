@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Fri Dec 15 07:48:27 2023 (serrano)                */
+;*    Last change :  Tue Dec 19 17:43:58 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -49,7 +49,6 @@
 	   (fixnum-range::bbv-range)
 	   (fixnum->range::bbv-range ::long)
 	   (vlen-range::bbv-range)
-;* 	   (vec->range::bbv-range ::obj)                               */
 	   (rtl-range::obj ::obj ::bbv-ctx)
 	   (range-type?::bool ::obj)
 	   (bbv-singleton?::bool ::obj)
@@ -195,7 +194,8 @@
 		 (duplicate::bbv-vlen x
 		    (offset (minfx (bbv-vlen-offset x) y))))
 		((and (bbv-vlen? x) (bbv-vlen? y))
-		 (minfx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+		 (if (<fx (bbv-vlen-offset x) (bbv-vlen-offset y)) x y))
+		 ;;(minfx (bbv-vlen-offset x) (bbv-vlen-offset y)))
 		((bbv-vlen? y)
 		 (loop y x))
 		(else
@@ -227,7 +227,9 @@
 		 (duplicate::bbv-vlen x
 		    (offset (maxfx (bbv-vlen-offset x) y))))
 		((and (bbv-vlen? x) (bbv-vlen? y))
-		 (maxfx (bbv-vlen-offset x) (bbv-vlen-offset y)))
+		 (if (>fx (bbv-vlen-offset x) (bbv-vlen-offset y)) x y))
+;* 		 (maxfx (bbv-max-fixnum)                               */
+;* 		    (maxfx (bbv-vlen-offset x) (bbv-vlen-offset y))))  */
 		((bbv-vlen? y)
 		 (loop y x))
 		(else
@@ -383,18 +385,6 @@
 ;*---------------------------------------------------------------------*/
 (define (vlen-range)
    *vlen-range*)
-
-;* {*---------------------------------------------------------------------*} */
-;* {*    vec->range ...                                                   *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (vec->range vec)                                            */
-;*    (if (rtl_reg? vec)                                               */
-;*        (instantiate::bbv-range                                      */
-;* 	  (lo 0)                                                       */
-;* 	  (up (instantiate::bbv-vlen                                   */
-;* 		 (offset 0)                                            */
-;* 		 (vec vec))))                                          */
-;*        (vlen-range)))                                               */
 
 ;*---------------------------------------------------------------------*/
 ;*    vlen->range ...                                                  */
@@ -566,17 +556,25 @@
 ;*    bbv-range> ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range>::obj x y)
-   (cond
-      ((empty-range? x) (if (empty-range? y) #unspecified #t))
-      ((empty-range? y) #t)
-      ((bbv-vlen-vec-eq? (bbv-range-up x) (bbv-range-up y))
-       (if (>fx (bbv-range-up-vlen-offset x) (bbv-range-up-vlen-offset y))
-	   (if (eq? (>= (bbv-range-lo x) (bbv-range-lo y)) #t)
-	       #t
-	       #unspecified)))
-      ((eq? (>rv (bbv-range-lo x) (bbv-range-up y)) #t) #t)
-      ((eq? (<=rv (bbv-range-up x) (bbv-range-lo y)) #f) #f)
-      (else #unspecified)))
+   
+   (define (range> x y)
+      (cond
+	 ((empty-range? x) (if (empty-range? y) #unspecified #t))
+	 ((empty-range? y) #t)
+	 ((bbv-vlen-vec-eq? (bbv-range-up x) (bbv-range-up y))
+	  (if (>fx (bbv-range-up-vlen-offset x) (bbv-range-up-vlen-offset y))
+	      (if (eq? (>= (bbv-range-lo x) (bbv-range-lo y)) #t)
+		  #t
+		  #unspecified)))
+	 ((eq? (>rv (bbv-range-lo x) (bbv-range-up y)) #t) #t)
+	 ((eq? (<=rv (bbv-range-up x) (bbv-range-lo y)) #t) #f)
+	 (else #unspecified)))
+   
+   (with-trace 'bbv-range (format "bbv-range> [@~a]" (gendebugid))
+      (trace-item "x=" (shape x))
+      (trace-item "y=" (shape y))
+      (trace-item "<- " (range> x y))
+      (range> x y)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range>= ...                                                  */
@@ -591,7 +589,7 @@
 	       #t
 	       #unspecified)))
       ((eq? (>=rv (bbv-range-lo x) (bbv-range-up y)) #t) #t)
-      ((eq? (<rv (bbv-range-up x) (bbv-range-lo y)) #f) #f)
+      ((eq? (<rv (bbv-range-up x) (bbv-range-lo y)) #t) #f)
       (else #unspecified)))
 
 ;*---------------------------------------------------------------------*/

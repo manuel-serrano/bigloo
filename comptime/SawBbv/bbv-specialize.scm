@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Dec 18 08:58:11 2023 (serrano)                */
+;*    Last change :  Tue Dec 19 15:28:33 2023 (serrano)                */
 ;*    Copyright   :  2017-23 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -186,6 +186,7 @@
 		;; instruction specialization
 		(multiple-value-bind (ins nctx)
 		   (specialize (car oins) nins bs ctx queue)
+		   (trace-item "iins=" (shape ins))
 		   (trace-item "nctx=" (shape nctx))
 		   (with-access::rtl_ins ins (args)
 		      (set! args (map (lambda (i)
