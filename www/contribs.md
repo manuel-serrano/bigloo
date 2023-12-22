@@ -26,8 +26,7 @@ ${<div  id="contribs" class="container">
     <div class="card-deck mb-3 text-center">
 	   <contribcard title="Bigloo @ Schemers">
 	   <ul>
-	     <li> <a href="https://hub.docker.com/u/schemers">Schemers</a> is a big collection of containers for Scheme 
-		 implementations. </li>
+	     <li> <a href="https://hub.docker.com/u/schemers">Schemers</a> is a big collection of containers for Scheme implementations. </li>
 		 <li> 45 implementations and more are coming! </li>
 		 <li> All containers boot into a REPL by default. 
 		 They also offer a Linux bash shell for compiling 
@@ -51,7 +50,7 @@ ${<div  id="contribs" class="container">
 	   
     <div class="card-deck mb-3 text-center">
 	   <contribcard title="SRFI-231">
-	     <a href="https://github.com/donaldsonjw/srfi231">SRI-231</a>  --
+	     <a href="https://github.com/donaldsonjw/srfi231">SRFI-231</a>  --
 		 The srfi library is an implementation of <a href="https://srfi.schemers.org/srfi-231/srfi-231.html">SRFI 231</a> for Bigloo. It supports both the 
 		 native and jvm backends. It supports all of the procedures defined 
 		 by SRFI-231 but does differ from the gambit implementation in a few 
@@ -61,9 +60,14 @@ ${<div  id="contribs" class="container">
 		 as opposed to all numeric storage classes with inclusive numeric 
 		 ranges. 
 	   </contribcard>
-	   <contribcard title="">
+	   
+	   <contribcard title="SRFI-42">
+	     <a href="https://github.com/donaldsonjw/srfi42">SRFI-42</a>  --
+   		   Eager Comprehensions.
 	   </contribcard>
-	   <contribcard title="">
+	   <contribcard title="SRFI-133">
+	     <a href="https://github.com/donaldsonjw/srfi133">SRFI-133</a>  --
+   		   Vector Library.
 	   </contribcard>
 	</div>
   </div>} 

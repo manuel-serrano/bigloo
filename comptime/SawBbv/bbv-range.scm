@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Tue Dec 19 17:43:58 2023 (serrano)                */
+;*    Last change :  Fri Dec 22 14:57:23 2023 (serrano)                */
 ;*    Copyright   :  2022-23 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -185,7 +185,7 @@
 ;*---------------------------------------------------------------------*/
 (define (minrv-up x y #!optional (unspecified #unspecified))
    (let ((m (minrv x y)))
-      (if (not (eq? m #unspecified))
+      (if (not (eq? m unspecified))
 	  m
 	  (let loop ((x x)
 		     (y y))
@@ -218,7 +218,7 @@
 ;*---------------------------------------------------------------------*/
 (define (maxrv-lo x y #!optional (unspecified #unspecified))
    (let ((m (maxrv x y)))
-      (if (not (eq? m #unspecified))
+      (if (not (eq? m unspecified))
 	  m
 	  (let loop ((x x)
 		     (y y))
