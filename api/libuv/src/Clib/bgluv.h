@@ -1,9 +1,12 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
 /*   Bigloo (4.5b)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Mon May 8 06:22:02 AM CEST 2023     */
+/*   Inria -- Sophia Antipolis (c)       Fri Dec 22 05:45:01 PM CET 2023     */
 /*===========================================================================*/
-/* COMPILATION: (/home/serrano/prgm/project/bigloo/bigloo/bin/bigloo -ldopt -L/home/serrano/prgm/project/bigloo/bigloo/libbacktrace/home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.5b  -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.5b -I Llib -lib-dir /home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.5b -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/bigloo/libuv/libuv-v1.44.2/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
+/* COMPILATION: (/home/serrano/prgm/project/bigloo/4.5b/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/4.5b/lib/bigloo/4.5b -I Llib -lib-dir /home/serrano/prgm/project/bigloo/4.5b/lib/bigloo/4.5b -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/4.5b/libuv/libuv-v1.47.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
+
+#ifndef __BGL___LIBUV_TYPES_H
+#define __BGL___LIBUV_TYPES_H
 
 /* object type definitions */
 typedef struct BgL_z52uvz52_bgl {
@@ -252,3 +255,5 @@ typedef struct BgL_uvworkz00_bgl {
 } *BgL_uvworkz00_bglt;
 
 
+
+#endif // __BGL___LIBUV_TYPES_H

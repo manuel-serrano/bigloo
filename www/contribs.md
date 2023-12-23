@@ -70,6 +70,20 @@ ${<div  id="contribs" class="container">
    		   Vector Library.
 	   </contribcard>
 	</div>
+	
+    <div class="card-deck mb-3 text-center">
+	   <contribcard title="SRFI-196">
+	     <a href="https://github.com/donaldsonjw/srfi133">SRFI-133</a>  --
+   		   Range Objects
+	   </contribcard>
+	   
+	   <contribcard title="">
+	   </contribcard>
+	
+	   <contribcard title="">
+	   </contribcard>
+    </div>
+	
   </div>} 
 
 _If you have contributions you would like
