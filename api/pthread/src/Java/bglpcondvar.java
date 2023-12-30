@@ -21,7 +21,6 @@ import bigloo.*;
 /*    bglpcondvar                                                      */
 /*---------------------------------------------------------------------*/
 public class bglpcondvar extends bigloo.condvar {
-   ArrayList alist = new ArrayList();
    
    protected static void setup() {
       bigloo.condvar.acondvar = new bglpcondvar( bigloo.foreign.BUNSPEC );
@@ -44,42 +43,85 @@ public class bglpcondvar extends bigloo.condvar {
       ((bglpcondvar) o).specific = s;
    }
 
+    /* This implementation of wait with timeout is inspired by the Timed Waits section of
+       Doug Lea's Concurrent Programming in Java 2nd Edition pages 194-195 */
    public boolean wait( final bglpmutex m, final int ms ) {
-      boolean res = true;
-      Object th = bglpthread.current_thread();
-      
-      synchronized( m ) {
-	 /* assertion */
-	 if( m.thread != th  && !(m.thread == null && th == bigloo.foreign.BFALSE) ) {
-	    foreign.fail( "condition-variable-wait!",
-			  "mutex not owned by current thread",
-			  m );
-	 }
+       boolean res = true;
+       boolean interrupted = false;
+       
+          /* make sure we have successfully released the mutex m and are
+             waiting on the condition before a signal or broadcast can be
+             made. Also, Note the monitor associated with the this
+             variable must be locked for the call to this.wait to work
+             correctly.  See
+             https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html#wait--
+          */
+          synchronized( this ) {
+              Object th = bglpthread.current_thread();
+       
+              /* assertion */
+              if( m.thread != th) {
+                  foreign.fail( "condition-variable-wait!",
+                                "mutex not owned by current thread",
+                                m );
+              }
 
-	 /* release the lock */
-	 m.release_lock();
-	 
-	 try {
-	    if( ms > 0 ) {
-	       alist.add( th );
-	       wait( ms );
-	       if( alist.contains( th ) ) {
-		  res = false;
-		  alist.remove( th );
-	       }
-	    } else {
-	       wait();
-	       m.acquire_lock();
-	    }
-	 } catch( Exception e ) {
-            // the semantics of condition-variable-wait! requires the mutex
-            // be locked regardless of whether or not the wait was successful
-             m.acquire_lock();
-	    return false;
-	 }
-      }
-      
-      return res;
+              /* The semantics of condition-variable-wait! require m be unlocked
+                 while waiting, */
+              m.release_lock();
+          
+              /* track wait time when needed */
+              long wait = ms;
+              long start = System.currentTimeMillis();
+          
+              while (true) {
+                  
+                  // Is it a timed wait and have we timed out?
+                  //If so, indicate it and exit. 
+                  if (ms > 0 && wait <= 0) {
+                      res = false;
+                      break; 
+                  }
+              
+                  /* wait to be signaled */
+                  try {          
+                      if( ms > 0 ) {
+                          wait( ms );
+                      } else {
+                          wait();
+                      }
+                      
+                  } catch( Exception e ) {
+                      if (e instanceof InterruptedException) {
+                          interrupted = true;
+                      }
+                      res = false;
+                      notify(); 
+                      break;
+                  }
+
+                  /* If we are waiting with timeout, update remaining time.*/
+                  if (ms > 0) {
+                      long now = System.currentTimeMillis();
+                      wait = ms - (now - start);
+                  } else {
+                      // we have waited successfully and can return
+                      res = true;
+                      break;
+                  }
+              }
+          }
+
+          /* The semantics of condition-variable-wait! require m to be
+          locked on return. */
+          m.acquire_lock();
+
+          // if we were interrupted make sure we pass on the fact.
+          if (interrupted) {
+              Thread.currentThread().interrupt();
+          }
+       
+       return res;
    }
 
       
@@ -103,20 +145,13 @@ public class bglpcondvar extends bigloo.condvar {
       return wait( o, ms );
    }
 
-   public boolean cond_signal(boolean b) {
-      synchronized( this ) {
-
+   public synchronized boolean cond_signal(boolean b) {     
 	 if( b ) {
-	    alist.clear();
-	    notifyAll();
+            notifyAll();
 	 } else {
-	    if( alist.size() > 0 ) alist.remove( 0 );
-	    
 	    notify();
 	 }
-	 
 	 return true;
-      }
    }
       
    public boolean broadcast() {
