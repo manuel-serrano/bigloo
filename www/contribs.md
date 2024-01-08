@@ -73,14 +73,18 @@ ${<div  id="contribs" class="container">
 	
     <div class="card-deck mb-3 text-center">
 	   <contribcard title="SRFI-196">
-	     <a href="https://github.com/donaldsonjw/srfi133">SRFI-133</a>  --
+	     <a href="https://github.com/donaldsonjw/srfi133">SRFI-196</a>  --
    		   Range Objects
 	   </contribcard>
 	   
-	   <contribcard title="">
+	   <contribcard title="SRFI-13">
+	     <a href="https://github.com/donaldsonjw/srfi13">SRFI-13</a>  --
+   		   String Library, 
 	   </contribcard>
-	
-	   <contribcard title="">
+	   
+	   <contribcard title="SRFI-14">
+	     <a href="https://github.com/donaldsonjw/srfi14">SRFI-14</a>  --
+   		   String Library, 
 	   </contribcard>
     </div>
 	
