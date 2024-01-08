@@ -16,6 +16,7 @@ package bigloo.srfi18;
 import java.lang.*;
 import bigloo.*;
 import bigloo.pthread.*;
+import java.util.concurrent.TimeUnit;
 
 /*---------------------------------------------------------------------*/
 /*    jmutex                                                           */
@@ -57,48 +58,50 @@ public class jmutex extends bigloo.pthread.bglpmutex {
    }
 
    public int acquire_lock( int ms ) {
-      synchronized( this ) {
-	 Object th = jthread.current_thread();
-      
-	 while( thread != null && thread != th ) {
-	    try {
-	       if( ms > 0 ) {
-		  wait( ms );
-		  if( thread != null && thread != th ) return 1;
-	       } else {
-		  wait();
-	       }
-	    } catch( Exception e ) {
-	       foreign.fail( "mutex-lock!", 
-			     e.getClass() + ": " + e.getMessage(),
-			     this );
-	    }
-	 }
+       
+       int res = 1;
+       try {
 
-	 /* mark mutex owned */
-	 thread = th;
-	 state = null;
+           if (ms > 0) {
+               if( mutex.tryLock(ms, TimeUnit.MILLISECONDS) ) {
+                   res = 0;
+               }
+           } else {
+               mutex.lock();
+               res = 0;       
+           }
 
-	 return 0;
-      }
+           /* if we have acquired the lock, mark it owned */
+           if (res == 0) {
+                /* We synchronize on this to prevent a race condition between 1
+                   thread unlocking the mutex and another locking it and their
+                   subsequent updating of thread and state */
+               synchronized (this) {
+                   /* mark mutex owned */
+                   thread = jthread.current_thread();
+                   state = null;
+               }
+           }      
+       } catch( Exception e ) {
+           foreign.fail( "mutex-lock!", 
+                         e.getClass() + ": " + e.getMessage(),
+                         this );
+       }
+       return res;
    }
 
    public int release_lock() {
-      Object th = jthread.current_thread();
-      if( thread == th ) {
-	 /* mark mutex no longer owned */
-	 try {
-	    super.release_lock();
-	    // notifyAll();
-	 } catch (java.lang.IllegalMonitorStateException e) {
-	    ;
-	 }
-      } else {
-	 foreign.fail( "mutex-unlock!",
-		       "mutex not owned by thread",
-		       this );
-      }
-      return 0;
+     /* We synchronize on this to prevent a race condition between 1
+        thread unlocking the mutex and another locking it and their
+        subsequent updating of thread and state */
+       synchronized (this) {
+           mutex.unlock();
+           /* mark mutex no longer owned */
+           thread = null;
+           state = "not-abandoned";
+       }
+       
+       return 0;
    }
 
    public static Object SPECIFIC( Object m ) {

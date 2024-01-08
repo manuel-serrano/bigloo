@@ -65,14 +65,21 @@ public class bglpmutex extends bigloo.mutex {
    public int acquire_lock( int ms ) {
        int res = 1;
        try {
+          
            if( mutex.tryLock(ms, TimeUnit.MILLISECONDS) ) {
-               /* mark mutex owned */
-               thread = bglpthread.current_thread();
-               //System.out.printf("thread %s is locking%n", thread); 
-               state = "locked";
-               res = 0;
-           }
-           
+
+               /* We synchronize on this to prevent a race condition between 1
+                  thread unlocking the mutex and another locking it and their
+                  subsequent updating of thread and state */
+               synchronized (this) {
+                   /* mark mutex owned */
+                   thread = bglpthread.current_thread();
+                   //System.out.printf("thread %s is locking%n", thread); 
+                   state = "locked";
+               }
+               
+               res = 0;                    
+           }      
        } catch( Exception e ) {
            foreign.fail( "mutex-lock!", 
                          e.getClass() + ": " + e.getMessage(),
@@ -84,10 +91,18 @@ public class bglpmutex extends bigloo.mutex {
    public int acquire_lock() {
        int res = 1;
        try {
-           mutex.lock();
-           /* mark mutex owned */
-           thread = bglpthread.current_thread();
-           state = "locked";
+               
+               mutex.lock();
+               
+               /* We synchronize on this to prevent a race condition between 1
+                  thread unlocking the mutex and another locking it and their
+                  subsequent updating of thread and state */
+               synchronized (this) {
+                   /* mark mutex owned */
+                   thread = bglpthread.current_thread();
+                   state = "locked";
+               }
+           
            res = 0;
        } catch( Exception e ) {
            foreign.fail( "mutex-lock!", 
@@ -103,10 +118,17 @@ public class bglpmutex extends bigloo.mutex {
    }
 
    public int release_lock() {
-       mutex.unlock();
-       /* mark mutex no longer owned */
-       thread = null;
-       state = "unlocked";
+
+       /* We synchronize on this to prevent a race condition between 1
+          thread unlocking the mutex and another locking it and their
+          subsequent updating of thread and state */
+       synchronized (this) {
+           mutex.unlock();
+           /* mark mutex no longer owned */
+           thread = null;
+           state = "unlocked";
+       }
+       
        return 0;
    }
 
