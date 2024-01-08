@@ -22,7 +22,6 @@ import bigloo.pthread.*;
 /*    jcondvar                                                         */
 /*---------------------------------------------------------------------*/
 public class jcondvar extends bigloo.pthread.bglpcondvar {
-   ArrayList alist = new ArrayList();
    
    protected static void setup() {
       bigloo.condvar.acondvar = new jcondvar( bigloo.foreign.BUNSPEC );
@@ -42,43 +41,85 @@ public class jcondvar extends bigloo.pthread.bglpcondvar {
       ((jcondvar) o).specific = s;
    }
 
+    /* This implementation of wait with timeout is inspired by the Timed Waits section of
+       Doug Lea's Concurrent Programming in Java 2nd Edition pages 194-195 */
    public boolean wait( final jmutex m, final int ms ) {
       boolean res = true;
-      Object th = jthread.current_thread();
+      boolean interrupted = false;
       
-      synchronized( m ) {
-	 /* assertion */
-	 if( m.thread != th ) {
-	    foreign.fail( "condition-variable-wait!",
-			  "mutex not owned by current thread",
-			  m );
-	 }
+      /* make sure we have successfully released the mutex m and are
+         waiting on the condition before a signal or broadcast can be
+         made. Also, Note the monitor associated with the this
+         variable must be locked for the call to this.wait to work
+         correctly.  See
+         https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html#wait--
+         */
+       synchronized( this ) {
+           Object th = jthread.current_thread();
 
-	 /* release the lock */
-	 m.release_lock();
-	 
-	 try {
-	    if( ms > 0 ) {
-	       alist.add( th );
-	       wait( ms );
-	       if( alist.contains( th ) ) {
-		  res = false;
-		  alist.remove( th );
-	       }
-	    } else {
-	       wait();
-	    }
-	 } catch( Exception e ) {
-	    return false;
-	 }
-      }
-      
-      /* release the condvar and re-acquire the lock */
-      m.acquire_lock();
-      m.thread = th;
-      System.out.println("jscondvar after wait..." + th.toString());
-      
-      return res;
+           /* assertion */
+          if( m.thread != th) {
+              foreign.fail( "condition-variable-wait!",
+                            "mutex not owned by current thread",
+                            m );
+          }
+          
+          /* The semantics of condition-variable-wait! require m be unlocked
+             while waiting, */
+          m.release_lock();
+          
+          /* track wait time when needed */
+          long wait = ms;
+          long start = System.currentTimeMillis();
+          
+          while (true) {
+              
+              // Is it a timed wait and have we timed out?
+              //If so, indicate it and exit. 
+              if (ms > 0 && wait <= 0) {
+                  res = false;
+                  break; 
+              }
+              
+              /* wait to be signaled */
+              try {          
+                  if( ms > 0 ) {
+                      wait( ms );
+                  } else {
+                      wait();
+                  }
+              
+              } catch( Exception e ) {
+                  if (e instanceof InterruptedException) {
+                      interrupted = true;
+                  }
+                  res = false;
+                  notify();
+                  break;
+              }
+
+              /* If we are waiting with timeout, update remaining time.*/
+              if (ms > 0) {
+                  long now = System.currentTimeMillis();
+                  wait = ms - (now - start);
+              } else {
+                  // we have waited successfully and can return
+                  res = true;
+                  break;
+              }
+          }
+       }
+
+       /* The semantics of condition-variable-wait! require m to be
+          locked on return. */
+       m.acquire_lock();
+
+       // if we were interrupted make sure we pass on the fact.
+       if (interrupted) {
+           Thread.currentThread().interrupt();
+       }
+       
+       return res;
    }
 
       
@@ -102,17 +143,14 @@ public class jcondvar extends bigloo.pthread.bglpcondvar {
       return wait( o, ms );
    }
 
-   public boolean cond_signal(boolean b) {
-      if( b ) {
-	 alist.clear();
-	 notifyAll();
-      } else {
-	 if( alist.size() > 0 ) alist.remove( 0 );
-	    
-	 notify();
-      }
-	 
-      return true;
+   public synchronized boolean cond_signal(boolean b) {         
+       if( b ) {
+           notifyAll();
+       } else {
+           notify();
+       }
+       
+       return true;
    }
       
    public boolean broadcast() {
