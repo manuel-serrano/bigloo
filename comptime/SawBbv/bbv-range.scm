@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Fri Dec 22 14:57:23 2023 (serrano)                */
-;*    Copyright   :  2022-23 manuel serrano                            */
+;*    Last change :  Tue Jan  9 12:14:09 2024 (serrano)                */
+;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
 ;*=====================================================================*/
@@ -600,10 +600,12 @@
       ((or (empty-range? x) (empty-range? y))
        #unspecified)
       ((and (eq? (=rv (bbv-range-lo x) (bbv-range-lo y)) #t)
-	    (eq? (=rv (bbv-range-up x) (bbv-range-up y)) #t))
+	    (eq? (=rv (bbv-range-up x) (bbv-range-up y)) #t)
+	    (eq? (=rv (bbv-range-lo x) (bbv-range-up x)) #t))
        #t)
       ((and (eq? (=rv (bbv-range-lo x) (bbv-range-lo y)) #f)
-	    (eq? (=rv (bbv-range-up x) (bbv-range-up y)) #f))
+	    (eq? (=rv (bbv-range-up x) (bbv-range-up y)) #f)
+	    (eq? (=rv (bbv-range-lo x) (bbv-range-up x)) #f))
        #f)
       (else
        #unspecified)))
