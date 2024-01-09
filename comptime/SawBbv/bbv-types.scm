@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Dec 15 09:58:46 2023 (serrano)                */
-;*    Copyright   :  2017-23 Manuel Serrano                            */
+;*    Last change :  Mon Jan  8 15:55:29 2024 (serrano)                */
+;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
 ;*=====================================================================*/
@@ -114,6 +114,7 @@
 	    (rtl_ins-nop?::bool i::rtl_ins)
 	    (rtl_ins-mov?::bool i::rtl_ins)
 	    (rtl_ins-go?::bool i::rtl_ins)
+	    (rtl_ins-pragma? i::rtl_ins)
 	    (rtl_ins-fail?::bool i::rtl_ins)
 	    (rtl_ins-switch? i::rtl_ins)
 	    (rtl_ins-br?::bool i::rtl_ins)
@@ -338,7 +339,7 @@
 		  ((null? es)
 		   (list entry))
 		  ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car es))) rnum)
-		   (cons entry ctx))
+		   (cons entry es))
 		  ((eq? (bbv-ctxentry-reg (car es)) reg)
 		   (cons entry (cdr es)))
 		  (else
@@ -619,6 +620,13 @@
 (define (rtl_ins-go? i::rtl_ins)
    (with-access::rtl_ins i (fun)
       (isa? fun rtl_go)))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-pragma? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-pragma? i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (isa? fun rtl_pragma)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-fail? ...                                                */

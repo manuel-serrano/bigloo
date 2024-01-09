@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Jan 14 13:58:26 2019 (serrano)                */
+;*    Last change :  Mon Jan  8 15:01:17 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -818,7 +818,7 @@
    ;; read except an undocumented argument used by the compiler to
    ;; get line number associated with expressions.
    (if (closed-input-port? iport)
-       (error 'read "Illegal closed input port" iport)
+       (error "read" "Illegal closed input port" iport)
        ;; The reader is always compiled in unsafe mode then, the
        ;; expansion of the *BIGLOO-GRAMMAR* never checks if the
        ;; input port is not already closed. In consequence, we

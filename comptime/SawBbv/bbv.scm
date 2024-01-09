@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Wed Dec 13 08:32:59 2023 (serrano)                */
-;*    Copyright   :  2017-23 Manuel Serrano                            */
+;*    Last change :  Tue Jan  9 11:00:04 2024 (serrano)                */
+;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
 ;*=====================================================================*/
@@ -347,9 +347,7 @@
 			      (args '()))))
 		  (when (null? (cdr succs))
 		     (set! succs '()))
-		  (if (rtl_ins-go? last)
-		      (set-car! lp fail)
-		      (set-cdr! lp (list fail))))))))
+		  (set-cdr! first (list fail)))))))
 
    (let loop ((bs (list b))
 	      (acc '()))
