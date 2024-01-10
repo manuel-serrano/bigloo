@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Jan 10 15:20:58 2024 (serrano)                */
+;*    Last change :  Wed Jan 10 16:59:35 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -31,7 +31,8 @@
 	    saw_regset
 	    saw_regutils
 	    saw_bbv-cache
-	    saw_bbv-range)
+	    saw_bbv-range
+	    saw_bbv-config)
 
    (export  (wide-class rtl_ins/bbv::rtl_ins
 	       (def (default #unspecified))
@@ -427,26 +428,28 @@
 ;*    Create an alias between REG and ALIAS.                           */
 ;*---------------------------------------------------------------------*/
 (define (alias-ctx ctx::bbv-ctx reg::rtl_reg alias::rtl_reg)
-   (let ((re (bbv-ctx-get ctx reg))
-	 (ae (bbv-ctx-get ctx alias)))
-      (with-access::bbv-ctxentry re (aliases)
-	 (with-access::bbv-ctxentry ae ((aaliases aliases))
-	    (let ((all (delete-duplicates
-			  (cons alias (append aliases aaliases)))))
-	       (let ((nre (duplicate::bbv-ctxentry re
-			     (aliases all))))
-		  (let loop ((all all)
-			     (ctx (extend-ctx/entry ctx nre)))
-		     (if (null? all)
-			 ctx
-			 (let ((ae (bbv-ctx-get ctx (car all))))
-			    (if ae
-				(with-access::bbv-ctxentry ae (aliases)
-				   (let ((nae (duplicate::bbv-ctxentry ae
-						 (aliases (cons reg aliases)))))
-				      (loop (cdr all)
-					 (extend-ctx/entry ctx nae))))
-				(loop (cdr all) ctx)))))))))))
+   (if *bbv-optim-alias*
+       (let ((re (bbv-ctx-get ctx reg))
+	     (ae (bbv-ctx-get ctx alias)))
+	  (with-access::bbv-ctxentry re (aliases)
+	     (with-access::bbv-ctxentry ae ((aaliases aliases))
+		(let ((all (delete-duplicates
+			      (cons alias (append aliases aaliases)))))
+		   (let ((nre (duplicate::bbv-ctxentry re
+				 (aliases all))))
+		      (let loop ((all all)
+				 (ctx (extend-ctx/entry ctx nre)))
+			 (if (null? all)
+			     ctx
+			     (let ((ae (bbv-ctx-get ctx (car all))))
+				(if ae
+				    (with-access::bbv-ctxentry ae (aliases)
+				       (let ((nae (duplicate::bbv-ctxentry ae
+						     (aliases (cons reg aliases)))))
+					  (loop (cdr all)
+					     (extend-ctx/entry ctx nae))))
+				    (loop (cdr all) ctx))))))))))
+       ctx))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    unalias-ctx ...                                                  */
@@ -464,16 +467,18 @@
 		      (aliases (remq reg aliases)))))
 	     ctx)))
    
-   (let ((e (bbv-ctx-get ctx reg)))
-      (if e
-	  (with-access::bbv-ctxentry e (aliases types polarity value)
-	     (let loop ((aliases aliases)
-			(ctx (extend-ctx ctx reg types polarity :value value :aliases #f)))
-		(if (null? aliases)
-		    ctx
-		    (loop (cdr aliases)
-		       (unalias ctx reg (car aliases))))))
-	  ctx)))
+   (if *bbv-optim-alias*
+       (let ((e (bbv-ctx-get ctx reg)))
+	  (if e
+	      (with-access::bbv-ctxentry e (aliases types polarity value)
+		 (let loop ((aliases aliases)
+			    (ctx (extend-ctx ctx reg types polarity :value value :aliases '())))
+		    (if (null? aliases)
+			ctx
+			(loop (cdr aliases)
+			   (unalias ctx reg (car aliases))))))
+	      ctx))
+       ctx))
 
 ;*---------------------------------------------------------------------*/
 ;*    shape ::rtl_ins/bbv ...                                          */
@@ -1180,7 +1185,9 @@
 ;*    bbv-equal? ::rtl_new ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-equal? x::rtl_new y)
-   (error "bbv-equal?" "not implemented" x))
+   (when (isa? rtl_new y)
+      (when (eq? (rtl_new-type x) (rtl_new-type y))
+	 (every bbv-equal? (rtl_new-constr x) (rtl_new-type y)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-equal? ::rtl_call ...                                        */
@@ -1193,7 +1200,7 @@
 ;*    bbv-equal? ::rtl_lightfuncall ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-equal? x::rtl_lightfuncall y)
-   (error "bbv-equal?" "not implemented" x))
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-equal? ::rtl_pragma ...                                      */

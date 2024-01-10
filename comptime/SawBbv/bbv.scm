@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jan  9 11:00:04 2024 (serrano)                */
+;*    Last change :  Wed Jan 10 18:16:06 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -98,17 +98,21 @@
 					     ".specialize.cfg")))
 				    (__ (when *bbv-log*
 					   (log-blocks global params blocks)))
+				    (as (assert-context! s))
+				    (_ (when (>=fx *trace-level* 2)
+					  (dump-cfg global params
+					     (block->block-list regs s)
+					     ".assert.cfg")))
 				    (b (block->block-list regs
-					  (assert-context!
-					     (if *bbv-blocks-cleanup*
-						 (simplify-branch!
-						    (remove-nop!
-						       (remove-goto!
-							  (simplify-branch!
-							     (coalesce!
-								(get-bb-mark)
-								(gc! s))))))
-						 s)))))
+					  (if *bbv-blocks-cleanup*
+					      (simplify-branch!
+						 (remove-nop!
+						    (remove-goto!
+						       (simplify-branch!
+							  (coalesce!
+							     (get-bb-mark)
+							     (gc! as))))))
+					      as))))
 				(verbose 3 " "
 				   (length blocks) " -> " (length b))
 				(verbose 2 "\n")

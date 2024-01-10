@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jan 10 09:09:22 2024 (serrano)                */
+;*    Last change :  Wed Jan 10 15:33:45 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -199,15 +199,14 @@
 		      (let ((lctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
 			 (trace-item "lctx=" (shape lctx))
 			 (cond
-			    ((rtl_ins-br? ins)
-			     (connect! bs ins)
-			     (loop (cdr oins) (cons ins nins) lctx))
 			    ((rtl_ins-go? ins)
 			     (connect! bs ins)
 			     (loop '() (cons ins nins) lctx))
 			    ((rtl_ins-ifne? ins)
 			     (connect! bs ins)
 			     (loop (cdr oins) (cons ins nins) lctx))
+			    ((rtl_ins-ifeq? ins)
+			     (error "bbv" "should not be here, all ifeq should have been removed" (shape ins)))
 			    (else
 			     (loop (cdr oins) (cons ins nins) lctx))))))))
 	    ((rtl_ins-last? (car oins))
@@ -433,81 +432,108 @@
 	 ((isa? y bbv-range) y)
 	 (else '_)))
 
+   (define (specialize+ reg type polarity value e)
+      (let ((ctx+ (extend-ctx ctx reg (list type) #t
+		     :value (min-value value (bbv-ctxentry-value e)))))
+	 (trace-item "ctx+=" (shape ctx+))
+	 (with-access::rtl_ins/bbv i (fun loc)
+	    (with-access::rtl_ifne fun (then)
+	       (tprint "TYPECHECK+ " (shape type) " " polarity)
+	       (let* ((assert (when (>fx *bbv-assert* 0)
+				 (rtl-assert-reg-type
+				    reg type polarity ctx loc
+				    "BBV-ASSERT-FAILURE:TYPECHECK+")))
+		      (s (if assert
+			     (duplicate::rtl_ins/bbv i
+				(ctx ctx)
+				(fun (duplicate::rtl_ifne fun
+					(then (bbv-block then ctx+ queue
+						 :creator bs))))
+				(dest #f)
+				(args (list (duplicate::rtl_ins/bbv i
+					       (ctx ctx)
+					       (fun assert)))))
+			     (if #f
+				 (duplicate::rtl_ins/bbv i
+				    (ctx ctx)
+				    (fun (duplicate::rtl_ifne fun
+					    (then (bbv-block then ctx+ queue
+						     :creator bs))))
+				    (dest #f)
+				    (args (list (duplicate::rtl_ins/bbv i
+						   (ctx ctx)
+						   (args '())
+						   (fun (instantiate::rtl_loadi
+							   (constant (instantiate::literal
+									(type *bool*)
+									(loc loc)
+									(value #t)))))))))
+				 (duplicate::rtl_ins/bbv i
+				    (ctx ctx)
+				    (fun (instantiate::rtl_go
+					    (to (bbv-block then ctx+ queue :creator bs))))
+				    (dest #f)
+				    (args '()))))))
+		  ;; the next ctx will be ignored...
+		  (values s (instantiate::bbv-ctx)))))))
+
+   (define (specialize- reg type polarity value e)
+      (with-access::rtl_ins/bbv i (fun loc)
+	 (let* ((assert (when (>fx *bbv-assert* 0)
+			   (rtl-assert-reg-type reg type polarity ctx loc
+			      "BBV-ASSERT-FAILURE:TYPECHECK-")))
+		(s (duplicate::rtl_ins/bbv i
+		      (ctx ctx)
+		      (fun (or assert (instantiate::rtl_nop)))
+		      (dest #f)
+		      (args '()))))
+	    (values s ctx))))
+   
    (with-trace 'bbv-ins "rtl_ins-specialize-typecheck"
       (multiple-value-bind (reg type polarity value)
 	 (rtl_ins-typecheck i)
-	 (let* ((e (bbv-ctx-get ctx reg))
-		(polarity (bbv-ctxentry-polarity e)))
-	    (with-access::rtl_ins i (fun)
-	       (trace-item "ins=" (shape i))
-	       (trace-item "typ=" (shape type) " polarity=" polarity)
-	       (trace-item "value=" (shape value))
-	       (trace-item "e=" (shape e))
-	       (trace-item "ctx=" (shape ctx))
-	       (cond
-		  ((and (type-in? type (bbv-ctxentry-types e)) polarity)
-		   ;; positive type simplification
-		   (let ((ctx+ (extend-ctx ctx reg (list type) #t
-				  :value (min-value value (bbv-ctxentry-value e)))))
-		      (trace-item "ctx+=" (shape ctx+))
-		      (with-access::rtl_ins/bbv i (fun loc)
-			 (with-access::rtl_ifne fun (then)
-			    (let ((s (duplicate::rtl_ins/bbv i
-					(ctx ctx)
-					(fun (if *bbv-assert*
-						 (duplicate::rtl_ifne fun
+	 (let ((e (bbv-ctx-get ctx reg)))
+	    (with-access::bbv-ctxentry e ((epolarity polarity))
+	       (with-access::rtl_ins i (fun)
+		  (trace-item "ins=" (shape i))
+		  (trace-item "typ=" (shape type) " polarity=" polarity)
+		  (trace-item "value=" (shape value))
+		  (trace-item "e=" (shape e))
+		  (trace-item "ctx=" (shape ctx))
+		  (cond
+		     ((and (type-in? type (bbv-ctxentry-types e)) polarity)
+		      ;; positive type simplification
+		      (if epolarity
+			  (specialize+ reg type epolarity value e)
+			  (specialize- reg type epolarity value e)))
+		     ((and (not (type-in? type (bbv-ctxentry-types e)))
+			   (not (type-in? *obj* (bbv-ctxentry-types e)))
+			   polarity epolarity)
+		      ;; negative type simplification
+		      (specialize- reg type epolarity value e))
+		     ((isa? fun rtl_ifne)
+		      (with-access::bbv-ctxentry e (aliases)
+			 (let ((regs (cons reg aliases)))
+			    (with-access::rtl_ifne fun (then)
+			       (let* ((ctx+ (extend-ctx* ctx regs (list type) #t
+					       :value (min-value value (bbv-ctxentry-value e))))
+				      (ctx- (if (bbv-ctxentry-polarity e)
+						(extend-ctx* ctx regs
+						   (list type) #f)
+						(extend-ctx* ctx regs
+						   (cons type (bbv-ctxentry-types e)) #f)))
+				      (s (duplicate::rtl_ins/bbv i
+					    (ctx ctx)
+					    (fun (duplicate::rtl_ifne fun
 						    (then (bbv-block then ctx+ queue
-							     :creator bs)))
-						 (instantiate::rtl_go
-						    (to (bbv-block then ctx+ queue :creator bs)))))
-					(dest #f)
-					(args (if (>fx *bbv-assert* 0)
-						  (list (duplicate::rtl_ins/bbv i
-							   (ctx ctx)
-							   (fun (rtl-assert-reg-type
-								   reg type polarity ctx loc
-								   "BBV-ASSERT-FAILURE:TYPECHECK+"))))
-						  '())))))
-			       ;; the next ctx will be ignored...
-			       (values s (instantiate::bbv-ctx)))))))
-		  ((or (and (type-in? type (bbv-ctxentry-types e)) (not polarity))
-		       (and (not (type-in? type (bbv-ctxentry-types e)))
-			    (not (type-in? *obj* (bbv-ctxentry-types e)))
-			    polarity))
-		   ;; negative type simplification
-		   (with-access::rtl_ins/bbv i (fun loc)
-		      (let ((s (duplicate::rtl_ins/bbv i
-				  (ctx ctx)
-				  (fun (if (>fx *bbv-assert* 0)
-					   (rtl-assert-reg-type reg type polarity ctx loc
-					      "BBV-ASSERT-FAILURE:TYPECHECK-")
-					   (instantiate::rtl_nop)))
-				  (dest #f)
-				  (args '()))))
-			 (values s ctx))))
-		  ((isa? fun rtl_ifne)
-		   (with-access::bbv-ctxentry e (aliases)
-		      (let ((regs (cons reg aliases)))
-			 (with-access::rtl_ifne fun (then)
-			    (let* ((ctx+ (extend-ctx* ctx regs (list type) #t
-					    :value (min-value value (bbv-ctxentry-value e))))
-				   (ctx- (if (bbv-ctxentry-polarity e)
-					     (extend-ctx* ctx regs
-						(list type) #f)
-					     (extend-ctx* ctx regs
-						(cons type (bbv-ctxentry-types e)) #f)))
-				   (s (duplicate::rtl_ins/bbv i
-					 (ctx ctx)
-					 (fun (duplicate::rtl_ifne fun
-						 (then (bbv-block then ctx+ queue
-							  :creator bs)))))))
-			       (trace-item "ctx+.2=" (shape ctx+))
-			       (trace-item "ctx-.2=" (shape ctx-))
-			       (values s ctx-))))))
-		  (else
-		   (error "rtl_ins-specialize-typecheck"
-		      "should not be here"
-		      (shape i)))))))))
+							     :creator bs)))))))
+				  (trace-item "ctx+.2=" (shape ctx+))
+				  (trace-item "ctx-.2=" (shape ctx-))
+				  (values s ctx-))))))
+		     (else
+		      (error "rtl_ins-specialize-typecheck"
+			 "should not be here"
+			 (shape i))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    range->loadi ...                                                 */
@@ -721,8 +747,7 @@
 			  (with-access::rtl_ins (car args) (dest)
 			     (multiple-value-bind (i cctx)
 				;; don't invoke directly rtl_ins-specialize-call
-				;; has the call might be a fixnum op or
-				;; a vlength
+				;; as the call might be a fixnum op or a vlength
 				((rtl_ins-specializer (car args))
 				 (car args) ins bs ctx queue)
 				(with-access::rtl_ins/bbv i (dest)
@@ -1165,9 +1190,53 @@
 			     (values (duplicate::rtl_ins/bbv i)
 				ctx+ ctx-))))))))))
 
+   (define (specialize+ i ins ctx+)
+      (with-access::rtl_ins i (dest fun args loc)
+	 (with-access::rtl_ifne fun (then)
+	    (let* ((assert (when (>fx *bbv-assert* 0)
+			      (let ((ins (car args)))
+				 (with-access::rtl_ins ins (args)
+				    (rtl-assert-fxcmp
+				       (fxcmp-op ins) (car args) (cadr args)
+				       #t ctx+ loc
+				       "BBV-ASSERT-FAILURE:FXCMP+")))))
+		   (ni (if assert
+			   (duplicate::rtl_ins/bbv i
+			      (ctx ctx)
+			      (fun (duplicate::rtl_ifne fun
+				      (then (bbv-block then ctx+ queue
+					       :creator bs))))
+			      (args (let ((i (car args)))
+				       (with-access::rtl_ins i (args)
+					  (list (duplicate::rtl_ins/bbv i
+						   (ctx ctx)
+						   (fun assert)))))))
+			   (duplicate::rtl_ins/bbv i
+			      (ctx ctx)
+			      (fun (duplicate::rtl_go fun
+				      (to (bbv-block then ctx+ queue
+					     :creator bs))))
+			      (args '())))))
+	       (values ni ctx+)))))
+
+   (define (specialize- i ins ctx-)
+      (with-access::rtl_ins i (dest fun args loc)
+	 (let* ((assert (when (>fx *bbv-assert* 0)
+			   (let ((ins (car args)))
+			      (with-access::rtl_ins ins (args)
+				 (rtl-assert-fxcmp
+				    (fxcmp-op ins) (car args) (cadr args)
+				    #f ctx- loc
+				    "BBV-ASSERT-FAILURE:FXCMP-")))))
+		(ni (duplicate::rtl_ins/bbv i
+		       (ctx ctx)
+		       (args '())
+		       (fun (or assert (duplicate::rtl_nop fun))))))
+	    (values ni ctx-))))
+
    (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp [@~a]" (gendebugid))
       (trace-item "ins=" (shape i))
-      (with-access::rtl_ins i (dest fun args)
+      (with-access::rtl_ins i (dest fun args loc)
 	 (cond
 	    ((isa? fun rtl_ifne)
 	     (with-access::rtl_ifne fun (then)
@@ -1177,22 +1246,9 @@
 		   (trace-item "ctx-=" (shape ctx-))
 		   (cond
 		      ((rtl_ins-true? ins)
-		       (with-access::rtl_ifne fun (then)
-			  (let* ((fun (duplicate::rtl_go fun
-					 (to (bbv-block then ctx+ queue
-						:creator bs))))
-				 (ni (duplicate::rtl_ins/bbv i
-					(ctx ctx)
-					(args '())
-					(fun fun))))
-			     (values ni ctx+))))
+		       (specialize+ i ins ctx+))
 		      ((rtl_ins-false? ins)
-		       (let* ((fun (duplicate::rtl_nop fun))
-			      (ni (duplicate::rtl_ins/bbv i
-				     (ctx ctx)
-				     (args '())
-				     (fun fun))))
-			  (values ni ctx-)))
+		       (specialize- i ins ctx-))
 		      (else
 		       (let ((fun (duplicate::rtl_ifne fun
 				     (then (bbv-block then ctx+ queue

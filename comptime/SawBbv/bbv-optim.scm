@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Wed Dec 13 18:06:21 2023 (serrano)                */
-;*    Copyright   :  2023 Manuel Serrano                               */
+;*    Last change :  Wed Jan 10 18:04:56 2024 (serrano)                */
+;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
 ;*=====================================================================*/
