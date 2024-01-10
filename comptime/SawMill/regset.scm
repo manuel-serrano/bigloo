@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 16 15:37:03 2005                          */
-;*    Last change :  Thu Jun 30 19:26:07 2022 (serrano)                */
-;*    Copyright   :  2005-22 Manuel Serrano                            */
+;*    Last change :  Wed Jan 10 11:32:26 2024 (serrano)                */
+;*    Copyright   :  2005-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Register sets for regiter allocation                             */
 ;*=====================================================================*/
@@ -40,7 +40,7 @@
 	       (msize::int read-only)
 	       (regv::vector read-only)
 	       (regl::pair-nil read-only)
-	       (string::bstring (default '#()))))
+	       (string::bstring (default ""))))
 
    (export  (make-empty-regset::regset ::pair-nil)
 	    (list->regset::regset ::pair-nil ::pair-nil)

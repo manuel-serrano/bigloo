@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Jan  8 15:55:29 2024 (serrano)                */
+;*    Last change :  Wed Jan 10 15:20:58 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -99,7 +99,7 @@
 	    (extend-ctx/entry ::bbv-ctx ::bbv-ctxentry)
 	    (extend-ctx/entry* ctx::bbv-ctx . entries)
 	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
-	       #!key (value '_))
+	       #!key (value '_) (aliases #f))
 	    (extend-ctx* ctx::bbv-ctx regs::pair ::pair ::bool
 	       #!key (value '_))
 	    (alias-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::rtl_reg)
@@ -367,7 +367,7 @@
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
 (define (extend-ctx ctx::bbv-ctx reg::rtl_reg types::pair polarity::bool
-	   #!key (value '_))
+	   #!key (value '_) (aliases #f))
    
    (define (new-ctxentry reg::rtl_reg type polarity::bool value)
       (instantiate::bbv-ctxentry
@@ -388,11 +388,13 @@
 		   (let ((n (new-ctxentry reg type polarity value)))
 		      (cons n entries)))
 		  ((eq? (bbv-ctxentry-reg (car entries)) reg)
-		   (let ((n (duplicate::bbv-ctxentry (car entries)
-			       (types types)
-			       (polarity polarity)
-			       (value value))))
-		      (cons n (cdr entries))))
+		   (with-access::bbv-ctxentry (car entries) ((oa aliases))
+		      (let ((n (duplicate::bbv-ctxentry (car entries)
+				  (types types)
+				  (polarity polarity)
+				  (value value)
+				  (aliases (or aliases oa)))))
+			 (cons n (cdr entries)))))
 		  (else
 		   (cons (car entries) (loop (cdr entries)))))))))
    
@@ -466,7 +468,7 @@
       (if e
 	  (with-access::bbv-ctxentry e (aliases types polarity value)
 	     (let loop ((aliases aliases)
-			(ctx (extend-ctx ctx reg types polarity :value value)))
+			(ctx (extend-ctx ctx reg types polarity :value value :aliases #f)))
 		(if (null? aliases)
 		    ctx
 		    (loop (cdr aliases)
