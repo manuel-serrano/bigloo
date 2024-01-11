@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Jan 10 16:59:35 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 16:36:07 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -279,15 +279,18 @@
    (with-access::bbv-ctxentry x ((xreg reg)
 				 (xpolarity polarity)
 				 (xtypes types)
-				 (xvalue value))
+				 (xvalue value)
+				 (xaliases aliases))
       (with-access::bbv-ctxentry y ((yreg reg)
 				    (ypolarity polarity)
 				    (ytypes types)
-				    (yvalue value))
+				    (yvalue value)
+				    (yaliases aliases))
 	 (and (eq? xreg yreg)
 	      (eq? xpolarity ypolarity)
 	      (equal? xtypes ytypes)
-	      (equal? xvalue yvalue)))))
+	      (equal? xvalue yvalue)
+	      (equal? xaliases yaliases)))))
 	      
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-equal? ...                                               */
@@ -542,11 +545,12 @@
 	    (display " " p)
 	    (dump-ctx ctx in p)
 	    (display "]" p)
-	    (display " ;;")
-	    (display* " def=" (map shape (regset->list def)))
-	    (display* " in=" (map shape (regset->list in)))
-	    (display* " out=" (map shape (regset->list out)))
-	    (display* " " (typeof fun))))))
+	    (when (>=fx *bbv-verbose* 2)
+	       (display " ;;")
+	       (display* " def=" (map shape (regset->list def)))
+	       (display* " in=" (map shape (regset->list in)))
+	       (display* " out=" (map shape (regset->list out)))
+	       (display* " " (typeof fun)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::blockV ...                                                */

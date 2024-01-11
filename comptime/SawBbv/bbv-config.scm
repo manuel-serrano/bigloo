@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Thu Jan 11 11:30:51 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 16:34:45 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -22,6 +22,7 @@
 	   *bbv-optim-vlength*
 	   *bbv-optim-bound*
 	   *bbv-optim-alias*
+	   *bbv-verbose*
 	   *max-block-merge-versions*
 	   *max-block-limit*
 	   *type-call*
@@ -51,7 +52,7 @@
 	 (else (error "bbv-log" "unknown value" e)))))
 
 ;*---------------------------------------------------------------------*/
-;*    *bbv-blocks-assert* ...                                          */
+;*    *bbv-assert* ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define *bbv-assert*
    (let ((e (getenv "BIGLOOBBVASSERT")))
@@ -69,7 +70,11 @@
 	 ((not e) #t)
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
-	 (else (error "bbv-blocks-cleanup" "unknown value" e)))))
+	 ((every (lambda (s)
+		     (member s '("gc" "coalesce" "simplify" "goto" "nop")))
+	     (string-split e " "))
+	  e)
+	 (else ((error "bbv-blocks-cleanup" "unknown value" e))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bbv-blocks-gc* ...                                              */
@@ -127,6 +132,16 @@
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
 	 (else (error "bbv-optim-alias" "unknown value" e)))))
+
+;*---------------------------------------------------------------------*/
+;*    *bbv-verbose* ...                                                */
+;*---------------------------------------------------------------------*/
+(define *bbv-verbose*
+   (let ((e (getenv "BIGLOOBBVVERBOSE")))
+      (if (not e)
+	  1
+	  (or (string->number e)
+	      (error "bbv-verbose" "illegal value" e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    basic-block versioning configuration                             */

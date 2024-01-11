@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Wed Jan 10 18:04:56 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 16:44:08 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -49,24 +49,33 @@
 ;*---------------------------------------------------------------------*/
 (define (remove-nop! b::block)
    (assert-blocks b "before nop!")
-   (let loop ((bs (list b))
-	      (acc (make-empty-bbset)))
-      (cond
-	 ((null? bs)
-	  b)
-	 ((bbset-in? (car bs) acc)
-	  (loop (cdr bs) acc))
-	 (else
-	  (with-access::block (car bs) (first succs preds label)
-	     (when *bbv-debug* (assert-block (car bs) "remove-nop!"))
-	     (let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
-		(if (pair? f)
-		    ;; prune the instructions
-		    (set! first f)
-		    ;; remove the block
-		    (let ((n (car succs)))
-		       (replace-block! (car bs) n))))
-	     (loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
+
+   (define (nop! b)
+      (let loop ((bs (list b))
+		 (acc (make-empty-bbset)))
+	 (cond
+	    ((null? bs)
+	     b)
+	    ((bbset-in? (car bs) acc)
+	     (loop (cdr bs) acc))
+	    (else
+	     (with-access::block (car bs) (first succs preds label)
+		(when *bbv-debug* (assert-block (car bs) "remove-nop!"))
+		(let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
+		   (if (pair? f)
+		       ;; prune the instructions
+		       (set! first f)
+		       ;; remove the block
+		       (let ((n (car succs)))
+			  (replace-block! (car bs) n))))
+		(loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
+
+   (if (or (eq? *bbv-blocks-cleanup* #t)
+	   (and (string? *bbv-blocks-cleanup*)
+		(string-contains *bbv-blocks-cleanup* "nop")))
+       (with-trace 'bbv-cleanup "remove-nop!"
+	  (nop! b))
+       b))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-goto! ...                                                 */
@@ -102,25 +111,33 @@
    
    (assert-blocks b "before goto!")
 
-   (let loop ((bs (list b))
-	      (acc (make-empty-bbset)))
-      (cond
-	 ((null? bs)
-	  b)
-	 ((bbset-in? (car bs) acc)
-	  (loop (cdr bs) acc))
-	 (else
-	  (when *bbv-debug* (assert-block (car bs) "remove-goto!"))
-	  (with-access::block (car bs) (succs)
-	     (when (and (or (and (pair? (cdr bs))
-				 (fallthrough-block? (car bs) succs (cadr bs)))
-			    (goto-block? (car bs) succs))
-			(not (bbset-in? (car succs) acc)))
-		(with-access::block (car bs) (first label)
-		   (with-access::rtl_ins (car (last-pair first)) (fun)
-		      (set! fun (instantiate::rtl_nop)))))
-	     (loop (append succs (cdr bs))
-		(bbset-cons (car bs) acc)))))))
+   (define (remove! b)
+      (let loop ((bs (list b))
+		 (acc (make-empty-bbset)))
+	 (cond
+	    ((null? bs)
+	     b)
+	    ((bbset-in? (car bs) acc)
+	     (loop (cdr bs) acc))
+	    (else
+	     (when *bbv-debug* (assert-block (car bs) "remove-goto!"))
+	     (with-access::block (car bs) (succs)
+		(when (and (or (and (pair? (cdr bs))
+				    (fallthrough-block? (car bs) succs (cadr bs)))
+			       (goto-block? (car bs) succs))
+			   (not (bbset-in? (car succs) acc)))
+		   (with-access::block (car bs) (first label)
+		      (with-access::rtl_ins (car (last-pair first)) (fun)
+			 (set! fun (instantiate::rtl_nop)))))
+		(loop (append succs (cdr bs))
+		   (bbset-cons (car bs) acc)))))))
+   
+   (if (or (eq? *bbv-blocks-cleanup* #t)
+	   (and (string? *bbv-blocks-cleanup*)
+		(string-contains *bbv-blocks-cleanup* "goto")))
+       (with-trace 'bbv-cleanup "remove-goto!"
+	  (remove! b))
+       b))
 
 ;*---------------------------------------------------------------------*/
 ;*    simplify-branch! ...                                             */
@@ -134,60 +151,68 @@
 
    (when *bbv-debug*
       (assert-blocks b "before simplify-branch!"))
+
+   (define (simplify! b)
+      (let loop ((bs (list b))
+		 (acc (make-empty-bbset)))
+	 (cond
+	    ((null? bs)
+	     b)
+	    ((bbset-in? (car bs) acc)
+	     (loop (cdr bs) acc))
+	    (else
+	     (with-access::blockS (car bs) (preds succs first label)
+		(when *bbv-debug*
+		   (assert-block (car bs) "simplify-branch!"))
+		(if (=fx (length succs) 1)
+		    (if (=fx (length (block-preds (car succs))) 1)
+			;; collapse the two blocks
+			(let ((s (car succs)))
+			   (for-each (lambda (ns)
+					(block-preds-set! ns
+					   (replace (block-preds ns) s (car bs))))
+			      (block-succs s))
+			   (set! succs (block-succs s))
+			   (let ((lp (last-pair first)))
+			      (if (rtl_ins-go? (car lp))
+				  (let ((rev (reverse! (cdr (reverse first)))))
+				     (set! first (append! rev (block-first s))))
+				  (set! first
+				     (append first
+					(list-copy (block-first s))))))
+			   (when *bbv-debug*
+			      (assert-blocks s "simplify-branch!.1"))
+			   (loop bs acc))
+			(loop (cons (car succs) (cdr bs))
+			   (bbset-cons (car bs) acc)))
+		    (let liip ((ss succs)
+			       (nsuccs '()))
+		       (if (null? ss)
+			   (loop (append (reverse nsuccs) (cdr bs))
+			      (bbset-cons (car bs) acc))
+			   (let ((s (car ss)))
+			      (if (goto-block? s)
+				  (let ((t (car (block-succs s))))
+				     (when *bbv-debug*
+					(tprint "simplify(" (block-label (car bs))
+					   "): " (block-label s)
+					   " preds: " (map block-label (block-preds s))
+					   " => " (block-label t)))
+				     (redirect-block! (car bs) s t)
+				     (block-preds-set! t
+					(remq s (block-preds t)))
+				     (when *bbv-debug*
+					(assert-blocks s "before simplify-branch!.2a")
+					(assert-blocks t "before simplify-branch!.2b"))
+				     (liip (cdr ss) nsuccs))
+				  (liip (cdr ss) (cons s nsuccs))))))))))))
    
-   (let loop ((bs (list b))
-	      (acc (make-empty-bbset)))
-      (cond
-	 ((null? bs)
-	  b)
-	 ((bbset-in? (car bs) acc)
-	  (loop (cdr bs) acc))
-	 (else
-	  (with-access::blockS (car bs) (preds succs first label)
-	     (when *bbv-debug*
-		(assert-block (car bs) "simplify-branch!"))
-	     (if (=fx (length succs) 1)
-		 (if (=fx (length (block-preds (car succs))) 1)
-		     ;; collapse the two blocks
-		     (let ((s (car succs)))
-			(for-each (lambda (ns)
-				     (block-preds-set! ns
-					(replace (block-preds ns) s (car bs))))
-			   (block-succs s))
-			(set! succs (block-succs s))
-			(let ((lp (last-pair first)))
-			   (if (rtl_ins-go? (car lp))
-			       (let ((rev (reverse! (cdr (reverse first)))))
-				  (set! first (append! rev (block-first s))))
-			       (set! first
-				  (append first
-				     (list-copy (block-first s))))))
-			(when *bbv-debug*
-			   (assert-blocks s "simplify-branch!.1"))
-			(loop bs acc))
-		     (loop (cons (car succs) (cdr bs))
-			(bbset-cons (car bs) acc)))
-		 (let liip ((ss succs)
-			    (nsuccs '()))
-		    (if (null? ss)
-			(loop (append (reverse nsuccs) (cdr bs))
-			   (bbset-cons (car bs) acc))
-			(let ((s (car ss)))
-			   (if (goto-block? s)
-			       (let ((t (car (block-succs s))))
-				  (when *bbv-debug*
-				     (tprint "simplify(" (block-label (car bs))
-					"): " (block-label s)
-					" preds: " (map block-label (block-preds s))
-					" => " (block-label t)))
-				  (redirect-block! (car bs) s t)
-				  (block-preds-set! t
-				     (remq s (block-preds t)))
-				  (when *bbv-debug*
-				     (assert-blocks s "before simplify-branch!.2a")
-				     (assert-blocks t "before simplify-branch!.2b"))
-				  (liip (cdr ss) nsuccs))
-			       (liip (cdr ss) (cons s nsuccs))))))))))))
+   (if (or (eq? *bbv-blocks-cleanup* #t)
+	   (and (string? *bbv-blocks-cleanup*)
+		(string-contains *bbv-blocks-cleanup* "simplify")))
+       (with-trace 'bbv-cleanup "simplify!"
+	  (simplify! b))
+       b))
 
 ;*---------------------------------------------------------------------*/
 ;*    coalesce! ...                                                    */
@@ -196,55 +221,58 @@
 ;*---------------------------------------------------------------------*/
 (define (coalesce! mark b::blockS)
    (assert-blocks b "before coalesce!")
-   (with-access::blockS b (parent succs)
-      (when *bbv-debug*
-	 (tprint "COALESCE: " (block-label b) " parent: " (block-label parent)
-	    " -> " (map block-label succs)))
-      (with-access::blockV parent (%mark)
-	 (unless (=fx mark %mark)
-	    (set! %mark mark)
-	    (with-trace 'bbv "coalesce"
-	       (trace-item "b=" (block-label b))
-	       (let ((versions (blockV-live-versions parent)))
-		  (if (or (null? versions) (null? (cdr versions)))
-		      (for-each (lambda (s) (coalesce! mark s)) succs)
-		      (let ((ks (sort (lambda (v1 v2)
-					 (<=fx (car v1) (car v2)))
-				   (map (lambda (v)
-					   (cons (bbv-hash v) v))
-				      versions))))
-			 (trace-item "coalesce "
-			    (map (lambda (k)
-				    (cons (block-label (cdr k)) (car k)))
-			       ks))
-			 (let loop ((ks ks))
-			    (cond
-			       ((null? (cdr ks))
-				(for-each (lambda (s) (coalesce! mark s)) succs))
-			       ((>=fx (blockS-%mark (cdar ks)) mark)
-				(loop (cdr ks)))
-			       (else
-				(let ((k (car ks)))
-				   (when *bbv-debug*
-				      (assert-block (cdr k) "coalesce!"))
-				   (let liip ((ls (cdr ks)))
-				      (cond
-					 ((null? ls)
-					  (loop (cdr ks)))
-					 ((and (=fx (car k) (caar ls))
-					       (not (eq? (cdr k) (cdar ls)))
-					       (coalesce? (cdr k) (cdar ls) '()))
-					  (coalesce-block! mark (cdr k) (cdar ls))
-					  (liip (cdr ls)))
-					 (else
-					  (liip (cdr ls))))))))))))))))
+   (when (or (eq? *bbv-blocks-cleanup* #t)
+	     (and (string? *bbv-blocks-cleanup*)
+		  (string-contains *bbv-blocks-cleanup* "coalesce")))
+      (with-access::blockS b (parent succs)
+	 (when *bbv-debug*
+	    (tprint "COALESCE: " (block-label b) " parent: " (block-label parent)
+	       " -> " (map block-label succs)))
+	 (with-access::blockV parent (%mark)
+	    (unless (=fx mark %mark)
+	       (set! %mark mark)
+	       (with-trace 'bbv-cleanup "coalesce"
+		  (trace-item "b=" (block-label b))
+		  (let ((versions (blockV-live-versions parent)))
+		     (if (or (null? versions) (null? (cdr versions)))
+			 (for-each (lambda (s) (coalesce! mark s)) succs)
+			 (let ((ks (sort (lambda (v1 v2)
+					    (<=fx (car v1) (car v2)))
+				      (map (lambda (v)
+					      (cons (bbv-hash v) v))
+					 versions))))
+			    (trace-item "coalesce "
+			       (map (lambda (k)
+				       (cons (block-label (cdr k)) (car k)))
+				  ks))
+			    (let loop ((ks ks))
+			       (cond
+				  ((null? (cdr ks))
+				   (for-each (lambda (s) (coalesce! mark s)) succs))
+				  ((>=fx (blockS-%mark (cdar ks)) mark)
+				   (loop (cdr ks)))
+				  (else
+				   (let ((k (car ks)))
+				      (when *bbv-debug*
+					 (assert-block (cdr k) "coalesce!"))
+				      (let liip ((ls (cdr ks)))
+					 (cond
+					    ((null? ls)
+					     (loop (cdr ks)))
+					    ((and (=fx (car k) (caar ls))
+						  (not (eq? (cdr k) (cdar ls)))
+						  (coalesce? (cdr k) (cdar ls) '()))
+					     (coalesce-block! mark (cdr k) (cdar ls))
+					     (liip (cdr ls)))
+					    (else
+					     (liip (cdr ls)))))))))))))))))
    b)
 
 ;*---------------------------------------------------------------------*/
 ;*    coalesce-block! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (coalesce-block! mark b by)
-   (with-trace 'bbv "coalesce-block!"
+   (with-trace 'bbv-cleanup "coalesce-block!"
       (trace-item "b=" (block-label b) " <- " (block-label by))
       ;; coalesce by into b, i.e., replace all occurrences of by with bx
       (let loop ((by (list by))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Thu Jan 11 11:53:46 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 14:12:11 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -292,21 +292,26 @@
 ;*    reg-debugname ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (reg-debugname reg::rtl_reg)
-   (with-access::rtl_reg reg (var debugname)
+   (with-access::rtl_reg reg (var debugname key)
       (cond
 	 (debugname
 	  debugname)
 	 ((global? var)
 	  (with-access::global var (id module alias)
-	     (bigloo-module-mangle (symbol->string (or alias id))
-		(symbol->string module))))
+	     (set! debugname
+		(bigloo-module-mangle (symbol->string (or alias id))
+		   (symbol->string module)))
+	     debugname))
 	 ((local? var)
-	  (with-access::local var (id key)
-	     (bigloo-mangle
-		(string-append
-		   (symbol->string id) "_" (integer->string key)))))
+	  (with-access::local var (id)
+	     (set! debugname
+		(bigloo-mangle
+		   (string-append
+		      (symbol->string id) "_" (symbol->string key))))
+	     debugname))
 	 (else
-	  (symbol->string (gensym 'bbv))))))
+	  (set! debugname (symbol->string (gensym 'bbv)))
+	  debugname))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-predicate ...                                               */
@@ -337,7 +342,7 @@
 ;*    assert-failure ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (assert-failure pred reg loc #!optional (tag "BBV-ASSERT-FAILURE"))
-   (with-access::rtl_reg reg (debugname)
+   (let ((debugname (reg-debugname reg)))
       (set! assert-cnt (+fx assert-cnt 1))
       (if (location? loc)
 	  (format "(fprintf(stderr, \"*** ~a[~a]:%s:%d\\n%s: %s::%s (%s:%d)\\n\", __FILE__, __LINE__, \"~a\", \"~a\", BSTRING_TO_STRING(bgl_typeof(~a)), \"~a\", ~a), exit(127), 0)"
@@ -354,12 +359,12 @@
 (define (assert-context! b::block)
    
    (define (pragma-ins cexpr::bstring ctx loc)
-      (let ((pgm (instantiate::rtl_pragma
+      (let ((pr (instantiate::rtl_pragma
 		    (format cexpr)))
 	    (es (instantiate::regset (msize 0) (regv '#()) (regl '()))))
 	 (instantiate::rtl_ins/bbv
 	    (loc loc)
-	    (fun pgm)
+	    (fun pr)
 	    (ctx ctx)
 	    (in es)
 	    (out es)
@@ -375,7 +380,6 @@
 	 (let ((checks (filter-map (lambda (e)
 				      (with-access::bbv-ctxentry e (reg types polarity)
 					 (with-access::rtl_reg reg (debugname name var type)
-					    (set! debugname (reg-debugname reg))
 					    (when (eq? type *obj*)
 					       (let ((preds (type-predicates types)))
 						  (when (pair? preds)
@@ -384,7 +388,7 @@
 								(format "(~a~a(~a) || ~a)"
 								   (if polarity "" "!")
 								   p
-								   debugname
+								   (reg-debugname reg)
 								   (assert-failure p reg loc)))
 							   preds))))))))
 			  entries)))
@@ -431,8 +435,7 @@
 (define (rtl-assert-reg-type reg::rtl_reg type::type polarity ctx loc tag)
    (let ((pred (type-predicate type)))
       (if pred
-	  (with-access::rtl_reg reg (debugname)
-	     (set! debugname (reg-debugname reg))
+	  (let ((debugname (reg-debugname reg)))
 	     (let ((cexpr (format "/* rtl-assert-reg-type */ (~a~a(~a) || ~a)"
 			     (if polarity "" "!")
 			     pred
@@ -450,30 +453,38 @@
 (define (rtl-assert-fxcmp op x y polarity ctx loc tag)
    
    (define (assert-fxcmp-failure loc tag)
+      (set! assert-cnt (+fx assert-cnt 1))
       (if (location? loc)
-	  (format "(fprintf(stderr, \"*** ~a:%s:%d\\n%s: %s:%d\\n\", __FILE__, __LINE__, \"~a\", \"~a\", ~a), exit(127), 0)"
-	     tag op (location-fname loc) (location-pos loc))
-	  (format "(fprintf(stderr, \"*** ~a:%s:%d\\n%s\\n\", __FILE__, __LINE__, \"~a\"), exit(127), 0)"
-	     tag op)))
+	  (format "(fprintf(stderr, \"*** ~a[~a]:%s:%d\\n%s: %s:%d\\n\", __FILE__, __LINE__, \"~a\", \"~a\", ~a), exit(127), 0)"
+	     tag assert-cnt op (location-fname loc) (location-pos loc))
+	  (format "(fprintf(stderr, \"*** ~a[~a]:%s:%d\\n%s\\n\", __FILE__, __LINE__, \"~a\"), exit(127), 0)"
+	     tag assert-cnt op)))
 
    (define (compile-simple x)
       (cond
 	 ((isa? x rtl_ins)
-	  (with-access::rtl_ins x (fun)
+	  (with-access::rtl_ins x (fun args)
 	     (cond
 		((isa? fun rtl_loadi)
 		 (with-access::rtl_loadi fun (constant)
 		    (with-access::atom constant (value)
 		       (format "CINT(~a)" value))))
+		((isa? fun rtl_call)
+		 (with-access::rtl_call fun (var)
+		    (with-access::variable var (value type)
+		       (if (eq? var *bint->long*)
+			   (if (rtl_reg? (car args))
+			       (format "CINT(~a)" (compile-simple (car args)))
+			       (tprint "x=" (shape x)))
+			   (tprint "y=" (shape x)))))
+		 #f)
 		(else
-		 (tprint "x=" (shape x) " " (typeof fun))
+		 (tprint "z=" (shape x) " " (typeof fun))
 		 #f))))
 	 ((isa? x rtl_reg)
-	  (with-access::rtl_reg x (debugname)
-	     (set! debugname (reg-debugname x))
-	     debugname))
+	  (reg-debugname x))
 	 (else
-	  (tprint "x=" (shape x) " " (typeof fun))
+	  (tprint "w=" (shape x) " " (typeof fun))
 	  #f)))
    
    (let ((cx (compile-simple x))
@@ -481,7 +492,7 @@
       (when (and cx cy)
 	 (let ((cexpr (format "/* rtl-assert-fxcmp */ (~a((~a) ~a (~a)) || ~a)"
 			 (if polarity "" "!")
-			 cx op cy (assert-fxcmp-failure loc tag))))
+			 cx (if (eq? op '=) "==" op) cy (assert-fxcmp-failure loc tag))))
 	    (instantiate::rtl_pragma
 	       (format cexpr))))))
 

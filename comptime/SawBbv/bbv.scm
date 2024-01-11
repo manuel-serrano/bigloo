@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Wed Jan 10 18:16:06 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 16:50:25 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -210,8 +210,12 @@
 		      (filter (lambda (b) (bbset-in? b setm)) versions)))
 		(loop (append succs (cdr bs))
 		   (cons (car bs) set)))))))
-   
-   (collect! b (mark b))
+
+   (when (or (eq? *bbv-blocks-cleanup* #t)
+	     (and (string? *bbv-blocks-cleanup*)
+		  (or (string-contains *bbv-blocks-cleanup* "coalesce")
+		      (string-contains *bbv-blocks-cleanup* "gc"))))
+      (collect! b (mark b)))
    b)
 
 ;*---------------------------------------------------------------------*/

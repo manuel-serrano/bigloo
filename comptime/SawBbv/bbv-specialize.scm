@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jan 11 08:25:15 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 15:21:51 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -407,8 +407,19 @@
       (with-access::rtl_ins i (args)
 	 (when (and (isa? (car args) rtl_ins) (rtl_ins-call? (car args)))
 	    (when (rtl_call-predicate (car args))
-	       (let ((args (rtl_ins-args* i)))
-		  (and (pair? args) (null? (cdr args)) (rtl_reg? (car args)))))))))
+	       (let ((vals (rtl_ins-args* i)))
+		  (when (and (pair? vals) (null? (cdr vals)) (rtl_reg? (car vals)))
+		     (with-access::rtl_ins (car args) (args)
+			(or (rtl_reg? (car args))
+			    (with-access::rtl_ins (car args) (fun)
+			       (when (isa? fun rtl_call)
+				  (with-access::rtl_call fun (var)
+				     (with-access::variable var (value type)
+					(if (or (eq? var *long->bint*))
+					    #t
+					    (begin
+					       (tprint "stop predicate " (shape var))
+					       #f)))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-resolved-ifne? ...                                       */
@@ -507,6 +518,11 @@
 			  (specialize- reg type epolarity value e)))
 		     ((and (not (type-in? type (bbv-ctxentry-types e)))
 			   (not (type-in? *obj* (bbv-ctxentry-types e)))
+			   ;; it should be possible to do something better
+			   ;; because it should compare number and number
+			   ;; sub types
+			   (not (memq 'number (bbv-ctxentry-types e)))
+			   (not (eq? type 'number))
 			   polarity epolarity)
 		      ;; negative type simplification
 		      (specialize- reg type epolarity value e))
@@ -588,7 +604,7 @@
 		(trace-item "rtl_ins-specialize-mov.2")
 		(with-access::rtl_ins (car args) (fun (fargs args))
 		   (with-access::rtl_call fun (var)
-		      (with-access::global var (value type)
+		      (with-access::variable var (value type)
 			 (if (and (eq? var *long->bint*)
 				  (isa? (car fargs) rtl_ins)
 				  (rtl_ins-loadi? (car fargs)))
@@ -701,7 +717,7 @@
    (define (new-value-call i)
       (with-access::rtl_ins i (dest fun args)
 	 (with-access::rtl_call fun (var)
-	    (with-access::global var (value type)
+	    (with-access::variable var (value type)
 	       (cond
 		  ((eq? var *bint->long*)
 		   (trace-item "new-value-call.bint->long")
