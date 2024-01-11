@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Thu Jan 11 11:32:07 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 11:53:46 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -416,11 +416,12 @@
 			    (acc '()))
 		    (if (null? first)
 			(block-first-set! (car bs) (reverse! acc))
-			(let ((ins (assert-ins (car first) (null? acc))))
+			(let* ((ins (car first))
+			       (assert (assert-ins ins (null? acc))))
 			   (loop (cdr first)
-			      (if ins
-				  (cons* (car first) ins acc)
-				  (cons (car first) acc))))))
+			      (if assert
+				  (cons* ins assert acc)
+				  (cons ins acc))))))
 		 (loop (append succs (cdr bs)) (bbset-cons (car bs) acc))))))
        b))
 
