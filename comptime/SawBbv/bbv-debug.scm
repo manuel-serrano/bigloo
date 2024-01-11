@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Wed Jan 10 15:39:06 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 11:32:07 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -316,11 +316,16 @@
       ((eq? type *long*) "INTEGERP")
       ((eq? type *bint*) "INTEGERP")
       ((eq? type *real*) "FLONUMP")
+      ((eq? type *breal*) "FLONUMP")
       ((eq? type *vector*) "VECTORP")
       ((eq? type *pair*) "PAIRP")
       ((eq? type *string*) "STRINGP")
+      ((eq? type *bstring*) "STRINGP")
       ((eq? type *char*) "CHARP")
+      ((eq? type *bchar*) "CHARP")
       ((eq? type *bnil*) "NULLP")
+      ((eq? type *procedure*) "PROCEDUREP")
+      ((eq? type *output-port*) "OUTPUT_PORTP")
       (else #f)))
 
 ;*---------------------------------------------------------------------*/

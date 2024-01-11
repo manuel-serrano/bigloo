@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Wed Jan 10 18:41:11 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 11:30:51 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -57,7 +57,7 @@
    (let ((e (getenv "BIGLOOBBVASSERT")))
       (if (not e)
 	  0
-	  (or (string->integer e)
+	  (or (string->number e)
 	      (error "bbv-assert" "illegal value" e)))))
 
 ;*---------------------------------------------------------------------*/
