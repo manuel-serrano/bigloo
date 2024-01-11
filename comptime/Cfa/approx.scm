@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Fri Nov  4 15:03:46 2022 (serrano)                */
-;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 11 09:37:33 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
 ;*=====================================================================*/
@@ -39,6 +39,7 @@
 	    (inline node-key-set! ::node/effect ::obj)
 	    (declare-approx-sets!)
 	    (union-approx!::approx ::approx ::approx)
+	    (union-approx2!::approx ::approx ::approx)
 	    (union-approx-filter!::approx ::approx ::approx)
 	    (approx-set-type! ::approx ::type)
 	    (approx-set-top! ::approx)
@@ -96,8 +97,11 @@
    (approx-set-type! dst (get-src-approx-type src))
    ;; check the consistency with *_* type
    (unless (eq? (approx-type dst) *_*)
-      (when (set-any vector-approx? (approx-allocs src))
-	 (approx-set-type! dst *vector*)))
+      (cond
+	 ((set-any vector-approx? (approx-allocs src))
+	  (approx-set-type! dst *vector*))
+	 ((and (eq? (approx-type src) *_*) (approx-top? src))
+	  (approx-set-type! dst *obj*))))
    ;; we check *obj* to prevent closure optimizations
    (when (not (or (eq? (approx-type dst) *procedure*)
 		  (eq? (approx-type dst) *_*)))
@@ -108,6 +112,34 @@
    ;; and we make the union of approximations
    (when (set-union! (approx-allocs dst) (approx-allocs src))
       (continue-cfa! 'union))
+   ;; and we return the dst
+   dst)
+
+(define (union-approx2!::approx dst::approx src::approx)
+   ;; merge has-procedure?
+   (when (approx-has-procedure? src)
+      (approx-has-procedure?-set! dst #t))
+   ;; we make the union of the type
+   (approx-set-type! dst (get-src-approx-type src))
+   (tprint "APRES TYPE " (shape dst))
+   ;; check the consistency with *_* type
+   (unless (eq? (approx-type dst) *_*)
+      (when (set-any vector-approx? (approx-allocs src))
+	 (approx-set-type! dst *vector*)))
+   (tprint "APRES UNLESS " (shape dst))
+   ;; we check *obj* to prevent closure optimizations
+   (when (not (or (eq? (approx-type dst) *procedure*)
+		  (eq? (approx-type dst) *_*)))
+      (disable-X-T! src "dst is not a procedure"))
+   (tprint "APRES X-T " (shape dst))
+   ;; of the alloc/top 
+   (when (approx-top? src)
+      (approx-set-top! dst))
+   (tprint "APRES ALLOC/TMP " (shape dst))
+   ;; and we make the union of approximations
+   (when (set-union! (approx-allocs dst) (approx-allocs src))
+      (continue-cfa! 'union))
+   (tprint "APRES union " (shape dst))
    ;; and we return the dst
    dst)
 

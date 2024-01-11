@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jan 10 15:33:45 2024 (serrano)                */
+;*    Last change :  Thu Jan 11 08:25:15 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -438,7 +438,6 @@
 	 (trace-item "ctx+=" (shape ctx+))
 	 (with-access::rtl_ins/bbv i (fun loc)
 	    (with-access::rtl_ifne fun (then)
-	       (tprint "TYPECHECK+ " (shape type) " " polarity)
 	       (let* ((assert (when (>fx *bbv-assert* 0)
 				 (rtl-assert-reg-type
 				    reg type polarity ctx loc
