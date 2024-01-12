@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Thu Jan 11 14:12:11 2024 (serrano)                */
+;*    Last change :  Fri Jan 12 08:21:08 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -331,6 +331,8 @@
       ((eq? type *bnil*) "NULLP")
       ((eq? type *procedure*) "PROCEDUREP")
       ((eq? type *output-port*) "OUTPUT_PORTP")
+      ((eq? type *bool*) "BOOLEANP")
+      ((eq? type *bbool*) "BOOLEANP")
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
