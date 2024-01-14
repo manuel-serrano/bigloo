@@ -331,6 +331,8 @@
       ((eq? type *bnil*) "NULLP")
       ((eq? type *procedure*) "PROCEDUREP")
       ((eq? type *output-port*) "OUTPUT_PORTP")
+      ((eq? type *bool*) "BOOLEANP")
+      ((eq? type *bbool*) "BOOLEANP")
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
