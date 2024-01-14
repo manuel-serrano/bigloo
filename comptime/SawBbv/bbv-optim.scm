@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Thu Jan 11 16:44:08 2024 (serrano)                */
+;*    Last change :  Sun Jan 14 06:00:16 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -39,15 +39,15 @@
 	    saw_bbv-liveness
 	    saw_bbv-debug)
 
-   (export  (remove-nop! b::block)
-	    (remove-goto! b::block)
-	    (simplify-branch! b::block)
-	    (coalesce! mark b::blockS)))
+   (export  (remove-nop! ::global ::block)
+	    (remove-goto! ::global ::block)
+	    (simplify-branch! ::global ::block)
+	    (coalesce! ::global mark ::blockS)))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-nop! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (remove-nop! b::block)
+(define (remove-nop! global b::block)
    (assert-blocks b "before nop!")
 
    (define (nop! b)
@@ -74,6 +74,7 @@
 	   (and (string? *bbv-blocks-cleanup*)
 		(string-contains *bbv-blocks-cleanup* "nop")))
        (with-trace 'bbv-cleanup "remove-nop!"
+	  (trace-item "global: " (global-id global))
 	  (nop! b))
        b))
 
@@ -82,7 +83,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Remove useless gotos (fallthru).                                 */
 ;*---------------------------------------------------------------------*/
-(define (remove-goto! b::block)
+(define (remove-goto! global b::block)
    
    (define (fallthrough-block? b succs next)
       ;; is a block explicitly jumping to its successor
@@ -136,18 +137,25 @@
 	   (and (string? *bbv-blocks-cleanup*)
 		(string-contains *bbv-blocks-cleanup* "goto")))
        (with-trace 'bbv-cleanup "remove-goto!"
+	  (trace-item "global: " (global-id global))
 	  (remove! b))
        b))
 
 ;*---------------------------------------------------------------------*/
 ;*    simplify-branch! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (simplify-branch! b::block)
+(define (simplify-branch! global b::block)
    
    (define (goto-block? b)
       ;; is a block explicitly jumping to its successor
       (with-access::block b (first)
 	 (every (lambda (i) (or (rtl_ins-nop? i) (rtl_ins-go? i))) first)))
+
+   (define (goto-target b)
+      (let ((t (car (block-succs b))))
+	 (if (goto-block? t)
+	     (goto-target t)
+	     t)))
 
    (when *bbv-debug*
       (assert-blocks b "before simplify-branch!"))
@@ -168,6 +176,7 @@
 		    (if (=fx (length (block-preds (car succs))) 1)
 			;; collapse the two blocks
 			(let ((s (car succs)))
+			   (trace-item "simplify[" label "] collapse " (block-label s))
 			   (for-each (lambda (ns)
 					(block-preds-set! ns
 					   (replace (block-preds ns) s (car bs))))
@@ -192,12 +201,12 @@
 			      (bbset-cons (car bs) acc))
 			   (let ((s (car ss)))
 			      (if (goto-block? s)
-				  (let ((t (car (block-succs s))))
-				     (when *bbv-debug*
-					(tprint "simplify(" (block-label (car bs))
-					   "): " (block-label s)
-					   " preds: " (map block-label (block-preds s))
-					   " => " (block-label t)))
+				  (let ((t (goto-target s)))
+				     (trace-item "simplify["
+					(block-label (car bs))
+					"] " (block-label s)
+					" preds: " (map block-label (block-preds s))
+					" => " (block-label t))
 				     (redirect-block! (car bs) s t)
 				     (block-preds-set! t
 					(remq s (block-preds t)))
@@ -211,6 +220,7 @@
 	   (and (string? *bbv-blocks-cleanup*)
 		(string-contains *bbv-blocks-cleanup* "simplify")))
        (with-trace 'bbv-cleanup "simplify!"
+	  (trace-item "global: " (global-id global))
 	  (simplify! b))
        b))
 
@@ -219,53 +229,59 @@
 ;*    -------------------------------------------------------------    */
 ;*    Coalesce equivalent basic blocks subgraphs                       */
 ;*---------------------------------------------------------------------*/
-(define (coalesce! mark b::blockS)
-   (assert-blocks b "before coalesce!")
-   (when (or (eq? *bbv-blocks-cleanup* #t)
-	     (and (string? *bbv-blocks-cleanup*)
-		  (string-contains *bbv-blocks-cleanup* "coalesce")))
+(define (coalesce! global::global mark b::blockS)
+   
+   (define (co! mark b)
       (with-access::blockS b (parent succs)
-	 (when *bbv-debug*
-	    (tprint "COALESCE: " (block-label b) " parent: " (block-label parent)
-	       " -> " (map block-label succs)))
+	 (trace-item
+	    (block-label b) " parent: " (block-label parent)
+	    " -> " (map block-label succs))
 	 (with-access::blockV parent (%mark)
 	    (unless (=fx mark %mark)
 	       (set! %mark mark)
-	       (with-trace 'bbv-cleanup "coalesce"
-		  (trace-item "b=" (block-label b))
-		  (let ((versions (blockV-live-versions parent)))
-		     (if (or (null? versions) (null? (cdr versions)))
-			 (for-each (lambda (s) (coalesce! mark s)) succs)
-			 (let ((ks (sort (lambda (v1 v2)
-					    (<=fx (car v1) (car v2)))
-				      (map (lambda (v)
-					      (cons (bbv-hash v) v))
-					 versions))))
-			    (trace-item "coalesce "
-			       (map (lambda (k)
-				       (cons (block-label (cdr k)) (car k)))
-				  ks))
-			    (let loop ((ks ks))
-			       (cond
-				  ((null? (cdr ks))
-				   (for-each (lambda (s) (coalesce! mark s)) succs))
-				  ((>=fx (blockS-%mark (cdar ks)) mark)
-				   (loop (cdr ks)))
-				  (else
-				   (let ((k (car ks)))
-				      (when *bbv-debug*
-					 (assert-block (cdr k) "coalesce!"))
-				      (let liip ((ls (cdr ks)))
-					 (cond
-					    ((null? ls)
-					     (loop (cdr ks)))
-					    ((and (=fx (car k) (caar ls))
-						  (not (eq? (cdr k) (cdar ls)))
-						  (coalesce? (cdr k) (cdar ls) '()))
-					     (coalesce-block! mark (cdr k) (cdar ls))
-					     (liip (cdr ls)))
-					    (else
-					     (liip (cdr ls)))))))))))))))))
+	       (trace-item "b=" (block-label b))
+	       (let ((versions (blockV-live-versions parent)))
+		  (if (or (null? versions) (null? (cdr versions)))
+		      (for-each (lambda (s) (co! mark s)) succs)
+		      (let ((ks (sort (lambda (v1 v2)
+					 (<=fx (car v1) (car v2)))
+				   (map (lambda (v)
+					   (cons (bbv-hash v) v))
+				      versions))))
+			 (trace-item "coalesce "
+			    (map (lambda (k)
+				    (cons (block-label (cdr k)) (car k)))
+			       ks))
+			 (let loop ((ks ks))
+			    (cond
+			       ((null? (cdr ks))
+				(for-each (lambda (s) (co! mark s)) succs))
+			       ((>=fx (blockS-%mark (cdar ks)) mark)
+				(loop (cdr ks)))
+			       (else
+				(let ((k (car ks)))
+				   (when *bbv-debug*
+				      (assert-block (cdr k) "coalesce!"))
+				   (let liip ((ls (cdr ks)))
+				      (cond
+					 ((null? ls)
+					  (loop (cdr ks)))
+					 ((and (=fx (car k) (caar ls))
+					       (not (eq? (cdr k) (cdar ls)))
+					       (coalesce? (cdr k) (cdar ls) '()))
+					  (coalesce-block! mark (cdr k) (cdar ls))
+					  (liip (cdr ls)))
+					 (else
+					  (liip (cdr ls))))))))))))))))
+   
+   (assert-blocks b "before coalesce!")
+   
+   (when (or (eq? *bbv-blocks-cleanup* #t)
+	     (and (string? *bbv-blocks-cleanup*)
+		  (string-contains *bbv-blocks-cleanup* "coalesce")))
+      (with-trace 'bbv-cleanup "coalesce"
+	 (trace-item "global: " (global-id global)))
+      (co! mark b))
    b)
 
 ;*---------------------------------------------------------------------*/

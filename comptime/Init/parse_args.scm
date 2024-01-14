@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jan 10 07:49:40 2024 (serrano)                */
+;*    Last change :  Sun Jan 14 06:30:17 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -545,14 +545,10 @@
        (set! *saw-bbv?* #t))
       (("-fno-saw-bbv" (help "Disable saw basic-blocks versionning"))
        (set! *saw-bbv?* #f))
-      (("-fsaw-bbv-fun" ?name (help "Apply bbv on this very function"))
+      (("-fsaw-bbv-fun" ?name (help "Apply bbv on these functions"))
        (set! *saw-bbv?* #t)
        (set! *saw-bbv-functions*
-	  (cons (string->symbol name) *saw-bbv-functions*)))
-      (("-fsaw-bbv-funs" ?names (help "Apply bbv on all these functions"))
-       (set! *saw-bbv?* #t)
-       (set! *saw-bbv-functions*
-	  (append (map string->symbol (string-split names " "))
+	  (append (map string->symbol (string-split name " "))
 	     *saw-bbv-functions*)))
       (("-fsaw-regalloc-msize" ?size (help "Set the register allocation body size limit"))
        (set! *saw-register-allocation?* #t)

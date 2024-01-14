@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jan 11 16:50:25 2024 (serrano)                */
+;*    Last change :  Sun Jan 14 06:09:25 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -90,35 +90,32 @@
 		      (unwind-protect
 			 (if (null? blocks)
 			     '()
-			     (let* ((s (bbv-block* (car blocks)
-					  (params->ctx params)))
-				    (_ (when (>=fx *trace-level* 2)
-					  (dump-cfg global params
-					     (block->block-list regs s)
-					     ".specialize.cfg")))
+			     (let* ((s (dump-blocks 1 "specialize" global params regs
+					  (bbv-block* (car blocks)
+					     (params->ctx params))))
 				    (__ (when *bbv-log*
 					   (log-blocks global params blocks)))
-				    (as (assert-context! s))
-				    (_ (when (>=fx *trace-level* 2)
-					  (dump-cfg global params
-					     (block->block-list regs s)
-					     ".assert.cfg")))
+				    (as (dump-blocks 1 "assert" global params regs
+					   (assert-context! s)))
 				    (b (block->block-list regs
 					  (if *bbv-blocks-cleanup*
-					      (simplify-branch!
-						 (remove-nop!
-						    (remove-goto!
-						       (simplify-branch!
-							  (coalesce!
-							     (get-bb-mark)
-							     (gc! as))))))
+					      (dump-blocks 2 "simplify2" global params regs
+						 (simplify-branch! global
+						    (dump-blocks 2 "nop" global params regs
+						       (remove-nop! global
+							  (dump-blocks 2 "goto" global params regs
+							     (remove-goto! global
+								(dump-blocks 2 "simplify1" global params regs
+								   (simplify-branch! global
+								      (dump-blocks 2 "coalesce!" global params regs
+									 (coalesce! global
+									    (get-bb-mark)
+									    (gc! as)))))))))))
 					      as))))
 				(verbose 3 " "
 				   (length blocks) " -> " (length b))
 				(verbose 2 "\n")
-				(when (>=fx *trace-level* 1)
-				   (dump-cfg global params
-				      (block->block-list regs s) ".bbv.cfg"))
+				(dump-blocks 1 "bbv" global params regs s)
 				(map! (lambda (b) (shrink! b)) b)
 				b))
 			 ;; don't shrink, otherwise dump could no longer
@@ -127,6 +124,15 @@
 				     (>=fx *trace-level* 1))
 			    (for-each (lambda (r) (shrink! r)) regs))))))))
        blocks))
+
+;*---------------------------------------------------------------------*/
+;*    dump-blocks ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (dump-blocks level name global params regs b)
+   (when (>=fx *trace-level* level)
+      (dump-cfg global params
+	 (block->block-list regs b) (format ".~a.cfg" name)))
+   b)
 
 ;*---------------------------------------------------------------------*/
 ;*    mark-merge! ...                                                  */

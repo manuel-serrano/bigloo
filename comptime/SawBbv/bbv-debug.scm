@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Thu Jan 11 14:12:11 2024 (serrano)                */
+;*    Last change :  Sun Jan 14 06:50:21 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -150,7 +150,7 @@
 	    (or (getenv "BIGLOOBBVVERSIONLIMIT") "4")
 	    (or (getenv "BIGLOOBBVSTRATEGY") "size")
 	    (command-line))
-	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > ~a.pdf\n"
+	 (fprintf port ";; bglcfg '~a' > '~a.dot' && dot '~a.dot' -Tpdf > '~a.pdf'\n"
 	    filename name name name)
 	 (for-each (lambda (b)
 		      (dump b port 0)
