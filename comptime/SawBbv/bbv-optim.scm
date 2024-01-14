@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Sun Jan 14 06:00:16 2024 (serrano)                */
+;*    Last change :  Sun Jan 14 08:25:48 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -66,8 +66,9 @@
 		       ;; prune the instructions
 		       (set! first f)
 		       ;; remove the block
-		       (let ((n (car succs)))
-			  (replace-block! (car bs) n))))
+		       (set! first (list (car first)))))
+;* 		       (let ((n (car succs)))                          */
+;* 			  (replace-block! (car bs) n))))               */
 		(loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
 
    (if (or (eq? *bbv-blocks-cleanup* #t)
@@ -96,19 +97,6 @@
 			(with-access::rtl_go fun (to)
 			   (when (eq? to (car succs))
 			      (eq? to next))))))))))
-
-   (define (goto-block? b succs)
-      ;; is a block jumping to its successor and the succssor has
-      ;; only b as predecessor
-      (when (pair? succs)
-	 (with-access::block b (first)
-	    (when (pair? first)
-	       (let ((i (car (last-pair first))))
-		  (when (rtl_ins-go? i)
-		     (with-access::rtl_ins i (fun)
-			(with-access::rtl_go fun (to)
-			   (when (eq? to (car succs))
-			      (null? (cdr succs)))))))))))
    
    (assert-blocks b "before goto!")
 
@@ -125,7 +113,7 @@
 	     (with-access::block (car bs) (succs)
 		(when (and (or (and (pair? (cdr bs))
 				    (fallthrough-block? (car bs) succs (cadr bs)))
-			       (goto-block? (car bs) succs))
+			       (goto-block? (car bs)))
 			   (not (bbset-in? (car succs) acc)))
 		   (with-access::block (car bs) (first label)
 		      (with-access::rtl_ins (car (last-pair first)) (fun)
@@ -146,17 +134,6 @@
 ;*---------------------------------------------------------------------*/
 (define (simplify-branch! global b::block)
    
-   (define (goto-block? b)
-      ;; is a block explicitly jumping to its successor
-      (with-access::block b (first)
-	 (every (lambda (i) (or (rtl_ins-nop? i) (rtl_ins-go? i))) first)))
-
-   (define (goto-target b)
-      (let ((t (car (block-succs b))))
-	 (if (goto-block? t)
-	     (goto-target t)
-	     t)))
-
    (when *bbv-debug*
       (assert-blocks b "before simplify-branch!"))
 
@@ -348,4 +325,30 @@
 		(set! xbl (cons by xbl))
 		(set! ybl (cons bx ybl))
 		#f))))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    goto-block? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (goto-block? b)
+   (with-access::block b (succs)
+      ;; is a block jumping to its successor and the succssor has
+      ;; only b as predecessor
+      (when (pair? succs)
+	 (with-access::block b (first)
+	    (when (pair? first)
+	       (let ((i (car (last-pair first))))
+		  (when (rtl_ins-go? i)
+		     (with-access::rtl_ins i (fun)
+			(with-access::rtl_go fun (to)
+			   (when (eq? to (car succs))
+			      (null? (cdr succs))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    goto-target ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (goto-target b)
+   (let ((t (car (block-succs b))))
+      (if (goto-block? t)
+	  (goto-target t)
+	  t)))
+
