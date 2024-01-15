@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Mon Jan 15 11:14:10 2024 (serrano)                */
+;*    Last change :  Mon Jan 15 15:03:31 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -257,13 +257,19 @@
       ;; intersection of ts1 types and ts2 types
       (filter (lambda (t) (memq t ts2)) ts1))
    
+   (define (list-eq? l1 l2)
+      (when (=fx (length l1) (length l2))
+	 (every eq? l1 l2)))
+   
    (with-trace 'bbv-merge "merge-ctxentry"
       (with-access::bbv-ctxentry e1 ((polarity1 polarity)
 				     (types1 types)
-				     (value1 value))
+				     (value1 value)
+				     (aliases1 aliases))
 	 (with-access::bbv-ctxentry e2 ((polarity2 polarity)
 					(types2 types)
-					(value2 value))
+					(value2 value)
+					(aliases2 aliases))
 	    (cond
 	       ((not (eq? polarity1 polarity2))
 		(trace-item "polarities differ")
@@ -274,6 +280,7 @@
 		   (if (null? ts)
 		       (bbv-ctxentry-top)
 		       (duplicate::bbv-ctxentry e1
+			  (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
 			  (types ts)
 			  (value '_)))))
 	       ((not (same-types? types1 types2))
@@ -283,18 +290,21 @@
 		   (if (null? ts)
 		       (bbv-ctxentry-top)
 		       (duplicate::bbv-ctxentry e1
+			  (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
 			  (types ts)
 			  (value '_)))))
 	       ((or (not (bbv-range? value1)) (not (bbv-range? value2)))
 		(trace-item "not both ranges value1=" (shape value1)
 		   " value2=" (shape value2))
 		(duplicate::bbv-ctxentry e1
+		   (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
 		   (value '_)))
 	       (else
 		(let ((range (merge-range value1 value2)))
 		   (trace-item "merge-range " (shape value1) " " (shape value2)
 		      " -> " (shape range))
 		   (duplicate::bbv-ctxentry e1
+		      (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
 		      (value (or range (fixnum-range)))))))))))
 
 ;*---------------------------------------------------------------------*/
