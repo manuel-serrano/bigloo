@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Jan 15 07:13:46 2024 (serrano)                */
+;*    Last change :  Mon Jan 15 10:58:52 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -187,7 +187,6 @@
 		(multiple-value-bind (ins nctx)
 		   (specialize (car oins) nins bs ctx queue)
 		   (trace-item "iins=" (shape ins))
-		   (trace-item "nctx=" (shape nctx))
 		   (with-access::rtl_ins ins (args)
 ;* 		      (set! args (map (lambda (i)                      */
 ;* 					 (if (isa? i rtl_ins)          */
@@ -197,7 +196,7 @@
 ;* 					     i))                       */
 ;* 				    args))                             */
 		      (let ((lctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
-			 (trace-item "lctx=" (shape lctx))
+			 (trace-item "nctx=" (shape lctx))
 			 (cond
 			    ((rtl_ins-go? ins)
 			     (connect! bs ins)

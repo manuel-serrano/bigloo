@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jan 11 16:36:07 2024 (serrano)                */
+;*    Last change :  Mon Jan 15 10:05:49 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -273,6 +273,13 @@
 		     params)))))
 
 ;*---------------------------------------------------------------------*/
+;*    list-eq? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (list-eq? l1 l2)
+   (when (=fx (length l1) (length l2))
+      (every eq? l1 l2)))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-ctxentry-equal? ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (bbv-ctxentry-equal? x::bbv-ctxentry y::bbv-ctxentry)
@@ -288,9 +295,9 @@
 				    (yaliases aliases))
 	 (and (eq? xreg yreg)
 	      (eq? xpolarity ypolarity)
-	      (equal? xtypes ytypes)
 	      (equal? xvalue yvalue)
-	      (equal? xaliases yaliases)))))
+	      (list-eq? xtypes ytypes)
+	      (list-eq? xaliases yaliases)))))
 	      
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-equal? ...                                               */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Tue Jan  9 18:55:41 2024 (serrano)                */
+;*    Last change :  Mon Jan 15 11:16:10 2024 (serrano)                */
 ;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -813,17 +813,19 @@
 	  (yu (bbv-range-upnum y))
 	  (xl (bbv-range-lonum x))
 	  (xu (bbv-range-upnum x))
-	  (v0 (* xl yl))
-	  (v1 (* xl yu))
-	  (v2 (* xu yu))
-	  (v3 (* yu yl))
-	  (mi0 (min v0 v1))
-	  (mi1 (min v2 v3))
-	  (ma0 (max v0 v1))
-	  (ma1 (max v2 v3)))
+	  (v0 (*rv xl yl #unspecified))
+	  (v1 (*rv xl yu #unspecified))
+	  (v2 (*rv xu yu #unspecified))
+	  (v3 (*rv yu yl #unspecified))
+	  (mi0 (minrv v0 v1))
+	  (mi1 (minrv v2 v3))
+	  (ma0 (maxrv v0 v1))
+	  (ma1 (maxrv v2 v3))
+	  (nlo (minrv (minrv mi0 mi1) (minrv xl yl)))
+	  (nup (maxrv (maxrv ma0 ma1) (maxrv xu yu))))
       (instantiate::bbv-range
-	 (lo (min mi0 mi1 xl yl))
-	 (up (max ma0 ma1 xu yu)))))
+	 (lo (if (eq? nlo #unspecified) bbv-min-fixnum nlo))
+	 (up (if (eq? nup #unspecified) bbv-max-fixnum nup)))))
       
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-union ...                                              */

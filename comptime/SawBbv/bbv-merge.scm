@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Dec 12 13:56:37 2023 (serrano)                */
-;*    Copyright   :  2022-23 Manuel Serrano                            */
+;*    Last change :  Mon Jan 15 11:14:10 2024 (serrano)                */
+;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
 ;*=====================================================================*/
@@ -368,9 +368,14 @@
 			       (bbv-vlen? up)
 			       (eq? (bbv-vlen-vec up0) (bbv-vlen-vec up))))))
 	     ranges)
-	  (instantiate::bbv-range
-	     (lo l)
-	     (up nu)))
+	  ;; ensute that at least one bound change
+	  (if (eq? nu u)
+	      (instantiate::bbv-range
+		 (lo nl)
+		 (up u))
+	      (instantiate::bbv-range
+		 (lo l)
+		 (up nu))))
 	 (else
 	  (instantiate::bbv-range
 	     (lo nl)

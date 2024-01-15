@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Jan 15 09:26:24 2024 (serrano)                */
+;*    Last change :  Mon Jan 15 10:19:33 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -53,7 +53,12 @@
        (with-trace 'bbv (global-id global)
 	  (when *bbv-debug* (tprint "=== " (shape global)))
 	  (start-bbv-cache!)
-	  (verbose 2 "        bbv " (global-id global))
+	  (verbose 2 "        bbv " (global-id global)
+	     " (" *max-block-merge-versions*
+	     (if *bbv-optim-vlength* " vlen" "")
+	     (if *bbv-optim-alias* " alias" "")
+	     (if *bbv-blocks-cleanup* " cleanup" "")
+	     ")")
 	  (when (>=fx *trace-level* 2)
 	     (dump-cfg global params blocks ".plain.cfg"))
 	  (set-max-label! blocks)
