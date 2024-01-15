@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jan 11 15:21:51 2024 (serrano)                */
+;*    Last change :  Mon Jan 15 07:13:46 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -418,7 +418,9 @@
 					(if (or (eq? var *long->bint*))
 					    #t
 					    (begin
-					       (tprint "stop predicate " (shape var))
+					       (when *bbv-debug*
+						  (tprint "stop predicate "
+						     (shape var)))
 					       #f)))))))))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1035,36 +1037,20 @@
       (instantiate::rtl_loadi
 	 (constant (instantiate::literal (type *bool*) (value #f)))))
 
-   (define (rtl_bint->long? a)
-      (when (isa? a rtl_ins)
-	 (with-access::rtl_ins a (fun)
-	    (when (isa? fun rtl_call)
-	       (with-access::rtl_call fun (var)
-		  (eq? var *bint->long*))))))
-
-   (define (rtl_$int->long? a)
-      (when (isa? a rtl_ins)
-	 (with-access::rtl_ins a (fun)
-	    (when (isa? fun rtl_call)
-	       (with-access::rtl_call fun (var)
-		  (eq? var *$int->long*))))))
-   
-   (define (reg? a)
-      (or (rtl_reg? a)
+   (define (reg a)
+      (if (rtl_reg? a)
+	  a
 	  (and (rtl_ins? a)
 	       (with-access::rtl_ins a (fun args dest)
 		  (when (isa? fun rtl_call)
 		     (with-access::rtl_call fun (var)
-			(if (eq? var *bint->long*)
-			    (rtl_reg? (car args))
-			    (rtl_reg? dest))))))))
-   
-   (define (reg a)
-      (cond
-	 ((rtl_reg? a) a)
-	 ((rtl_bint->long? a) (car (rtl_ins-args a)))
-	 ((rtl_$int->long? a) (car (rtl_ins-args a)))
-	 (else (rtl_ins-dest a))))
+			(if (or (eq? var *bint->long*)
+				(eq? var *int->long*))
+			    (when (rtl_reg? (car args)) (car args))
+			    (when (rtl_reg? dest) dest))))))))
+
+   (define (reg? a)
+      (reg a))
    
    (define (fxcmp-op i)
       (with-access::rtl_ins i (fun)
@@ -1094,14 +1080,14 @@
 	 ((=) (bbv-range= intl intr))
 	 (else #unspecified)))
 
-   (define (narrowing/op reg intr::bbv-range inte::bbv-range op+ op- ctx::bbv-ctx)
+   (define (narrowing/op reg::rtl_reg intr::bbv-range inte::bbv-range op+ op- ctx::bbv-ctx)
       (let* ((inte+ (op+ intr inte))
 	     (inte- (op- intr inte))
 	     (ctx+ (extend-ctx ctx reg (list *bint*) #t :value inte+))
 	     (ctx- (extend-ctx ctx reg (list *bint*) #t :value inte-)))
 	 (values ctx+ ctx-)))
    
-   (define (narrowing reg intr::bbv-range inte::bbv-range op ctx::bbv-ctx)
+   (define (narrowing reg::rtl_reg intr::bbv-range inte::bbv-range op ctx::bbv-ctx)
       (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp/narrowing [@~a]"
 			      (gendebugid))
 	 (trace-item "op=" op)
