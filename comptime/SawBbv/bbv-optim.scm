@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Sun Jan 14 08:25:48 2024 (serrano)                */
+;*    Last change :  Mon Jan 15 09:32:12 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -153,7 +153,7 @@
 		    (if (=fx (length (block-preds (car succs))) 1)
 			;; collapse the two blocks
 			(let ((s (car succs)))
-			   (trace-item "simplify[" label "] collapse " (block-label s))
+			   (trace-item "collapse[" label "] " (block-label s))
 			   (for-each (lambda (ns)
 					(block-preds-set! ns
 					   (replace (block-preds ns) s (car bs))))
@@ -179,10 +179,10 @@
 			   (let ((s (car ss)))
 			      (if (goto-block? s)
 				  (let ((t (goto-target s)))
-				     (trace-item "simplify["
-					(block-label (car bs))
-					"] " (block-label s)
-					" preds: " (map block-label (block-preds s))
+				     (trace-item "simplify[" label "] succ=" (block-label s)
+					" goto-target=" (block-label t)
+					" succ.preds: " (map block-label (block-preds s))
+					" succ.succs: " (map block-label (block-succs s))
 					" => " (block-label t))
 				     (redirect-block! (car bs) s t)
 				     (block-preds-set! t
@@ -333,15 +333,22 @@
    (with-access::block b (succs)
       ;; is a block jumping to its successor and the succssor has
       ;; only b as predecessor
-      (when (pair? succs)
+      (when (and (pair? succs) (null? (cdr succs)))
 	 (with-access::block b (first)
-	    (when (pair? first)
-	       (let ((i (car (last-pair first))))
-		  (when (rtl_ins-go? i)
-		     (with-access::rtl_ins i (fun)
-			(with-access::rtl_go fun (to)
-			   (when (eq? to (car succs))
-			      (null? (cdr succs))))))))))))
+	    (let loop ((first first))
+	       (cond
+		  ((null? first)
+		   #f)
+		  ((rtl_ins-go? (car first))
+		   (when (null? (cdr first))
+		      (with-access::rtl_ins (car first) (fun)
+			 (with-access::rtl_go fun (to)
+			    (when (eq? to (car succs))
+			       (null? (cdr succs)))))))
+		  ((rtl_ins-nop? (car first))
+		   (loop (cdr first)))
+		  (else
+		   #f)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    goto-target ...                                                  */
