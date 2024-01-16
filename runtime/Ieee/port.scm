@@ -267,7 +267,7 @@
 		  "bgl_open_input_substring")
 	       (method static $open-input-substring!::input-port (::bstring ::int ::int)
 		  "bgl_open_input_substring_bang")
-	       (method static $open-input-mmap::obj (::mmap ::bstring ::long ::long)
+	       (method static $open-input-mmap::input-port (::mmap ::bstring ::long ::long)
 		  "bgl_open_input_mmap")
                (method static $input-mmap-port?::bool (::obj)
 		   "INPUT_MMAP_PORTP")

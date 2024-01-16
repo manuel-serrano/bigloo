@@ -679,6 +679,8 @@ union scmobj {
       struct input_port iport;
       /* offset */
       long offset;
+      /* start */
+      long start;
       /* end */
       long end;
    } input_mmap_port;
@@ -1753,7 +1755,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 
 #define INPUT_GZIP_PORT(o) CREF(o)->input_gzip_port
 #define INPUT_PROCEDURE_PORT(o) CREF(o)->input_procedure_port
-
+#define INPUT_MMAP_PORT(o) CREF(o)->input_mmap_port 
 #define INPUT_PORT(o) CREF(o)->input_port
 
 #define INPUT_PORTP(o) (POINTERP(o) && (TYPE(o) == INPUT_PORT_TYPE))

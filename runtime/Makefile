@@ -183,7 +183,7 @@ endif
 JLIB		= foreign buffer configure stackwriter\
                   bbool output_string_port output_procedure_port \
 		  bchar input_console_port pair \
-		  bexception input_file_port \
+		  bexception input_file_port  input_mmap_port\
                   procedure \
 		  bignum bint input_port real \
 		  bllong belong input_string_port input_pipe_port rest \
