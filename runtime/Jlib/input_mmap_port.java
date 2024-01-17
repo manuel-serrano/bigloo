@@ -116,7 +116,7 @@ public class input_mmap_port extends input_port {
             res = false;
         } else {
             for(int i = 0; i < nbcopy; i++) {
-                buffer[bufpose+i] = mm.map.get(offset+i);
+                buffer[bufpose+i] = (byte)foreign.BGL_MMAP_REF(mm, offset+i);
             }
             offset += nbcopy;
             bufpose += nbcopy;

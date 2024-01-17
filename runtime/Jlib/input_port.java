@@ -48,19 +48,13 @@ public abstract class input_port extends obj
 
     if( nsize < bufsize ) return;
     
-    if (bufsize == 2)
-      foreign.fail( "input-port",
-                    "Can't enlarge buffer for non bufferized port (see the user manual for details)",
-                    this );
-    else
-    {
-      final byte[] obuffer= buffer;
-      final byte[] nbuffer= new byte[nsize];
-
-      for ( int i= 0 ; i < bufsize ; ++i )
+    final byte[] obuffer= buffer;
+    final byte[] nbuffer= new byte[nsize];
+    
+    for ( int i= 0 ; i < bufsize ; ++i )
         nbuffer[i]= obuffer[i];
-      buffer= nbuffer;
-    }
+    buffer= nbuffer;
+  
   }
 
    public final void rgc_double_buffer() {
