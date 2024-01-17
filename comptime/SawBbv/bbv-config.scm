@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Thu Jan 11 16:34:45 2024 (serrano)                */
+;*    Last change :  Wed Jan 17 07:49:44 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -93,8 +93,9 @@
 (define *bbv-merge-strategy*
    (let ((e (getenv "BIGLOOBBVSTRATEGY")))
       (cond
-	 ((not e) 'size)
+	 ((not e) 'nearobj)
 	 ((string=? e "first") 'first)
+	 ((string=? e "nearobj") 'nearobj)
 	 ((string=? e "size") 'size)
 	 ((string=? e "random") 'random)
 	 ((string=? e "distance") 'distance)

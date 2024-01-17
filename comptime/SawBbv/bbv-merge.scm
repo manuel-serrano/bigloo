@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Mon Jan 15 15:03:31 2024 (serrano)                */
+;*    Last change :  Wed Jan 17 07:11:58 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -47,17 +47,15 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge bs::pair-nil)
    (with-trace 'bbv-merge
-	 (format "bbv-block-merge [~a] ~( )"
+	 (format "bbv-block-merge {~a} ~( )"
 	    (block-label (blockS-parent (car bs)))
 	    (map block-label bs))
       (multiple-value-bind (bs1 bs2)
 	 (bbv-block-merge-select bs)
-	 (trace-item "bs1=" (block-label bs1))
-	 (trace-item "bs2=" (block-label bs2))
 	 (with-access::blockS bs1 ((ctx1 ctx))
 	    (with-access::blockS bs2 ((ctx2 ctx))
-	       (trace-item "ctx1=" (shape ctx1))
-	       (trace-item "ctx2=" (shape ctx2))
+	       (trace-item (block-label bs1) " ctx: " (shape ctx1))
+	       (trace-item (block-label bs2) " ctx: " (shape ctx2))
 	       (let ((mctx (merge-ctx ctx1 ctx2)))
 		  (trace-item "mctx=" (shape mctx))
 		  (values bs1 bs2 mctx)))))))
@@ -73,11 +71,95 @@
        ;; the strategies implementation
        (values (car bs) (cadr bs))
        (case *bbv-merge-strategy*
+	  ((nearobj) (bbv-block-merge-select-strategy-nearobj bs))
+	  ((samepositive) (bbv-block-merge-select-strategy-samepositive bs))
 	  ((size) (bbv-block-merge-select-strategy-size bs))
 	  ((distance) (bbv-block-merge-select-strategy-distance bs))
 	  ((random) (bbv-block-merge-select-strategy-random bs))
 	  ((first) (bbv-block-merge-select-strategy-first bs))
 	  (else (error "bbv-block-merge-select" "strategy not implemented" *bbv-merge-strategy*)))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-nearobj ...                      */
+;*    -------------------------------------------------------------    */
+;*    Before applying the "size" strategy checks if two contexts       */
+;*    are "near obj". A context is near obj if all its types are       */
+;*    either obj or negative polarities.                               */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-nearobj bs::pair)
+   
+   (define (nearobj b::blockS)
+      (with-access::blockS b (ctx)
+	 (with-access::bbv-ctx ctx (entries)
+	    (every (lambda (e::bbv-ctxentry)
+		      (with-access::bbv-ctxentry e (types polarity)
+			 (or (eq? (car types) *obj*) (not polarity))))
+	       entries))))
+   
+   (define (fullobj b::blockS)
+      (with-access::blockS b (ctx)
+	 (with-access::bbv-ctx ctx (entries)
+	    (every (lambda (e::bbv-ctxentry)
+		      (with-access::bbv-ctxentry e (types polarity)
+			 (eq? (car types) *obj*)))
+	       entries))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-nearobj"
+      (for-each (lambda (b)
+		   (trace-item "{" (block-label b)
+		      "} fullobj: " (fullobj b)
+		      " nearobj: " (nearobj b)
+		      " " (with-access::blockS b (ctx) (shape ctx))))
+	 bs)
+      (let ((bnb (filter nearobj bs)))
+	 (if (and (pair? bnb) (pair? (cdr bnb)))
+	     (let ((fb (find fullobj bs)))
+		(cond
+		   (fb
+		    (let ((nfb (find (lambda (b) (not (fullobj b))) bnb)))
+		       (values nfb fb)))
+		   ((pair? (cdr bnb))
+		    (values (car bnb) (cadr bnb)))
+		   (else
+		    (bbv-block-merge-select-strategy-samepositive bs))))
+	     (bbv-block-merge-select-strategy-samepositive bs)))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-samepositive ...                 */
+;*    -------------------------------------------------------------    */
+;*    Select two contexts that are only distinguished by negative      */
+;*    polarities                                                       */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-samepositive bs::pair)
+
+   (define (list-eq? x y)
+      (every eq? x y))
+   
+   (define (same-positive? x y)
+      (with-access::blockS x ((xctx ctx))
+	 (with-access::blockS y ((yctx ctx))
+	    (with-access::bbv-ctx xctx ((xentries entries))
+	       (with-access::bbv-ctx yctx ((yentries entries))
+		  (every (lambda (ex ey)
+			    (with-access::bbv-ctxentry ex ((xtypes types)
+							   (xpol polarity))
+			       (with-access::bbv-ctxentry ey ((ytypes types)
+							      (ypol polarity))
+				  (if (not xpol)
+				      (not ypol)
+				      (list-eq? xtypes xtypes)))))
+		     xentries yentries))))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-samepositive"
+      (let loop ((pbs bs))
+	 (if (null? pbs)
+	     (bbv-block-merge-select-strategy-size bs)
+	     (let ((sb (find (lambda (b)
+				(same-positive? (car pbs) b))
+			  (cdr pbs))))
+		(if sb
+		    (values (car pbs) sb)
+		    (loop (cdr pbs))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-size ...                         */
@@ -100,7 +182,7 @@
    (define (entry-size e::bbv-ctxentry)
       (with-access::bbv-ctxentry e (types polarity value)
 	 (cond
-	    ((not polarity) (length types))
+	    ((not polarity) (minfx 100 (*fx 50 (length types))))
 	    ((eq? (car types) *obj*) 100)
 	    ((isa? value bbv-range) (range-size value))
 	    (else (*fx 10 (length types))))))
@@ -112,10 +194,27 @@
    (define (block-size b::blockS)
       (with-access::blockS b (ctx)
 	 (ctx-size ctx)))
-
-   (let ((l (sort (map (lambda (b) (cons (block-size b) b)) bs)
-	       (lambda (x y) (<=fx (car x) (car y))))))
-      (values (cdr (car l)) (cdr (cadr l)))))
+   
+   (define (block-max-size b::blockS)
+      (with-access::blockS b (ctx)
+	 (with-access::bbv-ctx ctx (entries)
+	    (*fx 100 (length entries)))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-size"
+      (for-each (lambda (b)
+		   (trace-item "{" (block-label b) "} size: "
+		      (block-size b)
+		      " " (with-access::blockS b (ctx) (shape ctx))))
+	 bs)
+      (let* ((maxs (block-max-size (car bs)))
+	     (bsz (map (lambda (b) (cons (block-size b) b)) bs))
+	     (mbsz (filter (lambda (p) (=fx (car p) maxs)) bsz)))
+	 (if (and (pair? mbsz) (pair? (cdr mbsz)))
+	     ;; two contexts are "top-equivalent", pick these ones
+	     (values (cdr (car mbsz)) (cdr (cadr mbsz)))
+	     ;; pick the two smallest context
+	     (let ((l (sort bsz (lambda (x y) (<=fx (car x) (car y))))))
+		(values (cdr (car l)) (cdr (cadr l))))))))
 	   
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-distance ...                     */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Jan 15 10:58:52 2024 (serrano)                */
+;*    Last change :  Wed Jan 17 07:00:43 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -101,7 +101,7 @@
 ;*    block-merge-some! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (block-merge-some! bv::blockV queue)
-   (with-trace 'bbv-block-merge "block-merge-some!"
+   (with-trace 'bbv-block "block-merge-some!"
       (let ((lvs (blockV-live-versions bv)))
 	 (multiple-value-bind (bs1 bs2 mctx)
 	    (bbv-block-merge lvs)
