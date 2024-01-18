@@ -43,6 +43,7 @@
 	   rgc
 	   lalr
 	   input-port
+           input-mmap-port
 	   mmap
 	   read
 	   callcc
@@ -301,6 +302,7 @@
 	  (if-module 'rgc-insert test-rgc-insert)
 	  (if-module 'lalr test-lalr)
 	  (if-module 'input-port test-input-port)
+          (if-module 'input-mmap-port test-input-mmap-port)
 	  (if-module 'mmap test-mmap)
 	  (if-module 'read test-read)
 	  (if *callcc?*
