@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jan 17 07:00:43 2024 (serrano)                */
+;*    Last change :  Thu Jan 18 14:16:26 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -529,7 +529,9 @@
 		      (specialize- reg type epolarity value e))
 		     ((isa? fun rtl_ifne)
 		      (with-access::bbv-ctxentry e (aliases)
-			 (let ((regs (cons reg aliases)))
+			 (let ((regs (if (memq reg aliases)
+					 aliases
+					 (cons reg aliases))))
 			    (with-access::rtl_ifne fun (then)
 			       (let* ((ctx+ (extend-ctx* ctx regs (list type) #t
 					       :value (min-value value (bbv-ctxentry-value e))))
