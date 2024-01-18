@@ -2978,7 +2978,7 @@ uv_listen_cb(uv_stream_t *handle, int status) {
 /*    bgl_uv_listen ...                                                */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_listen(obj_t obj, int backlog, obj_t proc, bgl_uv_loop_t bloop) {
+bgl_uv_listen(obj_t obj, int backlog, obj_t proc) {
    if (!(PROCEDUREP(proc) && (PROCEDURE_CORRECT_ARITYP(proc, 2)))) {
       C_SYSTEM_FAILURE(BGL_TYPE_ERROR, "uv-tcp-listen",
 			"wrong callback", proc);
