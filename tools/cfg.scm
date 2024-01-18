@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Wed Dec 13 12:10:18 2023 (serrano)                */
-;*    Copyright   :  2017-23 Manuel Serrano                            */
+;*    Last change :  Thu Jan 18 09:22:37 2024 (serrano)                */
+;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
 ;*    -------------------------------------------------------------    */
@@ -209,6 +209,7 @@
    (define (normalize-mov obj)
       (match-case obj
 	 ((mov ?exp) exp)
+	 ((go ?lbl) (format "go ~a" lbl))
 	 ((?fun ?exp) `(,fun ,(normalize-mov exp)))
 	 ((?- . ?-) (map normalize-mov obj))
 	 (else obj)))
