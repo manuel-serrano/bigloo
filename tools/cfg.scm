@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Wed Dec 13 12:10:18 2023 (serrano)                */
-;*    Copyright   :  2017-23 Manuel Serrano                            */
+;*    Last change :  Wed Jan 17 16:36:29 2024 (serrano)                */
+;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
 ;*    -------------------------------------------------------------    */
@@ -206,11 +206,12 @@
    (define (gen-html-label content)
       `("<" ,@content ">"))
 
-   (define (normalize-mov obj)
+   (define (normalize-ins obj)
       (match-case obj
 	 ((mov ?exp) exp)
-	 ((?fun ?exp) `(,fun ,(normalize-mov exp)))
-	 ((?- . ?-) (map normalize-mov obj))
+	 ((go ?lbl) (format "go ~a" lbl))
+	 ((?fun ?exp) `(,fun ,(normalize-ins exp)))
+	 ((?- . ?-) (map normalize-ins obj))
 	 (else obj)))
    
    (define (escape obj)
@@ -232,7 +233,7 @@
 	 ((symbol? obj)
 	  (escape (symbol->string obj)))
 	 ((pair? obj)
-	  (let ((nobj (normalize-mov obj)))
+	  (let ((nobj (normalize-ins obj)))
 	     (if (pair? nobj)
 		 (format "(~( ))" (map escape nobj))
 		 (escape nobj))))
