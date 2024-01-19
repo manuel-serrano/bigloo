@@ -6335,14 +6335,14 @@ public final class foreign
 	 return new input_string_port( s, start, end, true );
       }
 
-   public static Object bgl_open_input_mmap(mmap mm, byte[] b, int start, int end)
+   public static input_port bgl_open_input_mmap(mmap mm, byte[] b, int start, int end)
       {
-	 return BFALSE;
+         return new input_mmap_port(mm, b, start, end); 
       }
     
    public static boolean INPUT_MMAP_PORTP(Object o)
       {
-	 return false;
+          return (o instanceof input_mmap_port);
       }
 
    public static Object bgl_open_input_procedure(procedure p, byte[] b)
@@ -6723,7 +6723,7 @@ public final class foreign
          // Commenting out the following stack trace printing to reduce noisy and confusing
          // ouput. If debugging problems, uncomment.
 	 // final stackwriter sw = new stackwriter( System.out, true );
-	 // e.printStackTrace( sw );
+         // e.printStackTrace( sw );
 	 
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    (e instanceof java.net.SocketTimeoutException ?

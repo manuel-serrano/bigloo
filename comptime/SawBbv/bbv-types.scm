@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Jan 15 10:05:49 2024 (serrano)                */
+;*    Last change :  Thu Jan 18 14:18:14 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -439,26 +439,32 @@
 ;*---------------------------------------------------------------------*/
 (define (alias-ctx ctx::bbv-ctx reg::rtl_reg alias::rtl_reg)
    (if *bbv-optim-alias*
-       (let ((re (bbv-ctx-get ctx reg))
-	     (ae (bbv-ctx-get ctx alias)))
-	  (with-access::bbv-ctxentry re (aliases)
-	     (with-access::bbv-ctxentry ae ((aaliases aliases))
-		(let ((all (delete-duplicates
-			      (cons alias (append aliases aaliases)))))
-		   (let ((nre (duplicate::bbv-ctxentry re
-				 (aliases all))))
-		      (let loop ((all all)
-				 (ctx (extend-ctx/entry ctx nre)))
-			 (if (null? all)
-			     ctx
-			     (let ((ae (bbv-ctx-get ctx (car all))))
-				(if ae
-				    (with-access::bbv-ctxentry ae (aliases)
-				       (let ((nae (duplicate::bbv-ctxentry ae
-						     (aliases (cons reg aliases)))))
-					  (loop (cdr all)
-					     (extend-ctx/entry ctx nae))))
-				    (loop (cdr all) ctx))))))))))
+       (if (eq? reg alias)
+	   ctx
+	   (let ((re (bbv-ctx-get ctx reg))
+		 (ae (bbv-ctx-get ctx alias)))
+	      (with-access::bbv-ctxentry re (aliases)
+		 (with-access::bbv-ctxentry ae ((aaliases aliases))
+		    (let ((all (delete-duplicates
+				  (cons alias (append aliases aaliases)))))
+		       (let ((nre (duplicate::bbv-ctxentry re
+				     (aliases (remq reg all)))))
+			  (let loop ((all all)
+				     (ctx (extend-ctx/entry ctx nre)))
+			     (if (null? all)
+				 ctx
+				 (let ((ae (bbv-ctx-get ctx (car all))))
+				    (if ae
+					(with-access::bbv-ctxentry ae (aliases (re reg))
+					   (if (or (eq? reg re) (memq reg aliases))
+					       (loop (cdr all) ctx)
+					       (let ((nae (duplicate::bbv-ctxentry ae
+							     (aliases (remq alias
+									 (delete-duplicates
+									    (cons reg aliases)))))))
+						  (loop (cdr all)
+						     (extend-ctx/entry ctx nae)))))
+					(loop (cdr all) ctx)))))))))))
        ctx))
 	  
 ;*---------------------------------------------------------------------*/

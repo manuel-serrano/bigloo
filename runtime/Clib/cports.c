@@ -444,7 +444,6 @@ bgl_proc_read(obj_t port, char *b, long l) {
 static long
 bgl_input_mmap_read(obj_t port, char *ptr, long sz) {
 #if HAVE_MMAP
-#define INPUT_MMAP_PORT(o) CREF(o)->input_mmap_port
    obj_t mm = PORT_MMAP(port);
    
    long available = INPUT_MMAP_PORT(port).end - INPUT_MMAP_PORT(port).offset;
@@ -473,13 +472,15 @@ bgl_input_mmap_read(obj_t port, char *ptr, long sz) {
 /*    bgl_input_mmap_seek ...                                          */
 /*---------------------------------------------------------------------*/
 static void
-bgl_input_mmap_seek(obj_t port, long pos) {
-   if (pos >= 0 && pos < BGL_INPUT_PORT_BUFSIZ(port)) {
-      INPUT_PORT(port).filepos = pos;
-      INPUT_PORT(port).matchstart = pos;
-      INPUT_PORT(port).matchstop = pos;
-      INPUT_PORT(port).forward = pos;
-   } else if (pos == BGL_INPUT_PORT_BUFSIZ(port)) {
+bgl_input_mmap_seek(obj_t port, long pos) { 
+   if (pos >= 0 && pos < INPUT_PORT(port).length) {
+      INPUT_PORT(port).filepos = INPUT_MMAP_PORT(port).start + pos;
+      INPUT_MMAP_PORT(port).offset = INPUT_MMAP_PORT(port).start + pos;
+      INPUT_PORT(port).matchstart = 0;
+      INPUT_PORT(port).matchstop = 0;
+      INPUT_PORT(port).forward = 0;
+      INPUT_PORT(port).bufpos = 0;
+   } else if (pos == INPUT_PORT(port).length) {
       INPUT_PORT(port).eof = 1;
    } else {
       C_SYSTEM_FAILURE(BGL_IO_PORT_ERROR,
@@ -1807,8 +1808,9 @@ bgl_open_input_mmap(obj_t mmap, obj_t buffer, long offset, long end) {
    obj_t port = bgl_make_input_port(mmap, 0L, KINDOF_MMAP, buffer);
 
    CREF(port)->input_mmap_port.offset = offset;
+   CREF(port)->input_mmap_port.start = offset;
    CREF(port)->input_mmap_port.end = end;
-   
+   CREF(port)->input_mmap_port.iport.length = end - offset;
    return port;
 }
 
@@ -2027,7 +2029,7 @@ bgl_input_port_reopen(obj_t port) {
    FILE *nf;
 
    if (!INPUT_PORT_ON_FILEP(port)) {
-      if (INPUT_STRING_PORTP(port)) {
+      if (INPUT_STRING_PORTP(port) || INPUT_MMAP_PORTP(port)) {
  	 return bgl_input_port_seek(port, 0);
       } else {
 	 return BFALSE;

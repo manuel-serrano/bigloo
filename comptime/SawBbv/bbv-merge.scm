@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Wed Jan 17 07:11:58 2024 (serrano)                */
+;*    Last change :  Thu Jan 18 10:47:57 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -116,7 +116,7 @@
 	     (let ((fb (find fullobj bs)))
 		(cond
 		   (fb
-		    (let ((nfb (find (lambda (b) (not (fullobj b))) bnb)))
+		    (let ((nfb (find (lambda (b) (not (eq? b fb))) bnb)))
 		       (values nfb fb)))
 		   ((pair? (cdr bnb))
 		    (values (car bnb) (cadr bnb)))
