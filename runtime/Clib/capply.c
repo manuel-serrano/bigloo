@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 20 11:26:29 1992                          */
-/*    Last change :  Tue Jan 30 17:04:10 2024 (serrano)                */
+/*    Last change :  Tue Jan 30 20:16:31 2024 (serrano)                */
 /*    Copyright   :  2006-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo APPLY                                                     */
@@ -89,80 +89,80 @@ obj_t apply(obj_t function, obj_t args_list) {
 	       return ((obj_t (*)(obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, runner);
          
 	    case -2:
-	       return ((obj_t (*)(obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[ 0 ], runner);
+	       return ((obj_t (*)(obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[ 0 ], runner);
          
 	    case -3:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[ 0 ], arg[ 1 ], runner);
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[ 0 ], arg[ 1 ], runner);
          
 		    
 	    case -4:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 												 runner);
 		    
 	    case -5:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 													arg[3], runner);
 		    
 	    case -6:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 													       arg[3], arg[4], runner);
 		    
 	    case -7:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 														      arg[3], arg[4], arg[5],
 														      runner);
 		    
 	    case -8:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 															     arg[3], arg[4], arg[5],
 															     arg[6], runner);
 		    
 	    case -9:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																    arg[3], arg[4], arg[5],
 																    arg[6], arg[7], runner);
 		    
 	    case -10:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																	   arg[3], arg[4], arg[5],
 																	   arg[6], arg[7], arg[8],
 																	   runner);
 		    
 	    case -11:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																		  arg[3], arg[4], arg[5],
 																		  arg[6], arg[7], arg[8],
 																		  arg[9], runner);
 		    
 	    case -12:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																			 arg[3], arg[4], arg[5],
 																			 arg[6], arg[7], arg[8],
 																			 arg[9], arg[10], runner);
 		    
 	    case -13:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																				arg[3], arg[4], arg[5],
 																				arg[6], arg[7], arg[8],
 																				arg[9], arg[10], arg[11],
 																				runner);
 		    
 	    case -14:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																				       arg[3], arg[4], arg[5],
 																				       arg[6], arg[7], arg[8],
 																				       arg[9], arg[10], arg[11],
 																				       arg[12], runner);
 		    
 	    case -15:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																					      arg[3], arg[4], arg[5],
 																					      arg[6], arg[7], arg[8],
 																					      arg[9], arg[10], arg[11],
 																					      arg[12], arg[13], runner);
 		    
 	    case -16:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																						     arg[3], arg[4], arg[5],
 																						     arg[6], arg[7], arg[8],
 																						     arg[9], arg[10], arg[11],
@@ -170,7 +170,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																						     runner);
 		    
 	    case -17:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																							    arg[3], arg[4], arg[5],
 																							    arg[6], arg[7], arg[8],
 																							    arg[9], arg[10], arg[11],
@@ -178,7 +178,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																							    arg[15], runner);
 
 	    case -18:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																								   arg[3], arg[4], arg[5],
 																								   arg[6], arg[7], arg[8],
 																								   arg[9], arg[10], arg[11],
@@ -186,7 +186,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																								   arg[15], arg[16],runner);
 	    
 	    case -19:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																									  arg[3], arg[4], arg[5],
 																									  arg[6], arg[7], arg[8],
 																									  arg[9], arg[10], arg[11],
@@ -194,7 +194,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																									  arg[15], arg[16],arg[17],runner);
 
 	    case -20:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																										 arg[3], arg[4], arg[5],
 																										 arg[6], arg[7], arg[8],
 																										 arg[9], arg[10], arg[11],
@@ -203,7 +203,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																										 arg[18],runner);
 
 	    case -21:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																											arg[3], arg[4], arg[5],
 																											arg[6], arg[7], arg[8],
 																											arg[9], arg[10], arg[11],
@@ -212,7 +212,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																											arg[18], arg[19], runner);
 
 	    case -22:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																											       arg[3], arg[4], arg[5],
 																											       arg[6], arg[7], arg[8],
 																											       arg[9], arg[10], arg[11],
@@ -221,7 +221,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																											       arg[18], arg[19], arg[20], runner);
 
 	    case -23:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																												      arg[3], arg[4], arg[5],
 																												      arg[6], arg[7], arg[8],
 																												      arg[9], arg[10], arg[11],
@@ -231,7 +231,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																												      arg[21], runner);
 
 	    case -24:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																													     arg[3], arg[4], arg[5],
 																													     arg[6], arg[7], arg[8],
 																													     arg[9], arg[10], arg[11],
@@ -241,7 +241,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																													     arg[21], arg[22], runner);
 
 	    case -25:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																														    arg[3], arg[4], arg[5],
 																														    arg[6], arg[7], arg[8],
 																														    arg[9], arg[10], arg[11],
@@ -251,7 +251,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																														    arg[21], arg[22], arg[23], runner);
 
 	    case -26:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																															   arg[3], arg[4], arg[5],
 																															   arg[6], arg[7], arg[8],
 																															   arg[9], arg[10], arg[11],
@@ -262,7 +262,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																															   arg[24], runner);
 
 	    case -27:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																  arg[3], arg[4], arg[5],
 																																  arg[6], arg[7], arg[8],
 																																  arg[9], arg[10], arg[11],
@@ -273,7 +273,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																  arg[24], arg[25], runner);
 
 	    case -28:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																	 arg[3], arg[4], arg[5],
 																																	 arg[6], arg[7], arg[8],
 																																	 arg[9], arg[10], arg[11],
@@ -284,7 +284,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																	 arg[24], arg[25], arg[26], runner);
 
 	    case -29:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																		arg[3], arg[4], arg[5],
 																																		arg[6], arg[7], arg[8],
 																																		arg[9], arg[10], arg[11],
@@ -296,7 +296,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																		arg[27], runner);
 
 	    case -30:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																		       arg[3], arg[4], arg[5],
 																																		       arg[6], arg[7], arg[8],
 																																		       arg[9], arg[10], arg[11],
@@ -308,7 +308,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																		       arg[27], arg[28], runner);
 
 	    case -31:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																			      arg[3], arg[4], arg[5],
 																																			      arg[6], arg[7], arg[8],
 																																			      arg[9], arg[10], arg[11],
@@ -320,7 +320,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																			      arg[27], arg[28], arg[29], runner);
 
 	    case -32:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																				     arg[3], arg[4], arg[5],
 																																				     arg[6], arg[7], arg[8],
 																																				     arg[9], arg[10], arg[11],
@@ -333,7 +333,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																				     arg[30], runner);
 
 	    case -33:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																					    arg[3], arg[4], arg[5],
 																																					    arg[6], arg[7], arg[8],
 																																					    arg[9], arg[10], arg[11],
@@ -346,7 +346,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																					    arg[30], arg[31], runner);
 
 	    case -34:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																						   arg[3], arg[4], arg[5],
 																																						   arg[6], arg[7], arg[8],
 																																						   arg[9], arg[10], arg[11],
@@ -359,7 +359,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																						   arg[30], arg[31], arg[32], runner);
 
 	    case -35:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																							  arg[3], arg[4], arg[5],
 																																							  arg[6], arg[7], arg[8],
 																																							  arg[9], arg[10], arg[11],
@@ -373,7 +373,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																							  arg[33], runner);
 
 	    case -36:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																								 arg[3], arg[4], arg[5],
 																																								 arg[6], arg[7], arg[8],
 																																								 arg[9], arg[10], arg[11],
@@ -387,7 +387,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																								 arg[33], arg[34], runner);
 
 	    case -37:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																									arg[3], arg[4], arg[5],
 																																									arg[6], arg[7], arg[8],
 																																									arg[9], arg[10], arg[11],
@@ -401,7 +401,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																									arg[33], arg[34], arg[35], runner);
 
 	    case -38:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																									       arg[3], arg[4], arg[5],
 																																									       arg[6], arg[7], arg[8],
 																																									       arg[9], arg[10], arg[11],
@@ -416,7 +416,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																									       arg[36], runner);
 
 	    case -39:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																										      arg[3], arg[4], arg[5],
 																																										      arg[6], arg[7], arg[8],
 																																										      arg[9], arg[10], arg[11],
@@ -431,22 +431,23 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																										      arg[36], arg[37], runner);
 
 	    case -40:
-	       return ((obj_t (*)(obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
-									    arg[3], arg[4], arg[5],
-									    arg[6], arg[7], arg[8],
-									    arg[9], arg[10], arg[11],
-									    arg[12], arg[13], arg[14],
-									    arg[15], arg[16], arg[17],
-									    arg[18], arg[19], arg[20],
-									    arg[21], arg[22], arg[23],
-									    arg[24], arg[25], arg[26],
-									    arg[27], arg[28], arg[29],
-									    arg[30], arg[31], arg[32],
-									    arg[33], arg[34], arg[35],
-									    arg[36], arg[37], arg[38], runner);
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+																																												    arg[3], arg[4], arg[5],
+																																												    arg[6], arg[7], arg[8],
+																																												    arg[9], arg[10], arg[11],
+																																												    arg[12], arg[13], arg[14],
+																																												    arg[15], arg[16], arg[17],
+																																												    arg[18], arg[19], arg[20],
+																																												    arg[21], arg[22], arg[23],
+																																												    arg[24], arg[25], arg[26],
+																																												    arg[27], arg[28], arg[29],
+																																												    arg[30], arg[31], arg[32],
+																																												    arg[33], arg[34], arg[35],
+																																												    arg[36], arg[37], arg[38],
+																																												    runner);
 
 	    case -41:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																												    arg[3], arg[4], arg[5],
 																																												    arg[6], arg[7], arg[8],
 																																												    arg[9], arg[10], arg[11],
@@ -462,7 +463,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																												    arg[39], runner);
 
 	    case -42:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																													   arg[3], arg[4], arg[5],
 																																													   arg[6], arg[7], arg[8],
 																																													   arg[9], arg[10], arg[11],
@@ -478,7 +479,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																													   arg[39], arg[40], runner);
 
 	    case -43:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																														  arg[3], arg[4], arg[5],
 																																														  arg[6], arg[7], arg[8],
 																																														  arg[9], arg[10], arg[11],
@@ -494,7 +495,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																														  arg[39], arg[40], arg[41], runner);
 
 	    case -44:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																															 arg[3], arg[4], arg[5],
 																																															 arg[6], arg[7], arg[8],
 																																															 arg[9], arg[10], arg[11],
@@ -511,7 +512,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																															 arg[42], runner);
 
 	    case -45:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																																arg[3], arg[4], arg[5],
 																																																arg[6], arg[7], arg[8],
 																																																arg[9], arg[10], arg[11],
@@ -528,7 +529,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																																arg[42], arg[43], runner);
 
 	    case -46:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																																       arg[3], arg[4], arg[5],
 																																																       arg[6], arg[7], arg[8],
 																																																       arg[9], arg[10], arg[11],
@@ -546,7 +547,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																																       runner);
 
 	    case -47:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																																	      arg[3], arg[4], arg[5],
 																																																	      arg[6], arg[7], arg[8],
 																																																	      arg[9], arg[10], arg[11],
@@ -564,7 +565,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																																	      arg[45], runner);
 
 	    case -48:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																																		     arg[3], arg[4], arg[5],
 																																																		     arg[6], arg[7], arg[8],
 																																																		     arg[9], arg[10], arg[11],
@@ -582,7 +583,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																																		     arg[45], arg[46], runner);
 
 	    case -49:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																																			    arg[3], arg[4], arg[5],
 																																																			    arg[6], arg[7], arg[8],
 																																																			    arg[9], arg[10], arg[11],
@@ -601,7 +602,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 																																																			    runner);
 
 	    case -50:
-	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
+	       return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[0], arg[1], arg[2],
 																																																				   arg[3], arg[4], arg[5],
 																																																				   arg[6], arg[7], arg[8],
 																																																				   arg[9], arg[10], arg[11],

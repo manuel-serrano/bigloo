@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec  8 13:29:20 2023 (serrano)                */
+/*    Last change :  Tue Jan 30 19:06:35 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -3245,13 +3245,13 @@ bgl_open_pipes(obj_t name) {
 
    if (!pipe(pipefd)) {
       obj_t out = bgl_make_output_port(name,
-					(bgl_stream_t)pipefd[ 1 ],
-					BGL_STREAM_TYPE_FD,
-					KINDOF_PIPE,
-					make_string_sans_fill(0),
-					bgl_syswrite,
-					lseek,
-					close);
+				       (bgl_stream_t)pipefd[ 1 ],
+				       BGL_STREAM_TYPE_FD,
+				       KINDOF_PIPE,
+				       make_string_sans_fill(0),
+				       bgl_syswrite,
+				       (long (*)())lseek,
+				       close);
       obj_t in = bgl_make_input_port(name,
 				      fdopen(pipefd[ 0 ], "r"),
 				      KINDOF_PIPE,
