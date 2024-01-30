@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Jan 30 18:28:03 2024 (serrano)                */
+/*    Last change :  Tue Jan 30 18:53:00 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -291,12 +291,11 @@ va_generic_entry(obj_t proc, ...) {
 
    va_end(argl);
 
-#define CALL(proc) ((obj_t (*)())PROCEDURE_VA_ENTRY(proc))      
    switch(arity) {
-      case -1  : return ((obj_t (*)(obj_t, ...))PROCEDURE_VA_ENTRY(proc))(proc, optional);
-      case -2  : return ((obj_t (*)(obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(proc))(proc, arg[0], optional);
-      case -3  : return ((obj_t (*)(obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(proc))(proc, arg[0], arg[1], optional);
-      case -4  : return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, ...))PROCEDURE_VA_ENTRY(proc))(proc, arg[0], arg[1], arg[2],
+      case -1  : return ((obj_t (*)(obj_t, obj_t))PROCEDURE_VA_ENTRY(proc))(proc, optional);
+      case -2  : return ((obj_t (*)(obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(proc))(proc, arg[0], optional);
+      case -3  : return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(proc))(proc, arg[0], arg[1], optional);
+      case -4  : return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(proc))(proc, arg[0], arg[1], arg[2],
                                       optional);
       case -5  : return ((obj_t (*)(obj_t, obj_t, obj_t, obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(proc))(proc, arg[0], arg[1], arg[2],
                                      arg[3], optional);
