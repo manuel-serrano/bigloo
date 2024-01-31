@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Dec 13 11:46:47 2023 (serrano)                */
-;*    Copyright   :  1996-2023 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 31 06:46:02 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -355,6 +355,12 @@
 	     (emit-cop (cfuncall-fun cop))
 	     (display "))(" *c-port*))))
 
+   (define (same-varc? x y)
+      (when (and (isa? x varc) (isa? y varc))
+	 (with-access::varc x ((xvariable variable))
+	    (with-access::varc y ((yvariable variable))
+	       (eq? xvariable yvariable)))))
+
    (labels ((emit-extra-light-cfuncall (cop)
                (let ((actuals (cfuncall-args cop)))
 		  (emit-cop (cfuncall-fun cop))
@@ -447,15 +453,35 @@
 			    (display ", " *c-port*)
 			    (loop (cdr actuals)))))))
 	    (emit-stdc-regular-cfuncall (cop)
-	       (begin
-		  (display "(VA_PROCEDUREP( " *c-port*)
-		  (emit-cop (cfuncall-fun cop))
-		  (display " ) ? " *c-port*)
-		  (emit-regular-cfuncall/strict-va cop)
-		  (display " : " *c-port*)
-		  (emit-regular-cfuncall/strict-fx cop)
-		  (display " )" *c-port*)
-		  #t)))
+	       (let* ((actuals (cfuncall-args cop))
+		      (fun (cfuncall-fun cop))
+		      (len (length actuals)))
+		  (if (or (>fx len 32) (not (same-varc? fun (car actuals))))
+		      (begin
+			 (display "(VA_PROCEDUREP( " *c-port*)
+			 (emit-cop (cfuncall-fun cop))
+			 (display " ) ? " *c-port*)
+			 (emit-regular-cfuncall/strict-va cop)
+			 (display " : " *c-port*)
+			 (emit-regular-cfuncall/strict-fx cop)
+			 (display " )" *c-port*)
+			 #t)
+		      (begin
+			 (display "BGL_PROCEDURE_CALL" *c-port*)
+			 (display (-fx len 2) *c-port*)
+			 (display "(" *c-port*)
+			 (emit-cop fun)
+			 ;; actuals are never empty because there is always
+			 ;; the function and EOA.
+			 (let loop ((args (cdr actuals)))
+			    (if (null? (cdr args))
+				(begin
+				   (display ")" *c-port*)
+				   #t)
+				(begin
+				   (display ", " *c-port*)
+				   (emit-cop (car args))
+				   (loop (cdr args))))))))))
       (emit-bdb-loc (cop-loc cop))
       (case (cfuncall-strength cop)
 	 ((elight)
@@ -463,7 +489,7 @@
 	 ((light)
 	  (emit-light-cfuncall cop))
 	 (else
-	  (if *stdc*
+	  (if #t
 	      (emit-stdc-regular-cfuncall cop)
 	      (emit-regular-cfuncall/eoa cop))))))
 
