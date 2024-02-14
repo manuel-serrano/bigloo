@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Dec  8 19:23:22 2023 (serrano)                */
-/*    Copyright   :  2014-23 Manuel Serrano                            */
+/*    Last change :  Wed Feb 14 12:48:22 2024 (serrano)                */
+/*    Copyright   :  2014-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
 /*=====================================================================*/
@@ -2993,10 +2993,10 @@ bgl_uv_listen(obj_t obj, int backlog, obj_t proc) {
       r = uv_listen(s, backlog, uv_listen_cb);
 
       if (r < 0) {
-	 fprintf(stderr, "LISTEN ERROR...\n");
 	 TRACECNT(klisten);
 	 free_stream_data(data);
       }
+      return r;
    }
 }
 
