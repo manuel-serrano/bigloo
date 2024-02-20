@@ -2090,7 +2090,7 @@ bgl_uv_fs_write(obj_t obj, obj_t buffer, long offset, long length, int64_t posit
 	 data->proc = proc;
 
 	 TRACECA(trw);
-	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb);
+	 return uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb);
       } else {
 	 uv_fs_t req;
 	 int r;
@@ -2130,7 +2130,7 @@ bgl_uv_fs_write2(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
 	 data->arg[1] = arg1;
 
 	 TRACECA(trw2);
-	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
+	 return uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw2_cb);
       } else {
 	 uv_fs_t req;
 	 int r;
@@ -2171,7 +2171,7 @@ bgl_uv_fs_write3(obj_t obj, obj_t buffer, long offset, long length, int64_t posi
 	 data->arg[2] = arg2;
 
 	 TRACECA(trw3);
-	 uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
+	 return uv_fs_write(loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw3_cb);
       } else {
 	 uv_fs_t req;
 	 int r;
