@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jan 18 14:16:26 2024 (serrano)                */
+;*    Last change :  Wed Feb 21 17:31:56 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -53,7 +53,8 @@
 	 (let loop ((n 0))
 	    (trace-item "loop(" n ") queue="
 	       (map (lambda (bs)
-		       (with-access::blockS bs (label) label))
+		       (with-access::blockS bs (label parent)
+			  (cons label (block-label parent))))
 		  (with-access::bbv-queue queue (blocks)
 			blocks)))
 	    (if (bbv-queue-empty? queue)
@@ -65,7 +66,8 @@
 			    " versions=" (map (lambda (b)
 						 (with-access::blockS b (label)
 						    label))
-					    versions)))
+					    versions))
+			 )
 		      (when (block-need-merge? bv)
 			 (trace-item "need-merge #" (block-label bv) "...")
 			 (when *bbv-debug*
@@ -112,7 +114,16 @@
 	    (let ((mbs (bbv-block bv mctx queue)))
 	       (trace-item "blockV=" (blockV-label bv)
 		  " -> #" (blockS-label mbs) " {" (length lvs) "} "
-		  (blockS-%merge-info mbs))
+		  (map (lambda (e)
+			  (cons (car e)
+			     (cond
+				((pair? (cdr e))
+				 (map block-label (cdr e)))
+				((block? (cdr e))
+				 (block-label (cdr e)))
+				(else
+				 e))))
+		     (blockS-%merge-info mbs)))
 	       (cond
 		  ((eq? bs1 mbs)
 		   (blockS-%merge-info-add! mbs 'merge-target (list bs2))
@@ -345,11 +356,11 @@
    (with-trace 'bbv-block (format "bbv-block #~a" (block-label b))
       (trace-item "ctx=" (shape ctx))
       (let ((bv (if (isa? b blockV) b (with-access::blockS b (parent) parent))))
-	 (with-access::blockV bv (first label)
+	 (with-access::blockV bv (first label versions)
 	    (trace-item "parent=" label)
 	    (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
 	       (cond
-		  ((bbv-ctx-assoc ctx (blockV-live-versions bv))
+		  ((bbv-ctx-assoc ctx versions)
 		   =>
 		   (lambda (b)
 		      (let ((obs (live-blockS b)))
@@ -361,6 +372,14 @@
 		      (with-access::blockS nbs (label)
 			 (trace-item "<- new=" label)
 			 (bbv-queue-push! queue nbs)
+			 (for-each (lambda (b)
+				      (with-access::blockS b (ctx mblock)
+					 (trace-item "queue.mblock="
+					    (if (isa? mblock block)
+						(block-label mblock)
+						"-")
+					    " ctx=" (shape ctx))))
+			    versions)
 			 nbs)))))))))
    
 ;*---------------------------------------------------------------------*/
