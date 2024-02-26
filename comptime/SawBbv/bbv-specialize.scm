@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Feb 21 17:31:56 2024 (serrano)                */
+;*    Last change :  Mon Feb 26 18:24:52 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -469,7 +469,7 @@
 	 (trace-item "ctx+=" (shape ctx+))
 	 (with-access::rtl_ins/bbv i (fun loc)
 	    (with-access::rtl_ifne fun (then)
-	       (let* ((assert (when (>fx *bbv-assert* 0)
+	       (let* ((assert (when (>=fx *bbv-assert* 1)
 				 (rtl-assert-reg-type
 				    reg type polarity ctx loc
 				    "BBV-ASSERT-FAILURE:TYPECHECK+")))
@@ -509,7 +509,7 @@
 
    (define (specialize- reg type polarity value e)
       (with-access::rtl_ins/bbv i (fun loc)
-	 (let* ((assert (when (>fx *bbv-assert* 0)
+	 (let* ((assert (when (>=fx *bbv-assert* 1)
 			   (rtl-assert-reg-type reg type polarity ctx loc
 			      "BBV-ASSERT-FAILURE:TYPECHECK-")))
 		(s (duplicate::rtl_ins/bbv i
@@ -1214,7 +1214,7 @@
    (define (specialize+ i ins ctx+)
       (with-access::rtl_ins i (dest fun args loc)
 	 (with-access::rtl_ifne fun (then)
-	    (let* ((assert (when (>fx *bbv-assert* 0)
+	    (let* ((assert (when (>=fx *bbv-assert* 1)
 			      (let ((ins (car args)))
 				 (with-access::rtl_ins ins (args)
 				    (rtl-assert-fxcmp
@@ -1242,7 +1242,7 @@
 
    (define (specialize- i ins ctx-)
       (with-access::rtl_ins i (dest fun args loc)
-	 (let* ((assert (when (>fx *bbv-assert* 0)
+	 (let* ((assert (when (>=fx *bbv-assert* 1)
 			   (let ((ins (car args)))
 			      (with-access::rtl_ins ins (args)
 				 (rtl-assert-fxcmp

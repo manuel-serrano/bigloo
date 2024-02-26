@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Sun Jan 14 06:50:21 2024 (serrano)                */
+;*    Last change :  Mon Feb 26 18:24:35 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -399,7 +399,7 @@
    
    
    (define (assert-ins i::rtl_ins/bbv first)
-      (when (or first (>fx *bbv-assert* 1))
+      (when (or first (>=fx *bbv-assert* 3))
 	 (with-access::rtl_ins/bbv i (loc ctx)
 	    (let ((assert (ctx-assert ctx loc)))
 	       (when (string? assert)
@@ -407,7 +407,7 @@
 		     (pragma-ins assert ctx loc)))))))
    
    (assert-blocks b "before assert!")
-   (if (>fx *bbv-assert* 0)
+   (if (>=fx *bbv-assert* 2)
        (let loop ((bs (list b))
 		  (acc (make-empty-bbset)))
 	  (cond

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Mon Jan 15 09:32:12 2024 (serrano)                */
+;*    Last change :  Mon Feb 26 21:36:36 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -111,9 +111,8 @@
 	    (else
 	     (when *bbv-debug* (assert-block (car bs) "remove-goto!"))
 	     (with-access::block (car bs) (succs)
-		(when (and (or (and (pair? (cdr bs))
-				    (fallthrough-block? (car bs) succs (cadr bs)))
-			       (goto-block? (car bs)))
+		(when (and (and (pair? (cdr bs))
+				(fallthrough-block? (car bs) succs (cadr bs)))
 			   (not (bbset-in? (car succs) acc)))
 		   (with-access::block (car bs) (first label)
 		      (with-access::rtl_ins (car (last-pair first)) (fun)
@@ -343,8 +342,7 @@
 		   (when (null? (cdr first))
 		      (with-access::rtl_ins (car first) (fun)
 			 (with-access::rtl_go fun (to)
-			    (when (eq? to (car succs))
-			       (null? (cdr succs)))))))
+			    (eq? to (car succs))))))
 		  ((rtl_ins-nop? (car first))
 		   (loop (cdr first)))
 		  (else
