@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri Dec  8 19:21:05 2023 (serrano)                */
-/*    Copyright   :  2005-23 Manuel Serrano                            */
+/*    Last change :  Thu Feb 15 07:44:15 2024 (serrano)                */
+/*    Copyright   :  2005-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -2516,7 +2516,7 @@ bgl_ssl_ctx_close(secure_context sc) {
 BGL_RUNTIME_DEF obj_t
 bgl_dh_check(DH *dh) {
    int codes;
-   
+
    if (!DH_check(dh, &codes)) {
       return BTRUE;
    }
@@ -3282,7 +3282,10 @@ bgl_ssl_cipher_initiv(ssl_cipher cipher,
       CCIPHER(cipher)->BgL_z42cipherzd2ctxz90 = ctx;
 
       EVP_CIPHER_CTX_init(ctx);
-      EVP_CipherInit_ex(ctx, CCIPHER(cipher)->BgL_z42cipherz42, NULL, NULL, NULL, enc);
+      if (!EVP_CipherInit_ex(ctx, CCIPHER(cipher)->BgL_z42cipherz42, NULL, NULL, NULL, enc)) {
+	 return 0;
+      }
+	 
       
       if (!EVP_CIPHER_CTX_set_key_length(ctx, klen)) {
 	 fprintf(stderr, "node-crypto : Invalid key length %ld\n", klen);
@@ -3396,9 +3399,9 @@ bgl_pkcs5_pbkdf2_hmac_sha1(obj_t pass, obj_t salt, int iter, int keylen) {
 /*---------------------------------------------------------------------*/
 obj_t bgl_ssl_error_string() {
    int err = ERR_get_error();
-   obj_t errmsg = make_string(128, 0);
+   char *string[128];
    
-   ERR_error_string_n(err, BSTRING_TO_STRING(errmsg), 128);
+   ERR_error_string_n(err, string, 128);
 
-   return errmsg;
+   return string_to_bstring(string);
 }

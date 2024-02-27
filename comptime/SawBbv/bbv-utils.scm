@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Dec 15 08:55:25 2023 (serrano)                */
-;*    Copyright   :  2017-23 Manuel Serrano                            */
+;*    Last change :  Tue Feb 27 08:10:42 2024 (serrano)                */
+;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
 ;*=====================================================================*/
@@ -38,7 +38,7 @@
 	    saw_bbv-range
 	    saw_bbv-debug)
 
-   (export  (type-in?::bool ::obj ::pair-nil)
+   (export  (<=ty ::obj ::obj)
 	    (set-max-label! blocks::pair-nil)
 	    (genlabel)
 	    (replace ::pair-nil ::obj ::obj)
@@ -49,19 +49,15 @@
 	    (bbv-ctx-extend-live-out-regs::bbv-ctx ::bbv-ctx ::rtl_ins/bbv)))
 
 ;*---------------------------------------------------------------------*/
-;*    type-in? ...                                                     */
+;*    <=ty ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (type-in? type types)
-   
-   (define (type-eq? x y)
-      (cond
-	 ((eq? x y) #t)
-	 ((eq? x *bint*) (or (eq? y *long*) (eq? y 'number)))
-	 ((eq? x *long*) (or (eq? y *bint*) (eq? y 'number)))
-	 ((or (eq? x 'number) (eq? y 'number)) #f)
-	 (else (is-subtype? x y))))
-   
-   (any (lambda (t) (type-eq? t type)) types))
+(define (<=ty x y)
+   (cond
+      ((eq? x y) #t)
+      ((eq? x *bint*) (or (eq? y *long*) (eq? y 'number)))
+      ((eq? x *long*) (or (eq? y *bint*) (eq? y 'number)))
+      ((or (eq? x 'number) (eq? y 'number)) #f)
+      (else (is-subtype? x y))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *label* ...                                                      */

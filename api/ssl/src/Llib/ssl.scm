@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Feb 21 16:54:10 2023 (serrano)                */
-;*    Copyright   :  2005-23 Manuel Serrano                            */
+;*    Last change :  Thu Feb 15 08:06:46 2024 (serrano)                */
+;*    Copyright   :  2005-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -1123,12 +1123,17 @@
    (cond-expand
       (bigloo-c
        (with-access::dh dh ($native)
-	  ($dh-generate-parameters-ex $native len
-	     (case generator
-		((DH-GENERATOR-2) $DH-GENERATOR-2)
-		(else (error "dh-generate-parameters-ex" "Illegal generator"
-			 generator)))
-	     0)))
+	  (let ((r ($dh-generate-parameters-ex $native len
+		      (case generator
+			 ((DH-GENERATOR-2) $DH-GENERATOR-2)
+			 (else (error "dh-generate-parameters-ex" "Illegal generator"
+				  generator)))
+		      0)))
+	     (if (=fx r 0)
+		 (error "dh-generate-parameters-ex"
+		    ($ssl-error-string)
+		    (format "size: ~a, generator: ~a" len generator))
+		 #t))))
       (else
        #f)))
 
