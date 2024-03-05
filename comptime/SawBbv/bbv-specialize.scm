@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Feb 27 07:55:49 2024 (serrano)                */
+;*    Last change :  Tue Mar  5 08:00:03 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -530,8 +530,8 @@
 		  (trace-item "value=" (shape value))
 		  (trace-item "e=" (shape e))
 		  (trace-item "ctx=" (shape ctx))
-		  #;(tprint "TCHECK " (shape i) " " (shape type)
-		     " " (shape (bbv-ctxentry-types e))
+		  #;(tprint "TCHECK " (shape i) " type=" (shape type)
+		     " env=" (shape (bbv-ctxentry-types e))
 		     " every=" (every (lambda (t) (<=ty t type))
 				  (bbv-ctxentry-types e))
 		     " nany=" (not (any (lambda (t) (<=ty t type))
@@ -548,16 +548,13 @@
 			  (specialize- reg type epolarity value e)))
 		     ((and (not (any (lambda (t) (<=ty type t))
 				   (bbv-ctxentry-types e)))
-			   ;; it should be possible to do something better
-			   ;; because it should compare number and number
-			   ;; sub types
 			   (not (memq 'number (bbv-ctxentry-types e)))
 			   (not (eq? type 'number))
 			   polarity epolarity)
 		      ;; negative type simplification
-		      #;(tprint "TCHECK-- " (shape i) " " (shape type)
-			 " " (shape (bbv-ctxentry-types e))
-			 " " (<=ty type *obj*))
+		      #;(tprint "TCHECK-- " (shape i) " type=" (shape type)
+			 " e=" (shape (bbv-ctxentry-types e))
+			 " <=? " (<=ty type *obj*))
 		      (specialize- reg type epolarity value e))
 		     ((isa? fun rtl_ifne)
 		      (with-access::bbv-ctxentry e (aliases)
