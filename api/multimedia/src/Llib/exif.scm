@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sun Dec  4 06:38:54 2022 (serrano)                */
-;*    Copyright   :  2004-22 Manuel Serrano                            */
+;*    Last change :  Mon Mar 25 13:02:56 2024 (serrano)                */
+;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
 ;*    -------------------------------------------------------------    */
@@ -240,41 +240,6 @@
    '#(_ 1 1 2 4 8 1 1 2 4 8 4 8))
 
 ;*---------------------------------------------------------------------*/
-;*    *jpeg-markers* ...                                               */
-;*---------------------------------------------------------------------*/
-(define *jpeg-markers*
-   (let ((v (make-vector 256 #f)))
-      ;;
-      (vector-set! v #xc0 'M_SOFO)
-      (vector-set! v #xc1 'M_SOF1)
-      (vector-set! v #xc2 'M_SOF2)
-      (vector-set! v #xc3 'M_SOF3)
-      (vector-set! v #xc5 'M_SOF5)
-      (vector-set! v #xc6 'M_SOF6)
-      (vector-set! v #xc7 'M_SOF7)
-      (vector-set! v #xc9 'M_SOF9)
-      (vector-set! v #xca 'M_SOFA)
-      (vector-set! v #xcb 'M_SOFB)
-      (vector-set! v #xcc 'M_SOFC)
-      (vector-set! v #xcd 'M_SOFD)
-      (vector-set! v #xce 'M_SOFE)
-      (vector-set! v #xcf 'M_SOFF)
-      ;;
-      (vector-set! v #xd8 'M_SOI)
-      (vector-set! v #xd9 'M_EOI)
-      (vector-set! v #xda 'M_SOS)
-      (vector-set! v #xe0 'M_JFIF)
-      (vector-set! v #xe1 'M_EXIF)
-      (vector-set! v #xfe 'M_COM)
-      v))
-
-;*---------------------------------------------------------------------*/
-;*    jpeg-marker ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (jpeg-marker m)
-   (vector-ref *jpeg-markers* (char->integer m)))
-
-;*---------------------------------------------------------------------*/
 ;*    read-jpeg-marker ...                                             */
 ;*    -------------------------------------------------------------    */
 ;*    Returns the marker (a char) or #f on failure.                    */
@@ -282,7 +247,7 @@
 (define (read-jpeg-marker p)
    (if (not (char=? (mmap-get-char p) #a255))
        #f
-       (jpeg-marker (mmap-get-char p))))
+       (char->integer (mmap-get-char p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-trailing-spaces! ...                                      */
@@ -337,8 +302,8 @@
 	  (mmap-strncpy o max)))
 
    (define (process-exif-gps-tag o bcount)
-      '(let* ((tag (elong->fixnum (get16u en bytes o))))
-	(tprint "TAG=" (integer->string tag 16) " "))
+      #;(let* ((tag (elong->fixnum (get16u en bytes o))))
+          (tprint "TAG=" (integer->string tag 16) " "))
       #f)
       
    (let ((dnum (elong->fixnum (get16u en bytes start))))
@@ -994,7 +959,6 @@
 		      'ignored)
 		     (else
 		      ;; TAG_UNKNOWN
-		      '(tprint "TAG_UNKNOWN: " (integer->string tag 16))
 		      'unknown)))
 	       (loop (+fx de 1)))))
       (when (< (+ start 2 4 (*fx 12 dnum)) (string-length bytes))
@@ -1107,84 +1071,87 @@
 		 (exif-error "read-jpeg-section" "Section too small" a))
 		((>=elong (+elong l (mmap-read-position mm)) (mmap-length mm))
 		 (exif-error "read-jpeg-section"
-			     (format "Premature end of section read: ~s"
-				     (-elong (mmap-length mm)
-					     (mmap-read-position mm)))
-			     (format ", expected: ~s" (- l 2))))
+		    (format "Premature end of section read: ~s"
+		       (-elong (mmap-length mm)
+			  (mmap-read-position mm)))
+		    (format ", expected: ~s" (- l 2))))
 		(else
-		 (values (jpeg-marker m)
-			 (mmap-get-string mm (-elong l #e2)))))))))
+		 (values (char->integer m)
+		    (mmap-get-string mm (-elong l #e2)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-jpeg-sections ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (read-jpeg-sections exif mm::mmap path)
    (mmap-read-position-set! mm 0)
-   (let ((m (read-jpeg-marker mm)))
-      (if (not (eq? m 'M_SOI))
+   (let ((m (read-jpeg-marker mm))) 
+      (if (not (eq? m #xd8)) ;; M_SOI
 	  (exif-error "read-jpeg-sections" "Illegal section marker"
 	     (-elong (mmap-read-position mm) 1))
 	  (let loop ()
 	     (multiple-value-bind (m bytes)
 		(read-jpeg-section mm path)
 		(case m
-		   ((M_SOS)
+		   ((#xda) ;; M_SOS
 		    'sos)
-		   ((M_EOI)
+		   ((#xd9) ;; M_EOI
 		    'eoi)
-		   ((M_COM)
+		   ((#xfe) ;; M_COM
 		    (read-COM! exif
 			       bytes
 			       (- (mmap-read-position mm)
 				  (string-length bytes)))
 		    (loop))
-		   ((M_EXIF)
+		   ((#xe0) ;; MJFIF
+		    ;; not implemented
+		    (loop))
+		   ((#xe1) ;; M_EXIF
 		    (if (substring=? bytes "Exif" 4)
 			(read-jpeg-exif! exif
 					 bytes
 					 (- (mmap-read-position mm)
 					    (string-length bytes))))
 		    (loop))
-		   ((M_SOFO)
+		   ((#xc0) ;; M_SOFO
 		    (read-SOFn! exif bytes "baseline")
 		    (loop))
-		   ((M_SOF1)
+		   ((#xc1) ;; M_SOF1
 		    (read-SOFn! exif bytes "extended sequential")
 		    (loop))
-		   ((M_SOF2)
+		   ((#xc2) ;; M_SOF2
 		    (read-SOFn! exif bytes "progressive")
 		    (loop))
-		   ((M_SOF3)
+		   ((#xc3) ;; M_SOF3
 		    (read-SOFn! exif bytes "lossless")
 		    (loop))
-		   ((M_SOF5)
+		   ((#xc5) ;; M_SOF5
 		    (read-SOFn! exif bytes "differential sequential")
 		    (loop))
-		   ((M_SOF6)
+		   ((#xc6) ;; M_SOF6
 		    (read-SOFn! exif bytes "differential progressive")
 		    (loop))
-		   ((M_SOF7)
+		   ((#xc7) ;; M_SOF7
 		    (read-SOFn! exif bytes "differential lossless")
 		    (loop))
-		   ((M_SOF9)
+		   ((#xc9) ;; M_SOF9
 		    (read-SOFn! exif bytes "extended sequential, arithmetic coding")
 		    (loop))
-		   ((M_SOFA)
+		   ((#xca) ;; M_SOFA
 		    (read-SOFn! exif bytes "progressive, arithmetic coding")
 		    (loop))
-		   ((M_SOFB)
+		   ((#xcb) ;; M_SOFB
 		    (read-SOFn! exif bytes "lossless, arithmetic coding")
 		    (loop))
-		   ((M_SOFC)
+		   ((#xcc) ;; M_SOFC
 		    (read-SOFn! exif bytes "differential sequential, arithmetic coding")
 		    (loop))
-		   ((M_SOFD)
+		   ((#xcd) ;; M_SOFD
 		    (read-SOFn! exif bytes "differential progressive, arithmetic coding")
 		    (loop))
-		   ((M_SOFE)
+		   ((#xce) ;; M_SOFE
 		    (read-SOFn! exif bytes "differential lossless, arithmetic coding")
 		    (loop))
-		   ((M_SOFF)
+		   ((#xcf) ;; M_SOFF
 		    (read-SOFn! exif bytes "?")
 		    (loop))
 		   (else
@@ -1222,7 +1189,7 @@
 		(strncpy voff cnt)))))
 			       
    (define (read-ifd en offset)
-      '(let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
+      #;(let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
 		 (offset (+fx offset 2)))
 	 (if (>fx dnum 0)
 	     (begin

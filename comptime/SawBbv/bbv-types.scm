@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jan 18 14:18:14 2024 (serrano)                */
+;*    Last change :  Mon Mar 25 17:52:19 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -269,6 +269,10 @@
 				       (instantiate::bbv-ctxentry
 					  (reg p)
 					  (types (list type))
+					  (value (if (or (eq? type *bint*)
+							 (eq? type *long*))
+						     (fixnum-range)
+						     '_))
 					  (polarity #t)))))
 		     params)))))
 
@@ -411,8 +415,11 @@
    
    (if (not (isa? reg rtl_reg/ra))
        ctx
-       (let ((v (if (and (eq? value '_) polarity
-			 (pair? types) (eq? (car types) *bint*) (null? (cdr types)))
+       (let ((v (if (and (eq? value '_)
+			 polarity
+			 (pair? types)
+			 (or (eq? (car types) *bint*) (eq? (car types) *long*))
+			 (null? (cdr types)))
 		    (fixnum-range)
 		    value)))
 	  (duplicate::bbv-ctx ctx

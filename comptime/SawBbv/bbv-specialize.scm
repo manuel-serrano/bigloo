@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Mar  5 08:00:03 2024 (serrano)                */
+;*    Last change :  Mon Mar 25 14:40:55 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -51,7 +51,7 @@
 	    (bs (new-blockS bv ctx :cnt 1)))
 	 (block-specialize! bs queue)
 	 (let loop ((n 0))
-	    (trace-item "loop(" n ") queue="
+	    (trace-item "loop(" n ") queue: "
 	       (map (lambda (bs)
 		       (with-access::blockS bs (label parent)
 			  (cons label (block-label parent))))
@@ -63,7 +63,7 @@
 		   (with-access::blockS bs ((bv parent) label)
 		      (with-access::blockV bv ((plabel label) versions)
 			 (trace-item "pop {" plabel "}->" label
-			    " versions=" (map (lambda (b)
+			    " versions: " (map (lambda (b)
 						 (with-access::blockS b (label)
 						    label))
 					    versions))
@@ -92,7 +92,7 @@
 	    (block-label bs)
 	    (map block-label (block-succs (blockS-parent bs))))
       (with-access::blockS bs ((bv parent) first ctx)
-	 (trace-item "ctx=" (shape ctx))
+	 (trace-item "ctx: " (shape ctx))
 	 (with-access::blockV bv ((pfirst first))
 	    (set! first (ins-specialize! pfirst bs ctx queue))
 	    (when *bbv-debug*
@@ -112,7 +112,7 @@
 	    ;; already been merge into). If no such block exists, create
 	    ;; a fresh new one
 	    (let ((mbs (bbv-block bv mctx queue)))
-	       (trace-item "blockV=" (blockV-label bv)
+	       (trace-item "blockV: " (blockV-label bv)
 		  " -> #" (blockS-label mbs) " {" (length lvs) "} "
 		  (map (lambda (e)
 			  (cons (car e)
@@ -186,8 +186,8 @@
 		 (nins '())
 		 (ctx ctx))
 	 (when (pair? oins)
-	    (trace-item "ins=" (shape (car oins)) )
-	    (trace-item "ctx=" (shape ctx)))
+	    (trace-item "ins: " (shape (car oins)) )
+	    (trace-item "ctx: " (shape ctx)))
 	 (cond
 	    ((null? oins)
 	     (reverse! nins))
@@ -197,7 +197,7 @@
 		;; instruction specialization
 		(multiple-value-bind (ins nctx)
 		   (specialize (car oins) nins bs ctx queue)
-		   (trace-item "iins=" (shape ins))
+		   (trace-item "iins: " (shape ins))
 		   (with-access::rtl_ins ins (args)
 ;* 		      (set! args (map (lambda (i)                      */
 ;* 					 (if (isa? i rtl_ins)          */
@@ -207,7 +207,7 @@
 ;* 					     i))                       */
 ;* 				    args))                             */
 		      (let ((lctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
-			 (trace-item "nctx=" (shape lctx))
+			 (trace-item "nctx: " (shape lctx))
 			 (cond
 			    ((rtl_ins-go? ins)
 			     (connect! bs ins)
@@ -332,7 +332,7 @@
 		    (first '())
 		    (%merge-info (if creator `((creator . ,creator)) '())))))
 	 (trace-item "lbl=#" lbl)
-	 (trace-item "ctx=" (shape ctx))
+	 (trace-item "ctx: " (shape ctx))
 	 (with-access::blockV bv (versions)
 	    (set! versions (cons bs versions))
 	    bs))))
@@ -354,10 +354,10 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-block b::block ctx::bbv-ctx queue::bbv-queue #!key creator)
    (with-trace 'bbv-block (format "bbv-block #~a" (block-label b))
-      (trace-item "ctx=" (shape ctx))
+      (trace-item "ctx: " (shape ctx))
       (let ((bv (if (isa? b blockV) b (with-access::blockS b (parent) parent))))
 	 (with-access::blockV bv (first label versions)
-	    (trace-item "parent=" label)
+	    (trace-item "parent: " label)
 	    (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
 	       (cond
 		  ((bbv-ctx-assoc ctx versions)
@@ -365,20 +365,20 @@
 		   (lambda (b)
 		      (let ((obs (live-blockS b)))
 			 (with-access::blockS obs (label)
-			    (trace-item "<- old=" label)
+			    (trace-item "<- old: " label)
 			    obs))))
 		  (else
 		   (let ((nbs (new-blockS bv ctx :creator creator)))
 		      (with-access::blockS nbs (label)
-			 (trace-item "<- new=" label)
+			 (trace-item "<- new: " label)
 			 (bbv-queue-push! queue nbs)
 			 (for-each (lambda (b)
 				      (with-access::blockS b (ctx mblock)
-					 (trace-item "queue.mblock="
+					 (trace-item "queue.mblock: "
 					    (if (isa? mblock block)
 						(block-label mblock)
 						"-")
-					    " ctx=" (shape ctx))))
+					    " ctx: " (shape ctx))))
 			    versions)
 			 nbs)))))))))
    
@@ -466,7 +466,7 @@
    (define (specialize+ reg type polarity value e)
       (let ((ctx+ (extend-ctx ctx reg (list type) #t
 		     :value (min-value value (bbv-ctxentry-value e)))))
-	 (trace-item "ctx+=" (shape ctx+))
+	 (trace-item "ctx+: " (shape ctx+))
 	 (with-access::rtl_ins/bbv i (fun loc)
 	    (with-access::rtl_ifne fun (then)
 	       (let* ((assert (when (>=fx *bbv-assert* 1)
@@ -525,36 +525,38 @@
 	 (let ((e (bbv-ctx-get ctx reg)))
 	    (with-access::bbv-ctxentry e ((epolarity polarity))
 	       (with-access::rtl_ins i (fun)
-		  (trace-item "ins=" (shape i))
-		  (trace-item "typ=" (shape type) " polarity=" polarity)
-		  (trace-item "value=" (shape value))
-		  (trace-item "e=" (shape e))
-		  (trace-item "ctx=" (shape ctx))
-		  #;(tprint "TCHECK " (shape i) " type=" (shape type)
-		     " env=" (shape (bbv-ctxentry-types e))
-		     " every=" (every (lambda (t) (<=ty t type))
+		  (trace-item "ins: " (shape i))
+		  (trace-item "type: " (if (not polarity) "!" "") (shape type))
+		  (trace-item "value: " (shape value))
+		  (trace-item "e: " (shape e))
+		  (trace-item "ctx: " (shape ctx))
+		  #;(tprint "TCHECK " (shape i) " type: " (shape type)
+		     " env: " (shape (bbv-ctxentry-types e))
+		     " every: " (every (lambda (t) (<=ty t type))
 				  (bbv-ctxentry-types e))
-		     " nany=" (not (any (lambda (t) (<=ty t type))
+		     " nany: " (not (any (lambda (t) (<=ty t type))
 				      (bbv-ctxentry-types e))))
 		  (cond
 		     ((and (every (lambda (t) (<=ty t type))
 			      (bbv-ctxentry-types e))
 			   polarity)
-		      #;(tprint "TCHECK+- " (shape i) " " (shape type)
+		      (trace-item "TCHECK+- type: " (shape type)
 			 " " (shape (bbv-ctxentry-types e)))
 		      ;; positive type simplification
 		      (if epolarity
 			  (specialize+ reg type epolarity value e)
 			  (specialize- reg type epolarity value e)))
-		     ((and (not (any (lambda (t) (<=ty type t))
+		     ((and (pair? (bbv-ctxentry-types e))
+			   (not (any (lambda (t) (<=ty type t))
 				   (bbv-ctxentry-types e)))
 			   (not (memq 'number (bbv-ctxentry-types e)))
+			   (not (memq *pair-nil* (bbv-ctxentry-types e)))
 			   (not (eq? type 'number))
 			   polarity epolarity)
 		      ;; negative type simplification
-		      #;(tprint "TCHECK-- " (shape i) " type=" (shape type)
-			 " e=" (shape (bbv-ctxentry-types e))
-			 " <=? " (<=ty type *obj*))
+		      (trace-item "TCHECK-- type: " (shape type)
+			 " e: " (shape (bbv-ctxentry-types e))
+			 " <=? *obj*: " (<=ty type *obj*))
 		      (specialize- reg type epolarity value e))
 		     ((isa? fun rtl_ifne)
 		      (with-access::bbv-ctxentry e (aliases)
@@ -574,8 +576,8 @@
 					    (fun (duplicate::rtl_ifne fun
 						    (then (bbv-block then ctx+ queue
 							     :creator bs)))))))
-				  (trace-item "ctx+.2=" (shape ctx+))
-				  (trace-item "ctx-.2=" (shape ctx-))
+				  (trace-item "ctx+.2: " (shape ctx+))
+				  (trace-item "ctx-.2: " (shape ctx-))
 				  (values s ctx-))))))
 		     (else
 		      (error "rtl_ins-specialize-typecheck"
@@ -611,23 +613,23 @@
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specialize-mov i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
    (with-trace 'bbv-ins "rtl_ins-specialize-mov"
-      (trace-item "ins=" (shape i))
-      (trace-item "ctx=" (shape ctx))
+      (trace-item "ins: " (shape i))
+      (trace-item "ctx: " (shape ctx))
       (with-access::rtl_ins i (dest args fun)
 	 (let ((ctx (unalias-ctx ctx dest)))
-	    (trace-item "unalias ctx=" (shape ctx))
+	    (trace-item "unalias ctx: " (shape ctx))
 	    (cond
 	       ((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
 		(trace-item "rtl_ins-specialize-mov.1")
-		(trace-item "dest=" (shape dest))
-		(trace-item "arg=" (shape (car args)))
+		(trace-item "dest: " (shape dest))
+		(trace-item "arg: " (shape (car args)))
 		(let ((e (bbv-ctx-get ctx (car args))))
 		   (with-access::bbv-ctxentry e (types value polarity)
 		      (if (bbv-singleton? value)
 			  (values (range->loadi i dest value types)
 			     (extend-ctx ctx dest types polarity :value value))
 			  (with-access::rtl_reg dest (var)
-			     (trace-item "dest.v=" (shape var))
+			     (trace-item "dest.v: " (shape var))
 			     (values (duplicate-ins i ctx)
 				(alias-ctx
 				   (extend-ctx ctx dest types polarity :value value)
@@ -799,15 +801,15 @@
 				 (car args) ins bs ctx queue)
 				(with-access::rtl_ins/bbv i (dest)
 				   (let ((e (bbv-ctx-get cctx dest)))
-				      (trace-item "e=" (shape e))
-				      (trace-item "dest=" (shape dest))
-				      (trace-item "cctx=" (shape cctx))
+				      (trace-item "e: " (shape e))
+				      (trace-item "dest: " (shape dest))
+				      (trace-item "cctx: " (shape cctx))
 				      (if (bbv-ctxentry? e)
 					  (bbv-ctxentry-value e)
 					  (fixnum-range)))))))
 			 (else
 			  (trace-item "new-value-call.long->bint.default")
-			  (trace-item "arg0=" (shape (car args)))
+			  (trace-item "arg0: " (shape (car args)))
 			  (fixnum-range)))))
 		  (else
 		   (trace-item "new-value-call.default")
@@ -821,19 +823,19 @@
 	 (else '_)))
 
    (with-trace 'bbv-ins (format "rtl_ins-specialize-call [@~a]" (gendebugid))
-      (trace-item "ins=" (shape i))
-      (trace-item "ctx=" (shape ctx))
+      (trace-item "ins: " (shape i))
+      (trace-item "ctx: " (shape ctx))
       (with-access::rtl_ins i (dest fun)
-	 (trace-item "dest=" (shape dest))
+	 (trace-item "dest: " (shape dest))
 	 (let ((ctx (unalias-ctx ctx dest)))
-	    (trace-item "unalias ctx=" (shape ctx))
+	    (trace-item "unalias ctx: " (shape ctx))
 	    (with-access::rtl_call fun (var)
 	       (with-access::global var (value type)
 		  (let* ((s (duplicate::rtl_ins/bbv i
 			       (ctx ctx)
 			       (fun (duplicate::rtl_call fun))))
 			 (nv (new-value i)))
-		     (trace-item "nv=" (shape nv))
+		     (trace-item "nv: " (shape nv))
 		     (values s
 			(extend-ctx ctx dest (list (if (fun? value) type *obj*)) #t
 			   :value nv)))))))))
@@ -872,8 +874,8 @@
       (with-access::rtl_ins/bbv i (dest args)
 	 (let* ((range (rtl-range i ctx))
 		(nctx (extend-ctx ctx dest (list *long*) #t :value range)))
-	    (trace-item "range=" range)
-	    (trace-item "nctx=" (shape nctx))
+	    (trace-item "range: " range)
+	    (trace-item "nctx: " (shape nctx))
 	    (values (duplicate::rtl_ins/bbv i
 		       (ctx ctx))
 	       nctx)))))
@@ -917,8 +919,8 @@
    (with-trace 'bbv-ins
 	 (format "rtl_ins-specialize-vector-bound-check [@~a]" (gendebugid))
       (with-access::rtl_ins i (args fun)
-	 (trace-item "ins=" (shape i))
-	 (trace-item "ctx=" (shape ctx))
+	 (trace-item "ins: " (shape i))
+	 (trace-item "ctx: " (shape ctx))
 	 (with-access::rtl_ins (car args) (fun args)
 	    (with-access::rtl_call fun (var)
 	       (let* ((vec (car args))
@@ -927,15 +929,15 @@
 		      (l (bbv-ctx-get ctx len))
 		      (va (bbv-ctxentry-value a))
 		      (vl (bbv-ctxentry-value l)))
-		  (trace-item "a=" (shape a))
-		  (trace-item "l=" (shape l))
+		  (trace-item "a: " (shape a))
+		  (trace-item "l: " (shape l))
 		  (cond
 		     ((not *bbv-optim-bound*)
 		      (trace-item "noopt")
 		      (let ((ctx+ (extend-ctx ctx vec (list *bint*) #t
 				     :value (bbv-range-lt vl (vlen-range))))
 			    (ctx- ctx))
-			 (trace-item "ctx+=" (shape ctx+))
+			 (trace-item "ctx+: " (shape ctx+))
 			 (dup-ifne i ctx+ ctx-)))
 		     ((not (bbv-range? va))
 		      (trace-item "not bbv-range? va")
@@ -943,7 +945,7 @@
 			  (let ((ctx+ (extend-ctx ctx vec (list *vector*) #t
 					 :value vl))
 				(ctx- ctx))
-			     (trace-item "ctx+.1=" (shape ctx+))
+			     (trace-item "ctx+.1: " (shape ctx+))
 			     (dup-ifne i ctx+ ctx-))
 			  (dup-ifne i ctx ctx)))
 		     ((not (bbv-range? vl))
@@ -985,7 +987,7 @@
 ;* 		      (trace-item "bbv-range>va and bbvrange>=va")     */
 ;* 		      (let ((ctx- (extend-ctx ctx vec (list *vector*) #t */
 ;* 				     :value (bbv-range-lt va vl))))    */
-;* 			 (trace-item "ctx-=" (shape ctx-))             */
+;* 			 (trace-item "ctx-: " (shape ctx-))             */
 ;* 		      (values (duplicate::rtl_ins/bbv i (fun (true)) (args '())) nctx))) */
 		     ((or (eq? (bbv-range> va vl) #t)
 			  (eq? (bbv-range< va (vlen-range)) #t))
@@ -997,7 +999,7 @@
 		      (let ((ctx+ (extend-ctx ctx vec (list *bint*) #t
 				     :value (bbv-range-lt vl (vlen-range))))
 			    (ctx- ctx))
-			 (trace-item "ctx+.2=" (shape ctx+))
+			 (trace-item "ctx+.2: " (shape ctx+))
 			 (dup-ifne i ctx+ ctx-))))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1101,6 +1103,11 @@
 	 ((=) '!=)
 	 (else op)))
    
+   (define (commute-op op)
+      (if (eq? op '=)
+	  '=
+	  (inv-op op)))
+   
    (define (resolve/op i op intl::bbv-range intr::bbv-range)
       (case op
 	 ((<) (bbv-range< intl intr))
@@ -1120,9 +1127,9 @@
    (define (narrowing reg::rtl_reg intr::bbv-range inte::bbv-range op ctx::bbv-ctx)
       (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp/narrowing [@~a]"
 			      (gendebugid))
-	 (trace-item "op=" op)
-	 (trace-item "reg=" (shape reg))
-	 (trace-item "ctx=" (shape ctx))
+	 (trace-item "op: " op)
+	 (trace-item "reg: " (shape reg))
+	 (trace-item "ctx: " (shape ctx))
 	 (case op
 	    ((<)
 	     (narrowing/op reg intr inte bbv-range-lt bbv-range-gte ctx))
@@ -1155,12 +1162,12 @@
 		   (rreg (reg rhs)))
 		(multiple-value-bind (lctx+ lctx-)
 		   (narrowing lreg intl intr op ctx)
-		   (trace-item "lctx+=" (shape lctx+))
-		   (trace-item "lctx-=" (shape lctx-))
+		   (trace-item "lctx+: " (shape lctx+))
+		   (trace-item "lctx-: " (shape lctx-))
 		   (multiple-value-bind (rctx+ rctx-)
 		      (narrowing rreg intr intl (inv-op op) ctx)
-		      (trace-item "rctx+=" (shape rctx+))
-		      (trace-item "rctx-=" (shape rctx-))
+		      (trace-item "rctx+: " (shape rctx+))
+		      (trace-item "rctx-: " (shape rctx-))
 		      (let ((lreg+ (bbv-ctx-get lctx+ lreg))
 			    (lreg- (bbv-ctx-get lctx- lreg))
 			    (rreg+ (bbv-ctx-get rctx+ rreg))
@@ -1173,7 +1180,7 @@
 	     (narrowing (reg lhs) intl intr op ctx))
 	    ((reg? rhs)
 	     ;; single register comparison
-	     (narrowing (reg rhs) intr intl (inv-op op) ctx))
+	     (narrowing (reg rhs) intr intl (commute-op op) ctx))
 	    (else
 	     ;; no register involed
 	     (values ctx ctx)))))
@@ -1182,7 +1189,7 @@
       (with-trace 'bbv-ins
 	    (format "rtl_ins-specialize-fxcmp/call ~a [@~a]"
 	       (shape i) (gendebugid))
-	 (trace-item "ctx=" (shape ctx))
+	 (trace-item "ctx: " (shape ctx))
 	 (with-access::rtl_ins i (fun args)
 	    (with-access::rtl_call fun (var)
 	       (let* ((lhs (car args))
@@ -1190,11 +1197,11 @@
 		      (intl (rtl-range lhs ctx))
 		      (intr (rtl-range rhs ctx))
 		      (op (fxcmp-op i)))
-		  (trace-item "op=" op)
-		  (trace-item "lhs=" (shape lhs))
-		  (trace-item "rhs=" (shape rhs))
-		  (trace-item "intl=" (shape intl))
-		  (trace-item "intr=" (shape intr))
+		  (trace-item "op: " op)
+		  (trace-item "lhs: " (shape lhs))
+		  (trace-item "rhs: " (shape rhs))
+		  (trace-item "intl: " (shape intl))
+		  (trace-item "intr: " (shape intr))
 		  (if (not (and (bbv-range? intl) (bbv-range? intr)))
 		      (values (duplicate::rtl_ins/bbv i)
 			 ctx ctx)
@@ -1214,10 +1221,11 @@
 				     (args '()))
 			     ctx ctx))
 			 (else
+			  (trace-item "resolve/op.unknown")
 			  (multiple-value-bind (ctx+ ctx-)
 			     (specialize/op op lhs rhs intl intr ctx)
-			     (trace-item "resolve/op.unspec+=" (shape ctx+))
-			     (trace-item "resolve/op.unspec-=" (shape ctx-))
+			     (trace-item "resolve/op.unspec+: " (shape ctx+))
+			     (trace-item "resolve/op.unspec-: " (shape ctx-))
 			     (values (duplicate::rtl_ins/bbv i)
 				ctx+ ctx-))))))))))
 
@@ -1266,15 +1274,15 @@
 	    (values ni ctx-))))
 
    (with-trace 'bbv-ins (format "rtl_ins-specialize-fxcmp [@~a]" (gendebugid))
-      (trace-item "ins=" (shape i))
+      (trace-item "ins: " (shape i))
       (with-access::rtl_ins i (dest fun args loc)
 	 (cond
 	    ((isa? fun rtl_ifne)
 	     (with-access::rtl_ifne fun (then)
 		(multiple-value-bind (ins ctx+ ctx-)
 		   (specialize-call (car args) ctx)
-		   (trace-item "ctx+=" (shape ctx+))
-		   (trace-item "ctx-=" (shape ctx-))
+		   (trace-item "ctx+: " (shape ctx+))
+		   (trace-item "ctx-: " (shape ctx-))
 		   (cond
 		      ((rtl_ins-true? ins)
 		       (specialize+ i ins ctx+))
@@ -1365,7 +1373,7 @@
 				  (up (minrv up (bbv-max-fixnum) (bbv-max-fixnum)))))
 			 (nctx (extend-ctx ctx reg (list *bint*) #t
 				  :value intx)))
-		     (trace-item "nctx=" (shape nctx))
+		     (trace-item "nctx: " (shape nctx))
 		     nctx))))))
    
    (define (fx-ov->fx var ins reg ctx nctx)
@@ -1394,12 +1402,12 @@
 		      (ctx ctx)
 		      (fun (duplicate::rtl_ifne fun
 			      (then (bbv-block then ctx+ queue :creator bs)))))))
-	    (trace-item "ctx+=" (shape ctx+))
-	    (trace-item "nctx=" (shape nctx))
+	    (trace-item "ctx+: " (shape ctx+))
+	    (trace-item "nctx: " (shape nctx))
 	    (values s nctx))))
    
    (with-trace 'bbv-ins "rtl_ins-specialize-fxovop"
-      (trace-item "i=" (shape i))
+      (trace-item "i: " (shape i))
       (with-access::rtl_ins i (dest (ifne fun) args)
 	 (let ((call (car args)))
 	    (with-access::rtl_ins (car args) (args fun)
@@ -1421,7 +1429,7 @@
 				(let ((nctx (extend-ctx ctx reg
 					       (list *bint*) #t
 					       :value range)))
-				   (trace-item "nctx.2=" (shape nctx))
+				   (trace-item "nctx.2: " (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default i call ifne reg (fixnum-range)))))
@@ -1434,7 +1442,7 @@
 				(let ((nctx (extend-ctx ctx reg
 					       (list *bint*) #t
 					       :value range)))
-				   (trace-item "nctx.3=" (shape nctx))
+				   (trace-item "nctx.3: " (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default i call ifne reg (fixnum-range)))))
@@ -1444,7 +1452,7 @@
 				(let ((nctx (extend-ctx ctx reg
 					       (list *bint*) #t
 					       :value range)))
-				   (trace-item "nctx.4=" (shape nctx))
+				   (trace-item "nctx.4: " (shape nctx))
 				   (values (fx-ov->fx var call reg ctx nctx)
 				      nctx))
 				(default i call ifne reg (fixnum-range)))))
@@ -1501,8 +1509,8 @@
 		  nctx)))))
    
    (with-trace 'bbv-ins (format "rtl_ins-specialize-fxop [@~a]" (gendebugid))
-      (trace-item "i=" (shape i))
-      (trace-item "ctx=" (shape ctx))
+      (trace-item "i: " (shape i))
+      (trace-item "ctx: " (shape ctx))
       (with-access::rtl_ins i (dest fun args)
 	 (with-access::rtl_call fun (var)
 	    (let* ((lhs (car args))
@@ -1511,17 +1519,17 @@
 		   (intr (rtl-range rhs ctx)))
 	       (cond
 		  ((not (and (bbv-range? intl) (bbv-range? intr)))
-		   (trace-item "not.range intl=" (shape intl) " intr=" (shape intr))
+		   (trace-item "not.range intl: " (shape intl) " intr: " (shape intr))
 		   (values (duplicate::rtl_ins/bbv i
 			      (ctx ctx))
 		      ctx))
 		  ((or (eq? var *-fx*) (eq? var *subfx*))
 		   (let ((range (bbv-range-sub intl intr)))
-		      (trace-item "-fx.range=" (shape range))
+		      (trace-item "-fx.range: " (shape range))
 		      (if (bbv-range-fixnum? range)
 			  (let ((nctx (extend-ctx ctx dest (list *long*) #t
 					 :value range)))
-			     (trace-item "nctx=" (shape nctx))
+			     (trace-item "nctx: " (shape nctx))
 			     (values (duplicate::rtl_ins/bbv i
 					(ctx ctx))
 				nctx))
@@ -1530,11 +1538,11 @@
 			     ctx))))
 		  ((eq? var *-fx-safe*)
 		   (let ((range (bbv-range-sub intl intr)))
-		      (trace-item "-fx-safe.range=" (shape range))
+		      (trace-item "-fx-safe.range: " (shape range))
 		      (if (bbv-range-fixnum? range)
 			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 					 :value range)))
-			     (trace-item "nctx=" (shape nctx))
+			     (trace-item "nctx: " (shape nctx))
 			     (values (fx-safe->fx var i ctx nctx)
 				nctx))
 			  (values (duplicate::rtl_ins/bbv i
@@ -1542,11 +1550,11 @@
 			     ctx))))
 		  ((or (eq? var *+fx*) (eq? var *addfx*))
 		   (let ((range (bbv-range-add intl intr)))
-		      (trace-item "+fx.range=" (shape range))
+		      (trace-item "+fx.range: " (shape range))
 		      (if (bbv-range-fixnum? range)
 			  (let ((nctx (extend-ctx ctx dest (list *long*) #t
 					 :value range)))
-			     (trace-item "nctx=" (shape nctx))
+			     (trace-item "nctx: " (shape nctx))
 			     (values (duplicate::rtl_ins/bbv i
 					(ctx ctx))
 				nctx))
@@ -1555,11 +1563,11 @@
 			     ctx))))
 		  ((eq? var *+fx-safe*)
 		   (let ((range (bbv-range-add intl intr)))
-		      (trace-item "+fx-safe.range=" (shape range))
+		      (trace-item "+fx-safe.range: " (shape range))
 		      (if (bbv-range-fixnum? range)
 			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 					 :value range)))
-			     (trace-item "nctx=" (shape nctx))
+			     (trace-item "nctx: " (shape nctx))
 			     (values (fx-safe->fx var i ctx nctx)
 				nctx))
 			  (values (duplicate::rtl_ins/bbv i
@@ -1567,11 +1575,11 @@
 			     ctx))))
 		  ((eq? var *2-*)
 		   (let ((range (bbv-range-sub intl intr)))
-		      (trace-item "2-.range=" (shape range))
+		      (trace-item "2-.range: " (shape range))
 		      (if (bbv-range-fixnum? range)
 			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 					 :value range)))
-			     (trace-item "nctx=" (shape nctx))
+			     (trace-item "nctx: " (shape nctx))
 			     (values (2->fx var i ctx nctx)
 				nctx))
 			  (values (duplicate::rtl_ins/bbv i
@@ -1579,18 +1587,18 @@
 			     ctx))))
 		  ((eq? var *2+*)
 		   (let ((range (bbv-range-add intl intr)))
-		      (trace-item "2+.range=" (shape range))
+		      (trace-item "2+.range: " (shape range))
 		      (if (bbv-range-fixnum? range)
 			  (let ((nctx (extend-ctx ctx dest (list *bint*) #t
 					 :value range)))
-			     (trace-item "nctx=" (shape nctx))
+			     (trace-item "nctx: " (shape nctx))
 			     (values (2->fx var i ctx nctx)
 				nctx))
 			  (values (duplicate::rtl_ins/bbv i
 				     (ctx ctx))
 			     ctx))))
 		  (else
-		   (trace-item "else ctx=" (shape ctx))
+		   (trace-item "else ctx: " (shape ctx))
 		   (values (duplicate::rtl_ins/bbv i
 			      (ctx ctx))
 		      ctx))))))))
