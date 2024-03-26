@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Mar 25 14:40:55 2024 (serrano)                */
+;*    Last change :  Tue Mar 26 15:49:24 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -570,7 +570,7 @@
 						(extend-ctx* ctx regs
 						   (list type) #f)
 						(extend-ctx* ctx regs
-						   (cons type (bbv-ctxentry-types e)) #f)))
+						   (list type) #f)))
 				      (s (duplicate::rtl_ins/bbv i
 					    (ctx ctx)
 					    (fun (duplicate::rtl_ifne fun

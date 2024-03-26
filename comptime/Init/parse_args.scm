@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Jan 14 06:30:17 2024 (serrano)                */
+;*    Last change :  Tue Mar 26 16:05:41 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -404,6 +404,8 @@
       ;; benchmarking
       (("-Obench" (help "Benchmarking mode"))
        (do-parse-args `("-O6" "-unsafe"
+			  "-freturn"
+			  "-freturn-goto"
 			  "-copt" ,*cflags-optim*
 			  "-static-all-bigloo"))) 
       ;; optimization

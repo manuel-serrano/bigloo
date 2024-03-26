@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Mon Mar 25 13:02:56 2024 (serrano)                */
+;*    Last change :  Tue Mar 26 11:03:54 2024 (serrano)                */
 ;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -278,14 +278,10 @@
       (define (string-strncpy o max)
 	 (let loop ((i 0))
 	    (if (=fx i max)
-		(let ((s (make-string i)))
-		   (blit-string! bytes o s 0 i)
-		   s)
+		(substring bytes o (+fx o i))
 		(let ((c (string-ref bytes (+fx i o))))
 		   (if (char=? c #a000)
-		       (let ((s (make-string i)))
-			  (blit-string! bytes o s 0 i)
-			  s)
+		       (substring bytes o (+fx o i))
 		       (loop (+fx i 1)))))))
       
       (define (mmap-strncpy o max)
@@ -985,7 +981,7 @@
 	  #t)
 	 (else
 	  (warning "'read-jpeg-exif"
-	     "Unknown exif endianess, assuminug big endian")
+	     "Unknown exif endianess, assuming big endian")
 	  #f)))
    
    (if (and (char=? (string-ref bytes 4) #a000)
@@ -1016,8 +1012,7 @@
 			       (set! cdd-width w)))
 			;; thumbnail
 			(if (and (integer? s) (integer? l))
-			    (let ((th (make-string l)))
-			       (blit-string! bytes s th 0 l)
+			    (let ((th (substring bytes s (+fx s l))))
 			       (set! thumbnail th)
 			       exif)
 			    (set! thumbnail #f)))))))))
@@ -1033,8 +1028,7 @@
 	       ((=fx i len)
 		(set! comment bytes))
 	       ((char=? (string-ref bytes i) #a000)
-		(let ((s (make-string i)))
-		   (blit-string! bytes 0 s 0 i)
+		(let ((s (substring bytes 0 i)))
 		   (set! comment s)
 		   (set! %commentpos pos)
 		   (set! %commentlen i)))
@@ -1301,18 +1295,18 @@
        (error/errno $errno-io-file-not-found-error
 	  "jpeg-exif" "Can't find file" path)
        (let ((mm (open-mmap path write: #f))
-	     (exif (instantiate::exif)))
+	     (exf (instantiate::exif)))
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
 		(cond
 		   ((tiff? mm)
-		    (read-tiff-sections exif mm path))
+		    (read-tiff-sections exf mm path))
 		   ((rw2? mm)
-		    (read-tiff-sections exif mm path))
+		    (read-tiff-sections exf mm path))
 		   (else
-		    (read-jpeg-sections exif mm path))))
+		    (read-jpeg-sections exf mm path))))
 	     (close-mmap mm))
-	  exif)))
+	  exf)))
 		
 ;*---------------------------------------------------------------------*/
 ;*    jpeg-exif-comment-set! ...                                       */
@@ -1322,12 +1316,12 @@
        (error/errno $errno-io-file-not-found-error
 	  "jpeg-exif-comment-set!" "Can't find file" path)
        (let ((mm (open-mmap path))
-	     (exif (instantiate::exif))
+	     (exf (instantiate::exif))
 	     (mtime #f))
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
-		(read-jpeg-sections exif mm path)
-		(with-access::exif exif (%commentpos %commentlen)
+		(read-jpeg-sections exf mm path)
+		(with-access::exif exf (%commentpos %commentlen)
 		   (and %commentpos
 			(let* ((len (string-length comment))
 			       (s (if (<fx len %commentlen)
@@ -1360,12 +1354,12 @@
        (error/errno $errno-io-file-not-found-error
 	  "jpeg-exif-comment-set!" "Can't find file" path)
        (let ((mm (open-mmap path))
-	     (exif (instantiate::exif))
+	     (exf (instantiate::exif))
 	     (mtime #f))
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
-		(read-jpeg-sections exif mm path)
-		(with-access::exif exif (%orientationpos)
+		(read-jpeg-sections exf mm path)
+		(with-access::exif exf (%orientationpos)
 		   (when %orientationpos
 		      (mmap-write-position-set! mm %orientationpos)
 		      (case orientation
@@ -1402,8 +1396,8 @@
 			(string-ref d i)
 			(substring d (+fx i 1) (string-length d)))))))
    
-   (define (substring->int d i len)
-      (let ((len (+fx i len))
+   (define (substring->int d i l)
+      (let ((len (+fx i l))
 	    (zero (char->integer #\0)))
 	 (let loop ((i i)
 		    (acc 0))
