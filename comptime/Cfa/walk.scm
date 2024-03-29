@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Thu Jan 11 09:02:33 2024 (serrano)                */
+;*    Last change :  Wed Mar 27 10:03:13 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
@@ -71,10 +71,6 @@
    (set-initial-approx! globals)
    ;; start now the control flow analysis.
    (let ((iteration-roots (cfa-iterate-to-fixpoint! globals)))
-      (let ((d *dest*))
-	 (set! *dest* "/tmp/avant.ast")
-	 (write-ast globals)
-	 (set! *dest* d))
       ;; show the number of iterations.
       (show-cfa-nb-iterations)
       ;; dead code removal
@@ -82,23 +78,11 @@
 	 ;; show approximation results (after dead-code-removal!)
 	 (show-cfa-results globals)
 	 ;; tvector optimization
-;* 	 (let ((d *dest*))                                             */
-;* 	    (set! *dest* "/tmp/vec.ast")                               */
-;* 	    (write-ast globals)                                        */
-;* 	    (set! *dest* d))                                           */
 	 (let ((additional (profile tvect (vector->tvector! globals))))
-;* 	    (let ((d *dest*))                                          */
-;* 	       (set! *dest* "/tmp/tvec.ast")                           */
-;* 	       (write-ast globals)                                     */
-;* 	       (set! *dest* d))                                        */
 	    ;; closure allocations optimization
 	    (profile clo (closure-optimization! globals))
 	    ;; type setting
 	    (profile type (type-settings! globals))
-	    (let ((d *dest*))
-	       (set! *dest* "/tmp/apres.ast")
-	       (write-ast globals)
-	       (set! *dest* d))
 	    ;; generic arithmetic specialization
 	    (specialize! globals)
 	    ;; cleanup and statistics display.
