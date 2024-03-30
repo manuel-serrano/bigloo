@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Fri Mar 29 11:49:27 2024 (serrano)                */
+;*    Last change :  Fri Mar 29 16:17:48 2024 (serrano)                */
 ;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -70,7 +70,6 @@
 	      (focal-plane-xres (default #f))
 	      (focal-plane-yres (default #f))
 	      (focal-plane-units (default #f))
-	      (gps-tag (default #f))
 	      (brightness-value (default #f))
 	      (subject-distance (default #f))
 	      (colorspace (default #f))
@@ -96,16 +95,17 @@
 	      (artist (default #f))
 	      (maker-note (default #f))
 	      (thumbnail (default #f))
-	      (thumbnail-path (default #f))
-	      (thumbnail-offset (default #f))
-	      (thumbnail-length (default #f))
+	      (%thunmnail-path (default #f))
+	      (%thunmnail-offset (default #f))
+	      (%thunmnail-length (default #f))
 	      (endianess (default #f))
-	      (gps-latitude-ref (default #f))
+	      (%gps-tag (default #f))
+	      (%gps-latitude-ref (default #f))
 	      (gps-latitude (default #f))
 	      (gps-longitude (default #f))
-	      (gps-longitude-ref (default #f))
+	      (%gps-longitude-ref (default #f))
 	      (gps-altitude (default #f))
-	      (gps-altitude-ref (default #f))
+	      (%gps-altitude-ref (default #f))
 	      (gps-satelites (default #f))
 	      (gps-measure-mode (default #f))
 	      (gps-status (default #f))
@@ -123,6 +123,15 @@
 ;*---------------------------------------------------------------------*/
 (define (exif-error proc msg obj)
    (error/errno $errno-io-parse-error proc msg obj))
+
+;*---------------------------------------------------------------------*/
+;*    getbuffer ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    This is a plain alias to substring in order to let hop2js        */
+;*    compiles this using a Buffer instead of a string.                */
+;*---------------------------------------------------------------------*/
+(define-inline (getbuffer bytes start len)
+   (substring bytes start len))
 
 ;*---------------------------------------------------------------------*/
 ;*    get16u ...                                                       */
@@ -219,9 +228,7 @@
        ;; FMT_URATIONAL, FMT_SRATIONAL
        (let ((num (get32u en bytes o))
 	     (den (get32u en bytes (+fx o 4))))
-	  (if (=elong den #e0)
-	      0
-	      (cons num den))))
+	  (cons num den)))
       ((11)
        ;; FMT_SINGLE 32bit
        (exif-error "exif" "Unsupported number format" fmt))
@@ -247,13 +254,16 @@
 	  0))))
 
 ;*---------------------------------------------------------------------*/
-;*    getformat3 ...                                                   */
+;*    getformatRat3 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (getformat3 en bytes valptr fmt)
-   (let ((sz (vector-ref *exif-formats-size* fmt)))
-      (vector (getformat en bytes valptr fmt)
-	 (getformat en bytes (+fx valptr sz) fmt)
-	 (getformat en bytes (+fx valptr (+fx sz sz)) fmt))))
+(define (getformatRat3 en bytes valptr fmt)
+   (let* ((sz (vector-ref *exif-formats-size* fmt))
+	  (r0 (getformat en bytes valptr fmt))
+	  (r1 (getformat en bytes (+fx valptr sz) fmt))
+	  (r2 (getformat en bytes (+fx valptr (+fx sz sz)) fmt)))
+      (+fl (/fl (elong->flonum (car r0)) (elong->flonum (cdr r0)))
+	 (+fl (/fl (elong->flonum (car r1)) (*fl 60. (elong->flonum (cdr r1))))
+	    (/fl (elong->flonum (car r2)) (*fl 3600. (elong->flonum (cdr r2))))))))
       
 ;*---------------------------------------------------------------------*/
 ;*    *exif-formats-size* ...                                          */
@@ -319,12 +329,6 @@
 	  (string-strncpy o max)
 	  (mmap-strncpy o max)))
 
-   (define (process-exif-gps-tag o bcount)
-      (tprint "o=" o " bcount=" bcount)
-      (let* ((tag (elong->fixnum (get16u en bytes o))))
-	 (tprint "TAG=" (integer->string tag 16) " "))
-      #f)
-      
    (let ((dnum (elong->fixnum (get16u en bytes start))))
       (let loop ((de 0))
 	 (when (<fx de dnum)
@@ -347,24 +351,24 @@
 		      #unspecified)
 		     ((#x10001)
 		      ;; TAG_GPS_LATITUDE_REF
-		      (with-access::exif exif (gps-latitude-ref)
-			 (set! gps-latitude-ref (strncpy valptr bcount))))
+		      (with-access::exif exif (%gps-latitude-ref)
+			 (set! %gps-latitude-ref (strncpy valptr bcount))))
 		     ((#x10002)
 		      ;; TAG_GPS_LATITUDE
 		      (with-access::exif exif (gps-latitude)
-			 (set! gps-latitude (getformat3 en bytes valptr fmt))))
+			 (set! gps-latitude (getformatRat3 en bytes valptr fmt))))
 		     ((#x10003)
 		      ;; TAG_GPS_LONGITUDE_REF
-		      (with-access::exif exif (gps-longitude-ref)
-			 (set! gps-longitude-ref (strncpy valptr bcount))))
+		      (with-access::exif exif (%gps-longitude-ref)
+			 (set! %gps-longitude-ref (strncpy valptr bcount))))
 		     ((#x10004)
 		      ;; TAG_GPS_LONGITUDE
 		      (with-access::exif exif (gps-longitude)
-			 (set! gps-longitude (getformat3 en bytes valptr fmt))))
+			 (set! gps-longitude (getformatRat3 en bytes valptr fmt))))
 		     ((#x10005)
 		      ;; TAG_GPS_ALTITUDE_REF
-		      (with-access::exif exif (gps-altitude-ref)
-			 (set! gps-altitude-ref (getformat/fx en bytes valptr fmt))))
+		      (with-access::exif exif (%gps-altitude-ref)
+			 (set! %gps-altitude-ref (getformat/fx en bytes valptr fmt))))
 		     ((#x10006)
 		      ;; TAG_GPS_ALTITUDE
 		      (with-access::exif exif (gps-altitude)
@@ -372,7 +376,7 @@
 		     ((#x10007)
 		      ;; TAG_GPS_TIMESPTAMP
 		      (with-access::exif exif (gps-time-stamp)
-			 (set! gps-time-stamp (getformat3 en bytes valptr fmt))))
+			 (set! gps-time-stamp (getformatRat3 en bytes valptr fmt))))
 		     ((#x10008)
 		      ;; TAG_GPS_SATELITE
 		      (with-access::exif exif (gps-satelites)
@@ -513,13 +517,13 @@
 		      ;; TAG_THUMBNAIL_OFFSET
 		      (let* ((ol (getformat/fx en bytes valptr fmt))
 			     (of (+fx ol base)))
-			 (with-access::exif exif (thumbnail-offset)
-			    (set! thumbnail-offset of))))
+			 (with-access::exif exif (%thunmnail-offset)
+			    (set! %thunmnail-offset of))))
 		     ((#x202)
 		      ;; TAG_THUMBNAIL_LENGTH
 		      (let ((le (getformat/fx en bytes valptr fmt)))
-			 (with-access::exif exif (thumbnail-length)
-			    (set! thumbnail-length le))))
+			 (with-access::exif exif (%thunmnail-length)
+			    (set! %thunmnail-length le))))
 		     ((#x203)
 		      ;; JPEGR
 		      'todo)
@@ -585,7 +589,7 @@
 		     ((#x8769)
 		      ;; TAG_EXIF_OFFSET
 		      (let ((ss (+fx base (elong->fixnum (get32u en bytes valptr)))))
-			 '(process-exif-dir! en bytes ss base exif o0 0)))
+			 (process-exif-dir! en bytes ss base exif o0 0)))
 		     ((#x8822)
 		      ;; EXPOSURE_PROGRAM
 		      (let ((e (getformat en bytes valptr fmt)))
@@ -593,10 +597,9 @@
 			    (set! exposure-program e))))
 		     ((#x8825)
 		      ;; GPS_TAG
-		      ;;(process-exif-gps-tag valptr bcount)
 		      (let ((t (getformat/fx en bytes valptr fmt)))
-			 (with-access::exif exif (gps-tag)
-			    (set! gps-tag t))))
+			 (with-access::exif exif (%gps-tag)
+			    (set! %gps-tag t))))
 		     ((#x8827)
 		      ;; ISO
 		      (let ((is (getformat en bytes valptr fmt)))
@@ -1018,8 +1021,8 @@
 		     (exif-error "read-jpeg-exit"
 			"Suspicious offset of first IFD value"
 			fo)
-		     (with-access::exif exif ((s thumbnail-offset)
-					      (l thumbnail-length)
+		     (with-access::exif exif ((s %thunmnail-offset)
+					      (l %thunmnail-length)
 					      thumbnail
 					      cdd-width
 					      ewidth
@@ -1037,7 +1040,7 @@
 			      (set! cdd-width w)))
 			;; thumbnail
 			(if (and (integer? s) (integer? l))
-			    (let ((th (substring bytes s (+fx s l))))
+			    (let ((th (getbuffer bytes s (+fx s l))))
 			       (set! thumbnail th)
 			       exif)
 			    (set! thumbnail #f)))))))))
@@ -1128,15 +1131,29 @@
 		    (loop))
 		   ((#xe1) ;; M_EXIF
 		    (when (substring=? bytes "Exif\000\000" 6)
-		       (with-access::exif exif (gps-tag endianess)
+		       (with-access::exif exif (%gps-tag endianess)
 			  (read-jpeg-exif! exif
 			     bytes
 			     (- (mmap-read-position mm)
 				(string-length bytes)))
 			  ;; gps
-			  (when gps-tag
+			  (when %gps-tag
 			     (process-exif-dir! endianess bytes
-				(+fx gps-tag 6) 6 exif 0 #x10000))))
+				(+fx %gps-tag 6) 6 exif 0 #x10000)
+			     (with-access::exif exif (gps-altitude
+							gps-latitude
+							gps-longitude
+							%gps-altitude-ref
+							%gps-latitude-ref
+							%gps-longitude-ref)
+				;; patch the relative values
+				(when (=fx %gps-altitude-ref 1)
+				   (set-car! gps-altitude
+				      (- (car gps-altitude))))
+				(when (equal? %gps-latitude-ref "S")
+				   (set! gps-latitude (negfl gps-latitude)))
+				(when (equal? %gps-longitude-ref "W")
+				   (set! gps-longitude (negfl gps-longitude)))))))
 		    (loop))
 		   ((#xc0) ;; M_SOFO
 		    (read-SOFn! exif bytes "baseline")
