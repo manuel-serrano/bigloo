@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Sat Jun 23 07:37:27 2018 (serrano)                */
-;*    Copyright   :  2007-21 Manuel Serrano                            */
+;*    Last change :  Wed Apr  3 16:53:23 2024 (serrano)                */
+;*    Copyright   :  2007-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -219,7 +219,7 @@
 ;*    parameter-grammar ...                                            */
 ;*---------------------------------------------------------------------*/
 (define parameter-grammar
-   (regular-grammar ()
+   (regular-grammar (msg)
       ((+ (in " \t\n\r"))
        (ignore))
       (#\;
@@ -250,7 +250,7 @@
 	     ((eof-object? c)
 	      '())
 	     ((>fx (bigloo-warning) 0)
-	      (display "*** WARNING:multipart:mime-content-type-decode: " (current-error-port))
+	      (display "*** WARNING:multipart:mime-content-type-decode(" msg "): " (current-error-port))
 	      (display "Illegal parameter value -- \"" (current-error-port))
 	      (display c (current-error-port))
 	      (display (read-string (the-port)) (current-error-port))
@@ -269,7 +269,7 @@
       ((: (+ (in "-_." ("azAZ09"))) "/")
        (let* ((ty (string-downcase! (the-substring 0 -1)))
 	      (sty (string-downcase! (read/rp token-grammar (the-port) ty)))
-	      (parameters (read/rp parameter-grammar (the-port))))
+	      (parameters (read/rp parameter-grammar (the-port) "content-type")))
 	  (list (string->symbol ty) (string->symbol sty) parameters)))
       ((: "=?" (+ (out #\?)) "?" (in ("azAZ")) "?")
        ;; rfc2047 header to be skipped
@@ -304,7 +304,7 @@
        (ignore))
       ((: (+ (in "-_." ("azAZ09"))) ";")
        (let* ((dispo (string-downcase! (the-substring 0 -1)))
-	      (parameters (read/rp parameter-grammar (the-port))))
+	      (parameters (read/rp parameter-grammar (the-port) "content-disposition")))
 	  (list (string->symbol dispo)  parameters)))
       ((: (+ (in "-_." ("azAZ09"))))
        (let ((dispo (string-downcase! (the-string))))
