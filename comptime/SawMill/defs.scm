@@ -324,7 +324,7 @@
 (define-method (dump-fun o::rtl_loadi dest args p m)
    (show-fun o dest p)
    (display " " p)
-   (display (atom-value (rtl_loadi-constant o)) p)
+   (write (atom-value (rtl_loadi-constant o)) p)
    (dump-args args p))
 
 ;*---------------------------------------------------------------------*/

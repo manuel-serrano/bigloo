@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Mar 26 15:49:24 2024 (serrano)                */
+;*    Last change :  Sat Apr  6 06:46:18 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -1100,13 +1100,8 @@
 	 ((<=) '>=)
 	 ((>) '<)
 	 ((>=) '<=)
-	 ((=) '!=)
+	 ((=) '=)
 	 (else op)))
-   
-   (define (commute-op op)
-      (if (eq? op '=)
-	  '=
-	  (inv-op op)))
    
    (define (resolve/op i op intl::bbv-range intr::bbv-range)
       (case op
@@ -1180,7 +1175,7 @@
 	     (narrowing (reg lhs) intl intr op ctx))
 	    ((reg? rhs)
 	     ;; single register comparison
-	     (narrowing (reg rhs) intr intl (commute-op op) ctx))
+	     (narrowing (reg rhs) intr intl (inv-op op) ctx))
 	    (else
 	     ;; no register involed
 	     (values ctx ctx)))))

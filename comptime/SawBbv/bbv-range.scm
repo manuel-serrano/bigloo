@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Jan 15 11:16:10 2024 (serrano)                */
+;*    Last change :  Sat Apr  6 06:39:49 2024 (serrano)                */
 ;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -694,10 +694,27 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-range-neq ...                                                */
+;*    -------------------------------------------------------------    */
+;*    Return a smaller ranger from X if it is not Y.                   */
 ;*---------------------------------------------------------------------*/
 (define (bbv-range-neq x y)
    (with-trace 'bbv-range "bbv-range-neq"
-      (bbv-range-union x y)))
+      (cond
+	 ((bbv-singleton? x)
+	  x)
+	 ((bbv-singleton? y)
+	  (let ((yv (bbv-range-lo y)))
+	     (cond
+		((= yv (bbv-range-lo x))
+		 (duplicate::bbv-range x
+		    (lo (++ (bbv-range-lo x)))))
+		((= yv (bbv-range-up x))
+		 (duplicate::bbv-range x
+		    (lo (-- (bbv-range-up x)))))
+		(else
+		 x))))
+	 (else
+	  x))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ->range ...                                                      */
