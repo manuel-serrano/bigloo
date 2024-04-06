@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Sat Apr  6 06:46:18 2024 (serrano)                */
+;*    Last change :  Sat Apr  6 07:26:03 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -197,7 +197,7 @@
 		;; instruction specialization
 		(multiple-value-bind (ins nctx)
 		   (specialize (car oins) nins bs ctx queue)
-		   (trace-item "iins: " (shape ins))
+		   (trace-item "nins: " (shape ins))
 		   (with-access::rtl_ins ins (args)
 ;* 		      (set! args (map (lambda (i)                      */
 ;* 					 (if (isa? i rtl_ins)          */
@@ -285,9 +285,9 @@
 ;*---------------------------------------------------------------------*/
 (define (block-merge! bs::blockS mbs::blockS)
    (with-trace 'bbv-block-merge
-	 (format "block-merge! ~a -> ~a"
-	    (with-access::blockS bs (label) label)
-	    (with-access::blockS mbs (label) label))
+      (format "block-merge! ~a -> ~a"
+	 (with-access::blockS bs (label) label)
+	 (with-access::blockS mbs (label) label))
       (with-access::blockS bs (mblock cnt succs)
 	 (set! mblock mbs)
 	 (set! cnt 0)
@@ -469,7 +469,7 @@
 	 (trace-item "ctx+: " (shape ctx+))
 	 (with-access::rtl_ins/bbv i (fun loc)
 	    (with-access::rtl_ifne fun (then)
-	       (let* ((assert (when (>=fx *bbv-assert* 1)
+	       (let* ((assert (when (>=fx *bbv-assert* 3)
 				 (rtl-assert-reg-type
 				    reg type polarity ctx loc
 				    "BBV-ASSERT-FAILURE:TYPECHECK+")))
@@ -509,7 +509,7 @@
 
    (define (specialize- reg type polarity value e)
       (with-access::rtl_ins/bbv i (fun loc)
-	 (let* ((assert (when (>=fx *bbv-assert* 1)
+	 (let* ((assert (when (>=fx *bbv-assert* 3)
 			   (rtl-assert-reg-type reg type polarity ctx loc
 			      "BBV-ASSERT-FAILURE:TYPECHECK-")))
 		(s (duplicate::rtl_ins/bbv i
@@ -1094,7 +1094,7 @@
 	       ((eq? var *>=fx*) '>=)
 	       ((eq? var *=fx*) '=)))))
    
-   (define (inv-op op)
+   (define (commute-op op)
       (case op
 	 ((<) '>)
 	 ((<=) '>=)
@@ -1160,7 +1160,7 @@
 		   (trace-item "lctx+: " (shape lctx+))
 		   (trace-item "lctx-: " (shape lctx-))
 		   (multiple-value-bind (rctx+ rctx-)
-		      (narrowing rreg intr intl (inv-op op) ctx)
+		      (narrowing rreg intr intl (commute-op op) ctx)
 		      (trace-item "rctx+: " (shape rctx+))
 		      (trace-item "rctx-: " (shape rctx-))
 		      (let ((lreg+ (bbv-ctx-get lctx+ lreg))
@@ -1175,7 +1175,7 @@
 	     (narrowing (reg lhs) intl intr op ctx))
 	    ((reg? rhs)
 	     ;; single register comparison
-	     (narrowing (reg rhs) intr intl (inv-op op) ctx))
+	     (narrowing (reg rhs) intr intl (commute-op op) ctx))
 	    (else
 	     ;; no register involed
 	     (values ctx ctx)))))
@@ -1227,7 +1227,7 @@
    (define (specialize+ i ins ctx+)
       (with-access::rtl_ins i (dest fun args loc)
 	 (with-access::rtl_ifne fun (then)
-	    (let* ((assert (when (>=fx *bbv-assert* 1)
+	    (let* ((assert (when (>=fx *bbv-assert* 3)
 			      (let ((ins (car args)))
 				 (with-access::rtl_ins ins (args)
 				    (rtl-assert-fxcmp
@@ -1255,7 +1255,7 @@
 
    (define (specialize- i ins ctx-)
       (with-access::rtl_ins i (dest fun args loc)
-	 (let* ((assert (when (>=fx *bbv-assert* 1)
+	 (let* ((assert (when (>=fx *bbv-assert* 3)
 			   (let ((ins (car args)))
 			      (with-access::rtl_ins ins (args)
 				 (rtl-assert-fxcmp

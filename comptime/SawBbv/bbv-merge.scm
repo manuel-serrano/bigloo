@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Thu Jan 18 10:47:57 2024 (serrano)                */
+;*    Last change :  Sat Apr  6 10:53:19 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -342,6 +342,7 @@
       (duplicate::bbv-ctxentry e1
 	 (types (list *obj*))
 	 (polarity #t)
+	 (aliases '())
 	 (value '_)))
    
    (define (merge-range range1 range2)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Mar 25 17:52:19 2024 (serrano)                */
+;*    Last change :  Sat Apr  6 07:22:47 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -183,13 +183,18 @@
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-ctxentry)
    (with-access::bbv-ctxentry e (reg types polarity value aliases)
-      (vector (shape reg)
-	 (format "[~( )]"
-	    (if polarity
-		(map shape types)
-		(map (lambda (t) (format "!~a" (shape t))) types)))
-	 (format "~s" (shape value))
-	 (map shape aliases))))
+      (if (and (=fx (length types) 1)
+	       (eq? (car types) *obj*)
+	       (eq? value '_)
+	       (null? aliases))
+	  (shape reg)
+	  (vector (shape reg)
+	     (format "[~( )]"
+		(if polarity
+		    (map shape types)
+		    (map (lambda (t) (format "!~a" (shape t))) types)))
+	     (format "~s" (shape value))
+	     (map shape aliases)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bb-mark* ...                                                    */
@@ -309,11 +314,12 @@
 (define (bbv-ctx-equal? x::bbv-ctx y::bbv-ctx)
    (with-access::bbv-ctx x ((xentries entries))
       (with-access::bbv-ctx y ((yentries entries))
-	 (every (lambda (xe)
-		   (with-access::bbv-ctxentry xe (reg)
-		      (let ((ye (bbv-ctx-get y reg)))
-			 (bbv-ctxentry-equal? xe ye))))
-	    xentries))))
+	 (when (=fx (length xentries) (length yentries))
+	    (every (lambda (xe)
+		      (with-access::bbv-ctxentry xe (reg)
+			 (let ((ye (bbv-ctx-get y reg)))
+			    (bbv-ctxentry-equal? xe ye))))
+	       xentries)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-ctx-assoc ...                                                */
@@ -491,6 +497,30 @@
 	     ctx)))
    
    (if *bbv-optim-alias*
+       (with-access::bbv-ctx ctx (entries)
+	  (instantiate::bbv-ctx
+	     (entries (map (lambda (e)
+			      (with-access::bbv-ctxentry e ((ereg reg) (ealiases aliases))
+				 (if (eq? ereg reg)
+				     (duplicate::bbv-ctxentry e
+					(aliases '()))
+				     (duplicate::bbv-ctxentry e
+					(aliases (remq reg ealiases))))))
+			 entries))))
+       ctx))
+
+(define (unalias-ctx-TBR ctx::bbv-ctx reg::rtl_reg)
+   
+   (define (unalias ctx::bbv-ctx reg::rtl_reg alias::rtl_reg)
+      (let ((e (bbv-ctx-get ctx alias)))
+	 (if e
+	     (with-access::bbv-ctxentry e (aliases)
+		(extend-ctx/entry ctx
+		   (duplicate::bbv-ctxentry e
+		      (aliases (remq reg aliases)))))
+	     ctx)))
+   
+   (if *bbv-optim-alias*
        (let ((e (bbv-ctx-get ctx reg)))
 	  (if e
 	      (with-access::bbv-ctxentry e (aliases types polarity value)
@@ -620,6 +650,8 @@
       (fprint p ":succs " (map lbl succs))
       (dump-margin p (+fx m 1))
       (fprint p ":merge-info " (dump-merge-info %merge-info))
+      (dump-margin p (+fx m 1))
+      (fprint p ":ctx " (shape ctx))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))

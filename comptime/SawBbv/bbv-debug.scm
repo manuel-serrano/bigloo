@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Mon Feb 26 18:24:35 2024 (serrano)                */
+;*    Last change :  Sat Apr  6 07:37:23 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -44,7 +44,7 @@
 	    (log-blocks ::global ::pair-nil ::pair-nil)
 	    (assert-block ::blockS ::obj)
 	    (assert-blocks ::blockS ::obj)
-	    (assert-context! b::block)
+	    (assert-context! b::blockS)
 	    (rtl-assert-reg-type ::rtl_reg ::type ::bool ::bbv-ctx ::obj ::bstring)
 	    (rtl-assert-fxcmp ::symbol x y ::bool ::bbv-ctx ::obj ::bstring)))
 
@@ -343,14 +343,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    assert-failure ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (assert-failure pred reg loc #!optional (tag "BBV-ASSERT-FAILURE"))
+(define (assert-failure pred reg polarity loc #!optional (tag "BBV-ASSERT-FAILURE"))
    (let ((debugname (reg-debugname reg)))
       (set! assert-cnt (+fx assert-cnt 1))
       (if (location? loc)
-	  (format "(fprintf(stderr, \"*** ~a[~a]:%s:%d\\n%s: %s::%s (%s:%d)\\n\", __FILE__, __LINE__, \"~a\", \"~a\", BSTRING_TO_STRING(bgl_typeof(~a)), \"~a\", ~a), exit(127), 0)"
-	     tag assert-cnt pred debugname debugname (location-fname loc) (location-pos loc))
-	  (format "(fprintf(stderr, \"*** ~a[~a]:%s:%d\\n%s: %s::%s\\n\", __FILE__, __LINE__, \"~a\", \"~a\", BSTRING_TO_STRING(bgl_typeof(~a))), exit(127), 0)"
-	     tag assert-cnt pred debugname debugname))))
+	  (format "(fprintf(stderr, \"*** ~a[~a]:%s:%d\\n%s: %s::~a%s (%s:%d)\\n\", __FILE__, __LINE__, \"~a\", \"~a\", BSTRING_TO_STRING(bgl_typeof(~a)), \"~a\", ~a), exit(127), 0)"
+	     tag assert-cnt (if polarity "" "!") pred debugname debugname (location-fname loc) (location-pos loc))
+	  (format "(fprintf(stderr, \"*** ~a[~a]:%s:%d\\n%s: %s::~a%s\\n\", __FILE__, __LINE__, \"~a\", \"~a\", BSTRING_TO_STRING(bgl_typeof(~a))), exit(127), 0)"
+	     tag assert-cnt (if polarity "" "!") pred debugname debugname))))
 
 ;*---------------------------------------------------------------------*/
 ;*    assert-context! ...                                              */
@@ -358,11 +358,11 @@
 ;*    Insert assertion to verify dynamically the correction of the     */
 ;*    specialized CFG.                                                 */
 ;*---------------------------------------------------------------------*/
-(define (assert-context! b::block)
+(define (assert-context! b::blockS)
    
    (define (pragma-ins cexpr::bstring ctx loc)
       (let ((pr (instantiate::rtl_pragma
-		    (format cexpr)))
+		   (format cexpr)))
 	    (es (instantiate::regset (msize 0) (regv '#()) (regl '()))))
 	 (instantiate::rtl_ins/bbv
 	    (loc loc)
@@ -372,7 +372,7 @@
 	    (out es)
 	    (def es)
 	    (args '()))))
-
+   
    (define (type-predicates types)
       (when (pair? types)
 	 (filter (lambda (x) x) (map type-predicate types))))
@@ -382,7 +382,7 @@
 	 (let ((checks (filter-map (lambda (e)
 				      (with-access::bbv-ctxentry e (reg types polarity)
 					 (with-access::rtl_reg reg (debugname name var type)
-					    (when (eq? type *obj*)
+					    (when (bigloo-type? type)
 					       (let ((preds (type-predicates types)))
 						  (when (pair? preds)
 						     (format "~( && )"
@@ -391,7 +391,7 @@
 								   (if polarity "" "!")
 								   p
 								   (reg-debugname reg)
-								   (assert-failure p reg loc)))
+								   (assert-failure p reg polarity loc)))
 							   preds))))))))
 			  entries)))
 	    (when (pair? checks)
@@ -399,7 +399,7 @@
    
    
    (define (assert-ins i::rtl_ins/bbv first)
-      (when (or first (>=fx *bbv-assert* 3))
+      (when (or first (>=fx *bbv-assert* 2))
 	 (with-access::rtl_ins/bbv i (loc ctx)
 	    (let ((assert (ctx-assert ctx loc)))
 	       (when (string? assert)
@@ -407,7 +407,7 @@
 		     (pragma-ins assert ctx loc)))))))
    
    (assert-blocks b "before assert!")
-   (if (>=fx *bbv-assert* 2)
+   (if (>=fx *bbv-assert* 1)
        (let loop ((bs (list b))
 		  (acc (make-empty-bbset)))
 	  (cond
@@ -416,7 +416,7 @@
 	     ((bbset-in? (car bs) acc)
 	      (loop (cdr bs) acc))
 	     (else
-	      (with-access::block (car bs) (first succs preds label)
+	      (with-access::blockS (car bs) (first succs preds label ctx)
 		 (when *bbv-debug* (assert-block (car bs) "assert-context!"))
 		 (let loop ((first first)
 			    (acc '()))
@@ -424,10 +424,11 @@
 			(block-first-set! (car bs) (reverse! acc))
 			(let* ((ins (car first))
 			       (assert (assert-ins ins (null? acc))))
-			   (loop (cdr first)
-			      (if assert
-				  (cons* ins assert acc)
-				  (cons ins acc))))))
+			   (with-access::rtl_ins/bbv ins (ctx)
+			      (loop (cdr first)
+				 (if assert
+				     (cons* ins assert acc)
+				     (cons ins acc)))))))
 		 (loop (append succs (cdr bs)) (bbset-cons (car bs) acc))))))
        b))
 
