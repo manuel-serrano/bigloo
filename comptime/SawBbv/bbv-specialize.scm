@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Sat Apr  6 07:26:03 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 12:50:53 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -537,15 +537,21 @@
 		     " nany: " (not (any (lambda (t) (<=ty t type))
 				      (bbv-ctxentry-types e))))
 		  (cond
-		     ((and (every (lambda (t) (<=ty t type))
-			      (bbv-ctxentry-types e))
-			   polarity)
+		     ((and polarity
+			   epolarity
+			   (every (lambda (t) (<=ty t type))
+			      (bbv-ctxentry-types e)))
 		      (trace-item "TCHECK+- type: " (shape type)
 			 " " (shape (bbv-ctxentry-types e)))
 		      ;; positive type simplification
-		      (if epolarity
-			  (specialize+ reg type epolarity value e)
-			  (specialize- reg type epolarity value e)))
+		      (specialize+ reg type epolarity value e))
+		     ((and (or (not polarity) (not epolarity))
+			   (any (lambda (t) (<=ty t type))
+			      (bbv-ctxentry-types e)))
+		      (trace-item "TCHECK+- type: " (shape type)
+			 " " (shape (bbv-ctxentry-types e)))
+		      ;; positive type simplification
+		      (specialize- reg type epolarity value e))
 		     ((and (pair? (bbv-ctxentry-types e))
 			   (not (any (lambda (t) (<=ty type t))
 				   (bbv-ctxentry-types e)))

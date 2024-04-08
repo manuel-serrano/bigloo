@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Tue Mar  5 08:04:45 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 11:21:57 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -57,6 +57,8 @@
       ((eq? x y) #t)
       ((eq? x *bint*) (or (eq? y *long*) (eq? y 'number)))
       ((eq? x *long*) (or (eq? y *bint*) (eq? y 'number)))
+      ((eq? x *real*) (or (eq? y *breal*) (eq? y 'number)))
+      ((eq? x *breal*) (or (eq? y *real*) (eq? y 'number)))
       ((or (eq? x 'number) (eq? y 'number)) #f)
       (else (is-subtype? x y))))
 

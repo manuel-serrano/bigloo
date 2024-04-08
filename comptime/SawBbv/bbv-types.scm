@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Sat Apr  6 07:22:47 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 12:42:56 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -409,13 +409,21 @@
 		   (let ((n (new-ctxentry reg type polarity value)))
 		      (cons n entries)))
 		  ((eq? (bbv-ctxentry-reg (car entries)) reg)
-		   (with-access::bbv-ctxentry (car entries) ((oa aliases))
-		      (let ((n (duplicate::bbv-ctxentry (car entries)
-				  (types types)
-				  (polarity polarity)
-				  (value value)
-				  (aliases (or aliases oa)))))
-			 (cons n (cdr entries)))))
+		   (with-access::bbv-ctxentry (car entries) ((oa aliases) (otypes types) (opolarity polarity))
+		      (if (and (eq? polarity opolarity) (not polarity))
+			  ;; accumulate negative polarity
+			  (let ((n (duplicate::bbv-ctxentry (car entries)
+				      (types (delete-duplicates (append otypes types)))
+				      (polarity polarity)
+				      (value value)
+				      (aliases (or aliases oa)))))
+			     (cons n (cdr entries)))  
+			  (let ((n (duplicate::bbv-ctxentry (car entries)
+				      (types types)
+				      (polarity polarity)
+				      (value value)
+				      (aliases (or aliases oa)))))
+			     (cons n (cdr entries))))))
 		  (else
 		   (cons (car entries) (loop (cdr entries)))))))))
    
