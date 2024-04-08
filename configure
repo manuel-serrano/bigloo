@@ -4,9 +4,9 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec 22 17:39:42 2023 (serrano)                */
+#*    Last change :  Mon Apr  8 10:54:27 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
-#*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
+#*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -281,7 +281,8 @@ libuvconfigureopt=
 #* libuvversion=v1.40.0                                                */
 #* libuvversion=v1.43.0                                                */
 #* libuvversion=v1.44.2                                                */
-libuvversion=v1.47.0
+#libuvversion=v1.47.0
+libuvversion=v1.48.0
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=

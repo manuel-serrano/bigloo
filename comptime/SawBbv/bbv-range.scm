@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Sat Apr  6 06:39:49 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 10:49:39 2024 (serrano)                */
 ;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -705,10 +705,10 @@
 	 ((bbv-singleton? y)
 	  (let ((yv (bbv-range-lo y)))
 	     (cond
-		((= yv (bbv-range-lo x))
+		((equal? yv (bbv-range-lo x))
 		 (duplicate::bbv-range x
 		    (lo (++ (bbv-range-lo x)))))
-		((= yv (bbv-range-up x))
+		((equal? yv (bbv-range-up x))
 		 (duplicate::bbv-range x
 		    (lo (-- (bbv-range-up x)))))
 		(else
