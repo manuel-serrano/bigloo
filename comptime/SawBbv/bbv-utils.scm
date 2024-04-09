@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon Apr  8 11:21:57 2024 (serrano)                */
+;*    Last change :  Tue Apr  9 16:08:30 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -304,15 +304,12 @@
       (let ((entries (filter (lambda (e)
 				(regset-member? (bbv-ctxentry-reg e) out))
 			(bbv-ctx-entries ctx))))
-	 (let ((nctx (if (and #f (=fx (length entries) (length (bbv-ctx-entries ctx))))
-			 ctx
-			 (duplicate::bbv-ctx ctx
-			    (entries entries)))))
+	 (let ((nctx (duplicate::bbv-ctx ctx
+			(entries entries))))
 	    (regset-for-each (lambda (r)
 				(unless (bbv-ctx-get nctx r)
 				   (with-access::rtl_reg r (type)
-				      (set! nctx (extend-ctx nctx r
-						    (list type) #t)))))
+				      (set! nctx (extend-ctx nctx r (list type) #t)))))
 	       out)
 	    nctx))))
 
