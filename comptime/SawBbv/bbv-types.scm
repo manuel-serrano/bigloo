@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Apr  8 12:42:56 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 14:19:39 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -408,7 +408,19 @@
 		  ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car entries))) rnum)
 		   (let ((n (new-ctxentry reg type polarity value)))
 		      (cons n entries)))
-		  ((eq? (bbv-ctxentry-reg (car entries)) reg)
+		  ((and #f (eq? (bbv-ctxentry-reg (car entries)) reg))
+		   ;; debug TBR
+		   (unless *should-be-change*
+		      (set! *should-be-change* #t)
+		      (tprint "should be changed..."))
+		   (with-access::bbv-ctxentry (car entries) ((oa aliases))
+		      (let ((n (duplicate::bbv-ctxentry (car entries)
+				  (types types)
+				  (polarity polarity)
+				  (value value)
+				  (aliases (or aliases oa)))))
+			 (cons n (cdr entries)))))
+		  ((and #t (eq? (bbv-ctxentry-reg (car entries)) reg))
 		   (with-access::bbv-ctxentry (car entries) ((oa aliases) (otypes types) (opolarity polarity))
 		      (if (and (eq? polarity opolarity) (not polarity))
 			  ;; accumulate negative polarity
@@ -417,7 +429,7 @@
 				      (polarity polarity)
 				      (value value)
 				      (aliases (or aliases oa)))))
-			     (cons n (cdr entries)))  
+			     (cons n (cdr entries)))
 			  (let ((n (duplicate::bbv-ctxentry (car entries)
 				      (types types)
 				      (polarity polarity)
@@ -438,6 +450,8 @@
 		    value)))
 	  (duplicate::bbv-ctx ctx
 	     (entries (extend-entries ctx reg types polarity v))))))
+
+(define *should-be-change* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx* ...                                                  */

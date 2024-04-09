@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Apr  8 12:50:53 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 14:08:05 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -467,12 +467,12 @@
       (let ((ctx+ (extend-ctx ctx reg (list type) #t
 		     :value (min-value value (bbv-ctxentry-value e)))))
 	 (trace-item "ctx+: " (shape ctx+))
-	 (with-access::rtl_ins/bbv i (fun loc)
+	 (with-access::rtl_ins/bbv i (fun loc args)
 	    (with-access::rtl_ifne fun (then)
 	       (let* ((assert (when (>=fx *bbv-assert* 3)
-				 (rtl-assert-reg-type
-				    reg type polarity ctx loc
-				    "BBV-ASSERT-FAILURE:TYPECHECK+")))
+                                 (rtl-assert-expr-type
+                                    reg type polarity ctx loc
+                                    "BBV-ASSERT-FAILURE:TYPECHECK+")))
 		      (s (if assert
 			     (duplicate::rtl_ins/bbv i
 				(ctx ctx)
@@ -482,8 +482,9 @@
 				(dest #f)
 				(args (list (duplicate::rtl_ins/bbv i
 					       (ctx ctx)
-					       (fun assert)))))
-			     (if #f
+					       (fun assert)
+					       (args args)))))
+			     (if (equal? (getenv "BIGLOOBBVGOODORBAD") "good")
 				 (duplicate::rtl_ins/bbv i
 				    (ctx ctx)
 				    (fun (duplicate::rtl_ifne fun
@@ -518,7 +519,7 @@
 		      (dest #f)
 		      (args '()))))
 	    (values s ctx))))
-   
+
    (with-trace 'bbv-ins "rtl_ins-specialize-typecheck"
       (multiple-value-bind (reg type polarity value)
 	 (rtl_ins-typecheck i)
@@ -537,33 +538,32 @@
 		     " nany: " (not (any (lambda (t) (<=ty t type))
 				      (bbv-ctxentry-types e))))
 		  (cond
-		     ((and polarity
-			   epolarity
+		     ((and polarity epolarity
 			   (every (lambda (t) (<=ty t type))
 			      (bbv-ctxentry-types e)))
-		      (trace-item "TCHECK+- type: " (shape type)
+		      (trace-item "TCHECK++ type: " (shape type)
 			 " " (shape (bbv-ctxentry-types e)))
 		      ;; positive type simplification
 		      (specialize+ reg type epolarity value e))
-		     ((and (or (not polarity) (not epolarity))
+		     ((and polarity (not epolarity)
 			   (any (lambda (t) (<=ty t type))
 			      (bbv-ctxentry-types e)))
 		      (trace-item "TCHECK+- type: " (shape type)
 			 " " (shape (bbv-ctxentry-types e)))
 		      ;; positive type simplification
 		      (specialize- reg type epolarity value e))
-		     ((and (pair? (bbv-ctxentry-types e))
+		     ((and polarity epolarity
+			   (pair? (bbv-ctxentry-types e))
 			   (not (any (lambda (t) (<=ty type t))
 				   (bbv-ctxentry-types e)))
 			   (not (memq 'number (bbv-ctxentry-types e)))
 			   (not (memq *pair-nil* (bbv-ctxentry-types e)))
-			   (not (eq? type 'number))
-			   polarity epolarity)
+			   (not (eq? type 'number)))
 		      ;; negative type simplification
 		      (trace-item "TCHECK-- type: " (shape type)
 			 " e: " (shape (bbv-ctxentry-types e))
 			 " <=? *obj*: " (<=ty type *obj*))
-		      (specialize- reg type epolarity value e))
+		      (specialize- reg type #f value e))
 		     ((isa? fun rtl_ifne)
 		      (with-access::bbv-ctxentry e (aliases)
 			 (let ((regs (if (memq reg aliases)

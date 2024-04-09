@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Apr  8 10:49:39 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 15:05:15 2024 (serrano)                */
 ;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -710,7 +710,7 @@
 		    (lo (++ (bbv-range-lo x)))))
 		((equal? yv (bbv-range-up x))
 		 (duplicate::bbv-range x
-		    (lo (-- (bbv-range-up x)))))
+		    (up (-- (bbv-range-up x)))))
 		(else
 		 x))))
 	 (else
@@ -721,9 +721,15 @@
 ;*---------------------------------------------------------------------*/
 (define (->range n)
    (cond
-      ((fixnum? n) n)
-      ((bignum? n) (if (> n 0) +inf.0 -inf.0))
-      (else n)))
+      ((fixnum? n)
+       (cond
+	  ((<= n (bbv-min-fixnum)) (bbv-min-fixnum))
+	  ((>= n (bbv-max-fixnum)) (bbv-max-fixnum))
+	  (else n)))
+      ((bignum? n)
+       (if (> n 0) +inf.0 -inf.0))
+      (else
+       n)))
 
 ;*---------------------------------------------------------------------*/
 ;*    +rv ...                                                          */

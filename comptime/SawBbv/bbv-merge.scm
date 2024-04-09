@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Sat Apr  6 10:53:19 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 13:25:15 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -377,6 +377,7 @@
 	       ((not polarity1)
 		(trace-item "merge-range.not polarity")
 		(let ((ts (types-intersection types1 types2)))
+		   (trace-item "types=" (map shape ts))
 		   (if (null? ts)
 		       (bbv-ctxentry-top)
 		       (duplicate::bbv-ctxentry e1

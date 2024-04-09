@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Jan 11 11:17:52 2024 (serrano)                */
+;*    Last change :  Tue Apr  9 10:37:05 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -142,12 +142,13 @@
 	   (infix macro $>=u64::bool (::uint64 ::uint64) ">=")
 	   (macro $evenfx?::bool (::long) "EVENP_FX")
 	   (macro $oddfx?::bool (::long) "ODDP_FX")
+	   ;; warning, the second argument of $*fx/ov and $*fx/ov-ov is ::long
 	   (macro $+fx/ov::bool (::bint ::bint ::bint) "BGL_ADDFX_OV")
-	   (macro $-fx/ov::bool (::bint ::bint ::bint) "BGL_SUBFX_OV")
-	   (macro $*fx/ov::bool (::bint ::long ::bint) "BGL_MULFX_OV")
 	   (macro $+fx/w-ov::bint (::bint ::bint) "BGL_ADDFX_SANS_OV")
+	   (macro $-fx/ov::bool (::bint ::bint ::bint) "BGL_SUBFX_OV")
 	   (macro $-fx/w-ov::bint (::bint ::bint) "BGL_SUBFX_SANS_OV")
-	   (macro $*fx/w-ov::bint (::bint ::bint) "BGL_MULFX_SANS_OV")
+	   (macro $*fx/ov::bool (::bint ::long ::bint) "BGL_MULFX_OV")
+	   (macro $*fx/w-ov::bint (::bint ::long) "BGL_MULFX_SANS_OV")
 	   (infix macro $+fx::long (::long ::long) "+")
 	   (infix macro $+elong::elong (::elong ::elong) "+")
 	   (infix macro $+llong::llong (::llong ::llong) "+")

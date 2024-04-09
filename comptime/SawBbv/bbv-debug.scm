@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Sat Apr  6 07:37:23 2024 (serrano)                */
+;*    Last change :  Mon Apr  8 17:41:44 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -46,6 +46,7 @@
 	    (assert-blocks ::blockS ::obj)
 	    (assert-context! b::blockS)
 	    (rtl-assert-reg-type ::rtl_reg ::type ::bool ::bbv-ctx ::obj ::bstring)
+	    (rtl-assert-expr-type reg::rtl_reg type::type polarity ctx loc tag)
 	    (rtl-assert-fxcmp ::symbol x y ::bool ::bbv-ctx ::obj ::bstring)))
 
 ;*---------------------------------------------------------------------*/
@@ -333,6 +334,7 @@
       ((eq? type *output-port*) "OUTPUT_PORTP")
       ((eq? type *bool*) "BOOLEANP")
       ((eq? type *bbool*) "BOOLEANP")
+      ((eq? type *symbol*) "SYMBOLP")
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -382,7 +384,9 @@
 	 (let ((checks (filter-map (lambda (e)
 				      (with-access::bbv-ctxentry e (reg types polarity)
 					 (with-access::rtl_reg reg (debugname name var type)
-					    (when (bigloo-type? type)
+					    (when (and (bigloo-type? type)
+						       (not (eq? type *procedure-el*))
+						       (not (eq? type *procedure*)))
 					       (let ((preds (type-predicates types)))
 						  (when (pair? preds)
 						     (format "~( && )"
@@ -449,6 +453,16 @@
 	  (begin
 	     (tprint "PAS DE TYPE PRED " (shape type) " " (eq? type *bnil*))
 	     #f))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl-assert-expr-type ...                                         */
+;*---------------------------------------------------------------------*/
+(define (rtl-assert-expr-type reg::rtl_reg type::type polarity ctx loc tag)
+   (let ((debugname (reg-debugname reg)))
+      (let ((cexpr (format "/* rtl-assert-expr-type */ ($1 || ~a)"
+		      (assert-failure (or (type-predicate type) "???") reg loc tag))))
+	 (instantiate::rtl_pragma
+	    (format cexpr)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl-assert-fxcmp ...                                             */
