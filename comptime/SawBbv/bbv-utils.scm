@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Tue Apr  9 16:08:30 2024 (serrano)                */
+;*    Last change :  Wed Apr 10 08:24:00 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -312,4 +312,3 @@
 				      (set! nctx (extend-ctx nctx r (list type) #t)))))
 	       out)
 	    nctx))))
-
