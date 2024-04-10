@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Apr  8 14:08:05 2024 (serrano)                */
+;*    Last change :  Wed Apr 10 06:49:57 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -484,7 +484,7 @@
 					       (ctx ctx)
 					       (fun assert)
 					       (args args)))))
-			     (if (equal? (getenv "BIGLOOBBVGOODORBAD") "good")
+			     (if (and #f (equal? (getenv "BIGLOOBBVGOODORBAD") "good"))
 				 (duplicate::rtl_ins/bbv i
 				    (ctx ctx)
 				    (fun (duplicate::rtl_ifne fun
