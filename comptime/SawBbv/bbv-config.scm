@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Wed Jan 17 07:49:44 2024 (serrano)                */
+;*    Last change :  Thu Apr 11 08:34:16 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -107,7 +107,7 @@
 (define *bbv-optim-vlength*
    (let ((e (getenv "BIGLOOBBVVLENGTH")))
       (cond
-	 ((not e) #f)
+	 ((not e) #t)
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
 	 (else (error "bbv-optim-vlength" "unknown value" e)))))

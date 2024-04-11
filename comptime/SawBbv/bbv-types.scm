@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Apr  9 11:40:38 2024 (serrano)                */
+;*    Last change :  Thu Apr 11 08:14:46 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -100,6 +100,8 @@
 	    (extend-ctx/entry ::bbv-ctx ::bbv-ctxentry)
 	    (extend-ctx/entry* ctx::bbv-ctx . entries)
 	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
+	       #!key (value '_) (aliases #f))
+	    (extend-ctx!::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
 	       #!key (value '_) (aliases #f))
 	    (extend-ctx* ctx::bbv-ctx regs::pair ::pair ::bool
 	       #!key (value '_))
@@ -408,19 +410,7 @@
 		  ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car entries))) rnum)
 		   (let ((n (new-ctxentry reg type polarity value)))
 		      (cons n entries)))
-		  ((and #f (eq? (bbv-ctxentry-reg (car entries)) reg))
-		   ;; debug TBR
-		   (unless *should-be-change*
-		      (set! *should-be-change* #t)
-		      (tprint "should be changed..."))
-		   (with-access::bbv-ctxentry (car entries) ((oa aliases))
-		      (let ((n (duplicate::bbv-ctxentry (car entries)
-				  (types types)
-				  (polarity polarity)
-				  (value value)
-				  (aliases (or aliases oa)))))
-			 (cons n (cdr entries)))))
-		  ((and #t (eq? (bbv-ctxentry-reg (car entries)) reg))
+		  ((eq? (bbv-ctxentry-reg (car entries)) reg)
 		   (with-access::bbv-ctxentry (car entries) ((oa aliases) (otypes types) (opolarity polarity))
 		      (if (and (eq? polarity opolarity) (not polarity))
 			  ;; accumulate negative polarity
@@ -451,7 +441,60 @@
 	  (duplicate::bbv-ctx ctx
 	     (entries (extend-entries ctx reg types polarity v))))))
 
-(define *should-be-change* #f)
+;*---------------------------------------------------------------------*/
+;*    extend-ctx! ...                                                  */
+;*    -------------------------------------------------------------    */
+;*    Extend the context with a new register assignement. Contrary to  */
+;*    extend-ctx! this function assumes that:                          */
+;*      - reg is not already in ctx                                    */
+;*      - ctx is a newly allocated context that can be mutated because */
+;*        not shared yet.                                              */
+;*---------------------------------------------------------------------*/
+(define (extend-ctx! ctx::bbv-ctx reg::rtl_reg types::pair polarity::bool
+	   #!key (value '_) (aliases #f))
+   
+   (define (new-ctxentry reg::rtl_reg type polarity::bool value)
+      (instantiate::bbv-ctxentry
+	 (reg reg)
+	 (types types)
+	 (polarity polarity)
+	 (value value)))
+   
+   (define (extend-entries ctx reg types polarity value)
+      (let ((rnum (rtl_reg/ra-num reg)))
+	 (with-access::bbv-ctx ctx (entries)
+	    (cond
+	       ((null? entries)
+		(let ((n (new-ctxentry reg type polarity value)))
+		   (list n)))
+	       ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car entries))) rnum)
+		(let ((n (new-ctxentry reg type polarity value)))
+		   (cons n entries)))
+	       (else
+		(let loop ((cur (cdr entries))
+			   (prev entries))
+		   (cond
+		      ((null? cur)
+		       (let ((n (new-ctxentry reg type polarity value)))
+			  (set-cdr! prev (list n))
+			  entries))
+		      ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car cur))) rnum)
+		       (let ((n (new-ctxentry reg type polarity value)))
+			  (set-cdr! prev (cons n (cdr cur)))
+			  entries))
+		      (else
+		       (loop (cdr cur) cur)))))))))
+   
+   (let ((v (if (and (eq? value '_)
+		     polarity
+		     (pair? types)
+		     (or (eq? (car types) *bint*) (eq? (car types) *long*))
+		     (null? (cdr types)))
+		(fixnum-range)
+		value)))
+      (with-access::bbv-ctx ctx (entries)
+	 (set! entries (extend-entries ctx reg types polarity v))
+	 ctx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    extend-ctx* ...                                                  */

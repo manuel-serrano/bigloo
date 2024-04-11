@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Wed Apr 10 08:24:00 2024 (serrano)                */
+;*    Last change :  Thu Apr 11 08:00:16 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -273,18 +273,18 @@
       (with-access::rtl_ins/bbv ins (in)
 	 (filter-map (lambda (e)
 			(let ((reg (bbv-ctxentry-reg e)))
-			   (if (or (not (isa? reg rtl_reg/ra))
-				   (regset-member? reg in))
-			       (let ((aliases (filter (lambda (reg)
-							 (regset-member? reg in))
-						 (bbv-ctxentry-aliases e))))
-				  (if (=fx (length aliases)
-					 (length (bbv-ctxentry-aliases e)))
-				      e
-				      (begin
-					 (set! filtered #t)
-					 (duplicate::bbv-ctxentry e
-					    (aliases aliases)))))
+			   [assert (reg) (isa? reg rtl_reg/ra)]
+			   (if (regset-member? reg in)
+			       (if (every (lambda (reg)
+					     (regset-member? reg in))
+				      (bbv-ctxentry-aliases e))
+				   e
+				   (let ((aliases (filter (lambda (reg)
+							     (regset-member? reg in))
+						     (bbv-ctxentry-aliases e))))
+				      (set! filtered #t)
+				      (duplicate::bbv-ctxentry e
+					 (aliases aliases))))
 			       (begin
 				  (set! filtered #t)
 				  #f))))
@@ -306,9 +306,10 @@
 			(bbv-ctx-entries ctx))))
 	 (let ((nctx (duplicate::bbv-ctx ctx
 			(entries entries))))
-	    (regset-for-each (lambda (r)
-				(unless (bbv-ctx-get nctx r)
-				   (with-access::rtl_reg r (type)
-				      (set! nctx (extend-ctx nctx r (list type) #t)))))
+	    (regset-for-each (lambda (reg)
+				[assert (reg) (isa? reg rtl_reg/ra)]
+				(unless (bbv-ctx-get nctx reg)
+				   (with-access::rtl_reg reg (type)
+				      (extend-ctx! nctx reg (list type) #t))))
 	       out)
 	    nctx))))
