@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Apr 11 08:14:46 2024 (serrano)                */
+;*    Last change :  Mon Apr 15 11:58:01 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -480,7 +480,7 @@
 			  entries))
 		      ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car cur))) rnum)
 		       (let ((n (new-ctxentry reg type polarity value)))
-			  (set-cdr! prev (cons n (cdr cur)))
+			  (set-cdr! prev (cons n cur))
 			  entries))
 		      (else
 		       (loop (cdr cur) cur)))))))))
@@ -553,16 +553,6 @@
 ;*    Removing all REG aliasings.                                      */
 ;*---------------------------------------------------------------------*/
 (define (unalias-ctx ctx::bbv-ctx reg::rtl_reg)
-   
-   (define (unalias ctx::bbv-ctx reg::rtl_reg alias::rtl_reg)
-      (let ((e (bbv-ctx-get ctx alias)))
-	 (if e
-	     (with-access::bbv-ctxentry e (aliases)
-		(extend-ctx/entry ctx
-		   (duplicate::bbv-ctxentry e
-		      (aliases (remq reg aliases)))))
-	     ctx)))
-   
    (if *bbv-optim-alias*
        (with-access::bbv-ctx ctx (entries)
 	  (instantiate::bbv-ctx
@@ -574,30 +564,6 @@
 				     (duplicate::bbv-ctxentry e
 					(aliases (remq reg ealiases))))))
 			 entries))))
-       ctx))
-
-(define (unalias-ctx-TBR ctx::bbv-ctx reg::rtl_reg)
-   
-   (define (unalias ctx::bbv-ctx reg::rtl_reg alias::rtl_reg)
-      (let ((e (bbv-ctx-get ctx alias)))
-	 (if e
-	     (with-access::bbv-ctxentry e (aliases)
-		(extend-ctx/entry ctx
-		   (duplicate::bbv-ctxentry e
-		      (aliases (remq reg aliases)))))
-	     ctx)))
-   
-   (if *bbv-optim-alias*
-       (let ((e (bbv-ctx-get ctx reg)))
-	  (if e
-	      (with-access::bbv-ctxentry e (aliases types polarity value)
-		 (let loop ((aliases aliases)
-			    (ctx (extend-ctx ctx reg types polarity :value value :aliases '())))
-		    (if (null? aliases)
-			ctx
-			(loop (cdr aliases)
-			   (unalias ctx reg (car aliases))))))
-	      ctx))
        ctx))
 
 ;*---------------------------------------------------------------------*/

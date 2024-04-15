@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    /tmp/OFAOT/nan/lib/bigloo/4.3h/bigloo_real.h                     */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_real.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Apr 28 10:36:49 2020 (serrano)                */
-/*    Copyright   :  2016-20 Manuel Serrano                            */
+/*    Last change :  Mon Apr 15 09:39:03 2024 (serrano)                */
+/*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
 /*=====================================================================*/
@@ -81,7 +81,7 @@ union nanobj {
       static struct { double real; } aux = { flonum }; \
       static const obj_t name = BREAL( &aux )
 
-#   define FLONUMP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))
+#   define FLONUMP( c ) ((c && ((((long)c) & TAG_MASK) == TAG_REAL)))
 #   define REALP( c ) FLONUMP( c )
 
 #   define BGL_REAL_SET( o, v ) ((REAL( o ).val = v), o)

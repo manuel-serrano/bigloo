@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 27 15:14:18 2023                          */
-;*    Last change :  Wed Sep 27 15:17:37 2023 (serrano)                */
-;*    Copyright   :  2023 Manuel Serrano                               */
+;*    Last change :  Mon Apr 15 12:09:32 2024 (serrano)                */
+;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV liveness (and widening).                                     */
 ;*=====================================================================*/
@@ -56,27 +56,35 @@
    (define (rtl_ins/bbv-in i)
       (with-access::rtl_ins/bbv i (in)
 	 in))
-   
+
+   (define (liveness-ins! ins succ)
+      (with-access::rtl_ins/bbv ins (out fun in def args)
+	 (let ((sub (map (lambda (a)
+			    (when (isa? a rtl_ins)
+			       (liveness-ins! a ins)))
+		       args)))
+	    (let ((u (cond
+			((rtl_ins? succ)
+			 (regset-union! out (rtl_ins/bbv-in succ)))
+			((pair? succ)
+			 (regset-union*! out (map rtl_ins/bbv-in succ)))
+			(else
+			 #f))))
+	       (regset-for-each
+		  (lambda (r)
+		     (when (not (regset-member? r def))
+			(set! u (or (regset-add! in r) u))))
+		  out)
+	       (or u (any (lambda (x) x) sub))))))
+      
    (define (liveness-block! block)
       (with-access::block block (succs first)
 	 (let loop ((inss (reverse first))
 		    (succ (map (lambda (b) (car (block-first b))) succs))
 		    (t #f))
 	    (if (pair? inss)
-		(with-access::rtl_ins/bbv (car inss) (out fun in def)
-		   (let ((u (cond
-			       ((rtl_ins? succ)
-				(regset-union! out (rtl_ins/bbv-in succ)))
-			       ((pair? succ)
-				(regset-union*! out (map rtl_ins/bbv-in succ)))
-			       (else
-				#f))))
-		      (regset-for-each
-			 (lambda (r)
-			    (when (not (regset-member? r def))
-			       (set! u (or (regset-add! in r) u))))
-			 out)
-		      (loop (cdr inss) (car inss) (or t u))))
+		(let ((u (liveness-ins! (car inss) succ)))
+		   (loop (cdr inss) (car inss) (or t u)))
 		t))))
    
    (with-trace 'bbv "liveness"

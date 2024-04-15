@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Apr 10 06:49:57 2024 (serrano)                */
+;*    Last change :  Mon Apr 15 10:39:05 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -145,7 +145,7 @@
 ;*    ins-specialize! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (ins-specialize! first bs::blockS ctx::bbv-ctx queue::bbv-queue)
-
+   
    (define (debug-connect msg bs n)
       (when *bbv-debug*
 	 (with-access::blockS n (preds succs)
@@ -186,8 +186,8 @@
 		 (nins '())
 		 (ctx ctx))
 	 (when (pair? oins)
-	    (trace-item "ins: " (shape (car oins)) )
-	    (trace-item "ctx: " (shape ctx)))
+	    (trace-item "ins-specialize.loop ins: " (shape (car oins)))
+	    (trace-item "ins-specialize.loop ctx: " (shape ctx)))
 	 (cond
 	    ((null? oins)
 	     (reverse! nins))
@@ -207,7 +207,8 @@
 ;* 					     i))                       */
 ;* 				    args))                             */
 		      (let ((lctx (bbv-ctx-extend-live-out-regs nctx (car oins))))
-			 (trace-item "nctx: " (shape lctx))
+			 (trace-item "nctx: " (shape nctx))
+			 (trace-item "lctx: " (shape lctx))
 			 (cond
 			    ((rtl_ins-go? ins)
 			     (connect! bs ins)
@@ -263,14 +264,23 @@
 		      (loop (cdr oins) (cons ins nins) ctx)))))
 	    (else
 	     (with-access::rtl_ins (car oins) (args)
-		(let ((args (map (lambda (i)
-				    (if (isa? i rtl_ins)
-					(car (loop (list i) '() ctx))
-					i))
-			       args)))
-		   (loop (cdr oins)
-		      (cons (duplicate-ins/args (car oins) args ctx) nins)
-		      (bbv-ctx-extend-live-out-regs ctx (car oins))))))))))
+		(let laap ((args args)
+			   (nargs '())
+			   (actx ctx))
+		   (cond
+		      ((null? args)
+		       (let ((nctx (bbv-ctx-extend-live-out-regs actx (car oins))))
+			  (trace-item "actx=" (shape actx))
+			  (trace-item "nctx=" (shape nctx))
+			  (loop (cdr oins)
+			     (cons (duplicate-ins/args (car oins) (reverse! nargs) actx) nins)
+			     nctx)))
+		      ((isa? (car args) rtl_ins)
+		       (let ((ni (car (loop (list (car args)) '() actx))))
+			  (with-access::rtl_ins/bbv ni (ctx)
+			     (laap (cdr args) (cons ni nargs) ctx))))
+		      (else
+		       (laap (cdr args) (cons (car args) nargs) actx))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    block-need-merge? ...                                            */
@@ -827,7 +837,7 @@
 	 ((rtl_ins-call? i) (new-value-call i))
 	 ((rtl_ins-loadi? i) (new-value-loadi i))
 	 (else '_)))
-
+   
    (with-trace 'bbv-ins (format "rtl_ins-specialize-call [@~a]" (gendebugid))
       (trace-item "ins: " (shape i))
       (trace-item "ctx: " (shape ctx))
@@ -840,11 +850,12 @@
 		  (let* ((s (duplicate::rtl_ins/bbv i
 			       (ctx ctx)
 			       (fun (duplicate::rtl_call fun))))
-			 (nv (new-value i)))
+			 (nv (new-value i))
+			 (nctx (extend-ctx ctx dest (list (if (fun? value) type *obj*)) #t
+				  :value nv)))
 		     (trace-item "nv: " (shape nv))
-		     (values s
-			(extend-ctx ctx dest (list (if (fun? value) type *obj*)) #t
-			   :value nv)))))))))
+		     (trace-item "nctx: " (shape nctx))
+		     (values s nctx))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-return-specialize? ...                                   */
@@ -1186,7 +1197,7 @@
 	     ;; no register involed
 	     (values ctx ctx)))))
    
-   (define (specialize-call i::rtl_ins ctx::bbv-ctx)
+   (define (specialize-fxcmp/call i::rtl_ins ctx::bbv-ctx)
       (with-trace 'bbv-ins
 	    (format "rtl_ins-specialize-fxcmp/call ~a [@~a]"
 	       (shape i) (gendebugid))
@@ -1281,7 +1292,7 @@
 	    ((isa? fun rtl_ifne)
 	     (with-access::rtl_ifne fun (then)
 		(multiple-value-bind (ins ctx+ ctx-)
-		   (specialize-call (car args) ctx)
+		   (specialize-fxcmp/call (car args) ctx)
 		   (trace-item "ctx+: " (shape ctx+))
 		   (trace-item "ctx-: " (shape ctx-))
 		   (cond
@@ -1300,7 +1311,7 @@
 			     ctx-)))))))
 	    ((isa? fun rtl_call)
 	     (multiple-value-bind (ins ctx+ ctx-)
-		(specialize-call i ctx)
+		(specialize-fxcmp/call i ctx)
 		(cond
 		   ((rtl_ins-true? ins) (values ins ctx+))
 		   ((rtl_ins-false? ins) (values ins ctx-))

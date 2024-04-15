@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Apr  8 15:05:15 2024 (serrano)                */
+;*    Last change :  Mon Apr 15 10:36:54 2024 (serrano)                */
 ;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -461,6 +461,18 @@
 		    (vlen->range (car args) ctx)))
 		(else
 		 (vlen-range)))))
+	 ((rtl_ins-vlen? i)
+	  (trace-item "rtl_vlen")
+	  (with-access::rtl_ins i (dest args)
+	     (cond
+		((not (rtl_reg? (car args)))
+		 (vlen-range))
+		((bbv-ctx-get ctx (car args))
+		 =>
+		 (lambda (e)
+		    (vlen->range (car args) ctx)))
+		(else
+		 (vlen-range)))))
 	 ((rtl_ins-call? i)
 	  (trace-item "rtl_call")
 	  (with-access::rtl_ins i (fun)
@@ -481,18 +493,6 @@
 		(with-access::atom constant (value)
 		   (when (fixnum? value)
 		      (fixnum->range value))))))
-	 ((rtl_ins-vlen? i)
-	  (trace-item "rtl_vlen")
-	  (with-access::rtl_ins i (dest args)
-	     (cond
-		((not (rtl_reg? (car args)))
-		 (vlen-range))
-		((bbv-ctx-get ctx (car args))
-		 =>
-		 (lambda (e)
-		    (vlen->range (car args) ctx)))
-		(else
-		 (vlen-range)))))
 	 (else
 	  #f))))
 

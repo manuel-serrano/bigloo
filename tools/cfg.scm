@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Mon Jul 17 08:14:47 2017                          */
-;*    Last change :  Wed Jan 17 16:36:29 2024 (serrano)                */
+;*    Last change :  Mon Apr 15 10:27:05 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CFG (BB) dump for the dot program.                               */
@@ -282,6 +282,8 @@
 	     (if compact
 		 (format "~a:~(,)/~a" (escape reg) type val)
 		 (format "~a:~a/~a[~( )]" (escape reg) type val (map escape aliases))))
+	    ((? symbol?)
+	     (escape entry))
 	    (else
 	     "-")))
       

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Mon Apr  8 13:25:15 2024 (serrano)                */
+;*    Last change :  Mon Apr 15 10:00:56 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -82,7 +82,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-nearobj ...                      */
 ;*    -------------------------------------------------------------    */
-;*    Before applying the "size" strategy checks if two contexts       */
+;*    Before applying the "samepositive" strategy checks if two ctx    */
 ;*    are "near obj". A context is near obj if all its types are       */
 ;*    either obj or negative polarities.                               */
 ;*---------------------------------------------------------------------*/
@@ -147,7 +147,7 @@
 							      (ypol polarity))
 				  (if (not xpol)
 				      (not ypol)
-				      (list-eq? xtypes xtypes)))))
+				      (list-eq? xtypes ytypes)))))
 		     xentries yentries))))))
    
    (with-trace 'bbv-merge "bbv-block-merge-select-strategy-samepositive"
@@ -178,6 +178,12 @@
 	    ((and (>=fx lo -65536) (<=fx up -65535)) 2)
 	    ((and (>=fx lo 0) (<=fx up 536870912)) 3)
 	    (else 5))))
+
+   (define (type-size type)
+      (cond
+	 ((eq? type *bignum*) 1)
+	 ((eq? type *real*) 2)
+	 (else 3)))
    
    (define (entry-size e::bbv-ctxentry)
       (with-access::bbv-ctxentry e (types polarity value)
@@ -185,7 +191,8 @@
 	    ((not polarity) (minfx 100 (*fx 50 (length types))))
 	    ((eq? (car types) *obj*) 100)
 	    ((isa? value bbv-range) (range-size value))
-	    (else (*fx 10 (length types))))))
+	    ((null? types) 0)
+	    (else (*fx 10 (apply + (map type-size types)))))))
    
    (define (ctx-size ctx::bbv-ctx)
       (with-access::bbv-ctx ctx (entries)
