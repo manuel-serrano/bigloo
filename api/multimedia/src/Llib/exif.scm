@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Fri Mar 29 16:17:48 2024 (serrano)                */
+;*    Last change :  Sun May  5 10:19:46 2024 (serrano)                */
 ;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -1107,8 +1107,7 @@
 ;*    read-jpeg-sections ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (read-jpeg-sections exif mm::mmap path)
-   (mmap-read-position-set! mm 0)
-   (let ((m (read-jpeg-marker mm))) 
+   (let ((m (read-jpeg-marker mm)))
       (if (not (eq? m #xd8)) ;; M_SOI
 	  (exif-error "read-jpeg-sections" "Illegal section marker"
 	     (-elong (mmap-read-position mm) 1))
@@ -1206,7 +1205,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    https://www.awaresystems.be/imaging/tiff/specification/TIFF6.pdf */
 ;*---------------------------------------------------------------------*/
-(define (read-tiff-sections exif mm::mmap path)
+(define (read-tiff-sections exif::exif mm::mmap path)
 
    (define (tiff-endianess)
       ;; big endian
@@ -1221,32 +1220,43 @@
 		    (mmap-substring mm o (+fx i o))
 		    (loop (+fx i 1)))))))
 
-;*    (define (read-entry en offset)                                   */
-;*       (let* ((tag (elong->fixnum (get16u en mm (+fx 0 offset))))    */
-;* 	     (typ (get16u en mm (+fx 2 offset)))                       */
-;* 	     (cnt (get32u en mm (+fx 4 offset)))                       */
-;* 	     (voff (get32u en mm (+fx 8 offset))))                     */
-;* 	 (tprint "tag=" tag " " (fixnum->string tag 16)                */
-;* 	    " typ=" typ " cnt=" cnt " voff=" voff " "                  */
-;* 	    (if (=fx typ 2)                                            */
-;* 		(strncpy voff cnt)))))                                 */
-			       
    (define (read-ifd en offset)
-      #;(let loop ((dnum (elong->fixnum (get16u en mm (elong->fixnum offset))))
-		 (offset (+fx offset 2)))
-	 (if (>fx dnum 0)
-	     (begin
-		(read-entry en offset)
-		(loop (-fx dnum 1)
-		   (+fx offset 12)))
-	     (begin
-		(tprint "NEXT=" (get32u en mm offset))
-		(tprint "OFFSET=" offset " " (integer->string offset 16)))))
       (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0 0))
 			       
    (let* ((en (tiff-endianess))
 	  (offset (get32u en mm 4)))
       (read-ifd en offset)))
+
+;*---------------------------------------------------------------------*/
+;*    read-raf-sections ...                                            */
+;*    -------------------------------------------------------------    */
+;*    https://libopenraw.freedesktop.org/formats/raf/                  */
+;*---------------------------------------------------------------------*/
+(define (read-raf-sections exif mm::mmap path)
+   (let* ((pos (mmap-read-position mm))
+	  (fmtv (mmap-substring mm pos (+elong pos 4)))
+	  (id (mmap-substring mm (+elong pos 4) (+elong pos 12))))
+      ; skip 8 bytes
+      (set! pos (mmap-read-position mm))
+      ;; read the camera string
+      (let* ((buf (mmap-substring mm pos (+elong pos 32)))
+	     (i (string-index buf #a000))
+	     (model (substring buf 0 i)))
+	 (with-access::exif exif (make unique-camera-model camera-serial-number)
+	    (set! make "FUJIFILM")
+	    (set! unique-camera-model model)
+	    (set! camera-serial-number id)
+	    (let* ((version (mmap-get-string mm 4))
+		   (unknown (mmap-get-string mm 20))
+		   (jpegoff (mmap-get-string mm 4))
+		   (metaoff (mmap-get-string mm 4))
+		   (metalen (mmap-get-string mm 4))
+		   (cfaoff (mmap-get-string mm 4))
+		   (cfalen (mmap-get-string mm 4))
+		   (unknownlen (mmap-get-string mm 12))
+		   (someoff (mmap-get-string mm 4)))
+	       (mmap-read-position-set! mm (+elong (mmap-read-position mm) 28))
+	       (read-jpeg-sections exif mm path))))))
 		
 ;*---------------------------------------------------------------------*/
 ;*    read-rw2-sections ...                                            */
@@ -1337,7 +1347,21 @@
       (unless res
 	 (mmap-read-position-set! mm 0))
       res))
-		
+
+;*---------------------------------------------------------------------*/
+;*    raf? ...                                                         */
+;*    -------------------------------------------------------------    */
+;*    Fujifilm Raw Format                                              */
+;*      https://libopenraw.freedesktop.org/formats/raf/                */
+;*---------------------------------------------------------------------*/
+(define (raf? mm::mmap)
+   (let* ((sig "FUJIFILMCCD-RAW ")
+	  (mark (mmap-substring mm 0 (string-length sig)))
+	  (res (string=? mark sig)))
+      (unless res
+	 (mmap-read-position-set! mm 0))
+      res))
+
 ;*---------------------------------------------------------------------*/
 ;*    jpeg-exif ...                                                    */
 ;*    -------------------------------------------------------------    */
@@ -1357,7 +1381,10 @@
 		    (read-tiff-sections exf mm path))
 		   ((rw2? mm)
 		    (read-tiff-sections exf mm path))
+		   ((raf? mm)
+		    (read-raf-sections exf mm path))
 		   (else
+		    (mmap-read-position-set! mm 0)
 		    (read-jpeg-sections exf mm path))))
 	     (close-mmap mm))
 	  exf)))
