@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Oct 26 09:22:50 2022 (serrano)                */
-/*    Copyright   :  2016-22 Manuel Serrano                            */
+/*    Last change :  Mon May  6 16:05:05 2024 (serrano)                */
+/*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -203,7 +203,7 @@ struct bgl_hvector {
 /*    HVECTOR                                                          */
 /*---------------------------------------------------------------------*/
 #define STVECTOR(o, type) \
-   ((struct { header_t header; unsigned long length; type obj0; } *)(CREF(o)))
+   ((struct { header_t header; unsigned long length; type obj[8]; } *)(CREF(o)))
    
 #define BGL_HVECTOR_LENGTH(v) (HVECTOR(v).length)
 
@@ -220,32 +220,32 @@ struct bgl_hvector {
 #define BGL_F32VECTORP(v) (POINTERP(v) && (TYPE(v) == F32VECTOR_TYPE))
 #define BGL_F64VECTORP(v) (POINTERP(v) && (TYPE(v) == F64VECTOR_TYPE))
 
-#define BGL_SVECTOR_TO_PTR(v) (&(STVECTOR(v, void *)->obj0))
+#define BGL_SVECTOR_TO_PTR(v) (&(STVECTOR(v, void *)->obj[0]))
 
-#define BGL_S8VREF(v, i) (&(STVECTOR(v, int8_t)->obj0))[i]
+#define BGL_S8VREF(v, i) (&(STVECTOR(v, int8_t)->obj[0]))[i]
 #define BGL_S8VSET(v, i, o) (BGL_S8VREF(v, i) = o, BUNSPEC)
-#define BGL_U8VREF(v, i) (&(STVECTOR(v, uint8_t)->obj0))[i]
+#define BGL_U8VREF(v, i) (&(STVECTOR(v, uint8_t)->obj[0]))[i]
 #define BGL_U8VSET(v, i, o) (BGL_S8VREF(v, i) = o, BUNSPEC)
    
-#define BGL_S16VREF(v, i) (&(STVECTOR(v, int16_t)->obj0))[i]
+#define BGL_S16VREF(v, i) (&(STVECTOR(v, int16_t)->obj[0]))[i]
 #define BGL_S16VSET(v, i, o) (BGL_S16VREF(v, i) = o, BUNSPEC)
-#define BGL_U16VREF(v, i) (&(STVECTOR(v, uint16_t)->obj0))[i]
+#define BGL_U16VREF(v, i) (&(STVECTOR(v, uint16_t)->obj[0]))[i]
 #define BGL_U16VSET(v, i, o) (BGL_S16VREF(v, i) = o, BUNSPEC)
 
-#define BGL_S32VREF(v, i) (&(STVECTOR(v, int32_t)->obj0))[i]
+#define BGL_S32VREF(v, i) (&(STVECTOR(v, int32_t)->obj[0]))[i]
 #define BGL_S32VSET(v, i, o) (BGL_S32VREF(v, i) = o, BUNSPEC)
-#define BGL_U32VREF(v, i) (&(STVECTOR(v, uint32_t)->obj0))[i]
+#define BGL_U32VREF(v, i) (&(STVECTOR(v, uint32_t)->obj[0]))[i]
 #define BGL_U32VSET(v, i, o) (BGL_U32VREF(v, i) = o, BUNSPEC)
 
-#define BGL_S64VREF(v, i) (&(STVECTOR(v, BGL_LONGLONG_T)->obj0))[i]
+#define BGL_S64VREF(v, i) (&(STVECTOR(v, BGL_LONGLONG_T)->obj[0]))[i]
 #define BGL_S64VSET(v, i, o) (BGL_S64VREF(v, i) = o, BUNSPEC)
-#define BGL_U64VREF(v, i) (&(STVECTOR(v, unsigned BGL_LONGLONG_T)->obj0))[i]
+#define BGL_U64VREF(v, i) (&(STVECTOR(v, unsigned BGL_LONGLONG_T)->obj[0]))[i]
 #define BGL_U64VSET(v, i, o) (BGL_U64VREF(v, i) = o, BUNSPEC)
 
-#define BGL_F32VREF(v, i) (&(STVECTOR(v, float)->obj0))[i]
+#define BGL_F32VREF(v, i) (&(STVECTOR(v, float)->obj[0]))[i]
 #define BGL_F32VSET(v, i, o) (BGL_F32VREF(v, i) = o, BUNSPEC)
 
-#define BGL_F64VREF(v, i) (&(STVECTOR(v, double)->obj0))[i]
+#define BGL_F64VREF(v, i) (&(STVECTOR(v, double)->obj[0]))[i]
 #define BGL_F64VSET(v, i, o) (BGL_F64VREF(v, i) = o, BUNSPEC)
 
 #define BGL_XXX_U8VREF(v, i, type) \
