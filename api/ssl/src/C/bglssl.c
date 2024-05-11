@@ -3399,7 +3399,7 @@ bgl_pkcs5_pbkdf2_hmac_sha1(obj_t pass, obj_t salt, int iter, int keylen) {
 /*---------------------------------------------------------------------*/
 obj_t bgl_ssl_error_string() {
    int err = ERR_get_error();
-   char *string[128];
+   char string[128];
    
    ERR_error_string_n(err, string, 128);
 
