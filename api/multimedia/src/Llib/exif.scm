@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Wed May  8 11:16:59 2024 (serrano)                */
+;*    Last change :  Sat May 11 08:00:39 2024 (serrano)                */
 ;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -161,12 +161,12 @@
 	     (substring bytes o i)
 	     (loop (+fx i 1)))))
    
-   (define (mmap-getascii bytes::bstring o)
-      (let loop ((i o))
+   (define (mmap-getascii bytes::mmap o)
+      (let loop ((i (fixnum->elong o)))
 	 (if (char=? (mmap-ref bytes i) #a000)
-	     (mmap-substring bytes o i)
-	     (loop (+fx i 1)))))
-   
+	     (mmap-substring bytes (fixnum->elong o) i)
+	     (loop (+elong i 1)))))
+
    (if (string? bytes)
        (string-getascii bytes o)
        (mmap-getascii bytes o)))
@@ -276,6 +276,18 @@
       ((12)
        ;; FMT_DOUBLE 64bit
        (exif-error "exif" "Unsupported number format" fmt))
+      ((257)
+       ;; PANASONIC bool
+       (char->integer
+	  (if (string? bytes)
+	      (string-ref bytes o)
+	      (mmap-ref bytes (fixnum->elong o)))))
+      ((258)
+       ;; PANASONIC 1|2|3
+       (char->integer
+	  (if (string? bytes)
+	      (string-ref bytes o)
+	      (mmap-ref bytes (fixnum->elong o)))))
       (else
        (tprint "unknown format " fmt)
        0)))
@@ -344,9 +356,33 @@
 ;*---------------------------------------------------------------------*/
 ;*    process-exif-dir! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (process-exif-dir! en::bool bytes start::int base::int exif o0 tag-base::long extension)
+(define (process-exif-dir! en::bool bytes start::int base::int exif o0 tag-base::long read-next::bool extension)
 
    (define (strncpy o max)
+
+      (define (string-strncpy o max)
+	 (let loop ((i 0))
+	    (if (=fx i max)
+		(substring bytes o (+fx o i))
+		(let ((c (string-ref bytes (+fx i o))))
+		   (if (char=? c #a000)
+		       (substring bytes o (+fx o i))
+		       (loop (+fx i 1)))))))
+      
+      (define (mmap-strncpy o max)
+	 (let loop ((i 0))
+	    (if (=fx i max)
+		(mmap-substring bytes o (+fx o i))
+		(let ((c (mmap-ref bytes (+fx i o))))
+		   (if (char=? c #a000)
+		       (mmap-substring bytes o (+fx i o))
+		       (loop (+fx i 1)))))))
+      
+      (if (string? bytes)
+	  (string-strncpy o max)
+	  (mmap-strncpy o max)))
+
+   (define (strncpy2 o max)
 
       (define (string-strncpy o max)
 	 (let loop ((i 0))
@@ -378,8 +414,10 @@
 		   (fmt (elong->fixnum (get16u en bytes (+fx 2 da))))
 		   (cmp (get32u en bytes (+fx 4 da))))
 	       (let* ((bcount (*fx (elong->fixnum cmp)
-				 (vector-ref *exif-formats-size*
-				    (elong->fixnum fmt))))
+				 (if (>elong fmt (vector-length *exif-formats-size*))
+				     1
+				     (vector-ref *exif-formats-size*
+					(elong->fixnum fmt)))))
 		      (valptr (if (>fx bcount 4)
 				  (let ((ov (get32u en bytes (+fx 8 da))))
 				     (+fx base (elong->fixnum ov)))
@@ -387,7 +425,7 @@
 		  ;; the tag-base is used to avoid tag confusion between
 		  ;; various extensions (e.g. GPS, see below)
 		  '(tprint "TAG=" (integer->string tag 16) " " de "/" dnum
-		    " " (mmap-read-position bytes))
+		     " " valptr " -> " (getformat en bytes valptr fmt))
 		  (case (+fx tag tag-base)
 		     ((#x1)
 		      ;; INTEROPINDEX
@@ -464,13 +502,13 @@
 		     ((#xfe)
 		      ;; NEW SUBFILE TYPE
 		      (let ((s (getformat/fx en bytes valptr fmt)))
-			 (tprint "NEW_SUBFILE TYPE=" s)
+			 '(tprint "NEW_SUBFILE TYPE=" s)
 			 (with-access::exif exif (new-subfile-type)
 			    (set! new-subfile-type s))))
 		     ((#xff)
 		      ;; SUBFILE TYPE
 		      (let ((s (getformat/fx en bytes valptr fmt)))
-			 (tprint "SUBFILE TYPE=" s)))
+			 '(tprint "SUBFILE TYPE=" s)))
 		     ((#x100)
 		      ;; IMAGE_WIDTH
 		      (let ((w (getformat/fx en bytes valptr fmt)))
@@ -646,7 +684,7 @@
 		     ((#x8769)
 		      ;; TAG_EXIF_OFFSET
 		      (let ((ss (+fx base (elong->fixnum (get32u en bytes valptr)))))
-			 (process-exif-dir! en bytes ss base exif o0 0 extension)))
+			 (process-exif-dir! en bytes ss base exif o0 0 #t extension)))
 		     ((#x8822)
 		      ;; EXPOSURE_PROGRAM
 		      (let ((e (getformat en bytes valptr fmt)))
@@ -665,7 +703,7 @@
 		     ((#x9000)
 		      ;; TAG_EXIF_VERSION
 		      (with-access::exif exif (version)
-			 (set! version (strncpy valptr bcount))))
+			 (set! version (strncpy2 valptr bcount))))
 		     ((#x9003 #x9004)
 		      ;; TAG_DATE_TIME_ORIGINAL, TAG_DATE_TIME_DIGITIZED
 		      (with-access::exif exif (date)
@@ -760,7 +798,11 @@
 		     ((#x927c)
 		      ;; MAKER NOTE
 		      (with-access::exif exif (maker-note)
-			 (strncpy valptr bcount)))
+			 (let ((buf (if (string? bytes)
+					(substring bytes valptr (+fx valptr bcount))
+					(mmap-substring bytes valptr (+fx valptr bcount)))))
+			    (set! maker-note (strncpy valptr bcount))
+			    (read-maker-note en buf exif))))
 		     ((#x9290)
 		      ;; SUB_SEC_TIME (ascii)
 		      '(tprint "SUB_SEC_TIME " (strncpy valptr bcount) " " bcount)
@@ -1054,12 +1096,13 @@
 		      ;; TAG_UNKNOWN
 		      (extension exif tag en bytes fmt bcount valptr)))
 		  (loop (+fx de 1))))))
-      (when (< (+ start 2 4 (*fx 12 dnum)) (string-length bytes))
+      (when (and read-next
+		 (< (+ start 2 4 (*fx 12 dnum)) (if (string? bytes) (string-length bytes) (mmap-length bytes))))
 	 (let ((of (get32u en bytes (+ start 2 (*fx 12 dnum)))))
-	    (if (>elong of #e0)
+	    (when (>elong of #e0)
 		(process-exif-dir! en bytes
 		   (+fx (elong->fixnum of) base)
-		   base exif o0 0 extension))))))
+		   base exif o0 0 read-next extension))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-jpeg-exif! ...                                              */
@@ -1101,9 +1144,9 @@
 					      focal-plane-units
 					      endianess)
 			(set! endianess en)
-			(process-exif-dir! en bytes (+fx 6 fo) 6 exif pos 0
+			(process-exif-dir! en bytes (+fx 6 fo) 6 exif pos 0 #t
 			   (lambda (exif tag en bytes fmt bcount valptr)
-			      (tprint "jpeg-extension tag=" tag " " valptr)
+			      '(tprint "jpeg-extension tag=" tag " " valptr)
 			      'unknown))
 			;; CDD width
 			(when (and (number? ewidth)
@@ -1146,15 +1189,15 @@
 ;*---------------------------------------------------------------------*/
 (define (read-SOFn! exif bytes encoding)
    (with-access::exif exif (width height jpeg-encoding)
-      (set! width (elong->fixnum (get16u #t bytes 3)))
-      (set! height (elong->fixnum (get16u #t bytes 1)))
+      (unless width (set! width (elong->fixnum (get16u #t bytes 3))))
+      (unless height (set! height (elong->fixnum (get16u #t bytes 1))))
       (set! jpeg-encoding encoding))
    exif)
 
 ;*---------------------------------------------------------------------*/
 ;*    read-jpeg-section ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (read-jpeg-section mm::mmap path)
+(define (read-jpeg-section mm::mmap)
    ;; padding bytes and section marker
    (let loop ((a 0)
 	      (m (mmap-get-char mm)))
@@ -1184,14 +1227,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-jpeg-sections ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (read-jpeg-sections exif mm::mmap path)
+(define (read-jpeg-sections exif mm::mmap)
    (let ((m (read-jpeg-marker mm)))
       (if (not (eq? m #xd8)) ;; M_SOI
 	  (exif-error "read-jpeg-sections" "Illegal section marker"
 	     (-elong (mmap-read-position mm) 1))
 	  (let loop ()
 	     (multiple-value-bind (m bytes offset)
-		(read-jpeg-section mm path)
+		(read-jpeg-section mm)
 		(case m
 		   ((#xda) ;; M_SOS
 		    'sos)
@@ -1216,9 +1259,8 @@
 			  ;; gps
 			  (when %gps-tag
 			     (process-exif-dir! endianess bytes
-				(+fx %gps-tag 6) 6 exif 0 #x10000
+				(+fx %gps-tag 6) 6 exif 0 #x10000 #t
 				(lambda (exif tag en bytes fmt bcount valptr)
-				   (tprint "read-jpeg-sections tag=" tag " " valptr)
 				   'unknown))
 			     (with-access::exif exif (gps-altitude
 							gps-latitude
@@ -1227,7 +1269,8 @@
 							%gps-latitude-ref
 							%gps-longitude-ref)
 				;; patch the relative values
-				(when (=fx %gps-altitude-ref 1)
+				(when (and (integer? %gps-altitude-ref)
+					   (=fx %gps-altitude-ref 1))
 				   (set-car! gps-altitude
 				      (- (car gps-altitude))))
 				(when (equal? %gps-latitude-ref "S")
@@ -1282,11 +1325,33 @@
    exif)
 
 ;*---------------------------------------------------------------------*/
+;*    read-maker-note ...                                              */
+;*---------------------------------------------------------------------*/
+(define (read-maker-note en bytes::bstring exif::exif)
+   (cond
+      ((string-prefix? "Panasonic" bytes)
+       (process-exif-dir! en bytes 12 0 exif 0 20000 #f
+	  (lambda (exif tag en bytes fmt bcount valptr)
+	     (case tag
+		((#x004b)
+		 (with-access::exif exif (width)
+		    (set! width (getformat en bytes valptr fmt))))
+		((#x004c)
+		 (with-access::exif exif (height)
+		    (set! height (getformat en bytes valptr fmt))))
+		((#x00d1)
+		 '(tprint "ISO=" (getformat en bytes valptr fmt)))
+		(else
+		 '(tprint "Panasonic extension " (integer->string tag 16) " valptr=" valptr
+		   " fmt=" fmt " bcount=" bcount
+		   " -> " (getformat en bytes valptr fmt)))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    read-tiff-sections ...                                           */
 ;*    -------------------------------------------------------------    */
 ;*    https://www.awaresystems.be/imaging/tiff/specification/TIFF6.pdf */
 ;*---------------------------------------------------------------------*/
-(define (read-tiff-sections exif::exif mm::mmap path)
+(define (read-tiff-sections exif::exif mm::mmap)
 
    (define (tiff-endianess)
       ;; big endian
@@ -1302,7 +1367,7 @@
 		    (loop (+fx i 1)))))))
 
    (define (read-ifd en offset)
-      (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0 0
+      (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0 0 #t
 	 (lambda (exif tag en bytes fmt bcount valptr)
 	    (tprint "read-ifd extension" tag " " valptr)
 	    'unknown)))
@@ -1316,7 +1381,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    https://www.exiftool.org/TagNames/PanasonicRaw.html              */
 ;*---------------------------------------------------------------------*/
-(define (read-rw2-sections exif mm::mmap path)
+(define (read-rw2-sections exif mm::mmap)
    
    (define (tiff-endianess)
       ;; big endian
@@ -1331,7 +1396,7 @@
 		    (mmap-substring mm o (+fx i o))
 		    (loop (+fx i 1)))))))
    
-   (define camera-ifd-offset 0)
+   (define camera-ifd 0)
    
    (define (extension exif tag en bytes fmt bcount valptr)
       (case tag
@@ -1391,19 +1456,24 @@
 	  (with-access::exif exif (%thumbnail-offset %thumbnail-length thumbnail)
 	     (set! %thumbnail-offset valptr)
 	     (set! %thumbnail-length bcount)
-	     (set! thumbnail (getbuffer bytes valptr (+fx valptr bcount)))))
+	     (set! thumbnail (getbuffer bytes valptr (+fx valptr bcount)))
+	     (read-jpeg-sections exif (string->mmap thumbnail))))
 	 ((#x002f #x0030 #x0031 #x0032)
 	  '(tprint "crop " tag " " (getformat en bytes valptr fmt)))
+	 ((#x004b)
+	  (tprint "Panasonic image width " (getformat en bytes valptr fmt)))
+	 ((#x004c)
+	  (tprint "Panasonic image height " (getformat en bytes valptr fmt)))
 	 ((#x0116)
-	  '(tprint "RowsPerStrip "(getformat en bytes valptr fmt)))
+	  '(tprint "RowsPerStrip " (getformat en bytes valptr fmt)))
 	 ((#x0117)
-	  (tprint "StripByteCounts "(getformat en bytes valptr fmt)))
+	  (tprint "StripByteCounts " (getformat en bytes valptr fmt)))
 	 ((#x0118)
 	  '(tprint "RawDataOffset " (getformat en bytes valptr fmt)))
 	 ((#x0119)
 	  '(tprint "DistortionInof"))
 	 ((#x0120)
-	  (set! camera-ifd-offset (+ 8 valptr)))
+	  (set! camera-ifd valptr))
 	 ((#x0121)
 	  '(tprint "multishot"))
 	 ((#x0127)
@@ -1485,15 +1555,17 @@
 	    (integer->string tag 16)))))
    
    (define (read-ifd en offset)
-      (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0 0
+      (process-exif-dir! en mm (elong->fixnum offset) 0 exif 0 0 #t
 	 extension))
    
    (let* ((en (tiff-endianess))
 	  (offset (get32u en mm 4)))
       (read-ifd en offset)
-      (when (>fx camera-ifd-offset 0)
-	 (process-exif-dir! en mm camera-ifd-offset 0 exif 0 0
-	    camera-ifd-extension))
+      (when (>fx camera-ifd 0)
+	 (let* ((offset (elong->fixnum (get32u en mm (+fx camera-ifd 4))))
+		(start (+fx camera-ifd offset)))
+	    (process-exif-dir! en mm start 0 exif 0 0 #f
+	       camera-ifd-extension)))
       exif))
 		
 ;*---------------------------------------------------------------------*/
@@ -1501,7 +1573,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    https://libopenraw.freedesktop.org/formats/raf/                  */
 ;*---------------------------------------------------------------------*/
-(define (read-raf-sections exif mm::mmap path)
+(define (read-raf-sections exif mm::mmap)
    (let* ((pos (mmap-read-position mm))
 	  (fmtv (mmap-substring mm pos (+elong pos 4)))
 	  (id (mmap-substring mm (+elong pos 4) (+elong pos 12))))
@@ -1525,7 +1597,7 @@
 		   (unknownlen (mmap-get-string mm 12))
 		   (someoff (mmap-get-string mm 4)))
 	       (mmap-read-position-set! mm (+elong (mmap-read-position mm) 28))
-	       (read-jpeg-sections exif mm path))))))
+	       (read-jpeg-sections exif mm))))))
 		
 ;*---------------------------------------------------------------------*/
 ;*    tiff? ...                                                        */
@@ -1595,17 +1667,17 @@
        (let ((mm (open-mmap path write: #f))
 	     (exf (instantiate::exif)))
 	  (unwind-protect
-	     (when (> (mmap-length mm) 0)
+	     (when (> (mmap-length mm) 64)
 		(cond
 		   ((tiff? mm)
-		    (read-tiff-sections exf mm path))
+		    (read-tiff-sections exf mm))
 		   ((rw2? mm)
-		    (read-rw2-sections exf mm path))
+		    (read-rw2-sections exf mm))
 		   ((raf? mm)
-		    (read-raf-sections exf mm path))
+		    (read-raf-sections exf mm))
 		   (else
 		    (mmap-read-position-set! mm 0)
-		    (read-jpeg-sections exf mm path))))
+		    (read-jpeg-sections exf mm))))
 	     (close-mmap mm))
 	  exf)))
 		
@@ -1621,7 +1693,7 @@
 	     (mtime #f))
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
-		(read-jpeg-sections exf mm path)
+		(read-jpeg-sections exf mm)
 		(with-access::exif exf (%commentpos %commentlen)
 		   (and %commentpos
 			(let* ((len (string-length comment))
@@ -1659,7 +1731,7 @@
 	     (mtime #f))
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
-		(read-jpeg-sections exf mm path)
+		(read-jpeg-sections exf mm)
 		(with-access::exif exf (%orientationpos)
 		   (when %orientationpos
 		      (mmap-write-position-set! mm %orientationpos)
@@ -1708,7 +1780,7 @@
 		   (if (or (<fx v 0) (>fx v 9))
 		       (parse-error d i)
 		       (loop (+fx i 1) (+fx v (*fx acc 10)))))))))
-   
+
    (if (and (=fx (string-length d) 19)
 	    (char=? (string-ref d 4) #\:)
 	    (char=? (string-ref d 7) #\:)
