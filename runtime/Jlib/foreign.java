@@ -6374,8 +6374,16 @@ public final class foreign
 	 return p;
       }
 
+   public static boolean bgl_input_port_timeout(input_port p) {
+      return 0;
+   }
+   
    public static boolean bgl_input_port_timeout_set(input_port p, int to) {
       return p.timeout_set( to / 1000 );
+   }
+   
+   public static boolean bgl_output_port_timeout(output_port p) {
+      return 0;
    }
    
    public static boolean bgl_output_port_timeout_set(output_port p, int to) {

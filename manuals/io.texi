@@ -74,9 +74,11 @@ in the source. Returns @code{-1} if that number is unknown (typically
 for a pipe).
 @end deffn
 
-@deffn {bigloo (>=2.8b) procedure} input-port-timeout-set! port time
+@deffn {bigloo (>=3.6b) procedure} input-port-timeout port
+@deffnx {bigloo (>=2.8b) procedure} input-port-timeout-set! port time
+@deffnx {bigloo (>=3.6b) procedure} output-port-timeout port
 @deffnx {bigloo (>=2.8b) procedure} output-port-timeout-set! port time
-These two functions limit the time an read or write operation may last.
+Setting a port timeout limits the time an read or write operation may last.
 If the @var{time} limit (expressed in microseconds) exceeded, an exception
 of time @code{&io-timeout-error} is raised.
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Jan 30 19:06:35 2024 (serrano)                */
+/*    Last change :  Tue May 14 12:11:50 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1028,6 +1028,21 @@ bgl_output_port_buffer_set(obj_t port, obj_t buf) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_output_port_timeout ...                                      */
+/*---------------------------------------------------------------------*/
+long
+bgl_output_port_timeout(obj_t port) {
+   struct bgl_output_timeout *to = PORT(port).timeout;
+
+   if (!to) {
+      return 0;
+   } else {
+      return to->timeout.tv_sec * 1000000 + to->timeout.tv_usec;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    bool_t                                                           */
 /*    bgl_output_port_timeout_set ...                                  */
 /*---------------------------------------------------------------------*/
@@ -1483,6 +1498,21 @@ bgl_input_port_buffer_set(obj_t ip, obj_t buffer) {
 #if (defined(RGC_0))
       STRING_SET(buffer, 0 , '\0');
 #endif      
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_input_port_timeout ...                                       */
+/*---------------------------------------------------------------------*/
+long
+bgl_input_port_timeout(obj_t port) {
+   struct bgl_input_timeout *to = PORT(port).timeout;
+
+   if (!to) {
+      return 0;
+   } else {
+      return to->timeout.tv_sec * 1000000 + to->timeout.tv_usec;
    }
 }
 
