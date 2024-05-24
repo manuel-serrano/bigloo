@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jul 14 10:44:41 2023 (serrano)                */
+;*    Last change :  Fri May 24 10:38:38 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -826,6 +826,12 @@
 ;*---------------------------------------------------------------------*/
 (define (location-line-num loc)
 
+   (define (relative file)
+      (let ((rel (relative-file-name file)))
+	 (if (<fx (string-length rel) (string-length file))
+	     rel
+	     file)))
+	 
    (define (location-at file point)
       (when (and (string? file) (integer? point))
 	 (let* ((fname (if (string=? (os-class) "win32")
@@ -839,16 +845,16 @@
 			      (opos 0))
 		      (let ((lstring (read-line port)))
 			 (if (eof-object? lstring)
-			     (values fname lnum (+fx 1 (-fx point opos))
+			     (values (relative fname) lnum (+fx 1 (-fx point opos))
 				(if (string? ostring)
 				    (string-append ostring "<eof>")
 				    "<eof>"))
 			     (if (>fx (input-port-position port) point)
-				 (values file lnum (-fx point opos) lstring)
+				 (values (relative file) lnum (-fx point opos) lstring)
 				 (let ((opos (input-port-position port)))
 				    (loop lstring (+fx lnum 1) opos))))))
 		   (close-input-port port))
-		(values file #f point #f)))))
+		(values (relative file) #f point #f)))))
    
    (define (location-line-col file line col)
       (if (and (>=fx line 0) (>=fx col 0))
@@ -862,15 +868,15 @@
 			       (lnum line))
 		       (let ((lstring (read-line port)))
 			  (if (eof-object? lstring)
-			      (values file line (+fx col 1)
+			      (values (relative file) line (+fx col 1)
 				 (string-append ostring "<eof>"))
 			      (if (=fx lnum 0)
-				  (values file line col lstring)
+				  (values (relative file) line col lstring)
 				  (let ((opos (input-port-position port)))
 				     (loop lstring (-fx lnum 1)))))))
 		    (close-input-port port))
-		 (values file line col #f)))
-	  (values file line col #f)))
+		 (values (relative file) line col #f)))
+	  (values (relative file) line col #f)))
 
    (match-case loc
       ((at ?file ?point)
@@ -1023,7 +1029,8 @@
    (define (display-trace-stack-frame frame level num)
       (match-case frame
 	 ((?name ?loc . (and (? alist?) ?rest))
-	  (let* ((margin (assq 'margin rest))
+	  (let* ((name (if (symbol? name) (symbol->string name) name))
+		 (margin (assq 'margin rest))
 		 (fmt (assq 'format rest))
 		 (nm (if (and (pair? fmt) (string? (cdr fmt)))
 			 (format (cdr fmt) name)
@@ -1040,7 +1047,10 @@
 	     (display level port)
 	     (display ". " port)
 	     ;; frame name
-	     (display name port)
+	     (let ((i (string-index name #\@)))
+		(if (and i (>fx i 0) loc)
+		    (display (substring name 0 i) port)
+		    (display name port)))
 	     (cond
 		((>fx num 1)
 		 (display " (* " port)
@@ -1050,13 +1060,9 @@
 		 (multiple-value-bind (file lnum lpoint lstring)
 		    (location-line-num loc)
 		    ;; file name
-		    (when (and file (not (equal? file ".")))
+		    (when (and (string? file) (not (string=? file ".")))
 		       (display ", " port)
-		       (display (filename file num
-				   (if (string? nm)
-				       (-fx (-fx 80 4) (string-length nm))
-				       60))
-			  port))
+		       (display file port))
 		    ;; line num
 		    (cond
 		       ((and (fixnum? lpoint) (=fx lpoint 0))
@@ -1091,7 +1097,7 @@
 	  (display frame port)
 	  (newline port)
 	  (+fx level 1))))
-   
+
    (when (pair? stack)
       (let loop ((i offset)
 		 (stk (cdr stack))
@@ -1314,7 +1320,7 @@
       ((tvector? obj)
        "tvector")
       ((struct? obj)
-       (string-append "struct:" (symbol->string! (struct-key obj))))
+       (string-append "struct:" (symbol->string (struct-key obj))))
       ((procedure? obj)
        "procedure")
       ((input-port? obj)

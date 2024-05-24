@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Thu Jan 24 08:52:59 2019 (serrano)                */
-;*    Copyright   :  2010-20 Manuel Serrano                            */
+;*    Last change :  Fri May 24 13:38:57 2024 (serrano)                */
+;*    Copyright   :  2010-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -538,7 +538,11 @@
 	   (conv-field-set l e2 e locals globals tail? where loc top?)
 	   (evcompile-error loc "eval" "Illegal form" e) ))
       ((set! ?v ?e)
-       (let ( (cv (conv-var v locals)) (e (uconv e)) )
+       (let* ( (cv (conv-var v locals))
+	       (e (uconv e)) )
+	  (when (isa? e ev_abs)
+	     (with-access::ev_abs e (where)
+		(set! where (symbol-append v where))))
 	  (if cv
 	      (instantiate::ev_setlocal
 		 (v cv)
@@ -592,7 +596,7 @@
 	  (prelock (uconv '()))
 	  (body (conv-begin body locals globals #f where loc #f)) ))
       ((lambda ?formals ?body)
-       (conv-lambda formals body (symbol-append '\@ where) #f) )
+       (conv-lambda formals body (symbol-append '|.| where) #f) )
       ((free-pragma::obj . ?-)
        (error "free-pragma" "not supported in eval" e))
       ((?f . ?args)
