@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Mon Mar 25 14:47:06 2024 (serrano)                */
+;*    Last change :  Mon May 27 08:47:48 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -184,7 +184,8 @@
        #t)
       ((or (eq? t2 *_*) (eq? t1 *_*))
        #t)
-;*        (or (eq? t1 *pair*) (eq? t1 *epair*) (eq? t1 *nil*)))        */
+      ((eq? t2 *pair-nil*)
+       (or (eq? t1 *pair*) (eq? t1 *epair*) (eq? t1 *nil*)))
       ((eq? t2 *epair*)
        (eq? t1 *pair*))
       ((or (tclass? t1) (tclass? t2))
