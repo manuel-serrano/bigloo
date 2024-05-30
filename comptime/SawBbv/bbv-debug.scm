@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Mon Apr  8 17:41:44 2024 (serrano)                */
+;*    Last change :  Tue May 28 15:03:20 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -41,6 +41,7 @@
 
    (export  (gendebugid)
 	    (dump-cfg ::global ::pair-nil ::pair-nil ::bstring)
+	    (dump-json-cfg ::global ::pair-nil ::pair-nil ::bstring)
 	    (log-blocks ::global ::pair-nil ::pair-nil)
 	    (assert-block ::blockS ::obj)
 	    (assert-blocks ::blockS ::obj)
@@ -163,6 +164,121 @@
        (call-with-output-file filename dump-cfg)
        (dump-cfg (current-error-port))))
 
+;*---------------------------------------------------------------------*/
+;*    dump-json-cfg ...                                                */
+;*---------------------------------------------------------------------*/
+(define (dump-json-cfg global params blocks suffix)
+   
+   (define oname
+      (if (string? *dest*)
+	  *dest*
+	  (if (and (pair? *src-files*) (string? (car *src-files*)))
+	      (prefix (car *src-files*))
+	      "./a.out")))
+   
+   (define filename
+      (string-replace (format "~a-~a~a" oname (global-id global) suffix)
+	 #\/ #\_))
+   
+   (define name (prefix filename))
+
+   (define (source first)
+      (let ((i (find (lambda (i)
+			  (with-access::rtl_ins i (loc) loc))
+		    first)))
+	 (when i
+	    (with-access::rtl_ins i (loc)
+	       (when (location? loc)
+		  (format "~a:~a" (basename (location-fname loc)) (location-lnum loc)))))))
+
+   (define (dump-ins o::rtl_ins/bbv p)
+      (with-access::rtl_ins/bbv o (fun dest args)
+	 (when dest
+	    (display "(" p)
+	    (dump dest p 0)
+	    (display " <- " p))
+	 (dump-ins-rhs o p 0)
+	 (when dest
+	    (display ")" p))
+	 (newline p)))
+
+   (define (shape-ctx-entry e)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases)
+	 (if (and (=fx (length types) 1)
+		  (eq? (car types) *obj*)
+		  (eq? value '_)
+		  (null? aliases))
+	     (shape reg)
+	     (vector (shape reg)
+		(format "[~( )]"
+		   (if polarity
+		       (map shape types)
+		       (map (lambda (t) (format "!~a" (shape t))) types)))
+		(format "~s" (shape value))))))
+   
+   (define (dump-blocks o::blockS p m sep)
+      
+      (define (lbl n)
+	 (if (isa? n block) (block-label n) (typeof n)))
+      
+      (with-access::blockS o (label collapsed first parent ctx preds succs %merge-info)
+	 (dump-margin p m)
+	 (fprint p "{")
+	 (dump-margin p (+fx m 2))
+	 (fprint p "\"id\": " label ",")
+	 (dump-margin p (+fx m 2))
+	 (fprint p "\"origin\": " (block-label parent) ",")
+	 (dump-margin p (+fx m 2))
+	 (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
+	 (dump-margin p (+fx m 2))
+	 (fprintf p "\"source\": \"~a\",\n" (source first))
+	 (dump-margin p (+fx m 2))
+	 (fprint p "\"usage\": " 0 ",")
+	 (dump-margin p (+fx m 2))
+	 (fprintf p "\"context\": ~s,\n"
+	    (call-with-output-string
+	       (lambda (op)
+		  (for-each (lambda (e)
+			       (display (shape-ctx-entry e) op)
+			       (display " " op))
+		     (with-access::bbv-ctx ctx (entries)
+			entries)))))
+	 (dump-margin p (+fx m 2))
+	 (fprint p "\"predecessors\": [" (format "~(, )" (map lbl preds)) "],")
+	 (dump-margin p (+fx m 2))
+	 (fprint p "\"successors\": [" (format "~(, )" (map lbl succs)) "],")
+	 (dump-margin p (+fx m 2))
+	 (fprintf p "\"details\": ~s\n"
+	    (call-with-output-string
+	       (lambda (op)
+		  (for-each (lambda (i) (dump-ins i op)) first))))
+	 (dump-margin p m)
+	 (fprint p "}" sep)))
+
+   (define (dump-cfg port)
+      (let* ((id (global-id global)))
+	 (fprint port "{")
+	 (fprint port "  \"compiler\": \"bigloo\",")
+	 (fprintf port "  \"version-limit\": ~a,\n"
+	    (or (getenv "BIGLOOBBVVERSIONLIMIT") "4"))
+	 (fprintf port "  \"vector-length\": \"~a\",\n"
+	    (or (getenv "BIGLOOBBVVLENGTH") "false"))
+	 (fprintf port "  \"merge-strategy\": \"~a\",\n"
+	    (or (getenv "BIGLOOBBVSTRATEGY") "size"))
+	 (fprint port "  \"specializedCFG\": [")
+	 
+	 (for-each (lambda (b) (dump-blocks b port 4 ",")) (cdr blocks))
+	 (dump-blocks (car blocks) port 4 "")
+	 
+	 (fprint port "  ]")
+	 (fprint port "}")
+	 id))
+   
+   (if oname
+       (call-with-output-file filename dump-cfg)
+       (dump-cfg (current-error-port))))
+
+   
 ;*---------------------------------------------------------------------*/
 ;*    make-margins ...                                                 */
 ;*---------------------------------------------------------------------*/

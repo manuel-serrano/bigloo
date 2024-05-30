@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Apr 15 10:39:05 2024 (serrano)                */
+;*    Last change :  Thu May 30 08:16:12 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -66,8 +66,7 @@
 			    " versions: " (map (lambda (b)
 						 (with-access::blockS b (label)
 						    label))
-					    versions))
-			 )
+					    versions)))
 		      (when (block-need-merge? bv)
 			 (trace-item "need-merge #" (block-label bv) "...")
 			 (when *bbv-debug*
@@ -603,26 +602,29 @@
 ;*---------------------------------------------------------------------*/
 ;*    range->loadi ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (range->loadi i::rtl_ins dest value types)
-   (with-access::bbv-range value (up)
-      (let* ((atom (instantiate::literal
-		      (type *long*)
-		      (value up)))
-	     (loadi (instantiate::rtl_loadi
-		       (constant atom))))
-	 (if (memq *long* types)
-	     (duplicate::rtl_ins/bbv i
-		(dest dest)
-		(args '())
-		(fun loadi))
-	     (duplicate::rtl_ins/bbv i
-		(dest dest)
-		(args (list (duplicate::rtl_ins/bbv i
-			       (dest dest)
-			       (args '())
-			       (fun loadi))))
-		(fun (instantiate::rtl_call 
-			(var *long->bint*))))))))
+(define (range->loadi i::rtl_ins dest value type)
+   (with-trace 'bbv-ins "range->loadi"
+      (trace-item "i=" (shape i))
+      (trace-item "types=" (shape type))
+      (with-access::bbv-range value (up)
+	 (let* ((atom (instantiate::literal
+			 (type *long*)
+			 (value up)))
+		(loadi (instantiate::rtl_loadi
+			  (constant atom))))
+	    (if (eq? *long* type)
+		(duplicate::rtl_ins/bbv i
+		   (dest dest)
+		   (args '())
+		   (fun loadi))
+		(duplicate::rtl_ins/bbv i
+		   (dest dest)
+		   (args (list (duplicate::rtl_ins/bbv i
+				  (dest dest)
+				  (args '())
+				  (fun loadi))))
+		   (fun (instantiate::rtl_call 
+			   (var *long->bint*)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-mov ...                                       */
@@ -642,7 +644,7 @@
 		(let ((e (bbv-ctx-get ctx (car args))))
 		   (with-access::bbv-ctxentry e (types value polarity)
 		      (if (bbv-singleton? value)
-			  (values (range->loadi i dest value types)
+			  (values (range->loadi i dest value (rtl_reg-type dest))
 			     (extend-ctx ctx dest types polarity :value value))
 			  (with-access::rtl_reg dest (var)
 			     (trace-item "dest.v: " (shape var))
@@ -869,18 +871,19 @@
 ;*    rtl_ins-specialize-return ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (rtl_ins-specialize-return i::rtl_ins ins::pair-nil bs ctx queue::bbv-queue)
-   (with-access::rtl_ins i (args dest)
+   (with-access::rtl_ins i (args dest fun)
       (let ((e (bbv-ctx-get ctx (car args))))
 	 (with-access::bbv-ctxentry e (types value)
 	    (if (bbv-singleton? value)
-		(let ((loadi (duplicate::rtl_ins/bbv i
-				(args (list (range->loadi i
-					       (car args) value types)))
-				(fun (instantiate::rtl_mov))
-				(dest (car args)))))
-		   (values (duplicate::rtl_ins/bbv i
-			      (args (cons loadi (cdr args))))
-		      ctx))
+		(with-access::rtl_return fun (type)
+		   (let ((loadi (duplicate::rtl_ins/bbv i
+				   (args (list (range->loadi i
+						  (car args) value type)))
+				   (fun (instantiate::rtl_mov))
+				   (dest (car args)))))
+		      (values (duplicate::rtl_ins/bbv i
+				 (args (cons loadi (cdr args))))
+			 ctx)))
 		(values i ctx))))))
 
 ;*---------------------------------------------------------------------*/

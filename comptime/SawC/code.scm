@@ -31,7 +31,7 @@
 
 (define *comment* #f)
 (define *trace* #f)
-(define *count* #f)
+(define *count* (getenv "BIGLOOSAWPROFILE"))
 (define *inline-simple-macros* #t)
 (define *counter* 0)
 (define *hasprotect* #f)
@@ -48,6 +48,7 @@
    (if *count*
        (begin (display "extern int bbcount[];\n")
 	      (display "extern char *bbname[];\n")
+	      (display "extern char *bbfun[];\n")
 	      (display "extern obj_t PRINT_TRACE(obj_t);\n\n") ))
 
    (display "\n") )
@@ -61,10 +62,17 @@
    (if *count*
        (begin (display* "int bbcount[" *counter* "];\n")
 	      (display* "char *bbname[" *counter* "];\n")
+	      (display* "char *bbfun[" *counter* "];\n")
 	      (display "obj_t PRINT_TRACE(obj_t r) {\n")
 	      (display "\tint i;\n")
-	      (display* "\tfor(i=0;i<" *counter* ";i++)\n")
-	      (display "\t\tprintf(\"%d\t%d\\n\",bbcount[i],i);\n")
+	      (display "\tputs(\"[\");\n")
+	      (display* "\tfor(i=0;i<" *counter* ";i++) {\n")
+	      (display "\t\tif (bbname[i]) {\n")
+	      (display "\t\t\tprintf(\"\t{\\\"fun\\\": \\\"%s\\\", \\\"id\\\": %s, \\\"count\\\": %d},\\n\", bbfun[i], bbname[i],bbcount[i]);\n")
+	      (display "\t\t}\n")
+	      (display "\t}\n")
+	      (display "\tprintf(\"\tnull\\n\");\n")
+	      (display "\tputs(\"]\");\n")
 	      (display "\treturn(BIGLOO_EXIT(r));\n")
 	      (display "}\n") )))
 
@@ -101,7 +109,8 @@
 	       (if *haspushbefore* (display " struct befored befored;\n"))
 	       (declare-regs locals)
 	       (if *trace* (display* "printf(\"" id "=" name "\\n\");\n")) ))))
-   (genbody l)
+   (with-access::global v (id)
+      (genbody l id))
    (display (make-string *pushtraceemmited* #\}))
    (display "\n}\n\n") )
 
@@ -163,19 +172,21 @@
 		    (display ";\n") ))
 	     l ))
 
-(define (genbody l) ;(list block)
+(define (genbody l funid) ;(list block)
    (for-each (lambda (b)
-		(out-label (block-label b))
+		(out-label (block-label b) funid)
 		(let ( (l (block-first b)) )
 		   (if (location? (find-location (car l))) (print ""))
 		   (for-each gen-ins l) ))
 	     l ))
 
-(define (out-label label)
+(define (out-label label funid)
    (display* "L" label ":")
-   (if *count*
-       (begin (display* "\tbbcount[" *counter* "]++;")
-	      (set! *counter* (+ 1 *counter*)) ))
+   (when *count*
+       (display* "\tbbcount[" *counter* "]++;\n")
+       (display* "\tbbname[" *counter* "] = \"" label "\";\n");
+       (display* "\tbbfun[" *counter* "] = \"" funid "\";\n");
+       (set! *counter* (+ 1 *counter*)) )
    (if *trace* (display* "\tprintf(\"" label "\\n\"); ")) )
 
 (define (print-location? loc)

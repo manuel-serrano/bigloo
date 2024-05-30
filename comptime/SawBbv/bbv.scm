@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Jan 15 10:19:33 2024 (serrano)                */
+;*    Last change :  Tue May 28 15:02:24 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -38,7 +38,8 @@
 	    saw_bbv-merge
 	    saw_bbv-liveness
 	    saw_bbv-optim
-	    saw_bbv-debug)
+	    saw_bbv-debug
+	    saw_bbv-profile)
 
    (export  (bbv::pair-nil ::backend ::global ::pair-nil ::pair-nil)))
 
@@ -95,24 +96,26 @@
 		      (unwind-protect
 			 (if (null? blocks)
 			     '()
-			     (let* ((s (dump-blocks 1 "specialize" global params regs
+			     (let* ((s (dump-blocks 2 "specialize" global params regs
 					  (bbv-block* (car blocks)
 					     (params->ctx params))))
 				    (__ (when *bbv-log*
 					   (log-blocks global params blocks)))
-				    (as (dump-blocks 1 "assert" global params regs
-					   (assert-context! s)))
+				    (pr (dump-blocks 2 "profile" global params regs
+					   (profile! s)))
+				    (as (dump-blocks 2 "assert" global params regs
+					   (assert-context! pr)))
 				    (b (block->block-list regs
 					  (if *bbv-blocks-cleanup*
-					      (dump-blocks 2 "simplify2" global params regs
+					      (dump-blocks 3 "simplify2" global params regs
 						 (simplify-branch! global
-						    (dump-blocks 2 "nop" global params regs
+						    (dump-blocks 3 "nop" global params regs
 						       (remove-nop! global
-							  (dump-blocks 2 "goto" global params regs
+							  (dump-blocks 3 "goto" global params regs
 							     (remove-goto! global
-								(dump-blocks 2 "simplify1" global params regs
+								(dump-blocks 3 "simplify1" global params regs
 								   (simplify-branch! global
-								      (dump-blocks 2 "coalesce" global params regs
+								      (dump-blocks 3 "coalesce" global params regs
 									 (coalesce! global
 									    (get-bb-mark)
 									    (gc! as)))))))))))
@@ -137,6 +140,9 @@
    (when (>=fx *trace-level* level)
       (dump-cfg global params
 	 (block->block-list regs b) (format ".~a.cfg" name)))
+   (when (and *bbv-dump-json* (or (>=fx *trace-level* level) (=fx level 1)))
+      (dump-json-cfg global params
+	 (block->block-list regs b) (format ".~a.json" name)))
    b)
 
 ;*---------------------------------------------------------------------*/

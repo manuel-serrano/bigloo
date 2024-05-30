@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Nov  3 11:05:14 2022 (serrano)                */
-;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu May 30 08:34:23 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -355,15 +355,6 @@
 	    (stop-on-pass 'beta (lambda () (write-ast ast)))
 	    (check-sharing "beta" ast)
 	    (check-type "beta" ast #f #f)
-	    
-;* 	    ;; we introduce traces in `small debug mode'               */
-;* 	    (when (and (>=fx *compiler-debug-trace* 1)                 */
-;* 		       (=fx (bigloo-compiler-debug) 1)                 */
-;* 		       (backend-trace-support (the-backend)))          */
-;* 	       (set! ast (profile trace (trace-walk! ast))))           */
-;* 	    (stop-on-pass 'trace (lambda () (write-ast ast)))          */
-;* 	    (check-sharing "trace" ast)                                */
-;* 	    (check-type "trace" ast #f #f)                             */
 	    
 	    ;; we replace `failure' invokation by `error/location' when
 	    ;; invoked in debug mode (to be performed after the coercion stage)

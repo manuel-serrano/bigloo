@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Thu Apr 11 08:34:16 2024 (serrano)                */
+;*    Last change :  Tue May 28 15:01:40 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -23,6 +23,8 @@
 	   *bbv-optim-bound*
 	   *bbv-optim-alias*
 	   *bbv-verbose*
+	   *bbv-dump-json*
+	   *bbv-profile*
 	   *max-block-merge-versions*
 	   *max-block-limit*
 	   *type-call*
@@ -143,6 +145,28 @@
 	  1
 	  (or (string->number e)
 	      (error "bbv-verbose" "illegal value" e)))))
+
+;*---------------------------------------------------------------------*/
+;*    *bbv-dump-json* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *bbv-dump-json*
+   (let ((e (getenv "BIGLOOBBVDUMPJSON")))
+      (cond
+	 ((not e) #f)
+	 ((string=? e "true") #t)
+	 ((string=? e "false") #f)
+	 (else (error "bbv-dump-json" "illegal value" e)))))
+
+;*---------------------------------------------------------------------*/
+;*    *bbv-profile* ...                                                */
+;*---------------------------------------------------------------------*/
+(define *bbv-profile*
+   (let ((e (getenv "BIGLOOBBVPROFILE")))
+      (cond
+	 ((not e) #f)
+	 ((string=? e "true") #t)
+	 ((string=? e "false") #f)
+	 (else (error "bbv-profile" "illegal value" e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    basic-block versioning configuration                             */
