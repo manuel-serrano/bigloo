@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Mon Jun  3 10:49:26 2024 (serrano)                */
+;*    Last change :  Mon Jun  3 17:20:00 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -273,6 +273,15 @@
 	    (fprint p "\"origin\": " (blockV-label (blockS-parent b)) ",")
 	    (dump-margin p (+fx m 2))
 	    (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
+	    (dump-margin p (+fx m 2))
+	    (fprintf p "\"context\": ~s,\n"
+	       (call-with-output-string
+		  (lambda (op)
+		     (for-each (lambda (e)
+				  (display (shape-ctx-entry e) op)
+				  (display " " op))
+			(with-access::bbv-ctx ctx (entries)
+			   entries)))))
 	    (dump-margin p (+fx m 2))
 	    (cond
 	       (mnew
