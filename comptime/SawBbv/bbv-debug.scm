@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Tue May 28 15:03:20 2024 (serrano)                */
+;*    Last change :  Mon Jun  3 10:49:26 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -176,6 +176,9 @@
 	      (prefix (car *src-files*))
 	      "./a.out")))
    
+   (define (sort-blocks b)
+      (sort (lambda (x y) (<= (block-label x) (block-label y))) b))
+
    (define filename
       (string-replace (format "~a-~a~a" oname (global-id global) suffix)
 	 #\/ #\_))
@@ -216,7 +219,7 @@
 		       (map (lambda (t) (format "!~a" (shape t))) types)))
 		(format "~s" (shape value))))))
    
-   (define (dump-blocks o::blockS p m sep)
+   (define (dump-blockS o::blockS p m sep)
       
       (define (lbl n)
 	 (if (isa? n block) (block-label n) (typeof n)))
@@ -255,6 +258,55 @@
 	 (dump-margin p m)
 	 (fprint p "}" sep)))
 
+   (define (log-blockS b::blockS p m sep)
+      (with-access::blockS b (label versions %merge-info ctx mblock)
+	 (let ((into (assq 'merge-info %merge-info))
+	       (mtgt (assq 'merge-target %merge-info))
+	       (mnew (assq 'merge-new %merge-info))
+	       (spec (assq 'merge-spec %merge-info))
+	       (crea (assq 'creator %merge-info)))
+	    (dump-margin p m)
+	    (fprint p "{")
+	    (dump-margin p (+fx m 2))
+	    (fprint p "\"id\": " label ",")
+	    (dump-margin p (+fx m 2))
+	    (fprint p "\"origin\": " (blockV-label (blockS-parent b)) ",")
+	    (dump-margin p (+fx m 2))
+	    (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
+	    (dump-margin p (+fx m 2))
+	    (cond
+	       (mnew
+		(fprint p "\"event\": \"merge\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"merged\": [~a, ~a]\n"
+		   (block-label (cadr mnew))
+		   (block-label (cadr (cdr mnew)))))
+	       ((and mtgt (pair? (cddr mtgt)))
+		(fprint p "\"event\": \"merge\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"merged\": [~a, ~a]\n"
+		   (block-label (cadr mtgt))
+		   (block-label (cadr (cdr mtgt)))))
+	       (mtgt
+		(fprint p "\"event\": \"create\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"from\": ~a\n"
+		   (block-label (cadr mtgt))))
+	       (crea
+		(fprint p "\"event\": \"create\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"from\": ~a\n"
+		   (block-label (cdr crea))))
+	       (else
+		(fprint p "\"event\": \"spontaneous\"\n")))
+	    (dump-margin p m)
+	    (fprint p "}" sep))))
+   
+   (define (log-blockV b::blockV p m sep)
+      (with-access::blockV b (label versions)
+	 (for-each (lambda (b) (log-blockS b p m sep))
+	    (sort-blocks versions))))
+
    (define (dump-cfg port)
       (let* ((id (global-id global)))
 	 (fprint port "{")
@@ -267,9 +319,14 @@
 	    (or (getenv "BIGLOOBBVSTRATEGY") "size"))
 	 (fprint port "  \"specializedCFG\": [")
 	 
-	 (for-each (lambda (b) (dump-blocks b port 4 ",")) (cdr blocks))
-	 (dump-blocks (car blocks) port 4 "")
+	 (for-each (lambda (b) (dump-blockS b port 4 ",")) (cdr blocks))
+	 (dump-blockS (car blocks) port 4 "")
 	 
+	 (fprint port "  ],")
+	 (fprint port "  \"history\": [")
+	 (let ((blockv (delete-duplicates! (map blockS-parent blocks) eq?)))
+	    (for-each (lambda (b) (log-blockV b port 4 ",")) (cdr blockv))
+	    (log-blockV (car blockv) port 4 ""))
 	 (fprint port "  ]")
 	 (fprint port "}")
 	 id))
