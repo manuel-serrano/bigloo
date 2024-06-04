@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue May 28 15:02:24 2024 (serrano)                */
+;*    Last change :  Tue Jun  4 10:11:39 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -96,26 +96,28 @@
 		      (unwind-protect
 			 (if (null? blocks)
 			     '()
-			     (let* ((s (dump-blocks 2 "specialize" global params regs
+			     (let* ((s (dump-blocks 2 "specialize" global params regs #f
 					  (bbv-block* (car blocks)
 					     (params->ctx params))))
-				    (__ (when *bbv-log*
+				    (__a (when *bbv-log*
 					   (log-blocks global params blocks)))
-				    (pr (dump-blocks 2 "profile" global params regs
+				    (history (when *bbv-dump-json*
+						(log-blocks-json global params blocks)))
+				    (pr (dump-blocks 2 "profile" global params regs history
 					   (profile! s)))
-				    (as (dump-blocks 2 "assert" global params regs
+				    (as (dump-blocks 2 "assert" global params regs history
 					   (assert-context! pr)))
 				    (b (block->block-list regs
 					  (if *bbv-blocks-cleanup*
-					      (dump-blocks 3 "simplify2" global params regs
+					      (dump-blocks 3 "simplify2" global params regs history
 						 (simplify-branch! global
-						    (dump-blocks 3 "nop" global params regs
+						    (dump-blocks 3 "nop" global params regs history
 						       (remove-nop! global
-							  (dump-blocks 3 "goto" global params regs
+							  (dump-blocks 3 "goto" global params regs history
 							     (remove-goto! global
-								(dump-blocks 3 "simplify1" global params regs
+								(dump-blocks 3 "simplify1" global params regs history
 								   (simplify-branch! global
-								      (dump-blocks 3 "coalesce" global params regs
+								      (dump-blocks 3 "coalesce" global params regs history
 									 (coalesce! global
 									    (get-bb-mark)
 									    (gc! as)))))))))))
@@ -123,7 +125,7 @@
 				(verbose 3 " "
 				   (length blocks) " -> " (length b))
 				(verbose 2 "\n")
-				(dump-blocks 1 "bbv" global params regs s)
+				(dump-blocks 1 "bbv" global params regs history s)
 				(map! (lambda (b) (shrink! b)) b)
 				b))
 			 ;; don't shrink, otherwise dump could no longer
@@ -136,13 +138,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    dump-blocks ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (dump-blocks level name global params regs b)
+(define (dump-blocks::blockS level::long name global::global params::pair-nil regs::pair-nil history b::blockS)
    (when (>=fx *trace-level* level)
       (dump-cfg global params
 	 (block->block-list regs b) (format ".~a.cfg" name)))
    (when (and *bbv-dump-json* (or (>=fx *trace-level* level) (=fx level 1)))
-      (dump-json-cfg global params
-	 (block->block-list regs b) (format ".~a.json" name)))
+      (dump-json-cfg global params history
+         (block->block-list regs b) (format ".~a.json" name)))
    b)
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Mon Jun  3 17:20:00 2024 (serrano)                */
+;*    Last change :  Tue Jun  4 10:13:54 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -41,8 +41,9 @@
 
    (export  (gendebugid)
 	    (dump-cfg ::global ::pair-nil ::pair-nil ::bstring)
-	    (dump-json-cfg ::global ::pair-nil ::pair-nil ::bstring)
+	    (dump-json-cfg ::global ::pair-nil ::obj ::pair-nil ::bstring)
 	    (log-blocks ::global ::pair-nil ::pair-nil)
+	    (log-blocks-json::bstring ::global ::pair-nil ::pair-nil)
 	    (assert-block ::blockS ::obj)
 	    (assert-blocks ::blockS ::obj)
 	    (assert-context! b::blockS)
@@ -165,9 +166,26 @@
        (dump-cfg (current-error-port))))
 
 ;*---------------------------------------------------------------------*/
+;*    shape-ctx-entry ...                                              */
+;*---------------------------------------------------------------------*/
+(define (shape-ctx-entry e)
+   (with-access::bbv-ctxentry e (reg types polarity value aliases)
+      (if (and (=fx (length types) 1)
+	       (eq? (car types) *obj*)
+	       (eq? value '_)
+	       (null? aliases))
+	  (shape reg)
+	  (vector (shape reg)
+	     (format "[~( )]"
+		(if polarity
+		    (map shape types)
+		    (map (lambda (t) (format "!~a" (shape t))) types)))
+	     (format "~s" (shape value))))))
+
+;*---------------------------------------------------------------------*/
 ;*    dump-json-cfg ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (dump-json-cfg global params blocks suffix)
+(define (dump-json-cfg global params history blocks suffix)
    
    (define oname
       (if (string? *dest*)
@@ -176,9 +194,6 @@
 	      (prefix (car *src-files*))
 	      "./a.out")))
    
-   (define (sort-blocks b)
-      (sort (lambda (x y) (<= (block-label x) (block-label y))) b))
-
    (define filename
       (string-replace (format "~a-~a~a" oname (global-id global) suffix)
 	 #\/ #\_))
@@ -205,20 +220,6 @@
 	    (display ")" p))
 	 (newline p)))
 
-   (define (shape-ctx-entry e)
-      (with-access::bbv-ctxentry e (reg types polarity value aliases)
-	 (if (and (=fx (length types) 1)
-		  (eq? (car types) *obj*)
-		  (eq? value '_)
-		  (null? aliases))
-	     (shape reg)
-	     (vector (shape reg)
-		(format "[~( )]"
-		   (if polarity
-		       (map shape types)
-		       (map (lambda (t) (format "!~a" (shape t))) types)))
-		(format "~s" (shape value))))))
-   
    (define (dump-blockS o::blockS p m sep)
       
       (define (lbl n)
@@ -257,65 +258,7 @@
 		  (for-each (lambda (i) (dump-ins i op)) first))))
 	 (dump-margin p m)
 	 (fprint p "}" sep)))
-
-   (define (log-blockS b::blockS p m sep)
-      (with-access::blockS b (label versions %merge-info ctx mblock)
-	 (let ((into (assq 'merge-info %merge-info))
-	       (mtgt (assq 'merge-target %merge-info))
-	       (mnew (assq 'merge-new %merge-info))
-	       (spec (assq 'merge-spec %merge-info))
-	       (crea (assq 'creator %merge-info)))
-	    (dump-margin p m)
-	    (fprint p "{")
-	    (dump-margin p (+fx m 2))
-	    (fprint p "\"id\": " label ",")
-	    (dump-margin p (+fx m 2))
-	    (fprint p "\"origin\": " (blockV-label (blockS-parent b)) ",")
-	    (dump-margin p (+fx m 2))
-	    (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
-	    (dump-margin p (+fx m 2))
-	    (fprintf p "\"context\": ~s,\n"
-	       (call-with-output-string
-		  (lambda (op)
-		     (for-each (lambda (e)
-				  (display (shape-ctx-entry e) op)
-				  (display " " op))
-			(with-access::bbv-ctx ctx (entries)
-			   entries)))))
-	    (dump-margin p (+fx m 2))
-	    (cond
-	       (mnew
-		(fprint p "\"event\": \"merge\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"merged\": [~a, ~a]\n"
-		   (block-label (cadr mnew))
-		   (block-label (cadr (cdr mnew)))))
-	       ((and mtgt (pair? (cddr mtgt)))
-		(fprint p "\"event\": \"merge\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"merged\": [~a, ~a]\n"
-		   (block-label (cadr mtgt))
-		   (block-label (cadr (cdr mtgt)))))
-	       (mtgt
-		(fprint p "\"event\": \"create\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"from\": ~a\n"
-		   (block-label (cadr mtgt))))
-	       (crea
-		(fprint p "\"event\": \"create\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"from\": ~a\n"
-		   (block-label (cdr crea))))
-	       (else
-		(fprint p "\"event\": \"spontaneous\"\n")))
-	    (dump-margin p m)
-	    (fprint p "}" sep))))
    
-   (define (log-blockV b::blockV p m sep)
-      (with-access::blockV b (label versions)
-	 (for-each (lambda (b) (log-blockS b p m sep))
-	    (sort-blocks versions))))
-
    (define (dump-cfg port)
       (let* ((id (global-id global)))
 	 (fprint port "{")
@@ -330,13 +273,13 @@
 	 
 	 (for-each (lambda (b) (dump-blockS b port 4 ",")) (cdr blocks))
 	 (dump-blockS (car blocks) port 4 "")
-	 
-	 (fprint port "  ],")
-	 (fprint port "  \"history\": [")
-	 (let ((blockv (delete-duplicates! (map blockS-parent blocks) eq?)))
-	    (for-each (lambda (b) (log-blockV b port 4 ",")) (cdr blockv))
-	    (log-blockV (car blockv) port 4 ""))
-	 (fprint port "  ]")
+
+	 (if history
+	     (begin
+		(fprint port "  ],")
+		(fprint port "  \"history\": " history))
+	     (fprint port "  ]"))
+		
 	 (fprint port "}")
 	 id))
    
@@ -429,7 +372,7 @@
 			       (block-label (cadr mtgt)))))))))
 
    (define (print-bs b::blockS)
-      (with-access::blockS b (versions %merge-info ctx mblock)
+      (with-access::blockS b (%merge-info ctx mblock)
 	 (print " "
 	    (paddingl 4 (log-label b))
 	    (paddingr 6 (if mblock (log-label mblock "->")))
@@ -448,6 +391,79 @@
 	 (print "==== " (shape global) " " (map shape params))
 	 (for-each print-bv (sort-blocks bv))
 	 (newline))))
+
+;*---------------------------------------------------------------------*/
+;*    log-blocks-json ...                                              */
+;*---------------------------------------------------------------------*/
+(define (log-blocks-json global params blocks)
+
+   (define (sort-blocks b)
+      (sort (lambda (x y) (<= (block-label x) (block-label y))) b))
+
+   (define (log-blockS b::blockS p m sep)
+      (with-access::blockS b (label versions %merge-info ctx mblock)
+	 (let ((into (assq 'merge-info %merge-info))
+	       (mtgt (assq 'merge-target %merge-info))
+	       (mnew (assq 'merge-new %merge-info))
+	       (spec (assq 'merge-spec %merge-info))
+	       (crea (assq 'creator %merge-info)))
+	    (dump-margin p m)
+	    (fprint p "{")
+	    (dump-margin p (+fx m 2))
+	    (fprint p "\"id\": " label ",")
+	    (dump-margin p (+fx m 2))
+	    (fprint p "\"origin\": " (blockV-label (blockS-parent b)) ",")
+	    (dump-margin p (+fx m 2))
+	    (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
+	    (dump-margin p (+fx m 2))
+	    (fprintf p "\"context\": ~s,\n"
+	       (call-with-output-string
+		  (lambda (op)
+		     (for-each (lambda (e)
+				  (display (shape-ctx-entry e) op)
+				  (display " " op))
+			(with-access::bbv-ctx ctx (entries)
+			   entries)))))
+	    (dump-margin p (+fx m 2))
+	    (cond
+	       (mnew
+		(fprint p "\"event\": \"merge\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"merged\": [~a, ~a]\n"
+		   (block-label (cadr mnew))
+		   (block-label (cadr (cdr mnew)))))
+	       ((and mtgt (pair? (cddr mtgt)))
+		(fprint p "\"event\": \"merge\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"merged\": [~a, ~a]\n"
+		   (block-label (cadr mtgt))
+		   (block-label (cadr (cdr mtgt)))))
+	       (mtgt
+		(fprint p "\"event\": \"create\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"from\": ~a\n"
+		   (block-label (cadr mtgt))))
+	       (crea
+		(fprint p "\"event\": \"create\",")
+		(dump-margin p (+fx m 2))
+		(fprintf p "\"from\": ~a\n"
+		   (block-label (cdr crea))))
+	       (else
+		(fprint p "\"event\": \"spontaneous\"\n")))
+	    (dump-margin p m)
+	    (fprint p "}" sep))))
+   
+   (define (log-blockV b::blockV p m sep)
+      (with-access::blockV b (label versions)
+	 (for-each (lambda (b) (log-blockS b p m sep))
+	    (sort-blocks versions))))
+
+   (call-with-output-string
+      (lambda (port)
+	 (fprint port "[")
+	 (for-each (lambda (b) (log-blockV b port 4 ",")) (cdr blocks))
+	 (log-blockV (car blocks) port 4 "")
+	 (fprint port "  ]"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    assert-blocks ...                                                */
