@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Sun Aug 25 09:15:10 2019 (serrano)                */
+;*    Last change :  Mon Jun 10 10:28:06 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -56,8 +56,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    *macro-mutex* ...                                                */
 ;*---------------------------------------------------------------------*/
-(define *eval-macro-mutex* (make-mutex "eval-macros"))
-(define *compiler-macro-mutex* (make-mutex "compiler-macros"))
+(define *eval-macro-mutex* (make-spinlock "eval-macros"))
+(define *compiler-macro-mutex* (make-spinlock "compiler-macros"))
 
 ;*---------------------------------------------------------------------*/
 ;*    macro                                                            */

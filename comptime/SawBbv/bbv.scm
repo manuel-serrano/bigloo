@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jun  4 10:11:39 2024 (serrano)                */
+;*    Last change :  Tue Jun 11 15:08:19 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -102,7 +102,7 @@
 				    (__a (when *bbv-log*
 					   (log-blocks global params blocks)))
 				    (history (when *bbv-dump-json*
-						(log-blocks-json global params blocks)))
+						(log-blocks-history global params blocks)))
 				    (pr (dump-blocks 2 "profile" global params regs history
 					   (profile! s)))
 				    (as (dump-blocks 2 "assert" global params regs history

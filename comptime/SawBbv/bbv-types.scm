@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Apr 15 11:58:01 2024 (serrano)                */
+;*    Last change :  Tue Jun 11 14:37:50 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -53,12 +53,12 @@
 	       (%mark::long (default -1))
 	       (%hash::obj (default #f))
 	       (%blacklist::obj (default '()))
-	       (%merge-info::pair-nil (default '()))
 	       (ctx::bbv-ctx read-only)
 	       (parent::blockV read-only)
 	       (cnt::long (default 0))
 	       (mblock::obj (default #f))
-	       (collapsed::bool (default #f)))
+	       (creator::obj read-only) 
+	       (merges::pair-nil (default '())))
 	    
 	    ;; block queue
 	    (class bbv-queue
@@ -80,8 +80,6 @@
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '()))
 	       (initval::obj (default #unspecified)))
-
-	    (blockS-%merge-info-add! b::blockS lbl val)
 
 	    (get-bb-mark)
 	    
@@ -138,15 +136,6 @@
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)
 	    (rtl_call-values i::rtl_ins)))
-
-;*---------------------------------------------------------------------*/
-;*    blockS-%merge-info-add! ...                                      */
-;*---------------------------------------------------------------------*/
-(define (blockS-%merge-info-add! b::blockS lbl val)
-   (with-access::blockS b (%merge-info)
-      (let ((c (assq lbl %merge-info)))
-	 (unless (pair? c)
-	    (set! %merge-info (cons (cons lbl val) %merge-info))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::blockV ...                                        */
@@ -669,20 +658,16 @@
 	 ((assq 'merge-new mi) 'merge-new)
 	 (else #f)))
    
-   (with-access::blockS o (label collapsed first parent ctx preds succs %merge-info)
+   (with-access::blockS o (label first parent ctx preds succs)
       (fprint p "(blockS " label)
       (dump-margin p (+fx m 1))
       (fprint p ":parent " (block-label parent))
       (dump-margin p (+fx m 1))
       (fprint p ":merge " (with-access::blockV parent (merge) merge))
       (dump-margin p (+fx m 1))
-      (fprint p ":collapsed " collapsed)
-      (dump-margin p (+fx m 1))
       (fprint p ":preds " (map lbl preds))
       (dump-margin p (+fx m 1))
       (fprint p ":succs " (map lbl succs))
-      (dump-margin p (+fx m 1))
-      (fprint p ":merge-info " (dump-merge-info %merge-info))
       (dump-margin p (+fx m 1))
       (fprint p ":ctx " (shape ctx))
       (dump-margin p (+fx m 1))

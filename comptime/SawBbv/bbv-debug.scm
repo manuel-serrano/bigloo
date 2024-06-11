@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Tue Jun  4 10:13:54 2024 (serrano)                */
+;*    Last change :  Tue Jun 11 11:27:40 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -43,7 +43,7 @@
 	    (dump-cfg ::global ::pair-nil ::pair-nil ::bstring)
 	    (dump-json-cfg ::global ::pair-nil ::obj ::pair-nil ::bstring)
 	    (log-blocks ::global ::pair-nil ::pair-nil)
-	    (log-blocks-json::bstring ::global ::pair-nil ::pair-nil)
+	    (log-blocks-history::bstring ::global ::pair-nil ::pair-nil)
 	    (assert-block ::blockS ::obj)
 	    (assert-blocks ::blockS ::obj)
 	    (assert-context! b::blockS)
@@ -175,12 +175,14 @@
 	       (eq? value '_)
 	       (null? aliases))
 	  (shape reg)
-	  (vector (shape reg)
-	     (format "[~( )]"
-		(if polarity
-		    (map shape types)
-		    (map (lambda (t) (format "!~a" (shape t))) types)))
-	     (format "~s" (shape value))))))
+	  (cons (shape reg)
+	     (cond
+		((not (eq? value '_))
+		 (list (shape value)))
+		(else
+		 (if polarity
+		     (map shape types)
+		     (map (lambda (t) (format "!~a" (shape t))) types))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-json-cfg ...                                                */
@@ -200,7 +202,7 @@
    
    (define name (prefix filename))
 
-   (define (source first)
+   (define (loc first)
       (let ((i (find (lambda (i)
 			  (with-access::rtl_ins i (loc) loc))
 		    first)))
@@ -225,7 +227,7 @@
       (define (lbl n)
 	 (if (isa? n block) (block-label n) (typeof n)))
       
-      (with-access::blockS o (label collapsed first parent ctx preds succs %merge-info)
+      (with-access::blockS o (label collapsed first parent ctx preds succs)
 	 (dump-margin p m)
 	 (fprint p "{")
 	 (dump-margin p (+fx m 2))
@@ -235,7 +237,7 @@
 	 (dump-margin p (+fx m 2))
 	 (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
 	 (dump-margin p (+fx m 2))
-	 (fprintf p "\"source\": \"~a\",\n" (source first))
+	 (fprintf p "\"loc\": \"~a\",\n" (loc first))
 	 (dump-margin p (+fx m 2))
 	 (fprint p "\"usage\": " 0 ",")
 	 (dump-margin p (+fx m 2))
@@ -270,10 +272,12 @@
 	 (fprintf port "  \"merge-strategy\": \"~a\",\n"
 	    (or (getenv "BIGLOOBBVSTRATEGY") "size"))
 	 (fprint port "  \"specializedCFG\": [")
-	 
-	 (for-each (lambda (b) (dump-blockS b port 4 ",")) (cdr blocks))
-	 (dump-blockS (car blocks) port 4 "")
 
+	 (format "~(, )"
+	    (map (lambda (b) (dump-blockS b port 4 ","))
+	       (sort-blocks blocks)))
+
+	 (display "    { \"id\": 0 }" port)
 	 (if history
 	     (begin
 		(fprint port "  ],")
@@ -295,15 +299,20 @@
    `',(apply vector (map (lambda (n) (make-string n #\space)) (iota n))))
 
 ;*---------------------------------------------------------------------*/
+;*    sort-blocks ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (sort-blocks b)
+   (sort (lambda (x y) (<=fx (block-label x) (block-label y))) b))
+
+;*---------------------------------------------------------------------*/
 ;*    log-blocks ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (log-blocks global::global params::pair-nil bv::pair-nil)
 
-   (define (sort-blocks b)
-      (sort (lambda (x y) (<= (block-label x) (block-label y))) b))
+   
 
    (define margins
-      (make-margins 12))
+      (make-margins 40))
 
    (define (log-label block #!optional prefix)
       (if prefix
@@ -348,35 +357,30 @@
 	 ;;(format "~4d ~( )" id (map log-entry entries))
 	 (format "~( )" (map log-entry entries))))
    
-   (define (log-merge mblock info)
-      (let ((into (assq 'merge-info info))
-	    (mtgt (assq 'merge-target info))
-	    (mnew (assq 'merge-new info))
-	    (spec (assq 'merge-spec info))
-	    (crea (assq 'creator info)))
-	 (string-append
-	    ;; creator
-	    (paddingr 7 (if crea (log-label (cdr crea) "<-")))
-	    ;; merge
-	    (paddingr 10 (cond
-			   (mnew
-			    (format "!~a+~a"
-			       (block-label (cadr mnew))
-			       (block-label (cadr (cdr mnew)))))
-			   ((and mtgt (pair? (cddr mtgt)))
-			    (format "!~a+~a"
-			       (block-label (cadr mtgt))
-			       (block-label (cadr (cdr mtgt)))))
-			   (mtgt
-			    (format "!~a"
-			       (block-label (cadr mtgt)))))))))
+   (define (log-creator mblock creator)
+      (cond
+	 ((pair? creator)
+	  (format "<- ~a+~a"
+	     (block-label (car creator))
+	     (block-label (cdr creator))))
+	 ((isa? creator block)
+	  (format "<- ~a" (block-label creator)))
+	 (else
+	  (format "<- ~a" creator))))
+   
+   (define (log-merges mblock merges)
+      (format "~(, )"
+	 (map (lambda (m)
+		 (format "~a+~a" (block-label (car m)) (block-label (cdr m))))
+	    merges)))
 
    (define (print-bs b::blockS)
-      (with-access::blockS b (%merge-info ctx mblock)
+      (with-access::blockS b (creator merges ctx mblock)
 	 (print " "
 	    (paddingl 4 (log-label b))
 	    (paddingr 6 (if mblock (log-label mblock "->")))
-	    " " (log-merge mblock %merge-info)
+	    (paddingr 12 (log-creator mblock creator))
+	    " " (paddingl 30 (log-merges mblock merges))
 	    " " (log-ctx ctx))))
       
    (define (print-bv b::blockV)
@@ -393,76 +397,89 @@
 	 (newline))))
 
 ;*---------------------------------------------------------------------*/
-;*    log-blocks-json ...                                              */
+;*    log-blocks-history ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (log-blocks-json global params blocks)
+(define (log-blocks-history global params blocks)
 
    (define (sort-blocks b)
       (sort (lambda (x y) (<= (block-label x) (block-label y))) b))
 
-   (define (log-blockS b::blockS p m sep)
-      (with-access::blockS b (label versions %merge-info ctx mblock)
-	 (let ((into (assq 'merge-info %merge-info))
-	       (mtgt (assq 'merge-target %merge-info))
-	       (mnew (assq 'merge-new %merge-info))
-	       (spec (assq 'merge-spec %merge-info))
-	       (crea (assq 'creator %merge-info)))
-	    (dump-margin p m)
-	    (fprint p "{")
-	    (dump-margin p (+fx m 2))
-	    (fprint p "\"id\": " label ",")
-	    (dump-margin p (+fx m 2))
-	    (fprint p "\"origin\": " (blockV-label (blockS-parent b)) ",")
-	    (dump-margin p (+fx m 2))
-	    (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
-	    (dump-margin p (+fx m 2))
-	    (fprintf p "\"context\": ~s,\n"
-	       (call-with-output-string
-		  (lambda (op)
-		     (for-each (lambda (e)
-				  (display (shape-ctx-entry e) op)
-				  (display " " op))
-			(with-access::bbv-ctx ctx (entries)
-			   entries)))))
-	    (dump-margin p (+fx m 2))
-	    (cond
-	       (mnew
-		(fprint p "\"event\": \"merge\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"merged\": [~a, ~a]\n"
-		   (block-label (cadr mnew))
-		   (block-label (cadr (cdr mnew)))))
-	       ((and mtgt (pair? (cddr mtgt)))
-		(fprint p "\"event\": \"merge\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"merged\": [~a, ~a]\n"
-		   (block-label (cadr mtgt))
-		   (block-label (cadr (cdr mtgt)))))
-	       (mtgt
-		(fprint p "\"event\": \"create\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"from\": ~a\n"
-		   (block-label (cadr mtgt))))
-	       (crea
-		(fprint p "\"event\": \"create\",")
-		(dump-margin p (+fx m 2))
-		(fprintf p "\"from\": ~a\n"
-		   (block-label (cdr crea))))
-	       (else
-		(fprint p "\"event\": \"spontaneous\"\n")))
-	    (dump-margin p m)
-	    (fprint p "}" sep))))
+   (define (log-blockS-creator b::blockS p m)
+      (with-access::blockS b (label versions creator ctx)
+	 (dump-margin p m)
+	 (fprint p "{")
+	 (dump-margin p (+fx m 2))
+	 (fprint p "\"id\": " label ",")
+	 (dump-margin p (+fx m 2))
+	 (fprint p "\"origin\": " (blockV-label (blockS-parent b)) ",")
+	 (dump-margin p (+fx m 2))
+	 (fprintf p "\"bbs\": \"~a\",\n" (global-id global))
+	 (dump-margin p (+fx m 2))
+	 (fprintf p "\"context\": ~s,\n"
+	    (call-with-output-string
+	       (lambda (op)
+		  (for-each (lambda (e)
+			       (display (shape-ctx-entry e) op)
+			       (display " " op))
+		     (with-access::bbv-ctx ctx (entries)
+			entries)))))
+	 (dump-margin p (+fx m 2))
+	 (cond
+	    ((isa? creator block)
+	     (fprint p "\"event\": \"create\",")
+	     (dump-margin p (+fx m 2))
+	     (fprintf p "\"from\": ~a\n" (block-label creator)))
+	    ((symbol? creator)
+	     (fprint p "\"event\": \"create\",")
+	     (dump-margin p (+fx m 2))
+	     (fprintf p "\"from\": \"~a\"\n" creator))
+	    ((pair? creator)
+	     (fprint p "\"event\": \"mergeCreate\",")
+	     (dump-margin p (+fx m 2))
+	     (fprintf p "\"merged\": [~a, ~a]\n"
+		(block-label (car creator))
+		(block-label (cdr creator))))
+	    (else
+	     (error "log-blocks-history"
+		(format "missing block creator (~a)" label) creator)))
+	 (dump-margin p m)
+	 (fprint p "},")))
+
+   (define (log-blockS-merges b::blockS p m)
+      (with-access::blockS b (label versions merges mblock)
+	 (for-each (lambda (e)
+		      (dump-margin p m)
+		      (fprint p "{")
+		      (dump-margin p (+fx m 2))
+		      (fprint p "\"id\": " label ",")
+		      (dump-margin p (+fx m 2))
+		      (fprint p "\"event\": \"merge\",")
+		      (dump-margin p (+fx m 2))
+		      (fprintf p "\"merged\": [~a, ~a]\n"
+			 (block-label (car e))
+			 (block-label (cdr e)))
+		      (dump-margin p m)
+		      (fprint p "},"))
+	    merges)))
    
-   (define (log-blockV b::blockV p m sep)
+   (define (log-blockV-creator b::blockV p m)
       (with-access::blockV b (label versions)
-	 (for-each (lambda (b) (log-blockS b p m sep))
+	 (for-each (lambda (b) (log-blockS-creator b p m))
+	    (sort-blocks versions))))
+   
+   (define (log-blockV-merges b::blockV p m)
+      (with-access::blockV b (label versions)
+	 (for-each (lambda (b) (log-blockS-merges b p m))
 	    (sort-blocks versions))))
 
    (call-with-output-string
       (lambda (port)
 	 (fprint port "[")
-	 (for-each (lambda (b) (log-blockV b port 4 ",")) (cdr blocks))
-	 (log-blockV (car blocks) port 4 "")
+	 (for-each (lambda (b) (log-blockV-creator b port 4))
+	    (sort-blocks blocks))
+	 (for-each (lambda (b) (log-blockV-merges b port 4))
+	    (sort-blocks blocks))
+	 (display "    { \"event\": \"end\"}\n" port)
 	 (fprint port "  ]"))))
 
 ;*---------------------------------------------------------------------*/

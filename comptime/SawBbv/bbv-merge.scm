@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Mon Apr 15 10:00:56 2024 (serrano)                */
+;*    Last change :  Tue Jun 11 13:51:19 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -54,8 +54,8 @@
 	 (bbv-block-merge-select bs)
 	 (with-access::blockS bs1 ((ctx1 ctx))
 	    (with-access::blockS bs2 ((ctx2 ctx))
-	       (trace-item (block-label bs1) " ctx: " (shape ctx1))
-	       (trace-item (block-label bs2) " ctx: " (shape ctx2))
+	       (trace-item "#" (block-label bs1) " ctx: " (shape ctx1))
+	       (trace-item "#" (block-label bs2) " ctx: " (shape ctx2))
 	       (let ((mctx (merge-ctx ctx1 ctx2)))
 		  (trace-item "mctx=" (shape mctx))
 		  (values bs1 bs2 mctx)))))))
