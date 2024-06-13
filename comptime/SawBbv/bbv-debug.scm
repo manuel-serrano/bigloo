@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Tue Jun 11 11:27:40 2024 (serrano)                */
+;*    Last change :  Wed Jun 12 07:18:38 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -277,7 +277,7 @@
 	    (map (lambda (b) (dump-blockS b port 4 ","))
 	       (sort-blocks blocks)))
 
-	 (display "    { \"id\": 0 }" port)
+	 (display "    null" port)
 	 (if history
 	     (begin
 		(fprint port "  ],")
@@ -338,19 +338,19 @@
    (define (log-entry e)
       (with-access::bbv-ctxentry e (reg types polarity value aliases)
 	 (if (pair? aliases)
-	     (format "~a:[~( ) ~a ~( )]"
+	     (format "~a:[~( )~a ~( )]"
 		(shape reg)
 		(if polarity
 		    (map shape types)
 		    (map (lambda (t) (format "!~a" (shape t))) types))
-		(shape value)
+		(if (eq? value '_) "" (format " ~a" (shape value)))
 		(map shape aliases))
-	     (format "~a:[~( ) ~a]"
+	     (format "~a:[~( )~a]"
 		(shape reg)
 		(if polarity
 		    (map shape types)
 		    (map (lambda (t) (format "!~a" (shape t))) types))
-		(shape value)))))
+		(if (eq? value '_) "" (format " ~a" (shape value)))))))
    
    (define (log-ctx ctx)
       (with-access::bbv-ctx ctx (id entries)
@@ -479,7 +479,7 @@
 	    (sort-blocks blocks))
 	 (for-each (lambda (b) (log-blockV-merges b port 4))
 	    (sort-blocks blocks))
-	 (display "    { \"event\": \"end\"}\n" port)
+	 (display "    null\n" port)
 	 (fprint port "  ]"))))
 
 ;*---------------------------------------------------------------------*/

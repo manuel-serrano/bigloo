@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jun 11 13:53:21 2024 (serrano)                */
+;*    Last change :  Wed Jun 12 08:00:40 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -78,8 +78,9 @@
 			       (blockV-versions bv)))
 			 (block-merge-some! bv queue)))
 		   (unless (block-merged? bs)
-		      (with-access::blockS bs ((bv parent))
-			 (trace-item "need-specialize #" (block-label bv) "..."))
+		      (with-access::blockS bs ((bv parent) label)
+			 (trace-item "need-specialize #" label
+			    " (parent #" (block-label bv) ")"))
 		      (block-specialize! bs queue))
 		   (loop (+fx n 1))))))))
 
@@ -106,6 +107,7 @@
 (define (block-merge-some! bv::blockV queue)
    (with-trace 'bbv-block "block-merge-some!"
       (let ((lvs (blockV-live-versions bv)))
+	 (trace-item "blockV: " (blockV-label bv) " len: " (length lvs))
 	 (multiple-value-bind (bs1 bs2 mctx)
 	    (bbv-block-merge lvs)
 	    ;; Find an already existing block for mctx, if such a block
@@ -113,13 +115,9 @@
 	    ;; already been merge into). If no such block exists, create
 	    ;; a fresh new one
 	    (let ((mbs (bbv-block bv mctx queue :creator (cons bs1 bs2))))
-	       (trace-item "blockV: " (blockV-label bv)
-		  " -> #" (blockS-label mbs) " {" (length lvs) "} "
-		  (with-access::blockS mbs (merges)
-		     (map (lambda (m)
-			     (cons (block-label (car m))
-				(block-label (cdr m))))
-			merges)))
+	       (trace-item "#" (block-label bs1) "+#" (block-label bs2)
+		  " -> #" (blockS-label mbs) " "
+		  (shape mctx))
 	       (cond
 		  ((eq? bs1 mbs)
 		   (with-access::blockS mbs (merges)
@@ -381,12 +379,13 @@
 			 (trace-item "<- new: #" label)
 			 (bbv-queue-push! queue nbs)
 			 (for-each (lambda (b)
-				      (with-access::blockS b (ctx mblock)
-					 (trace-item "queue.mblock: "
+				      (with-access::blockS b (ctx mblock label)
+					 (trace-item "version: "
+					    "#" label 
 					    (if (isa? mblock block)
-						(format "#~a"
+						(format "(->#~a)"
 						   (block-label mblock))
-						"-")
+						"")
 					    " ctx: " (shape ctx))))
 			    versions)
 			 nbs)))))))))
