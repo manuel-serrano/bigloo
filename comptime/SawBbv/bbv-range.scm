@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Mon Apr 15 10:36:54 2024 (serrano)                */
+;*    Last change :  Thu Jun 13 11:25:00 2024 (serrano)                */
 ;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -723,8 +723,8 @@
    (cond
       ((fixnum? n)
        (cond
-	  ((<= n (bbv-min-fixnum)) (bbv-min-fixnum))
-	  ((>= n (bbv-max-fixnum)) (bbv-max-fixnum))
+	  ((< n (bbv-min-fixnum)) -inf.0)
+	  ((> n (bbv-min-fixnum)) +inf.0)
 	  (else n)))
       ((bignum? n)
        (if (> n 0) +inf.0 -inf.0))
