@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Tue May 28 15:01:40 2024 (serrano)                */
+;*    Last change :  Mon Jun 17 09:27:33 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -24,6 +24,7 @@
 	   *bbv-optim-alias*
 	   *bbv-verbose*
 	   *bbv-dump-json*
+	   *bbv-dump-cfg*
 	   *bbv-profile*
 	   *max-block-merge-versions*
 	   *max-block-limit*
@@ -95,7 +96,10 @@
 (define *bbv-merge-strategy*
    (let ((e (getenv "BIGLOOBBVSTRATEGY")))
       (cond
-	 ((not e) 'nearobj)
+	 ((not e) 'score+)
+	 ((string=? e "score+") 'score+)
+	 ((string=? e "score") 'score)
+	 ((string=? e "sametypes") 'sametypes)
 	 ((string=? e "first") 'first)
 	 ((string=? e "nearobj") 'nearobj)
 	 ((string=? e "size") 'size)
@@ -155,7 +159,20 @@
 	 ((not e) #f)
 	 ((string=? e "true") #t)
 	 ((string=? e "false") #f)
+	 ((string=? e "") #f)
 	 (else (error "bbv-dump-json" "illegal value" e)))))
+
+;*---------------------------------------------------------------------*/
+;*    *bbv-dump-cfg* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *bbv-dump-cfg*
+   (let ((e (getenv "BIGLOOBBVDUMPCFG")))
+      (cond
+	 ((not e) #f)
+	 ((string=? e "true") #t)
+	 ((string=? e "false") #f)
+	 ((string=? e "") #f)
+	 (else (error "bbv-dump-cfg" "illegal value" e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bbv-profile* ...                                                */

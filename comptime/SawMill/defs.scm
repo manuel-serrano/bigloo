@@ -99,7 +99,10 @@
 (define debug-saw
    (let ((e (getenv "BIGLOOTRACE")))
       (when (string? e)
-	 (string-index "bbv" e))))
+	 (or (string-prefix? "bbv " e)
+	     (string-suffix? " bbv" e)
+	     (string-contains e " bbv ")
+	     (string=? "bbv" e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-args* ...                                                */

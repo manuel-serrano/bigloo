@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jun 11 15:08:19 2024 (serrano)                */
+;*    Last change :  Mon Jun 17 13:25:13 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -60,7 +60,7 @@
 	     (if *bbv-optim-alias* " alias" "")
 	     (if *bbv-blocks-cleanup* " cleanup" "")
 	     ")")
-	  (when (>=fx *trace-level* 2)
+	  (when *bbv-dump-cfg*
 	     (dump-cfg global params blocks ".plain.cfg"))
 	  (set-max-label! blocks)
 	  ;; After the reorder-succs! pass, the succs list order is meaningful.
@@ -68,30 +68,30 @@
 	  ;; (sometimes implicit). If any second successor, it is the target
 	  ;; of the conditional branch of the instruction.
 	  (reorder-succs! blocks)
-	  (when (>=fx *trace-level* 2)
+	  (when *bbv-dump-cfg*
 	     (dump-cfg global params blocks ".reorder.cfg"))
 	  ;; replace the possible go instruction that follows an error call
 	  (fail! (car blocks))
-	  (when (>=fx *trace-level* 2)
+	  (when *bbv-dump-cfg*
 	     (dump-cfg global params blocks ".failure.cfg"))
 	  ;; there are several form of type checks, normalize them to ease
 	  ;; the bbv algorithm
 	  (normalize-typecheck! (car blocks))
-	  (when (>=fx *trace-level* 2)
+	  (when *bbv-dump-cfg*
 	     (dump-cfg global params blocks ".typecheck.cfg"))
 	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
-	     (when (>=fx *trace-level* 2)
+	     (when *bbv-dump-cfg*
 		(dump-cfg global params blocks ".goto.cfg"))
 	     (let ((blocks (normalize-ifeq! (car blocks))))
-		(when (>=fx *trace-level* 2)
+		(when *bbv-dump-cfg*
 		   (dump-cfg global params blocks ".ifeq.cfg"))
 		(let ((blocks (normalize-mov! (car blocks))))
-		   (when (>=fx *trace-level* 2)
+		   (when *bbv-dump-cfg*
 		      (dump-cfg global params blocks ".mov.cfg"))
 		   (let ((regs (bbv-liveness! back blocks params)))
 		      ;; liveness also widen each block into a blockV
 		      (mark-merge! (car blocks))
-		      (when (>=fx *trace-level* 2)
+		      (when *bbv-dump-cfg*
 			 (dump-cfg global params blocks ".liveness.cfg"))
 		      (unwind-protect
 			 (if (null? blocks)
@@ -139,7 +139,7 @@
 ;*    dump-blocks ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (dump-blocks::blockS level::long name global::global params::pair-nil regs::pair-nil history b::blockS)
-   (when (>=fx *trace-level* level)
+   (when (and *bbv-dump-cfg* (or (>=fx *trace-level* level) (=fx level 1)))
       (dump-cfg global params
 	 (block->block-list regs b) (format ".~a.cfg" name)))
    (when (and *bbv-dump-json* (or (>=fx *trace-level* level) (=fx level 1)))

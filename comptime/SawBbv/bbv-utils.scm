@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon May 27 08:50:05 2024 (serrano)                */
+;*    Last change :  Mon Jun 17 13:40:00 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -302,8 +302,13 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-ctx-extend-live-out-regs ctx ins::rtl_ins/bbv)
    (with-access::rtl_ins/bbv ins (out)
-      (let ((entries (filter (lambda (e)
-				(regset-member? (bbv-ctxentry-reg e) out))
+      (let ((entries (filter-map (lambda (e)
+				    (when (regset-member? (bbv-ctxentry-reg e) out)
+				       (with-access::bbv-ctxentry e (aliases)
+					  (if (null? aliases)
+					      e
+					      (duplicate::bbv-ctxentry e
+						 (aliases (filter (lambda (r) (regset-member? r out)) aliases)))))))
 			(bbv-ctx-entries ctx))))
 	 (let ((nctx (duplicate::bbv-ctx ctx
 			(entries entries))))

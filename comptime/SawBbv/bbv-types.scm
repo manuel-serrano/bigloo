@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Jun 11 14:37:50 2024 (serrano)                */
+;*    Last change :  Mon Jun 17 08:56:09 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -77,6 +77,7 @@
 	       (reg::rtl_reg read-only)
 	       (types::pair read-only (default (list *obj*)))
 	       (polarity::bool read-only)
+	       (count::long (default 0))
 	       (value read-only (default '_))
 	       (aliases::pair-nil (default '()))
 	       (initval::obj (default #unspecified)))
@@ -98,7 +99,7 @@
 	    (extend-ctx/entry ::bbv-ctx ::bbv-ctxentry)
 	    (extend-ctx/entry* ctx::bbv-ctx . entries)
 	    (extend-ctx::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
-	       #!key (value '_) (aliases #f))
+	       #!key (value '_) (aliases #f) (count 1))
 	    (extend-ctx!::bbv-ctx ::bbv-ctx ::rtl_reg ::pair ::bool
 	       #!key (value '_) (aliases #f))
 	    (extend-ctx* ctx::bbv-ctx regs::pair ::pair ::bool
@@ -173,7 +174,7 @@
 ;*    shape ::bbv-ctxentry ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (shape e::bbv-ctxentry)
-   (with-access::bbv-ctxentry e (reg types polarity value aliases)
+   (with-access::bbv-ctxentry e (reg types polarity value aliases count)
       (if (and (=fx (length types) 1)
 	       (eq? (car types) *obj*)
 	       (eq? value '_)
@@ -182,7 +183,7 @@
 	  (vector (shape reg)
 	     (format "[~( )]"
 		(if polarity
-		    (map shape types)
+		    (map (lambda (t) (format "~a:~a" (shape t) count)) types)
 		    (map (lambda (t) (format "!~a" (shape t))) types)))
 	     (format "~s" (shape value))
 	     (map shape aliases)))))
@@ -265,6 +266,7 @@
 				       (instantiate::bbv-ctxentry
 					  (reg p)
 					  (types (list type))
+					  (count 10)
 					  (value (if (or (eq? type *bint*)
 							 (eq? type *long*))
 						     (fixnum-range)
@@ -378,13 +380,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement.              */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx ctx::bbv-ctx reg::rtl_reg types::pair polarity::bool
-	   #!key (value '_) (aliases #f))
+(define (extend-ctx::bbv-ctx ctx::bbv-ctx reg::rtl_reg types::pair polarity::bool
+	   #!key (value '_) (aliases #f) (count 1))
    
    (define (new-ctxentry reg::rtl_reg type polarity::bool value)
       (instantiate::bbv-ctxentry
 	 (reg reg)
 	 (types types)
+	 (count (if (memq *obj* types) 0 count))
 	 (polarity polarity)
 	 (value value)))
    
@@ -394,18 +397,19 @@
 	    (let loop ((entries entries))
 	       (cond
 		  ((null? entries)
-		   (let ((n (new-ctxentry reg type polarity value)))
+		   (let ((n (new-ctxentry reg types polarity value)))
 		      (list n)))
 		  ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car entries))) rnum)
-		   (let ((n (new-ctxentry reg type polarity value)))
+		   (let ((n (new-ctxentry reg types polarity value)))
 		      (cons n entries)))
 		  ((eq? (bbv-ctxentry-reg (car entries)) reg)
-		   (with-access::bbv-ctxentry (car entries) ((oa aliases) (otypes types) (opolarity polarity))
+		   (with-access::bbv-ctxentry (car entries) ((oa aliases) (otypes types) (opolarity polarity) (ocount count))
 		      (if (and (eq? polarity opolarity) (not polarity))
 			  ;; accumulate negative polarity
 			  (let ((n (duplicate::bbv-ctxentry (car entries)
 				      (types (delete-duplicates (append otypes types) eq?))
 				      (polarity polarity)
+				      (count 0)
 				      (value value)
 				      (aliases (or aliases oa)))))
 			     (cons n (cdr entries)))
@@ -413,6 +417,7 @@
 				      (types types)
 				      (polarity polarity)
 				      (value value)
+				      (count (+fx ocount 1))
 				      (aliases (or aliases oa)))))
 			     (cons n (cdr entries))))))
 		  (else

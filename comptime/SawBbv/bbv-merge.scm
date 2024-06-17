@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Jun 11 13:51:19 2024 (serrano)                */
+;*    Last change :  Thu Jun 13 13:22:10 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -47,9 +47,9 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge bs::pair-nil)
    (with-trace 'bbv-merge
-	 (format "bbv-block-merge {~a} ~( )"
+	 (format "bbv-block-merge {#~a} ~( )"
 	    (block-label (blockS-parent (car bs)))
-	    (map block-label bs))
+	    (map (lambda (b) (format "#~a" (block-label b))) bs))
       (multiple-value-bind (bs1 bs2)
 	 (bbv-block-merge-select bs)
 	 (with-access::blockS bs1 ((ctx1 ctx))
@@ -71,14 +71,89 @@
        ;; the strategies implementation
        (values (car bs) (cadr bs))
        (case *bbv-merge-strategy*
+	  ((score+) (bbv-block-merge-select-strategy-score+ bs))
+	  ((score) (bbv-block-merge-select-strategy-score bs))
 	  ((nearobj) (bbv-block-merge-select-strategy-nearobj bs))
-	  ((samepositive) (bbv-block-merge-select-strategy-samepositive bs))
+	  ((nearnegative) (bbv-block-merge-select-strategy-nearnegative bs))
+	  ((anynegative) (bbv-block-merge-select-strategy-anynegative bs))
 	  ((size) (bbv-block-merge-select-strategy-size bs))
 	  ((distance) (bbv-block-merge-select-strategy-distance bs))
 	  ((random) (bbv-block-merge-select-strategy-random bs))
 	  ((first) (bbv-block-merge-select-strategy-first bs))
 	  (else (error "bbv-block-merge-select" "strategy not implemented" *bbv-merge-strategy*)))))
 
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-score+ ...                       */
+;*    -------------------------------------------------------------    */
+;*    Select two contexts that are only distinguished by negative      */
+;*    polarities                                                       */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-score+ bs::pair)
+   
+   (define (list-eq? x y)
+      (every eq? x y))
+   
+   (define (same-positive? x y)
+      (with-access::blockS x ((xctx ctx))
+	 (with-access::blockS y ((yctx ctx))
+	    (with-access::bbv-ctx xctx ((xentries entries))
+	       (with-access::bbv-ctx yctx ((yentries entries))
+		  (every (lambda (ex ey)
+			    (with-access::bbv-ctxentry ex ((xtypes types)
+							   (xpol polarity))
+			       (with-access::bbv-ctxentry ey ((ytypes types)
+							      (ypol polarity))
+				  (if (not xpol)
+				      (not ypol)
+				      (list-eq? xtypes ytypes)))))
+		     xentries yentries))))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-samepositive"
+      (let loop ((pbs bs))
+	 (if (null? pbs)
+	     (bbv-block-merge-select-strategy-score bs)
+	     (let ((sb (find (lambda (b)
+				(same-positive? (car pbs) b))
+			  (cdr pbs))))
+		(if sb
+		    (begin
+		       (trace-item "merging "
+			  "#" (block-label (car pbs)) "+"
+			  "#" (block-label sb))
+		       (values (car pbs) sb))
+		    (loop (cdr pbs))))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-score ...                        */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-score bs::pair)
+   
+   (define (entry-score::long e::bbv-ctxentry)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases count)
+	 (cond
+	    ((not polarity) 1)
+	    ((memq *obj* types) 0)
+	    (else count))))
+   
+   (define (ctx-score::long ctx::bbv-ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-score entries))))
+   
+   (define (blockS-score::long b::blockS)
+      (with-access::blockS b (ctx)
+	 (ctx-score ctx)))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-score"
+      (let ((bs (sort (lambda (x y)
+			 (<= (car x) (car y)))
+		   (map (lambda (b) (cons (blockS-score b) b)) bs))))
+	 (for-each (lambda (b)
+		      (with-access::blockS (cdr b) (ctx)
+			 (trace-item "#" (block-label (cdr b)) " [" (car b) "] "
+			    (shape ctx))))
+	    bs)
+	 (values (cdar bs) (cdadr bs)))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-nearobj ...                      */
 ;*    -------------------------------------------------------------    */
@@ -117,8 +192,14 @@
 		(cond
 		   (fb
 		    (let ((nfb (find (lambda (b) (not (eq? b fb))) bnb)))
+		       (trace-item "merging "
+			  "#" (block-label nfb) "+"
+			  "#" (block-label fb))
 		       (values nfb fb)))
 		   ((pair? (cdr bnb))
+		    (trace-item "merging "
+		       "#" (block-label (car bnb)) "+"
+		       "#" (block-label (cadr bnb)))
 		    (values (car bnb) (cadr bnb)))
 		   (else
 		    (bbv-block-merge-select-strategy-samepositive bs))))
@@ -131,7 +212,7 @@
 ;*    polarities                                                       */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-samepositive bs::pair)
-
+   
    (define (list-eq? x y)
       (every eq? x y))
    
@@ -153,13 +234,81 @@
    (with-trace 'bbv-merge "bbv-block-merge-select-strategy-samepositive"
       (let loop ((pbs bs))
 	 (if (null? pbs)
-	     (bbv-block-merge-select-strategy-size bs)
+	     (bbv-block-merge-select-strategy-score bs)
 	     (let ((sb (find (lambda (b)
 				(same-positive? (car pbs) b))
 			  (cdr pbs))))
 		(if sb
-		    (values (car pbs) sb)
+		    (begin
+		       (trace-item "merging "
+			  "#" (block-label (car pbs)) "+"
+			  "#" (block-label sb))
+		       (values (car pbs) sb))
 		    (loop (cdr pbs))))))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-nearnegative ...                 */
+;*    -------------------------------------------------------------    */
+;*    Search if there is a fully negative ctx and at least another     */
+;*    ctx with some negative polarities. Merge the fully negative      */
+;*    with the smallest ctx with negative polarities.                  */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-nearnegative bs::pair)
+   
+   (define (negative b::blockS)
+      (with-access::blockS b (ctx)
+	 (with-access::bbv-ctx ctx (entries)
+	    (every (lambda (e::bbv-ctxentry)
+		    (with-access::bbv-ctxentry e (types polarity)
+		       (or (eq? (car types) *obj*) (not polarity))))
+	       entries))))
+   
+   (define (fullnegative b::blockS)
+      (with-access::blockS b (ctx)
+	 (with-access::bbv-ctx ctx (entries)
+	    (every (lambda (e::bbv-ctxentry)
+		      (with-access::bbv-ctxentry e (types polarity)
+			 (or (eq? (car types) *obj*) (not polarity))))
+	       entries))))
+
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-nearnegative"
+      (let ((bnb (filter negative bs)))
+	 (if (and (pair? bnb) (pair? (cdr bnb)))
+	     (let ((lst (sort (lambda (x y)
+				 (>= (car x) (car y)))
+			   (map (lambda (b) (cons (block-size b) b)) bnb))))
+		(trace-item "merging "
+		   "#" (block-label (cdr (car lst))) "+"
+		   "#" (block-label (cdr (cadr lst))))
+		(values (cdar lst) (cdadr lst)))
+	     (bbv-block-merge-select-strategy-samepositive bs)))))
+   
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-anynegative ...                  */
+;*    -------------------------------------------------------------    */
+;*    Merge any blocks that contains negative polarities               */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-anynegative bs::pair)
+
+   (define (negative b::blockS)
+      (with-access::blockS b (ctx)
+	 (with-access::bbv-ctx ctx (entries)
+	    (any (lambda (e::bbv-ctxentry)
+		    (with-access::bbv-ctxentry e (polarity)
+		       (not polarity)))
+	       entries))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-anynegative"
+      (let ((bnb (filter negative bs)))
+	 (if (and (pair? bnb) (pair? (cdr bnb)))
+	     (let ((lst (sort (lambda (x y)
+				 (>= (car x) (car y)))
+			   (map (lambda (b) (cons (block-size b) b)) bnb))))
+		(trace-item "merging "
+		   "#" (block-label (cdr (car lst))) "+"
+		   "#" (block-label (cdr (cadr lst))))
+		(values (cdar lst) (cdadr lst)))
+	     (bbv-block-merge-select-strategy-size bs)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-size ...                         */
@@ -167,40 +316,6 @@
 ;*    Select the two smallest contexts.                                */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-size bs::pair)
-   
-   (define (range-size r::bbv-range)
-      (with-access::bbv-range r (lo up)
-	 (cond
-	    ((and (isa? lo bbv-vlen) (isa? up bbv-vlen)) 4)
-	    ((or (not (fixnum? lo)) (not (fixnum? up))) 6)
-	    ((and (>=fx lo -128) (<=fx up 127)) 1)
-	    ((and (>=fx lo 0) (<=fx up 255)) 1)
-	    ((and (>=fx lo -65536) (<=fx up -65535)) 2)
-	    ((and (>=fx lo 0) (<=fx up 536870912)) 3)
-	    (else 5))))
-
-   (define (type-size type)
-      (cond
-	 ((eq? type *bignum*) 1)
-	 ((eq? type *real*) 2)
-	 (else 3)))
-   
-   (define (entry-size e::bbv-ctxentry)
-      (with-access::bbv-ctxentry e (types polarity value)
-	 (cond
-	    ((not polarity) (minfx 100 (*fx 50 (length types))))
-	    ((eq? (car types) *obj*) 100)
-	    ((isa? value bbv-range) (range-size value))
-	    ((null? types) 0)
-	    (else (*fx 10 (apply + (map type-size types)))))))
-   
-   (define (ctx-size ctx::bbv-ctx)
-      (with-access::bbv-ctx ctx (entries)
-	 (apply + (map entry-size entries))))
-   
-   (define (block-size b::blockS)
-      (with-access::blockS b (ctx)
-	 (ctx-size ctx)))
    
    (define (block-max-size b::blockS)
       (with-access::blockS b (ctx)
@@ -210,17 +325,24 @@
    (with-trace 'bbv-merge "bbv-block-merge-select-strategy-size"
       (for-each (lambda (b)
 		   (trace-item "{" (block-label b) "} size: "
-		      (block-size b)
-		      " " (with-access::blockS b (ctx) (shape ctx))))
+		      "#" (block-size b)
+		      "#" " " (with-access::blockS b (ctx) (shape ctx))))
 	 bs)
       (let* ((maxs (block-max-size (car bs)))
 	     (bsz (map (lambda (b) (cons (block-size b) b)) bs))
 	     (mbsz (filter (lambda (p) (=fx (car p) maxs)) bsz)))
 	 (if (and (pair? mbsz) (pair? (cdr mbsz)))
 	     ;; two contexts are "top-equivalent", pick these ones
-	     (values (cdr (car mbsz)) (cdr (cadr mbsz)))
+	     (begin
+		(trace-item "merging "
+		   "#" (block-label (cdr (car mbsz))) "+"
+		   "#" (block-label (cdr (cadr mbsz))))
+		(values (cdr (car mbsz)) (cdr (cadr mbsz))))
 	     ;; pick the two smallest context
 	     (let ((l (sort bsz (lambda (x y) (<=fx (car x) (car y))))))
+		(trace-item "merging "
+		   "#" (block-label (cdr (car l))) "+"
+		   "#" (block-label (cdr (cadr l))))
 		(values (cdr (car l)) (cdr (cadr l))))))))
 	   
 ;*---------------------------------------------------------------------*/
@@ -229,7 +351,7 @@
 ;*    Select the two closest contexts.                                 */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-distance bs::pair)
-
+   
    (define (dist-entry x::bbv-ctxentry y::bbv-ctxentry)
       (with-access::bbv-ctxentry x ((xpolarity polarity)
 				    (xtypes types)
@@ -261,7 +383,7 @@
 		4)
 	       (else
 		11)))))
-      
+   
    (define (ctx-dist xctx::bbv-ctx yctx::bbv-ctx)
       (with-access::bbv-ctx xctx (entries)
 	 (apply +
@@ -279,12 +401,16 @@
 		(with-access::blockS y ((yctx ctx))
 		   (cons (ctx-dist xctx yctx) p))))))
    
-   (let ((l (sort (map block-dist
-		     (append-map (lambda (x)
-				    (map (lambda (y) (cons x y)) bs))
-			bs))
-	       (lambda (x y) (<=fx (car x) (car y))))))
-      (values (car (cdar l)) (cdr (cdar l)))))
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-distance"
+      (let ((l (sort (map block-dist
+			(append-map (lambda (x)
+				       (map (lambda (y) (cons x y)) bs))
+			   bs))
+		  (lambda (x y) (<=fx (car x) (car y))))))
+	 (trace-item "merging "
+	    "#" (block-label (car (cdar l))) "+"
+	    "#" (block-label (cdr (cdar l))))
+	 (values (car (cdar l)) (cdr (cdar l))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-random ...                       */
@@ -292,13 +418,18 @@
 ;*    Peek two random blocks for merging.                              */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-random bs::pair)
-   (let* ((len (length bs))
-	  (x (random len)))
-      (let loop ()
-	 (let ((y (random len)))
-	    (if (=fx x y)
-		(loop)
-		(values (list-ref bs x) (list-ref bs y)))))))
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-randome"
+      (let* ((len (length bs))
+	     (x (random len)))
+	 (let loop ()
+	    (let ((y (random len)))
+	       (if (=fx x y)
+		   (loop)
+		   (begin
+		      (trace-item "merging "
+			 "#" (block-label (list-ref bs x)) "+"
+			 "#" (block-label (list-ref bs y)))
+		      (values (list-ref bs x) (list-ref bs y)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-first ...                        */
@@ -306,7 +437,11 @@
 ;*    Peek two first blocks for merging.                               */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-first bs::pair)
-   (values (car bs) (cadr bs)))
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-randome"
+      (trace-item "merging "
+	 "#" (block-label (car bs)) "+"
+	 "#" (block-label (cadr bs)))
+      (values (car bs) (cadr bs))))
 
 ;*---------------------------------------------------------------------*/
 ;*    merge-ctx ...                                                    */
@@ -372,10 +507,12 @@
       (with-access::bbv-ctxentry e1 ((polarity1 polarity)
 				     (types1 types)
 				     (value1 value)
+				     (count1 count)
 				     (aliases1 aliases))
 	 (with-access::bbv-ctxentry e2 ((polarity2 polarity)
 					(types2 types)
 					(value2 value)
+					(count2 count)
 					(aliases2 aliases))
 	    (cond
 	       ((not (eq? polarity1 polarity2))
@@ -390,6 +527,7 @@
 		       (duplicate::bbv-ctxentry e1
 			  (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
 			  (types ts)
+			  (count 1)
 			  (value '_)))))
 	       ((not (same-types? types1 types2))
 		(trace-item "not same types types1="
@@ -400,12 +538,14 @@
 		       (duplicate::bbv-ctxentry e1
 			  (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
 			  (types ts)
+			  (count (minfx count1 count2))
 			  (value '_)))))
 	       ((or (not (bbv-range? value1)) (not (bbv-range? value2)))
 		(trace-item "not both ranges value1=" (shape value1)
 		   " value2=" (shape value2))
 		(duplicate::bbv-ctxentry e1
 		   (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
+		   (count (minfx count1 count2))
 		   (value '_)))
 	       (else
 		(let ((range (merge-range value1 value2)))
@@ -413,6 +553,7 @@
 		      " -> " (shape range))
 		   (duplicate::bbv-ctxentry e1
 		      (aliases (if (list-eq? aliases1 aliases2) aliases1 '()))
+		      (count (minfx count1 count2))
 		      (value (or range (fixnum-range)))))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -499,4 +640,41 @@
 	     (lo nl)
 	     (up nu))))))
 
+;*---------------------------------------------------------------------*/
+;*    block-size ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (block-size b::blockS)
+   
+   (define (range-size r::bbv-range)
+      (with-access::bbv-range r (lo up)
+	 (cond
+	    ((and (isa? lo bbv-vlen) (isa? up bbv-vlen)) 4)
+	    ((or (not (fixnum? lo)) (not (fixnum? up))) 6)
+	    ((and (>=fx lo -128) (<=fx up 127)) 1)
+	    ((and (>=fx lo 0) (<=fx up 255)) 1)
+	    ((and (>=fx lo -65536) (<=fx up -65535)) 2)
+	    ((and (>=fx lo 0) (<=fx up 536870912)) 3)
+	    (else 5))))
+   
+   (define (type-size type)
+      (cond
+	 ((eq? type *bignum*) 1)
+	 ((eq? type *real*) 2)
+	 (else 3)))
+   
+   (define (entry-size e::bbv-ctxentry)
+      (with-access::bbv-ctxentry e (types polarity value)
+	 (cond
+	    ((not polarity) (minfx 10 (*fx 10 (length types))))
+	    ((eq? (car types) *obj*) 100)
+	    ((isa? value bbv-range) (range-size value))
+	    ((null? types) 0)
+	    (else (*fx 10 (apply + (map type-size types)))))))
+   
+   (define (ctx-size ctx::bbv-ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-size entries))))
+   
+   (with-access::blockS b (ctx)
+	 (ctx-size ctx)))
 

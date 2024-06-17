@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Mon Feb 26 21:36:36 2024 (serrano)                */
+;*    Last change :  Thu Jun 13 14:59:19 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -119,7 +119,7 @@
 			 (set! fun (instantiate::rtl_nop)))))
 		(loop (append succs (cdr bs))
 		   (bbset-cons (car bs) acc)))))))
-   
+
    (if (or (eq? *bbv-blocks-cleanup* #t)
 	   (and (string? *bbv-blocks-cleanup*)
 		(string-contains *bbv-blocks-cleanup* "goto")))

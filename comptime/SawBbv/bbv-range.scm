@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Thu Jun 13 11:25:00 2024 (serrano)                */
+;*    Last change :  Mon Jun 17 11:42:39 2024 (serrano)                */
 ;*    Copyright   :  2022-24 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
@@ -125,7 +125,7 @@
 	       #f
 	       #unspecified)))
       ((and (fixnum? x) (bbv-vlen? y))
-       (if (>fx x (->range (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
+       (if (> x (->range (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
 	   #t
 	   (if (<=fx x (bbv-vlen-offset y))
 	       #f
@@ -149,7 +149,7 @@
 	       #f
 	       #unspecified)))
       ((and (fixnum? x) (bbv-vlen? y))
-       (if (>=fx x (->range (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
+       (if (> x (->range (+fx (bbv-max-fixnum) (bbv-vlen-offset y))))
 	   #t
 	   (if (<fx x (bbv-vlen-offset y))
 	       #f

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Wed Jun 12 07:18:38 2024 (serrano)                */
+;*    Last change :  Mon Jun 17 09:43:28 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -169,7 +169,7 @@
 ;*    shape-ctx-entry ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (shape-ctx-entry e)
-   (with-access::bbv-ctxentry e (reg types polarity value aliases)
+   (with-access::bbv-ctxentry e (reg types polarity value aliases count)
       (if (and (=fx (length types) 1)
 	       (eq? (car types) *obj*)
 	       (eq? value '_)
@@ -178,10 +178,10 @@
 	  (cons (shape reg)
 	     (cond
 		((not (eq? value '_))
-		 (list (shape value)))
+		 (list (format "~a:~a" (shape value) count)))
 		(else
 		 (if polarity
-		     (map shape types)
+		     (map (lambda (t) (format "~a:~a" (shape t) count)) types)
 		     (map (lambda (t) (format "!~a" (shape t))) types))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -336,19 +336,19 @@
 	  (vector-ref margins n)))
       
    (define (log-entry e)
-      (with-access::bbv-ctxentry e (reg types polarity value aliases)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases count)
 	 (if (pair? aliases)
 	     (format "~a:[~( )~a ~( )]"
 		(shape reg)
 		(if polarity
-		    (map shape types)
+		    (map (lambda (t) (format "~a:~a" (shape t) count)) types)
 		    (map (lambda (t) (format "!~a" (shape t))) types))
 		(if (eq? value '_) "" (format " ~a" (shape value)))
 		(map shape aliases))
 	     (format "~a:[~( )~a]"
 		(shape reg)
 		(if polarity
-		    (map shape types)
+		    (map (lambda (t) (format "~a:~a" (shape t) count)) types)
 		    (map (lambda (t) (format "!~a" (shape t))) types))
 		(if (eq? value '_) "" (format " ~a" (shape value)))))))
    
@@ -378,7 +378,7 @@
       (with-access::blockS b (creator merges ctx mblock)
 	 (print " "
 	    (paddingl 4 (log-label b))
-	    (paddingr 6 (if mblock (log-label mblock "->")))
+	    (paddingr 6 (if mblock (log-label mblock "~>")))
 	    (paddingr 12 (log-creator mblock creator))
 	    " " (paddingl 30 (log-merges mblock merges))
 	    " " (log-ctx ctx))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jun 12 08:00:40 2024 (serrano)                */
+;*    Last change :  Mon Jun 17 09:02:26 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -363,7 +363,7 @@
       (let ((bv (if (isa? b blockV) b (with-access::blockS b (parent) parent))))
 	 (with-access::blockV bv (first label versions)
 	    (trace-item "parent: " label)
-	    (trace-item "versions: " (map block-label versions))
+	    (trace-item "versions: " (map (lambda (b) (format "#~a"(block-label b))) versions))
 	    (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
 	       (cond
 		  ((bbv-ctx-assoc ctx versions)
@@ -441,8 +441,7 @@
 			       (when (isa? fun rtl_call)
 				  (with-access::rtl_call fun (var)
 				     (with-access::variable var (value type)
-					(if (or (eq? var *long->bint*))
-					    #t
+					(or (eq? var *long->bint*)
 					    (begin
 					       (when *bbv-debug*
 						  (tprint "stop predicate "
@@ -641,15 +640,15 @@
 		(trace-item "dest: " (shape dest))
 		(trace-item "arg: " (shape (car args)))
 		(let ((e (bbv-ctx-get ctx (car args))))
-		   (with-access::bbv-ctxentry e (types value polarity)
+		   (with-access::bbv-ctxentry e (types value polarity count)
 		      (if (bbv-singleton? value)
 			  (values (range->loadi i dest value (rtl_reg-type dest))
-			     (extend-ctx ctx dest types polarity :value value))
+			     (extend-ctx ctx dest types polarity :count count :value value))
 			  (with-access::rtl_reg dest (var)
 			     (trace-item "dest.v: " (shape var))
 			     (values (duplicate-ins i ctx)
 				(alias-ctx
-				   (extend-ctx ctx dest types polarity :value value)
+				   (extend-ctx ctx dest types polarity :count count :value value)
 				   dest (car args))))))))
 	       ((and *type-call* (pair? args) (rtl_ins-call? (car args)))
 		(trace-item "rtl_ins-specialize-mov.2")
@@ -664,6 +663,7 @@
 				   (with-access::atom constant (value type)
 				      (values (duplicate-ins i ctx)
 					 (extend-ctx ctx dest (list *bint*) #t
+					    :count 0
 					    :value (if (fixnum? value)
 						       (fixnum->range value)
 						       (fixnum-range)))))))
@@ -676,29 +676,34 @@
 						(extend-ctx ctx dest
 						   (bbv-ctxentry-types e)
 						   (bbv-ctxentry-polarity e)
+						   :count 0
 						   :value (bbv-ctxentry-value e))
 						(extend-ctx ctx dest
-						   (list type) #t))))))))))))
+						   (list type) #t
+						   :count 0))))))))))))
 	       ((and *type-loadi* (pair? args) (rtl_ins-loadi? (car args)))
 		(trace-item "rtl_ins-specialize-mov.3")
 		(with-access::rtl_ins (car args) (fun)
 		   (with-access::rtl_loadi fun (constant)
 		      (with-access::atom constant (value type)
 			 (values (duplicate-ins i ctx)
-			    (extend-ctx ctx dest (list type) #t :value
-			       (if (fixnum? value) (fixnum->range value) '_)))))))
+			    (extend-ctx ctx dest (list type) #t
+			       :value (if (fixnum? value) (fixnum->range value) '_)
+			       :count 0))))))
 	       ((and *type-loadg* (pair? args) (rtl_ins-loadg? (car args)))
 		(trace-item "rtl_ins-specialize-mov.4")
 		(with-access::rtl_ins (car args) (fun)
 		   (with-access::rtl_loadg fun (var)
 		      (with-access::variable var (value type)
 			 (values (duplicate-ins i ctx)
-			    (extend-ctx ctx dest (list type) #t))))))
+			    (extend-ctx ctx dest (list type) #t :count 0))))))
 	       (else
 		(trace-item "rtl_ins-specialize-mov.5")
 		(with-access::rtl_reg dest (type)
 		   (values (duplicate-ins i ctx)
-		      (extend-ctx ctx dest (list (if (eq? type *obj*) (rtl_ins-type i) type)) #t)))))))))
+		      (extend-ctx ctx dest
+			 (list (if (eq? type *obj*) (rtl_ins-type i) type)) #t
+			 :count 0)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-type ...                                                 */
@@ -853,6 +858,7 @@
 			       (fun (duplicate::rtl_call fun))))
 			 (nv (new-value i))
 			 (nctx (extend-ctx ctx dest (list (if (fun? value) type *obj*)) #t
+				  :count 0
 				  :value nv)))
 		     (trace-item "nv: " (shape nv))
 		     (trace-item "nctx: " (shape nctx))
