@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Mon Jun 17 09:27:33 2024 (serrano)                */
+;*    Last change :  Tue Jun 18 16:25:13 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -96,7 +96,8 @@
 (define *bbv-merge-strategy*
    (let ((e (getenv "BIGLOOBBVSTRATEGY")))
       (cond
-	 ((not e) 'score+)
+	 ((not e) 'score-)
+	 ((string=? e "score-") 'score-)
 	 ((string=? e "score+") 'score+)
 	 ((string=? e "score") 'score)
 	 ((string=? e "sametypes") 'sametypes)

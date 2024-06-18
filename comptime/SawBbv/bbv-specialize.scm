@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Mon Jun 17 09:02:26 2024 (serrano)                */
+;*    Last change :  Tue Jun 18 17:48:38 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -1387,12 +1387,14 @@
 			     (bbv-range-mul intl intr))
 			    (else
 			     (error "fxovop-ctx" "wrong operator" (shape fun))))))
+	       (trace-item "intv=" (shape intv))
 	       (with-access::bbv-range intv (lo up)
 		  (let* ((intx (instantiate::bbv-range
 				  (lo (maxrv lo (bbv-min-fixnum) (bbv-min-fixnum)))
 				  (up (minrv up (bbv-max-fixnum) (bbv-max-fixnum)))))
 			 (nctx (extend-ctx ctx reg (list *bint*) #t
 				  :value intx)))
+		     (trace-item "intx=" (shape intx))
 		     (trace-item "nctx: " (shape nctx))
 		     nctx))))))
    

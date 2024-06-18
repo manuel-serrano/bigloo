@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Thu Jun 13 13:22:10 2024 (serrano)                */
+;*    Last change :  Tue Jun 18 16:25:31 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -72,7 +72,7 @@
        (values (car bs) (cadr bs))
        (case *bbv-merge-strategy*
 	  ((score+) (bbv-block-merge-select-strategy-score+ bs))
-	  ((score) (bbv-block-merge-select-strategy-score bs))
+	  ((score-) (bbv-block-merge-select-strategy-score- bs))
 	  ((nearobj) (bbv-block-merge-select-strategy-nearobj bs))
 	  ((nearnegative) (bbv-block-merge-select-strategy-nearnegative bs))
 	  ((anynegative) (bbv-block-merge-select-strategy-anynegative bs))
@@ -90,6 +90,54 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-score+ bs::pair)
    
+   (define (entry-score::long e::bbv-ctxentry)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases count)
+	 (cond
+	    ((not polarity) 1)
+	    ((memq *obj* types) 0)
+	    (else count))))
+   
+   (define (ctx-score::long ctx::bbv-ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-score entries))))
+   
+   (define (blockS-score::long b::blockS)
+      (with-access::blockS b (ctx)
+	 (ctx-score ctx)))
+   
+   (define (all l)
+      (if (null? l)
+	  '()
+	  (append (map (lambda (e) (cons (car l) e)) (cdr l))
+	     (all (cdr l)))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-score+"
+      (for-each (lambda (b)
+		   (with-access::blockS b (label ctx)
+		      (trace-item "[" label "] "
+			 (ctx-score ctx) " " (shape ctx))))
+	 bs)
+      ;; compute the scores of all possible merge
+      (let* ((cc (all bs))
+	     (ccs (map (lambda (c)
+			  (with-access::blockS (car c) ((actx ctx))
+			     (with-access::blockS (cdr c) ((dctx ctx))
+				(cons (ctx-score (merge-ctx actx dctx)) c))))
+		     cc))
+	     (sccs (sort (lambda (x y)
+			    (>=fx (car x) (car y)))
+		      ccs))
+	     (pair (cdar sccs)))
+	 (trace-item "merging "
+	    "#" (block-label (car pair)) "+"
+	    "#" (block-label (cdr pair)) " (score: " (caar sccs) ")")
+ 	 (values (car pair) (cdr pair)))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-score- ...                       */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-score- bs::pair)
+   
    (define (list-eq? x y)
       (every eq? x y))
    
@@ -103,30 +151,11 @@
 							   (xpol polarity))
 			       (with-access::bbv-ctxentry ey ((ytypes types)
 							      (ypol polarity))
-				  (if (not xpol)
-				      (not ypol)
-				      (list-eq? xtypes ytypes)))))
+				  (cond
+				     ((not xpol) (not ypol))
+				     ((not ypol) #f)
+				     (else (list-eq? xtypes ytypes))))))
 		     xentries yentries))))))
-   
-   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-samepositive"
-      (let loop ((pbs bs))
-	 (if (null? pbs)
-	     (bbv-block-merge-select-strategy-score bs)
-	     (let ((sb (find (lambda (b)
-				(same-positive? (car pbs) b))
-			  (cdr pbs))))
-		(if sb
-		    (begin
-		       (trace-item "merging "
-			  "#" (block-label (car pbs)) "+"
-			  "#" (block-label sb))
-		       (values (car pbs) sb))
-		    (loop (cdr pbs))))))))
-
-;*---------------------------------------------------------------------*/
-;*    bbv-block-merge-select-strategy-score ...                        */
-;*---------------------------------------------------------------------*/
-(define (bbv-block-merge-select-strategy-score bs::pair)
    
    (define (entry-score::long e::bbv-ctxentry)
       (with-access::bbv-ctxentry e (reg types polarity value aliases count)
@@ -143,7 +172,7 @@
       (with-access::blockS b (ctx)
 	 (ctx-score ctx)))
    
-   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-score"
+   (define (score- bs::pair)
       (let ((bs (sort (lambda (x y)
 			 (<= (car x) (car y)))
 		   (map (lambda (b) (cons (blockS-score b) b)) bs))))
@@ -152,7 +181,25 @@
 			 (trace-item "#" (block-label (cdr b)) " [" (car b) "] "
 			    (shape ctx))))
 	    bs)
-	 (values (cdar bs) (cdadr bs)))))
+	 (trace-item "merging-smallest-score "
+	    "#" (block-label (cdar bs)) "+"
+	    "#" (block-label (cdadr bs)))
+	 (values (cdar bs) (cdadr bs))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-score-"
+      (let loop ((pbs bs))
+	 (if (null? pbs)
+	     (score- bs)
+	     (let ((sb (find (lambda (b)
+				(same-positive? (car pbs) b))
+			  (cdr pbs))))
+		(if sb
+		    (begin
+		       (trace-item "merging-same-positive "
+			  "#" (block-label (car pbs)) "+"
+			  "#" (block-label sb))
+		       (values (car pbs) sb))
+		    (loop (cdr pbs))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-nearobj ...                      */
@@ -226,15 +273,16 @@
 							   (xpol polarity))
 			       (with-access::bbv-ctxentry ey ((ytypes types)
 							      (ypol polarity))
-				  (if (not xpol)
-				      (not ypol)
-				      (list-eq? xtypes ytypes)))))
+				  (cond
+				     ((not xpol) (not ypol))
+				     ((not ypol) #f)
+				     (else (list-eq? xtypes ytypes))))))
 		     xentries yentries))))))
    
    (with-trace 'bbv-merge "bbv-block-merge-select-strategy-samepositive"
       (let loop ((pbs bs))
 	 (if (null? pbs)
-	     (bbv-block-merge-select-strategy-score bs)
+	     (bbv-block-merge-select-strategy-nearnegative bs)
 	     (let ((sb (find (lambda (b)
 				(same-positive? (car pbs) b))
 			  (cdr pbs))))
@@ -503,7 +551,7 @@
       (when (=fx (length l1) (length l2))
 	 (every eq? l1 l2)))
    
-   (with-trace 'bbv-merge "merge-ctxentry"
+   (with-trace 'bbv-merge-ctx "merge-ctxentry"
       (with-access::bbv-ctxentry e1 ((polarity1 polarity)
 				     (types1 types)
 				     (value1 value)
