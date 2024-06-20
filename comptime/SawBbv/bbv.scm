@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Jun 17 13:25:13 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 08:21:35 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -52,7 +52,6 @@
 		(memq (global-id global) *saw-bbv-functions*))
 	    (>=fx *max-block-merge-versions* 1))
        (with-trace 'bbv (global-id global)
-	  (when *bbv-debug* (tprint "=== " (shape global)))
 	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global)
 	     " (" *max-block-merge-versions*
@@ -96,28 +95,28 @@
 		      (unwind-protect
 			 (if (null? blocks)
 			     '()
-			     (let* ((s (dump-blocks 2 "specialize" global params regs #f
-					  (bbv-block* (car blocks)
+			     (let* ((s (dump-blocks 1 "specialize" global params regs #f
+					  (bbv-root-block (car blocks)
 					     (params->ctx params))))
 				    (__a (when *bbv-log*
 					   (log-blocks global params blocks)))
 				    (history (when *bbv-dump-json*
 						(log-blocks-history global params blocks)))
-				    (pr (dump-blocks 2 "profile" global params regs history
+				    (pr (dump-blocks 1 "profile" global params regs history
 					   (profile! s)))
-				    (as (dump-blocks 2 "assert" global params regs history
+				    (as (dump-blocks 1 "assert" global params regs history
 					   (assert-context! pr)))
 				    (b (block->block-list regs
 					  (if *bbv-blocks-cleanup*
-					      (dump-blocks 3 "simplify2" global params regs history
+					      (dump-blocks 1 "simplify2" global params regs history
 						 (simplify-branch! global
-						    (dump-blocks 3 "nop" global params regs history
+						    (dump-blocks 1 "nop" global params regs history
 						       (remove-nop! global
-							  (dump-blocks 3 "goto" global params regs history
+							  (dump-blocks 1 "goto" global params regs history
 							     (remove-goto! global
-								(dump-blocks 3 "simplify1" global params regs history
+								(dump-blocks 1 "simplify1" global params regs history
 								   (simplify-branch! global
-								      (dump-blocks 3 "coalesce" global params regs history
+								      (dump-blocks 1 "coalesce" global params regs history
 									 (coalesce! global
 									    (get-bb-mark)
 									    (gc! as)))))))))))

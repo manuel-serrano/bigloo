@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Mon Jun 17 08:56:09 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 07:17:18 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -56,6 +56,7 @@
 	       (ctx::bbv-ctx read-only)
 	       (parent::blockV read-only)
 	       (cnt::long (default 0))
+	       (gcmark::long (default -1))
 	       (mblock::obj (default #f))
 	       (creator::obj read-only) 
 	       (merges::pair-nil (default '())))
@@ -90,6 +91,7 @@
 	    (bbv-queue-pop!::blockS ::bbv-queue)
 	    
 	    (blockV-live-versions::pair-nil ::blockV)
+	    (block-live?::bool bs::blockS)
 	    
 	    (params->ctx::bbv-ctx ::pair-nil)
 
@@ -247,10 +249,14 @@
 ;*---------------------------------------------------------------------*/
 (define (blockV-live-versions bv::blockV)
    (with-access::blockV bv (versions)
-      (filter (lambda (bs)
-		 (with-access::blockS bs (mblock cnt)
-		    (and (not mblock) (>fx cnt 0))))
-	 versions)))
+      (filter block-live? versions)))
+
+;*---------------------------------------------------------------------*/
+;*    block-live? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (block-live? bs::blockS)
+   (with-access::blockS bs (mblock cnt)
+      (and (not mblock) (>fx cnt 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    params->ctx ...                                                  */
@@ -663,7 +669,7 @@
 	 ((assq 'merge-new mi) 'merge-new)
 	 (else #f)))
    
-   (with-access::blockS o (label first parent ctx preds succs)
+   (with-access::blockS o (label first parent ctx preds succs cnt)
       (fprint p "(blockS " label)
       (dump-margin p (+fx m 1))
       (fprint p ":parent " (block-label parent))
@@ -675,6 +681,9 @@
       (fprint p ":succs " (map lbl succs))
       (dump-margin p (+fx m 1))
       (fprint p ":ctx " (shape ctx))
+      (when *bbv-debug*
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":cnt " cnt))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))
@@ -1321,4 +1330,4 @@
    (with-access::blockS b (preds cnt)
       (set! preds val)
       (set! cnt (length preds))))
-
+   

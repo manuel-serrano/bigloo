@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Tue Jun 18 16:25:13 2024 (serrano)                */
+;*    Last change :  Wed Jun 19 13:14:27 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -97,8 +97,10 @@
    (let ((e (getenv "BIGLOOBBVSTRATEGY")))
       (cond
 	 ((not e) 'score-)
+	 ((string=? e "adn") 'adn) ;; adn in BIGLOOBBVADN (see bbv-merge.scm)
 	 ((string=? e "score-") 'score-)
 	 ((string=? e "score+") 'score+)
+	 ((string=? e "score*") 'score*)
 	 ((string=? e "score") 'score)
 	 ((string=? e "sametypes") 'sametypes)
 	 ((string=? e "first") 'first)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Mon Jun 17 09:43:28 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 08:26:50 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -52,6 +52,11 @@
 	    (rtl-assert-fxcmp ::symbol x y ::bool ::bbv-ctx ::obj ::bstring)))
 
 ;*---------------------------------------------------------------------*/
+;*    dump-blocks-error ...                                            */
+;*---------------------------------------------------------------------*/
+(define dump-blocks-error #f)
+
+;*---------------------------------------------------------------------*/
 ;*    debugcnt ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define debugcnt 0)
@@ -70,19 +75,23 @@
 ;*    succs, and branch instructions.                                  */
 ;*---------------------------------------------------------------------*/
 (define (assert-block b::blockS stage)
-   (with-access::blockS b (preds succs first label parent)
+   (with-access::blockS b (preds succs first label parent cnt creator mblock)
+      ;; check that cnt and preds are in sync
+      (unless (or (=fx cnt (length preds)) (eq? creator 'root))
+	 (tprint (shape b))
+	 (error stage 
+	    (format "predecessors and cnt not in sync #~a" label)
+	    (format "preds.len=~a cnt=~a" (length preds) cnt)))
       ;; check that b in the preds.succs
       (let ((l (filter (lambda (p)
 			  (with-access::blockS p (succs)
 			     (not (memq b succs))))
 		  preds)))
 	 (when (pair? l)
-	    (tprint (shape b))
-	    (tprint "preds...")
 	    (for-each (lambda (b) (tprint (shape b))) l)
 	    (error stage 
-	       (format "predecessors not pointing to ~a" label)
-	       (map block-label l))))
+	       (format "predecessors not pointing to #~a" label)
+	       (map (lambda (b) (format "#~a" (block-label b))) l))))
       ;; check that b in the succs.preds
       (let ((l (filter (lambda (p)
 			  (with-access::blockS p (preds)
@@ -90,41 +99,41 @@
 		  succs)))
 	 (when (pair? l)
 	    (tprint (shape b))
-	    (tprint "succs...")
 	    (for-each (lambda (b) (tprint (shape b))) l)
 	    (error stage
-	       (format "successors not pointing to ~a" label)
-	       (map block-label l))))
+	       (format "successors not pointing to #~a" label)
+	       (map (lambda (b) (format "#~a" (block-label b))) l))))
       ;; check that the instructions are in the succs
       (let ((l '()))
-	 (for-each (lambda (ins)
-		      (cond
-			 ((rtl_ins-ifeq? ins)
-			  (set! l (cons ins l)))
-			 ((rtl_ins-ifne? ins)
-			  (with-access::rtl_ins ins (fun)
-			     (with-access::rtl_ifne fun (then)
-				(unless (memq then succs)
-				   (set! l (cons ins l))))))
-			 ((rtl_ins-go? ins)
-			  (with-access::rtl_ins ins (fun)
-			     (with-access::rtl_go fun (to)
-				(unless (memq to succs)
-				   (set! l (cons ins l))))))
-			 ((rtl_ins-switch? ins)
-			  (with-access::rtl_ins ins (fun)
-			     (with-access::rtl_switch fun (labels)
-				(for-each (lambda (lbl)
-					     (unless (memq lbl succs)
-						(set! l (cons ins l))))
-				   labels))))))
-	    first)
-	 (when (pair? l)
-	    (tprint "wrong block: " (shape b))
-	    (tprint "parent block: " (shape parent))
-	    (error stage
-	       (format "instruction target not in succs of " label)
-	       (map shape l))))))
+	 (unless (or mblock (=fx cnt 0))
+	    (for-each (lambda (ins)
+			 (cond
+			    ((rtl_ins-ifeq? ins)
+			     (set! l (cons ins l)))
+			    ((rtl_ins-ifne? ins)
+			     (with-access::rtl_ins ins (fun)
+				(with-access::rtl_ifne fun (then)
+				   (unless (memq then succs)
+				      (set! l (cons ins l))))))
+			    ((rtl_ins-go? ins)
+			     (with-access::rtl_ins ins (fun)
+				(with-access::rtl_go fun (to)
+				   (unless (memq to succs)
+				      (set! l (cons ins l))))))
+			    ((rtl_ins-switch? ins)
+			     (with-access::rtl_ins ins (fun)
+				(with-access::rtl_switch fun (labels)
+				   (for-each (lambda (lbl)
+						(unless (memq lbl succs)
+						   (set! l (cons ins l))))
+				      labels))))))
+	       first)
+	    (when (pair? l)
+	       (tprint "wrong block: " (shape b))
+	       (tprint "parent block: " (shape parent))
+	       (error stage
+		  (format "instruction target not in succs of #~a" label)
+		  (map shape l)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-cfg ...                                                     */

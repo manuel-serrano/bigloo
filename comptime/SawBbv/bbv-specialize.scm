@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jun 18 17:48:38 2024 (serrano)                */
+;*    Last change :  Wed Jun 19 16:02:06 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -37,16 +37,23 @@
 	    saw_bbv-merge
 	    saw_bbv-config
 	    saw_bbv-cost
+	    saw_bbv-gc
 	    saw_bbv-debug)
 
-   (export (bbv-block*::blockS ::blockV ::bbv-ctx)))
+   (export (bbv-root-block::blockS ::blockV ::bbv-ctx)))
 
 ;*---------------------------------------------------------------------*/
-;*    bbv-block* ...                                                   */
+;*    *root-block* ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (bbv-block*::blockS bv::blockV ctx::bbv-ctx)
-   (with-trace 'bbv-block
-	 (format "bbv-block* ~a" (with-access::blockV bv (label) label))
+(define *root-block* #f)
+
+;*---------------------------------------------------------------------*/
+;*    bbv-root-block ...                                               */
+;*---------------------------------------------------------------------*/
+(define (bbv-root-block::blockS bv::blockV ctx::bbv-ctx)
+   (with-trace 'bbv-block "bbv-root-block"
+      (trace-item "label=#" (block-label bv))
+      (set! *root-block* bv)
       (let ((queue (instantiate::bbv-queue))
 	    (bs (new-blockS bv ctx :cnt 1 :creator 'root)))
 	 (block-specialize! bs queue)
@@ -61,27 +68,31 @@
 	    (if (bbv-queue-empty? queue)
 		bs
 		(let ((bs (bbv-queue-pop! queue)))
-		   (with-access::blockS bs ((bv parent) label)
-		      (with-access::blockV bv ((plabel label) versions)
-			 (trace-item "pop {" plabel "}->" label
-			    " versions: " (map (lambda (b)
-						 (with-access::blockS b (label)
-						    (format "#~a" label)))
-					    versions)))
-		      (when (block-need-merge? bv)
-			 (trace-item "need-merge #" (block-label bv) "...")
-			 (when *bbv-debug*
-			    (for-each (lambda (b)
-					 (with-access::blockS b (label ctx)
-					    (trace-item "#" label ": "
-					       (shape ctx))))
-			       (blockV-versions bv)))
-			 (block-merge-some! bv queue)))
-		   (unless (block-merged? bs)
-		      (with-access::blockS bs ((bv parent) label)
-			 (trace-item "need-specialize #" label
-			    " (parent #" (block-label bv) ")"))
-		      (block-specialize! bs queue))
+		   (when (block-live? bs)
+		      (with-access::blockS bs ((bv parent) label cnt)
+			 (with-access::blockV bv ((plabel label) versions)
+			    (trace-item "pop {#" plabel "}->#" label
+			       " cnt: " cnt
+			       " versions: "
+			       (filter-map (lambda (b)
+					      (with-access::blockS b (label cnt)
+						 (when (>fx cnt 0)
+						    (format "#~a" label))))
+				  versions)))
+			 (when (block-need-merge? bv)
+			    (trace-item "need-merge #" (block-label bv) "...")
+			    (when *bbv-debug*
+			       (for-each (lambda (b)
+					    (with-access::blockS b (label ctx)
+					       (trace-item "#" label ": "
+						  (shape ctx))))
+				  (blockV-versions bv)))
+			    (block-merge-some! bv queue)))
+		      (when (block-live? bs)
+			 (with-access::blockS bs ((bv parent) label)
+			    (trace-item "need-specialize #" label
+			       " (parent #" (block-label bv) ")"))
+			 (block-specialize! bs queue)))
 		   (loop (+fx n 1))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -89,9 +100,10 @@
 ;*---------------------------------------------------------------------*/
 (define (block-specialize!::blockS bs::blockS queue::bbv-queue)
    (with-trace 'bbv-block
-	 (format "block-specialize! #~a->#~a succs: ~a"
+	 (format "block-specialize! #~a->#~a cnt: ~a parent.succs: ~a"
 	    (block-label (blockS-parent bs))
 	    (block-label bs)
+	    (blockS-cnt bs)
 	    (map block-label (block-succs (blockS-parent bs))))
       (with-access::blockS bs ((bv parent) first ctx)
 	 (trace-item "ctx: " (shape ctx))
@@ -107,7 +119,8 @@
 (define (block-merge-some! bv::blockV queue)
    (with-trace 'bbv-block "block-merge-some!"
       (let ((lvs (blockV-live-versions bv)))
-	 (trace-item "blockV: " (blockV-label bv) " len: " (length lvs))
+	 (trace-item "blockV: " (blockV-label bv)
+	    " lvs: " (map block-label lvs))
 	 (multiple-value-bind (bs1 bs2 mctx)
 	    (bbv-block-merge lvs)
 	    ;; Find an already existing block for mctx, if such a block
@@ -116,7 +129,7 @@
 	    ;; a fresh new one
 	    (let ((mbs (bbv-block bv mctx queue :creator (cons bs1 bs2))))
 	       (trace-item "#" (block-label bs1) "+#" (block-label bs2)
-		  " -> #" (blockS-label mbs) " "
+		  " -> #" (blockS-label mbs) " cnt: " (blockS-cnt mbs) " " 
 		  (shape mctx))
 	       (cond
 		  ((eq? bs1 mbs)
@@ -286,38 +299,30 @@
 ;*    block-merge! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (block-merge! bs::blockS mbs::blockS)
-   (with-trace 'bbv-block-merge
-      (format "block-merge! ~a -> ~a"
-	 (with-access::blockS bs (label) label)
-	 (with-access::blockS mbs (label) label))
-      (with-access::blockS bs (mblock cnt succs)
+   (with-trace 'bbv-block "block-merge!"
+      (trace-item "bs=#" (block-label bs))
+      (trace-item "mbs=#" (block-label mbs))
+      (when *bbv-debug* (assert-block bs "block-merge!"))
+      (with-access::blockS bs (mblock succs parent label)
+	 (trace-item "parent=#" (block-label parent))
 	 (set! mblock mbs)
-	 (set! cnt 0)
-	 (replace-block! bs mbs)
-	 (when *bbv-blocks-gc*
-	    (for-each collect-block! succs)))))
-
-;*---------------------------------------------------------------------*/
-;*    collect-block! ...                                               */
-;*    -------------------------------------------------------------    */
-;*    Collect the unreachable specialized blocks.                      */
-;*---------------------------------------------------------------------*/
-(define (collect-block! bs::blockS)
-   (when *bbv-debug*
-      (assert-block bs "collect-block!"))
-   (with-access::blockS bs (label succs cnt)
-      (with-trace 'bbv-gc (format "collect-block! ~a (~a)" label cnt)
-	 (when (>fx cnt 0)
-	    (set! cnt (-fx cnt 1))
-	    (when (=fx cnt 0)
-	       (for-each collect-block! succs))))))
-
-;*---------------------------------------------------------------------*/
-;*    block-merged? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (block-merged?::bool bs::blockS)
-   (with-access::blockS bs (mblock)
-      mblock))
+	 (let ((osuccs succs))
+	    ;; replace-block! resets bs' succs to '() so the list
+	    ;; has to be kept and passed explicitly to the gc
+	    (replace-block! bs mbs)
+	    (when *bbv-debug*
+	       (assert-block bs "block-merge!.bs")
+	       (assert-block mbs "block-merge!.mbs"))
+	    (bbv-gc! *root-block*))
+	 (with-access::blockV parent (versions)
+	    (trace-item "<- #" label
+	       " #{" (block-label parent)
+	       "} versions: "
+	       (filter-map (lambda (b)
+			      (with-access::blockS b (label cnt)
+				 (when (>fx cnt 0)
+				    (format "#~a[~a]" label cnt))))
+		  versions))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    new-blockS ...                                                   */
@@ -336,8 +341,10 @@
 	 (trace-item "ctx: " (shape ctx))
 	 (with-access::blockV bv (versions label)
 	    (trace-item "parent=#" label)
-	    (trace-item "versions=" (map (lambda (b)
-					    (format "#~a" (block-label b)))
+	    (trace-item "versions=" (filter-map (lambda (b)
+						   (with-access::blockS b (cnt label)
+						      (when (>fx cnt 0)
+							 (format "#~a" label))))
 				       versions))
 	    (set! versions (cons bs versions))
 	    bs))))
@@ -362,16 +369,22 @@
       (trace-item "ctx: " (shape ctx))
       (let ((bv (if (isa? b blockV) b (with-access::blockS b (parent) parent))))
 	 (with-access::blockV bv (first label versions)
-	    (trace-item "parent: " label)
-	    (trace-item "versions: " (map (lambda (b) (format "#~a"(block-label b))) versions))
+	    (trace-item "parent: #" label)
+	    (trace-item "versions: " (filter-map (lambda (b)
+						   (with-access::blockS b (cnt label)
+						      (when (>fx cnt 0)
+							 (format "#~a" label))))
+				       versions))
 	    (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
 	       (cond
-		  ((bbv-ctx-assoc ctx versions)
+		  ((bbv-ctx-assoc ctx (blockV-live-versions bv))
 		   =>
 		   (lambda (b)
 		      (let ((obs (live-blockS b)))
-			 (with-access::blockS obs (label)
-			    (trace-item "<- old: #" label)
+			 (with-access::blockS obs (label cnt)
+			    (trace-item "<- old: #" label "[" cnt "]")
+			    (when *bbv-debug*
+			       (assert-block obs "bbv-block")) 
 			    obs))))
 		  (else
 		   (let ((nbs (new-blockS bv ctx :creator creator)))
@@ -379,14 +392,16 @@
 			 (trace-item "<- new: #" label)
 			 (bbv-queue-push! queue nbs)
 			 (for-each (lambda (b)
-				      (with-access::blockS b (ctx mblock label)
-					 (trace-item "version: "
-					    "#" label 
-					    (if (isa? mblock block)
-						(format "(->#~a)"
-						   (block-label mblock))
-						"")
-					    " ctx: " (shape ctx))))
+				      (with-access::blockS b (ctx mblock label cnt)
+					 (when (>fx cnt 0)
+					    (trace-item "version: "
+					       "#" label
+					       (if (isa? mblock block)
+						   (format "(->#~a)"
+						      (block-label mblock))
+						   "")
+					       " cnt: " cnt 
+					       " ctx: " (shape ctx)))))
 			    versions)
 			 nbs)))))))))
    

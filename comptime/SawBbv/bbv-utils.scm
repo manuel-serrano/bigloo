@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Mon Jun 17 13:40:00 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 07:30:23 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    BB manipulations                                                 */
+;*    BBB manipulations                                                */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -41,7 +41,7 @@
    (export  (<=ty ::obj ::obj)
 	    (set-max-label! blocks::pair-nil)
 	    (genlabel)
-	    (replace ::pair-nil ::obj ::obj)
+	    (list-replace ::pair-nil ::obj ::obj)
 	    (block->block-list regs b::block)
 	    (redirect-block! b::blockS old::blockS new::blockS)
 	    (replace-block! ::blockS ::blockS #!key debug)
@@ -83,9 +83,9 @@
       blocks))
 
 ;*---------------------------------------------------------------------*/
-;*    replace ...                                                      */
+;*    list-replace ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (replace lst old new)
+(define (list-replace lst old new)
    (let loop ((l lst))
       (cond
 	 ((null? l) l)
@@ -123,7 +123,7 @@
       (trace-item "new="(block-label new) " "
 	 (map block-label (block-succs new)))
       (with-access::blockS b (succs first)
-	 (set! succs (replace succs old new))
+	 (set! succs (list-replace succs old new))
 	 (with-access::blockS old (preds)
 	    (block-preds-update! old (remq! b preds)))
 	 (with-access::block new (preds)
@@ -149,7 +149,7 @@
 			 ((rtl_ins-switch? ins)
 			  (with-access::rtl_ins ins (fun)
 			     (with-access::rtl_switch fun (labels)
-				(set! labels (replace labels old new)))))))
+				(set! labels (list-replace labels old new)))))))
 	    first)))
    b)
 
@@ -161,13 +161,15 @@
 ;*---------------------------------------------------------------------*/
 (define (replace-block! old::blockS new::blockS #!key debug)
    (with-trace 'bbv-utils "replace-block!"
-      (trace-item "old=" (block-label old) " "
-	 (map block-label (block-succs old)))
-      (trace-item "new="(block-label new) " "
-	 (map block-label (block-succs new)))
+      (trace-item "old=#" (block-label old)
+	 " succs=" (map (lambda (s) (format "#~a" (block-label s))) (block-succs old))
+	 " preds=" (map (lambda (s) (format "#~a" (block-label s))) (block-preds old)))
+      (trace-item "new=#"(block-label new)
+	 " succs=" (map (lambda (s) (format "#~a" (block-label s))) (block-succs new))
+	 " preds=" (map (lambda (s) (format "#~a" (block-label s))) (block-preds new)))
       (when *bbv-debug*
-	 (assert-block old "replace-block.old!")
-	 (assert-block new "replace-block.new!"))
+	 (assert-block old "replace-block!.old>")
+	 (assert-block new "replace-block!.new>"))
       (unless (eq? old new)
 	 ;; debugging
 	 (when (and debug *bbv-debug*)
@@ -181,18 +183,16 @@
 		     (error "replace-block!"
 			(format "Wrong block replacement ~a" (block-label old))
 			(block-label new))))))
-	 (with-access::blockS old ((old-succs succs) (old-preds preds) mblock)
-	    ;; mark the replacement
-	    (set! mblock new)
+	 (with-access::blockS old ((old-succs succs) (old-preds preds) mblock cnt)
+	    ;; remove "old" from all its successors's pred list
 	    (for-each (lambda (b)
-			 (with-access::blockS b (preds cnt)
-			    (set! cnt (-fx cnt 1))
+			 (with-access::blockS b (preds)
 			    (block-preds-update! b 
 			       (filter! (lambda (n) (not (eq? n old))) preds))))
 	       old-succs)
 	    (for-each (lambda (b)
-			 (with-access::blockS b (succs first)
-			    (set! succs (replace succs old new))
+			 (with-access::blockS b (succs first preds)
+			    (set! succs (list-replace succs old new))
 			    (for-each (lambda (ins)
 					 (cond
 					    ((rtl_ins-ifeq? ins)
@@ -213,14 +213,23 @@
 					    ((rtl_ins-switch? ins)
 					     (with-access::rtl_ins ins (fun)
 						(with-access::rtl_switch fun (labels)
-						   (set! labels (replace labels old new)))))))
+						   (set! labels (list-replace labels old new)))))))
 			       first)))
 	       old-preds)
-	    (with-access::blockS new ((npreds preds) cnt)
+	    (with-access::blockS new ((npreds preds))
 	       (block-preds-update! new
 		  (delete-duplicates! (append old-preds npreds) eq?)))
+	    ;; mark the redirection
+	    (set! mblock new)
+	    (set! old-preds '())
+	    (set! old-succs '())
+	    (set! cnt 0)
 	    (when *bbv-debug*
-	       (assert-block new "replace-block!.replaced"))
+	       (assert-block old "replace-block!.old<")
+	       (assert-block new "replace-block!.new<"))
+	    (trace-item "after-merge new=#"(block-label new)
+	       " succs=" (map (lambda (s) (format "#~a" (block-label s))) (block-succs new))
+	       " preds=" (map (lambda (s) (format "#~a" (block-label s))) (block-preds new)))
 	    new))))
 
 ;*---------------------------------------------------------------------*/

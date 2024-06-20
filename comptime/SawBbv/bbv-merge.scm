@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Jun 18 16:25:31 2024 (serrano)                */
+;*    Last change :  Wed Jun 19 13:14:11 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -71,6 +71,8 @@
        ;; the strategies implementation
        (values (car bs) (cadr bs))
        (case *bbv-merge-strategy*
+	  ((adn) (bbv-block-merge-select-strategy-adn bs))
+	  ((score*) (bbv-block-merge-select-strategy-score* bs))
 	  ((score+) (bbv-block-merge-select-strategy-score+ bs))
 	  ((score-) (bbv-block-merge-select-strategy-score- bs))
 	  ((nearobj) (bbv-block-merge-select-strategy-nearobj bs))
@@ -83,10 +85,168 @@
 	  (else (error "bbv-block-merge-select" "strategy not implemented" *bbv-merge-strategy*)))))
 
 ;*---------------------------------------------------------------------*/
+;*    *ADN* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *ADNc* #f)
+(define *ADNt* #f)
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-adn ...                          */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-adn bs::pair)
+   
+   (define (entry-score::double e::bbv-ctxentry)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases count)
+	 (let ((t (if polarity 2. 1.))
+	       (c (fixnum->flonum count))
+	       (l (vector-length *ADNc*)))
+	    (let loop ((i 1)
+		       (cs (vector-ref *ADNc* 0))
+		       (ts (vector-ref *ADNt* 0)))
+	       (if (=fx i l)
+		   (+ cs ts)
+		   (loop (+fx i 1)
+		      (+fl (*fl (exptfl c (fixnum->flonum i)) (vector-ref *ADNc* i)) cs)
+		      (+fl (*fl (exptfl t (fixnum->flonum i)) (vector-ref *ADNt* i)) ts)))))))
+   
+   (define (ctx-score::double ctx::bbv-ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-score entries))))
+   
+   (define (blockS-score::long b::blockS)
+      (with-access::blockS b (ctx)
+	 (ctx-score ctx)))
+   
+   (define (all l)
+      (if (null? l)
+	  '()
+	  (append (map (lambda (e) (cons (car l) e)) (cdr l))
+	     (all (cdr l)))))
+
+   (define (load-adn!)
+      (unless *ADNc*
+	 (let ((s (getenv "BIGLOOBBVADN")))
+	    (if (string? s)
+		(let* ((v (list->vector (map (lambda (x)
+						(cond
+						   ((fixnum? x) (fixnum->flonum x))
+						   ((flonum? x) x)
+						   (else (error "bbv-block-merge-select-strategy-adn"
+							    "wrong adn"
+							    s))))
+					   (call-with-input-string s port->sexp-list))))
+		       (l (vector-length v)))
+		   (if (or (<fx l 4) (odd? l))
+		       (error "bbv-block-merge-select-strategy-adn" "wrong adn"
+			  s)
+		       (begin
+			  (set! *ADNc* (vector-copy v 0 (/fx l 2)))
+			  (set! *ADNt* (vector-copy v (/fx l 2) l))
+			  (trace-item "adnc=" *ADNc*)
+			  (trace-item "adnt=" *ADNt*))))
+		(error "bbv-block-merge-select-strategy-adn" "not adn provided"
+		   "BIGLOOBBVADN")))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-adn"
+      ;; load the adn
+      (load-adn!)
+
+      ;; debug
+      (for-each (lambda (b)
+		   (with-access::blockS b (label ctx)
+		      (trace-item "[" label "] "
+			 (ctx-score ctx) " " (shape ctx))))
+	 bs)
+
+      ;; compute the scores of all possible merges
+      (let* ((cx (map blockS-ctx bs))
+	     (cc (all bs))
+	     (ccs (map (lambda (c)
+			  (with-access::blockS (car c) ((actx ctx))
+			     (with-access::blockS (cdr c) ((dctx ctx))
+				(let* ((nx (merge-ctx actx dctx))
+				       (score (apply +
+						 (map ctx-score
+						    (filter (lambda (x)
+							       (not (or (eq? x actx)
+									(eq? x dctx)
+									(bbv-ctx-equal? x nx))))
+						       cx)))))
+				   (cons score c)))))
+		     cc))
+	     (sccs (sort (lambda (x y)
+			    (>=fl (car x) (car y)))
+		      ccs))
+	     (pair (cdar sccs)))
+	 (trace-item "merging "
+	    "#" (block-label (car pair)) "+"
+	    "#" (block-label (cdr pair)) " (score: " (caar sccs) ")")
+ 	 (values (car pair) (cdr pair)))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-score* ...                       */
+;*    -------------------------------------------------------------    */
+;*    Select two contexts that when merged yield to the max score of   */
+;*    all the contexts.                                                */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-score* bs::pair)
+   
+   (define (entry-score::long e::bbv-ctxentry)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases count)
+	 (cond
+	    ((not polarity) 1)
+	    ((memq *obj* types) 0)
+	    (else count))))
+   
+   (define (ctx-score::long ctx::bbv-ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-score entries))))
+   
+   (define (blockS-score::long b::blockS)
+      (with-access::blockS b (ctx)
+	 (ctx-score ctx)))
+   
+   (define (all l)
+      (if (null? l)
+	  '()
+	  (append (map (lambda (e) (cons (car l) e)) (cdr l))
+	     (all (cdr l)))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-score*"
+      (for-each (lambda (b)
+		   (with-access::blockS b (label ctx)
+		      (trace-item "[" label "] "
+			 (ctx-score ctx) " " (shape ctx))))
+	 bs)
+      ;; compute the scores of all possible merges
+      (let* ((cc (all bs))
+	     (cx (map blockS-ctx bs))
+	     (ccs (map (lambda (c)
+			  (with-access::blockS (car c) ((actx ctx))
+			     (with-access::blockS (cdr c) ((dctx ctx))
+				(let* ((nx (merge-ctx actx dctx))
+				       (score (apply +
+						 (map ctx-score
+						    (filter (lambda (x)
+							       (not (or (eq? x actx)
+									(eq? x dctx)
+									(bbv-ctx-equal? x nx))))
+						       cx)))))
+				   (cons score c)))))
+		     cc))
+	     (sccs (sort (lambda (x y)
+			    (>=fx (car x) (car y)))
+		      ccs))
+	     (pair (cdar sccs)))
+	 (trace-item "merging "
+	    "#" (block-label (car pair)) "+"
+	    "#" (block-label (cdr pair)) " (score: " (caar sccs) ")")
+ 	 (values (car pair) (cdr pair)))))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-score+ ...                       */
 ;*    -------------------------------------------------------------    */
-;*    Select two contexts that are only distinguished by negative      */
-;*    polarities                                                       */
+;*    Select two contexts that when merged yield to the max score.     */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-score+ bs::pair)
    
@@ -117,12 +277,14 @@
 		      (trace-item "[" label "] "
 			 (ctx-score ctx) " " (shape ctx))))
 	 bs)
-      ;; compute the scores of all possible merge
+      ;; compute the scores of all possible merges
       (let* ((cc (all bs))
 	     (ccs (map (lambda (c)
 			  (with-access::blockS (car c) ((actx ctx))
 			     (with-access::blockS (cdr c) ((dctx ctx))
-				(cons (ctx-score (merge-ctx actx dctx)) c))))
+				(let* ((nx (merge-ctx actx dctx))
+				       (score (ctx-score nx)))
+				   (cons score c)))))
 		     cc))
 	     (sccs (sort (lambda (x y)
 			    (>=fx (car x) (car y)))
