@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 10:13:26 2024                          */
-;*    Last change :  Thu Jun 20 18:56:59 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 20:01:21 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV gc                                                           */
@@ -46,15 +46,23 @@
 (define (bbv-gc! bv::blockV)
    (with-trace 'bbv-gc "bbv-gc!"
       (with-access::blockV bv (versions)
-	 ;; reset all counters
 	 (let ((m0 (get-gc-mark!))
 	       (l (blockV-live-versions bv)))
-	    (for-each (lambda (b)
-			 (walk*! b m0
-			    (lambda (b)
-			       (with-access::blockS b (cnt)
-				  (set! cnt 0)))))
-	       versions)
+	    (when *bbv-debug*
+	       (let ((m (get-gc-mark!)))
+		  (for-each (lambda (b)
+			       (walk! b m
+				  (lambda (b)
+				     (assert-block b "bbv-gc!>"))))
+		     l)))
+	    ;; reset all counters
+	    (walk*! bv m0
+	       (lambda (b)
+		  (with-access::blockV b (versions)
+		     (for-each (lambda (b)
+				  (with-access::blockS b (cnt)
+				     (set! cnt 0)))
+			versions))))
 	    ;; mark all reachables blocks
 	    (let ((m (get-gc-mark!)))
 	       (for-each (lambda (b)
@@ -75,7 +83,15 @@
 						   (with-access::blockS p (gcmark)
 						      (eq? gcmark m0)))
 					   preds))))))
-		  l))))))
+		  l))
+	    (when *bbv-debug*
+	       (let ((m (get-gc-mark!)))
+		  (for-each (lambda (b)
+			       (walk! b m
+				  (lambda (b)
+				     (trace-item (format "#~a[~a]" (block-label b) (blockS-cnt b)))
+				     (assert-block b "bbv-gc!<"))))
+		     l)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gc-mark* ...                                                    */
@@ -102,15 +118,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    walk*! ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (walk*! b::blockS m::long proc::procedure)
-   (with-access::blockS b (cnt %mark succs)
-      (proc b)
+(define (walk*! b::blockV m::long proc::procedure)
+   (with-access::blockV b (cnt %mark succs)
       (unless (eq? %mark m)
 	 (set! %mark m)
-	 (for-each (lambda (s)
-		      (walk*! s m proc))
-	    succs)
-	 (with-access::blockS b (parent)
-	    (with-access::blockV parent (versions)
-	       (for-each (lambda (s) (walk*! s m proc)) versions))))))
+	 (proc b)
+	 (for-each (lambda (s) (walk*! s m proc)) succs))))
 	 

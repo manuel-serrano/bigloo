@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Wed Jun 19 13:14:11 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 19:13:13 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -89,25 +89,29 @@
 ;*---------------------------------------------------------------------*/
 (define *ADNc* #f)
 (define *ADNt* #f)
+(define *ADNs* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-adn ...                          */
 ;*---------------------------------------------------------------------*/
 (define (bbv-block-merge-select-strategy-adn bs::pair)
-   
+
    (define (entry-score::double e::bbv-ctxentry)
       (with-access::bbv-ctxentry e (reg types polarity value aliases count)
-	 (let ((t (if polarity 2. 1.))
+	 (let ((t (if polarity 10. 1.))
 	       (c (fixnum->flonum count))
+	       (s (fixnum->flonum (entry-size e)))
 	       (l (vector-length *ADNc*)))
 	    (let loop ((i 1)
 		       (cs (vector-ref *ADNc* 0))
-		       (ts (vector-ref *ADNt* 0)))
+		       (ts (vector-ref *ADNt* 0))
+		       (ss (vector-ref *ADNs* 0)))
 	       (if (=fx i l)
-		   (+ cs ts)
+		   (+ cs ts ss)
 		   (loop (+fx i 1)
 		      (+fl (*fl (exptfl c (fixnum->flonum i)) (vector-ref *ADNc* i)) cs)
-		      (+fl (*fl (exptfl t (fixnum->flonum i)) (vector-ref *ADNt* i)) ts)))))))
+		      (+fl (*fl (exptfl t (fixnum->flonum i)) (vector-ref *ADNt* i)) ts)
+		      (+fl (*fl (exptfl s (fixnum->flonum i)) (vector-ref *ADNs* i)) ss)))))))
    
    (define (ctx-score::double ctx::bbv-ctx)
       (with-access::bbv-ctx ctx (entries)
@@ -136,14 +140,16 @@
 							    s))))
 					   (call-with-input-string s port->sexp-list))))
 		       (l (vector-length v)))
-		   (if (or (<fx l 4) (odd? l))
+		   (if (or (<fx l 6) (odd? l))
 		       (error "bbv-block-merge-select-strategy-adn" "wrong adn"
 			  s)
 		       (begin
-			  (set! *ADNc* (vector-copy v 0 (/fx l 2)))
-			  (set! *ADNt* (vector-copy v (/fx l 2) l))
+			  (set! *ADNc* (vector-copy v 0 (/fx l 3)))
+			  (set! *ADNt* (vector-copy v (/fx l 3) (*fx 2 (/fx l 3))))
+			  (set! *ADNs* (vector-copy v (*fx 2 (/fx l 3)) l))
 			  (trace-item "adnc=" *ADNc*)
-			  (trace-item "adnt=" *ADNt*))))
+			  (trace-item "adnt=" *ADNt*)
+			  (trace-item "adnt=" *ADNs*))))
 		(error "bbv-block-merge-select-strategy-adn" "not adn provided"
 		   "BIGLOOBBVADN")))))
    
@@ -851,9 +857,9 @@
 	     (up nu))))))
 
 ;*---------------------------------------------------------------------*/
-;*    block-size ...                                                   */
+;*    entry-size ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (block-size b::blockS)
+(define (entry-size e::bbv-ctxentry)
    
    (define (range-size r::bbv-range)
       (with-access::bbv-range r (lo up)
@@ -872,19 +878,19 @@
 	 ((eq? type *real*) 2)
 	 (else 3)))
    
-   (define (entry-size e::bbv-ctxentry)
-      (with-access::bbv-ctxentry e (types polarity value)
+   (with-access::bbv-ctxentry e (types polarity value)
 	 (cond
 	    ((not polarity) (minfx 10 (*fx 10 (length types))))
 	    ((eq? (car types) *obj*) 100)
 	    ((isa? value bbv-range) (range-size value))
 	    ((null? types) 0)
 	    (else (*fx 10 (apply + (map type-size types)))))))
-   
-   (define (ctx-size ctx::bbv-ctx)
-      (with-access::bbv-ctx ctx (entries)
-	 (apply + (map entry-size entries))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    block-size ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (block-size b::blockS)
    (with-access::blockS b (ctx)
-	 (ctx-size ctx)))
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-size entries)))))
 

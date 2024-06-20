@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jun 19 16:02:06 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 19:45:08 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -60,9 +60,8 @@
 	 (let loop ((n 0))
 	    (trace-item "loop(" n ") queue: "
 	       (map (lambda (bs)
-		       (with-access::blockS bs (label parent)
-			  (cons (format "#~a" label)
-			     (format "#~a" (block-label parent)))))
+		       (with-access::blockS bs (label parent cnt)
+			  (format "#~a[~a]<-#~a" label cnt (block-label parent))))
 		  (with-access::bbv-queue queue (blocks)
 		     blocks)))
 	    (if (bbv-queue-empty? queue)
@@ -86,7 +85,7 @@
 					    (with-access::blockS b (label ctx)
 					       (trace-item "#" label ": "
 						  (shape ctx))))
-				  (blockV-versions bv)))
+				  (blockV-live-versions bv)))
 			    (block-merge-some! bv queue)))
 		      (when (block-live? bs)
 			 (with-access::blockS bs ((bv parent) label)
@@ -100,11 +99,15 @@
 ;*---------------------------------------------------------------------*/
 (define (block-specialize!::blockS bs::blockS queue::bbv-queue)
    (with-trace 'bbv-block
-	 (format "block-specialize! #~a->#~a cnt: ~a parent.succs: ~a"
+	 (format "block-specialize! #~a->#~a cnt: ~a parent.succs: ~a preds: ~a"
 	    (block-label (blockS-parent bs))
 	    (block-label bs)
 	    (blockS-cnt bs)
-	    (map block-label (block-succs (blockS-parent bs))))
+	    (map block-label (block-succs (blockS-parent bs)))
+	    (map (lambda (b)
+		    (format "#~a~a" (block-label b)
+		       (if (block-live? b) "+" "-")))
+	       (block-preds bs)))
       (with-access::blockS bs ((bv parent) first ctx)
 	 (trace-item "ctx: " (shape ctx))
 	 (with-access::blockV bv ((pfirst first))
@@ -300,15 +303,15 @@
 ;*---------------------------------------------------------------------*/
 (define (block-merge! bs::blockS mbs::blockS)
    (with-trace 'bbv-block "block-merge!"
-      (trace-item "bs=#" (block-label bs))
-      (trace-item "mbs=#" (block-label mbs))
+      (trace-item "bs=#" (block-label bs) "[" (blockS-cnt bs) "] "
+	 (map block-label (block-preds bs)))
+      (trace-item "mbs=#" (block-label mbs) "[" (blockS-cnt mbs) "] "
+	 (map block-label (block-preds mbs)))
       (when *bbv-debug* (assert-block bs "block-merge!"))
       (with-access::blockS bs (mblock succs parent label)
 	 (trace-item "parent=#" (block-label parent))
 	 (set! mblock mbs)
 	 (let ((osuccs succs))
-	    ;; replace-block! resets bs' succs to '() so the list
-	    ;; has to be kept and passed explicitly to the gc
 	    (replace-block! bs mbs)
 	    (when *bbv-debug*
 	       (assert-block bs "block-merge!.bs")
@@ -371,9 +374,9 @@
 	 (with-access::blockV bv (first label versions)
 	    (trace-item "parent: #" label)
 	    (trace-item "versions: " (filter-map (lambda (b)
-						   (with-access::blockS b (cnt label)
-						      (when (>fx cnt 0)
-							 (format "#~a" label))))
+						   (with-access::blockS b (label)
+						      (format "#~a~a" label
+							 (if (block-live? b) "+" "-"))))
 				       versions))
 	    (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
 	       (cond

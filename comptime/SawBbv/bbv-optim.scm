@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Thu Jun 20 07:57:39 2024 (serrano)                */
+;*    Last change :  Thu Jun 20 19:21:57 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -62,13 +62,21 @@
 	     (with-access::block (car bs) (first succs preds label)
 		(when *bbv-debug* (assert-block (car bs) "remove-nop!"))
 		(let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
-		   (if (pair? f)
+		   (cond
+		      ((pair? f)
 		       ;; prune the instructions
-		       (set! first f)
+		       (set! first f))
+		      ((pair? succs)
 		       ;; remove the block
-		       (set! first (list (car first)))))
-;* 		       (let ((n (car succs)))                          */
-;* 			  (replace-block! (car bs) n))))               */
+		       (let ((succ (car succs)))
+			  (for-each (lambda (p)
+				       (redirect-block! p (car bs) succ))
+			     preds)))
+		      (else
+		       (set! first
+			  (list (instantiate::rtl_ins
+				   (args '())
+				   (fun (instantiate::rtl_nop))))))))
 		(loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
 
    (if (or (eq? *bbv-blocks-cleanup* #t)
