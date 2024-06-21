@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Jun 21 05:09:51 2024 (serrano)                */
+;*    Last change :  Fri Jun 21 07:26:52 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -186,28 +186,30 @@
 	       " " (map block-label preds)
 	       " -> " (map (lambda (b) (if (isa? b block) (block-label b) '-))
 			 succs)))))
-   
-   (cond
-      ((rtl_ins-ifne? ins)
-       (with-access::rtl_ins ins (fun)
-	  (let ((n (rtl_ifne-then fun)))
-	     (debug-connect "connect.ifne" bs n)
-	     (block-succs-set! bs (list #unspecified n))
-	     (block-preds-update! n (cons bs (block-preds n))))))
-      ((rtl_ins-go? ins)
-       (with-access::rtl_ins ins (fun)
-	  (let ((n (rtl_go-to fun)))
-	     (debug-connect "connect.go" bs n)
-	     (if (pair? (block-succs bs))
-		 (set-car! (block-succs bs) n)
-		 (block-succs-set! bs (list n)))
-	     (block-preds-update! n (cons bs (block-preds n))))))
-      ((rtl_ins-switch? ins)
-       (with-access::rtl_ins ins (fun)
-	  (block-succs-set! bs (rtl_switch-labels fun))
-	  (for-each (lambda (n)
-		       (block-preds-update! n (cons bs (block-preds n))))
-	     (rtl_switch-labels fun))))))
+
+   (with-trace 'bbv-ins "connect!"
+      (trace-item "#" (block-label bs) " ins=" (shape ins))
+      (cond
+	 ((rtl_ins-ifne? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (let ((n (rtl_ifne-then fun)))
+		(debug-connect "connect.ifne" bs n)
+		(block-succs-set! bs (list #unspecified n))
+		(block-preds-update! n (cons bs (block-preds n))))))
+	 ((rtl_ins-go? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (let ((n (rtl_go-to fun)))
+		(debug-connect "connect.go" bs n)
+		(if (pair? (block-succs bs))
+		    (set-car! (block-succs bs) n)
+		    (block-succs-set! bs (list n)))
+		(block-preds-update! n (cons bs (block-preds n))))))
+	 ((rtl_ins-switch? ins)
+	  (with-access::rtl_ins ins (fun)
+	     (block-succs-set! bs (rtl_switch-labels fun))
+	     (for-each (lambda (n)
+			  (block-preds-update! n (cons bs (block-preds n))))
+		(rtl_switch-labels fun)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ins-specialize! ...                                              */
@@ -320,11 +322,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    ins-update! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (ins-update! first bs::blockS ctx::bbv-ctx queue::bbv-queue)
+(define (ins-update!::pair-nil first bs::blockS ctx::bbv-ctx queue::bbv-queue)
    (with-trace 'bbv-ins (format "ins-update! #~a<-#~a [@~a]"
 			   (block-label bs)
 			   (block-label (blockS-parent bs))
 			   (gendebugid))
+      (with-access::blockS bs (asleep)
+	 (set! asleep #f))
       (map! (lambda (oin)
 	       (with-access::rtl_ins/bbv oin (ctx)
 		  (cond
@@ -361,7 +365,8 @@
 			       ins))))
 		     (else
 		      oin))))
-	 first)))
+	 first)
+      first))
 
 ;*---------------------------------------------------------------------*/
 ;*    block-need-merge? ...                                            */
@@ -464,7 +469,8 @@
 			    (when (=fx cnt 0)
 			       ;; this block was unreachable we have to
 			       ;; update it
-			       (bbv-queue-push! queue obs))
+			       (unless (bbv-queue-has? queue obs)
+				  (bbv-queue-push! queue obs)))
 			    obs))))
 		  (else
 		   (let ((nbs (new-blockS bv ctx :creator creator)))
@@ -524,12 +530,7 @@
 			       (when (isa? fun rtl_call)
 				  (with-access::rtl_call fun (var)
 				     (with-access::variable var (value type)
-					(or (eq? var *long->bint*)
-					    (begin
-					       (when *bbv-debug*
-						  (tprint "stop predicate "
-						     (shape var)))
-					       #f)))))))))))))))
+					(eq? var *long->bint*))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-resolved-ifne? ...                                       */

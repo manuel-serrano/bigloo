@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 10:13:26 2024                          */
-;*    Last change :  Fri Jun 21 05:11:34 2024 (serrano)                */
+;*    Last change :  Fri Jun 21 07:26:05 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV gc                                                           */
@@ -90,8 +90,9 @@
 	       (lambda (b)
 		  (with-access::blockV b (versions)
 		     (for-each (lambda (b)
-				  (with-access::blockS b (cnt succs preds)
+				  (with-access::blockS b (cnt succs preds asleep)
 				     (when (=fx cnt 0)
+					(set! asleep #t)
 					(set! succs '())
 					(set! preds '()))))
 			versions))))

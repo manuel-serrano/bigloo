@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jun 20 07:17:18 2024 (serrano)                */
+;*    Last change :  Fri Jun 21 07:25:01 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -59,7 +59,8 @@
 	       (gcmark::long (default -1))
 	       (mblock::obj (default #f))
 	       (creator::obj read-only) 
-	       (merges::pair-nil (default '())))
+	       (merges::pair-nil (default '()))
+	       (asleep::bool (default #f)))
 	    
 	    ;; block queue
 	    (class bbv-queue
@@ -89,6 +90,7 @@
 	    (bbv-queue-empty? ::bbv-queue)
 	    (bbv-queue-push! ::bbv-queue ::blockS)
 	    (bbv-queue-pop!::blockS ::bbv-queue)
+	    (bbv-queue-has?::bool ::bbv-queue ::blockS)
 	    
 	    (blockV-live-versions::pair-nil ::blockV)
 	    (block-live?::bool bs::blockS)
@@ -243,6 +245,13 @@
 		(set! last '()))
 	     b)
 	  (error "bbv-queue-pop!" "Illegal empty queue" queue))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-queue-has? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (bbv-queue-has?::bool queue::bbv-queue b::blockS)
+   (with-access::bbv-queue queue (blocks)
+      (memq b blocks)))
    
 ;*---------------------------------------------------------------------*/
 ;*    blockV-live-versions ...                                         */
@@ -669,7 +678,7 @@
 	 ((assq 'merge-new mi) 'merge-new)
 	 (else #f)))
    
-   (with-access::blockS o (label first parent ctx preds succs cnt)
+   (with-access::blockS o (label first parent ctx preds succs cnt asleep)
       (fprint p "(blockS " label)
       (dump-margin p (+fx m 1))
       (fprint p ":parent " (block-label parent))
@@ -683,7 +692,9 @@
       (fprint p ":ctx " (shape ctx))
       (when *bbv-debug*
 	 (dump-margin p (+fx m 1))
-	 (fprint p ":cnt " cnt))
+	 (fprint p ":cnt " cnt)
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":asleep " asleep))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display "\n )\n" p)))

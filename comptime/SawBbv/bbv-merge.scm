@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Thu Jun 20 19:13:13 2024 (serrano)                */
+;*    Last change :  Fri Jun 21 07:40:08 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -140,7 +140,7 @@
 							    s))))
 					   (call-with-input-string s port->sexp-list))))
 		       (l (vector-length v)))
-		   (if (or (<fx l 6) (odd? l))
+		   (if (or (<fx l 6) (not (=fx (remainderfx l 3) 0)))
 		       (error "bbv-block-merge-select-strategy-adn" "wrong adn"
 			  s)
 		       (begin
