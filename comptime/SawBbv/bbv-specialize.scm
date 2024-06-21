@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jun 20 19:45:08 2024 (serrano)                */
+;*    Last change :  Fri Jun 21 05:09:51 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -88,10 +88,13 @@
 				  (blockV-live-versions bv)))
 			    (block-merge-some! bv queue)))
 		      (when (block-live? bs)
-			 (with-access::blockS bs ((bv parent) label)
-			    (trace-item "need-specialize #" label
-			       " (parent #" (block-label bv) ")"))
-			 (block-specialize! bs queue)))
+			 (with-access::blockS bs ((bv parent) label first)
+			    (if (pair? first)
+				;; the block has already been specialized
+				;; but later on became unreachable, it must
+				;; must be updated
+				(block-update! bs queue)
+				(block-specialize! bs queue)))))
 		   (loop (+fx n 1))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -99,10 +102,10 @@
 ;*---------------------------------------------------------------------*/
 (define (block-specialize!::blockS bs::blockS queue::bbv-queue)
    (with-trace 'bbv-block
-	 (format "block-specialize! #~a->#~a cnt: ~a parent.succs: ~a preds: ~a"
-	    (block-label (blockS-parent bs))
+	 (format "block-specialize! #~a[~a]<-#~a parent.succs: ~a preds: ~a"
 	    (block-label bs)
 	    (blockS-cnt bs)
+	    (block-label (blockS-parent bs))
 	    (map block-label (block-succs (blockS-parent bs)))
 	    (map (lambda (b)
 		    (format "#~a~a" (block-label b)
@@ -115,6 +118,27 @@
 	    (when *bbv-debug*
 	       (assert-block bs "block-specialize!"))
 	    bs))))
+
+;*---------------------------------------------------------------------*/
+;*    block-update! ...                                                */
+;*---------------------------------------------------------------------*/
+(define (block-update!::blockS bs::blockS queue::bbv-queue)
+   (with-trace 'bbv-block
+	 (format "block-update! #~a[~a]<-#~a parent.succs: ~a preds: ~a"
+	    (block-label bs)
+	    (blockS-cnt bs)
+	    (block-label (blockS-parent bs))
+	    (map block-label (block-succs (blockS-parent bs)))
+	    (map (lambda (b)
+		    (format "#~a~a" (block-label b)
+		       (if (block-live? b) "+" "-")))
+	       (block-preds bs)))
+      (with-access::blockS bs ((bv parent) first ctx)
+	 (trace-item "ctx: " (shape ctx))
+	 (set! first (ins-update! first bs ctx queue))
+	 (when *bbv-debug*
+	    (assert-block bs "block-specialize!"))
+	 bs)))
 
 ;*---------------------------------------------------------------------*/
 ;*    block-merge-some! ...                                            */
@@ -148,11 +172,11 @@
 		   (block-merge! bs2 mbs)))
 	       (when *bbv-debug*
 		  (assert-block mbs "block-merge-some!")))))))
-   
+
 ;*---------------------------------------------------------------------*/
-;*    ins-specialize! ...                                              */
+;*    connect! ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (ins-specialize! first bs::blockS ctx::bbv-ctx queue::bbv-queue)
+(define (connect! bs::blockS ins::rtl_ins)
    
    (define (debug-connect msg bs n)
       (when *bbv-debug*
@@ -163,32 +187,35 @@
 	       " -> " (map (lambda (b) (if (isa? b block) (block-label b) '-))
 			 succs)))))
    
-   (define (connect! bs::blockS ins::rtl_ins)
-      (cond
-	 ((rtl_ins-ifne? ins)
-	  (with-access::rtl_ins ins (fun)
-	     (let ((n (rtl_ifne-then fun)))
-		(debug-connect "connect.ifne" bs n)
-		(block-succs-set! bs (list #unspecified n))
-		(block-preds-update! n (cons bs (block-preds n))))))
-	 ((rtl_ins-go? ins)
-	  (with-access::rtl_ins ins (fun)
-	     (let ((n (rtl_go-to fun)))
-		(debug-connect "connect.go" bs n)
-		(if (pair? (block-succs bs))
-		    (set-car! (block-succs bs) n)
-		    (block-succs-set! bs (list n)))
-		(block-preds-update! n (cons bs (block-preds n))))))
-	 ((rtl_ins-switch? ins)
-	  (with-access::rtl_ins ins (fun)
-	     (block-succs-set! bs (rtl_switch-labels fun))
-	     (for-each (lambda (n)
-			  (block-preds-update! n (cons bs (block-preds n))))
-		(rtl_switch-labels fun))))))
-   
-   (with-trace 'bbv-ins (format "ins-specialize! #~a->#~a [@~a]"
-			   (block-label (blockS-parent bs))
+   (cond
+      ((rtl_ins-ifne? ins)
+       (with-access::rtl_ins ins (fun)
+	  (let ((n (rtl_ifne-then fun)))
+	     (debug-connect "connect.ifne" bs n)
+	     (block-succs-set! bs (list #unspecified n))
+	     (block-preds-update! n (cons bs (block-preds n))))))
+      ((rtl_ins-go? ins)
+       (with-access::rtl_ins ins (fun)
+	  (let ((n (rtl_go-to fun)))
+	     (debug-connect "connect.go" bs n)
+	     (if (pair? (block-succs bs))
+		 (set-car! (block-succs bs) n)
+		 (block-succs-set! bs (list n)))
+	     (block-preds-update! n (cons bs (block-preds n))))))
+      ((rtl_ins-switch? ins)
+       (with-access::rtl_ins ins (fun)
+	  (block-succs-set! bs (rtl_switch-labels fun))
+	  (for-each (lambda (n)
+		       (block-preds-update! n (cons bs (block-preds n))))
+	     (rtl_switch-labels fun))))))
+
+;*---------------------------------------------------------------------*/
+;*    ins-specialize! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (ins-specialize! first bs::blockS ctx::bbv-ctx queue::bbv-queue)
+   (with-trace 'bbv-ins (format "ins-specialize! #~a<-#~a [@~a]"
 			   (block-label bs)
+			   (block-label (blockS-parent bs))
 			   (gendebugid))
       (let loop ((oins first)
 		 (nins '())
@@ -291,6 +318,52 @@
 		       (laap (cdr args) (cons (car args) nargs) actx))))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    ins-update! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (ins-update! first bs::blockS ctx::bbv-ctx queue::bbv-queue)
+   (with-trace 'bbv-ins (format "ins-update! #~a<-#~a [@~a]"
+			   (block-label bs)
+			   (block-label (blockS-parent bs))
+			   (gendebugid))
+      (map! (lambda (oin)
+	       (with-access::rtl_ins/bbv oin (ctx)
+		  (cond
+		     ((rtl_ins-go? oin)
+		      (with-access::rtl_ins oin (fun)
+			 (with-access::rtl_go fun (to)
+			    (let* ((n (bbv-block to ctx queue :creator bs))
+				   (ins (duplicate::rtl_ins/bbv oin
+					   (ctx ctx)
+					   (fun (duplicate::rtl_go fun
+						   (to n))))))
+			       (connect! bs ins)
+			       ins))))
+		     ((rtl_ins-switch? oin)
+		      (with-access::rtl_ins oin (fun)
+			 (with-access::rtl_switch fun (labels)
+			    (let ((ins (duplicate::rtl_ins/bbv oin
+					  (ctx ctx)
+					  (fun (duplicate::rtl_switch fun
+						  (labels (map (lambda (b)
+								  (bbv-block b ctx queue :creator bs))
+							     labels)))))))
+			       (connect! bs ins)
+			       ins))))
+		     ((rtl_ins-ifne? oin)
+		      (with-access::rtl_ins oin (fun args)
+			 (with-access::rtl_ifne fun (then)
+			    (let* ((n (bbv-block then ctx queue :creator bs))
+				   (ins (duplicate::rtl_ins/bbv oin
+					   (ctx ctx)
+					   (fun (duplicate::rtl_ifne fun
+						   (then n))))))
+			       (connect! bs ins)
+			       ins))))
+		     (else
+		      oin))))
+	 first)))
+
+;*---------------------------------------------------------------------*/
 ;*    block-need-merge? ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (block-need-merge?::bool bv::blockV)
@@ -380,32 +453,24 @@
 				       versions))
 	    (let ((ctx (bbv-ctx-filter-live-in-regs ctx (car first))))
 	       (cond
-		  ((bbv-ctx-assoc ctx (blockV-live-versions bv))
+		  ((bbv-ctx-assoc ctx versions)
 		   =>
 		   (lambda (b)
 		      (let ((obs (live-blockS b)))
 			 (with-access::blockS obs (label cnt)
 			    (trace-item "<- old: #" label "[" cnt "]")
 			    (when *bbv-debug*
-			       (assert-block obs "bbv-block")) 
+			       (assert-block obs "bbv-block"))
+			    (when (=fx cnt 0)
+			       ;; this block was unreachable we have to
+			       ;; update it
+			       (bbv-queue-push! queue obs))
 			    obs))))
 		  (else
 		   (let ((nbs (new-blockS bv ctx :creator creator)))
 		      (with-access::blockS nbs (label)
 			 (trace-item "<- new: #" label)
 			 (bbv-queue-push! queue nbs)
-			 (for-each (lambda (b)
-				      (with-access::blockS b (ctx mblock label cnt)
-					 (when (>fx cnt 0)
-					    (trace-item "version: "
-					       "#" label
-					       (if (isa? mblock block)
-						   (format "(->#~a)"
-						      (block-label mblock))
-						   "")
-					       " cnt: " cnt 
-					       " ctx: " (shape ctx)))))
-			    versions)
 			 nbs)))))))))
    
 ;*---------------------------------------------------------------------*/

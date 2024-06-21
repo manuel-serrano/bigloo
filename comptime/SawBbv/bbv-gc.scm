@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 10:13:26 2024                          */
-;*    Last change :  Thu Jun 20 20:01:21 2024 (serrano)                */
+;*    Last change :  Fri Jun 21 05:11:34 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV gc                                                           */
@@ -48,15 +48,16 @@
       (with-access::blockV bv (versions)
 	 (let ((m0 (get-gc-mark!))
 	       (l (blockV-live-versions bv)))
+	    ;; debug
 	    (when *bbv-debug*
 	       (let ((m (get-gc-mark!)))
 		  (for-each (lambda (b)
-			       (walk! b m
+			       (walkbs! b m
 				  (lambda (b)
 				     (assert-block b "bbv-gc!>"))))
 		     l)))
 	    ;; reset all counters
-	    (walk*! bv m0
+	    (walkbv! bv (get-gc-mark!)
 	       (lambda (b)
 		  (with-access::blockV b (versions)
 		     (for-each (lambda (b)
@@ -66,7 +67,7 @@
 	    ;; mark all reachables blocks
 	    (let ((m (get-gc-mark!)))
 	       (for-each (lambda (b)
-			    (walk! b m
+			    (walkbs! b m
 			       (lambda (b)
 				  (with-access::blockS b (cnt gcmark)
 				     (set! gcmark m0)
@@ -75,7 +76,7 @@
 	    ;; filters out the unreachable preds block
 	    (let ((m (get-gc-mark!)))
 	       (for-each (lambda (b)
-			    (walk! b m
+			    (walkbs! b m
 			       (lambda (b)
 				  (with-access::blockS b (preds)
 				     (set! preds
@@ -84,14 +85,27 @@
 						      (eq? gcmark m0)))
 					   preds))))))
 		  l))
+	    ;; cleanup unreachable blocks
+	    (walkbv! bv (get-gc-mark!)
+	       (lambda (b)
+		  (with-access::blockV b (versions)
+		     (for-each (lambda (b)
+				  (with-access::blockS b (cnt succs preds)
+				     (when (=fx cnt 0)
+					(set! succs '())
+					(set! preds '()))))
+			versions))))
+	    ;; debug
 	    (when *bbv-debug*
-	       (let ((m (get-gc-mark!)))
+	       (let ((m (get-gc-mark!))
+		     (d '()))
 		  (for-each (lambda (b)
-			       (walk! b m
+			       (walkbs! b m
 				  (lambda (b)
-				     (trace-item (format "#~a[~a]" (block-label b) (blockS-cnt b)))
+				     (set! d (cons (format "#~a[~a]" (block-label b) (blockS-cnt b)) d))
 				     (assert-block b "bbv-gc!<"))))
-		     l)))))))
+		     l)
+		  (trace-item d)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gc-mark* ...                                                    */
@@ -106,22 +120,22 @@
    *gc-mark*)
 
 ;*---------------------------------------------------------------------*/
-;*    walk! ...                                                        */
+;*    walkbs! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (walk! b::blockS m::long proc::procedure)
+(define (walkbs! b::blockS m::long proc::procedure)
    (with-access::blockS b (cnt %mark succs)
       (proc b)
       (unless (eq? %mark m)
 	 (set! %mark m)
-	 (for-each (lambda (s) (walk! s m proc)) succs))))
+	 (for-each (lambda (s) (walkbs! s m proc)) succs))))
 
 ;*---------------------------------------------------------------------*/
-;*    walk*! ...                                                       */
+;*    walkbv! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (walk*! b::blockV m::long proc::procedure)
+(define (walkbv! b::blockV m::long proc::procedure)
    (with-access::blockV b (cnt %mark succs)
       (unless (eq? %mark m)
 	 (set! %mark m)
 	 (proc b)
-	 (for-each (lambda (s) (walk*! s m proc)) succs))))
+	 (for-each (lambda (s) (walkbv! s m proc)) succs))))
 	 
