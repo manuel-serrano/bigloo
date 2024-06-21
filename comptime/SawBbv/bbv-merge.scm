@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Fri Jun 21 07:40:08 2024 (serrano)                */
+;*    Last change :  Fri Jun 21 15:35:23 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -497,7 +497,7 @@
 		   "#" (block-label (cdr (car lst))) "+"
 		   "#" (block-label (cdr (cadr lst))))
 		(values (cdar lst) (cdadr lst)))
-	     (bbv-block-merge-select-strategy-samepositive bs)))))
+	     (bbv-block-merge-select-strategy-anynegative bs)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-block-merge-select-strategy-anynegative ...                  */
