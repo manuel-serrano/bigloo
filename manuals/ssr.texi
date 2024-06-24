@@ -13,7 +13,7 @@
 @c ------------------------------------------------------------------- @c
 @node SSR, System Programming, Hash Tables, Standard Library
 @comment  node-name,  next,  previous,  up
-@subsection SSR
+@subsection Single Source Reachability
 @cindex ssr
 
 @deffn {bigloo procedure} make-graph #!key (source 0)

@@ -3,11 +3,24 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olivier Melancon                                  */
 ;*    Creation    :  Fri Jun 21 15:42:17 2024                          */
-;*    Last change :  Mon Jun 24 10:54:05 2024 (serrano)                */
+;*    Last change :  Mon Jun 24 19:22:31 2024 (serrano)                */
 ;*    Copyright   :  2024 Olivier Melancon                             */
 ;*    -------------------------------------------------------------    */
 ;*    ssr                                                              */
-;*=====================================================================*/
+;*    -------------------------------------------------------------    */
+;*    Single-Source Reachability algorithm                             */
+;*                                                                     */
+;*    Shiloach, Yossi and Even, Shimon, (1981),                        */
+;*    An On-Line Edge-Deletion Problem,                                */
+;*    28(1), Journal of the ACM,                                       */
+;*    https://doi.org/10.1145/322234.322235,                           */
+;*                                                                     */
+;*    Alshammari, M., & Rezgui, A. (2020).                             */
+;*    A single-source shortest path algorithm for dynamic graphs.      */
+;*    AKCE International Journal of Graphs and Combinatorics,          */
+;*    17(3), 1063-1068.                                                */
+;*    https://doi.org/10.1016/j.akcej.2020.01.002                      */
+;*---------------------------------------------------------------------*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
