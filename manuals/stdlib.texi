@@ -32,7 +32,8 @@ reason they are presented in a separate section @ref{Input and Output}.
 * Serialization::              
 * Bit Manipulation::            
 * Weak Pointers::
-* Hash Tables::   
+* Hash Tables::
+* SSR::
 * System Programming::
 * Date::
 * Digest::
@@ -2245,6 +2246,11 @@ bound variables.
 @c    Hash tables                                                      @c
 @c ------------------------------------------------------------------- @c
 @include hash.texi
+
+@c ------------------------------------------------------------------- @c
+@c    SSR                                                              @c
+@c ------------------------------------------------------------------- @c
+@include ssr.texi
 
 @c ------------------------------------------------------------------- @c
 @c    System                                                           @c

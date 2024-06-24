@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    System programming ...                                           @c
 @c ------------------------------------------------------------------- @c
-@node System Programming, Date, Hash Tables, Standard Library
+@node System Programming, Date, SSR, Standard Library
 @comment  node-name,  next,  previous,  up
 @section System programming
 @cindex System programming

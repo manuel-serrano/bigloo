@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat Aug 27 17:03:15 2022 (serrano)                */
-#*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun 24 09:22:02 2024 (serrano)                */
+#*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -296,7 +296,7 @@ C_SCM_READ	= $(READ:%=Read/%.c)
 #*---------------------------------------------------------------------*/
 UNSAFE		= intext hmac md5 crc16 sha1 sha2 gunzip tar kmp \
                   base64 bignumber aes rsa url http crc uuid ftp \
-                  bm
+                  bm ssr
 
 REGEXP		= pregexp pcre regex
  

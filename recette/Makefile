@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Wed Mar 11 05:28:28 2020 (serrano)                */
-#*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun 24 09:27:00 2024 (serrano)                */
+#*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -58,7 +58,7 @@ ICOMMON		= vital bps bool list vector srfi4 struct print \
                   rgc_eval rgc hash module import1 import2 \
                   cfa2 cell hygiene wind dsssl sua peek callcc fringe \
                   unicode optim pregexp lalr system date process \
-                  mmap input_mmap_port weakptr crypto crc
+                  mmap input_mmap_port weakptr crypto crc ssr
 
 OCOMMON		= object object_sans \
                   object1 object1_sans \
