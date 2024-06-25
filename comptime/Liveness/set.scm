@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 22 09:48:04 2013                          */
-;*    Last change :  Fri Jul  9 07:35:56 2021 (serrano)                */
-;*    Copyright   :  2013-21 Manuel Serrano                            */
+;*    Last change :  Tue Jun 25 15:20:47 2024 (serrano)                */
+;*    Copyright   :  2013-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Liveness set handling                                            */
 ;*=====================================================================*/
@@ -28,10 +28,24 @@
 	    liveness_types)
    (export  (in? ::local ::pair-nil)
 	    (subset? ::pair-nil ::pair-nil)
-	    (union::pair-nil . ::pair-nil)
+	    (union::pair-nil ::pair-nil ::pair-nil)
+	    (union3::pair-nil ::pair-nil ::pair-nil ::pair-nil)
 	    (add ::local/liveness pair-nil)
-	    (intersection::pair-nil . ::pair-nil)
+	    (intersection::pair-nil ::pair-nil ::pair-nil)
+	    (intersection*::pair-nil . ::pair-nil)
 	    (disjonction::pair-nil ::pair-nil ::pair-nil)))
+
+;*---------------------------------------------------------------------*/
+;*    *mark* ...                                                       */
+;*---------------------------------------------------------------------*/
+(define *mark* 1024)
+
+;*---------------------------------------------------------------------*/
+;*    get-mark ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (get-mark::long)
+   (set! *mark* (+fx 1 *mark*))
+   *mark*)
 
 ;*---------------------------------------------------------------------*/
 ;*    variable-reset! ...                                              */
@@ -71,19 +85,57 @@
 ;*    -------------------------------------------------------------    */
 ;*    union of N lists of local variables                              */
 ;*---------------------------------------------------------------------*/
-(define (union . ls)
+(define (union l1 l2)
    
    (define res '())
+
+   (define mark (get-mark))
    
    (define (variable-mark! v)
       (with-access::local/liveness v (%count)
-	 (when (=fx %count 0)
-	    (set! %count 1)
+	 (unless (=fx %count mark)
+	    (set! %count mark)
 	    (set! res (cons v res)))))
 
-   (for-each (lambda (l) (for-each variable-reset! l)) ls)
-   (for-each (lambda (l) (for-each variable-mark! l)) ls)
-   res)
+   (cond
+      ((null? l1)
+       l2)
+      ((null? l2)
+       l1)
+      (else
+       (for-each variable-mark! l1)
+       (for-each variable-mark! l2)
+       res)))
+
+;*---------------------------------------------------------------------*/
+;*    union ...                                                        */
+;*    -------------------------------------------------------------    */
+;*    union of N lists of local variables                              */
+;*---------------------------------------------------------------------*/
+(define (union3 l1 l2 l3)
+   
+   (define res '())
+   
+   (define mark (get-mark))
+   
+   (define (variable-mark! v)
+      (with-access::local/liveness v (%count)
+	 (when (=fx %count mark)
+	    (set! %count mark)
+	    (set! res (cons v res)))))
+
+   (cond
+      ((null? l1)
+       (union l2 l3))
+      ((null? l2)
+       (union l1 l3))
+      ((null? l3)
+       (union l1 l2))
+      (else
+       (for-each variable-mark! l1)
+       (for-each variable-mark! l2)
+       (for-each variable-mark! l3)
+       res)))
 
 ;*---------------------------------------------------------------------*/
 ;*    add ...                                                          */
@@ -96,7 +148,28 @@
 ;*    -------------------------------------------------------------    */
 ;*    intersection of N lists of local variables                       */
 ;*---------------------------------------------------------------------*/
-(define (intersection . ls)
+(define (intersection l1 l2)
+   
+   (define (variable-mark! v)
+      (with-access::local/liveness v (%count)
+	 (set! %count (+fx 1 %count))))
+   
+   (for-each variable-reset! l1)
+   (for-each variable-reset! l2)
+   (for-each variable-mark! l1)
+   (for-each variable-mark! l2)
+   
+   (filter (lambda (l)
+	      (with-access::local/liveness l ((c %count))
+		 (=fx c 2)))
+      l1))
+
+;*---------------------------------------------------------------------*/
+;*    intersection* ...                                                */
+;*    -------------------------------------------------------------    */
+;*    intersection of N lists of local variables                       */
+;*---------------------------------------------------------------------*/
+(define (intersection* . ls)
    
    (define (variable-mark! v)
       (with-access::local/liveness v (%count)
@@ -107,8 +180,10 @@
    
    (for-each (lambda (l) (for-each variable-reset! l)) ls)
    (for-each mark-list! ls)
-   
+
    (let ((%count (length ls)))
+      (when (>=fx %count *mark*)
+	 (set! *mark* (+fx %count 1)))
       (filter (lambda (l)
 		 (with-access::local/liveness l ((c %count))
 		    (=fx c %count)))
@@ -121,14 +196,17 @@
 ;*---------------------------------------------------------------------*/
 (define (disjonction l1 l2)
    
+   (define mark (get-mark))
+   
    (define (variable-mark! v)
       (with-access::local/liveness v (%count)
-	 (set! %count 1)))
-   
-   (for-each variable-reset! l1)
-   (for-each variable-mark! l2)
-   
-   (filter (lambda (v)
-	      (with-access::local/liveness v (%count)
-		 (=fx %count 0)))
-      l1))
+	 (set! %count mark)))
+
+   (if (null? l2)
+       l1
+       (begin
+	  (for-each variable-mark! l2)
+	  (filter (lambda (v)
+		     (with-access::local/liveness v (%count)
+			(not (=fx %count mark))))
+	     l1))))

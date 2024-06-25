@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Tue Jun 25 11:53:07 2024 (serrano)                */
+;*    Last change :  Tue Jun 25 16:34:06 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -379,8 +379,6 @@
 			    (loop (cdr actuals)))))))
 	    (emit-light-cfuncall (cop)
                (let ((actuals (cfuncall-args cop)))
-		  (tprint "PROCEDURE_L_ENTRY " (shape (cfuncall-type cop)) " "
-		     (type-name (cfuncall-type cop)))
 		  (out-call "PROCEDURE_L_ENTRY" fun-l-cast actuals #f)
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because there is always

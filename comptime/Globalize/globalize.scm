@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/globalize.scm     */
+;*    .../project/bigloo/bigloo/comptime/Globalize/globalize.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:45:58 1995                          */
-;*    Last change :  Tue Feb  9 09:29:02 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jun 25 14:50:32 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `globalization' process                                      */
 ;*=====================================================================*/
@@ -82,9 +82,9 @@
 	 (trace globalize "   G  : " (shape G) #\Newline)
 	 ;; we print the globalization result
 	 (verb-globalization)
-	 ;; for each globalized function, we computed its new body
+	 ;; for each globalized function, compute its new body
 	 (set-globalized-new-bodies! global G)
-	 ;; for each globalized function, we computes its set of
+	 ;; for each globalized function, compute its set of
 	 ;; kaptured variables.
 	 (set-kaptured! G)
 	 ;; then, we compute new global definitions

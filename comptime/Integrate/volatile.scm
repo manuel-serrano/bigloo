@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 12 08:55:10 2021                          */
-;*    Last change :  Fri Jul  9 14:43:08 2021 (serrano)                */
-;*    Copyright   :  2021 Manuel Serrano                               */
+;*    Last change :  Tue Jun 25 15:07:41 2024 (serrano)                */
+;*    Copyright   :  2021-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Flag as "volatile" local variables that survive a set-exit       */
 ;*    node. This is used only when  *local-exit?* is true.             */
@@ -35,20 +35,23 @@
 ;*    temporaries in registers.                                        */
 ;*---------------------------------------------------------------------*/
 (define (volatile! global)
-   (with-access::global global (value id)
-      (multiple-value-bind (def use)
-	 (liveness-sfun! value)
-	 (with-access::sfun value (body)
-	    (when (use-set-exit? body)
-	       (volatile body '())))))
-   global)
+   (with-trace 'integrate "volatile"
+      (trace-item "global=" (shape global))
+      (with-access::global global (value id)
+	 (multiple-value-bind (def use)
+	    (liveness-sfun! value)
+	    (with-access::sfun value (body)
+	       (when (use-set-exit? body)
+		  (volatile body '())))))
+      global))
 
 ;*---------------------------------------------------------------------*/
 ;*    volalite-sfun ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (volatile-sfun node env)
-   (with-access::sfun node (args body)
-      (volatile body (append args env))))
+   (with-trace 'integrate "volatile-sfun"
+      (with-access::sfun node (args body)
+	 (volatile body (append args env)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    volatile ::node ...                                              */
