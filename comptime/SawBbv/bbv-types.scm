@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Jun 21 07:25:01 2024 (serrano)                */
+;*    Last change :  Tue Jun 25 08:44:58 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -404,7 +404,8 @@
 	 (types types)
 	 (count (if (memq *obj* types) 0 count))
 	 (polarity polarity)
-	 (value value)))
+	 (value value)
+	 (aliases (or aliases '()))))
    
    (define (extend-entries ctx reg types polarity value)
       (let ((rnum (rtl_reg/ra-num reg)))
@@ -467,7 +468,8 @@
 	 (reg reg)
 	 (types types)
 	 (polarity polarity)
-	 (value value)))
+	 (value value)
+	 (aliases (or aliases '()))))
    
    (define (extend-entries ctx reg types polarity value)
       (let ((rnum (rtl_reg/ra-num reg)))

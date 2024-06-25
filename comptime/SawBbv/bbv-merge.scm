@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Fri Jun 21 15:35:23 2024 (serrano)                */
+;*    Last change :  Tue Jun 25 07:41:16 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -75,6 +75,7 @@
 	  ((score*) (bbv-block-merge-select-strategy-score* bs))
 	  ((score+) (bbv-block-merge-select-strategy-score+ bs))
 	  ((score-) (bbv-block-merge-select-strategy-score- bs))
+	  ((score2) (bbv-block-merge-select-strategy-score2 bs))
 	  ((nearobj) (bbv-block-merge-select-strategy-nearobj bs))
 	  ((nearnegative) (bbv-block-merge-select-strategy-nearnegative bs))
 	  ((anynegative) (bbv-block-merge-select-strategy-anynegative bs))
@@ -330,7 +331,75 @@
 	 (cond
 	    ((not polarity) 1)
 	    ((memq *obj* types) 0)
-	    (else count))))
+	    (else (* count count)))))
+   
+   (define (ctx-score::long ctx::bbv-ctx)
+      (with-access::bbv-ctx ctx (entries)
+	 (apply + (map entry-score entries))))
+   
+   (define (blockS-score::long b::blockS)
+      (with-access::blockS b (ctx)
+	 (ctx-score ctx)))
+   
+   (define (score- bs::pair)
+      (let ((bs (sort (lambda (x y)
+			 (<= (car x) (car y)))
+		   (map (lambda (b) (cons (blockS-score b) b)) bs))))
+	 (for-each (lambda (b)
+		      (with-access::blockS (cdr b) (ctx)
+			 (trace-item "#" (block-label (cdr b)) " [" (car b) "] "
+			    (shape ctx))))
+	    bs)
+	 (trace-item "merging-smallest-score "
+	    "#" (block-label (cdar bs)) "+"
+	    "#" (block-label (cdadr bs)))
+	 (values (cdar bs) (cdadr bs))))
+   
+   (with-trace 'bbv-merge "bbv-block-merge-select-strategy-score-"
+      (let loop ((pbs bs))
+	 (if (null? pbs)
+	     (score- bs)
+	     (let ((sb (find (lambda (b)
+				(same-positive? (car pbs) b))
+			  (cdr pbs))))
+		(if sb
+		    (begin
+		       (trace-item "merging-same-positive "
+			  "#" (block-label (car pbs)) "+"
+			  "#" (block-label sb))
+		       (values (car pbs) sb))
+		    (loop (cdr pbs))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    bbv-block-merge-select-strategy-score2 ...                       */
+;*---------------------------------------------------------------------*/
+(define (bbv-block-merge-select-strategy-score2 bs::pair)
+   
+   (define (list-eq? x y)
+      (every eq? x y))
+   
+   (define (same-positive? x y)
+      (with-access::blockS x ((xctx ctx))
+	 (with-access::blockS y ((yctx ctx))
+	    (with-access::bbv-ctx xctx ((xentries entries))
+	       (with-access::bbv-ctx yctx ((yentries entries))
+		  (every (lambda (ex ey)
+			    (with-access::bbv-ctxentry ex ((xtypes types)
+							   (xpol polarity))
+			       (with-access::bbv-ctxentry ey ((ytypes types)
+							      (ypol polarity))
+				  (cond
+				     ((not xpol) (not ypol))
+				     ((not ypol) #f)
+				     (else (list-eq? xtypes ytypes))))))
+		     xentries yentries))))))
+   
+   (define (entry-score::long e::bbv-ctxentry)
+      (with-access::bbv-ctxentry e (reg types polarity value aliases count)
+	 (cond
+	    ((not polarity) 1)
+	    ((memq *obj* types) 0)
+	    (else (* count count)))))
    
    (define (ctx-score::long ctx::bbv-ctx)
       (with-access::bbv-ctx ctx (entries)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Tue May 10 09:09:08 2022 (serrano)                */
-;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jun 25 11:51:56 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -139,6 +139,8 @@
    (trace (cgen 3) "(node->cop node::funcall kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
    (with-access::funcall node (fun args strength loc type)
+      (when (eq? strength 'light)
+	 (tprint "funcall type=" (shape type)))
       (let loop ((old-actuals  args)
 		 (new-actuals  '())
 		 (auxs         '())

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Jun 21 07:26:52 2024 (serrano)                */
+;*    Last change :  Tue Jun 25 08:29:41 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -828,10 +828,13 @@
       (with-access::rtl_ins i (dest args fun)
 	 (with-access::rtl_loadg fun (var)
 	    (with-access::variable var (type)
-	       (let ((s (duplicate::rtl_ins/bbv i
+	       (let* ((s (duplicate::rtl_ins/bbv i
 			   (ctx ctx)
 			   (fun (duplicate::rtl_loadg fun))))
-		     (nctx (extend-ctx ctx dest (list type) #t)))
+		      (ro (or (global-read-only? var)
+			      (and (=fx (global-occurrencew var) 1)
+				   (not (eq? type *obj*)))))
+		      (nctx (extend-ctx ctx dest (list type) #t)))
 		  (trace-item "load.g " (shape nctx))
 		  (values s nctx)))))))
 

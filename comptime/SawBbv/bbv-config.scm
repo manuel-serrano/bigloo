@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Wed Jun 19 13:14:27 2024 (serrano)                */
+;*    Last change :  Tue Jun 25 07:41:29 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -99,6 +99,7 @@
 	 ((not e) 'score-)
 	 ((string=? e "adn") 'adn) ;; adn in BIGLOOBBVADN (see bbv-merge.scm)
 	 ((string=? e "score-") 'score-)
+	 ((string=? e "score2") 'score2)
 	 ((string=? e "score+") 'score+)
 	 ((string=? e "score*") 'score*)
 	 ((string=? e "score") 'score)

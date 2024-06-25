@@ -253,7 +253,8 @@
 ;; Special cases of gen-expr
 ;;
 (define-method (gen-expr fun::rtl_lightfuncall args);
-   (gen-Xfuncall "L_" args #f) )
+   (with-access::rtl_lightfuncall fun (rettype)
+      (gen-Xfuncall "L_" rettype args #f)) )
 
 (define-method (gen-expr fun::rtl_getfield args);
    (display "BGL_SAW_GETFIELD(")
@@ -283,11 +284,11 @@
        (begin (display "(VA_PROCEDUREP(")
 	      (gen-reg (car args))
 	      (display ") ? ")
-	      (gen-Xfuncall "" args #t)
+	      (gen-Xfuncall "" *obj* args #t)
 	      (display " : ")
-	      (gen-Xfuncall "" args #f)
+	      (gen-Xfuncall "" *obj* args #f)
 	      (display ")") )
-       (gen-Xfuncall "" args #t) ) )
+       (gen-Xfuncall "" *obj* args #t) ) )
 
 (define (typename o)
    (cond
@@ -300,16 +301,18 @@
       (else
        "obj_t")))
        
-(define (gen-Xfuncall type args eoa?);()
-   (when *stdc*
-      (display
-	 (if eoa?
-	     "((obj_t (*)(obj_t, ...))"
-	     (format "((obj_t (*)(~(, )))"
-		(map typename args)))))
-   (display* "PROCEDURE_" type "ENTRY(")
+(define (gen-Xfuncall strength rettype args eoa?);
+   (if *stdc*
+       (display
+	  (if eoa?
+	      (format "((~a (*)(obj_t, ...))" (type-name rettype))
+	      (format "((~a (*)(~(, )))"
+		 (typename rettype)
+		 (map typename args))))
+       (display* "((" (type-name rettype) " (*)())"))
+   (display* "PROCEDURE_" strength "ENTRY(")
    (gen-reg (car args))
-   (display (if *stdc* "))(" ")("))
+   (display "))(")
    (gen-args args)
    (if eoa? (display ", BEOA"))
    (display ")") )
