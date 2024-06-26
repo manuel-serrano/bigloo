@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Mar 26 16:05:41 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 10:25:19 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -514,11 +514,11 @@
       (("-fno-global-tailc" (help "Disable global tail-call optimization"))
        (set! *global-tail-call?* #f))
       ;; return
-      (("-freturn" (help "Enable set-exit replacement with return"))
+      (("-freturn" (help "Enable set-exit replacement with return (-O3)"))
        (set! *optim-return?* #t))
       (("-fno-return" (help "Disable set-exit replacement"))
        (set! *optim-return?* #f))
-      (("-freturn-goto" (help "Enable local set-exit replacement with return"))
+      (("-freturn-goto" (help "Enable local set-exit replacement with return (-O3)"))
        (set! *optim-return?* #t)
        (set! *optim-return-goto?* #t))
       (("-fno-return-goto" (help "Disable local set-exit replacement"))
@@ -1302,7 +1302,6 @@
       (set! *optim-tagged-fxop?* #t)
 ;*       (set! *local-exit?* #t)                                       */
       ;; (set! *optim-narrow?* #t)
-      ;; (set! *optim-return?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)
       (set! *optim-cfa-unbox-closure-args* #t)
       (unless (eq? *c-tail-call* #f)
@@ -1312,6 +1311,8 @@
       (-O2!)
       (set! *optim-jvm-inlining* 3)
       (set! *optim-jvm-branch* 5)
+      (set! *optim-return?* #t)
+      (set! *optim-return-goto?* #t)
       (if (not (boolean? *optim-unroll-loop?*))
 	  (set! *optim-unroll-loop?* #t)))
    

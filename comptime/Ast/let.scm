@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Jan  3 07:44:31 2022 (serrano)                */
+;*    Last change :  Wed Jun 26 10:39:01 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -537,14 +537,25 @@
 ;*    	          (v3 i3)                                              */
 ;*    	          ...)                                                 */
 ;*         body)                                                       */
-;*    ==>                                                              */
+;*    ==> if no fx is used in vx                                       */
 ;*      (LET* ((v1 i1)                                                 */
 ;*    	       (v2 i2)                                                 */
-;*    	       (v3 i1))                                                */
+;*    	       (v3 i3))                                                */
 ;*         (LETREC ((f1 (lambda (x) ...))                              */
 ;*    	            (f2 (lambda (x) ...))                              */
 ;*    	            (f3 (lambda (x) ...)))                             */
-;*    	body))                                                         */
+;*    	      body))                                                   */
+;*    ==> if one fx is used in one vx                                  */
+;*      (LET ((v1 #unspecified)                                        */
+;*    	      (v2 #unspecified)                                        */
+;*    	      (v3 #unspecified))                                       */
+;*         (LETREC ((f1 (lambda (x) ...))                              */
+;*    	            (f2 (lambda (x) ...))                              */
+;*    	            (f3 (lambda (x) ...)))                             */
+;*           (set! v1 i1)                                              */
+;*           (set! v2 i2)                                              */
+;*           (set! v3 i3)                                              */
+;*           body))                                                    */
 ;*---------------------------------------------------------------------*/
 (define (letrec*->node sexp stack loc site)
 
@@ -846,7 +857,7 @@
 	    (else
 	     (loop (car sexp) (loop (cdr sexp) res env) env)))))
    
-   (define (stage8 ebindings body)
+   (define (stage8-old ebindings body)
       ;; a true letrec*
       (with-trace 'letrec* "letrec*/stage8"
 	 (trace-item "bindings="
@@ -860,6 +871,29 @@
 				       ,(cadr (car b))))
 			      ebindings)
 			 ,body)))
+	    (sexp->node sexp stack loc site))))
+
+   (define (stage8 ebindings body)
+      ;; a true letrec*
+      (with-trace 'letrec* "letrec*/stage8"
+	 (trace-item "bindings="
+	    (map (lambda (b) (shape (ebinding-var b))) ebindings))
+	 (let ((sexp `(let ,(filter-map (lambda (b)
+					   (unless (function? (ebinding-value b))
+					      (let ((ty (type-of-id (caar b) (find-location (car b)))))
+						 (list (caar b) (type-undefined ty)))))
+			       ebindings)
+			 (letrec ,(filter-map (lambda (b)
+						 (when (function? (ebinding-value b))
+						    (let ((ty (type-of-id (caar b) (find-location (car b)))))
+						       (list (caar b) (ebinding-value b)))))
+				     ebindings)
+			    ,@(filter-map (lambda (b)
+					     (unless (function? (ebinding-value b))
+						`(set! ,(fast-id-of-id (caar b) loc)
+						    ,(ebinding-value b))))
+				 ebindings)
+			    ,body))))
 	    (sexp->node sexp stack loc site))))
 
    (define (stage7 ebindings body)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Tue Jun 25 15:11:33 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 10:09:22 2024 (serrano)                */
 ;*    Copyright   :  2013-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property with fix point iteration.                  */
@@ -786,7 +786,7 @@
 	    (defuse
 	       (widen!::switch/liveness n
 		  (def (union deftest (apply intersection* defs)))
-		  (use (union usetest (disjonction (apply union uses) deftest)))))))))
+		  (use (union usetest (disjonction (apply union* uses) deftest)))))))))
 
 (define-method (defuse n::switch/liveness)
    (with-access::switch/liveness n (def use)

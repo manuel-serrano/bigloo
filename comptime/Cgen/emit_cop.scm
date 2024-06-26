@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Tue Jun 25 16:34:06 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 10:02:12 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -244,11 +244,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::csetq)
    (with-access::csetq cop (var value loc)
-      ;; we first emit a location for this node
       (emit-bdb-loc loc)
       (emit-cop var)
-      ;; don't omit to put space sourrounding `=' otherwise
-      ;; it could become an ambiguous assignement (e.g. x=-1).
       (display " = " *c-port*)
       (emit-cop value)
       #t))
@@ -355,6 +352,13 @@
 	     (emit-cop (cfuncall-fun cop))
 	     (display "))(" *c-port*))))
 
+   (define (call-cast cop)
+      (unless (or (eq? (cfuncall-type cop) *obj*)
+		  (equal? "obj_t" (type-name (cfuncall-type cop))))
+	 (display "(" *c-port*)
+	 (display (type-name (cfuncall-type cop)) *c-port*)
+	 (display ")" *c-port*)))
+   
    (define (same-varc? x y)
       (when (and (isa? x varc) (isa? y varc))
 	 (with-access::varc x ((xvariable variable))
@@ -458,6 +462,7 @@
 		      (len (length actuals)))
 		  (if (or (>fx len 32) (not (same-varc? fun (car actuals))))
 		      (begin
+			 (call-cast cop)
 			 (display "(VA_PROCEDUREP( " *c-port*)
 			 (emit-cop (cfuncall-fun cop))
 			 (display " ) ? " *c-port*)
@@ -467,6 +472,7 @@
 			 (display " )" *c-port*)
 			 #t)
 		      (begin
+			 (call-cast cop)
 			 (display "BGL_PROCEDURE_CALL" *c-port*)
 			 (display (-fx len 2) *c-port*)
 			 (display "(" *c-port*)

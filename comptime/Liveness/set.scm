@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 22 09:48:04 2013                          */
-;*    Last change :  Tue Jun 25 15:20:47 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 10:08:37 2024 (serrano)                */
 ;*    Copyright   :  2013-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Liveness set handling                                            */
@@ -30,6 +30,7 @@
 	    (subset? ::pair-nil ::pair-nil)
 	    (union::pair-nil ::pair-nil ::pair-nil)
 	    (union3::pair-nil ::pair-nil ::pair-nil ::pair-nil)
+	    (union*::pair-nil . ::pair-nil)
 	    (add ::local/liveness pair-nil)
 	    (intersection::pair-nil ::pair-nil ::pair-nil)
 	    (intersection*::pair-nil . ::pair-nil)
@@ -137,6 +138,25 @@
        (for-each variable-mark! l3)
        res)))
 
+;*---------------------------------------------------------------------*/
+;*    union* ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (union* . ls)
+   
+   (define res '())
+
+   (define mark (get-mark))
+      
+   (define (variable-mark! v)
+      (with-access::local/liveness v (%count)
+	 (when (=fx %count 0)
+	    (set! %count 1)
+	    (set! res (cons v res)))))
+
+   (for-each (lambda (l) (for-each variable-reset! l)) ls)
+   (for-each (lambda (l) (for-each variable-mark! l)) ls)
+   res)
+  
 ;*---------------------------------------------------------------------*/
 ;*    add ...                                                          */
 ;*---------------------------------------------------------------------*/
