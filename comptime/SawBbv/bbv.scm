@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jun 20 08:21:35 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 16:42:24 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -368,6 +368,7 @@
 	       (let ((fail (instantiate::rtl_ins
 			      (dest #f)
 			      (fun (instantiate::rtl_pragma
+				      (srfi0 'bigloo-c)
 				      (loc (rtl_ins-loc last))
 				      (format "exit(0)")))
 			      (args '()))))

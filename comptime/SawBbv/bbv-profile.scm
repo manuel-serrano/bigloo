@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Thu May 30 09:14:49 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 16:43:39 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv profileging tools                                            */
@@ -53,6 +53,7 @@
    
    (define (pragma-ins cexpr::bstring ctx loc)
       (let ((pr (instantiate::rtl_pragma
+		   (srfi0 'bigloo-c)
 		   (format cexpr)))
 	    (es (instantiate::regset (msize 0) (regv '#()) (regl '()))))
 	 (instantiate::rtl_ins/bbv
