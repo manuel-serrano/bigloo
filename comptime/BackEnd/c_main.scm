@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/c_main.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/c_main.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Fri Feb  3 14:37:10 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 26 14:28:05 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -50,7 +50,7 @@
 			      0
 			      ,(symbol->string *module*))
 			     ((@ bigloo-initialized! __param))
-			     (let ((z::bint ($int->bint 0)))
+			     (let ((z::bint ($long->bint 0)))
 				(%exit z))
 			     #unspecified)))
 	  (node (let ((node (sexp->node main-body args #f 'value)))

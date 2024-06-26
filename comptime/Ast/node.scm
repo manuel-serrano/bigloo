@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Mon Jun 27 09:57:10 2022 (serrano)                */
+;*    Last change :  Wed Jun 26 14:46:37 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -112,7 +112,8 @@
 	      
 	   ;; the pragma node
 	   (final-class pragma::extern
-	      (format::bstring read-only))
+	      (format::bstring read-only)
+	      (srfi0::symbol read-only (default 'bigloo-c)))
 
 	   ;; getpatchid node
 	   (final-class genpatchid::extern

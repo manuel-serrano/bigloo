@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  4 20:11:07 1999                          */
-#*    Last change :  Wed Jun 26 08:37:02 2024 (serrano)                */
+#*    Last change :  Wed Jun 26 15:01:47 2024 (serrano)                */
 #*    Copyright   :  1999-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The bdb Makefile                                                 */
@@ -26,10 +26,10 @@ DIRECTORIES	= bdb blib
 boot: boot-blib boot-bdb
 
 boot-blib:
-	@ (cd blib; $(MAKE) all)
+	@ $(MAKE) -C blib all
 
 boot-bdb:
-	@ (cd bdb; $(MAKE) MODE=final mode)
+	@ $(MAKE) -C bdb MODE=final mode
 
 #*---------------------------------------------------------------------*/
 #*    Populating bdb                                                   */
@@ -49,17 +49,17 @@ pop:
 
 clean:
 	@ for d in $(DIRECTORIES) ; do \
-             (cd $$d; $(MAKE) ROOT="$(ROOT)" clean); \
+             ($(MAKE) -C $$d ROOT="$(ROOT)" clean); \
           done;
 
 cleanall: 
 	@ for d in $(DIRECTORIES) ; do \
-             (cd $$d; $(MAKE) ROOT="$(ROOT)" cleanall); \
+             ($(MAKE) -C $$d ROOT="$(ROOT)" cleanall); \
           done;
 
 distclean: 
 	@ for d in $(DIRECTORIES) ; do \
-             (cd $$d; $(MAKE) ROOT="$(ROOT)" cleanall); \
+             ($(MAKE) -C $dd ROOT="$(ROOT)" cleanall); \
           done;
 
 
