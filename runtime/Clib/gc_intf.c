@@ -28,6 +28,9 @@ GC_API void bgl_gc_init() {
       }
 #endif      
       GC_INIT();
+#ifdef GC_THREADS
+      GC_start_mark_threads();
+#endif      
       GC_set_finalize_on_demand(1);
       init = 1;
    }
