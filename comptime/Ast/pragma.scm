@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/pragma.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/pragma.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:11:13 1996                          */
-;*    Last change :  Mon Dec 12 21:13:13 2016 (serrano)                */
+;*    Last change :  Wed Jun 26 15:16:21 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of pragma forms.                                    */
 ;*=====================================================================*/
@@ -76,6 +76,32 @@
 				  (find-location/loc (car exps) loc)
 				  (if free 'value 'set!))
 			       nodes)))))))
+	  ((?- :srfi (and (? symbol?) ?srfi) (and (? string?) ?format) . ?values)
+	   (let ((max-index (get-max-index format))
+		 (loc (find-location/loc exp loc)))
+	      (if (not (=fx max-index (length values)))
+		  (error-sexp->node
+		     "Wrong number of arguments in `pragma' form"
+		     exp
+		     loc)
+		  (let loop ((exps values)
+			     (nodes '()))
+		     (if (null? exps)
+			 (instantiate::pragma
+			    (loc loc)
+			    (type type)
+			    (srfi0 srfi)
+			    (format format)
+			    (expr* (reverse! nodes))
+			    (side-effect (not free))
+			    (effect effect))
+			 (loop (cdr exps)
+			    (cons
+			       (sexp->node (car exps)
+				  stack
+				  (find-location/loc (car exps) loc)
+				  (if free 'value 'set!))
+			       nodes)))))))
 	  ((?- ?ident)
 	   (let ((v (sexp->node ident stack loc site)))
 	      (if (isa? v var)
@@ -84,6 +110,21 @@
 			(instantiate::pragma
 			   (loc loc)
 			   (type type)
+			   (format "")
+			   (expr* (list v))
+			   (side-effect (not free))
+			   (effect effect))))
+		  (error-sexp->node "Illegal `pragma' expression" exp
+		     (find-location/loc exp loc)))))
+	  ((?- :srfi (and (? symbol?) ?srfi) ?ident)
+	   (let ((v (sexp->node ident stack loc site)))
+	      (if (isa? v var)
+		  (with-access::var v (variable)
+		     (with-access::variable variable (name removable)
+			(instantiate::pragma
+			   (loc loc)
+			   (type type)
+			   (srfi0 srfi)
 			   (format "")
 			   (expr* (list v))
 			   (side-effect (not free))
