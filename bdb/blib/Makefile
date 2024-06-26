@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bdb/blib/Makefile                    */
+#*    serrano/prgm/project/bigloo/bigloo/bdb/blib/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:20:03 2017 (serrano)                */
+#*    Last change :  Wed Jun 26 08:40:53 2024 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdb library.                           */
 #*=====================================================================*/
@@ -120,15 +120,14 @@ $(HEAPJVM_FILE): .jfile .afile make_lib.scm
 lib: lib-c lib-jvm
 
 #*--- lib-c -----------------------------------------------------------*/
-lib-c: $(TAGS) .afile $(CLASS_DIR) \
-        lib.$(SHAREDSUFFIX) \
-        lib.a
+lib-c: $(TAGS) .afile objs
+	$(MAKE) lib.$(SHAREDSUFFIX) lib.a
 
 lib.$(SHAREDSUFFIX): $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX)
 lib.a: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
 
 
-$(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
+$(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS)
 	@ $(MAKE) bigloo-shared-lib \
              LIBDEST=$@ \
 	     LIBPATH=$(BOOTLIBDIR) \
@@ -142,13 +141,17 @@ $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a: .afile $(OBJECTS)
 	@ echo "$(LIB)/lib$(LIBNAME)_s-$(RELEASE).a Done..."
 	@ echo "-------------------------------"
 
+objs:
+	mkdir -p objs
+
 #*--- lib-jvm ---------------------------------------------------------*/
-lib-jvm: $(TAGS) $(CLASS_DIR) lib.zip
+lib-jvm: $(TAGS) $(CLASS_DIR)
+	$(MAKE) lib.zip
 
 $(CLASS_DIR): 
 	mkdir -p $(CLASS_DIR)
 
-lib.zip: .afile .jfile $(BGL_CLASSES) $(JAVA_CLASSES_SRC) dojavac
+lib.zip: .afile .jfile $(CLASS_DIR) $(BGL_CLASSES) $(JAVA_CLASSES_SRC) dojavac
 	@ $(RM) -f $(LIB)/$(TARGETNAME)_s.zip
 	@ (cd objs/class && \
 	  $(ZIP) -q $(ZFLAGS) \

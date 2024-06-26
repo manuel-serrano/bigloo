@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  4 20:11:07 1999                          */
-#*    Last change :  Tue Mar 24 12:22:41 2020 (serrano)                */
-#*    Copyright   :  1999-2020 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Jun 26 08:37:02 2024 (serrano)                */
+#*    Copyright   :  1999-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The bdb Makefile                                                 */
 #*=====================================================================*/
@@ -23,8 +23,12 @@ DIRECTORIES	= bdb blib
 #*---------------------------------------------------------------------*/
 #*    Booting bdb on a bare system                                     */
 #*---------------------------------------------------------------------*/
-boot:
+boot: boot-blib boot-bdb
+
+boot-blib:
 	@ (cd blib; $(MAKE) all)
+
+boot-bdb:
 	@ (cd bdb; $(MAKE) MODE=final mode)
 
 #*---------------------------------------------------------------------*/
