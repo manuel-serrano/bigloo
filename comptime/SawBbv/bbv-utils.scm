@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Jun 20 07:30:23 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 19:37:26 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBB manipulations                                                */
@@ -162,8 +162,8 @@
 (define (replace-block! old::blockS new::blockS #!key debug)
    (with-trace 'bbv-utils "replace-block!"
       (trace-item "old=#" (block-label old)
-	 " succs=" (map (lambda (s) (format "#~a" (block-label s))) (block-succs old))
-	 " preds=" (map (lambda (s) (format "#~a" (block-label s))) (block-preds old)))
+	 " succs=" (map (lambda (s) (format "#~a[~a]" (block-label s) (blockS-cnt s))) (block-succs old))
+	 " preds=" (map (lambda (s) (format "#~a[~a]" (block-label s) (blockS-cnt s))) (block-preds old)))
       (trace-item "new=#"(block-label new)
 	 " succs=" (map (lambda (s) (format "#~a" (block-label s))) (block-succs new))
 	 " preds=" (map (lambda (s) (format "#~a" (block-label s))) (block-preds new)))
@@ -188,7 +188,8 @@
 	    (for-each (lambda (b)
 			 (with-access::blockS b (preds)
 			    (block-preds-update! b 
-			       (filter! (lambda (n) (not (eq? n old))) preds))))
+			       (filter! (lambda (n) (not (eq? n old))) preds))
+			    (trace-item (format "updating #~a[~a]" (block-label b) (blockS-cnt b)))))
 	       old-succs)
 	    (for-each (lambda (b)
 			 (with-access::blockS b (succs first preds)

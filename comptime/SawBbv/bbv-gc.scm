@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 10:13:26 2024                          */
-;*    Last change :  Fri Jun 21 07:26:05 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 17:58:41 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV gc                                                           */
@@ -45,17 +45,24 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-gc! bv::blockV)
    (with-trace 'bbv-gc "bbv-gc!"
+      (trace-item "bv= #" (blockV-label bv))
       (with-access::blockV bv (versions)
 	 (let ((m0 (get-gc-mark!))
 	       (l (blockV-live-versions bv)))
 	    ;; debug
 	    (when *bbv-debug*
-	       (let ((m (get-gc-mark!)))
+	       (let ((m (get-gc-mark!))
+		     (d '()))
 		  (for-each (lambda (b)
 			       (walkbs! b m
 				  (lambda (b)
+				     (set! d (cons (format "#~a[~a]" (block-label b) (blockS-cnt b)) d))
 				     (assert-block b "bbv-gc!>"))))
-		     l)))
+		     l)
+		  (trace-item ">>> " (length l) "/" (length d) " " d)
+		  (trace-item "### " (map (lambda (b)
+					     (format "#~a[~a]" (block-label b) (blockS-cnt b)))
+					versions))))
 	    ;; reset all counters
 	    (walkbv! bv (get-gc-mark!)
 	       (lambda (b)
@@ -64,6 +71,12 @@
 				  (with-access::blockS b (cnt)
 				     (set! cnt 0)))
 			versions))))
+	    ;; mark the root block (that cannot be collected)
+	    (for-each (lambda (b)
+			 (with-access::blockS b (creator cnt label)
+			    (when (eq? creator 'root)
+			       (set! cnt 1))))
+	       l)
 	    ;; mark all reachables blocks
 	    (let ((m (get-gc-mark!)))
 	       (for-each (lambda (b)
@@ -106,7 +119,7 @@
 				     (set! d (cons (format "#~a[~a]" (block-label b) (blockS-cnt b)) d))
 				     (assert-block b "bbv-gc!<"))))
 		     l)
-		  (trace-item d)))))))
+		  (trace-item "<<< " (length d) " " d)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gc-mark* ...                                                    */

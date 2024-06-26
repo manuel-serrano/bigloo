@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Tue Jun 25 08:44:58 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 19:41:49 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -1340,7 +1340,8 @@
 ;*    Set the PREDS field and update CNT accordingly.                  */
 ;*---------------------------------------------------------------------*/
 (define-method (block-preds-update! b::blockS val::pair-nil)
-   (with-access::blockS b (preds cnt)
+   (with-access::blockS b (preds cnt creator)
       (set! preds val)
-      (set! cnt (length preds))))
+      (set! cnt (+fx (length preds) (if (eq? creator 'root) 1 0)))))
+
    
