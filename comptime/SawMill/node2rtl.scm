@@ -370,14 +370,14 @@
 
 ;;
 (define-method (node->rtl::area e::pragma) ; ()
-   (with-access::pragma e (expr* format)
+   (with-access::pragma e (expr* format srfi0)
       (if (and (string-null? format)
 	       (pair? expr*)
 	       (null? (cdr expr*))
 	       (isa? (car expr*) var))
 	  (let ((fmt (variable-name (var-variable (car expr*)))))
-	     (call* e (instantiate::rtl_pragma (format fmt)) (cdr expr*)))
-	  (call* e (instantiate::rtl_pragma (format format)) expr*))) )
+	     (call* e (instantiate::rtl_pragma (format fmt) (srfi0 srfi0)) (cdr expr*)))
+	  (call* e (instantiate::rtl_pragma (format format) (srfi0 srfi0)) expr*))) )
 
 ;;
 (define-method (node->rtl::area e::getfield) ; ()

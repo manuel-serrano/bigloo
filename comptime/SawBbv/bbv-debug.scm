@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Fri Jun 21 07:26:29 2024 (serrano)                */
+;*    Last change :  Wed Jun 26 16:43:00 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -590,6 +590,7 @@
    
    (define (pragma-ins cexpr::bstring ctx loc)
       (let ((pr (instantiate::rtl_pragma
+		   (srfi0 'bigloo-c)
 		   (format cexpr)))
 	    (es (instantiate::regset (msize 0) (regv '#()) (regl '()))))
 	 (instantiate::rtl_ins/bbv
@@ -675,6 +676,7 @@
 			     debugname
 			     (assert-failure pred reg loc tag))))
 		(instantiate::rtl_pragma
+		   (srfi0 'bigloo-c)
 		   (format cexpr))))
 	  (begin
 	     (tprint "PAS DE TYPE PRED " (shape type) " " (eq? type *bnil*))
@@ -688,6 +690,7 @@
       (let ((cexpr (format "/* rtl-assert-expr-type */ ($1 || ~a)"
 		      (assert-failure (or (type-predicate type) "???") reg loc tag))))
 	 (instantiate::rtl_pragma
+	    (srfi0 'bigloo-c)
 	    (format cexpr)))))
 
 ;*---------------------------------------------------------------------*/
@@ -737,6 +740,7 @@
 			 (if polarity "" "!")
 			 cx (if (eq? op '=) "==" op) cy (assert-fxcmp-failure loc tag))))
 	    (instantiate::rtl_pragma
+	       (srfi0 'bigloo-c)
 	       (format cexpr))))))
 
 
