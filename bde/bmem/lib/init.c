@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Sat Mar  5 09:18:02 2022 (serrano)                */
-/*    Copyright   :  2003-22 Manuel Serrano                            */
+/*    Last change :  Thu Jun 27 09:34:46 2024 (serrano)                */
+/*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -53,12 +53,12 @@ pthread_key_t bmem_key;
 pthread_mutex_t bmem_mutex;
 
 /* garbage collector */
-void *(*____GC_malloc)( size_t ) = 0;
-void *(*____GC_realloc)( void *, size_t ) = 0;
-void *(*____GC_malloc_atomic)( size_t ) = 0;
-void *(*____GC_malloc_uncollectable)( size_t ) = 0;
+void *(*____GC_malloc) (size_t) = 0;
+void *(*____GC_realloc) (void *, size_t) = 0;
+void *(*____GC_malloc_atomic) (size_t) = 0;
+void *(*____GC_malloc_uncollectable) (size_t) = 0;
 void (*____GC_gcollect)() = 0;
-void *(*____GC_add_gc_hook)( void (*)() ) = 0;
+void *(*____GC_add_gc_hook) (void (*)()) = 0;
 char **____executable_name = 0;
 void *____command_line = 0;
 void (*____GC_reset_allocated_bytes)() = 0;
@@ -69,16 +69,16 @@ void (*____bgl_init_trace_register)(void (*i)(), obj_t (*g)(int), void (*w)(obj_
 obj_t (*____bgl_get_trace_stack)(int);
 
 /* thread */
-void *(*____pthread_getspecific)( pthread_key_t );
-int (*____pthread_setspecific)( pthread_key_t, void * );
-int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
-int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
+void *(*____pthread_getspecific) (pthread_key_t);
+int (*____pthread_setspecific) (pthread_key_t, void *);
+int (*____pthread_key_create) (pthread_key_t *, void (*) (void *));
+int (*____pthread_mutex_init) (pthread_mutex_t *, void *);
        
 /* classes */
 void *(*____register_class)(void *, void *, void *, long, void *, void *, void *, void *, void *, void *, void *);
 int (*____bgl_types_number)();
-long (*____get_hash_power_number)( char *, unsigned long );
-long (*____get_hash_power_number_len)( char *, unsigned long, long );
+long (*____get_hash_power_number) (char *, unsigned long);
+long (*____get_hash_power_number_len) (char *, unsigned long, long);
 void *(*____bgl_get_symtab)() = 0;
 void (*____bgl_init_objects)() = 0;
 void (*____bglpth_setup)() = 0;
@@ -90,20 +90,20 @@ void *unknown_ident;
 /*---------------------------------------------------------------------*/
 void *
 unbound() {
-   fprintf( stderr, "unbound function\n" );
-   exit( -2 );
+   fprintf (stderr, "unbound function\n");
+   exit (-2);
 }
 
 /*---------------------------------------------------------------------*/
 /*    void *                                                           */
 /*    open_shared_library ...                                          */
 /*---------------------------------------------------------------------*/
-void *open_shared_library( char *lib ) {
+void *open_shared_library (char *lib) {
    void *handle;
    
-   if( !(handle = dlopen( lib, RTLD_LAZY ) ) ) {
-      FAIL( IDENT, "Can't open library", lib );
-      exit( -1 );
+   if (!(handle = dlopen (lib, RTLD_LAZY))) {
+      FAIL (IDENT, "Can't open library", lib);
+      exit (-1);
    }
    
    return handle;
@@ -137,21 +137,21 @@ get_function(void *handle, char *id) {
 /*    find_function ...                                                */
 /*---------------------------------------------------------------------*/
 fun_t
-find_function( void *handle, char *id ) {
+find_function (void *handle, char *id) {
    char *err;
-   fun_t fun = dlsym( handle, id );
+   fun_t fun = dlsym (handle, id);
 
-   if( bmem_verbose >= 2 ) {
-      fprintf( stderr, "  %s...", id );
+   if (bmem_verbose >= 2) {
+      fprintf (stderr, "  %s...", id);
    }
-   if( !fun || (err = dlerror()) ) {
-      if( bmem_verbose >= 2 ) {
-	 fprintf( stderr, "no\n" );
+   if (!fun || (err = dlerror())) {
+      if (bmem_verbose >= 2) {
+	 fprintf (stderr, "no\n");
       }
       return (fun_t)&unbound;
    } else {
-      if( bmem_verbose >= 2 ) {
-	 fprintf( stderr, "ok\n" );
+      if (bmem_verbose >= 2) {
+	 fprintf (stderr, "ok\n");
       }
       return fun;
    }
@@ -162,19 +162,19 @@ find_function( void *handle, char *id ) {
 /*    get_variable ...                                                 */
 /*---------------------------------------------------------------------*/
 void *
-get_variable( void *handle, char *id ) {
+get_variable (void *handle, char *id) {
    char *err;
-   fun_t fun = dlsym( handle, id );
+   fun_t fun = dlsym (handle, id);
 
-   if( bmem_verbose >= 2 ) {
-      fprintf( stderr, "  %s...", id );
+   if (bmem_verbose >= 2) {
+      fprintf (stderr, "  %s...", id);
    }
-   if( !fun || (err = dlerror()) ) {
-      FAIL( IDENT, "Can't find variable", id );
-      exit( -2 );
+   if (!fun || (err = dlerror())) {
+      FAIL (IDENT, "Can't find variable", id);
+      exit (-2);
    } else {
-      if( bmem_verbose >= 2 ) {
-	 fprintf( stderr, "ok\n" );
+      if (bmem_verbose >= 2) {
+	 fprintf (stderr, "ok\n");
       }
       return fun;
    }
@@ -186,27 +186,27 @@ get_variable( void *handle, char *id ) {
 /*---------------------------------------------------------------------*/
 static void
 dump_statistics() {
-   char *n = getenv( "BMEMMON" );
-   char *fmt = getenv( "BMEMFORMAT" );
+   char *n = getenv ("BMEMMON");
+   char *fmt = getenv ("BMEMFORMAT");
    char *e = 0L;
    FILE *f;
    int bmemdumpfmt = BMEMDUMPFORMAT_SEXP;
 
-   if( !n ) {
-      if( ____executable_name && *____executable_name ) {
-	 char *s1 = strrchr( *____executable_name, '/' );
-	 char *s2 = strrchr( s1 ? s1 + 1: *____executable_name,  '.' );
+   if (!n) {
+      if (____executable_name && *____executable_name) {
+	 char *s1 = strrchr (*____executable_name, '/');
+	 char *s2 = strrchr (s1 ? s1 + 1: *____executable_name,  '.');
 	 char *s = s1 ? s1 + 1: *____executable_name;
-	 int l = strlen( s );
-	 char *r = malloc( l + 6 );
+	 int l = strlen (s);
+	 char *r = malloc (l + 6);
 
 	 e = *____executable_name;
 	 
-	 if( s2 ) {
-	    strcpy( r, s );
-	    strcpy( &r[ s2 - s ], ".bmem" );
+	 if (s2) {
+	    strcpy (r, s);
+	    strcpy (&r[ s2 - s ], ".bmem");
 	 } else {
-	    sprintf( r, "%s.bmem", s );
+	    sprintf (r, "%s.bmem", s);
 	 }
 
 	 n = r;
@@ -216,52 +216,52 @@ dump_statistics() {
       }
    }
 
-   if( fmt && !strcmp( fmt, "json" ) ) {
+   if (fmt && !strcmp (fmt, "json")) {
       bmemdumpfmt = BMEMDUMPFORMAT_JSON;
       n = "a.json";
    }
       
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "\nDumping file \"%s\"...", n );
-      fflush( stderr );
+   if (bmem_verbose >= 1) {
+      fprintf (stderr, "\nDumping file \"%s\"...", n);
+      fflush (stderr);
    }
    
-   if( !(f = fopen( n, "w" )) ) {
-      FAIL( IDENT, "Can't open output file", n );
+   if (!(f = fopen (n, "w"))) {
+      FAIL (IDENT, "Can't open output file", n);
    }
 
-   if( bmemdumpfmt == BMEMDUMPFORMAT_JSON ) {
+   if (bmemdumpfmt == BMEMDUMPFORMAT_JSON) {
       // json dump
-      fprintf( f, "{\"monitor\":\n  { \"info\": { \"exec\": \"%s\", \"version\": \"%s\", \"sizeWord\": %d },\n", e, VERSION, BMEMSIZEOFWORD );
-      GC_dump_statistics_json( f );
-      fprintf( f, "   ,\n" );
-      //alloc_dump_statistics_json( f );
-      fprintf( f, "}}\n" );
+      fprintf (f, "{\"monitor\":\n  { \"info\": { \"exec\": \"%s\", \"version\": \"%s\", \"sizeWord\": %d },\n", e, VERSION, BMEMSIZEOFWORD);
+      GC_dump_statistics_json (f);
+      fprintf (f, "   ,\n");
+      //alloc_dump_statistics_json (f);
+      fprintf (f, "}}\n");
    } else {
       // text dump
-      fprintf( f, ";; sizes are expressed in word (e.g., 4 bytes)\n" );
-      fprintf( f, "(monitor\n" );
-      fprintf( f, "  (info (exec \"%s\") (version \"%s\") (sizeof-word %d))\n",
-	       e, VERSION, BMEMSIZEOFWORD );
-      GC_dump_statistics( f );
-      //alloc_dump_statistics( f );
-      type_dump( f );
-      fprintf( f, ")\n" );
+      fprintf (f, ";; sizes are expressed in word (e.g., 4 bytes)\n");
+      fprintf (f, "(monitor\n");
+      fprintf (f, "  (info (exec \"%s\") (version \"%s\") (sizeof-word %d))\n",
+	       e, VERSION, BMEMSIZEOFWORD);
+      GC_dump_statistics (f);
+      //alloc_dump_statistics (f);
+      type_dump (f);
+      fprintf (f, ")\n");
    }
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, " done\n\n" );
+   if (bmem_verbose >= 1) {
+      fprintf (stderr, " done\n\n");
    }
    
-   fprintf( stderr, "Total size: %lldMB (%lldKB)\n",
-	    GC_alloc_total() / 1024 / 1024, GC_alloc_total() / 1024 );
+   fprintf (stderr, "Total size: %lldMB (%lldKB)\n",
+	    GC_alloc_total() / 1024 / 1024, GC_alloc_total() / 1024);
    
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "\n(export \"BMEMVERBOSE=0\" to disable bmem messages)\n" );
-      fprintf( stderr, "(export \"BMEMFORMAT=json\" to generate json format)\n" );
-      fflush( stderr );
-      fflush( stdout );
+   if (bmem_verbose >= 1) {
+      fprintf (stderr, "\n(export \"BMEMVERBOSE=0\" to disable bmem messages)\n");
+      fprintf (stderr, "(export \"BMEMFORMAT=json\" to generate json format)\n");
+      fflush (stderr);
+      fflush (stdout);
    }
-   fclose( f );
+   fclose (f);
 }
 
 /*---------------------------------------------------------------------*/
@@ -274,7 +274,7 @@ bgl_bmem_reset() {
    //alloc_reset_statistics();
    //thread_reset_statistics();
 
-   fprintf( stderr, "bmem reset\n" );
+   fprintf (stderr, "bmem reset\n");
    
    return BTRUE;
 }
@@ -284,7 +284,7 @@ bgl_bmem_reset() {
 /*    bigloo_abort ...                                                 */
 /*---------------------------------------------------------------------*/
 int
-bigloo_abort( long n ) {
+bigloo_abort (long n) {
    return n;
 }
 
@@ -293,10 +293,10 @@ bigloo_abort( long n ) {
 /*    bmem_dump ...                                                    */
 /*---------------------------------------------------------------------*/
 static void
-bmem_dump( int _ ) {
+bmem_dump (int _) {
    static int indump = 0;
 
-   if( !indump ) {
+   if (!indump) {
       indump = 1;
 
       if (getenv("BMEMCOLOR")) {
@@ -327,38 +327,38 @@ bglpth_setup_bmem() {
    bmem_thread = 2;
 
    /* Hello world */
-   if( getenv( "BMEMVERBOSE" ) ) {
-      bmem_verbose = atoi( getenv( "BMEMVERBOSE" ) );
+   if (getenv ("BMEMVERBOSE")) {
+      bmem_verbose = atoi (getenv ("BMEMVERBOSE"));
    }
    
-   if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
-      strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
+   if (getenv ("BMEMLIBBIGLOOTHREAD")) {
+      strcpy (bigloothread_lib, getenv ("BMEMLIBBIGLOOTHREAD"));
    } else {
-      sprintf( bigloothread_lib, "%s/libbigloopthread_s_mt-%s.%s",
+      sprintf (bigloothread_lib, "%s/libbigloopthread_s_mt-%s.%s",
 	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
-	       SHARED_LIB_SUFFIX );
+	       SHARED_LIB_SUFFIX);
    }
 
-   if( bmem_verbose >= 2 ) {
-      fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
+   if (bmem_verbose >= 2) {
+      fprintf (stderr, "Loading thread library %s...\n", bigloothread_lib);
    }
 
-   hdl = open_shared_library( bigloothread_lib );
+   hdl = open_shared_library (bigloothread_lib);
 
-   ____bglthread_setup_bmem = (void (*)())get_function( hdl, "bglpth_setup_bmem" );
-   ____pthread_getspecific = get_function( hdl, "bglpth_pthread_getspecific" );
-   ____pthread_setspecific = (int (*)())get_function( hdl, "bglpth_pthread_setspecific" );
-   ____pthread_key_create = (int (*)())get_function( hdl, "bglpth_pthread_key_create" );
-   ____pthread_mutex_init = (int (*)())get_function( hdl, "bglpth_pthread_mutex_init" );
+   ____bglthread_setup_bmem = (void (*)())get_function (hdl, "bglpth_setup_bmem");
+   ____pthread_getspecific = get_function (hdl, "bglpth_pthread_getspecific");
+   ____pthread_setspecific = (int (*)())get_function (hdl, "bglpth_pthread_setspecific");
+   ____pthread_key_create = (int (*)())get_function (hdl, "bglpth_pthread_key_create");
+   ____pthread_mutex_init = (int (*)())get_function (hdl, "bglpth_pthread_mutex_init");
 
-   if( ____pthread_key_create( &bmem_key, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
+   if (____pthread_key_create (&bmem_key, 0L)) {
+      FAIL (IDENT, "Can't get thread key", "bmem_key");
+      exit (-2);
    }
 
-   if( ____pthread_mutex_init( &bmem_mutex, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
+   if (____pthread_mutex_init (&bmem_mutex, 0L)) {
+      FAIL (IDENT, "Can't get thread key", "bmem_key");
+      exit (-2);
    }
 
    ____bglthread_setup_bmem();
@@ -381,99 +381,99 @@ bmem_init_inner() {
    char *bgllibsuffix, *bglgcsuffix = "_u";
 
    /* Hello world */
-   if( getenv( "BMEMVERBOSE" ) ) {
-      bmem_verbose = atoi( getenv( "BMEMVERBOSE" ) );
+   if (getenv ("BMEMVERBOSE")) {
+      bmem_verbose = atoi (getenv ("BMEMVERBOSE"));
    }
    
    /* backtrace */
-   if (getenv( "BMEMBACKTRACE")) {
+   if (getenv ("BMEMBACKTRACE")) {
       bmem_backtrace = atoi(getenv("BMEMBACKTRACE"));
       if (bmem_backtrace < 0 && bmem_verbose >= 1) {
 	 fprintf(stderr, "Disabling stack back traces...\n");
       }
    }
    
-   if( !getenv( "BMEMTHREAD" ) ) {
-      if( bmem_verbose >= 1 ) {
-	 fprintf( stderr, "Bmem initialization...\n" );
+   if (!getenv ("BMEMTHREAD")) {
+      if (bmem_verbose >= 1) {
+	 fprintf (stderr, "Bmem initialization...\n");
       }
    } else {
-      if( bmem_verbose >= 1 ) {
-	 fprintf( stderr, "Bmem mt initialization...\n" );
+      if (bmem_verbose >= 1) {
+	 fprintf (stderr, "Bmem mt initialization...\n");
       }
 
       bglpth_setup_bmem();
    }
    
-   if( getenv( "BMEMLIBBIGLOO" ) ) {
-      strcpy( bigloo_lib, getenv( "BMEMLIBBIGLOO" ) );
+   if (getenv ("BMEMLIBBIGLOO")) {
+      strcpy (bigloo_lib, getenv ("BMEMLIBBIGLOO"));
    } else {
-      if( getenv( "BMEMLIBSUFFIX" ) ) {
-	 bgllibsuffix = getenv( "BMEMLIBSUFFIX" );
+      if (getenv ("BMEMLIBSUFFIX")) {
+	 bgllibsuffix = getenv ("BMEMLIBSUFFIX");
       } else {
 	 bgllibsuffix = "_s";
       }
    
-      sprintf( bigloo_lib, "%s/libbigloo%s-%s.%s",
+      sprintf (bigloo_lib, "%s/libbigloo%s-%s.%s",
 	       LIBRARY_DIRECTORY, bgllibsuffix, BGL_RELEASE_NUMBER,
-	       SHARED_LIB_SUFFIX );
+	       SHARED_LIB_SUFFIX);
    }
 
-#if( BGL_GC_CUSTOM == 1 )
-   if( getenv( "BMEMLIBBIGLOOGC" ) ) {
-      strcpy( gc_lib, getenv( "BMEMLIBBIGLOOGC" ) );
+#if (BGL_GC_CUSTOM == 1)
+   if (getenv ("BMEMLIBBIGLOOGC")) {
+      strcpy (gc_lib, getenv ("BMEMLIBBIGLOOGC"));
    } else {
-      if( getenv( "BMEMGCSUFFIX" ) ) {
-	 bglgcsuffix = getenv( "BMEMGCSUFFIX" );
+      if (getenv ("BMEMGCSUFFIX")) {
+	 bglgcsuffix = getenv ("BMEMGCSUFFIX");
       } else {
 	 bglgcsuffix = "";
       }
-      sprintf( gc_lib, "%s/lib%s%s-%s.%s",
+      sprintf (gc_lib, "%s/lib%s%s-%s.%s",
 	       LIBRARY_DIRECTORY,
 	       BGL_GC_LIBRARY,
 	       bglgcsuffix,
 	       BGL_RELEASE_NUMBER,
-	       SHARED_LIB_SUFFIX );
+	       SHARED_LIB_SUFFIX);
    }
 #else
-   strcpy( gc_lib, BGL_GC_LIBRARY );
+   strcpy (gc_lib, BGL_GC_LIBRARY);
 #endif
-   if( getenv( "BMEMDEBUG" ) )
-      bmem_debug = atoi( getenv( "BMEMDEBUG" ) );
+   if (getenv ("BMEMDEBUG"))
+      bmem_debug = atoi (getenv ("BMEMDEBUG"));
 
    /* The GC library */
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "Loading library %s...\n", gc_lib );
+   if (bmem_verbose >= 1) {
+      fprintf (stderr, "Loading library %s...\n", gc_lib);
    }
-   hdl = open_shared_library( gc_lib );
-   ____GC_malloc = get_function( hdl, "GC_malloc" );
-   ____GC_realloc = get_function( hdl, "GC_realloc" );
-   ____GC_malloc_atomic = get_function( hdl, "GC_malloc_atomic" );
-   ____GC_malloc_uncollectable = get_function( hdl, "GC_malloc_uncollectable" );
-   ____GC_add_gc_hook = get_function( hdl, "GC_add_gc_hook" );
-   ____GC_gcollect = (void (*)())get_function( hdl, "GC_gcollect" );
+   hdl = open_shared_library (gc_lib);
+   ____GC_malloc = get_function (hdl, "GC_malloc");
+   ____GC_realloc = get_function (hdl, "GC_realloc");
+   ____GC_malloc_atomic = get_function (hdl, "GC_malloc_atomic");
+   ____GC_malloc_uncollectable = get_function (hdl, "GC_malloc_uncollectable");
+   ____GC_add_gc_hook = get_function (hdl, "GC_add_gc_hook");
+   ____GC_gcollect = (void (*)())get_function (hdl, "GC_gcollect");
    
-   ____GC_add_gc_hook( GC_collect_hook );
-   ____GC_reset_allocated_bytes = (void (*)())get_function( hdl, "GC_reset_allocated_bytes" );
+   ____GC_add_gc_hook (GC_collect_hook);
+   ____GC_reset_allocated_bytes = (void (*)())get_function (hdl, "GC_reset_allocated_bytes");
 
    /* The Bigloo library */
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "Loading library %s...\n", bigloo_lib );
+   if (bmem_verbose >= 1) {
+      fprintf (stderr, "Loading library %s...\n", bigloo_lib);
    }
-   hdl = open_shared_library( bigloo_lib );
-   ____executable_name = get_variable( hdl, "executable_name" );
-   ____command_line = get_variable( hdl, "command_line" );
-   ____bgl_init_objects = (void (*)())get_function( hdl, "bgl_init_objects" );
-   ____get_hash_power_number = (long (*)())get_function( hdl, "get_hash_power_number" );
-   ____get_hash_power_number_len = (long (*)())get_function( hdl, "get_hash_power_number_len" );
-   ____bgl_get_symtab = get_function( hdl, "bgl_get_symtab" );
-   ____bgl_current_nanoseconds = (BGL_LONGLONG_T (*)())get_function( hdl, "bgl_current_nanoseconds" );
+   hdl = open_shared_library (bigloo_lib);
+   ____executable_name = get_variable (hdl, "executable_name");
+   ____command_line = get_variable (hdl, "command_line");
+   ____bgl_init_objects = (void (*)())get_function (hdl, "bgl_init_objects");
+   ____get_hash_power_number = (long (*)())get_function (hdl, "get_hash_power_number");
+   ____get_hash_power_number_len = (long (*)())get_function (hdl, "get_hash_power_number_len");
+   ____bgl_get_symtab = get_function (hdl, "bgl_get_symtab");
+   ____bgl_current_nanoseconds = (BGL_LONGLONG_T (*)())get_function (hdl, "bgl_current_nanoseconds");
 
    ____bgl_init_trace_register = (void (*)())get_function(hdl, "bgl_init_trace_register");
    
    /* class */
-   ____register_class = get_function( hdl, "BGl_registerzd2classz12zc0zz__objectz00" );
-   ____bgl_types_number = (int (*)())get_function( hdl, "bgl_types_number" );
+   ____register_class = get_function (hdl, "BGl_registerzd2classz12zc0zz__objectz00");
+   ____bgl_types_number = (int (*)())get_function (hdl, "bgl_types_number");
 
    /* backtrace init */
    backtrace_init();
@@ -543,7 +543,7 @@ static void
 bmem_init() {
    static int initp = 0;
 
-   if( !initp ) {
+   if (!initp) {
       initp = 1;
       bmem_init_inner();
    }

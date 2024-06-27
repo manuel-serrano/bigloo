@@ -1,0 +1,115 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/socket.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Tue Jun 30 08:09:52 1998                          @c
+@c    Last change :  Mon Jan  7 10:47:50 2002 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Memory Profiling                                                 @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Memory Profiling                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Memory Profiling, Bee, User Extensions, Top
+@comment  node-name,  next,  previous,  up
+@section Memory Profiling
+@cindex profiling
+@cindex memory
+
+The Bigloo Memory Profiler reports information about the garbage
+collector activity and the number of allocations. The memory profiler
+is only available to the C backend.
+
+For programs to be profiled, they must be compiled and linked with the
+@code{-pmem} Bigloo option. It disables some optimizations (such as
+function inlining) and it forces the C compilation with the @code{-g}
+flags.
+
+Memory profiling uses the Unix @code{LD_PRELOAD} facility to override
+the definition of the standard Bigloo library. As such, it requires
+programs to be linked against dynamic libraries. Note that the Bigloo
+@code{-Obench} option forces the compiler to link against static libraries
+and it is then incompatible with the @code{-pmem} command line option.
+
+The memory profiler is named @code{bglmemrun}. It is use as:
+
+@smalllisp
+$ bigloo -O3 -unsafe -pmem maze.scm
+$ bglmemrun ./a.out
+@end smalllisp
+
+When the execution completes, it produces a report such as:
+
+@smalllisp
+gc   1: alloc size=2.49MB, heap size=4.12MB, live size=3.95MB
+gc   2: alloc size=2.59MB, heap size=7.34MB, live size=2.34MB
+...
+gc  68: alloc size=8.10MB, heap size=13.05MB, live size=4.71MB
+gc  69: alloc size=5.16MB, heap size=13.05MB, live size=0.14MB
+
+
+===================================================
+allocation size: 463.95MB
+gc count: 69
+
+lib/init.c:
+      565:     0.05MB  0.01% [      64] (vector, keyword, input-port, output-port, string, mutex)
+objs/obj_u/Ieee/port.c:
+     3835:     0.81MB  0.17% [     300] (string, mutex, output-port)
+objs/obj_u/Ieee/vector.c:
+      936:    39.24MB  8.46% [     109] (vector)
+/home/serrano/trashcan/TBR/maze.c:
+      417:   196.19MB 42.29% [ 5143100] (vector)
+     2248:   120.16MB 25.90% [ 1750000] (procedure)
+      454:    93.46MB 20.14% [ 1750000] (vector)
+      565:    13.35MB  2.88% [     100] (vector)
+      881:     0.31MB  0.07% [   20103] (pair)
+     2519:     0.12MB  0.03% [    8020] (pair)
+      958:     0.11MB  0.02% [    3500] (vector)
+      677:     0.09MB  0.02% [    6020] (pair)
+
+---------------------------------------------------
+allocation count: 140737358159915
+   vector              :   342.41MB 73.80% [ 6897370]
+   procedure           :   120.17MB 25.90% [ 1750100]
+@end smalllisp
+
+The first column is the line location of the C generated files. To get
+the locations associated with the original Scheme source file, use
+the additional Bigloo command line options @code{-glines}.
+
+Example:
+
+@smalllisp
+$ bigloo -O3 -unsafe -pmem maze.scm -glines
+$ bglmemrun ./a.out
+...
+===================================================
+allocation size: 463.95MB
+gc count: 69
+
+lib/init.c:
+      565:     0.05MB  0.01% [      64] (vector, keyword, input-port, output-port, string, mutex)
+objs/obj_u/Ieee/port.c:
+     3835:     0.81MB  0.17% [     300] (string, mutex, output-port)
+/home/serrano/trashcan/TBR/maze.scm:
+      182:   196.19MB 42.29% [ 5143100] (vector)
+      620:   120.16MB 25.90% [ 1750000] (procedure)
+      187:    93.46MB 20.14% [ 1750000] (vector)
+      260:    13.35MB  2.88% [     100] (vector)
+      318:     0.31MB  0.07% [   20103] (pair)
+      763:     0.13MB  0.03% [    8534] (pair)
+      373:     0.11MB  0.02% [    3500] (vector)
+      307:     0.08MB  0.02% [    5505] (pair)
+objs/obj_u/Ieee/vector.c:
+      936:    39.24MB  8.46% [     109] (vector)
+
+---------------------------------------------------
+allocation count: 140737358037043
+   vector              :   342.41MB 73.80% [ 6897370]
+   procedure           :   120.17MB 25.90% [ 1750100]
+@end smalllisp
+
+
+

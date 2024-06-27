@@ -11,7 +11,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Extension                                                        @c
 @c ------------------------------------------------------------------- @c
-@node Bee, Global Index, User Extensions, Top
+@node Bee, Global Index, Memory Profiling, Top
 @comment  node-name,  next,  previous,  up
 @chapter Bigloo Development Environment
 @cindex bigloo development environment

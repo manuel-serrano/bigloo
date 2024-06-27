@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jun 26 10:25:19 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 09:45:52 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -57,6 +57,14 @@
    (do-parse-args (cdr args))
    ;; we setup the heap name
    (when *user-heap-name* (set! *heap-name* *user-heap-name*))
+   ;; profiling test
+   (when *bmem-profiling*
+      (when *static-bigloo?*
+	 (error "-pmem" "Incompatible -pmem/-static-bigloo" args))
+      (set! *rm-tmp-files* #f)
+      (set! *c-debug* #t)
+      (set! *strip* #f)
+      (set! *user-inlining?* #f))
    ;; saw or no saw
    (set! *saw* (or (eq? *force-saw* #t)
 		   (memq *target-language* '(jvm .net))))

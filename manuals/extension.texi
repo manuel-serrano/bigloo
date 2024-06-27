@@ -11,7 +11,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Extension                                                        @c
 @c ------------------------------------------------------------------- @c
-@node User Extensions, Bee, Cross Compilation, Top
+@node User Extensions, Memory Profiling, Cross Compilation, Top
 @comment  node-name,  next,  previous,  up
 @chapter User Extensions
 @cindex user extensions

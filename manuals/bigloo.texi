@@ -209,6 +209,7 @@ Bigloo @value{bigloovers}, @value{bigloodate}
 * Compiler Description::           Interfacing with the compiler
 * Cross Compilation::              Compiling for different platforms
 * User Extensions::                User compiler extensions
+* Memory Profiling::               Memory profiling
 * Bee::                            The Bigloo development environment
 * Global Index::                   Global Bigloo document index
 * Library Index::                  Index for forms, functions and variables
@@ -560,6 +561,11 @@ and keyword functions.
 @c    Extension                                                        @c
 @c ------------------------------------------------------------------- @c
 @include extension.texi
+
+@c ------------------------------------------------------------------- @c
+@c    pmem                                                             @c
+@c ------------------------------------------------------------------- @c
+@include pmem.texi
 
 @c ------------------------------------------------------------------- @c
 @c    Bee                                                              @c
