@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Wed Jun 26 16:43:00 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 17:48:54 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
@@ -75,14 +75,14 @@
 ;*    succs, and branch instructions.                                  */
 ;*---------------------------------------------------------------------*/
 (define (assert-block b::blockS stage)
-   (with-access::blockS b (preds succs first label parent cnt creator mblock asleep)
+   (with-access::blockS b (preds succs first label parent gccnt creator mblock asleep)
       (unless asleep
 	 ;; check that cnt and preds are in sync
-	 (unless (or (=fx cnt (length preds)) (eq? creator 'root))
+	 (unless (or (=fx gccnt (length preds)) (eq? creator 'root))
 	    (tprint (shape b))
 	    (error stage 
 	       (format "predecessors and cnt not in sync #~a" label)
-	       (format "preds.len=~a cnt=~a" (length preds) cnt)))
+	       (format "preds.len=~a gccnt=~a" (length preds) gccnt)))
 	 ;; check that b in the preds.succs
 	 (let ((l (filter (lambda (p)
 			     (with-access::blockS p (succs asleep)
@@ -107,7 +107,7 @@
 		  (map (lambda (b) (format "#~a" (block-label b))) l))))
 	 ;; check that the instructions are in the succs
 	 (let ((l '()))
-	    (unless (or mblock (=fx cnt 0))
+	    (when (block-live? b)
 	       (for-each (lambda (ins)
 			    (cond
 			       ((rtl_ins-ifeq? ins)

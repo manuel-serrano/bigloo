@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jun 27 11:40:09 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 17:40:26 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -56,7 +56,7 @@
 	       (%blacklist::obj (default '()))
 	       (ctx::bbv-ctx read-only)
 	       (parent::blockV read-only)
-	       (cnt::long (default 0))
+	       (gccnt::long (default 0))
 	       (gcmark::long (default -1))
 	       (mblock::obj (default #f))
 	       (creator::obj read-only) 
@@ -265,11 +265,11 @@
 ;*    block-live? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (block-live? bs::blockS)
-   (with-access::blockS bs (mblock cnt label)
+   (with-access::blockS bs (mblock gccnt label)
       (and (not mblock)
 	   (case *bbv-blocks-gc*
 	      ((ssr) (bbv-gc-block-reachable? bs))
-	      ((cnt) (>fx cnt 0))
+	      ((cnt) (>fx gccnt 0))
 	      (else #t)))))
 
 ;*---------------------------------------------------------------------*/
@@ -685,7 +685,7 @@
 	 ((assq 'merge-new mi) 'merge-new)
 	 (else #f)))
    
-   (with-access::blockS o (label first parent ctx preds succs cnt asleep)
+   (with-access::blockS o (label first parent ctx preds succs gccnt asleep)
       (fprint p "(blockS " label)
       (dump-margin p (+fx m 1))
       (fprint p ":parent " (block-label parent))
@@ -699,7 +699,7 @@
       (fprint p ":ctx " (shape ctx))
       (when *bbv-debug*
 	 (dump-margin p (+fx m 1))
-	 (fprint p ":cnt " cnt)
+	 (fprint p ":cnt " gccnt)
 	 (dump-margin p (+fx m 1))
 	 (fprint p ":asleep " asleep))
       (dump-margin p (+fx m 1))
@@ -1333,7 +1333,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    block-preds-update! ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    Set the PREDS field and update CNT accordingly.                  */
+;*    Set the PREDS field                                              */
 ;*---------------------------------------------------------------------*/
 (define-generic (block-preds-update! b::block val::pair-nil)
    (with-access::block b (preds)
@@ -1345,8 +1345,10 @@
 ;*    Set the PREDS field and update CNT accordingly.                  */
 ;*---------------------------------------------------------------------*/
 (define-method (block-preds-update! b::blockS npreds::pair-nil)
-   (with-access::blockS b (preds cnt creator)
-      (set! preds npreds)
-      (set! cnt (+fx (length npreds) (if (eq? creator 'root) 1 0)))))
+   (with-trace 'bbv-gc "block-preds-update!"
+      (trace-item "b=#" (block-label b) " len=" (length npreds))
+      (with-access::blockS b (preds gccnt creator)
+	 (set! preds npreds)
+	 (set! gccnt (+fx (length npreds) (if (eq? creator 'root) 1 0))))))
 
    
