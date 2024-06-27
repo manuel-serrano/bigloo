@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jun 27 15:51:34 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 18:45:40 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -351,9 +351,14 @@
 	 (with-access::blockS n (preds succs)
 	    (trace-item msg " #" 
 	       (block-label bs) " to #" (block-label n)
-	       " " (map block-label preds)
-	       " -> " (map (lambda (b) (if (isa? b block) (block-label b) '-))
-			 succs)))))
+	       " preds: " (map (lambda (s)
+				  (format "#~a" (block-label s)))
+			     preds)
+	       " succs: " (map (lambda (b)
+				 (if (isa? b block)
+				     (format "#~a" (block-label b))
+				     '-))
+			    succs)))))
 
    (with-trace 'bbv-ins "connect!"
       (trace-item "#" (block-label bs) " ins=" (shape ins))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 10:13:26 2024                          */
-;*    Last change :  Thu Jun 27 15:52:08 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 18:43:34 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV gc                                                           */
@@ -58,21 +58,22 @@
 		  (l (blockV-live-versions bv)))
 	       ;; debug
 	       (when *bbv-debug*
-		  (let ((m (get-gc-mark!))
-			(d '()))
-		     (for-each (lambda (b)
-				  (walkbs! b m
-				     (lambda (b)
-					(set! d (cons (format "#~a[~a]"
-							 (block-label b)
-							 (blockS-gccnt b)) d))
-					(assert-block b "bbv-gc!>"))))
-			l)
-		     (trace-item ">>> " (length l) "/" (length d) " " d)
-		     (trace-item "### " (map (lambda (b)
-						(format "#~a[~a]" (block-label b)
-						   (blockS-gccnt b)))
-					   versions))))
+		  (with-trace 'bbv-gc-debug "bbv-gc-debug"
+		     (let ((m (get-gc-mark!))
+			   (d '()))
+			(for-each (lambda (b)
+				     (walkbs! b m
+					(lambda (b)
+					   (set! d (cons (format "#~a[~a]"
+							    (block-label b)
+							    (blockS-gccnt b)) d))
+					   (assert-block b "bbv-gc!>"))))
+			   l)
+			(trace-item ">>> " (length l) "/" (length d) " " d)
+			(trace-item "### " (map (lambda (b)
+						   (format "#~a[~a]" (block-label b)
+						      (blockS-gccnt b)))
+					      versions)))))
 	       ;; reset all counters
 	       (walkbv! bv (get-gc-mark!)
 		  (lambda (b)
@@ -121,18 +122,19 @@
 			   versions))))
 	       ;; debug
 	       (when *bbv-debug*
-		  (let ((m (get-gc-mark!))
-			(d '()))
-		     (for-each (lambda (b)
-				  (walkbs! b m
-				     (lambda (b)
-					(set! d (cons (format "#~a[~a]"
-							 (block-label b)
-							 (blockS-gccnt b))
-						   d))
-					(assert-block b "bbv-gc!<"))))
-			l)
-		     (trace-item "<<< " (length d) " " d))))))))
+		  (with-trace 'bbv-gc-debug "bbv-gc-debug"
+		     (let ((m (get-gc-mark!))
+			   (d '()))
+			(for-each (lambda (b)
+				     (walkbs! b m
+					(lambda (b)
+					   (set! d (cons (format "#~a[~a]"
+							    (block-label b)
+							    (blockS-gccnt b))
+						      d))
+					   (assert-block b "bbv-gc!<"))))
+			   l)
+			(trace-item "<<< " (length d) " " d)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gc-mark* ...                                                    */
