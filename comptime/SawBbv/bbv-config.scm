@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Tue Jun 25 07:41:29 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 11:51:53 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -85,9 +85,10 @@
 (define *bbv-blocks-gc*
    (let ((e (getenv "BIGLOOBBVGC")))
       (cond
-	 ((not e) #t)
+	 ((not e) 'cnt)
 	 ((string=? e "false") #f)
-	 ((string=? e "true") #t)
+	 ((string=? e "ssr") 'ssr)
+	 ((string=? e "cnt") 'cnt)
 	 (else (error "bbv-blocks-gc" "unknown value" e)))))
 
 ;*---------------------------------------------------------------------*/

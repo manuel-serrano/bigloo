@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Jun 26 19:41:49 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 11:40:09 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -32,7 +32,8 @@
 	    saw_regutils
 	    saw_bbv-cache
 	    saw_bbv-range
-	    saw_bbv-config)
+	    saw_bbv-config
+	    saw_bbv-gc)
 
    (export  (wide-class rtl_ins/bbv::rtl_ins
 	       (def (default #unspecified))
@@ -91,7 +92,7 @@
 	    (bbv-queue-push! ::bbv-queue ::blockS)
 	    (bbv-queue-pop!::blockS ::bbv-queue)
 	    (bbv-queue-has?::bool ::bbv-queue ::blockS)
-	    
+
 	    (blockV-live-versions::pair-nil ::blockV)
 	    (block-live?::bool bs::blockS)
 	    
@@ -252,7 +253,7 @@
 (define (bbv-queue-has?::bool queue::bbv-queue b::blockS)
    (with-access::bbv-queue queue (blocks)
       (memq b blocks)))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    blockV-live-versions ...                                         */
 ;*---------------------------------------------------------------------*/
@@ -264,8 +265,12 @@
 ;*    block-live? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (block-live? bs::blockS)
-   (with-access::blockS bs (mblock cnt)
-      (and (not mblock) (>fx cnt 0))))
+   (with-access::blockS bs (mblock cnt label)
+      (and (not mblock)
+	   (case *bbv-blocks-gc*
+	      ((ssr) (bbv-gc-block-reachable? bs))
+	      ((cnt) (>fx cnt 0))
+	      (else #t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    params->ctx ...                                                  */
@@ -1339,9 +1344,9 @@
 ;*    -------------------------------------------------------------    */
 ;*    Set the PREDS field and update CNT accordingly.                  */
 ;*---------------------------------------------------------------------*/
-(define-method (block-preds-update! b::blockS val::pair-nil)
+(define-method (block-preds-update! b::blockS npreds::pair-nil)
    (with-access::blockS b (preds cnt creator)
-      (set! preds val)
-      (set! cnt (+fx (length preds) (if (eq? creator 'root) 1 0)))))
+      (set! preds npreds)
+      (set! cnt (+fx (length npreds) (if (eq? creator 'root) 1 0)))))
 
    

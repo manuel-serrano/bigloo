@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Thu Jun 20 19:21:57 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 15:12:28 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -42,7 +42,7 @@
    (export  (remove-nop! ::global ::block)
 	    (remove-goto! ::global ::block)
 	    (simplify-branch! ::global ::block)
-	    (coalesce! ::global mark ::blockS)))
+	    (coalesce! ::global ::blockS)))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-nop! ...                                                  */
@@ -214,7 +214,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Coalesce equivalent basic blocks subgraphs                       */
 ;*---------------------------------------------------------------------*/
-(define (coalesce! global::global mark b::blockS)
+(define (coalesce! global::global b::blockS)
    
    (define (co! mark b)
       (with-access::blockS b (parent succs)
@@ -266,7 +266,7 @@
 		  (string-contains *bbv-blocks-cleanup* "coalesce")))
       (with-trace 'bbv-cleanup "coalesce"
 	 (trace-item "global: " (global-id global)))
-      (co! mark b))
+      (co! (get-bb-mark) b))
    b)
 
 ;*---------------------------------------------------------------------*/

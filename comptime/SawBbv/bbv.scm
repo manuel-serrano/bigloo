@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Wed Jun 26 16:42:24 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 15:08:04 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
@@ -118,7 +118,6 @@
 								   (simplify-branch! global
 								      (dump-blocks 1 "coalesce" global params regs history
 									 (coalesce! global
-									    (get-bb-mark)
 									    (gc! as)))))))))))
 					      as))))
 				(verbose 3 " "
