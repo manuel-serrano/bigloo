@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    The hash tables                                                  @c
 @c ------------------------------------------------------------------- @c
-@node Hash Tables, SSR, Weak Pointers, Standard Library
+@node Hash Tables, Misc. Algorithms, Weak Pointers, Standard Library
 @section Hash Tables
 
 Bigloo offers hash tables with support for weak pointers. Here are described 

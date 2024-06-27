@@ -33,7 +33,7 @@ reason they are presented in a separate section @ref{Input and Output}.
 * Bit Manipulation::            
 * Weak Pointers::
 * Hash Tables::
-* SSR::
+* Misc. Algorithms::
 * System Programming::
 * Date::
 * Digest::
@@ -42,7 +42,7 @@ reason they are presented in a separate section @ref{Input and Output}.
 @end menu
 
 @c ------------------------------------------------------------------- @c
-@c    Base Library                                                     @c
+@c    Scheme Library                                                   @c
 @c ------------------------------------------------------------------- @c
 @node Scheme Library, Input and Output, , Standard Library
 @comment  node-name,  next,  previous,  up
@@ -2248,9 +2248,9 @@ bound variables.
 @include hash.texi
 
 @c ------------------------------------------------------------------- @c
-@c    SSR                                                              @c
+@c    Misc algo                                                        @c
 @c ------------------------------------------------------------------- @c
-@include ssr.texi
+@include algo.texi
 
 @c ------------------------------------------------------------------- @c
 @c    System                                                           @c

@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    System programming ...                                           @c
 @c ------------------------------------------------------------------- @c
-@node System Programming, Date, SSR, Standard Library
+@node System Programming, Date, Misc. Algorithms, Standard Library
 @comment  node-name,  next,  previous,  up
 @section System programming
 @cindex System programming
@@ -254,7 +254,7 @@ When no user is found, these procedures returns @code{#f}.
 Wrapper to Unix syslog facilities. See the @code{syslog} man page for detail.
 Example.
 
-@smalllisp @noindent
+@smalllisp
 (openlog "foo.scm" (syslog-option 'LOG_PID 'LOG_ODELAY) (syslog-facility 'LOG_MAIL))
 (syslog (syslog-level 'LOG_INFO) "this is a log message")
 (closelog)
@@ -299,11 +299,11 @@ All other symbols trigger an error.
 Bigloo defines the @code{cond-expand} @code{rlimit} keyword, which enables
 applications to use the two functions conditionally.
 
-@smalllisp @noindent
+@smalllisp
 (multiple-value-bind (soft hard)
   (getrlimit 'NOFILE)
   (cons soft hard)) @result{} (#e1024 . #e1048576)
-(setrlimit 'NOFILE #e256 #e1048576) @result{#t}
+(setrlimit 'NOFILE #e256 #e1048576) @result{} #t
 (cond-expand
    (rlimit 'supported)
    (else 'unsupported)) @result{} supported
@@ -393,7 +393,7 @@ name @var{name}s.
 @deffn {bigloo procedure} file-name->list name
 Explodes a file name into a list.
 
-@smalllisp @noindent
+@smalllisp
 (file-name->list "/etc/passwd")
    @result{} '("" "etc" "passwd")
 (file-name->list "etc/passwd")
@@ -416,7 +416,7 @@ if no changes in the string is needed. Otherwise, as
 In addition to handling @code{..} directory name, the function 
 @code{file-name-unix-canonicalize} also handles the @code{~} character.
 
-@smalllisp @noindent
+@smalllisp
 (file-name-canonicalize "/etc/passwd")
    @result{} "/etc/passwd"
 (file-name-canonicalize "/etc/../tmp/passwd")
@@ -433,7 +433,7 @@ In addition to handling @code{..} directory name, the function
 @deffn {bigloo procedure} relative-file-name name base
 Builds a file name relative to @var{base}.
 
-@smalllisp @noindent
+@smalllisp
 (relative-file-name "/etc/passwd" "/etc"
    @result{} "passwd"
 @end smalllisp
@@ -451,7 +451,7 @@ current directory one may add @code{"."} to the @var{path} list. On
 success, the absolute file name is returned. On failure,
 @code{#f} is returned. Example:
 
-@smalllisp @noindent
+@smalllisp
 (find-file/path "/etc/passwd" '("/toto" "/titi")) 
    @result{} "/etc/passwd"
 (find-file/path "passwd" '("/toto" "/etc"))

@@ -1,0 +1,89 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/socket.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Tue Jun 30 08:09:52 1998                          @c
+@c    Last change :  Mon Jan  7 10:47:50 2002 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Misc Algorithms                                                  @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Misc Algorithms                                                  @c
+@c ------------------------------------------------------------------- @c
+@node Misc. Algorithms, System Programming, Hash Tables, Standard Library
+@comment  node-name,  next,  previous,  up
+@section Algorithms
+@cindex algorithms
+
+@menu
+* Single Source Reachability Graphs::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Single Source Reachability                                       @c
+@c ------------------------------------------------------------------- @c
+@node Single Source Reachability Graphs, , , Misc. Algorithms
+@comment  node-name,  next,  previous,  up
+@section Single Source Reachability Graphs
+@cindex graph
+
+Single source reachability (SSR) graphs enable constant time ownership of
+a node. They can be used to build graphs, add nodes and edges,
+remove and replace edges, and then test if after such a modification
+a certain node is still reachable from the root. A naive implementation
+would traverse the whole graph from the root, paying attention to cycle
+to check the ownership. SSR does this efficiently without any traversal.
+
+The algorithm assumes that nodes are represented by integer labels. 
+
+Example:
+
+@smalllisp
+(define g (ssr-make-graph :source 1))
+(ssr-add-edge! g 1 2 :onconnect (lambda (n) (print n)))       @print{} 2
+(ssr-add-edge! g 2 3 :onconnect (lambda (n) (print n)))       @print{} 3
+(ssr-add-edge! g 3 4 :onconnect (lambda (n) (print n)))       @print{} 4
+(ssr-add-edge! g 4 2 :onconnect (lambda (n) (print n)))
+(ssr-connected? g 3)                                          @result{} #t
+(ssr-add-edge! g 2 5 :onconnect (lambda (n) (print n)))       @print{} 5
+(ssr-connected? g 3)                                          @result{} #t
+(ssr-redirect! g 3 5 :onconnect (lambda (n) (print n)))
+(ssr-connected? g 3)                                          @result{} #f
+(ssr-redirect! g 5 3 :onconnect (lambda (n) (print n)))       @print{} 3 4
+(ssr-connected? g 3)                                          @result{} #t
+(ssr-remove-edge! g 3 4 :ondisconnect (lambda (n) (print n))) @print{} 4
+(ssr-connected? g 4)                                          @result{} #f
+ @end smalllisp
+
+@deffn {bigloo procedure} ssr-make-graph #!key (source 0)
+@end deffn
+
+Builds an SSR graph.
+
+@deffn {bigloo procedure} ssr-add-edge! graph from to #!key onconnect
+@end deffn
+
+Add an edge to an SSR graph. If FROM and TO, two integers, are not
+already members of the graph, they are added as well as a connecting edge.
+The optional argument ONCONNECT is a function of one argument. 
+
+@deffn {bigloo procedure} ssr-remove-edge! graph from to #!key ondisconnect
+@end deffn
+
+Remove the edge from an SSR graph connecting FROM and TO (two integers).
+The optional argument ONDISCONNECT is a function of one argument. 
+
+
+@deffn {bigloo procedure} ssr-redirect! graph node other #!key onconnect ondisconnect
+@end deffn
+
+Redirect edges from an SSR graph. Edges pointing to NODE are redirected
+to OTHER. The optional arguments ONCONNECT and ONDISCONNECT are
+functions of one argument.
+
+@deffn {bigloo procedure} ssr-connected? graph node
+
+Check is NODE is reachable from the graph source.
+@end deffn
+

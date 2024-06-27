@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olivier Melancon                                  */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Mon Jun 24 10:54:37 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 07:24:14 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    ssr graphs                                                       */
 ;*=====================================================================*/
@@ -107,7 +107,7 @@
    
   (test-module "ssr" "ssr.scm")
   
-  (define (make-test-graph source)
+  (define (make-test-graph #!key source)
     (list->table (list (cons source '()) (cons 'source source))))
   (define (test-graph-edges-for-each f graph)
     (table-for-each
@@ -169,10 +169,10 @@
       (apply test args)))
 
   (define (run test . args)
-    (parameterize ((param-make make-graph)
-                   (param-add! add-edge!)
-                   (param-delete! remove-edge!)
-                   (param-redirect! redirect!)
+    (parameterize ((param-make ssr-make-graph)
+                   (param-add! ssr-add-edge!)
+                   (param-delete! ssr-remove-edge!)
+                   (param-redirect! ssr-redirect!)
                    (param-rank get-rank))
       (apply test args)))
 
@@ -208,7 +208,7 @@
 	    (cons (make-random-instruction) (make-random-instructions (- n 1)))))
      
      (define (interpret-instructions instructions)
-	(define graph ((param-make) 0))
+	(define graph ((param-make) :source 0))
 	(for-each
 	   (lambda (instr) (instruction-exec instr graph))
 	   instructions)
@@ -242,7 +242,7 @@
         #t)))
 
   (define (test1)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 1 2)
     ((param-add!) graph 2 3)
     ((param-add!) graph 3 4)
@@ -251,7 +251,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 5)))
 
   (define (test2)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 1 2)
     ((param-add!) graph 2 3)
     ((param-add!) graph 3 4)
@@ -260,7 +260,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 5)))
 
   (define (test3)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 3 3)
     ((param-add!) graph 2 3)
     ((param-add!) graph 1 2)
@@ -269,7 +269,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 4)))
 
   (define (test4)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 1 2)
     ((param-add!) graph 2 1)
@@ -277,7 +277,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 6)))
 
   (define (test5)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 1 2)
     ((param-add!) graph 1 3)
@@ -289,7 +289,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 7)))
 
   (define (test6)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 1 2)
     ((param-add!) graph 1 3)
@@ -302,7 +302,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 8)))
 
   (define (test7)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 1 2)
     ((param-add!) graph 2 3)
@@ -311,7 +311,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 4)))
 
   (define (test8)
-    (define graph ((param-make) -1))
+    (define graph ((param-make) :source -1))
     ((param-add!) graph -1 0)
     ((param-add!) graph 0 1)
     ((param-add!) graph 1 2)
@@ -322,7 +322,7 @@
   (define (test9)
     (define result1 #f)
     (define result2 #f)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 0 6)
     ((param-add!) graph 1 2)
@@ -340,7 +340,7 @@
     (list result1 result2))
 
   (define (test10)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 0 2)
     ((param-add!) graph 0 3)
@@ -356,7 +356,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 9)))
 
   (define (test11)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 0 2)
     ((param-add!) graph 0 3)
@@ -373,7 +373,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 9)))
 
   (define (test12)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 0 2)
     ((param-add!) graph 0 3)
@@ -392,7 +392,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 9)))
 
   (define (test13)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 0 2)
     ((param-add!) graph 0 3)
@@ -405,7 +405,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 7)))
 
   (define (test14)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 0 2)
     ((param-add!) graph 0 3)
@@ -418,7 +418,7 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 6)))
 
   (define (test15)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 1 2)
     ((param-redirect!) graph 2 0)
@@ -426,14 +426,14 @@
     (map (lambda (n) ((param-rank) graph n)) (iota 4)))
 
   (define (test16)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-add!) graph 1 2)
     ((param-redirect!) graph 2 2)
     (map (lambda (n) ((param-rank) graph n)) (iota 3)))
 
   (define (test17)
-    (define graph ((param-make) 0))
+    (define graph ((param-make) :source 0))
     ((param-add!) graph 0 1)
     ((param-redirect!) graph 1 2)
     ((param-add!) graph 0 3)

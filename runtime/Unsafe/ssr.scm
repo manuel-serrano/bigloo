@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olivier Melancon                                  */
 ;*    Creation    :  Fri Jun 21 15:42:17 2024                          */
-;*    Last change :  Mon Jun 24 19:22:31 2024 (serrano)                */
+;*    Last change :  Thu Jun 27 07:22:29 2024 (serrano)                */
 ;*    Copyright   :  2024 Olivier Melancon                             */
 ;*    -------------------------------------------------------------    */
 ;*    ssr                                                              */
@@ -64,11 +64,11 @@
 	    __r4_ports_6_10_1
 	    __evenv)
    
-   (export (make-graph::vector #!optional (source 0))
-	   (add-edge! graph::vector from::long to::long #!key onconnect)
-	   (remove-edge! graph::vector from::long to::long #!key ondisconnect)
-	   (redirect! graph::vector node::long other::long #!key onconnect ondisconnect)
-	   (connected? graph::vector node::long)))
+   (export (ssr-make-graph::vector #!key (source 0))
+	   (ssr-add-edge! graph::vector from::long to::long #!key onconnect)
+	   (ssr-remove-edge! graph::vector from::long to::long #!key ondisconnect)
+	   (ssr-redirect! graph::vector node::long other::long #!key onconnect ondisconnect)
+	   (ssr-connected? graph::vector node::long)))
 
 ;*---------------------------------------------------------------------*/
 ;*    compatibility kit                                                */
@@ -172,7 +172,7 @@
           (table-set! table x default)
           default))))
 
-(define (make-graph #!optional (source 0))
+(define (ssr-make-graph #!key (source 0))
   (vector
     source                                  ;; source
     (list->table (list (cons source 0)))    ;; ranks table
@@ -289,7 +289,7 @@
   (let ((friends (table-ref (graph-friends graph) x #f)))
     (if friends (set-contains? friends f) #f)))
 
-(define (add-edge! graph from to #!key onconnect)
+(define (ssr-add-edge! graph from to #!key onconnect)
   (define queue (make-queue))
 
   (define (hoist hoister node)
@@ -312,7 +312,7 @@
 	       (n (queue-get! queue)))
 	   (hoist h n)))))
 
-(define (remove-edge! graph from to #!key ondisconnect)
+(define (ssr-remove-edge! graph from to #!key ondisconnect)
   (cond
     ((not (parent? graph to from)) ;; edge not in BFS, can be removed safely
       (remove-friend! graph from to))
@@ -411,7 +411,7 @@
       (catch (queue-get! catch-queue)))
     (if ondisconnect (set-for-each ondisconnect disconnected))))
 
-(define (redirect! graph node other #!key onconnect ondisconnect)
+(define (ssr-redirect! graph node other #!key onconnect ondisconnect)
   (define (find-min-by-rank nodes)
     (let loop ((best (car nodes))
                (rank (get-rank graph (car nodes)))
@@ -453,11 +453,11 @@
             ;; removing friendlies never changes rank
             (for-each (lambda (f) (remove-friend! graph f node)) friendlies)
             (if parent (remove-parent-edge! graph node ondisconnect: ondisconnect))
-            (add-edge! graph adopter other onconnect: onconnect)
+            (ssr-add-edge! graph adopter other onconnect: onconnect)
             ;; next edges cannot udpate rank
             (for-each (lambda (f) (when (not (= f adopter)) (add-friend! graph f other))) friendlies)))))))
 
-(define (connected? graph node)
+(define (ssr-connected? graph node)
   (not (= (get-rank graph node) infinity)))
 
 ;; tests
