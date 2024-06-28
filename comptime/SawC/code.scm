@@ -329,8 +329,10 @@
 
 ;;
 (define-method (gen-expr fun::rtl_pragma args);
-   (emit-pragma (rtl_pragma-format fun) args)
-   (display "") )
+   (with-access::rtl_pragma fun (srfi0)
+      (when (eq? srfi0 'backend-c)
+	 (emit-pragma (rtl_pragma-format fun) args)
+	 (display "") )))
 
 ;;
 (define-method (gen-expr fun::rtl_switch args);
