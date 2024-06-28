@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cc/roots.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cc/roots.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 09:37:13 2016                          */
-;*    Last change :  Wed Jun  1 11:51:37 2016 (serrano)                */
-;*    Copyright   :  2016 Manuel Serrano                               */
+;*    Last change :  Fri Jun 28 08:56:39 2024 (serrano)                */
+;*    Copyright   :  2016-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Explicit GC roots registration                                   */
 ;*=====================================================================*/
@@ -33,7 +33,7 @@
    (unit 'gc-roots
       -1
       (if (backend-pragma-support (the-backend))
-	  '(begin (pragma::obj "bgl_gc_roots_register()"))
+	  '(begin (pragma::obj :srfi bigloo-c "bgl_gc_roots_register()"))
 	  `(begin #unspecified))
       #t
       #f)) 

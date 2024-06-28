@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 19 07:16:40 2022                          */
-;*    Last change :  Thu Jun 27 11:51:53 2024 (serrano)                */
+;*    Last change :  Fri Jun 28 07:37:04 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv global configuration                                         */
@@ -71,6 +71,7 @@
    (let ((e (getenv "BIGLOOBBVCLEANUP")))
       (cond
 	 ((not e) #t)
+	 ((string=? e "") #t)
 	 ((string=? e "false") #f)
 	 ((string=? e "true") #t)
 	 ((every (lambda (s)

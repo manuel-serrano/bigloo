@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Jun 27 17:47:41 2024 (serrano)                */
+;*    Last change :  Fri Jun 28 08:48:02 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBB manipulations                                                */
@@ -36,7 +36,8 @@
 	    saw_bbv-specialize
 	    saw_bbv-cache
 	    saw_bbv-range
-	    saw_bbv-debug)
+	    saw_bbv-debug
+	    saw_bbv-gc)
 
    (export  (<=ty ::obj ::obj)
 	    (set-max-label! blocks::pair-nil)
@@ -157,16 +158,28 @@
 ;*    replace-block! ...                                               */
 ;*    -------------------------------------------------------------    */
 ;*    Replace one "old" block with a "new" one. Reconnect the preds    */
-;*    of the old block but disconnect the succs of the old block.      */
+;*    of the old block and disconnect the succs of the old block.      */
 ;*---------------------------------------------------------------------*/
 (define (replace-block! old::blockS new::blockS #!key debug)
    (with-trace 'bbv-utils "replace-block!"
       (trace-item "old=#" (block-label old)
-	 " succs=" (map (lambda (s) (format "#~a[~a]" (block-label s) (blockS-gccnt s))) (block-succs old))
-	 " preds=" (map (lambda (s) (format "#~a[~a]" (block-label s) (blockS-gccnt s))) (block-preds old)))
+	 " succs=" (map (lambda (s)
+			   (format "#~a~a" (block-label s)
+			      (if (block-live? s) "+" "-")))
+		      (block-succs old))
+	 " preds=" (map (lambda (s)
+			   (format "#~a~a" (block-label s)
+			      (if (block-live? s) "+" "-")))
+		      (block-preds old)))
       (trace-item "new=#"(block-label new)
-	 " succs=" (map (lambda (s) (format "#~a" (block-label s))) (block-succs new))
-	 " preds=" (map (lambda (s) (format "#~a" (block-label s))) (block-preds new)))
+	 " succs=" (map (lambda (s)
+			   (format "#~a~a" (block-label s)
+			      (if (block-live? s) "+" "-")))
+		      (block-succs new))
+	 " preds=" (map (lambda (s)
+			   (format "#~a~a" (block-label s)
+			      (if (block-live? s) "+" "-")))
+		      (block-preds new)))
       (when *bbv-debug*
 	 (assert-block old "replace-block!.old>")
 	 (assert-block new "replace-block!.new>"))
@@ -187,14 +200,16 @@
 	    ;; remove "old" from all its successors's pred list
 	    (for-each (lambda (b)
 			 (with-access::blockS b (preds)
+			    (trace-item (format "replace-block.update #~a~a"
+					   (block-label b)
+					   (if (block-live? b) "+" "-")))
 			    (block-preds-update! b 
-			       (filter! (lambda (n) (not (eq? n old))) preds))
-			    (trace-item (format "updating #~a[~a]"
-					   (block-label b) (blockS-gccnt b)))))
+			       (filter! (lambda (n) (not (eq? n old))) preds))))
 	       old-succs)
 	    (for-each (lambda (b)
 			 (with-access::blockS b (succs first preds)
 			    (set! succs (list-replace succs old new))
+			    (bbv-gc-connect! b new)
 			    (for-each (lambda (ins)
 					 (cond
 					    ((rtl_ins-ifeq? ins)
@@ -220,18 +235,25 @@
 	       old-preds)
 	    (with-access::blockS new ((npreds preds))
 	       (block-preds-update! new
-		  (delete-duplicates! (append old-preds npreds) eq?)))
+		  (delete-duplicates (append old-preds npreds) eq?)))
 	    ;; mark the redirection
 	    (set! mblock new)
 	    (set! old-preds '())
 	    (set! old-succs '())
 	    (set! gccnt 0)
+	    (bbv-gc-redirect! old new)
 	    (when *bbv-debug*
 	       (assert-block old "replace-block!.old<")
 	       (assert-block new "replace-block!.new<"))
 	    (trace-item "after-merge new=#"(block-label new)
-	       " succs=" (map (lambda (s) (format "#~a" (block-label s))) (block-succs new))
-	       " preds=" (map (lambda (s) (format "#~a" (block-label s))) (block-preds new)))
+	       " succs=" (map (lambda (s)
+				 (format "#~a~a" (block-label s)
+				    (if (block-live? s) "+" "-")))
+			    (block-succs new))
+	       " preds=" (map (lambda (s)
+				 (format "#~a~a" (block-label s)
+				    (if (block-live? s) "+" "-")))
+			    (block-preds new)))
 	    new))))
 
 ;*---------------------------------------------------------------------*/

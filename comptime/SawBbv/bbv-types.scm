@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jun 27 17:40:26 2024 (serrano)                */
+;*    Last change :  Fri Jun 28 10:11:08 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -1346,7 +1346,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (block-preds-update! b::blockS npreds::pair-nil)
    (with-trace 'bbv-gc "block-preds-update!"
-      (trace-item "b=#" (block-label b) " len=" (length npreds))
+      (trace-item "b=#" (block-label b) " npreds="
+	 (map (lambda (s)
+		 (format "#~a~a" (block-label s)
+		    (if (block-live? s) "+" "-")))
+	    npreds))
       (with-access::blockS b (preds gccnt creator)
 	 (set! preds npreds)
 	 (set! gccnt (+fx (length npreds) (if (eq? creator 'root) 1 0))))))

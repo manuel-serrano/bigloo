@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 13 08:00:37 2022                          */
-;*    Last change :  Tue Jun 25 07:41:16 2024 (serrano)                */
+;*    Last change :  Fri Jun 28 08:36:26 2024 (serrano)                */
 ;*    Copyright   :  2022-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV merge                                                        */
@@ -49,7 +49,10 @@
    (with-trace 'bbv-merge
 	 (format "bbv-block-merge {#~a} ~( )"
 	    (block-label (blockS-parent (car bs)))
-	    (map (lambda (b) (format "#~a" (block-label b))) bs))
+	    (map (lambda (b)
+		    (format "#~a~a" (block-label b)
+		       (if (block-live? b) "+" "-")))
+	       bs))
       (multiple-value-bind (bs1 bs2)
 	 (bbv-block-merge-select bs)
 	 (with-access::blockS bs1 ((ctx1 ctx))

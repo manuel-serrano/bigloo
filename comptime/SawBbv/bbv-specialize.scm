@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jun 27 18:45:40 2024 (serrano)                */
+;*    Last change :  Fri Jun 28 07:39:12 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -150,7 +150,10 @@
    (with-trace 'bbv-block "block-merge-some!"
       (let ((lvs (blockV-live-versions bv)))
 	 (trace-item "blockV: " (blockV-label bv)
-	    " lvs: " (map block-label lvs))
+	    " versions: " (map (lambda (b)
+				  (format "#~a~a" (block-label b)
+				     (if (block-live? b) "+" "-")))
+			     (blockV-versions bv)))
 	 (multiple-value-bind (bs1 bs2 mctx)
 	    (bbv-block-merge lvs)
 	    ;; Find an already existing block for mctx, if such a block
@@ -161,7 +164,7 @@
 	       (trace-item "#" (block-label bs1) "+#" (block-label bs2)
 		  " -> #" (blockS-label mbs)
 		  (if (block-live? mbs) "+" "-")
-		  (shape mctx))
+		  " mctx: " (shape mctx))
 	       (cond
 		  ((eq? bs1 mbs)
 		   (with-access::blockS mbs (merges)
@@ -176,6 +179,43 @@
 		   (block-merge! bs2 mbs)))
 	       (when *bbv-debug*
 		  (assert-block mbs "block-merge-some!")))))))
+
+;*---------------------------------------------------------------------*/
+;*    block-merge! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (block-merge! bs::blockS mbs::blockS)
+   (with-trace 'bbv-block "block-merge!"
+      (trace-item "bs=#" (block-label bs) (if (block-live? bs) "+" "-")
+	 " preds: "
+	 (map (lambda (b)
+		 (format "#~a~a" (block-label b)
+		    (if (block-live? b) "+" "-")))
+	    (block-preds bs)))
+      (trace-item "mbs=#" (block-label mbs) (if (block-live? mbs) "+" "-")
+	 " preds: "
+	 (map (lambda (b)
+		 (format "#~a~a" (block-label b)
+		    (if (block-live? b) "+" "-")))
+	    (block-preds mbs)))
+      (when *bbv-debug* (assert-block bs "block-merge!"))
+      (with-access::blockS bs (mblock succs parent label)
+	 (trace-item "parent=#" (block-label parent))
+	 (set! mblock mbs)
+	 (let ((osuccs succs))
+	    (replace-block! bs mbs)
+	    (when *bbv-debug*
+	       (assert-block bs "block-merge!.bs")
+	       (assert-block mbs "block-merge!.mbs"))
+	    (bbv-gc! *root-block*))
+	 (with-access::blockV parent (versions)
+	    (trace-item "<- #" label
+	       " #{" (block-label parent)
+	       "} versions: "
+	       (map (lambda (b)
+		       (with-access::blockS b (label)
+			  (format "#~a~a" label
+			     (if (block-live? b) "+" "-"))))
+		  versions))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ins-specialize! ...                                              */
@@ -398,36 +438,6 @@
 	 (if merge *max-block-merge-versions* *max-block-limit*))))
 
 ;*---------------------------------------------------------------------*/
-;*    block-merge! ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (block-merge! bs::blockS mbs::blockS)
-   (with-trace 'bbv-block "block-merge!"
-      (trace-item "bs=#" (block-label bs) (if (block-live? bs) "+" "-") " "
-	 (map (lambda (b) (format "#~a" (block-label b))) (block-preds bs)))
-      (trace-item "mbs=#" (block-label mbs) (if (block-live? mbs) "+" "-") " "
-	 (map (lambda (b) (format "#~a" (block-label b))) (block-preds mbs)))
-      (when *bbv-debug* (assert-block bs "block-merge!"))
-      (with-access::blockS bs (mblock succs parent label)
-	 (trace-item "parent=#" (block-label parent))
-	 (set! mblock mbs)
-	 (let ((osuccs succs))
-	    (replace-block! bs mbs)
-	    (bbv-gc-redirect! bs mbs)
-	    (when *bbv-debug*
-	       (assert-block bs "block-merge!.bs")
-	       (assert-block mbs "block-merge!.mbs"))
-	    (bbv-gc! *root-block*))
-	 (with-access::blockV parent (versions)
-	    (trace-item "<- #" label
-	       " #{" (block-label parent)
-	       "} versions: "
-	       (filter-map (lambda (b)
-			      (with-access::blockS b (label)
-				 (format "#~a~a" label
-				    (if (block-live? b) "+" "-"))))
-		  versions))))))
-
-;*---------------------------------------------------------------------*/
 ;*    live-blockS ...                                                  */
 ;*    -------------------------------------------------------------    */
 ;*    If "b" is dead (because it has been merged), this function       */
@@ -444,8 +454,20 @@
 ;*---------------------------------------------------------------------*/
 (define (bbv-block b::block ctx::bbv-ctx queue::bbv-queue #!key creator)
    (with-trace 'bbv-block "bbv-block"
-      (trace-item (format "block: #~a~a" (block-label b)
-		     (if (isa? b blockS) (if (block-live? b) "+" "-") "")))
+      (trace-item (format "block: #~a" (block-label b))
+	 (if (isa? b blockS) (if (block-live? b) "+" "-") "")
+	 " preds: " (map (lambda (b)
+			    (format "#~a~a" (block-label b)
+			       (if (isa? b blockS)
+				   (if (block-live? b) "+" "-")
+				   "")))
+		       (block-preds b))
+	 " succs: " (map (lambda (b)
+			    (format "#~a~a" (block-label b)
+			       (if (isa? b blockS)
+				   (if (block-live? b) "+" "-")
+				   "")))
+		       (block-succs b)))
       (trace-item "ctx: " (shape ctx))
       (let ((bv (if (isa? b blockV) b (with-access::blockS b (parent) parent))))
 	 (with-access::blockV bv (first label versions)

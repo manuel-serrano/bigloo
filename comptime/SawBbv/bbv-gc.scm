@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 10:13:26 2024                          */
-;*    Last change :  Thu Jun 27 18:43:34 2024 (serrano)                */
+;*    Last change :  Fri Jun 28 07:49:06 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV gc                                                           */
@@ -203,46 +203,93 @@
    (ssr-connected? *gc-graph* (block-label b)))
 
 ;*---------------------------------------------------------------------*/
+;*    bbv-gc-ondisconnect! ...                                         */
+;*---------------------------------------------------------------------*/
+(define (bbv-gc-ondisconnect! n::long)
+   (with-trace 'bbv-gc-debug "bbv-gc-ondisconnect!"
+      (trace-item "n: -#" n)
+      (let ((b (vector-ref *gc-blocks* n)))
+	 (with-access::blockS b (preds succs)
+	    (trace-item "preds: "
+	       (map (lambda (b)
+		       (format "#~a~a" (block-label b)
+			  (if (block-live? b) "+" "-")))
+		  (blockS-preds b)))
+	    (trace-item "succs: "
+	       (map (lambda (b)
+		       (format "#~a~a" (block-label b)
+			  (if (block-live? b) "+" "-")))
+		  (blockS-succs b)))
+	    (for-each (lambda (s)
+			 (ssr-remove-edge! *gc-graph* n (block-label s))
+			 (with-access::blockS s (preds)
+			    (set! preds (remq! b preds))))
+	       succs)
+	    (set! succs '())))))
+
+;*---------------------------------------------------------------------*/
+;*    bbv-gc-onconnect! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (bbv-gc-onconnect! n::long)
+   (with-trace 'bbv-gc-debug "bbv-gc-onconnect!"
+      (trace-item "n: +#" n)
+      (let ((b (vector-ref *gc-blocks* n)))
+	 (trace-item "preds: "
+	    (map (lambda (b)
+		    (format "#~a~a" (block-label b)
+		       (if (block-live? b) "+" "-")))
+	       (blockS-preds b)))
+	 (trace-item "succs: "
+	    (map (lambda (b)
+		    (format "#~a~a" (block-label b)
+		       (if (block-live? b) "+" "-")))
+	       (blockS-succs b))))))
+
+;*---------------------------------------------------------------------*/
 ;*    bbv-gc-connect! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (bbv-gc-connect! from::blockS to::blockS)
    (with-trace 'bbv-gc "bbv-gc-connect!"
-      (trace-item "from #" (block-label from) "[" (blockS-gccnt from) "]")
-      (trace-item "to #" (block-label to) "[" (blockS-gccnt to) "]"
+      (trace-item "from #" (block-label from))
+      (trace-item "to #" (block-label to)
 	 " preds: "
 	 (map (lambda (b)
 		 (format "#~a~a" (block-label b)
 		    (if (block-live? b) "+" "-")))
 	    (blockS-preds to)))
       (when (eq? *bbv-blocks-gc* 'ssr)
-	 (ssr-add-edge! *gc-graph* (block-label from) (block-label to)))))
+	 (ssr-add-edge! *gc-graph* (block-label from) (block-label to)
+	    :onconnect bbv-gc-onconnect!))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-gc-disconnect! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (bbv-gc-disconnect! from::blockS to::blockS)
    (with-trace 'bbv-gc "bbv-gc-disconnect!"
-      (trace-item "from #" (block-label from) "[" (blockS-gccnt from) "]")
-      (trace-item "to #" (block-label to) "[" (blockS-gccnt to) "]"
+      (trace-item "from #" (block-label from))
+      (trace-item "to #" (block-label to)
 	 " preds: "
 	 (map (lambda (b)
 		 (format "#~a~a" (block-label b)
 		    (if (block-live? b) "+" "-")))
 	    (blockS-preds to)))
       (when (eq? *bbv-blocks-gc* 'ssr)
-	 (ssr-remove-edge! *gc-graph* (block-label from) (block-label to)))))
+	 (ssr-remove-edge! *gc-graph* (block-label from) (block-label to)
+	    :ondisconnect bbv-gc-ondisconnect!))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-gc-redirect! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (bbv-gc-redirect! old::blockS new::blockS)
    (with-trace 'bbv-gc "bbv-gc-redirect"
-      (trace-item "old #" (block-label old) "[" (blockS-gccnt old) "]")
-      (trace-item "new #" (block-label new) "[" (blockS-gccnt new) "]"
-	 " "
-	 (map (lambda (b) (format "#~a" (block-label b))) (blockS-preds new)))
+      (trace-item "old #" (block-label old))
+      (trace-item "new #" (block-label new)
+	 " preds: "
+	 (map (lambda (b)
+		 (format "#~a~a" (block-label b)
+		    (if (block-live? b) "+" "-")))
+	    (blockS-preds new)))
       (when (eq? *bbv-blocks-gc* 'ssr)
-	 (ssr-redirect! *gc-graph* (block-label old) (block-label new))
-	 (with-access::blockS new (preds gccnt)
-	    (set! preds (filter bbv-gc-block-reachable? preds))
-	    (set! gccnt (length preds))))))
+	 (ssr-redirect! *gc-graph* (block-label old) (block-label new)
+	    :ondisconnect bbv-gc-ondisconnect!
+	    :onconnect bbv-gc-onconnect!))))
