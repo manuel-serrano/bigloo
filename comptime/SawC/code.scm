@@ -31,7 +31,7 @@
 
 (define *comment* #f)
 (define *trace* #f)
-(define *count* (getenv "BIGLOOSAWPROFILE"))
+(define *count* (let ((n (getenv "BIGLOOSAWPROFILE"))) (equal? n "true")))
 (define *inline-simple-macros* #t)
 (define *counter* 0)
 (define *hasprotect* #f)
@@ -330,9 +330,11 @@
 ;;
 (define-method (gen-expr fun::rtl_pragma args);
    (with-access::rtl_pragma fun (srfi0)
-      (when (eq? srfi0 'backend-c)
-	 (emit-pragma (rtl_pragma-format fun) args)
-	 (display "") )))
+      (if (eq? srfi0 'bigloo-c)
+	  (begin
+	     (emit-pragma (rtl_pragma-format fun) args)
+	     (display "") )
+	  (display "BUNSPEC"))))
 
 ;;
 (define-method (gen-expr fun::rtl_switch args);
