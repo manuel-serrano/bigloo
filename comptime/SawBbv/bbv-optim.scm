@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Thu Jun 27 15:12:28 2024 (serrano)                */
+;*    Last change :  Sat Jun 29 20:03:20 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -217,47 +217,49 @@
 (define (coalesce! global::global b::blockS)
    
    (define (co! mark b)
-      (with-access::blockS b (parent succs)
-	 (trace-item
-	    (block-label b) " parent: " (block-label parent)
-	    " -> " (map block-label succs))
-	 (with-access::blockV parent (%mark)
-	    (unless (=fx mark %mark)
-	       (set! %mark mark)
-	       (trace-item "b=" (block-label b))
-	       (let ((versions (blockV-live-versions parent)))
-		  (if (or (null? versions) (null? (cdr versions)))
-		      (for-each (lambda (s) (co! mark s)) succs)
-		      (let ((ks (sort (lambda (v1 v2)
-					 (<=fx (car v1) (car v2)))
-				   (map (lambda (v)
-					   (cons (bbv-hash v) v))
-				      versions))))
-			 (trace-item "coalesce "
-			    (map (lambda (k)
-				    (cons (block-label (cdr k)) (car k)))
-			       ks))
-			 (let loop ((ks ks))
-			    (cond
-			       ((null? (cdr ks))
-				(for-each (lambda (s) (co! mark s)) succs))
-			       ((>=fx (blockS-%mark (cdar ks)) mark)
-				(loop (cdr ks)))
-			       (else
-				(let ((k (car ks)))
-				   (when *bbv-debug*
-				      (assert-block (cdr k) "coalesce!"))
-				   (let liip ((ls (cdr ks)))
-				      (cond
-					 ((null? ls)
-					  (loop (cdr ks)))
-					 ((and (=fx (car k) (caar ls))
-					       (not (eq? (cdr k) (cdar ls)))
-					       (coalesce? (cdr k) (cdar ls) '()))
-					  (coalesce-block! mark (cdr k) (cdar ls))
-					  (liip (cdr ls)))
-					 (else
-					  (liip (cdr ls))))))))))))))))
+      (with-trace 'bbv-cleanup "coalesce.co!"
+	 (trace-item "b: #" (block-label b))
+	 (with-access::blockS b (parent succs)
+	    (trace-item
+	       (block-label b) " parent: " (block-label parent)
+	       " -> " (map block-label succs))
+	    (with-access::blockV parent (%mark)
+	       (unless (=fx mark %mark)
+		  (set! %mark mark)
+		  (trace-item "b=" (block-label b))
+		  (let ((versions (blockV-live-versions parent)))
+		     (if (or (null? versions) (null? (cdr versions)))
+			 (for-each (lambda (s) (co! mark s)) succs)
+			 (let ((ks (sort (lambda (v1 v2)
+					    (<=fx (car v1) (car v2)))
+				      (map (lambda (v)
+					      (cons (bbv-hash v) v))
+					 versions))))
+			    (trace-item "coalesce "
+			       (map (lambda (k)
+				       (cons (block-label (cdr k)) (car k)))
+				  ks))
+			    (let loop ((ks ks))
+			       (cond
+				  ((null? (cdr ks))
+				   (for-each (lambda (s) (co! mark s)) succs))
+				  ((>=fx (blockS-%mark (cdar ks)) mark)
+				   (loop (cdr ks)))
+				  (else
+				   (let ((k (car ks)))
+				      (when *bbv-debug*
+					 (assert-block (cdr k) "coalesce!"))
+				      (let liip ((ls (cdr ks)))
+					 (cond
+					    ((null? ls)
+					     (loop (cdr ks)))
+					    ((and (=fx (car k) (caar ls))
+						  (not (eq? (cdr k) (cdar ls)))
+						  (coalesce? (cdr k) (cdar ls) '()))
+					     (coalesce-block! mark (cdr k) (cdar ls))
+					     (liip (cdr ls)))
+					    (else
+					     (liip (cdr ls)))))))))))))))))
    
    (assert-blocks b "before coalesce!")
    
@@ -265,8 +267,8 @@
 	     (and (string? *bbv-blocks-cleanup*)
 		  (string-contains *bbv-blocks-cleanup* "coalesce")))
       (with-trace 'bbv-cleanup "coalesce"
-	 (trace-item "global: " (global-id global)))
-      (co! (get-bb-mark) b))
+	 (trace-item "global: " (global-id global))
+	 (co! (get-bb-mark) b)))
    b)
 
 ;*---------------------------------------------------------------------*/
@@ -304,35 +306,41 @@
 ;*    Is it possible to coalesce two blocks with the same hash?        */
 ;*---------------------------------------------------------------------*/
 (define (coalesce? bx::blockS by::blockS stack)
-   (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
-      (with-access::blockS by ((ybl %blacklist) (ysuccs succs) first)
-	 (cond
-	    ((eq? bx by)
-	     #t)
-	    ((and (memq bx stack) (memq by stack))
-	     #t)
-	    ((not (=fx (bbv-hash bx) (bbv-hash by)))
-	     #f)
-	    ((not (bbv-equal? bx by))
-	     #f)
-	    ((or (eq? xbl '*) (eq? ybl '*))
-	     #f)
-	    ((or (memq bx ybl) (memq by xbl))
-	     #f)
-	    ((and (=fx (length ysuccs) 0) (=fx (length first) 1))
-	     #f)
-	    ((=fx (length ysuccs) (length xsuccs))
-	     (let ((ns (cons* bx by stack)))
-		(or (every (lambda (x y) (coalesce? x y ns)) xsuccs ysuccs)
-		    (begin
-		       (set! xbl (cons by xbl))
-		       (set! ybl (cons bx ybl))
-		       #f))))
-	    (else
-	     (begin
-		(set! xbl (cons by xbl))
-		(set! ybl (cons bx ybl))
-		#f))))))
+   (with-trace 'bbv-cleanup "coalesce?"
+      (trace-item "bx=" (block-label bx))
+      (trace-item "bv=" (block-label by))
+      (trace-item "stack.len=" (length stack))
+      (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
+	 (with-access::blockS by ((ybl %blacklist) (ysuccs succs) first)
+	    (cond
+	       ((eq? bx by)
+		#t)
+	       ((memq bx stack)
+		(memq by stack))
+	       ((>fx (length stack) 20)
+		#f)
+	       ((not (=fx (bbv-hash bx) (bbv-hash by)))
+		#f)
+	       ((not (bbv-equal? bx by))
+		#f)
+	       ((or (eq? xbl '*) (eq? ybl '*))
+		#f)
+	       ((or (memq bx ybl) (memq by xbl))
+		#f)
+	       ((and (=fx (length ysuccs) 0) (=fx (length first) 1))
+		#f)
+	       ((=fx (length ysuccs) (length xsuccs))
+		(let ((ns (cons* bx by stack)))
+		   (or (every (lambda (x y) (coalesce? x y ns)) xsuccs ysuccs)
+		       (begin
+			  (set! xbl (cons by xbl))
+			  (set! ybl (cons bx ybl))
+			  #f))))
+	       (else
+		(begin
+		   (set! xbl (cons by xbl))
+		   (set! ybl (cons bx ybl))
+		   #f)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    goto-block? ...                                                  */
