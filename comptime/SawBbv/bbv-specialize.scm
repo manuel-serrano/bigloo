@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Fri Jun 28 07:39:12 2024 (serrano)                */
+;*    Last change :  Tue Jul  2 14:46:29 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -70,26 +70,25 @@
 	    (if (bbv-queue-empty? queue)
 		bs
 		(let ((bs (bbv-queue-pop! queue)))
-		   (when (block-live? bs)
-		      (with-access::blockS bs ((bv parent) label gccnt)
-			 (with-access::blockV bv ((plabel label) versions)
-			    (trace-item "pop {#" plabel "}->#" label
-			       (if (block-live? bs) "+" "-")
-			       " versions: "
-			       (map (lambda (b)
-				       (with-access::blockS b (label)
-					  (format "#~a~a" label
-					     (if (block-live? b) "+" "-"))))
-				  versions)))
-			 (when (block-need-merge? bv)
-			    (trace-item "need-merge #" (block-label bv) "...")
-			    (when *bbv-debug*
-			       (for-each (lambda (b)
-					    (with-access::blockS b (label ctx)
-					       (trace-item "#" label ": "
-						  (shape ctx))))
-				  (blockV-live-versions bv)))
-			    (block-merge-some! bv queue)))
+		   (with-access::blockS bs ((bv parent) label gccnt)
+		      (with-access::blockV bv ((plabel label) versions)
+			 (trace-item "pop {#" plabel "}->#" label
+			    (if (block-live? bs) "+" "-")
+			    " versions: "
+			    (map (lambda (b)
+				    (with-access::blockS b (label)
+				       (format "#~a~a" label
+					  (if (block-live? b) "+" "-"))))
+			       versions)))
+		      (when (block-need-merge? bv)
+			 (trace-item "need-merge #" (block-label bv) "...")
+			 (when *bbv-debug*
+			    (for-each (lambda (b)
+					 (with-access::blockS b (label ctx)
+					    (trace-item "#" label ": "
+					       (shape ctx))))
+			       (blockV-live-versions bv)))
+			 (block-merge-some! bv queue))
 		      (when (block-live? bs)
 			 (with-access::blockS bs ((bv parent) label first)
 			    (if (pair? first)
