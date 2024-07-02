@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/comptime/Init/pass-args-parse.sch        */
+;*    .../project/bigloo/bigloo/comptime/Init/pass-args-parse.sch      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep 17 22:15:24 2009                          */
-;*    Last change :  Thu Sep 17 22:16:53 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Tue Jul  2 09:27:39 2024 (serrano)                */
+;*    Copyright   :  2009-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Runs parse-args several times over the arguments.                */
 ;*    each time only the 'selected' clauses are evaluated.             */
@@ -20,7 +20,7 @@
 ;*     (pass-parse-args (1 2 default) default                          */
 ;*         args                                                        */
 ;*         (section "Misc")                                            */
-;*         ;; priliminary test                                         */
+;*         ;; preliminary test                                         */
 ;*         (pass 1                                                     */
 ;*          (("-" (help "Read source code on current input channel"))  */
 ;*           (set! *src-files* (cons 'stdin *src-files*)))             */

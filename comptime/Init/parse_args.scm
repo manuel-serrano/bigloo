@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Jul  1 11:06:22 2024 (serrano)                */
+;*    Last change :  Tue Jul  2 09:24:58 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -212,7 +212,7 @@
    
    (bigloo-warning-set! 2)
    
-   (pass-args-parse (lib-dir jvm default) default args
+   (pass-args-parse (lib-dir jvm wasm default) default args
       
 ;*--- misc ------------------------------------------------------------*/
       (section "Misc")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Jul  2 07:36:23 2024 (serrano)                */
+;*    Last change :  Tue Jul  2 09:47:14 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The wasm clauses compilation. Almost similar to extern clauses.  */
@@ -75,24 +75,26 @@
    (match-case wasm
       ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
        (set! *wasm-exported* (cons (cons wasm exportp) *wasm-exported*)))
-      (((or export type include) . ?-)
-       ;; an error
-       (user-error "Parse error" "Illegal wasm form" wasm '()))
-      ((or (macro ?type ?l-name ?proto ?c-name)
-	   (infix macro ?type ?l-name ?proto ?c-name))
-       (if (not (and (string? c-name)
-		     (symbol? type)
-		     (symbol? l-name)
-		     (check-wasm-args? proto)))
-	   (user-error "Parse error" "Illegal `macro' form" wasm '())
-	   (declare-global-cfun! l-name #f 'wasm c-name
-	      type proto (eq? (car wasm) 'infix) #t wasm wasm)))
-      ((macro ?type ?l-name ?c-name)
-       (if (not (and (string? c-name)
-		     (symbol? type)
-		     (symbol? l-name)))
-	   (user-error "Parse error" "Illegal `macro' form" wasm '())
-	   (declare-global-cvar! l-name #f c-name type #t wasm wasm)))
+      ((or (macro (and (? symbol?) ?id) ?proto (and (? string?) ?cn))
+	   (infix macro (and (? symbol?) ?id) ?proto (and (? string?) ?cn)))
+       ;; macro function definitions
+       (let* ((pid  (parse-id id (find-location wasm)))
+	      (ln   (car pid))
+	      (type (type-id (cdr pid))))
+	  (if (or (not (check-id pid wasm))
+		  (not (check-wasm-args? proto)))
+	      (user-error "Parse error" "Illegal wasm form" wasm '())
+	      (let ((infix? (eq? (car wasm) 'infix)))
+		 (declare-global-cfun! ln #f 'foreign
+		    cn type proto infix? #t wasm #f)))))
+      ((macro (and (? symbol?) ?id) (and (? string?) ?c-name))
+       ;; macro variable definitions
+       (let* ((pid    (parse-id id (find-location wasm)))
+	      (l-name (car pid))
+	      (type   (type-id (cdr pid))))
+	  (if (not (check-id pid wasm))
+	      (user-error "Parse error" "Illegal wasm form" wasm '())
+	      (declare-global-cvar! l-name #f c-name type #t wasm #f))))
       ((macro . ?-)
        (user-error "Parse error" "Illegal wasm form" wasm '()))
       (else
