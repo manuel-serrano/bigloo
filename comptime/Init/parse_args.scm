@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Jun 27 09:45:52 2024 (serrano)                */
+;*    Last change :  Mon Jul  1 11:06:22 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -340,6 +340,12 @@
 	  (set! *heap-name* *heap-jvm-name*)
 	  (set! *obj-suffix* '("class"))
 	  (set! *target-language* 'jvm)))
+      ;; wasm code generation
+      (pass wasm
+	 (("-wasm" (help "Compile module to WASM .wat file"))
+	  (set! *heap-name* *heap-wasm-name*)
+	  (set! *obj-suffix* '("wat"))
+	  (set! *target-language* 'wasm)))
       ;; Bigloo Assembly code generation
       (("-saw" (help "Cut the AST in the saw-mill"))
        (set! *force-saw* #t))

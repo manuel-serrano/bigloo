@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Jul 11 15:12:01 2023 (serrano)                */
-;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jul  1 11:06:50 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -211,6 +211,7 @@
 	    *heap-name*
 	    *heap-library*
 	    *heap-jvm-name*
+	    *heap-wasm-name*
 	    *heap-dump-names*
 	    *jvm-foreign-class-id*
 	    *jvm-foreign-class-name*
@@ -569,6 +570,10 @@
 (param-define *heap-jvm-name*
    "The Bigloo heap file name for the JVM backend"
    (string-append *heap-base-name* ".jheap"))
+;; the wasm heap name
+(param-define *heap-wasm-name*
+   "The Bigloo heap file name for the WASM backend"
+   (string-append *heap-base-name* ".wheap"))
 ;; the heap dumped names
 (param-define *heap-dump-names*
    "The name of the heap to be dumped"

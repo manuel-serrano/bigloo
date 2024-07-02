@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Jun  3 08:57:38 2024 (serrano)                */
+;*    Last change :  Mon Jul  1 10:53:34 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -466,7 +466,7 @@
    
    (define (raise/denv hdl)
       ;; since 19 jun 2021, error handlers are pushed
-      ;; along a cell where to store the exection value
+      ;; along a cell where to store the exception value
       ;; this removes one closure allocation of 
       ;; with-handler forms (see comptime/Expand/exit.scm)
       (let ((denv (cdr hdl))
@@ -476,7 +476,7 @@
    
    (define (raise/cell hdl)
       ;; since 14 jun 2021, error handlers are pushed
-      ;; along a cell where to store the exection value
+      ;; along a cell where to store the exception value
       ;; this removes one closure allocation of 
       ;; with-handler forms (see comptime/Expand/exit.scm)
       (let ((cell (cdr hdl))
@@ -486,7 +486,7 @@
 
    (define (raise/cell hdl)
       ;; since 14 jun 2021, error handlers are pushed
-      ;; along a cell where to store the exection value
+      ;; along a cell where to store the exception value
       ;; this removes one closure allocation of 
       ;; with-handler forms (see comptime/Expand/exit.scm)
       (let ((cell (cdr hdl))

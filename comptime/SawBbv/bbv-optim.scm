@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:26:43 2023                          */
-;*    Last change :  Sat Jun 29 20:03:20 2024 (serrano)                */
+;*    Last change :  Mon Jul  1 08:17:25 2024 (serrano)                */
 ;*    Copyright   :  2023-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV optimizations                                                */
@@ -255,7 +255,8 @@
 					     (loop (cdr ks)))
 					    ((and (=fx (car k) (caar ls))
 						  (not (eq? (cdr k) (cdar ls)))
-						  (coalesce? (cdr k) (cdar ls) '()))
+						  ;; (coalesce-TBR? (cdr k) (cdar ls) '())
+						  (coalesce? (cdr k) (cdar ls) 0))
 					     (coalesce-block! mark (cdr k) (cdar ls))
 					     (liip (cdr ls)))
 					    (else
@@ -277,18 +278,18 @@
 (define (coalesce-block! mark b by)
    (with-trace 'bbv-cleanup "coalesce-block!"
       (trace-item "b=" (block-label b) " <- " (block-label by))
-      ;; coalesce by into b, i.e., replace all occurrences of by with bx
+      ;; coalesce by into b, i.e., replace all occurrences of by with b
       (let loop ((by (list by))
 		 (bx (list b)))
 	 (trace-item "by=" (map block-label by))
 	 (trace-item "bx=" (map block-label bx))
 	 (cond
 	    ((null? by)
-	     b)
+	     #unspecified)
 	    ((=fx (blockS-%mark (car by)) mark)
-	     b)
+	     #unspecified)
 	    ((eq? (car by) (car bx))
-	     b)
+	     #unspecified)
 	    (else
 	     (with-access::blockS (car by) (preds (ysuccs succs) first %mark)
 		(set! %mark mark)
@@ -305,13 +306,52 @@
 ;*    -------------------------------------------------------------    */
 ;*    Is it possible to coalesce two blocks with the same hash?        */
 ;*---------------------------------------------------------------------*/
-(define (coalesce? bx::blockS by::blockS stack)
+(define (coalesce? bx::blockS by::blockS depth)
+   
+   (define (mark-uncoalescable! bx by)
+      (with-access::blockS bx ((xbl %blacklist) )
+	 (with-access::blockS by ((ybl %blacklist))
+	    (set! xbl (cons by xbl))
+	    (set! ybl (cons bx ybl))
+	    #f)))
+   
+   (with-trace 'bbv-cleanup "coalesce?"
+      (trace-item "bx=" (block-label bx))
+      (trace-item "bv=" (block-label by))
+      (trace-item "stack.depth" depth)
+      (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
+	 (with-access::blockS by ((ybl %blacklist) (ysuccs succs) (yfirst first))
+	    (cond
+	       ((eq? bx by)
+		#t)
+	       ((>fx depth 40)
+		(mark-uncoalescable! bx by))
+	       ((not (=fx (bbv-hash bx) (bbv-hash by)))
+		(mark-uncoalescable! bx by))
+	       ((or (eq? xbl '*) (eq? ybl '*))
+		(mark-uncoalescable! bx by))
+	       ((or (memq bx ybl) (memq by xbl))
+		#f)
+	       ((and (=fx (length ysuccs) 0) (=fx (length yfirst) 1))
+		(mark-uncoalescable! bx by))
+	       ((=fx (length ysuccs) (length xsuccs))
+		(or (every (lambda (x y) (coalesce? x y (+fx depth 1))) xsuccs ysuccs)
+		    (mark-uncoalescable! bx by)))
+	       (else
+		(mark-uncoalescable! bx by)))))))
+
+;*---------------------------------------------------------------------*/
+;*    coalesce-TBR? ...                                                */
+;*    -------------------------------------------------------------    */
+;*    Is it possible to coalesce two blocks with the same hash?        */
+;*---------------------------------------------------------------------*/
+(define (coalesce-TBR? bx::blockS by::blockS stack)
    (with-trace 'bbv-cleanup "coalesce?"
       (trace-item "bx=" (block-label bx))
       (trace-item "bv=" (block-label by))
       (trace-item "stack.len=" (length stack))
       (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
-	 (with-access::blockS by ((ybl %blacklist) (ysuccs succs) first)
+	 (with-access::blockS by ((ybl %blacklist) (ysuccs succs) (yfirst first))
 	    (cond
 	       ((eq? bx by)
 		#t)
@@ -327,7 +367,7 @@
 		#f)
 	       ((or (memq bx ybl) (memq by xbl))
 		#f)
-	       ((and (=fx (length ysuccs) 0) (=fx (length first) 1))
+	       ((and (=fx (length ysuccs) 0) (=fx (length yfirst) 1))
 		#f)
 	       ((=fx (length ysuccs) (length xsuccs))
 		(let ((ns (cons* bx by stack)))

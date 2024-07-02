@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Mon Mar 16 06:06:24 2020 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  2 07:26:28 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@
 	    module_with
 	    module_type
 	    module_foreign
+	    module_wasm
 	    module_java
 	    module_eval
 	    module_load
@@ -242,6 +243,7 @@
 		  (make-with-compiler)
 		  (make-foreign-compiler)
 		  (make-extern-compiler)
+		  (make-wasm-compiler)
 		  (make-type-compiler)
 		  (make-pragma-compiler)
 		  (make-option-compiler)
