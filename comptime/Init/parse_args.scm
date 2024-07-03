@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jul  2 09:24:58 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 14:20:18 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1327,8 +1327,8 @@
       (set! *optim-jvm-branch* 5)
       (set! *optim-return?* #t)
       (set! *optim-return-goto?* #t)
-      (if (not (boolean? *optim-unroll-loop?*))
-	  (set! *optim-unroll-loop?* #t)))
+      (unless (boolean? *optim-unroll-loop?*)
+	 (set! *optim-unroll-loop?* #t)))
    
    (set! *optim* 1)
    (set! *optim-sync-failsafe?* #t)

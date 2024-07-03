@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed Jul  3 13:26:07 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 14:27:32 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The wasm clauses compilation. Almost similar to extern clauses.  */
@@ -39,7 +39,8 @@
    (instantiate::ccomp
       (id 'wasm)
       (producer wasm-producer)
-      (consumer (lambda (m c) (wasm-producer c)))))
+      (consumer (lambda (m c) (wasm-producer c)))
+      (finalizer wasm-finalizer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-producer ...                                                */
@@ -61,9 +62,26 @@
    (trace (ast 2) "wasm parser: " wasm #\Newline)
    (match-case wasm
       (((and (? symbol?) ?id) (and (? string?) ?name))
-       (let ((g (find-global/module id 'foreign)))
-	  (global-jvm-type-name-set! g name)))
+       (set! *wasm-extern* (cons (cons id name) *wasm-extern*)))
       (else
        (user-error "Parse error" "Illegal wasm form" wasm '()))))
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-extern* ...                                                */
+;*---------------------------------------------------------------------*/
+(define *wasm-extern* '())
+
+;*---------------------------------------------------------------------*/
+;*    wasm-finalizer ...                                               */
+;*---------------------------------------------------------------------*/
+(define (wasm-finalizer)
+   (for-each (lambda (w)
+		(let ((id (car w))
+		      (name (cdr w)))
+		   (let ((g (find-global/module id 'foreign)))
+		      (if g
+			  (global-jvm-type-name-set! g name)
+			  (error "wasm" "Cannot find extern definition" id)))))
+      *wasm-extern*))
 
 	  
