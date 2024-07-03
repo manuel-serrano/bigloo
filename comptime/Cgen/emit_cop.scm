@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Jun 26 10:02:12 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 11:15:12 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -676,11 +676,17 @@
 ;*    emit-cop ::cbox-ref ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::cbox-ref)
-   (with-access::cbox-ref cop (var loc)
+   (with-access::cbox-ref cop (var loc type)
       (emit-bdb-loc loc)
+      (unless (eq? type *obj*)
+	 (display "((" *c-port*)
+	 (display (type-name type) *c-port*)
+	 (display ")" *c-port*))
       (display "CELL_REF(" *c-port*)
       (emit-cop var)
-      (write-char #\) *c-port*)
+      (if (eq? type *obj*)
+	  (write-char #\) *c-port*)
+	  (display "))" *c-port*))
       #t))
 
 ;*---------------------------------------------------------------------*/

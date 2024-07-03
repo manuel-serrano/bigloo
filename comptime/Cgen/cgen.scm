@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Jun 28 10:52:13 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 11:17:26 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -1135,10 +1135,10 @@
    (trace (cgen 3)
 	  "(node->cop node::box-ref kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::box-ref node (var loc)
+   (with-access::box-ref node (var loc type)
       (kont (node->cop var
 	       (lambda (v) (instantiate::cbox-ref
-			      (type (cop-type v))
+			      (type type)
 			      (loc loc)
 			      (var v)))
 	        inpushexit))))

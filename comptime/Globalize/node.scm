@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Thu Jul  8 11:29:07 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jul  3 11:05:07 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -164,12 +164,9 @@
 		;; (local-access-set! variable 'cell-globalize)
 		(let ((vtype (get-bigloo-defined-type vtype))
 		      (ntype (get-bigloo-defined-type (node-type node))))
-		   ;; (node-type-set! node (get-bigloo-defined-type vtype))
 		   (node-type-set! node *cell*)
 		   (instantiate::box-ref
 		      (loc (node-loc node))
-		      ;; (vtype (get-bigloo-defined-type vtype))
-		      ;; (type (get-bigloo-defined-type (node-type node)))
 		      (vtype vtype)
 		      (type ntype)
 		      (var node))))
