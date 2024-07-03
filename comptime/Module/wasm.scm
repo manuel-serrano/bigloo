@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Jul  2 09:47:14 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 13:26:07 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The wasm clauses compilation. Almost similar to extern clauses.  */
@@ -39,8 +39,7 @@
    (instantiate::ccomp
       (id 'wasm)
       (producer wasm-producer)
-      (consumer (lambda (m c) (wasm-producer c)))
-      (finalizer wasm-finalizer)))
+      (consumer (lambda (m c) (wasm-producer c)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-producer ...                                                */
@@ -56,84 +55,15 @@
        '()))
 
 ;*---------------------------------------------------------------------*/
-;*    check-wasm-args? ...                                             */
-;*---------------------------------------------------------------------*/
-(define (check-wasm-args? proto)
-   (let loop ((proto proto))
-      (cond
-	 ((null? proto) #t)
-	 ((symbol? proto) #t)
-	 ((not (pair? proto)) #f)
-	 ((not (symbol? (car proto))) #f)
-	 (else (loop (cdr proto))))))
-
-;*---------------------------------------------------------------------*/
 ;*    wasm-parser ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (wasm-parser wasm exportp)
    (trace (ast 2) "wasm parser: " wasm #\Newline)
    (match-case wasm
-      ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
-       (set! *wasm-exported* (cons (cons wasm exportp) *wasm-exported*)))
-      ((or (macro (and (? symbol?) ?id) ?proto (and (? string?) ?cn))
-	   (infix macro (and (? symbol?) ?id) ?proto (and (? string?) ?cn)))
-       ;; macro function definitions
-       (let* ((pid  (parse-id id (find-location wasm)))
-	      (ln   (car pid))
-	      (type (type-id (cdr pid))))
-	  (if (or (not (check-id pid wasm))
-		  (not (check-wasm-args? proto)))
-	      (user-error "Parse error" "Illegal wasm form" wasm '())
-	      (let ((infix? (eq? (car wasm) 'infix)))
-		 (declare-global-cfun! ln #f 'foreign
-		    cn type proto infix? #t wasm #f)))))
-      ((macro (and (? symbol?) ?id) (and (? string?) ?c-name))
-       ;; macro variable definitions
-       (let* ((pid    (parse-id id (find-location wasm)))
-	      (l-name (car pid))
-	      (type   (type-id (cdr pid))))
-	  (if (not (check-id pid wasm))
-	      (user-error "Parse error" "Illegal wasm form" wasm '())
-	      (declare-global-cvar! l-name #f c-name type #t wasm #f))))
-      ((macro . ?-)
-       (user-error "Parse error" "Illegal wasm form" wasm '()))
+      (((and (? symbol?) ?id) (and (? string?) ?name))
+       (let ((g (find-global/module id 'foreign)))
+	  (global-jvm-type-name-set! g name)))
       (else
        (user-error "Parse error" "Illegal wasm form" wasm '()))))
 
-;*---------------------------------------------------------------------*/
-;*    *wasm-exported* ...                                              */
-;*---------------------------------------------------------------------*/
-(define *wasm-exported* '())
-
-;*---------------------------------------------------------------------*/
-;*    wasm-finalizer ...                                               */
-;*---------------------------------------------------------------------*/
-(define (wasm-finalizer)
-   ;; we patch bigloo wasm exported variables
-   (for-each (lambda (wasm)
-		(let* ((fo (car wasm))
-		       (ex (cdr wasm))
-		       (global (find-global (cadr fo)))
-		       (name (caddr fo)))
-		   (cond
-		      ((not (global? global))
-		       (when ex
-			  (if (not (or (eq? *pass* 'make-add-heap)
-				       (eq? *pass* 'make-heap)))
-			      (user-error "Wasm"
-				 (format "Unbound global variable \"~a\""
-				    (cadr fo))
-				 wasm
-				 '()))))
-		      ((string? (global-name global))
-		       (user-warning
-			  "Wasm"
-			  "Re-exportation of global variable (ignored)"
-			  wasm))
-		      (else
-		       (global-name-set! global name)))))
-      *wasm-exported*)
-   (set! *wasm-exported* '())
-   ;; and we build a unit if Wasm types have generated codes
-   'void)
 	  
