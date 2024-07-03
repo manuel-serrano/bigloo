@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Tue Jul 19 13:56:36 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jul  3 16:13:05 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -81,9 +81,6 @@
 (define (trace-fun! var stack level)
    (let* ((fun  (variable-value var))
 	  (body (sfun-body fun))
-;* 	  (lloc (if (global? var)                                      */
-;* 		    (find-location (find-last-sexp (global-src var)))  */
-;* 		    (node-loc (find-last-node body))))                 */
 	  (lloc (sfun-loc fun)))
       (when (and (not (fun-predicate-of fun))
 		 (not (memq 'no-trace (sfun-property fun)))

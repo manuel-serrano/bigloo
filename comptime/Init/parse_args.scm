@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul  3 14:20:18 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 15:56:16 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1253,14 +1253,10 @@
       (set! *error-localization* #t))
    (if (> (string-length string) 0)
        (case (string-ref string 0)
-	  ((#\2)
-	   (-g2!))
-	  ((#\3)
-	   (-g3!))
-	  ((#\4)
-	   (-g4!))
-	  (else
-	   (error "parse-arg" "Illegal -g option" string)))))
+	  ((#\2) (-g2!))
+	  ((#\3) (-g3!))
+	  ((#\4) (-g4!))
+	  (else (error "parse-arg" "Illegal -g option" string)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-bdb-args ...                                               */

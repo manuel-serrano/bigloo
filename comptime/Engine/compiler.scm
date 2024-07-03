@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu May 30 08:34:23 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 16:17:02 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -114,7 +114,8 @@
 	 (set! *unsafe-type* #t)))
    (unless (backend-typed-funcall (the-backend))
       (set! *optim-cfa-unbox-closure-args* #f))
-   (when (>fx *compiler-debug-trace* 0)
+   (when (or (>=fx *compiler-debug-trace* 1)
+	     (>=fx *compiler-debug* 1))
       ;; compiler introduced traces are imcompatible with the setjmp/longmp
       ;; optimization
       (set! *optim-return-goto?* #f))
