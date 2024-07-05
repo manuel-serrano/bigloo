@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed Jul  3 14:27:32 2024 (serrano)                */
+;*    Last change :  Fri Jul  5 08:51:31 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The wasm clauses compilation. Almost similar to extern clauses.  */
@@ -61,8 +61,8 @@
 (define (wasm-parser wasm exportp)
    (trace (ast 2) "wasm parser: " wasm #\Newline)
    (match-case wasm
-      (((and (? symbol?) ?id) (and (? string?) ?name))
-       (set! *wasm-extern* (cons (cons id name) *wasm-extern*)))
+      (((and (? symbol?) ?id) (and (? string?) ?name) . ?deps)
+       (set! *wasm-extern* (cons (vector id name deps) *wasm-extern*)))
       (else
        (user-error "Parse error" "Illegal wasm form" wasm '()))))
 
@@ -76,11 +76,15 @@
 ;*---------------------------------------------------------------------*/
 (define (wasm-finalizer)
    (for-each (lambda (w)
-		(let ((id (car w))
-		      (name (cdr w)))
+		(let ((id (vector-ref w 0))
+		      (name (vector-ref w 1))
+		      (deps (vector-ref w 2)))
 		   (let ((g (find-global/module id 'foreign)))
 		      (if g
-			  (global-jvm-type-name-set! g name)
+			  (begin
+			     (global-jvm-type-name-set! g name)
+			     (global-pragma-set! g
+				(cons (cons 'wasm deps) (global-pragma g))))
 			  (error "wasm" "Cannot find extern definition" id)))))
       *wasm-extern*))
 
