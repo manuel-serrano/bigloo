@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Jun 26 10:39:01 2024 (serrano)                */
+;*    Last change :  Fri Jul  5 13:58:37 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -878,18 +878,28 @@
       (with-trace 'letrec* "letrec*/stage8"
 	 (trace-item "bindings="
 	    (map (lambda (b) (shape (ebinding-var b))) ebindings))
+	 (trace-item "let.bindings="
+	    (map (lambda (b) (shape (ebinding-var b)))
+	       (filter (lambda (b)
+			  (not (direct-function? (ebinding-value b))))
+		  ebindings)))
+	 (trace-item "letrec.bindings="
+	    (map (lambda (b) (shape (ebinding-var b)))
+	       (filter (lambda (b)
+			  (function? (ebinding-value b)))
+		  ebindings)))
 	 (let ((sexp `(let ,(filter-map (lambda (b)
-					   (unless (function? (ebinding-value b))
+					   (unless (direct-function? (ebinding-value b))
 					      (let ((ty (type-of-id (caar b) (find-location (car b)))))
 						 (list (caar b) (type-undefined ty)))))
 			       ebindings)
 			 (letrec ,(filter-map (lambda (b)
-						 (when (function? (ebinding-value b))
+						 (when (direct-function? (ebinding-value b))
 						    (let ((ty (type-of-id (caar b) (find-location (car b)))))
 						       (list (caar b) (ebinding-value b)))))
 				     ebindings)
 			    ,@(filter-map (lambda (b)
-					     (unless (function? (ebinding-value b))
+					     (unless (direct-function? (ebinding-value b))
 						`(set! ,(fast-id-of-id (caar b) loc)
 						    ,(ebinding-value b))))
 				 ebindings)
