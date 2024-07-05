@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Nov 17 17:21:24 2023 (serrano)                */
-;*    Copyright   :  2003-23 Manuel Serrano                            */
+;*    Last change :  Fri Jul  5 11:13:33 2024 (serrano)                */
+;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -78,7 +78,8 @@
       (heap-compatible 'c)
       (trace-support #f)
       (srfi0 'bigloo-c)
-      (require-tailc #t)))
+      (require-tailc #t)
+      (strict-type-cast #t)))
  
 ;*---------------------------------------------------------------------*/
 ;*    build-cgen-backend ...                                           */

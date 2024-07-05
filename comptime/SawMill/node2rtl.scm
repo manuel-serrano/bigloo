@@ -13,6 +13,7 @@
 	   tools_shape
 	   saw_defs
 	   backend_cplib
+	   backend_backend
 	   )
    (export (global->rtl::block var::global)
 	   (local->reg::rtl_reg var::local))
@@ -431,10 +432,10 @@
 
 ;;
 (define-method (node->rtl::area e::cast) ; ()
-  (with-access::cast e (arg)
-      ; CARE MANU pourquoi il y aurait des mauvais type!!
-      ; (call e (instantiate::rtl_cast (type (get-type e #f))) arg)
-      (node->rtl arg) ))
+  (with-access::cast e (arg type)
+      (if (backend-strict-type-cast (the-backend))
+	  (call e (instantiate::rtl_cast (totype type) (fromtype (get-type arg #f))) arg)
+	  (node->rtl arg) )))
 
 ;;
 (define-method (node->rtl::area e::cast-null) ; ()
