@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sun May 28 06:51:37 2023 (serrano)                */
+;*    Last change :  Fri Jul  5 10:02:37 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -565,7 +565,7 @@
 	       (if (=fx r clen)
 		   ;; we still have to check the checksum
 		   (if (=fx checksum (get-8bits-integer r))
-		       (values (substring new 0 w) (+fx r 3))
+		       (values (substring new 0 w) (+fx r 3)) 
 		       (err))
 		   (let ((c (string-ref string r)))
 		      (if (char=? c #\z)

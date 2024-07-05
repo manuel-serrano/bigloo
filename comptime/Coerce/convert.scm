@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Fri Oct 13 07:36:56 2023 (serrano)                */
-;*    Copyright   :  1995-2023 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jul  5 10:17:48 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -290,7 +290,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-one-conversion from to checkop coerceop node safe)
    (if (or (eq? checkop #t) (not safe))
-       (do-convert coerceop node from)
+       (do-convert coerceop node from to)
        (if (tclass? from)
 	   (make-one-class-conversion from to checkop coerceop node)
 	   (make-one-type-conversion from to checkop coerceop node))))
@@ -332,7 +332,7 @@
 					(loc loc)
 					(type (strict-node-type to from))
 					(variable var))
-				     from))
+				     from to))
 	     (condn (skip-let-var lnode)))
 	 ;; we set the local variable type
 	 (local-type-set! var from)
@@ -355,7 +355,7 @@
    (trace (coerce 2) "make-one-class-conversion: " (shape node) " ("
 	  (shape from) " -> " (shape to) ")" #\Newline)
    (if (and (tclass? to) (type-subclass? from to))
-       (do-convert coerce-op node from)
+       (do-convert coerce-op node from to)
        (let* ((aux   (gensym 'aux))
 	      (aux2  (gensym 'aux2))
 	      (loc   (node-loc node))
@@ -376,7 +376,7 @@
 					    (loc loc)
 					    (type from)
 					    (variable var))
-					 from))
+					 from to))
 		 (condn (skip-let-var lnode)))
 	     ;; we set the local variable type
 	     (local-type-set! var from)
@@ -402,11 +402,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-convert ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (do-convert coerce-op node from::type)
+(define (do-convert coerce-op node from::type to::type)
    (trace coerce "do-convert: " (shape coerce-op) " " (shape node)
 	  #\Newline)
    (if (eq? coerce-op #t)
-       node
+       (if ;;(backend-strict-type-cast (the-backend))
+	   #f
+	   (instantiate::cast
+	      (loc (node-loc node))
+	      (type to)
+	      (arg node))
+	   node)
        (let ((nnode (top-level-sexp->node `(,coerce-op ,node)
 		       (node-loc node))))
 	  (trace coerce
@@ -420,12 +426,3 @@
 	  (lvtype-node! nnode)
 	  (spread-side-effect! nnode)
 	  nnode)))
-
-
-
-
-
-
-
-
-

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/backend.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/backend.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Sat Jan 30 03:45:00 2016 (serrano)                */
-;*    Copyright   :  2003-16 Manuel Serrano                            */
+;*    Last change :  Fri Jul  5 10:33:20 2024 (serrano)                */
+;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/
@@ -48,7 +48,8 @@
 	      (pregisters::pair-nil (default '()))
 	      (bound-check::bool (default #t))
 	      (type-check::bool (default #t))
-	      (typed-funcall::bool (default #t))))
+	      (typed-funcall::bool (default #t))
+	      (strict-type-cast::bool (default #f))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)

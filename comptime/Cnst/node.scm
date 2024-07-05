@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Thu Nov  3 11:44:41 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jul  5 10:28:04 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -153,7 +153,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cnst! node::cast)
    (with-access::cast node (arg)
-      (cnst! arg)
+      (set! arg (cnst! arg))
       node))
 
 ;*---------------------------------------------------------------------*/
