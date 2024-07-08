@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Thu Jul  8 11:32:33 2021 (serrano)                */
-;*    Copyright   :  2012-21 Manuel Serrano                            */
+;*    Last change :  Mon Jul  8 08:45:55 2024 (serrano)                */
+;*    Copyright   :  2012-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
 ;*    explicitly lock/unlock and push/pop operations. Used by the      */
@@ -35,6 +35,7 @@
 	    ast_sexp
 	    ast_app
 	    ast_dump
+	    ast_occur
 	    backend_backend
 	    inline_app
 	    effect_effect
@@ -190,6 +191,8 @@
    (with-access::sync node (loc)
       (init-sync! loc))
    
-   (if (failsafe-sync? node)
-       (failsafe-sync->sequence node)
-       (effect-sync->sequence node)))
+   (let ((enode (if (failsafe-sync? node)
+		    (failsafe-sync->sequence node)
+		    (effect-sync->sequence node))))
+      (occur-node! enode)
+      enode))
