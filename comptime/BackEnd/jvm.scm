@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/jvm.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/BackEnd/jvm.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Sun Jul 21 11:34:37 2013 (serrano)                */
-;*    Copyright   :  2012-13 Manuel Serrano                            */
+;*    Last change :  Mon Jul  8 15:27:34 2024 (serrano)                */
+;*    Copyright   :  2012-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
 ;*=====================================================================*/
@@ -57,7 +57,8 @@
       (foreign-clause-support '(java))
       (debug-support '(jvm))
       (bound-check #f)
-      (type-check #f)))
+      (type-check #f)
+      (force-register-gc-roots #f)))
    
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */

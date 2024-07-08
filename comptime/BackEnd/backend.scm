@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Fri Jul  5 10:33:20 2024 (serrano)                */
+;*    Last change :  Mon Jul  8 15:21:01 2024 (serrano)                */
 ;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
@@ -49,7 +49,8 @@
 	      (bound-check::bool (default #t))
 	      (type-check::bool (default #t))
 	      (typed-funcall::bool (default #t))
-	      (strict-type-cast::bool (default #f))))
+	      (strict-type-cast::bool (default #f))
+	      (force-register-gc-roots::bool (default #t))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)
