@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Jul  3 16:17:02 2024 (serrano)                */
+;*    Last change :  Mon Jul  8 15:31:10 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -266,7 +266,8 @@
 	 (backend-check-inlines (the-backend))
 
 	 ;; explicit GC roots registration
-	 (when *gc-force-register-roots?*
+	 (when (and *gc-force-register-roots?*
+		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
 
 	 ;; ok, now we build the ast
