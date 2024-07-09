@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Jun 14 14:30:35 2019 (serrano)                */
+;*    Last change :  Tue Jul  9 14:02:12 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -16,6 +16,10 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __r4_strings_6_7
+   
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       (include "Ieee/string-generic.sch")))
    
    (import  __error
 	    __param)
@@ -360,7 +364,11 @@
 ;*    @deffn substring=?@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (substring=? string1 string2 len)
-   ($substring=? string1 string2 len))
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($substring=? string1 string2 len))
+      (else
+       ($$substring=? string1 string2 len))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-at?@ ...                                        */

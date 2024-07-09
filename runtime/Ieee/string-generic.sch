@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Tue Jul  9 13:50:06 2024 (serrano)                */
+;*    Last change :  Tue Jul  9 14:03:02 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -13,12 +13,12 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   (export ($substring=?::bool ::bstring ::bstring ::long)))
+   (export ($$substring=?::bool ::bstring ::bstring ::long)))
 
 ;*---------------------------------------------------------------------*/
-;*    $substring=? ...                                                 */
+;*    $$substring=? ...                                                */
 ;*---------------------------------------------------------------------*/
-(define ($substring=? string1 string2 len)
+(define ($$substring=? string1 string2 len)
    (when (and (>=fx (string-length string1) len)
 	      (>=fx (string-length string2) len))
       (let loop ((i 0))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Tue Jul  9 13:43:02 2024 (serrano)                */
+;*    Last change :  Tue Jul  9 13:59:40 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -15,7 +15,7 @@
 
    (cond-expand
       ((and (not bigloo-c) (not bigloo-jvm))
-       (include "symbol-generic.sch")))
+       (include "Ieee/symbol-generic.sch")))
    
    (import  __error
 	    __param)
@@ -45,7 +45,6 @@
 
    (extern  (macro c-symbol?::bool (::obj) "SYMBOLP")
 	    (c-string->symbol::symbol (::string) "string_to_symbol")
-	    (c-bstring->symbol::symbol (::bstring) "bstring_to_symbol")
 	    ($bstring->symbol::symbol (::bstring) "bstring_to_symbol")
 	    ($gensym::symbol (::obj) "bgl_gensym")
 	    (macro c-symbol->string::bstring (::obj) "SYMBOL_TO_STRING")
@@ -55,7 +54,7 @@
 	    
             (macro c-keyword?::bool (::obj) "KEYWORDP")
 	    (c-string->keyword::keyword (::string) "string_to_keyword")
-	    (c-bstring->keyword::keyword (::bstring) "bstring_to_keyword")
+	    ($bstring->keyword::keyword (::bstring) "bstring_to_keyword")
 	    (macro c-keyword->string::bstring (::keyword) "KEYWORD_TO_STRING")
 	    (macro c-keyword-plist::obj (::obj) "GET_KEYWORD_PLIST")
 	    (macro set-keyword-plist::obj (::obj ::obj) "SET_KEYWORD_PLIST")
@@ -65,8 +64,6 @@
 	       (method static c-symbol?::bool (::obj)
 		       "SYMBOLP")
 	       (method static c-string->symbol::symbol (::string)
-		       "string_to_symbol")
-	       (method static c-bstring->symbol::symbol (::bstring)
 		       "string_to_symbol")
 	       (method static $symbol->string::bstring (::symbol)
 		       "SYMBOL_TO_STRING")
@@ -81,7 +78,7 @@
 		       "KEYWORDP")
 	       (method static c-string->keyword::keyword (::string)
 		       "string_to_keyword")
-	       (method static c-bstring->keyword::keyword (::bstring)
+	       (method static $bstring->keyword::keyword (::bstring)
 		       "string_to_keyword")
 	       (method static c-keyword->string::bstring (::keyword)
 		       "KEYWORD_TO_STRING")
@@ -120,7 +117,6 @@
 	    (set-keyword-plist args-safe)
 	    (cnst->integer args-safe)
 	    (c-string->symbol no-cfa-top nesting fail-safe)
-	    (c-bstring->symbol no-cfa-top nesting fail-safe)
 	    ($bstring->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol-ci no-cfa-top nesting fail-safe)
@@ -153,13 +149,17 @@
 ;*    string->symbol ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (string->symbol string)
-   ($bstring->symbol string))
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($bstring->symbol string))
+      (else
+       ($$bstring->symbol string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->symbol-ci ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (string->symbol-ci string)
-   ($bstring->symbol (string-upcase string)))
+   (string->symbol (string-upcase string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol-append ...                                                */

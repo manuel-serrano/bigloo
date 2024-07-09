@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Thu Nov  3 11:45:38 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  9 14:12:40 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
 ;*=====================================================================*/
@@ -100,9 +100,9 @@
 	  (set! *string->ucs2string*
 		(get-global/module 'c-utf8-string->ucs2-string 'foreign))
 	  (set! *bstring->symbol*
- 		(get-global/module 'c-bstring->symbol 'foreign))
+ 		(get-global/module '$bstring->symbol 'foreign))
 	  (set! *bstring->keyword*
-		(get-global/module 'c-bstring->keyword 'foreign))
+		(get-global/module '$bstring->keyword 'foreign))
 	  (set! *bool->bbool*
 		(get-global/module '$bool->bbool 'foreign))
 	  (set! *long->int*
