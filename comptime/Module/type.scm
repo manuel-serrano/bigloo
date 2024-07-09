@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/type.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/type.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:05:27 1996                          */
-;*    Last change :  Fri Nov 18 07:10:35 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  9 10:02:17 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type clauses compilation.                                    */
 ;*=====================================================================*/
@@ -69,8 +69,9 @@
        (let ((type (declare-type! id name class)))
 	  (type-magic?-set! type #t)
 	  type))
-      ((subtype (and (? symbol?) ?child) (and ?name (? string?))
-		(and ?parent (? pair?)))
+      ((subtype (and (? symbol?) ?child)
+	  (and ?name (? string?))
+	  (and ?parent (? pair?)))
        (let loop ((walk  parent)
 		  (class #unspecified))
 	  (cond
@@ -91,6 +92,14 @@
 		    (else
 		     (loop (cdr walk)
 			   (type-class tparent)))))))))
+      ((subtype (and (? symbol?) ?child)
+	  (and ?name (? string?))
+	  (and ?parent (? pair?))
+	  (and ?null-value (? symbol?)))
+       ;; MS: 9 jul 2024 extension
+       (let ((t (type-parser import `(subtype ,child ,name ,parent) clauses)))
+	  (with-access::type t (null)
+	     (set! null null-value))))
       ((tvector (and (? symbol?) ?id) ((and (? symbol?) ?item-type)))
        (delay-tvector-type! id item-type clause import))
       ((coerce (and (? symbol?) ?from) (and (? symbol?) ?to) ?check ?coerce)

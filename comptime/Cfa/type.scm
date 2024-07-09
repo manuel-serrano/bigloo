@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Thu Jan 11 09:05:48 2024 (serrano)                */
+;*    Last change :  Tue Jul  9 10:14:27 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We make the obvious type election (taking care of tvectors).     */
+;*    Type election (taking care of tvectors).                         */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -22,6 +22,7 @@
 	    tools_error
 	    engine_param
 	    ast_var
+	    ast_env
 	    ast_node
 	    cfa_info
 	    cfa_info2
@@ -195,9 +196,34 @@
 	      ;; mandatory that there type is checkable and then, it means
 	      ;; that there type is a Bigloo type.
 	      (variable-type-set! variable *obj*)
-	      (variable-type-set! variable ntype)))
+	      (variable-type-set! variable (mark-null-type-ctor! ntype))))
 	 ((and (eq? otype *vector*) (tvec? ntype))
-	  (variable-type-set! variable ntype)))))
+	  (variable-type-set! variable (mark-null-type-ctor! ntype))))))
+
+;*---------------------------------------------------------------------*/
+;*    mark-null-type-ctor! ...                                         */
+;*    -------------------------------------------------------------    */
+;*    This function has been added in July 2024, it complements the    */
+;*    extension of the subtype parser (see, Module/type.scm and        */
+;*    ../runtime/Llib/type.scm).                                       */
+;*    -------------------------------------------------------------    */
+;*    When a global variable is assigned a precise type (i.e., not     */
+;*    *obj*) it has to use a specific null value when declared.        */
+;*    Which null value to use is (optionally) declared in the type     */
+;*    itself as the mean of a global variable. This function           */
+;*    increments the use counter of that variable.                     */
+;*---------------------------------------------------------------------*/
+(define (mark-null-type-ctor! type)
+   (with-access::type type (null)
+      (when (symbol? null)
+	 (set! null (find-global null))
+	 (unless null
+	    (internal-error "cfg:null-type!"
+	       "Cannot find null-type variable" null)))
+      (when (isa? null global)
+	 (with-access::global null (occurrence)
+	    (set! occurrence (+fx 1 occurrence)))))
+   type)
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ...                                                   */

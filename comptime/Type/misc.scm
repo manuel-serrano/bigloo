@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
 ;*    Last change :  Fri Jan  5 19:08:02 2018 (serrano)                */
-;*    Copyright   :  2004-18 Manuel Serrano                            */
+;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
 ;*=====================================================================*/

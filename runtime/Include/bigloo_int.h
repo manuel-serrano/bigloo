@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Apr  9 10:37:10 2024 (serrano)                */
+/*    Last change :  Tue Jul  9 10:04:16 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -25,6 +25,8 @@ extern "C" {
 /*    Integers                                                         */
 /*---------------------------------------------------------------------*/
 #define INTEGERP( o ) ((((long)o) & TAG_MASK) == TAG_INT)
+
+#define BINT_NULL BINT(0)
 
 #if( !BGL_NAN_TAGGING && !BGL_SMI )
 /* normal tagging */

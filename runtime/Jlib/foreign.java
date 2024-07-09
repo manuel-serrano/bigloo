@@ -861,6 +861,9 @@ public final class foreign
 	 return n.value.doubleValue();
       }
 
+   public static bint BINT_NULL = bint_allocated[100];
+   public static int LONG_NULL = 0;
+   
    public static bint BINT(long v)
       {
 	 if ((-100 <= v) && (v < 2018))

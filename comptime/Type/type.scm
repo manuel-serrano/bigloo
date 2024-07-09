@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Type/type.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Type/type.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:38:54 1996                          */
-;*    Last change :  Wed Nov 16 08:17:05 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  9 09:39:12 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type class definition                                        */
 ;*=====================================================================*/
@@ -35,6 +35,8 @@
 	      init?::bool
 	      ;; is this type can be converted into every thing ?
 	      (magic?::bool (default #f))
+	      ;; the (optional) default null value for that type
+	      (null (default #f))
 	      ;; is the type name containing a `$'?
 	      ($ (default #t))
 	      ;; a type than self is aliasing

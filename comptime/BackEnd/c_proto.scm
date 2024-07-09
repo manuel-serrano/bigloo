@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Tue May 10 12:29:26 2022 (serrano)                */
-;*    Copyright   :  1996-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  9 10:23:56 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -131,20 +131,41 @@
 		 "static")
 	     #\space
 	     (make-typed-declaration type name)
-	     (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
+	     (type-null-value type)))
 	 ((eq? (global-import variable) 'export)
 	  (fprint *c-port*
 	     (if (memq 'thread-local (global-pragma variable))
 		 "BGL_THREAD_DECL "
 		 "BGL_EXPORTED_DEF ")
 	     (make-typed-declaration type name)
-	     (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
+	     (type-null-value type)))
 	 (else
 	  (fprint *c-port*
-		  (get-c-scope variable)
-		  #\space
-		  (make-typed-declaration type name)
-		  #\;)))))
+	     (get-c-scope variable)
+	     #\space
+	     (make-typed-declaration type name)
+	     ";")))))
+
+;*---------------------------------------------------------------------*/
+;*    type-null-value ...                                              */
+;*---------------------------------------------------------------------*/
+(define (type-null-value t::type)
+   
+   (define (obj-null-value t)
+      (with-access::type t (null)
+	 (if (isa? null global)
+	     (string-append " = " (variable-name null) ";")
+	     " = BUNSPEC;")))
+
+   (define (foreign-null-value t::type)
+      (with-access::type t (null)
+	 (if (isa? null global)
+	     (string-append " = " (variable-name null) ";")
+	     ";")))
+   
+   (if (sub-type? t *obj*)
+       (obj-null-value t)
+       (foreign-null-value t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototype ::sfun ...                                        */
