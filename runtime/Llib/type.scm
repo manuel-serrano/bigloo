@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Jul  9 10:00:58 2024 (serrano)                */
+;*    Last change :  Tue Jul  9 13:02:59 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -777,7 +777,7 @@
     (coerce opaque bool () ((lambda (x) #t))))
    (extern
       (macro $bint-null::bint "BINT_NULL")
-      (macro $long-null::bint "0L")
+      (macro $long-null::long "0L")
       
       (macro $bool->bbool::bbool (::bool) "BBOOL")
       (macro $obj->bool::bool (::obj) "CBOOL")

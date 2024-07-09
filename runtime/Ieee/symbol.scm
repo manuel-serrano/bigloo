@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Sun Aug 25 09:19:14 2019 (serrano)                */
+;*    Last change :  Tue Jul  9 13:43:02 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -13,6 +13,10 @@
 ;*---------------------------------------------------------------------*/
 (module __r4_symbols_6_4
 
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       (include "symbol-generic.sch")))
+   
    (import  __error
 	    __param)
    
@@ -42,6 +46,7 @@
    (extern  (macro c-symbol?::bool (::obj) "SYMBOLP")
 	    (c-string->symbol::symbol (::string) "string_to_symbol")
 	    (c-bstring->symbol::symbol (::bstring) "bstring_to_symbol")
+	    ($bstring->symbol::symbol (::bstring) "bstring_to_symbol")
 	    ($gensym::symbol (::obj) "bgl_gensym")
 	    (macro c-symbol->string::bstring (::obj) "SYMBOL_TO_STRING")
 	    (macro c-symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
@@ -63,7 +68,7 @@
 		       "string_to_symbol")
 	       (method static c-bstring->symbol::symbol (::bstring)
 		       "string_to_symbol")
-	       (method static c-symbol->string::bstring (::symbol)
+	       (method static $symbol->string::bstring (::symbol)
 		       "SYMBOL_TO_STRING")
 	       (method static c-symbol-plist::obj (::symbol)
 		       "GET_SYMBOL_PLIST")
@@ -116,6 +121,7 @@
 	    (cnst->integer args-safe)
 	    (c-string->symbol no-cfa-top nesting fail-safe)
 	    (c-bstring->symbol no-cfa-top nesting fail-safe)
+	    ($bstring->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol-ci no-cfa-top nesting fail-safe)
 	    (getprop side-effect-free nesting fail-safe)
@@ -147,13 +153,13 @@
 ;*    string->symbol ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (string->symbol string)
-   (c-bstring->symbol string))
+   ($bstring->symbol string))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->symbol-ci ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (string->symbol-ci string)
-   (c-bstring->symbol (string-upcase string)))
+   ($bstring->symbol (string-upcase string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol-append ...                                                */
