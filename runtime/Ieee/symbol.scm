@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Tue Jul  9 13:59:40 2024 (serrano)                */
+;*    Last change :  Wed Jul 10 11:00:43 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -116,14 +116,13 @@
 	    (c-keyword-plist args-safe)
 	    (set-keyword-plist args-safe)
 	    (cnst->integer args-safe)
-	    (c-string->symbol no-cfa-top nesting fail-safe)
 	    ($bstring->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol-ci no-cfa-top nesting fail-safe)
 	    (getprop side-effect-free nesting fail-safe)
 	    (c-keyword? (predicate-of keyword) no-cfa-top nesting fail-safe)
 	    (keyword? side-effect-free nesting fail-safe)
-	    (c-string->keyword no-cfa-top nesting fail-safe)
+	    ($bstring->keyword no-cfa-top nesting fail-safe)
 	    (string->keyword no-cfa-top nesting fail-safe)
 	    (gensym fail-safe)))
 
@@ -297,7 +296,11 @@
 ;*    string->keyword ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (string->keyword string)
-   (c-string->keyword string))
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($bstring->keyword string))
+      (else
+       ($$bstring->keyword string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol->keyword ...                                              */
