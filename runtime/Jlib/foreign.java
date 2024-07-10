@@ -5753,7 +5753,7 @@ public final class foreign
       res = p.funcall0();
       end = System.currentTimeMillis();
 
-      env.mvalues_number = 1;
+      env.mvalues_number = 4;
       env.mvalues_values[ 1 ] = BINT( end - start );
       env.mvalues_values[ 2 ] = BINT( 0 );
       env.mvalues_values[ 3 ] = BINT( 0 );

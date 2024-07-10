@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Fri Jul  5 10:02:37 2024 (serrano)                */
+;*    Last change :  Wed Jul 10 08:31:14 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -692,7 +692,11 @@
 ;*---------------------------------------------------------------------*/
 (define (time proc)
    (if (correct-arity? proc 0)
-       ($time proc)
+       (cond-expand
+	  ((or bigloo-c bigloo-jvm)
+	   ($time proc))
+	  (else
+	   (values (proc) 0 0 0)))
        (error 'time "Wrong procedure arity" proc)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Jul  9 14:02:12 2024 (serrano)                */
+;*    Last change :  Wed Jul 10 08:29:01 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -357,8 +357,10 @@
        (let ((l1 (string-length string1)))
 	  (when (=fx l1 (string-length string2))
 	     (=fx ($memcmp string1 string2 l1) 0))))
+      (bigloo-jvm
+       ($string=? string1 string2))
       (else
-       ($string=? string1 string2))))
+       ($$string=? string1 string2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring=?@ ...                                          */

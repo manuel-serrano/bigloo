@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Tue Jul  9 14:01:11 2024 (serrano)                */
+;*    Last change :  Wed Jul 10 08:26:36 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -13,7 +13,8 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   (export ($$bstring->symbol::symbol ::bstring)))
+   (export ($$bstring->symbol::symbol ::bstring)
+	   ($$bkeyword->symbol::keyword ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol table                                                     */
@@ -31,6 +32,24 @@
 	     (cdr old)
 	     (let ((sym ($make-symbol string)))
 		(set! *symbol-table* (cons (cons string sym) *symbol-table*))
+		sym)))))
+
+;*---------------------------------------------------------------------*/
+;*    keyword table                                                    */
+;*---------------------------------------------------------------------*/
+(define *keyword-mutex* (make-mutex))
+(define *keyword-table* '())
+
+;*---------------------------------------------------------------------*/
+;*    $$bstring->keyword ...                                           */
+;*---------------------------------------------------------------------*/
+(define ($$bstring->keyword string)
+   (synchronize *keyword-mutex*
+      (let ((old (assoc string *keyword-table*)))
+	 (if (pair? old)
+	     (cdr old)
+	     (let ((sym ($make-keyword string)))
+		(set! *keyword-table* (cons (cons string sym) *keyword-table*))
 		sym)))))
 
 
