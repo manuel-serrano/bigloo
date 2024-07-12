@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 11:09:52 1996                          */
-;*    Last change :  Wed Jun 16 15:53:47 2021 (serrano)                */
+;*    Last change :  Fri Jul 12 19:11:27 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We shrink all the ast to get rid off all the pass info for the   */
 ;*    following passes.                                                */
@@ -17,7 +17,8 @@
 	   ast_var
 	   ast_node
 	   ast_env)
-   (export (shrinkify! globals)))
+   (export (shrinkify! globals)
+	   (generic shrink-node!::unspecified ::node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    shrinkify! ...                                                   */

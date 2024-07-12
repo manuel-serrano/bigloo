@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 12 08:55:10 2021                          */
-;*    Last change :  Tue Jun 25 15:07:41 2024 (serrano)                */
+;*    Last change :  Fri Jul 12 19:08:27 2024 (serrano)                */
 ;*    Copyright   :  2021-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Flag as "volatile" local variables that survive a set-exit       */
@@ -21,6 +21,7 @@
 	    ast_var
 	    ast_node
 	    ast_walk
+	    ast_shrinkify
 	    liveness_liveness
 	    tools_shape
 	    tools_speek)
@@ -38,11 +39,12 @@
    (with-trace 'integrate "volatile"
       (trace-item "global=" (shape global))
       (with-access::global global (value id)
-	 (multiple-value-bind (def use)
-	    (liveness-sfun! value)
-	    (with-access::sfun value (body)
-	       (when (use-set-exit? body)
-		  (volatile body '())))))
+	 (with-access::sfun value (body)
+	    (when (use-set-exit? body)
+	       (multiple-value-bind (def use)
+		  (liveness-sfun! value)
+		  (volatile body '())
+		  (shrink-node! body)))))
       global))
 
 ;*---------------------------------------------------------------------*/
