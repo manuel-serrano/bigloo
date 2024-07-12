@@ -3842,6 +3842,10 @@ public final class foreign
    // VECTOR
    //////
    // Predicates
+   public static Object[] BGL_AS_VECTOR(Object o) {
+      return (Object[])o;
+   }
+   
    public static boolean VECTORP(Object o) {
       return (o instanceof Object[]);
    }
@@ -4417,6 +4421,10 @@ public final class foreign
    ////
    // CLASS
    ////
+   public static bclass BGL_AS_CLASS(Object o) {
+      return (bclass)o;
+   }
+   
    public static int BGL_MAX_CLASS_NUM(Object o) {
       return 1 << 32;
    }
