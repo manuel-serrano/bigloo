@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Thu Oct  7 08:22:57 2021 (serrano)                */
+;*    Last change :  Fri Jul 12 12:44:52 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -67,12 +67,15 @@
 	    (macro $exitd-push-protect!::void (::exit ::obj) "BGL_EXITD_PUSH_PROTECT")
 	    (macro $exitd-pop-protect!::void (::exit) "BGL_EXITD_POP_PROTECT")
 	    
-	    (export $failsafe-mutex-profile "bgl_failsafe_mutex_profile")
-	    (export $exitd-mutex-profile "bgl_exitd_mutex_profile")
 	    (export unwind-stack-until! "unwind_stack_until")
 	    (export unwind-stack-value? "unwind_stack_value_p")
 	    
 	    (export default-uncaught-exception-handler "bgl_uncaught_exception_handler"))
+   
+   (cond-expand (bigloo-c
+		 (extern 
+		    (export $failsafe-mutex-profile "bgl_failsafe_mutex_profile")
+		    (export $exitd-mutex-profile "bgl_exitd_mutex_profile"))))
    
    (cond-expand (bigloo-c
 		 (export
