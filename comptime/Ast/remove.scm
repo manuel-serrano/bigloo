@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Wed Jun 16 15:53:32 2021 (serrano)                */
+;*    Last change :  Fri Jul 12 17:11:13 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
 ;*    global variables and remove all globals which are not            */
@@ -55,67 +55,72 @@
 ;*    remove-var ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (remove-var pass globals)
-   ;; first we recompute the occurrences
-   (occur-var globals)
-   ;; then, we do the removal
-   (let loop ((globals globals)
-	      (res     '())
-	      (fixp    #t))
-      (if (null? globals)
-	  ;; it is finished, recompute the occur prop (for read/write) ...
-	  (let ((nglobals (reverse! res)))
-	     (occur-var nglobals)
-	     ;; have we reached the fix point?
-	     (if fixp
-		 nglobals
-		 (loop nglobals '() #t)))
-	  (let ((global (car globals)))
-	     (cond
-		;; the function is exported, it hence can't be removed
-		((eq? (global-import global) 'export)
-		 (global-remove-sfun! global)
-		 (loop (cdr globals) (cons global res) fixp))
-		;; we can remove this global from now, 
-		;; we mark it or remove it.
-		((or (eq? (global-removable global) pass)
-		     (and (pair? pass)
-			  (memq (global-removable global) pass)))
-		 (if (<=fx (global-occurrence global) 0)
-		     (begin
-			;; we remove this function
-			(verbose 3 "         removing "
-				 (shape global) #\Newline)
-			(loop (cdr globals) res #f))
-		     (begin
-			(global-removable-set! global 'now)
-			(global-remove-sfun! global)
-			(loop (cdr globals) (cons global res) fixp))))
-		((and (<=fx (global-occurrence global) 0)
-		      (eq? (global-removable global) 'now)
-		      (not (eq? pass 'no-remove)))
-		 ;; this function is never used, we skip it
-		 (verbose 3 "        " (shape global) " removed "
-			  " (import: " (global-import global) ")"
-			  #\Newline)
-		 (loop (cdr globals) res #f))
-		(else
-		 (global-remove-sfun! global)
-		 ;; we keep the function
-		 (loop (cdr globals) (cons global res) fixp)))))))
+   (with-trace 'remove "remove-var"
+      (trace-item "pass=" pass)
+      (trace-item "#globals=" (length globals))
+      ;; first we recompute the occurrences
+      (occur-var globals)
+      ;; then, we do the removal
+      (let loop ((globals globals)
+		 (res     '())
+		 (fixp    #t))
+	 (if (null? globals)
+	     ;; it is finished, recompute the occur prop (for read/write) ...
+	     (let ((nglobals (reverse! res)))
+		(occur-var nglobals)
+		;; have we reached the fix point?
+		(if fixp
+		    nglobals
+		    (loop nglobals '() #t)))
+	     (let ((global (car globals)))
+		(cond
+		   ;; the function is exported, it hence can't be removed
+		   ((eq? (global-import global) 'export)
+		    (global-remove-sfun! global)
+		    (loop (cdr globals) (cons global res) fixp))
+		   ;; we can remove this global from now, 
+		   ;; we mark it or remove it.
+		   ((or (eq? (global-removable global) pass)
+			(and (pair? pass)
+			     (memq (global-removable global) pass)))
+		    (if (<=fx (global-occurrence global) 0)
+			(begin
+			   ;; we remove this function
+			   (verbose 3 "         removing "
+			      (shape global) #\Newline)
+			   (loop (cdr globals) res #f))
+			(begin
+			   (global-removable-set! global 'now)
+			   (global-remove-sfun! global)
+			   (loop (cdr globals) (cons global res) fixp))))
+		   ((and (<=fx (global-occurrence global) 0)
+			 (eq? (global-removable global) 'now)
+			 (not (eq? pass 'no-remove)))
+		    ;; this function is never used, we skip it
+		    (verbose 3 "        " (shape global) " removed "
+		       " (import: " (global-import global) ")"
+		       #\Newline)
+		    (loop (cdr globals) res #f))
+		   (else
+		    (global-remove-sfun! global)
+		    ;; we keep the function
+		    (loop (cdr globals) (cons global res) fixp))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    global-remove-sfun! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (global-remove-sfun! global)
-   (let ((sfun (global-value global)))
-      (set! *removed-count* 0)
-      (sfun-body-set! sfun (node-remove! (sfun-body sfun)))
-      (if (and (>=fx *optim* 2) (>fx *removed-count* 0))
-	  ;; execute the fix point iteration for optmized mode only
-	  (begin
-	     (occur-node-sfun! (global-value global) global)
-	     (global-remove-sfun! global))
-	  global)))
+   (with-trace 'remove "global-remove-sfun!"
+      (trace-item "global=" (shape global))
+      (let ((sfun (global-value global)))
+	 (set! *removed-count* 0)
+	 (sfun-body-set! sfun (node-remove! (sfun-body sfun)))
+	 (if (and (>=fx *optim* 2) (>fx *removed-count* 0))
+	     ;; execute the fix point iteration for optmized mode only
+	     (begin
+		(occur-node-sfun! (global-value global) global)
+		(global-remove-sfun! global))
+	     global))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node-remove! ...                                                 */

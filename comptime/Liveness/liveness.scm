@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Wed Jun 26 10:09:22 2024 (serrano)                */
+;*    Last change :  Fri Jul 12 17:13:40 2024 (serrano)                */
 ;*    Copyright   :  2013-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property with fix point iteration.                  */
@@ -265,7 +265,8 @@
 
 (define-method (inout! n::app/liveness o)
    (with-trace 'liveness "inout! ::app/liveness"
-      (with-access::app/liveness n (in out use def args)
+      (with-access::app/liveness n (in out use def args loc)
+	 (trace-item "loc=" loc)
 	 (set! out o)
 	 (set! in (union use (disjonction out def)))
 	 (for-each (lambda (a) (inout! a o)) args)
@@ -885,7 +886,8 @@
 
 (define-method (inout! n::let-var/liveness o)
    (with-trace 'liveness "inout! ::let-var/liveness"
-      (with-access::let-var/liveness n (def use body in out bindings)
+      (with-access::let-var/liveness n (def use body in out bindings loc)
+	 (trace-item "loc=" loc)
 	 (set! out o)
 	 (set! in (union use (disjonction out def)))
 	 (multiple-value-bind (def use)
