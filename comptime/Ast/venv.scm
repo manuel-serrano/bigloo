@@ -358,9 +358,7 @@
 		(new (instantiate::global
 			(type *_*)
 			(module module)
-			(jvm-type-name (if (eq? import 'eval)
-					   "eval"
-					   (module->qualified-type module)))
+			(jvm-type-name "")
 			(id ident)
 			(alias (when alias id))
 			(value value)

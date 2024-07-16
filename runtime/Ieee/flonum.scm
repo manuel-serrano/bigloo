@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/flonum.scm       */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/flonum.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Fri Jun 28 13:53:09 2024 (serrano)                */
+;*    Last change :  Wed Jul  3 14:05:16 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -83,6 +83,52 @@
 	    (macro %float->int-bits::int (::float) "FLOAT_TO_INT_BITS")
 	    (macro %int-bits->float::float (::int) "INT_BITS_TO_FLOAT")
 	    (macro $randomfl::double () "RANDOMFL"))
+
+   (wasm    ($flonum? "(ref.test (ref $real) ~0)")
+	    ($=fl "(f64.eq ~0 ~1)")
+	    ($<fl "(f64.lt ~0 ~1)")
+	    ($<=fl "(f64.le ~0 ~1)")
+	    ($>fl "(f64.gt ~0 ~1)")
+	    ($>=fl "(f64.ge ~0 ~1)")
+	    ($+fl "(f64.add ~0 ~1)")
+	    ($-fl "(f64.sub ~0 ~1)")
+	    ($*fl "(f64.mul ~0 ~1)")
+	    ($/fl "(f64.div ~0 ~1)")
+	    ($negfl "(f64.neg ~0)")
+	    ($maxfl "(f64.max ~0 ~1)")
+	    ($minfl "(f64.min ~0 ~1)")
+	    ($absfl "(f64.abs ~0)")
+	    ($sqrt "(f64.sqrt ~0)")
+	    ($floor "(f64.floor ~0)")
+	    ($ceiling "(f64.ceil ~0)")
+	    ($roundfl "(f64.nearest ~0)")
+
+	    ($strtod "(f64.const nan)")
+	    
+	    ($fmod "(f64.const 0)")
+	    ($exp "(f64.const 0)")
+	    ($log "(f64.const 0)")
+	    ($log2 "(f64.const 0)")
+	    ($log10 "(f64.const 0)")
+	    ($sin "(f64.const 0)")
+	    ($cos "(f64.const 0)")
+	    ($tan "(f64.const 0)")
+	    ($asin "(f64.const 0)")
+	    ($acos "(f64.const 0)")
+	    ($atan "(f64.const 0)")
+	    ($atan2 "(f64.const 0)")
+	    ($pow "(f64.const 0)")
+		
+	    (%double->llong-bits "(i64.reinterpret_f64 ~0)")
+	    (%llong-bits->double "(f64.reinterpret_i64 ~0)")
+	    (%float->int-bits "(i32.reinterpret_f32 ~0)")
+	    (%int-bits->float "(f32.reinterpret_i32 ~0)")
+	    ($randomfl "(f64.const 0)")
+
+	    (%ieee-string->double "(f64.const nan)")
+	    (%double->ieee-string "(ref.null none)") ; TODO: implement this function
+	    (%ieee-string->float "(f32.const nan)")
+	    (%float->ieee-string "(ref.null none)")) ; TODO: implement this function
    
    (java    (class foreign
 	       (method static $flonum?::bool (::obj)

@@ -13,8 +13,11 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
+	(use
+		__bexit)
+
    (export ($$bstring->symbol::symbol ::bstring)
-	   ($$bkeyword->symbol::keyword ::bstring)))
+	   ($$bstring->keyword::keyword ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol table                                                     */
@@ -51,6 +54,3 @@
 	     (let ((sym ($make-keyword string)))
 		(set! *keyword-table* (cons (cons string sym) *keyword-table*))
 		sym)))))
-
-
-

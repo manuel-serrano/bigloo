@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/foreign.scm             */
+;*    serrano/trashcan/TBR/toto/runtime/Llib/foreign.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Thu Mar  3 13:31:00 2016 (serrano)                */
+;*    Last change :  Wed Jul  3 14:09:17 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -45,6 +45,13 @@
 	    (macro %void*-ptr-null?::bool (::void*) "FOREIGN_PTR_NULL")
 	    (infix macro $make-string-ptr-null::string () "0L")
 	    (infix macro $make-void*-null::void* () "0L"))
+
+   (wasm    (c-foreign? "(ref.test (ref $foreign) ~0)")
+	    (c-foreign-null? "(ref.is_null ~0)")
+	    (c-foreign-eq? "(ref.eq ~0 ~1)")
+		(foreign-id "(struct.get $foreign $id ~0)")
+	    ($make-string-ptr-null "(ref.null none)")
+	    ($make-void*-null "(ref.null none)"))
    
    (java    (class foreign
 	       (method static c-foreign?::bool (::obj)

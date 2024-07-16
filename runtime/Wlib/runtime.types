@@ -1,0 +1,155 @@
+;; Special types
+(rec
+    (type $cnst (sub (struct)))
+    (type $bunspec (sub final $cnst (struct)))
+    (type $beoa (sub final $cnst (struct)))
+    (type $boptional (sub final $cnst (struct)))
+    (type $bkey (sub final $cnst (struct)))
+    (type $brest (sub final $cnst (struct))))
+
+(type $magic (struct))
+(type $vector (array (mut eqref)))
+(type $procedure (struct 
+    (field $entry funcref) 
+    (field $attr (mut eqref))
+    (field $arity i32)
+    (field $env (ref null $vector))))
+(type $tmpfun (struct (field funcref)))
+
+(tag $fail)
+
+;; Boxed string
+(type $bstring (array (mut i8)))
+(type $ucs2string (array (mut i16)))
+
+(type $regexp (struct))
+
+;; TODO
+(rec
+    (type $pair-nil (struct))
+    (type $symbol (struct (field (ref null $bstring))))
+    (type $keyword (struct (field (ref null $bstring))))
+    (type $custom (struct (field $ident (mut (ref null $bstring)))))
+    (type $weakptr (struct)))
+
+;; Functions types (for closures and variadic calls)
+(type $func0 (func (result eqref)))
+(type $func1 (func (param eqref) (result eqref)))
+(type $func2 (func (param eqref) (param eqref) (result eqref)))
+(type $func3 (func (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func4 (func (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func5 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func6 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func7 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func8 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func9 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func10 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func11 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+
+;; Pairs
+(type $cell (sub (struct (field $car (mut eqref)))))
+(type $pair (sub $cell (struct (field $car (mut eqref)) (field $cdr (mut eqref)))))
+(type $epair (sub $pair (struct 
+    (field $car (mut eqref)) 
+    (field $cdr (mut eqref)) 
+    (field $cer (mut eqref)))))
+
+;; Bignums
+(type $bignum (struct))
+
+;; Boxed numeric types
+(rec
+    (type $bbool (struct (field $v i8)))
+    (type $bchar (struct (field $v i8)))
+    (type $bucs2 (struct (field $v i16)))
+    (type $bint8 (struct (field $v i8)))
+    (type $buint8 (struct (field $v i8)))
+    (type $bint16 (struct (field $v i16)))
+    (type $buint16 (struct (field $v i16)))
+    (type $bint32 (struct (field $v i32)))
+    (type $buint32 (struct (field $v i32)))
+    (type $bint64 (struct (field $v i64)))
+    (type $buint64 (struct (field $v i64)))
+    (type $bint (struct (field $v i64)))
+    (type $buint (struct (field $v i64)))
+    (type $belong (struct (field $v i64)))
+    (type $bllong (struct (field $v i64)))
+    (type $real (struct (field $v f64))))
+
+(rec (type $exit (struct 
+    (field $userp (mut i64))
+    (field $stamp (mut i64))
+    (field $protect (mut eqref))
+    (field $prev (mut (ref null $exit))))))
+(tag $bexception (param (ref $exit)) (param anyref))
+
+;; Classes
+(type $class (struct
+    (field $name (ref null $symbol))
+    (field $module (ref null $symbol))
+    (field $new_fun eqref)
+    (field $alloc_fun (ref null $procedure))
+    (field $nil_fun (ref null $procedure))
+    (field $nil eqref)
+    (field $constructor eqref)
+    (field $super eqref)
+    (field $subclasses (mut eqref))
+    (field $shrink eqref)
+    (field $evdata (mut eqref))
+    (field $ancestors (ref null $vector))
+    (field $virtual_fields (ref null $vector))
+    (field $direct_fields (mut (ref null $vector)))
+    (field $all_fields (mut (ref null $vector)))
+    (field $hash i64)
+    (field $index i64)
+    (field $depth i64)))
+
+(type $struct (struct
+    (field $key eqref)
+    (field $values (ref $vector))))
+
+(type $BgL_objectz00_bglt (sub (struct
+    (field $header i64)
+    (field $widening eqref))))
+
+;; Ports
+(type $output-port (sub (struct)))
+(type $file-output-port (sub $output-port (struct (field $fd i32))))
+(type $input-port (sub (struct)))
+(type $binary-port (sub (struct)))
+
+;; Foreign type
+(type $foreign (struct
+    (field $id (ref null $symbol))))
+
+;; Date type
+(type $date (struct))
+
+;; Thread types
+(type $mutex (struct
+    (field $name eqref)
+    (field $backend eqref)
+    (field $state eqref)))
+(type $condvar (struct))
+(type $semaphore (struct))
+
+;; Network
+(type $socket (struct))
+(type $datagram-socket (struct))
+
+(type $process (struct))
+(type $mmap (struct))
+
+(type $tvector (struct))
+
+;; Dynamic env (for multithreading)
+(type $dynamic-env (struct 
+  (field $top (mut (ref null $exit)))
+  (field $exitd_val (mut eqref))
+  (field $uncaught-exception-handler (mut eqref))
+  (field $error-handler (mut eqref))
+
+  ;; Current ports
+  (field $current-out-port (mut (ref null $output-port)))
+  (field $current-err-port (mut (ref null $output-port)))
+  (field $current-in-port (mut (ref null $input-port)))))

@@ -31,6 +31,7 @@ CONFIGURE	= $(BOOTDIR)/configure
 # The heap file
 HEAPC_FILE	= bigloo.heap
 HEAPJVM_FILE	= bigloo.jheap
+HEAPWASM_FILE	= bigloo.wheap
 # Default object file locations
 OBJDIR_SYS	= obj_s
 OBJDIR_USR	= obj_s
@@ -364,6 +365,26 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
 	          objs/$(CLASSDIR_SYS)/bigloo/runtime/Unsafe/regexp.class
 
 #*---------------------------------------------------------------------*/
+#*    WASM module files                                                  */
+#*---------------------------------------------------------------------*/
+# WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
+#                  $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
+WASMS = objs/$(WASMDIR_SYS)/Llib/bigloo.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/boolean.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/number.wasm objs/$(WASMDIR_SYS)/Ieee/fixnum.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/flonum.wasm objs/$(WASMDIR_SYS)/Ieee/vector.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/pairlist.wasm objs/$(WASMDIR_SYS)/Ieee/equiv.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/string.wasm objs/$(WASMDIR_SYS)/Ieee/symbol.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/output.wasm \
+	objs/$(WASMDIR_SYS)/Llib/bconfigure.wasm \
+	objs/$(WASMDIR_SYS)/Llib/param.wasm \
+	objs/$(WASMDIR_SYS)/Llib/object.wasm \
+	objs/$(WASMDIR_SYS)/Llib/error.wasm \
+	objs/$(WASMDIR_SYS)/Llib/bexit.wasm \
+	objs/$(WASMDIR_SYS)/Llib/thread.wasm \
+	# objs/$(WASMDIR_SYS)/Pp/circle.wasm objs/$(WASMDIR_SYS)/Pp/pp.wasm \
+
+#*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
 #*---------------------------------------------------------------------*/
 C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
@@ -445,7 +466,7 @@ includes: $(BOOTLIBDIR)/bigloo.h \
 #*---------------------------------------------------------------------*/
 #*    The heap construction                                            */
 #*---------------------------------------------------------------------*/
-.PHONY: heap heap-c heap-jvm
+.PHONY: heap heap-c heap-jvm heap-wasm
 
 heap: heap-c
 heap-c: .afile includes
@@ -458,6 +479,13 @@ heap-jvm: .afile .jfile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
+	@ echo "Heap Done..."
+	@ echo "-------------------------------"
+
+heap-wasm: .afile includes
+	$(RM) -f $(BOOTLIBDIR)/$(HEAPWASM_FILE)
+	$(BIGLOO) -target wasm -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
+                  $(EFLAGS) Llib/make_lib.scm -heap $(HEAPWASM_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
 
@@ -613,6 +641,75 @@ class_p/jlib:
                   $(JCFLAGS) $(JLIB_SRC))
 
 #*---------------------------------------------------------------------*/
+#*    Bigloo WASM libraries compilation                                */
+#*---------------------------------------------------------------------*/
+.PHONY: lib-wasm lib-wasm_s lib-wasm_u libs-wasm
+
+libs-wasm:
+	@ $(MAKE) lib-wasm_u
+	@ $(MAKE) lib-wasm_s
+
+lib-wasm: lib-wasm_s
+lib-wasm_s: includes
+	@ echo "\e[1;34mGenerating lib-wasm_s\e[0m"
+	@ $(MAKE) one-lib-wasm \
+                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
+                BFLAGS_USR="$(BSAFEFLAGS)" \
+								WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_s \
+                LIBSUFFIX=_s
+
+lib-wasm_u: includes
+	@ echo "\e[1;34mGenerating lib-wasm_u\e[0m"
+	@ $(MAKE) one-lib-wasm \
+                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
+                BFLAGS_USR="$(BUNSAFEFLAGS)" \
+								WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_u \
+                LIBSUFFIX=_u
+
+one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
+
+WASM_AS=wasm-as
+WASM_AS_FLAGS=-all -g
+WASM_MERGE=wasm-merge
+WASM_MERGE_FLAGS=-all -g -sec
+
+.PHONY: touch-wasm
+touch-wasm:
+	@ touch $(WASMS:objs//%.wasm=%.scm)
+
+$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/$(WASMDIR_SYS)/runtime.wasm $(WASMS)
+	@ echo "\e[1;34mLinking $@\e[0m"
+	@ LST=; for n in $(WASMS); do \
+		file="`basename $$n .wasm`.scm"; \
+		dir=`dirname $$n`; \
+		dir=`basename $$dir`; \
+		LST="$$LST $$n `grep $$dir/$$file .afile | awk '{ print $$1 }' | sed 's/[(]//'`"; \
+	done; \
+	$(WASM_MERGE) $(WASM_MERGE_FLAGS) objs/$(WASMDIR_SYS)/runtime.wasm __runtime $$LST -o $@
+
+objs/wasm_u/runtime.wasm: Wlib/runtime.wat
+	@ echo "\e[34mGenerating WASM for $<\e[0m"
+	@ sed -e '/\(;TYPES;\)/ {' -e 'r Wlib/runtime.types' -e 'd' -e '}' $< > $(@:%.wasm=%.wat) \
+		| $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@
+
+objs/wasm_s/runtime.wasm: Wlib/runtime.wat
+	@ echo "\e[34mGenerating WASM for $<\e[0m"
+	@ sed -e '/\(;TYPES;\)/ {' -e 'r Wlib/runtime.types' -e 'd' -e '}' $< > $(@:%.wasm=%.wat) \
+		| $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@
+
+objs/wasm_u/%.wasm: %.scm
+	@ echo "\e[34mGenerating WASM for $<\e[0m"
+	@ $(BIGLOO) -wasm $(BFLAGS_SYS) $(EFLAGS) -c $< -o $(@:%.wasm=%.wat) \
+    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@ || exit 1
+    # && rm $(@:%.wasm=%.wat) || exit 1
+
+objs/wasm_s/%.wasm: %.scm
+	@ echo "\e[34mGenerating WASM for $<\e[0m"
+	@ $(BIGLOO) -wasm $(BFLAGS_USR) $(EFLAGS) -c $< -o $(@:%.wasm=%.wat) \
+    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@  || exit 1
+    # && rm $(@:%.wasm=%.wat) || exit 1
+
+#*---------------------------------------------------------------------*/
 #*    pop                                                              */
 #*    -------------------------------------------------------------    */
 #*    This entry is used by the bigloo/Makefile (the main Bigloo       */
@@ -691,13 +788,16 @@ compile-bee: lib_p
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-bee install-c install-jvm \
-        uninstall uninstall-bee uninstall-jvm
+.PHONY: install install-bee install-c install-jvm install-wasm \
+        uninstall uninstall-bee uninstall-jvm uninstall-wasm
 
 install:
 	@ $(MAKE) install-c
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) install-jvm; \
+          fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) install-wasm; \
           fi
 
 install-c:
@@ -738,10 +838,14 @@ install-jvm:
              chmod $(MODFILE) $(ZIPDIR)/bigloo_u.zip; \
         fi
 
+install-wasm:
+	cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
+
 install-bee:
 	$(MAKE) install-lib LIB=libbigloo_p-$(RELEASE)
 
-uninstall: uninstall-bee uninstall-jvm
+uninstall: uninstall-bee uninstall-jvm uninstall-wasm
 	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
           for i in $(INCLUDE_FILE:Include/%=%) bigloo_gc.h bigloo_config.h; do \
              $(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$$i; \
@@ -761,6 +865,9 @@ uninstall-jvm:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.jheap
 	-$(RM) -f $(ZIPDIR)/bigloo_s.zip
 	-$(RM) -f $(ZIPDIR)/bigloo_u.zip
+
+uninstall-wasm:
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wasm
 
 uninstall-bee:
 	- $(MAKE) uninstall-lib LIB=libbigloo-$(RELEASE)_p
@@ -944,7 +1051,7 @@ objs-sans-dirs: Jlib/configure.java
 	mkdir -p objs/obj_s/Llib
 	mkdir -p objs/obj_s/R5rs
 	(dirs="Clib Ieee Llib Mlib Ilib R5rs Rgc Eval Lalr Match Pp Read Unsafe"; \
-         objs="obj_u obj_p saw_u saw_s"; \
+         objs="obj_u obj_p saw_u saw_s wasm_s wasm_u"; \
          for o in $$objs; do \
            mkdir -p objs/$$o; \
            for d in $$dirs; do \
@@ -970,7 +1077,7 @@ dirs:
            done; \
          done; \
          dirs="Clib Ilib Ieee Llib Mlib R5rs Rgc Eval Lalr Match Pp Read Unsafe"; \
-         for o in obj_u saw_s saw_u; do \
+         for o in obj_u saw_s saw_u wasm_s wasm_u; do \
            echo objs/$$o; \
            mkdir -p objs/$$o; \
            for d in $$dirs; do \
@@ -979,7 +1086,7 @@ dirs:
            done; \
          done; \
          dirs="Clib Ieee Llib R5rs"; \
-         for o in obj_s obj_p saw_s saw_u; do \
+         for o in obj_s obj_p saw_s saw_u wasm_s wasm_u; do \
            echo objs/$$o; \
            mkdir -p objs/$$o; \
            for d in $$dirs; do \

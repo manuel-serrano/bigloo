@@ -49,6 +49,29 @@
 	    (infix macro c-char-or::uchar (::uchar ::uchar) "|")
 	    (infix macro c-char-and::uchar (::uchar ::uchar) "&")
 	    (macro c-char-not::uchar (::uchar) "~"))
+
+	(wasm  
+		(c-char? "(ref.test (ref $bchar) ~0)")
+	    (c-char=? "(i32.eq ~0 ~1)")
+	    (c-char<? "(i32.lt_u ~0 ~1)")
+	    (c-char>? "(i32.gt_u ~0 ~1)")
+	    (c-char<=? "(i32.le_u ~0 ~1)")
+	    (c-char>=? "(i32.ge_u ~0 ~1)")
+	    (c-char->integer "(i64.extend_i32_u ~0)")
+	    (c-integer->char "(i32.wrap_i64 ~0)")
+	    (c-char-or "(i32.or ~0 ~1)")
+	    (c-char-and "(i32.and ~0 ~1)")
+	    (c-char-not "(i32.xor ~0 (i32.const 255))")
+		
+		;; TODO: implement WASM char
+		(c-char-upcase "~0")
+	    (c-char-downcase "~0")
+		(c-char-alphabetic? "(i32.const 0)")
+	    (c-char-lower-case? "(i32.const 0)")
+	    (c-char-numeric? "(i32.const 0)")
+	    (c-char-upper-case? "(i32.const 0)")
+	    (c-char-whitespace? "(i32.const 0)")
+		)
    
    (java    (class foreign
 	       (method static c-char?::bool (::obj) "CHARP")

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/bit.scm          */
+;*    serrano/trashcan/TBR/toto/runtime/Llib/bit.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 11:06:41 1995                          */
-;*    Last change :  Thu Nov  4 18:55:03 2021 (serrano)                */
+;*    Last change :  Wed Jul  3 14:09:03 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bit management                                                   */
 ;*=====================================================================*/
@@ -116,6 +116,90 @@
 	    (infix macro $bitlshs64::int64 (::int64 ::int) " << ")
 	    (infix macro $bitlshu64::uint64 (::uint64 ::int) " << ")
 	    )
+
+   (wasm    ($bitor "(i64.or ~0 ~1)")
+	    ($bitorelong "(i64.or ~0 ~1)")
+	    ($bitorllong "(i64.or ~0 ~1)")
+	    ($bitors8 "(i32.or ~0 ~1)")
+	    ($bitoru8 "(i32.or ~0 ~1)")
+	    ($bitors16 "(i32.or ~0 ~1)")
+	    ($bitoru16 "(i32.or ~0 ~1)")
+	    ($bitors32 "(i32.or ~0 ~1)")
+	    ($bitoru32 "(i32.or ~0 ~1)")
+	    ($bitors64 "(i64.or ~0 ~1)")
+	    ($bitoru64 "(i64.or ~0 ~1)")
+	    
+	    ($bitand "(i64.and ~0 ~1)")
+	    ($bitandelong "(i64.and ~0 ~1)")
+	    ($bitandllong "(i64.and ~0 ~1)")
+	    ($bitands8 "(i32.and ~0 ~1)")
+	    ($bitandu8 "(i32.and ~0 ~1)")
+	    ($bitands16 "(i32.and ~0 ~1)")
+	    ($bitandu16 "(i32.and ~0 ~1)")
+	    ($bitands32 "(i32.and ~0 ~1)")
+	    ($bitandu32 "(i32.and ~0 ~1)")
+	    ($bitands64 "(i64.and ~0 ~1)")
+	    ($bitandu64 "(i64.and ~0 ~1)")
+		
+	    ($bitnot "(i64.xor ~0 (i64.const -1))")
+	    ($bitnotelong "(i64.xor ~0 (i64.const -1))")
+	    ($bitnotllong "(i64.xor ~0 (i64.const -1))")
+	    ($bitnots8 "(i32.xor ~0 (i32.const -1))")
+	    ($bitnotu8 "(i32.xor ~0 (i32.const -1))")
+	    ($bitnots16 "(i32.xor ~0 (i32.const -1))")
+	    ($bitnotu16 "(i32.xor ~0 (i32.const -1))")
+	    ($bitnots32 "(i32.xor ~0 (i32.const -1))")
+	    ($bitnotu32 "(i32.xor ~0 (i32.const -1))")
+	    ($bitnots64 "(i64.xor ~0 (i64.const -1))")
+	    ($bitnotu64 "(i64.xor ~0 (i64.const -1))")
+	    
+	    ($bitxor "(i64.xor ~0 ~1)")
+	    ($bitxorelong "(i64.xor ~0 ~1)")
+	    ($bitxorllong "(i64.xor ~0 ~1)")
+	    ($bitxors8 "(i32.xor ~0 ~1)")
+	    ($bitxoru8 "(i32.xor ~0 ~1)")
+	    ($bitxors16 "(i32.xor ~0 ~1)")
+	    ($bitxoru16 "(i32.xor ~0 ~1)")
+	    ($bitxors32 "(i32.xor ~0 ~1)")
+	    ($bitxoru32 "(i32.xor ~0 ~1)")
+	    ($bitxors64 "(i64.xor ~0 ~1)")
+	    ($bitxoru64 "(i64.xor ~0 ~1)")
+
+		($bitrsh "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($bitrshelong "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($bitrshllong "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($bitrshs8 "(i32.shr_s ~0 ~1)")
+	    ($bitrshu8 "(i32.shr_u ~0 ~1)")
+	    ($bitrshs16 "(i32.shr_s ~0 ~1)")
+	    ($bitrshu16 "(i32.shr_u ~0 ~1)")
+	    ($bitrshs32 "(i32.shr_s ~0 ~1)")
+	    ($bitrshu32 "(i32.shr_u ~0 ~1)")
+	    ($bitrshs64 "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($bitrshu64 "(i64.shr_u ~0 (i64.extend_i32_u ~1))")
+	    
+	    ($bitursh "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($biturshelong "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($biturshllong "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($biturshs8 "(i32.shr_s ~0 ~1)")
+	    ($biturshu8 "(i32.shr_u ~0 ~1)")
+	    ($biturshs16 "(i32.shr_s ~0 ~1)")
+	    ($biturshu16 "(i32.shr_u ~0 ~1)")
+	    ($biturshs32 "(i32.shr_s ~0 ~1)")
+	    ($biturshu32 "(i32.shr_u ~0 ~1)")
+	    ($biturshs64 "(i64.shr_s ~0 (i64.extend_i32_u ~1))")
+	    ($biturshu64 "(i64.shr_u ~0 (i64.extend_i32_u ~1))")
+		
+	    ($bitlsh "(i64.shl ~0 (i64.extend_i32_u ~1))")
+	    ($bitlshelong "(i64.shl ~0 (i64.extend_i32_u ~1))")
+	    ($bitlshllong "(i64.shl ~0 (i64.extend_i32_u ~1))")
+	    ($bitlshs8 "(i32.shl ~0 ~1)")
+	    ($bitlshu8 "(i32.shl ~0 ~1)")
+	    ($bitlshs16 "(i32.shl ~0 ~1)")
+	    ($bitlshu16 "(i32.shl ~0 ~1)")
+	    ($bitlshs32 "(i32.shl ~0 ~1)")
+	    ($bitlshu32 "(i32.shl ~0 ~1)")
+	    ($bitlshs64 "(i64.shl ~0 (i64.extend_i32_u ~1))")
+	    ($bitlshu64 "(i64.shl ~0 (i64.extend_i32_u ~1))"))
    
    (java    (class foreign
 	       (method static $bitor::long (::long ::long)

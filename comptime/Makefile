@@ -232,7 +232,7 @@ JVM_OBJ		= $(JVM_FILE:%=Jvm/%.o)
 #*--- BackEnd ---------------------------------------------------------*/
 BACKEND_FILE    = backend walk init lib cplib cvm bvm \
                   c c_main c_proto c_emit  \
-                  jvm jvm_class
+                  jvm jvm_class wasm
 
 BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 
@@ -254,6 +254,11 @@ SAW_BBV_OBJ	= $(SAW_BBV_FILE:%=SawBbv/%.o)
 SAW_C_FILE      = compile code
 
 SAW_C_OBJ	= $(SAW_C_FILE:%=SawC/%.o)
+
+#*--- SawWasm ---------------------------------------------------------*/
+SAW_WASM_FILE	= compile code
+
+SAW_WASM_OBJ	= $(SAW_WASM_FILE:%=SawWasm/%.o)
 
 #*--- SawJvm ----------------------------------------------------------*/
 SAW_JVM_FILE	= compile type code inline funcall names out jld
@@ -362,7 +367,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) $(READ_OBJ) \
                   $(LIFEXT_OBJ) $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) \
                   $(OBJECT_OBJ) $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) \
                   $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) \
-                  $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) \
+                  $(SAW_C_OBJ) $(SAW_WASM_OBJ) $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) \
                   $(ISA_OBJ) $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) \
                   $(LIVENESS_OBJ)
 

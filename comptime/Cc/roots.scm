@@ -33,7 +33,7 @@
    (unit 'gc-roots
       -1
       (if (backend-pragma-support (the-backend))
-	  '(begin (pragma::obj :srfi bigloo-c "bgl_gc_roots_register()"))
+	  '(begin (pragma::obj srfi: bigloo-c "bgl_gc_roots_register()"))
 	  `(begin #unspecified))
       #t
       #f)) 

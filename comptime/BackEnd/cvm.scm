@@ -18,4 +18,5 @@
    (include "BackEnd/cvm.sch")
    (export (abstract-class cvm::backend)
 	   (class sawc::cvm)
+	   (class wasm::cvm)
 	   (class cgen::cvm)))

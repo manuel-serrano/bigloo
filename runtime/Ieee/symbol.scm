@@ -44,6 +44,7 @@
 	    __bignum)
 
    (extern  (macro c-symbol?::bool (::obj) "SYMBOLP")
+		(macro $make-symbol::symbol (::bstring) "")
 	    (c-string->symbol::symbol (::string) "string_to_symbol")
 	    ($bstring->symbol::symbol (::bstring) "bstring_to_symbol")
 	    ($gensym::symbol (::obj) "bgl_gensym")
@@ -52,13 +53,21 @@
 	    (macro set-symbol-plist::obj (::obj ::obj) "SET_SYMBOL_PLIST")
 	    (symbol-exists?::bool (::string) "symbol_exists_p")
 	    
-            (macro c-keyword?::bool (::obj) "KEYWORDP")
+        (macro c-keyword?::bool (::obj) "KEYWORDP")
+		(macro $make-keyword::keyword (::bstring) "")
 	    (c-string->keyword::keyword (::string) "string_to_keyword")
 	    ($bstring->keyword::keyword (::bstring) "bstring_to_keyword")
 	    (macro c-keyword->string::bstring (::keyword) "KEYWORD_TO_STRING")
 	    (macro c-keyword-plist::obj (::obj) "GET_KEYWORD_PLIST")
 	    (macro set-keyword-plist::obj (::obj ::obj) "SET_KEYWORD_PLIST")
 	    (macro cnst->integer::long (::obj) "CCNST"))
+
+	(wasm
+		(c-symbol? "(ref.test (ref $symbol) ~0)")
+		($make-symbol "(struct.new $symbol ~0)")
+		(c-keyword? "(ref.test (ref $keyword) ~0)")
+		($make-keyword "(struct.new $keyword ~0)")
+	)
    
    (java    (class foreign
 	       (method static c-symbol?::bool (::obj)

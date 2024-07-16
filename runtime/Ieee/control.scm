@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/control.scm      */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/control.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Thu Sep 16 17:42:58 2021 (serrano)                */
+;*    Last change :  Wed Jul  3 14:03:20 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -44,6 +44,11 @@
 	    
 	    (macro push-before!::obj (::procedure) "PUSH_BEFORE")
 	    (macro pop-before!::obj () "POP_BEFORE"))
+
+   (wasm    (c-procedure? "(ref.test (ref $procedure) ~0)")
+            ;; TODO: is really needed to implement push-before and pop-before?
+            (push-before! "(global.get $BUNSPEC)")
+            (pop-before! "(global.get $BUNSPEC)"))
    
    (java    (class foreign
 	       (method static c-procedure?::bool (::obj) "PROCEDUREP")

@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/bexit.scm        */
+;*    serrano/trashcan/TBR/toto/runtime/Llib/bexit.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
@@ -78,12 +78,32 @@
 		    (export $exitd-mutex-profile "bgl_exitd_mutex_profile"))))
    
    (cond-expand (bigloo-c
+		 (extern 
+		    (export $failsafe-mutex-profile "bgl_failsafe_mutex_profile")
+		    (export $exitd-mutex-profile "bgl_exitd_mutex_profile"))))
+   
+   (cond-expand (bigloo-c
 		 (export
 		    (inline env-get-exitd-val::obj ::dynamic-env)
 		    (inline env-set-exitd-val!::obj ::dynamic-env ::obj)
 		    ($exitd-mutex-profile)
 		    ($failsafe-mutex-profile))))
-   
+
+   (wasm
+		;; TODO: rewrite implicit current dynamic env functions (like push-exit!) as scheme functions.
+        ; (push-exit! "(class $PUSH_ENV_EXIT (global.get $current-dynamic-env) ~0 ~1)")
+	    ; ($env-push-exit! "(call $PUSH_ENV_EXIT ~0 ~1 ~2)")
+	    ; (pop-exit! "(call $POP_ENV_EXIT (global.get $current-dynamic-env))")
+	    ; ($env-pop-exit! "(call $POP_ENV_EXIT ~0)")
+	    ($exitd->exit "(ref.cast (ref $exit) ~0)")
+	   ; ($get-exitd-val "(struct.get $dynamic-env $exitd_val (global.get $current-dynamic-env))")
+	    ($env-get-exitd-val "(struct.get $dynamic-env $exitd_val ~0)")
+		
+	    ; ($exitd-protect "(call $BGL_EXITD_PROTECT ~0)")
+	    ; ($exitd-protect-set! "(call $BGL_EXITD_PROTECT_SET ~0 ~1)")
+	    ; ($exitd-push-protect! "(call $BGL_EXITD_PUSH_PROTECT ~0 ~1)")
+		)
+	    
    (java    (class foreign
 	       (method static push-exit!::obj (::exit ::long)
 		  "PUSH_EXIT")

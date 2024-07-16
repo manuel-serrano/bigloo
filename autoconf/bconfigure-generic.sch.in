@@ -14,18 +14,19 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   (extern $$configure-release-number::bstring
+   (export 
+	   $$configure-release-number::bstring
 	   $$configure-specific-version::bstring
 	   $$configure-homeurl::bstring
 	   $$configure-shell::bstring
 	   $$configure-shell-mv::bstring
 	   $$configure-shell-rm::bstring
-           $$configure-c-compiler-style::bstring
+       $$configure-c-compiler-style::bstring
 	   $$configure-c-compiler::bstring
 	   $$configure-c-ld::bstring
 	   $$configure-c-compiler-o-option::bstring
 	   $$configure-c-compiler-fp-option::bstring
-           $$configure-c-compiler-debug-option::bstring
+       $$configure-c-compiler-debug-option::bstring
 	   $$configure-c-compiler-optim-flag::bstring
 	   $$configure-c-compiler-rpath::bstring
 	   $$configure-c-flags::bstring
@@ -34,12 +35,12 @@
 	   $$configure-c-nan-flag::bstring
 	   $$configure-c-strip-flag::bstring
 	   $$configure-c-prof-flag::bstring
-           $$configure-c-object-file-extension::bstring
+       $$configure-c-object-file-extension::bstring
 	   $$configure-c-string-split::bool
-           $$configure-c-linker-style::bstring
+       $$configure-c-linker-style::bstring
 	   $$configure-c-linker-flags::bstring
 	   $$configure-c-linker-o-option::bstring
-           $$configure-c-linker-debug-option::bstring
+       $$configure-c-linker-debug-option::bstring
 	   $$configure-c-linker-optim-flags::bstring
 	   $$configure-c-linker-soname-option::bstring
 	   $$configure-c-linker-shared-option::bstring

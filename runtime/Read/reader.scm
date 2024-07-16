@@ -58,6 +58,15 @@
 	   (macro make-cnst::obj (::long) "BCNST")
 	   (macro $nan::double "BGL_NAN")
 	   (macro $infinity::double "BGL_INFINITY"))
+
+	(wasm
+		(unspec "(global.get $BUNSPEC)")
+		(boptional "(global.get $BOPTIONAL)")
+		(brest "(global.get $BREST)")
+		(bkey "(global.get $BREST)")
+		;; TODO: make cnst
+		(make-cnst "(ref.null none)")
+		)
    
    (java   (class foreign
 	      (field static unspec::obj "BUNSPEC")

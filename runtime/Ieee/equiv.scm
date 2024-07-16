@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/equiv.scm        */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/equiv.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Fri Nov  4 16:33:19 2022 (serrano)                */
+;*    Last change :  Wed Jul  3 14:03:37 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -47,6 +47,8 @@
 	    __evenv)
    
    (extern  (infix macro c-eq?::bool (::obj ::obj) "=="))
+
+   (wasm    (c-eq? "(ref.eq ~0 ~1)"))
    
    (java    (class foreign
 	       (method static c-eq?::bool (::obj ::obj) "EQ")

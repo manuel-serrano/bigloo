@@ -61,6 +61,13 @@
 	    ($create-struct::struct (::symbol ::int) "create_struct")
 	    (macro $create-s-struct::struct (::symbol ::int)
 		   "CREATE_S_STRUCT"))
+
+	(wasm
+		($struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
+		(u-struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
+		($struct-key "(struct.get $struct $key ~0)")
+		($struct? "(ref.test (ref $struct) ~0)")
+	    ($struct-length "(array.len (struct.get $struct $values ~0))"))
    
    (java    (class foreign
 	       (method static $struct-ref::obj (::struct ::int)

@@ -221,6 +221,11 @@
 	    (macro $F_ULOCK::int "F_ULOCK")
 	    (macro $F_TEST::int "F_TEST"))
 
+	(wasm
+		(c-input-port? "(ref.test (ref $input-port) ~0)")
+		(c-output-port? "(ref.test (ref $output-port) ~0)")
+		)
+
    (java    (class foreign
 	       (method static c-input-port?::bool  (::obj)
 		  "INPUT_PORTP")

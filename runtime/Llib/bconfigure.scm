@@ -20,7 +20,7 @@
    
    (cond-expand
       ((and (not bigloo-c) (not bigloo-jvm))
-       (include "Ieee/bconfigure-generic.sch")))
+       (include "Llib/bconfigure-generic.sch")))
    
    (import  __error)
    
@@ -129,6 +129,25 @@
 	   (macro $configure-have-alloca::bool "BGL_HAVE_ALLOCA")
 	   (macro $configure-have-c99stackalloc::bool "BGL_HAVE_C99STACKALLOC")
 	   )
+
+	(wasm
+		($configure-have-shared-library "(i32.const 0)")
+		($configure-have-bigloo-abort "(i32.const 0)")
+		($configure-have-bdb "(i32.const 0)")
+		($configure-have-dlopen "(i32.const 0)")
+		($configure-big-endian "(i32.const 0)") ; The WASM VM is little-endian
+		($configure-gc-custom "(i32.const 0)")
+		($configure-gc "(i32.const 0)")
+		($configure-int-size "(i32.const 64)")
+		($configure-elong-size "(i32.const 64)")
+		($configure-have-unistring "(i32.const 0)")
+		($configure-have-syslog "(i32.const 0)")
+		($configure-have-getrlimit "(i32.const 0)")
+		($configure-have-overflow "(i32.const 0)")
+		($configure-have-spinlock "(i32.const 0)")
+		($configure-have-alloca "(i32.const 0)")
+		($configure-have-c99stackalloc "(i32.const 0)")
+		)
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/number.scm       */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/number.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Tue Oct 25 07:54:25 2022 (serrano)                */
+;*    Last change :  Wed Jul  3 14:05:40 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -61,6 +61,25 @@
 
 	    (export exact->inexact "bgl_exact_to_inexact")
 	    (export inexact->exact "bgl_inexact_to_exact"))
+
+   (wasm    ($fixnum->flonum "(f64.convert_i64_s ~0)")
+	    ($flonum->fixnum "(i64.trunc_f64_s ~0)")
+	    
+	    ($elong->flonum  "(f64.convert_i64_s ~0)")
+	    ($flonum->elong "(i64.trunc_f64_s ~0)")
+	    
+	    ($llong->flonum  "(f64.convert_i64_s ~0)")
+	    ($flonum->llong "(i64.trunc_f64_s ~0)")
+	    
+	    ($flonum->int32 "(i32.trunc_f64_s ~0)")
+	    ($int32->flonum "(f64.convert_i32_s ~0)")
+	    ($flonum->uint32 "(i32.trunc_f64_u ~0)")
+	    ($uint32->flonum "(f64.convert_i32_u ~0)")
+	    
+	    ($flonum->int64 "(i64.trunc_f64_s ~0)")
+	    ($int64->flonum "(f64.convert_i64_s ~0)")
+	    ($flonum->uint64 "(i64.trunc_f64_u ~0)")
+	    ($uint64->flonum "(f64.convert_i64_u ~0)"))
 
    (java    (class foreign
 	       (method static $fixnum->flonum::double (::long)

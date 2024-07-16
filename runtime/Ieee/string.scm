@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/string.scm       */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/string.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
@@ -39,6 +39,10 @@
 	    __r4_control_features_6_9
 	    
 	    __evenv)
+
+	; (cond-expand
+    ;  ((and (not bigloo-c) (not bigloo-jvm))
+    ;   (include "Ieee/string-generic.sch")))
    
    (extern  (macro $string?::bool (::obj) "STRINGP")
 	    ($make-string::bstring (::long ::uchar) "make_string")
@@ -88,6 +92,19 @@
 	    ($blit-string::obj (::bstring ::long ::bstring ::long ::long)
 				"blit_string")
 	    (macro $string-shrink!::bstring (::bstring ::long) "bgl_string_shrink"))
+
+   (wasm    ($string? "(ref.test (ref $bstring) ~0)")
+		($make-string "(array.new $bstring ~1 (i32.wrap_i64 ~0))")
+	    ($make-string/wo-fill "(array.new_default $bstring (i32.wrap_i64 ~0))")
+	    ($string->bstring-len "~0")
+	    ($string-length "(i64.extend_i32_u (array.len ~0))")
+	    ($string-ref "(array.get $bstring ~0 (i32.wrap_i64 ~1))")
+		;; TODO: maybe move string-set to its own function in the runtime
+	    ($string-set! "(block (result eqref) (array.set $bstring ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))")
+		
+		($string-bound-check? "(i64.lt_u ~0 ~1)")
+	    ($blit-string "(block (result eqref) (array.copy $bstring $bstring ~0 (i32.wrap_i64 ~1) ~2 (i32.wrap_i64 ~3) (i32.wrap_i64 ~4)) (global.get $BUNSPEC))")
+	    ($string-shrink! "~0"))
 
    (java    (class foreign
 	       (method static $string?::bool (::obj)

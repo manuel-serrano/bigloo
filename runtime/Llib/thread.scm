@@ -99,6 +99,19 @@
 		   "BGL_THREAD_BACKEND")
 	    (macro $thread-backend-set!::void (::obj)
 		   "BGL_THREAD_BACKEND_SET"))
+
+	(wasm
+		($dynamic-env? "(ref.test (ref $dynamic-env) ~0)")
+		($mutex? "(ref.test (ref $mutex) ~0)")
+		($make-mutex "(struct.new_default $mutex)")
+		($mutex-name "(struct.get $mutex $name ~0)")
+		($mutex-backend "(struct.get $mutex $backend ~0)")
+		;; TODO
+		($mutex-lock "(i32.const 1)")
+		($mutex-lock-prelock "(i32.const 1)")
+		($mutex-timed-lock "(i32.const 1)")
+		($mutex-unlock "(i32.const 1)")
+		($mutex-state "(struct.get $mutex $state ~0)"))
 	    
    (java    (class foreign
 	       (method static $dynamic-env?::bool (::obj)

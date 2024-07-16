@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/control5.scm     */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/control5.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb 27 14:11:26 1998                          */
-;*    Last change :  Wed Sep 15 14:32:55 2021 (serrano)                */
+;*    Last change :  Wed Jul  3 14:02:47 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    An implementation of the R5RS multiple values.                   */
 ;*=====================================================================*/

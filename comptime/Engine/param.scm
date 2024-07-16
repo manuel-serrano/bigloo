@@ -1087,7 +1087,7 @@
 ;*    *target-language* ...                                            */
 ;*---------------------------------------------------------------------*/
 (param-define *target-language*
-   "The target language (either c, c-saw, jvm, or .net)"
+   "The target language (either c, c-saw, wasm, jvm, or .net)"
    (string->symbol (bigloo-config 'default-back-end)))
 
 ;*---------------------------------------------------------------------*/

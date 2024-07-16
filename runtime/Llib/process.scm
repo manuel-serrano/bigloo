@@ -59,6 +59,26 @@
 	    (c-process-list::obj () "c_process_list")
 	    (c-process-nil::process () "bgl_process_nil"))
 
+	(wasm
+		;; TODO: implement WASM processes
+		(c-process? "(ref.test (ref $process) ~0)")
+		(c-process-pid "(i32.const 0)")
+		(c-process-input-port "(global.get $BUNSPEC)")
+		(c-process-output-port "(global.get $BUNSPEC)")
+		(c-process-error-port "(global.get $BUNSPEC)")
+		(c-process-alive? "(i32.const 0)")
+		(c-process-wait "(global.get $BUNSPEC)")
+		(c-process-exit-status "(global.get $BUNSPEC)")
+		(c-process-send-signal "(global.get $BUNSPEC)")
+		(c-process-kill "(global.get $BUNSPEC)")
+		(c-process-stop "(global.get $BUNSPEC)")
+		(c-process-continue "(global.get $BUNSPEC)")
+		(c-run-process "(global.get $BUNSPEC)")
+		(c-unregister-process "(global.get $BUNSPEC)")
+		(c-process-list "(global.get $BUNSPEC)")
+		(c-process-nil "(struct.new_default $process)")
+		)
+
    (java    (class foreign
 	       (method static c-process?::bool (::obj)
 		       "PROCESSP")

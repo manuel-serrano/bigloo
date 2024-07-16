@@ -1086,12 +1086,14 @@
       (("-fread-plain" (help "Read source from plain text file"))
        (set! *reader* 'plain))
       ;; target
-      (("-target" ?lang (help "DON'T USE, (see -native, -jvm)"))
+      (("-target" ?lang (help "DON'T USE, (see -native, -jvm, -wasm)"))
        (case (string->symbol lang)
 	  ((c)
 	   'nothing)
 	  ((jvm)
 	   (set! *target-language* 'jvm))
+	  ((wasm)
+	   (set! *target-language* 'wasm))
 	  ((.net)
 	   (set! *target-language* '.net))
 	  (else

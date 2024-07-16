@@ -14,6 +14,7 @@
 	   saw_defs
 	   backend_cplib
 	   backend_backend
+	   backend_backend
 	   )
    (export (global->rtl::block var::global)
 	   (local->reg::rtl_reg var::local))

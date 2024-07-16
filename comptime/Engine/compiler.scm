@@ -91,6 +91,7 @@
 	    backend_walk)
 
    (with    backend_c
+		backend_wasm
 	    backend_jvm)
    
    (export  (compiler)))

@@ -51,6 +51,14 @@
    	    (macro c-custom-identifier-set!::obj (::custom ::string)
 		   "CUSTOM_IDENTIFIER_SET")
 	    (c-custom-nil::custom () "bgl_custom_nil"))
+
+	(wasm
+		(c-custom? "(ref.test (ref $custom) ~0)")
+		(c-custom-equal? "(ref.eq ~0 ~1)")
+		(c-custom-hash "(i32.const 0)") ;; TODO: implement hashing for custom type
+		(c-custom-identifier "(struct.get $custom $ident ~0)")
+		(c-custom-nil "(struct.new_default $custom)")
+	)
    
    (java    (class foreign
 	       (method static c-custom?::bool (::obj)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/boolean.scm      */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/boolean.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:34:45 1995                          */
-;*    Last change :  Sun Sep 23 17:33:52 2018 (serrano)                */
+;*    Last change :  Wed Jul  3 14:02:15 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.1. Booleans (page 13, r4)                                      */
 ;*=====================================================================*/
@@ -32,6 +32,8 @@
    (extern  (macro $boolean?::bool (::obj) "BOOLEANP")
 	    (macro btrue::bbool "BTRUE")
 	    (macro bfalse::bbool "BFALSE"))
+
+   (wasm    ($boolean? "(ref.test (ref $bbool) ~0)"))
    
    (java    (class foreign
 	       (method static $boolean?::bool (::obj) "BOOLEANP")

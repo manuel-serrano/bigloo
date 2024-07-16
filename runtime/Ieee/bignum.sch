@@ -86,6 +86,9 @@
       (macro $quotientelong-safe::obj (::elong ::elong) "BGL_SAFE_QUOTIENT_ELONG")
       (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG"))
 
+	(wasm
+		($bignum? "(ref.test (ref $bignum) ~0)"))
+	
    (java
       (class foreign
 	 (method static $bignum?::bool (::obj)

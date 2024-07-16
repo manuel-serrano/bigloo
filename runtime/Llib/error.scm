@@ -89,6 +89,24 @@
 	    (macro $errno-io-connection-error::int "BGL_IO_CONNECTION_ERROR")
 	    (macro $errno-process-exception::int "BGL_PROCESS_EXCEPTION"))
 
+	(wasm
+		(sighup "(i32.const 1)")
+	    (sigint "(i32.const 2)")
+	    (sigquit "(i32.const 3)")
+	    (sigill "(i32.const 4)")
+	    (sigtrap "(i32.const 5)")
+	    (sigabrt "(i32.const 6)")
+	    (sigbus "(i32.const 7)")
+	    (sigfpe "(i32.const 8)")
+	    (sigkill "(i32.const 9)")
+	    (sigusr1 "(i32.const 10)")
+	    (sigsegv "(i32.const 11)")
+	    (sigusr2 "(i32.const 12)")
+	    (sigpipe "(i32.const 13)")
+	    (sigalrm "(i32.const 14)")
+	    (sigterm "(i32.const 15)")
+	    (sigwinch "(i32.const 28)"))
+
    (java    (export the_failure "the_failure")
 	    (export error/errno "bgl_system_failure")
 	    (class foreign

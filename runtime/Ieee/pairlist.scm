@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/pairlist.scm     */
+;*    serrano/trashcan/TBR/toto/runtime/Ieee/pairlist.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Mon Jun 14 15:34:11 2021 (serrano)                */
+;*    Last change :  Wed Jul  3 14:06:04 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -57,6 +57,19 @@
 	    (export reverse! "bgl_reverse_bang")
 	    (export remq "bgl_remq")
 	    (export remq! "bgl_remq_bang"))
+
+   (wasm    ($pair? "(ref.test (ref $pair) ~0)")
+            ($epair? "(ref.test (ref $epair) ~0)")
+	    ($cons "(struct.new $pair ~0 ~1)")
+	    ($acons "(struct.new $pair ~0 ~1)")
+	    ($econs "(struct.new $epair ~0 ~1 ~2)")
+	    ($car "(struct.get $pair $car (ref.cast (ref $pair) ~0))")
+	    ($cdr "(struct.get $pair $cdr (ref.cast (ref $pair) ~0))")
+	    ($cer "(struct.get $epair $cer (ref.cast (ref $epair) ~0))")
+	    ; ($set-car! "(struct.set $pair $car (ref.cast (ref $pair) ~0) ~1)")
+	    ; ($set-cdr! "(struct.set $pair $cdr (ref.cast (ref $pair) ~0) ~1)")
+	    ; ($set-cer! "(struct.set $epair $cer (ref.cast (ref $epair) ~0) ~1)")
+	    ($null? "(ref.is_null ~0)"))
    
    (java    (class foreign
 	       (method static $pair?::bool (::obj)
