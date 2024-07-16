@@ -1,0 +1,179 @@
+;; @CONFIGURE@
+;*=====================================================================*/
+;*    .../project/bigloo/bigloo/autoconf/bconfigure-generic.sch.in     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Tue Jul 16 13:12:00 2024                          */
+;*    Last change :  Tue Jul 16 13:53:24 2024 (serrano)                */
+;*    Copyright   :  2024 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Generic configuration                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The directives                                                   */
+;*---------------------------------------------------------------------*/
+(directives
+   (extern $$configure-release-number::bstring
+	   $$configure-specific-version::bstring
+	   $$configure-homeurl::bstring
+	   $$configure-shell::bstring
+	   $$configure-shell-mv::bstring
+	   $$configure-shell-rm::bstring
+           $$configure-c-compiler-style::bstring
+	   $$configure-c-compiler::bstring
+	   $$configure-c-ld::bstring
+	   $$configure-c-compiler-o-option::bstring
+	   $$configure-c-compiler-fp-option::bstring
+           $$configure-c-compiler-debug-option::bstring
+	   $$configure-c-compiler-optim-flag::bstring
+	   $$configure-c-compiler-rpath::bstring
+	   $$configure-c-flags::bstring
+	   $$configure-c-strict-stdc::bool
+	   $$configure-c-pic-flag::bstring
+	   $$configure-c-nan-flag::bstring
+	   $$configure-c-strip-flag::bstring
+	   $$configure-c-prof-flag::bstring
+           $$configure-c-object-file-extension::bstring
+	   $$configure-c-string-split::bool
+           $$configure-c-linker-style::bstring
+	   $$configure-c-linker-flags::bstring
+	   $$configure-c-linker-o-option::bstring
+           $$configure-c-linker-debug-option::bstring
+	   $$configure-c-linker-optim-flags::bstring
+	   $$configure-c-linker-soname-option::bstring
+	   $$configure-c-linker-shared-option::bstring
+	   $$configure-ld-library-dir::bstring
+	   $$configure-library-directory::bstring
+	   $$configure-non-custom-gc-directory::bstring
+ 	   $$configure-zip-directory::bstring
+ 	   $$configure-dll-directory::bstring
+ 	   $$configure-user-libraries::bstring
+	   $$configure-c-beautifier::bstring
+	   $$configure-dirname-cmd::bstring
+	   $$configure-library-base-name::bstring
+	   $$configure-heap-debug-copt::bstring
+ 	   $$configure-have-shared-library::bool
+	   $$configure-shared-link-option::bstring
+	   $$configure-static-link-option::bstring
+	   $$configure-shared-lib-suffix::bstring
+	   $$configure-auto-finalizer::bool
+	   $$configure-have-dlopen::bool
+	   $$configure-dlopen-lib::bstring
+	   $$configure-have-bigloo-abort::bool
+	   $$configure-java::bstring
+	   $$configure-jar::bstring
+	   $$configure-java-shell::bstring
+	   $$configure-jflags::bstring
+	   $$configure-jvflags::bstring
+	   $$configure-default-back-end::bstring
+	   $$configure-gc-lib::bstring
+	   $$configure-gc-custom::bool
+	   $$configure-gc::int
+	   $$configure-have-bdb::bool
+	   $$configure-dns-cache-enabled::bool
+	   $$configure-big-endian::bool
+	   $$configure-regexp-family::bstring
+	   $$configure-nan-tagging::bool
+	   $$configure-int-size::int
+	   $$configure-elong-size::int
+	   $$configure-have-unistring::bool
+	   $$configure-have-syslog::bool
+	   $$configure-have-getrlimit::bool
+	   $$configure-have-overflow::bool
+	   $$configure-class-display-min-size::long
+	   $$configure-os-class::bstring
+	   $$configure-os-name::bstring
+	   $$configure-os-arch::bstring
+	   $$configure-os-version::bstring
+	   $$configure-thread-local-storage::bool
+	   $$configure-have-spinlock::bool
+	   $$cfg-no-gc::long
+	   $$cfg-boehm-gc::long
+	   $$cfg-saw-gc::long
+	   $$configure-have-alloca::bool
+	   $$configure-have-c99stackalloc::bool))
+
+;*---------------------------------------------------------------------*/
+;*    definitions                                                      */
+;*---------------------------------------------------------------------*/
+(define $$configure-release-number::bstring "@BGL_RELEASE_NUMBER@")
+(define $$configure-specific-version::bstring "@BGL_SPECIFIC_VERSION@")
+(define $$configure-homeurl::bstring "@BGL_HOMEURL@")
+(define $$configure-shell::bstring "@SHELL@")
+(define $$configure-shell-mv::bstring "@SHELL_MV@")
+(define $$configure-shell-rm::bstring "@SHELL_RM@")
+(define $$configure-c-compiler-style::bstring "@C_COMPILER_STYLE@")
+(define $$configure-c-compiler::bstring "@C_COMPILER@")
+(define $$configure-c-ld::bstring "@C_LD@")
+(define $$configure-c-compiler-o-option::bstring "@C_COMPILER_O_OPTION@")
+(define $$configure-c-compiler-fp-option::bstring "@C_COMPILER_FP_OPTION@")
+(define $$configure-c-compiler-debug-option::bstring "@C_COMPILER_DEBUG_OPTION@")
+(define $$configure-c-compiler-optim-flag::bstring "@C_COMPILER_OPTIM_FLAGS@")
+(define $$configure-c-compiler-rpath::bstring "@C_COMPILER_RPATH@")
+(define $$configure-c-flags::bstring "@C_FLAGS@")
+(define $$configure-c-strict-stdc::bool "@BGL_STRICT_STDC@")
+(define $$configure-c-pic-flag::bstring "@C_PICFLAGS@")
+(define $$configure-c-nan-flag::bstring "@C_NANFLAGS@")
+(define $$configure-c-strip-flag::bstring "@C_STRIP_FLAGS@")
+(define $$configure-c-prof-flag::bstring "@C_PROFILE_FLAGS@")
+(define $$configure-c-object-file-extension::bstring "@C_OBJECT_FILE_EXTENSION@")
+(define $$configure-c-string-split::bool "@C_STRING_SPLIT@")
+(define $$configure-c-linker-style::bstring "@C_LINKER_STYLE@")
+(define $$configure-c-linker-flags::bstring "@C_LINKER_FLAGS@")
+(define $$configure-c-linker-o-option::bstring "@C_LINKER_O_OPTION@")
+(define $$configure-c-linker-debug-option::bstring "@C_LINKER_DEBUG_OPTION@")
+(define $$configure-c-linker-optim-flags::bstring "@C_LINKER_OPTIM_FLAGS@")
+(define $$configure-c-linker-soname-option::bstring "@C_LINKER_SONAME_OPTION@")
+(define $$configure-c-linker-shared-option::bstring "@C_LINKER_SHARED_OPTION@")
+(define $$configure-ld-library-dir::bstring "@BGL_LD_LIBRARY_DIR@")
+(define $$configure-library-directory::bstring "@LIBRARY_DIRECTORY@")
+(define $$configure-non-custom-gc-directory::bstring "@BGL_NON_CUSTOM_GC_DIR@")
+(define $$configure-zip-directory::bstring "@ZIP_DIRECTORY@")
+(define $$configure-dll-directory::bstring "@DLL_DIRECTORY@")
+(define $$configure-user-libraries::bstring "@USER_LIBRARIES@")
+(define $$configure-c-beautifier::bstring "@C_BEAUTIFIER@")
+(define $$configure-dirname-cmd::bstring "@DIRNAME_CMD@")
+(define $$configure-library-base-name::bstring "@LIBRARY_BASE_NAME@")
+(define $$configure-heap-debug-copt::bstring "@BGL_HEAP_DEBUG_COPT@")
+(define $$configure-have-shared-library::bool #t)
+(define $$configure-shared-link-option::bstring "")
+(define $$configure-static-link-option::bstring "")
+(define $$configure-shared-lib-suffix::bstring "wat")
+(define $$configure-auto-finalizer::bool #f)
+(define $$configure-have-dlopen::bool #t)
+(define $$configure-dlopen-lib::bstring "")
+(define $$configure-have-bigloo-abort::bool #f)
+(define $$configure-java::bstring "")
+(define $$configure-jar::bstring "")
+(define $$configure-java-shell::bstring "")
+(define $$configure-jflags::bstring "")
+(define $$configure-jvflags::bstring "")
+(define $$configure-default-back-end::bstring "@BGL_DEFAULT_BACK_END@")
+(define $$configure-gc-lib::bstring "")
+(define $$configure-gc-custom::bool #f)
+(define $$configure-gc::int 0)
+(define $$configure-have-bdb::bool #f)
+(define $$configure-dns-cache-enabled::bool #f)
+(define $$configure-big-endian::bool #t)
+(define $$configure-regexp-family::bstring "pregexp")
+(define $$configure-nan-tagging::bool #f)
+(define $$configure-int-size::int 32)
+(define $$configure-elong-size::int 32)
+(define $$configure-have-unistring::bool #f)
+(define $$configure-have-syslog::bool #f)
+(define $$configure-have-getrlimit::bool #f)
+(define $$configure-have-overflow::bool #f)
+(define $$configure-class-display-min-size::long 0)
+(define $$configure-os-class::bstring "wasm")
+(define $$configure-os-name::bstring "wasm")
+(define $$configure-os-arch::bstring "wasm")
+(define $$configure-os-version::bstring "@OS_VERSION@")
+(define $$configure-thread-local-storage::bool #f)
+(define $$configure-have-spinlock::bool #f)
+(define $$cfg-no-gc::long 0)
+(define $$cfg-boehm-gc::long 0)
+(define $$cfg-saw-gc::long 0)
+(define $$configure-have-alloca::bool #f)
+(define $$configure-have-c99stackalloc::bool #f)
+  

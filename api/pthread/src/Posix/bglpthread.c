@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Fri Dec  8 14:11:46 2023 (serrano)                */
-/*    Copyright   :  2002-23 Manuel Serrano                            */
+/*    Last change :  Mon Jul 15 11:34:03 2024 (serrano)                */
+/*    Copyright   :  2002-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -353,7 +353,15 @@ bglpth_thread_kill(bglpthread_t t, int sig) {
 void
 bglpth_thread_setname(bglpthread_t t, obj_t name) {
 #if BGL_HAS_THREAD_SETNAME
-   pthread_setname_np(t->pthread, BSTRING_TO_STRING(name));
+   if (STRING_LENGTH(name) >= 16) {
+      char *cname = (char *)GC_MALLOC_ATOMIC(16);
+      strncpy(cname, BSTRING_TO_STRING(name), 15);
+      cname[15] = 0;
+	 
+      pthread_setname_np(t->pthread, cname);
+   } else {
+      pthread_setname_np(t->pthread, BSTRING_TO_STRING(name));
+   }
 #endif   
 }
 

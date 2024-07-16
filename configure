@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Apr  8 10:54:27 2024 (serrano)                */
+#*    Last change :  Tue Jul 16 13:09:13 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -484,6 +484,7 @@ bigloo_static_h=
 bigloo_config_h=
 bigloo_config_jvm=
 bigloo_config_sch=
+bconfigure_generic_sch=
 summary=yes
 java_configured=no
 os=posix
@@ -1390,6 +1391,11 @@ fi
 # The bigloo_config.sch file
 if [ "$bigloo_config_sch " = " " ]; then
   bigloo_config_sch=lib/bigloo/$release/bigloo_config.sch
+fi
+
+# The bconfigure-generic.sch file
+if [ "$bconfigure_generic_sch " = " " ]; then
+  bconfigure_generic_sch=runtime/Llib/bconfigure-generic.sch
 fi
 
 # The bigloo_bmacs.el file
@@ -3015,7 +3021,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Tell what we are doing
   $echo ""
-  $echo "configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch:"
+  $echo "configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch, $bconfigure_generic_sch:"
 
   # The C compiler options
   cbraflags=`$autoconf ccbracket` || exit 1
@@ -3663,8 +3669,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     ostmp=/tmp
   fi
 
-  # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
+  # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bconfigure_generic_sch, bigloo.sh
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`$echo $release | sed -e "s|[.]|_|"`;
