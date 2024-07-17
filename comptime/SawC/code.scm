@@ -338,16 +338,18 @@
 
 ;;
 (define-method (gen-expr fun::rtl_switch args);
-   (let ( (pats (rtl_switch-patterns fun)) )
+   (let* ( (pats (rtl_switch-patterns fun))
+	   (reg (car args))
+	   (treg (rtl_reg-type reg)) )
       (display "switch(")
-      (gen-reg (car args))
+      (gen-reg reg)
       (display ") {")
       (for-each (lambda (pat lab)
 		   (if (eq? pat 'else)
 		       (display "\n\t default: ")
 		       (for-each (lambda (n)
 				    (display "\n\t case ")
-				    (emit-atom-value n)
+				    (emit-atom-value n treg)
 				    (display ":") )
 			  pat ))
 		   (display* " goto L" (block-label lab) ";") )
@@ -439,7 +441,8 @@
    "" )
 
 (define-method (gen-prefix fun::rtl_loadi) ;()
-   (emit-atom-value (atom-value (rtl_loadi-constant fun))) )
+   (let ((i (rtl_loadi-constant fun)))
+      (emit-atom-value (atom-value i) (atom-type i))) )
 
 (define-method (gen-prefix fun::rtl_loadg) ;()
    (display (gname (rtl_loadg-var fun))) )

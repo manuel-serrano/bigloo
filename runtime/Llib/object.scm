@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Jul 12 11:24:16 2024 (serrano)                */
+;*    Last change :  Wed Jul 17 11:27:01 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -155,7 +155,7 @@
 		  "BGL_AS_OBJECT")
 	       (method static $as-vector::vector (::obj)
 		   "BGL_AS_VECTOR")
-	       (method statix $as-class::class (::obj)
+	       (method static $as-class::class (::obj)
 		  "BGL_AS_CLASS")
 	       (method static $object-widening::obj (::object)
 		  "BGL_OBJECT_WIDENING")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Wed Jul 10 11:00:43 2024 (serrano)                */
+;*    Last change :  Wed Jul 17 13:02:08 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -66,6 +66,10 @@
 	       (method static c-string->symbol::symbol (::string)
 		       "string_to_symbol")
 	       (method static $symbol->string::bstring (::symbol)
+		       "SYMBOL_TO_STRING")
+	       (method static $bstring->symbol::symbol (::bstring)
+		       "string_to_symbol")
+	       (method static c-symbol->string::bstring (::symbol)
 		       "SYMBOL_TO_STRING")
 	       (method static c-symbol-plist::obj (::symbol)
 		       "GET_SYMBOL_PLIST")

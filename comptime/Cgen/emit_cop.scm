@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Jul  3 11:15:12 2024 (serrano)                */
+;*    Last change :  Wed Jul 17 11:42:42 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -103,8 +103,8 @@
 ;*    emit-cop ::catom ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::catom)
-   (with-access::catom cop (value)
-      (emit-atom-value value)
+   (with-access::catom cop (value type)
+      (emit-atom-value value type)
       #t))
 
 ;*---------------------------------------------------------------------*/
@@ -182,7 +182,7 @@
       (if c-exp?
 	  (begin
 	     (if (null? cops)
-		 (emit-atom-value #unspecified)
+		 (emit-atom-value #unspecified *unspec*)
 		 (begin
 		    (display "( " *c-port*)
 		    (trace cgen (display "/* cop-csequence */" *c-port*))
@@ -641,7 +641,7 @@
 		(for-each (lambda (t)
 			     (unless (memq t seen)
 				(display "case " *c-port*)
-				(emit-atom-value t)
+				(emit-atom-value t (cop-type test))
 				(display " : " *c-port*)
 				(newline *c-port*)))
 		   (car clause))
