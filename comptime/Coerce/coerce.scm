@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sat Mar  5 06:28:20 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jul 17 13:27:26 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -510,8 +510,9 @@
 ;*    coerce! ::box-ref ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::box-ref caller to safe)
-   (with-access::box-ref node (var type vtype loc)
-      (let ((cnode (convert! node vtype to safe)))
+   (with-access::box-ref node (var type vtype loc type)
+      (let* ((tnode (if (eq? type *obj*) node (cast-node node type)))
+	     (cnode (convert! tnode vtype to safe)))
 	 (if (tclass? to)
 	     (cast-node cnode to)
 	     cnode))))

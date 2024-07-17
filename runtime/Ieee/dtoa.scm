@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Fri Jul 23 19:27:36 2021 (serrano)                */
-;*    Copyright   :  2011-21 Manuel Serrano                            */
+;*    Last change :  Wed Jul 17 11:27:29 2024 (serrano)                */
+;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
 ;*=====================================================================*/
