@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Thu Jul 18 10:40:54 2024 (serrano)                */
+;*    Last change :  Thu Jul 18 10:45:59 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -220,7 +220,7 @@
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-string string loc)
    
-   (define (alloc-string)
+   (define (alloc-string-literal::ref)
       ;; in lib-mode string are statically allocated
       (let ((var (def-global-scnst!
 		    (make-typed-ident (gensym 'string) 'bstring)
@@ -228,13 +228,33 @@
 		    string
 		    'sstring
 		    loc)))
-	 (if *shared-cnst?*
-	     (hashtable-put! *string-env* string (cnst-info string var)))
+	 (when *shared-cnst?*
+	    (hashtable-put! *string-env* string (cnst-info string var)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type *bstring*)
 	    (variable var))))
-   
+
+   (define (alloc-string)
+      (let ((ref (alloc-string-literal)))
+	 (unless (backend-string-literal-support (the-backend))
+	    ;; when the backend does not support string literals
+	    ;; e.g., wasm, the cnst pass generate a dummy pragma form
+	    ;; that will enable the backend to generate ad-hoc code
+	    ;; for building the string at init-time.
+	    (with-access::ref ref (variable)
+	       (add-cnst-sexp!
+		  `(set! (@ ,(global-id variable) ,(global-module variable))
+		      ,(coerce!
+			  (instantiate::pragma
+			     (type *bstring*)
+			     (srfi0 (backend-srfi0 (the-backend)))
+			     (format (format "string:~a" (string-for-read string))))
+			  variable
+			  (strict-node-type *bstring* *obj*)
+			  #f)))))
+	 ref))
+	  
    (let ((old (and *shared-cnst?* (hashtable-get *string-env* string))))
       (cond
 	 (old

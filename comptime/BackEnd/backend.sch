@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
 ;; Bigloo (4.6a)
-;; Inria -- Sophia Antipolis     Mon Jul 8 03:29:28 PM CEST 2024 
+;; Inria -- Sophia Antipolis     Thu Jul 18 10:44:00 AM CEST 2024 
 ;; (bigloo BackEnd/backend.scm -classgen)
 ;; ==========================================================
 
@@ -13,6 +13,8 @@
   (export
     (inline backend?::bool ::obj)
     (backend-nil::backend)
+    (inline backend-string-literal-support::bool ::backend)
+    (inline backend-string-literal-support-set! ::backend ::bool)
     (inline backend-force-register-gc-roots::bool ::backend)
     (inline backend-force-register-gc-roots-set! ::backend ::bool)
     (inline backend-strict-type-cast::bool ::backend)
@@ -81,6 +83,8 @@
 ;; backend
 (define-inline (backend?::bool obj::obj) ((@ isa? __object) obj (@ backend backend_backend)))
 (define (backend-nil::backend) (class-nil (@ backend backend_backend)))
+(define-inline (backend-string-literal-support::bool o::backend) (-> |#!bigloo_wallow| o string-literal-support))
+(define-inline (backend-string-literal-support-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o string-literal-support) v))
 (define-inline (backend-force-register-gc-roots::bool o::backend) (-> |#!bigloo_wallow| o force-register-gc-roots))
 (define-inline (backend-force-register-gc-roots-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o force-register-gc-roots) v))
 (define-inline (backend-strict-type-cast::bool o::backend) (-> |#!bigloo_wallow| o strict-type-cast))
