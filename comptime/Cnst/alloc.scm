@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Fri Jun  3 14:21:30 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul 18 10:40:54 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -219,6 +219,7 @@
 ;*    input-string-port!                                               */
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-string string loc)
+   
    (define (alloc-string)
       ;; in lib-mode string are statically allocated
       (let ((var (def-global-scnst!
@@ -233,6 +234,7 @@
 	    (loc loc)
 	    (type *bstring*)
 	    (variable var))))
+   
    (let ((old (and *shared-cnst?* (hashtable-get *string-env* string))))
       (cond
 	 (old
