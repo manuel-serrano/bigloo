@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Jul 10 08:29:01 2024 (serrano)                */
+;*    Last change :  Thu Jul 18 11:12:21 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -377,17 +377,13 @@
       (bigloo-jvm
        ($string=? string1 string2))
       (else
-       ($$string=? string1 string2))))
+       ($string=? string1 string2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring=?@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (substring=? string1 string2 len)
-   (cond-expand
-      ((or bigloo-c bigloo-jvm)
-       ($substring=? string1 string2 len))
-      (else
-       ($$substring=? string1 string2 len))))
+   ($substring=? string1 string2 len))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-at?@ ...                                        */
@@ -408,8 +404,8 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (substring-ci-at? string1 string2 off #!optional (len -1))
    (if (=fx len -1)
-       ($prefix-ci-at? string1 string2 off)
-       ($substring-ci-at? string1 string2 off len)))
+	   ($prefix-ci-at? string1 string2 off)
+	   ($substring-ci-at? string1 string2 off len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn empty-string?@ ...                                        */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Wed Jun 26 14:28:05 2024 (serrano)                */
+;*    Last change :  Thu Jul 18 13:09:53 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
@@ -35,7 +35,7 @@
 ;*    make-bigloo-main ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-bigloo-main)
-   (let* ((args (list (make-local-svar 'argv *obj*)))
+   (let* ((args (list (make-local-svar 'argv *pair*)))
 	  (main-body (if (global? *main*)
 			 `(begin
 			     (,(module-initialization-id *module*)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Mar 29 09:30:57 2023 (serrano)                */
-;*    Copyright   :  2003-23 Manuel Serrano                            */
+;*    Last change :  Thu Jul 18 10:25:10 2024 (serrano)                */
+;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -899,7 +899,7 @@
 	  (if (eof-object? (the-failure))
 	      (make-date
 		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss
-		 :nsec sss :timezone 0)
+		 :nsec sss)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -915,8 +915,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date
-		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss
-		 :timezone 0)
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
 		 (read/rp iso8601-Z-grammar (the-port)
@@ -932,7 +931,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date 
-		 :year YYYY :month MM :day DD :hour HH :min mm :timezone 0)
+		 :year YYYY :month MM :day DD :hour HH :min mm)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
 		 (read/rp iso8601-Z-grammar (the-port)
@@ -948,7 +947,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date 
-		 :year YYYY :month MM :day DD :hour HH :timezone 0 :dst 0)
+		 :year YYYY :month MM :day DD :hour HH)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    

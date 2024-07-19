@@ -340,7 +340,7 @@
 (define-method (gen-expr fun::rtl_switch args);
    (let* ( (pats (rtl_switch-patterns fun))
 	   (reg (car args))
-	   (treg (rtl_reg-type reg)) )
+	   (treg (rtl_switch-type fun)) )
       (display "switch(")
       (gen-reg reg)
       (display ") {")
