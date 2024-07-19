@@ -27,7 +27,7 @@
     saw_bbv)
   (export
     (saw-wasm-gen b::wasm v::global)
-    (wasm-type t::type)
+    (wasm-type t::type #!optional (may-null #t))
     (wasm-sym t::bstring))
   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
   (static (wide-class SawCIreg::rtl_reg index)))
@@ -92,7 +92,7 @@
       (for-each visit l)
       regs ))
 
-(define (wasm-type t)
+(define (wasm-type t::type #!optional (may-null #t))
   (let ((id (type-id t))
         (name (type-name t)))
     (case id
@@ -101,8 +101,11 @@
       ('unspecified 'eqref)
       ('class-field 'eqref)
       ('pair-nil 'eqref)
+      ('cobj 'eqref)
+      ('void* 'i32) ;; A raw pointer into the linear memory
+      ('tvector 'arrayref)
       ;; TODO: handle procedure-el and procedure-l
-      ('procedure-el '(ref null $procedure))
+      ('procedure-el (if may-null '(ref null $procedure) '(ref $procedure)))
       ('bool 'i32)
       ('byte 'i32)
       ('ubyte 'i32)
@@ -122,18 +125,22 @@
       ('long 'i64)
       ('ulong 'i64)
       ('elong 'i64)
+      ('uelong 'i64)
       ('llong 'i64)
+      ('ullong 'i64)
       ('float 'f32)
       ('double 'f64)
       ;; FIXME: remove the null qualifier
-      ('vector '(ref null $vector))
-      ('string '(ref null $bstring)) ; string and bstring are the same
+      ('vector (if may-null '(ref null $vector) '(ref $vector)))
+      ('string (if may-null '(ref null $bstring) '(ref $bstring))) ; string and bstring are the same
       (else 
         (cond 
-          ((foreign-type? t) (string-append `(todo ,(type-id t))))
-          ((string-suffix? "_bglt" name) `(ref null ,(wasm-sym name)))
+          ((foreign-type? t) `(todo ,(type-id t)))
+          ((string-suffix? "_bglt" name) (if may-null `(ref null ,(wasm-sym name)) `(ref ,(wasm-sym name))))
           ;; FIXME: remove the null qualifier
-          (else (string-append `(ref null ,(wasm-sym (symbol->string (type-id t)))))))))))
+          (else (if may-null 
+            `(ref null ,(wasm-sym (symbol->string (type-id t))))
+            `(ref ,(wasm-sym (symbol->string (type-id t)))) )))))))
 
 (define (gen-params l) ;()
   (map (lambda (arg) `(param ,(wasm-sym (reg_name arg)) ,(wasm-type (rtl_reg-type arg)))) l))
@@ -248,9 +255,11 @@
   `(struct.new $cell ,@(gen-args args)))
 
 (define-method (gen-expr fun::rtl_boxref args)
+  ;; FIXME: remove the cast to cell
   `(struct.get $cell $car (ref.cast (ref $cell) ,(gen-reg (car args)))))
 
 (define-method (gen-expr fun::rtl_boxset args)
+  ;; FIXME: remove the cast to cell
   `(struct.set $cell $car (ref.cast (ref $cell) ,(gen-reg (car args))) ,@(gen-args (cdr args))))
 
 (define-method (gen-expr fun::rtl_fail args)
@@ -364,16 +373,18 @@
 
 (define-method (gen-expr fun::rtl_vref args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
-  `(array.get $vector ,(gen-reg (car args)) (i32.wrap_i64 ,(gen-reg (cadr args)))))
+  ;; FIXME: is the cast to ref vector really required?
+  `(array.get $vector (ref.cast (ref $vector) ,(gen-reg (car args))) (i32.wrap_i64 ,(gen-reg (cadr args)))))
 
 (define-method (gen-expr fun::rtl_vset args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
-  `(array.set $vector ,(gen-reg (car args)) (i32.wrap_i64 ,(gen-reg (cadr args))) ,@(gen-args (cddr args))))
+  ;; FIXME: is the cast to ref vector really required?
+  `(array.set $vector (ref.cast (ref $vector) ,(gen-reg (car args))) (i32.wrap_i64 ,(gen-reg (cadr args))) ,@(gen-args (cddr args))))
 
 (define-method (gen-expr fun::rtl_vlength args)
   `(i64.extend_i32_u (array.len ,@(gen-args args))))
 
-(define (emit-wasm-atom-value value)
+(define (emit-wasm-atom-value type value)
    (cond
       ; TODO: better reusable code? maybe use a macro, too many repetitions
       ((boolean? value) `(i32.const ,(if value 1 0)))
@@ -390,7 +401,11 @@
       ((elong? value) `(i64.const ,value))
       ((llong? value) `(i64.const ,value))
       ((ucs2? value) `(i32.const ,(ucs2->integer value)))
-      ((fixnum? value) `(i64.const ,value))
+      ((fixnum? value)
+        ;; TODO: support other types
+        (if (eq? (type-id type) 'int)
+        `(i32.const ,value)
+        `(i64.const ,value)))
       ((flonum? value) 
         (cond
           ((nanfl? value) `(f64.const nan))
@@ -400,7 +415,7 @@
       ((eq? value #unspecified) '(global.get $BUNSPEC))
       ((eq? value __eoa__) '(global.get $BEOA))
       ((bignum? value) '(ref.null none)) ; TODO: implement bignum
-      ((string? value) '(i32.const 0)) ; FIXME: implement C string constants
+      ((string? value) `(array.new_default $bstring (i32.const ,(string-length value)))) ; FIXME: implement C string constants
       ((cnst? value)
         (cond
           ((eof-object? value) '(global.get $BEOF))
@@ -413,7 +428,8 @@
    ))
 
 (define-method (gen-expr fun::rtl_loadi args)
-  (emit-wasm-atom-value (atom-value (rtl_loadi-constant fun))))
+  (let ((atom (rtl_loadi-constant fun)))
+    (emit-wasm-atom-value (atom-type atom) (atom-value atom))))
 
 (define-method (gen-expr fun::rtl_loadg args)
   (let* ((var (rtl_loadg-var fun))
@@ -479,6 +495,13 @@
       `(call ,(wasm-sym name) ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_funcall args)
+  (gen-expr-funcall/lightfuncall args))
+
+(define-method (gen-expr fun::rtl_lightfuncall args)
+  ; TODO: implement lightfuncall
+  `(ref.cast ,(wasm-type (rtl_lightfuncall-rettype fun) #f) ,(gen-expr-funcall/lightfuncall args)))
+
+(define (gen-expr-funcall/lightfuncall args)
   (let* ((arg_count (length args))
          (func_type (wasm-sym (string-append "func" (fixnum->string arg_count))))
          (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
@@ -523,6 +546,13 @@
 (define-method (gen-expr fun::rtl_cast_null args)
   ; NOT IMPLEMENTED
   `(CASTNULL ,@(gen-args args)))
+
+(define-method (gen-expr fun::rtl_pragma args)
+  (if (eq? (rtl_pragma-srfi0 fun) 'bigloo-wasm)
+    (let ((format (rtl_pragma-format fun)))
+      (call-with-input-string format read))
+    ;; TODO: implement pragma default value depending on type
+    '(global.get $BUNSPEC)))
 
 (define-method (gen-expr fun::rtl_jumpexit args)
   `(throw $bexception ,@(gen-args args)))

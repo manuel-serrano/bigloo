@@ -54,7 +54,7 @@
       (srfi0 'bigloo-wasm)
       (foreign-clause-support '(wasm extern))
       (strict-type-cast #t)
-      (pragma-support #f)
+      (pragma-support #t)
       (require-tailc #t)
       ; TODO: maybe remove these two checks
       (bound-check #f)
@@ -174,11 +174,36 @@
         (newline)
         (aux n (+fx depth 1))) l))
 
+    (define (dump-string s)
+      (define (visible? c)
+        (and 
+          (char>=? c #\x20) 
+          (char<? c #\x7F) ;; exclude the DEL character (illegal in WASM text format)
+          (not (char=? c #\")) 
+          (not (char=? c #\\))))
+
+      (display "\"")
+      (let iter ((i 0))
+        (when (<fx i (string-length s))
+          (let ((c (string-ref s i))
+                (hex "0123456789abcdef"))
+            (cond 
+              ((visible? c) (display c))
+              ((char=? c #\") (display "\\\""))
+              ((char=? c #\\) (display "\\\\"))
+              (else (display* "\\" 
+                (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
+                (string-ref hex (char->integer (char-and c #\x0F)))
+                ))))
+          (iter (+fx i 1))))
+      (display "\""))
+
     (define (pp-arg a)
       (cond
         ((elong? a) (display a))
         ((llong? a) (display a))
         ((bignum? a) (display a))
+        ((string? a) (dump-string a))
         (else (write a))))
 
     (define (pp-0 l)
@@ -221,7 +246,7 @@
           ('sub (pp-1 l))
           ('global (pp-1 l))
           ('memory (pp-oneline l))
-          ('data (pp-oneline l))
+          ('data (pp-1 l))
           ('elem (pp-oneline l))
           ('export (pp-oneline l))
           ('param (pp-oneline l))
@@ -246,6 +271,7 @@
           ('call (pp-1 l))
           ('struct.new (pp-1 l))
           ('struct.get (pp-2 l))
+          ('array.get (pp-1 l))
           ('array.new (pp-1 l))
           ('array.new_elem (pp-2 l))
           (else (pp-0 l))))
@@ -552,9 +578,19 @@
   ;;        global declaration as WASM requires a constant expression. But
   ;;        array.new_data is not constant (for now).
   (set-variable-name! global)
+
+  (define (split-long-data data block-size result)
+    (if (=fx (string-length data) 0)
+      (reverse result)
+      (let ((len (min (string-length data) block-size)))
+        (split-long-data 
+          (substring data len) 
+          block-size 
+          (cons (substring data 0 len) result)))))
+
   (let* ((str (string-for-read ostr))
          (offset (allocate-string ostr)))
-    `((data (i32.const ,offset) ,str)
+    `((data (i32.const ,offset) ,@(split-long-data str 100 '()))
       (global 
         ,(wasm-sym (global-name global))
         ,@(if (eq? (global-import global) 'export)
