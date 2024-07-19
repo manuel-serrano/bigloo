@@ -223,6 +223,82 @@
 	   (macro $f64vector-copy!::void (::f64vector ::long ::f64vector ::long ::long)
 		  "BGL_F64VECTOR_COPY")
 	   )
+
+	(wasm
+	   ($s8vector? "(ref.test (ref $s8vector) ~0)")
+	   ($u8vector? "(ref.test (ref $u8vector) ~0)")
+	   ($s16vector? "(ref.test (ref $s16vector) ~0)")
+	   ($u16vector? "(ref.test (ref $u16vector) ~0)")
+	   ($s32vector? "(ref.test (ref $s32vector) ~0)")
+	   ($u32vector? "(ref.test (ref $u32vector) ~0)")
+	   ($s32vector? "(ref.test (ref $s32vector) ~0)")
+	   ($u32vector? "(ref.test (ref $u32vector) ~0)")
+	   ($s64vector? "(ref.test (ref $s64vector) ~0)")
+	   ($u64vector? "(ref.test (ref $u64vector) ~0)")
+	   ($f32vector? "(ref.test (ref $f32vector) ~0)")
+	   ($f64vector? "(ref.test (ref $f64vector) ~0)")
+
+	   ($alloc-s8vector "(array.new_default $s8vector ~0)")
+	   ($alloc-u8vector "(array.new_default $u8vector ~0)")
+	   ($alloc-s16vector "(array.new_default $s16vector ~0)")
+	   ($alloc-u16vector "(array.new_default $u16vector ~0)")
+	   ($alloc-s32vector "(array.new_default $s32vector ~0)")
+	   ($alloc-u32vector "(array.new_default $u32vector ~0)")
+	   ($alloc-s64vector "(array.new_default $s64vector ~0)")
+	   ($alloc-u64vector "(array.new_default $u64vector ~0)")
+	   ($alloc-f32vector "(array.new_default $f32vector ~0)")
+	   ($alloc-f64vector "(array.new_default $f64vector ~0)")
+
+	   ($s8vector-ref "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
+	   ($s8vector-set! "(array.set $s8vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($s8vector-ref-ur "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
+	   ($s8vector-set-ur! "(array.set $s8vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($u8vector-ref "(array.get $u8vector ~0 (i32.wrap_i64 ~1))")
+	   ($u8vector-set! "(array.set $u8vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($u8vector-ref-ur "(array.get $u8vector ~0 (i32.wrap_i64 ~1))")
+	   ($u8vector-set-ur! "(array.set $u8vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($s16vector-ref "(array.get $s16vector ~0 (i32.wrap_i64 ~1))")
+	   ($s16vector-set! "(array.set $s16vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($s16vector-ref-ur "(array.get $s16vector ~0 (i32.wrap_i64 ~1))")
+	   ($s16vector-set-ur! "(array.set $s16vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($u16vector-ref "(array.get $u16vector ~0 (i32.wrap_i64 ~1))")
+	   ($u16vector-set! "(array.set $u16vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($u16vector-ref-ur "(array.get $u16vector ~0 (i32.wrap_i64 ~1))")
+	   ($u16vector-set-ur! "(array.set $u16vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($s32vector-ref "(array.get $s32vector ~0 (i32.wrap_i64 ~1))")
+	   ($s32vector-set! "(array.set $s32vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($s32vector-ref-ur "(array.get $s32vector ~0 (i32.wrap_i64 ~1))")
+	   ($s32vector-set-ur! "(array.set $s32vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($u32vector-ref "(array.get $u32vector ~0 (i32.wrap_i64 ~1))")
+	   ($u32vector-set! "(array.set $u32vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($u32vector-ref-ur "(array.get $u32vector ~0 (i32.wrap_i64 ~1))")
+	   ($u32vector-set-ur! "(array.set $u32vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($s64vector-ref "(array.get $s64vector ~0 (i32.wrap_i64 ~1))")
+	   ($s64vector-set! "(array.set $s64vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($s64vector-ref-ur "(array.get $s64vector ~0 (i32.wrap_i64 ~1))")
+	   ($s64vector-set-ur! "(array.set $s64vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($u64vector-ref "(array.get $u64vector ~0 (i32.wrap_i64 ~1))")
+	   ($u64vector-set! "(array.set $u64vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($u64vector-ref-ur "(array.get $u64vector ~0 (i32.wrap_i64 ~1))")
+	   ($u64vector-set-ur! "(array.set $u64vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($f32vector-ref "(array.get $f32vector ~0 (i32.wrap_i64 ~1))")
+	   ($f32vector-set! "(array.set $f32vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($f32vector-ref-ur "(array.get $f32vector ~0 (i32.wrap_i64 ~1))")
+	   ($f32vector-set-ur! "(array.set $f32vector ~0 (i32.wrap_i64 ~1) ~2)")
+
+	   ($f64vector-ref "(array.get $f64vector ~0 (i32.wrap_i64 ~1))")
+	   ($f64vector-set! "(array.set $f64vector ~0 (i32.wrap_i64 ~1) ~2)")
+	   ($f64vector-ref-ur "(array.get $f64vector ~0 (i32.wrap_i64 ~1))")
+	   ($f64vector-set-ur! "(array.set $f64vector ~0 (i32.wrap_i64 ~1) ~2)")
+	)
    
    (java   (class foreign
 	      (method static $hvector?::bool (::obj)

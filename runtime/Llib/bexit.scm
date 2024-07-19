@@ -78,11 +78,6 @@
 		    (export $exitd-mutex-profile "bgl_exitd_mutex_profile"))))
    
    (cond-expand (bigloo-c
-		 (extern 
-		    (export $failsafe-mutex-profile "bgl_failsafe_mutex_profile")
-		    (export $exitd-mutex-profile "bgl_exitd_mutex_profile"))))
-   
-   (cond-expand (bigloo-c
 		 (export
 		    (inline env-get-exitd-val::obj ::dynamic-env)
 		    (inline env-set-exitd-val!::obj ::dynamic-env ::obj)

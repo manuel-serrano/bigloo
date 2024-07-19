@@ -1331,6 +1331,12 @@
 
       ($ucs2->bucs2 "(struct.new $bucs2 ~0)")
       ($bucs2->ucs2 "(struct.get $bucs2 $v ~0)")
+
+      ($cobj->obj "~0")
+      
+      ;; FIXME: remove explicit cast to ref foreign
+      ($obj->void* "(struct.get $foreign $ptr (ref.cast (ref $foreign) ~0))")
+      ($void*->obj "(struct.new $foreign (ref.null none) ~0)")
       )
 
    (java

@@ -61,12 +61,12 @@
 	    ($make-vector-uncollectable "(array.new $vector ~1 (i32.wrap_i64 ~0))")
 	    ($create-vector "(array.new_default $vector (i32.wrap_i64 ~0))")
 	    ($create-vector-uncollectable "(array.new_default $vector (i32.wrap_i64 ~0))")
-	    ($vector? "(ref.test arrayref ~0)")
-	    ($vector-length "(array.len ~0)")
+	    ($vector? "(ref.test arrayref ~0)") ;; TODO: arrayref or (ref $vector) ?
+	    ($vector-length "(i64.extend_i32_u (array.len ~0))")
 	    ($vector-ref "(array.get $vector ~0 ~1)")
 	    ($vector-ref-ur "(array.get $vector ~0 ~1)")
 		($vector-bound-check? "(i64.lt_u ~0 ~1)")
-		($vector-tag-set! "(global.get $BUNSPEC)")
+		($vector-tag-set! "(global.get $BUNSPEC)") ;; TODO: implement tags for WASM vectors
 		($vector-tag "(i32.const 0)")
 		($vector-shrink! "~0"))
 

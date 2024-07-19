@@ -53,6 +53,10 @@
 	   
 	   (export get-tvector-descriptor "get_tvector_descriptor"))
 
+	(wasm
+		($tvector? "(ref.test arrayref ~0)")
+		($tvector-length "(array.len ~0)"))
+
    (java   (class foreign
 	      (method static $tvector?::bool (::obj)
 		      "TVECTORP")

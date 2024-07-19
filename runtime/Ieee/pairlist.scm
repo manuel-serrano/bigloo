@@ -66,9 +66,6 @@
 	    ($car "(struct.get $pair $car (ref.cast (ref $pair) ~0))")
 	    ($cdr "(struct.get $pair $cdr (ref.cast (ref $pair) ~0))")
 	    ($cer "(struct.get $epair $cer (ref.cast (ref $epair) ~0))")
-	    ; ($set-car! "(struct.set $pair $car (ref.cast (ref $pair) ~0) ~1)")
-	    ; ($set-cdr! "(struct.set $pair $cdr (ref.cast (ref $pair) ~0) ~1)")
-	    ; ($set-cer! "(struct.set $epair $cer (ref.cast (ref $epair) ~0) ~1)")
 	    ($null? "(ref.is_null ~0)"))
    
    (java    (class foreign

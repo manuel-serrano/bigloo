@@ -370,18 +370,23 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
 # WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
 #                  $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
 WASMS = objs/$(WASMDIR_SYS)/Llib/bigloo.wasm \
-	objs/$(WASMDIR_SYS)/Ieee/boolean.wasm \
-	objs/$(WASMDIR_SYS)/Ieee/number.wasm objs/$(WASMDIR_SYS)/Ieee/fixnum.wasm \
-	objs/$(WASMDIR_SYS)/Ieee/flonum.wasm objs/$(WASMDIR_SYS)/Ieee/vector.wasm \
-	objs/$(WASMDIR_SYS)/Ieee/pairlist.wasm objs/$(WASMDIR_SYS)/Ieee/equiv.wasm \
-	objs/$(WASMDIR_SYS)/Ieee/string.wasm objs/$(WASMDIR_SYS)/Ieee/symbol.wasm \
-	objs/$(WASMDIR_SYS)/Ieee/output.wasm \
-	objs/$(WASMDIR_SYS)/Llib/bconfigure.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/boolean.wasm objs/$(WASMDIR_SYS)/Ieee/char.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/control.wasm objs/$(WASMDIR_SYS)/Ieee/control5.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/dtoa.wasm objs/$(WASMDIR_SYS)/Ieee/equiv.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/fixnum.wasm objs/$(WASMDIR_SYS)/Ieee/flonum.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/input.wasm objs/$(WASMDIR_SYS)/Ieee/number.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/output.wasm objs/$(WASMDIR_SYS)/Ieee/pairlist.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/port.wasm objs/$(WASMDIR_SYS)/Ieee/string.wasm \
+	objs/$(WASMDIR_SYS)/Ieee/symbol.wasm objs/$(WASMDIR_SYS)/Ieee/vector.wasm \
+	objs/$(WASMDIR_SYS)/Llib/tvector.wasm \
+	objs/$(WASMDIR_SYS)/Llib/bconfigure.wasm objs/$(WASMDIR_SYS)/Llib/bexit.wasm \
 	objs/$(WASMDIR_SYS)/Llib/param.wasm \
 	objs/$(WASMDIR_SYS)/Llib/object.wasm \
 	objs/$(WASMDIR_SYS)/Llib/error.wasm \
-	objs/$(WASMDIR_SYS)/Llib/bexit.wasm \
+	objs/$(WASMDIR_SYS)/Llib/foreign.wasm \
 	objs/$(WASMDIR_SYS)/Llib/thread.wasm \
+	objs/$(WASMDIR_SYS)/Llib/bit.wasm \
+	objs/$(WASMDIR_SYS)/Llib/srfi4.wasm \
 	# objs/$(WASMDIR_SYS)/Pp/circle.wasm objs/$(WASMDIR_SYS)/Pp/pp.wasm \
 
 #*---------------------------------------------------------------------*/

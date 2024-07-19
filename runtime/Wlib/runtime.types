@@ -8,7 +8,22 @@
     (type $brest (sub final $cnst (struct))))
 
 (type $magic (struct))
+
 (type $vector (array (mut eqref)))
+(type $dvector (array (mut f64)))
+(type $lvector (array (mut i64)))
+(type $bvector (array (mut i32)))
+(type $s8vector (array (mut i8)))
+(type $s16vector (array (mut i16)))
+(type $s32vector (array (mut i32)))
+(type $s64vector (array (mut i64)))
+(type $u8vector (array (mut i8)))
+(type $u16vector (array (mut i16)))
+(type $u32vector (array (mut i32)))
+(type $u64vector (array (mut i64)))
+(type $f32vector (array (mut f32)))
+(type $f64vector (array (mut f64)))
+
 (type $procedure (struct 
     (field $entry funcref) 
     (field $attr (mut eqref))
@@ -35,16 +50,26 @@
 ;; Functions types (for closures and variadic calls)
 (type $func0 (func (result eqref)))
 (type $func1 (func (param eqref) (result eqref)))
-(type $func2 (func (param eqref) (param eqref) (result eqref)))
-(type $func3 (func (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func4 (func (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func5 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func6 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func7 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func8 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func9 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func10 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
-(type $func11 (func (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (param eqref) (result eqref)))
+(type $func2 (func (param eqref eqref) (result eqref)))
+(type $func3 (func (param eqref eqref eqref) (result eqref)))
+(type $func4 (func (param eqref eqref eqref eqref) (result eqref)))
+(type $func5 (func (param eqref eqref eqref eqref eqref) (result eqref)))
+(type $func6 (func (param eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func7 (func (param eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func8 (func (param eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func9 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func10 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func11 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func12 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func13 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func14 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func15 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func16 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func17 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func18 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func19 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func20 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+(type $func21 (func (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
 
 ;; Pairs
 (type $cell (sub (struct (field $car (mut eqref)))))
@@ -119,8 +144,10 @@
 (type $binary-port (sub (struct)))
 
 ;; Foreign type
+(rec (type $cobj (struct)))
 (type $foreign (struct
-    (field $id (ref null $symbol))))
+    (field $id (ref null $symbol))
+    (field $ptr i32)))
 
 ;; Date type
 (type $date (struct))

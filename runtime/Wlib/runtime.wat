@@ -196,6 +196,40 @@
     (global.get $BUNSPEC))
 
   ;; --------------------------------------------------------
+  ;; Vector functions
+  ;; --------------------------------------------------------
+
+  (func $bgl_fill_vector (export "bgl_fill_vector")
+    (param $v (ref null $vector))
+    (param $start i64)
+    (param $end i64)
+    (param $o eqref)
+    (result eqref)
+    (array.fill $vector 
+      (ref.cast (ref $vector) (local.get $v)) ;; FIXME: remove the cast
+      (i32.wrap_i64 (local.get $start)) 
+      (local.get $o)
+      (i32.wrap_i64 (i64.sub (local.get $end) (local.get $start))))
+    (global.get $BUNSPEC))
+  
+  ;; --------------------------------------------------------
+  ;; Typed vector functions
+  ;; --------------------------------------------------------
+
+  ;; TODO: implement tvector descr
+
+  (func $TVECTOR_DESCR (export "TVECTOR_DESCR")
+    (param $v arrayref)
+    (result eqref)
+    (global.get $BUNSPEC))
+
+  (func $TVECTOR_DESCR_SET (export "TVECTOR_DESCR_SET")
+    (param $v arrayref)
+    (param $desc eqref)
+    (result eqref)
+    (global.get $BUNSPEC))
+
+  ;; --------------------------------------------------------
   ;; String functions
   ;; --------------------------------------------------------
 

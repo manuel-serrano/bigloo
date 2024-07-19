@@ -66,11 +66,6 @@
 		;; TODO: implement WASM char
 		(c-char-upcase "~0")
 	    (c-char-downcase "~0")
-		(c-char-alphabetic? "(i32.const 0)")
-	    (c-char-lower-case? "(i32.const 0)")
-	    (c-char-numeric? "(i32.const 0)")
-	    (c-char-upper-case? "(i32.const 0)")
-	    (c-char-whitespace? "(i32.const 0)")
 		)
    
    (java    (class foreign

@@ -50,8 +50,10 @@
 	    (c-foreign-null? "(ref.is_null ~0)")
 	    (c-foreign-eq? "(ref.eq ~0 ~1)")
 		(foreign-id "(struct.get $foreign $id ~0)")
-	    ($make-string-ptr-null "(ref.null none)")
-	    ($make-void*-null "(ref.null none)"))
+		(%string-ptr-null? "(i32.eqz (array.len ~0))")
+		(%void*-ptr-null? "(i32.eqz ~0)")
+	    ($make-string-ptr-null "(array.new_fixed $bstring 0)")
+	    ($make-void*-null "(i32.const 0)"))
    
    (java    (class foreign
 	       (method static c-foreign?::bool (::obj)
