@@ -688,9 +688,9 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/$(WASMDIR_SYS)/runtime.wasm 
 		file="`basename $$n .wasm`.scm"; \
 		dir=`dirname $$n`; \
 		dir=`basename $$dir`; \
-		LST="$$LST $$n `grep $$dir/$$file .afile | awk '{ print $$1 }' | sed 's/[(]//'`"; \
+		LST="$$LST $$n `grep $$dir/$$file .afile | awk '{ print $$1 }' | sed 's/[(]//'` -ism $$n.map"; \
 	done; \
-	$(WASM_MERGE) $(WASM_MERGE_FLAGS) objs/$(WASMDIR_SYS)/runtime.wasm __runtime $$LST -o $@
+	$(WASM_MERGE) $(WASM_MERGE_FLAGS) objs/$(WASMDIR_SYS)/runtime.wasm __runtime $$LST -osm $(@:%=%.map) -o $@
 
 objs/wasm_u/runtime.wasm: Wlib/runtime.wat
 	@ echo "\e[34mGenerating WASM for $<\e[0m"
@@ -705,13 +705,13 @@ objs/wasm_s/runtime.wasm: Wlib/runtime.wat
 objs/wasm_u/%.wasm: %.scm
 	@ echo "\e[34mGenerating WASM for $<\e[0m"
 	@ $(BIGLOO) -wasm $(BFLAGS_SYS) $(EFLAGS) -c $< -o $(@:%.wasm=%.wat) \
-    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@ || exit 1
+    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -sm $(@:%=%.map) -o $@ || exit 1
     # && rm $(@:%.wasm=%.wat) || exit 1
 
 objs/wasm_s/%.wasm: %.scm
 	@ echo "\e[34mGenerating WASM for $<\e[0m"
 	@ $(BIGLOO) -wasm $(BFLAGS_USR) $(EFLAGS) -c $< -o $(@:%.wasm=%.wat) \
-    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@  || exit 1
+    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -sm $(@:%=%.map) -o $@  || exit 1
     # && rm $(@:%.wasm=%.wat) || exit 1
 
 #*---------------------------------------------------------------------*/

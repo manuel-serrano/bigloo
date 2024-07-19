@@ -15,7 +15,8 @@
 (module tools_location
    (include "Tools/location.sch")
    (import  engine_param)
-   (export  (find-location ::obj)
+   (export  (parse-location ::obj)
+		(find-location ::obj)
 	    (find-location/loc ::obj ::obj)
 	    (location-full-fname::bstring ::obj)
 	    (location-shape ::obj ::obj)
@@ -46,17 +47,21 @@
       (or (file-position->line pos lines) 0)))
 
 ;*---------------------------------------------------------------------*/
+;*    parse-location ...                                               */
+;*---------------------------------------------------------------------*/
+(define (parse-location loc)
+	(if (location? loc)
+		loc
+		(match-case loc
+			((at ?fname ?pos)
+			(location fname pos (pos->line fname pos)))
+			(else
+			#f))))
+
+;*---------------------------------------------------------------------*/
 ;*    find-location ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (find-location exp)
-   (define (parse-location loc)
-      (if (location? loc)
-	  loc
-	  (match-case loc
-	     ((at ?fname ?pos)
-	      (location fname pos (pos->line fname pos)))
-	     (else
-	      #f))))
    (cond
       ((epair? exp)
        ;; easy the location has been directly produced by the reader.

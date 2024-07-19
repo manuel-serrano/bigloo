@@ -13,6 +13,7 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
+	(import __bit)
    (export (bigloo_strcmp::bool ::bstring ::bstring)
 	   (bigloo_strncmp::bool ::bstring ::bstring ::long)
 	   (bigloo_strcmp_at::bool ::bstring ::bstring ::long)
@@ -420,7 +421,7 @@
 		   (else
 		    (string-set-ur! buf i c)
 		    (loop (+fx i 1)))))
-	     (bgl_string_shrink! buf i)))))
+	     (string-shrink! buf i)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl_escape_scheme_string ...                                     */
@@ -441,7 +442,7 @@
 			   (string-set-ur! buf i #\Newline)
 			   (string-set-ur! buf i nc)))
 		    (loop (+fx i 2)))))
-	     (bgl_string_shrink! buf i)))
+	     (string-shrink! buf i)))
       buf))
 
 ;*---------------------------------------------------------------------*/
@@ -526,7 +527,7 @@
 			   (string-set-ur! dst (++ w)
 			      (hexa (integer->char (bit-and n 7))))))))
 		(loop))
-	     (bgl_string_shrink! dst w)))))
+	     (string-shrink! dst w)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string_for_read ...                                              */

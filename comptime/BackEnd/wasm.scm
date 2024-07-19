@@ -3,12 +3,14 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module backend_wasm
-    (include "Engine/pass.sch")
+    (include "Engine/pass.sch"
+      "Tools/location.sch")
     (import engine_param
         engine_configure
         tools_license
         tools_error
         tools_shape
+        tools_location
         backend_backend
         backend_cvm
         
@@ -59,7 +61,8 @@
       ; TODO: maybe remove these two checks
       (bound-check #f)
       (type-check #f)
-      (force-register-gc-roots #f)))
+      (force-register-gc-roots #f)
+      (string-literal-support #f)))
 
 (define-method (backend-compile me::wasm)
     (wasm-walk me))
@@ -88,8 +91,6 @@
   (pass-prelude "WebAssembly generation"
     (lambda () (start-emission! ".wat")))
 
-  (fprint *wasm-port* "(module ;; " *module*)
-
   (for-each-type! (lambda (t) (type-occurrence-set! t 0)))
   (for-each-global!
     (lambda (global)
@@ -109,54 +110,53 @@
                   (type-occurrence-increment! (local-type a)))))
             (sfun-args (global-value global))))))))
 
-  (let ((compiled-funcs (backend-compile-functions me)))
-  
-  (with-output-to-port *wasm-port* (lambda () 
-    ;; FIXME: Still required?
-    (wasm-pp '(import "__runtime" "generic_va_call" (func $generic_va_call (param (ref $procedure)) (param (ref $vector)) (result eqref))))
-    (wasm-pp '(import "__runtime" "BUNSPEC" (global $BUNSPEC (ref $bunspec))))
-    (wasm-pp '(import "__runtime" "BOPTIONAL" (global $BOPTIONAL (ref $boptional))))
-    (wasm-pp '(import "__runtime" "BKEY" (global $BKEY (ref $bkey))))
-    (wasm-pp '(import "__runtime" "BREST" (global $BREST (ref $brest))))
-    (for-each wasm-pp (emit-imports))
-    (for-each wasm-pp (emit-memory))))
-
-  (for-each (lambda (line) 
-    (fprintf *wasm-port* "  ~a\n" line))
-  (readlines "Wlib/runtime.types"))
-
   (let ((fixpoint #f))
-  (let loop ()
-    (unless fixpoint
-      (set! fixpoint #t)
-      (for-each (lambda (t::tclass)
-        (when (>fx (type-occurrence t) 0)
-          (with-access::tclass t (its-super slots)
-            (when (and its-super (=fx (type-occurrence its-super) 0))
-              (type-occurrence-increment! its-super)
-              (set! fixpoint #f))
-            (for-each (lambda (t::slot)
-              (with-access::slot t (type)
-                (when (=fx (type-occurrence type) 0)
-                  (type-occurrence-increment! type)
-                  (set! fixpoint #f))))
-            slots))))
-      (get-class-list)))))
-  (let ((classes (filter (lambda (t) (>fx (type-occurrence t) 0)) (get-class-list))))
-    (with-output-to-port *wasm-port* (lambda () 
-      (for-each wasm-pp (emit-class-types classes)))))
+    (let loop ()
+      (unless fixpoint
+        (set! fixpoint #t)
+        (for-each (lambda (t::tclass)
+          (when (>fx (type-occurrence t) 0)
+            (with-access::tclass t (its-super slots)
+              (when (and its-super (=fx (type-occurrence its-super) 0))
+                (type-occurrence-increment! its-super)
+                (set! fixpoint #f))
+              (for-each (lambda (t::slot)
+                (with-access::slot t (type)
+                  (when (=fx (type-occurrence type) 0)
+                    (type-occurrence-increment! type)
+                    (set! fixpoint #f))))
+              slots))))
+        (get-class-list)))))
 
-  (emit-prototypes)
-  
-  ;; then we emit the constants values
-  (with-output-to-port *wasm-port* (lambda () 
-    (for-each wasm-pp (emit-cnsts))))
-  
-  ; we now emit the code for all the Scheme functions
-  (with-output-to-port *wasm-port* (lambda () 
-    (for-each wasm-pp compiled-funcs)))
+  ;; Registers functions defined in this module to avoid importing them.
+  ;; This is required as some files in the standard library redefine in Scheme
+  ;; some C functions used by the C backend.
+  (for-each (lambda (fun) 
+    (set-variable-name! fun)
+    (hashtable-put! *defined-ids* (global-name fun) #t)) 
+    (cvm-functions me))
 
-  (fprint *wasm-port* ")"))
+  (let ((compiled-funcs (backend-compile-functions me))
+        (classes (filter (lambda (t) (>fx (type-occurrence t) 0)) (get-class-list))))
+
+    (with-output-to-port *wasm-port* (lambda ()
+      (wasm-pp
+        `(module ,(wasm-sym (symbol->string *module*)) 
+          (comment "Imports"
+            (import "__runtime" "generic_va_call" (func $generic_va_call (param (ref $procedure)) (param (ref $vector)) (result eqref)))
+            (import "__runtime" "BUNSPEC" (global $BUNSPEC (ref $bunspec)))
+            (import "__runtime" "BOPTIONAL" (global $BOPTIONAL (ref $boptional)))
+            (import "__runtime" "BKEY" (global $BKEY (ref $bkey)))
+            (import "__runtime" "BREST" (global $BREST (ref $brest)))
+            (import "__js" "trace" (func $__trace))
+            ,@(emit-imports))
+          (comment "Memory" ,@(emit-memory))
+          (comment "Primitive types" ,@(call-with-input-file "Wlib/runtime.types" port->sexp-list))
+          (comment "Class types" ,@(emit-class-types classes))
+          (comment "Globals" ,@(emit-prototypes))
+          (comment "Constants" ,@(emit-cnsts))
+          (comment "String data" ,@(emit-strings))
+          (comment "Functions" ,@compiled-funcs))))))
   
   (stop-emission!))
 
@@ -236,10 +236,30 @@
       (map (lambda (a) (display " ") (pp-arg a)) (cdr l))
       (display ")"))
 
+    (define (pp-comment l)
+      (match-case l
+        ((comment ?comment . ?nodes)
+          (display* ";; " comment)
+          (for-each (lambda (node) (newline) (aux node depth)) nodes))
+        (else
+          (error "wasm-pp" "Illegal form for comment node" l))))
+
+    (define (pp-location l)
+      (match-case l
+        ((@ ?loc ?node)
+          (display ";;@ ")
+          (display* (location-fname loc) ":" (location-lnum loc) ":1\n")
+          (aux node depth))
+        (else
+          (error "wasm-pp" "Illegal form for location node" l))))
+
     (ppindent depth)
     (cond 
       ((pair? l)
         (case (car l)
+          ('comment (pp-comment l))
+          ('@ (pp-location l))
+          ('module (pp-1 l))
           ('import (pp-2 l))
           ('func (pp-1 l))
           ('type (pp-1 l))
@@ -436,15 +456,16 @@
   ;; when a main is produced
   (let ((init (find-global 'bigloo-initialized! '__param)))
     (when init (set-variable-name! init)))
-
-  (with-output-to-port *wasm-port* (lambda ()
-  (for-each-global!
-    (lambda (global)
-      (if (and (require-prototype? global)
-               (not (scnst? (global-value global)))
-               (not (require-import? global)))
-          (let ((prototype (emit-prototype (global-value global) global)))
-            (when prototype (wasm-pp prototype)))))))))
+    
+  (let ((globals '()))
+    (for-each-global!
+      (lambda (global)
+        (if (and (require-prototype? global)
+                (not (scnst? (global-value global)))
+                (not (require-import? global)))
+            (let ((prototype (emit-prototype (global-value global) global)))
+              (when prototype (set! globals (cons prototype globals)))))))
+    globals))
 
 (define-generic (emit-prototype value::value variable::variable) #f)
 
@@ -501,7 +522,6 @@
 ;*    emit-cnsts ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnsts)
-  (with-output-to-port *wasm-port* (lambda ()
   (let ((cnsts '()))
     (for-each-global!
       (lambda (global)
@@ -509,7 +529,7 @@
                  (scnst? (global-value global)))
           (let ((cnst (emit-cnst (global-value global) global)))
             (when cnst (set! cnsts (cons cnst cnsts)))))))
-    (apply append cnsts)))))
+    (apply append cnsts)))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst ...                                                    */
@@ -551,53 +571,17 @@
                 (shape node)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    allocate-string ...                                              */
-;*---------------------------------------------------------------------*/
-(define (allocate-string str::bstring)
-  ; Allocate space inside WebAssembly module's linear memory for the string
-  ; and return its offset.
-  ; TODO: maybe do some string interning if not yet done by optimizations?
-  (let* ((length (string-length str))
-         (offset *string-current-offset*))
-    (set! *string-current-offset* (+fx *string-current-offset* length))
-    offset))
-
-(define *string-current-offset* 0)
-
-;*---------------------------------------------------------------------*/
 ;*    emit-cnst-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-string ostr global)
-  ;; FIXME: Use passive (data) to allocate strings (see bulk memory extension)
-  ;;        this will allow to use a single global memory for all modules.
-  ;;        If it is done, no need to allocate offsets to strings anymore.
-  ;;        Ex:
-  ;;          (data $mystring-data "hello")
-  ;;          (global $mystring (ref $bstring) (array.new_data $bstring $mystring-data (LENGTH)))
-  ;; FIXME: initialize the string. As is it is not possible to init in the 
-  ;;        global declaration as WASM requires a constant expression. But
-  ;;        array.new_data is not constant (for now).
   (set-variable-name! global)
-
-  (define (split-long-data data block-size result)
-    (if (=fx (string-length data) 0)
-      (reverse result)
-      (let ((len (min (string-length data) block-size)))
-        (split-long-data 
-          (substring data len) 
-          block-size 
-          (cons (substring data 0 len) result)))))
-
-  (let* ((str (string-for-read ostr))
-         (offset (allocate-string ostr)))
-    `((data (i32.const ,offset) ,@(split-long-data str 100 '()))
-      (global 
-        ,(wasm-sym (global-name global))
-        ,@(if (eq? (global-import global) 'export)
-            `((export ,(global-name global)))
-            '())
-        (ref null $bstring) 
-        (array.new_default $bstring (i32.const ,(string-length ostr)))))))
+  `((global 
+      ,(wasm-sym (global-name global))
+      ,@(if (eq? (global-import global) 'export)
+          `((export ,(global-name global)))
+          '())
+      (mut (ref null $bstring)) 
+      (ref.null $bstring))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-real ...                                               */
@@ -680,11 +664,33 @@
               (global.get $BUNSPEC)
               (i32.const ,arity)
               (ref.null none))))))))
+
+;*---------------------------------------------------------------------*/
+;*    emit-string-data ...                                             */
+;*---------------------------------------------------------------------*/
+(define (emit-string-data str info)
+  (define (split-long-data data block-size result)
+    (if (=fx (string-length data) 0)
+      (reverse result)
+      (let ((len (min (string-length data) block-size)))
+        (split-long-data 
+          (substring data len) 
+          block-size 
+          (cons (substring data 0 len) result)))))
+  (let ((section (car info))
+        (offset (cdr info)))
+    `(data ,section ,@(split-long-data str 100 '()))))
+
+;*---------------------------------------------------------------------*/
+;*    emit-strings ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (emit-strings)
+  (hashtable-map *allocated-strings* emit-string-data))
   
 ; We maintain a hashtable of imported globals and functions in WASM as
 ; we can't import two times the same item (this occurs in the standard
 ; library).
-(define *imported-ids* (make-hashtable))
+(define *defined-ids* (make-hashtable))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-imports ...                                                 */
@@ -696,8 +702,8 @@
       ;; (tprint "GLOBAL " (global-id global) " " (global-name global) " " (global-import global) " " (global-occurrence global))
       (when (and (require-import? global) (not (scnst? global)))
         (let ((import (emit-import (global-value global) global)))
-          (when (and import (not (hashtable-contains? *imported-ids* (global-name global))))
-            (hashtable-put! *imported-ids* (global-name global) #t)
+          (when (and import (not (hashtable-contains? *defined-ids* (global-name global))))
+            (hashtable-put! *defined-ids* (global-name global) #t)
             (set! imports (cons import imports)))))))
     imports))
 

@@ -14,6 +14,7 @@
     object_class
     cnst_alloc
     tools_shape
+    tools_location
     backend_backend
     backend_cvm
     backend_wasm
@@ -28,7 +29,8 @@
   (export
     (saw-wasm-gen b::wasm v::global)
     (wasm-type t::type #!optional (may-null #t))
-    (wasm-sym t::bstring))
+    (wasm-sym t::bstring)
+    *allocated-strings*)
   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
   (static (wide-class SawCIreg::rtl_reg index)))
 
@@ -46,28 +48,30 @@
 
 (define (gen-fun b::wasm v::global l)
    (with-access::global v (name import value type)
-      (with-access::sfun value (args)
+      (with-access::sfun value (loc args)
          (let ((params (map local->reg args)))
             (build-tree b params l)
             (set! l (register-allocation b v params l))
             (set! l (bbv b v params l))
 
-            `(func ,(wasm-sym name)
+            `(comment ,(string-append (symbol->string (global-id v)) " in " (symbol->string (global-module v)))
+              ,(with-loc loc
+                `(func ,(wasm-sym name)
 
-              ,@(if (eq? import 'export)
-                  `((export ,name))
-                  '())
+                ,@(if (eq? import 'export)
+                    `((export ,name))
+                    '())
 
-              ,@(let ((locals (get-locals params l)))
-                `(,@(gen-params params)
-                ,@(gen-result type)
-                ,@(gen-locals locals)))
+                ,@(let ((locals (get-locals params l)))
+                  `(,@(gen-params params)
+                  ,@(gen-result type)
+                  ,@(gen-locals locals)))
 
-              ,@(if (needs-dispatcher? l)
-                    `((local $__label i32)
-                      (local.set $__label (i32.const ,(block-label (car l))))
-                      ,@(gen-body l))
-                    (gen-basic-block (car l))))))))
+                ,@(if (needs-dispatcher? l)
+                      `((local $__label i32)
+                        (local.set $__label (i32.const ,(block-label (car l))))
+                        ,@(gen-body l))
+                      (gen-basic-block (car l))))))))))
 
 (define (get-locals params l) ;()
    ;; update all reg to ireg and  return all regs not in params.
@@ -231,55 +235,75 @@
         (if (SawCIreg-var reg) "V" "R")
         (fixnum->string (SawCIreg-index reg))))))
 
+(define (with-loc loc expr)
+  (let ((parsed-loc (parse-location loc)))
+    (if parsed-loc
+      `(@ ,parsed-loc ,expr)
+      expr)))
+
+(define (with-fun-loc fun expr)
+  (with-access::rtl_fun fun (loc)
+    (with-loc loc expr)))
+
 (define-method (gen-expr fun::rtl_nop args)
   ;; Strangely, NOP is defined as returning the constant BUNSPEC...
-  '(global.get $BUNSPEC))
+  (with-fun-loc fun '(global.get $BUNSPEC)))
 
 (define-method (gen-expr fun::rtl_globalref args)
   ; NOT IMPLEMENTED
-  '(GLOBALREF ,@(gen-args args)))
+  (with-fun-loc fun '(GLOBALREF ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_getfield args)
   (with-access::rtl_getfield fun (name objtype)
-    `(struct.get ,(wasm-sym (type-class-name objtype)) ,(wasm-sym name) ,@(gen-args args))))
+    (with-fun-loc fun 
+      `(struct.get ,(wasm-sym (type-class-name objtype)) ,(wasm-sym name) ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_setfield args)
   (with-access::rtl_setfield fun (name objtype)
-    `(struct.set ,(wasm-sym (type-class-name objtype)) ,(wasm-sym name) ,@(gen-args args))))
+    (with-fun-loc fun
+      `(struct.set ,(wasm-sym (type-class-name objtype)) ,(wasm-sym name) ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_instanceof args)
   ; NOT IMPLEMENTED
-  `(INSTANCEOF ,@(gen-args args)))
+  (with-fun-loc fun `(INSTANCEOF ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_makebox args)
-  `(struct.new $cell ,@(gen-args args)))
+  (with-fun-loc fun 
+    `(struct.new $cell ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_boxref args)
   ;; FIXME: remove the cast to cell
-  `(struct.get $cell $car (ref.cast (ref $cell) ,(gen-reg (car args)))))
+  (with-fun-loc fun
+    `(struct.get $cell $car (ref.cast (ref $cell) ,(gen-reg (car args))))))
 
 (define-method (gen-expr fun::rtl_boxset args)
   ;; FIXME: remove the cast to cell
-  `(struct.set $cell $car (ref.cast (ref $cell) ,(gen-reg (car args))) ,@(gen-args (cdr args))))
+  (with-fun-loc fun
+    `(struct.set $cell $car (ref.cast (ref $cell) ,(gen-reg (car args))) ,@(gen-args (cdr args)))))
 
 (define-method (gen-expr fun::rtl_fail args)
   ;; TODO
-  '(throw $fail))
+  (with-fun-loc fun 
+    '(throw $fail)))
 
 (define-method (gen-expr fun::rtl_return args)
-  `(return ,@(gen-args args)))
+  (with-fun-loc fun
+    `(return ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_go args)
   ; We can not return a list of WASM instruction there (as it is not the 
   ; expected interface by the callers of this function). Therefore, we
   ; need to encapsulate the two instructions inside a WASM block.
-  `(block ,@(gen-go (rtl_go-to fun))))
+  (with-fun-loc fun
+    `(block ,@(gen-go (rtl_go-to fun)))))
 
 (define-method (gen-expr fun::rtl_ifne args)
-  `(if ,@(gen-args args) (then ,@(gen-go (rtl_ifne-then fun)))))
+  (with-fun-loc fun
+    `(if ,@(gen-args args) (then ,@(gen-go (rtl_ifne-then fun))))))
 
 (define-method (gen-expr fun::rtl_ifeq args)
-  `(if (i32.eqz ,@(gen-args args)) (then ,@(gen-go (rtl_ifeq-then fun)))))
+  (with-fun-loc fun
+    `(if (i32.eqz ,@(gen-args args)) (then ,@(gen-go (rtl_ifeq-then fun))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    intify ...                                                       */
@@ -312,7 +336,12 @@
         ;; TODO: generate a binary search if the density is too low.
         ;;       see SawJvm/code.scm: rtl_switch gen-fun
         
-        (emit-binary-search type (gen-args args) else-bb (list->vector (map car num2bb)) (list->vector (map cdr num2bb)))
+        (with-fun-loc fun 
+          (emit-binary-search type 
+            (gen-args args) 
+            else-bb 
+            (list->vector (map car num2bb)) 
+            (list->vector (map cdr num2bb))))
         ; Code to generate br_table (to be used once Relooper is implemented).
         ; `(br_table ,@(map wasm-block-label (flat num2bb else-bb)) ,(wasm-block-label else-bb) (i64.sub ,@(gen-args args) (i64.const ,min)))
       ))))
@@ -366,23 +395,33 @@
 (define-method (gen-expr fun::rtl_loadfun args)
   ; We need to encapsulate the funcref into a struct so it can be passed
   ; to functions taking eqref (like make-fx-procedure).
-  `(struct.new $tmpfun (ref.func ,(wasm-sym (global-name (rtl_loadfun-var fun))))))
+  (with-fun-loc fun
+    `(struct.new $tmpfun (ref.func ,(wasm-sym (global-name (rtl_loadfun-var fun)))))))
 
 (define-method (gen-expr fun::rtl_valloc args)
-  `(array.new_default $vector (i32.wrap_i64 ,@(gen-args args))))
+  (with-fun-loc fun
+    `(array.new_default $vector (i32.wrap_i64 ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_vref args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
   ;; FIXME: is the cast to ref vector really required?
-  `(array.get $vector (ref.cast (ref $vector) ,(gen-reg (car args))) (i32.wrap_i64 ,(gen-reg (cadr args)))))
+  (with-fun-loc fun
+    `(array.get $vector 
+      (ref.cast (ref $vector) ,(gen-reg (car args))) 
+      (i32.wrap_i64 ,(gen-reg (cadr args))))))
 
 (define-method (gen-expr fun::rtl_vset args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
   ;; FIXME: is the cast to ref vector really required?
-  `(array.set $vector (ref.cast (ref $vector) ,(gen-reg (car args))) (i32.wrap_i64 ,(gen-reg (cadr args))) ,@(gen-args (cddr args))))
+  (with-fun-loc fun
+    `(array.set $vector 
+      (ref.cast (ref $vector) ,(gen-reg (car args)))
+      (i32.wrap_i64 ,(gen-reg (cadr args))) 
+      ,@(gen-args (cddr args)))))
 
 (define-method (gen-expr fun::rtl_vlength args)
-  `(i64.extend_i32_u (array.len ,@(gen-args args))))
+  (with-fun-loc fun
+    `(i64.extend_i32_u (array.len ,@(gen-args args)))))
 
 (define (emit-wasm-atom-value type value)
    (cond
@@ -429,19 +468,24 @@
 
 (define-method (gen-expr fun::rtl_loadi args)
   (let ((atom (rtl_loadi-constant fun)))
-    (emit-wasm-atom-value (atom-type atom) (atom-value atom))))
+    (with-fun-loc fun 
+      (emit-wasm-atom-value (atom-type atom) (atom-value atom)))))
 
 (define-method (gen-expr fun::rtl_loadg args)
   (let* ((var (rtl_loadg-var fun))
           (name (global-name var))
           (macro-code (global-jvm-type-name var)))
-    (if (and (isa? (global-value var) cvar)
-            (not (string-null? macro-code)))
-      (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
-      `(global.get ,(wasm-sym (global-name (rtl_loadg-var fun)))))))
+    (with-fun-loc fun
+      (if (and (isa? (global-value var) cvar)
+              (not (string-null? macro-code)))
+        (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
+        `(global.get ,(wasm-sym (global-name (rtl_loadg-var fun))))))))
 
 (define-method (gen-expr fun::rtl_storeg args)
-  `(global.set ,(wasm-sym (global-name (rtl_storeg-var fun))) ,@(gen-args args)))
+  (with-fun-loc fun 
+    `(global.set 
+      ,(wasm-sym (global-name (rtl_storeg-var fun))) 
+      ,@(gen-args args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-sym ...                                                     */
@@ -489,17 +533,21 @@
   (let* ((var (rtl_call-var fun))
           (name (global-name var))
           (macro-code (global-jvm-type-name var)))
-    (if (and (isa? (global-value var) cfun)
-            (not (string-null? macro-code)))
-      (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
-      `(call ,(wasm-sym name) ,@(gen-args args)))))
+    (with-fun-loc fun
+      (if (and (isa? (global-value var) cfun)
+              (not (string-null? macro-code)))
+        (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
+        `(call ,(wasm-sym name) ,@(gen-args args))))))
 
 (define-method (gen-expr fun::rtl_funcall args)
-  (gen-expr-funcall/lightfuncall args))
+  (with-fun-loc fun (gen-expr-funcall/lightfuncall args)))
 
 (define-method (gen-expr fun::rtl_lightfuncall args)
   ; TODO: implement lightfuncall
-  `(ref.cast ,(wasm-type (rtl_lightfuncall-rettype fun) #f) ,(gen-expr-funcall/lightfuncall args)))
+  (with-fun-loc fun
+    `(ref.cast 
+      ,(wasm-type (rtl_lightfuncall-rettype fun) #f) 
+      ,(gen-expr-funcall/lightfuncall args))))
 
 (define (gen-expr-funcall/lightfuncall args)
   (let* ((arg_count (length args))
@@ -522,7 +570,7 @@
 
 (define-method (gen-expr fun::rtl_apply args)
   ; TODO
-  `(throw $fail))
+  (with-fun-loc fun `(throw $fail)))
 
 (define-method (gen-expr fun::rtl_mov args)
   (gen-reg (car args)))
@@ -534,7 +582,7 @@
     (if constr
       alloc
       ; TODO: call constructor
-      `(block ,alloc)))))
+      (with-fun-loc fun `(block ,alloc))))))
 
 (define-method (gen-expr fun::rtl_cast args)
   ;; (tprint (typeof (rtl_ins-fun (car args))))
@@ -545,21 +593,57 @@
 
 (define-method (gen-expr fun::rtl_cast_null args)
   ; NOT IMPLEMENTED
-  `(CASTNULL ,@(gen-args args)))
+  (with-fun-loc fun `(CASTNULL ,@(gen-args args))))
+
+(define *allocated-strings* (make-hashtable))
+(define *string-current-offset* 0)
+
+;*---------------------------------------------------------------------*/
+;*    allocate-string ...                                              */
+;*---------------------------------------------------------------------*/
+(define (allocate-string str::bstring)
+  ; Allocate space inside WebAssembly module's linear memory for the string
+  ; and return its offset.
+  (let ((info (hashtable-get *allocated-strings* str)))
+    (if info
+      info
+      (let* ((length (string-length str))
+            (section (wasm-sym (symbol->string (gensym "string-data"))))
+            (new-info (cons section *string-current-offset*)))
+        (set! *string-current-offset* (+fx *string-current-offset* length))
+        (hashtable-put! *allocated-strings* str new-info)
+        new-info))))
+
+(define (gen-string-literal str::bstring)
+  ;; FIXME: Use passive (data) to allocate strings (see bulk memory extension)
+  ;;      this will allow to use a single global memory for all modules.
+  ;;      If it is done, no need to allocate offsets to strings anymore.
+  ;;      Ex:
+  ;;        (data $mystring-data "hello")
+  ;;        (global $mystring (ref $bstring) (array.new_data $bstring $mystring-data (LENGTH)))
+  (let* ((info (allocate-string str))
+         (section (car info))
+         (offset (cdr info)))
+    `(array.new_data $bstring ,section
+      (i32.const 0)
+      (i32.const ,(string-length str)))))
 
 (define-method (gen-expr fun::rtl_pragma args)
-  (if (eq? (rtl_pragma-srfi0 fun) 'bigloo-wasm)
-    (let ((format (rtl_pragma-format fun)))
-      (call-with-input-string format read))
-    ;; TODO: implement pragma default value depending on type
-    '(global.get $BUNSPEC)))
+  (with-fun-loc fun
+    (if (eq? (rtl_pragma-srfi0 fun) 'bigloo-wasm)
+      (let ((format (rtl_pragma-format fun)))
+        (if (string-prefix? "string:" format)
+          (gen-string-literal (substring format 7))
+          (call-with-input-string format read)))
+      ;; TODO: implement pragma default value depending on type
+      '(global.get $BUNSPEC))))
 
 (define-method (gen-expr fun::rtl_jumpexit args)
-  `(throw $bexception ,@(gen-args args)))
+  (with-fun-loc fun `(throw $bexception ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_protect args)
   ;; TODO: correctly initialize exit object
-  '(struct.new_default $exit))
+  (with-fun-loc fun '(struct.new_default $exit)))
 
 (define-method (gen-expr fun::rtl_protected args)
   ;; Strange, nothing to do...

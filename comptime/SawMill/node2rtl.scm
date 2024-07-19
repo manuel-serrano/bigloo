@@ -214,12 +214,9 @@
 ;;
 (define-method (node->rtl::area e::var) ; ()
    (with-access::var e (variable)
-      (unless (local? variable)
-	 (tprint "node->rtl " (shape e) " " (sfun? (variable-value variable))))
       (cond ((local? variable)
 	     (single e (instantiate::rtl_mov) (local->reg variable)) )
 	    ((sfun? (variable-value variable))
-	     (tprint "LOAD FUN..." (shape e))
 	     (single e (instantiate::rtl_loadfun (var (get-global variable)))) )
 	    (else
 	     (single e (instantiate::rtl_loadg (var (get-global variable)))) ))))
