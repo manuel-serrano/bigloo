@@ -65,7 +65,8 @@
 			 (instantiate::pragma
 			    (loc loc)
 			    (type type)
-			    (format format)
+			    (format (if (string-prefix? "wasm:" format) (substring format 5) format))
+				(srfi0 (if (string-prefix? "wasm:" format) 'bigloo-wasm 'bigloo-c))
 			    (expr* (reverse! nodes))
 			    (side-effect (not free))
 			    (effect effect))

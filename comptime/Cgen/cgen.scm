@@ -514,7 +514,7 @@
    (trace (cgen 3)
 	  "(node->cop node::pragma kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::pragma node (format effect expr* srfi0 loc)
+   (with-access::pragma node (format type effect expr* srfi0 loc)
       (if (eq? srfi0 'bigloo-c)
 	  (if (and (string-null? format)
 		   (pair? expr*)
@@ -525,7 +525,7 @@
 		    (extern->cop name #f node kont inpushexit)))
 	      (extern->cop format #f node kont inpushexit))
 	  (begin
-	     (tprint "############## IGNORING PRAGMA " srfi0)
+	     (tprint "############## IGNORING PRAGMA " srfi0 " " format)
 	     (instantiate::catom
 		(type type)
 		(value 0)

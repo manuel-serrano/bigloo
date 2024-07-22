@@ -148,7 +148,7 @@
             (import "__runtime" "BOPTIONAL" (global $BOPTIONAL (ref $boptional)))
             (import "__runtime" "BKEY" (global $BKEY (ref $bkey)))
             (import "__runtime" "BREST" (global $BREST (ref $brest)))
-            (import "__js" "trace" (func $__trace))
+            (import "__js" "trace" (func $__trace (param i32)))
             ,@(emit-imports))
           (comment "Memory" ,@(emit-memory))
           (comment "Primitive types" ,@(call-with-input-file "Wlib/runtime.types" port->sexp-list))
@@ -631,18 +631,18 @@
 ;*    emit-cnst-sfun ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-sfun sfun global)
-  (emit-cnst-sfun/sgfun sfun global))
+  (emit-cnst-sfun/sgfun sfun global 'procedure))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sgfun ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-sgfun sgfun global)
-  (emit-cnst-sfun/sgfun sgfun global))
+  (emit-cnst-sfun/sgfun sgfun global 'generic))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun/sgfun ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (emit-cnst-sfun/sgfun fun global)
+(define (emit-cnst-sfun/sgfun fun global kind)
   (with-trace 'wasm "Emit SFUN"
     (trace-item "name=" (global-name global) " import=" (global-import global))
     ; TODO: implement SFUN cnst
@@ -663,7 +663,12 @@
               (ref.func ,(wasm-sym name))
               (global.get $BUNSPEC)
               (i32.const ,arity)
-              (ref.null none))))))))
+              ,(if (eq? kind 'generic)
+                '(array.new_fixed $vector 3
+                  (global.get $BFALSE)
+                  (global.get $BFALSE)
+                  (global.get $BUNSPEC))
+                '(ref.null none)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-string-data ...                                             */

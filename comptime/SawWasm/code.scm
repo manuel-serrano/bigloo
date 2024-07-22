@@ -104,7 +104,7 @@
       ('nil 'eqref)
       ('unspecified 'eqref)
       ('class-field 'eqref)
-      ('pair-nil 'eqref)
+      ('pair-nil 'eqref) ;; FIXME: should be (ref null $pair)
       ('cobj 'eqref)
       ('void* 'i32) ;; A raw pointer into the linear memory
       ('tvector 'arrayref)
@@ -144,7 +144,7 @@
           ;; FIXME: remove the null qualifier
           (else (if may-null 
             `(ref null ,(wasm-sym (symbol->string (type-id t))))
-            `(ref ,(wasm-sym (symbol->string (type-id t)))) )))))))
+            `(ref ,(wasm-sym (symbol->string (type-id t)))))))))))
 
 (define (gen-params l) ;()
   (map (lambda (arg) `(param ,(wasm-sym (reg_name arg)) ,(wasm-type (rtl_reg-type arg)))) l))
@@ -576,13 +576,11 @@
   (gen-reg (car args)))
 
 (define-method (gen-expr fun::rtl_new args)
-  ; NOT IMPLEMENTED
   (with-access::rtl_new fun (type constr)
+    (when (pair? constr)
+      (error "gen-expr" "Not supported." (shape constr)))
     (let ((alloc `(struct.new_default ,(wasm-sym (type-class-name type)))))
-    (if constr
-      alloc
-      ; TODO: call constructor
-      (with-fun-loc fun `(block ,alloc))))))
+      (with-fun-loc fun alloc))))
 
 (define-method (gen-expr fun::rtl_cast args)
   ;; (tprint (typeof (rtl_ins-fun (car args))))
