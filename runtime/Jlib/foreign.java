@@ -4421,7 +4421,7 @@ public final class foreign
    ////
    // CLASS
    ////
-   public static bclass BGL_AS_CLASS(Object o) {
+   public static Object BGL_AS_CLASS(Object o) {
       return (bclass)o;
    }
    
