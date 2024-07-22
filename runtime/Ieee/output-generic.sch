@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Mon Jul 22 15:44:02 2024 (serrano)                */
+;*    Last change :  Mon Jul 22 15:51:47 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -23,9 +23,9 @@
    (string-ref "0123456789abcdef" n))
 
 ;*---------------------------------------------------------------------*/
-;*    names ...                                                        */
+;*    char-names ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-macro (names)
+(define-macro (char-names)
    `',(apply vector
 	 (map (lambda (n)
 		 (call-with-output-string
@@ -37,6 +37,6 @@
 ;*    bgl_write_char ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (bgl_write_char o op)
-   (define names (names))
-   (vector-ref names (char->integer o)))
+   (define names (char-names))
+   ($display-string (vector-ref names (char->integer o)) op))
 

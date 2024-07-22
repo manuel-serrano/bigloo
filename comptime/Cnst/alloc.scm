@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Thu Jul 18 10:45:59 2024 (serrano)                */
+;*    Last change :  Mon Jul 22 16:05:49 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -249,7 +249,7 @@
 			  (instantiate::pragma
 			     (type *bstring*)
 			     (srfi0 (backend-srfi0 (the-backend)))
-			     (format (format "string:~a" (string-for-read string))))
+			     (format (format "string:~a" string)))
 			  variable
 			  (strict-node-type *bstring* *obj*)
 			  #f)))))
