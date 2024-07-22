@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Jan 14 14:01:03 2019 (serrano)                */
+;*    Last change :  Mon Jul 22 15:41:16 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -23,7 +23,11 @@
 ;*---------------------------------------------------------------------*/
 (module __r4_output_6_10_3
 
-   (import  __error
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       (include "Ieee/output-generic.sch")))
+   
+    (import  __error
 	    __bexit
 	    __r4_ports_6_10_1
 	    __r4_numbers_6_5_flonum_dtoa
