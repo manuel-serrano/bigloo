@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Jun 24 09:22:02 2024 (serrano)                */
+#*    Last change :  Mon Jul 22 08:49:37 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -583,12 +583,12 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHARE
 #*---------------------------------------------------------------------*/
 .PHONY: lib-jvm lib-jvm_s lib-jvm_u lib-jvm_p libs-jvm
 
-libs-jvm:
+libs-jvm: .jfile
 	@ $(MAKE) lib-jvm_u
 	@ $(MAKE) lib-jvm_s
 
 lib-jvm: lib-jvm_s
-lib-jvm_s: includes
+lib-jvm_s: .jfile includes
 	$(MAKE) one-lib-jvm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS) $(BJSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS) $(BJSAFEFLAGS)" \
@@ -596,14 +596,14 @@ lib-jvm_s: includes
                 LIBSUFFIX=_s
 
 
-lib-jvm_u: includes
+lib-jvm_u: .jfile includes
 	$(MAKE) one-lib-jvm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 CLASSDIR_USR=class_u CLASSDIR_SYS=class_u \
                 LIBSUFFIX=_u
 
-lib-jvm_p: includes
+lib-jvm_p: .jfile includes
 	$(MAKE) one-lib-jvm \
                 BFLAGS_SYS="$(BUNSAFEPFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEPFLAGS)" \

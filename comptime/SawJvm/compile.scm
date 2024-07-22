@@ -79,6 +79,7 @@
       (code! me 'from) )
    (code! me '(aload argv))
    (code! me '(invokestatic listargv))
+   (code! me '(checkcast pair))
    (call-global me (find-global 'bigloo_main *module*))
    (code! me '(pop))
    (code! me '(return))

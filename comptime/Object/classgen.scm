@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Wed Jun 19 14:34:24 2019 (serrano)                */
-;*    Copyright   :  2011-19 Manuel Serrano                            */
+;*    Last change :  Mon Jul 22 11:08:44 2024 (serrano)                */
+;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
 ;*=====================================================================*/
@@ -267,7 +267,7 @@
 	  `((object-widening-set! ,new #f))
 	  '()))
    
-   (define (pragma-allocate id tid g)
+   (define (pragma-c-allocate id tid g)
       (let ((new (mark-symbol-non-user! (gensym 'new))))
 	 `(define-inline (,id)
 	     ,(unsafe
@@ -312,8 +312,9 @@
 	  (holder (tclass-holder c)))
       (values
 	 `(inline ,alloc-tid)
-	 (if (backend-pragma-support (the-backend))
-	     (pragma-allocate alloc-tid tid holder)
+	 (if (and (backend-pragma-support (the-backend))
+		  (eq? (backend-srfi0 (the-backend)) 'bigloo-c))
+	     (pragma-c-allocate alloc-tid tid holder)
 	     (nopragma-allocate alloc-tid tid holder)))))
 
 ;*---------------------------------------------------------------------*/
