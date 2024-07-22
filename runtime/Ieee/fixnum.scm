@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Tue Apr  9 10:37:05 2024 (serrano)                */
+;*    Last change :  Mon Jul 22 12:32:47 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -13,7 +13,11 @@
 ;*---------------------------------------------------------------------*/
 (module __r4_numbers_6_5_fixnum
    
-   (import  __error
+    (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       (include "Ieee/fixnum-generic.sch")))
+   
+  (import  __error
 	    __param)
    
    (use     __type
