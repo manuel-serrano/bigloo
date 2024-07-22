@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Mon Jul 22 12:43:12 2024 (serrano)                */
+;*    Last change :  Mon Jul 22 12:55:42 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -13,7 +13,7 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   (integer_to_string::bstring  (::long ::long) "integer_to_string")
+   (export (integer_to_string::bstring ::long ::long))
    (extern (export integer_to_string "integer_to_string")))
 
 ;*---------------------------------------------------------------------*/

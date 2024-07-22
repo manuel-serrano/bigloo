@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Thu Jul 18 10:34:22 2024 (serrano)                */
+;*    Last change :  Mon Jul 22 12:59:23 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -243,8 +243,8 @@
 			(else (error "gensym" "Illegal argument" arg)))))
 	  (let loop ()
 	     (set! *gensym-counter* (+fx *gensym-counter* 1))
-	     (let ((name (string-append string
-					(integer->string *gensym-counter*))))
+	     (let* ((n (integer->string *gensym-counter*))
+		    (name (string-append string n)))
 		(if (not (symbol-exists? name))
 		    (string->symbol name)
 		    (loop))))))))
