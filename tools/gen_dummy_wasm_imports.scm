@@ -1,0 +1,57 @@
+(module util
+   (main main))
+
+(define (main x)
+    (let ((already-generated (make-hashtable)))
+    (let ((module '(module
+        (import "__runtime" "BUNSPEC" (global $BUNSPEC eqref)))))
+        (append! module (call-with-input-file "Wlib/runtime.types" port->sexp-list))
+        (for-each (lambda (f)
+            (append! module (call-with-input-file f
+            (lambda (p)
+                (let* ((m (read p)))
+                    (filter-map (lambda (c)
+                        (match-case c
+                            ((import ?mod ?id (func ?name (type ?-) ?params (result ?rtype)))
+                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
+                                    (hashtable-put! already-generated id #t)
+                                    `(func (export ,id) ,params (result ,rtype) ,(emit-default-value rtype))))
+                            ((import ?mod ?id (func ?name (type ?-) ?params (result ?rtype)))
+                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
+                                    (hashtable-put! already-generated id #t)
+                                    `(func (export ,id) ,params (result ,rtype) ,(emit-default-value rtype))))
+                            ((import ?mod ?id (func ?name (type ?-) (result ?rtype)))
+                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
+                                    (hashtable-put! already-generated id #t)
+                                    `(func (export ,id) (result ,rtype) ,(emit-default-value rtype))))
+                            ((import ?mod ?id (func ?name (type ?-) ?params))
+                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
+                                    (hashtable-put! already-generated id #t)
+                                    `(func (export ,id) ,params)))
+                            ((import ?mod ?id (func ???-))
+                                (error "parse-import" "Unknown function pattern" c))
+                            ((import ?mod ?id (global ?name ?type))
+                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
+                                    (hashtable-put! already-generated id #t)
+                                    `(global ,name (export ,id) ,type ,(emit-default-value type))))))
+                    (cdr m)))))))
+        (cdr x))
+        (pp module))))
+
+(define (should-generate? mod)
+    (not (string=? mod "wasi_snapshot_preview1")))
+
+(define (result-type result)
+    (match-case result
+        ((result ?type) type)
+        (else 'eqref)))
+
+(define (emit-default-value type)
+    (case type
+        ('i32 '(i32.const 0))
+        ('i64 '(i64.const 0))
+        ('f32 '(f32.const 0))
+        ('f64 '(f64.const 0))
+        ('eqref '(global.get $BUNSPEC))
+        (else '(ref.null none))
+    ))

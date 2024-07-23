@@ -675,14 +675,38 @@ one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
 
 WASM_AS=wasm-as
 WASM_AS_FLAGS=-all -g
+WASM_DIS=wasm-dis
+WASM_DIS_FLAGS=-all
 WASM_MERGE=wasm-merge
-WASM_MERGE_FLAGS=-all -g -sec
+WASM_MERGE_FLAGS=-all -g --rename-export-conflicts
 
 .PHONY: touch-wasm
 touch-wasm:
 	@ touch $(WASMS:objs//%.wasm=%.scm)
+	@ touch Wlib/runtime.wat
 
-$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/$(WASMDIR_SYS)/runtime.wasm $(WASMS)
+$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/wasm$(LIBSUFFIX)/bigloo_dis.wat objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
+	@ echo "\e[1;34mLinking $@ with missing dummy runtime\e[0m"
+	@ $(WASM_MERGE) $(WASM_MERGE_FLAGS) \
+		objs/wasm$(LIBSUFFIX)/bigloo_dis.wat __runtime \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __runtime \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __os \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __hash \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __gunzip \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __url \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __binary \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __reader \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __bignum \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __evaluate \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __pp_circle \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __http \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __date \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __intext \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __ftp \
+		-o $@ \
+		-osm $@.map
+
+objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/$(WASMDIR_SYS)/runtime.wasm $(WASMS)
 	@ echo "\e[1;34mLinking $@\e[0m"
 	@ LST=; for n in $(WASMS); do \
 		file="`basename $$n .wasm`.scm"; \
@@ -713,6 +737,18 @@ objs/wasm_s/%.wasm: %.scm
 	@ $(BIGLOO) -wasm $(BFLAGS_USR) $(EFLAGS) -c $< -o $(@:%.wasm=%.wat) \
     && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -sm $(@:%=%.map) -o $@  || exit 1
     # && rm $(@:%.wasm=%.wat) || exit 1
+
+objs/wasm$(LIBSUFFIX)/bigloo_dis.wat: objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
+	@ echo "\e[34mDisassembling Bigloo WASM library\e[0m"
+	@ $(WASM_DIS) $(WASM_DIS_FLAGS) $< -o $@ -sm $<.map
+
+objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: objs/wasm$(LIBSUFFIX)/bigloo_dis.wat objs/wasm$(LIBSUFFIX)/gen_dummy_wasm_imports
+	@ echo "\e[34mExtracting missing runtime functions\e[0m"
+	@ ./objs/wasm$(LIBSUFFIX)/gen_dummy_wasm_imports objs/wasm$(LIBSUFFIX)/bigloo_dis.wat > $@
+
+objs/wasm$(LIBSUFFIX)/gen_dummy_wasm_imports: ../tools/gen_dummy_wasm_imports.scm
+	@ echo "\e[34mCompiling tool/gen_dummy_wasm_imports.scm\e[0m"
+	@ $(BIGLOO) $(BCOMMONFLAGS) -w $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
