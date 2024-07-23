@@ -560,6 +560,7 @@
 ;*    error ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (error proc msg obj)
+	(pragma :srfi bigloo-wasm "(call $__trace (i32.const 111))")
    (raise
       (instantiate::&error
 	 (proc proc)

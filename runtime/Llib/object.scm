@@ -1105,14 +1105,20 @@
 	 (generics-add-class! num (if (class? super) (class-index super) num))
 	 class))
    
+   
    (synchronize $bigloo-generic-mutex
+	
       (initialize-objects!)
+	  
       (when (and super (not (class? super)))
-	 (error name "Illegal super-class for class" super))
+		(error name "Illegal super-class for class" super)
+		#f)
+
       (unless (vector? plain)
-	 (error "register-class!" "Fields not a vector" plain))
+	 	(error "register-class!" "Fields not a vector" plain)
+		#f)
       (let ((k (class-exists name)))
-	 (cond
+	 (let ((v (cond
 	    ((not (class? k))
 	     (new-class!))
 	    ((=fx (class-hash k) hash)
@@ -1121,7 +1127,8 @@
 	     (warning "register-class!" "Dangerous class redefinition: \"" name "@"
 		module
 		"\" (" name "@" (class-module k) ")")
-	     (new-class!))))))
+	     (new-class!)))))
+		v))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-virtual-slots-vector ...                              */
@@ -1201,11 +1208,13 @@
 ;*---------------------------------------------------------------------*/
 (define (register-generic-sans-lock! generic default name)
    (if (not (generic-registered? generic))
+	
        (let* ((def-met (if (procedure? default)
 			   default
 			   generic-no-default-behavior))
 	      (def-bucket ($make-vector-uncollectable
 			   (bigloo-generic-bucket-size) def-met)))
+		
 	  (when (=fx *nb-generics* *nb-generics-max*)
 	     (double-nb-generics!))
 	  (vector-set! *generics* *nb-generics* generic)
@@ -1214,6 +1223,7 @@
 	  (generic-default-bucket-set! generic def-bucket)
 	  (generic-method-array-set! generic (make-method-array def-bucket))
 	  #unspecified)
+	  
        (begin
 	  (when (procedure? default)
 	     ;; We have to adjust the generic default bucket and the

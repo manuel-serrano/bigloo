@@ -1,6 +1,8 @@
 (module $__runtime
   ;; WASI
   (import "wasi_snapshot_preview1" "fd_write" (func $wasi_fd_write (param i32 i32 i32 i32) (result i32)))
+  (import "__js" "read_string" (func $js_read_string (param i32 i32) (result i32)))
+  (import "__js" "write_string" (func $js_write_string (param i32 i32 i32)))
 
   ;; General bigloo memory
   (memory 1)
@@ -22,7 +24,23 @@
   ;; Dynamic env functions
   ;; --------------------------------------------------------
 
-  (global $current-dynamic-env (ref $dynamic-env) (struct.new_default $dynamic-env))
+  (global $current-dynamic-env (ref $dynamic-env) 
+    (struct.new $dynamic-env
+      ;; $exitd_top
+      (struct.new_default $exit)
+      ;; $exitd_val
+      (struct.new $pair (struct.new $pair (global.get $BUNSPEC) (global.get $BUNSPEC)) (global.get $BUNSPEC))
+      ;; $uncaught-exception-handler
+      (ref.null none)
+      ;; $error-handler
+      (struct.new $pair (global.get $BUNSPEC) (global.get $BFALSE))
+      
+      ;; $current-out-port
+      (struct.new $file-output-port (i32.const 1))
+      ;; $current-err-port
+      (struct.new $file-output-port (i32.const 2))
+      ;; $current-in-port
+      (struct.new $file-output-port (i32.const 0))))
 
   (func $BGL_CURRENT_DYNAMIC_ENV (export "BGL_CURRENT_DYNAMIC_ENV")
     (result (ref null $dynamic-env))
@@ -103,6 +121,64 @@
   ;; --------------------------------------------------------
   ;; Class functions
   ;; --------------------------------------------------------
+
+  (func $bgl_make_class (export "bgl_make_class")
+    (param $name (ref null $symbol))
+    (param $module (ref null $symbol))
+    (param $num i64)
+    (param $inheritance-num i64)
+    (param $super eqref)
+    (param $sub eqref)
+    (param $alloc (ref null $procedure))
+    (param $hash i64)
+    (param $direct-fields (ref null $vector))
+    (param $all-fields (ref null $vector))
+    (param $constructor eqref)
+    (param $virtual-fields (ref null $vector))
+    (param $new eqref)
+    (param $nil (ref null $procedure))
+    (param $shrink eqref)
+    (param $depth i64)
+    (param $evdata eqref)
+    (result (ref null $class))
+
+    (local $self (ref $class))
+    (local $ancestors (ref $vector))
+    (local.set $ancestors (array.new_default $vector (i32.add (i32.wrap_i64 (local.get $depth)) (i32.const 1))))
+    (if (i64.lt_u (local.get $depth) (i64.const 0))
+      (then 
+        (array.copy 
+          $vector $vector
+          (local.get $ancestors)
+          (i32.const 0)
+          (struct.get $class $ancestors (ref.cast (ref $class) (local.get $super)))
+          (i32.const 0)
+          (i32.wrap_i64 (local.get $depth)))))
+
+    (local.set $self 
+      (struct.new $class
+        (local.get $name)
+        (local.get $module)
+        (local.get $new)
+        (local.get $alloc)
+        (local.get $nil)
+        (global.get $BUNSPEC) (; NIL ;)
+        (local.get $constructor)
+        (local.get $super)
+        (local.get $sub)
+        (local.get $shrink)
+        (local.get $evdata)
+        (local.get $ancestors)
+        (local.get $virtual-fields)
+        (local.get $direct-fields)
+        (local.get $all-fields)
+        (local.get $hash)
+        (local.get $num)
+        (local.get $depth)))
+    
+    (array.set $vector (local.get $ancestors) (i32.wrap_i64 (local.get $depth)) (local.get $self))
+    (local.get $self)
+    )
 
   (func $BGL_CLASS_SUBCLASSES_SET (export "BGL_CLASS_SUBCLASSES_SET")
     (param $class (ref null $class))
@@ -325,8 +401,8 @@
     (param $protect i64) 
     (result eqref)
     (struct.set $exit $userp (local.get $v) (local.get $protect))
-    (struct.set $exit $prev (local.get $v) (struct.get $dynamic-env 0 (local.get $env)))
-    (struct.set $dynamic-env 0 (local.get $env) (local.get $v))
+    (struct.set $exit $prev (local.get $v) (struct.get $dynamic-env $exitd_top (local.get $env)))
+    (struct.set $dynamic-env $exitd_top (local.get $env) (local.get $v))
     (global.get $BUNSPEC))
 
   (func $PUSH_EXIT (export "PUSH_EXIT") 
@@ -341,10 +417,10 @@
   (func $POP_ENV_EXIT (export "POP_ENV_EXIT")
     (param $env (ref null $dynamic-env)) 
     (result eqref)
-    (struct.set $dynamic-env 0
+    (struct.set $dynamic-env $exitd_top
         (local.get $env)
         (struct.get $exit $prev
-            (struct.get $dynamic-env 0 (local.get $env))))
+            (struct.get $dynamic-env $exitd_top (local.get $env))))
     (global.get $BUNSPEC))
 
   (func $POP_EXIT (export "POP_EXIT") (result eqref)
@@ -376,6 +452,15 @@
       (struct.new $pair 
         (local.get $p)
         (struct.get $exit $protect (local.get $e)))))
+  
+  (func $BGL_ERROR_HANDLER_GET (export "BGL_ERROR_HANDLER_GET")
+    (result eqref)
+    (struct.get $dynamic-env $error-handler (global.get $current-dynamic-env)))
+
+  (func $BGL_ENV_ERROR_HANDLER_GET (export "BGL_ENV_ERROR_HANDLER_GET")
+    (param $env (ref null $dynamic-env))
+    (result eqref)
+    (struct.get $dynamic-env $error-handler (local.get $env)))
 
   (func $BGL_ERROR_HANDLER_SET (export "BGL_ERROR_HANDLER_SET") 
     (param $hdl eqref) 
@@ -390,7 +475,7 @@
   (func $BGL_ENV_EXITD_TOP_AS_OBJ (export "BGL_ENV_EXITD_TOP_AS_OBJ") 
     (param $env (ref null $dynamic-env)) 
     (result eqref)
-    (ref.cast (ref $exit) (struct.get $dynamic-env $top (local.get $env))))
+    (ref.cast (ref $exit) (struct.get $dynamic-env $exitd_top (local.get $env))))
 
   (func $BGL_EXITD_TOP_AS_OBJ (export "BGL_EXITD_TOP_AS_OBJ") (result eqref)
     (call $BGL_ENV_EXITD_TOP_AS_OBJ (global.get $current-dynamic-env)))
@@ -508,7 +593,58 @@
     (param $c i32)
     (param $port (ref null $output-port))
     (result eqref)
+    
+    (i32.store8 (i32.const 128) (local.get $c))
+    (call $js_write_string (i32.const 1) (i32.const 128) (i32.const 1))
     (local.get $port))
+
+  (func $display_substring_file_port
+    (param $text (ref $bstring))
+    (param $start i64)
+    (param $end i64)
+    (param $port (ref $file-output-port))
+
+    (call $store_string
+      (local.get $text)
+      (i32.const 128))
+    (call $js_write_string 
+      (struct.get $file-output-port $fd (ref.cast (ref $file-output-port) (local.get $port))) 
+      (i32.const 128) 
+      (i32.wrap_i64 
+        (i64.sub 
+          (local.get $end) 
+          (local.get $start)))))
+
+  (func $display_substring_string_port
+    (param $text (ref $bstring))
+    (param $start i64)
+    (param $end i64)
+    (param $port (ref $string-output-port))
+
+    (local $length i32)
+    (local $new_buffer (ref $bstring))
+
+    ;; Allocate space for new buffer.
+    (local.set $length (i32.wrap_i64 (i64.sub (local.get $end) (local.get $start))))
+    (local.set $new_buffer
+      (array.new_default $bstring
+        (i32.add 
+          (array.len (struct.get $string-output-port $buffer (local.get $port)))
+          (local.get $length))))
+    
+    ;; Copy data to new buffer.
+    (array.copy $bstring $bstring 
+      (local.get $new_buffer) (i32.const 0) 
+      (struct.get $string-output-port $buffer (local.get $port)) (i32.const 0)
+      (local.get $length))
+    (array.copy $bstring $bstring
+      (local.get $new_buffer) (local.get $length)
+      (local.get $text) (i32.wrap_i64 (local.get $start))
+      (local.get $length))
+
+    (struct.set $string-output-port $buffer
+      (local.get $port)
+      (local.get $new_buffer)))
 
   (func $bgl_display_substring (export "bgl_display_substring")
     (param $text (ref null $bstring))
@@ -517,20 +653,19 @@
     (param $port (ref null $output-port))
     (result eqref)
 
-    ;; We write the ciovec_array at the memory address 128 (of the primary memory).
-    (i32.store (i32.const 128) (i32.const 136))
-    (i32.store (i32.const 132) (array.len (local.get $text)))
-    (call $store_string
-      (local.get $text)
-      (i32.const 136))
-    
-    ;; FIXME: add thread synchronisation code
-    (drop (call $wasi_fd_write
-      (i32.const 1) ;; STDOUT, FIXME: should depend on output-port
-      (i32.const 128) ;; address of iovs
-      (i32.const 1) ;; length of iovs
-      (i32.const 128) ;; address where to store the wrote bytes count
-    ))
+    (if (ref.test (ref $file-output-port) (local.get $port))
+      (then 
+        (call $display_substring_file_port 
+          (ref.cast (ref $bstring) (local.get $text))
+          (local.get $start)
+          (local.get $end)
+          (ref.cast (ref $file-output-port) (local.get $port))))
+      (else
+        (call $display_substring_string_port 
+          (ref.cast (ref $bstring) (local.get $text))
+          (local.get $start)
+          (local.get $end)
+          (ref.cast (ref $string-output-port) (local.get $port)))))
 
     (local.get $port))
 

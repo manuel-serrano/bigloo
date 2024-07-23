@@ -42,8 +42,8 @@
 ;; TODO
 (rec
     (type $pair-nil (struct))
-    (type $symbol (struct (field (ref null $bstring))))
-    (type $keyword (struct (field (ref null $bstring))))
+    (type $symbol (struct (field $str (ref null $bstring)) (field $cval eqref)))
+    (type $keyword (struct (field $str (ref null $bstring)) (field $cval eqref)))
     (type $custom (struct (field $ident (mut (ref null $bstring)))))
     (type $weakptr (struct)))
 
@@ -139,7 +139,8 @@
 
 ;; Ports
 (type $output-port (sub (struct)))
-(type $file-output-port (sub $output-port (struct (field $fd i32))))
+(type $file-output-port (sub final $output-port (struct (field $fd i32))))
+(type $string-output-port (sub final $output-port (struct (field $buffer (mut (ref $bstring))))))
 (type $input-port (sub (struct)))
 (type $binary-port (sub (struct)))
 
@@ -171,7 +172,7 @@
 
 ;; Dynamic env (for multithreading)
 (type $dynamic-env (struct 
-  (field $top (mut (ref null $exit)))
+  (field $exitd_top (mut (ref null $exit)))
   (field $exitd_val (mut eqref))
   (field $uncaught-exception-handler (mut eqref))
   (field $error-handler (mut eqref))

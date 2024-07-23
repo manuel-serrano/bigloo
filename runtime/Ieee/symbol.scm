@@ -73,10 +73,18 @@
 	(wasm
 		(c-symbol? "(ref.test (ref $symbol) ~0)")
 		($symbol? "(ref.test (ref $symbol) ~0)")
-		($make-symbol "(struct.new $symbol ~0)")
+		($make-symbol "(struct.new $symbol ~0 (global.get $BUNSPEC))")
+	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
+	    (c-symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
+		
+	    ($symbol->string "(struct.get $symbol $str (ref.cast (ref $symbol) ~0))")
+	    (c-symbol->string "(struct.get $symbol $str (ref.cast (ref $symbol) ~0))")
+
 		(c-keyword? "(ref.test (ref $keyword) ~0)")
 		($keyword? "(ref.test (ref $keyword) ~0)")
-		($make-keyword "(struct.new $keyword ~0)")
+		($make-keyword "(struct.new $keyword ~0 (global.get $BUNSPEC))")
+	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
+	    (c-keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	)
    
    (java    (class foreign
@@ -236,11 +244,17 @@
 		     (else (error "gensym" "Illegal argument" arg)))))
 	  ($gensym arg)))
       (else
+	  (pragma :srfi bigloo-wasm "(call $__trace (i32.const 1000))")
        (let ((string (cond
 			((not arg) "g")
 			((symbol? arg) (symbol->string arg))
 			((string? arg) arg)
 			(else (error "gensym" "Illegal argument" arg)))))
+		
+	  (pragma :srfi bigloo-wasm "(call $__trace (i32.const 2000))")
+	  (when (>fx  *gensym-counter* 10)
+	  	(pragma :srfi bigloo-wasm "(call $__trace (i32.const 2001))")
+		#f)
 	  (let loop ()
 	     (set! *gensym-counter* (+fx *gensym-counter* 1))
 	     (let* ((n (integer->string *gensym-counter*))

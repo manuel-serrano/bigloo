@@ -41,7 +41,8 @@
    
    (extern (export real->string "bgl_real_to_string"))
 
-   (option (set! *init-mode* 'intern)))
+   (cond-expand ((or bigloo-c bigloo-jvm)
+   	(option (set! *init-mode* 'intern)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    static                                                           */

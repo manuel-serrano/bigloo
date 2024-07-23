@@ -171,7 +171,6 @@
 	    (c-opaque? "(i32.const 0)")
 		(c-opaque-nil "(ref.null none)")
 
-		;; TODO: is the cast really required?
         ($procedure-arity "(struct.get $procedure $arity ~0)")
         ($procedure-attr "(struct.get $procedure $attr ~0)")
 	    ($procedure-length "(array.len (struct.get $procedure $env ~0))")
