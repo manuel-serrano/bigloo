@@ -30,6 +30,9 @@
     (saw-wasm-gen b::wasm v::global)
     (wasm-type t::type #!optional (may-null #t))
     (wasm-sym t::bstring)
+    (wasm-cnst-false)
+    (wasm-cnst-true)
+    (wasm-cnst-unspec)
     *allocated-strings*)
   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
   (static (wide-class SawCIreg::rtl_reg index)))
@@ -103,11 +106,13 @@
       ('obj 'eqref)
       ('nil 'eqref)
       ('unspecified 'eqref)
+      ('bbool 'i31ref)
       ('class-field 'eqref)
-      ('pair-nil 'eqref) ;; FIXME: should be (ref null $pair)
+      ('pair-nil '(ref null $pair)) ;; FIXME: should be (ref null $pair)
       ('cobj 'eqref)
       ('void* 'i32) ;; A raw pointer into the linear memory
       ('tvector 'arrayref)
+      ('cnst 'i31ref)
       ;; TODO: handle procedure-el and procedure-l
       ('procedure-el (if may-null '(ref null $procedure) '(ref $procedure)))
       ('bool 'i32)
@@ -134,14 +139,12 @@
       ('ullong 'i64)
       ('float 'f32)
       ('double 'f64)
-      ;; FIXME: remove the null qualifier
       ('vector (if may-null '(ref null $vector) '(ref $vector)))
       ('string (if may-null '(ref null $bstring) '(ref $bstring))) ; string and bstring are the same
       (else 
         (cond 
-          ((foreign-type? t) `(todo ,(type-id t)))
+          ((foreign-type? t) (error "wasm-gen" "unimplemented foreign type in WASM" (type-id t)))
           ((string-suffix? "_bglt" name) (if may-null `(ref null ,(wasm-sym name)) `(ref ,(wasm-sym name))))
-          ;; FIXME: remove the null qualifier
           (else (if may-null 
             `(ref null ,(wasm-sym (symbol->string (type-id t))))
             `(ref ,(wasm-sym (symbol->string (type-id t)))))))))))
@@ -245,9 +248,30 @@
   (with-access::rtl_fun fun (loc)
     (with-loc loc expr)))
 
+(define (wasm-cnst-false)
+  '(global.get $BFALSE))
+
+(define (wasm-cnst-true)
+  '(global.get $BTRUE))
+
+(define (wasm-cnst-unspec)
+  '(global.get $BUNSPEC))
+
+(define (wasm-cnst-optional)
+  '(global.get $BOPTIONAL))
+
+(define (wasm-cnst-key)
+  '(global.get $BKEY))
+
+(define (wasm-cnst-rest)
+  '(global.get $BREST))
+
+(define (wasm-cnst-eoa)
+  '(global.get $BEOA))
+
 (define-method (gen-expr fun::rtl_nop args)
   ;; Strangely, NOP is defined as returning the constant BUNSPEC...
-  (with-fun-loc fun '(global.get $BUNSPEC)))
+  (with-fun-loc fun (wasm-cnst-unspec)))
 
 (define-method (gen-expr fun::rtl_globalref args)
   ; NOT IMPLEMENTED
@@ -451,20 +475,20 @@
           ((and (infinitefl? value) (>fl value 0.0)) `(f64.const inf))
           ((infinitefl? value) `(f64.const -inf))
           (else `(f64.const ,value))))
-      ((eq? value #unspecified) '(global.get $BUNSPEC))
-      ((eq? value __eoa__) '(global.get $BEOA))
+      ((eq? value #unspecified) (wasm-cnst-unspec))
+      ((eq? value __eoa__) (wasm-cnst-eoa))
+      ((eq? value boptional) (wasm-cnst-optional))
+      ((eq? value bkey) (wasm-cnst-key))
+      ((eq? value brest) (wasm-cnst-rest))
       ((bignum? value) '(ref.null none)) ; TODO: implement bignum
       ((string? value) `(array.new_default $bstring (i32.const ,(string-length value)))) ; FIXME: implement C string constants
       ((cnst? value)
         (cond
           ((eof-object? value) '(global.get $BEOF))
-          ((eq? value boptional) '(global.get $BOPTIONAL))
-          ((eq? value bkey) '(global.get $BKEY))
-          ((eq? value brest) '(global.get $BREST))
-          ((eq? value __eoa__) '(global.get $BEOA))
-          (else `(BCNST ,(cnst->integer value)))))
-      (else `(TYPE ,(typeof value))) ; TODO: support other types, see emit-atom-value in c_emit.scm
-   ))
+          (else `(i31.ref (i32.const ,(cnst->integer value))))))
+      (else 
+        ; TODO: support other types, see emit-atom-value in c_emit.scm
+        (error "wasm-gen" "unimplemented scheme atom value for WASM" (typeof value)))))
 
 (define-method (gen-expr fun::rtl_loadi args)
   (let ((atom (rtl_loadi-constant fun)))
@@ -634,7 +658,7 @@
           (gen-string-literal (substring format 7))
           (call-with-input-string format read)))
       ;; TODO: implement pragma default value depending on type
-      '(global.get $BUNSPEC))))
+      (wasm-cnst-unspec))))
 
 (define-method (gen-expr fun::rtl_jumpexit args)
   (with-fun-loc fun `(throw $bexception ,@(gen-args args))))

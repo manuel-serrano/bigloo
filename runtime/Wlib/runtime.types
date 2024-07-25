@@ -1,12 +1,3 @@
-;; Special types
-(rec
-    (type $cnst (sub (struct)))
-    (type $bunspec (sub final $cnst (struct)))
-    (type $beoa (sub final $cnst (struct)))
-    (type $boptional (sub final $cnst (struct)))
-    (type $bkey (sub final $cnst (struct)))
-    (type $brest (sub final $cnst (struct))))
-
 (type $cnst-table (array (mut eqref)))
 
 (type $magic (struct))
@@ -120,7 +111,7 @@
     (field $nil eqref)
     (field $constructor eqref)
     (field $super eqref)
-    (field $subclasses (mut eqref))
+    (field $subclasses (mut (ref null $pair)))
     (field $shrink eqref)
     (field $evdata (mut eqref))
     (field $ancestors (ref null $vector))

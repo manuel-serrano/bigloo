@@ -160,12 +160,15 @@
 	    (export bigloo-exit-mutex "bgl_exit_mutex"))
 
    (wasm
+	    (__unspec__ "(ref.i31 (i32.const 3))")
+	    (__eoa__ "(ref.null none)")
+
 		($make-cell "(struct.new $cell ~0)")
 		($make-stack-cell "(struct.new $cell ~0)")
 		($cell-ref "(struct.get $cell $car ~0)")
 		($cell? "(ref.test (ref $cell) ~0)")
 
-		(c-cnst? "(ref.test (ref $cnst) ~0)")
+		(c-cnst? "(ref.test i31ref ~0)")
 	    
 		;; Opaque types not supported in WASM backend
 	    (c-opaque? "(i32.const 0)")

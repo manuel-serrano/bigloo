@@ -60,12 +60,7 @@
 	   (macro $infinity::double "BGL_INFINITY"))
 
 	(wasm
-		(unspec "(global.get $BUNSPEC)")
-		(boptional "(global.get $BOPTIONAL)")
-		(brest "(global.get $BREST)")
-		(bkey "(global.get $BREST)")
-		;; TODO: make cnst
-		(make-cnst "(ref.null none)")
+		(make-cnst "(ref.i31 (i32.wrap_i64 ~0))")
 		($nan "(f64.const nan)")
 		($infinity "(f64.const inf)"))
    

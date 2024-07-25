@@ -140,15 +140,26 @@
   (let ((compiled-funcs (backend-compile-functions me))
         (classes (filter (lambda (t) (>fx (type-occurrence t) 0)) (get-class-list))))
 
+    (hashtable-put! *defined-ids* "BFALSE" #t)
+    (hashtable-put! *defined-ids* "BTRUE" #t)
+    (hashtable-put! *defined-ids* "BUNSPEC" #t)
+    (hashtable-put! *defined-ids* "BOPTIONAL" #t)
+    (hashtable-put! *defined-ids* "BKEY" #t)
+    (hashtable-put! *defined-ids* "BREST" #t)
+    (hashtable-put! *defined-ids* "BEOA" #t)
+
     (with-output-to-port *wasm-port* (lambda ()
       (wasm-pp
         `(module ,(wasm-sym (symbol->string *module*)) 
           (comment "Imports"
             (import "__runtime" "generic_va_call" (func $generic_va_call (param (ref $procedure)) (param (ref $vector)) (result eqref)))
-            (import "__runtime" "BUNSPEC" (global $BUNSPEC (ref $bunspec)))
-            (import "__runtime" "BOPTIONAL" (global $BOPTIONAL (ref $boptional)))
-            (import "__runtime" "BKEY" (global $BKEY (ref $bkey)))
-            (import "__runtime" "BREST" (global $BREST (ref $brest)))
+            (import "__runtime" "BFALSE" (global $BFALSE i31ref))
+            (import "__runtime" "BTRUE" (global $BTRUE i31ref))
+            (import "__runtime" "BUNSPEC" (global $BUNSPEC i31ref))
+            (import "__runtime" "BOPTIONAL" (global $BOPTIONAL i31ref))
+            (import "__runtime" "BKEY" (global $BKEY i31ref))
+            (import "__runtime" "BREST" (global $BREST i31ref))
+            (import "__runtime" "BEOA" (global $BEOA i31ref))
             (import "__js" "trace" (func $__trace (param i32)))
             ,@(emit-imports))
           (comment "Memory" ,@(emit-memory))
@@ -670,13 +681,13 @@
             (mut (ref null $procedure)) 
             (struct.new $procedure 
               (ref.func ,(wasm-sym name))
-              (global.get $BUNSPEC)
+              ,(wasm-cnst-unspec)
               (i32.const ,arity)
               ,(if (eq? kind 'generic)
-                '(array.new_fixed $vector 3
-                  (global.get $BFALSE)
-                  (global.get $BFALSE)
-                  (global.get $BUNSPEC))
+                `(array.new_fixed $vector 3
+                  ,(wasm-cnst-false)
+                  ,(wasm-cnst-false)
+                  ,(wasm-cnst-unspec))
                 '(ref.null none)))))))))
 
 ;*---------------------------------------------------------------------*/

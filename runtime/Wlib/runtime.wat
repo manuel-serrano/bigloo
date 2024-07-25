@@ -1,6 +1,7 @@
 (module $__runtime
   ;; WASI
   (import "wasi_snapshot_preview1" "fd_write" (func $wasi_fd_write (param i32 i32 i32 i32) (result i32)))
+  (import "__js" "trace" (func $js_trace (param i32)))
   (import "__js" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
   (import "__js" "close_file" (func $js_close_file (param i32)))
   (import "__js" "read_file" (func $js_read_file (param i32 i32) (result i32)))
@@ -14,13 +15,13 @@
   ;; It is used to include the content of 'runtime.types'.
   (;TYPES;)
 
-  (global $BUNSPEC (export "BUNSPEC") (ref $bunspec) (struct.new $bunspec))
-  (global $BOPTIONAL (export "BOPTIONAL") (ref $boptional) (struct.new $boptional))
-  (global $BKEY (export "BKEY") (ref $bkey) (struct.new $bkey))
-  (global $BREST (export "BREST") (ref $brest) (struct.new $brest))
-  (global $BEOA (export "BEOA") (ref $beoa) (struct.new $beoa))
-  (global $BFALSE (export "BFALSE") (ref $bbool) (struct.new $bbool (i32.const 0)))
-  (global $BTRUE (export "BTRUE") (ref $bbool) (struct.new $bbool (i32.const 1)))
+  (global $BUNSPEC (export "BUNSPEC") i31ref (ref.i31 (i32.const 3)))
+  (global $BOPTIONAL (export "BOPTIONAL") i31ref (ref.i31 (i32.const 0x102)))
+  (global $BKEY (export "BKEY") i31ref (ref.i31 (i32.const 0x106)))
+  (global $BREST (export "BREST") i31ref (ref.i31 (i32.const 0x103)))
+  (global $BEOA (export "BEOA") i31ref (ref.null none))
+  (global $BFALSE (export "BFALSE") i31ref (ref.i31 (i32.const 1)))
+  (global $BTRUE (export "BTRUE") i31ref (ref.i31 (i32.const 2)))
 
   ;; --------------------------------------------------------
   ;; Dynamic env functions
@@ -132,16 +133,15 @@
   ;; Boolean functions
   ;; --------------------------------------------------------
 
-  (func $BBOOL (export "BBOOL") (param i32) (result (ref null $bbool))
-    (if (result (ref $bbool)) (local.get 0)
+  (func $BBOOL (export "BBOOL") (param $v i32) (result i31ref)
+    (if (result i31ref) (local.get $v)
         (then (global.get $BTRUE))
         (else (global.get $BFALSE))))
 
-  (func $CBOOL (export "CBOOL") (param eqref) (result i32)
-      (if (result i32)
-        (ref.test (ref $bbool) (local.get 0))
-        (then (struct.get $bbool 0 (ref.cast (ref $bbool) (local.get 0))))
-        (else (i32.const 1))))
+  (func $CBOOL (export "CBOOL") (param $v eqref) (result i32)
+    (if (result i32) (ref.eq (local.get $v) (global.get $BFALSE))
+      (then (i32.const 0))
+      (else (i32.const 1))))
 
   ;; --------------------------------------------------------
   ;; Custom functions
@@ -180,7 +180,7 @@
     (param $num i64)
     (param $inheritance-num i64)
     (param $super eqref)
-    (param $sub eqref)
+    (param $subclasses (ref null $pair))
     (param $alloc (ref null $procedure))
     (param $hash i64)
     (param $direct-fields (ref null $vector))
@@ -217,7 +217,7 @@
         (global.get $BUNSPEC) (; NIL ;)
         (local.get $constructor)
         (local.get $super)
-        (local.get $sub)
+        (local.get $subclasses)
         (local.get $shrink)
         (local.get $evdata)
         (local.get $ancestors)
@@ -234,7 +234,7 @@
 
   (func $BGL_CLASS_SUBCLASSES_SET (export "BGL_CLASS_SUBCLASSES_SET")
     (param $class (ref null $class))
-    (param $subclasses eqref)
+    (param $subclasses (ref null $pair))
     (result eqref)
     (struct.set $class $subclasses (local.get $class) (local.get $subclasses))
     (global.get $BUNSPEC))

@@ -72,6 +72,13 @@
 	    
 	    (export string->obj "string_to_obj")
 	    (export obj->string "obj_to_string"))
+
+	(wasm
+		(cnst->integer "(i64.extend_i32_u (i31.get ~0))")
+		(integer->cnst "(ref.i31 (i32.wrap_i64 ~0))")
+		(pointer? "(i32.const 1)")
+		(size-of-long "(i32.const 8)") ;; i64 in WASM
+	)
    
    (java    (class foreign
 	       (method static cnst->integer::long (::obj) "CCNST")
