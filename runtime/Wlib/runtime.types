@@ -7,6 +7,8 @@
     (type $bkey (sub final $cnst (struct)))
     (type $brest (sub final $cnst (struct))))
 
+(type $cnst-table (array (mut eqref)))
+
 (type $magic (struct))
 
 (type $vector (array (mut eqref)))
@@ -138,10 +140,42 @@
     (field $widening eqref))))
 
 ;; Ports
-(type $output-port (sub (struct)))
-(type $file-output-port (sub final $output-port (struct (field $fd i32))))
-(type $string-output-port (sub final $output-port (struct (field $buffer (mut (ref $bstring))))))
-(type $input-port (sub (struct)))
+(type $port (sub 
+    (struct
+        (field $name (mut (ref null $bstring)))
+        (field $chook (mut eqref)))))
+
+(type $output-port (sub $port 
+    (struct
+        (field $name (mut (ref null $bstring)))
+        (field $chook (mut eqref))
+        (field $fhook (mut eqref))
+        (field $flushbuf (mut eqref))
+        (field $isclosed (mut i8)))))
+(type $file-output-port (sub final $output-port 
+    (struct 
+        (field $name (mut (ref null $bstring)))
+        (field $chook (mut eqref))
+        (field $fhook (mut eqref))
+        (field $flushbuf (mut eqref))
+        (field $isclosed (mut i8))
+        (field $fd i32))))
+(type $string-output-port (sub final $output-port 
+    (struct 
+        (field $name (mut (ref null $bstring)))
+        (field $chook (mut eqref))
+        (field $fhook (mut eqref))
+        (field $flushbuf (mut eqref))
+        (field $isclosed (mut i8))
+        (field $buffer (mut (ref $bstring))))))
+
+(type $input-port (sub $port
+    (struct
+        (field $name (mut (ref null $bstring)))
+        (field $chook (mut eqref))
+        ;; RGC is defined in JavaScript.
+        (field $rgc externref))))
+
 (type $binary-port (sub (struct)))
 
 ;; Foreign type

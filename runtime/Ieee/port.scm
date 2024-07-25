@@ -224,6 +224,31 @@
 	(wasm
 		(c-input-port? "(ref.test (ref $input-port) ~0)")
 		(c-output-port? "(ref.test (ref $output-port) ~0)")
+	    (c-output-string-port? "(ref.test (ref $string-output-port) ~0)")
+
+		($port-isatty? "(i32.const 1)") ;; FIXME: actually only terminal ports are supported
+		($output-port-name "(struct.get $port $name ~0)")
+ 	    ($output-port-name-set! "(struct.set $port $name ~0 ~1)")
+ 	    ($input-port-name "(struct.get $port $name ~0)")
+ 	    ($input-port-name-set! "(struct.set $port $name ~0 ~1)")
+
+		(c-output-port-chook "(struct.get $output-port $chook ~0)")
+	    (c-output-port-chook-set! "(struct.set $output-port $chook ~0 ~1)")
+	    ($output-port-fhook "(struct.get $output-port $fhook ~0)")
+	    ($output-port-fhook-set! "(struct.set $output-port $fhook ~0 ~1)")
+	    ($output-port-flushbuf "(struct.get $output-port $flushbuf ~0)")
+	    ($output-port-flushbuf-set! "(struct.set $output-port $flushbuf ~0 ~1)")
+		
+	    ($closed-output-port? "(struct.get $output-port $isclosed (ref.cast (ref $output-port) ~0))")
+
+		($input-port-chook "(struct.get $port $chook ~0)")
+	    ($input-port-chook-set! "(struct.set $port $chook ~0 ~1)")
+
+		;; Not supported
+		($input-port-timeout "(i64.const 0)")
+	    ($input-port-timeout-set! "(i32.const 0)")
+	    ($output-port-timeout "(i64.const 0)")
+	    ($output-port-timeout-set! "(i32.const 0)")
 		)
 
    (java    (class foreign
