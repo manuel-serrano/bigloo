@@ -13,6 +13,7 @@
         tools_location
         backend_backend
         backend_cvm
+        cnst_alloc
         
         backend_cplib
         module_module
@@ -458,6 +459,14 @@
     (when init (set-variable-name! init)))
     
   (let ((globals '()))
+    (let ((cnst-init (get-cnst-table)))
+      ;; Use a more suitable name for WASM.
+      (global-name-set! cnst-init "__wasm_cnsts")
+      (set! globals (cons 
+        `(global $__cnsts_table 
+            (ref $cnst-table)
+            (array.new_default $cnst-table (i32.const ,(get-cnst-offset)))) globals)))
+
     (for-each-global!
       (lambda (global)
         (if (and (require-prototype? global)

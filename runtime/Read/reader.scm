@@ -66,7 +66,8 @@
 		(bkey "(global.get $BREST)")
 		;; TODO: make cnst
 		(make-cnst "(ref.null none)")
-		)
+		($nan "(f64.const nan)")
+		($infinity "(f64.const inf)"))
    
    (java   (class foreign
 	      (field static unspec::obj "BUNSPEC")
