@@ -578,7 +578,7 @@
       (br_table $0 $1 $2 $3 $4 $5 $error (i32.sub (i32.const -1) (struct.get $procedure $arity (local.get $proc)))))
 
       ;; 5 mandatory argument
-      (return (call_ref $func7
+      (return (call_ref $func6
         (local.get $proc)
         (array.get $vector (local.get $params) (i32.const 0))
         (array.get $vector (local.get $params) (i32.const 1))
@@ -586,42 +586,42 @@
         (array.get $vector (local.get $params) (i32.const 3))
         (array.get $vector (local.get $params) (i32.const 4))
         (call $make_list_params (local.get $params) (i32.const 5))
-        (ref.cast (ref $func7) (local.get $entry)))))
+        (ref.cast (ref $func6) (local.get $entry)))))
       ;; 4 mandatory argument
-      (return (call_ref $func6
+      (return (call_ref $func5
         (local.get $proc)
         (array.get $vector (local.get $params) (i32.const 0))
         (array.get $vector (local.get $params) (i32.const 1))
         (array.get $vector (local.get $params) (i32.const 2))
         (array.get $vector (local.get $params) (i32.const 3))
         (call $make_list_params (local.get $params) (i32.const 4))
-        (ref.cast (ref $func6) (local.get $entry)))))
+        (ref.cast (ref $func5) (local.get $entry)))))
       ;; 3 mandatory argument
-      (return (call_ref $func5
+      (return (call_ref $func4
         (local.get $proc)
         (array.get $vector (local.get $params) (i32.const 0))
         (array.get $vector (local.get $params) (i32.const 1))
         (array.get $vector (local.get $params) (i32.const 2))
         (call $make_list_params (local.get $params) (i32.const 3))
-        (ref.cast (ref $func5) (local.get $entry)))))
+        (ref.cast (ref $func4) (local.get $entry)))))
       ;; 2 mandatory argument
-      (return (call_ref $func4
+      (return (call_ref $func3
         (local.get $proc)
         (array.get $vector (local.get $params) (i32.const 0))
         (array.get $vector (local.get $params) (i32.const 1))
         (call $make_list_params (local.get $params) (i32.const 2))
-        (ref.cast (ref $func4) (local.get $entry)))))
+        (ref.cast (ref $func3) (local.get $entry)))))
       ;; 1 mandatory argument
-      (return (call_ref $func3
+      (return (call_ref $func2
         (local.get $proc)
         (array.get $vector (local.get $params) (i32.const 0))
         (call $make_list_params (local.get $params) (i32.const 1))
-        (ref.cast (ref $func3) (local.get $entry)))))
+        (ref.cast (ref $func2) (local.get $entry)))))
       ;; 0 mandatory argument
-      (return (call_ref $func2
+      (return (call_ref $func1
         (local.get $proc)
         (call $make_list_params (local.get $params) (i32.const 0))
-        (ref.cast (ref $func2) (local.get $entry)))))
+        (ref.cast (ref $func1) (local.get $entry)))))
     (unreachable))
 
   ;; --------------------------------------------------------

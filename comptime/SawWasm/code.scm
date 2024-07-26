@@ -575,7 +575,7 @@
 
 (define (gen-expr-funcall/lightfuncall args)
   (let* ((arg_count (length args))
-         (func_type (wasm-sym (string-append "func" (fixnum->string arg_count))))
+         (func_type (wasm-sym (string-append "func" (fixnum->string (-fx arg_count 1)))))
          (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
     `(if (result eqref) (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
       (then ; Is a variadic function!
@@ -586,8 +586,9 @@
       )
       (else
         (call_ref 
-          ,func_type 
-          ,@(gen-args args) 
+          ,func_type
+          (ref.cast (ref $procedure) ,(gen-reg (car args)))
+          ,@(gen-args (cdr args)) 
           (ref.cast 
             (ref ,func_type) 
             (struct.get $procedure $entry ,proc)))))))
