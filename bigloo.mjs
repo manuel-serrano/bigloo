@@ -54,7 +54,8 @@ const instance = await WebAssembly.instantiate(wasm, {
                     throw WebAssembly.RuntimeError("invalid open flags");
             }
 
-            return openSync(path, fs_flags);
+            const fd = openSync(path, fs_flags);
+            return fd;
         },
 
         close_file: function (fd) {

@@ -109,7 +109,8 @@
 	    ($append-output-file::obj (::bstring ::bstring) "bgl_append_output_file")
 	    ($open-output-string::output-port (::bstring) "bgl_open_output_string")
 	    ($open-output-procedure::obj (::procedure ::procedure ::procedure ::bstring) "bgl_open_output_procedure")
-	    ($close-input-port::obj (::obj) "bgl_close_input_port")
+		;; FIXME: normally this function takes a obj (but WHY????)
+	    ($close-input-port::obj (::input-port) "bgl_close_input_port")
 	    ($input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
 	    ($input-port-clone!::input-port (::input-port ::input-port) "bgl_input_port_clone")
 	    ($set-input-port-position!::void (::input-port ::long) "bgl_input_port_seek")
@@ -225,6 +226,8 @@
 		(c-input-port? "(ref.test (ref $input-port) ~0)")
 		(c-output-port? "(ref.test (ref $output-port) ~0)")
 	    (c-output-string-port? "(ref.test (ref $string-output-port) ~0)")
+
+	    (c-default-io-bufsiz "(i64.const 4096)")
 
 		($port-isatty? "(i32.const 1)") ;; FIXME: actually only terminal ports are supported
 		($output-port-name "(struct.get $port $name ~0)")

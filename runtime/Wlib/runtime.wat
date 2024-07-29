@@ -898,7 +898,9 @@
       (then (return (call $close_string_output_port (ref.cast (ref $string-output-port) (local.get $port))))))
     (if (ref.test (ref $file-output-port) (local.get $port))
       (then (return (call $close_file_output_port (ref.cast (ref $file-output-port) (local.get $port))))))
-    (unreachable)
+    
+    ;; Default implementation
+    (local.get $port)
   )
 
   ;; --------------------------------------------------------
@@ -908,7 +910,7 @@
   (func $EOF_OBJECTP (export "EOF_OBJECTP")
     (param $v eqref)
     (result i32)
-    (ref.is_null (local.get $v)))
+    (ref.eq (local.get $v) (global.get $BEOF)))
 
   (func $load_string
     (param $addr i32)
@@ -1330,4 +1332,74 @@
       (then (return (call $rgc_file_charready (ref.cast (ref $file-input-port) (local.get $port))))))
     
     (i32.lt_u (struct.get $rgc $forward (local.get $rgc)) (struct.get $rgc $bufpos (local.get $rgc))))
+
+  (func $bgl_open_input_file (export "bgl_open_input_file")
+    (param $path (ref null $bstring))
+    (param $buffer (ref null $bstring))
+    (result eqref)
+    (local $fd i32)
+    (call $store_string
+      (local.get $path)
+      (i32.const 128))
+    (local.set $fd
+      (call $js_open_file
+        (i32.const 128)
+        (array.len (local.get $path))
+        ;; READ-ONLY flag
+        (i32.const 0)))
+    (struct.new $file-input-port
+      ;; Name
+      (local.get $path)
+      ;; CHook
+      (global.get $BUNSPEC)
+      ;; RGC
+      (struct.new $rgc
+        ;; EOF
+        (i32.const 0)
+        ;; Filepos
+        (i32.const 0)
+        ;; Forward
+        (i32.const 0)
+        ;; Bufpos
+        (i32.const 0)
+        ;; Matchstart
+        (i32.const 0)
+        ;; Matchstop
+        (i32.const 0)
+        ;; Lastchar
+        (i32.const 0x0A (; ASCII NEWLINE '\n' ;))
+        ;; Buffer
+        (if (result (ref $bstring))
+          (ref.is_null (local.get $buffer))
+          (then (array.new_default $bstring (i32.const 4096)))
+          (else 
+            (if (result (ref $bstring))
+              (i32.eqz (array.len (local.get $buffer)))
+              (then (array.new_default $bstring (i32.const 4096)))
+              (else (ref.cast (ref $bstring) (local.get $buffer)))))))
+      ;; File descriptor
+      (local.get $fd)))
+
+  (func $close_file_input_port
+    (param $port (ref $file-input-port))
+    (result eqref)
+
+    (call $js_close_file (struct.get $file-input-port $fd (local.get $port)))
+    (local.get $port))
+
+  (func $bgl_close_input_port (export "bgl_close_input_port")
+    (param $port (ref null $input-port))
+    (result eqref)
+    
+    (local $rgc (ref $rgc))
+    (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+
+    (struct.set $rgc $eof (local.get $rgc) (i32.const 1 (; TRUE ;)))
+    ;; TODO: call chook
+
+    (if (ref.test (ref $file-input-port) (local.get $port))
+      (then (return (call $close_file_input_port (ref.cast (ref $file-input-port) (local.get $port))))))
+    
+    ;; Default implementation
+    (local.get $port))
 )
