@@ -582,10 +582,10 @@
         (emit-cnst-sfun node variable))
       ((sgfun)
         (emit-cnst-sgfun node variable))
-      ; ((selfun)
-      ;  (emit-cnst-selfun node variable))
-      ; ((slfun)
-      ;  (emit-cnst-slfun node variable))
+      ((selfun)
+        (emit-cnst-selfun node variable))
+      ((slfun)
+        (emit-cnst-slfun node variable))
       ; ((stvector)
       ;  (emit-cnst-stvector node variable))
         (else
@@ -655,6 +655,18 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-sfun sfun global)
   (emit-cnst-sfun/sgfun sfun global 'procedure))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-slfun ...                                              */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-slfun slfun global)
+  (emit-cnst-sfun/sgfun slfun global 'procedure))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-selfun ...                                             */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-selfun selfun global)
+  (emit-cnst-sfun/sgfun selfun global 'procedure))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sgfun ...                                              */
@@ -821,5 +833,4 @@
 ;*    emit-memory ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (emit-memory)
-  `((memory 1)
-    (export "memory" (memory 0))))
+  `((import "__runtime" "memory" (memory 0))))
