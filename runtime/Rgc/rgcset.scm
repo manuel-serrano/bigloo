@@ -47,6 +47,8 @@
 
    (extern  (macro $configure-int-bit-size::long "BGL_INT_BIT_SIZE"))
 
+   (wasm ($configure-int-bit-size "(i64.const 64)"))
+
    (java    (class $configure
 	       (field static int-bit-size::long "BGL_INT_BIT_SIZE")
 	       "bigloo.configure"))

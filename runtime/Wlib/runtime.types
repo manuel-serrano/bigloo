@@ -160,12 +160,29 @@
         (field $isclosed (mut i8))
         (field $buffer (mut (ref $bstring))))))
 
+(type $rgc (struct
+    ;; We only uses i32 as arrays can only be indexed by 32 bits integers.
+    (field $eof (mut i32))
+    (field $filepos (mut i32))
+    (field $forward (mut i32))
+    (field $bufpos (mut i32))
+    (field $matchstart (mut i32))
+    (field $matchstop (mut i32))
+    (field $lastchar (mut i32))
+    (field $buffer (mut (ref $bstring)))))
+
 (type $input-port (sub $port
     (struct
         (field $name (mut (ref null $bstring)))
         (field $chook (mut eqref))
-        ;; RGC is defined in JavaScript.
-        (field $rgc externref))))
+        (field $rgc (ref $rgc)))))
+
+(type $file-input-port (sub $input-port
+    (struct
+        (field $name (mut (ref null $bstring)))
+        (field $chook (mut eqref))
+        (field $rgc (ref $rgc))
+        (field $fd i32))))
 
 (type $binary-port (sub (struct)))
 

@@ -387,6 +387,13 @@ WASMS = objs/$(WASMDIR_SYS)/Llib/bigloo.wasm \
 	objs/$(WASMDIR_SYS)/Llib/thread.wasm \
 	objs/$(WASMDIR_SYS)/Llib/bit.wasm \
 	objs/$(WASMDIR_SYS)/Llib/srfi4.wasm \
+	objs/$(WASMDIR_SYS)/Llib/ucs2.wasm \
+	objs/$(WASMDIR_SYS)/Read/reader.wasm \
+	objs/$(WASMDIR_SYS)/Rgc/rgc.wasm objs/$(WASMDIR_SYS)/Rgc/rgccompile.wasm \
+	objs/$(WASMDIR_SYS)/Rgc/rgcconfig.wasm objs/$(WASMDIR_SYS)/Rgc/rgcdfa.wasm \
+	objs/$(WASMDIR_SYS)/Rgc/rgcexpand.wasm objs/$(WASMDIR_SYS)/Rgc/rgcposix.wasm \
+	objs/$(WASMDIR_SYS)/Rgc/rgcrules.wasm objs/$(WASMDIR_SYS)/Rgc/rgcset.wasm \
+	objs/$(WASMDIR_SYS)/Rgc/rgctree.wasm \
 	# objs/$(WASMDIR_SYS)/Pp/circle.wasm objs/$(WASMDIR_SYS)/Pp/pp.wasm \
 
 #*---------------------------------------------------------------------*/

@@ -14,89 +14,6 @@ if (argv.length < 3) {
     exit(1);
 }
 
-class JSInputPort {
-    NEWLINE = 0x0A;
-
-    constructor() {
-        this.filepos = 0;
-        this.matchstart = 0;
-        this.matchstop = 0;
-        this.lastchar = NEWLINE;
-        this.buffer = new Uint8Array();
-    }
-
-    /** At start of file? */
-    at_bof() {
-        return this.filepos == 0;
-    }
-
-    /** At start of line? */
-    at_bol() {
-        if (this.matchstart > 0)
-            return this.buffer[this.matchstart - 1] == NEWLINE;
-        else
-            return this.lastchar == NEWLINE;
-    }
-
-    /** At end of line? */
-    at_eol(forward, bufpos) {
-        if (forward == bufpos) {
-            if (this.fill_buffer())
-                return this.at_eol(this.forward, this.bufpos);
-            else
-                return false;
-        } else {
-            this.forward = forward;
-            this.bufpos = bufpos;
-            return this.buffer[forward] == NEWLINE;
-        }
-    }
-
-    /** At end of file? */
-    at_eof() {
-        return this.eof && (this.matchstop == this.bufpos);
-    }
-
-    at_eof2(forward, bufpos) {
-        if (forward < bufpos) {
-            this.forward = forward;
-            this.bufpos = bufpos;
-        } else {
-            if (this.eof) {
-                this.forward = forward;
-                this.bufpos = bufpos;
-                return true;
-            } else {
-                return !fill_buffer();
-            }
-        }
-    }
-
-    fill_buffer() {
-        this.forward = this.bufpos;
-        if (this.eof)
-            return false;
-
-
-    }
-
-    start_match() {
-        return this.forward = this.matchstart = this.matchstop;
-    }
-
-    stop_match(forward) {
-        return this.matchstop = forward;
-    }
-
-    match_length() {
-        return this.matchstop - this.matchstart;
-    }
-
-    set_filepos() {
-        this.filepos += this.match_length();
-    }
-}
-
 const wasm = await WebAssembly.compile(await readFile(argv[2]));
 const instance = await WebAssembly.instantiate(wasm, {
     __js: {
@@ -151,9 +68,8 @@ const instance = await WebAssembly.instantiate(wasm, {
             if (fd < 0)
                 throw WebAssembly.RuntimeError("invalid file descriptor");
 
-            const memory = new Uint32Array(instance.exports.memory.buffer);
-            // FIXME: probably incorrect
-            const readBytes = readSync(fd, memory, offset, length);
+            const memory = new Uint8Array(instance.exports.memory.buffer, offset, length);
+            const readBytes = readSync(fd, memory);
             return readBytes;
         },
 
@@ -163,19 +79,6 @@ const instance = await WebAssembly.instantiate(wasm, {
 
             const buffer = new Uint8Array(instance.exports.memory.buffer, offset, length);
             writeSync(fd, buffer);
-        }
-    },
-
-    __rgc_js: {
-        bof: function (port) {
-            if (port.matchstart > 0)
-                return port.buffer[port.matchstart - 1] == '\n';
-            else
-                return port.lastchar == '\n';
-        },
-
-        set_filepos: function (port) {
-            port.filepos += port.matchstop - port.matchstart;
         }
     }
 });
