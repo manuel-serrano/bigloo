@@ -388,6 +388,8 @@ WASMS = objs/$(WASMDIR_SYS)/Llib/bigloo.wasm \
 	objs/$(WASMDIR_SYS)/Llib/bit.wasm \
 	objs/$(WASMDIR_SYS)/Llib/srfi4.wasm \
 	objs/$(WASMDIR_SYS)/Llib/ucs2.wasm \
+	objs/$(WASMDIR_SYS)/Llib/hash.wasm \
+	objs/$(WASMDIR_SYS)/Llib/weakhash.wasm \
 	objs/$(WASMDIR_SYS)/Read/reader.wasm \
 	objs/$(WASMDIR_SYS)/Rgc/rgc.wasm objs/$(WASMDIR_SYS)/Rgc/rgccompile.wasm \
 	objs/$(WASMDIR_SYS)/Rgc/rgcconfig.wasm objs/$(WASMDIR_SYS)/Rgc/rgcdfa.wasm \
@@ -698,7 +700,6 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/wasm$(LIBSUFFIX)/bigloo_dis.
 		objs/wasm$(LIBSUFFIX)/bigloo_dis.wat __runtime \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __runtime \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __os \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __hash \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __gunzip \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __url \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __binary \

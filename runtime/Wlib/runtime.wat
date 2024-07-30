@@ -1402,4 +1402,92 @@
     
     ;; Default implementation
     (local.get $port))
+
+  ;; --------------------------------------------------------
+  ;; Hash functions
+  ;; --------------------------------------------------------
+
+  (func $bgl_string_hash (export "bgl_string_hash")
+    (param $str (ref null $bstring))
+    (param $start i32)
+    (param $len i32)
+    (result i64)
+    (local $r i64)
+    (local $i i32)
+    ;; We use the same algorithm as for the C and Java implementation of Bigloo runtime.
+    (local.set $r (i64.const 5381))
+    (local.set $i (local.get $start))
+    (loop $for-loop
+      (if (i32.lt_u (local.get $i) (local.get $len))
+        (then
+          ;; r <- r + (r << 5) + s[i]
+          (local.set $r
+            (i64.add
+              (local.get $r)
+              (i64.add
+                (i64.shl
+                  (local.get $r)
+                  (i64.const 5))
+                (i64.extend_i32_u (array.get $bstring (local.get $str) (local.get $i))))))
+          (local.set $i (i32.add (local.get $i) (i32.const 1)))
+          (br $for-loop))))
+    (i64.and
+      (local.get $r)
+      (i64.const 536870911 (; ((1 << 29) - 1) ;))))
+
+  (func $bgl_string_hash_persistent (export "bgl_string_hash_persistent")
+    (param $str (ref null $bstring))
+    (param $start i32)
+    (param $len i32)
+    (result i64)
+    (call $bgl_string_hash (local.get $str) (local.get $start) (local.get $len)))
+
+  (func $bgl_symbol_hash_number (export "bgl_symbol_hash_number")
+    (param $sym (ref null $symbol))
+    (result i64)
+    (i64.add
+      (call $bgl_string_hash 
+        (struct.get $symbol $str (local.get $sym)) 
+        (i32.const 0) 
+        (array.len (struct.get $symbol $str (local.get $sym))))
+      (i64.const 1)))
+
+  (func $bgl_symbol_hash_number_persistent (export "bgl_symbol_hash_number_persistent")
+    (param $sym (ref null $symbol))
+    (result i64)
+    (call $bgl_symbol_hash_number (local.get $sym)))
+
+  (func $bgl_keyword_hash_number (export "bgl_keyword_hash_number")
+    (param $key (ref null $keyword))
+    (result i64)
+    (i64.add
+      (call $bgl_string_hash 
+        (struct.get $keyword $str (local.get $key)) 
+        (i32.const 0) 
+        (array.len (struct.get $keyword $str (local.get $key))))
+      (i64.const 2)))
+
+  (func $bgl_keyword_hash_number_persistent (export "bgl_keyword_hash_number_persistent")
+    (param $key (ref null $keyword))
+    (result i64)
+    (call $bgl_keyword_hash_number (local.get $key)))
+
+  (func $bgl_obj_hash_number (export "bgl_obj_hash_number")
+    (param $obj eqref)
+    (result i64)
+    ;; FIXME: implement hashing for objects
+    (i64.const 0))
+
+  (func $bgl_pointer_hash_number (export "bgl_pointer_hash_number")
+    (param $obj eqref)
+    (param $power i64)
+    (result i64)
+    (i64.rem_u
+      (call $bgl_obj_hash_number (local.get $obj))
+      (local.get $power)))
+
+  (func $bgl_foreign_hash_number (export "bgl_foreign_hash_number")
+    (param $obj (ref null $foreign))
+    (result i64)
+    (i64.extend_i32_u (struct.get $foreign $ptr (local.get $obj))))
 )

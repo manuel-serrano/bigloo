@@ -72,6 +72,11 @@
 	    (macro elong-hash-number::long (::elong) "(long)")
 	    (macro llong-hash-number::long (::llong) "(long)")
 	    (macro $strlen::long (::string) "strlen"))
+
+	(wasm
+		(elong-hash-number "~0")
+		(llong-hash-number "~0")
+		($strlen "(array.len ~0)"))
    
    (java    (class foreign
 	       (method static $string-hash::long (::string ::int ::int)
