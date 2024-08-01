@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Jul  9 13:02:59 2024 (serrano)                */
+;*    Last change :  Thu Aug  1 13:14:08 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -157,6 +157,7 @@
     (subtype void "void" (cobj))
     (subtype void* "void *" (cobj))
     (subtype function "(long *)()" (cobj))
+    (subtype funptr "function_t" (cobj))
 
     ;; obj coercions
     (coerce obj magic () ())

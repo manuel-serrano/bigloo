@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Dec  9 13:26:46 2023 (serrano)                */
+/*    Last change :  Thu Aug  1 13:17:18 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2666,7 +2666,7 @@ BGL_RUNTIME_DECL obj_t the_failure(obj_t, obj_t, obj_t);
 BGL_RUNTIME_DECL obj_t bgl_typeof(obj_t);
 BGL_RUNTIME_DECL obj_t bgl_system_failure(int, obj_t, obj_t, obj_t);
 
-BGL_RUNTIME_DECL obj_t bgl_make_procedure(obj_t, int, int);
+BGL_RUNTIME_DECL obj_t bgl_make_procedure(function_t, int, int);
 BGL_RUNTIME_DECL obj_t make_fx_procedure(function_t, int, int);
 BGL_RUNTIME_DECL obj_t make_va_procedure(function_t, int, int);
 BGL_RUNTIME_DECL obj_t bgl_dup_procedure(obj_t);

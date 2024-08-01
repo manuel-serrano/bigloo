@@ -448,7 +448,7 @@
    (display (gname (rtl_loadg-var fun))) )
 
 (define-method (gen-prefix fun::rtl_loadfun) ;()
-   (display* "(obj_t) " (gname (rtl_loadfun-var fun))) )
+   (display* "(function_t) " (gname (rtl_loadfun-var fun))) )
 
 (define-method (gen-prefix fun::rtl_storeg) ;()
    (display* (gname (rtl_storeg-var fun)) ", ") )

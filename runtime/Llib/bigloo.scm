@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Jul 10 08:31:14 2024 (serrano)                */
+;*    Last change :  Thu Aug  1 13:19:12 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -60,23 +60,23 @@
 	    (macro $procedure-length::int (::procedure)
 		   "PROCEDURE_LENGTH")
 
-	    (macro $make-procedure::procedure (::obj ::int ::int)
+	    (macro $make-procedure::procedure (::funptr ::int ::int)
 		   "bgl_make_procedure")
 	    (macro $dup-procedure::procedure (::procedure)
 		   "bgl_dup_procedure")
 	    
-	    (macro make-fx-procedure::procedure (::obj ::int ::int)
+	    (macro make-fx-procedure::procedure (::funptr ::int ::int)
 		   "MAKE_FX_PROCEDURE")		 
-	    (macro make-va-procedure::procedure (::obj ::int ::int)
+	    (macro make-va-procedure::procedure (::funptr ::int ::int)
 		   "MAKE_VA_PROCEDURE")
 	    
-	    (macro make-stack-fx-procedure::procedure (::obj ::int ::int)
+	    (macro make-stack-fx-procedure::procedure (::funptr ::int ::int)
 		   "BGL_MAKE_STACK_FX_PROCEDURE")		 
 	    
 	    (macro make-el-procedure::procedure-el (::int)
 		   "MAKE_EL_PROCEDURE")	 
 	    
-	    (macro make-l-procedure::procedure (::obj ::int)
+	    (macro make-l-procedure::procedure (::funptr ::int)
 		   "MAKE_L_PROCEDURE")		 
 	    					 
 	    (macro procedure-set!::obj (::procedure ::int ::obj)
