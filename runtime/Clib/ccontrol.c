@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Wed Jan 31 07:23:43 2024 (serrano)                */
+/*    Last change :  Thu Aug  1 13:17:52 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -21,11 +21,11 @@ extern obj_t make_string_sans_fill(long);
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-bgl_make_procedure(obj_t entry, int arity, int size) {
+bgl_make_procedure(function_t entry, int arity, int size) {
    if (arity >= 0)
-      return make_fx_procedure((obj_t (*)())entry, arity, size);
+      return make_fx_procedure(entry, arity, size);
    else
-      return make_va_procedure((obj_t (*)())entry, arity, size);
+      return make_va_procedure(entry, arity, size);
 }
 
 /*---------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ bgl_init_fx_procedure(obj_t proc, obj_t (*entry)(), int arity, int size) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-make_fx_procedure(obj_t (*entry)(), int arity, int size) {
+make_fx_procedure(function_t entry, int arity, int size) {
    if (size > (1 << HEADER_SIZE_BIT_SIZE)) {
       C_FAILURE("make-fx-procedure", "Environment to large", BINT(size));
    } else {
@@ -86,7 +86,7 @@ make_fx_procedure(obj_t (*entry)(), int arity, int size) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-make_va_procedure(obj_t (*entry)(), int arity, int size) {
+make_va_procedure(function_t entry, int arity, int size) {
 
    if (size > (1 << HEADER_SIZE_BIT_SIZE)) {
       C_FAILURE("make-va-procedure", "Environment to large", BINT(size));

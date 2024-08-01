@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Jun 21 15:17:29 2022 (serrano)                */
-/*    Copyright   :  2016-22 Manuel Serrano                            */
+/*    Last change :  Thu Aug  1 13:35:39 2024 (serrano)                */
+/*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo SAW                                                       */
 /*=====================================================================*/
@@ -173,12 +173,13 @@ extern void bgl_saw_gc();
 #define BGL_RTL_PUSH_EXIT(_xit, _ser) \
    BGL_RTL_PUSH_ENV_EXIT(BGL_CURRENT_DYNAMIC_ENV(), _xit, _ser)
 
-/* #define BGL_RTL_PUSH_BEFORE(_bfr) \                                 */
-/*    befored.before = _bfr; \                                         */
-/*    befored.prev = BGL_BEFORED_TOP(); \                              */
-/*    BGL_BEFORED_TOP_SET(&befored);                                   */
+#define BGL_RTL_PUSH_BEFORE(_bfr) \
+   befored.before = _bfr; \
+   befored.prev = BGL_BEFORED_TOP(); \
+   BGL_BEFORED_TOP_SET(&befored);
 
 #define BGL_RTL_RET(_v) return (_v)
+
 #endif
 #endif
 
