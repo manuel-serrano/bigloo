@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Aug  1 13:14:08 2024 (serrano)                */
+;*    Last change :  Thu Aug  1 14:31:05 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -48,6 +48,7 @@
     
     (subtype dynamic-env "obj_t" (obj))
     (subtype procedure "obj_t" (obj))
+    (subtype procedure-l "obj_t" (obj))
     (subtype procedure-el "obj_t" (obj))
     (subtype pair "obj_t" (obj))
     (subtype epair "obj_t" (obj))
@@ -697,7 +698,9 @@
 
     ;; procedure
     (coerce procedure bool () ((lambda (x) #t)))
+    (coerce procedure-l procedure () ())
     (coerce procedure-el procedure () ())
+    (coerce procedure procedure-l () ())
     (coerce procedure procedure-el () ())
 
     ;; struct

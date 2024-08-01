@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/hash-bad.scm                  */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/hash.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Jun  2 08:14:11 2023 (serrano)                */
+;*    Last change :  Thu Aug  1 14:40:09 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -17,6 +17,10 @@
 ;*---------------------------------------------------------------------*/
 (module __hash
 
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       (include "Llib/hash-generic.sch")))
+   
    (import  __error
 	    __r4_symbols_6_4
 	    __param

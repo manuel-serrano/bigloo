@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Aug  1 13:19:12 2024 (serrano)                */
+;*    Last change :  Thu Aug  1 14:31:49 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -89,9 +89,9 @@
 	    (macro $procedure-attr::obj (::procedure)
 		   "PROCEDURE_ATTR")			 
 
-	    (macro procedure-l-set!::obj (::obj ::int ::obj)
+	    (macro procedure-l-set!::obj (::procedure-l ::int ::obj)
 		   "PROCEDURE_L_SET")		  
-	    (macro procedure-l-ref::obj (::obj ::int)
+	    (macro procedure-l-ref::obj (::procedure-l ::int)
 		   "PROCEDURE_L_REF")
 	    
 	    (macro procedure-el-set!::obj (::procedure-el ::int ::obj)
