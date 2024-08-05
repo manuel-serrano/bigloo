@@ -17,6 +17,7 @@ static obj_t javascript_symbol = BUNSPEC;
 static obj_t caseless_symbol = BUNSPEC;
 static obj_t multiline_symbol = BUNSPEC;
 static obj_t noraise_symbol = BUNSPEC;
+static obj_t anchored_symbol = BUNSPEC;
 
 #if (!defined(PCRE_JAVASCRIPT_COMPAT))
 #  define PCRE_JAVASCRIPT_COMPAT 0
@@ -212,7 +213,7 @@ bgl_charmatch(obj_t re, char *string, bool_t stringp, int beg, int len, int offs
    char c = BGL_REGEXP_CHAR(re);
 
    while (beg < len) {
-      if (string[ ofset + beg++ ] == c) {
+      if (string[ offset + beg++ ] == c) {
 	 obj_t p = stringp ?
 	    make_string(1, c) : MAKE_PAIR(BINT(beg - 1), BINT(beg));
 
