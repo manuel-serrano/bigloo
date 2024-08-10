@@ -7,6 +7,21 @@
   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
 
+  (import "__math" "fmod" (func $js_math_fmod (param f64 f64) (result f64)))
+  (import "__math" "exp" (func $js_math_exp (param f64) (result f64)))
+  (import "__math" "log" (func $js_math_log (param f64) (result f64)))
+  (import "__math" "log2" (func $js_math_log2 (param f64) (result f64)))
+  (import "__math" "log10" (func $js_math_log10 (param f64) (result f64)))
+  (import "__math" "sin" (func $js_math_sin (param f64) (result f64)))
+  (import "__math" "cos" (func $js_math_cos (param f64) (result f64)))
+  (import "__math" "tan" (func $js_math_tan (param f64) (result f64)))
+  (import "__math" "asin" (func $js_math_asin (param f64) (result f64)))
+  (import "__math" "acos" (func $js_math_acos (param f64) (result f64)))
+  (import "__math" "atan" (func $js_math_atan (param f64) (result f64)))
+  (import "__math" "atan2" (func $js_math_atan2 (param f64 f64) (result f64)))
+  (import "__math" "pow" (func $js_math_pow (param f64 f64) (result f64)))
+  (import "__math" "randomf" (func $js_math_randomf (result f64)))
+
   ;; General bigloo memory
   (memory 1)
   (export "memory" (memory 0))
@@ -304,20 +319,20 @@
   ;; --------------------------------------------------------
 
   (func $MAKE_FX_PROCEDURE (export "MAKE_FX_PROCEDURE")
-    (param $entry eqref)
+    (param $entry funcref)
     (param $arity i32)
     (param $size i32)
     (result (ref null $procedure))
     (struct.new $procedure
-      (struct.get $tmpfun 0 (ref.cast (ref $tmpfun) (local.get $entry)))
+      (local.get $entry)
       (ref.null none)
       (local.get $arity)
       (array.new_default $vector (local.get $size))))
 
-  (func $MAKE_EL_PROCEDURE (export "MAKE_EL_PROCEDURE")
-    (param $size i32)
-    (result (ref null $procedure))
-    (call $MAKE_FX_PROCEDURE (struct.new_default $tmpfun) (i32.const 0) (local.get $size)))
+  ;;(func $MAKE_EL_PROCEDURE (export "MAKE_EL_PROCEDURE")
+  ;;  (param $size i32)
+  ;;  (result (ref null $procedure))
+  ;;  (call $MAKE_FX_PROCEDURE (struct.new_default $tmpfun) (i32.const 0) (local.get $size)))
 
   (func $PROCEDURE_CORRECT_ARITYP (export "PROCEDURE_CORRECT_ARITYP")
     (param $p (ref null $procedure)) 
@@ -1476,7 +1491,7 @@
     (param $obj eqref)
     (result i64)
     ;; FIXME: implement hashing for objects
-    (i64.const 0))
+    (i64.const 4901665283))
 
   (func $bgl_pointer_hash_number (export "bgl_pointer_hash_number")
     (param $obj eqref)
@@ -1490,4 +1505,39 @@
     (param $obj (ref null $foreign))
     (result i64)
     (i64.extend_i32_u (struct.get $foreign $ptr (local.get $obj))))
+
+  ;; --------------------------------------------------------
+  ;; lockf function and constants
+  ;; --------------------------------------------------------
+
+  (global $F_LOCK (export "F_LOCK") i32 (i32.const 0))
+  (global $F_TLOCK (export "F_TLOCK") i32 (i32.const 0))
+  (global $F_ULOCK (export "F_ULOCK") i32 (i32.const 0))
+  (global $F_TEST (export "F_TEST") i32 (i32.const 0))
+  (func $bgl_lockf (export "bgl_lockf")
+    (param $port (ref null $output-port))
+    (param i32)
+    (param i64)
+    (result i32)
+    ;; Not implemented (not supported by NodeJS fs API).
+    (i32.const 0 (; FALSE ;)))
+
+  ;; --------------------------------------------------------
+  ;; Math functions
+  ;; --------------------------------------------------------
+
+  (export "fmod" (func $js_math_fmod))
+  (export "exp" (func $js_math_exp))
+  (export "log" (func $js_math_log))
+  (export "log2" (func $js_math_log2))
+  (export "log10" (func $js_math_log10))
+  (export "sin" (func $js_math_sin))
+  (export "cos" (func $js_math_cos))
+  (export "tan" (func $js_math_tan))
+  (export "asin" (func $js_math_asin))
+  (export "acos" (func $js_math_acos))
+  (export "atan" (func $js_math_atan))
+  (export "atan2" (func $js_math_atan2))
+  (export "pow" (func $js_math_pow))
+  (export "RANDOMFL" (func $js_math_randomf))
 )

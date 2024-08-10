@@ -104,20 +104,6 @@
 	    ($roundfl "(f64.nearest ~0)")
 
 	    ($strtod "(f64.const nan)")
-	    
-	    ($fmod "(f64.const 0)")
-	    ($exp "(f64.const 0)")
-	    ($log "(f64.const 0)")
-	    ($log2 "(f64.const 0)")
-	    ($log10 "(f64.const 0)")
-	    ($sin "(f64.const 0)")
-	    ($cos "(f64.const 0)")
-	    ($tan "(f64.const 0)")
-	    ($asin "(f64.const 0)")
-	    ($acos "(f64.const 0)")
-	    ($atan "(f64.const 0)")
-	    ($atan2 "(f64.const 0)")
-	    ($pow "(f64.const 0)")
 		
 	    (%double->llong-bits "(i64.reinterpret_f64 ~0)")
 	    (%llong-bits->double "(f64.reinterpret_i64 ~0)")
