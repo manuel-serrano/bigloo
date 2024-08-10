@@ -13,8 +13,12 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   (export (bgl_write_char::obj ::bchar ::output-port))
-   (extern (export bgl_write_char "bgl_write_char")))
+   (export 
+      (bgl_write_char::obj ::bchar ::output-port)
+      (bgl_display_fixnum::obj ::bint ::output-port))
+   (extern 
+      (export bgl_write_char "bgl_write_char")
+      (export bgl_display_fixnum "bgl_display_fixnum")))
 
 ;*---------------------------------------------------------------------*/
 ;*    alpha ...                                                        */
@@ -40,3 +44,8 @@
    (define names (char-names))
    ($display-string (vector-ref names (char->integer o)) op))
 
+;*---------------------------------------------------------------------*/
+;*    bgl_display_fixnum ...                                           */
+;*---------------------------------------------------------------------*/
+(define (bgl_display_fixnum o op)
+   ($display-string (integer->string o) op))

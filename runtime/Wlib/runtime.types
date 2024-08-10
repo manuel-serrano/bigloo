@@ -18,7 +18,7 @@
 (type $f64vector (array (mut f64)))
 
 (type $procedure (struct 
-    (field $entry funcref) 
+    (field $entry funcref)
     (field $attr (mut eqref))
     (field $arity i32)
     (field $env (ref null $vector))))
