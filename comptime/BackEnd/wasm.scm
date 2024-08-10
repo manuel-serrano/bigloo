@@ -39,6 +39,7 @@
         cnst_node)
         
     (export (build-wasm-backend)
+        (wasm-pp code)
         *wasm-port*))
 
 ;*---------------------------------------------------------------------*/

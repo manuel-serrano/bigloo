@@ -46,9 +46,10 @@ COMMONFLAGS	= -q \
                   $(LIBDIRFLAGS) \
                   -unsafev \
                   -gno-error-localization \
-                  -no-hello
+                  -no-hello \
+                  -cg
 # Optimized _and_ debugged compilation
-OGBFLAGS        = $(BOOTFLAGS) $(COMMONFLAGS) -Wall -O2 +rm -g
+OGBFLAGS        = $(BOOTFLAGS) $(COMMONFLAGS) -Wall -O2 -g
 # Bootstrap flag
 BFLAGS		= $(OGBFLAGS)       
 EFLAGS		=
@@ -57,7 +58,7 @@ BDISTFLAGS	= $(COMMONFLAGS) -O2 -rm -unsafe -s
 # Distribution Jvm flag
 BJVMFLAGS	= $(BDISTFLAGS) -lib-dir $(BOOTLIBDIR)
 # Link flag
-LDBOOTFLAGS     = -static-bigloo $(LDSTRIPFLAGS)
+LDBOOTFLAGS     = -static-bigloo -cg $(LDSTRIPFLAGS)
 # C compiler flag
 CADDFLAGS	= -I$(BOOTLIBDIR)
 
@@ -256,7 +257,7 @@ SAW_C_FILE      = compile code
 SAW_C_OBJ	= $(SAW_C_FILE:%=SawC/%.o)
 
 #*--- SawWasm ---------------------------------------------------------*/
-SAW_WASM_FILE	= compile code
+SAW_WASM_FILE	= compile code relooper
 
 SAW_WASM_OBJ	= $(SAW_WASM_FILE:%=SawWasm/%.o)
 

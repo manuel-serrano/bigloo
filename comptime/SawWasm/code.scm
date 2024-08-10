@@ -25,7 +25,8 @@
     saw_expr
     saw_regset
     saw_register-allocation
-    saw_bbv)
+    saw_bbv
+    saw_wasm_relooper)
   (export
     (saw-wasm-gen b::wasm v::global)
     (wasm-type t::type #!optional (may-null #t))
@@ -33,6 +34,10 @@
     (wasm-cnst-false)
     (wasm-cnst-true)
     (wasm-cnst-unspec)
+    (gen-reg reg)
+    (gen-basic-block b)
+    (gen-ins ins::rtl_ins)
+    (gen-switch fun type patterns labels args gen-go gen-block-label)
     *allocated-strings*)
   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
   (static (wide-class SawCIreg::rtl_reg index)))
@@ -40,6 +45,10 @@
 (define (saw-wasm-gen b::wasm v::global)
   (let ((l (global->blocks b v)))
     (gen-fun b v l)))
+
+;; Recreate structured control flow (generate blocks, loops and if blocks in WASM)
+;; or use the simpler dispatcher pattern to emulate gotos?
+(define *use-relooper* #t)
 
 (define (needs-dispatcher? l)
    ; if there is a single basic block or none, then we don't have any control flow
@@ -50,50 +59,46 @@
    ))
 
 (define (gen-fun b::wasm v::global l)
-   (with-access::global v (name import value type)
-      (with-access::sfun value (loc args)
-         (let ((params (map local->reg args)))
-            (build-tree b params l)
-            (set! l (register-allocation b v params l))
-            (set! l (bbv b v params l))
+  (with-access::global v (name import value type)
+    (with-access::sfun value (loc args)
+        (let ((params (map local->reg args)))
+          (build-tree b params l)
+          (set! l (register-allocation b v params l))
+          (set! l (bbv b v params l))
 
-            `(comment ,(string-append (symbol->string (global-id v)) " in " (symbol->string (global-module v)))
-              ,(with-loc loc
-                `(func ,(wasm-sym name)
+          `(comment ,(string-append (symbol->string (global-id v)) " in " (symbol->string (global-module v)))
+            ,(with-loc loc
+              `(func ,(wasm-sym name)
 
-                ,@(if (eq? import 'export)
-                    `((export ,name))
-                    '())
+              ,@(if (eq? import 'export)
+                  `((export ,name))
+                  '())
 
-                ,@(let ((locals (get-locals params l)))
-                  `(,@(gen-params params)
-                  ,@(gen-result type)
-                  ,@(gen-locals locals)))
+              ,@(let ((locals (get-locals params l)))
+                `(,@(gen-params params)
+                ,@(gen-result type)
+                ,@(gen-locals locals)))
 
-                ,@(if (needs-dispatcher? l)
-                      `((local $__label i32)
-                        (local.set $__label (i32.const ,(block-label (car l))))
-                        ,@(gen-body l))
-                      (gen-basic-block (car l))))))))))
+              ,@(gen-body v l))))))))
 
 (define (get-locals params l) ;()
-   ;; update all reg to ireg and  return all regs not in params.
-   (let ( (n 0) (regs '()) )
+   ;; update all reg to ireg and return all regs not in params.
+   (let ((n 0) (regs '()))
       (define (expr->ireg e)
-   (cond
-      ((isa? e SawCIreg))
-      ((rtl_reg? e) (widen!::SawCIreg e (index n))
-        (set! n (+fx n 1))
-        (set! regs (cons e regs)) )
-      (else
-      (map expr->ireg (rtl_ins-args e)) )))
+        (cond
+            ((isa? e SawCIreg))
+            ((rtl_reg? e) (widen!::SawCIreg e (index n))
+              (set! n (+fx n 1))
+              (set! regs (cons e regs)))
+            (else
+            (map expr->ireg (rtl_ins-args e)))))
       (define (visit b::block)
-   (for-each
-    (lambda (ins)
-      (with-access::rtl_ins ins (dest fun args)
-    (if dest (expr->ireg dest))
-    (for-each expr->ireg args) ))
-    (block-first b) ))
+        (for-each
+          (lambda (ins)
+            (with-access::rtl_ins ins (dest fun args)
+              (if dest (expr->ireg dest))
+              (for-each expr->ireg args) ))
+          (block-first b) ))
       (for-each expr->ireg params)
       (set! regs '())
       (for-each visit l)
@@ -113,7 +118,9 @@
       ('void* 'i32) ;; A raw pointer into the linear memory
       ('tvector 'arrayref)
       ('cnst 'i31ref)
+      ('funptr 'funcref)
       ;; TODO: handle procedure-el and procedure-l
+      ('procedure-l (if may-null '(ref null $procedure) '(ref $procedure)))
       ('procedure-el (if may-null '(ref null $procedure) '(ref $procedure)))
       ('bool 'i32)
       ('byte 'i32)
@@ -165,16 +172,32 @@
       (string-append (if (SawCIreg-var reg) "V" "R")
       (integer->string (SawCIreg-index reg)) )))
 
-(define (gen-body blocks)
-  `((loop $__dispatcher
-    ,@(letrec ((iter-block (lambda (l label)
-        (if (null? l)
-          `((block ,(wasm-block-sym label) ,(gen-dispatcher blocks)))
-          (let ((bb (car l)))
-            (if label
-              `((block ,(wasm-block-sym label) ,@(iter-block (cdr l) (block-label bb)) ,@(gen-basic-block bb)))
-              `(,@(iter-block (cdr l) (block-label bb)) ,@(gen-basic-block bb))))))))
-      (iter-block (reverse blocks) #f)))))
+(define (gen-body v::global blocks)
+  (if *use-relooper*
+    (let ((body (reloop v (dom_tree blocks))))
+      (if body
+        body
+        ;; Relooper failed (the CFG is probably irreducible), 
+        ;; fallback to using the dispatcher pattern.
+        (gen-dispatcher-body blocks)))
+    (gen-dispatcher-body blocks)))
+
+(define (gen-dispatcher-body blocks)
+  ;; If there is only a single basic block in the function, there is no need to do
+  ;; hard work or generate a dispatcher. Just dump the basic block code.
+  (if (null? (cdr blocks))
+    (gen-basic-block (car blocks))
+    `((local $__label i32)
+      (local.set $__label (i32.const ,(block-label (car blocks))))
+      (loop $__dispatcher
+      ,@(letrec ((iter-block (lambda (l label)
+          (if (null? l)
+            `((block ,(wasm-block-sym label) ,(gen-dispatcher blocks)))
+            (let ((bb (car l)))
+              (if label
+                `((block ,(wasm-block-sym label) ,@(iter-block (cdr l) (block-label bb)) ,@(gen-basic-block bb)))
+                `(,@(iter-block (cdr l) (block-label bb)) ,@(gen-basic-block bb))))))))
+        (iter-block (reverse blocks) #f))))))
 
 (define (wasm-block-sym label)
   (string->symbol (string-append "$bb_" (integer->string label))))
@@ -274,7 +297,7 @@
   (with-fun-loc fun (wasm-cnst-unspec)))
 
 (define-method (gen-expr fun::rtl_globalref args)
-  ; NOT IMPLEMENTED
+  ; TODO: NOT IMPLEMENTED
   (with-fun-loc fun '(GLOBALREF ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_getfield args)
@@ -288,7 +311,7 @@
       `(struct.set ,(wasm-sym (type-class-name objtype)) ,(wasm-sym name) ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_instanceof args)
-  ; NOT IMPLEMENTED
+  ; TODO: NOT IMPLEMENTED
   (with-fun-loc fun `(INSTANCEOF ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_makebox args)
@@ -339,37 +362,55 @@
     ((int32? x) (int32->fixnum x))
     (else x)))
 
+(define (gen-switch fun type patterns labels args gen-go gen-block-label)
+  (let ((else-bb #unspecified) (num2bb '()))
+    (define (add n bb)
+      (set! num2bb (cons (cons (intify n) bb) num2bb)))
+
+    (for-each (lambda (pat bb)
+      (if (eq? pat 'else)
+        (set! else-bb bb)
+        (for-each (lambda (n) (add n bb)) pat)))
+      patterns labels)
+      
+    (set! num2bb (sort num2bb (lambda (x y) (<fx (car x) (car y)))))
+    (let* ((nums (map car num2bb))
+            (min (car nums))
+            (max (car (last-pair nums)))
+            (n (length nums)))
+      
+      ;; TODO: generate a binary search if the density is too low.
+      ;;       see SawJvm/code.scm: rtl_switch gen-fun
+      
+
+      (if gen-block-label
+        ;; Jump table using br_table
+        (with-fun-loc fun
+          `(br_table 
+            ,@(map gen-block-label (flat num2bb else-bb)) 
+            ,(gen-block-label else-bb) 
+            (i32.sub 
+              ,(if (need-cast-to-i32? type)
+                  `(i32.wrap_i64 ,@(gen-args args))
+                  (car (gen-args args)))
+              (i32.const ,min))))
+
+        ;; Binary search
+        (with-fun-loc fun 
+          `(comment "Binary search for switch"
+            ,(emit-binary-search gen-go type 
+              (gen-args args) 
+              else-bb 
+              (list->vector (map car num2bb)) 
+              (list->vector (map cdr num2bb)))))))))
+
 (define-method (gen-expr fun::rtl_switch args)
   (with-access::rtl_switch fun (type patterns labels)
-    (let ((else-bb #unspecified) (num2bb '()))
-      (define (add n bb)
-        (set! num2bb (cons (cons (intify n) bb) num2bb)))
+    (gen-switch fun type patterns labels args gen-go #f)))
 
-      (for-each (lambda (pat bb)
-        (if (eq? pat 'else)
-          (set! else-bb bb)
-          (for-each (lambda (n) (add n bb)) pat)))
-        patterns labels)
-        
-      (set! num2bb (sort num2bb (lambda (x y) (<fx (car x) (car y)))))
-      (let* ((nums (map car num2bb))
-        (min (car nums))
-        (max (car (last-pair nums)))
-        (n (length nums)))
-        
-        ;; TODO: generate a binary search if the density is too low.
-        ;;       see SawJvm/code.scm: rtl_switch gen-fun
-        
-        (with-fun-loc fun 
-          (emit-binary-search type 
-            (gen-args args) 
-            else-bb 
-            (list->vector (map car num2bb)) 
-            (list->vector (map cdr num2bb))))
-        ; Code to generate br_table (to be used once Relooper is implemented).
-        ; `(br_table ,@(map wasm-block-label (flat num2bb else-bb)) ,(wasm-block-label else-bb) (i64.sub ,@(gen-args args) (i64.const ,min)))
-      ))))
-
+;*---------------------------------------------------------------------*/
+;*    cmp-ops-for-type ...                                             */
+;*---------------------------------------------------------------------*/
 (define (cmp-ops-for-type type)
   (case (type-id type)
     ('char (values 'i32.lt_s 'i32.gt_s 'i32.const))
@@ -387,10 +428,16 @@
     ('uint64 (values 'i64.lt_u 'i64.gt_u 'i64.const))
     (else (values 'i64.lt_s 'i64.gt_s 'i64.const))))
 
+(define (need-cast-to-i32? type)
+  (case (wasm-type type)
+    ('i32 #f)
+    ('i64 #t)
+    (else (error "wasm" "Not a WASM integer type." type))))
+
 ;*---------------------------------------------------------------------*/
 ;*    emit-binary-search ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (emit-binary-search type args else-bb patterns blocks)
+(define (emit-binary-search gen-go type args else-bb patterns blocks)
   (multiple-value-bind (lt gt const) (cmp-ops-for-type type)
     (let helper ((low 0)
                 (high (-fx (vector-length patterns) 1)))
@@ -417,10 +464,8 @@
   (walk al (caar al) '()))
 
 (define-method (gen-expr fun::rtl_loadfun args)
-  ; We need to encapsulate the funcref into a struct so it can be passed
-  ; to functions taking eqref (like make-fx-procedure).
   (with-fun-loc fun
-    `(struct.new $tmpfun (ref.func ,(wasm-sym (global-name (rtl_loadfun-var fun)))))))
+    `(ref.func ,(wasm-sym (global-name (rtl_loadfun-var fun))))))
 
 (define-method (gen-expr fun::rtl_valloc args)
   (with-fun-loc fun
@@ -553,7 +598,7 @@
     ((pair? macro) (map (lambda (n) (expand-wasm-macro n args)) macro))
     (else macro)))
 
-(define-method (gen-expr fun::rtl_call args)  
+(define-method (gen-expr fun::rtl_call args)
   (let* ((var (rtl_call-var fun))
           (name (global-name var))
           (macro-code (global-jvm-type-name var)))
@@ -561,7 +606,21 @@
       (if (and (isa? (global-value var) cfun)
               (not (string-null? macro-code)))
         (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
-        `(call ,(wasm-sym name) ,@(gen-args args))))))
+        (case (global-id var)
+          ('make-fx-procedure (inline-make-procedure args))
+          ('make-va-procedure (inline-make-procedure args))
+          (else `(call ,(wasm-sym name) ,@(gen-args args))))))))
+
+(define (inline-make-procedure args)
+  `(struct.new $procedure
+    ;; Entry
+    ,(gen-reg (car args))
+    ;; Attr
+    (global.get $BUNSPEC)
+    ;; Arity
+    ,(gen-reg (cadr args))
+    ;; Env
+    (array.new_default $vector ,(gen-reg (caddr args)))))
 
 (define-method (gen-expr fun::rtl_funcall args)
   (with-fun-loc fun (gen-expr-funcall/lightfuncall args)))
@@ -608,14 +667,13 @@
       (with-fun-loc fun alloc))))
 
 (define-method (gen-expr fun::rtl_cast args)
-  ;; (tprint (typeof (rtl_ins-fun (car args))))
   (let ((type (rtl_cast-totype fun)))
     (case (type-id type)
       ('obj (gen-reg (car args)))
       (else `(ref.cast ,(wasm-type type) ,(gen-reg (car args)))))))
 
 (define-method (gen-expr fun::rtl_cast_null args)
-  ; NOT IMPLEMENTED
+  ; TODO: NOT IMPLEMENTED
   (with-fun-loc fun `(CASTNULL ,@(gen-args args))))
 
 (define *allocated-strings* (make-hashtable))
