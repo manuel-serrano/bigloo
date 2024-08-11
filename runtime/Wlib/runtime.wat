@@ -1,26 +1,33 @@
 (module $__runtime
-  ;; WASI
-  (import "wasi_snapshot_preview1" "fd_write" (func $wasi_fd_write (param i32 i32 i32 i32) (result i32)))
   (import "__js" "trace" (func $js_trace (param i32)))
   (import "__js" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
   (import "__js" "close_file" (func $js_close_file (param i32)))
   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
 
-  (import "__math" "fmod" (func $js_math_fmod (param f64 f64) (result f64)))
-  (import "__math" "exp" (func $js_math_exp (param f64) (result f64)))
-  (import "__math" "log" (func $js_math_log (param f64) (result f64)))
-  (import "__math" "log2" (func $js_math_log2 (param f64) (result f64)))
-  (import "__math" "log10" (func $js_math_log10 (param f64) (result f64)))
-  (import "__math" "sin" (func $js_math_sin (param f64) (result f64)))
-  (import "__math" "cos" (func $js_math_cos (param f64) (result f64)))
-  (import "__math" "tan" (func $js_math_tan (param f64) (result f64)))
-  (import "__math" "asin" (func $js_math_asin (param f64) (result f64)))
-  (import "__math" "acos" (func $js_math_acos (param f64) (result f64)))
-  (import "__math" "atan" (func $js_math_atan (param f64) (result f64)))
-  (import "__math" "atan2" (func $js_math_atan2 (param f64 f64) (result f64)))
-  (import "__math" "pow" (func $js_math_pow (param f64 f64) (result f64)))
-  (import "__math" "randomf" (func $js_math_randomf (result f64)))
+  (import "__js_math" "fmod" (func $js_math_fmod (param f64 f64) (result f64)))
+  (import "__js_math" "exp" (func $js_math_exp (param f64) (result f64)))
+  (import "__js_math" "log" (func $js_math_log (param f64) (result f64)))
+  (import "__js_math" "log2" (func $js_math_log2 (param f64) (result f64)))
+  (import "__js_math" "log10" (func $js_math_log10 (param f64) (result f64)))
+  (import "__js_math" "sin" (func $js_math_sin (param f64) (result f64)))
+  (import "__js_math" "cos" (func $js_math_cos (param f64) (result f64)))
+  (import "__js_math" "tan" (func $js_math_tan (param f64) (result f64)))
+  (import "__js_math" "asin" (func $js_math_asin (param f64) (result f64)))
+  (import "__js_math" "acos" (func $js_math_acos (param f64) (result f64)))
+  (import "__js_math" "atan" (func $js_math_atan (param f64) (result f64)))
+  (import "__js_math" "atan2" (func $js_math_atan2 (param f64 f64) (result f64)))
+  (import "__js_math" "pow" (func $js_math_pow (param f64 f64) (result f64)))
+  (import "__js_math" "randomf" (func $js_math_randomf (result f64)))
+
+  (import "__js_date" "current_seconds" (func $js_date_current_seconds (result i64)))
+  (import "__js_date" "current_milliseconds" (func $js_date_current_milliseconds (result i64)))
+  (import "__js_date" "current_microseconds" (func $js_date_current_microseconds (result i64)))
+  (import "__js_date" "current_nanoseconds" (func $js_date_current_nanoseconds (result i64)))
+  (import "__js_date" "mktime" (func $js_date_mktime (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
+  (import "__js_date" "mktimegm" (func $js_date_mktimegm (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
+  (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
+  (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
 
   ;; General bigloo memory
   (memory 1)
@@ -927,7 +934,7 @@
     (result i32)
     (ref.eq (local.get $v) (global.get $BEOF)))
 
-  (func $load_string
+  (func $load_string_in_buffer
     (param $addr i32)
     (param $length i32)
     (param $buffer (ref $bstring))
@@ -1225,7 +1232,7 @@
       (then
         (struct.set $rgc $eof (local.get $rgc) (i32.const 1 (; TRUE ;))))
       (else
-        (call $load_string
+        (call $load_string_in_buffer
           (i32.const 128)
           (local.get $nbread)
           (struct.get $rgc $buffer (local.get $rgc))
@@ -1540,4 +1547,218 @@
   (export "atan2" (func $js_math_atan2))
   (export "pow" (func $js_math_pow))
   (export "RANDOMFL" (func $js_math_randomf))
+
+  ;; --------------------------------------------------------
+  ;; Date functions
+  ;; --------------------------------------------------------
+
+  (export "bgl_current_seconds" (func $js_date_current_seconds))
+  (export "bgl_current_milliseconds" (func $js_date_current_milliseconds))
+  (export "bgl_current_microseconds" (func $js_date_current_microseconds))
+  (export "bgl_current_nanoseconds" (func $js_date_current_nanoseconds))
+
+  (func $load_string
+    (param $addr i32)
+    (param $length i32)
+    (result (ref $bstring))
+    (local $result (ref $bstring))
+    (local $i i32)
+    (local.set $result (array.new_default $bstring (local.get $length)))
+    (local.set $i (i32.const 0))
+    (loop $loop
+      (if (i32.lt_u (local.get $i) (local.get $length))
+        (then
+          (array.set $bstring (local.get $result) (local.get $i)
+            (i32.load8_u (i32.add (local.get $addr) (local.get $i))))
+          (local.set $i (i32.add (local.get $i) (i32.const 1)))
+          (br $loop))))
+    (local.get $result))
+
+  (type $stringarray (array (ref $bstring)))
+
+  (global $day_names (mut (ref null $stringarray)) (ref.null none))
+  (global $day_anames (mut (ref null $stringarray)) (ref.null none))
+
+  (func $make_day_name 
+    (param $day i32) 
+    (param $longFormat i32) 
+    (result (ref $bstring))
+    
+    (call $load_string
+      (i32.const 128)
+      (call $js_date_day_name 
+        (local.get $day) 
+        (local.get $longFormat) 
+        (i32.const 128))))
+
+  (func $make_day_names (param $longFormat i32) (result (ref $stringarray))
+    (array.new_fixed $stringarray 7
+      (call $make_day_name (i32.const 0) (local.get $longFormat))
+      (call $make_day_name (i32.const 1) (local.get $longFormat))
+      (call $make_day_name (i32.const 2) (local.get $longFormat))
+      (call $make_day_name (i32.const 3) (local.get $longFormat))
+      (call $make_day_name (i32.const 4) (local.get $longFormat))
+      (call $make_day_name (i32.const 5) (local.get $longFormat))
+      (call $make_day_name (i32.const 6) (local.get $longFormat))))
+
+  (func $bgl_day_name (export "bgl_day_name") 
+    (param $day i32) 
+    (result (ref null $bstring))
+    (if (ref.is_null (global.get $day_names))
+      (then (global.set $day_names (call $make_day_names (i32.const 1 (; Long format ;))))))
+    (array.get $stringarray (global.get $day_names) (i32.sub (local.get $day) (i32.const 1))))
+
+  (func $bgl_day_aname (export "bgl_day_aname") 
+    (param $day i32) 
+    (result (ref null $bstring))
+    (if (ref.is_null (global.get $day_anames))
+      (then (global.set $day_anames (call $make_day_names (i32.const 0 (; Short format ;))))))
+    (array.get $stringarray (global.get $day_anames) (i32.sub (local.get $day) (i32.const 1))))
+
+  (global $month_names (mut (ref null $stringarray)) (ref.null none))
+  (global $month_anames (mut (ref null $stringarray)) (ref.null none))
+
+  (func $make_month_name 
+    (param $month i32) 
+    (param $longFormat i32) 
+    (result (ref $bstring))
+    
+    (call $load_string
+      (i32.const 128)
+      (call $js_date_month_name 
+        (local.get $month) 
+        (local.get $longFormat) 
+        (i32.const 128))))
+
+  (func $make_month_names (param $longFormat i32) (result (ref $stringarray))
+    (array.new_fixed $stringarray 12
+      (call $make_month_name (i32.const 0) (local.get $longFormat))
+      (call $make_month_name (i32.const 1) (local.get $longFormat))
+      (call $make_month_name (i32.const 2) (local.get $longFormat))
+      (call $make_month_name (i32.const 3) (local.get $longFormat))
+      (call $make_month_name (i32.const 4) (local.get $longFormat))
+      (call $make_month_name (i32.const 5) (local.get $longFormat))
+      (call $make_month_name (i32.const 6) (local.get $longFormat))
+      (call $make_month_name (i32.const 7) (local.get $longFormat))
+      (call $make_month_name (i32.const 8) (local.get $longFormat))
+      (call $make_month_name (i32.const 9) (local.get $longFormat))
+      (call $make_month_name (i32.const 10) (local.get $longFormat))
+      (call $make_month_name (i32.const 11) (local.get $longFormat))))
+
+  (func $bgl_month_name (export "bgl_month_name") 
+    (param $month i32) 
+    (result (ref null $bstring))
+    (if (ref.is_null (global.get $month_names))
+      (then (global.set $month_names (call $make_month_names (i32.const 1 (; Long format ;))))))
+    (array.get $stringarray (global.get $month_names) (i32.sub (local.get $month) (i32.const 1))))
+
+  (func $bgl_month_aname (export "bgl_month_aname") 
+    (param $month i32) 
+    (result (ref null $bstring))
+    (if (ref.is_null (global.get $month_anames))
+      (then (global.set $month_anames (call $make_month_names (i32.const 0 (; Short format ;))))))
+    (array.get $stringarray (global.get $month_anames) (i32.sub (local.get $month) (i32.const 1))))
+
+  (func $bgl_make_date (export "bgl_make_date")
+    (param $ns i64)
+    (param $s i32)
+    (param $m i32)
+    (param $h i32)
+    (param $mday i32)
+    (param $mon i32)
+    (param $year i32)
+    (param $tz i64)
+    (param $istz i32)
+    (param $isdst i32)
+    (result (ref null $date))
+    (call $bgl_update_date
+      (struct.new_default $date)
+      (local.get $ns)
+      (local.get $s)
+      (local.get $m)
+      (local.get $h)
+      (local.get $mday)
+      (local.get $mon)
+      (local.get $year)
+      (local.get $tz)
+      (local.get $istz)
+      (local.get $isdst)))
+
+  (func $bgl_update_date (export "bgl_update_date")
+    (param $date (ref null $date))
+    (param $ns i64)
+    (param $s i32)
+    (param $m i32)
+    (param $h i32)
+    (param $mday i32)
+    (param $mon i32)
+    (param $year i32)
+    (param $tz i64)
+    (param $istz i32)
+    (param $isdst i32)
+    (result (ref null $date))
+    (struct.set $date $nanosecond (local.get $date) (i64.rem_u (local.get $ns) (i64.const 1000000000)))
+    (struct.set $date $second (local.get $date) (i32.add (local.get $s) (i32.wrap_i64 (i64.div_u (local.get $ns) (i64.const 1000000000)))))
+    (struct.set $date $minute (local.get $date) (local.get $m))
+    (struct.set $date $hour (local.get $date) (local.get $h))
+    (struct.set $date $day (local.get $date) (local.get $mday))
+    (struct.set $date $month (local.get $date) (local.get $mon))
+    (struct.set $date $year (local.get $date) (local.get $year))
+    (struct.set $date $is-dst (local.get $date) (local.get $isdst))
+
+    (if (local.get $istz)
+      (then
+        (struct.set $date $time 
+          (local.get $date)
+          (call $js_date_mktimegm
+            (local.get $year)
+            (local.get $mon)
+            (local.get $mday)
+            (local.get $h)
+            (local.get $m)
+            (local.get $s)
+            (i64.div_u (local.get $ns) (i64.const 1000000)))))
+      (else
+        (struct.set $date $time  
+          (local.get $date)
+          (call $js_date_mktime
+            (local.get $year)
+            (local.get $mon)
+            (local.get $mday)
+            (local.get $h)
+            (local.get $m)
+            (local.get $s)
+            (i64.div_u (local.get $ns) (i64.const 1000000))))))
+
+    ;; FIXME: handle timezone correctly! This code is completly buggy.
+
+    (local.get $date))
+
+  (func $BGL_DATE_UPDATE_MILLISECOND (export "BGL_DATE_UPDATE_MILLISECOND")
+    (param $date (ref null $date))
+    (param $ms i64)
+    (result i64)
+    (struct.set $date $nanosecond (local.get $date) (i64.mul (local.get $ms) (i64.const 1000000)))
+    (struct.get $date $nanosecond (local.get $date)))
+
+  (func $BGL_DATE_UPDATE_SECOND (export "BGL_DATE_UPDATE_SECOND")
+    (param $date (ref null $date))
+    (param $s i32)
+    (result i32)
+    (struct.set $date $second (local.get $date) (local.get $s))
+    (local.get $s))
+
+  (func $BGL_DATE_UPDATE_MINUTE (export "BGL_DATE_UPDATE_MINUTE")
+    (param $date (ref null $date))
+    (param $m i32)
+    (result i32)
+    (struct.set $date $minute (local.get $date) (local.get $m))
+    (local.get $m))
+
+  (func $BGL_DATE_UPDATE_TIME (export "BGL_DATE_UPDATE_TIME")
+    (param $date (ref null $date))
+    (param $s i64)
+    (result i64)
+    (struct.set $date $time (local.get $date) (i64.mul (local.get $s) (i64.const 1000)))
+    (local.get $s))
 )

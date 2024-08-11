@@ -101,6 +101,9 @@
     (field $prev (mut (ref null $exit))))))
 (tag $bexception (param (ref $exit)) (param anyref))
 
+;; Exception raised for unimplemented code.
+(tag $unimplemented)
+
 ;; Classes
 (type $class (struct
     (field $name (ref null $symbol))
@@ -193,7 +196,20 @@
     (field $ptr i32)))
 
 ;; Date type
-(type $date (struct))
+(type $date (struct
+    (field $timezone (mut i64))
+    (field $year (mut i32))
+    (field $month (mut i32))
+    (field $yday (mut i32))
+    (field $wday (mut i32))
+    (field $day (mut i32))
+    (field $hour (mut i32))
+    (field $minute (mut i32))
+    (field $second (mut i32))
+    (field $nanosecond (mut i64))
+    (field $is-dst (mut i32))
+    (field $is-gmt (mut i32))
+    (field $time (mut i64))))
 
 ;; Thread types
 (type $mutex (struct

@@ -8,7 +8,7 @@ import { extname } from 'node:path';
 // a global variable and therefore we need to explicitly import 'process'.
 let argv;
 if (globalThis.window && "Deno" in window) {
-    argv = (await import ('node:process')).argv;
+    argv = (await import('node:process')).argv;
 } else {
     argv = process.argv;
 }
@@ -23,6 +23,8 @@ if (argv.length < 3) {
     console.error(`ERROR: input file '${argv[2]}' is not a WASM module.`);
     exit(1);
 }
+
+const currentLocale = navigator.languages[0];
 
 const schemeStringDecoder = new TextDecoder();
 const schemeStringEncoder = new TextEncoder();
@@ -141,7 +143,29 @@ const instance = await WebAssembly.instantiate(wasm, {
         }
     },
 
-    __math: {
+    __js_date: {
+        current_seconds: () => Math.trunc(Date.now() / 1000),
+        current_milliseconds: () => Math.trunc(Date.now()),
+        current_microseconds: () => Math.trunc(Date.now() * 1000),
+        current_nanoseconds: () => Math.trunc(Date.now() * 1000000),
+
+        mktime: (year, month, day, hour, minute, second, millisecond) => (new Date(year, month, day, hour, minute, second, millisecond)).getTime(),
+        mktimegm: (year, month, day, hour, minute, second, millisecond) => (Date.UTC(year, month, day, hour, minute, second, millisecond)),
+
+        day_name: (day, longFormat, addr) =>
+            storeJSStringToScheme((new Date(Date.UTC(2021, 1, day + 1)))
+                .toLocaleDateString(currentLocale, {
+                    weekday: (longFormat ? "long" : "short")
+                }), addr),
+
+        month_name: (month, longFormat, addr) =>
+            storeJSStringToScheme((new Date(Date.UTC(2021, month)))
+                .toLocaleDateString(currentLocale, {
+                    month: (longFormat ? "long" : "short")
+                }), addr)
+    },
+
+    __js_math: {
         fmod: (x, y) => x % y,
         exp: Math.exp,
         log: Math.log,

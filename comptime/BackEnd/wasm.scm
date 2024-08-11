@@ -34,6 +34,7 @@
         cgen_cop
         saw_wasm_compile
         saw_wasm_code
+        saw_defs
         (emit-bdb-loc cgen_emit-cop)
         type_tools
         cnst_node)
@@ -566,17 +567,17 @@
       ((sreal)
         (emit-cnst-real node variable))
       ((selong)
-        (emit-cnst-i64 node variable))
+        (emit-cnst-i64 '$belong node variable))
       ((sllong)
-        (emit-cnst-i64 node variable))
+        (emit-cnst-i64 '$bllong node variable))
       ((sint32)
-        (emit-cnst-i32 node variable))
+        (emit-cnst-i32 '$bint32 node variable))
       ((suint32)
-        (emit-cnst-i32 node variable))
+        (emit-cnst-i32 '$buint32 node variable))
       ((sint64)
-        (emit-cnst-i64 node variable))
+        (emit-cnst-i64 '$bint64 node variable))
       ((suint64)
-        (emit-cnst-i64 node variable))
+        (emit-cnst-i64 '$buint64 node variable))
       ((sstring) 
         (emit-cnst-string node variable))
       ((sfun) 
@@ -630,26 +631,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-i32 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (emit-cnst-i32 value global)
+(define (emit-cnst-i32 type value global)
   (set-variable-name! global)
   `((global 
       ,(wasm-sym (global-name global))
       ,@(if (eq? (global-import global) 'export)
           `((export ,(global-name global)))
           '())
-      i32 (i32.const ,value))))
+      (ref ,type) (struct.new ,type (i32.const ,value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-i64 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (emit-cnst-i64 value global)
+(define (emit-cnst-i64 type value global)
   (set-variable-name! global)
   `((global 
       ,(wasm-sym (global-name global))
       ,@(if (eq? (global-import global) 'export)
           `((export ,(global-name global)))
           '())
-      i64 (i64.const ,value))))
+      (ref ,type) (struct.new ,type (i64.const ,value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun ...                                               */
