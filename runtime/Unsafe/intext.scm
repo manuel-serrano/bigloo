@@ -76,7 +76,7 @@
 	(wasm
 		(cnst->integer "(i64.extend_i32_u (i31.get ~0))")
 		(integer->cnst "(ref.i31 (i32.wrap_i64 ~0))")
-		(pointer? "(i32.const 1)")
+		(pointer? "(i32.const 1)") ;; all boxed types are sort of pointers
 		(size-of-long "(i32.const 8)") ;; i64 in WASM
 	)
    

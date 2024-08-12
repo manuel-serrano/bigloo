@@ -46,6 +46,13 @@
   (global $BFALSE (export "BFALSE") i31ref (ref.i31 (i32.const 1)))
   (global $BTRUE (export "BTRUE") i31ref (ref.i31 (i32.const 2)))
 
+  (func $BOOLEANP (export "BOOLEANP")
+    (param $v eqref)
+    (result i32)
+    (i32.or
+      (ref.eq (local.get $v) (global.get $BFALSE))
+      (ref.eq (local.get $v) (global.get $BTRUE))))
+
   ;; --------------------------------------------------------
   ;; Dynamic env functions
   ;; --------------------------------------------------------

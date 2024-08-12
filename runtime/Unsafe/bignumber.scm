@@ -82,6 +82,10 @@
       (macro $flonum->fixnum::long (::double) "(long)")
       (macro $srand::void (::int) "srand"))
 
+	(wasm
+		($fixnum->flonum "(f64.convert_i64_s ~0)")
+		($flonum->fixnum "(i64.trunc_f64_s ~0)"))
+
    (java
       (class foreign
 	 (method static $srand::void (::int) "srand")))
