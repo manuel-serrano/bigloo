@@ -63,9 +63,9 @@
 	    ($cons "(struct.new $pair ~0 ~1)")
 	    ($acons "(struct.new $pair ~0 ~1)")
 	    ($econs "(struct.new $epair ~0 ~1 ~2)")
-	    ($car "(struct.get $pair $car (ref.cast (ref $pair) ~0))")
-	    ($cdr "(struct.get $pair $cdr (ref.cast (ref $pair) ~0))")
-	    ($cer "(struct.get $epair $cer (ref.cast (ref $epair) ~0))")
+	    ($car "(struct.get $pair $car ~0)")
+	    ($cdr "(struct.get $pair $cdr ~0)")
+	    ($cer "(struct.get $epair $cer ~0)")
 	    ($null? "(ref.is_null ~0)"))
    
    (java    (class foreign
