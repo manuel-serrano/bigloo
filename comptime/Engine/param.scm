@@ -473,10 +473,10 @@
 	  (list "." (bigloo-config 'library-directory))
 	  (cons "." lib-env))))
 (param-define *default-lib-dir*
-   "Depreacted, don't use"
+   "Deprecated, don't use"
    (bigloo-config 'library-directory))
 (param-define *ld-library-dir*
-   "Depreacted, don't use"
+   "Deprecated, don't use"
    (bigloo-config 'library-directory))
 ;; the lib source dir path
 (param-define *lib-src-dir*

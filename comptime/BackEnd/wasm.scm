@@ -165,8 +165,13 @@
             (import "__js" "trace" (func $__trace (param i32)))
             ,@(emit-imports))
           (comment "Memory" ,@(emit-memory))
-          (comment "Primitive types" ,@(call-with-input-file "Wlib/runtime.types" port->sexp-list))
+
+          ;; FIXME: allow custom name for types.wat file
+          (comment "Primitive types" ,@(let ((tname (find-file/path "types.wat" *lib-dir*)))
+                                          (call-with-input-file tname port->sexp-list)))
+
           (comment "Class types" ,@(emit-class-types classes))
+          (comment "Extra types" ,@*extra-types*)
           (comment "Globals" ,@(emit-prototypes))
           (comment "Constants" ,@(emit-cnsts))
           (comment "String data" ,@(emit-strings))
@@ -524,6 +529,7 @@
     ; TODO: implement types
     ('bool '(i32.const 0))
     ('char '(i32.const 0))
+    ('uchar '(i32.const 0))
     ('byte '(i32.const 0))
     ('ubyte '(i32.const 0))
     ('int8 '(i32.const 0))
@@ -541,7 +547,10 @@
     ('llong '(i64.const 0))
     ('float '(f32.const 0))
     ('double '(f64.const 0))
-    (else '(ref.null none))))
+    (else 
+      (if (foreign-type? type)
+        (error "wasm" "Unknown foreign type for default value." type)
+        '(ref.null none)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnsts ...                                                   */

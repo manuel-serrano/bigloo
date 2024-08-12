@@ -38,13 +38,18 @@
     (gen-basic-block b)
     (gen-ins ins::rtl_ins)
     (gen-switch fun type patterns labels args gen-go gen-block-label)
-    *allocated-strings*)
+    *allocated-strings*
+    *extra-types*)
   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
   (static (wide-class SawCIreg::rtl_reg index)))
 
 (define (saw-wasm-gen b::wasm v::global)
   (let ((l (global->blocks b v)))
     (gen-fun b v l)))
+
+;; Extra types that must be inserted in the module preamble. This is mostly used for
+;; temp function types for extra-light funcalls.
+(define *extra-types* '())
 
 ;; Recreate structured control flow (generate blocks, loops and if blocks in WASM)
 ;; or use the simpler dispatcher pattern to emulate gotos?
@@ -296,10 +301,6 @@
   ;; Strangely, NOP is defined as returning the constant BUNSPEC...
   (with-fun-loc fun (wasm-cnst-unspec)))
 
-(define-method (gen-expr fun::rtl_globalref args)
-  ; TODO: NOT IMPLEMENTED
-  (with-fun-loc fun '(GLOBALREF ,@(gen-args args))))
-
 (define-method (gen-expr fun::rtl_getfield args)
   (with-access::rtl_getfield fun (name objtype)
     (with-fun-loc fun 
@@ -550,6 +551,11 @@
         (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
         `(global.get ,(wasm-sym (global-name (rtl_loadg-var fun))))))))
 
+(define-method (gen-expr fun::rtl_globalref args)
+  ;; TODO: what is the difference with rtl_loadg? Should we also support WASM macro expansion here?
+  (with-fun-loc fun 
+    `(global.get ,(wasm-sym (global-name (rtl_globalref-var fun))))))
+
 (define-method (gen-expr fun::rtl_storeg args)
   (with-fun-loc fun 
     `(global.set 
@@ -623,20 +629,13 @@
     (array.new_default $vector ,(gen-reg (caddr args)))))
 
 (define-method (gen-expr fun::rtl_funcall args)
-  (with-fun-loc fun (gen-expr-funcall/lightfuncall args)))
+  (with-fun-loc fun (gen-expr-funcall/lightfuncall 'eqref args)))
 
-(define-method (gen-expr fun::rtl_lightfuncall args)
-  ; TODO: implement lightfuncall
-  (with-fun-loc fun
-    `(ref.cast 
-      ,(wasm-type (rtl_lightfuncall-rettype fun) #f) 
-      ,(gen-expr-funcall/lightfuncall args))))
-
-(define (gen-expr-funcall/lightfuncall args)
+(define (gen-expr-funcall/lightfuncall type args)
   (let* ((arg_count (length args))
          (func_type (wasm-sym (string-append "func" (fixnum->string (-fx arg_count 1)))))
          (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
-    `(if (result eqref) (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
+    `(if (result ,type) (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
       (then ; Is a variadic function!
         (call 
           $generic_va_call 
@@ -646,15 +645,43 @@
       (else
         (call_ref 
           ,func_type
-          (ref.cast (ref $procedure) ,(gen-reg (car args)))
+          ,proc
           ,@(gen-args (cdr args)) 
           (ref.cast 
             (ref ,func_type) 
             (struct.get $procedure $entry ,proc)))))))
 
+(define-method (gen-expr fun::rtl_lightfuncall args)
+  ; TODO: implement lightfuncall
+  (let ((functy (create-ref-func-type (wasm-type (rtl_lightfuncall-rettype fun)) (map wasm-typeof-arg args)))
+        (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
+    (with-fun-loc fun 
+      `(call_ref ,functy
+          ,proc
+          ,@(gen-args (cdr args))
+          (ref.cast
+            (ref ,functy)
+            (struct.get $procedure $entry ,proc))))))
+
+(define (wasm-typeof-arg o)
+  (cond
+    ((isa? o rtl_reg) (wasm-type (rtl_reg-type o)))
+    ((isa? o rtl_ins)
+      (if (rtl_ins-dest o)
+       (wasm-typeof-arg (rtl_ins-dest o))
+       'eqref))
+      (else
+       'eqref)))
+
+(define (create-ref-func-type retty params)
+  (let ((sym (gensym "$functy")))
+    (set! *extra-types* (cons `(type ,sym (func (param ,@params) (result ,retty))) *extra-types*))
+    sym))
+
 (define-method (gen-expr fun::rtl_apply args)
   ; TODO
-  (with-fun-loc fun `(throw $fail)))
+  (with-fun-loc fun 
+    `(comment "Apply" (throw $unimplemented))))
 
 (define-method (gen-expr fun::rtl_mov args)
   (gen-reg (car args)))
@@ -671,7 +698,7 @@
     (cond
       ((eq? (type-id type) 'obj) (gen-reg (car args)))
       ;; FIXME: hack due to a bigloo bug (I think)
-      ((eq? (wasm-type type) (wasm-type (rtl_cast-fromtype fun))) (gen-reg (car args)))
+      ((or (eq? (wasm-type type) 'i32) (eq? (wasm-type type) 'i64)) (gen-reg (car args)))
       (else `(comment ,(string-append "CAST " (symbol->string (type-id type)) " " (symbol->string (type-id (rtl_cast-fromtype fun)))) (ref.cast ,(wasm-type type) ,(gen-reg (car args))))))))
 
 (define-method (gen-expr fun::rtl_cast_null args)
