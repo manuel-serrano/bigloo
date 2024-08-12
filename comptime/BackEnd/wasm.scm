@@ -667,8 +667,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-selfun ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (emit-cnst-selfun selfun global)
-  (emit-cnst-sfun/sgfun selfun global 'procedure))
+(define (emit-cnst-selfun fun global)
+  (let ((vname (set-variable-name! global)))
+    `((global ,(wasm-sym vname) eqref (ref.null none)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sgfun ...                                              */
@@ -681,6 +682,7 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-sfun/sgfun fun global kind)
   (with-trace 'wasm "Emit SFUN"
+    (trace-item "type=" (typeof fun))
     (trace-item "name=" (global-name global) " import=" (global-import global))
     ; TODO: implement SFUN cnst
     (unless (eq? (global-import global) 'import)
@@ -755,15 +757,12 @@
 (define (require-import? global)
   (let ((value (global-value global))
         (import (global-import global)))
-    ;; TODO: remove this log code
-    ; (if (and (eq? import 'foreign))
-    ;  (tprint "FOREIGN " (global-id global) " " (global-name global) " " (global-jvm-type-name global) " " (global-occurrence global)))
     (and
       (or 
         (eq? import 'import)
         (and 
           (eq? import 'foreign)
-          (not (and (isa? value cfun) (not (string-null? (global-jvm-type-name global)))))))
+          (not (and (or (isa? value cvar) (isa? value cfun)) (not (string-null? (global-jvm-type-name global)))))))
       (>fx (global-occurrence global) 0))))
 
 ;*---------------------------------------------------------------------*/
