@@ -32,8 +32,6 @@
    (extern  (macro $boolean?::bool (::obj) "BOOLEANP")
 	    (macro btrue::bbool "BTRUE")
 	    (macro bfalse::bbool "BFALSE"))
-
-   (wasm    ($boolean? "(ref.test (ref $bbool) ~0)"))
    
    (java    (class foreign
 	       (method static $boolean?::bool (::obj) "BOOLEANP")
