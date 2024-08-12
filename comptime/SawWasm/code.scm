@@ -668,13 +668,15 @@
 
 (define-method (gen-expr fun::rtl_cast args)
   (let ((type (rtl_cast-totype fun)))
-    (case (type-id type)
-      ('obj (gen-reg (car args)))
-      (else `(ref.cast ,(wasm-type type) ,(gen-reg (car args)))))))
+    (cond
+      ((eq? (type-id type) 'obj) (gen-reg (car args)))
+      ;; FIXME: hack due to a bigloo bug (I think)
+      ((eq? (wasm-type type) (wasm-type (rtl_cast-fromtype fun))) (gen-reg (car args)))
+      (else `(comment ,(string-append "CAST " (symbol->string (type-id type)) " " (symbol->string (type-id (rtl_cast-fromtype fun)))) (ref.cast ,(wasm-type type) ,(gen-reg (car args))))))))
 
 (define-method (gen-expr fun::rtl_cast_null args)
   ; TODO: NOT IMPLEMENTED
-  (with-fun-loc fun `(CASTNULL ,@(gen-args args))))
+  (with-fun-loc fun `(ref.null none)))
 
 (define *allocated-strings* (make-hashtable))
 (define *string-current-offset* 0)
