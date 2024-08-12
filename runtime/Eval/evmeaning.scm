@@ -67,6 +67,8 @@
 			     "eval_funcall_4")
 	    (%eval-apply::obj (::procedure ::obj)
 			      "eval_apply"))
+
+	;; TODO: implement WASM port
    
    (java    (class foreign
 	       (method static %funcall-0::obj (::procedure)

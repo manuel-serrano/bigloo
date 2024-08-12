@@ -1062,7 +1062,7 @@
       ($void*->obj::foreign (::void*) "void_star_to_obj"))
 
    (wasm
-      ($bbool->bool "(struct.get $bbool $v ~0)")
+      ($bbool->bool "(ref.eq ~0 (global.get $BTRUE))")
 
       ($double->real "(struct.new $real ~0)")
       ($elong->belong "(struct.new $belong ~0)")

@@ -367,8 +367,8 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
 #*---------------------------------------------------------------------*/
 #*    WASM module files                                                  */
 #*---------------------------------------------------------------------*/
-# WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
-#                  $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
+#WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
+#                 $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
 WASMS = \
 	objs/$(WASMDIR_SYS)/Ieee/boolean.wasm objs/$(WASMDIR_SYS)/Ieee/char.wasm \
 	objs/$(WASMDIR_SYS)/Ieee/control.wasm objs/$(WASMDIR_SYS)/Ieee/control5.wasm \
@@ -382,23 +382,38 @@ WASMS = \
 	objs/$(WASMDIR_SYS)/Llib/bigloo.wasm objs/$(WASMDIR_SYS)/Llib/binary.wasm \
 	objs/$(WASMDIR_SYS)/Llib/bit.wasm objs/$(WASMDIR_SYS)/Llib/custom.wasm \
 	objs/$(WASMDIR_SYS)/Llib/date.wasm objs/$(WASMDIR_SYS)/Llib/dsssl.wasm \
-	objs/$(WASMDIR_SYS)/Llib/tvector.wasm \
-	objs/$(WASMDIR_SYS)/Llib/param.wasm \
-	objs/$(WASMDIR_SYS)/Llib/object.wasm \
-	objs/$(WASMDIR_SYS)/Llib/error.wasm \
-	objs/$(WASMDIR_SYS)/Llib/foreign.wasm \
-	objs/$(WASMDIR_SYS)/Llib/thread.wasm \
-	objs/$(WASMDIR_SYS)/Llib/srfi4.wasm \
-	objs/$(WASMDIR_SYS)/Llib/ucs2.wasm \
-	objs/$(WASMDIR_SYS)/Llib/hash.wasm \
-	objs/$(WASMDIR_SYS)/Llib/weakhash.wasm \
+	objs/$(WASMDIR_SYS)/Llib/error.wasm objs/$(WASMDIR_SYS)/Llib/foreign.wasm \
+	objs/$(WASMDIR_SYS)/Llib/hash.wasm objs/$(WASMDIR_SYS)/Llib/i18n.wasm \
+	objs/$(WASMDIR_SYS)/Llib/mmap.wasm objs/$(WASMDIR_SYS)/Llib/module.wasm \
+	objs/$(WASMDIR_SYS)/Llib/object.wasm objs/$(WASMDIR_SYS)/Llib/os.wasm \
+	objs/$(WASMDIR_SYS)/Llib/param.wasm objs/$(WASMDIR_SYS)/Llib/process.wasm \
+	objs/$(WASMDIR_SYS)/Llib/semaphore.wasm objs/$(WASMDIR_SYS)/Llib/socket.wasm \
+	objs/$(WASMDIR_SYS)/Llib/srfi4.wasm objs/$(WASMDIR_SYS)/Llib/struct.wasm \
+	objs/$(WASMDIR_SYS)/Llib/thread.wasm objs/$(WASMDIR_SYS)/Llib/trace.wasm \
+	objs/$(WASMDIR_SYS)/Llib/tvector.wasm objs/$(WASMDIR_SYS)/Llib/type.wasm \
+	objs/$(WASMDIR_SYS)/Llib/ucs2.wasm objs/$(WASMDIR_SYS)/Llib/unicode.wasm \
+	objs/$(WASMDIR_SYS)/Llib/weakhash.wasm objs/$(WASMDIR_SYS)/Llib/weakptr.wasm \
 	objs/$(WASMDIR_SYS)/Read/reader.wasm \
 	objs/$(WASMDIR_SYS)/Rgc/rgc.wasm objs/$(WASMDIR_SYS)/Rgc/rgccompile.wasm \
 	objs/$(WASMDIR_SYS)/Rgc/rgcconfig.wasm objs/$(WASMDIR_SYS)/Rgc/rgcdfa.wasm \
 	objs/$(WASMDIR_SYS)/Rgc/rgcexpand.wasm objs/$(WASMDIR_SYS)/Rgc/rgcposix.wasm \
 	objs/$(WASMDIR_SYS)/Rgc/rgcrules.wasm objs/$(WASMDIR_SYS)/Rgc/rgcset.wasm \
 	objs/$(WASMDIR_SYS)/Rgc/rgctree.wasm \
-	# objs/$(WASMDIR_SYS)/Pp/circle.wasm objs/$(WASMDIR_SYS)/Pp/pp.wasm \
+	objs/$(WASMDIR_SYS)/Pp/circle.wasm objs/$(WASMDIR_SYS)/Pp/pp.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/base64.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/bm.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/crc.wasm objs/$(WASMDIR_SYS)/Unsafe/crc16.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/ftp.wasm objs/$(WASMDIR_SYS)/Unsafe/gunzip.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/hmac.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/intext.wasm objs/$(WASMDIR_SYS)/Unsafe/kmp.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/md5.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/regexp.wasm objs/$(WASMDIR_SYS)/Unsafe/rsa.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/sha1.wasm objs/$(WASMDIR_SYS)/Unsafe/sha2.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/ssr.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/url.wasm objs/$(WASMDIR_SYS)/Unsafe/uuid.wasm \
+	# objs/$(WASMDIR_SYS)/Unsafe/aes.wasm objs/$(WASMDIR_SYS)/Unsafe/http.wasm \
+	# objs/$(WASMDIR_SYS)/Unsafe/tar.wasm objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \
+	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm
 
 #*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
@@ -701,19 +716,10 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/wasm$(LIBSUFFIX)/bigloo_dis.
 	@ $(WASM_MERGE) $(WASM_MERGE_FLAGS) \
 		objs/wasm$(LIBSUFFIX)/bigloo_dis.wat __runtime \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __runtime \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __os \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __gunzip \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __url \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __binary \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __reader \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __bignum \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __evaluate \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __pp_circle \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __http \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __date \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __intext \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __ftp \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __hash \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __evaluate \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __bignum \
 		-o $@ \
 		-osm $@.map
 
@@ -891,6 +897,8 @@ install-jvm:
         fi
 
 install-wasm:
+	cp Wlib/runtime.types $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
+	cp Wlib/runtime.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
 	cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
 	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
 

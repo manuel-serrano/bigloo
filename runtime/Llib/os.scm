@@ -69,8 +69,8 @@
 	    (c-chmod::bool (::string ::bool ::bool ::bool) "bgl_chmod")
 	    (macro c-chmod-int::bool (::string ::int) "chmod")
 	    
-            (macro runtime-default-executable-name::string "BGL_DEFAULT_A_OUT")
-            (macro runtime-default-script-name::string "BGL_DEFAULT_A_BAT")
+        (macro runtime-default-executable-name::string "BGL_DEFAULT_A_OUT")
+        (macro runtime-default-script-name::string "BGL_DEFAULT_A_BAT")
 	    (macro runtime-os-class::string "OS_CLASS")
 	    (macro runtime-os-name::string "OS_NAME")
 	    (macro runtime-os-arch::string "OS_ARCH")
@@ -154,6 +154,13 @@
 	    ($bgl-dlsym::custom (::bstring ::bstring ::bstring) "bgl_dlsym")
 	    ($bgl-dlsym-get::obj (::custom) "bgl_dlsym_get")
 	    ($bgl-dlsym-set::obj (::custom ::obj) "bgl_dlsym_set"))
+
+	(wasm
+		;; TODO: implement the OS module in WASM
+		
+	    ($getenv? "(throw $unimplemented)")
+	    ($getenv "(throw $unimplemented)")
+	    (c-getcwd "(throw $unimplemented)"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
