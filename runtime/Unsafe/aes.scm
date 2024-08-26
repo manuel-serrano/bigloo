@@ -4,7 +4,7 @@
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
 ;*    Last change :  Wed Oct  7 11:48:25 2015 (serrano)                */
-;*    Copyright   :  2005-15 Chris Veness                              */
+;*    Copyright   :  2005-24 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
 ;*    -------------------------------------------------------------    */
