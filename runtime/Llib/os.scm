@@ -158,8 +158,8 @@
 	(wasm
 		;; TODO: implement the OS module in WASM
 		
-	    ($getenv? "(throw $unimplemented)")
-	    ($getenv "(throw $unimplemented)")
+	    ($getenv? "(i32.const 0)")
+	    ($getenv "(array.new_fixed $bstring 0)")
 	    (c-getcwd "(throw $unimplemented)"))
 
    (java    (class foreign

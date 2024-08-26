@@ -411,6 +411,7 @@ WASMS = \
 	objs/$(WASMDIR_SYS)/Unsafe/sha1.wasm objs/$(WASMDIR_SYS)/Unsafe/sha2.wasm \
 	objs/$(WASMDIR_SYS)/Unsafe/ssr.wasm \
 	objs/$(WASMDIR_SYS)/Unsafe/url.wasm objs/$(WASMDIR_SYS)/Unsafe/uuid.wasm \
+	objs/$(WASMDIR_SYS)/Eval/evmeaning.wasm \
 	# objs/$(WASMDIR_SYS)/Unsafe/aes.wasm objs/$(WASMDIR_SYS)/Unsafe/http.wasm \
 	# objs/$(WASMDIR_SYS)/Unsafe/tar.wasm objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \
 	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm
@@ -699,6 +700,9 @@ lib-wasm_u: includes
 
 one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
 
+WASM_OPT=wasm-opt
+# WASM_OPT_FLAGS=-O3 --gufa -O3 -g
+WASM_OPT_FLAGS=-O0 -g
 WASM_AS=wasm-as
 WASM_AS_FLAGS=-all -g
 WASM_DIS=wasm-dis
@@ -711,61 +715,34 @@ touch-wasm:
 	@ touch $(WASMS:objs//%.wasm=%.scm)
 	@ touch Wlib/runtime.wat
 
-$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/wasm$(LIBSUFFIX)/bigloo_dis.wat objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
-	@ echo "\e[1;34mLinking $@ with missing dummy runtime\e[0m"
-	@ $(WASM_MERGE) $(WASM_MERGE_FLAGS) \
-		objs/wasm$(LIBSUFFIX)/bigloo_dis.wat __runtime \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __runtime \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __url \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __http \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __evaluate \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat __bignum \
-		-o $@ \
-		-osm $@.map
+$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX)_final.wat
+	@ echo "\e[1;34mAssembling $@\e[0m"
+	@ $(WASM_OPT) -all $(WASM_OPT_FLAGS) $< -o $@
 
-objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: objs/$(WASMDIR_SYS)/runtime.wasm $(WASMS)
+objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX)_final.wat: objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
+	@ echo "\e[1;34mLinking $@ with dummy runtime\e[0m"
+	@ ../tools/bigloo-wasm-merge Wlib/runtime.types \
+		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
+		> $@
+
+objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: Wlib/runtime.types Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
 	@ echo "\e[1;34mLinking $@\e[0m"
-	@ LST=; for n in $(WASMS); do \
-		file="`basename $$n .wasm`.scm"; \
-		dir=`dirname $$n`; \
-		dir=`basename $$dir`; \
-		LST="$$LST $$n `grep $$dir/$$file .afile | awk '{ print $$1 }' | sed 's/[(]//'` -ism $$n.map"; \
-	done; \
-	$(WASM_MERGE) $(WASM_MERGE_FLAGS) objs/$(WASMDIR_SYS)/runtime.wasm __runtime $$LST -osm $(@:%=%.map) -o $@
+	@ ../tools/bigloo-wasm-merge Wlib/runtime.types Wlib/runtime.wat $(WASMS:%.wasm=%.wat) > $@
 
-objs/wasm_u/runtime.wasm: Wlib/runtime.wat
+objs/wasm_u/%.wat: %.scm
 	@ echo "\e[34mGenerating WASM for $<\e[0m"
-	@ sed -e '/\(;TYPES;\)/ {' -e 'r Wlib/runtime.types' -e 'd' -e '}' $< > $(@:%.wasm=%.wat) \
-		| $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@
+	@ $(BIGLOO) -wasm $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+	@ wasm-as -all $@
 
-objs/wasm_s/runtime.wasm: Wlib/runtime.wat
+objs/wasm_s/%.wat: %.scm
 	@ echo "\e[34mGenerating WASM for $<\e[0m"
-	@ sed -e '/\(;TYPES;\)/ {' -e 'r Wlib/runtime.types' -e 'd' -e '}' $< > $(@:%.wasm=%.wat) \
-		| $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -o $@
+	@ $(BIGLOO) -wasm $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
+	@ wasm-as -all $@
 
-objs/wasm_u/%.wasm: %.scm
-	@ echo "\e[34mGenerating WASM for $<\e[0m"
-	@ $(BIGLOO) -wasm $(BFLAGS_SYS) $(EFLAGS) -c $< -o $(@:%.wasm=%.wat) \
-    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -sm $(@:%=%.map) -o $@ || exit 1
-    # && rm $(@:%.wasm=%.wat) || exit 1
-
-objs/wasm_s/%.wasm: %.scm
-	@ echo "\e[34mGenerating WASM for $<\e[0m"
-	@ $(BIGLOO) -wasm $(BFLAGS_USR) $(EFLAGS) -c $< -o $(@:%.wasm=%.wat) \
-    && $(WASM_AS) $(WASM_AS_FLAGS) $(@:%.wasm=%.wat) -sm $(@:%=%.map) -o $@  || exit 1
-    # && rm $(@:%.wasm=%.wat) || exit 1
-
-objs/wasm$(LIBSUFFIX)/bigloo_dis.wat: objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
-	@ echo "\e[34mDisassembling Bigloo WASM library\e[0m"
-	@ $(WASM_DIS) $(WASM_DIS_FLAGS) $< -o $@ -sm $<.map
-
-objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: objs/wasm$(LIBSUFFIX)/bigloo_dis.wat objs/wasm$(LIBSUFFIX)/gen_dummy_wasm_imports
-	@ echo "\e[34mExtracting missing runtime functions\e[0m"
-	@ ./objs/wasm$(LIBSUFFIX)/gen_dummy_wasm_imports objs/wasm$(LIBSUFFIX)/bigloo_dis.wat > $@
-
-objs/wasm$(LIBSUFFIX)/gen_dummy_wasm_imports: ../tools/gen_dummy_wasm_imports.scm
-	@ echo "\e[34mCompiling tool/gen_dummy_wasm_imports.scm\e[0m"
-	@ $(BIGLOO) $(BCOMMONFLAGS) -w $< -o $@
+objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat
+	@ echo "\e[34mExtracting missing runtime functions (for dev purposes)\e[0m"
+	@ ../tools/gen_dummy_wasm_imports Wlib/runtime.types $< > $@
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */

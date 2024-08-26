@@ -43,6 +43,14 @@ const instance = await WebAssembly.instantiate(wasm, {
             console.log("TRACE: " + x);
         },
 
+        argc: argv.length - 2 /* ignore the path of NodeJS and of runtime.mjs. */,
+
+        get_arg: function (idx, addr) {
+            let real_idx = idx + 2 /* ignore the path of NodeJS and of runtime.mjs. */;
+            let arg = argv[real_idx];
+            return storeJSStringToScheme(arg, addr);
+        },
+
         is_tty: function (fd) {
             // FIXME: will not work in Deno as process is not imported globally.
             switch (fd) {
@@ -144,10 +152,10 @@ const instance = await WebAssembly.instantiate(wasm, {
     },
 
     __js_date: {
-        current_seconds: () => Math.trunc(Date.now() / 1000),
-        current_milliseconds: () => Math.trunc(Date.now()),
-        current_microseconds: () => Math.trunc(Date.now() * 1000),
-        current_nanoseconds: () => Math.trunc(Date.now() * 1000000),
+        current_seconds: () => BigInt(Math.trunc(Date.now() / 1000)),
+        current_milliseconds: () => BigInt(Math.trunc(Date.now())),
+        current_microseconds: () => BigInt(Math.trunc(Date.now() * 1000)),
+        current_nanoseconds: () => BigInt(Math.trunc(Date.now() * 1000000)),
 
         mktime: (year, month, day, hour, minute, second, millisecond) => (new Date(year, month, day, hour, minute, second, millisecond)).getTime(),
         mktimegm: (year, month, day, hour, minute, second, millisecond) => (Date.UTC(year, month, day, hour, minute, second, millisecond)),
@@ -188,4 +196,10 @@ if (!instance.exports.bigloo_main) {
     exit(1);
 }
 
-instance.exports.bigloo_main(null);
+if (!instance.exports.__js_bigloo_main) {
+    console.error("ERROR: missing '__js_bigloo_main' symbol in WASM module file.");
+    exit(1);
+}
+
+// Call the Bigloo Scheme program!
+instance.exports.__js_bigloo_main();

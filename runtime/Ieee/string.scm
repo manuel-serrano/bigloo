@@ -377,7 +377,7 @@
       (bigloo-jvm
        ($string=? string1 string2))
       (else
-       ($string=? string1 string2))))
+       (bigloo_strcmp string1 string2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring=?@ ...                                          */

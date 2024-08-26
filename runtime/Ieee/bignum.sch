@@ -87,7 +87,24 @@
       (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG"))
 
 	(wasm
-		($bignum? "(ref.test (ref $bignum) ~0)"))
+		($bignum? "(ref.test (ref $bignum) ~0)")
+		($bignum->fixnum-safe "~0")
+
+		(+fx-safe "(struct.new $bint (i64.add ~0 ~1))")
+		(-fx-safe "(struct.new $bint (i64.sub ~0 ~1))")
+		(*fx-safe "(struct.new $bint (i64.mul ~0 ~1))")
+		
+		(+elong-safe "(struct.new $belong (i64.add ~0 ~1))")
+		(-elong-safe "(struct.new $belong (i64.sub ~0 ~1))")
+		(*elong-safe "(struct.new $belong (i64.mul ~0 ~1))")
+		
+		(+llong-safe "(struct.new $bllong (i64.add ~0 ~1))")
+		(-llong-safe "(struct.new $bllong (i64.sub ~0 ~1))")
+		(*llong-safe "(struct.new $bllong (i64.mul ~0 ~1))")
+
+		($quotientfx-safe "(struct.new $bint (i64.div_s ~0 ~1))")
+		($quotientelong-safe "(struct.new $belong (i64.div_s ~0 ~1))")
+		($quotientllong-safe "(struct.new $bllong (i64.div_s ~0 ~1))"))
 	
    (java
       (class foreign

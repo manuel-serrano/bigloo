@@ -34,10 +34,12 @@
     (wasm-cnst-false)
     (wasm-cnst-true)
     (wasm-cnst-unspec)
+    (emit-wasm-atom-value type value)
     (gen-reg reg)
     (gen-basic-block b)
     (gen-ins ins::rtl_ins)
     (gen-switch fun type patterns labels args gen-go gen-block-label)
+    (cnst-table-sym)
     *allocated-strings*
     *extra-types*)
   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
@@ -115,6 +117,7 @@
     (case id
       ('obj 'eqref)
       ('nil 'eqref)
+      ('magic 'eqref)
       ('unspecified 'eqref)
       ('bbool 'i31ref)
       ('class-field 'eqref)
@@ -126,7 +129,7 @@
       ('funptr 'funcref)
       ;; TODO: handle procedure-el and procedure-l
       ('procedure-l (if may-null '(ref null $procedure) '(ref $procedure)))
-      ('procedure-el (if may-null '(ref null $procedure) '(ref $procedure)))
+      ('procedure-el (if may-null '(ref null $vector) '(ref $vector)))
       ('bool 'i32)
       ('byte 'i32)
       ('ubyte 'i32)
@@ -363,6 +366,9 @@
     ((int32? x) (int32->fixnum x))
     (else x)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-switch ...                                                   */
+;*---------------------------------------------------------------------*/
 (define (gen-switch fun type patterns labels args gen-go gen-block-label)
   (let ((else-bb #unspecified) (num2bb '()))
     (define (add n bb)
@@ -429,6 +435,9 @@
     ('uint64 (values 'i64.lt_u 'i64.gt_u 'i64.const))
     (else (values 'i64.lt_s 'i64.gt_s 'i64.const))))
 
+;*---------------------------------------------------------------------*/
+;*    need-cast-to-i32? ...                                            */
+;*---------------------------------------------------------------------*/
 (define (need-cast-to-i32? type)
   (case (wasm-type type)
     ('i32 #f)
@@ -576,7 +585,7 @@
   ; Generate something like:
   ;   (local.set $label (i32.const BLOCK_LABEL))
   ;   (br $dispatcher)
-  ; This is used to simulate gotos (because they don't exist as is in Wasm).
+  ; This is used to simulate a goto. It is only used if Relooper is not enabled.
   ; See (gen-body) to understand what $dispatcher is.
 
   `((local.set $__label (i32.const ,(block-label to)))
@@ -615,6 +624,10 @@
         (case (global-id var)
           ('make-fx-procedure (inline-make-procedure args))
           ('make-va-procedure (inline-make-procedure args))
+          ('make-l-procedure (inline-make-l-procedure args))
+          ('make-el-procedure (inline-make-el-procedure args))
+          ('cnst-table-set! (inline-cnst-table-set! args))
+          ('cnst-table-ref (inline-cnst-table-ref args))
           (else `(call ,(wasm-sym name) ,@(gen-args args))))))))
 
 (define (inline-make-procedure args)
@@ -628,6 +641,36 @@
     ;; Env
     (array.new_default $vector ,(gen-reg (caddr args)))))
 
+(define (inline-make-l-procedure args)
+  `(struct.new $procedure
+    ;; Entry
+    ,(gen-reg (car args))
+    ;; Attr
+    (global.get $BUNSPEC)
+    ;; Arity
+    (i32.const 0)
+    ;; Env
+    (array.new_default $vector ,(gen-reg (cadr args)))))
+
+(define (inline-make-el-procedure args)
+  `(array.new_default $vector ,(gen-reg (car args))))
+
+(define (cnst-table-sym)
+  (wasm-sym (string-append "__cnsts_table_" (symbol->string *module*))))
+
+(define (inline-cnst-table-set! args) 
+  `(block (result eqref) 
+    (array.set $cnst-table 
+      (global.get ,(cnst-table-sym))
+      ,@(gen-args args)) 
+    (global.get $BUNSPEC)))
+
+(define (inline-cnst-table-ref args) 
+  `(array.get
+      $cnst-table
+      (global.get ,(cnst-table-sym))
+      ,@(gen-args args)))
+
 (define-method (gen-expr fun::rtl_funcall args)
   (with-fun-loc fun (gen-expr-funcall/lightfuncall 'eqref args)))
 
@@ -640,8 +683,7 @@
         (call 
           $generic_va_call 
           ,proc 
-          (array.new_fixed $vector ,(-fx arg_count 1) ,@(gen-args (cdr args))))
-      )
+          (array.new_fixed $vector ,(-fx arg_count 1) ,@(gen-args (cdr args)))))
       (else
         (call_ref 
           ,func_type
@@ -663,6 +705,22 @@
             (ref ,functy)
             (struct.get $procedure $entry ,proc))))))
 
+;*---------------------------------------------------------------------*/
+;*    typeof-arg ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (typeof-arg o)
+  (cond
+    ((isa? o rtl_reg) (type-id (rtl_reg-type o)))
+    ((isa? o rtl_ins)
+      (if (rtl_ins-dest o)
+       (typeof-arg (rtl_ins-dest o))
+       'obj))
+      (else
+       'obj)))
+
+;*---------------------------------------------------------------------*/
+;*    wasm-typeof-arg ...                                              */
+;*---------------------------------------------------------------------*/
 (define (wasm-typeof-arg o)
   (cond
     ((isa? o rtl_reg) (wasm-type (rtl_reg-type o)))
@@ -673,6 +731,9 @@
       (else
        'eqref)))
 
+;*---------------------------------------------------------------------*/
+;*    create-ref-func-type ...                                         */
+;*---------------------------------------------------------------------*/
 (define (create-ref-func-type retty params)
   (let ((sym (gensym "$functy")))
     (set! *extra-types* (cons `(type ,sym (func (param ,@params) (result ,retty))) *extra-types*))
@@ -694,11 +755,21 @@
       (with-fun-loc fun alloc))))
 
 (define-method (gen-expr fun::rtl_cast args)
+  (define (is-procedure-ty? ty)
+    (case ty
+      ('procedure #t)
+      ('procedure-l #t)
+      ('procedure-el #t)
+      (else #f)))
+
   (let ((type (rtl_cast-totype fun)))
     (cond
       ((eq? (type-id type) 'obj) (gen-reg (car args)))
+
       ;; FIXME: hack due to a bigloo bug (I think)
       ((or (eq? (wasm-type type) 'i32) (eq? (wasm-type type) 'i64)) (gen-reg (car args)))
+      ((and (is-procedure-ty? (type-id type)) (is-procedure-ty? (typeof-arg (car args)))) (gen-reg (car args)))
+
       (else `(comment ,(string-append "CAST " (symbol->string (type-id type)) " " (symbol->string (type-id (rtl_cast-fromtype fun)))) (ref.cast ,(wasm-type type) ,(gen-reg (car args))))))))
 
 (define-method (gen-expr fun::rtl_cast_null args)
@@ -718,19 +789,19 @@
     (if info
       info
       (let* ((length (string-length str))
-            (section (wasm-sym (symbol->string (gensym "string-data"))))
+            (modname (symbol->string *module*))
+            (hash (integer->string (string-hash str)))
+            (offset (integer->string *string-current-offset*))
+            (section (string->symbol (string-append "$sd" modname hash offset)))
             (new-info (cons section *string-current-offset*)))
         (set! *string-current-offset* (+fx *string-current-offset* length))
         (hashtable-put! *allocated-strings* str new-info)
         new-info))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-string-literal ...                                           */
+;*---------------------------------------------------------------------*/
 (define (gen-string-literal str::bstring)
-  ;; FIXME: Use passive (data) to allocate strings (see bulk memory extension)
-  ;;      this will allow to use a single global memory for all modules.
-  ;;      If it is done, no need to allocate offsets to strings anymore.
-  ;;      Ex:
-  ;;        (data $mystring-data "hello")
-  ;;        (global $mystring (ref $bstring) (array.new_data $bstring $mystring-data (LENGTH)))
   (let* ((info (allocate-string str))
          (section (car info))
          (offset (cdr info)))
@@ -746,6 +817,7 @@
           (gen-string-literal (substring format 7))
           (call-with-input-string format read)))
       ;; TODO: implement pragma default value depending on type
+      ;; FIXME: use throw $unimplemented
       (wasm-cnst-unspec))))
 
 (define-method (gen-expr fun::rtl_jumpexit args)

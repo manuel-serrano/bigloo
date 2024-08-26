@@ -1,45 +1,64 @@
 (module util
    (main main))
 
+(define already-generated (make-hashtable))
 (define (main x)
-    (let ((already-generated (make-hashtable)))
-    (let ((module '(module
-        (import "__runtime" "BUNSPEC" (global $BUNSPEC eqref)))))
-        (append! module (call-with-input-file "Wlib/runtime.types" port->sexp-list))
+    (let ((module '(module $dummy_module)))
+        (append! module (call-with-input-file (cadr x) port->sexp-list))
         (for-each (lambda (f)
             (append! module (call-with-input-file f
             (lambda (p)
                 (let* ((m (read p)))
                     (filter-map (lambda (c)
                         (match-case c
-                            ((import ?mod ?id (func ?name (type ?-) ?params (result ?rtype)))
-                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
-                                    (hashtable-put! already-generated id #t)
-                                    `(func (export ,id) ,params (result ,rtype) ,(emit-default-value rtype))))
-                            ((import ?mod ?id (func ?name (type ?-) ?params (result ?rtype)))
-                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
-                                    (hashtable-put! already-generated id #t)
-                                    `(func (export ,id) ,params (result ,rtype) ,(emit-default-value rtype))))
-                            ((import ?mod ?id (func ?name (type ?-) (result ?rtype)))
-                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
-                                    (hashtable-put! already-generated id #t)
-                                    `(func (export ,id) (result ,rtype) ,(emit-default-value rtype))))
-                            ((import ?mod ?id (func ?name (type ?-) ?params))
-                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
-                                    (hashtable-put! already-generated id #t)
-                                    `(func (export ,id) ,params)))
-                            ((import ?mod ?id (func ???-))
-                                (error "parse-import" "Unknown function pattern" c))
-                            ((import ?mod ?id (global ?name ?type))
-                                (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
-                                    (hashtable-put! already-generated id #t)
-                                    `(global ,name (export ,id) ,type ,(emit-default-value type))))))
+                            ((import ?mod ?id ?decl) (parse-import mod id decl))))
                     (cdr m)))))))
-        (cdr x))
-        (pp module))))
+        (cddr x))
+        (pp module)))
+
+(define (parse-import mod id import)
+    (match-case import
+        ((func . ?s) 
+            (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
+                (hashtable-put! already-generated id #t)
+                (parse-func id s)))
+        ((global . ?s) 
+            (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
+                (hashtable-put! already-generated id #t)
+                (parse-global id s)))))
+
+(define (parse-func id sig)
+    (define (emit-unimplemented)
+        ;; '((throw $unimplemented))
+        '())
+
+    (if (string=? id "bigloo_main")
+        #f ;; FIXME: why we need a special case for bigloo_main, try to remove it.
+        (let ((retty 'void))
+            `(func ,(car sig)
+                (export ,id)
+                ,@(filter 
+                    (lambda (d)
+                        (match-case d
+                            ((type ???-) #t)
+                            ((result ?type)
+                                (set! retty type)
+                                #t)
+                            ((param ???-) #t)
+                            (else #f)))
+                    (cdr sig))
+                ,@(emit-unimplemented)
+                ,@(if (eq? retty 'void)
+                    '()
+                    (list (emit-default-value retty)))))))
+
+(define (parse-global id sig)
+    (match-case sig
+        ((?name ?type) `(global ,name (export ,id) ,type ,(emit-default-value type)))
+        (else (error "parse-global" "Unknown global signature." sig))))
 
 (define (should-generate? mod)
-    (not (string=? mod "wasi_snapshot_preview1")))
+    (not (string-prefix? "__js" mod)))
 
 (define (result-type result)
     (match-case result

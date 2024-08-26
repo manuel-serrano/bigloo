@@ -42,6 +42,7 @@
    
    (export  (register-allocation::pair-nil ::backend
 	       ::global ::pair-nil ::pair-nil)
+		(interfere-reg! r1 r2)
 	    (generic type-interference! ::backend ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/

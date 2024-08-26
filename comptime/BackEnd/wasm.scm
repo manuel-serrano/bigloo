@@ -15,6 +15,9 @@
         backend_cvm
         cnst_alloc
         
+        ; tvector_tvector
+        ; tvector_cnst
+        
         backend_cplib
         module_module
         type_type
@@ -28,6 +31,8 @@
         ast_env
         ast_ident
         ast_occur
+
+        saw_register-allocation
         
         ast_type-occur
         ast_pragma
@@ -72,6 +77,20 @@
 
 (define-method (backend-link-objects me::wasm sources)
     (tprint sources))
+
+(define-method (type-interference! back::wasm regs)
+  (when (pair? regs)
+    (let loop ((regs regs))
+        (when (pair? (cdr regs))
+          (let* ((r1 (car regs))
+                  (t1 (rtl_reg-type r1)))
+              (when (type? t1)
+                (for-each (lambda (r2)
+                              (let ((t2 (rtl_reg-type r2)))
+                                (unless (eq? t1 t2)
+                                  (interfere-reg! r1 r2))))
+        (cdr regs)))
+              (loop (cdr regs)))))))
 
 (define (require-prototype? global)
    (and (or (eq? (global-module global) *module*)
@@ -449,8 +468,8 @@
         (name (type-class-name class))
         (struct `(struct
           ; MUST BE the same fields as defined in runtime.types.
-          (field $header i64)
-          (field $widening eqref)
+          (field $header (mut i64))
+          (field $widening (mut eqref))
           ,@(filter-map emit-slot (tclass-slots class)))))
     (if super
       `(type
@@ -481,10 +500,8 @@
     
   (let ((globals '()))
     (let ((cnst-init (get-cnst-table)))
-      ;; Use a more suitable name for WASM.
-      (global-name-set! cnst-init "__wasm_cnsts")
       (set! globals (cons 
-        `(global $__cnsts_table 
+        `(global ,(cnst-table-sym)
             (ref $cnst-table)
             (array.new_default $cnst-table (i32.const ,(get-cnst-offset)))) globals)))
 
@@ -597,9 +614,9 @@
         (emit-cnst-selfun node variable))
       ((slfun)
         (emit-cnst-slfun node variable))
-      ; ((stvector)
+      ;((stvector)
       ;  (emit-cnst-stvector node variable))
-        (else
+      (else
         (internal-error "backend:emit-cnst"
                 (format "Unknown cnst class \"~a\"" class)
                 (shape node)))))))
@@ -615,7 +632,7 @@
           `((export ,(global-name global)))
           '())
       (mut (ref null $bstring)) 
-      (ref.null $bstring))))
+      (array.new_fixed $bstring 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-real ...                                               */
@@ -719,6 +736,18 @@
                 '(ref.null none)))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    emit-cnst-stvector ...                                           */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-stvector tvec global)
+  '(let* ((vec (a-tvector-vector tvec))
+          (type (tvec-item-type (a-tvector-type tvec))))
+      (set-variable-name! global)
+      `(global
+        ,(wasm-name (global-name global))
+        (array.new_fixed (ref (array ,(wasm-type type))) ,(vector-length vec)
+          ,@(vector-map (lambda (v) (emit-wasm-atom-value type v) vec))))))
+
+;*---------------------------------------------------------------------*/
 ;*    emit-string-data ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-string-data str info)
@@ -751,8 +780,6 @@
 (define (emit-imports)
   (let ((imports '()))
     (for-each-global! (lambda (global)
-      ;; TODO: remove this log code
-      ;; (tprint "GLOBAL " (global-id global) " " (global-name global) " " (global-import global) " " (global-occurrence global))
       (when (and (require-import? global) (not (scnst? global)))
         (let ((import (emit-import (global-value global) global)))
           (when (and import (not (hashtable-contains? *defined-ids* (global-name global))))
@@ -781,15 +808,10 @@
   (let ((name (global-name variable))
         (library (global-library variable))
         (module (global-module variable)))
-    ; (multiple-value-bind (id module) (bigloo-demangle name)
-      ;; TODO: remove log
-      ; (tprint "MODULE " name ": " library " " (global-module variable) " " module " " id)
       (let ((is-macro (isa? variable cfun)))
         (cond
-          ; (is-macro "__runtime")
           (library (symbol->string library))
           ((not (eq? module 'foreign)) (symbol->string module))
-          ; ((and module (not (eq? module #unspecified))) module)
           (else "__runtime")))))
 
 (define-generic (emit-import value::value variable::variable)

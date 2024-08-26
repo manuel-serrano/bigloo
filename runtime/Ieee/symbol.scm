@@ -244,16 +244,13 @@
 		     (else (error "gensym" "Illegal argument" arg)))))
 	  ($gensym arg)))
       (else
-	  (pragma :srfi bigloo-wasm "(call $__trace (i32.const 1000))")
        (let ((string (cond
 			((not arg) "g")
 			((symbol? arg) (symbol->string arg))
 			((string? arg) arg)
 			(else (error "gensym" "Illegal argument" arg)))))
 		
-	  (pragma :srfi bigloo-wasm "(call $__trace (i32.const 2000))")
 	  (when (>fx  *gensym-counter* 10)
-	  	(pragma :srfi bigloo-wasm "(call $__trace (i32.const 2001))")
 		#f)
 	  (let loop ()
 	     (set! *gensym-counter* (+fx *gensym-counter* 1))

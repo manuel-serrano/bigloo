@@ -180,15 +180,12 @@
 
 	    (procedure-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
 	    (procedure-l-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
-	    (procedure-el-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
+	    (procedure-el-ref "(array.get $vector ~0 ~1)")
 
 		($make-cell "(struct.new $cell ~0)")
 	    ($make-stack-cell "(struct.new $cell ~0)")
 	    ($cell-ref "(struct.get $cell $car ~0)")
-	    ($cell? "(ref.test (ref $cell) ~0)")
-		
-		(cnst-table-set! "(block (result eqref) (array.set $cnst-table (global.get $__cnsts_table) ~0 ~1) (global.get $BUNSPEC))")
-		(cnst-table-ref "(array.get $cnst-table (global.get $__cnsts_table) ~0)"))
+	    ($cell? "(ref.test (ref $cell) ~0)"))
 
    (java    (class foreign
 	       (field static __unspec__::obj "BUNSPEC")

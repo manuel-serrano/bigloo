@@ -421,9 +421,12 @@
   (with-trace 'relooper "reloop"
     (trace-item "function=" (global-name global))
 
-    (if (compute-loop-headers tree)
-      (begin
-        (compute-merge-nodes tree)
-        (do-tree tree '()))
-      ;; Fail, the CFG is irreducible.
-      #f)))
+    (with-handler
+      (lambda (e)
+        #f)
+      (if (compute-loop-headers tree)
+        (begin
+          (compute-merge-nodes tree)
+          (do-tree tree '()))
+        ;; Fail, the CFG is irreducible.
+        #f))))

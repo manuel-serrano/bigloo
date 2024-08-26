@@ -1,7 +1,5 @@
 (type $cnst-table (array (mut eqref)))
 
-(type $magic (struct))
-
 (type $vector (array (mut eqref)))
 (type $dvector (array (mut f64)))
 (type $lvector (array (mut i64)))
@@ -27,8 +25,8 @@
 (tag $fail)
 
 ;; Boxed string
-(type $bstring (array (mut i8)))
-(type $ucs2string (array (mut i16)))
+(rec (type $bstring (array (mut i8))))
+(rec (type $ucs2string (array (mut i16))))
 
 (type $regexp (struct))
 
@@ -65,12 +63,13 @@
 (type $func21 (func (param (ref null $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
 
 ;; Pairs
-(type $cell (sub (struct (field $car (mut eqref)))))
-(type $pair (sub $cell (struct (field $car (mut eqref)) (field $cdr (mut eqref)))))
-(type $epair (sub $pair (struct 
-    (field $car (mut eqref)) 
-    (field $cdr (mut eqref)) 
-    (field $cer (mut eqref)))))
+(rec
+    (type $cell (sub (struct (field $car (mut eqref)))))
+    (type $pair (sub $cell (struct (field $car (mut eqref)) (field $cdr (mut eqref)))))
+    (type $epair (sub $pair (struct 
+        (field $car (mut eqref)) 
+        (field $cdr (mut eqref)) 
+        (field $cer (mut eqref))))))
 
 ;; Bignums
 (type $bignum (struct))
@@ -130,8 +129,8 @@
     (field $values (ref $vector))))
 
 (type $BgL_objectz00_bglt (sub (struct
-    (field $header i64)
-    (field $widening eqref))))
+    (field $header (mut i64))
+    (field $widening (mut eqref)))))
 
 ;; Ports
 (type $port (sub 

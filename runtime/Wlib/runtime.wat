@@ -1,33 +1,39 @@
 (module $__runtime
-  (import "__js" "trace" (func $js_trace (param i32)))
+  (import "__js" "trace" (func $js_trace (param i32))) ;; FIXME: remove
+
+  (import "__js" "argc" (global $js_argc i32))
+  (import "__js" "get_arg" (func $js_get_arg (param i32 i32) (result i32)))
+
   (import "__js" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
   (import "__js" "close_file" (func $js_close_file (param i32)))
   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
 
-  (import "__js_math" "fmod" (func $js_math_fmod (param f64 f64) (result f64)))
-  (import "__js_math" "exp" (func $js_math_exp (param f64) (result f64)))
-  (import "__js_math" "log" (func $js_math_log (param f64) (result f64)))
-  (import "__js_math" "log2" (func $js_math_log2 (param f64) (result f64)))
-  (import "__js_math" "log10" (func $js_math_log10 (param f64) (result f64)))
-  (import "__js_math" "sin" (func $js_math_sin (param f64) (result f64)))
-  (import "__js_math" "cos" (func $js_math_cos (param f64) (result f64)))
-  (import "__js_math" "tan" (func $js_math_tan (param f64) (result f64)))
-  (import "__js_math" "asin" (func $js_math_asin (param f64) (result f64)))
-  (import "__js_math" "acos" (func $js_math_acos (param f64) (result f64)))
-  (import "__js_math" "atan" (func $js_math_atan (param f64) (result f64)))
-  (import "__js_math" "atan2" (func $js_math_atan2 (param f64 f64) (result f64)))
-  (import "__js_math" "pow" (func $js_math_pow (param f64 f64) (result f64)))
-  (import "__js_math" "randomf" (func $js_math_randomf (result f64)))
+  (import "__js_math" "fmod" (func $fmod (param f64 f64) (result f64)))
+  (import "__js_math" "exp" (func $exp (param f64) (result f64)))
+  (import "__js_math" "log" (func $log (param f64) (result f64)))
+  (import "__js_math" "log2" (func $log2 (param f64) (result f64)))
+  (import "__js_math" "log10" (func $log10 (param f64) (result f64)))
+  (import "__js_math" "sin" (func $sin (param f64) (result f64)))
+  (import "__js_math" "cos" (func $cos (param f64) (result f64)))
+  (import "__js_math" "tan" (func $tan (param f64) (result f64)))
+  (import "__js_math" "asin" (func $asin (param f64) (result f64)))
+  (import "__js_math" "acos" (func $acos (param f64) (result f64)))
+  (import "__js_math" "atan" (func $atan (param f64) (result f64)))
+  (import "__js_math" "atan2" (func $atan2 (param f64 f64) (result f64)))
+  (import "__js_math" "pow" (func $pow (param f64 f64) (result f64)))
+  (import "__js_math" "randomf" (func $RANDOMFL (result f64)))
 
-  (import "__js_date" "current_seconds" (func $js_date_current_seconds (result i64)))
-  (import "__js_date" "current_milliseconds" (func $js_date_current_milliseconds (result i64)))
-  (import "__js_date" "current_microseconds" (func $js_date_current_microseconds (result i64)))
-  (import "__js_date" "current_nanoseconds" (func $js_date_current_nanoseconds (result i64)))
+  (import "__js_date" "current_seconds" (func $bgl_current_seconds (result i64)))
+  (import "__js_date" "current_milliseconds" (func $bgl_current_milliseconds (result i64)))
+  (import "__js_date" "current_microseconds" (func $bgl_current_microseconds (result i64)))
+  (import "__js_date" "current_nanoseconds" (func $bgl_current_nanoseconds (result i64)))
   (import "__js_date" "mktime" (func $js_date_mktime (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
   (import "__js_date" "mktimegm" (func $js_date_mktimegm (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
   (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
   (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
+
+  ;; (import "__bigloo_main" "bigloo_main" (func $bigloo_main (param (ref null $pair)) (result eqref)))
 
   ;; General bigloo memory
   (memory 1)
@@ -378,11 +384,11 @@
     (global.get $BUNSPEC))
 
   (func $PROCEDURE_EL_SET (export "PROCEDURE_EL_SET") 
-    (param $p (ref null $procedure)) 
+    (param $p (ref null $vector)) 
     (param $i i32) 
     (param $v eqref) 
     (result eqref)
-    (array.set $vector (struct.get $procedure $env (local.get $p)) (local.get $i) (local.get $v))
+    (array.set $vector (local.get $p) (local.get $i) (local.get $v))
     (global.get $BUNSPEC))
 
   (func $PROCEDURE_ATTR_SET (export "PROCEDURE_ATTR_SET") 
@@ -693,10 +699,49 @@
         (ref.cast (ref $func1) (local.get $entry)))))
     (unreachable))
 
+  
   ;; --------------------------------------------------------
-  ;; IO functions
+  ;; OS functions
+  ;; --------------------------------------------------------
+
+  (global $OS_CLASS (export "OS_CLASS") (ref null $bstring)
+    ;; ASCII for 'wasm'
+    (array.new_fixed $bstring 4 (i32.const 0x77) (i32.const 0x61) (i32.const 0x73) (i32.const 0x6D)))
+
+  (global $OS_NAME (export "OS_NAME") (ref null $bstring)
+    ;; ASCII for 'wasm'
+    (array.new_fixed $bstring 4 (i32.const 0x77) (i32.const 0x61) (i32.const 0x73) (i32.const 0x6D)))
+    
+  (global $OS_ARCH (export "OS_ARCH") (ref null $bstring)
+    ;; ASCII for 'wasm'
+    (array.new_fixed $bstring 4 (i32.const 0x77) (i32.const 0x61) (i32.const 0x73) (i32.const 0x6D)))
+    
+  (global $OS_TMP (export "OS_TMP") (ref null $bstring)
+    ;; ASCII for '/tmp'
+    (array.new_fixed $bstring 4 (i32.const 0x2F) (i32.const 0x74) (i32.const 0x6D) (i32.const 0x70)))
+
+  ;; --------------------------------------------------------
+  ;; Object functions
   ;; --------------------------------------------------------
   
+  (func $BGL_OBJECT_CLASS_NUM_SET (export "BGL_OBJECT_CLASS_NUM_SET")
+    (param $o (ref null $BgL_objectz00_bglt))
+    (param $num i64)
+    (result eqref)
+    (struct.set $BgL_objectz00_bglt $header (local.get $o) (local.get $num))
+    (global.get $BUNSPEC))
+
+  ;; --------------------------------------------------------
+  ;; Mutext functions
+  ;; --------------------------------------------------------
+
+  (func $bgl_make_nil_mutex (export "bgl_make_nil_mutex")
+    (result (ref null $mutex))
+    (ref.null none))
+
+  (func $bgl_make_nil_condvar (export "bgl_make_nil_condvar")
+    (result (ref null $condvar))
+    (ref.null none))
 
   ;; --------------------------------------------------------
   ;; Output port functions
@@ -1501,12 +1546,6 @@
     (result i64)
     (call $bgl_keyword_hash_number (local.get $key)))
 
-  (func $bgl_obj_hash_number (export "bgl_obj_hash_number")
-    (param $obj eqref)
-    (result i64)
-    ;; FIXME: implement hashing for objects
-    (i64.const 4901665283))
-
   (func $bgl_pointer_hash_number (export "bgl_pointer_hash_number")
     (param $obj eqref)
     (param $power i64)
@@ -1540,29 +1579,29 @@
   ;; Math functions
   ;; --------------------------------------------------------
 
-  (export "fmod" (func $js_math_fmod))
-  (export "exp" (func $js_math_exp))
-  (export "log" (func $js_math_log))
-  (export "log2" (func $js_math_log2))
-  (export "log10" (func $js_math_log10))
-  (export "sin" (func $js_math_sin))
-  (export "cos" (func $js_math_cos))
-  (export "tan" (func $js_math_tan))
-  (export "asin" (func $js_math_asin))
-  (export "acos" (func $js_math_acos))
-  (export "atan" (func $js_math_atan))
-  (export "atan2" (func $js_math_atan2))
-  (export "pow" (func $js_math_pow))
-  (export "RANDOMFL" (func $js_math_randomf))
+  (export "fmod" (func $fmod))
+  (export "exp" (func $exp))
+  (export "log" (func $log))
+  (export "log2" (func $log2))
+  (export "log10" (func $log10))
+  (export "sin" (func $sin))
+  (export "cos" (func $cos))
+  (export "tan" (func $tan))
+  (export "asin" (func $asin))
+  (export "acos" (func $acos))
+  (export "atan" (func $atan))
+  (export "atan2" (func $atan2))
+  (export "pow" (func $pow))
+  (export "RANDOMFL" (func $RANDOMFL))
 
   ;; --------------------------------------------------------
   ;; Date functions
   ;; --------------------------------------------------------
 
-  (export "bgl_current_seconds" (func $js_date_current_seconds))
-  (export "bgl_current_milliseconds" (func $js_date_current_milliseconds))
-  (export "bgl_current_microseconds" (func $js_date_current_microseconds))
-  (export "bgl_current_nanoseconds" (func $js_date_current_nanoseconds))
+  (export "bgl_current_seconds" (func $bgl_current_seconds))
+  (export "bgl_current_milliseconds" (func $bgl_current_milliseconds))
+  (export "bgl_current_microseconds" (func $bgl_current_microseconds))
+  (export "bgl_current_nanoseconds" (func $bgl_current_nanoseconds))
 
   (func $load_string
     (param $addr i32)
@@ -1768,4 +1807,29 @@
     (result i64)
     (struct.set $date $time (local.get $date) (i64.mul (local.get $s) (i64.const 1000)))
     (local.get $s))
+
+  ;; --------------------------------------------------------
+  ;; Main function
+  ;; --------------------------------------------------------
+
+  (func $main (export "__js_bigloo_main")
+    (local $i i32)
+    (local $argv (ref null $pair))
+    (local.set $i (i32.sub (global.get $js_argc) (i32.const 1)))
+    (loop $loop
+      (if (i32.ge_s (local.get $i) (i32.const 0))
+        (then
+          (local.set $argv
+            (struct.new $pair
+              (call $load_string
+                (i32.const 128)
+                (call $js_get_arg
+                  (local.get $i)
+                  (i32.const 128)))
+              (local.get $argv)))
+          (local.set $i (i32.sub (local.get $i) (i32.const 1)))
+          (br $loop))))
+    
+    ;; TODO: do something with the return value of bigloo_main
+    (drop (call $bigloo_main (local.get $argv))))
 )

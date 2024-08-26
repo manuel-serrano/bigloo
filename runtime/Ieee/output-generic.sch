@@ -15,10 +15,14 @@
 (directives
    (export 
       (bgl_write_char::obj ::bchar ::output-port)
-      (bgl_display_fixnum::obj ::bint ::output-port))
+      (bgl_display_fixnum::obj ::bint ::output-port)
+      (bgl_display_elong::obj ::elong ::output-port)
+      (bgl_display_llong::obj ::llong ::output-port))
    (extern 
       (export bgl_write_char "bgl_write_char")
-      (export bgl_display_fixnum "bgl_display_fixnum")))
+      (export bgl_display_fixnum "bgl_display_fixnum")
+      (export bgl_display_elong "bgl_display_elong")
+      (export bgl_display_llong "bgl_display_llong")))
 
 ;*---------------------------------------------------------------------*/
 ;*    alpha ...                                                        */
@@ -49,3 +53,15 @@
 ;*---------------------------------------------------------------------*/
 (define (bgl_display_fixnum o op)
    ($display-string (integer->string o) op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_display_elong ...                                           */
+;*---------------------------------------------------------------------*/
+(define (bgl_display_elong o op)
+   (bgl_display_fixnum ($long->bint ($elong->long o)) op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_display_llong ...                                           */
+;*---------------------------------------------------------------------*/
+(define (bgl_display_llong o op)
+   (bgl_display_fixnum ($long->bint ($llong->long o)) op))
