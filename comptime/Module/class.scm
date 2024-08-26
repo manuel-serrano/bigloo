@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/class.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/class.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sun May 10 08:57:29 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Aug 26 14:30:21 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
 ;*=====================================================================*/
@@ -132,8 +132,7 @@
       ;; tclass can be something else than a class if an error has been found
       (delay-class-accessors!
 	 tclass
-	 (delay
-	    (gen-register-class! cdef holder tclass src-def)))))
+	 (delay (gen-register-class! cdef holder tclass src-def)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-import-class! ...                                        */
@@ -149,8 +148,8 @@
 	  (final? (eq? kind 'final))
 	  (wide (if (eq? kind 'wide) 'widening #f))
 	  (tclass (declare-class-type! cdef holder wide
-				       final? abstract?
-				       src-def)))
+		     final? abstract?
+		     src-def)))
       ;; some paranoid checking
       (assert (tclass) (tclass? tclass))
       ;; we store the src-import location in order to print a nice error
@@ -194,7 +193,7 @@
 (define (gen-register-class! class-def holder class src-def)
    (if (check-class-declaration? class src-def)
        (begin
-	  ;; store inside the class structure some information about its slots
+	  ;; store inside the class structure information about its slots
 	  (set-class-slots! class class-def src-def)
 	  ;; install the coercion between the new-class and obj
 	  ;; and the class and all its super classes
@@ -457,53 +456,53 @@
 ;*---------------------------------------------------------------------*/
 (define (force-class-accesses)
    ;; first we process the non wide classes
-   (let loop ((cur    (reverse *class-accesses*))
-	      (next   '())
+   (let loop ((cur (reverse *class-accesses*))
+	      (next '())
 	      (access '()))
       (if (null? cur)
 	  (if (null? next)
 	      access
 	      (loop next '() access))
-	  (let* ((class (car (car cur)))
-		 (super (if (tclass? class)
-			    (tclass-its-super class)
-			    (jclass-its-super class))))
+	  (let* ((clazz (car (car cur)))
+		 (super (if (tclass? clazz)
+			    (tclass-its-super clazz)
+			    (jclass-its-super clazz))))
 	     (cond
-		((eq? super class)
+		((eq? super clazz)
 		 ;; this is the root we proceed now
 		 (loop (cdr cur)
 		       next
 		       (append (force (cdr (car cur))) access)))
-		((and (tclass? class) (not (tclass? super)))
+		((and (tclass? clazz) (not (tclass? super)))
 		 (if (type? super)
 		     ;; this is and error that will be pointed out later. for
 		     ;; the moment we simply ignore it.
 		     (begin
-			(tclass-slots-set! class '())
+			(tclass-slots-set! clazz '())
 			(loop (cdr cur)
 			      next
 			      access))
 		     (loop (cdr cur)
 			   next
 			   (append (force (cdr (car cur))) access))))
-		((and (jclass? class) (not (jclass? super)))
+		((and (jclass? clazz) (not (jclass? super)))
 		 (if (type? super)
 		     ;; this is and error that will be pointed out later. for
 		     ;; the moment we simply ignore it.
 		     (begin
-			(jclass-slots-set! class '())
+			(jclass-slots-set! clazz '())
 			(loop (cdr cur)
 			      next
 			      access))
 		     (loop (cdr cur)
 			   next
 			   (append (force (cdr (car cur))) access))))
-		((and (tclass? class) (eq? (tclass-slots super) #unspecified))
+		((and (tclass? clazz) (eq? (tclass-slots super) #unspecified))
 		 ;; we have not yet seen the super, we delay again
 		 (loop (cdr cur)
 		       (cons (car cur) next)
 		       access))
-		((and (jclass? class) (eq? (jclass-slots super) #unspecified))
+		((and (jclass? clazz) (eq? (jclass-slots super) #unspecified))
 		 ;; we have not yet seen the super, we delay again
 		 (loop (cdr cur)
 		       (cons (car cur) next)

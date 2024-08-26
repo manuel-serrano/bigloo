@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sun Nov 14 06:36:49 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Aug 26 14:39:51 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
 ;*=====================================================================*/
@@ -15,6 +15,7 @@
 (module object_class
 
    (import  tools_error
+	    tools_shape
 	    type_type
 	    type_cache
 	    type_env
@@ -178,12 +179,20 @@
 	  (let* ((wtid (wide-chunk-class-id class-id))
 		 (wt (widen!::wclass (declare-type! wtid t-name 'bigloo)
 			(its-class type))))
-	     (wclass-size-set! wt sizeof)
-	     (tclass-wide-type-set! type wt)
-	     (type-name-set! type (type-name super))
-	     (type-size-set! type (type-size super))
-	     (gen-coercion-clause! type wtid super #f)
-	     (gen-class-coercers! wt super))
+	     (if (string? (type-name super))
+		 (begin
+		    (wclass-size-set! wt sizeof)
+		    (tclass-wide-type-set! type wt)
+		    (type-name-set! type (type-name super))
+		    (type-size-set! type (type-size super))
+		    (gen-coercion-clause! type wtid super #f)
+		    (gen-class-coercers! wt super))
+		 (user-error/location
+		    (find-location src)
+		    (symbol->string (type-id super))
+		    (format "\"~a\" must be declared or imported before wide class \"~a\"" (type-id super) class-id)
+		    class-def
+		    type)))
 	  (type-size-set! type sizeof))
       ;; we add the class for the C type emission
       (set! *class-type-list* (cons type *class-type-list*))
