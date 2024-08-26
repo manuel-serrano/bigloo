@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Mon Aug 26 14:28:41 2024 (serrano)                */
+;*    Last change :  Mon Aug 26 15:48:08 2024 (serrano)                */
 ;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
@@ -136,8 +136,11 @@
    (define (make-one-coercion from-id from-name to-id to-name)
       (let ((t->f (symbol-append to-id '-> from-id))
 	    (f->t (symbol-append from-id '-> to-id)))
-	 (values `(pragma (,t->f nesting args-safe side-effect-free no-cfa-top (effect))
-			  (,f->t nesting args-safe side-effect-free no-cfa-top (effect)))
+	 (values `(cond-expand
+		     (bigloo-c
+		      (pragma
+			 (,t->f nesting args-safe side-effect-free no-cfa-top (effect))
+			 (,f->t nesting args-safe side-effect-free no-cfa-top (effect)))))
 		 (list `(macro ,from-id ,t->f (,to-id)
 			       ,(string-append "(" from-name ")"))
 		       `(macro ,to-id ,f->t (,from-id)
