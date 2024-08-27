@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/coercion.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/Object/coercion.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Wed Mar  7 11:37:37 2012 (serrano)                */
-;*    Copyright   :  2000-12 Manuel Serrano                            */
+;*    Last change :  Mon Aug 26 15:48:08 2024 (serrano)                */
+;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
 ;*    -------------------------------------------------------------    */
@@ -132,15 +132,20 @@
 ;*    c-gen-class-coercers! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (c-gen-class-coercers! class super)
+   
    (define (make-one-coercion from-id from-name to-id to-name)
       (let ((t->f (symbol-append to-id '-> from-id))
 	    (f->t (symbol-append from-id '-> to-id)))
-	 (values `(pragma (,t->f nesting args-safe side-effect-free no-cfa-top (effect))
-			  (,f->t nesting args-safe side-effect-free no-cfa-top (effect)))
+	 (values `(cond-expand
+		     (bigloo-c
+		      (pragma
+			 (,t->f nesting args-safe side-effect-free no-cfa-top (effect))
+			 (,f->t nesting args-safe side-effect-free no-cfa-top (effect)))))
 		 (list `(macro ,from-id ,t->f (,to-id)
 			       ,(string-append "(" from-name ")"))
 		       `(macro ,to-id ,f->t (,from-id)
 			       ,(string-append "(" to-name ")"))))))
+
    (let ((tid   (type-id   class))
 	 (tname (type-name class)))
       (multiple-value-bind (prag coercers)

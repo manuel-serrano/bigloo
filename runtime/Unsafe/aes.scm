@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/aes.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/aes.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Wed Oct  7 11:48:25 2015 (serrano)                */
-;*    Copyright   :  2005-15 Chris Veness                              */
+;*    Last change :  Tue Aug 27 07:52:07 2024 (serrano)                */
+;*    Copyright   :  2005-24 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
 ;*    -------------------------------------------------------------    */
@@ -97,7 +97,7 @@
       ((input-port? plaintext)
        (aes-ctr-encrypt-port plaintext password nbits))
       (else
-       (error 'aes-ctr-encrypt "Illegal argument" plaintext))))
+       (error "aes-ctr-encrypt" "Illegal argument" plaintext))))
 
 ;*---------------------------------------------------------------------*/
 ;*    aes-ctr-encrypt-string ...                                       */
@@ -141,7 +141,7 @@
       ((input-port? ciphertext)
        (aes-ctr-decrypt-port ciphertext password nbits))
       (else
-       (error 'aes-ctr-decrypt "Illegal argument" ciphertext))))
+       (error "aes-ctr-decrypt" "Illegal argument" ciphertext))))
  
 ;*---------------------------------------------------------------------*/
 ;*    aes-ctr-decrypt-string ...                                       */
@@ -203,11 +203,11 @@
 			   ((?pred ?value)
 			    `(,pred (let ((,tvar ,value)) ,@body)))
 			   (else
-			    (error 'let+ "illegal form" b))))
+			    (error "let+" "illegal form" b))))
 		     clauses)
 	      (else 0))))
       (else
-       (error 'let+ "illegal form" bindings))))
+       (error "let+" "illegal form" bindings))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    blocksize ...                                                    */
@@ -237,11 +237,11 @@
    
    ;; user check
    (unless (memv nbits '(128 192 256))
-      (error 'aes-ctr-encrypt "Illegal bit keys" nbits))
+      (error "aes-ctr-encrypt" "Illegal bit keys" nbits))
 
    ;; internal check
    (unless (or (string? plaintext) (mmap? plaintext))
-      (bigloo-type-error 'aes-ctr-encrypt "string or mmap" plaintext))
+      (bigloo-type-error "aes-ctr-encrypt" "string or mmap" plaintext))
    
    ;; from the user password, create the aes key
    (let* ((state::vector (make-u8matrix 4 4))
@@ -315,7 +315,7 @@
    
    ;; user check
    (unless (memv nbits '(128 192 256))
-      (error 'aes-ctr-decrypt "Illegal bit keys" nbits))
+      (error "aes-ctr-decrypt" "Illegal bit keys" nbits))
    
    (let* ((state::vector (make-u8matrix 4 4))
 	  (key::u8vector (aes-password->key password nbits state))

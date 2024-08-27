@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Sun Aug 25 09:10:00 2019 (serrano)                */
-;*    Copyright   :  2004-19 Manuel Serrano                            */
+;*    Last change :  Mon Aug 26 11:18:51 2024 (serrano)                */
+;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
 ;*=====================================================================*/
@@ -33,12 +33,12 @@
 	   __foreign
 	   __error
 	   __evenv
-	   __os
 	   __bit)
    
    (import  __object
 	    __thread
-	    __configure)
+	    __configure
+	    __os)
    
    (export (bigloo-strict-r5rs-strings::bool)
 	   (bigloo-strict-r5rs-strings-set! ::bool)

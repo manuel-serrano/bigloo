@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Mon Jul 22 16:05:49 2024 (serrano)                */
+;*    Last change :  Mon Aug 26 13:46:35 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -199,17 +199,20 @@
 ;*    make-cnst-table-ref ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (make-cnst-table-ref offset type loc)
-   (instantiate::app
+   (instantiate::cast
       (loc loc)
       (type (strict-node-type type (get-default-type)))
-      (fun (instantiate::ref
+      (arg (instantiate::app
 	      (loc loc)
-	      (type (strict-node-type (get-default-type) (variable-type *cnst-table-ref*)))
-	      (variable *cnst-table-ref*)))
-      (args (list (instantiate::literal
-		     (loc loc)
-		     (type *int*)
-		     (value offset))))))
+	      (type *obj*)
+	      (fun (instantiate::ref
+		      (loc loc)
+		      (type (strict-node-type (get-default-type) (variable-type *cnst-table-ref*)))
+		      (variable *cnst-table-ref*)))
+	      (args (list (instantiate::literal
+			     (loc loc)
+			     (type *int*)
+			     (value offset))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst-alloc-string ...                                            */
@@ -823,6 +826,7 @@
 ;*    cnst-alloc-vector ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-vector vec loc)
+   
    (define (cnst-vector-node)
       (cnst!
        (coerce!
@@ -881,26 +885,29 @@
 	#unspecified
 	(strict-node-type *vector* *obj*)
 	#f)))
+   
    (define (read-alloc-vector)
       (let ((offset *cnst-offset*))
 	 (set! *cnst-offset* (+fx 1 *cnst-offset*))
 	 (set! *global-set* (cons vec *global-set*))
-	 (if *shared-cnst?*
-	     (set! *vector-env* (cons (cnst-info vec offset) *vector-env*)))
+	 (when *shared-cnst?*
+	    (set! *vector-env* (cons (cnst-info vec offset) *vector-env*)))
 	 (make-cnst-table-ref offset *vector* loc)))
+   
    (define (lib-alloc-vector)
       (let ((var (def-global-svar! (make-typed-ident (gensym 'vector) 'vector)
 		    *module*
 		    'cnst-vector
 		    'now)))
-	 (if *shared-cnst?*
-	     (set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
+	 (when *shared-cnst?*
+	    (set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
 	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
 				,(cnst-vector-node)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (strict-node-type *vector* (variable-type var)))
 	    (variable var))))
+   
    (let ((old (and *shared-cnst?*
 		   (let loop ((env *vector-env*))
 		      (cond
@@ -916,7 +923,7 @@
 	      (instantiate::ref
 		 (loc loc)
 		 (type (strict-node-type
-			*vector* (variable-type (cnst-info-offset old))))
+			  *vector* (variable-type (cnst-info-offset old))))
 		 (variable (cnst-info-offset old)))
 	      (make-cnst-table-ref (cnst-info-offset old) *vector* loc)))
 	 ((eq? *init-mode* 'lib)
