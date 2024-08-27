@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Thu Nov  3 11:18:51 2022 (serrano)                */
+;*    Last change :  Tue Aug 27 07:58:21 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atoms (e.g., bools, numbers)  */
@@ -26,6 +26,7 @@
 	    engine_param
 	    ast_occur
 	    ast_remove
+	    ast_app
 	    type_cache)
    (export  (beta-walk!::obj ::pair-nil)))
 
@@ -109,9 +110,19 @@
 ;*    node-beta! ::funcall ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::funcall stack)
-   (funcall-fun-set! node (node-beta! (funcall-fun node) stack))
-   (node-beta*! (funcall-args node) stack)
-   node)
+   (let ((nfun (node-beta! (funcall-fun node) stack)))
+      (funcall-fun-set! node nfun)
+      (node-beta*! (funcall-args node) stack)
+      (if (and (var? nfun) (local? (var-variable nfun)))
+	  (let ((red (assq (var-variable nfun) stack)))
+	     (if (and (pair? red) (closure? (cdr red)))
+		 (with-access::local (var-variable nfun) (occurrence)
+		    (set! occurrence (-fx occurrence 2))
+		    (make-app-node '() (node-loc node) 'value
+		       (duplicate::ref (cdr red))
+		       (cdr (funcall-args node))))
+		 node))
+	  node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-beta! ::extern ...                                          */
@@ -218,6 +229,7 @@
 	     (let* ((binding (car bindings))
 		    (var (car binding))
 		    (val (node-beta! (cdr binding) stack)))
+		(set-cdr! binding val)
 		(if (and removable?
 			 (or (and (atom? (cdr binding))
 				  (let ((val (atom-value (cdr binding))))
@@ -227,6 +239,7 @@
 					 (symbol? val)
 					 (keyword? val)
 					 (cnst? val))))
+			     (closure? (cdr binding))
 			     (and (var? (cdr binding))
 				  (local? (var-variable (cdr binding)))
 				  (eq? (local-access (var-variable (cdr binding))) 'read)
