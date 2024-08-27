@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Sat Sep  4 15:17:27 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Aug 27 13:29:55 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -107,7 +107,7 @@
       (X! *funcall-list*)
       ;; and the T one
       (T-fix-point! *funcall-list*)
-      ;; mark all the light procedure
+      ;; mark all the light procedures
       (for-each (lambda (alloc)
 		   (with-access::make-procedure-app alloc (args T X)
 		      (let ((f (variable-value (var-variable (car args)))))
@@ -269,6 +269,7 @@
 		       'selfun))
 		(var-variable-set! fun *make-el-procedure*)
 		(var-type-set! fun *procedure-el*)
+		(variable-type-set! (sfun-the-closure sfun) *procedure-el*)
 		(set! type *procedure-el*))
 	       (else
 		(var-variable-set! fun *make-el-procedure*)
