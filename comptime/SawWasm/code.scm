@@ -11,6 +11,7 @@
     type_tools		; for emit-atom-value/make-typed-declaration
     type_cache		; for emit-atom-value
     type_typeof
+    tvector_tvector
     object_class
     cnst_alloc
     tools_shape
@@ -57,6 +58,9 @@
 ;; or use the simpler dispatcher pattern to emulate gotos?
 (define *use-relooper* #t)
 
+;*---------------------------------------------------------------------*/
+;*    needs-dispatcher? ...                                            */
+;*---------------------------------------------------------------------*/
 (define (needs-dispatcher? l)
    ; if there is a single basic block or none, then we don't have any control flow
    ; and therefore we are sure that we don't need a dispatcher block.
@@ -65,6 +69,9 @@
       (null? (cdr l)))
    ))
 
+;*---------------------------------------------------------------------*/
+;*    gen-fun ...                                                      */
+;*---------------------------------------------------------------------*/
 (define (gen-fun b::wasm v::global l)
   (with-access::global v (name import value type)
     (with-access::sfun value (loc args)
@@ -88,8 +95,11 @@
 
               ,@(gen-body v l))))))))
 
+;*---------------------------------------------------------------------*/
+;*    get-locals ...                                                   */
+;*---------------------------------------------------------------------*/
 (define (get-locals params l) ;()
-   ;; update all reg to ireg and return all regs not in params.
+   ;; Update all reg to ireg and return all regs not in params.
    (let ((n 0) (regs '()))
       (define (expr->ireg e)
         (cond
@@ -111,6 +121,9 @@
       (for-each visit l)
       regs ))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-type ...                                                    */
+;*---------------------------------------------------------------------*/
 (define (wasm-type t::type #!optional (may-null #t))
   (let ((id (type-id t))
         (name (type-name t)))
@@ -121,7 +134,7 @@
       ('unspecified 'eqref)
       ('bbool 'i31ref)
       ('class-field 'eqref)
-      ('pair-nil '(ref null $pair)) ;; FIXME: should be (ref null $pair)
+      ('pair-nil '(ref null $pair))
       ('cobj 'eqref)
       ('void* 'i32) ;; A raw pointer into the linear memory
       ('tvector 'arrayref)
@@ -159,27 +172,83 @@
       (else 
         (cond 
           ((foreign-type? t) (error "wasm-gen" "unimplemented foreign type in WASM" (type-id t)))
+          ;; Classes
           ((string-suffix? "_bglt" name) (if may-null `(ref null ,(wasm-sym name)) `(ref ,(wasm-sym name))))
+          ((tvec? t) (if may-null `(ref null ,(wasm-vector-type t)) `(ref ,(wasm-vector-type t))))
           (else (if may-null 
             `(ref null ,(wasm-sym (symbol->string (type-id t))))
             `(ref ,(wasm-sym (symbol->string (type-id t)))))))))))
 
-(define (gen-params l) ;()
+;*---------------------------------------------------------------------*/
+;*    wasm-vector-type ...                                             */
+;*---------------------------------------------------------------------*/
+(define (wasm-vector-type vtype::type)
+  (if (eq? (type-id vtype) 'vector)
+    '$vector
+    (get-ref-tvector-type (tvec-item-type vtype))))
+
+(define *tvector-types* '())
+;*---------------------------------------------------------------------*/
+;*    get-ref-tvector-type ...                                         */
+;*---------------------------------------------------------------------*/
+(define (get-ref-tvector-type vtype::type)
+  (case (type-id vtype)
+    ;; Use predefined vector type for common types.
+    ('obj '$vector)
+    (else
+      (let ((type (assq vtype *tvector-types*)))
+        (if type
+          (cdr type)
+          (let ((sym (gensym "$tvecty"))
+                (wasm-vtype
+                  (case (type-id vtype)
+                    ;; i8 and i16 are allowed in array definitions in WASM, use them 
+                    ;; instead of i32 to avoid wasting space.
+                    ('bool 'i8)
+                    ('byte 'i8)
+                    ('ubyte 'i8)
+                    ('char 'i8)
+                    ('uchar 'i8)
+                    ('int8 'i8)
+                    ('uint8 'i8)
+                    ('int16 'i8)
+                    ('uint32 'i8)
+                    (else (wasm-type vtype)))))
+            (set! *extra-types* (cons `(type ,sym (array (mut ,wasm-vtype))) *extra-types*))
+            (set! *tvector-types* (cons (cons vtype sym) *tvector-types*))
+            sym))))))
+
+;*---------------------------------------------------------------------*/
+;*    gen-params ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (gen-params l)
   (map (lambda (arg) `(param ,(wasm-sym (reg_name arg)) ,(wasm-type (rtl_reg-type arg)))) l))
 
+;*---------------------------------------------------------------------*/
+;*    gen-result ...                                                   */
+;*---------------------------------------------------------------------*/
 (define (gen-result t)
   (if (eq? (type-id t) 'void)
     '()
     `((result ,(wasm-type t)))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-locals ...                                                   */
+;*---------------------------------------------------------------------*/
 (define (gen-locals l)
   (map (lambda (local) `(local ,(wasm-sym (reg_name local)) ,(wasm-type (rtl_reg-type local)))) l))
 
+;*---------------------------------------------------------------------*/
+;*    reg_name ...                                                     */
+;*---------------------------------------------------------------------*/
 (define (reg_name reg) ;()
   (or (rtl_reg-debugname reg)
       (string-append (if (SawCIreg-var reg) "V" "R")
       (integer->string (SawCIreg-index reg)) )))
 
+;*---------------------------------------------------------------------*/
+;*    gen-body ...                                                     */
+;*---------------------------------------------------------------------*/
 (define (gen-body v::global blocks)
   (if *use-relooper*
     (let ((body (reloop v (dom_tree blocks))))
@@ -190,6 +259,9 @@
         (gen-dispatcher-body blocks)))
     (gen-dispatcher-body blocks)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-dispatcher-body ...                                          */
+;*---------------------------------------------------------------------*/
 (define (gen-dispatcher-body blocks)
   ;; If there is only a single basic block in the function, there is no need to do
   ;; hard work or generate a dispatcher. Just dump the basic block code.
@@ -207,15 +279,27 @@
                 `(,@(iter-block (cdr l) (block-label bb)) ,@(gen-basic-block bb))))))))
         (iter-block (reverse blocks) #f))))))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-block-sym ...                                               */
+;*---------------------------------------------------------------------*/
 (define (wasm-block-sym label)
   (string->symbol (string-append "$bb_" (integer->string label))))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-block-label ...                                             */
+;*---------------------------------------------------------------------*/
 (define (wasm-block-label b)
   (wasm-block-sym (block-label b)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-dispatcher ...                                               */
+;*---------------------------------------------------------------------*/
 (define (gen-dispatcher blocks)
   `(br_table ,@(map wasm-block-label blocks) (local.get $__label)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-basic-block ...                                              */
+;*---------------------------------------------------------------------*/
 (define (gen-basic-block b)
   (filter-map gen-ins (block-first b)))
 
@@ -477,26 +561,36 @@
   (with-fun-loc fun
     `(ref.func ,(wasm-sym (global-name (rtl_loadfun-var fun))))))
 
+(define (cast-to-i32-if-needed reg)
+  (if (eq? (wasm-typeof-arg reg) 'i64)
+    `(i32.wrap_i64 ,(gen-reg reg))
+    (gen-reg reg)))
+
 (define-method (gen-expr fun::rtl_valloc args)
-  (with-fun-loc fun
-    `(array.new_default $vector (i32.wrap_i64 ,@(gen-args args)))))
+  (with-access::rtl_valloc fun (type vtype)
+    (with-fun-loc fun
+      `(array.new_default 
+        ,(wasm-vector-type vtype)
+        ,(cast-to-i32-if-needed (car args))))))
 
 (define-method (gen-expr fun::rtl_vref args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
-  ;; FIXME: is the cast to ref vector really required?
-  (with-fun-loc fun
-    `(array.get $vector 
-      (ref.cast (ref $vector) ,(gen-reg (car args))) 
-      (i32.wrap_i64 ,(gen-reg (cadr args))))))
+  (with-access::rtl_vref fun (type vtype)
+    (let ((vec-type (wasm-vector-type vtype)))
+      (with-fun-loc fun
+        `(array.get ,vec-type 
+          (ref.cast (ref ,vec-type) ,(gen-reg (car args)))
+          ,(cast-to-i32-if-needed (cadr args)))))))
 
 (define-method (gen-expr fun::rtl_vset args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
-  ;; FIXME: is the cast to ref vector really required?
-  (with-fun-loc fun
-    `(array.set $vector 
-      (ref.cast (ref $vector) ,(gen-reg (car args)))
-      (i32.wrap_i64 ,(gen-reg (cadr args))) 
-      ,@(gen-args (cddr args)))))
+  (with-access::rtl_vset fun (type vtype)
+    (let ((vec-type (wasm-vector-type vtype)))
+      (with-fun-loc fun
+        `(array.set ,vec-type 
+          (ref.cast (ref ,vec-type) ,(gen-reg (car args)))
+          ,(cast-to-i32-if-needed (cadr args))
+          ,@(gen-args (cddr args)))))))
 
 (define-method (gen-expr fun::rtl_vlength args)
   (with-fun-loc fun

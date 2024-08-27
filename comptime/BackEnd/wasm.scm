@@ -4,7 +4,8 @@
 ;*---------------------------------------------------------------------*/
 (module backend_wasm
     (include "Engine/pass.sch"
-      "Tools/location.sch")
+      "Tools/location.sch"
+      "Tvector/tvector.sch")
     (import engine_param
         engine_configure
         tools_license
@@ -14,9 +15,6 @@
         backend_backend
         backend_cvm
         cnst_alloc
-        
-        ; tvector_tvector
-        ; tvector_cnst
         
         backend_cplib
         module_module
@@ -31,6 +29,9 @@
         ast_env
         ast_ident
         ast_occur
+
+        tvector_tvector
+        tvector_cnst
 
         saw_register-allocation
         
@@ -190,7 +191,7 @@
                                           (call-with-input-file tname port->sexp-list)))
 
           (comment "Class types" ,@(emit-class-types classes))
-          (comment "Extra types" ,@*extra-types*)
+          (comment "Extra types" ,@(reverse *extra-types*))
           (comment "Globals" ,@(emit-prototypes))
           (comment "Constants" ,@(emit-cnsts))
           (comment "String data" ,@(emit-strings))
@@ -614,8 +615,8 @@
         (emit-cnst-selfun node variable))
       ((slfun)
         (emit-cnst-slfun node variable))
-      ;((stvector)
-      ;  (emit-cnst-stvector node variable))
+      ((stvector)
+        (emit-cnst-stvector node variable))
       (else
         (internal-error "backend:emit-cnst"
                 (format "Unknown cnst class \"~a\"" class)
@@ -739,13 +740,14 @@
 ;*    emit-cnst-stvector ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-stvector tvec global)
-  '(let* ((vec (a-tvector-vector tvec))
+  (let* ((vec (a-tvector-vector tvec))
           (type (tvec-item-type (a-tvector-type tvec))))
       (set-variable-name! global)
       `(global
         ,(wasm-name (global-name global))
+        ,(wasm-type (a-tvector-type tvec))
         (array.new_fixed (ref (array ,(wasm-type type))) ,(vector-length vec)
-          ,@(vector-map (lambda (v) (emit-wasm-atom-value type v) vec))))))
+          ,@(vector-map (lambda (v) (emit-wasm-atom-value type v)) vec)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-string-data ...                                             */
