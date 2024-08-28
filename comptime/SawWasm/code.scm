@@ -31,6 +31,7 @@
   (export
     (saw-wasm-gen b::wasm v::global)
     (wasm-type t::type #!optional (may-null #t))
+    (wasm-vector-type t::type)
     (wasm-sym t::bstring)
     (wasm-cnst-false)
     (wasm-cnst-true)
@@ -577,10 +578,17 @@
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
   (with-access::rtl_vref fun (type vtype)
     (let ((vec-type (wasm-vector-type vtype)))
-      (with-fun-loc fun
-        `(array.get ,vec-type 
-          (ref.cast (ref ,vec-type) ,(gen-reg (car args)))
-          ,(cast-to-i32-if-needed (cadr args)))))))
+      ;; If vtype is a vector of eqref (type vector), then we need to explicitly insert
+      ;; a cast to the expected element type. This is not required for typed vectors
+      ;; as the WASM type has already the correct type.
+      (let ((array-code 
+              `(array.get ,vec-type 
+                (ref.cast (ref ,vec-type) ,(gen-reg (car args)))
+                ,(cast-to-i32-if-needed (cadr args)))))
+        (with-fun-loc fun 
+          (if (eq? (type-id vtype) 'vector)
+           `(ref.cast ,(wasm-type type) ,array-code)
+           array-code))))))
 
 (define-method (gen-expr fun::rtl_vset args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.

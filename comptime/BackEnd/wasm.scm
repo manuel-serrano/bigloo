@@ -743,11 +743,11 @@
   (let* ((vec (a-tvector-vector tvec))
           (type (tvec-item-type (a-tvector-type tvec))))
       (set-variable-name! global)
-      `(global
-        ,(wasm-name (global-name global))
+      `((global
+        ,(wasm-sym (global-name global))
         ,(wasm-type (a-tvector-type tvec))
-        (array.new_fixed (ref (array ,(wasm-type type))) ,(vector-length vec)
-          ,@(vector-map (lambda (v) (emit-wasm-atom-value type v)) vec)))))
+        (array.new_fixed ,(wasm-vector-type (a-tvector-type tvec)) ,(vector-length vec)
+          ,@(vector->list (vector-map (lambda (v) (emit-wasm-atom-value type v)) vec)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-string-data ...                                             */

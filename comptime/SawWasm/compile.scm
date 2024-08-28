@@ -41,6 +41,7 @@
 	    backend_cplib
 	    object_class
 	    object_slots
+		saw_defs
 	    saw_wasm_code))
 
 ;*---------------------------------------------------------------------*/
