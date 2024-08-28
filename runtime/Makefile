@@ -412,10 +412,11 @@ WASMS = \
 	objs/$(WASMDIR_SYS)/Unsafe/ssr.wasm \
 	objs/$(WASMDIR_SYS)/Unsafe/url.wasm objs/$(WASMDIR_SYS)/Unsafe/uuid.wasm \
 	objs/$(WASMDIR_SYS)/Eval/evmeaning.wasm \
-	# objs/$(WASMDIR_SYS)/Unsafe/aes.wasm objs/$(WASMDIR_SYS)/Unsafe/http.wasm \
-	# objs/$(WASMDIR_SYS)/Unsafe/tar.wasm objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \
-	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm
-
+	objs/$(WASMDIR_SYS)/Unsafe/http.wasm objs/$(WASMDIR_SYS)/Unsafe/tar.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \
+	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm \
+	# objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm \
+	# objs/$(WASMDIR_SYS)/Unsafe/aes.wasm
 #*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
 #*---------------------------------------------------------------------*/
