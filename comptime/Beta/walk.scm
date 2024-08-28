@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Tue Aug 27 07:58:21 2024 (serrano)                */
+;*    Last change :  Tue Aug 27 13:18:26 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atoms (e.g., bools, numbers)  */
@@ -37,6 +37,11 @@
    (pass-prelude "Constant Beta")
    (beta-globals! globals)
    (pass-postlude (remove-var 'beta globals)))
+
+;*---------------------------------------------------------------------*/
+;*    *closure-optim* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *closure-optim* #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    beta-globals! ...                                                */
@@ -113,7 +118,7 @@
    (let ((nfun (node-beta! (funcall-fun node) stack)))
       (funcall-fun-set! node nfun)
       (node-beta*! (funcall-args node) stack)
-      (if (and (var? nfun) (local? (var-variable nfun)))
+      (if (and (var? nfun) (local? (var-variable nfun)) *closure-optim*)
 	  (let ((red (assq (var-variable nfun) stack)))
 	     (if (and (pair? red) (closure? (cdr red)))
 		 (with-access::local (var-variable nfun) (occurrence)
@@ -239,7 +244,7 @@
 					 (symbol? val)
 					 (keyword? val)
 					 (cnst? val))))
-			     (closure? (cdr binding))
+			     (and (closure? (cdr binding)) *closure-optim*)
 			     (and (var? (cdr binding))
 				  (local? (var-variable (cdr binding)))
 				  (eq? (local-access (var-variable (cdr binding))) 'read)
