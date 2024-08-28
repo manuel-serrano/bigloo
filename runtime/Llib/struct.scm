@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/struct.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/struct.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 13:02:29 1992                          */
-;*    Last change :  Tue Nov 15 08:29:10 2011 (serrano)                */
+;*    Last change :  Wed Aug 28 17:58:26 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Non R4Rs structure and SRFI-9 records.                           */
 ;*    -------------------------------------------------------------    */
@@ -41,9 +41,9 @@
 	    (macro $struct-set!::obj (::struct ::int ::obj)
 		   "STRUCT_SET")
 	    (macro u-struct-ref::obj (::obj ::int)
-		   "STRUCT_REF")
+		   "UNSAFE_STRUCT_REF")
 	    (macro u-struct-set!::obj (::obj ::int ::obj)
-		   "STRUCT_SET")
+		   "UNSAFE_STRUCT_SET")
 	    ;; the struct-key function takes ::obj (instead of ::symbol)
 	    ;; parameters because the key of the structure is used by
 	    ;; intext. intext stores non symbol into that field. to avoid

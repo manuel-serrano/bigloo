@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Apr 15 06:55:00 2018 (serrano)                */
-/*    Copyright   :  2016-18 Manuel Serrano                            */
+/*    Last change :  Wed Aug 28 17:59:08 2024 (serrano)                */
+/*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRUCTs                                                   */
 /*=====================================================================*/
@@ -24,13 +24,13 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t create_struct( obj_t key, int len );
+BGL_RUNTIME_DECL obj_t create_struct(obj_t key, int len);
 
 /*---------------------------------------------------------------------*/
 /*    bgl_struct ...                                                   */
 /*---------------------------------------------------------------------*/
 struct bgl_struct {
-#if( !defined( TAG_STRUCTURE ) )
+#if(!defined(TAG_STRUCTURE))
    header_t header;
 #endif
    /* the key (i.e., the name) of the structure */
@@ -41,37 +41,40 @@ struct bgl_struct {
    obj_t obj0;
 };
 
-#define STRUCT_SIZE (sizeof( struct bgl_struct ))
+#define STRUCT_SIZE (sizeof(struct bgl_struct))
 
-#define STRUCT( o ) CSTRUCTURE( o )->structure
+#define STRUCT(o) CSTRUCTURE(o)->structure
 
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
-#if( defined( TAG_STRUCTURE ) )
-#   define BSTRUCTURE( r ) BGL_UNPTR( (obj_t)((long)p + TAG_STRUCTURE) )
-#   define CSTRUCTURE( p ) BGL_PTR( (obj_t)((long)p - TAG_STRUCTURE) )
-#   if( TAG_STRUCTURE != 0 )
-#      define STRUCTP( c ) ((((long)c) & TAG_MASK) == TAG_STRUCTURE)
+#if(defined(TAG_STRUCTURE))
+#   define BSTRUCTURE(r) BGL_UNPTR((obj_t)((long)p + TAG_STRUCTURE))
+#   define CSTRUCTURE(p) BGL_PTR((obj_t)((long)p - TAG_STRUCTURE))
+#   if(TAG_STRUCTURE != 0)
+#      define STRUCTP(c) ((((long)c) & TAG_MASK) == TAG_STRUCTURE)
 #   else
-#      define STRUCTP( c ) ((c && ((((long)c) & TAG_MASK) == TAG_STRUCTURE)))
+#      define STRUCTP(c) ((c && ((((long)c) & TAG_MASK) == TAG_STRUCTURE)))
 #   endif
 #else
-#   define BSTRUCTURE( p ) BREF( p )
-#   define CSTRUCTURE( p ) CREF( p )
-#   define STRUCTP( c ) (POINTERP( c ) && (TYPE( c ) == STRUCT_TYPE))
+#   define BSTRUCTURE(p) BREF(p)
+#   define CSTRUCTURE(p) CREF(p)
+#   define STRUCTP(c) (POINTERP(c) && (TYPE(c) == STRUCT_TYPE))
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */
 /*---------------------------------------------------------------------*/
-#define STRUCT_LENGTH( c ) STRUCT( c ).length
+#define STRUCT_LENGTH(c) STRUCT(c).length
    
-#define STRUCT_KEY( c ) STRUCT( c ).key
-#define STRUCT_KEY_SET( c, k ) (BASSIGN( STRUCT_KEY( c ), k, c))
+#define STRUCT_KEY(c) STRUCT(c).key
+#define STRUCT_KEY_SET(c, k) (BASSIGN(STRUCT_KEY(c), k, c))
 
-#define STRUCT_REF( c, i ) ((&(STRUCT(c).obj0))[ i ])
-#define STRUCT_SET( c, i, o ) (BASSIGN( STRUCT_REF( c, i ), o, c))
+#define STRUCT_REF(c, i) ((&(STRUCT(c).obj0))[ i ])
+#define STRUCT_SET(c, i, o) (BASSIGN(STRUCT_REF(c, i), o, c))
+
+#define UNSAFE_STRUCT_REF(c, i) STRUCT_REF(c, i)
+#define UNSAFE_STRUCT_SET(c, i, o) STRUCT_SET(c, i, o)
 
 /*---------------------------------------------------------------------*/
 /*    C++                                                              */
