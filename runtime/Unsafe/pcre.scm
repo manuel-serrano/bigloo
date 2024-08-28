@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Tue Oct  8 18:25:57 2019 (serrano)                */
-;*    Copyright   :  2011-21 Manuel Serrano                            */
+;*    Last change :  Wed Aug 28 12:59:49 2024 (serrano)                */
+;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
 ;*=====================================================================*/
@@ -12,38 +12,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    directives                                                       */
 ;*---------------------------------------------------------------------*/
-(module __regexp
+(directives
    
-   (import  __error)
-   
-   (use     __type
-            __bigloo
-            __tvector
-            __ucs2
-            __dsssl
-            __bexit
-            __bignum
-            __object
-            __thread
-	    __bit
-            
-            __r4_output_6_10_3
-            
-            __r4_numbers_6_5_fixnum
-            __r4_numbers_6_5_flonum
-            __r4_numbers_6_5
-            __r4_equivalence_6_2
-            __r4_vectors_6_8
-            __r4_booleans_6_1
-            __r4_characters_6_6
-            __r4_symbols_6_4
-            __r4_pairs_and_lists_6_3
-            __r4_strings_6_7
-            __r4_ports_6_10_1
-            __r4_control_features_6_9
-
-            __evenv)
-
    (extern ($regcomp::regexp (::bstring ::obj ::bool) "bgl_regcomp")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")

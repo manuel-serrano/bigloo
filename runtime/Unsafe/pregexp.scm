@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /tmp/BUFOV/bigloo-4.3h/runtime/Unsafe/pregexp.scm                */
+;*    .../prgm/project/bigloo/bigloo/runtime/Unsafe/pregexp.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Fri Mar 27 18:08:35 2020 (serrano)                */
+;*    Last change :  Wed Aug 28 12:59:21 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -15,38 +15,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __regexp
+(directives
    
-   (import  __error)
-   
-   (use     __type
-	    __bigloo
-	    __tvector
-	    __ucs2
-	    __dsssl
-	    __bexit
-	    __bignum
-	    __object
-	    __thread
-	    __bit
-	    
-	    __r4_output_6_10_3
-	    
-	    __r4_numbers_6_5_fixnum
-	    __r4_numbers_6_5_flonum
-	    __r4_numbers_6_5
-	    __r4_equivalence_6_2
-	    __r4_vectors_6_8
-	    __r4_booleans_6_1
-	    __r4_characters_6_6
-	    __r4_symbols_6_4
-	    __r4_pairs_and_lists_6_3
-	    __r4_strings_6_7
-	    __r4_ports_6_10_1
-	    __r4_control_features_6_9
-
-	    __evenv)
-
    (extern ($make-regexp::regexp (::bstring) "bgl_make_regexp")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")

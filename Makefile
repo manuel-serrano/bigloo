@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jul 11 15:27:19 2023 (serrano)                */
-#*    Copyright   :  1998-2023 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Aug 28 13:10:33 2024 (serrano)                */
+#*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -213,6 +213,7 @@ boot-c: checkgmake
 	  $(MAKE) -C comptime boot && \
 	  $(MAKE) -C runtime heap; \
 	fi
+	touch runtime/Unsafe/regexp.scm && $(MAKE) -C runtime boot
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
         fi

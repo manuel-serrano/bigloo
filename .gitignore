@@ -88,7 +88,6 @@ comptime/Tools/date.scm
 comptime/Tools/license.scm
 
 # runtime
-runtime/Unsafe/regexp.scm
 runtime/Jlib/configure.java
 runtime/Llib/bconfigure-generic.sch
 

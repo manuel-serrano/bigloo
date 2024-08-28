@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jul 16 13:09:13 2024 (serrano)                */
+#*    Last change :  Wed Aug 28 12:57:02 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -2817,32 +2817,16 @@ if [ "$regexp " = " " ]; then
   if [ "$pcre2libs " != "no " ]; then
     extralibs="-l$extrapcre2 $extralibs"
     regexp=pcre2
-    regexpscm=pcre.scm
-    regexpc=pcre.c
   elif [ "$pcrelibs " != "no " ]; then
     extralibs="-l$extrapcre $extralibs"
     regexp=pcre
-    regexpscm=pcre.scm
-    regexpc=pcre.c
 
     if [ `$autoconf pcrefreestudy` = "yes" ]; then
       regexphasfreestudy=1
     fi
   else
     regexp=pregexp
-    regexpscm=pregexp.scm
-    regexpc=pregexp.c
   fi
-fi
-
-$echo ";; generated file (from $regexpscm), don't edit (`date`)" > runtime/Unsafe/regexp.scm
-cat runtime/Unsafe/$regexpscm >>  runtime/Unsafe/regexp.scm
-
-if [ -f runtime/objs/obj_u/Unsafe/$regexpc ]; then
-  $echo "/* generated file (from $regexpc), don't edit (`date`) */" > runtime/objs/obj_u/Unsafe/regexp.c
-  cat runtime/objs/obj_u/Unsafe/$regexpc >> runtime/objs/obj_u/Unsafe/regexp.c
-else
-  touch runtime/objs/obj_u/Unsafe/regexp.c
 fi
 
 featureflags="-srfi enable-$regexp $featureflags"
