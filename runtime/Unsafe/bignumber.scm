@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Nov 29 09:37:36 2021 (serrano)                */
-;*    Copyright   :  2006-21 Marc Feeley                               */
+;*    Last change :  Wed Aug 28 14:10:09 2024 (serrano)                */
+;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */

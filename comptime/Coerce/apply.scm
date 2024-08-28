@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Thu Jul  8 11:28:29 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Aug 28 17:33:50 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `apply' coercion                                            */
 ;*=====================================================================*/
@@ -36,9 +36,9 @@
 (define-method (coerce! node::app-ly caller to safe)
    (trace coerce "coerce-apply!: " (shape node) #\Newline)
    (let ((error-msg (list 'quote (shape node))))
-      ;; we coerce the arguments
-      (app-ly-arg-set! node (coerce! (app-ly-arg node) caller *obj* safe))
-      ;; we coerce the procedure
+      ;; coerce the arguments
+      (app-ly-arg-set! node (coerce! (app-ly-arg node) caller *pair-nil* safe))
+      ;; coerce the procedure
       (let ((c-fun (coerce! (app-ly-fun node) caller *procedure* safe)))
 	 ;; we check arity
 	 (if *unsafe-arity*
@@ -64,7 +64,7 @@
 		    (len (gensym 'len))
 		    (body (lvtype-node
 			   (top-level-sexp->node
-			    `(let ((,(symbol-append len '::int)
+			    `(let ((,(symbol-append len '::long)
 				    ,(coerce! lval caller *int* safe)))
 				(if (correct-arity? ,fun ,len)
 				    ,(convert! node *obj* to safe)

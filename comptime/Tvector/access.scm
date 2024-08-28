@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tvector/access.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Tvector/access.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 13:33:40 1995                          */
-;*    Last change :  Thu Nov 10 07:09:46 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Aug 28 17:41:21 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We install all the coercer and accessor for `tvector' types.     */
 ;*=====================================================================*/
@@ -23,7 +23,9 @@
 	    tools_error
 	    tools_shape
 	    ast_ident
-	    ast_private)
+	    ast_private
+	    ast_var
+	    ast_env)
    (export  (make-tvector-accesses tvector::tvec ::obj ::bool)))
 
 ;*---------------------------------------------------------------------*/
@@ -48,7 +50,9 @@
 	  (tv->vector-id (symbol-append tv-id '->vector))
 	  (vector->tv-id (symbol-append 'vector-> tv-id))
 	  (tv->list      (symbol-append tv-id '->list))
-	  (tv-length-id  (symbol-append tv-id '-length)))
+	  (tv-length-id  (symbol-append tv-id '-length))
+	  (int-type      (get-tvector-length-type))
+	  (int-type-id   (type-id int-type)))
       
       (define (make-descr)
 	 (if import
@@ -78,32 +82,32 @@
       
       (define (make-tv-ref)
 	 (let* ((pfmt (string-append "TVECTOR_REF( " mitem-name ",$1,$2 )"))
-		(exp (make-private-sexp 'vref tv-id item-id 'int
+		(exp (make-private-sexp 'vref tv-id item-id int-type-id
 					pfmt 'tv 'o)))
 	    `(define-inline (,(make-typed-ident tv-ref-id item-id)
 			     ,(make-typed-ident 'tv tv-id)
-			     o::int)
+			     ,(make-typed-ident 'o int-type-id))
 		,exp)))
       
       (define (make-tv-set!)
 	 (let* ((pfmt (string-append "TVECTOR_SET( " mitem-name ",$1,$2,$3 )"))
-		(exp (make-private-sexp 'vset! tv-id item-id 'int
+		(exp (make-private-sexp 'vset! tv-id item-id int-type-id
 					pfmt 'tv 'o 'v)))
 	    `(define-inline (,(symbol-append tv-set!-id '::obj)
 			     ,(make-typed-ident 'tv tv-id)
-			     o::int
+			     ,(make-typed-ident 'o int-type-id)
 			     ,(make-typed-ident 'v item-id))
 		,exp)))
       
       (define (make-tv)
 	 `(define-inline (,(make-typed-ident tv-make-id tv-id)
-			  len::int
+			  ,(make-typed-ident 'len int-type-id)
 			  ,(make-typed-ident 'v item-id))
 	     (let ((,(make-typed-ident 'tv tv-id) (,tv-alloc-id len)))
-		(labels ((,(make-typed-ident 'loop tv-id) (i::int)
+		(labels ((,(make-typed-ident 'loop tv-id) (,(make-typed-ident 'i int-type-id))
 				(if (=fx i len)
 				    tv
-				    (let ((ni::int (+fx i 1)))
+				    (let ((,(make-typed-ident 'ni int-type-id) (+fx i 1)))
 				       (,tv-set!-id tv i v)
 				       (loop ni)))))
 		   (loop 0)))))
@@ -114,8 +118,8 @@
 	     "ALLOCATE_TVECTOR( "))
       
       (define (make-c-alloc-tv)
-	 `(define-inline (,(make-typed-ident tv-alloc-id tv-id) len::int)
-	     ,(make-private-sexp 'valloc tv-id item-id 'int
+	 `(define-inline (,(make-typed-ident tv-alloc-id tv-id) ,(make-typed-ident 'len int-type-id))
+	     ,(make-private-sexp 'valloc tv-id item-id int-type-id
 				 (string-append (allocate-tvector)
 						mitem-name ", "
 						item-name
@@ -128,9 +132,9 @@
 				 'len descr-id)))
       
       (define (make-jvm-alloc-tv)
-	 `(define-inline (,(make-typed-ident tv-alloc-id tv-id) len::int)
+	 `(define-inline (,(make-typed-ident tv-alloc-id tv-id) ,(make-typed-ident 'len int-type-id))
 	     (let ((,(make-typed-ident 'v tv-id)
-		    ,(make-private-sexp 'valloc tv-id item-id 'int
+		    ,(make-private-sexp 'valloc tv-id item-id int-type-id
 					  (string-append (allocate-tvector)
 							 mitem-name ", "
 							 item-name
@@ -157,10 +161,10 @@
       (define (make-tv->list)
 	 `(define (,(symbol-append tv->list '::obj)
 		   ,(make-typed-ident 'tv tv-id))
-	     (let ((len::int (,tv-length-id tv)))
+	     (let ((,(make-typed-ident 'len int-type-id) (,tv-length-id tv)))
 		(if (=fx len 0)
 		    '()
-		    (labels ((loop::pair (i::int acc::obj)
+		    (labels ((loop::pair (,(make-typed-ident 'i int-type-id) acc::obj)
 				   (if (=fx i 0)
 				       (cons (,tv-ref-id tv i) acc)
 				       (loop (-fx i 1)
@@ -172,9 +176,9 @@
 	     (vector->tvector ',tv-id v)))
       
       (define (make-tv-length)
-	 `(define-inline (,(symbol-append tv-length-id '::int)
+	 `(define-inline (,(make-typed-ident tv-length-id int-type-id)
 			  ,(make-typed-ident 'o tv-id))
-	     ,(make-private-sexp 'vlength tv-id item-id 'int
+	     ,(make-private-sexp 'vlength tv-id item-id int-type-id
 				 "TVECTOR_LENGTH( $1 )" 'o)))
 
       ;; we parse a pragma clause for predicate and allocator and accessors
@@ -185,19 +189,19 @@
 		;; tv-ref
 		(inline ,(make-typed-ident tv-ref-id item-id)
 			,(make-typed-ident 'tv tv-id)
-			::int)
+			,(make-typed-ident 'i int-type-id))
 		;; tv-set!
 		(inline ,(symbol-append tv-set!-id '::obj)
 			,(make-typed-ident 'tv tv-id)
-			::int
+			,(make-typed-ident 'i int-type-id)
 			,(make-typed-ident 'v item-id))
 		;; make-tv
 		(inline ,(make-typed-ident tv-make-id tv-id)
-			::int
+			,(make-typed-ident 'i int-type-id)
 			,(make-typed-formal item-id))
 		;; alloc-tv
 		(inline ,(make-typed-ident tv-alloc-id tv-id)
-			::int)
+			,(make-typed-ident 'i int-type-id))
 		;; tv->vector
 		(inline ,(symbol-append tv->vector-id '::vector)
 			,(make-typed-ident 'tv tv-id))
@@ -205,7 +209,7 @@
 		(inline ,(make-typed-ident vector->tv-id tv-id) 
 			::vector)
 		;; tv-length
-		(inline ,(symbol-append tv-length-id '::int)
+		(inline ,(make-typed-ident tv-length-id int-type-id)
 			,(make-typed-ident 'o tv-id))
 		;; tv->list
 		(,(symbol-append tv->list '::obj)
@@ -233,3 +237,17 @@
 	    (make-vector->tv)
 	    (make-tv-length)
 	    (make-tv->list))))
+
+;*---------------------------------------------------------------------*/
+;*    get-tvector-length-type ...                                      */
+;*---------------------------------------------------------------------*/
+(define (get-tvector-length-type)
+   (unless *tvector-length*
+      (set! *tvector-length* (get-global/module '$tvector-length 'foreign)))
+   (global-type *tvector-length*))
+
+;*---------------------------------------------------------------------*/
+;*    *tvector-length* ...                                             */
+;*---------------------------------------------------------------------*/
+(define *tvector-length* #f)
+

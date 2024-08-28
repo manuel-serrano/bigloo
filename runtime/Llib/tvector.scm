@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 09:38:41 1995                          */
-;*    Last change :  Sun Aug 25 09:08:27 2019 (serrano)                */
+;*    Last change :  Wed Aug 28 16:13:16 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The typed vectors Scheme management.                             */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 
    (extern (macro $tvector?::bool (::obj)
 		  "TVECTORP")
-	   (macro $tvector-length::int (::tvector)
+	   (macro $tvector-length::long (::tvector)
 		  "TVECTOR_LENGTH")
 	   
 	   (macro $tvector-descr::obj (::tvector)
@@ -65,7 +65,7 @@
 		      "TVECTOR_DESCR_SET")))
 
    (export  (inline tvector?::bool ::obj)
-	    (inline tvector-length::int ::tvector)
+	    (inline tvector-length::long ::tvector)
 	    (get-tvector-descriptor::obj ::symbol)
 	    (declare-tvector! ::string  ::procedure ::obj ::obj)
 	    (tvector-ref ::tvector)

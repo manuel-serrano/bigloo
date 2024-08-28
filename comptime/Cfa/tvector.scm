@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Fri Nov  4 09:21:53 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Aug 28 17:38:38 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -524,9 +524,22 @@
 					   '()
 					   loc
 					   'value)))
-		(node-type-set! new-node *int*)
+		(node-type-set! new-node (get-tvector-length-type))
 		(inline-node new-node 1 '()))
 	     node))))
+
+;*---------------------------------------------------------------------*/
+;*    get-tvector-length-type ...                                      */
+;*---------------------------------------------------------------------*/
+(define (get-tvector-length-type)
+   (unless *tvector-length*
+      (set! *tvector-length* (get-global/module '$tvector-length 'foreign)))
+   (global-type *tvector-length*))
+
+;*---------------------------------------------------------------------*/
+;*    *tvector-length* ...                                             */
+;*---------------------------------------------------------------------*/
+(define *tvector-length* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    patch-vector?! ...                                               */
