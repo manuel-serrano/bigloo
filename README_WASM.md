@@ -2,11 +2,11 @@
 
 ## How to compile Bigloo/WASM
 
-1. First, compile Bigloo in this repository (as usually).
-2. Make the WASM heap: `cd runtime && make heap-wasm`.
-3. Compile the WASM lib: `cd runtime && make lib-wasm -j`.
-This will create the files `bigloo_s.wat` and `bigloo_s.wasm` in the Bigloo lib directory.
-4. Install WASM lib and heap: `cd runtime && make install-wasm`
+  1. First, compile Bigloo in this repository (as usual).
+  2. Make the WASM heap: `cd runtime && make heap-wasm`.
+  3. Compile the WASM lib: `cd runtime && make lib-wasm -j`.
+     This will create the files `bigloo_s.wat` and `bigloo_s.wasm` in the Bigloo lib directory.
+  4. Install WASM lib and heap: `cd runtime && make install-wasm`
 
 These requires the `bigloo-wasm-merge` tool and the `gen_dummy_wasm_imports` (found in `tools/gen_dummy_wasm_imports.scm`).
 

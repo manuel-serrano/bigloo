@@ -33,6 +33,7 @@
   (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
   (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
 
+  (import "__js" "exit" (func $js_exit (param i32)))
   ;; (import "__bigloo_main" "bigloo_main" (func $bigloo_main (param (ref null $pair)) (result eqref)))
 
   ;; General bigloo memory
@@ -1875,4 +1876,15 @@
     
     ;; TODO: do something with the return value of bigloo_main
     (drop (call $bigloo_main (local.get $argv))))
+
+    (func $BIGLOO_EXIT
+        (export "BIGLOO_EXIT")
+        (param eqref)
+        (result eqref)
+	(call $js_exit
+	   (if (result i32)
+	       (ref.test (ref $bint) (local.get 0))
+	       (then (i32.wrap_i64 (struct.get $bint $v (ref.cast (ref $bint) (local.get 0)))))
+	       (else (i32.const 0))))
+	(global.get $BUNSPEC))
 )

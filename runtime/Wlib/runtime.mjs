@@ -148,6 +148,10 @@ const instance = await WebAssembly.instantiate(wasm, {
 
         number_to_string: function (x, addr) {
             return storeJSStringToScheme(x.toString(), addr);
+        },
+
+        exit: function (val) {
+ 	    process.exit(val);
         }
     },
 
