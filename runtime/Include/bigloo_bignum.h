@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jul 26 08:58:25 2017                          */
-/*    Last change :  Mon Dec  6 09:55:15 2021 (serrano)                */
-/*    Copyright   :  2017-22 Manuel Serrano                            */
+/*    Last change :  Thu Aug 29 10:39:35 2024 (serrano)                */
+/*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo BIGNUMs                                                   */
 /*=====================================================================*/
@@ -31,7 +31,7 @@ BGL_RUNTIME_DECL obj_t bgl_string_to_bignum(char *, int);
 /*---------------------------------------------------------------------*/
 struct bgl_bignum {
    header_t header;
-#if (BGL_HAVE_GMP)
+#if (BGL_HAVE_GMP && !BGL_FORCE_GENERIC)
    /* from gmp.h */
    __mpz_struct mpz;
    void *mp_d;
@@ -52,7 +52,7 @@ struct bgl_bignum {
 /*---------------------------------------------------------------------*/
 /*    Bignum                                                           */
 /*---------------------------------------------------------------------*/
-#if (BGL_HAVE_GMP)   
+#if (BGL_HAVE_GMP && !BGL_FORCE_GENERIC)   
 #  define BXSIZ(o) (BIGNUM(o).mpz._mp_size)
    
 #  define BXZERO(x) (BXSIZ(x) == 0)
