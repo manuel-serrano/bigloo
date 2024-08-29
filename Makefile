@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Aug 29 09:19:33 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 09:23:28 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -213,8 +213,7 @@ boot-c: checkgmake
 	  $(MAKE) -C comptime boot && \
 	  $(MAKE) -C runtime heap; \
 	fi
-	touch runtime/Unsafe/regexp.scm
-	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Llib/rsa.scm
+	$(MAKE) boot-touch-generic-dependencies
 	$(MAKE) -C runtime boot
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
@@ -226,6 +225,12 @@ boot-c: checkgmake
         fi
 	@ echo "Boot done..."
 	@ echo "-------------------------------"
+
+# touch the generic Scheme source files that must be
+# recompiled ith the configured options (e.g., gmp or pcre2)
+boot-touch-generic-dependencies:
+	touch runtime/Unsafe/regexp.scm
+	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Llib/rsa.scm
 
 boot-jvm: checkgmake
 	$(MAKE) -C runtime boot-jvm

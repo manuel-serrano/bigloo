@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Thu Aug 29 09:21:27 2024 (serrano)                */
+;*    Last change :  Thu Aug 29 09:32:57 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -39,10 +39,6 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   
-   (option
-      (set! *c-user-header* '("#if( BGL_HAVE_GMP == 0 )"))
-      (set! *c-user-foot* '("#endif")))
    
    (extern
       (macro $fixnum->flonum::double (::long) "(double)")
