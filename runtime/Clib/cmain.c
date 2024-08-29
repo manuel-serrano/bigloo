@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Thu Aug 29 10:54:51 2024 (serrano)                */
+/*    Last change :  Thu Aug 29 10:57:23 2024 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -221,7 +221,7 @@ _bigloo_main(int argc,
 	    
 	 srand((24 * (60 * tm->tm_sec + tm->tm_min)) + tm->tm_hour);
 
-#if(BGL_HAVE_GMP && !BGL_FORCE_GENERIC)
+#if(BGL_HAVE_GMP && !BGL_BOOT)
 	 /* big numbers init */
 	 gmp_randinit_default(gmp_random_state);
 	 gmp_randseed_ui(gmp_random_state,

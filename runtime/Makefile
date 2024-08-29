@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 29 10:41:31 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 10:57:08 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -647,7 +647,7 @@ one-distlib: $(C_OBJECTS)
 #*---------------------------------------------------------------------*/
 boot: dirs includes
 	touch .afile
-	@ $(MAKE) boot-libs CEFLAGS=-DBGL_FORCE_GENERIC=1
+	@ $(MAKE) boot-libs CEFLAGS=-DBGL_BOOT=1
 
 boot-libs:
 	@ $(MAKE) lib-c_u SCMOBJSUFFIX="" COBJSUFFIX=%.o

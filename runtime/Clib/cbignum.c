@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Thu Aug 29 08:30:59 2024 (serrano)                */
+/*    Last change :  Thu Aug 29 11:02:43 2024 (serrano)                */
 /*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -33,7 +33,7 @@ bgl_init_bignum() {
 #endif
 }
 
-#if (BGL_HAVE_GMP)   
+#if (BGL_HAVE_GMP && !BGL_BOOT)   
 
 /* field access macros.  */
 #define SIZ(x) ((x)->_mp_size)
