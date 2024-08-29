@@ -54,7 +54,7 @@
     (write x p)
     (get-output-string p)))
 
-(define *seen-exports* (make-hashtable))
+(define *seen-exports* (create-hashtable :weak 'open-string))
 (define (collect-exports l)
   (for-each
     (lambda (d)
@@ -64,7 +64,7 @@
         ((func ?- (export ?n) ???-) (hashtable-put! *seen-exports* n #t))))
     l))
 
-(define *seen-imports* (make-hashtable))
+(define *seen-imports* (create-hashtable :weak 'open-string))
 (define (remove-duplicate-imports! l)
   (filter!
     (lambda (d)
@@ -107,7 +107,7 @@
         (else #t)))
     l))
 
-(define *seen-recs* (make-hashtable))
+(define *seen-recs* (create-hashtable :weak 'open-string))
 (define (remove-duplicate-recs! l)
   (filter!
     (lambda (d)
@@ -133,7 +133,7 @@
         (else #t)))
     (cdr mod)))
 
-(define *export-whitelist* (make-hashtable))
+(define *export-whitelist* (create-hashtable :weak 'open-string))
 (define (keep-export? n) (hashtable-contains? *export-whitelist* n))
 
 (define (init-export-whitelist)
@@ -162,7 +162,7 @@
             (set-cdr! d (cons id r))))))
     l))
 
-(define *initial-order* (make-hashtable))
+(define *initial-order* (create-hashtable :weak 'open-string))
 (define (compute-initial-order l)
   (let ((index 0))
     (for-each 
