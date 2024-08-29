@@ -40,9 +40,9 @@
 		   "STRUCT_REF")
 	    (macro $struct-set!::obj (::struct ::int ::obj)
 		   "STRUCT_SET")
-	    (macro u-struct-ref::obj (::obj ::int)
+	    (macro u-struct-ref::obj (::struct ::int)
 		   "STRUCT_REF")
-	    (macro u-struct-set!::obj (::obj ::int ::obj)
+	    (macro u-struct-set!::obj (::struct ::int ::obj)
 		   "STRUCT_SET")
 	    ;; the struct-key function takes ::obj (instead of ::symbol)
 	    ;; parameters because the key of the structure is used by
@@ -67,7 +67,12 @@
 		(u-struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
 		($struct-key "(struct.get $struct $key ~0)")
 		($struct? "(ref.test (ref $struct) ~0)")
-	    ($struct-length "(array.len (struct.get $struct $values ~0))"))
+	    ($struct-length "(array.len (struct.get $struct $values ~0))")
+		
+		($make-struct "(struct.new $struct ~0 (array.new $vector ~2 ~1))")
+	    ($make-s-struct "(struct.new $struct ~0 (array.new $vector ~2 ~1))")
+	    ($create-struct "(struct.new $struct ~0 (array.new_default $vector ~1))")
+	    ($create-s-struct "(struct.new $struct ~0 (array.new_default $vector ~1))"))
    
    (java    (class foreign
 	       (method static $struct-ref::obj (::struct ::int)

@@ -55,10 +55,6 @@
 ;; temp function types for extra-light funcalls.
 (define *extra-types* '())
 
-;; Recreate structured control flow (generate blocks, loops and if blocks in WASM)
-;; or use the simpler dispatcher pattern to emulate gotos?
-(define *use-relooper* #t)
-
 ;*---------------------------------------------------------------------*/
 ;*    needs-dispatcher? ...                                            */
 ;*---------------------------------------------------------------------*/
@@ -251,7 +247,7 @@
 ;*    gen-body ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (gen-body v::global blocks)
-  (if *use-relooper*
+  (if *wasm-use-relooper*
     (let ((body (reloop v (dom_tree blocks))))
       (if body
         body
@@ -620,7 +616,7 @@
       ((uint64? value) `(i64.const ,(uint64->llong value)))
       ((elong? value) `(i64.const ,value))
       ((llong? value) `(i64.const ,value))
-      ((ucs2? value) `(i32.const ,(ucs2->integer value)))
+      ((ucs2? value) `(struct.new $bucs2 (i32.const ,(ucs2->integer value))))
       ((fixnum? value)
         ;; TODO: support other types
         (if (eq? (type-id type) 'int)

@@ -74,8 +74,7 @@
 					  #!optional (nbits 128))
 	   (aes-ctr-decrypt-file::bstring ::bstring ::bstring
 					  #!optional (nbits 128)))
-
-   (option (set! *init-mode* 'intern)))
+   )
 
 ;*---------------------------------------------------------------------*/
 ;*    u8vector-ref ...                                                 */

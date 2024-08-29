@@ -78,32 +78,32 @@
       
       (define (make-tv-ref)
 	 (let* ((pfmt (string-append "TVECTOR_REF( " mitem-name ",$1,$2 )"))
-		(exp (make-private-sexp 'vref tv-id item-id 'int
+		(exp (make-private-sexp 'vref tv-id item-id 'long
 					pfmt 'tv 'o)))
 	    `(define-inline (,(make-typed-ident tv-ref-id item-id)
 			     ,(make-typed-ident 'tv tv-id)
-			     o::int)
+			     o::long)
 		,exp)))
       
       (define (make-tv-set!)
 	 (let* ((pfmt (string-append "TVECTOR_SET( " mitem-name ",$1,$2,$3 )"))
-		(exp (make-private-sexp 'vset! tv-id item-id 'int
+		(exp (make-private-sexp 'vset! tv-id item-id 'long
 					pfmt 'tv 'o 'v)))
 	    `(define-inline (,(symbol-append tv-set!-id '::obj)
 			     ,(make-typed-ident 'tv tv-id)
-			     o::int
+			     o::long
 			     ,(make-typed-ident 'v item-id))
 		,exp)))
       
       (define (make-tv)
 	 `(define-inline (,(make-typed-ident tv-make-id tv-id)
-			  len::int
+			  len::long
 			  ,(make-typed-ident 'v item-id))
 	     (let ((,(make-typed-ident 'tv tv-id) (,tv-alloc-id len)))
-		(labels ((,(make-typed-ident 'loop tv-id) (i::int)
+		(labels ((,(make-typed-ident 'loop tv-id) (i::long)
 				(if (=fx i len)
 				    tv
-				    (let ((ni::int (+fx i 1)))
+				    (let ((ni::long (+fx i 1)))
 				       (,tv-set!-id tv i v)
 				       (loop ni)))))
 		   (loop 0)))))
@@ -114,8 +114,8 @@
 	     "ALLOCATE_TVECTOR( "))
       
       (define (make-c-alloc-tv)
-	 `(define-inline (,(make-typed-ident tv-alloc-id tv-id) len::int)
-	     ,(make-private-sexp 'valloc tv-id item-id 'int
+	 `(define-inline (,(make-typed-ident tv-alloc-id tv-id) len::long)
+	     ,(make-private-sexp 'valloc tv-id item-id 'long
 				 (string-append (allocate-tvector)
 						mitem-name ", "
 						item-name
@@ -157,10 +157,10 @@
       (define (make-tv->list)
 	 `(define (,(symbol-append tv->list '::obj)
 		   ,(make-typed-ident 'tv tv-id))
-	     (let ((len::int (,tv-length-id tv)))
+	     (let ((len::long (,tv-length-id tv)))
 		(if (=fx len 0)
 		    '()
-		    (labels ((loop::pair (i::int acc::obj)
+		    (labels ((loop::pair (i::long acc::obj)
 				   (if (=fx i 0)
 				       (cons (,tv-ref-id tv i) acc)
 				       (loop (-fx i 1)
@@ -172,9 +172,9 @@
 	     (vector->tvector ',tv-id v)))
       
       (define (make-tv-length)
-	 `(define-inline (,(symbol-append tv-length-id '::int)
+	 `(define-inline (,(symbol-append tv-length-id '::long)
 			  ,(make-typed-ident 'o tv-id))
-	     ,(make-private-sexp 'vlength tv-id item-id 'int
+	     ,(make-private-sexp 'vlength tv-id item-id 'long
 				 "TVECTOR_LENGTH( $1 )" 'o)))
 
       ;; we parse a pragma clause for predicate and allocator and accessors
@@ -185,19 +185,19 @@
 		;; tv-ref
 		(inline ,(make-typed-ident tv-ref-id item-id)
 			,(make-typed-ident 'tv tv-id)
-			::int)
+			::long)
 		;; tv-set!
 		(inline ,(symbol-append tv-set!-id '::obj)
 			,(make-typed-ident 'tv tv-id)
-			::int
+			::long
 			,(make-typed-ident 'v item-id))
 		;; make-tv
 		(inline ,(make-typed-ident tv-make-id tv-id)
-			::int
+			::long
 			,(make-typed-formal item-id))
 		;; alloc-tv
 		(inline ,(make-typed-ident tv-alloc-id tv-id)
-			::int)
+			::long)
 		;; tv->vector
 		(inline ,(symbol-append tv->vector-id '::vector)
 			,(make-typed-ident 'tv tv-id))
@@ -205,7 +205,7 @@
 		(inline ,(make-typed-ident vector->tv-id tv-id) 
 			::vector)
 		;; tv-length
-		(inline ,(symbol-append tv-length-id '::int)
+		(inline ,(symbol-append tv-length-id '::long)
 			,(make-typed-ident 'o tv-id))
 		;; tv->list
 		(,(symbol-append tv->list '::obj)

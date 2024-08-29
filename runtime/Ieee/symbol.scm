@@ -73,7 +73,7 @@
 	(wasm
 		(c-symbol? "(ref.test (ref $symbol) ~0)")
 		($symbol? "(ref.test (ref $symbol) ~0)")
-		($make-symbol "(struct.new $symbol ~0 (global.get $BUNSPEC))")
+		($make-symbol "(struct.new $symbol ~0 (ref.null none))")
 	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
 	    (c-symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
 		
@@ -82,7 +82,7 @@
 
 		(c-keyword? "(ref.test (ref $keyword) ~0)")
 		($keyword? "(ref.test (ref $keyword) ~0)")
-		($make-keyword "(struct.new $keyword ~0 (global.get $BUNSPEC))")
+		($make-keyword "(struct.new $keyword ~0 (ref.null none))")
 	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	    (c-keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	)

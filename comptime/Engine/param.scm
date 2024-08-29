@@ -245,6 +245,7 @@
 	    *allow-type-redefinition*
 	    *local-exit?*
 	    *pre-processor*
+       *wasm-use-relooper*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -1213,3 +1214,10 @@
 ;*---------------------------------------------------------------------*/
 (add-doc-variable! '*load-path* "The load path")
 (add-doc-variable! '*user-pass* "The user specific compilation pass")
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-use-relooper* ...                                          */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-use-relooper*
+   "If false, use the naive dispatcher pattern to generate structured control flow for WASM"
+   #t)

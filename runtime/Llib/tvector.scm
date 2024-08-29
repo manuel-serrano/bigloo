@@ -43,7 +43,7 @@
 
    (extern (macro $tvector?::bool (::obj)
 		  "TVECTORP")
-	   (macro $tvector-length::int (::tvector)
+	   (macro $tvector-length::long (::tvector)
 		  "TVECTOR_LENGTH")
 	   
 	   (macro $tvector-descr::obj (::tvector)
@@ -54,8 +54,8 @@
 	   (export get-tvector-descriptor "get_tvector_descriptor"))
 
 	(wasm
-		($tvector? "(ref.test arrayref ~0)")
-		($tvector-length "(array.len ~0)"))
+		($tvector? "(ref.test (ref array) ~0)")
+		($tvector-length "(i64.extend_i32_u (array.len ~0))"))
 
    (java   (class foreign
 	      (method static $tvector?::bool (::obj)
@@ -69,7 +69,7 @@
 		      "TVECTOR_DESCR_SET")))
 
    (export  (inline tvector?::bool ::obj)
-	    (inline tvector-length::int ::tvector)
+	    (inline tvector-length::long ::tvector)
 	    (get-tvector-descriptor::obj ::symbol)
 	    (declare-tvector! ::string  ::procedure ::obj ::obj)
 	    (tvector-ref ::tvector)

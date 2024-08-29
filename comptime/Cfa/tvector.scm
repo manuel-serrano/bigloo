@@ -524,7 +524,7 @@
 					   '()
 					   loc
 					   'value)))
-		(node-type-set! new-node *int*)
+		(node-type-set! new-node *long*)
 		(inline-node new-node 1 '()))
 	     node))))
 

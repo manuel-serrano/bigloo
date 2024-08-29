@@ -67,7 +67,7 @@
       (set! *user-inlining?* #f))
    ;; saw or no saw
    (set! *saw* (or (eq? *force-saw* #t)
-		   (memq *target-language* '(jvm .net))))
+		   (memq *target-language* '(jvm wasm .net))))
    (let ((pres (if *extended-done?*
 		   #t
 		   (let ((auto-mode (let loop ((sfiles *src-files*))
@@ -113,7 +113,7 @@
       ;; when compiling for the Java back-end, the call/cc mode must
       ;; always be disabled (because call/cc is only supported in the
       ;; dynamic extend of the compilation).
-      (when (memq *target-language* '(jvm .net))
+      (when (memq *target-language* '(jvm wasm .net))
 	 (set! *additional-heap-names*
 	    (delete! "bdb" *additional-heap-names*))
 	 (when (or (not (number? *compiler-debug*)) (<= *compiler-debug* 1))
@@ -122,7 +122,7 @@
       ;; profiling mode disable inlining
       (when (and (fixnum? *profile-mode*)
 		 (>fx *profile-mode* 0)
-		 (not (memq *target-language* '(jvm .net))))
+		 (not (memq *target-language* '(jvm wasm .net))))
 	 (set! *optim-loop-inlining?* #f)
 	 (set! *optim-unroll-loop?* #f)
 	 (set! *inlining-kfactor* (lambda (olevel) 0))
@@ -897,6 +897,13 @@
        (set! *jvm-java* file))
       (("-jvm-opt" ?string (help "JVM invocation option"))
        (set! *jvm-options* (string-append *jvm-options* " " string)))
+
+;*--- WASM specific options --------------------------------------------*/
+      (section "WASM specific options")
+      (("-wasm-relooper" (help "Better compilation of structured conflow flow for WASM"))
+       (set! *wasm-use-relooper* #t))
+      (("-no-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))
+       (set! *wasm-use-relooper* #f))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")

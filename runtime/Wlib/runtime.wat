@@ -60,6 +60,21 @@
       (ref.eq (local.get $v) (global.get $BTRUE))))
 
   ;; --------------------------------------------------------
+  ;; Struct functions
+  ;; --------------------------------------------------------
+
+  (func $STRUCT_SET (export "STRUCT_SET")
+    (param $struct (ref null $struct))
+    (param $index i32)
+    (param $value eqref)
+    (result eqref)
+    (array.set $vector 
+      (struct.get $struct $values (local.get $struct)) 
+      (local.get $index) 
+      (local.get $value))
+    (global.get $BUNSPEC))
+
+  ;; --------------------------------------------------------
   ;; Dynamic env functions
   ;; --------------------------------------------------------
 
@@ -419,17 +434,45 @@
   ;; Typed vector functions
   ;; --------------------------------------------------------
 
-  ;; TODO: implement tvector descr
+  ;; TODO: better implementation of tvector descr
+
+  (global $tvector_descr_i8 (mut eqref) (ref.null none))
+  (global $tvector_descr_i16 (mut eqref) (ref.null none))
+  (global $tvector_descr_i32 (mut eqref) (ref.null none))
+  (global $tvector_descr_i64 (mut eqref) (ref.null none))
+  (global $tvector_descr_f32 (mut eqref) (ref.null none))
+  (global $tvector_descr_f64 (mut eqref) (ref.null none))
+  (global $tvector_descr_eqref (mut eqref) (ref.null none))
 
   (func $TVECTOR_DESCR (export "TVECTOR_DESCR")
     (param $v arrayref)
     (result eqref)
+    (if (ref.test (ref $u32vector) (local.get $v))
+      (then (return (global.get $tvector_descr_i32))))
+    (if (ref.test (ref $u64vector) (local.get $v))
+      (then (return (global.get $tvector_descr_i64))))
+    (if (ref.test (ref $f32vector) (local.get $v))
+      (then (return (global.get $tvector_descr_f32))))
+    (if (ref.test (ref $f64vector) (local.get $v))
+      (then (return (global.get $tvector_descr_f64))))
+    (if (ref.test (ref $vector) (local.get $v))
+      (then (return (global.get $tvector_descr_eqref))))
     (global.get $BUNSPEC))
 
   (func $TVECTOR_DESCR_SET (export "TVECTOR_DESCR_SET")
     (param $v arrayref)
     (param $desc eqref)
     (result eqref)
+    (if (ref.test (ref $u32vector) (local.get $v))
+      (then (global.set $tvector_descr_i32 (local.get $desc)) (return (global.get $BUNSPEC))))
+    (if (ref.test (ref $u64vector) (local.get $v))
+      (then (global.set $tvector_descr_i64 (local.get $desc)) (return (global.get $BUNSPEC))))
+    (if (ref.test (ref $f32vector) (local.get $v))
+      (then (global.set $tvector_descr_f32 (local.get $desc)) (return (global.get $BUNSPEC))))
+    (if (ref.test (ref $f64vector) (local.get $v))
+      (then (global.set $tvector_descr_f64 (local.get $desc)) (return (global.get $BUNSPEC))))
+    (if (ref.test (ref $vector) (local.get $v))
+      (then (global.set $tvector_descr_eqref (local.get $desc)) (return (global.get $BUNSPEC))))
     (global.get $BUNSPEC))
 
   ;; --------------------------------------------------------
@@ -916,7 +959,7 @@
       ;; Is closed
       (i32.const 0)
       ;; Buffer
-      (array.new_fixed $bstring 0)))
+      (array.new_default $bstring (i32.const 128))))
 
   (func $bgl_open_output_file (export "bgl_open_output_file")
     (param $path (ref null $bstring))

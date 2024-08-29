@@ -15,6 +15,7 @@
         backend_backend
         backend_cvm
         cnst_alloc
+        cc_exec
         
         backend_cplib
         module_module
@@ -77,7 +78,33 @@
     (wasm-walk me))
 
 (define-method (backend-link-objects me::wasm sources)
-    (tprint sources))
+    (let* ((types-file (find-file/path "types.wat" *lib-dir*))
+           (runtime-file (find-file/path "bigloo_s.wat" *lib-dir*))
+           (source-args (apply string-append (map (lambda (src) (string-append (cdr src) " ")) sources)))
+           (required-files (string-append " " types-file " " runtime-file " "))
+
+           (tmp-wat-file "final.wat")
+
+           (wasm-merge "../tools/bigloo-wasm-merge")
+           (wasm-merge-options "")
+           (wasm-merge-cmd (string-append
+              wasm-merge " " wasm-merge-options
+              required-files " " source-args
+              " > " tmp-wat-file))
+
+           (wasm-as "wasm-as")
+           (wasm-as-options "-all -g")
+           (wasm-as-cmd (string-append " && "
+              wasm-as " " wasm-as-options " " tmp-wat-file))
+           
+           (rm-tmp-file-cmd 
+            (if *rm-tmp-files*
+              (string-append " && " (bigloo-config 'shell-rm) " " tmp-wat-file)
+              ""))
+
+           (cmd (string-append wasm-merge-cmd wasm-as-cmd rm-tmp-file-cmd)))
+           (tprint "COMMAND " cmd)
+    (exec cmd #f "wasm-linker")))
 
 (define-method (type-interference! back::wasm regs)
   (when (pair? regs)
@@ -665,7 +692,7 @@
       ,@(if (eq? (global-import global) 'export)
           `((export ,(global-name global)))
           '())
-      (ref ,type) (struct.new ,type (i32.const ,value)))))
+      (ref ,type) (struct.new ,type ,(emit-wasm-atom-value (global-type global) value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-i64 ...                                                */
@@ -677,7 +704,7 @@
       ,@(if (eq? (global-import global) 'export)
           `((export ,(global-name global)))
           '())
-      (ref ,type) (struct.new ,type (i64.const ,value)))))
+      (ref ,type) (struct.new ,type ,(emit-wasm-atom-value (global-type global) value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun ...                                               */
@@ -696,7 +723,7 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-selfun fun global)
   (let ((vname (set-variable-name! global)))
-    `((global ,(wasm-sym vname) eqref (ref.null none)))))
+    `((global ,(wasm-sym vname) (ref null $vector) (ref.null none)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sgfun ...                                              */

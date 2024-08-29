@@ -61,7 +61,7 @@
 	    ($make-vector-uncollectable "(array.new $vector ~1 (i32.wrap_i64 ~0))")
 	    ($create-vector "(array.new_default $vector (i32.wrap_i64 ~0))")
 	    ($create-vector-uncollectable "(array.new_default $vector (i32.wrap_i64 ~0))")
-	    ($vector? "(ref.test arrayref ~0)") ;; TODO: arrayref or (ref $vector) ?
+	    ($vector? "(ref.test (ref $vector) ~0)")
 	    ($vector-length "(i64.extend_i32_u (array.len ~0))")
 	    ($vector-ref "(array.get $vector ~0 ~1)")
 	    ($vector-ref-ur "(array.get $vector ~0 ~1)")

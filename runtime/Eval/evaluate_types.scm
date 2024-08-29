@@ -60,44 +60,44 @@
 	   (class ev_litt::ev_expr
 	      value)
 	   (class ev_if::ev_expr
-	      p::ev_expr
-	      t::ev_expr
-	      e::ev_expr)
+	      p
+	      t
+	      e)
 	   (class ev_list::ev_expr
 	      args)
 	   (class ev_or::ev_list)
 	   (class ev_and::ev_list)
 	   (class ev_prog2::ev_expr
-	      e1::ev_expr
-	      e2::ev_expr)
+	      e1
+	      e2)
 	   (class ev_hook::ev_expr
-	      e::ev_expr)
+	      e)
 	   (class ev_trap::ev_hook)
 	   (class ev_setlocal::ev_hook
-	      v::ev_var)
+	      v)
 	   (class ev_setglobal::ev_hook
 	      (loc read-only)
 	      name::symbol
 	      mod)
 	   (class ev_defglobal::ev_setglobal)
 	   (class ev_bind-exit::ev_expr
-	      var::ev_var
-	      body::ev_expr)
+	      var
+	      body)
 	   (class ev_unwind-protect::ev_expr
-	      e::ev_expr
-	      body::ev_expr)
+	      e
+	      body)
 	   (class ev_with-handler::ev_expr
-	      handler::ev_expr
-	      body::ev_expr)
+	      handler
+	      body)
 	   (class ev_synchronize::ev_expr
 	      (loc read-only)
-	      mutex::ev_expr
-	      prelock::ev_expr
-	      body::ev_expr)
+	      mutex
+	      prelock
+	      body)
 	   (class ev_binder::ev_expr
 	      vars
 	      vals
-	      body::ev_expr)
+	      body)
 	   (class ev_let::ev_binder
 	      (boxes (default '())))
 	   (class ev_let*::ev_binder
@@ -108,23 +108,23 @@
 	      vals ; cons (list var) expr
 	      (env (default '())) ; list (cons var code)
 	      (stk (default '()))
-	      body::ev_expr
+	      body
 	      (boxes (default '()))
 	      )
 	   (class ev_goto::ev_expr
 	      (loc read-only)
-	      label::ev_var
-	      labels::ev_labels
+	      label
+	      labels
 	      args )
 	   (class ev_app::ev_expr
 	      (loc read-only)
-	      fun::ev_expr args tail?)
+	      fun args tail?)
 	   (class ev_abs::ev_expr
 	      (loc read-only)
 	      where
 	      (arity read-only)
 	      vars
-	      body::ev_expr
+	      body
 	      (size::int (default 0))
 	      (bind (default '()))
 	      (free (default '()))

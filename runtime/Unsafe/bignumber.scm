@@ -91,7 +91,7 @@
 	 (method static $srand::void (::int) "srand")))
 	    
    (cond-expand
-      ((not enable-gmp)
+      ((or (not enable-gmp) bigloo-wasm)
        (extern
 	  ($make-bignum::bignum (::u16vector) "bgl_make_bignum")
 	  (macro $bignum-u16vect::u16vector (::bignum) "BGL_BIGNUM_U16VECT")
@@ -142,7 +142,7 @@
 	  (export $$bitnotbx "bgl_bignum_not"))))
    
    (cond-expand
-      ((not enable-gmp)
+      ((or (not enable-gmp) bigloo-wasm)
        (export
 	  (inline $$string->integer-obj::obj ::string ::long)
 	  ($$fixnum->bignum::bignum ::long)
@@ -199,7 +199,7 @@
    (string->integer str radix))
 
 (cond-expand
-   ((not enable-gmp)
+   ((or (not enable-gmp) bigloo-wasm)
 
 ;*---------------------------------------------------------------------*/
 ;*    expt ...                                                         */
