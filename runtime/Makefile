@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 29 11:28:48 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 10:57:08 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -83,6 +83,8 @@ BSAFEDBGFLAGS	= $(BSAFEFLAGS) -gheap
 #*--- Bigloo, unsafe, heap --------------------------------------------*/
 BUNSAFEDBGFLAGS	= $(BUNSAFEFLAGS) -gheap
 CDBGFLAGS	= -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(BACKPTRFLAGS) -DBIGLOO_TRACE
+#*--- Bigloo distrib flags --------------------------------------------*/
+BDISTRIBFLAGS   = -copt -DBGL_BOOT=1
 
 #*---------------------------------------------------------------------*/
 #*    The assembler objects.                                           */
@@ -625,8 +627,8 @@ distlib_u:
 	$(MAKE) one-distlib \
 		BIGLOO=$(BIGLOO) \
                 BFEATUREFLAGS= \
-                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
-                BFLAGS_USR="$(BUNSAFEFLAGS)" \
+                BFLAGS_SYS="$(BUNSAFEFLAGS) $(BDISTRIBFLAGS)" \
+                BFLAGS_USR="$(BUNSAFEFLAGS) $(BDISTRIBFLAGS)" \
                 OBJDIR_USR=obj_u OBJDIR_SYS=obj_u
 
 
@@ -634,8 +636,8 @@ distlib:
 	$(MAKE) one-distlib \
 		BIGLOO=$(BIGLOO) \
                 BFEATUREFLAGS= \
-                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
-                BFLAGS_USR="$(BSAFEFLAGS)" \
+                BFLAGS_SYS="$(BUNSAFEFLAGS) $(BDISTRIBFLAGS)" \
+                BFLAGS_USR="$(BSAFEFLAGS) $(BDISTRIBFLAGS)" \
                 OBJDIR_USR=obj_s OBJDIR_SYS=obj_u
 
 one-distlib: $(C_OBJECTS)
@@ -647,7 +649,7 @@ one-distlib: $(C_OBJECTS)
 #*---------------------------------------------------------------------*/
 boot: dirs includes
 	touch .afile
-	@ $(MAKE) boot-libs EFLAGS="-copt -DBGL_BOOT=1" CEFLAGS=-DBGL_BOOT=1
+	@ $(MAKE) boot-libs CEFLAGS=-DBGL_BOOT=1
 
 boot-libs:
 	@ $(MAKE) lib-c_u SCMOBJSUFFIX="" COBJSUFFIX=%.o
