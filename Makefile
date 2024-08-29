@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Aug 29 13:56:54 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 14:15:53 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -215,8 +215,9 @@ boot-c: checkgmake
 	fi
 	# touch the generic Scheme source files that must be
 	# recompiled ith the configured options (e.g., gmp or pcre2)
+	touch runtime/Eval/evprimop.scm
 	touch runtime/Unsafe/regexp.scm
-	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Clib/cbignum.c
+	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c
 	$(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
