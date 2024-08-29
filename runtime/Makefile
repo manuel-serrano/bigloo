@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 29 08:27:02 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 08:43:46 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -367,7 +367,6 @@ C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
 POPULATION_SI	= $(SRC_FILES) \
                   Makefile \
                   Llib/make_lib.scm \
-		  Ieee/bignum.sch \
 		  Lalr/lalr.sch \
 		  Rgc/rgc-node.sch \
 		  Eval/byte-code.sch \

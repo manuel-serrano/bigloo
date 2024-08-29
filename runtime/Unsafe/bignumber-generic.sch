@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Thu Aug 29 07:44:23 2024 (serrano)                */
+;*    Last change :  Thu Aug 29 09:21:27 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -86,10 +86,6 @@
       (export $bignum->string "bgl_bignum_to_string")
       (export $randbx "bgl_rand_bignum")
       (export $seed-rand "bgl_seed_rand")
-      
-      (export $zerobx? "BXZERO")
-      (export $positivebx? "BXPOSITIVE")
-      (export $negativebx? "BXNEGATIVE")
       
       (export $bignum->flonum "bgl_bignum_to_flonum")
       (export $flonum->bignum "bgl_flonum_to_bignum")
