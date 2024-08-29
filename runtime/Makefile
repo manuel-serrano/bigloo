@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Aug 28 12:53:45 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 08:27:02 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -55,8 +55,7 @@ LIBSUFFIX	=
 BHEAPFLAGS	= $(BOOTFLAGS) $(BFEATUREFLAGS) \
                   -unsafe -q -mkheap -mklib -s -no-hello
 #*--- Bigloo, common --------------------------------------------------*/
-#BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm -lib-dir $(BOOTLIBDIR)
-BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) -rm -copt -w -lib-dir $(BOOTLIBDIR)
+BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm
 #*--- Bigloo, safe ----------------------------------------------------*/
 BSAFEFLAGS	= -srfi bigloo-safe $(BCOMMONFLAGS) \
                   -O3 -mklib -cc $(CC) -fsharing \
@@ -626,6 +625,7 @@ distlibs:
 distlib_u:
 	$(MAKE) one-distlib \
 		BIGLOO=$(BIGLOO) \
+                BFEATUREFLAGS= \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 OBJDIR_USR=obj_u OBJDIR_SYS=obj_u
@@ -634,6 +634,7 @@ distlib_u:
 distlib:
 	$(MAKE) one-distlib \
 		BIGLOO=$(BIGLOO) \
+                BFEATUREFLAGS= \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
                 OBJDIR_USR=obj_s OBJDIR_SYS=obj_u
