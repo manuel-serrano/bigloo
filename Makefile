@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Aug 29 14:15:53 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 14:40:40 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -207,7 +207,7 @@ boot-c: checkgmake
 	  $(MAKE) -C runtime heap && \
 	  $(MAKE) -C runtime boot && \
 	  $(MAKE) -C comptime bigloo && \
-	  $(MAKE) -C comptime doboot; \
+	  $(MAKE) -C comptime boot; \
 	else \
 	  $(MAKE) -C runtime boot && \
 	  $(MAKE) -C comptime boot && \
@@ -217,7 +217,7 @@ boot-c: checkgmake
 	# recompiled ith the configured options (e.g., gmp or pcre2)
 	touch runtime/Eval/evprimop.scm
 	touch runtime/Unsafe/regexp.scm
-	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c
+	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c runtime/Clib/cmain.c
 	$(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
