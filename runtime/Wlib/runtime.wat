@@ -42,7 +42,7 @@
 
   ;; /!\ DO NOT MODIFY THE FOLLOWING LINE. 
   ;; It is used to include the content of 'runtime.types'.
-  (;TYPES;)
+  #;TYPES
 
   (global $BUNSPEC (export "BUNSPEC") i31ref (ref.i31 (i32.const 3)))
   (global $BEOF (export "BEOF") i31ref (ref.i31 (i32.const 4))) ;; TODO: What value to choose for BEOF? Is it really a cnst?
@@ -110,7 +110,7 @@
         ;; Is closed
         (i32.const 0)
         ;; File descriptor
-        (i32.const 1 (; POSIX stdout fd ;)))
+        (i32.const 1 #;(POSIX stdout fd)))
       ;; $current-err-port
       (struct.new $file-output-port 
         ;; Name
@@ -131,7 +131,7 @@
         ;; Is closed
         (i32.const 0)
         ;; File descriptor
-        (i32.const 2 (; POSIX stderr fd ;)))
+        (i32.const 2 #;(POSIX stderr fd)))
       ;; $current-in-port
       (struct.new $file-input-port
         ;; Name
@@ -159,11 +159,11 @@
           ;; Matchstop
           (i32.const 0)
           ;; Lastchar
-          (i32.const 0x0A (; ASCII NEWLINE '\n' ;))
+          (i32.const 0x0A #;(ASCII NEWLINE '\n'))
           ;; Buffer
           (array.new_default $bstring (i32.const 128)))
         ;; File descriptor
-        (i32.const 0 (; POSIX stdin fd ;)))))
+        (i32.const 0 #;(POSIX stdin fd)))))
 
   (func $BGL_CURRENT_DYNAMIC_ENV (export "BGL_CURRENT_DYNAMIC_ENV")
     (result (ref null $dynamic-env))
@@ -284,7 +284,7 @@
         (local.get $new)
         (local.get $alloc)
         (local.get $nil)
-        (global.get $BUNSPEC) (; NIL ;)
+        (global.get $BUNSPEC) #;NIL
         (local.get $constructor)
         (local.get $super)
         (local.get $subclasses)
@@ -550,8 +550,8 @@
     (i64.lt_s
       (i64.and
         (i64.reinterpret_f64 (local.get $v))
-        (i64.const 0x7FFFFFFFFFFFFFFF (; NaN ;)))
-      (i64.const 0x7FF0000000000000 (; Inf ;))))
+        (i64.const 0x7FFFFFFFFFFFFFFF #;NaN))
+      (i64.const 0x7FF0000000000000 #;Inf)))
 
   (func $BGL_IS_INF (export "BGL_IS_INF") (param $v f64) (result i32)
     ;; The abs is required to take care of -INF and +INF.
@@ -1217,11 +1217,11 @@
             (i32.sub
               (struct.get $rgc $matchstart (local.get $rgc))
               (i32.const 1)))
-          (i32.const 0x0A (; ASCII NEWLINE '\n' ;))))
+          (i32.const 0x0A #;(ASCII NEWLINE '\n'))))
       (else
         (i32.eq
           (struct.get $rgc $lastchar (local.get $rgc))
-          (i32.const 0x0A (; ASCII NEWLINE '\n' ;))))))
+          (i32.const 0x0A #;(ASCII NEWLINE '\n'))))))
 
   (func $rgc_buffer_eol_p (export "rgc_buffer_eol_p")
     (param $port (ref null $input-port))
@@ -1242,7 +1242,7 @@
               (i64.extend_i32_u (struct.get $rgc $forward (local.get $rgc)))
               (i64.extend_i32_u (struct.get $rgc $bufpos (local.get $rgc)))))
           (else
-            (i32.const 0 (; FALSE ;)))))
+            (i32.const 0 #;FALSE))))
       (else
         (struct.set $rgc $forward (local.get $rgc) (i32.wrap_i64 (local.get $forward)))
         (struct.set $rgc $bufpos (local.get $rgc) (i32.wrap_i64 (local.get $bufpos)))
@@ -1250,7 +1250,7 @@
           (array.get $bstring 
             (struct.get $rgc $buffer (local.get $rgc)) 
             (i32.wrap_i64 (local.get $forward)))
-          (i32.const 0x0A (; ASCII NEWLINE '\n' ;))))))
+          (i32.const 0x0A #;(ASCII NEWLINE '\n'))))))
 
   (func $rgc_buffer_bof_p (export "rgc_buffer_bof_p")
     (param $port (ref null $input-port))
@@ -1282,14 +1282,14 @@
       (then
         (struct.set $rgc $forward (local.get $rgc) (i32.wrap_i64 (local.get $forward)))
         (struct.set $rgc $bufpos (local.get $rgc) (i32.wrap_i64 (local.get $bufpos)))
-        (i32.const 0 (; FALSE ;)))
+        (i32.const 0 #;FALSE))
       (else
         (if (result i32)
           (struct.get $rgc $eof (local.get $rgc))
           (then
             (struct.set $rgc $forward (local.get $rgc) (i32.wrap_i64 (local.get $forward)))
             (struct.set $rgc $bufpos (local.get $rgc) (i32.wrap_i64 (local.get $bufpos)))
-            (i32.const 1 (; TRUE ;)))
+            (i32.const 1 #;TRUE))
           (else
             ;; NOT (rgc_fill_buffer(port))
             (i32.sub
@@ -1326,7 +1326,7 @@
     (if (i32.le_s (local.get $nbread) (i32.const 0))
       ;; TODO: emit exceptions in case of error (when nbread < 0)
       (then
-        (struct.set $rgc $eof (local.get $rgc) (i32.const 1 (; TRUE ;))))
+        (struct.set $rgc $eof (local.get $rgc) (i32.const 1 #;TRUE)))
       (else
         (call $load_string_in_buffer
           (i32.const 128)
@@ -1339,8 +1339,8 @@
 
     (if (result i32)
       (i32.le_s (local.get $nbread) (i32.const 0))
-      (then (i32.const 0 (; FALSE ;)))
-      (else (i32.const 1 (; TRUE ;)))))
+      (then (i32.const 0 #;FALSE))
+      (else (i32.const 1 #;TRUE))))
 
   (func $rgc_fill_file_buffer
     (param $port (ref $file-input-port))
@@ -1415,14 +1415,14 @@
 
     (struct.set $rgc $forward (local.get $rgc) (struct.get $rgc $bufpos (local.get $rgc)))
     (if (struct.get $rgc $eof (local.get $rgc))
-      (then (return (i32.const 0 (; FALSE ;)))))
+      (then (return (i32.const 0 #;FALSE))))
 
     (if (ref.test (ref $file-input-port) (local.get $port))
       (then 
         (return_call $rgc_fill_file_buffer 
           (ref.cast (ref $file-input-port) (local.get $port)))))
 
-    (i32.const 1 (; TRUE ;)))
+    (i32.const 1 #;TRUE))
 
   (func $rgc_file_charready
     (param $port (ref $file-input-port))
@@ -1431,7 +1431,7 @@
     (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
     
     (if (struct.get $rgc $eof (local.get $rgc))
-      (then (return (i32.const 0 (; FALSE ;)))))
+      (then (return (i32.const 0 #;FALSE))))
 
     ;; FIXME: in java we also check the file position
     (i32.lt_u 
@@ -1485,7 +1485,7 @@
         ;; Matchstop
         (i32.const 0)
         ;; Lastchar
-        (i32.const 0x0A (; ASCII NEWLINE '\n' ;))
+        (i32.const 0x0A #;(ASCII NEWLINE '\n'))
         ;; Buffer
         (if (result (ref $bstring))
           (ref.is_null (local.get $buffer))
@@ -1512,7 +1512,7 @@
     (local $rgc (ref $rgc))
     (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
 
-    (struct.set $rgc $eof (local.get $rgc) (i32.const 1 (; TRUE ;)))
+    (struct.set $rgc $eof (local.get $rgc) (i32.const 1 #;TRUE))
     ;; TODO: call chook
 
     (if (ref.test (ref $file-input-port) (local.get $port))
@@ -1551,7 +1551,7 @@
           (br $for-loop))))
     (i64.and
       (local.get $r)
-      (i64.const 536870911 (; ((1 << 29) - 1) ;))))
+      (i64.const 536870911 #;((1 << 29) - 1))))
 
   (func $bgl_string_hash_persistent (export "bgl_string_hash_persistent")
     (param $str (ref null $bstring))
@@ -1617,7 +1617,7 @@
     (param i64)
     (result i32)
     ;; Not implemented (not supported by NodeJS fs API).
-    (i32.const 0 (; FALSE ;)))
+    (i32.const 0 #;FALSE))
 
   ;; --------------------------------------------------------
   ;; Math functions
@@ -1695,14 +1695,14 @@
     (param $day i32) 
     (result (ref null $bstring))
     (if (ref.is_null (global.get $day_names))
-      (then (global.set $day_names (call $make_day_names (i32.const 1 (; Long format ;))))))
+      (then (global.set $day_names (call $make_day_names (i32.const 1 #;(Long format))))))
     (array.get $stringarray (global.get $day_names) (i32.sub (local.get $day) (i32.const 1))))
 
   (func $bgl_day_aname (export "bgl_day_aname") 
     (param $day i32) 
     (result (ref null $bstring))
     (if (ref.is_null (global.get $day_anames))
-      (then (global.set $day_anames (call $make_day_names (i32.const 0 (; Short format ;))))))
+      (then (global.set $day_anames (call $make_day_names (i32.const 0 #;(Short format))))))
     (array.get $stringarray (global.get $day_anames) (i32.sub (local.get $day) (i32.const 1))))
 
   (global $month_names (mut (ref null $stringarray)) (ref.null none))
@@ -1739,14 +1739,14 @@
     (param $month i32) 
     (result (ref null $bstring))
     (if (ref.is_null (global.get $month_names))
-      (then (global.set $month_names (call $make_month_names (i32.const 1 (; Long format ;))))))
+      (then (global.set $month_names (call $make_month_names (i32.const 1 #;(Long format))))))
     (array.get $stringarray (global.get $month_names) (i32.sub (local.get $month) (i32.const 1))))
 
   (func $bgl_month_aname (export "bgl_month_aname") 
     (param $month i32) 
     (result (ref null $bstring))
     (if (ref.is_null (global.get $month_anames))
-      (then (global.set $month_anames (call $make_month_names (i32.const 0 (; Short format ;))))))
+      (then (global.set $month_anames (call $make_month_names (i32.const 0 #;(Short format))))))
     (array.get $stringarray (global.get $month_anames) (i32.sub (local.get $month) (i32.const 1))))
 
   (func $bgl_make_date (export "bgl_make_date")

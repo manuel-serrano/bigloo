@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Engine/engine.scm           */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/engine.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 10:13:23 1993                          */
-;*    Last change :  Thu Aug 22 07:55:27 2013 (serrano)                */
-;*    Copyright   :  1993-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Aug 30 12:06:34 2024 (serrano)                */
+;*    Copyright   :  1993-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The system's engine (some kind of dispatcher between the linker, */
 ;*    the interpreter and the compiler).                               */

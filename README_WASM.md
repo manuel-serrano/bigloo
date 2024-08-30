@@ -1,3 +1,31 @@
+Bigloo-WASM, a WASM backend for the Bigloo compiler
+===================================================
+
+This is a fork of the "official" Bigloo distribution that adds a
+WASM backend to the compiler and an implementation of the runtime system.
+
+> [!CAUTION]
+> This fork is experimental and not all Bigloo features are supported yet.
+> The main missing features are:
+
+  - no thread support;
+  - no `call/cc`.
+
+> [!WARNING]
+> Some features are known to be slow:
+
+  - regexp;
+  - bignum.
+  
+Installation
+------------
+
+To install the Bigloo-WASM branch:
+
+```
+./configure --wasm=yes && make && make install
+```
+
 # How to use Bigloo with WASM backend
 
 ## How to compile Bigloo/WASM

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Init/parse_args.scm      */
+;*    .../prgm/project/bigloo/wasm/comptime/Init/parse_args.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul  3 15:56:16 2024 (serrano)                */
+;*    Last change :  Fri Aug 30 11:57:49 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -904,6 +904,8 @@
        (set! *wasm-use-relooper* #t))
       (("-no-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))
        (set! *wasm-use-relooper* #f))
+      (("-wat" (help "Do not assemble the generated .wat file"))
+       (set! *pass* 'wat))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/runtime/Makefile              */
+#*    .../prgm/project/bigloo/wasm/bigloo-wasm/runtime/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Jul 22 08:49:37 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 14:34:32 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -47,6 +47,12 @@ SCMCLASSSUFFIX	= %.class
 PBASE		= bigloo.runtime
 # The qualifier of the build library
 LIBSUFFIX	=
+# Wasm types
+WASMTYPES	= Wlib/types.wat
+# Wasm flags
+WFLAGS		= 
+# Wasm merge tool
+WASMMERE	= $(BOOTDIR)/tools
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
@@ -483,22 +489,19 @@ heap: heap-c
 heap-c: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
 	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
-	@ echo "Heap Done..."
-	@ echo "-------------------------------"
+	@ echo "heap \e[1;35m$(HEAPC_FILE)\e[0m  done."
 
 heap-jvm: .afile .jfile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
-	@ echo "Heap Done..."
-	@ echo "-------------------------------"
+	@ echo "heap \e[1;35m$(HEAPJVM_FILE)\e[0m  done."
 
 heap-wasm: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPWASM_FILE)
 	$(BIGLOO) -target wasm -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPWASM_FILE)
-	@ echo "Heap Done..."
-	@ echo "-------------------------------"
+	@ echo "heap \e[1;35m$(HEAPWASM_FILE)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo C libraries compilation                                   */
@@ -571,8 +574,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJE
 	$(AR) $(ARFLAGS) \
                 $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a $^
 	$(RANLIB) $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
+	@ echo "static library \e[1;36m$(@)\e[0m done."
 
 one-share-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
 
@@ -583,6 +585,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHARE
              LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
              BIGLOOLIB= \
              SONAME=lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
+	@ echo "shared library \e[1;37m$(@)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JVM libraries compilation                                 */
@@ -628,8 +631,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib 
                  bigloo/runtime/*/_KBGl_*.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
-	@ echo "$(LIBRARYNAME)$(LIBSUFFIX).zip done..."
-	@ echo "-------------------------------"
+	@ echo "zip library \e[1;38m$(@)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JAS libraries compilation                                 */
@@ -662,30 +664,26 @@ libs-wasm:
 
 lib-wasm: lib-wasm_s
 lib-wasm_s: includes
-	@ echo "\e[1;34mGenerating lib-wasm_s\e[0m"
-	@ $(MAKE) one-lib-wasm \
+	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
-								WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_s \
+                WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_s \
                 LIBSUFFIX=_s
 
 lib-wasm_u: includes
-	@ echo "\e[1;34mGenerating lib-wasm_u\e[0m"
-	@ $(MAKE) one-lib-wasm \
+	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
-								WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_u \
+                WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_u \
                 LIBSUFFIX=_u
 
-one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
+one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
 
-WASM_OPT=wasm-opt
+WASM_OPT ?= wasm-opt
 # WASM_OPT_FLAGS=-O3 --gufa -O3 -g
 WASM_OPT_FLAGS=-O0 -g
-WASM_AS=wasm-as
+WASM_AS ?= wasm-as
 WASM_AS_FLAGS=-all -g
-WASM_DIS=wasm-dis
-WASM_DIS_FLAGS=-all
 WASM_MERGE=wasm-merge
 WASM_MERGE_FLAGS=-all -g --rename-export-conflicts
 
@@ -694,34 +692,53 @@ touch-wasm:
 	@ touch $(WASMS:objs//%.wasm=%.scm)
 	@ touch Wlib/runtime.wat
 
-$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
-	@ echo "\e[1;34mAssembling $@\e[0m"
-	@ $(WASM_OPT) -all $(WASM_OPT_FLAGS) $< -o $@
+$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
+  $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
+	$(WASM_OPT) -all $(WASM_OPT_FLAGS) $< -o $@
 
-$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
-	@ echo "\e[1;34mLinking $@ with dummy runtime\e[0m"
-	@ ../tools/bigloo-wasm-merge Wlib/runtime.types \
+$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
+  objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
+  objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
+	$(BIGLOO) -wasm -y -w $(WASMTYPES) \
+		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
+		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
+		-o $@
+	@ echo "wat file \e[1;33m$(@)\e[0m done"
+
+objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
+  $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
+	$(BIGLOO) -wasm -y -w $(WASMTYPES) \
+               Wlib/runtime.wat \
+               $(WASMS:%.wasm=%.wat) \
+               -o $@
+	@ echo "wat file \e[1;33m$(@)\e[0m done"
+
+xxx$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
+  objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
+  objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
+	../tools/bigloo-wasm-merge $(WASMTYPES) \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
 		> $@
+	@ echo "wat file \e[1;33m$(@)\e[0m done"
 
-objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: Wlib/runtime.types Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
-	@ echo "\e[1;34mLinking $@\e[0m"
-	@ ../tools/bigloo-wasm-merge Wlib/runtime.types Wlib/runtime.wat $(WASMS:%.wasm=%.wat) > $@
+xxxobjs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
+  $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
+	../tools/bigloo-wasm-merge $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat) > $@
+	@ echo "wat file \e[1;33m$(@)\e[0m done"
 
-objs/wasm_u/%.wat: %.scm
-	@ echo "\e[34mGenerating WASM for $<\e[0m"
-	@ $(BIGLOO) -wasm $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
-	@ wasm-as -all $@
+objs/wasm_u/%.wat: %.scm $(BOOTLIBDIR)/types.wat
+	$(BIGLOO) -wasm $(WFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
 
-objs/wasm_s/%.wat: %.scm
-	@ echo "\e[34mGenerating WASM for $<\e[0m"
-	@ $(BIGLOO) -wasm $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
-	@ wasm-as -all $@
+objs/wasm_s/%.wat: %.scm $(BOOTLIBDIR)/types.wat
+	$(BIGLOO) -wasm $(WFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
 
-objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat
-	@ echo "\e[34mExtracting missing runtime functions (for dev purposes)\e[0m"
-	@ ../tools/gen_dummy_wasm_imports Wlib/runtime.types $< > $@
+objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
+  objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat
+	$(BIGLOO) -i ../tools/gen_dummy_wasm_imports.scm $(WASMTYPES) $< > $@ || (rm -f $@; exit 1)
+
+ $(BOOTLIBDIR)/types.wat: $(WASMTYPES)
+	cp $< $@
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -780,6 +797,11 @@ boot-jvm:
 	@ $(MAKE) heap-jvm
 	@ $(MAKE) lib-jvm_s
 	@ $(MAKE) lib-jvm_u
+
+boot-wasm:
+	@ $(MAKE) heap-wasm
+	@ $(MAKE) lib-wasm_s
+	@ $(MAKE) lib-wasm_u
 
 #*---------------------------------------------------------------------*/
 #*    hostboot                                                         */
@@ -853,10 +875,14 @@ install-jvm:
         fi
 
 install-wasm:
-	cp Wlib/runtime.types $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
+	cp $(WASMTYPES) $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
 	cp Wlib/runtime.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
 	cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
 	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
+	cp $(BOOTLIBDIR)/bigloo_s.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat
+	cp $(BOOTLIBDIR)/bigloo_u.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat
 
 install-bee:
 	$(MAKE) install-lib LIB=libbigloo_p-$(RELEASE)

@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/configure                     */
+#*    serrano/prgm/project/bigloo/wasm/bigloo-wasm/configure           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jul 16 13:09:13 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 14:07:59 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -123,6 +123,12 @@ java=java
 jflags=
 jvflags=-noverify
 jshell=sh
+
+#*--- Java back-end user configuration --------------------------------*/
+wasmbackend=no # set to "no" not to install the Wasm back-end
+wasmas=wasm-as
+wasmopt=wasm-opt
+wasmjs=nodejs
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh
@@ -782,6 +788,12 @@ while : ; do
     --jvm-default-backend)
       defaultbackend="jvm";;
 
+    --wasm=*)
+      wasmbackend="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --wasmjs=sh)
+      wasmjs="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --no-share)
       ldopt="no-share";;
 
@@ -1175,6 +1187,7 @@ while : ; do
       echo "Bigloo compiler:"  >&2;
       echo "   --native=yes|no [default yes]" >&2;
       echo "   --jvm=yes|no|force [default no]" >&2;
+      echo "   --wasm=yes|no|force [default no]" >&2;
       echo "   --bee=partial|full [default partial]" >&2;
       echo "" >&2;
       echo "API:" >&2;
@@ -1264,6 +1277,11 @@ while : ; do
       echo "   --javashell=shell [should be sh or msdos (default sh)]" >&2;
       echo "   --native-default-backend" >&2;
       echo "   --jvm-default-backend" >&2;
+      echo "" >&2;
+      echo "WASM configuration:"  >&2;
+      echo "   --wasmas=file [wasm assembler]" >&2;
+      echo "   --wasmopt=file [wasm optimizer]" >&2;
+      echo "   --wasmjs=file [JavaScript implementation (default nodejs)]" >&2;
       echo "" >&2;
       echo "Misc:"  >&2;
       echo "   --custom-all-libs [use custom version for all third party libs]" >&2;
@@ -3639,6 +3657,16 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     jar=
   fi
 
+  # wasm configuration
+  if [ "$wasmbackend" = "yes" -o "$wasmbackend" = "force" ]; then
+    # checking wasmas
+    $wasmas --help 2> /dev/null > /dev/null
+    if [ $? != 0 ]; then
+      echo "*** ERROR:configure:$wasm-as (wasm assembler) not properly working!"
+      exit 1
+    fi
+  fi
+  
   # Posix Os
   case $hostos in
     mingw)
@@ -5115,6 +5143,16 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "JVMBACKEND=no" >> $makefile_cfg
   fi
 
+  # WASM configuration
+  if [ "$wasmbackend" = "yes" -o "$wasmbackend" = "force" ]; then
+    $echo "" >> $makefile_cfg
+    $echo "WASMBACKEND=yes" >> $makefile_cfg
+    $echo "WASM_AS=$wasmas" >> $makefile_cfg
+    $echo "WASM_OPT=$wasmopt" >> $makefile_cfg
+  else
+    $echo "" >> $makefile_cfg
+    $echo "WASMBACKEND=no" >> $makefile_cfg
+  fi
 fi
 
 # Bigloo compilation flags
@@ -5253,6 +5291,11 @@ if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
   bcke="$bcke JVM:yes"
 else
   bcke="$bcke JVM:no"
+fi
+if [ "$wasmbackend" = "yes" -o "$wasmbackend" = "force" ]; then
+  bcke="$bcke WASM:yes"
+else
+  bcke="$bcke WASM:no"
 fi
 
 $echo  >> $configurelog

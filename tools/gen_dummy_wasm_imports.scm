@@ -3,18 +3,18 @@
 
 (define already-generated (make-hashtable))
 (define (main x)
-    (let ((module '(module $dummy_module)))
-        (append! module (call-with-input-file (cadr x) port->sexp-list))
-        (for-each (lambda (f)
-            (append! module (call-with-input-file f
-            (lambda (p)
-                (let* ((m (read p)))
-                    (filter-map (lambda (c)
-                        (match-case c
-                            ((import ?mod ?id ?decl) (parse-import mod id decl))))
-                    (cdr m)))))))
-        (cddr x))
-        (pp module)))
+   (let ((module (apply append
+		    (call-with-input-file (cadr x) read)
+		    (map (lambda (f)
+			    (call-with-input-file f
+			       (lambda (p)
+				  (let ((m (cddr (read p))))
+				     (filter-map (lambda (c)
+						    (match-case c
+						       ((import ?mod ?id ?decl) (parse-import mod id decl))))
+					(cdr m))))))
+		       (cddr x)))))
+      (pp module)))
 
 (define (parse-import mod id import)
     (match-case import

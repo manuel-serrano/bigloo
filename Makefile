@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/Makefile                      */
+#*    serrano/prgm/project/bigloo/wasm/bigloo-wasm/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jul 11 15:27:19 2023 (serrano)                */
-#*    Copyright   :  1998-2023 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Aug 29 14:33:50 2024 (serrano)                */
+#*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -216,6 +216,9 @@ boot-c: checkgmake
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
         fi
+	if [ "$(WASMBACKEND)" = "yes" ]; then \
+	  $(MAKE) boot-wasm; \
+        fi
 	$(MAKE) boot-bde
 	$(MAKE) boot-api
 	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
@@ -226,6 +229,9 @@ boot-c: checkgmake
 
 boot-jvm: checkgmake
 	$(MAKE) -C runtime boot-jvm
+
+boot-wasm: checkgmake
+	$(MAKE) -C runtime boot-wasm
 
 boot-bde:
 	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) $(SHRD_BDE_OPT)"
