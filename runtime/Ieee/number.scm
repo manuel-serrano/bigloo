@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Jul  3 14:05:40 2024 (serrano)                */
+;*    Last change :  Wed Aug 28 14:06:12 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -18,11 +18,14 @@
 (module __r4_numbers_6_5
    
    (import  __error
-	    __param)
+	    __param
+	    __bignum)
 
    (use     __type
 	    __bigloo
 	    __tvector
+	    __evenv
+	    
 	    __r4_equivalence_6_2
 	    __r4_numbers_6_5_fixnum
 	    __r4_booleans_6_1
@@ -33,13 +36,8 @@
 	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
-	    __r5_control_features_6_4
-	    __bignum
-	    
-	    __evenv)
+	    __r5_control_features_6_4)
 
-   (include "Ieee/bignum.sch")
-   
    (extern  (macro $fixnum->flonum::double (::long)   "(double)")
 	    (macro $flonum->fixnum::long (::double) "(long)")
 	    

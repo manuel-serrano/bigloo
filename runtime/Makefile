@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 29 14:34:32 2024 (serrano)                */
+#*    Last change :  Thu Aug 29 11:32:27 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -62,8 +62,7 @@ WASMMERE	= $(BOOTDIR)/tools
 BHEAPFLAGS	= $(BOOTFLAGS) $(BFEATUREFLAGS) \
                   -unsafe -q -mkheap -mklib -s -no-hello
 #*--- Bigloo, common --------------------------------------------------*/
-#BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm -lib-dir $(BOOTLIBDIR)
-BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) -rm -copt -w -lib-dir $(BOOTLIBDIR)
+BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm
 #*--- Bigloo, safe ----------------------------------------------------*/
 BSAFEFLAGS	= -srfi bigloo-safe $(BCOMMONFLAGS) \
                   -O3 -mklib -cc $(CC) -fsharing \
@@ -303,15 +302,10 @@ C_SCM_READ	= $(READ:%=Read/%.c)
 #*---------------------------------------------------------------------*/
 UNSAFE		= intext hmac md5 crc16 sha1 sha2 gunzip tar kmp \
                   base64 bignumber aes rsa url http crc uuid ftp \
-                  bm ssr
+                  bm ssr regexp
 
-REGEXP		= pregexp pcre regex
- 
 SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.scm)
 C_SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.c)
-
-SCM_REGEXP	= $(REGEXP:%=Unsafe/%.scm)
-C_SCM_REGEXP	= $(REGEXP:%=Unsafe/%.c)
 
 #*---------------------------------------------------------------------*/
 #*    The Lalr compiler objects                                        */
@@ -331,7 +325,7 @@ SCM_SYS_SRC	= $(SCM_READ) $(SCM_RGC) $(SCM_PP) \
 #*---------------------------------------------------------------------*/
 #*    Src files                                                        */
 #*---------------------------------------------------------------------*/
-SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_REGEXP_SRC) \
+SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) \
                   $(C_CLIB) \
                   $(JAVA_JLIB:%/configure.java=) \
                   Mlib/mach_dep.c \
@@ -358,8 +352,7 @@ INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
 OBJECTS		= $(C_CLIB:%.c=objs/$(OBJDIR_USR)/%.o) \
                   objs/$(OBJDIR_SYS)/Mlib/mach_dep.o \
                   $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.o) \
-                  $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.o) \
-		  objs/$(OBJDIR_SYS)/Unsafe/regexp.o
+                  $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.o)
 
 GCSTDOBJECTS	= $(GCSTDOBJ:%.o=objs/$(OBJDIR_SYS)/%.o)
 
@@ -367,8 +360,7 @@ GCSTDOBJECTS	= $(GCSTDOBJ:%.o=objs/$(OBJDIR_SYS)/%.o)
 #*    JVM class files                                                  */
 #*---------------------------------------------------------------------*/
 CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
-                  $(SCM_USR_SRC:%.scm=objs/$(CLASSDIR_USR)/bigloo/runtime/%.class) \
-	          objs/$(CLASSDIR_SYS)/bigloo/runtime/Unsafe/regexp.class
+                  $(SCM_USR_SRC:%.scm=objs/$(CLASSDIR_USR)/bigloo/runtime/%.class)
 
 #*---------------------------------------------------------------------*/
 #*    WASM module files                                                  */
@@ -405,10 +397,7 @@ WASMS = \
 #*    C Object files for the distribution                              */
 #*---------------------------------------------------------------------*/
 C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
-                  $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.c) \
-		  objs/$(OBJDIR_SYS)/Unsafe/pregexp.c \
-		  objs/$(OBJDIR_SYS)/Unsafe/pcre.c \
-		  objs/$(OBJDIR_SYS)/Unsafe/regex.c
+                  $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.c)
 
 #*---------------------------------------------------------------------*/
 #*    Population                                                       */
@@ -416,7 +405,6 @@ C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
 POPULATION_SI	= $(SRC_FILES) \
                   Makefile \
                   Llib/make_lib.scm \
-		  Ieee/bignum.sch \
 		  Lalr/lalr.sch \
 		  Rgc/rgc-node.sch \
 		  Eval/byte-code.sch \
@@ -456,7 +444,6 @@ all-jvm: heap-jvm libs-jvm
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
 distrib:
-	cp Unsafe/pcre.scm Unsafe/regexp.scm
 	$(MAKE) DISTRIB=true dodistrib
 
 dodistrib: .afile
@@ -627,7 +614,6 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib 
 	 $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip \
                  $(SCM_SYS_SRC:%.scm=bigloo/runtime/%.class) \
                  $(SCM_USR_SRC:%.scm=bigloo/runtime/%.class) \
-		 bigloo/runtime/Unsafe/regexp.class \
                  bigloo/runtime/*/_KBGl_*.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
@@ -766,16 +752,18 @@ distlibs:
 distlib_u:
 	$(MAKE) one-distlib \
 		BIGLOO=$(BIGLOO) \
-                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
-                BFLAGS_USR="$(BUNSAFEFLAGS)" \
+                BFEATUREFLAGS= \
+                BFLAGS_SYS="$(BUNSAFEFLAGS) $(BDISTRIBFLAGS)" \
+                BFLAGS_USR="$(BUNSAFEFLAGS) $(BDISTRIBFLAGS)" \
                 OBJDIR_USR=obj_u OBJDIR_SYS=obj_u
 
 
 distlib:
 	$(MAKE) one-distlib \
 		BIGLOO=$(BIGLOO) \
-                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
-                BFLAGS_USR="$(BSAFEFLAGS)" \
+                BFEATUREFLAGS= \
+                BFLAGS_SYS="$(BUNSAFEFLAGS) $(BDISTRIBFLAGS)" \
+                BFLAGS_USR="$(BSAFEFLAGS) $(BDISTRIBFLAGS)" \
                 OBJDIR_USR=obj_s OBJDIR_SYS=obj_u
 
 one-distlib: $(C_OBJECTS)
@@ -787,7 +775,7 @@ one-distlib: $(C_OBJECTS)
 #*---------------------------------------------------------------------*/
 boot: dirs includes
 	touch .afile
-	@ $(MAKE) boot-libs
+	@ $(MAKE) boot-libs CEFLAGS=-DBGL_BOOT=1
 
 boot-libs:
 	@ $(MAKE) lib-c_u SCMOBJSUFFIX="" COBJSUFFIX=%.o
@@ -1182,14 +1170,14 @@ ude: .afile .jfile
 #*---------------------------------------------------------------------*/
 afile: .afile
 .afile:
-	$(BGLAFILE) -o .afile $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm
+	$(BGLAFILE) -o .afile $(SCM_USR_SRC) $(SCM_SYS_SRC)
 
 #*---------------------------------------------------------------------*/
 #*    .jfile                                                           */
 #*---------------------------------------------------------------------*/
 jfile: .jfile
 .jfile:
-	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm > .jfile
+	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC)
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */
@@ -1198,6 +1186,8 @@ objs/obj_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/obj_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/obj_s/Llib/evobject.o: Llib/object.sch
 objs/obj_u/Llib/evobject.o: Llib/object.sch
+objs/obj_u/Unsafe/regexp.o: Unsafe/pcre.scm Unsafe/pregexp.scm Unsafe/regexp.scm
+objs/obj_s/Unsafe/regexp.o: Unsafe/pcre.scm Unsafe/pregexp.scm Unsafe/regexp.scm
 objs/saw_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/saw_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/saw_s/Llib/evobject.o: Llib/object.sch

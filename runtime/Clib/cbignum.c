@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Mar 15 18:04:19 2023 (serrano)                */
-/*    Copyright   :  2003-23 Manuel Serrano                            */
+/*    Last change :  Thu Aug 29 11:02:43 2024 (serrano)                */
+/*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -33,7 +33,7 @@ bgl_init_bignum() {
 #endif
 }
 
-#if (BGL_HAVE_GMP)   
+#if (BGL_HAVE_GMP && !BGL_BOOT)   
 
 /* field access macros.  */
 #define SIZ(x) ((x)->_mp_size)
@@ -1073,18 +1073,6 @@ BGL_RUNTIME_DEF void
 bgl_seed_rand(unsigned long int seed) {
    srand(seed);
    gmp_randseed_ui(gmp_random_state, seed);
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    BGl_modulezd2initializa7ationz75zz__bignumz00 ...                */
-/*    -------------------------------------------------------------    */
-/*    When the GMP support is enabled, we have to replace the          */
-/*    initialization of the Bigloo module with a fake definition...    */
-/*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-BGl_modulezd2initializa7ationz75zz__bignumz00(long BgL_checksumz00_4789, char *BgL_fromz00_4790) {
-   return BUNSPEC;
 }
 
 /*---------------------------------------------------------------------*/

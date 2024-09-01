@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Thu Nov  4 18:55:38 2021 (serrano)                */
-;*    Copyright   :  2008-21 Manuel Serrano                            */
+;*    Last change :  Wed Aug 28 14:06:56 2024 (serrano)                */
+;*    Copyright   :  2008-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
 ;*=====================================================================*/
@@ -14,6 +14,10 @@
 ;*---------------------------------------------------------------------*/
 (directives
    
+   (cond-expand
+      ((not enable-gmp)
+       (import __bignum)))
+
    (extern
       ($fixnum->bignum::bignum (::long) "bgl_long_to_bignum")
       ($elong->bignum::bignum (::elong) "bgl_long_to_bignum")
@@ -44,7 +48,7 @@
       ($bignum->string::bstring  (::bignum ::int) "bgl_bignum_to_string")
       ($randbx::bignum (::bignum) "bgl_rand_bignum")
       ($seed-rand::void (::long) "bgl_seed_rand")
-
+      
       ($bitlshbx::bignum (::bignum ::long) "bgl_bignum_lsh")
       ($bitrshbx::bignum (::bignum ::long) "bgl_bignum_rsh")
       ($bitorbx::bignum (::bignum ::bignum) "bgl_bignum_or")
@@ -57,16 +61,6 @@
       (macro $positivebx?::bool (::bignum) "BXPOSITIVE")
       (macro $negativebx?::bool (::bignum) "BXNEGATIVE")
       
-      ($bignum->flonum::double (::bignum) "bgl_bignum_to_flonum")
-      ($flonum->bignum::bignum (::double) "bgl_flonum_to_bignum"))
-
-   (cond-expand
-      (enable-gmp
-       (with __bignum))
-      (else
-       (import __bignum)))
-
-   (extern
       (macro $bignum?::bool (::obj) "BIGNUMP")
       
       (macro $bignum->fixnum-safe::obj (::obj) "BGL_SAFE_BX_TO_FX")
@@ -84,7 +78,10 @@
       
       (macro $quotientfx-safe::obj (::long ::long) "BGL_SAFE_QUOTIENT_FX")
       (macro $quotientelong-safe::obj (::elong ::elong) "BGL_SAFE_QUOTIENT_ELONG")
-      (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG"))
+      (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG")
+      
+      ($bignum->flonum::double (::bignum) "bgl_bignum_to_flonum")
+      ($flonum->bignum::bignum (::double) "bgl_flonum_to_bignum"))
 
 	(wasm
 		($bignum? "(ref.test (ref $bignum) ~0)")
@@ -217,6 +214,19 @@
 	 (method static $flonum->bignum::bignum (::double)
 	    "FLONUM_TO_BIGNUM")))
 
+   (pragma
+      ($bignum? side-effect-free (predicate-of bignum) no-cfa-top nesting fail-safe)
+      ($bignum->fixnum-safe fail-safe)
+      (+fx-safe fail-safe)
+      (-fx-safe fail-safe)
+      (*fx-safe fail-safe)
+      (+elong-safe fail-safe)
+      (-elong-safe fail-safe)
+      (*elong-safe fail-safe)
+      (+llong-safe fail-safe)
+      (-llong-safe fail-safe)
+      (*llong-safe fail-safe))
+   
    (cond-expand
       (enable-gmp
        (pragma
@@ -242,17 +252,5 @@
 	  ($lcmbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	  ($flonum->bignum side-effect-free args-safe (effect) fail-safe)
 	  ($bignum->flonum side-effect-free no-cfa-top nesting (effect) fail-safe)
-	  ($bitlshbx side-effect-free args-safe (effect) fail-safe))))
+	  ($bitlshbx side-effect-free args-safe (effect) fail-safe)))))
 
-   (pragma
-      ($bignum? side-effect-free (predicate-of bignum) no-cfa-top nesting fail-safe)
-      ($bignum->fixnum-safe fail-safe)
-      (+fx-safe fail-safe)
-      (-fx-safe fail-safe)
-      (*fx-safe fail-safe)
-      (+elong-safe fail-safe)
-      (-elong-safe fail-safe)
-      (*elong-safe fail-safe)
-      (+llong-safe fail-safe)
-      (-llong-safe fail-safe)
-      (*llong-safe fail-safe)))
