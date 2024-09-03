@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/sha2.scm              */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/sha2.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Fri Sep 22 08:32:56 2017 (serrano)                */
-;*    Copyright   :  2008-21 Wayne Richards, Manuel Serrano            */
+;*    Last change :  Tue Sep  3 12:07:48 2024 (serrano)                */
+;*    Copyright   :  2008-24 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
 ;*=====================================================================*/
@@ -970,7 +970,7 @@
 	    (u64vector-set! v i val)
 	    (loop (+fx i 1)))))
    
-   (let loop ((i 0)
+   '(let loop ((i 0)
 	      (l 0))
       (let ((bytes (fill-buffer! buffer i)))
 	 (cond

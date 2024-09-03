@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/bigloo-wasm/configure           */
+#*    serrano/prgm/project/bigloo/wasm/configure                       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Aug 28 12:57:02 2024 (serrano)                */
+#*    Last change :  Mon Sep  2 10:50:10 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -762,6 +762,9 @@ while : ; do
     --a.bat=*)
       abat="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --jvm)
+      jvmbackend=yes;;
+
     --jvm=*)
       jvmbackend="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -787,6 +790,9 @@ while : ; do
 
     --jvm-default-backend)
       defaultbackend="jvm";;
+
+    --wasm)
+      wasmbackend=yes;;
 
     --wasm=*)
       wasmbackend="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -1351,6 +1357,9 @@ if [ -x /bin/echo ]; then
 else
   echo=echo
 fi
+
+# configuration status beginning
+$echo "configuring with \"$logopt\"" > config.status
 
 # buildbindir
 if [ "$buildbindir " = " " ]; then
@@ -5428,7 +5437,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Generate the config.status file for debian packages              */
 #*---------------------------------------------------------------------*/
-$echo "configuration completed" > config.status
+$echo "configuration completed" >> config.status
 
 #*---------------------------------------------------------------------*/
 #*    Ok, we are done now                                              */

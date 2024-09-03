@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/bigloo-wasm/Makefile            */
+#*    serrano/prgm/project/bigloo/wasm/Makefile                        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Aug 29 14:40:40 2024 (serrano)                */
+#*    Last change :  Mon Sep  2 10:48:46 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -150,7 +150,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*    Boot a new Bigloo system on a new host. This boot makes use      */
 #*    of the pre-compiled C files.                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: checkconf boot boot-jvm boot-bde boot-api boot-bglpkg
+.PHONY: checkconf boot boot-jvm boot-wasm boot-bde boot-api boot-bglpkg
 
 build: checkconf $(BOOTMETHOD)
 
@@ -205,9 +205,11 @@ boot-c: checkgmake
 	if [ -x $(BGLBUILDBINDIR)/bigloo ]; then \
 	  $(MAKE) -C runtime .afile && \
 	  $(MAKE) -C runtime heap && \
+          $(MAKE) boot-touch-specific && \
 	  $(MAKE) -C runtime boot && \
-	  $(MAKE) -C comptime bigloo && \
-	  $(MAKE) -C comptime boot; \
+          $(MAKE) boot-touch-specific && \
+	  $(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u && \
+	  $(MAKE) -C comptime bigloo && $(MAKE) -C comptime boot; \
 	else \
 	  $(MAKE) -C runtime boot && \
 	  $(MAKE) -C comptime boot && \
@@ -215,9 +217,7 @@ boot-c: checkgmake
 	fi
 	# touch the generic Scheme source files that must be
 	# recompiled ith the configured options (e.g., gmp or pcre2)
-	touch runtime/Eval/evprimop.scm
-	touch runtime/Unsafe/regexp.scm
-	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c runtime/Clib/cmain.c
+	$(MAKE) boot-touch-specific
 	$(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
@@ -232,6 +232,16 @@ boot-c: checkgmake
         fi
 	@ echo "Boot done..."
 	@ echo "-------------------------------"
+
+# This touches the runtime file that depends on some platform
+# configurations and that needs to be re-compiled because
+# the shipped intermediate C file use a generic implementation
+# that is not compatible with the specific autoconfiguration versions
+.PHONY: boot-touch-specific
+boot-touch-specific:
+	touch runtime/Eval/evprimop.scm
+	touch runtime/Unsafe/regexp.scm
+	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c runtime/Clib/cmain.c
 
 boot-jvm: checkgmake
 	$(MAKE) -C runtime boot-jvm
@@ -440,6 +450,9 @@ fullbootstrap-sans-configure:
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C runtime heap-jvm libs-jvm; \
+        fi
+	if [ "$(WASMBACKEND)" = "yes" ]; then \
+	  $(MAKE) -C runtime heap-wasm libs-wasm; \
         fi
 	$(MAKE) -C bde -i clean; $(MAKE) -C bde
 	$(MAKE) -C api fullbootstrap

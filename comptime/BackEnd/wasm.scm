@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../bigloo/wasm/bigloo-wasm/comptime/BackEnd/wasm.scm            */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/wasm.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :                                                    */
+;*    Last change :  Mon Sep  2 10:54:11 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -99,7 +99,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link me::wasm result)
    (when (string? result)
-      (backend-link-objects me (list result))))
+      (if (and (string? *dest*) (string=? (suffix *dest*) "wat"))
+	  (when (string? *dest*) (rename-file result *dest*))
+	  (backend-link-objects me (list result)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-link-objects ...                                         */
@@ -129,8 +131,9 @@
 	  (error "wasm-link" "More than one source file provided" sources))
 	 (else
 	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
-		 (runtime-file (find-file/path "bigloo_s.wat" *lib-dir*))
-		 (runtime-mjs (find-file/path "runtime.mjs" *lib-dir*)))
+		 (runtime-file (find-file-in-path "bigloo_s.wat" *lib-dir*))
+		 (runtime-mjs (find-file-in-path "runtime.mjs" *lib-dir*)))
+	     (verbose 2 "      merging [" tmp #\] #\Newline)
 	     (wat-merge (cons runtime-file sources) tmp)
 	     (let* ((wasm (string-append (prefix (car sources)) ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
@@ -292,8 +295,10 @@
 	 (econs (car l) (cdr l) (hash-key-of l))))
    
    (define (read-module f)
-      (let ((m (call-with-input-file f read)))
-	 (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m)))))
+      (if (file-exists? f)
+	  (let ((m (call-with-input-file f read)))
+	     (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
+	  (error "wasm" "Cannot find wasm module" f)))
 
    (let ((modules (append-map read-module files)))
       (collect-exports modules)
@@ -447,7 +452,7 @@
 		   
 		   ;; FIXME: allow custom name for types.wat file
 		   (comment "Primitive types"
-		      ,@(let ((tname (find-file/path "types.wat" *lib-dir*)))
+		      ,@(let ((tname (find-file-in-path "types.wat" *lib-dir*)))
 			   (if tname
 			       (match-case (call-with-input-file tname read)
 				  ((module (? symbol?) . ?body)
@@ -470,7 +475,6 @@
 ;*    *wasm-port* ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define *wasm-port* #f)
-
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-pp ...                                                      */
@@ -1128,7 +1132,7 @@
 	    (eq? import 'import)
 	    (and 
 	     (eq? import 'foreign)
-	     (not (and (or (isa? value cvar) (isa? value cfun)) (not (string-null? (global-jvm-type-name global)))))))
+	     (not (and (or (isa? value cvar) (isa? value cfun)) (not (string-null? (global-qualified-type-name global)))))))
 	   (>fx (global-occurrence global) 0))))
 
 ;*---------------------------------------------------------------------*/
@@ -1225,3 +1229,11 @@
 	 "."
 	 suffix)))
 
+;*---------------------------------------------------------------------*/
+;*    find-file-in-path ...                                            */
+;*---------------------------------------------------------------------*/
+(define (find-file-in-path file path)
+   (let ((f (find-file/path file path)))
+      (if (string? f)
+	  f
+	  (error "wasm" (format "Cannot find \"~a\" in path" file) path))))

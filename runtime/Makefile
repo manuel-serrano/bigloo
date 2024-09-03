@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    .../prgm/project/bigloo/wasm/bigloo-wasm/runtime/Makefile        */
+#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 29 11:32:27 2024 (serrano)                */
+#*    Last change :  Mon Sep  2 12:04:02 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -435,10 +435,11 @@ POPULATION	= $(POPULATION_SI) $(INCLUDE_FILE) \
 #*---------------------------------------------------------------------*/
 .PHONY: all all-c all-jvm
 
-all: all-c all-jvm
+all: all-c all-jvm all-wasm
 
 all-c: heap-c libs-c
 all-jvm: heap-jvm libs-jvm
+all-wasm: heap-wasm libs-wasm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
@@ -775,7 +776,7 @@ one-distlib: $(C_OBJECTS)
 #*---------------------------------------------------------------------*/
 boot: dirs includes
 	touch .afile
-	@ $(MAKE) boot-libs CEFLAGS=-DBGL_BOOT=1
+	@ $(MAKE) boot-libs CEFLAGS=-DBGL_BOOT=1 EFLAGS="-srfi boot"
 
 boot-libs:
 	@ $(MAKE) lib-c_u SCMOBJSUFFIX="" COBJSUFFIX=%.o
@@ -1177,7 +1178,7 @@ afile: .afile
 #*---------------------------------------------------------------------*/
 jfile: .jfile
 .jfile:
-	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC)
+	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) > .jfile
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

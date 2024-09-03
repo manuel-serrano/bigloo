@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/var.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/var.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Sat Jun 12 08:40:44 2021 (serrano)                */
+;*    Last change :  Tue Sep  3 07:43:37 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -63,7 +63,7 @@
 	      src::obj
 	      ;; the qualified type the global belongs to
 	      ;; (for JVM compilation only)
-	      jvm-type-name::bstring
+	      qualified-type-name::bstring
 	      ;; is the global always initialized before used? #t means
 	      ;; that the variable is always initialized, #f means that
 	      ;; it is used before initialized, and #unspecified means that

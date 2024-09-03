@@ -23,7 +23,7 @@ Installation
 To install the Bigloo-WASM branch:
 
 ```
-./configure --wasm=yes && make && make install
+./configure --wasm && make && make install
 ```
 
 # How to use Bigloo with WASM backend

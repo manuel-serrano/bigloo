@@ -643,51 +643,64 @@
         ; TODO: support other types, see emit-atom-value in c_emit.scm
         (error "wasm-gen" "unimplemented scheme atom value for WASM" (typeof value)))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_loadi ...                                         */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_loadi args)
   (let ((atom (rtl_loadi-constant fun)))
     (with-fun-loc fun 
       (emit-wasm-atom-value (atom-type atom) (atom-value atom)))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_loadg ...                                         */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_loadg args)
-  (let* ((var (rtl_loadg-var fun))
+   (let* ((var (rtl_loadg-var fun))
           (name (global-name var))
-          (macro-code (global-jvm-type-name var)))
-    (with-fun-loc fun
-      (if (and (isa? (global-value var) cvar)
-              (not (string-null? macro-code)))
-        (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
-        `(global.get ,(wasm-sym (global-name (rtl_loadg-var fun))))))))
+          (macro-code (global-qualified-type-name var)))
+      (with-fun-loc fun
+	 (if (and (isa? (global-value var) cvar)
+		  (not (string-null? macro-code)))
+	     (expand-wasm-macro (call-with-input-string macro-code read)
+		(gen-args args))
+	     `(global.get ,(wasm-sym (global-name (rtl_loadg-var fun))))))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_globalref ...                                     */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_globalref args)
-  ;; TODO: what is the difference with rtl_loadg? Should we also support WASM macro expansion here?
-  (with-fun-loc fun 
-    `(global.get ,(wasm-sym (global-name (rtl_globalref-var fun))))))
+   ;; TODO: what is the difference with rtl_loadg?
+   ;; Should we also support WASM macro expansion here?
+   (with-fun-loc fun 
+      `(global.get ,(wasm-sym (global-name (rtl_globalref-var fun))))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_storeg ...                                        */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_storeg args)
-  (with-fun-loc fun 
-    `(global.set 
-      ,(wasm-sym (global-name (rtl_storeg-var fun))) 
-      ,@(gen-args args))))
+   (with-fun-loc fun 
+      `(global.set 
+	  ,(wasm-sym (global-name (rtl_storeg-var fun))) 
+	  ,@(gen-args args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-sym ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (wasm-sym ident)
-  ; All symbolic references are prefixed by $ in Wasm textual format.
+  ;; All symbolic references are prefixed by $ in Wasm textual format.
   (string->symbol (string-append "$" ident)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-go ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (gen-go to::block)
-  ; Generate something like:
-  ;   (local.set $label (i32.const BLOCK_LABEL))
-  ;   (br $dispatcher)
-  ; This is used to simulate a goto. It is only used if Relooper is not enabled.
-  ; See (gen-body) to understand what $dispatcher is.
-
-  `((local.set $__label (i32.const ,(block-label to)))
-    (br $__dispatcher)))
+   ;; Generate something like:
+   ;;   (local.set $label (i32.const BLOCK_LABEL))
+   ;;   (br $dispatcher)
+   ;; This is used to simulate a goto. It is only used if Relooper
+   ;; is not enabled. See (gen-body) to understand what $dispatcher is.
+   `((local.set $__label (i32.const ,(block-label to)))
+     (br $__dispatcher)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-wasm-macro ...                                            */
@@ -701,118 +714,154 @@
 ;*      (local.get (1 2 3))                                            */
 ;*---------------------------------------------------------------------*/
 (define (expand-wasm-macro macro args)
-  (cond 
-    ((symbol? macro)
-      (let ((name (symbol->string macro)))
-        (if (string-prefix? "~" name)
-          (let ((index (string->integer (substring name 1))))
-            (list-ref args index))
-          macro)))
-    ((pair? macro) (map (lambda (n) (expand-wasm-macro n args)) macro))
-    (else macro)))
+   (cond 
+      ((symbol? macro)
+       (let ((name (symbol->string macro)))
+	  (if (string-prefix? "~" name)
+	      (let ((index (string->integer (substring name 1))))
+		 (list-ref args index))
+	      macro)))
+      ((pair? macro) (map (lambda (n) (expand-wasm-macro n args)) macro))
+      (else macro)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_call ...                                          */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_call args)
-  (let* ((var (rtl_call-var fun))
+   (let* ((var (rtl_call-var fun))
           (name (global-name var))
-          (macro-code (global-jvm-type-name var)))
-    (with-fun-loc fun
-      (if (and (isa? (global-value var) cfun)
-              (not (string-null? macro-code)))
-        (expand-wasm-macro (call-with-input-string macro-code read) (gen-args args))
-        (case (global-id var)
-          ('make-fx-procedure (inline-make-procedure args))
-          ('make-va-procedure (inline-make-procedure args))
-          ('make-l-procedure (inline-make-l-procedure args))
-          ('make-el-procedure (inline-make-el-procedure args))
-          ('cnst-table-set! (inline-cnst-table-set! args))
-          ('cnst-table-ref (inline-cnst-table-ref args))
-          (else `(call ,(wasm-sym name) ,@(gen-args args))))))))
+          (macro-code (global-qualified-type-name var)))
+      (with-fun-loc fun
+	 (if (and (isa? (global-value var) cfun)
+		  (not (string-null? macro-code)))
+	     (expand-wasm-macro (call-with-input-string macro-code read)
+		(gen-args args))
+	     (case (global-id var)
+		('make-fx-procedure (inline-make-procedure args))
+		('make-va-procedure (inline-make-procedure args))
+		('make-l-procedure (inline-make-l-procedure args))
+		('make-el-procedure (inline-make-el-procedure args))
+		('cnst-table-set! (inline-cnst-table-set! args))
+		('cnst-table-ref (inline-cnst-table-ref args))
+		(else `(call ,(wasm-sym name) ,@(gen-args args))))))))
 
+;*---------------------------------------------------------------------*/
+;*    inline-make-procedure ...                                        */
+;*---------------------------------------------------------------------*/
 (define (inline-make-procedure args)
-  `(struct.new $procedure
-    ;; Entry
-    ,(gen-reg (car args))
-    ;; Attr
-    (global.get $BUNSPEC)
-    ;; Arity
-    ,(gen-reg (cadr args))
-    ;; Env
-    (array.new_default $vector ,(gen-reg (caddr args)))))
+   `(struct.new $procedure
+       ;; Entry
+       ,(gen-reg (car args))
+       ;; Attr
+       (global.get $BUNSPEC)
+       ;; Arity
+       ,(gen-reg (cadr args))
+       ;; Env
+       (array.new_default $vector ,(gen-reg (caddr args)))))
 
+;*---------------------------------------------------------------------*/
+;*    inline-make-l-procedure ...                                      */
+;*---------------------------------------------------------------------*/
 (define (inline-make-l-procedure args)
-  `(struct.new $procedure
-    ;; Entry
-    ,(gen-reg (car args))
-    ;; Attr
-    (global.get $BUNSPEC)
-    ;; Arity
-    (i32.const 0)
-    ;; Env
-    (array.new_default $vector ,(gen-reg (cadr args)))))
+   `(struct.new $procedure
+       ;; Entry
+       ,(gen-reg (car args))
+       ;; Attr
+       (global.get $BUNSPEC)
+       ;; Arity
+       (i32.const 0)
+       ;; Env
+       (array.new_default $vector ,(gen-reg (cadr args)))))
 
+;*---------------------------------------------------------------------*/
+;*    inline-make-el-procedure ...                                     */
+;*---------------------------------------------------------------------*/
 (define (inline-make-el-procedure args)
-  `(array.new_default $vector ,(gen-reg (car args))))
+   `(array.new_default $vector ,(gen-reg (car args))))
 
+;*---------------------------------------------------------------------*/
+;*    cnst-table-sym ...                                               */
+;*---------------------------------------------------------------------*/
 (define (cnst-table-sym)
-  (wasm-sym (string-append "__cnsts_table_" (symbol->string *module*))))
+   (wasm-sym (string-append "__cnsts_table_" (symbol->string *module*))))
 
+;*---------------------------------------------------------------------*/
+;*    inline-cnst-table-set! ...                                       */
+;*---------------------------------------------------------------------*/
 (define (inline-cnst-table-set! args) 
-  `(block (result eqref) 
-    (array.set $cnst-table 
-      (global.get ,(cnst-table-sym))
-      ,@(gen-args args)) 
-    (global.get $BUNSPEC)))
+   `(block (result eqref) 
+       (array.set $cnst-table 
+	  (global.get ,(cnst-table-sym))
+	  ,@(gen-args args)) 
+       (global.get $BUNSPEC)))
 
+;*---------------------------------------------------------------------*/
+;*    inline-cnst-table-ref ...                                        */
+;*---------------------------------------------------------------------*/
 (define (inline-cnst-table-ref args) 
-  `(array.get
-      $cnst-table
-      (global.get ,(cnst-table-sym))
-      ,@(gen-args args)))
+   `(array.get
+       $cnst-table
+       (global.get ,(cnst-table-sym))
+       ,@(gen-args args)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_funcall ...                                       */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_funcall args)
-  (with-fun-loc fun (gen-expr-funcall/lightfuncall 'eqref args)))
+   (with-fun-loc fun (gen-expr-funcall/lightfuncall 'eqref args)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr-funcall/lightfuncall ...                                */
+;*---------------------------------------------------------------------*/
 (define (gen-expr-funcall/lightfuncall type args)
-  (let* ((arg_count (length args))
-         (func_type (wasm-sym (string-append "func" (fixnum->string (-fx arg_count 1)))))
-         (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
-    `(if (result ,type) (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
-      (then ; Is a variadic function!
-        (call 
-          $generic_va_call 
-          ,proc 
-          (array.new_fixed $vector ,(-fx arg_count 1) ,@(gen-args (cdr args)))))
-      (else
-        (call_ref 
-          ,func_type
-          ,proc
-          ,@(gen-args (cdr args)) 
-          (ref.cast 
-            (ref ,func_type) 
-            (struct.get $procedure $entry ,proc)))))))
+   (let* ((arg_count (length args))
+	  (func_type (wasm-sym
+			(string-append "func"
+			   (fixnum->string (-fx arg_count 1)))))
+	  (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
+      `(if (result ,type)
+	   (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
+	   (then ;; Is a variadic function!
+	      (call 
+		 $generic_va_call 
+		 ,proc 
+		 (array.new_fixed $vector ,(-fx arg_count 1) ,@(gen-args (cdr args)))))
+	   (else
+	    (call_ref 
+	       ,func_type
+	       ,proc
+	       ,@(gen-args (cdr args)) 
+	       (ref.cast 
+		  (ref ,func_type) 
+		  (struct.get $procedure $entry ,proc)))))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_lightfuncall ...                                  */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_lightfuncall args)
-  ; TODO: implement lightfuncall
-  (let ((functy (create-ref-func-type (wasm-type (rtl_lightfuncall-rettype fun)) (map wasm-typeof-arg args)))
-        (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
-    (with-fun-loc fun 
-      `(call_ref ,functy
-          ,proc
-          ,@(gen-args (cdr args))
-          (ref.cast
-            (ref ,functy)
-            (struct.get $procedure $entry ,proc))))))
+   ;; TODO: implement lightfuncall
+   (let ((functy (create-ref-func-type
+		    (wasm-type (rtl_lightfuncall-rettype fun))
+		    (map wasm-typeof-arg args)))
+	 (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
+      (with-fun-loc fun 
+	 `(call_ref ,functy
+	     ,proc
+	     ,@(gen-args (cdr args))
+	     (ref.cast
+		(ref ,functy)
+		(struct.get $procedure $entry ,proc))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    typeof-arg ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (typeof-arg o)
-  (cond
-    ((isa? o rtl_reg) (type-id (rtl_reg-type o)))
-    ((isa? o rtl_ins)
-      (if (rtl_ins-dest o)
-       (typeof-arg (rtl_ins-dest o))
-       'obj))
+   (cond
+      ((isa? o rtl_reg) (type-id (rtl_reg-type o)))
+      ((isa? o rtl_ins)
+       (if (rtl_ins-dest o)
+	   (typeof-arg (rtl_ins-dest o))
+	   'obj))
       (else
        'obj)))
 
@@ -820,12 +869,12 @@
 ;*    wasm-typeof-arg ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (wasm-typeof-arg o)
-  (cond
-    ((isa? o rtl_reg) (wasm-type (rtl_reg-type o)))
-    ((isa? o rtl_ins)
-      (if (rtl_ins-dest o)
-       (wasm-typeof-arg (rtl_ins-dest o))
-       'eqref))
+   (cond
+      ((isa? o rtl_reg) (wasm-type (rtl_reg-type o)))
+      ((isa? o rtl_ins)
+       (if (rtl_ins-dest o)
+	   (wasm-typeof-arg (rtl_ins-dest o))
+	   'eqref))
       (else
        'eqref)))
 
@@ -833,46 +882,71 @@
 ;*    create-ref-func-type ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (create-ref-func-type retty params)
-  (let ((sym (gensym "$functy")))
-    (set! *extra-types* (cons `(type ,sym (func (param ,@params) (result ,retty))) *extra-types*))
-    sym))
+   (let ((sym (gensym "$functy")))
+      (set! *extra-types*
+	 (cons `(type ,sym (func (param ,@params) (result ,retty)))
+	    *extra-types*))
+      sym))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_apply ...                                         */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_apply args)
-  ; TODO
-  (with-fun-loc fun 
-    `(comment "Apply" (throw $unimplemented))))
+   ;; TODO
+   (with-fun-loc fun 
+      `(comment "Apply" (throw $unimplemented))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_mov ...                                           */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_mov args)
-  (gen-reg (car args)))
+   (gen-reg (car args)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_new ...                                           */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_new args)
-  (with-access::rtl_new fun (type constr)
-    (when (pair? constr)
-      (error "gen-expr" "Not supported." (shape constr)))
-    (let ((alloc `(struct.new_default ,(wasm-sym (type-class-name type)))))
-      (with-fun-loc fun alloc))))
+   (with-access::rtl_new fun (type constr)
+      (when (pair? constr)
+	 (error "gen-expr" "Not supported." (shape constr)))
+      (let ((alloc `(struct.new_default ,(wasm-sym (type-class-name type)))))
+	 (with-fun-loc fun alloc))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_cast ...                                          */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_cast args)
-  (define (is-procedure-ty? ty)
-    (case ty
-      ('procedure #t)
-      ('procedure-l #t)
-      ('procedure-el #t)
-      (else #f)))
+   
+   (define (is-procedure-ty? ty)
+      (case ty
+	 ('procedure #t)
+	 ('procedure-l #t)
+	 ('procedure-el #t)
+	 (else #f)))
+   
+   (let ((type (rtl_cast-totype fun)))
+      (cond
+	 ((eq? (type-id type) 'obj)
+	  (gen-reg (car args)))
+	 ;; FIXME: hack due to a bigloo bug (I think)
+	 ((or (eq? (wasm-type type) 'i32) (eq? (wasm-type type) 'i64))
+	  (gen-reg (car args)))
+	 ((and (is-procedure-ty? (type-id type))
+	       (is-procedure-ty? (typeof-arg (car args))))
+	  (gen-reg (car args)))
+	 (else
+	  `(comment ,(string-append "CAST "
+			(symbol->string (type-id type))
+			" "
+			(symbol->string (type-id (rtl_cast-fromtype fun))))
+	      (ref.cast ,(wasm-type type) ,(gen-reg (car args))))))))
 
-  (let ((type (rtl_cast-totype fun)))
-    (cond
-      ((eq? (type-id type) 'obj) (gen-reg (car args)))
-
-      ;; FIXME: hack due to a bigloo bug (I think)
-      ((or (eq? (wasm-type type) 'i32) (eq? (wasm-type type) 'i64)) (gen-reg (car args)))
-      ((and (is-procedure-ty? (type-id type)) (is-procedure-ty? (typeof-arg (car args)))) (gen-reg (car args)))
-
-      (else `(comment ,(string-append "CAST " (symbol->string (type-id type)) " " (symbol->string (type-id (rtl_cast-fromtype fun)))) (ref.cast ,(wasm-type type) ,(gen-reg (car args))))))))
-
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_cast_null ...                                     */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_cast_null args)
-  ; TODO: NOT IMPLEMENTED
-  (with-fun-loc fun `(ref.null none)))
+   ;; TODO: NOT IMPLEMENTED
+   (with-fun-loc fun `(ref.null none)))
 
 (define *allocated-strings* (make-hashtable))
 (define *string-current-offset* 0)
@@ -881,50 +955,62 @@
 ;*    allocate-string ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (allocate-string str::bstring)
-  ; Allocate space inside WebAssembly module's linear memory for the string
-  ; and return its offset.
-  (let ((info (hashtable-get *allocated-strings* str)))
-    (if info
-      info
-      (let* ((length (string-length str))
-            (modname (symbol->string *module*))
-            (hash (integer->string (string-hash str)))
-            (offset (integer->string *string-current-offset*))
-            (section (string->symbol (string-append "$sd" modname hash offset)))
-            (new-info (cons section *string-current-offset*)))
-        (set! *string-current-offset* (+fx *string-current-offset* length))
-        (hashtable-put! *allocated-strings* str new-info)
-        new-info))))
+   ;; Allocate space inside WebAssembly module's linear memory for the string
+   ;; and return its offset.
+   (let ((info (hashtable-get *allocated-strings* str)))
+      (if info
+	  info
+	  (let* ((length (string-length str))
+		 (modname (symbol->string *module*))
+		 (hash (integer->string (string-hash str)))
+		 (offset (integer->string *string-current-offset*))
+		 (section (string->symbol (string-append "$sd" modname hash offset)))
+		 (new-info (cons section *string-current-offset*)))
+	     (set! *string-current-offset* (+fx *string-current-offset* length))
+	     (hashtable-put! *allocated-strings* str new-info)
+	     new-info))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-string-literal ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (gen-string-literal str::bstring)
-  (let* ((info (allocate-string str))
-         (section (car info))
-         (offset (cdr info)))
-    `(array.new_data $bstring ,section
-      (i32.const 0)
-      (i32.const ,(string-length str)))))
+   (let* ((info (allocate-string str))
+	  (section (car info))
+	  (offset (cdr info)))
+      `(array.new_data $bstring ,section
+	  (i32.const 0)
+	  (i32.const ,(string-length str)))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_pragma ...                                        */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_pragma args)
-  (with-fun-loc fun
-    (if (eq? (rtl_pragma-srfi0 fun) 'bigloo-wasm)
-      (let ((format (rtl_pragma-format fun)))
-        (if (string-prefix? "string:" format)
-          (gen-string-literal (substring format 7))
-          (call-with-input-string format read)))
-      ;; TODO: implement pragma default value depending on type
-      ;; FIXME: use throw $unimplemented
-      (wasm-cnst-unspec))))
+   (with-fun-loc fun
+      (if (eq? (rtl_pragma-srfi0 fun) 'bigloo-wasm)
+	  (let ((format (rtl_pragma-format fun)))
+	     (if (string-prefix? "string:" format)
+		 (gen-string-literal (substring format 7))
+		 (call-with-input-string format read)))
+	  ;; TODO: implement pragma default value depending on type
+	  ;; FIXME: use throw $unimplemented
+	  (wasm-cnst-unspec))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_jumpexit ...                                      */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_jumpexit args)
-  (with-fun-loc fun `(throw $bexception ,@(gen-args args))))
+   (with-fun-loc fun `(throw $bexception ,@(gen-args args))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_protect ...                                       */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_protect args)
-  ;; TODO: correctly initialize exit object
-  (with-fun-loc fun '(struct.new_default $exit)))
+   ;; TODO: correctly initialize exit object
+   (with-fun-loc fun '(struct.new_default $exit)))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_protected ...                                     */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_protected args)
-  ;; Strange, nothing to do...
-  (gen-reg (car args)))
+   ;; Strange, nothing to do...
+   (gen-reg (car args)))

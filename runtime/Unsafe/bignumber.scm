@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Unsafe/bignumber.scm      */
+;*    .../prgm/project/bigloo/wasm/runtime/Unsafe/bignumber.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Aug 29 08:35:09 2024 (serrano)                */
+;*    Last change :  Mon Sep  2 12:50:52 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -47,7 +47,7 @@
 
 
    (cond-expand
-      (enable-gmp
+      ((and enable-gmp (not boot))
        (include "./Unsafe/bignumber-gmp.sch"))
       (else
        (include "./Unsafe/bignumber-generic.sch")))
