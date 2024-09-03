@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Sep  3 12:07:48 2024 (serrano)                */
+;*    Last change :  Tue Sep  3 12:31:07 2024 (serrano)                */
 ;*    Copyright   :  2008-24 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
@@ -970,7 +970,7 @@
 	    (u64vector-set! v i val)
 	    (loop (+fx i 1)))))
    
-   '(let loop ((i 0)
+   (let loop ((i 0)
 	      (l 0))
       (let ((bytes (fill-buffer! buffer i)))
 	 (cond
@@ -981,14 +981,60 @@
 	    ((>=fx (-fx 128 bytes) 8)
 	     ;; we have room for the length of the message. The length is
 	     ;; a 64 bits integer but we are using here 64bits values
-	     (let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
+	     ;; 
+	     ;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	     ;; HUBERT: this triggers the error:
+	     ;; [wasm-validator error in function BGl_sha512zd2updatezd2zz__sha2z00] call param types must match, on 
+	     ;; (call_ref $func1
+		;; (local.get $2)
+		;; (local.get $14)
+		;; (ref.cast (ref $func1)
+		   ;; (struct.get $procedure $entry
+		      ;; (ref.cast (ref $procedure)
+			 ;; (local.get $3)
+			 ;; )
+		      ;; )
+		   ;; )
+		;; )
+              ;; (on argument 0)
+	     ;; [wasm-validator error in function BGl_sha512zd2updatezd2zz__sha2z00] call param types must match, on 
+	     ;; (call_ref $func1
+		;; (local.get $2)
+		;; (local.get $14)
+		;; (ref.cast (ref $func1)
+		   ;; (struct.get $procedure $entry
+		      ;; (ref.cast (ref $procedure)
+			 ;; (local.get $3)
+			 ;; )
+		      ;; )
+		   ;; )
+		;; )
+	     ;; (on argument 1)
+	     ;; [wasm-validator error in function BGl_sha512zd2updatezd2zz__sha2z00] i64 != eqref: binary child types must be equal, on 
+	     ;; (i64.add
+		;; (local.get $13)
+		;; (call_ref $func1
+		   ;; (local.get $2)
+		   ;; (local.get $14)
+		   ;; (ref.cast (ref $func1)
+		      ;; (struct.get $procedure $entry
+			 ;; (ref.cast (ref $procedure)
+			    ;; (local.get $3)
+			    ;; )
+			 ;; )
+		      ;; )
+		   ;; )
+		;; )
+	     ;; Fatal: Error: input module is not valid.
+
+	     '(let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
 		(u64vector-set! buffer 15 ulen))
 	     (sha512-internal-transform state buffer))
 	    (else
 	     ;; we don't have space for the length
 	     (sha512-internal-transform state buffer)
 	     (u64vector-fill! buffer 15 #u64:0)
-	     (let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
+	     '(let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
 		(u64vector-set! buffer 15 ulen))
 	     (sha512-internal-transform state buffer))))))
 
