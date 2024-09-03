@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/java.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/java.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Nov 21 07:30:08 2012 (serrano)                */
-;*    Copyright   :  2000-12 Manuel Serrano                            */
+;*    Last change :  Tue Sep  3 06:42:41 2024 (serrano)                */
+;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
 ;*=====================================================================*/
@@ -417,7 +417,7 @@
 	  (tid (type-id (cdr pid))))
       (let ((g (declare-global-cfun! ln #f module jname tid args #f #f src #f)))
 	 (cfun-method-set! (global-value g) modifiers)
-	 (global-jvm-type-name-set! g kname)
+	 (global-qualified-type-name-set! g kname)
 	 g)))
 
 ;*---------------------------------------------------------------------*/

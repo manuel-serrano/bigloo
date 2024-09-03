@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 29 11:32:27 2024 (serrano)                */
+#*    Last change :  Mon Sep  2 12:03:47 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -438,15 +438,13 @@ heap: heap-c
 heap-c: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
 	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
-	@ echo "Heap Done..."
-	@ echo "-------------------------------"
+	@ echo "heap \e[1;35m$(HEAPC_FILE)\e[0m  done."
 
 heap-jvm: .afile .jfile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
-	@ echo "Heap Done..."
-	@ echo "-------------------------------"
+	@ echo "heap \e[1;35m$(HEAPJVM_FILE)\e[0m  done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo C libraries compilation                                   */
@@ -519,8 +517,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJE
 	$(AR) $(ARFLAGS) \
                 $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a $^
 	$(RANLIB) $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
+	@ echo "static library \e[1;36m$(@)\e[0m done."
 
 one-share-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
 
@@ -531,6 +528,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHARE
              LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
              BIGLOOLIB= \
              SONAME=lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
+	@ echo "shared library \e[1;37m$(@)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JVM libraries compilation                                 */
@@ -575,8 +573,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib 
                  bigloo/runtime/*/_KBGl_*.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
-	@ echo "$(LIBRARYNAME)$(LIBSUFFIX).zip done..."
-	@ echo "-------------------------------"
+	@ echo "zip library \e[1;38m$(@)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JAS libraries compilation                                 */
@@ -647,7 +644,7 @@ one-distlib: $(C_OBJECTS)
 #*---------------------------------------------------------------------*/
 boot: dirs includes
 	touch .afile
-	@ $(MAKE) boot-libs CEFLAGS=-DBGL_BOOT=1
+	@ $(MAKE) boot-libs CEFLAGS=-DBGL_BOOT=1 EFLAGS="-srfi boot"
 
 boot-libs:
 	@ $(MAKE) lib-c_u SCMOBJSUFFIX="" COBJSUFFIX=%.o
@@ -1028,7 +1025,7 @@ afile: .afile
 #*---------------------------------------------------------------------*/
 jfile: .jfile
 .jfile:
-	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC)
+	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) > .jfile
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

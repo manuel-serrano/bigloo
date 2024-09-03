@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Aug 28 12:57:02 2024 (serrano)                */
+#*    Last change :  Mon Sep  2 10:49:33 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -527,14 +527,12 @@ while : ; do
       sharedcompiler=no;
       sharedbde=yes;
       infodir=$HOME/house/info;
-      java=java11;
-      javac=javac11;
       ld=gcc;
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
       cfpflags="$cfpflags";
       bootflags="$bootflags -cg";
-      jvmbackend="no";
+      jvmbackend="yes";
       mode=standard;
       configureinfo="yes";
       bee="full";
@@ -755,6 +753,9 @@ while : ; do
 
     --a.bat=*)
       abat="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --jvm)
+      jvmbackend=yes;;
 
     --jvm=*)
       jvmbackend="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -1174,7 +1175,7 @@ while : ; do
       cd $bootdir;
       echo "Bigloo compiler:"  >&2;
       echo "   --native=yes|no [default yes]" >&2;
-      echo "   --jvm=yes|no|force [default no]" >&2;
+      echo "   --jvm[=yes|no|force] [default no]" >&2;
       echo "   --bee=partial|full [default partial]" >&2;
       echo "" >&2;
       echo "API:" >&2;
@@ -3654,7 +3655,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bconfigure_generic_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`$echo $release | sed -e "s|[.]|_|"`;
@@ -5385,7 +5386,8 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Generate the config.status file for debian packages              */
 #*---------------------------------------------------------------------*/
-$echo "configuration completed" > config.status
+$echo "$*" > config.status
+$echo "configuration completed" >> config.status
 
 #*---------------------------------------------------------------------*/
 #*    Ok, we are done now                                              */

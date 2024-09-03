@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen Cfa/specialize.scm)
+;; Bigloo (4.6a)
+;; Inria -- Sophia Antipolis     Thu Aug 29 03:10:46 PM CEST 2024 
+;; (bigloo -classgen Cfa/specialize.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,7 +11,7 @@
 ;; specialized-global
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-specialized-global::specialized-global id1126::symbol name1127::obj type1128::type value1129::value access1130::obj fast-alpha1131::obj removable1132::obj occurrence1133::long occurrencew1134::long user?1135::bool module1136::symbol import1137::obj evaluable?1138::bool eval?1139::bool library1140::obj pragma1141::obj src1142::obj jvm-type-name1143::bstring init1144::obj alias1145::obj fix1146::obj)
+    (inline make-specialized-global::specialized-global id1133::symbol name1134::obj type1135::type value1136::value access1137::obj fast-alpha1138::obj removable1139::obj occurrence1140::long occurrencew1141::long user?1142::bool module1143::symbol import1144::obj evaluable?1145::bool eval?1146::bool library1147::obj pragma1148::obj src1149::obj qualified-type-name1150::bstring init1151::obj alias1152::obj fix1153::obj)
     (inline specialized-global?::bool ::obj)
     (specialized-global-nil::specialized-global)
     (inline specialized-global-fix::obj ::specialized-global)
@@ -20,8 +20,8 @@
     (inline specialized-global-alias-set! ::specialized-global ::obj)
     (inline specialized-global-init::obj ::specialized-global)
     (inline specialized-global-init-set! ::specialized-global ::obj)
-    (inline specialized-global-jvm-type-name::bstring ::specialized-global)
-    (inline specialized-global-jvm-type-name-set! ::specialized-global ::bstring)
+    (inline specialized-global-qualified-type-name::bstring ::specialized-global)
+    (inline specialized-global-qualified-type-name-set! ::specialized-global ::bstring)
     (inline specialized-global-src::obj ::specialized-global)
     (inline specialized-global-src-set! ::specialized-global ::obj)
     (inline specialized-global-pragma::obj ::specialized-global)
@@ -59,7 +59,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; specialized-global
-(define-inline (make-specialized-global::specialized-global id1126::symbol name1127::obj type1128::type value1129::value access1130::obj fast-alpha1131::obj removable1132::obj occurrence1133::long occurrencew1134::long user?1135::bool module1136::symbol import1137::obj evaluable?1138::bool eval?1139::bool library1140::obj pragma1141::obj src1142::obj jvm-type-name1143::bstring init1144::obj alias1145::obj fix1146::obj) (instantiate::specialized-global (id id1126) (name name1127) (type type1128) (value value1129) (access access1130) (fast-alpha fast-alpha1131) (removable removable1132) (occurrence occurrence1133) (occurrencew occurrencew1134) (user? user?1135) (module module1136) (import import1137) (evaluable? evaluable?1138) (eval? eval?1139) (library library1140) (pragma pragma1141) (src src1142) (jvm-type-name jvm-type-name1143) (init init1144) (alias alias1145) (fix fix1146)))
+(define-inline (make-specialized-global::specialized-global id1133::symbol name1134::obj type1135::type value1136::value access1137::obj fast-alpha1138::obj removable1139::obj occurrence1140::long occurrencew1141::long user?1142::bool module1143::symbol import1144::obj evaluable?1145::bool eval?1146::bool library1147::obj pragma1148::obj src1149::obj qualified-type-name1150::bstring init1151::obj alias1152::obj fix1153::obj) (instantiate::specialized-global (id id1133) (name name1134) (type type1135) (value value1136) (access access1137) (fast-alpha fast-alpha1138) (removable removable1139) (occurrence occurrence1140) (occurrencew occurrencew1141) (user? user?1142) (module module1143) (import import1144) (evaluable? evaluable?1145) (eval? eval?1146) (library library1147) (pragma pragma1148) (src src1149) (qualified-type-name qualified-type-name1150) (init init1151) (alias alias1152) (fix fix1153)))
 (define-inline (specialized-global?::bool obj::obj) ((@ isa? __object) obj (@ specialized-global cfa_specialize)))
 (define (specialized-global-nil::specialized-global) (class-nil (@ specialized-global cfa_specialize)))
 (define-inline (specialized-global-fix::obj o::specialized-global) (-> |#!bigloo_wallow| o fix))
@@ -68,8 +68,8 @@
 (define-inline (specialized-global-alias-set! o::specialized-global v::obj) (set! (-> |#!bigloo_wallow| o alias) v))
 (define-inline (specialized-global-init::obj o::specialized-global) (-> |#!bigloo_wallow| o init))
 (define-inline (specialized-global-init-set! o::specialized-global v::obj) (set! (-> |#!bigloo_wallow| o init) v))
-(define-inline (specialized-global-jvm-type-name::bstring o::specialized-global) (-> |#!bigloo_wallow| o jvm-type-name))
-(define-inline (specialized-global-jvm-type-name-set! o::specialized-global v::bstring) (set! (-> |#!bigloo_wallow| o jvm-type-name) v))
+(define-inline (specialized-global-qualified-type-name::bstring o::specialized-global) (-> |#!bigloo_wallow| o qualified-type-name))
+(define-inline (specialized-global-qualified-type-name-set! o::specialized-global v::bstring) (set! (-> |#!bigloo_wallow| o qualified-type-name) v))
 (define-inline (specialized-global-src::obj o::specialized-global) (-> |#!bigloo_wallow| o src))
 (define-inline (specialized-global-src-set! o::specialized-global v::obj) (set! (-> |#!bigloo_wallow| o src) v))
 (define-inline (specialized-global-pragma::obj o::specialized-global) (-> |#!bigloo_wallow| o pragma))

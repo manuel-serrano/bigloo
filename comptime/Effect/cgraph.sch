@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen Effect/cgraph.scm)
+;; Bigloo (4.6a)
+;; Inria -- Sophia Antipolis     Thu Aug 29 03:10:46 PM CEST 2024 
+;; (bigloo -classgen Effect/cgraph.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,11 +11,15 @@
 ;; local/from
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-local/from::local/from id1163::symbol name1164::obj type1165::type value1166::value access1167::obj fast-alpha1168::obj removable1169::obj occurrence1170::long occurrencew1171::long user?1172::bool key1173::long from1174::obj)
+    (inline make-local/from::local/from id1172::symbol name1173::obj type1174::type value1175::value access1176::obj fast-alpha1177::obj removable1178::obj occurrence1179::long occurrencew1180::long user?1181::bool key1182::long val-noescape1183::obj volatile1184::bool from1185::obj)
     (inline local/from?::bool ::obj)
     (local/from-nil::local/from)
     (inline local/from-from::obj ::local/from)
     (inline local/from-from-set! ::local/from ::obj)
+    (inline local/from-volatile::bool ::local/from)
+    (inline local/from-volatile-set! ::local/from ::bool)
+    (inline local/from-val-noescape::obj ::local/from)
+    (inline local/from-val-noescape-set! ::local/from ::obj)
     (inline local/from-key::long ::local/from)
     (inline local/from-user?::bool ::local/from)
     (inline local/from-user?-set! ::local/from ::bool)
@@ -40,7 +44,7 @@
 ;; global/from
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-global/from::global/from id1141::symbol name1142::obj type1143::type value1144::value access1145::obj fast-alpha1146::obj removable1147::obj occurrence1148::long occurrencew1149::long user?1150::bool module1151::symbol import1152::obj evaluable?1153::bool eval?1154::bool library1155::obj pragma1156::obj src1157::obj jvm-type-name1158::bstring init1159::obj alias1160::obj from1161::obj)
+    (inline make-global/from::global/from id1150::symbol name1151::obj type1152::type value1153::value access1154::obj fast-alpha1155::obj removable1156::obj occurrence1157::long occurrencew1158::long user?1159::bool module1160::symbol import1161::obj evaluable?1162::bool eval?1163::bool library1164::obj pragma1165::obj src1166::obj qualified-type-name1167::bstring init1168::obj alias1169::obj from1170::obj)
     (inline global/from?::bool ::obj)
     (global/from-nil::global/from)
     (inline global/from-from::obj ::global/from)
@@ -49,8 +53,8 @@
     (inline global/from-alias-set! ::global/from ::obj)
     (inline global/from-init::obj ::global/from)
     (inline global/from-init-set! ::global/from ::obj)
-    (inline global/from-jvm-type-name::bstring ::global/from)
-    (inline global/from-jvm-type-name-set! ::global/from ::bstring)
+    (inline global/from-qualified-type-name::bstring ::global/from)
+    (inline global/from-qualified-type-name-set! ::global/from ::bstring)
     (inline global/from-src::obj ::global/from)
     (inline global/from-src-set! ::global/from ::obj)
     (inline global/from-pragma::obj ::global/from)
@@ -88,11 +92,15 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; local/from
-(define-inline (make-local/from::local/from id1163::symbol name1164::obj type1165::type value1166::value access1167::obj fast-alpha1168::obj removable1169::obj occurrence1170::long occurrencew1171::long user?1172::bool key1173::long from1174::obj) (instantiate::local/from (id id1163) (name name1164) (type type1165) (value value1166) (access access1167) (fast-alpha fast-alpha1168) (removable removable1169) (occurrence occurrence1170) (occurrencew occurrencew1171) (user? user?1172) (key key1173) (from from1174)))
+(define-inline (make-local/from::local/from id1172::symbol name1173::obj type1174::type value1175::value access1176::obj fast-alpha1177::obj removable1178::obj occurrence1179::long occurrencew1180::long user?1181::bool key1182::long val-noescape1183::obj volatile1184::bool from1185::obj) (instantiate::local/from (id id1172) (name name1173) (type type1174) (value value1175) (access access1176) (fast-alpha fast-alpha1177) (removable removable1178) (occurrence occurrence1179) (occurrencew occurrencew1180) (user? user?1181) (key key1182) (val-noescape val-noescape1183) (volatile volatile1184) (from from1185)))
 (define-inline (local/from?::bool obj::obj) ((@ isa? __object) obj (@ local/from effect_cgraph)))
 (define (local/from-nil::local/from) (class-nil (@ local/from effect_cgraph)))
 (define-inline (local/from-from::obj o::local/from) (-> |#!bigloo_wallow| o from))
 (define-inline (local/from-from-set! o::local/from v::obj) (set! (-> |#!bigloo_wallow| o from) v))
+(define-inline (local/from-volatile::bool o::local/from) (-> |#!bigloo_wallow| o volatile))
+(define-inline (local/from-volatile-set! o::local/from v::bool) (set! (-> |#!bigloo_wallow| o volatile) v))
+(define-inline (local/from-val-noescape::obj o::local/from) (-> |#!bigloo_wallow| o val-noescape))
+(define-inline (local/from-val-noescape-set! o::local/from v::obj) (set! (-> |#!bigloo_wallow| o val-noescape) v))
 (define-inline (local/from-key::long o::local/from) (-> |#!bigloo_wallow| o key))
 (define-inline (local/from-key-set! o::local/from v::long) (set! (-> |#!bigloo_wallow| o key) v))
 (define-inline (local/from-user?::bool o::local/from) (-> |#!bigloo_wallow| o user?))
@@ -117,7 +125,7 @@
 (define-inline (local/from-id-set! o::local/from v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; global/from
-(define-inline (make-global/from::global/from id1141::symbol name1142::obj type1143::type value1144::value access1145::obj fast-alpha1146::obj removable1147::obj occurrence1148::long occurrencew1149::long user?1150::bool module1151::symbol import1152::obj evaluable?1153::bool eval?1154::bool library1155::obj pragma1156::obj src1157::obj jvm-type-name1158::bstring init1159::obj alias1160::obj from1161::obj) (instantiate::global/from (id id1141) (name name1142) (type type1143) (value value1144) (access access1145) (fast-alpha fast-alpha1146) (removable removable1147) (occurrence occurrence1148) (occurrencew occurrencew1149) (user? user?1150) (module module1151) (import import1152) (evaluable? evaluable?1153) (eval? eval?1154) (library library1155) (pragma pragma1156) (src src1157) (jvm-type-name jvm-type-name1158) (init init1159) (alias alias1160) (from from1161)))
+(define-inline (make-global/from::global/from id1150::symbol name1151::obj type1152::type value1153::value access1154::obj fast-alpha1155::obj removable1156::obj occurrence1157::long occurrencew1158::long user?1159::bool module1160::symbol import1161::obj evaluable?1162::bool eval?1163::bool library1164::obj pragma1165::obj src1166::obj qualified-type-name1167::bstring init1168::obj alias1169::obj from1170::obj) (instantiate::global/from (id id1150) (name name1151) (type type1152) (value value1153) (access access1154) (fast-alpha fast-alpha1155) (removable removable1156) (occurrence occurrence1157) (occurrencew occurrencew1158) (user? user?1159) (module module1160) (import import1161) (evaluable? evaluable?1162) (eval? eval?1163) (library library1164) (pragma pragma1165) (src src1166) (qualified-type-name qualified-type-name1167) (init init1168) (alias alias1169) (from from1170)))
 (define-inline (global/from?::bool obj::obj) ((@ isa? __object) obj (@ global/from effect_cgraph)))
 (define (global/from-nil::global/from) (class-nil (@ global/from effect_cgraph)))
 (define-inline (global/from-from::obj o::global/from) (-> |#!bigloo_wallow| o from))
@@ -126,8 +134,8 @@
 (define-inline (global/from-alias-set! o::global/from v::obj) (set! (-> |#!bigloo_wallow| o alias) v))
 (define-inline (global/from-init::obj o::global/from) (-> |#!bigloo_wallow| o init))
 (define-inline (global/from-init-set! o::global/from v::obj) (set! (-> |#!bigloo_wallow| o init) v))
-(define-inline (global/from-jvm-type-name::bstring o::global/from) (-> |#!bigloo_wallow| o jvm-type-name))
-(define-inline (global/from-jvm-type-name-set! o::global/from v::bstring) (set! (-> |#!bigloo_wallow| o jvm-type-name) v))
+(define-inline (global/from-qualified-type-name::bstring o::global/from) (-> |#!bigloo_wallow| o qualified-type-name))
+(define-inline (global/from-qualified-type-name-set! o::global/from v::bstring) (set! (-> |#!bigloo_wallow| o qualified-type-name) v))
 (define-inline (global/from-src::obj o::global/from) (-> |#!bigloo_wallow| o src))
 (define-inline (global/from-src-set! o::global/from v::obj) (set! (-> |#!bigloo_wallow| o src) v))
 (define-inline (global/from-pragma::obj o::global/from) (-> |#!bigloo_wallow| o pragma))

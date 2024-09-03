@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Aug 29 14:40:40 2024 (serrano)                */
+#*    Last change :  Mon Sep  2 13:28:38 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -205,9 +205,11 @@ boot-c: checkgmake
 	if [ -x $(BGLBUILDBINDIR)/bigloo ]; then \
 	  $(MAKE) -C runtime .afile && \
 	  $(MAKE) -C runtime heap && \
+          $(MAKE) boot-touch-specific && \
 	  $(MAKE) -C runtime boot && \
-	  $(MAKE) -C comptime bigloo && \
-	  $(MAKE) -C comptime boot; \
+          $(MAKE) boot-touch-specific && \
+	  $(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u && \
+	  $(MAKE) -C comptime bigloo && $(MAKE) -C comptime boot; \
 	else \
 	  $(MAKE) -C runtime boot && \
 	  $(MAKE) -C comptime boot && \
@@ -215,9 +217,7 @@ boot-c: checkgmake
 	fi
 	# touch the generic Scheme source files that must be
 	# recompiled ith the configured options (e.g., gmp or pcre2)
-	touch runtime/Eval/evprimop.scm
-	touch runtime/Unsafe/regexp.scm
-	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c runtime/Clib/cmain.c
+	$(MAKE) boot-touch-specific
 	$(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
@@ -229,6 +229,16 @@ boot-c: checkgmake
         fi
 	@ echo "Boot done..."
 	@ echo "-------------------------------"
+
+# This touches the runtime file that depends on some platform
+# configurations and that needs to be re-compiled because
+# the shipped intermediate C file use a generic implementation
+# that is not compatible with the specific autoconfiguration versions
+.PHONY: boot-touch-specific
+boot-touch-specific:
+	touch runtime/Eval/evprimop.scm
+	touch runtime/Unsafe/regexp.scm
+	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c runtime/Clib/cmain.c
 
 boot-jvm: checkgmake
 	$(MAKE) -C runtime boot-jvm

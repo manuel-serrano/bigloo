@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Heap/restore.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Heap/restore.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Wed Jul 26 10:18:56 2017 (serrano)                */
-;*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep  3 06:42:35 2024 (serrano)                */
+;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
@@ -99,7 +99,7 @@
 				 (lambda (new)
 				    (add-qualified-type!
 				     (global-module new)
-				     (global-jvm-type-name new)
+				     (global-qualified-type-name new)
 				     (shape new))))
 				Genv)
 			     ;; we add all the heap modules
@@ -212,7 +212,7 @@
 				(lambda (new)
 				   (add-qualified-type!
 				      (global-module new)
-				      (global-jvm-type-name new)
+				      (global-qualified-type-name new)
 				      (shape new)))))
 			  ;; we add all the heap modules
 			  (hashtable-for-each
