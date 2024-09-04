@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Sep  2 10:54:11 2024 (serrano)                */
+;*    Last change :  Wed Sep  4 07:48:15 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -137,10 +137,11 @@
 	     (wat-merge (cons runtime-file sources) tmp)
 	     (let* ((wasm (string-append (prefix (car sources)) ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
-		(verbose 2 "      [" cmd #\] #\Newline)
+		(verbose 2 "      assembling [" cmd #\] #\Newline)
 		(unwind-protect
 		   (let ((target (or *dest* "a.out")))
 		      (exec cmd #t "wasm-as")
+		      (verbose 2 "      generating [" target #\] #\Newline)
 		      (with-output-to-file target
 			 (lambda ()
 			    (display "#!/bin/sh\n")

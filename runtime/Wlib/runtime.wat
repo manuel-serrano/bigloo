@@ -8,6 +8,7 @@
   (import "__js" "close_file" (func $js_close_file (param i32)))
   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
+  (import "__js" "write_char" (func $js_write_char (param i32 i32)))
 
   (import "__js_math" "fmod" (func $fmod (param f64 f64) (result f64)))
   (import "__js_math" "exp" (func $exp (param f64) (result f64)))
@@ -816,14 +817,44 @@
       (local.get $addr)))
 
   (func $bgl_display_char (export "bgl_display_char")
-    (param $c i32)
-    (param $port (ref null $output-port))
-    (result eqref)
-    
-    (i32.store8 (i32.const 128) (local.get $c))
-    ;; FIXME: support other ports
-    (call $js_write_file (i32.const 1) (i32.const 128) (i32.const 1))
-    (local.get $port))
+     (param $c i32)
+     (param $port (ref null $output-port))
+     (result eqref)
+     (local $old_buffer (ref $bstring))
+     (local $new_buffer (ref $bstring))
+     
+     ;; FIXME: support other ports
+     (if (ref.test (ref $file-output-port) (local.get $port))
+	 (then
+	    (call $js_write_char
+	       (struct.get $file-output-port $fd
+		  (ref.cast (ref $file-output-port) (local.get $port)))
+	       (local.get $c)))
+	 (else
+	  (local.set $old_buffer 
+	     (struct.get $string-output-port $buffer
+		(ref.cast (ref $string-output-port) (local.get $port))))
+	  ;; Allocate space for new buffer.
+	  (local.set $new_buffer
+	     (array.new_default $bstring
+		(i32.add
+		   (array.len (local.get $old_buffer))
+		   (i32.const 1))))
+	  ;; Copy data to new buffer.
+	  (array.copy $bstring $bstring
+	     (local.get $new_buffer)
+	     (i32.const 0)
+	     (local.get $old_buffer)
+	     (array.len (local.get $old_buffer))
+	     (i32.const 0))
+	  (array.set $bstring
+	     (local.get $new_buffer)
+	     (array.len (local.get $old_buffer))
+	     (local.get $c))
+	  (struct.set $string-output-port $buffer
+	     (ref.cast (ref $string-output-port) (local.get $port))
+	     (local.get $new_buffer))))
+     (local.get $port))
 
   (func $display_substring_file_port
     (param $text (ref $bstring))

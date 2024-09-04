@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/string.scm                */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/string.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Jul 18 11:12:21 2024 (serrano)                */
+;*    Last change :  Wed Sep  4 09:41:20 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -40,10 +40,6 @@
 	    
 	    __evenv)
 
-	; (cond-expand
-    ;  ((and (not bigloo-c) (not bigloo-jvm))
-    ;   (include "Ieee/string-generic.sch")))
-   
    (extern  (macro $string?::bool (::obj) "STRINGP")
 	    ($make-string::bstring (::long ::uchar) "make_string")
 	    ($make-string/wo-fill::bstring (::long) "make_string_sans_fill")
