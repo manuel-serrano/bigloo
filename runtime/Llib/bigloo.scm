@@ -169,6 +169,10 @@
 		($cell? "(ref.test (ref $cell) ~0)")
 
 		(c-cnst? "(ref.test i31ref ~0)")
+	
+		;; These two functions are inlined by the WASM backend directly.
+	    (cnst-table-set! "(throw $unimplemented)")
+	    (cnst-table-ref "(throw $unimplemented)")
 	    
 		;; Opaque types not supported in WASM backend
 	    (c-opaque? "(i32.const 0)")
