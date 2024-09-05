@@ -898,7 +898,11 @@ uninstall-jvm:
 	-$(RM) -f $(ZIPDIR)/bigloo_u.zip
 
 uninstall-wasm:
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wasm
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat
 
 uninstall-bee:
 	- $(MAKE) uninstall-lib LIB=libbigloo-$(RELEASE)_p
