@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Sep  4 07:48:15 2024 (serrano)                */
+;*    Last change :  Wed Sep  4 18:03:30 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -537,7 +537,8 @@
 		  ((visible? c) (display c))
 		  ((char=? c #\") (display "\\\""))
 		  ((char=? c #\\) (display "\\\\"))
-		  (else (display* "\\" 
+		  ((char=? c #\newline) (display "\\n"))
+		  (else (display* "\\u" 
 			   (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
 			   (string-ref hex (char->integer (char-and c #\x0F)))
 			   ))))
@@ -1092,6 +1093,7 @@
 ;*    emit-string-data ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-string-data str info)
+   
    (define (split-long-data data block-size result)
       (if (=fx (string-length data) 0)
 	  (reverse result)
@@ -1100,6 +1102,7 @@
 		(substring data len) 
 		block-size 
 		(cons (substring data 0 len) result)))))
+
    (let ((section (car info))
 	 (offset (cdr info)))
       `(data ,section ,@(split-long-data str 100 '()))))
