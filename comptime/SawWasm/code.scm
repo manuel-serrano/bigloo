@@ -721,7 +721,8 @@
 	      (let ((index (string->integer (substring name 1))))
 		 (list-ref args index))
 	      macro)))
-      ((pair? macro) (map (lambda (n) (expand-wasm-macro n args)) macro))
+      ((pair? macro)
+       (map (lambda (n) (expand-wasm-macro n args)) macro))
       (else macro)))
 
 ;*---------------------------------------------------------------------*/
@@ -799,8 +800,7 @@
 ;*    inline-cnst-table-ref ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (inline-cnst-table-ref args) 
-   `(array.get
-       $cnst-table
+   `(array.get $cnst-table
        (global.get ,(cnst-table-sym))
        ,@(gen-args args)))
 

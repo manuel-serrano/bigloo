@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/vector.scm                */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/vector.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Jul  3 14:06:42 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 14:15:39 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -55,8 +55,7 @@
 	    (macro $vector-blit-no-overlap!::vector (::vector ::vector ::long ::long ::long) "BGL_VECTOR_BLIT_NO_OVERLAP")
 	    (macro $vector-blit-overlap!::vector (::vector ::vector ::long ::long ::long) "BGL_VECTOR_BLIT_OVERLAP"))
    
-   (wasm
-	    ($free-vector-uncollectable "")
+   (wasm    ($free-vector-uncollectable "")
 	    ($make-vector "(array.new $vector ~1 (i32.wrap_i64 ~0))")
 	    ($make-vector-uncollectable "(array.new $vector ~1 (i32.wrap_i64 ~0))")
 	    ($create-vector "(array.new_default $vector (i32.wrap_i64 ~0))")

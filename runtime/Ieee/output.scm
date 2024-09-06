@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/output.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/output.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Jul 22 15:41:16 2024 (serrano)                */
+;*    Last change :  Thu Sep  5 08:30:26 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -761,13 +761,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-2 ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (display-2 obj port::output-port)
+(define (display-2 obj port)
    (%write/display-2 obj port display))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-2 ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (write-2 obj port::output-port)
+(define (write-2 obj port)
    (%write/display-2 obj port write))
 
 ;*---------------------------------------------------------------------*/
@@ -975,31 +975,29 @@
 (define (write/display-vector obj port disp)
    ($display-char #\# port)
    (let ((tag (vector-tag obj)))
-      (if (>fx tag 0)
-	  (begin
-	     (if (>=fx tag 100)
-		 (disp tag port)
-		 (begin
-		    ($display-char #\0 port)
-		    (if (>=fx tag 10)
-			(disp tag port)
-			(begin
-			   ($display-char #\0 port)
-			   (disp tag port))))))))
+      (when (>fx tag 0)
+	 (if (>=fx tag 100)
+	     (disp tag port)
+	     (begin
+		($display-char #\0 port)
+		(if (>=fx tag 10)
+		    (disp tag port)
+		    (begin
+		       ($display-char #\0 port)
+		       (disp tag port)))))))
    ($display-char #\( port)
    (if (=fx 0 (vector-length obj))
        ($display-char #\) port)
        (let ((len (-fx (vector-length obj) 1)))
 	  (let loop ((i 0))
+	     (disp (vector-ref obj i) port)
 	     (cond
 		((=fx i len)
-		 (disp (vector-ref obj i) port)
 		 ($display-char #\) port))
 		(else
-		 (disp (vector-ref obj i) port)
 		 ($display-char #\space port)
 		 (loop (+fx 1 i))))))))
- 
+
 ;*---------------------------------------------------------------------*/
 ;*    write/display-tvector ...                                        */
 ;*---------------------------------------------------------------------*/

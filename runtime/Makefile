@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Sep  2 12:04:02 2024 (serrano)                */
+#*    Last change :  Thu Sep  5 08:17:26 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -685,7 +685,8 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
-  objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
+  objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
+  $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
 	$(BIGLOO) -wasm -y -w $(WASMTYPES) \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
@@ -698,20 +699,6 @@ objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
                Wlib/runtime.wat \
                $(WASMS:%.wasm=%.wat) \
                -o $@
-	@ echo "wat file \e[1;33m$(@)\e[0m done"
-
-xxx$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
-  objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
-  objs/wasm$(LIBSUFFIX)/dummy_runtime.wat
-	../tools/bigloo-wasm-merge $(WASMTYPES) \
-		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
-		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
-		> $@
-	@ echo "wat file \e[1;33m$(@)\e[0m done"
-
-xxxobjs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
-  $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
-	../tools/bigloo-wasm-merge $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat) > $@
 	@ echo "wat file \e[1;33m$(@)\e[0m done"
 
 objs/wasm_u/%.wat: %.scm $(BOOTLIBDIR)/types.wat
@@ -1179,6 +1166,14 @@ afile: .afile
 jfile: .jfile
 .jfile:
 	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) > .jfile
+
+#*---------------------------------------------------------------------*/
+#*    wasm dependencies                                                */
+#*---------------------------------------------------------------------*/
+objs/wasm_s/Ieee/fixnum.wat: Ieee/fixnum-generic.sch
+objs/wasm_u/Ieee/fixnum.wat: Ieee/fixnum-generic.sch
+objs/wasm_s/Ieee/output.wat: Ieee/output-generic.sch
+objs/wasm_u/Ieee/output.wat: Ieee/output-generic.sch
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */
