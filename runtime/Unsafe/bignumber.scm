@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Sep  2 12:50:52 2024 (serrano)                */
+;*    Last change :  Sat Sep  7 12:36:40 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -41,10 +41,6 @@
 	    __r4_strings_6_7
 	    __r4_ports_6_10_1
 	    __r4_control_features_6_9)
-	(wasm
-		($fixnum->flonum "(f64.convert_i64_s ~0)")
-		($flonum->fixnum "(i64.trunc_f64_s ~0)"))
-
 
    (cond-expand
       ((and enable-gmp (not boot))
@@ -71,6 +67,10 @@
       (macro $quotientfx-safe::obj (::long ::long) "BGL_SAFE_QUOTIENT_FX")
       (macro $quotientelong-safe::obj (::elong ::elong) "BGL_SAFE_QUOTIENT_ELONG")
       (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG"))
+
+   (wasm
+      ($fixnum->flonum "(f64.convert_i64_s ~0)")
+      ($flonum->fixnum "(i64.trunc_f64_s ~0)"))
 
    (java
       (class foreign

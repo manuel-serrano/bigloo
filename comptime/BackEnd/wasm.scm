@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Sep  4 18:03:30 2024 (serrano)                */
+;*    Last change :  Sat Sep  7 13:55:07 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -110,9 +110,9 @@
    (let ((wasmas "wasm-as -all"))
       (verbose 1 "   . Wasmas (" wasmas ")" #\Newline)
       (cond
-	 ((and (pair? *o-files*) (not (eq? *pass* 'so)))
+	 ((and (null? *o-files*) (eq? *pass* 'so))
 	  (error "wasm-link" "cannot build a library without object files" sources))
-	 ((and (eq? *pass* 'so) (pair? sources))
+	 ((and (eq? *pass* 'so) (not (pair? sources)))
 	  (error "wasm-link" "cannot build a library with sources" sources))
 	 ((eq? *pass* 'so)
 	  (if (string=? (suffix *dest*) "wat")
@@ -132,10 +132,11 @@
 	 (else
 	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
 		 (runtime-file (find-file-in-path "bigloo_s.wat" *lib-dir*))
-		 (runtime-mjs (find-file-in-path "runtime.mjs" *lib-dir*)))
+		 (runtime-mjs (find-file-in-path "runtime.mjs" *lib-dir*))
+		 (objects (map (lambda (e) (if (pair? e) (cdr e) e)) sources)))
 	     (verbose 2 "      merging [" tmp #\] #\Newline)
-	     (wat-merge (cons runtime-file sources) tmp)
-	     (let* ((wasm (string-append (prefix (car sources)) ".wasm"))
+	     (wat-merge (cons runtime-file objects) tmp)
+	     (let* ((wasm (string-append (prefix (car objects)) ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
 		(unwind-protect

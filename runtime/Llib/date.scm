@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/date.scm         */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/date.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Thu Jul 18 10:25:10 2024 (serrano)                */
+;*    Last change :  Sat Sep  7 12:49:05 2024 (serrano)                */
 ;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -97,13 +97,12 @@
 	    ($date-seconds-to-string::bstring (::elong) "bgl_seconds_to_string")
 	    ($date-seconds-to-utc-string::bstring (::elong) "bgl_seconds_to_utc_string"))
 
-	(wasm
-		;; TODO: implement WASM date and time
-		(c-date? "(ref.test (ref $date) ~0)")
-		($date->gmtdate! "(throw $unimplemented)")
+   (wasm    ;; TODO: implement WASM date and time
+            (c-date? "(ref.test (ref $date) ~0)")
+	    ($date->gmtdate! "(throw $unimplemented)")
 
-		($date-integer->second "~0")
-		($date-nanosecond "(struct.get $date $nanosecond ~0)")
+	    ($date-integer->second "~0")
+	    ($date-nanosecond "(struct.get $date $nanosecond ~0)")
 	    ($date-millisecond "(i64.div_u (struct.get $date $nanosecond ~0) (i64.const 1000000))")
 	    ($date-second "(struct.get $date $second ~0)")
 	    ($date-minute "(struct.get $date $minute ~0)")
@@ -118,7 +117,7 @@
 	    ($date-is-gmt "(struct.get $date $is-gmt ~0)")
 	    ($date-time "(i64.div_u (struct.get $date $time ~0) (i64.const 1000))")
 	    
-		;; TODO: implement WASM date and time
+	    ;; TODO: implement WASM date and time
 	    ($date-from-seconds "(throw $unimplemented)")
 	    ($date-from-seconds-gmt "(throw $unimplemented)")
 	    ($date-from-milliseconds-gmt "(throw $unimplemented)")

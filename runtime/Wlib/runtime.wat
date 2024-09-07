@@ -1670,6 +1670,26 @@
   (export "RANDOMFL" (func $RANDOMFL))
 
   ;; --------------------------------------------------------
+  ;; bignum functions
+  ;; --------------------------------------------------------
+  (export "BGL_SAFE_PLUS_FX" (func $BGL_SAFE_PLUS_FX))
+  (export "BGL_SAFE_MINUS_FX" (func $BGL_SAFE_MINUS_FX))
+
+  (func $BGL_SAFE_PLUS_FX
+     (param $x i64)
+     (param $y i64)
+     (result eqref)
+     (struct.new $bint
+	(i64.add (local.get $x) (local.get $y))))
+
+  (func $BGL_SAFE_MINUS_FX
+     (param $x i64)
+     (param $y i64)
+     (result eqref)
+     (struct.new $bint
+	(i64.sub (local.get $x) (local.get $y))))
+
+  ;; --------------------------------------------------------
   ;; Date functions
   ;; --------------------------------------------------------
 
