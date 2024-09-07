@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Sep  4 09:41:20 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 14:33:16 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -90,7 +90,7 @@
 	    (macro $string-shrink!::bstring (::bstring ::long) "bgl_string_shrink"))
 
    (wasm    ($string? "(ref.test (ref $bstring) ~0)")
-		($make-string "(array.new $bstring ~1 (i32.wrap_i64 ~0))")
+            ($make-string "(array.new $bstring ~1 (i32.wrap_i64 ~0))")
 	    ($make-string/wo-fill "(array.new_default $bstring (i32.wrap_i64 ~0))")
 	    ($string->bstring-len "~0")
 	    ($string-length "(i64.extend_i32_u (array.len ~0))")

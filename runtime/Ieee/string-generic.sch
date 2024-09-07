@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/runtime/Ieee/string-generic.sch        */
+;*    .../prgm/project/bigloo/wasm/runtime/Ieee/string-generic.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Thu Jul 18 11:10:58 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 14:32:36 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -13,7 +13,7 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-	(import __bit)
+   (import __bit)
    (export (bigloo_strcmp::bool ::bstring ::bstring)
 	   (bigloo_strncmp::bool ::bstring ::bstring ::long)
 	   (bigloo_strcmp_at::bool ::bstring ::bstring ::long)

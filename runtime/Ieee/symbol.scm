@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/symbol.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/symbol.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Mon Jul 22 12:59:23 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 14:35:08 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -45,7 +45,7 @@
 
    (extern  (macro c-symbol?::bool (::obj) "SYMBOLP")
 	    (macro $symbol?::bool (::obj) "SYMBOLP")
-		(macro $make-symbol::symbol (::bstring) "")
+	    (macro $make-symbol::symbol (::bstring) "")
 	    (c-string->symbol::symbol (::string) "string_to_symbol")
 	    ($string->symbol::symbol (::string) "string_to_symbol")
 	    ($bstring->symbol::symbol (::bstring) "bstring_to_symbol")

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/runtime/Ieee/symbol-generic.sch        */
+;*    .../prgm/project/bigloo/wasm/runtime/Ieee/symbol-generic.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Mon Jul 22 13:11:50 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 14:34:53 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -13,9 +13,7 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-	(use
-		__bexit)
-
+   (use __bexit)
    (export ($$bstring->symbol::symbol ::bstring)
 	   ($$bstring->keyword::keyword ::bstring)))
 

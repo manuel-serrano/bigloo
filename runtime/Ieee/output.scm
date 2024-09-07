@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu Sep  5 08:30:26 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 14:36:22 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -623,12 +623,12 @@
       `(cond
 	  ((string? ,obj) 
 	   (,write/display-string ,obj ,port))
-	  ((symbol? ,obj)
-	   (,write/display-symbol ,obj ,port))
 	  ((fixnum? ,obj)
-	   ($display-fixnum ,obj ,port))
+	   (display-fixnum ,obj ,port))
 	  ((char? ,obj)
 	   (,$write/display-char ,obj ,port))
+	  ((symbol? ,obj)
+	   (,write/display-symbol ,obj ,port))
 	  ((pair? ,obj)
 	   (,write/display-pair ,obj ,port))
 	  ((null? ,obj)
@@ -676,7 +676,7 @@
 	  ((eq? ,obj '#!key)
 	   (display-string "#!key" ,port))
 	  ((procedure? ,obj)
-	   ($write-procedure ,obj ,port))
+	   (write-procedure ,obj ,port))
 	  ((output-port? ,obj)
 	   (cond
 	      ((output-string-port? ,obj)
@@ -777,6 +777,16 @@
    (display-string (symbol->string! obj) port))
 
 ;*---------------------------------------------------------------------*/
+;*    write-procedure ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (write-procedure obj port)
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($write-procedure obj port))
+      (else
+       ($$write-procedure obj port))))
+   
+;*---------------------------------------------------------------------*/
 ;*    write-symbol ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (write-symbol obj port)
@@ -873,7 +883,11 @@
 ;*    display-fixnum ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (display-fixnum obj port)
-   ($display-fixnum obj port))
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($display-fixnum obj port))
+      (else 
+       ($$display-fixnum obj port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-elong ...                                                */
