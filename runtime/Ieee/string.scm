@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Sep  6 14:33:16 2024 (serrano)                */
+;*    Last change :  Sun Sep  8 09:31:22 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -97,9 +97,8 @@
 	    ($string-ref "(array.get $bstring ~0 (i32.wrap_i64 ~1))")
 		;; TODO: maybe move string-set to its own function in the runtime
 	    ($string-set! "(block (result eqref) (array.set $bstring ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))")
-		
-		($string-bound-check? "(i64.lt_u ~0 ~1)")
-	    ($blit-string "(block (result eqref) (array.copy $bstring $bstring ~0 (i32.wrap_i64 ~1) ~2 (i32.wrap_i64 ~3) (i32.wrap_i64 ~4)) (global.get $BUNSPEC))")
+	    ($string-bound-check? "(i64.lt_u ~0 ~1)")
+	    ($blit-string "(block (result eqref) (array.copy $bstring $bstring ~2 (i32.wrap_i64 ~3) ~0 (i32.wrap_i64 ~1) (i32.wrap_i64 ~4)) (global.get $BUNSPEC))")
 	    ($string-shrink! "~0"))
 
    (java    (class foreign
