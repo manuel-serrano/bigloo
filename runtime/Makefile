@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Sep  8 12:14:34 2024 (serrano)                */
+#*    Last change :  Sun Sep  8 15:32:29 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -923,6 +923,13 @@ objs/class_s/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 
 objs/class_p/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
+objs/class_u/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
 
 #*---------------------------------------------------------------------*/
 #*    objs                                                             */
