@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Thu Aug 29 11:02:43 2024 (serrano)                */
+/*    Last change :  Sun Sep  8 11:30:27 2024 (serrano)                */
 /*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -858,9 +858,14 @@ bgl_safe_bignum_to_fixnum(obj_t bx) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_plus_fx(long x, long y) {
+#if BGL_HAVE_OVERFLOW
+   long z;
+   if (__builtin_saddl_overflow(x, y, &z))
+#else   
    long z = x + y;
    if ((x & C_LONG_SIGN_BIT) == (y & C_LONG_SIGN_BIT) &&
        (z & C_LONG_SIGN_BIT) != (x & C_LONG_SIGN_BIT))
+#endif   
       return bgl_bignum_add(bgl_long_to_bignum(x), bgl_long_to_bignum(y));
    else
       return BINT(z);
@@ -872,10 +877,14 @@ bgl_safe_plus_fx(long x, long y) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_minus_fx(long x, long y) {
+#if BGL_HAVE_OVERFLOW
+   long z;
+   if (__builtin_ssubl_overflow(x, y, &z))
+#else   
    long z = x - y;
-
    if ((x & C_LONG_SIGN_BIT) != (y & C_LONG_SIGN_BIT) &&
        (z & C_LONG_SIGN_BIT) != (x & C_LONG_SIGN_BIT))
+#endif
       return bgl_bignum_sub(bgl_long_to_bignum(x), bgl_long_to_bignum(y));
    else
       return BINT(z);
@@ -887,6 +896,14 @@ bgl_safe_minus_fx(long x, long y) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_mul_fx(long x, long y) {
+#if BGL_HAVE_OVERFLOW
+      long z;
+      if (__builtin_smull_overflow(x, y, &z))
+	 return bgl_bignum_mul(bgl_long_to_bignum(x),
+			       bgl_long_to_bignum(y));
+      else
+	 return BINT(z);
+#else   
    if (!y || !x)
       return BINT(0);
    else {
@@ -899,6 +916,7 @@ bgl_safe_mul_fx(long x, long y) {
 	 return bgl_bignum_mul(bgl_long_to_bignum(x),
 			       bgl_long_to_bignum(y));
    }
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -910,11 +928,7 @@ bgl_safe_quotient_fx(long x, long y) {
    if (x == BGL_LONG_MIN && y == -1) {
       return bgl_bignum_div(bgl_long_to_bignum(x), bgl_long_to_bignum(y));
    } else {
-#if (!BGL_NAN_TAGGING)
       return BINT(x / y);
-#else
-      return BINT(x / y);
-#endif
    }
 }
 
@@ -924,10 +938,15 @@ bgl_safe_quotient_fx(long x, long y) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_plus_elong(long x, long y) {
+#if BGL_HAVE_OVERFLOW
+   long z;
+   if (__builtin_saddl_overflow(x, y, &z))
+#else   
    long z = x + y;
 
    if ((x & C_ELONG_SIGN_BIT) == (y & C_ELONG_SIGN_BIT) &&
        (z & C_ELONG_SIGN_BIT) != (x & C_ELONG_SIGN_BIT))
+#endif      
       return bgl_bignum_add(bgl_long_to_bignum(x), bgl_long_to_bignum(y));
    else
       return make_belong(z);
@@ -939,10 +958,15 @@ bgl_safe_plus_elong(long x, long y) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_minus_elong(long x, long y) {
+#if BGL_HAVE_OVERFLOW
+   long z;
+   if (__builtin_ssubl_overflow(x, y, &z))
+#else   
    long z = x - y;
 
    if ((x & C_ELONG_SIGN_BIT) != (y & C_ELONG_SIGN_BIT) &&
        (z & C_ELONG_SIGN_BIT) != (x & C_ELONG_SIGN_BIT))
+#endif      
       return bgl_bignum_sub(bgl_long_to_bignum(x), bgl_long_to_bignum(y));
    else
       return make_belong(z);
@@ -954,6 +978,13 @@ bgl_safe_minus_elong(long x, long y) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_mul_elong(long x, long y) {
+#if BGL_HAVE_OVERFLOW
+   long z;
+   if (__builtin_smull_overflow(x, y, &z))
+      return bgl_bignum_mul(bgl_long_to_bignum(x), bgl_long_to_bignum(y));
+   else
+      return make_belong(z);
+#else   
    if (!y)
       return bgl_belongzero;
    else {
@@ -964,6 +995,7 @@ bgl_safe_mul_elong(long x, long y) {
       else
 	 return bgl_bignum_mul(bgl_long_to_bignum(x), bgl_long_to_bignum(y));
    }
+#endif   
 }
 
 /*---------------------------------------------------------------------*/

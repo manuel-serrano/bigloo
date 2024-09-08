@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Oct 13 14:06:20 2015                          */
-#*    Last change :  Thu Jul 13 12:43:52 2023 (serrano)                */
-#*    Copyright   :  2015-23 Manuel Serrano                            */
+#*    Last change :  Fri Aug 30 11:44:07 2024 (serrano)                */
+#*    Copyright   :  2015-24 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Bigloo wrapper                                                   */
 #*=====================================================================*/
@@ -16,4 +16,8 @@ DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
 export LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH
 
-exec @BIGLOO@ @LDBIGLOOOPT@ "$@"
+if [ $1 = "-i" ]; then
+  exec @BIGLOO@ "$@"
+else  
+  exec @BIGLOO@ @LDBIGLOOOPT@ "$@"
+fi       

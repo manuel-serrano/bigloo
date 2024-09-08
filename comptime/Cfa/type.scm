@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Sep  6 09:48:19 2024 (serrano)                */
+;*    Last change :  Sun Sep  8 13:13:39 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -488,11 +488,29 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::vref)
    (call-next-method)
-   (with-access::vref node (ftype type)
-      (when (eq? ftype *_*)
-	 (set! ftype *obj*))
-      (set! type ftype))
-   node)
+   (with-access::vref node (ftype type vtype)
+      (cond
+	 ((tvec? vtype)
+	  node)
+	 ((eq? ftype *_*)
+	  (set! ftype *obj*)
+	  (set! type *obj*)
+	  node)
+	 (else
+	  (let ((ctype ftype))
+	     (set! type *obj*)
+	     (set! ftype *obj*)
+	     (instantiate::cast
+		(type ctype)
+		(arg node)))))))
+
+;* (define-method (type-node! node::vref)                              */
+;*    (call-next-method)                                               */
+;*    (with-access::vref node (ftype type)                             */
+;*       (when (eq? ftype *_*)                                         */
+;* 	 (set! ftype *obj*))                                           */
+;*       (set! type ftype))                                            */
+;*    node)                                                            */
       
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::vset! ...                                           */
