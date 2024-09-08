@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Thu Aug 29 09:32:57 2024 (serrano)                */
+;*    Last change :  Mon Sep  2 11:30:19 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -92,7 +92,11 @@
       (export $bitorbx "bgl_bignum_or")
       (export $bitxorbx "bgl_bignum_xor")
       (export $bitandbx "bgl_bignum_and")
-      (export $bitnotbx "bgl_bignum_not"))
+      (export $bitnotbx "bgl_bignum_not")
+
+      (export $zerobx? "BXZERO")
+      (export $positivebx? "BXPOSITIVE")
+      (export $negativebx? "BXNEGATIVE"))
    
    (export
       (inline $string->integer-obj::obj ::string ::long)

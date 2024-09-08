@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sun Apr 14 08:04:18 2019 (serrano)                */
+;*    Last change :  Mon Sep  2 14:47:09 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -124,7 +124,7 @@
       (when (and (backend-qualified-types (the-backend))
 		 (not (eq? (global-module new) 'foreign)))
 	 (add-qualified-type! (global-module new)
-	    (global-jvm-type-name new)
+	    (global-qualified-type-name new)
 	    (shape new)))))
 
 ;*---------------------------------------------------------------------*/
@@ -354,19 +354,24 @@
 	      old)
 	     (else
 	      (error-rebind-global! old src)))
-	  (let ((bucket (hashtable-get *Genv* ident))
-		(new (instantiate::global
-			(type *_*)
-			(module module)
-			(jvm-type-name (if (eq? import 'eval)
-					   "eval"
-					   (module->qualified-type module)))
-			(id ident)
-			(alias (when alias id))
-			(value value)
-			(src src)
-			(user? #t)
-			(import import))))
+	  (let* ((bucket (hashtable-get *Genv* ident))
+		 (qtn (cond
+			 ((not (backend-qualified-types (the-backend)))
+			  "")
+			 ((eq? import 'eval)
+			  "eval")
+			 (else
+			  (module->qualified-type module))))
+		 (new (instantiate::global
+			 (type *_*)
+			 (module module)
+			 (qualified-type-name qtn)
+			 (id ident)
+			 (alias (when alias id))
+			 (value value)
+			 (src src)
+			 (user? #t)
+			 (import import))))
 	     (cond
 		((or (not (pair? bucket)) (null? (cdr bucket)))
 		 ;; this is the firt time we see this identifier

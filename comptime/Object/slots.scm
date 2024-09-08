@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/slots.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Object/slots.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Wed Aug  2 17:16:26 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep  3 06:43:23 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
 ;*=====================================================================*/
@@ -350,7 +350,7 @@
 	    (let ((g (declare-global-cvar! l-id #f qc-id
 			(type-id t-id) reado? src #f)))
 	       (global-module-set! g (jclass-id class))
-	       (global-jvm-type-name-set! g (jclass-name class))
+	       (global-qualified-type-name-set! g (jclass-name class))
 	       g)))
 
       (let ((sslots (cond

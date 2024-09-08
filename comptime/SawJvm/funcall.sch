@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen SawJvm/funcall.scm)
+;; Bigloo (4.6a)
+;; Inria -- Sophia Antipolis     Thu Aug 29 03:10:46 PM CEST 2024 
+;; (bigloo -classgen SawJvm/funcall.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,7 +11,7 @@
 ;; indexed
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-indexed::indexed id1175::symbol name1176::obj type1177::type value1178::value access1179::obj fast-alpha1180::obj removable1181::obj occurrence1182::long occurrencew1183::long user?1184::bool module1185::symbol import1186::obj evaluable?1187::bool eval?1188::bool library1189::obj pragma1190::obj src1191::obj jvm-type-name1192::bstring init1193::obj alias1194::obj index1195::int)
+    (inline make-indexed::indexed id1184::symbol name1185::obj type1186::type value1187::value access1188::obj fast-alpha1189::obj removable1190::obj occurrence1191::long occurrencew1192::long user?1193::bool module1194::symbol import1195::obj evaluable?1196::bool eval?1197::bool library1198::obj pragma1199::obj src1200::obj qualified-type-name1201::bstring init1202::obj alias1203::obj index1204::int)
     (inline indexed?::bool ::obj)
     (indexed-nil::indexed)
     (inline indexed-index::int ::indexed)
@@ -20,8 +20,8 @@
     (inline indexed-alias-set! ::indexed ::obj)
     (inline indexed-init::obj ::indexed)
     (inline indexed-init-set! ::indexed ::obj)
-    (inline indexed-jvm-type-name::bstring ::indexed)
-    (inline indexed-jvm-type-name-set! ::indexed ::bstring)
+    (inline indexed-qualified-type-name::bstring ::indexed)
+    (inline indexed-qualified-type-name-set! ::indexed ::bstring)
     (inline indexed-src::obj ::indexed)
     (inline indexed-src-set! ::indexed ::obj)
     (inline indexed-pragma::obj ::indexed)
@@ -59,7 +59,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; indexed
-(define-inline (make-indexed::indexed id1175::symbol name1176::obj type1177::type value1178::value access1179::obj fast-alpha1180::obj removable1181::obj occurrence1182::long occurrencew1183::long user?1184::bool module1185::symbol import1186::obj evaluable?1187::bool eval?1188::bool library1189::obj pragma1190::obj src1191::obj jvm-type-name1192::bstring init1193::obj alias1194::obj index1195::int) (instantiate::indexed (id id1175) (name name1176) (type type1177) (value value1178) (access access1179) (fast-alpha fast-alpha1180) (removable removable1181) (occurrence occurrence1182) (occurrencew occurrencew1183) (user? user?1184) (module module1185) (import import1186) (evaluable? evaluable?1187) (eval? eval?1188) (library library1189) (pragma pragma1190) (src src1191) (jvm-type-name jvm-type-name1192) (init init1193) (alias alias1194) (index index1195)))
+(define-inline (make-indexed::indexed id1184::symbol name1185::obj type1186::type value1187::value access1188::obj fast-alpha1189::obj removable1190::obj occurrence1191::long occurrencew1192::long user?1193::bool module1194::symbol import1195::obj evaluable?1196::bool eval?1197::bool library1198::obj pragma1199::obj src1200::obj qualified-type-name1201::bstring init1202::obj alias1203::obj index1204::int) (instantiate::indexed (id id1184) (name name1185) (type type1186) (value value1187) (access access1188) (fast-alpha fast-alpha1189) (removable removable1190) (occurrence occurrence1191) (occurrencew occurrencew1192) (user? user?1193) (module module1194) (import import1195) (evaluable? evaluable?1196) (eval? eval?1197) (library library1198) (pragma pragma1199) (src src1200) (qualified-type-name qualified-type-name1201) (init init1202) (alias alias1203) (index index1204)))
 (define-inline (indexed?::bool obj::obj) ((@ isa? __object) obj (@ indexed saw_jvm_funcall)))
 (define (indexed-nil::indexed) (class-nil (@ indexed saw_jvm_funcall)))
 (define-inline (indexed-index::int o::indexed) (-> |#!bigloo_wallow| o index))
@@ -68,8 +68,8 @@
 (define-inline (indexed-alias-set! o::indexed v::obj) (set! (-> |#!bigloo_wallow| o alias) v))
 (define-inline (indexed-init::obj o::indexed) (-> |#!bigloo_wallow| o init))
 (define-inline (indexed-init-set! o::indexed v::obj) (set! (-> |#!bigloo_wallow| o init) v))
-(define-inline (indexed-jvm-type-name::bstring o::indexed) (-> |#!bigloo_wallow| o jvm-type-name))
-(define-inline (indexed-jvm-type-name-set! o::indexed v::bstring) (set! (-> |#!bigloo_wallow| o jvm-type-name) v))
+(define-inline (indexed-qualified-type-name::bstring o::indexed) (-> |#!bigloo_wallow| o qualified-type-name))
+(define-inline (indexed-qualified-type-name-set! o::indexed v::bstring) (set! (-> |#!bigloo_wallow| o qualified-type-name) v))
 (define-inline (indexed-src::obj o::indexed) (-> |#!bigloo_wallow| o src))
 (define-inline (indexed-src-set! o::indexed v::obj) (set! (-> |#!bigloo_wallow| o src) v))
 (define-inline (indexed-pragma::obj o::indexed) (-> |#!bigloo_wallow| o pragma))

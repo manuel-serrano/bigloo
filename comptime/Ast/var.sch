@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.4b)
-;; Inria -- Sophia Antipolis     Mon 04 Jan 2021 12:00:55 PM CET 
+;; Bigloo (4.6a)
+;; Inria -- Sophia Antipolis     Thu Aug 29 03:10:46 PM CEST 2024 
 ;; (bigloo -classgen Ast/var.scm)
 ;; ==========================================================
 
@@ -18,7 +18,7 @@
 ;; variable
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-variable::variable id1282::symbol name1283::obj type1284::type value1285::value access1286::obj fast-alpha1287::obj removable1288::obj occurrence1289::long occurrencew1290::long user?1291::bool)
+    (inline make-variable::variable id1284::symbol name1285::obj type1286::type value1287::value access1288::obj fast-alpha1289::obj removable1290::obj occurrence1291::long occurrencew1292::long user?1293::bool)
     (inline variable?::bool ::obj)
     (variable-nil::variable)
     (inline variable-user?::bool ::variable)
@@ -44,15 +44,15 @@
 ;; global
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-global::global id1261::symbol name1262::obj type1263::type value1264::value access1265::obj fast-alpha1266::obj removable1267::obj occurrence1268::long occurrencew1269::long user?1270::bool module1271::symbol import1272::obj evaluable?1273::bool eval?1274::bool library1275::obj pragma1276::obj src1277::obj jvm-type-name1278::bstring init1279::obj alias1280::obj)
+    (inline make-global::global id1263::symbol name1264::obj type1265::type value1266::value access1267::obj fast-alpha1268::obj removable1269::obj occurrence1270::long occurrencew1271::long user?1272::bool module1273::symbol import1274::obj evaluable?1275::bool eval?1276::bool library1277::obj pragma1278::obj src1279::obj qualified-type-name1280::bstring init1281::obj alias1282::obj)
     (inline global?::bool ::obj)
     (global-nil::global)
     (inline global-alias::obj ::global)
     (inline global-alias-set! ::global ::obj)
     (inline global-init::obj ::global)
     (inline global-init-set! ::global ::obj)
-    (inline global-jvm-type-name::bstring ::global)
-    (inline global-jvm-type-name-set! ::global ::bstring)
+    (inline global-qualified-type-name::bstring ::global)
+    (inline global-qualified-type-name-set! ::global ::bstring)
     (inline global-src::obj ::global)
     (inline global-src-set! ::global ::obj)
     (inline global-pragma::obj ::global)
@@ -90,9 +90,11 @@
 ;; local
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-local::local id1248::symbol name1249::obj type1250::type value1251::value access1252::obj fast-alpha1253::obj removable1254::obj occurrence1255::long occurrencew1256::long user?1257::bool key1258::long val-noescape1259::obj)
+    (inline make-local::local id1249::symbol name1250::obj type1251::type value1252::value access1253::obj fast-alpha1254::obj removable1255::obj occurrence1256::long occurrencew1257::long user?1258::bool key1259::long val-noescape1260::obj volatile1261::bool)
     (inline local?::bool ::obj)
     (local-nil::local)
+    (inline local-volatile::bool ::local)
+    (inline local-volatile-set! ::local ::bool)
     (inline local-val-noescape::obj ::local)
     (inline local-val-noescape-set! ::local ::obj)
     (inline local-key::long ::local)
@@ -119,7 +121,7 @@
 ;; fun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-fun::fun arity1237::long side-effect1238::obj predicate-of1239::obj stack-allocator1240::obj top?1241::bool the-closure1242::obj effect1243::obj failsafe1244::obj args-noescape1245::obj args-retescape1246::obj)
+    (inline make-fun::fun arity1238::long side-effect1239::obj predicate-of1240::obj stack-allocator1241::obj top?1242::bool the-closure1243::obj effect1244::obj failsafe1245::obj args-noescape1246::obj args-retescape1247::obj)
     (inline fun?::bool ::obj)
     (fun-nil::fun)
     (inline fun-args-retescape::obj ::fun)
@@ -145,7 +147,7 @@
 ;; sfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfun::sfun arity1214::long side-effect1215::obj predicate-of1216::obj stack-allocator1217::obj top?1218::bool the-closure1219::obj effect1220::obj failsafe1221::obj args-noescape1222::obj args-retescape1223::obj property1224::obj args1225::obj args-name1226::obj body1227::obj class1228::obj dsssl-keywords1229::obj loc1230::obj optionals1231::obj keys1232::obj the-closure-global1233::obj strength1234::symbol stackable1235::obj)
+    (inline make-sfun::sfun arity1215::long side-effect1216::obj predicate-of1217::obj stack-allocator1218::obj top?1219::bool the-closure1220::obj effect1221::obj failsafe1222::obj args-noescape1223::obj args-retescape1224::obj property1225::obj args1226::obj args-name1227::obj body1228::obj class1229::obj dsssl-keywords1230::obj loc1231::obj optionals1232::obj keys1233::obj the-closure-global1234::obj strength1235::symbol stackable1236::obj)
     (inline sfun?::bool ::obj)
     (sfun-nil::sfun)
     (inline sfun-stackable::obj ::sfun)
@@ -192,7 +194,7 @@
 ;; cfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cfun::cfun arity1199::long side-effect1200::obj predicate-of1201::obj stack-allocator1202::obj top?1203::bool the-closure1204::obj effect1205::obj failsafe1206::obj args-noescape1207::obj args-retescape1208::obj args-type1209::obj macro?1210::bool infix?1211::bool method1212::pair-nil)
+    (inline make-cfun::cfun arity1198::long side-effect1199::obj predicate-of1200::obj stack-allocator1201::obj top?1202::bool the-closure1203::obj effect1204::obj failsafe1205::obj args-noescape1206::obj args-retescape1207::obj args-type1208::obj macro?1209::bool infix?1210::bool method1213::pair-nil)
     (inline cfun?::bool ::obj)
     (cfun-nil::cfun)
     (inline cfun-method::pair-nil ::cfun)
@@ -224,7 +226,7 @@
 ;; svar
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-svar::svar loc1197::obj)
+    (inline make-svar::svar loc1196::obj)
     (inline svar?::bool ::obj)
     (svar-nil::svar)
     (inline svar-loc::obj ::svar)
@@ -233,7 +235,7 @@
 ;; scnst
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-scnst::scnst node1193::obj class1194::obj loc1195::obj)
+    (inline make-scnst::scnst node1192::obj class1193::obj loc1194::obj)
     (inline scnst?::bool ::obj)
     (scnst-nil::scnst)
     (inline scnst-loc::obj ::scnst)
@@ -245,7 +247,7 @@
 ;; cvar
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cvar::cvar macro?1191::bool)
+    (inline make-cvar::cvar macro?1190::bool)
     (inline cvar?::bool ::obj)
     (cvar-nil::cvar)
     (inline cvar-macro?::bool ::cvar))))
@@ -253,7 +255,7 @@
 ;; sexit
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sexit::sexit handler1188::obj detached?1189::bool)
+    (inline make-sexit::sexit handler1187::obj detached?1188::bool)
     (inline sexit?::bool ::obj)
     (sexit-nil::sexit)
     (inline sexit-detached?::bool ::sexit)
@@ -264,7 +266,7 @@
 ;; feffect
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-feffect::feffect read1185::obj write1186::obj)
+    (inline make-feffect::feffect read1184::obj write1185::obj)
     (inline feffect?::bool ::obj)
     (feffect-nil::feffect)
     (inline feffect-write::obj ::feffect)
@@ -280,7 +282,7 @@
 (define (value-nil::value) (class-nil (@ value ast_var)))
 
 ;; variable
-(define-inline (make-variable::variable id1282::symbol name1283::obj type1284::type value1285::value access1286::obj fast-alpha1287::obj removable1288::obj occurrence1289::long occurrencew1290::long user?1291::bool) (instantiate::variable (id id1282) (name name1283) (type type1284) (value value1285) (access access1286) (fast-alpha fast-alpha1287) (removable removable1288) (occurrence occurrence1289) (occurrencew occurrencew1290) (user? user?1291)))
+(define-inline (make-variable::variable id1284::symbol name1285::obj type1286::type value1287::value access1288::obj fast-alpha1289::obj removable1290::obj occurrence1291::long occurrencew1292::long user?1293::bool) (instantiate::variable (id id1284) (name name1285) (type type1286) (value value1287) (access access1288) (fast-alpha fast-alpha1289) (removable removable1290) (occurrence occurrence1291) (occurrencew occurrencew1292) (user? user?1293)))
 (define-inline (variable?::bool obj::obj) ((@ isa? __object) obj (@ variable ast_var)))
 (define (variable-nil::variable) (class-nil (@ variable ast_var)))
 (define-inline (variable-user?::bool o::variable) (-> |#!bigloo_wallow| o user?))
@@ -305,15 +307,15 @@
 (define-inline (variable-id-set! o::variable v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; global
-(define-inline (make-global::global id1261::symbol name1262::obj type1263::type value1264::value access1265::obj fast-alpha1266::obj removable1267::obj occurrence1268::long occurrencew1269::long user?1270::bool module1271::symbol import1272::obj evaluable?1273::bool eval?1274::bool library1275::obj pragma1276::obj src1277::obj jvm-type-name1278::bstring init1279::obj alias1280::obj) (instantiate::global (id id1261) (name name1262) (type type1263) (value value1264) (access access1265) (fast-alpha fast-alpha1266) (removable removable1267) (occurrence occurrence1268) (occurrencew occurrencew1269) (user? user?1270) (module module1271) (import import1272) (evaluable? evaluable?1273) (eval? eval?1274) (library library1275) (pragma pragma1276) (src src1277) (jvm-type-name jvm-type-name1278) (init init1279) (alias alias1280)))
+(define-inline (make-global::global id1263::symbol name1264::obj type1265::type value1266::value access1267::obj fast-alpha1268::obj removable1269::obj occurrence1270::long occurrencew1271::long user?1272::bool module1273::symbol import1274::obj evaluable?1275::bool eval?1276::bool library1277::obj pragma1278::obj src1279::obj qualified-type-name1280::bstring init1281::obj alias1282::obj) (instantiate::global (id id1263) (name name1264) (type type1265) (value value1266) (access access1267) (fast-alpha fast-alpha1268) (removable removable1269) (occurrence occurrence1270) (occurrencew occurrencew1271) (user? user?1272) (module module1273) (import import1274) (evaluable? evaluable?1275) (eval? eval?1276) (library library1277) (pragma pragma1278) (src src1279) (qualified-type-name qualified-type-name1280) (init init1281) (alias alias1282)))
 (define-inline (global?::bool obj::obj) ((@ isa? __object) obj (@ global ast_var)))
 (define (global-nil::global) (class-nil (@ global ast_var)))
 (define-inline (global-alias::obj o::global) (-> |#!bigloo_wallow| o alias))
 (define-inline (global-alias-set! o::global v::obj) (set! (-> |#!bigloo_wallow| o alias) v))
 (define-inline (global-init::obj o::global) (-> |#!bigloo_wallow| o init))
 (define-inline (global-init-set! o::global v::obj) (set! (-> |#!bigloo_wallow| o init) v))
-(define-inline (global-jvm-type-name::bstring o::global) (-> |#!bigloo_wallow| o jvm-type-name))
-(define-inline (global-jvm-type-name-set! o::global v::bstring) (set! (-> |#!bigloo_wallow| o jvm-type-name) v))
+(define-inline (global-qualified-type-name::bstring o::global) (-> |#!bigloo_wallow| o qualified-type-name))
+(define-inline (global-qualified-type-name-set! o::global v::bstring) (set! (-> |#!bigloo_wallow| o qualified-type-name) v))
 (define-inline (global-src::obj o::global) (-> |#!bigloo_wallow| o src))
 (define-inline (global-src-set! o::global v::obj) (set! (-> |#!bigloo_wallow| o src) v))
 (define-inline (global-pragma::obj o::global) (-> |#!bigloo_wallow| o pragma))
@@ -350,9 +352,11 @@
 (define-inline (global-id-set! o::global v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; local
-(define-inline (make-local::local id1248::symbol name1249::obj type1250::type value1251::value access1252::obj fast-alpha1253::obj removable1254::obj occurrence1255::long occurrencew1256::long user?1257::bool key1258::long val-noescape1259::obj) (instantiate::local (id id1248) (name name1249) (type type1250) (value value1251) (access access1252) (fast-alpha fast-alpha1253) (removable removable1254) (occurrence occurrence1255) (occurrencew occurrencew1256) (user? user?1257) (key key1258) (val-noescape val-noescape1259)))
+(define-inline (make-local::local id1249::symbol name1250::obj type1251::type value1252::value access1253::obj fast-alpha1254::obj removable1255::obj occurrence1256::long occurrencew1257::long user?1258::bool key1259::long val-noescape1260::obj volatile1261::bool) (instantiate::local (id id1249) (name name1250) (type type1251) (value value1252) (access access1253) (fast-alpha fast-alpha1254) (removable removable1255) (occurrence occurrence1256) (occurrencew occurrencew1257) (user? user?1258) (key key1259) (val-noescape val-noescape1260) (volatile volatile1261)))
 (define-inline (local?::bool obj::obj) ((@ isa? __object) obj (@ local ast_var)))
 (define (local-nil::local) (class-nil (@ local ast_var)))
+(define-inline (local-volatile::bool o::local) (-> |#!bigloo_wallow| o volatile))
+(define-inline (local-volatile-set! o::local v::bool) (set! (-> |#!bigloo_wallow| o volatile) v))
 (define-inline (local-val-noescape::obj o::local) (-> |#!bigloo_wallow| o val-noescape))
 (define-inline (local-val-noescape-set! o::local v::obj) (set! (-> |#!bigloo_wallow| o val-noescape) v))
 (define-inline (local-key::long o::local) (-> |#!bigloo_wallow| o key))
@@ -379,7 +383,7 @@
 (define-inline (local-id-set! o::local v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; fun
-(define-inline (make-fun::fun arity1237::long side-effect1238::obj predicate-of1239::obj stack-allocator1240::obj top?1241::bool the-closure1242::obj effect1243::obj failsafe1244::obj args-noescape1245::obj args-retescape1246::obj) (instantiate::fun (arity arity1237) (side-effect side-effect1238) (predicate-of predicate-of1239) (stack-allocator stack-allocator1240) (top? top?1241) (the-closure the-closure1242) (effect effect1243) (failsafe failsafe1244) (args-noescape args-noescape1245) (args-retescape args-retescape1246)))
+(define-inline (make-fun::fun arity1238::long side-effect1239::obj predicate-of1240::obj stack-allocator1241::obj top?1242::bool the-closure1243::obj effect1244::obj failsafe1245::obj args-noescape1246::obj args-retescape1247::obj) (instantiate::fun (arity arity1238) (side-effect side-effect1239) (predicate-of predicate-of1240) (stack-allocator stack-allocator1241) (top? top?1242) (the-closure the-closure1243) (effect effect1244) (failsafe failsafe1245) (args-noescape args-noescape1246) (args-retescape args-retescape1247)))
 (define-inline (fun?::bool obj::obj) ((@ isa? __object) obj (@ fun ast_var)))
 (define (fun-nil::fun) (class-nil (@ fun ast_var)))
 (define-inline (fun-args-retescape::obj o::fun) (-> |#!bigloo_wallow| o args-retescape))
@@ -404,7 +408,7 @@
 (define-inline (fun-arity-set! o::fun v::long) (set! (-> |#!bigloo_wallow| o arity) v))
 
 ;; sfun
-(define-inline (make-sfun::sfun arity1214::long side-effect1215::obj predicate-of1216::obj stack-allocator1217::obj top?1218::bool the-closure1219::obj effect1220::obj failsafe1221::obj args-noescape1222::obj args-retescape1223::obj property1224::obj args1225::obj args-name1226::obj body1227::obj class1228::obj dsssl-keywords1229::obj loc1230::obj optionals1231::obj keys1232::obj the-closure-global1233::obj strength1234::symbol stackable1235::obj) (instantiate::sfun (arity arity1214) (side-effect side-effect1215) (predicate-of predicate-of1216) (stack-allocator stack-allocator1217) (top? top?1218) (the-closure the-closure1219) (effect effect1220) (failsafe failsafe1221) (args-noescape args-noescape1222) (args-retescape args-retescape1223) (property property1224) (args args1225) (args-name args-name1226) (body body1227) (class class1228) (dsssl-keywords dsssl-keywords1229) (loc loc1230) (optionals optionals1231) (keys keys1232) (the-closure-global the-closure-global1233) (strength strength1234) (stackable stackable1235)))
+(define-inline (make-sfun::sfun arity1215::long side-effect1216::obj predicate-of1217::obj stack-allocator1218::obj top?1219::bool the-closure1220::obj effect1221::obj failsafe1222::obj args-noescape1223::obj args-retescape1224::obj property1225::obj args1226::obj args-name1227::obj body1228::obj class1229::obj dsssl-keywords1230::obj loc1231::obj optionals1232::obj keys1233::obj the-closure-global1234::obj strength1235::symbol stackable1236::obj) (instantiate::sfun (arity arity1215) (side-effect side-effect1216) (predicate-of predicate-of1217) (stack-allocator stack-allocator1218) (top? top?1219) (the-closure the-closure1220) (effect effect1221) (failsafe failsafe1222) (args-noescape args-noescape1223) (args-retescape args-retescape1224) (property property1225) (args args1226) (args-name args-name1227) (body body1228) (class class1229) (dsssl-keywords dsssl-keywords1230) (loc loc1231) (optionals optionals1232) (keys keys1233) (the-closure-global the-closure-global1234) (strength strength1235) (stackable stackable1236)))
 (define-inline (sfun?::bool obj::obj) ((@ isa? __object) obj (@ sfun ast_var)))
 (define (sfun-nil::sfun) (class-nil (@ sfun ast_var)))
 (define-inline (sfun-stackable::obj o::sfun) (-> |#!bigloo_wallow| o stackable))
@@ -453,7 +457,7 @@
 (define-inline (sfun-arity-set! o::sfun v::long) (set! (-> |#!bigloo_wallow| o arity) v))
 
 ;; cfun
-(define-inline (make-cfun::cfun arity1199::long side-effect1200::obj predicate-of1201::obj stack-allocator1202::obj top?1203::bool the-closure1204::obj effect1205::obj failsafe1206::obj args-noescape1207::obj args-retescape1208::obj args-type1209::obj macro?1210::bool infix?1211::bool method1212::pair-nil) (instantiate::cfun (arity arity1199) (side-effect side-effect1200) (predicate-of predicate-of1201) (stack-allocator stack-allocator1202) (top? top?1203) (the-closure the-closure1204) (effect effect1205) (failsafe failsafe1206) (args-noescape args-noescape1207) (args-retescape args-retescape1208) (args-type args-type1209) (macro? macro?1210) (infix? infix?1211) (method method1212)))
+(define-inline (make-cfun::cfun arity1198::long side-effect1199::obj predicate-of1200::obj stack-allocator1201::obj top?1202::bool the-closure1203::obj effect1204::obj failsafe1205::obj args-noescape1206::obj args-retescape1207::obj args-type1208::obj macro?1209::bool infix?1210::bool method1213::pair-nil) (instantiate::cfun (arity arity1198) (side-effect side-effect1199) (predicate-of predicate-of1200) (stack-allocator stack-allocator1201) (top? top?1202) (the-closure the-closure1203) (effect effect1204) (failsafe failsafe1205) (args-noescape args-noescape1206) (args-retescape args-retescape1207) (args-type args-type1208) (macro? macro?1209) (infix? infix?1210) (method method1213)))
 (define-inline (cfun?::bool obj::obj) ((@ isa? __object) obj (@ cfun ast_var)))
 (define (cfun-nil::cfun) (class-nil (@ cfun ast_var)))
 (define-inline (cfun-method::pair-nil o::cfun) (-> |#!bigloo_wallow| o method))
@@ -486,14 +490,14 @@
 (define-inline (cfun-arity-set! o::cfun v::long) (set! (-> |#!bigloo_wallow| o arity) v))
 
 ;; svar
-(define-inline (make-svar::svar loc1197::obj) (instantiate::svar (loc loc1197)))
+(define-inline (make-svar::svar loc1196::obj) (instantiate::svar (loc loc1196)))
 (define-inline (svar?::bool obj::obj) ((@ isa? __object) obj (@ svar ast_var)))
 (define (svar-nil::svar) (class-nil (@ svar ast_var)))
 (define-inline (svar-loc::obj o::svar) (-> |#!bigloo_wallow| o loc))
 (define-inline (svar-loc-set! o::svar v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
 
 ;; scnst
-(define-inline (make-scnst::scnst node1193::obj class1194::obj loc1195::obj) (instantiate::scnst (node node1193) (class class1194) (loc loc1195)))
+(define-inline (make-scnst::scnst node1192::obj class1193::obj loc1194::obj) (instantiate::scnst (node node1192) (class class1193) (loc loc1194)))
 (define-inline (scnst?::bool obj::obj) ((@ isa? __object) obj (@ scnst ast_var)))
 (define (scnst-nil::scnst) (class-nil (@ scnst ast_var)))
 (define-inline (scnst-loc::obj o::scnst) (-> |#!bigloo_wallow| o loc))
@@ -504,14 +508,14 @@
 (define-inline (scnst-node-set! o::scnst v::obj) (set! (-> |#!bigloo_wallow| o node) v))
 
 ;; cvar
-(define-inline (make-cvar::cvar macro?1191::bool) (instantiate::cvar (macro? macro?1191)))
+(define-inline (make-cvar::cvar macro?1190::bool) (instantiate::cvar (macro? macro?1190)))
 (define-inline (cvar?::bool obj::obj) ((@ isa? __object) obj (@ cvar ast_var)))
 (define (cvar-nil::cvar) (class-nil (@ cvar ast_var)))
 (define-inline (cvar-macro?::bool o::cvar) (-> |#!bigloo_wallow| o macro?))
 (define-inline (cvar-macro?-set! o::cvar v::bool) (set! (-> |#!bigloo_wallow| o macro?) v))
 
 ;; sexit
-(define-inline (make-sexit::sexit handler1188::obj detached?1189::bool) (instantiate::sexit (handler handler1188) (detached? detached?1189)))
+(define-inline (make-sexit::sexit handler1187::obj detached?1188::bool) (instantiate::sexit (handler handler1187) (detached? detached?1188)))
 (define-inline (sexit?::bool obj::obj) ((@ isa? __object) obj (@ sexit ast_var)))
 (define (sexit-nil::sexit) (class-nil (@ sexit ast_var)))
 (define-inline (sexit-detached?::bool o::sexit) (-> |#!bigloo_wallow| o detached?))
@@ -520,7 +524,7 @@
 (define-inline (sexit-handler-set! o::sexit v::obj) (set! (-> |#!bigloo_wallow| o handler) v))
 
 ;; feffect
-(define-inline (make-feffect::feffect read1185::obj write1186::obj) (instantiate::feffect (read read1185) (write write1186)))
+(define-inline (make-feffect::feffect read1184::obj write1185::obj) (instantiate::feffect (read read1184) (write write1185)))
 (define-inline (feffect?::bool obj::obj) ((@ isa? __object) obj (@ feffect ast_var)))
 (define (feffect-nil::feffect) (class-nil (@ feffect ast_var)))
 (define-inline (feffect-write::obj o::feffect) (-> |#!bigloo_wallow| o write))

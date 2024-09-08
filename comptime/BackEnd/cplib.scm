@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/cplib.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/cplib.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Tue Nov 27 11:23:48 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Mon Sep  2 13:39:30 2024 (serrano)                */
+;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
 ;*=====================================================================*/
@@ -90,7 +90,7 @@
 	     "bigloo"
 	     (let ((holder (tclass-holder super)))
 		(add-qualified-type! (global-module holder)
-				     (global-jvm-type-name holder)
+				     (global-qualified-type-name holder)
 				     id)
 		(class-package (global-module holder))))))
    

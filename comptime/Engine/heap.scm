@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Engine/heap.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Engine/heap.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Wed Jul 26 10:18:31 2017 (serrano)                */
-;*    Copyright   :  2007-17 Manuel Serrano                            */
+;*    Last change :  Tue Sep  3 06:42:24 2024 (serrano)                */
+;*    Copyright   :  2007-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
 ;*=====================================================================*/
@@ -89,7 +89,7 @@
 			   (lambda (new)
 			      (add-qualified-type!
 			       (global-module new)
-			       (global-jvm-type-name new)
+			       (global-qualified-type-name new)
 			       (shape new)))))
 		       ;; we add all the heap modules
 		       (hashtable-for-each
@@ -125,7 +125,7 @@
       (let* ((module (global-module new))
 	     (id (global-id new))
 	     (qt (module->qualified-type module))
-	     (jt (global-jvm-type-name new))
+	     (jt (global-qualified-type-name new))
 	     (val (global-value new)))
 	 (cond
 	    ((sfun? val)
@@ -143,7 +143,7 @@
 				   `(inline ,(shape (sfun-body val)))
 				   "")
 			      "\n    "
-			      (jvm-type-name ,jt) "\n   "
+			      (qualified-type-name ,jt) "\n   "
 			      (args ,(map shape (sfun-args val))))))
 	    ((cfun? val)
 	     (print "   " `(native
@@ -157,7 +157,7 @@
 			      "\n    "
 			      (qualified-type ,qt)
 			      "\n    "
-			      (jvm-type-name ,jt) "\n   "
+			      (qualified-type-name ,jt) "\n   "
 			      (args ,(map shape (cfun-args-type val))))))
 	    (else
 	     (unless (eq? (type-id (global-type new)) 'class)
@@ -172,7 +172,7 @@
 				 "\n    "
 				 (qualified-type ,qt)
 				 "\n    "
-				 (jvm-type-name ,jt))))))))
+				 (qualified-type-name ,jt))))))))
    (hashtable-for-each
       Genv
       (lambda (k bucket) (for-each dump-var (cdr bucket)))))
