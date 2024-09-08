@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sat Sep  7 13:55:07 2024 (serrano)                */
+;*    Last change :  Sat Sep  7 17:52:07 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -112,7 +112,7 @@
       (cond
 	 ((and (null? *o-files*) (eq? *pass* 'so))
 	  (error "wasm-link" "cannot build a library without object files" sources))
-	 ((and (eq? *pass* 'so) (not (pair? sources)))
+	 ((and (eq? *pass* 'so) (not (pair? *o-files*)) (not (pair? sources)))
 	  (error "wasm-link" "cannot build a library with sources" sources))
 	 ((eq? *pass* 'so)
 	  (if (string=? (suffix *dest*) "wat")
