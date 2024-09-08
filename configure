@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Sep  2 10:49:33 2024 (serrano)                */
+#*    Last change :  Tue Sep  3 07:53:00 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -531,7 +531,7 @@ while : ; do
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
       cfpflags="$cfpflags";
-      bootflags="$bootflags -cg";
+      bootflags="$bootflags -cg +rm";
       jvmbackend="yes";
       mode=standard;
       configureinfo="yes";
@@ -1334,6 +1334,9 @@ if [ -x /bin/echo ]; then
 else
   echo=echo
 fi
+
+# config.status
+$echo "Configuring with \"$logopt\"..." > config.status
 
 # buildbindir
 if [ "$buildbindir " = " " ]; then
@@ -5386,7 +5389,6 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Generate the config.status file for debian packages              */
 #*---------------------------------------------------------------------*/
-$echo "$*" > config.status
 $echo "configuration completed" >> config.status
 
 #*---------------------------------------------------------------------*/

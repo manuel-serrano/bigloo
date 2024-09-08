@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Tue Jul  9 10:14:27 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 09:48:19 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -60,11 +60,21 @@
 	  ;; procedure is unreachable and then we can ignore it.
 	  (with-access::intern-sfun/Cinfo fun (body args approx)
 	     ;; the formals
-	     (for-each (lambda (var)
-			  (trace (cfa 3) "  formal " (shape var)
-			     " " (typeof (local-value var)) #\Newline)
-			  (type-variable! (local-value var) var))
-		       args)
+	     (trace (cfa 3) "  formal " (shape var)
+		" " (typeof (local-value var)) #\Newline)
+	     (if (unoptimized-closure? fun)
+		 ;; unoptimized closures have to use polymorphic arguments
+		 (for-each (lambda (var)
+			      ;; force an obj type for this formal argument
+			      (variable-type-set! var *obj*))
+		    (cdr args))
+		 ;; optimized closures and regular functions may have
+		 ;; specialized arguments
+		 (for-each (lambda (var)
+			      (trace (cfa 3) "  formal " (shape var)
+				 " " (typeof (local-value var)) #\Newline)
+			      (type-variable! (local-value var) var))
+		    args))
 	     ;; and the function result
 	     (set-variable-type! var (get-approx-type approx var))
 	     (shrink! fun)

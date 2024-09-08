@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Tue Aug 27 13:29:55 2024 (serrano)                */
+;*    Last change :  Fri Sep  6 09:47:23 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -42,6 +42,7 @@
 	    cfa_type)
    (export  (closure-optimization! ::pair-nil)
 	    (closure-optimization?)
+	    (unoptimized-closure?::bool ::sfun)
 	    (type-closures!)
 	    (add-procedure-ref!  ::node)
 	    (get-procedure-list::pair-nil)
@@ -56,6 +57,14 @@
 (define (closure-optimization?)
    (>=fx *optim* 2))
 
+;*---------------------------------------------------------------------*/
+;*    unoptimized-closure? ...                                         */
+;*---------------------------------------------------------------------*/
+(define (unoptimized-closure? fun)
+   (when (isa? fun intern-sfun/Cinfo)
+      (with-access::intern-sfun/Cinfo fun (strength the-closure-global)
+	 (and (global? the-closure-global) (eq? strength '???)))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    closure-optimization! ...                                        */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Sep  2 11:59:30 2024 (serrano)                */
+#*    Last change :  Tue Sep  3 07:54:15 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -48,10 +48,10 @@ COMMONFLAGS	= -q \
                   -gno-error-localization \
                   -no-hello
 # Optimized _and_ debugged compilation
-OGBFLAGS        = $(BOOTFLAGS) $(COMMONFLAGS) -Wall -O2 -rm -g
+OGBFLAGS        = $(COMMONFLAGS) -Wall -O2 -rm -g $(BOOTFLAGS)
 # Bootstrap flag
 #BFLAGS		= $(OGBFLAGS)       
-BFLAGS		= $(BOOTFLAGS) $(COMMONFLAGS) -Wall -O2 -rm
+BFLAGS		= $(COMMONFLAGS) -Wall -O2 -rm $(BOOTFLAGS)
 EFLAGS		=
 # Distribution flag
 BDISTFLAGS	= $(COMMONFLAGS) -O2 -rm -unsafe -s
