@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sat Feb 11 19:45:39 2023 (serrano)                */
-;*    Copyright   :  1994-2023 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Sep  8 12:06:44 2024 (serrano)                */
+;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Jul  2 07:27:11 2024 (serrano)                */
+#*    Last change :  Fri Aug 30 08:41:23 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -438,13 +438,11 @@ jvm: .jfile
 	$(MAKE) jvm-sans-jfile
 
 jvm-sans-jfile: $(CLASS_OBJECTS)
-	@ echo "Linking..."
 	$(BIGLOO) $(EFLAGS) -jvm -jvm-jar -jvm-java $(JAVA) \
              -jvm-shell $(JSHELL) \
              -jvm-classpath $(CLASSPATH) -jvm-jarpath $(JARPATH) \
              $(BDISTFLAGS) -o $(BIGLOO_DEST).jvm $(CLASS_OBJECTS)
-	@ echo "$(BIGLOO_DEST).jvm done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;34m$(BIGLOO_DEST).jvm\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
@@ -504,46 +502,40 @@ bigloo.$(SHAREDSUFFIX):
 #*    file.                                                            */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking...bigloo$(EXE_SUFFIX)"
-	if [ "$(LDRPATHOPT) " != " " ]; then \
-	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
-	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
-	          -o $(BIGLOO_DEST).aux \
-	          $(O_OBJECTS) $(G_OBJECTS); \
-        else \
-	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
+ifeq ($(LDRPATHOPT),)
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
 	          -copt "$(EXTRA_LD_OPT)" \
 	          -o $(BIGLOO_DEST).aux \
-	          $(O_OBJECTS) $(G_OBJECTS); \
-        fi
+	          $(O_OBJECTS) $(G_OBJECTS)
+else
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
+	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
+	          -o $(BIGLOO_DEST).aux \
+	          $(O_OBJECTS) $(G_OBJECTS)
+endif
 	@ if [ $(HOSTOS) = "cygwin" ]; then \
 	    echo "Waiting a few seconds for the lock on $@ to be released..."; \
 	    sleep 5s; \
 	  fi
 	mv $(BIGLOO_DEST).aux $@
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;34m$(@)\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    bigloo.new                                                       */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(NEW_SUFFIX): .afile .etags $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking bigloo.new..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ \
               $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;34m$(@)\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    bigloo.$(SHAREDSUFFIX)                                           */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS) $(G_OBJECTS)
-	@ echo "Linking bigloo.$(SHAREDSUFFIX)..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $@ \
               $(O_OBJECTS) $(G_OBJECTS) \
               $(LDCSTRIPFLAGS)
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;34m$(@)\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    mainnewo (for Bigloo++ regeneration)                             */
@@ -556,8 +548,7 @@ mainnewo: $(O_LESS_MAIN_OBJECTS_OBJECTS)
 #*    dist-bigloo.exe                                                  */
 #*---------------------------------------------------------------------*/
 dist-bigloo.exe: $(C_OBJECTS) Tools/date.c Tools/license.c
-	@ echo "Comptime (distribution) done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;35mComptime (distribution)\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    Tools/date.scm                                                   */
@@ -598,19 +589,15 @@ ude: Tools/date.scm Tools/license.scm .afile .jfile .etags
 
 .afile: $(SOURCE_FILES) Tools/license.scm
 	$(BGLAFILE) -o .afile $(SOURCE_FILES) Tools/license.scm
+	@ echo "\e[1;35m$(@)\e[0m done..."
 
 .jfile: .afile
 	$(BGLJFILE) -o .jfile $(SOURCE_FILES) Tools/license.scm
+	@ echo "\e[1;35m$(@)\e[0m done..."
 
 .etags: .afile
 	$(BGLTAGS) --define-var doc-define -o .etags $(SOURCE_FILES) Tools/license.scm
-
-#*---------------------------------------------------------------------*/
-#*    qnctags                                                          */
-#*---------------------------------------------------------------------*/
-.PHONY: qnctags
-qnctags:
-	etags `find . -name '*.scm' -print -o -name '*.[ch]' -print`
+	@ echo "\e[1;35m$(@)\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    dep                                                              */
@@ -629,7 +616,6 @@ dep: Tools/date.scm Tools/license.scm
 #*    the source files. Mostly we have to remove debug informations.   */
 #*---------------------------------------------------------------------*/
 dist-updates:
-	echo "updating Tools/trace.sc[hm]"
 	cat Tools/trace.sch | sed -e s/"#t"/"#f"/g > Tools/trace.schu; \
          $(RM) Tools/trace.sch; mv Tools/trace.schu Tools/trace.sch
 	cat Tools/trace.scm | sed -e s/"#t"/"#f"/g > Tools/trace.scmu; \
@@ -651,7 +637,7 @@ boot:
         else \
 	  $(MAKE) doboot.static SCMOBJSUFFIX="" COBJSUFFIX=%.o; \
 	fi
-	@ echo "$(BIGLOO_DEST)$(EXE_SUFFIX) done..."
+	@ echo "\e[1;34m$(BIGLOO_DEST)$(EXE_SUFFIX)\e[0m done..."
 
 doboot.shared: $(O_OBJECTS) $(G_OBJECTS)
 	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(G_OBJECTS) -L$(BOOTLIBDIR) $(LDBUILDOPTS) $(LDCOMPLIBS_SHARED) $(LDCOMPLIBS)
@@ -730,8 +716,6 @@ clean-jvm:
 	- $(RM) -f $(BIGLOO_DEST).jar
 
 clean: clean-common clean-c clean-jvm
-	@ echo "cleanup done..."
-	@ echo "-------------------------------"
 
 cleanall: clean
 	@ if [ `pwd` = $(HOME)/prgm/project/bigloo/comptime ]; then \
@@ -752,8 +736,6 @@ distclean:
 .PHONY: touchall
 touchall:
 	touch $(SOURCE_FILES)
-	@ echo "touchall done..."
-	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
 #*    getsources                                                       */

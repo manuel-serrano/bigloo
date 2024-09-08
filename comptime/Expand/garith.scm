@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Thu Nov 10 17:28:57 2022 (serrano)                */
-;*    Copyright   :  1994-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Sep  8 12:07:27 2024 (serrano)                */
+;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
 ;*=====================================================================*/

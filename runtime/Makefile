@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 29 11:32:27 2024 (serrano)                */
+#*    Last change :  Sun Sep  8 12:14:34 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -818,6 +818,12 @@ objs/saw_u/$(SCMOBJSUFFIX): %.scm
 objs/saw_s/$(SCMOBJSUFFIX): %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
 
+objs/obj_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
+objs/saw_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*     .c --> .o                                                       */
 #*---------------------------------------------------------------------*/
@@ -858,6 +864,12 @@ objs/saw_s/Clib/%.o: Clib/%.c
 	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
         mv Clib-$(@F) $@
 
+objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
+	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
+
+objs/saw_u/Eval/evprimop.o: objs/saw_u/Eval/evprimop.c
+	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CSAWFLAGS) $(CEFLAGS) -c $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*     .scm --> .c                                                     */
 #*---------------------------------------------------------------------*/
@@ -873,9 +885,6 @@ objs/obj_u/Unsafe/bignumber.c: Unsafe/bignumber.scm
 objs/obj_u/Eval/evprimop.c: Eval/evprimop.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(EFLAGS) -cgen $< -o $@
 
-objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
-	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
-
 objs/saw_u/%.c: %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -c $< -indent -o $@
 
@@ -888,8 +897,8 @@ objs/saw_u/Unsafe/bignumber.c: Unsafe/bignumber.scm
 objs/saw_u/Eval/evprimop.c: Eval/evprimop.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(SAWFLAGS) $(EFLAGS) -cgen $< -o $@
 
-objs/saw_u/Eval/evprimop.o: objs/saw_u/Eval/evprimop.c
-	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CSAWFLAGS) $(CEFLAGS) -c $< -o $@
+objs/obj_u/Eval/evaluate_comp.c: Eval/evaluate_comp.scm
+	$(BIGLOO) $(BFLAGS_USR) $(EFLAGS) -c $< -indent -fno-arithmetic-overflow -o $@
 
 #*---------------------------------------------------------------------*/
 #*    mach_dep.o                                                       */

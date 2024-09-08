@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Thu Sep  2 07:36:35 2021 (serrano)                */
-;*    Copyright   :  2011-21 Manuel Serrano                            */
+;*    Last change :  Sun Sep  8 11:55:22 2024 (serrano)                */
+;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
