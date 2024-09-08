@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sat Sep  7 17:52:07 2024 (serrano)                */
+;*    Last change :  Sun Sep  8 10:20:57 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -146,7 +146,7 @@
 		      (with-output-to-file target
 			 (lambda ()
 			    (display "#!/bin/sh\n")
-			    (display* "node " runtime-mjs " " wasm " $*")
+			    (display* "node $BIGLOOWASMOPT " runtime-mjs " " wasm " $*")
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*

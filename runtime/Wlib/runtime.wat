@@ -1675,6 +1675,7 @@
   (export "BGL_SAFE_PLUS_FX" (func $BGL_SAFE_PLUS_FX))
   (export "BGL_SAFE_MUL_FX" (func $BGL_SAFE_MUL_FX))
   (export "BGL_SAFE_MINUS_FX" (func $BGL_SAFE_MINUS_FX))
+  (export "BGL_SAFE_QUOTIENT_FX" (func $BGL_SAFE_QUOTIENT_FX))
 
   (func $BGL_SAFE_PLUS_FX
      (param $x i64)
@@ -1696,6 +1697,13 @@
      (result eqref)
      (struct.new $bint
 	(i64.sub (local.get $x) (local.get $y))))
+
+  (func $BGL_SAFE_QUOTIENT_FX
+     (param $x i64)
+     (param $y i64)
+     (result eqref)
+     (struct.new $bint
+	(i64.div_s (local.get $x) (local.get $y))))
 
   ;; --------------------------------------------------------
   ;; Date functions
