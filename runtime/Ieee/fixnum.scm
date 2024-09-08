@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/fixnum.scm                */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/fixnum.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Aug 29 07:33:59 2024 (serrano)                */
+;*    Last change :  Sun Sep  8 18:37:56 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -223,7 +223,7 @@
 	   (infix macro $remainderu32::uint32 (::uint32 ::int32) "%")
 	   (infix macro $remainders64::int64 (::int64 ::int64) "%")
 	   (infix macro $remainderu64::uint64 (::uint64 ::int64) "%")
-	   (macro strtol::long (::string ::long ::long) "BGL_STRTOL")
+	   (macro $strtol::long (::string ::long ::long) "BGL_STRTOL")
 	   (macro $strtoul::long (::string ::long ::long) "BGL_STRTOUL")
 	   (macro strtoel::elong (::string ::long ::long) "BGL_STRTOL")
 	   (macro $strtoeul::elong (::string ::long ::long) "BGL_STRTOUL")
@@ -769,7 +769,7 @@
 		  "REMAINDER_S64")
 	       (method static $remainderu64::uint64 (::uint64 ::uint64)
 		  "REMAINDER_S64")
-	       (method static strtol::long (::string ::long ::long)
+	       (method static $strtol::long (::string ::long ::long)
 		  "strtol")
 	       (method static $strtoul::long (::string ::long ::long)
 		  "strtoul")
@@ -1189,6 +1189,7 @@
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
 	    (unsigned->string::bstring ::obj #!optional (radix::long 16))
+	    (inline strtol::long ::bstring radix start)
 	    (string->integer::long ::bstring #!optional (radix::long 10) (start::long 0))
 	    (elong->string::bstring ::elong . pair)
 	    (string->elong::elong ::bstring #!optional (radix::long 10))
@@ -2731,6 +2732,16 @@
 	  (loop (+fx i 1)
 		(+bx (*bx res Z256)
 		     (fixnum->bignum (char->integer (string-ref str i))))))))
+
+;*---------------------------------------------------------------------*/
+;*    strtol ...                                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (strtol string start radix)
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       ($$strtol string start radix))
+      (else
+       ($strtol string start radix) )))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->integer ...                                              */
