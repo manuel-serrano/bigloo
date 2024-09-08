@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Fri Sep  6 14:34:53 2024 (serrano)                */
+;*    Last change :  Sun Sep  8 18:58:40 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -14,6 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (directives
    (use __bexit)
+   (import __hash)
    (export ($$bstring->symbol::symbol ::bstring)
 	   ($$bstring->keyword::keyword ::bstring)))
 
@@ -21,34 +22,38 @@
 ;*    symbol table                                                     */
 ;*---------------------------------------------------------------------*/
 (define *symbol-mutex* (make-mutex 'symbol-mutex))
-(define *symbol-table* '())
+(define *symbol-table* *symbol-table*)
 
 ;*---------------------------------------------------------------------*/
 ;*    $$bstring->symbol ...                                            */
 ;*---------------------------------------------------------------------*/
 (define ($$bstring->symbol string)
    (synchronize *symbol-mutex*
-      (let ((old (assoc string *symbol-table*)))
-	 (if (pair? old)
-	     (cdr old)
+      (unless (hashtable? *symbol-table*)
+	 (set! *symbol-table* (create-hashtable)))
+      (let ((old (hashtable-get *symbol-table* string)))
+	 (if (symbol? old)
+	     old
 	     (let ((sym ($make-symbol string)))
-		(set! *symbol-table* (cons (cons string sym) *symbol-table*))
+		(hashtable-put! *symbol-table* string sym)
 		sym)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    keyword table                                                    */
 ;*---------------------------------------------------------------------*/
 (define *keyword-mutex* (make-mutex 'keyword-mutex))
-(define *keyword-table* '())
+(define *keyword-table* *keyword-table*)
 
 ;*---------------------------------------------------------------------*/
 ;*    $$bstring->keyword ...                                           */
 ;*---------------------------------------------------------------------*/
 (define ($$bstring->keyword string)
    (synchronize *keyword-mutex*
-      (let ((old (assoc string *keyword-table*)))
-	 (if (pair? old)
-	     (cdr old)
-	     (let ((sym ($make-keyword string)))
-		(set! *keyword-table* (cons (cons string sym) *keyword-table*))
-		sym)))))
+      (unless (hashtable? *keyword-table*)
+	 (set! *keyword-table* (create-hashtable)))
+      (let ((old (hashtable-get *keyword-table* string)))
+	 (if (keyword? old)
+	     old
+	     (let ((key ($make-keyword string)))
+		(hashtable-put! *keyword-table* string key)
+		key)))))
