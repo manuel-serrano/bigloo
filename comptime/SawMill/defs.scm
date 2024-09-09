@@ -436,4 +436,15 @@
    (display " " p)
    (dump-args args p))
    
+;*---------------------------------------------------------------------*/
+;*    dump-fun ::rtl_cast ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (dump-fun o::rtl_cast dest args p m)
+   (show-fun o dest p)
+   (display " " p)
+   (display (shape (rtl_cast-totype o)) p)
+   (display "<-" p)
+   (display (shape (rtl_cast-fromtype o)) p)
+   (dump-args args p))
+   
 

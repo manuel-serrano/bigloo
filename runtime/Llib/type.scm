@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/pgrm/project/bigloo/bigloo/runtime/Llib/type.scm         */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/type.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Aug  1 14:31:05 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 11:48:16 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1063,6 +1063,7 @@
 
    (wasm
       ($bbool->bool "(ref.eq ~0 (global.get $BTRUE))")
+      ($bool->bbool "(if (result i31ref) ~0 (then (global.get $BTRUE)) (else (global.get $BFALSE)))")
 
       ($double->real "(struct.new $real ~0)")
       ($elong->belong "(struct.new $belong ~0)")
@@ -1080,7 +1081,8 @@
       ($ushort->bint "(struct.new $bint (i64.extend_i32_u ~0))")
       ($int->bint "(struct.new $bint (i64.extend_i32_s ~0))")
       ($uint->bint "(struct.new $bint (i64.extend_i32_u ~0))")
-      ($long->bint "(struct.new $bint ~0)")
+      ;;($long->bint "(struct.new $bint ~0)")
+      ($long->bint "(call $I64_TO_BINT ~0)")
       ($ulong->bint "(struct.new $bint ~0)")
       ($int8->bint "(struct.new $bint (i64.extend_i32_s ~0))")
       ($uint8->bint "(struct.new $bint (i64.extend_i32_u ~0))")

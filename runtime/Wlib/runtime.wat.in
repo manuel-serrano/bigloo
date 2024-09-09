@@ -57,8 +57,8 @@
   ;; (type $bints-table (array (mut eqref)))
   (type $bints-table (array (ref $bint)))
   (global $BINTS (ref $bints-table) 
-     ;;(array.new_default $bints-table (i32.const 20))
-     (array.new_fixed $bints-table 20 (struct.new $bint (i64.const -10)) (struct.new $bint (i64.const -9)) (struct.new $bint (i64.const -8)) (struct.new $bint (i64.const -7)) (struct.new $bint (i64.const -6)) (struct.new $bint (i64.const -5)) (struct.new $bint (i64.const -4)) (struct.new $bint (i64.const -3)) (struct.new $bint (i64.const -2)) (struct.new $bint (i64.const -1)) (struct.new $bint (i64.const 0)) (struct.new $bint (i64.const 1)) (struct.new $bint (i64.const 2)) (struct.new $bint (i64.const 3)) (struct.new $bint (i64.const 4)) (struct.new $bint (i64.const 5)) (struct.new $bint (i64.const 6)) (struct.new $bint (i64.const 7)) (struct.new $bint (i64.const 8)) (struct.new $bint (i64.const 9)))
+     ;;(array.new_default $bints-table (i32.const @BINTS_PREALLOC_SIZE@))
+     @BINTS_PREALLOC@
      )
 
   (func $BOOLEANP (export "BOOLEANP")
@@ -1680,10 +1680,10 @@
   (export "I64_TO_BINT" (func $I64_TO_BINT))
   (func $I64_TO_BINT
      (param $x i64)
-     (result $bint)
+     (result (ref $bint))
      (local $tmp i64)
-     (local.set $tmp (i64.add (local.get $x) (i64.const -10)))
-     (if (i64.lt_u (local.get $tmp) (i64.const 20))
+     (local.set $tmp (i64.add (local.get $x) (i64.const @BINTS_PREALLOC_START@)))
+     (if (i64.lt_u (local.get $tmp) (i64.const @BINTS_PREALLOC_SIZE@))
 	 (then
 	    (return
 	       (array.get $bints-table
@@ -1972,13 +1972,13 @@
 ;*     ;; bints pre-allocation                                         */
 ;*     (local.set $i (i32.const 0))                                    */
 ;*     (loop $loop                                                     */
-;*        (if (i32.lt_s (local.get $i) (i32.const 20)) */
+;*        (if (i32.lt_s (local.get $i) (i32.const @BINTS_PREALLOC_SIZE@)) */
 ;* 	   (then                                                       */
 ;* 	      (array.set $bints-table                                  */
 ;* 		 (global.get $BINTS)                                   */
 ;* 		 (local.get $i)                                        */
 ;* 		 (struct.new $bint                                     */
-;* 		    (i64.add (i64.const -10)        */
+;* 		    (i64.add (i64.const @BINTS_PREALLOC_START@)        */
 ;* 		       (i64.extend_i32_s (local.get $i)))))            */
 ;* 	      (local.set $i (i32.add (local.get $i) (i32.const 1)))    */
 ;* 	      (br $loop))))                                            */

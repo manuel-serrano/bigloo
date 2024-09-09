@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Sep  8 19:00:29 2024 (serrano)                */
+#*    Last change :  Mon Sep  9 13:35:23 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -53,6 +53,10 @@ WASMTYPES	= Wlib/types.wat
 WFLAGS		= 
 # Wasm merge tool
 WASMMERE	= $(BOOTDIR)/tools
+# Wasm preallocate ints length
+WASM_BINTS_PREALLOC_SIZE = 20
+WASM_BINTS_PREALLOC_START = -10
+WASM_BINTS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed) (quote @DOLLAR@bints-table) $(WASM_BINTS_PREALLOC_SIZE) (map (lambda (i) (list (quote struct.new) (quote @DOLLAR@bint) (list (quote i64.const) i))) (iota $(WASM_BINTS_PREALLOC_SIZE) $(WASM_BINTS_PREALLOC_START))))) (exit 0))"
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
@@ -677,7 +681,7 @@ WASM_MERGE_FLAGS=-all -g --rename-export-conflicts
 .PHONY: touch-wasm
 touch-wasm:
 	@ touch $(WASMS:objs//%.wasm=%.scm)
-	@ touch Wlib/runtime.wat
+	@ touch Wlib/runtime.wat.in
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
   $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
@@ -711,7 +715,7 @@ objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat
 	$(BIGLOO) -i ../tools/gen_dummy_wasm_imports.scm $(WASMTYPES) $< > $@ || (rm -f $@; exit 1)
 
- $(BOOTLIBDIR)/types.wat: $(WASMTYPES)
+$(BOOTLIBDIR)/types.wat: $(WASMTYPES)
 	cp $< $@
 
 #*---------------------------------------------------------------------*/
@@ -1182,6 +1186,16 @@ objs/wasm_s/Ieee/string.wat: Ieee/string-generic.sch
 objs/wasm_u/Ieee/string.wat: Ieee/string-generic.sch
 objs/wasm_s/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_u/Ieee/symbol.wat: Ieee/symbol-generic.sch
+
+Wlib/runtime.wat: Wlib/runtime.wat.in
+	preallocs=`$(WASM_BINTS_PREALLOC)`; \
+        echo "P=$preallocs"; \
+	cat $< \
+           | sed -e "s/@BINTS_PREALLOC_SIZE@/$(WASM_BINTS_PREALLOC_SIZE)/g" \
+           | sed -e "s/@BINTS_PREALLOC_START@/$(WASM_BINTS_PREALLOC_START)/g" \
+           | sed -e "s/@BINTS_PREALLOC@/$$preallocs/" \
+           | sed -e "s/@DOLLAR@/$$/g" \
+           > $@
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

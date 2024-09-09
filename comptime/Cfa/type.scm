@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sun Sep  8 13:14:20 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 10:56:44 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -500,9 +500,11 @@
 	  (let ((ctype ftype))
 	     (set! type *obj*)
 	     (set! ftype *obj*)
-	     (instantiate::cast
-		(type ctype)
-		(arg node)))))))
+	     (if (eq? ctype *obj*)
+		 node
+		 (instantiate::cast
+		    (type ctype)
+		    (arg node))))))))
 
 ;* (define-method (type-node! node::vref)                              */
 ;*    (call-next-method)                                               */

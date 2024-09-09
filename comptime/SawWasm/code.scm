@@ -27,6 +27,9 @@
     saw_regset
     saw_register-allocation
     saw_bbv
+    saw_bbv-config
+    saw_bbv-types
+    saw_bbv-debug
     saw_wasm_relooper)
   (export
     (saw-wasm-gen b::wasm v::global)
@@ -70,27 +73,30 @@
 ;*    gen-fun ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (gen-fun b::wasm v::global l)
-  (with-access::global v (name import value type)
-    (with-access::sfun value (loc args)
-        (let ((params (map local->reg args)))
-          (build-tree b params l)
-          (set! l (register-allocation b v params l))
-          (set! l (bbv b v params l))
-
-          `(comment ,(string-append (symbol->string (global-id v)) " in " (symbol->string (global-module v)))
-            ,(with-loc loc
-              `(func ,(wasm-sym name)
-
-              ,@(if (eq? import 'export)
-                  `((export ,name))
-                  '())
-
-              ,@(let ((locals (get-locals params l)))
-                `(,@(gen-params params)
-                ,@(gen-result type)
-                ,@(gen-locals locals)))
-
-              ,@(gen-body v l))))))))
+   (with-access::global v (name import value type)
+      (when *bbv-dump-cfg*
+	 (with-access::sfun value (args)
+	    (dump-cfg v (map local->reg args) l ".wasm.cfg")))
+      (with-access::sfun value (loc args)
+	 (let ((params (map local->reg args)))
+	    (build-tree b params l)
+	    (set! l (register-allocation b v params l))
+	    (set! l (bbv b v params l))
+	    
+	    `(comment ,(string-append (symbol->string (global-id v)) " in " (symbol->string (global-module v)))
+		,(with-loc loc
+		    `(func ,(wasm-sym name)
+			
+			,@(if (eq? import 'export)
+			      `((export ,name))
+			      '())
+			
+			,@(let ((locals (get-locals params l)))
+			     `(,@(gen-params params)
+				 ,@(gen-result type)
+				 ,@(gen-locals locals)))
+			
+			,@(gen-body v l))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-locals ...                                                   */
@@ -570,21 +576,37 @@
         ,(wasm-vector-type vtype)
         ,(cast-to-i32-if-needed (car args))))))
 
+;*---------------------------------------------------------------------*/
+;*    as-vector ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (as-vector arg vtype::type)
+   (if (eq? (type-id vtype) 'vector)
+       (gen-reg arg)
+       (let ((vec-type (wasm-vector-type vtype)))
+	  `(ref.cast (ref ,vec-type) ,(gen-reg arg)))))
+
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_vref ...                                          */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_vref args)
-  ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
-  (with-access::rtl_vref fun (type vtype)
-    (let ((vec-type (wasm-vector-type vtype)))
-      ;; If vtype is a vector of eqref (type vector), then we need to explicitly insert
-      ;; a cast to the expected element type. This is not required for typed vectors
-      ;; as the WASM type has already the correct type.
-      (let ((array-code 
-              `(array.get ,vec-type 
-                (ref.cast (ref ,vec-type) ,(gen-reg (car args)))
-                ,(cast-to-i32-if-needed (cadr args)))))
-        (with-fun-loc fun 
-          (if (eq? (type-id vtype) 'vector)
-           `(ref.cast ,(wasm-type type) ,array-code)
-           array-code))))))
+   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices,
+   ;; thus the i32.wrap_i64.
+   (with-access::rtl_vref fun (type vtype)
+      (let ((vec-type (wasm-vector-type vtype)))
+	 ;; If vtype is a vector of eqref (type vector), then
+	 ;; we need to explicitly insert a cast to the expected element
+	 ;; type. This is not required for typed vectors
+	 ;; as the WASM type has already the correct type.
+	 (let ((array-code 
+		  `(array.get ,vec-type
+		      ,(as-vector (car args) vtype)
+		      
+		      ,(cast-to-i32-if-needed (cadr args)))))
+	    (with-fun-loc fun 
+	       (if (and (eq? (type-id vtype) 'vector)
+			(not (eq? type *obj*)))
+		   `(ref.cast ,(wasm-type type) ,array-code)
+		   array-code))))))
 
 (define-method (gen-expr fun::rtl_vset args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
@@ -592,7 +614,7 @@
     (let ((vec-type (wasm-vector-type vtype)))
       (with-fun-loc fun
         `(array.set ,vec-type 
-          (ref.cast (ref ,vec-type) ,(gen-reg (car args)))
+          ,(as-vector (car args) vtype)
           ,(cast-to-i32-if-needed (cadr args))
           ,@(gen-args (cddr args)))))))
 
@@ -939,7 +961,7 @@
 			(symbol->string (type-id type))
 			" "
 			(symbol->string (type-id (rtl_cast-fromtype fun))))
-	      (ref.cast ,(wasm-type type) ,(gen-reg (car args))))))))
+	      (ref.cast ,(wasm-type type #f) ,(gen-reg (car args))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_cast_null ...                                     */
