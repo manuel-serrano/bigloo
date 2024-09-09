@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/copy.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Reduce/copy.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Aug 27 16:44:34 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Sep  9 19:13:56 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    The reduction of type checks.                                    */
+;*    The copy propagation.                                            */
 ;*=====================================================================*/
     
 ;*---------------------------------------------------------------------*/

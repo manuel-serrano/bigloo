@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Thu Nov  3 11:32:08 2022 (serrano)                */
+;*    Last change :  Mon Sep  9 19:20:27 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -57,11 +57,17 @@
    (node->sexp-hook node)
    (with-access::var node (type variable)
       (let* ((vshape (shape variable))
+	     (oshape (if *access-shape?*
+			 (string->symbol
+			    (format "~a[~a]" vshape
+			       (with-access::variable variable (occurrence)
+				  occurrence)))
+		      vshape))
 	     (tvshape (if (and *type-shape?*
 			       (not (sfun? (variable-value variable)))
 			       (not (eq? type (variable-type variable))))
-			  (string->symbol (format "~a[::~a]" vshape (shape type)))
-			  vshape)))
+			  (string->symbol (format "~a[::~a]" oshape (shape type)))
+			  oshape)))
 	 (location-shape (node-loc node) tvshape))))
 		     
 ;*---------------------------------------------------------------------*/
@@ -122,7 +128,7 @@
 		      (*type-shape?*
 		       `(,(node->sexp (app-fun node))
 			 ,@(if *access-shape?*
-			       `(side-effect: (side-effect? node))
+			       `(side-effect: ,(side-effect? node))
 			       '())
 			 ,@(if *alloc-shape?*
 			       `(stackable: (app-stackable node))
