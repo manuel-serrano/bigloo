@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/hash.scm         */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/hash.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Thu Aug  1 14:40:09 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 07:52:30 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -116,6 +116,7 @@
 	       (max-length 16384)
 	       (bucket-expansion 1.2)
 	       (persistent #f))
+	    (create-hashtable-open-string)
 	    (get-hashnumber::long ::obj)
 	    (get-hashnumber-persistent::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
@@ -251,21 +252,29 @@
 	   (max-length 16384)
 	   (bucket-expansion 1.2)
 	   (persistent #f))
-   (let ((weak (case weak
-		  ((keys) (weak-keys))
-		  ((data) (weak-data))
-		  ((both) (weak-both))
-		  ((none) (weak-none))
-		  ((open-string) (weak-open-string))
-		  ((string) (weak-string))
-		  (else (if weak (weak-data) (weak-none))))))
+    (let ((wk::long (case weak
+		       ;; integers are also used in the case construct
+		       ;; to let backend that use Scheme hashtables for
+		       ;; implementing symbols to bootstrap more easily
+		       ((keys 1) (weak-keys))
+		       ((data 2) (weak-data))
+		       ((both 3) (weak-both))
+		       ((none 0) (weak-none))
+		       ((open-string 8) (weak-open-string))
+		       ((string 4) (weak-string))
+		       ((#t) (weak-data))
+		       ((#f) (weak-none))
+		       ((8) (weak-open-string))
+		       (else (error "create-hashtable"
+				"Illegal weak argument"
+				weak)))))
       (when persistent
 	 (if hash
 	    (error "create-hashtable"
 	       "Persistent hashtable cannot use custom hash function"
 	       hash)
 	    (set! hash 'persistent)))
-      (if (or (eq? weak (weak-open-string)) (eq? weak (weak-string)))
+      (if (or (=fx wk (weak-open-string)) (=fx wk (weak-string)))
 	  (cond
 	     (eqtest
 	      (error "create-hashtable"
@@ -273,16 +282,27 @@
 	     (hash
 	      (error "create-hashtable"
 		 "Cannot provide hash for string hashtable" hash))
-	     ((eq? weak (weak-open-string))
-	      (%hashtable 0 size (make-vector (*fx 3 size) #f) eq? list weak 0 0))
+	     ((=fx wk (weak-open-string))
+	      (%hashtable 0 size (make-vector (*fx 3 size) #f) eq? list wk 0 0))
 	     (else
 	      (%hashtable 0 max-bucket-length (make-vector size '())
 		 string=?
 		 (lambda (s) ($string-hash s 0 (string-length s)))
-		 weak max-length bucket-expansion)))
+		 wk max-length bucket-expansion)))
 	  (%hashtable 0 max-bucket-length (make-vector size '())
 	     eqtest hash
-	     weak max-length bucket-expansion))))
+	     wk max-length bucket-expansion))))
+
+;*---------------------------------------------------------------------*/
+;*    create-hashtable-open-string ...                                 */
+;*    -------------------------------------------------------------    */
+;*    Mainly used for backend that use a Scheme implementation         */
+;*    of symbols' hashtable.                                           */
+;*---------------------------------------------------------------------*/
+(define (create-hashtable-open-string)
+   (let ((size 128)
+	 (wk (weak-open-string)))
+      (%hashtable 0 size (make-vector (*fx 3 size) #f) eq? list wk 0 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable? ...                                                   */

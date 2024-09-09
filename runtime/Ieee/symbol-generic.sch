@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Sun Sep  8 19:58:31 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 07:36:12 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -30,12 +30,12 @@
 (define ($$bstring->symbol string)
    (synchronize *symbol-mutex*
       (unless (hashtable? *symbol-table*)
-	 (set! *symbol-table* (create-hashtable :weak #f)))
-      (let ((old (hashtable-get *symbol-table* string)))
+	 (set! *symbol-table* (create-hashtable-open-string)))
+      (let ((old (open-string-hashtable-get *symbol-table* string)))
 	 (if (symbol? old)
 	     old
 	     (let ((sym ($make-symbol string)))
-		(hashtable-put! *symbol-table* string sym)
+		(open-string-hashtable-put! *symbol-table* string sym)
 		sym)))))
 
 ;*---------------------------------------------------------------------*/
@@ -50,10 +50,10 @@
 (define ($$bstring->keyword string)
    (synchronize *keyword-mutex*
       (unless (hashtable? *keyword-table*)
-	 (set! *keyword-table* (create-hashtable :weak #f)))
-      (let ((old (hashtable-get *keyword-table* string)))
+	 (set! *keyword-table* (create-hashtable-open-string)))
+      (let ((old (open-string-hashtable-get *keyword-table* string)))
 	 (if (keyword? old)
 	     old
 	     (let ((key ($make-keyword string)))
-		(hashtable-put! *keyword-table* string key)
+		(open-string-hashtable-put! *keyword-table* string key)
 		key)))))
