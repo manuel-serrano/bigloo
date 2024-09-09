@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Thu Aug  1 14:40:09 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 07:29:06 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -111,6 +111,7 @@
 	       (max-length 16384)
 	       (bucket-expansion 1.2)
 	       (persistent #f))
+	    (create-hashtable-open-string)
 	    (get-hashnumber::long ::obj)
 	    (get-hashnumber-persistent::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
@@ -247,13 +248,20 @@
 	   (bucket-expansion 1.2)
 	   (persistent #f))
    (let ((weak (case weak
-		  ((keys) (weak-keys))
-		  ((data) (weak-data))
-		  ((both) (weak-both))
-		  ((none) (weak-none))
-		  ((open-string) (weak-open-string))
-		  ((string) (weak-string))
-		  (else (if weak (weak-data) (weak-none))))))
+		  ;; integers are also used in the case construct
+		  ;; to let backend that use Scheme hashtables for
+		  ;; implementing symbols to bootstrap more easily
+		  ((keys 1) (weak-keys))
+		  ((data 2) (weak-data))
+		  ((both 3) (weak-both))
+		  ((none 0) (weak-none))
+		  ((open-string 8) (weak-open-string))
+		  ((string 4) (weak-string))
+		  ((#t) (weak-data))
+		  ((#f) (weak-none))
+		  (else (error "create-hashtable"
+			   "Illegal weak argument"
+			   weak)))))
       (when persistent
 	 (if hash
 	    (error "create-hashtable"
@@ -278,6 +286,15 @@
 	  (%hashtable 0 max-bucket-length (make-vector size '())
 	     eqtest hash
 	     weak max-length bucket-expansion))))
+
+;*---------------------------------------------------------------------*/
+;*    create-hashtable-open-string ...                                 */
+;*    -------------------------------------------------------------    */
+;*    Mainly used for backend that use a Scheme implementation         */
+;*    of symbols' hashtable.                                           */
+;*---------------------------------------------------------------------*/
+(define (create-hashtable-open-string)
+   (create-hashtable :weak (weak-open-string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable? ...                                                   */
@@ -1314,3 +1331,4 @@
       (if (>fx (*fx n 3) (*fx 2 (%hashtable-max-bucket-len t)))
 	  (open-string-hashtable-rehash! t)
 	  (%hashtable-size-set! t (+fx n 1)))))
+
