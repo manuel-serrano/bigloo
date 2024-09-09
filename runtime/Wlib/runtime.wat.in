@@ -1682,7 +1682,7 @@
      (param $x i64)
      (result (ref $bint))
      (local $tmp i64)
-     (local.set $tmp (i64.add (local.get $x) (i64.const @BINTS_PREALLOC_START@)))
+     (local.set $tmp (i64.sub (local.get $x) (i64.const @BINTS_PREALLOC_START@)))
      (if (i64.lt_u (local.get $tmp) (i64.const @BINTS_PREALLOC_SIZE@))
 	 (then
 	    (return

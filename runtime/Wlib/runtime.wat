@@ -57,8 +57,8 @@
   ;; (type $bints-table (array (mut eqref)))
   (type $bints-table (array (ref $bint)))
   (global $BINTS (ref $bints-table) 
-     ;;(array.new_default $bints-table (i32.const 20))
-     (array.new_fixed $bints-table 20 (struct.new $bint (i64.const -10)) (struct.new $bint (i64.const -9)) (struct.new $bint (i64.const -8)) (struct.new $bint (i64.const -7)) (struct.new $bint (i64.const -6)) (struct.new $bint (i64.const -5)) (struct.new $bint (i64.const -4)) (struct.new $bint (i64.const -3)) (struct.new $bint (i64.const -2)) (struct.new $bint (i64.const -1)) (struct.new $bint (i64.const 0)) (struct.new $bint (i64.const 1)) (struct.new $bint (i64.const 2)) (struct.new $bint (i64.const 3)) (struct.new $bint (i64.const 4)) (struct.new $bint (i64.const 5)) (struct.new $bint (i64.const 6)) (struct.new $bint (i64.const 7)) (struct.new $bint (i64.const 8)) (struct.new $bint (i64.const 9)))
+     ;;(array.new_default $bints-table (i32.const 100))
+     (array.new_fixed $bints-table 100 (struct.new $bint (i64.const -10)) (struct.new $bint (i64.const -9)) (struct.new $bint (i64.const -8)) (struct.new $bint (i64.const -7)) (struct.new $bint (i64.const -6)) (struct.new $bint (i64.const -5)) (struct.new $bint (i64.const -4)) (struct.new $bint (i64.const -3)) (struct.new $bint (i64.const -2)) (struct.new $bint (i64.const -1)) (struct.new $bint (i64.const 0)) (struct.new $bint (i64.const 1)) (struct.new $bint (i64.const 2)) (struct.new $bint (i64.const 3)) (struct.new $bint (i64.const 4)) (struct.new $bint (i64.const 5)) (struct.new $bint (i64.const 6)) (struct.new $bint (i64.const 7)) (struct.new $bint (i64.const 8)) (struct.new $bint (i64.const 9)) (struct.new $bint (i64.const 10)) (struct.new $bint (i64.const 11)) (struct.new $bint (i64.const 12)) (struct.new $bint (i64.const 13)) (struct.new $bint (i64.const 14)) (struct.new $bint (i64.const 15)) (struct.new $bint (i64.const 16)) (struct.new $bint (i64.const 17)) (struct.new $bint (i64.const 18)) (struct.new $bint (i64.const 19)) (struct.new $bint (i64.const 20)) (struct.new $bint (i64.const 21)) (struct.new $bint (i64.const 22)) (struct.new $bint (i64.const 23)) (struct.new $bint (i64.const 24)) (struct.new $bint (i64.const 25)) (struct.new $bint (i64.const 26)) (struct.new $bint (i64.const 27)) (struct.new $bint (i64.const 28)) (struct.new $bint (i64.const 29)) (struct.new $bint (i64.const 30)) (struct.new $bint (i64.const 31)) (struct.new $bint (i64.const 32)) (struct.new $bint (i64.const 33)) (struct.new $bint (i64.const 34)) (struct.new $bint (i64.const 35)) (struct.new $bint (i64.const 36)) (struct.new $bint (i64.const 37)) (struct.new $bint (i64.const 38)) (struct.new $bint (i64.const 39)) (struct.new $bint (i64.const 40)) (struct.new $bint (i64.const 41)) (struct.new $bint (i64.const 42)) (struct.new $bint (i64.const 43)) (struct.new $bint (i64.const 44)) (struct.new $bint (i64.const 45)) (struct.new $bint (i64.const 46)) (struct.new $bint (i64.const 47)) (struct.new $bint (i64.const 48)) (struct.new $bint (i64.const 49)) (struct.new $bint (i64.const 50)) (struct.new $bint (i64.const 51)) (struct.new $bint (i64.const 52)) (struct.new $bint (i64.const 53)) (struct.new $bint (i64.const 54)) (struct.new $bint (i64.const 55)) (struct.new $bint (i64.const 56)) (struct.new $bint (i64.const 57)) (struct.new $bint (i64.const 58)) (struct.new $bint (i64.const 59)) (struct.new $bint (i64.const 60)) (struct.new $bint (i64.const 61)) (struct.new $bint (i64.const 62)) (struct.new $bint (i64.const 63)) (struct.new $bint (i64.const 64)) (struct.new $bint (i64.const 65)) (struct.new $bint (i64.const 66)) (struct.new $bint (i64.const 67)) (struct.new $bint (i64.const 68)) (struct.new $bint (i64.const 69)) (struct.new $bint (i64.const 70)) (struct.new $bint (i64.const 71)) (struct.new $bint (i64.const 72)) (struct.new $bint (i64.const 73)) (struct.new $bint (i64.const 74)) (struct.new $bint (i64.const 75)) (struct.new $bint (i64.const 76)) (struct.new $bint (i64.const 77)) (struct.new $bint (i64.const 78)) (struct.new $bint (i64.const 79)) (struct.new $bint (i64.const 80)) (struct.new $bint (i64.const 81)) (struct.new $bint (i64.const 82)) (struct.new $bint (i64.const 83)) (struct.new $bint (i64.const 84)) (struct.new $bint (i64.const 85)) (struct.new $bint (i64.const 86)) (struct.new $bint (i64.const 87)) (struct.new $bint (i64.const 88)) (struct.new $bint (i64.const 89)))
      )
 
   (func $BOOLEANP (export "BOOLEANP")
@@ -1680,10 +1680,10 @@
   (export "I64_TO_BINT" (func $I64_TO_BINT))
   (func $I64_TO_BINT
      (param $x i64)
-     (result $bint)
+     (result (ref $bint))
      (local $tmp i64)
-     (local.set $tmp (i64.add (local.get $x) (i64.const -10)))
-     (if (i64.lt_u (local.get $tmp) (i64.const 20))
+     (local.set $tmp (i64.sub (local.get $x) (i64.const -10)))
+     (if (i64.lt_u (local.get $tmp) (i64.const 100))
 	 (then
 	    (return
 	       (array.get $bints-table
@@ -1972,7 +1972,7 @@
 ;*     ;; bints pre-allocation                                         */
 ;*     (local.set $i (i32.const 0))                                    */
 ;*     (loop $loop                                                     */
-;*        (if (i32.lt_s (local.get $i) (i32.const 20)) */
+;*        (if (i32.lt_s (local.get $i) (i32.const 100)) */
 ;* 	   (then                                                       */
 ;* 	      (array.set $bints-table                                  */
 ;* 		 (global.get $BINTS)                                   */

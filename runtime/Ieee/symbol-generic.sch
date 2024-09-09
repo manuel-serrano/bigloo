@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Mon Sep  9 07:36:12 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 18:30:52 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -13,7 +13,8 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   (use __bexit)
+   (use __bexit
+	__structure)
    (import __hash)
    (export ($$bstring->symbol::symbol ::bstring)
 	   ($$bstring->keyword::keyword ::bstring)))
@@ -29,7 +30,8 @@
 ;*---------------------------------------------------------------------*/
 (define ($$bstring->symbol string)
    (synchronize *symbol-mutex*
-      (unless (hashtable? *symbol-table*)
+      ;; don't use hashtable? predicate because of symbols bootstrap
+      (unless (struct? *symbol-table*)
 	 (set! *symbol-table* (create-hashtable-open-string)))
       (let ((old (open-string-hashtable-get *symbol-table* string)))
 	 (if (symbol? old)
@@ -49,7 +51,8 @@
 ;*---------------------------------------------------------------------*/
 (define ($$bstring->keyword string)
    (synchronize *keyword-mutex*
-      (unless (hashtable? *keyword-table*)
+      ;; don't use hashtable? predicate because of symbols bootstrap
+      (unless (struct? *keyword-table*)
 	 (set! *keyword-table* (create-hashtable-open-string)))
       (let ((old (open-string-hashtable-get *keyword-table* string)))
 	 (if (keyword? old)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/struct.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/struct.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 13:02:29 1992                          */
-;*    Last change :  Wed Aug 28 17:58:26 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 18:17:53 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Non R4Rs structure and SRFI-9 records.                           */
 ;*    -------------------------------------------------------------    */
@@ -62,14 +62,13 @@
 	    (macro $create-s-struct::struct (::symbol ::int)
 		   "CREATE_S_STRUCT"))
 
-	(wasm
-		($struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
-		(u-struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
-		($struct-key "(struct.get $struct $key ~0)")
-		($struct? "(ref.test (ref $struct) ~0)")
+   (wasm    ($struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
+            (u-struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
+	    ($struct-key "(struct.get $struct $key ~0)")
+	    ($struct? "(ref.test (ref $struct) ~0)")
 	    ($struct-length "(array.len (struct.get $struct $values ~0))")
 		
-		($make-struct "(struct.new $struct ~0 (array.new $vector ~2 ~1))")
+	    ($make-struct "(struct.new $struct ~0 (array.new $vector ~2 ~1))")
 	    ($make-s-struct "(struct.new $struct ~0 (array.new $vector ~2 ~1))")
 	    ($create-struct "(struct.new $struct ~0 (array.new_default $vector ~1))")
 	    ($create-s-struct "(struct.new $struct ~0 (array.new_default $vector ~1))"))

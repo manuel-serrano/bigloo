@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Sep  9 13:35:23 2024 (serrano)                */
+#*    Last change :  Mon Sep  9 18:46:25 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -54,7 +54,7 @@ WFLAGS		=
 # Wasm merge tool
 WASMMERE	= $(BOOTDIR)/tools
 # Wasm preallocate ints length
-WASM_BINTS_PREALLOC_SIZE = 20
+WASM_BINTS_PREALLOC_SIZE = 100
 WASM_BINTS_PREALLOC_START = -10
 WASM_BINTS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed) (quote @DOLLAR@bints-table) $(WASM_BINTS_PREALLOC_SIZE) (map (lambda (i) (list (quote struct.new) (quote @DOLLAR@bint) (list (quote i64.const) i))) (iota $(WASM_BINTS_PREALLOC_SIZE) $(WASM_BINTS_PREALLOC_START))))) (exit 0))"
 

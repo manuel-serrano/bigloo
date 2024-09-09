@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Fri Sep  6 14:36:22 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 18:15:22 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -589,20 +589,20 @@
 ;*---------------------------------------------------------------------*/
 (define (format fmt . obj)
    (let ((p (open-output-string)))
-      (xprintf 'format p fmt obj)
+      (xprintf "format" p fmt obj)
       (close-output-port p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    printf ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (printf fmt . obj)
-   (xprintf 'printf (current-output-port) fmt obj))
+   (xprintf "printf" (current-output-port) fmt obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    fprintf ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (fprintf port fmt . obj)
-   (xprintf 'fprintf port fmt obj))
+   (xprintf "fprintf" port fmt obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    %write/display-2 ...                                             */
@@ -854,7 +854,7 @@
 	    ($string-bound-check? end (+fx (string-length obj) 1))
 	    (>=fx start 0))
        ($display-substring obj start end port)
-       (error 'display-substring
+       (error "display-substring"
 	      (format "Illegal index, start=~a end=~a" start end)
 	      obj)))
 
