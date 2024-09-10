@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Aug 30 11:57:49 2024 (serrano)                */
+;*    Last change :  Tue Sep 10 06:38:22 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -235,8 +235,8 @@
       (("--to-stdout" (help "Write C code on current output channel"))
        (set! *verbose* -1)
        (set! *dest* '--to-stdout))
-      ;; stop after .o production
-      (("-c" (help "Suppress linking and produce a .o file"))
+      ;; stop after the production of the object file
+      (("-c" (help "Suppress linking and produce a object file"))
        (set! *pass* 'cc))
       ;; generates a shared library
       (("-y" (help "Generate a shared library"))
@@ -900,6 +900,14 @@
 
 ;*--- WASM specific options --------------------------------------------*/
       (section "WASM specific options")
+      (("-wasm" ?string (help "Wasm engine"))
+       (set! *wasm-engine* string))
+      (("-wasm-opt" ?string (help "Wasm engine options"))
+       (set! *wasm-options* (cons string *wasm-options*)))
+      (("-wasmas" ?string (help "Wasm assembler"))
+       (set! *wasmas* (cons string *wasmas*)))
+      (("-wopt" ?string (help "Invoke wasmas with STRING"))
+       (set! *wasmas-options* (cons string *wasmas-options*)))
       (("-wasm-relooper" (help "Better compilation of structured conflow flow for WASM"))
        (set! *wasm-use-relooper* #t))
       (("-no-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))

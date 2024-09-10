@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sun Sep  8 10:20:57 2024 (serrano)                */
+;*    Last change :  Tue Sep 10 06:43:44 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -92,7 +92,9 @@
 (define-method (backend-compile me::wasm)
    (let ((wat (profile wat (wasm-walk me))))
       (stop-on-pass 'wat (lambda () 'done))
-      wat))
+      (if (eq? *pass* 'cc)
+	  'done
+	  wat)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-link ...                                                 */
@@ -107,8 +109,8 @@
 ;*    backend-link-objects ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::wasm sources)
-   (let ((wasmas "wasm-as -all"))
-      (verbose 1 "   . Wasmas (" wasmas ")" #\Newline)
+   (let ((wasmas (format "~a ~( )" *wasmas* *wasmas-options*)))
+      (verbose 1 "   . Wasm" #\Newline)
       (cond
 	 ((and (null? *o-files*) (eq? *pass* 'so))
 	  (error "wasm-link" "cannot build a library without object files" sources))
@@ -133,8 +135,11 @@
 	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
 		 (runtime-file (find-file-in-path "bigloo_s.wat" *lib-dir*))
 		 (runtime-mjs (find-file-in-path "runtime.mjs" *lib-dir*))
-		 (objects (map (lambda (e) (if (pair? e) (cdr e) e)) sources)))
-	     (verbose 2 "      merging [" tmp #\] #\Newline)
+		 (srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
+		 (objects (append srcobj *o-files*)))
+	     (verbose 2 "      merging ["
+		(format "~a ~( )" runtime-file objects)
+		" -> " tmp #\] #\Newline)
 	     (wat-merge (cons runtime-file objects) tmp)
 	     (let* ((wasm (string-append (prefix (car objects)) ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
@@ -146,7 +151,9 @@
 		      (with-output-to-file target
 			 (lambda ()
 			    (display "#!/bin/sh\n")
-			    (display* "node $BIGLOOWASMOPT " runtime-mjs " " wasm " $*")
+			    (display* (format "~a ~( ) $BIGLOOWASMOPT "
+					 *wasm-engine* *wasm-options*)
+			       runtime-mjs " " wasm " $*")
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Engine/param.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/param.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Jul  1 11:06:50 2024 (serrano)                */
+;*    Last change :  Tue Sep 10 06:39:54 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -245,7 +245,11 @@
 	    *allow-type-redefinition*
 	    *local-exit?*
 	    *pre-processor*
-       *wasm-use-relooper*
+	    *wasm-use-relooper*
+	    *wasmas*
+	    *wasmas-options*
+	    *wasm-options*
+	    *wasm-engine*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -1221,3 +1225,32 @@
 (param-define *wasm-use-relooper*
    "If false, use the naive dispatcher pattern to generate structured control flow for WASM"
    #t)
+
+;*---------------------------------------------------------------------*/
+;*    *wasmas* ...                                                     */
+;*---------------------------------------------------------------------*/
+(param-define *wasmas*
+   "wasm assembler"
+   "wasm-as")
+		 
+;*---------------------------------------------------------------------*/
+;*    *wasmas-options* ...                                             */
+;*---------------------------------------------------------------------*/
+(param-define *wasmas-options*
+   "wasmas options"
+   '("-all"))
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-engine* ...                                                */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-engine*
+   "wasm engine"
+   "node")
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-options* ...                                               */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-options*
+   "wasm engine options"
+   '())
+		 
