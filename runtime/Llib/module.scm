@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Jun  3 14:55:39 2022 (serrano)                */
-;*    Copyright   :  2009-22 Manuel Serrano                            */
+;*    Last change :  Tue Sep 10 07:06:27 2024 (serrano)                */
+;*    Copyright   :  2009-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
 ;*    that is in charge of mapping module names to file names.         */
@@ -150,7 +150,12 @@
    (let ((base (assoc abase afile-table)))
       (if (pair? base)
 	  (resolve-abase/bucket mod base)
-	  '())))
+	  (let ((fname (format "~a/~a.scm" abase mod)))
+	     (if (file-exists? fname)
+		 (let ((files (list fname)))
+		    (module-add-access! mod files abase)
+		    files)
+		 '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    resolve-abase/bucket ...                                         */
