@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/hash.scm           */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/hash.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Sep  9 07:52:30 2024 (serrano)                */
+;*    Last change :  Wed Sep 11 18:33:17 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -77,10 +77,9 @@
 	    (macro llong-hash-number::long (::llong) "(long)")
 	    (macro $strlen::long (::string) "strlen"))
 
-	(wasm
-		(elong-hash-number "~0")
-		(llong-hash-number "~0")
-		($strlen "(array.len ~0)"))
+   (wasm    (elong-hash-number "~0")
+            (llong-hash-number "~0")
+            ($strlen "(array.len ~0)"))
    
    (java    (class foreign
 	       (method static $string-hash::long (::string ::int ::int)
@@ -1339,3 +1338,4 @@
       (if (>fx (*fx n 3) (*fx 2 (%hashtable-max-bucket-len t)))
 	  (open-string-hashtable-rehash! t)
 	  (%hashtable-size-set! t (+fx n 1)))))
+

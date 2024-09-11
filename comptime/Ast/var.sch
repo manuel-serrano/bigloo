@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
 ;; Bigloo (4.6a)
-;; Inria -- Sophia Antipolis     Tue Sep 3 07:55:05 AM CEST 2024 
+;; Inria -- Sophia Antipolis     Thu Aug 29 03:10:46 PM CEST 2024 
 ;; (bigloo -classgen Ast/var.scm)
 ;; ==========================================================
 

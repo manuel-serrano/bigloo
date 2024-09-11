@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Sep  2 12:00:01 2024 (serrano)                */
+#*    Last change :  Tue Sep  3 07:54:15 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -48,10 +48,10 @@ COMMONFLAGS	= -q \
                   -gno-error-localization \
                   -no-hello
 # Optimized _and_ debugged compilation
-OGBFLAGS        = $(BOOTFLAGS) $(COMMONFLAGS) -Wall -O2 +rm -g
+OGBFLAGS        = $(COMMONFLAGS) -Wall -O2 -rm -g $(BOOTFLAGS)
 # Bootstrap flag
 #BFLAGS		= $(OGBFLAGS)       
-BFLAGS		= $(BOOTFLAGS) $(COMMONFLAGS) -Wall -O2 -rm
+BFLAGS		= $(COMMONFLAGS) -Wall -O2 -rm $(BOOTFLAGS)
 EFLAGS		=
 # Distribution flag
 BDISTFLAGS	= $(COMMONFLAGS) -O2 -rm -unsafe -s
@@ -449,6 +449,7 @@ jvm-sans-jfile: $(CLASS_OBJECTS)
              -jvm-classpath $(CLASSPATH) -jvm-jarpath $(JARPATH) \
              $(BDISTFLAGS) -o $(BIGLOO_DEST).jvm $(CLASS_OBJECTS)
 	@ echo "compiler \e[1;34m$(BIGLOO_DEST).jvm\e[0m done."
+	@ echo "\e[1;34m$(BIGLOO_DEST).jvm\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
@@ -554,7 +555,7 @@ mainnewo: $(O_LESS_MAIN_OBJECTS_OBJECTS)
 #*    dist-bigloo.exe                                                  */
 #*---------------------------------------------------------------------*/
 dist-bigloo.exe: $(C_OBJECTS) Tools/date.c Tools/license.c
-	@ echo "\e[1;35mComptime (distribution)\e[0m done."
+	@ echo "\e[1;35mComptime (distribution)\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    Tools/date.scm                                                   */
@@ -595,15 +596,15 @@ ude: Tools/date.scm Tools/license.scm .afile .jfile .etags
 
 .afile: $(SOURCE_FILES) Tools/license.scm
 	$(BGLAFILE) -o .afile $(SOURCE_FILES) Tools/license.scm
-	@ echo "afile \e[1;35m$(@)\e[0m done."
+	@ echo "\e[1;35m$(@)\e[0m done..."
 
 .jfile: .afile
 	$(BGLJFILE) -o .jfile $(SOURCE_FILES) Tools/license.scm
-	@ echo "jfile \e[1;35m$(@)\e[0m done."
+	@ echo "\e[1;35m$(@)\e[0m done..."
 
 .etags: .afile
 	$(BGLTAGS) --define-var doc-define -o .etags $(SOURCE_FILES) Tools/license.scm
-	@ echo "etags \e[1;35m$(@)\e[0m done."
+	@ echo "\e[1;35m$(@)\e[0m done..."
 
 #*---------------------------------------------------------------------*/
 #*    dep                                                              */
@@ -643,7 +644,7 @@ boot:
         else \
 	  $(MAKE) doboot.static SCMOBJSUFFIX="" COBJSUFFIX=%.o; \
 	fi
-	@ echo "compiler \e[1;34m$(BIGLOO_DEST)$(EXE_SUFFIX)\e[0m done."
+	@ echo "\e[1;34m$(BIGLOO_DEST)$(EXE_SUFFIX)\e[0m done..."
 
 doboot.shared: $(O_OBJECTS) $(G_OBJECTS)
 	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(G_OBJECTS) -L$(BOOTLIBDIR) $(LDBUILDOPTS) $(LDCOMPLIBS_SHARED) $(LDCOMPLIBS)

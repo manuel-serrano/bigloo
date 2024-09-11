@@ -533,14 +533,12 @@ while : ; do
       sharedcompiler=no;
       sharedbde=yes;
       infodir=$HOME/house/info;
-      java=java11;
-      javac=javac11;
       ld=gcc;
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -Wno-alloca-larger-than -DBGL_BOOTCONFIG";
       coflags="$coflags";
       cfpflags="$cfpflags";
-      bootflags="$bootflags -cg";
-      jvmbackend="no";
+      bootflags="$bootflags -cg +rm";
+      jvmbackend="yes";
       mode=standard;
       configureinfo="yes";
       bee="full";
@@ -1192,7 +1190,7 @@ while : ; do
       cd $bootdir;
       echo "Bigloo compiler:"  >&2;
       echo "   --native=yes|no [default yes]" >&2;
-      echo "   --jvm=yes|no|force [default no]" >&2;
+      echo "   --jvm[=yes|no|force] [default no]" >&2;
       echo "   --wasm=yes|no|force [default no]" >&2;
       echo "   --bee=partial|full [default partial]" >&2;
       echo "" >&2;
@@ -1358,8 +1356,8 @@ else
   echo=echo
 fi
 
-# configuration status beginning
-$echo "configuring with \"$logopt\"" > config.status
+# config.status
+$echo "Configuring with \"$logopt\"..." > config.status
 
 # buildbindir
 if [ "$buildbindir " = " " ]; then
@@ -3691,7 +3689,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bconfigure_generic_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`$echo $release | sed -e "s|[.]|_|"`;

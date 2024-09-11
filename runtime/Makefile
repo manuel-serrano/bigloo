@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
+#*    /tmp/BGL/bigloo/runtime/Makefile                                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Sep  9 18:46:25 2024 (serrano)                */
+#*    Last change :  Wed Sep 11 18:36:03 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -481,19 +481,19 @@ heap: heap-c
 heap-c: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
 	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
-	@ echo "heap \e[1;35m$(HEAPC_FILE)\e[0m  done."
+	@ echo "\e[1;35m$(HEAPC_FILE)\e[0m  done."
 
 heap-jvm: .afile .jfile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
-	@ echo "heap \e[1;35m$(HEAPJVM_FILE)\e[0m  done."
+	@ echo "\e[1;35m$(HEAPJVM_FILE)\e[0m  done."
 
 heap-wasm: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPWASM_FILE)
 	$(BIGLOO) -target wasm -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPWASM_FILE)
-	@ echo "heap \e[1;35m$(HEAPWASM_FILE)\e[0m done."
+	@ echo "\e[1;35m$(HEAPWASM_FILE)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo C libraries compilation                                   */
@@ -566,7 +566,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJE
 	$(AR) $(ARFLAGS) \
                 $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a $^
 	$(RANLIB) $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
-	@ echo "static library \e[1;36m$(@)\e[0m done."
+	@ echo "\e[1;36m$(@)\e[0m done."
 
 one-share-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
 
@@ -577,7 +577,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHARE
              LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
              BIGLOOLIB= \
              SONAME=lib$(LIBRARYNAME)$(LIBSUFFIX)$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX)
-	@ echo "shared library \e[1;37m$(@)\e[0m done."
+	@ echo "\e[1;37m$(@)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JVM libraries compilation                                 */
@@ -622,7 +622,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib 
                  bigloo/runtime/*/_KBGl_*.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
-	@ echo "zip library \e[1;38m$(@)\e[0m done."
+	@ echo "\e[1;38m$(@)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo JAS libraries compilation                                 */
@@ -695,7 +695,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
 		-o $@
-	@ echo "wat file \e[1;33m$(@)\e[0m done"
+	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
@@ -703,7 +703,7 @@ objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
                Wlib/runtime.wat \
                $(WASMS:%.wasm=%.wat) \
                -o $@
-	@ echo "wat file \e[1;33m$(@)\e[0m done"
+	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm_u/%.wat: %.scm $(BOOTLIBDIR)/types.wat
 	$(BIGLOO) -wasm $(WFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
@@ -963,6 +963,12 @@ objs/saw_u/$(SCMOBJSUFFIX): %.scm
 objs/saw_s/$(SCMOBJSUFFIX): %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
 
+objs/obj_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
+objs/saw_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*     .c --> .o                                                       */
 #*---------------------------------------------------------------------*/
@@ -1003,6 +1009,12 @@ objs/saw_s/Clib/%.o: Clib/%.c
 	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
         mv Clib-$(@F) $@
 
+objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
+	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
+
+objs/saw_u/Eval/evprimop.o: objs/saw_u/Eval/evprimop.c
+	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CSAWFLAGS) $(CEFLAGS) -c $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*     .scm --> .c                                                     */
 #*---------------------------------------------------------------------*/
@@ -1018,9 +1030,6 @@ objs/obj_u/Unsafe/bignumber.c: Unsafe/bignumber.scm
 objs/obj_u/Eval/evprimop.c: Eval/evprimop.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(EFLAGS) -cgen $< -o $@
 
-objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
-	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
-
 objs/saw_u/%.c: %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -c $< -indent -o $@
 
@@ -1033,8 +1042,8 @@ objs/saw_u/Unsafe/bignumber.c: Unsafe/bignumber.scm
 objs/saw_u/Eval/evprimop.c: Eval/evprimop.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(SAWFLAGS) $(EFLAGS) -cgen $< -o $@
 
-objs/saw_u/Eval/evprimop.o: objs/saw_u/Eval/evprimop.c
-	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CSAWFLAGS) $(CEFLAGS) -c $< -o $@
+objs/obj_u/Eval/evaluate_comp.c: Eval/evaluate_comp.scm
+	$(BIGLOO) $(BFLAGS_USR) $(EFLAGS) -c $< -indent -fno-arithmetic-overflow -o $@
 
 #*---------------------------------------------------------------------*/
 #*    mach_dep.o                                                       */
@@ -1062,6 +1071,13 @@ objs/class_s/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 
 objs/class_p/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
+objs/class_u/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
 
 #*---------------------------------------------------------------------*/
 #*    objs                                                             */

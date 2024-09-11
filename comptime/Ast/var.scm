@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Tue Sep  3 07:43:37 2024 (serrano)                */
+;*    Last change :  Tue Sep  3 06:41:25 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -62,7 +62,7 @@
 	      ;; declaration source
 	      src::obj
 	      ;; the qualified type the global belongs to
-	      ;; (for JVM compilation only)
+	      ;; (for some backend only, see Backend/backend.scm)
 	      qualified-type-name::bstring
 	      ;; is the global always initialized before used? #t means
 	      ;; that the variable is always initialized, #f means that

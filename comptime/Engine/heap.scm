@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/heap.scm        */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Engine/heap.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Tue Sep  3 07:44:04 2024 (serrano)                */
+;*    Last change :  Tue Sep  3 06:42:24 2024 (serrano)                */
 ;*    Copyright   :  2007-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */

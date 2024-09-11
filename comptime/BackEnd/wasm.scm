@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/wasm.scm       */
+;*    /tmp/BGL/bigloo/comptime/BackEnd/wasm.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Sep 10 09:15:56 2024 (serrano)                */
+;*    Last change :  Wed Sep 11 18:47:27 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -92,16 +92,15 @@
 (define-method (backend-compile me::wasm)
    (let ((wat (profile wat (wasm-walk me))))
       (stop-on-pass 'wat (lambda () 'done))
-      (if (eq? *pass* 'cc)
-	  'done
-	  wat)))
+      wat))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-link ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link me::wasm result)
    (when (string? result)
-      (if (and (string? *dest*) (string=? (suffix *dest*) "wat"))
+      (if (or (eq? *pass* 'cc)
+	      (and (string? *dest*) (string=? (suffix *dest*) "wat")))
 	  (when (string? *dest*) (rename-file result *dest*))
 	  (backend-link-objects me (list result)))))
 
