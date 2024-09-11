@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Aug 29 08:35:09 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 19:30:08 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -182,12 +182,12 @@
     (pragma
       ($bignum? side-effect-free (predicate-of bignum) no-cfa-top nesting fail-safe)
       ($bignum->fixnum-safe fail-safe)
-      (+fx-safe fail-safe)
-      (-fx-safe fail-safe)
-      (*fx-safe fail-safe)
-      (+elong-safe fail-safe)
-      (-elong-safe fail-safe)
-      (*elong-safe fail-safe)
-      (+llong-safe fail-safe)
-      (-llong-safe fail-safe)
-      (*llong-safe fail-safe)))
+      (+fx-safe fail-safe side-effect-free)
+      (-fx-safe fail-safe side-effect-free)
+      (*fx-safe fail-safe side-effect-free)
+      (+elong-safe fail-safe side-effect-free)
+      (-elong-safe fail-safe side-effect-free)
+      (*elong-safe fail-safe side-effect-free)
+      (+llong-safe fail-safe side-effect-free)
+      (-llong-safe fail-safe side-effect-free)
+      (*llong-safe fail-safe side-effect-free)))

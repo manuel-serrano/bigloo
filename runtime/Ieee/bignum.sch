@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Wed Aug 28 14:06:56 2024 (serrano)                */
+;*    Last change :  Mon Sep  9 19:32:05 2024 (serrano)                */
 ;*    Copyright   :  2008-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
@@ -197,15 +197,15 @@
    (pragma
       ($bignum? side-effect-free (predicate-of bignum) no-cfa-top nesting fail-safe)
       ($bignum->fixnum-safe fail-safe)
-      (+fx-safe fail-safe)
-      (-fx-safe fail-safe)
-      (*fx-safe fail-safe)
-      (+elong-safe fail-safe)
-      (-elong-safe fail-safe)
-      (*elong-safe fail-safe)
-      (+llong-safe fail-safe)
-      (-llong-safe fail-safe)
-      (*llong-safe fail-safe))
+      (+fx-safe fail-safe side-effect-free)
+      (-fx-safe fail-safe side-effect-free)
+      (*fx-safe fail-safe side-effect-free)
+      (+elong-safe fail-safe side-effect-free)
+      (-elong-safe fail-safe side-effect-free)
+      (*elong-safe fail-safe side-effect-free)
+      (+llong-safe fail-safe side-effect-free)
+      (-llong-safe fail-safe side-effect-free)
+      (*llong-safe fail-safe side-effect-free))
    
    (cond-expand
       (enable-gmp
