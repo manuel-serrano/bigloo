@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Sep  2 13:28:38 2024 (serrano)                */
+#*    Last change :  Wed Sep 11 18:58:10 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -232,16 +232,6 @@ boot-c: checkgmake
         fi
 	@ echo "Boot done..."
 	@ echo "-------------------------------"
-
-# This touches the runtime file that depends on some platform
-# configurations and that needs to be re-compiled because
-# the shipped intermediate C file use a generic implementation
-# that is not compatible with the specific autoconfiguration versions
-.PHONY: boot-touch-specific
-boot-touch-specific:
-	touch runtime/Eval/evprimop.scm
-	touch runtime/Unsafe/regexp.scm
-	touch runtime/Ieee/fixnum.scm runtime/Ieee/number.scm runtime/Unsafe/bignumber.scm runtime/Llib/rsa.scm runtime/Llib/os.scm runtime/Clib/cbignum.c runtime/Clib/cmain.c
 
 # This touches the runtime file that depends on some platform
 # configurations and that needs to be re-compiled because
