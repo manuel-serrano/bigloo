@@ -1934,8 +1934,8 @@ case $hostos in
       sysdlldirstr=`$echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
     fi
 
-    jvmrecettebootpath="-classpath \".;../lib/bigloo/$release/bigloo_s.zip;objs_jvm\""
-    jvmapibootpath="\".;../../../../../lib/bigloo/$release/bigloo_s.zip\""
+    jvmrecettebootpath="-classpath \".;$(BOOTLIBDIR)/bigloo_s.zip;objs_jvm\""
+    jvmapibootpath="\".;$(BOOTLIBDIR)/bigloo_s.zip\""
 
     ldopt="no-share"
 

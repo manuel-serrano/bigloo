@@ -1338,4 +1338,3 @@
       (if (>fx (*fx n 3) (*fx 2 (%hashtable-max-bucket-len t)))
 	  (open-string-hashtable-rehash! t)
 	  (%hashtable-size-set! t (+fx n 1)))))
-
