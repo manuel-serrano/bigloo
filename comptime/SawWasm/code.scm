@@ -33,9 +33,10 @@
     saw_wasm_relooper)
   (export
     (saw-wasm-gen b::wasm v::global)
-    (wasm-type t::type #!optional (may-null #t))
+    (wasm-type t::type #!optional (may-null #f))
     (wasm-vector-type t::type)
     (wasm-sym t::bstring)
+    (wasm-cnst-nil)
     (wasm-cnst-false)
     (wasm-cnst-true)
     (wasm-cnst-unspec)
@@ -127,7 +128,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    wasm-type ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (wasm-type t::type #!optional (may-null #t))
+(define (wasm-type t::type #!optional (may-null #f))
   (let ((id (type-id t))
         (name (type-name t)))
     (case id
@@ -170,8 +171,8 @@
       ((ullong) 'i64)
       ((float) 'f32)
       ((double) 'f64)
-      ((vector) (if may-null '(ref null $vector) '(ref $vector)))
-      ((string) (if may-null '(ref null $bstring) '(ref $bstring))) ; string and bstring are the same
+      ((vector) '(ref $vector))
+      ((string bstring) '(ref $bstring))
       (else 
         (cond 
           ((foreign-type? t) (error "wasm-gen" "unimplemented foreign type in WASM" (type-id t)))
@@ -366,6 +367,9 @@
   (with-access::rtl_fun fun (loc)
     (with-loc loc expr)))
 
+(define (wasm-cnst-nil)
+  '(global.get $BNIL))
+
 (define (wasm-cnst-false)
   '(global.get $BFALSE))
 
@@ -412,12 +416,12 @@
 (define-method (gen-expr fun::rtl_boxref args)
   ;; FIXME: remove the cast to cell
   (with-fun-loc fun
-    `(struct.get $cell $car (ref.cast (ref $cell) ,(gen-reg (car args))))))
+    `(struct.get $cell $val (ref.cast (ref $cell) ,(gen-reg (car args))))))
 
 (define-method (gen-expr fun::rtl_boxset args)
   ;; FIXME: remove the cast to cell
   (with-fun-loc fun
-    `(struct.set $cell $car (ref.cast (ref $cell) ,(gen-reg (car args))) ,@(gen-args (cdr args)))))
+    `(struct.set $cell $val (ref.cast (ref $cell) ,(gen-reg (car args))) ,@(gen-args (cdr args)))))
 
 (define-method (gen-expr fun::rtl_fail args)
   ;; TODO
@@ -622,11 +626,13 @@
   (with-fun-loc fun
     `(i64.extend_i32_u (array.len ,@(gen-args args)))))
 
+;*---------------------------------------------------------------------*/
+;*    emit-wasm-atom-value ...                                         */
+;*---------------------------------------------------------------------*/
 (define (emit-wasm-atom-value type value)
    (cond
       ; TODO: better reusable code? maybe use a macro, too many repetitions
       ((boolean? value) `(i32.const ,(if value 1 0)))
-      ((null? value) '(ref.null none))
       ((char? value) `(i32.const ,(char->integer value)))
       ((int8? value) `(i32.const ,(int8->fixnum value)))
       ((uint8? value) `(i32.const ,(uint8->fixnum value)))
@@ -640,16 +646,17 @@
       ((llong? value) `(i64.const ,value))
       ((ucs2? value) `(struct.new $bucs2 (i32.const ,(ucs2->integer value))))
       ((fixnum? value)
-        ;; TODO: support other types
-        (if (eq? (type-id type) 'int)
-        `(i32.const ,value)
-        `(i64.const ,value)))
+       ;; TODO: support other types
+       (if (eq? (type-id type) 'int)
+	   `(i32.const ,value)
+	   `(i64.const ,value)))
       ((flonum? value) 
-        (cond
+       (cond
           ((nanfl? value) `(f64.const nan))
           ((and (infinitefl? value) (>fl value 0.0)) `(f64.const inf))
           ((infinitefl? value) `(f64.const -inf))
           (else `(f64.const ,value))))
+      ((null? value) (wasm-cnst-nil))
       ((eq? value #unspecified) (wasm-cnst-unspec))
       ((eq? value __eoa__) (wasm-cnst-eoa))
       ((eq? value boptional) (wasm-cnst-optional))
@@ -658,12 +665,12 @@
       ((bignum? value) '(ref.null none)) ; TODO: implement bignum
       ((string? value) `(array.new_default $bstring (i32.const ,(string-length value)))) ; FIXME: implement C string constants
       ((cnst? value)
-        (cond
+       (cond
           ((eof-object? value) '(global.get $BEOF))
           (else `(i31.ref (i32.const ,(cnst->integer value))))))
       (else 
-        ; TODO: support other types, see emit-atom-value in c_emit.scm
-        (error "wasm-gen" "unimplemented scheme atom value for WASM" (typeof value)))))
+       ; TODO: support other types, see emit-atom-value in c_emit.scm
+       (error "wasm-gen" "unimplemented scheme atom value for WASM" (typeof value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_loadi ...                                         */

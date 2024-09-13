@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /tmp/BGL/bigloo/comptime/BackEnd/wasm.scm                        */
+;*    /priv/serrano2/bigloo/wasm/comptime/BackEnd/wasm.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Sep 11 18:47:27 2024 (serrano)                */
+;*    Last change :  Fri Sep 13 10:14:54 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -446,6 +446,7 @@
 			    (param (ref $procedure))
 			    (param (ref $vector))
 			    (result eqref)))
+		      (import "__runtime" "BNIL" (global $BNIL i31ref))
 		      (import "__runtime" "BFALSE" (global $BFALSE i31ref))
 		      (import "__runtime" "BTRUE" (global $BTRUE i31ref))
 		      (import "__runtime" "BUNSPEC" (global $BUNSPEC i31ref))
@@ -454,6 +455,37 @@
 		      (import "__runtime" "BREST" (global $BREST i31ref))
 		      (import "__runtime" "BEOA" (global $BEOA i31ref))
 		      (import "__js" "trace" (func $__trace (param i32)))
+
+		      (import "__runtime" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value $pair))
+		      (import "__runtime" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value $bstring))
+		      (import "__runtime" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value $symbol))
+		      (import "__runtime" "BGL_KEYWORD_DEFAULT_VALUE" (global $keyword-default-value $keyword))
+		      (import "__runtime" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value $vector))
+		      (import "__runtime" "BGL_U8VECTOR_DEFAULT_VALUE" (global $u8vector-default-value $u8vector))
+		      (import "__runtime" "BGL_S8VECTOR_DEFAULT_VALUE" (global $s8vector-default-value $s8vector))
+		      (import "__runtime" "BGL_U16VECTOR_DEFAULT_VALUE" (global $u16vector-default-value $u16vector))
+		      (import "__runtime" "BGL_S16VECTOR_DEFAULT_VALUE" (global $s16vector-default-value $s16vector))
+		      (import "__runtime" "BGL_U32VECTOR_DEFAULT_VALUE" (global $u32vector-default-value $u32vector))
+		      (import "__runtime" "BGL_S32VECTOR_DEFAULT_VALUE" (global $s32vector-default-value $s32vector))
+		      (import "__runtime" "BGL_U64VECTOR_DEFAULT_VALUE" (global $u64vector-default-value $u64vector))
+		      (import "__runtime" "BGL_S64VECTOR_DEFAULT_VALUE" (global $s64vector-default-value $s64vector))
+		      (import "__runtime" "BGL_F32VECTOR_DEFAULT_VALUE" (global $f32vector-default-value $f32vector))
+		      (import "__runtime" "BGL_F64VECTOR_DEFAULT_VALUE" (global $f64vector-default-value $f64vector))
+		      (import "__runtime" "BGL_STRUCT_DEFAULT_VALUE" (global $struct-default-value $struct))
+		      (import "__runtime" "BGL_CLASS_DEFAULT_VALUE" (global $class-default-value $class))
+		      (import "__runtime" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value $procedure))
+		      (import "__runtime" "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value $vector))
+		      (import "__runtime" "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value $mutex))
+		      (import "__runtime" "BGL_CONDVAR_DEFAULT_VALUE" (global $condvar-default-value $condvar))
+		      (import "__runtime" "BGL_DATE_DEFAULT_VALUE" (global $date-default-value $date))
+		      (import "__runtime" "BGL_REAL_DEFAULT_VALUE" (global $real-default-value $real))
+		      (import "__runtime" "BGL_BIGNUM_DEFAULT_VALUE" (global $bignum-default-value $bignum))
+		      (import "__runtime" "BGL_PORT_DEFAULT_VALUE" (global $port-default-value $port))
+		      (import "__runtime" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value $output-port))
+		      (import "__runtime" "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE" (global $file-output-port-default-value $file-output-port))
+		      (import "__runtime" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value $input-port))
+		      (import "__runtime" "BGL_FILE_INPUT_PORT_DEFAULT_VALUE" (global $file-input-port-default-value $file-input-port))
+		      
 		      ,@(emit-imports))
 		   
 		   (comment "Memory" ,@(emit-memory))
@@ -910,10 +942,42 @@
       ((llong) '(i64.const 0))
       ((float) '(f32.const 0))
       ((double) '(f64.const 0))
-      (else 
+      ((pair) `(global.get $pair-default-value))
+      ((nil) (wasm-cnst-nil))
+      ((pair-nil) (wasm-cnst-nil))
+      ((symbol) `(global.get $symbol-default-value))
+      ((keyword) `(global.get $keyword-default-value))
+      ((bstring) `(global.get $bstring-default-value))
+      ((vector) `(global.get $vector-default-value))
+      ((u8vector) `(global.get $u8vector-default-value))
+      ((s8vector) `(global.get $s8vector-default-value))
+      ((u16vector) `(global.get $u16vector-default-value))
+      ((s16vector) `(global.get $s16vector-default-value))
+      ((u32vector) `(global.get $u32vector-default-value))
+      ((s32vector) `(global.get $s32vector-default-value))
+      ((u64vector) `(global.get $u64vector-default-value))
+      ((s64vector) `(global.get $s64vector-default-value))
+      ((f32vector) `(global.get $f32vector-default-value))
+      ((f64vector) `(global.get $f64vector-default-value))
+      ((struct) `(global.get $struct-default-value))
+      ((class) `(global.get $class-default-value))
+      ((procedure) `(global.get $procedure-default-value))
+      ((procedure-el) `(global.get $procedure-el-default-value))
+      ((mutex) `(global.get $mutex-default-value))
+      ((condvar) `(global.get $condvar-default-value))
+      ((date) `(global.get $date-default-value))
+      ((real) `(global.get $real-default-value))
+      ((bignum) `(global.get $bignum-default-value))
+      ((port) `(global.get $port-default-value))
+      ((output-port) `(global.get $output-port-default-value))
+      ((file-output-port) `(global.get $file-output-port-default-value))
+      ((input-port) `(global.get $input-port-default-value))
+      ((file-input-port) `(global.get $file-input-port-default-value))
+      ((obj) (wasm-cnst-unspec))
+      (else
        (if (foreign-type? type)
-	   (error "wasm" "Unknown foreign type for default value." type)
-	   '(ref.null none)))))
+	   (error "wasm" "Unknown foreign type for default value" (type-id type))
+	   (error "wasm" "No default init value for builtin type" (type-id type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnsts ...                                                   */
@@ -977,7 +1041,7 @@
 	,@(if (eq? (global-import global) 'export)
 	      `((export ,(global-name global)))
 	      '())
-	(mut (ref null $bstring)) 
+	(mut (ref $bstring)) 
 	(array.new_fixed $bstring 0))))
 
 ;*---------------------------------------------------------------------*/
@@ -997,7 +1061,7 @@
 		 `((export ,(global-name global)))
 		 '())
 	   ;; FIXME: remove the mut and null qualifiers
-	   (mut (ref null $real)) 
+	   (mut (ref $real)) 
 	   (struct.new $real (f64.const ,value))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1010,7 +1074,8 @@
 	,@(if (eq? (global-import global) 'export)
 	      `((export ,(global-name global)))
 	      '())
-	(ref ,type) (struct.new ,type ,(emit-wasm-atom-value (global-type global) value)))))
+	(ref ,type)
+	(struct.new ,type ,(emit-wasm-atom-value (global-type global) value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-i64 ...                                                */
@@ -1022,7 +1087,8 @@
 	,@(if (eq? (global-import global) 'export)
 	      `((export ,(global-name global)))
 	      '())
-	(ref ,type) (struct.new ,type ,(emit-wasm-atom-value (global-type global) value)))))
+	(ref ,type)
+	(struct.new ,type ,(emit-wasm-atom-value (global-type global) value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun ...                                               */
@@ -1068,8 +1134,7 @@
 		 ,@(if (eq? (global-import global) 'export)
 		       `((export ,vname))
 		       '())
-		 ;; FIXME: should not be mutable and remove the null qualifier
-		 (mut (ref null $procedure)) 
+		 (mut (ref $procedure)) 
 		 (struct.new $procedure 
 		    (ref.func ,(wasm-sym name))
 		    ,(wasm-cnst-unspec)

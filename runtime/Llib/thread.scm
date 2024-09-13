@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/thread.scm       */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/thread.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sat May 13 08:38:08 2023 (serrano)                */
-;*    Copyright   :  2004-23 Manuel Serrano                            */
+;*    Last change :  Fri Sep 13 11:13:36 2024 (serrano)                */
+;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
 ;*    This is simply an implementation of lock and synchronization     */
@@ -279,17 +279,10 @@
    ($current-dynamic-env))
 
 ;*---------------------------------------------------------------------*/
-;*    *nothread-backend* ...                                           */
-;*---------------------------------------------------------------------*/
-(define *nothread-backend*
-   (instantiate::nothread-backend
-      (name "nothread")))
-
-;*---------------------------------------------------------------------*/
 ;*    *thread-backends* ...                                            */
 ;*---------------------------------------------------------------------*/
 (define *thread-backends*
-   (list *nothread-backend*))
+   (list (instantiate::nothread-backend (name "nothread"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-thread-backend ...                                       */

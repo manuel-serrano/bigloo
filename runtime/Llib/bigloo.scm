@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Llib/bigloo.scm                */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/bigloo.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Aug  1 14:31:49 2024 (serrano)                */
+;*    Last change :  Fri Sep 13 11:33:33 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -159,34 +159,33 @@
 	    (export bigloo-exit-apply "bigloo_exit_apply")
 	    (export bigloo-exit-mutex "bgl_exit_mutex"))
 
-   (wasm
-	    (__unspec__ "(ref.i31 (i32.const 3))")
-	    (__eoa__ "(ref.null none)")
-
-		($make-cell "(struct.new $cell ~0)")
-		($make-stack-cell "(struct.new $cell ~0)")
-		($cell-ref "(struct.get $cell $car ~0)")
-		($cell? "(ref.test (ref $cell) ~0)")
-
-		(c-cnst? "(ref.test i31ref ~0)")
-	
-		;; These two functions are inlined by the WASM backend directly.
+   (wasm    (__unspec__ "(ref.i31 (i32.const 3))")
+            (__eoa__ "(ref.null none)")
+      
+	    ($make-cell "(struct.new $cell ~0)")
+	    ($make-stack-cell "(struct.new $cell ~0)")
+	    ($cell-ref "(struct.get $cell $val ~0)")
+	    ($cell? "(ref.test (ref $cell) ~0)")
+      
+	    (c-cnst? "(ref.test i31ref ~0)")
+      
+	    ;; These two functions are inlined by the WASM backend directly.
 	    (cnst-table-set! "(throw $unimplemented)")
 	    (cnst-table-ref "(throw $unimplemented)")
-	    
-		;; Opaque types not supported in WASM backend
+      
+	    ;; Opaque types not supported in WASM backend
 	    (c-opaque? "(i32.const 0)")
-		(c-opaque-nil "(ref.null none)")
-
-        ($procedure-arity "(struct.get $procedure $arity ~0)")
-        ($procedure-attr "(struct.get $procedure $attr ~0)")
+	    (c-opaque-nil "(ref.null none)")
+      
+	    ($procedure-arity "(struct.get $procedure $arity ~0)")
+	    ($procedure-attr "(struct.get $procedure $attr ~0)")
 	    ($procedure-length "(array.len (struct.get $procedure $env ~0))")
-
+      
 	    (procedure-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
 	    (procedure-l-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
 	    (procedure-el-ref "(array.get $vector ~0 ~1)")
-
-		($make-cell "(struct.new $cell ~0)")
+	    
+	    ($make-cell "(struct.new $cell ~0)")
 	    ($make-stack-cell "(struct.new $cell ~0)")
 	    ($cell-ref "(struct.get $cell $car ~0)")
 	    ($cell? "(ref.test (ref $cell) ~0)"))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/pairlist.scm              */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/pairlist.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Wed Jul  3 14:06:04 2024 (serrano)                */
+;*    Last change :  Fri Sep 13 10:08:20 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -66,7 +66,7 @@
 	    ($car "(struct.get $pair $car ~0)")
 	    ($cdr "(struct.get $pair $cdr ~0)")
 	    ($cer "(struct.get $epair $cer ~0)")
-	    ($null? "(ref.is_null ~0)"))
+	    ($null? "(ref.eq (global.get $BNIL) ~0)"))
    
    (java    (class foreign
 	       (method static $pair?::bool (::obj)

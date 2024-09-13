@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Init/parse_args.scm        */
+;*    /priv/serrano2/bigloo/wasm/comptime/Init/parse_args.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Sep 10 06:38:22 2024 (serrano)                */
+;*    Last change :  Fri Sep 13 14:12:40 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -900,6 +900,8 @@
 
 ;*--- WASM specific options --------------------------------------------*/
       (section "WASM specific options")
+      (("-wat" (help "Do not assemble the generated .wat file"))
+       (set! *pass* 'wat))
       (("-wasm" ?string (help "Wasm engine"))
        (set! *wasm-engine* string))
       (("-wasm-opt" ?string (help "Wasm engine options"))
@@ -908,12 +910,10 @@
        (set! *wasmas* (cons string *wasmas*)))
       (("-wopt" ?string (help "Invoke wasmas with STRING"))
        (set! *wasmas-options* (cons string *wasmas-options*)))
-      (("-wasm-relooper" (help "Better compilation of structured conflow flow for WASM"))
+      (("-fwasm-relooper" (help "Better compilation of structured conflow flow for WASM"))
        (set! *wasm-use-relooper* #t))
-      (("-no-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))
+      (("-fno-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))
        (set! *wasm-use-relooper* #f))
-      (("-wat" (help "Do not assemble the generated .wat file"))
-       (set! *pass* 'wat))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")
