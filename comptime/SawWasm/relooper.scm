@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Sat Sep 14 13:13:00 2024 (serrano)                */
+;*    Last change :  Sat Sep 14 13:38:42 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -538,7 +538,7 @@
 		    `((block ,@(node-within x '() #f context'))))
 		 (within x terminator z context)))
 	    ((not z)
-	     (let ((context' (cons `(with-fall-through ,(car ys)) context)))
+	     (let ((context' (append context `((with-fall-through ,(car ys))))))
 		(append (node-within x (cdr ys) (car ys) context')
 		   (do-tree (car ys) context))))
 	    (else
@@ -602,7 +602,7 @@
 	  (do-tree (car y) context))))
 
 (define (node-within x ys::pair-nil z context::pair-nil)
-   (node-within-unopt x ys z context))
+   (node-within-opt x ys z context))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-tree ...                                                      */
