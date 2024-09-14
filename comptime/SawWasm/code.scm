@@ -1,80 +1,82 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Hubert Gruniaux                                   */
+;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
+;*    Last change :                                                    */
+;*    Copyright   :  2024 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Wasm code generation                                             */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
 (module saw_wasm_code
-  (include "Tools/trace.sch"
-      "Tools/location.sch")
-  (import type_type		; type
-    ast_var		; local/global
-    ast_node		; atom
-    ast_env
-    module_module	; *module*
-    engine_param		; *stdc* ...
+   (include "Tools/trace.sch"
+	    "Tools/location.sch")
+   (import type_type	; type
+	   ast_var		; local/global
+	   ast_node		; atom
+	   ast_env
+	   module_module	; *module*
+	   engine_param	; *stdc* ...
+	   type_tools		; for emit-atom-value/make-typed-declaration
+	   type_cache		; for emit-atom-value
+	   type_typeof
+	   tvector_tvector
+	   object_class
+	   cnst_alloc
+	   tools_shape
+	   tools_location
+	   backend_backend
+	   backend_cvm
+	   backend_wasm
+	   backend_c_emit
+	   saw_defs
+	   saw_woodcutter
+	   saw_node2rtl
+	   saw_expr
+	   saw_regset
+	   saw_register-allocation
+	   saw_bbv
+	   saw_bbv-config
+	   saw_bbv-types
+	   saw_bbv-debug
+	   saw_wasm_relooper)
+   (export
+      (saw-wasm-gen b::wasm v::global)
+      (wasm-type t::type #!optional (may-null #f))
+      (wasm-vector-type t::type)
+      (wasm-sym t::bstring)
+      (wasm-cnst-nil)
+      (wasm-cnst-false)
+      (wasm-cnst-true)
+      (wasm-cnst-unspec)
+      (emit-wasm-atom-value type value)
+      (gen-reg reg)
+      (gen-basic-block b)
+      (gen-ins ins::rtl_ins)
+      (gen-switch fun type patterns labels args gen-go gen-block-label)
+      (cnst-table-sym)
+      *allocated-strings*
+      *extra-types*)
+   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
+   (static (wide-class SawCIreg::rtl_reg index)))
 
-    type_tools		; for emit-atom-value/make-typed-declaration
-    type_cache		; for emit-atom-value
-    type_typeof
-    tvector_tvector
-    object_class
-    cnst_alloc
-    tools_shape
-    tools_location
-    backend_backend
-    backend_cvm
-    backend_wasm
-    backend_c_emit
-    saw_defs
-    saw_woodcutter
-    saw_node2rtl
-    saw_expr
-    saw_regset
-    saw_register-allocation
-    saw_bbv
-    saw_bbv-config
-    saw_bbv-types
-    saw_bbv-debug
-    saw_wasm_relooper)
-  (export
-    (saw-wasm-gen b::wasm v::global)
-    (wasm-type t::type #!optional (may-null #f))
-    (wasm-vector-type t::type)
-    (wasm-sym t::bstring)
-    (wasm-cnst-nil)
-    (wasm-cnst-false)
-    (wasm-cnst-true)
-    (wasm-cnst-unspec)
-    (emit-wasm-atom-value type value)
-    (gen-reg reg)
-    (gen-basic-block b)
-    (gen-ins ins::rtl_ins)
-    (gen-switch fun type patterns labels args gen-go gen-block-label)
-    (cnst-table-sym)
-    *allocated-strings*
-    *extra-types*)
-  (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
-  (static (wide-class SawCIreg::rtl_reg index)))
-
+;*---------------------------------------------------------------------*/
+;*    saw-wasm-gen ...                                                 */
+;*---------------------------------------------------------------------*/
 (define (saw-wasm-gen b::wasm v::global)
-  (let ((l (global->blocks b v)))
-    (gen-fun b v l)))
-
-;; Extra types that must be inserted in the module preamble. This is mostly used for
-;; temp function types for extra-light funcalls.
-(define *extra-types* '())
-
-;*---------------------------------------------------------------------*/
-;*    needs-dispatcher? ...                                            */
-;*---------------------------------------------------------------------*/
-(define (needs-dispatcher? l)
-   ; if there is a single basic block or none, then we don't have any control flow
-   ; and therefore we are sure that we don't need a dispatcher block.
-   (not (or
-      (null? l) 
-      (null? (cdr l)))
-   ))
+   (let ((l (global->blocks b v)))
+      (gen-fun b v l)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-fun ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (gen-fun b::wasm v::global l)
    (with-access::global v (name import value type)
+      ;; debug 
       (when *bbv-dump-cfg*
 	 (with-access::sfun value (args)
 	    (dump-cfg v (map local->reg args) l ".wasm.cfg")))
@@ -84,7 +86,8 @@
 	    (set! l (register-allocation b v params l))
 	    (set! l (bbv b v params l))
 	    
-	    `(comment ,(string-append (symbol->string (global-id v)) " in " (symbol->string (global-module v)))
+	    `(comment ,(string-append (symbol->string (global-id v))
+			  " in " (symbol->string (global-module v)))
 		,(with-loc loc
 		    `(func ,(wasm-sym name)
 			
@@ -98,6 +101,30 @@
 				 ,@(gen-locals locals)))
 			
 			,@(gen-body v l))))))))
+
+;*---------------------------------------------------------------------*/
+;*    gen-body ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (gen-body v::global blocks)
+   (or (relooper v blocks)
+       (gen-dispatcher-body blocks)))
+
+;*---------------------------------------------------------------------*/
+;*    *extra-types*                                                    */
+;*---------------------------------------------------------------------*/
+;; Extra types that must be inserted in the module preamble.
+;; This is mostly used for
+;; temp function types for extra-light funcalls.
+(define *extra-types* '())
+
+;*---------------------------------------------------------------------*/
+;*    needs-dispatcher? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (needs-dispatcher? l)
+   ;; if there is a single basic block or none,
+   ;; then we don't have any control flow
+   ;; and therefore we are sure that we don't need a dispatcher block.
+   (not (or (null? l) (null? (cdr l)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-locals ...                                                   */
@@ -226,62 +253,59 @@
 ;*    gen-params ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (gen-params l)
-  (map (lambda (arg) `(param ,(wasm-sym (reg_name arg)) ,(wasm-type (rtl_reg-type arg)))) l))
+   (map (lambda (arg)
+	   `(param ,(wasm-sym (reg-name arg)) ,(wasm-type (rtl_reg-type arg))))
+      l))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-result ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (gen-result t)
-  (if (eq? (type-id t) 'void)
-    '()
-    `((result ,(wasm-type t)))))
+   (if (eq? (type-id t) 'void)
+       '()
+       `((result ,(wasm-type t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-locals ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (gen-locals l)
-  (map (lambda (local) `(local ,(wasm-sym (reg_name local)) ,(wasm-type (rtl_reg-type local)))) l))
+   (map (lambda (local)
+	   `(local ,(wasm-sym (reg-name local))
+	       ,(wasm-type (rtl_reg-type local))))
+      l))
 
 ;*---------------------------------------------------------------------*/
-;*    reg_name ...                                                     */
+;*    reg-name ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (reg_name reg) ;()
-  (or (rtl_reg-debugname reg)
-      (string-append (if (SawCIreg-var reg) "V" "R")
-      (integer->string (SawCIreg-index reg)) )))
-
-;*---------------------------------------------------------------------*/
-;*    gen-body ...                                                     */
-;*---------------------------------------------------------------------*/
-(define (gen-body v::global blocks)
-  (if *wasm-use-relooper*
-    (let ((body (reloop v (dom_tree blocks))))
-      (if body
-        body
-        ;; Relooper failed (the CFG is probably irreducible), 
-        ;; fallback to using the dispatcher pattern.
-        (gen-dispatcher-body blocks)))
-    (gen-dispatcher-body blocks)))
+(define (reg-name reg) ;()
+   (or (rtl_reg-debugname reg)
+       (string-append (if (SawCIreg-var reg) "V" "R")
+	  (integer->string (SawCIreg-index reg)) )))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-dispatcher-body ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (gen-dispatcher-body blocks)
-  ;; If there is only a single basic block in the function, there is no need to do
-  ;; hard work or generate a dispatcher. Just dump the basic block code.
-  (if (null? (cdr blocks))
-    (gen-basic-block (car blocks))
-    `((local $__label i32)
-      (local.set $__label (i32.const ,(block-label (car blocks))))
-      (loop $__dispatcher
-      ,@(letrec ((iter-block (lambda (l label)
-          (if (null? l)
-            `((block ,(wasm-block-sym label) ,(gen-dispatcher blocks)))
-            (let ((bb (car l)))
-              (if label
-                `((block ,(wasm-block-sym label) ,@(iter-block (cdr l) (block-label bb)) ,@(gen-basic-block bb)))
-                `(,@(iter-block (cdr l) (block-label bb)) ,@(gen-basic-block bb))))))))
-        (iter-block (reverse blocks) #f))))))
+   ;; If there is only a single basic block in the function, there is no
+   ;; need to do hard work or generate a dispatcher.
+   ;; Just dump the basic block code.
+   (if (null? (cdr blocks))
+       (gen-basic-block (car blocks))
+       `((local $__label i32)
+	 (local.set $__label (i32.const ,(block-label (car blocks))))
+	 (loop $__dispatcher
+	    ,@(let iter-block ((l (reverse blocks))
+			       (label #f))
+		 (if (null? l)
+		     `((block ,(wasm-block-sym label)
+			  ,(gen-dispatcher blocks)))
+		     (let ((bb (car l)))
+			(if label
+			    `((block ,(wasm-block-sym label)
+				 ,@(iter-block (cdr l) (block-label bb))
+				 ,@(gen-basic-block bb)))
+			    `(,@(iter-block (cdr l) (block-label bb))
+				,@(gen-basic-block bb))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-block-sym ...                                               */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/relooper.scm         */
+;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/relooper.scm       */
 ;*    -------------------------------------------------------------    */
-;*    Author      :  Manuel Serrano                                    */
+;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :                                                    */
+;*    Last change :  Sat Sep 14 08:28:16 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -33,19 +33,17 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module saw_wasm_relooper
-   (import
-      type_type
-      ast_var
-      ast_node
-      saw_defs
-      backend_backend
-      backend_cvm
-      saw_wasm_code
-      backend_wasm)
-   (export 
-      (reloop global tree)
-      (dom_tree blocks)
-      (dump_tree tree depth)))
+   (import type_type
+           ast_var
+	   ast_node
+	   saw_defs
+	   engine_param
+	   backend_backend
+	   backend_cvm
+	   saw_wasm_code
+	   backend_wasm
+	   tools_shape)
+   (export (relooper v::global blocks::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dom_tree_node                                                    */
@@ -62,9 +60,44 @@
    order)
 
 ;*---------------------------------------------------------------------*/
-;*    compute_spanning_tree ...                                        */
+;*    dom_tree_node-block-label ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (compute_spanning_tree entry_block)
+(define (dom_tree_node-block-label node)
+   (when (dom_tree_node? node)
+      (block-label (dom_tree_node-block node))))
+
+;*---------------------------------------------------------------------*/
+;*    relooper ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (relooper v::global blocks::pair-nil)
+   (when *wasm-use-relooper*
+      (reloop v (dom-tree blocks))))
+
+;*---------------------------------------------------------------------*/
+;*    reloop ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (reloop global tree)
+   (with-trace 'relooper "reloop"
+      (trace-item "function=" (shape global) " (" (global-name global) ")")
+      (with-handler
+	 (lambda (e)
+	    (when (isa? e &exception)
+	       (exception-notify e)
+	       (tprint "giving with relooper"))
+	    #f)
+	 (if (compute-loop-headers tree)
+	     ;; the graph is reducible
+	     (begin
+		(compute-merge-nodes tree)
+		(do-tree tree '()))
+	     ;; todo, transform build an equivalent reducible graph
+	     (begin
+		#f)))))
+
+;*---------------------------------------------------------------------*/
+;*    compute-spanning-tree ...                                        */
+;*---------------------------------------------------------------------*/
+(define (compute-spanning-tree entry-block)
    (let ((stack '())
 	 (visited (make-hashtable)))
       
@@ -77,7 +110,7 @@
 	       (block-succs block))
 	    (set! stack (cons node stack))))
       
-      (define (update-succs-and-preds node)
+      (define (update-succs-and-preds! node)
 	 ;; FIXME: we use filter-map instead of map because basic blocks
 	 ;;        seems to have "phantom" predecessors. That is, predecessors
 	 ;;        that don't exist (were not visited but also do not show
@@ -90,14 +123,14 @@
 	       (block-preds (dom_tree_node-block node)))))
       
       ;; Assign node orders in reverse postorder.
-      (define (update-orders stack order)
+      (define (update-orders! stack order)
 	 (unless (null? stack)
 	    (dom_tree_node-order-set! (car stack) order)
-	    (update-orders (cdr stack) (+fx order 1))))
+	    (update-orders! (cdr stack) (+fx order 1))))
       
-      (dfs entry_block)
-      (for-each update-succs-and-preds stack)
-      (update-orders stack 0)
+      (dfs entry-block)
+      (for-each update-succs-and-preds! stack)
+      (update-orders! stack 0)
       stack))
 
 ;*---------------------------------------------------------------------*/
@@ -114,37 +147,37 @@
    ;;   - We find the node just before the first mismatch between the two paths.
    ;; Better algorithms exist, and should probably be used instead.
    
-   (define (find_path tree node path)
+   (define (find-path tree node path)
       (if (eq? tree node)
 	  (reverse path)
 	  (let ((result (filter-map 
 			   (lambda (subtree) 
-			      (find_path subtree node (cons tree path))) 
+			      (find-path subtree node (cons tree path))) 
 			   (dom_tree_node-children tree))))
 	     (if (null? result)
 		 '()
 		 (car result)))))
    
-   (define (find_before_first_mismatch path1 path2 last_node)
+   (define (find-before-first-mismatch path1 path2 last-node)
       (cond 
 	 ((or (null? path1) (null? path2))
-	  last_node)
+	  last-node)
 	 ((eq? (car path1) (car path2))
-	  (find_before_first_mismatch (cdr path1) (cdr path2) (car path1)))
+	  (find-before-first-mismatch (cdr path1) (cdr path2) (car path1)))
 	 (else
-	  last_node)))
+	  last-node)))
    
-   (let ((path1 (find_path tree node1 '()))
-	 (path2 (find_path tree node2 '())))
-      (find_before_first_mismatch path1 path2 tree)))
+   (let ((path1 (find-path tree node1 '()))
+	 (path2 (find-path tree node2 '())))
+      (find-before-first-mismatch path1 path2 tree)))
 
 ;*---------------------------------------------------------------------*/
-;*    dom_tree ...                                                     */
+;*    dom-tree ...                                                     */
 ;*    -------------------------------------------------------------    */
 ;*    Computes the dominator tree for the given list of                */
 ;*    RTL basic blocks.                                                */
 ;*---------------------------------------------------------------------*/
-(define (dom_tree blocks)
+(define (dom-tree blocks)
    ;; Algorithm reference:
    ;;   K. D. Cooper, T. J. Harvey, and K. Kennedy.
    ;;   A simple, fast dominance algorithm.
@@ -178,17 +211,20 @@
 		   (loop2)))
 	     (intersect u v))))
    
-   (let ((nodes (compute_spanning_tree (car blocks))))
-      (set! nodes (sort (lambda (u v) (<fx (dom_tree_node-order u) (dom_tree_node-order v))) nodes))
-      (let ((entry_node (car nodes)))
+   (let ((nodes (compute-spanning-tree (car blocks))))
+      (set! nodes
+	 (sort (lambda (u v)
+		  (<fx (dom_tree_node-order u) (dom_tree_node-order v)))
+	    nodes))
+      (let ((entry-node (car nodes)))
 	 ;; Do not use parent-set! here because we don't want 
-	 ;; to update the entry_node children list.
-	 (dom_tree_node-parent-set! entry_node entry_node)
+	 ;; to update the entry-node children list.
+	 (dom_tree_node-parent-set! entry-node entry-node)
 	 ;; Discard entry node, it is at start of the list
 	 ;; because it always has order 0.
 	 (set! nodes (cdr nodes))
 	 
-	 (with-trace 'relooper "dom_tree"
+	 (with-trace 'relooper "dom-tree"
 	    (let loop ()
 	       (let ((changed #f))
 		  (for-each (lambda (u)
@@ -207,16 +243,16 @@
 		  (if changed
 		      (loop)
 		      (begin
-			 ;; Remove the parent of entry_node (it doesn't
+			 ;; Remove the parent of entry-node (it doesn't
 			 ;; have one, but for the algorithm sake, we
 			 ;; considered that it was its own parent).
-			 (dom_tree_node-parent-set! entry_node #f)
-			 entry_node))))))))
+			 (dom_tree_node-parent-set! entry-node #f)
+			 entry-node))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    dump_tree ...                                                    */
+;*    dump-tree ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (dump_tree tree depth)
+(define (dump-tree tree depth)
    ;; Only used for debugging purposes.
    (define (ppindent depth)
       (unless (=fx depth 0)
@@ -224,16 +260,30 @@
 	 (ppindent (-fx depth 1))))
    
    (ppindent depth)
-   (display* "- Block " (block-label (dom_tree_node-block tree)))
+   (display* "- Block " (dom_tree_node-block-label tree))
    (display* " (order=" (dom_tree_node-order tree) ")")
    (display* " (is_loop_header=" (dom_tree_node-is_loop_header tree) ")")
    (display* " (is_merge_node=" (dom_tree_node-is_merge_node tree) ")")
    (newline)
    (for-each (lambda (child)
-		(dump_tree child (+fx depth 1))) (dom_tree_node-children tree)))
+		(dump-tree child (+fx depth 1)))
+      (dom_tree_node-children tree)))
 
 ;*---------------------------------------------------------------------*/
-;*    find-terminator ...                                              */
+;*    dump-context ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (dump-context context)
+   (map (lambda (f)
+	   (if (pair? (cdr f))
+	       (cons (car f)
+		  (if (dom_tree_node? (cadr f))
+		      (list (dom_tree_node-block-label (cadr f)))
+		      '(#f)))
+	       f))
+      context))
+
+;*---------------------------------------------------------------------*/
+;*    flow-leaving ...                                                 */
 ;*    -------------------------------------------------------------    */
 ;*    Finds the terminator instruction of the block (the last          */
 ;*    instruction), in a form more suitable for the Relooper           */
@@ -241,7 +291,7 @@
 ;*    as they do not have any successors and therefore are not         */
 ;*    important for Relooper.                                          */
 ;*---------------------------------------------------------------------*/
-(define (find-terminator node)
+(define (flow-leaving node)
    
    (define (find-then-succ-by-block block)
       (find (lambda (succ) (eq? (dom_tree_node-block succ) block))
@@ -297,9 +347,9 @@
    (find (lambda (ins) (rtl_switch? (rtl_ins-fun ins))) (block-first block)))
 
 ;*---------------------------------------------------------------------*/
-;*    is-back-edge? ...                                                */
+;*    back-edge? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (is-back-edge? u v)
+(define (back-edge? u v)
    (>=fx (dom_tree_node-order u) (dom_tree_node-order v)))
 
 ;*---------------------------------------------------------------------*/
@@ -320,11 +370,12 @@
 ;*    It returns true if the graph is reducible, false otherwise.      */
 ;*---------------------------------------------------------------------*/
 (define (compute-loop-headers tree)
+   
    (define (is-loop-header? node)
       (bind-exit (return)
 	 (for-each (lambda (pred)
 		      ;; Check if the graph is irreducible.
-		      (when (and (is-back-edge? pred node)
+		      (when (and (back-edge? pred node)
 				 (not (dominates? node pred)))
 			 (return 'irreducible))
 		      
@@ -333,21 +384,22 @@
 	    (dom_tree_node-preds node))
 	 #f))
    
-   (bind-exit (return)
-      (with-trace 'relooper "compute-loop-headers"
-	 (define (dfs node)
-	    (with-trace 'relooper "compute-loop-headers.dfs"
-	       (trace-item "node=" (block-label (dom_tree_node-block node)))
-	       (let ((loop? (is-loop-header? node)))
-		  (cond
-		     ((eq? loop? 'irreducible) (return #f))
-		     (loop?
-		      (trace-item "is a loop header")
-		      (dom_tree_node-is_loop_header-set! node #t))))
-	       (for-each dfs (dom_tree_node-children node))))
-	 (dfs tree)
-	 ;; The graph is reducible.
-	 #t)))
+   (define (dfs node)
+      (bind-exit (return)
+	 (with-trace 'relooper "compute-loop-headers.dfs"
+	    (trace-item "node=" (block-label (dom_tree_node-block node)))
+	    (let ((loop? (is-loop-header? node)))
+	       (cond
+		  ((eq? loop? 'irreducible)
+		   (return #f))
+		  (loop?
+		   (trace-item "is a loop header")
+		   (dom_tree_node-is_loop_header-set! node #t))))
+	    (for-each dfs (dom_tree_node-children node))
+	    #t)))
+   
+   (with-trace 'relooper "compute-loop-headers"
+      (dfs tree)))
 
 ;*---------------------------------------------------------------------*/
 ;*    compute-merge-nodes ...                                          */
@@ -357,25 +409,27 @@
 ;*---------------------------------------------------------------------*/
 (define (compute-merge-nodes tree)
    
-   (define (is-merge-node node)
+   (define (is-merge-node? node)
       ;; A node is a merge node if it has at least two incoming forward 
       ;; edges (backward edges do not count).
       (let ((forward-iedge-count 0))
 	 (for-each (lambda (pred)
-		      (unless (is-back-edge? pred node)
-			 (set! forward-iedge-count (+fx forward-iedge-count 1))))
+		      (unless (back-edge? pred node)
+			 (set! forward-iedge-count
+			    (+fx forward-iedge-count 1))))
 	    (dom_tree_node-preds node))
 	 (trace-item "forward-iedge-count=" forward-iedge-count)
 	 (>=fx forward-iedge-count 2)))
    
+   (define (dfs node)
+      (with-trace 'relooper "compute-merge-nodes.dfs"
+	 (trace-item "node=" (block-label (dom_tree_node-block node)))
+	 (when (is-merge-node? node)
+	    (trace-item "is a merge node")
+	    (dom_tree_node-is_merge_node-set! node #t))
+	 (for-each dfs (dom_tree_node-children node))))
+   
    (with-trace 'relooper "compute-merge-nodes"
-      (define (dfs node)
-	 (with-trace 'relooper "compute-merge-nodes.dfs"
-	    (trace-item "node=" (block-label (dom_tree_node-block node)))
-	    (when (is-merge-node node)
-	       (trace-item "is a merge node")
-	       (dom_tree_node-is_merge_node-set! node #t))
-	    (for-each dfs (dom_tree_node-children node))))
       (dfs tree)))
 
 ;*---------------------------------------------------------------------*/
@@ -385,6 +439,7 @@
    (match-case frame
       ((block-followed-by ?l) (eq? node l))
       ((loop-headed-by ?l) (eq? node l))
+      ((with-fall-through ?l) (eq? node l))
       ((if-then-else ?l) (eq? node l))
       (else #f)))
 
@@ -392,28 +447,18 @@
 ;*    index-of ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (index-of node context)
-   (cond
-      ((null? context)
-       (error "relooper" "Target label not in evaluation context" node))
-      ((matches-frame? node (car context))
-       0)
-      (else
-       (+fx 1 (index-of node (cdr context))))))
-
-;*---------------------------------------------------------------------*/
-;*    gen-go ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (gen-go from to context)
-   (cond
-      ((is-back-edge? from to)
-       ;; continue
-       `((br ,(index-of to context))))
-      ((dom_tree_node-is_merge_node to)
-       ;; exit
-       `((br ,(index-of to context))))
-      (else
-       ;; inline target basic block
-       (do-tree to context))))
+   (let loop ((ctx context)
+	      (index 0))
+      (cond
+	 ((null? ctx)
+	  (error "relooper"
+	     (format "Target ~a label not in evaluation context"
+		(dom_tree_node-block-label node))
+	     (dump-context context)))
+	 ((matches-frame? node (car ctx))
+	  index)
+	 (else
+	  loop (cdr ctx) (+fx 1 index)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-block ...                                                    */
@@ -424,78 +469,132 @@
       (let ((fun (rtl_ins-fun ins)))
 	 (or (rtl_notseq? fun) (rtl_last? fun))))
    
-   (filter-map 
-      (lambda (ins)
-	 (if (is-terminal? ins)
-	     #f
-	     (gen-ins ins)))
+   (filter-map (lambda (ins)
+		  (unless (is-terminal? ins)
+		     (gen-ins ins)))
       (block-first block)))
+
+;*---------------------------------------------------------------------*/
+;*    do-branch ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (do-branch::pair from to context::pair-nil)
+   (with-trace 'relooper "do-branch"
+      (trace-item "from=" (dom_tree_node-block-label from))
+      (trace-item "to=" (dom_tree_node-block-label to))
+      (trace-item "context=" (dump-context context))
+      (cond
+	 ((back-edge? from to)
+	  ;; continue
+	  `((br ,(index-of to context))))
+	 ((dom_tree_node-is_merge_node to)
+	  ;; exit
+	  `((br ,(index-of to context))))
+	 (else
+	  ;; inline target basic block
+	  (do-tree to context)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-within ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (node-within node context)
-   `(,@(gen-block (dom_tree_node-block node))
-       ,@(let ((terminator (find-terminator node)))
-	    (match-case terminator
-	       ((goto ?t)
-		(gen-go node t context))
-	       ((if ?c ?t ?f)
-		;; handle ifeq and ifne
-		`((if ,(gen-reg c)
-		      (then ,@(gen-go node t (cons '(if-then-else) context)))
-		      (else ,@(gen-go node f (cons '(if-then-else) context))))))
-	       ((switch ?fun ?type ?patterns ?labels ?args)
-		(list (gen-switch fun type patterns labels args 
-			 (lambda (to) (gen-go node to context))
-			 (lambda (node) (index-of node context)))))
-	       ((other ?ins) (list (gen-ins ins)))
-	       (else (error "relooper" "Unknown terminator instruction" terminator))))))
+(define (node-within-opt x ys::pair-nil z context::pair-nil)
+   
+   (define (within x terminator z context)
+      (with-trace 'relooper "node-within.within"
+	 `(,@(gen-block (dom_tree_node-block x))
+	     ,@(match-case terminator
+		  ((goto ?l)
+		   (do-branch x l context))
+		  ((if ?e ?t ?f)
+		   ;; handle ifeq and ifne
+		   `((if ,(gen-reg e)
+			 (then ,@(do-branch x t
+				    (cons `(if-then-else ,z) context)))
+			 (else ,@(do-branch x f
+				    (cons `(if-then-else ,z) context))))))
+		  ((switch ?fun ?type ?patterns ?labels ?args)
+		   (list (gen-switch fun type patterns labels args 
+			    (lambda (to) (do-branch x to context))
+			    (lambda (node) (index-of node context)))))
+		  ((other ?ins)
+		   (list (gen-ins ins)))
+		  (else
+		   (error "relooper" "Unknown terminator instruction"
+		      terminator))))))
+   
+   (with-trace 'relooper "node-within"
+      (trace-item "x=" (dom_tree_node-block-label x))
+      (trace-item "ys=" (map dom_tree_node-block-label ys))
+      (trace-item "z=" (when z (dom_tree_node-block-label z)))
+      (trace-item "context=" (dump-context context))
+      (let ((terminator (flow-leaving x)))
+	 (trace-item "terminator=" (car terminator))
+	 (cond
+	    ((null? ys)
+	     (if (and z (not (eq? (car terminator) 'if)))
+		 (let ((context' (cons `(block-followed-by ,z) context)))
+		    `(block ,@(node-within x '() #f context')))
+		 (within x terminator z context)))
+	    ((not z)
+	     (let ((context' (cons `(with-fall-through ,(car ys)) context)))
+		(append (node-within x (cdr ys) (car ys) context')
+		   (do-tree (car ys) context))))
+	    (else
+	     (let ((context' (cons `(block-followed-by ,z) context)))
+		`(block ,@(node-within x ys #f context'))))))))
 
-;*---------------------------------------------------------------------*/
-;*    node-within-with-y ...                                           */
-;*---------------------------------------------------------------------*/
-(define (node-within-with-y node y context)
-   (if (null? y)
-       (node-within node context)
-       (append `((block
-		    ,@(node-within-with-y node (cdr y)
-			 (cons `(block-followed-by ,(car y)) context))))
-	  (do-tree (car y) context))))
+(define (node-within-unopt x ys::pair-nil z context::pair-nil)
+   
+   (define (within x terminator context)
+      (with-trace 'relooper "within"
+	 `(,@(gen-block (dom_tree_node-block x))
+	     ,@(match-case terminator
+		  ((goto ?l)
+		   (do-branch x l context))
+		  ((if ?e ?t ?f)
+		   ;; handle ifeq and ifne
+		   `((if ,(gen-reg e)
+			 (then ,@(do-branch x t
+				    (cons '(if-then-else) context)))
+			 (else ,@(do-branch x f
+				    (cons '(if-then-else) context))))))
+		  ((switch ?fun ?type ?patterns ?labels ?args)
+		   (list (gen-switch fun type patterns labels args 
+			    (lambda (to) (do-branch x to context))
+			    (lambda (node) (index-of node context)))))
+		  ((other ?ins)
+		   (list (gen-ins ins)))
+		  (else
+		   (error "relooper" "Unknown terminator instruction"
+		      terminator))))))
+   
+   (with-trace 'relooper "node-within"
+      (if (null? ys)
+	  (let ((terminator (flow-leaving x)))
+	     (within x terminator context))
+	  (cons `(block ,@(node-within x (cdr ys) #f
+			     (cons `(block-followed-by ,(car ys)) context)))
+	     (do-tree (car ys) context)))))
+
+(define (node-within x ys::pair-nil z context::pair-nil)
+   (node-within-unopt x ys z context))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-tree ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (do-tree tree context)
+(define (do-tree::pair x context)
    (with-trace 'relooper "do-tree"
-      (trace-item "block=" (block-label (dom_tree_node-block tree)))
+      (trace-item "x=" (dom_tree_node-block-label x))
+      (trace-item "context=" (dump-context context))
       
-      (define (code-for-tree context)
-	 (let ((selected_children
-		  (if (has-switch-terminator? (dom_tree_node-block tree))
-		      (dom_tree_node-children tree)
-		      (filter 
-			 (lambda (node) (dom_tree_node-is_merge_node node)) 
-			 (dom_tree_node-children tree)))))
-	    (node-within-with-y tree selected_children context)))
+      (define (code-for-x context)
+	 (let ((ys (if (has-switch-terminator? (dom_tree_node-block x))
+		       (dom_tree_node-children x)
+		       (filter (lambda (node)
+				  (dom_tree_node-is_merge_node node)) 
+			  (dom_tree_node-children x)))))
+	    (node-within x ys #f context)))
       
-      (if (dom_tree_node-is_loop_header tree)
-	  `((loop ,@(code-for-tree (cons `(loop-headed-by ,tree) context))))
-	  (code-for-tree context))))
+      (if (dom_tree_node-is_loop_header x)
+	  `((loop ,@(code-for-x (cons `(loop-headed-by ,x) context))))
+	  (code-for-x context))))
 
-;*---------------------------------------------------------------------*/
-;*    reloop ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (reloop global tree)
-   (with-trace 'relooper "reloop"
-      (trace-item "function=" (global-name global))
-      
-      (with-handler
-	 (lambda (e)
-	    #f)
-	 (if (compute-loop-headers tree)
-	     (begin
-		(compute-merge-nodes tree)
-		(do-tree tree '()))
-	     ;; Fail, the CFG is irreducible.
-	     #f))))
