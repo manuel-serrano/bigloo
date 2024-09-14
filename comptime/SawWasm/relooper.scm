@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/wasm/comptime/SawWasm/relooper.new.scm        */
+;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/relooper.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Sat Sep 14 13:06:53 2024 (serrano)                */
+;*    Last change :  Sat Sep 14 13:13:00 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -477,7 +477,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-branch ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (do-branch::pair from to context::pair-nil)
+(define (do-branch from to context::pair-nil)
    (with-trace 'relooper "do-branch"
       (trace-item "from=" (dom_tree_node-block-label from))
       (trace-item "to=" (dom_tree_node-block-label to))
@@ -488,7 +488,10 @@
 	  `((br ,(index-of to context))))
 	 ((dom_tree_node-is_merge_node to)
 	  ;; exit
-	  `((br ,(index-of to context))))
+	  (let ((idx (index-of to context)))
+	     (if (=fx idx 0)
+		 '()
+		 `((br ,idx)))))
 	 (else
 	  ;; inline target basic block
 	  (do-tree to context)))))
@@ -532,7 +535,7 @@
 	    ((null? ys)
 	     (if (and z (not (eq? (car terminator) 'if)))
 		 (let ((context' (cons `(block-followed-by ,z) context)))
-		    `(block ,@(node-within x '() #f context')))
+		    `((block ,@(node-within x '() #f context'))))
 		 (within x terminator z context)))
 	    ((not z)
 	     (let ((context' (cons `(with-fall-through ,(car ys)) context)))
@@ -540,7 +543,7 @@
 		   (do-tree (car ys) context))))
 	    (else
 	     (let ((context' (cons `(block-followed-by ,z) context)))
-		`(block ,@(node-within x ys #f context'))))))))
+		`((block ,@(node-within x ys #f context')))))))))
 
 (define (node-within-unopt x ys::pair-nil z context::pair-nil)
    
