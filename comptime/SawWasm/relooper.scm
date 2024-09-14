@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/relooper.scm       */
+;*    .../project/bigloo/wasm/comptime/SawWasm/relooper.new.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Sat Sep 14 08:28:16 2024 (serrano)                */
+;*    Last change :  Sat Sep 14 13:06:53 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -458,7 +458,7 @@
 	 ((matches-frame? node (car ctx))
 	  index)
 	 (else
-	  loop (cdr ctx) (+fx 1 index)))))
+	  (loop (cdr ctx) (+fx 1 index))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-block ...                                                    */
@@ -574,6 +574,29 @@
 	  (cons `(block ,@(node-within x (cdr ys) #f
 			     (cons `(block-followed-by ,(car ys)) context)))
 	     (do-tree (car ys) context)))))
+
+(define (node-within-orig node y z context)
+   (define (node-within node context)
+      `(,@(gen-block (dom_tree_node-block node))
+	  ,@(let ((terminator (flow-leaving node)))
+	       (match-case terminator
+		  ((goto ?t) (do-branch node t context))
+		  ((if ?c ?t ?f) ;; handle ifeq and ifne
+		   `((if ,(gen-reg c)
+			 (then ,@(do-branch node t (cons '(if-then-else) context)))
+			 (else ,@(do-branch node f (cons '(if-then-else) context))))))
+		  ((switch ?fun ?type ?patterns ?labels ?args)
+		   (list (gen-switch fun type patterns labels args 
+			    (lambda (to) (do-branch node to context))
+			    (lambda (node) (index-of node context)))))
+		  ((other ?ins) (list (gen-ins ins)))
+		  (else (error "relooper" "Unknown terminator instruction" terminator))))))
+
+   (if (null? y)
+       (node-within node context)
+       (append
+	  `((block ,@(node-within-orig node (cdr y) z (cons `(block-followed-by ,(car y)) context))))
+	  (do-tree (car y) context))))
 
 (define (node-within x ys::pair-nil z context::pair-nil)
    (node-within-unopt x ys z context))
