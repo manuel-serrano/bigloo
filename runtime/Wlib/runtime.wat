@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :                                                    */
+;*    Last change :  Mon Sep 16 10:52:48 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -44,6 +44,7 @@
   (import "__js_date" "mktimegm" (func $js_date_mktimegm (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
   (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
   (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
+  (import "__js_bignum" "bgl_long_to_bignum" (func $js_long_to_bignum (param i64) (result i64)))
 
   (import "__js" "exit" (func $js_exit (param i32)))
   ;; (import "__bigloo_main" "bigloo_main" (func $bigloo_main (param (ref null $pair)) (result eqref)))
@@ -208,7 +209,7 @@
   (global $real-default-value (export "BGL_REAL_DEFAULT_VALUE") (ref $real)
      (struct.new $real (f64.const 0)))
   (global $bignum-default-value (export "BGL_BIGNUM_DEFAULT_VALUE") (ref $bignum)
-     (struct.new $bignum))
+     (struct.new $bignum (i64.const 0)))
   (global $port-default-value (export "BGL_PORT_DEFAULT_VALUE") (ref $port)
      (struct.new $port
 	;; name
@@ -237,12 +238,12 @@
 	(global.get $BUNSPEC)
 	;; flushbuf
 	(global.get $BUNSPEC)
-	;; isclsoed
+	;; isclosed
 	(i32.const 0)
 	;; fd
 	(i32.const 0)))
   (global $string-output-port-default-value (export "BGL_STRING_OUTPUT_PORT_DEFAULT_VALUE") (ref $string-output-port)
-     (struct.new $file-output-port
+     (struct.new $string-output-port
 	;; name
 	(global.get $bstring-default-value)
 	;; chook
@@ -251,7 +252,7 @@
 	(global.get $BUNSPEC)
 	;; flushbuf
 	(global.get $BUNSPEC)
-	;; isclsoed
+	;; isclosed
 	(i32.const 0)
 	;; buffer
 	(global.get $bstring-default-value)))
@@ -482,7 +483,7 @@
     (param $num i64)
     (param $inheritance-num i64)
     (param $super eqref)
-    (param $subclasses (ref $pair))
+    (param $subclasses eqref)
     (param $alloc (ref $procedure))
     (param $hash i64)
     (param $direct-fields (ref $vector))
@@ -536,7 +537,7 @@
 
   (func $BGL_CLASS_SUBCLASSES_SET (export "BGL_CLASS_SUBCLASSES_SET")
     (param $class (ref $class))
-    (param $subclasses (ref $pair))
+    (param $subclasses eqref)
     (result eqref)
     (struct.set $class $subclasses (local.get $class) (local.get $subclasses))
     (global.get $BUNSPEC))
@@ -597,10 +598,18 @@
       (local.get $arity)
       (array.new_default $vector (local.get $size))))
 
-  ;;(func $MAKE_EL_PROCEDURE (export "MAKE_EL_PROCEDURE")
-  ;;  (param $size i32)
-  ;;  (result (ref $procedure))
-  ;;  (call $MAKE_FX_PROCEDURE (struct.new_default $tmpfun) (i32.const 0) (local.get $size)))
+  (func $MAKE_L_PROCEDURE (export "MAKE_L_PROCEDURE")
+    (param $entry funcref)
+    (param $size i32)
+    (result (ref $procedure-l))
+    (struct.new $procedure-l
+      (local.get $entry)
+      (array.new_default $vector (local.get $size))))
+
+  (func $MAKE_EL_PROCEDURE (export "MAKE_EL_PROCEDURE")
+     (param $size i32)
+     (result (ref $procedure-el))
+     (array.new_default $procedure-el (local.get $size)))
 
   (func $PROCEDURE_CORRECT_ARITYP (export "PROCEDURE_CORRECT_ARITYP")
     (param $p (ref $procedure)) 
@@ -624,20 +633,33 @@
     (global.get $BUNSPEC))
 
   (func $PROCEDURE_L_SET (export "PROCEDURE_L_SET") 
-    (param $p (ref $procedure)) 
-    (param $i i32) 
+    (param $p (ref $procedure-l)) 
+    (param $i i32)
     (param $v eqref) 
     (result eqref)
-    (array.set $vector (struct.get $procedure $env (local.get $p)) (local.get $i) (local.get $v))
+    (array.set $vector (struct.get $procedure-l $env (local.get $p)) (local.get $i) (local.get $v))
     (global.get $BUNSPEC))
 
-  (func $PROCEDURE_EL_SET (export "PROCEDURE_EL_SET") 
-    (param $p (ref $vector)) 
+  (func $PROCEDURE_L_REF (export "PROCEDURE_L_REF") 
+    (param $p (ref $procedure-l)) 
     (param $i i32) 
     (param $v eqref) 
     (result eqref)
-    (array.set $vector (local.get $p) (local.get $i) (local.get $v))
+    (array.get $vector (struct.get $procedure-l $env (local.get $p)) (local.get $i)))
+
+  (func $PROCEDURE_EL_SET (export "PROCEDURE_EL_SET") 
+    (param $p (ref $procedure-el)) 
+    (param $i i32) 
+    (param $v eqref) 
+    (result eqref)
+    (array.set $procedure-el (local.get $p) (local.get $i) (local.get $v))
     (global.get $BUNSPEC))
+
+  (func $PROCEDURE_EL_REF (export "PROCEDURE_EL_REF") 
+    (param $p (ref $procedure-el)) 
+    (param $i i32) 
+    (result eqref)
+    (array.get $procedure-el (local.get $p) (local.get $i)))
 
   (func $PROCEDURE_ATTR_SET (export "PROCEDURE_ATTR_SET") 
     (param $p (ref $procedure)) 
@@ -822,8 +844,9 @@
     (result eqref)
     (struct.set $dynamic-env $exitd_top
         (local.get $env)
-        (struct.get $exit $prev
-            (struct.get $dynamic-env $exitd_top (local.get $env))))
+	(ref.cast (ref $exit)
+	   (struct.get $exit $prev
+	      (struct.get $dynamic-env $exitd_top (local.get $env)))))
     (global.get $BUNSPEC))
 
   (func $POP_EXIT (export "POP_EXIT") (result eqref)
@@ -1925,6 +1948,22 @@
 	  (return 
 	     (struct.new $bint (local.get $x))))))
 
+  ;; flonums
+  (export "bgl_double_to_ieee_string" (func $bgl_double_to_ieee_string))
+  (export "bgl_float_to_ieee_string" (func $bgl_float_to_ieee_string))
+  
+  (func $bgl_double_to_ieee_string
+     (param $x f64)
+     (result (ref $bstring))
+     ;; CARE MS 16sep2024: TODO
+     (global.get $bstring-default-value))
+  
+  (func $bgl_float_to_ieee_string
+     (param $x f32)
+     (result (ref $bstring))
+     ;; CARE MS 16sep2024: TODO
+     (global.get $bstring-default-value))
+  
   ;; --------------------------------------------------------
   ;; bignum functions
   ;; --------------------------------------------------------
@@ -1932,7 +1971,8 @@
   (export "BGL_SAFE_MUL_FX" (func $BGL_SAFE_MUL_FX))
   (export "BGL_SAFE_MINUS_FX" (func $BGL_SAFE_MINUS_FX))
   (export "BGL_SAFE_QUOTIENT_FX" (func $BGL_SAFE_QUOTIENT_FX))
-
+  (export "bgl_long_to_bignum" (func $bgl_long_to_bignum))
+  
   (func $BGL_SAFE_PLUS_FX
      (param $x i64)
      (param $y i64)
@@ -1965,6 +2005,14 @@
 	(call $I64_TO_BINT
 	   (i64.div_s (local.get $x) (local.get $y)))))
 
+  (func $bgl_long_to_bignum
+     (param $num i64)
+     (result (ref $bignum))
+     (return
+	(struct.new $bignum
+	   (call $js_long_to_bignum
+	      (local.get $num)))))
+  
   ;; --------------------------------------------------------
   ;; Date functions
   ;; --------------------------------------------------------
@@ -2191,7 +2239,7 @@
      (param $socket (ref $socket))
      (result (ref $output-port))
      (global.get $output-port-default-value))
-  
+
   ;; --------------------------------------------------------
   ;; Main function
   ;; --------------------------------------------------------

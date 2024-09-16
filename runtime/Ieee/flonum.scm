@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/flonum.scm                */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/flonum.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Wed Jul  3 14:05:16 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 15:38:06 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -112,9 +112,9 @@
 	    ($randomfl "(f64.const 0)")
 
 	    (%ieee-string->double "(f64.const nan)")
-	    (%double->ieee-string "(ref.null none)") ; TODO: implement this function
+	    (%double->ieee-string "(call $bgl_double_to_ieee_string ~0)")
 	    (%ieee-string->float "(f32.const nan)")
-	    (%float->ieee-string "(ref.null none)")) ; TODO: implement this function
+	    (%float->ieee-string "(call $bgl_float_to_ieee_string ~0)")) ; TODO: implement this function
    
    (java    (class foreign
 	       (method static $flonum?::bool (::obj)

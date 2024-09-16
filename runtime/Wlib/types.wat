@@ -22,7 +22,12 @@
 		       (field $attr (mut eqref))
 		       (field $arity i32)
 		       (field $env (ref null $vector))))
-   (type $tmpfun (struct (field funcref)))
+   ;;(type $tmpfun (struct (field funcref)))
+
+   (type $procedure-l (struct
+			 (field $entry funcref)
+			 (field $env (ref null $vector))))
+   (type $procedure-el (array (mut eqref)))
    
    (tag $fail)
    
@@ -78,7 +83,7 @@
 				 (field $cer (mut eqref))))))
    
    ;; Bignums
-   (type $bignum (struct))
+   (type $bignum (struct (field $val i64)))
    
    ;; Boxed numeric types
    (rec
@@ -103,7 +108,7 @@
 		       (field $userp (mut i64))
 		       (field $stamp (mut i64))
 		       (field $protect (mut eqref))
-		       (field $prev (mut (ref $exit))))))
+		       (field $prev (mut (ref null $exit))))))
    (tag $bexception (param (ref $exit)) (param anyref))
    
    ;; Exception raised for unimplemented code.
@@ -119,7 +124,7 @@
 		   (field $nil eqref)
 		   (field $constructor eqref)
 		   (field $super eqref)
-		   (field $subclasses (mut (ref $pair)))
+		   (field $subclasses (mut eqref))
 		   (field $shrink eqref)
 		   (field $evdata (mut eqref))
 		   (field $ancestors (ref $vector))
@@ -150,14 +155,14 @@
 			    (field $chook (mut eqref))
 			    (field $fhook (mut eqref))
 			    (field $flushbuf (mut eqref))
-			    (field $isclosed (mut i8)))))
+			    (field $isclosed (mut i32)))))
    (type $file-output-port (sub final $output-port 
 			      (struct 
 				 (field $name (mut (ref $bstring)))
 				 (field $chook (mut eqref))
 				 (field $fhook (mut eqref))
 				 (field $flushbuf (mut eqref))
-				 (field $isclosed (mut i8))
+				 (field $isclosed (mut i32))
 				 (field $fd i32))))
    (type $string-output-port (sub final $output-port 
 				(struct 
@@ -165,7 +170,7 @@
 				   (field $chook (mut eqref))
 				   (field $fhook (mut eqref))
 				   (field $flushbuf (mut eqref))
-				   (field $isclosed (mut i8))
+				   (field $isclosed (mut i32))
 				   (field $buffer (mut (ref $bstring))))))
    
    (type $rgc (struct

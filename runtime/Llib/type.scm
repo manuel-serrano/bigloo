@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/type.scm           */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/type.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Sep  9 11:48:16 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 15:10:27 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1342,7 +1342,7 @@
       
       ;; FIXME: remove explicit cast to ref foreign
       ($obj->void* "(struct.get $foreign $ptr (ref.cast (ref $foreign) ~0))")
-      ($void*->obj "(struct.new $foreign (ref.null none) ~0)")
+      ($void*->obj "(struct.new $foreign (global.get $symbol-default-value) ~0)")
       )
 
    (java

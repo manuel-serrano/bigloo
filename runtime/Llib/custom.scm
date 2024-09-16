@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/custom.scm       */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/custom.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 16 17:22:43 1999                          */
-;*    Last change :  Sun Aug 25 09:09:39 2019 (serrano)                */
+;*    Last change :  Mon Sep 16 15:14:08 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Scheme custom type manipulation.                                 */
 ;*=====================================================================*/
@@ -52,13 +52,11 @@
 		   "CUSTOM_IDENTIFIER_SET")
 	    (c-custom-nil::custom () "bgl_custom_nil"))
 
-	(wasm
-		(c-custom? "(ref.test (ref $custom) ~0)")
-		(c-custom-equal? "(ref.eq ~0 ~1)")
-		(c-custom-hash "(i32.const 0)") ;; TODO: implement hashing for custom type
-		(c-custom-identifier "(struct.get $custom $ident ~0)")
-		(c-custom-nil "(struct.new_default $custom)")
-	)
+   (wasm    (c-custom? "(ref.test (ref $custom) ~0)")
+            (c-custom-equal? "(ref.eq ~0 ~1)")
+            (c-custom-hash "(i32.const 0)") ;; TODO: implement hashing for custom type
+            (c-custom-identifier "(struct.get $custom $ident ~0)")
+            (c-custom-nil "(struct.new $custom (global.get $bstring-default-value))"))
    
    (java    (class foreign
 	       (method static c-custom?::bool (::obj)

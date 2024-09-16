@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Llib/foreign.scm               */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/foreign.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Wed Jul  3 14:09:17 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 15:04:55 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -49,9 +49,9 @@
    (wasm    (c-foreign? "(ref.test (ref $foreign) ~0)")
 	    (c-foreign-null? "(ref.is_null ~0)")
 	    (c-foreign-eq? "(ref.eq ~0 ~1)")
-		(foreign-id "(struct.get $foreign $id ~0)")
-		(%string-ptr-null? "(i32.eqz (array.len ~0))")
-		(%void*-ptr-null? "(i32.eqz ~0)")
+	    (foreign-id "(struct.get $foreign $id ~0)")
+	    (%string-ptr-null? "(i32.eqz (array.len ~0))")
+	    (%void*-ptr-null? "(i32.eqz ~0)")
 	    ($make-string-ptr-null "(array.new_fixed $bstring 0)")
 	    ($make-void*-null "(i32.const 0)"))
    

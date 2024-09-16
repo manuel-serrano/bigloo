@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Sep 16 08:20:33 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 10:30:36 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -15,14 +15,14 @@
 (module saw_wasm_code
    (include "Tools/trace.sch"
 	    "Tools/location.sch")
-   (import type_type	; type
-	   ast_var		; local/global
-	   ast_node		; atom
+   (import type_type
+	   ast_var
+	   ast_node
 	   ast_env
-	   module_module	; *module*
-	   engine_param	; *stdc* ...
-	   type_tools		; for emit-atom-value/make-typed-declaration
-	   type_cache		; for emit-atom-value
+	   module_module
+	   engine_param
+	   type_tools
+	   type_cache
 	   type_typeof
 	   tvector_tvector
 	   object_class
@@ -164,15 +164,12 @@
       ((unspecified) 'eqref)
       ((bbool) 'i31ref)
       ((class-field) 'eqref)
-      ((pair-nil) '(ref null $pair))
+      ((pair-nil) 'eqref)
       ((cobj) 'eqref)
       ((void*) 'i32) ;; A raw pointer into the linear memory
       ((tvector) 'arrayref)
       ((cnst) 'i31ref)
       ((funptr) 'funcref)
-      ;; TODO: handle procedure-el and procedure-l
-      ((procedure-l) (if may-null '(ref null $procedure) '(ref $procedure)))
-      ((procedure-el) (if may-null '(ref null $vector) '(ref $vector)))
       ((bool) 'i32)
       ((byte) 'i32)
       ((ubyte) 'i32)
@@ -420,10 +417,10 @@
   (with-access::rtl_ins ins (dest fun args)
     (if dest
       `(local.set ,(gen-reg/dest dest) ,(gen-expr fun args))
-      ; We need to add an explicit drop if the instruction push
-      ; some data to the stack. Indeed, at the end of each block
-      ; the stack must be empty (all pushed values must have been
-      ; popped).
+      ;; We need to add an explicit drop if the instruction push
+      ;; some data to the stack. Indeed, at the end of each block
+      ;; the stack must be empty (all pushed values must have been
+      ;; popped).
       (if (do-push? fun) `(drop ,(gen-expr fun args)) (gen-expr fun args)))))
 
 (define-generic (gen-expr fun::rtl_fun args) #unspecified)
@@ -719,19 +716,32 @@
 (define (emit-wasm-atom-value type value)
    (cond
       ; TODO: better reusable code? maybe use a macro, too many repetitions
-      ((boolean? value) `(i32.const ,(if value 1 0)))
-      ((char? value) `(i32.const ,(char->integer value)))
-      ((int8? value) `(i32.const ,(int8->fixnum value)))
-      ((uint8? value) `(i32.const ,(uint8->fixnum value)))
-      ((int16? value) `(i32.const ,(int16->fixnum value)))
-      ((uint16? value) `(i32.const ,(uint16->fixnum value)))
-      ((int32? value) `(i32.const ,(int32->llong value)))
-      ((uint32? value) `(i32.const ,(uint32->llong value)))
-      ((int64? value) `(i64.const ,(int64->llong value)))
-      ((uint64? value) `(i64.const ,(uint64->llong value)))
-      ((elong? value) `(i64.const ,value))
-      ((llong? value) `(i64.const ,value))
-      ((ucs2? value) `(struct.new $bucs2 (i32.const ,(ucs2->integer value))))
+      ((boolean? value)
+       `(i32.const ,(if value 1 0)))
+      ((char? value)
+       `(i32.const ,(char->integer value)))
+      ((int8? value)
+       `(i32.const ,(int8->fixnum value)))
+      ((uint8? value)
+       `(i32.const ,(uint8->fixnum value)))
+      ((int16? value)
+       `(i32.const ,(int16->fixnum value)))
+      ((uint16? value)
+       `(i32.const ,(uint16->fixnum value)))
+      ((int32? value)
+       `(i32.const ,(int32->llong value)))
+      ((uint32? value)
+       `(i32.const ,(uint32->llong value)))
+      ((int64? value)
+       `(i64.const ,(int64->llong value)))
+      ((uint64? value)
+       `(i64.const ,(uint64->llong value)))
+      ((elong? value)
+       `(i64.const ,value))
+      ((llong? value)
+       `(i64.const ,value))
+      ((ucs2? value)
+       `(struct.new $bucs2 (i32.const ,(ucs2->integer value))))
       ((fixnum? value)
        ;; TODO: support other types
        (if (eq? (type-id type) 'int)
@@ -743,21 +753,39 @@
           ((and (infinitefl? value) (>fl value 0.0)) `(f64.const inf))
           ((infinitefl? value) `(f64.const -inf))
           (else `(f64.const ,value))))
-      ((null? value) (wasm-cnst-nil))
-      ((eq? value #unspecified) (wasm-cnst-unspec))
-      ((eq? value __eoa__) (wasm-cnst-eoa))
-      ((eq? value boptional) (wasm-cnst-optional))
-      ((eq? value bkey) (wasm-cnst-key))
-      ((eq? value brest) (wasm-cnst-rest))
-      ((bignum? value) '(ref.null none)) ; TODO: implement bignum
-      ((string? value) `(array.new_default $bstring (i32.const ,(string-length value)))) ; FIXME: implement C string constants
+      ((null? value)
+       (wasm-cnst-nil))
+      ((eq? value #unspecified)
+       (wasm-cnst-unspec))
+      ((eq? value __eoa__)
+       (wasm-cnst-eoa))
+      ((eq? value boptional)
+       (wasm-cnst-optional))
+      ((eq? value bkey)
+       (wasm-cnst-key))
+      ((eq? value brest)
+       (wasm-cnst-rest))
+      ((bignum? value)
+       (if (=bx (fixnum->bignum (bignum->fixnum value)) value)
+	   (let* ((str (bignum->string value 16))
+		  (info (allocate-string str)))
+	      `(call $bgl_long_to_bignum (i64.const ,(bignum->fixnum value))))
+	   (error "wasm-gen" "big bignum literals not implemented" value)))
+;* 	   (let* ((str (bignum->string value 16))                      */
+;* 		  (info (allocate-string str)))                        */
+;* 	      `(call $bgl_data_to_bignum (i32.const 0)                 */
+;* 		  (i32.const ,(string-length str))                     */
+;* 		  (i32.const 16)))))                                   */
+      ((string? value)
+       ;; FIXME: implement C string constants
+       `(array.new_default $bstring (i32.const ,(string-length value)))) 
+      ((eof-object? value)
+       '(global.get $BEOF))
       ((cnst? value)
-       (cond
-          ((eof-object? value) '(global.get $BEOF))
-          (else `(i31.ref (i32.const ,(cnst->integer value))))))
+       `(i31.ref (i32.const ,(cnst->integer value))))
       (else 
-       ; TODO: support other types, see emit-atom-value in c_emit.scm
-       (error "wasm-gen" "unimplemented scheme atom value for WASM" (typeof value)))))
+       (error "wasm-gen" "unimplemented scheme atom value for WASM"
+	  (typeof value)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_loadi ...                                         */
@@ -1041,8 +1069,9 @@
 			       ;; widening
 			       (ref.null none)
 			       ;; class fields
-			       ,@(map (lambda (s)
-					 (wasm-default-value (slot-type s)))
+			       ,@(filter-map (lambda (s)
+						(unless (>=fx (slot-virtual-num s) 0)
+						   (wasm-default-value (slot-type s))))
 				    slots)))))
 	    (when (pair? constr)
 	       (error "gen-expr" "Not supported." (shape constr)))
@@ -1061,14 +1090,6 @@
 ;*    gen-expr ::rtl_cast ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_cast args)
-   
-   (define (is-procedure-ty? ty)
-      (case ty
-	 ((procedure) #t)
-	 ((procedure-l) #t)
-	 ((procedure-el) #t)
-	 (else #f)))
-   
    (let ((type (rtl_cast-totype fun)))
       (cond
 	 ((eq? (type-id type) 'obj)
@@ -1076,8 +1097,8 @@
 	 ;; FIXME: hack due to a bigloo bug (I think)
 	 ((or (eq? (wasm-type type) 'i32) (eq? (wasm-type type) 'i64))
 	  (gen-reg (car args)))
-	 ((and (is-procedure-ty? (type-id type))
-	       (is-procedure-ty? (typeof-arg (car args))))
+	 ((and (eq? (type-id type) 'pair-nil)
+	       (memq (typeof-arg (car args)) '(pair nil)))
 	  (gen-reg (car args)))
 	 (else
 	  `(comment ,(string-append "CAST "
@@ -1093,6 +1114,10 @@
    ;; TODO: NOT IMPLEMENTED
    (with-fun-loc fun `(ref.null none)))
 
+;*---------------------------------------------------------------------*/
+;*    Literal wasm                                                     */
+;*    strings                                                          */
+;*---------------------------------------------------------------------*/
 (define *allocated-strings* (make-hashtable))
 (define *string-current-offset* 0)
 
