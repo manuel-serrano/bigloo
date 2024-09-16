@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/intext.scm     */
+;*    /priv/serrano2/bigloo/wasm/runtime/Unsafe/intext.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sat Jun 10 07:37:58 2023 (serrano)                */
+;*    Last change :  Mon Sep 16 08:59:27 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -1036,7 +1036,7 @@
    ;; print-custom
    (define (print-custom item mark)
       (!print-markup #\+)
-      (let* ((ident (custom-identifier item)))
+      (let ((ident (custom-identifier item)))
 	 (!print-chars ident (string-length ident))
 	 (let ((s (mark-value mark)))
 	    (!print-chars s (string-length s)))))

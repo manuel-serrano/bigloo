@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
+;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :                                                    */
+;*    Last change :  Mon Sep 16 08:20:33 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -26,13 +26,12 @@
 	   type_typeof
 	   tvector_tvector
 	   object_class
+	   object_slots
 	   cnst_alloc
 	   tools_shape
 	   tools_location
 	   backend_backend
 	   backend_cvm
-	   backend_wasm
-	   backend_c_emit
 	   saw_defs
 	   saw_woodcutter
 	   saw_node2rtl
@@ -44,30 +43,30 @@
 	   saw_bbv-types
 	   saw_bbv-debug
 	   saw_wasm_relooper)
-   (export
-      (saw-wasm-gen b::wasm v::global)
-      (wasm-type t::type #!optional (may-null #f))
-      (wasm-vector-type t::type)
-      (wasm-sym t::bstring)
-      (wasm-cnst-nil)
-      (wasm-cnst-false)
-      (wasm-cnst-true)
-      (wasm-cnst-unspec)
-      (emit-wasm-atom-value type value)
-      (gen-reg reg)
-      (gen-basic-block b)
-      (gen-ins ins::rtl_ins)
-      (gen-switch fun type patterns labels args gen-go gen-block-label)
-      (cnst-table-sym)
-      *allocated-strings*
-      *extra-types*)
+   (export (wasm-gen b::wasm v::global)
+	   (wasm-type t::type #!optional (may-null #f))
+	   (wasm-default-value t::type)
+	   (wasm-vector-type t::type)
+	   (wasm-sym t::bstring)
+	   (wasm-cnst-nil)
+	   (wasm-cnst-false)
+	   (wasm-cnst-true)
+	   (wasm-cnst-unspec)
+	   (emit-wasm-atom-value type value)
+	   (gen-reg reg)
+	   (gen-basic-block b)
+	   (gen-ins ins::rtl_ins)
+	   (gen-switch fun type patterns labels args gen-go gen-block-label)
+	   (cnst-table-sym)
+	   *allocated-strings*
+	   *extra-types*)
    (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
    (static (wide-class SawCIreg::rtl_reg index)))
 
 ;*---------------------------------------------------------------------*/
-;*    saw-wasm-gen ...                                                 */
+;*    wasm-gen ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (saw-wasm-gen b::wasm v::global)
+(define (wasm-gen b::wasm v::global)
    (let ((l (global->blocks b v)))
       (gen-fun b v l)))
 
@@ -209,6 +208,70 @@
           (else (if may-null 
             `(ref null ,(wasm-sym (symbol->string (type-id t))))
             `(ref ,(wasm-sym (symbol->string (type-id t)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    wasm-default-value ...                                           */
+;*---------------------------------------------------------------------*/
+(define (wasm-default-value type)
+   (case (type-id type)
+      ;; TODO: implement types
+      ((bool) '(i32.const 0))
+      ((char) '(i32.const 0))
+      ((uchar) '(i32.const 0))
+      ((byte) '(i32.const 0))
+      ((ubyte) '(i32.const 0))
+      ((int8) '(i32.const 0))
+      ((uint8) '(i32.const 0))
+      ((int16) '(i32.const 0))
+      ((uint16) '(i32.const 0))
+      ((int32) '(i32.const 0))
+      ((uint32) '(i32.const 0))
+      ((int64) '(i64.const 0))
+      ((uint64) '(i64.const 0))
+      ((int) '(i32.const 0))
+      ((uint) '(i32.const 0))
+      ((long) '(i64.const 0))
+      ((elong) '(i64.const 0))
+      ((llong) '(i64.const 0))
+      ((float) '(f32.const 0))
+      ((double) '(f64.const 0))
+      ((bint) `(global.get $bint-default-value))
+      ((pair) `(global.get $pair-default-value))
+      ((nil) (wasm-cnst-nil))
+      ((pair-nil) (wasm-cnst-nil))
+      ((symbol) `(global.get $symbol-default-value))
+      ((keyword) `(global.get $keyword-default-value))
+      ((bstring) `(global.get $bstring-default-value))
+      ((vector) `(global.get $vector-default-value))
+      ((u8vector) `(global.get $u8vector-default-value))
+      ((s8vector) `(global.get $s8vector-default-value))
+      ((u16vector) `(global.get $u16vector-default-value))
+      ((s16vector) `(global.get $s16vector-default-value))
+      ((u32vector) `(global.get $u32vector-default-value))
+      ((s32vector) `(global.get $s32vector-default-value))
+      ((u64vector) `(global.get $u64vector-default-value))
+      ((s64vector) `(global.get $s64vector-default-value))
+      ((f32vector) `(global.get $f32vector-default-value))
+      ((f64vector) `(global.get $f64vector-default-value))
+      ((struct) `(global.get $struct-default-value))
+      ((class) `(global.get $class-default-value))
+      ((procedure) `(global.get $procedure-default-value))
+      ((procedure-el) `(global.get $procedure-el-default-value))
+      ((mutex) `(global.get $mutex-default-value))
+      ((condvar) `(global.get $condvar-default-value))
+      ((date) `(global.get $date-default-value))
+      ((real) `(global.get $real-default-value))
+      ((bignum) `(global.get $bignum-default-value))
+      ((port) `(global.get $port-default-value))
+      ((output-port) `(global.get $output-port-default-value))
+      ((file-output-port) `(global.get $file-output-port-default-value))
+      ((input-port) `(global.get $input-port-default-value))
+      ((file-input-port) `(global.get $file-input-port-default-value))
+      ((obj) (wasm-cnst-unspec))
+      (else
+       (if (foreign-type? type)
+	   (error "wasm" "Unknown foreign type for default value" (type-id type))
+	   (error "wasm" "No default init value for builtin type" (type-id type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-vector-type ...                                             */
@@ -959,11 +1022,40 @@
 ;*    gen-expr ::rtl_new ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_new args)
+   
+   (define (gen-new-tclass fun args type constr)
+      (with-access::tclass type (slots)
+	 (let* ((clazz (wasm-sym (type-class-name type)))
+		(alloc (if (every (lambda (s)
+				     (let ((t (slot-type s)))
+					(or (eq? t *obj*)
+					    (eq? t *long*)
+					    (eq? t *bool*)
+					    (eq? t *char*)
+					    (eq? t *real*))))
+			      slots)
+			   `(struct.new_default ,clazz)
+			   `(struct.new ,clazz
+			       ;; header
+			       (i64.const 0)
+			       ;; widening
+			       (ref.null none)
+			       ;; class fields
+			       ,@(map (lambda (s)
+					 (wasm-default-value (slot-type s)))
+				    slots)))))
+	    (when (pair? constr)
+	       (error "gen-expr" "Not supported." (shape constr)))
+	    (with-fun-loc fun alloc))))
+   
    (with-access::rtl_new fun (type constr)
-      (when (pair? constr)
-	 (error "gen-expr" "Not supported." (shape constr)))
-      (let ((alloc `(struct.new_default ,(wasm-sym (type-class-name type)))))
-	 (with-fun-loc fun alloc))))
+      (if (isa? type tclass)
+	  (gen-new-tclass fun args type constr)
+	  (let ((alloc `(struct.new_default
+			   ,(wasm-sym (type-class-name type)))))
+	     (when (pair? constr)
+		(error "gen-expr" "Not supported." (shape constr)))
+	     (with-fun-loc fun alloc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_cast ...                                          */

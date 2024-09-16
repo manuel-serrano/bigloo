@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/relooper.scm       */
+;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/relooper.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Sat Sep 14 13:38:42 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 07:35:25 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -82,8 +82,8 @@
       (with-handler
 	 (lambda (e)
 	    (when (isa? e &exception)
-	       (exception-notify e)
-	       (tprint "giving with relooper"))
+	       (exception-notify e))
+	    (tprint "giving with relooper: " (shape global))
 	    #f)
 	 (if (compute-loop-headers tree)
 	     ;; the graph is reducible
@@ -98,40 +98,43 @@
 ;*    compute-spanning-tree ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (compute-spanning-tree entry-block)
-   (let ((stack '())
-	 (visited (make-hashtable)))
-      
-      (define (dfs block)
-	 (let ((node (make-dom_tree_node block '() '() #f #f #f '() 0)))
-	    (hashtable-put! visited block node)
-	    (for-each (lambda (succ)
-			 (unless (hashtable-contains? visited succ)
-			    (dfs succ))) 
-	       (block-succs block))
-	    (set! stack (cons node stack))))
-      
-      (define (update-succs-and-preds! node)
-	 ;; FIXME: we use filter-map instead of map because basic blocks
-	 ;;        seems to have "phantom" predecessors. That is, predecessors
-	 ;;        that don't exist (were not visited but also do not show
-	 ;;        up in the dumped CFG).
-	 (dom_tree_node-succs-set! node
-	    (filter-map (lambda (block) (hashtable-get visited block))
-	       (block-succs (dom_tree_node-block node))))
-	 (dom_tree_node-preds-set! node
-	    (filter-map (lambda (block) (hashtable-get visited block))
-	       (block-preds (dom_tree_node-block node)))))
-      
-      ;; Assign node orders in reverse postorder.
-      (define (update-orders! stack order)
-	 (unless (null? stack)
-	    (dom_tree_node-order-set! (car stack) order)
-	    (update-orders! (cdr stack) (+fx order 1))))
-      
-      (dfs entry-block)
-      (for-each update-succs-and-preds! stack)
-      (update-orders! stack 0)
-      stack))
+   
+   (define stack '())
+   
+   (define visited (make-hashtable))
+   
+   (define (dfs block)
+      (let ((node (make-dom_tree_node block '() '() #f #f #f '() 0)))
+	 (hashtable-put! visited block node)
+	 (for-each (lambda (succ)
+		      (unless (hashtable-contains? visited succ)
+			 (dfs succ))) 
+	    (block-succs block))
+	 (set! stack (cons node stack))))
+   
+   (define (update-succs-and-preds! node)
+      ;; FIXME: we use filter-map instead of map because basic blocks
+      ;;        seems to have "phantom" predecessors. That is, predecessors
+      ;;        that don't exist (were not visited but also do not show
+      ;;        up in the dumped CFG).
+      (dom_tree_node-succs-set! node
+	 (filter-map (lambda (block) (hashtable-get visited block))
+	    (block-succs (dom_tree_node-block node))))
+      (dom_tree_node-preds-set! node
+	 (filter-map (lambda (block) (hashtable-get visited block))
+	    (block-preds (dom_tree_node-block node)))))
+   
+   ;; Assign node orders in reverse postorder.
+   (define (update-orders! stack order)
+      (unless (null? stack)
+	 (dom_tree_node-order-set! (car stack) order)
+	 (update-orders! (cdr stack) (+fx order 1))))
+   
+   (dfs entry-block)
+   (for-each update-succs-and-preds! stack)
+   (update-orders! stack 0)
+   
+   stack)
 
 ;*---------------------------------------------------------------------*/
 ;*    lca ...                                                          */

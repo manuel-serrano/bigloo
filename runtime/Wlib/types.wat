@@ -37,7 +37,7 @@
       (type $pair-nil (struct))
       (type $symbol (struct (field $str (ref $bstring)) (field $cval eqref)))
       (type $keyword (struct (field $str (ref $bstring)) (field $cval eqref)))
-      (type $custom (struct (field $ident (mut (ref null $bstring)))))
+      (type $custom (struct (field $ident (mut (ref $bstring)))))
       (type $weakptr (struct)))
    
    ;; Functions types (for closures and variadic calls)

@@ -81,6 +81,9 @@
       (ref.eq (local.get $v) (global.get $BTRUE))))
 
   ;; Bigloo types default value
+  (global $bint-default-value (export "BGL_BINT_DEFAULT_VALUE") (ref $bint)
+     (array.get $bints-table (global.get $BINTS) (i32.const 0)))
+
   (global $pair-default-value (export "BGL_PAIR_DEFAULT_VALUE") (ref $pair)
      (struct.new $pair (global.get $BUNSPEC) (global.get $BNIL)))
   (global $bstring-default-value (export "BGL_BSTRING_DEFAULT_VALUE") (ref $bstring)

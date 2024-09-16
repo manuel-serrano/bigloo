@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Sep 13 10:14:54 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 08:30:43 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -456,6 +456,7 @@
 		      (import "__runtime" "BEOA" (global $BEOA i31ref))
 		      (import "__js" "trace" (func $__trace (param i32)))
 
+		      (import "__runtime" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value $bint))
 		      (import "__runtime" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value $pair))
 		      (import "__runtime" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value $bstring))
 		      (import "__runtime" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value $symbol))
@@ -914,70 +915,7 @@
 	  ,@(if (eq? (global-import variable) 'export)
 		`((export ,(global-name variable)))
 		'())
-	  (mut ,(wasm-type type)) ,(emit-default-value type))))
-
-;*---------------------------------------------------------------------*/
-;*    emit-default-value ...                                           */
-;*---------------------------------------------------------------------*/
-(define (emit-default-value type)
-   (case (type-id type)
-      ;; TODO: implement types
-      ((bool) '(i32.const 0))
-      ((char) '(i32.const 0))
-      ((uchar) '(i32.const 0))
-      ((byte) '(i32.const 0))
-      ((ubyte) '(i32.const 0))
-      ((int8) '(i32.const 0))
-      ((uint8) '(i32.const 0))
-      ((int16) '(i32.const 0))
-      ((uint16) '(i32.const 0))
-      ((int32) '(i32.const 0))
-      ((uint32) '(i32.const 0))
-      ((int64) '(i64.const 0))
-      ((uint64) '(i64.const 0))
-      ((int) '(i32.const 0))
-      ((uint) '(i32.const 0))
-      ((long) '(i64.const 0))
-      ((elong) '(i64.const 0))
-      ((llong) '(i64.const 0))
-      ((float) '(f32.const 0))
-      ((double) '(f64.const 0))
-      ((pair) `(global.get $pair-default-value))
-      ((nil) (wasm-cnst-nil))
-      ((pair-nil) (wasm-cnst-nil))
-      ((symbol) `(global.get $symbol-default-value))
-      ((keyword) `(global.get $keyword-default-value))
-      ((bstring) `(global.get $bstring-default-value))
-      ((vector) `(global.get $vector-default-value))
-      ((u8vector) `(global.get $u8vector-default-value))
-      ((s8vector) `(global.get $s8vector-default-value))
-      ((u16vector) `(global.get $u16vector-default-value))
-      ((s16vector) `(global.get $s16vector-default-value))
-      ((u32vector) `(global.get $u32vector-default-value))
-      ((s32vector) `(global.get $s32vector-default-value))
-      ((u64vector) `(global.get $u64vector-default-value))
-      ((s64vector) `(global.get $s64vector-default-value))
-      ((f32vector) `(global.get $f32vector-default-value))
-      ((f64vector) `(global.get $f64vector-default-value))
-      ((struct) `(global.get $struct-default-value))
-      ((class) `(global.get $class-default-value))
-      ((procedure) `(global.get $procedure-default-value))
-      ((procedure-el) `(global.get $procedure-el-default-value))
-      ((mutex) `(global.get $mutex-default-value))
-      ((condvar) `(global.get $condvar-default-value))
-      ((date) `(global.get $date-default-value))
-      ((real) `(global.get $real-default-value))
-      ((bignum) `(global.get $bignum-default-value))
-      ((port) `(global.get $port-default-value))
-      ((output-port) `(global.get $output-port-default-value))
-      ((file-output-port) `(global.get $file-output-port-default-value))
-      ((input-port) `(global.get $input-port-default-value))
-      ((file-input-port) `(global.get $file-input-port-default-value))
-      ((obj) (wasm-cnst-unspec))
-      (else
-       (if (foreign-type? type)
-	   (error "wasm" "Unknown foreign type for default value" (type-id type))
-	   (error "wasm" "No default init value for builtin type" (type-id type))))))
+	  (mut ,(wasm-type type)) ,(wasm-default-value type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnsts ...                                                   */

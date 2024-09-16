@@ -446,5 +446,15 @@
    (display "<-" p)
    (display (shape (rtl_cast-fromtype o)) p)
    (dump-args args p))
-   
+
+;*---------------------------------------------------------------------*/
+;*    dump-fun ::rtl_new ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (dump-fun o::rtl_new dest args p m)
+   (show-fun o dest p)
+   (display "::" p)
+   (display (shape (rtl_new-type o)) p)
+   (display " " p)
+   (display (map shape (rtl_new-constr o)) p)
+   (dump-args args p))
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/SawC/compile.scm     */
+;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/compile.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Fri Jun 24 20:28:16 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Sep 16 08:29:49 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `C generation' pass.                                         */
 ;*=====================================================================*/
@@ -41,7 +41,7 @@
 	    backend_cplib
 	    object_class
 	    object_slots
-		saw_defs
+	    saw_defs
 	    saw_wasm_code))
 
 ;*---------------------------------------------------------------------*/
@@ -52,4 +52,4 @@
    (for-each-global! set-variable-name!)
    (let ((globals (cvm-functions me)))
       ;; we now emit the code for all the Scheme functions
-      (map (lambda (v) (saw-wasm-gen me v)) globals)))
+      (map (lambda (v) (wasm-gen me v)) globals)))
