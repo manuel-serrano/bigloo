@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Sep  3 07:53:00 2024 (serrano)                */
+#*    Last change :  Thu Sep 12 07:04:12 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -1913,8 +1913,8 @@ case $hostos in
       sysdlldirstr=`$echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
     fi
 
-    jvmrecettebootpath="-classpath \".;../lib/bigloo/$release/bigloo_s.zip;objs_jvm\""
-    jvmapibootpath="\".;../../../../../lib/bigloo/$release/bigloo_s.zip\""
+    jvmrecettebootpath="-classpath \".;$(BOOTLIBDIR)/bigloo_s.zip;objs_jvm\""
+    jvmapibootpath="\".;$(BOOTLIBDIR)/bigloo_s.zip\""
 
     ldopt="no-share"
 

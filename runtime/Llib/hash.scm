@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Sep  9 08:04:04 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 16:40:00 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -264,10 +264,10 @@
 			       weak)))))
       (when persistent
 	 (if hash
-	    (error "create-hashtable"
-	       "Persistent hashtable cannot use custom hash function"
-	       hash)
-	    (set! hash 'persistent)))
+	     (error "create-hashtable"
+		"Persistent hashtable cannot use custom hash function"
+		hash)
+	     (set! hash 'persistent)))
       (if (or (=fx wk (weak-open-string)) (=fx wk (weak-string)))
 	  (cond
 	     (eqtest
@@ -1333,4 +1333,3 @@
       (if (>fx (*fx n 3) (*fx 2 (%hashtable-max-bucket-len t)))
 	  (open-string-hashtable-rehash! t)
 	  (%hashtable-size-set! t (+fx n 1)))))
-

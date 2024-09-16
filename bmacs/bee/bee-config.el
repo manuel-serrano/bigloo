@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Wed Nov 15 08:11:41 2023 (serrano)                */
+;*    Last change :  Fri Sep 13 10:08:53 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -166,7 +166,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'ude-font-lock-face-11)
    (list (concat "\(\\(type\\|export\\|import\\|option\\|eval\\|eval!\\|main\\|with"
 		 "\\|from\\|static\\|use\\|library"
-		 "\\|include\\|foreign\\|extern\\|java\\|Cforeign"
+		 "\\|include\\|foreign\\|extern\\|java\\|wasm\\|Cforeign"
 		 "\\|require:\\|provide:\\)[ \t\n]")
 	 1
 	 'font-lock-type-face)
