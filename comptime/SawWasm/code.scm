@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Sep 16 10:30:36 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 07:52:40 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -239,6 +239,8 @@
       ((symbol) `(global.get $symbol-default-value))
       ((keyword) `(global.get $keyword-default-value))
       ((bstring) `(global.get $bstring-default-value))
+      ((ucs2string) `(global.get $ucs2string-default-value))
+      ((regexp) `(global.get $regexp-default-value))
       ((vector) `(global.get $vector-default-value))
       ((u8vector) `(global.get $u8vector-default-value))
       ((s8vector) `(global.get $s8vector-default-value))
@@ -264,6 +266,11 @@
       ((file-output-port) `(global.get $file-output-port-default-value))
       ((input-port) `(global.get $input-port-default-value))
       ((file-input-port) `(global.get $file-input-port-default-value))
+      ((socket) `(global.get $socket-default-value))
+      ((datagram-socket) `(global.get $datagram-socket-default-value))
+      ((weakptr) `(global.get $weakptr-default-value))
+      ((mmap) `(global.get $mmap-default-value))
+      ((custom) `(global.get $custom-default-value))
       ((obj) (wasm-cnst-unspec))
       (else
        (if (foreign-type? type)

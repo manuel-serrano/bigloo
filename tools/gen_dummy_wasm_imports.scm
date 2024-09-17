@@ -28,34 +28,37 @@
                 (parse-global id s)))))
 
 (define (parse-func id sig)
-    (define (emit-unimplemented)
-        ;; '((throw $unimplemented))
-        '())
-
-    (if (string=? id "bigloo_main")
-        #f ;; FIXME: why we need a special case for bigloo_main, try to remove it.
-        (let ((retty 'void))
-            `(func ,(car sig)
-                (export ,id)
-                ,@(filter 
-                    (lambda (d)
-                        (match-case d
-                            ((type ???-) #t)
-                            ((result ?type)
-                                (set! retty type)
-                                #t)
-                            ((param ???-) #t)
-                            (else #f)))
-                    (cdr sig))
-                ,@(emit-unimplemented)
-                ,@(if (eq? retty 'void)
-                    '()
-                    (list (emit-default-value retty)))))))
+   
+   (define cnt 0)
+   
+   (define (emit-unimplemented)
+      ;; '((throw $unimplemented))
+      `(call $not_implemented (i32.const ,cnt)))
+   
+   (unless (string=? id "bigloo_main")
+      (let ((retty 'void))
+	 `(func ,(car sig)
+	     (export ,id)
+	     ,@(filter (lambda (d)
+			  (match-case d
+			     ((type ???-) #t)
+			     ((result ?type)
+			      (set! retty type)
+			      #t)
+			     ((param ???-) #t)
+			     (else #f)))
+		  (cdr sig))
+	     ,(emit-unimplemented)
+	     ,@(if (eq? retty 'void)
+		   '()
+		   (list (emit-default-value retty sig)))))))
 
 (define (parse-global id sig)
     (match-case sig
-        ((?name ?type) `(global ,name (export ,id) ,type ,(emit-default-value type)))
-        (else (error "parse-global" "Unknown global signature." sig))))
+        ((?name ?type)
+	 `(global ,name (export ,id) ,type ,(emit-default-value type sig)))
+        (else
+	 (error "parse-global" "Unknown global signature." sig))))
 
 (define (should-generate? mod)
     (not (string-prefix? "__js" mod)))
@@ -65,12 +68,19 @@
         ((result ?type) type)
         (else 'eqref)))
 
-(define (emit-default-value type)
-    (case type
-        ('i32 '(i32.const 0))
-        ('i64 '(i64.const 0))
-        ('f32 '(f32.const 0))
-        ('f64 '(f64.const 0))
-        ('eqref '(global.get $BUNSPEC))
-        (else '(ref.null none))
-    ))
+(define (emit-default-value type sig)
+   (case type
+      ;; TODO: implement types
+      ((i32) '(i32.const 0))
+      ((i64) '(i64.const 0))
+      ((f32) '(f32.const 0))
+      ((f64) '(f64.const 0))
+      ((eqref) '(global.get $BUNSPEC))
+      (else
+       (match-case type
+	  ((or (mut (ref ?type)) (ref ?type))
+	   `(global.get ,(symbol-append type '-default-value)))
+	  (else
+	   (error "wasm"
+	      (format "No default init value for builtin type: ~a" type)
+	      sig))))))

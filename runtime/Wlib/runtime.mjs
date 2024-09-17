@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.mjs              */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.mjs        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Sep 16 10:54:22 2024 (serrano)                */
+/*    Last change :  Tue Sep 17 07:28:54 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -66,6 +66,10 @@ const wasm = await WebAssembly.compile(readFileSync(argv[2]));
 
 const instance = await WebAssembly.instantiate(wasm, {
    __js: {
+      not_implemented: x => {
+	 console.error("not implemented", x);
+	 system.exit(1);
+      }
       trace: function (x) {
          console.log("TRACE: " + x);
       },

@@ -1,15 +1,16 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.wat.in           */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat.in     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Sep 16 10:52:48 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 07:45:15 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
 ;*=====================================================================*/
 
 (module $__runtime
+  (import "__js" "not_implemented" (func $not_implemented (param i32)))
   (import "__js" "trace" (func $js_trace (param i32))) ;; FIXME: remove
 
   (import "__js" "argc" (global $js_argc i32))
@@ -82,42 +83,78 @@
       (ref.eq (local.get $v) (global.get $BTRUE))))
 
   ;; Bigloo types default value
-  (global $bint-default-value (export "BGL_BINT_DEFAULT_VALUE") (ref $bint)
-     (array.get $bints-table (global.get $BINTS) (i32.const 0)))
-
-  (global $pair-default-value (export "BGL_PAIR_DEFAULT_VALUE") (ref $pair)
+  (global $bint-default-value
+     (export "BGL_BINT_DEFAULT_VALUE") (ref $bint)
+     (struct.new $bint (i64.const 0)))
+  (global $real-default-value
+     (export "BGL_REAL_DEFAULT_VALUE") (ref $real)
+     (struct.new $real (f64.const 0)))
+  (global $bignum-default-value
+     (export "BGL_BIGNUM_DEFAULT_VALUE") (ref $bignum)
+     (struct.new $bignum (i64.const 0)))
+  
+  (global $pair-default-value
+     (export "BGL_PAIR_DEFAULT_VALUE") (ref $pair)
      (struct.new $pair (global.get $BUNSPEC) (global.get $BNIL)))
-  (global $bstring-default-value (export "BGL_BSTRING_DEFAULT_VALUE") (ref $bstring)
+  
+  (global $bstring-default-value
+     (export "BGL_BSTRING_DEFAULT_VALUE") (ref $bstring)
      (array.new_fixed $bstring 0))
-  (global $symbol-default-value (export "BGL_SYMBOL_DEFAULT_VALUE") (ref $symbol)
+  (global $ucs2string-default-value
+     (export "BGL_UCS2STRING_DEFAULT_VALUE") (ref $ucs2string)
+     (array.new_fixed $ucs2string 0))
+  
+  (global $regexp-default-value
+     (export "BGL_REGEXP_DEFAULT_VALUE") (ref $regexp)
+     (struct.new $regexp))
+  
+  (global $symbol-default-value
+     (export "BGL_SYMBOL_DEFAULT_VALUE") (ref $symbol)
      (struct.new $symbol (global.get $bstring-default-value) (global.get $BNIL)))
-  (global $keyword-default-value (export "BGL_KEYWORD_DEFAULT_VALUE") (ref $keyword)
-     (struct.new $keyword (global.get $bstring-default-value) (global.get $BNIL)))
-  (global $vector-default-value (export "BGL_VECTOR_DEFAULT_VALUE") (ref $vector)
+  (global $keyword-default-value
+     (export "BGL_KEYWORD_DEFAULT_VALUE") (ref $keyword)
+     (struct.new $keyword (global.get $bstring-default-value) (global.get $BNIL))
+     )
+  (global $vector-default-value
+     (export "BGL_VECTOR_DEFAULT_VALUE") (ref $vector)
      (array.new_fixed $vector 0))
-  (global $u8vector-default-value (export "BGL_U8VECTOR_DEFAULT_VALUE") (ref $u8vector)
+  (global $u8vector-default-value
+     (export "BGL_U8VECTOR_DEFAULT_VALUE") (ref $u8vector)
      (array.new_fixed $u8vector 0))
-  (global $s8vector-default-value (export "BGL_S8VECTOR_DEFAULT_VALUE") (ref $s8vector)
+  (global $s8vector-default-value
+     (export "BGL_S8VECTOR_DEFAULT_VALUE") (ref $s8vector)
      (array.new_fixed $s8vector 0))
-  (global $u16vector-default-value (export "BGL_U16VECTOR_DEFAULT_VALUE") (ref $u16vector)
+  (global $u16vector-default-value
+     (export "BGL_U16VECTOR_DEFAULT_VALUE") (ref $u16vector)
      (array.new_fixed $u16vector 0))
-  (global $s16vector-default-value (export "BGL_S16VECTOR_DEFAULT_VALUE") (ref $s16vector)
+  (global $s16vector-default-value
+     (export "BGL_S16VECTOR_DEFAULT_VALUE") (ref $s16vector)
      (array.new_fixed $s16vector 0))
-  (global $u32vector-default-value (export "BGL_U32VECTOR_DEFAULT_VALUE") (ref $u32vector)
+  (global $u32vector-default-value
+     (export "BGL_U32VECTOR_DEFAULT_VALUE") (ref $u32vector)
      (array.new_fixed $u32vector 0))
-  (global $s32vector-default-value (export "BGL_S32VECTOR_DEFAULT_VALUE") (ref $s32vector)
+  (global $s32vector-default-value
+     (export "BGL_S32VECTOR_DEFAULT_VALUE") (ref $s32vector)
      (array.new_fixed $s32vector 0))
-  (global $u64vector-default-value (export "BGL_U64VECTOR_DEFAULT_VALUE") (ref $u64vector)
+  (global $u64vector-default-value
+     (export "BGL_U64VECTOR_DEFAULT_VALUE") (ref $u64vector)
      (array.new_fixed $u64vector 0))
-  (global $s64vector-default-value (export "BGL_S64VECTOR_DEFAULT_VALUE") (ref $s64vector)
+  (global $s64vector-default-value
+     (export "BGL_S64VECTOR_DEFAULT_VALUE") (ref $s64vector)
      (array.new_fixed $s64vector 0))
-  (global $f32vector-default-value (export "BGL_F32VECTOR_DEFAULT_VALUE") (ref $f32vector)
+  (global $f32vector-default-value
+     (export "BGL_F32VECTOR_DEFAULT_VALUE") (ref $f32vector)
      (array.new_fixed $f32vector 0))
-  (global $f64vector-default-value (export "BGL_F64VECTOR_DEFAULT_VALUE") (ref $f64vector)
+  (global $f64vector-default-value
+     (export "BGL_F64VECTOR_DEFAULT_VALUE") (ref $f64vector)
      (array.new_fixed $f64vector 0))
-  (global $struct-default-value (export "BGL_STRUCT_DEFAULT_VALUE") (ref $struct)
+
+  (global $struct-default-value
+     (export "BGL_STRUCT_DEFAULT_VALUE") (ref $struct)
      (struct.new $struct (global.get $BUNSPEC) (global.get $vector-default-value)))
-  (global $mutex-default-value (export "BGL_MUTEX_DEFAULT_VALUE") (ref $mutex)
+
+  (global $mutex-default-value
+     (export "BGL_MUTEX_DEFAULT_VALUE") (ref $mutex)
      (struct.new $mutex
 	;; name
 	(global.get $BUNSPEC)
@@ -125,9 +162,12 @@
 	(global.get $BUNSPEC)
 	;; state
 	(global.get $BUNSPEC)))
-  (global $condvar-default-value (export "BGL_CONDVAR_DEFAULT_VALUE") (ref $condvar)
+  (global $condvar-default-value
+     (export "BGL_CONDVAR_DEFAULT_VALUE") (ref $condvar)
      (struct.new $condvar))
-  (global $date-default-value (export "BGL_DATE_DEFAULT_VALUE") (ref $date)
+  
+  (global $date-default-value
+     (export "BGL_DATE_DEFAULT_VALUE") (ref $date)
      (struct.new $date
 	;; timezone
 	(i64.const 0)
@@ -156,19 +196,23 @@
 	;; time
 	(i64.const 0)))
 	
-  (global $procedure-default-value (export "BGL_PROCEDURE_DEFAULT_VALUE") (ref $procedure)
+  (global $procedure-default-value
+     (export "BGL_PROCEDURE_DEFAULT_VALUE") (ref $procedure)
      (struct.new $procedure
 	;; entry
-	(ref.cast funcref (ref.func $BOOLEANP))
+	(ref.func $BOOLEANP)
 	;; attr
 	(global.get $BUNSPEC)
 	;; arity
 	(i32.const 0)
 	;; env
 	(global.get $vector-default-value)))
-  (global $procedure-el-default-value (export "BGL_PROCEDURE_EL_DEFAULT_VALUE") (ref $vector)
+  (global $procedure-el-default-value
+     (export "BGL_PROCEDURE_EL_DEFAULT_VALUE") (ref $vector)
      (global.get $vector-default-value))
-  (global $class-default-value (export "BGL_CLASS_DEFAULT_VALUE") (ref $class)
+  
+  (global $class-default-value
+     (export "BGL_CLASS_DEFAULT_VALUE") (ref $class)
      (struct.new $class
 	;; name
 	(global.get $symbol-default-value)
@@ -206,17 +250,16 @@
 	(i64.const 0)
 	;; depth
 	(i64.const 0)))
-  (global $real-default-value (export "BGL_REAL_DEFAULT_VALUE") (ref $real)
-     (struct.new $real (f64.const 0)))
-  (global $bignum-default-value (export "BGL_BIGNUM_DEFAULT_VALUE") (ref $bignum)
-     (struct.new $bignum (i64.const 0)))
-  (global $port-default-value (export "BGL_PORT_DEFAULT_VALUE") (ref $port)
+  
+  (global $port-default-value
+     (export "BGL_PORT_DEFAULT_VALUE") (ref $port)
      (struct.new $port
 	;; name
 	(global.get $bstring-default-value)
 	;; chook
 	(global.get $BUNSPEC)))
-  (global $output-port-default-value (export "BGL_OUTPUT_PORT_DEFAULT_VALUE") (ref $output-port)
+  (global $output-port-default-value
+     (export "BGL_OUTPUT_PORT_DEFAULT_VALUE") (ref $output-port)
      (struct.new $output-port
 	;; name
 	(global.get $bstring-default-value)
@@ -228,7 +271,8 @@
 	(global.get $BUNSPEC)
 	;; isclsoed
 	(i32.const 0)))
-  (global $file-output-port-default-value (export "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE") (ref $file-output-port)
+  (global $file-output-port-default-value
+     (export "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE") (ref $file-output-port)
      (struct.new $file-output-port
 	;; name
 	(global.get $bstring-default-value)
@@ -242,7 +286,8 @@
 	(i32.const 0)
 	;; fd
 	(i32.const 0)))
-  (global $string-output-port-default-value (export "BGL_STRING_OUTPUT_PORT_DEFAULT_VALUE") (ref $string-output-port)
+  (global $string-output-port-default-value
+     (export "BGL_STRING_OUTPUT_PORT_DEFAULT_VALUE") (ref $string-output-port)
      (struct.new $string-output-port
 	;; name
 	(global.get $bstring-default-value)
@@ -256,7 +301,8 @@
 	(i32.const 0)
 	;; buffer
 	(global.get $bstring-default-value)))
-  (global $rgc-default-value (export "BGL_RGC_DEFAULT_VALUE") (ref $rgc)
+  (global $rgc-default-value
+     (export "BGL_RGC_DEFAULT_VALUE") (ref $rgc)
      (struct.new $rgc
 	;; eof
 	(i32.const 0)
@@ -274,7 +320,8 @@
 	(i32.const 0)
 	;; buffer
 	(global.get $bstring-default-value)))
-  (global $input-port-default-value (export "BGL_INPUT_PORT_DEFAULT_VALUE") (ref $input-port)
+  (global $input-port-default-value
+     (export "BGL_INPUT_PORT_DEFAULT_VALUE") (ref $input-port)
      (struct.new $input-port
 	;; name
 	(global.get $bstring-default-value)
@@ -282,7 +329,8 @@
 	(global.get $BUNSPEC)
 	;; rgc
 	(global.get $rgc-default-value)))
-  (global $file-input-port-default-value (export "BGL_FILE_INPUT_PORT_DEFAULT_VALUE") (ref $file-input-port)
+  (global $file-input-port-default-value
+     (export "BGL_FILE_INPUT_PORT_DEFAULT_VALUE") (ref $file-input-port)
      (struct.new $file-input-port
 	;; name
 	(global.get $bstring-default-value)
@@ -292,6 +340,26 @@
 	(global.get $rgc-default-value)
 	;; fd
 	(i32.const 0)))
+
+  (global $socket-default-value
+     (export "BGL_SOCKET_DEFAULT_VALUE") (ref $socket)
+     (struct.new $socket))
+  (global $datagram-socket-default-value
+     (export "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE") (ref $datagram-socket)
+     (struct.new $datagram-socket))
+  
+  (global $weakptr-default-value
+     (export "BGL_WEAKPTR_DEFAULT_VALUE") (ref $weakptr)
+     (struct.new $weakptr))
+  
+  (global $mmap-default-value
+     (export "BGL_MMAP_DEFAULT_VALUE") (ref $mmap)
+     (struct.new $mmap))
+  
+  (global $custom-default-value
+     (export "BGL_CUSTOM_DEFAULT_VALUE") (ref $custom)
+     (struct.new $custom
+	(global.get $bstring-default-value)))
   
   ;; --------------------------------------------------------
   ;; Struct functions
@@ -2041,8 +2109,8 @@
 
   (type $stringarray (array (ref $bstring)))
 
-  (global $day_names (mut (ref $stringarray)) (ref.null none))
-  (global $day_anames (mut (ref $stringarray)) (ref.null none))
+  (global $day_names (mut (ref null $stringarray)) (ref.null none))
+  (global $day_anames (mut (ref null $stringarray)) (ref.null none))
 
   (func $make_day_name 
     (param $day i32) 
@@ -2067,11 +2135,12 @@
       (call $make_day_name (i32.const 6) (local.get $longFormat))))
 
   (func $bgl_day_name (export "bgl_day_name") 
-    (param $day i32) 
-    (result (ref $bstring))
-    (if (ref.is_null (global.get $day_names))
-      (then (global.set $day_names (call $make_day_names (i32.const 1 #;(Long format))))))
-    (array.get $stringarray (global.get $day_names) (i32.sub (local.get $day) (i32.const 1))))
+     (param $day i32) 
+     (result (ref $bstring))
+     (if (ref.is_null (global.get $day_names))
+	 (then
+	    (global.set $day_names (call $make_day_names (i32.const 1 #;(Long format))))))
+     (array.get $stringarray (global.get $day_names) (i32.sub (local.get $day) (i32.const 1))))
 
   (func $bgl_day_aname (export "bgl_day_aname") 
     (param $day i32) 
@@ -2080,8 +2149,8 @@
       (then (global.set $day_anames (call $make_day_names (i32.const 0 #;(Short format))))))
     (array.get $stringarray (global.get $day_anames) (i32.sub (local.get $day) (i32.const 1))))
 
-  (global $month_names (mut (ref $stringarray)) (ref.null none))
-  (global $month_anames (mut (ref $stringarray)) (ref.null none))
+  (global $month_names (mut (ref null $stringarray)) (ref.null none))
+  (global $month_anames (mut (ref null $stringarray)) (ref.null none))
 
   (func $make_month_name 
     (param $month i32) 
