@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Sep 17 09:43:14 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 17:08:45 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -417,7 +417,7 @@
 
    (define (type-require-init? t)
       (case (type-id t)
-	 ((obj int long double) #f)
+	 ((obj int long double bool) #f)
 	 (else #t)))
 
    (define (first-block-assigs l)
@@ -622,7 +622,8 @@
 (define-method (gen-expr fun::rtl_getfield args)
   (with-access::rtl_getfield fun (name objtype)
     (with-fun-loc fun 
-      `(struct.get ,(wasm-sym (type-class-name objtype)) ,(wasm-sym name) ,@(gen-args args)))))
+      `(struct.get ,(wasm-sym (type-class-name objtype))
+	  ,(wasm-sym name) ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_setfield args)
   (with-access::rtl_setfield fun (name objtype)
