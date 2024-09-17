@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/binary.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/binary.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  7 10:38:25 1994                          */
-;*    Last change :  Sun Aug 25 09:08:39 2019 (serrano)                */
+;*    Last change :  Tue Sep 17 14:53:50 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Les entrees/sorties compactees des objets Scheme (eventuellement */
 ;*    circulaires).                                                    */
@@ -78,6 +78,8 @@
 	    (macro $int-eof?::bool (::int)
 		   "BGL_INT_EOFP"))
 
+   (wasm    (c-binary-port? "(ref.test (ref $binary-port) ~0)"))
+   
    (java    (class foreign
 	       (method static c-binary-port?::bool (::obj)
 		       "BINARY_PORTP")

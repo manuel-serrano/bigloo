@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Unsafe/pregexp.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/pregexp.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Wed Aug 28 12:59:21 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 14:50:17 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -23,6 +23,8 @@
            (macro $regexp-capture-count::long (::regexp) "BGL_REGEXP_CAPTURE_COUNT")
 	   (macro $regexp-preg::obj (::regexp) "BGL_REGEXP_PREG")
 	   (macro $regexp-preg-set!::obj (::regexp ::obj) "BGL_REGEXP_PREG_SET"))
+
+   (wasm   ($regexp? "(ref.test (ref $regexp) ~0)"))
    
    (java   (class foreign
 	      (method static $make-regexp::regexp (::bstring)

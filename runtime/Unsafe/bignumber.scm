@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Sep  9 19:35:30 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 14:44:29 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -69,8 +69,7 @@
       (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG"))
 
    (wasm
-      ($fixnum->flonum "(f64.convert_i64_s ~0)")
-      ($flonum->fixnum "(i64.trunc_f64_s ~0)"))
+      ($bignum? "(ref.test (ref $bignum) ~0)"))
 
    (java
       (class foreign

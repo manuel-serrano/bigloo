@@ -83,7 +83,7 @@
 				 (field $cer (mut eqref))))))
    
    ;; Bignums
-   (type $bignum (struct (field $val i64)))
+   (type $bignum (struct (field $u16vect (ref $u16vector))))
    
    ;; Boxed numeric types
    (rec
@@ -237,6 +237,7 @@
    (type $mmap (struct))
    
    (type $tvector (struct))
+   (type $hvector (struct))
    
    ;; Dynamic env (for multithreading)
    (type $dynamic-env

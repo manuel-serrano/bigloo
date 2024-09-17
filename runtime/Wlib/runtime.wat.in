@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Sep 17 07:45:15 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 08:23:10 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -45,10 +45,12 @@
   (import "__js_date" "mktimegm" (func $js_date_mktimegm (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
   (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
   (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
-  (import "__js_bignum" "bgl_long_to_bignum" (func $js_long_to_bignum (param i64) (result i64)))
 
   (import "__js" "exit" (func $js_exit (param i32)))
-  ;; (import "__bigloo_main" "bigloo_main" (func $bigloo_main (param (ref null $pair)) (result eqref)))
+  (import "__js" "signal" (func $js_signal (param i32) (param eqref)))
+
+  (import "$__object" "BGl_classzd2nilzd2initz12z12zz__objectz00" (func $BGl_z62classzd2nilzd2initz12z70zz__objectz00 (param (ref $class)) (result eqref)))
+  (import "$__bignum" "bgl_long_to_bignum" (func $bgl_long_to_bignum (param i64) (result $bignum)))
 
   ;; General bigloo memory
   (memory 1)
@@ -83,19 +85,64 @@
       (ref.eq (local.get $v) (global.get $BTRUE))))
 
   ;; Bigloo types default value
+  (global $funptr-default-value
+     (export "BGL_FUNPTR_DEFAULT_VALUE") funcref
+     (ref.func $BOOLEANP))
+  
   (global $bint-default-value
      (export "BGL_BINT_DEFAULT_VALUE") (ref $bint)
      (struct.new $bint (i64.const 0)))
+  (global $bint8-default-value
+     (export "BGL_BINT8_DEFAULT_VALUE") (ref $bint8)
+     (struct.new $bint8 (i32.const 0)))
+  (global $bint16-default-value
+     (export "BGL_BINT16_DEFAULT_VALUE") (ref $bint16)
+     (struct.new $bint16 (i32.const 0)))
+  (global $bint32-default-value
+     (export "BGL_BINT32_DEFAULT_VALUE") (ref $bint32)
+     (struct.new $bint32 (i32.const 0)))
+  (global $bint64-default-value
+     (export "BGL_BINT64_DEFAULT_VALUE") (ref $bint64)
+     (struct.new $bint64 (i64.const 0)))
+  (global $buint8-default-value
+     (export "BGL_BUINT8_DEFAULT_VALUE") (ref $buint8)
+     (struct.new $buint8 (i32.const 0)))
+  (global $buint16-default-value
+     (export "BGL_BUINT16_DEFAULT_VALUE") (ref $buint16)
+     (struct.new $buint16 (i32.const 0)))
+  (global $buint32-default-value
+     (export "BGL_BUINT32_DEFAULT_VALUE") (ref $buint32)
+     (struct.new $buint32 (i32.const 0)))
+  (global $buint64-default-value
+     (export "BGL_BUINT64_DEFAULT_VALUE") (ref $buint64)
+     (struct.new $buint64 (i64.const 0)))
+  (global $belong-default-value
+     (export "BGL_BELONG_DEFAULT_VALUE") (ref $belong)
+     (struct.new $belong (i64.const 0)))
   (global $real-default-value
      (export "BGL_REAL_DEFAULT_VALUE") (ref $real)
      (struct.new $real (f64.const 0)))
   (global $bignum-default-value
      (export "BGL_BIGNUM_DEFAULT_VALUE") (ref $bignum)
-     (struct.new $bignum (i64.const 0)))
+     (struct.new $bignum (array.new_fixed $u16vector 0)))
+  
+  (global $bchar-default-value
+     (export "BGL_BCHAR_DEFAULT_VALUE") (ref $bchar)
+     (struct.new $bchar (i32.const 0)))
+  (global $bucs2-default-value
+     (export "BGL_BUCS2_DEFAULT_VALUE") (ref $bucs2)
+     (struct.new $bucs2 (i32.const 0)))
   
   (global $pair-default-value
      (export "BGL_PAIR_DEFAULT_VALUE") (ref $pair)
      (struct.new $pair (global.get $BUNSPEC) (global.get $BNIL)))
+  (global $epair-default-value
+     (export "BGL_EPAIR_DEFAULT_VALUE") (ref $epair)
+     (struct.new $epair (global.get $BUNSPEC) (global.get $BNIL) (global.get $BUNSPEC)))
+  
+  (global $cell-default-value
+     (export "BGL_CELL_DEFAULT_VALUE") (ref $cell)
+     (struct.new $cell (global.get $BUNSPEC)))
   
   (global $bstring-default-value
      (export "BGL_BSTRING_DEFAULT_VALUE") (ref $bstring)
@@ -340,6 +387,9 @@
 	(global.get $rgc-default-value)
 	;; fd
 	(i32.const 0)))
+  (global $binary-port-default-value
+     (export "BGL_BINARY_PORT_DEFAULT_VALUE") (ref $binary-port)
+     (struct.new $binary-port))
 
   (global $socket-default-value
      (export "BGL_SOCKET_DEFAULT_VALUE") (ref $socket)
@@ -356,10 +406,64 @@
      (export "BGL_MMAP_DEFAULT_VALUE") (ref $mmap)
      (struct.new $mmap))
   
+  (global $process-default-value
+     (export "BGL_PROCESS_DEFAULT_VALUE") (ref $process)
+     (struct.new $process))
+  
   (global $custom-default-value
      (export "BGL_CUSTOM_DEFAULT_VALUE") (ref $custom)
      (struct.new $custom
 	(global.get $bstring-default-value)))
+  (global $foreign-default-value
+     (export "BGL_FOREIGN_DEFAULT_VALUE") (ref $foreign)
+     (struct.new $foreign
+	(global.get $symbol-default-value)
+	(i32.const 0)))
+
+  (global $exit-default-value
+     (export "BGL_EXIT_DEFAULT_VALUE") (ref $exit)
+     (struct.new $exit
+	;; userp
+	(i64.const 0)
+	;; stamp
+	(i64.const 0)
+	;; protect
+	(global.get $BUNSPEC)
+	;; prev
+	(ref.null none)))
+
+  (global $dynamic-env-default-value
+     (export "BGL_DYNAMIC_ENV_DEFAULT_VALUE") (ref $dynamic-env)
+     (struct.new $dynamic-env
+	;; exitd_top
+	(global.get $exit-default-value)
+	;; exitd_val
+	(global.get $BUNSPEC)
+	;; uncaught-exception-handler
+	(global.get $BUNSPEC)
+	;; error-handler
+	(global.get $BUNSPEC)
+	;; current-output-port
+	(global.get $output-port-default-value)
+	;; current-error-port
+	(global.get $output-port-default-value)
+	;; current-input-port
+	(global.get $input-port-default-value)))
+
+  (global $object-default-value
+     (export "BGL_OBJECT_DEFAULT_VALUE") (ref $BgL_objectz00_bglt)
+     (struct.new $BgL_objectz00_bglt
+	(i64.const 0)
+	(ref.null none)))
+
+  (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE
+     (export "BGL_CLASS_INSTANCE_DEFAULT_VALUE")
+     (param $clazz (ref $class))
+     (result (ref $BgL_objectz00_bglt))
+     (local $ctor (ref $procedure))
+     (local.set $ctor (struct.get $class $nil_fun (local.get $clazz)))
+     (ref.cast (ref $BgL_objectz00_bglt)
+	(call $BGl_classzd2nilzd2zz__objectz00 (local.get $clazz))))  
   
   ;; --------------------------------------------------------
   ;; Struct functions
@@ -585,7 +689,7 @@
         (local.get $new)
         (local.get $alloc)
         (local.get $nil)
-        (global.get $BUNSPEC) #;NIL
+        (global.get $BFALSE)
         (local.get $constructor)
         (local.get $super)
         (local.get $subclasses)
@@ -2039,7 +2143,6 @@
   (export "BGL_SAFE_MUL_FX" (func $BGL_SAFE_MUL_FX))
   (export "BGL_SAFE_MINUS_FX" (func $BGL_SAFE_MINUS_FX))
   (export "BGL_SAFE_QUOTIENT_FX" (func $BGL_SAFE_QUOTIENT_FX))
-  (export "bgl_long_to_bignum" (func $bgl_long_to_bignum))
   
   (func $BGL_SAFE_PLUS_FX
      (param $x i64)
@@ -2073,14 +2176,6 @@
 	(call $I64_TO_BINT
 	   (i64.div_s (local.get $x) (local.get $y)))))
 
-  (func $bgl_long_to_bignum
-     (param $num i64)
-     (result (ref $bignum))
-     (return
-	(struct.new $bignum
-	   (call $js_long_to_bignum
-	      (local.get $num)))))
-  
   ;; --------------------------------------------------------
   ;; Date functions
   ;; --------------------------------------------------------
@@ -2310,13 +2405,24 @@
      (global.get $output-port-default-value))
 
   ;; --------------------------------------------------------
+  ;; OS
+  ;; --------------------------------------------------------
+  (func $bgl_signal (export "bgl_signal")
+     (param $sig i32)
+     (param $hdl eqref)
+     (result eqref)
+     (call $js_signal (local.get $sig) (local.get $hdl))
+     (return (global.get $BUNSPEC)))
+		       
+  ;; --------------------------------------------------------
   ;; Main function
   ;; --------------------------------------------------------
 
   (func $main (export "__js_bigloo_main")
     (local $i i32)
-    (local $argv (ref $pair))
+    (local $argv eqref)
     (local.set $i (i32.sub (global.get $js_argc) (i32.const 1)))
+    (local.set $argv (global.get $BNIL))
     (loop $loop
       (if (i32.ge_s (local.get $i) (i32.const 0))
         (then
@@ -2331,31 +2437,16 @@
           (local.set $i (i32.sub (local.get $i) (i32.const 1)))
           (br $loop))))
 
-;*     ;; bints pre-allocation                                         */
-;*     (local.set $i (i32.const 0))                                    */
-;*     (loop $loop                                                     */
-;*        (if (i32.lt_s (local.get $i) (i32.const @BINTS_PREALLOC_SIZE@)) */
-;* 	   (then                                                       */
-;* 	      (array.set $bints-table                                  */
-;* 		 (global.get $BINTS)                                   */
-;* 		 (local.get $i)                                        */
-;* 		 (struct.new $bint                                     */
-;* 		    (i64.add (i64.const @BINTS_PREALLOC_START@)        */
-;* 		       (i64.extend_i32_s (local.get $i)))))            */
-;* 	      (local.set $i (i32.add (local.get $i) (i32.const 1)))    */
-;* 	      (br $loop))))                                            */
-    
-    ;; TODO: do something with the return value of bigloo_main
-    (drop (call $bigloo_main (local.get $argv))))
+    (drop (call $bigloo_main (ref.cast (ref $pair) (local.get $argv)))))
 
-    (func $BIGLOO_EXIT
-        (export "BIGLOO_EXIT")
-        (param eqref)
-        (result eqref)
-	(call $js_exit
-	   (if (result i32)
-	       (ref.test (ref $bint) (local.get 0))
-	       (then (i32.wrap_i64 (struct.get $bint $v (ref.cast (ref $bint) (local.get 0)))))
-	       (else (i32.const 0))))
-	(global.get $BUNSPEC))
+  (func $BIGLOO_EXIT
+     (export "BIGLOO_EXIT")
+     (param eqref)
+     (result eqref)
+     (call $js_exit
+	(if (result i32)
+	    (ref.test (ref $bint) (local.get 0))
+	    (then (i32.wrap_i64 (struct.get $bint $v (ref.cast (ref $bint) (local.get 0)))))
+	    (else (i32.const 0))))
+     (global.get $BUNSPEC))
 )

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Sep  9 18:15:47 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 15:00:27 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -754,7 +754,11 @@
 		  (when (>u64 v #u64:0) (display (uint64->llong v) ,port)))
 	       (display (uint64->fixnum (remainderu64 ,obj (fixnum->uint64 10))) ,port)))
 	  ((cnst? obj)
-	   ($write-cnst obj port))
+	   (cond-expand
+	      ((and (not bigloo-c) (not bigloo-jvm))
+	       ($$write-cnst obj port))
+	      (else
+	       ($write-cnst obj port))))
 	  (else
 	   ($write-unknown ,obj ,port)))))
 

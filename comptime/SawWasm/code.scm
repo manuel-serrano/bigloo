@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Sep 17 07:52:40 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 09:43:14 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -74,32 +74,58 @@
 ;*    gen-fun ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (gen-fun b::wasm v::global l)
-   (with-access::global v (name import value type)
-      ;; debug 
-      (when *bbv-dump-cfg*
-	 (with-access::sfun value (args)
-	    (dump-cfg v (map local->reg args) l ".wasm.cfg")))
-      (with-access::sfun value (loc args)
-	 (let ((params (map local->reg args)))
-	    (build-tree b params l)
-	    (set! l (register-allocation b v params l))
-	    (set! l (bbv b v params l))
-	    
-	    `(comment ,(string-append (symbol->string (global-id v))
-			  " in " (symbol->string (global-module v)))
-		,(with-loc loc
-		    `(func ,(wasm-sym name)
-			
-			,@(if (eq? import 'export)
-			      `((export ,name))
-			      '())
-			
-			,@(let ((locals (get-locals params l)))
-			     `(,@(gen-params params)
-				 ,@(gen-result type)
-				 ,@(gen-locals locals)))
-			
-			,@(gen-body v l))))))))
+   
+   (define (split-body body)
+      (let loop ((body body)
+		 (locals '()))
+	 (match-case body
+	    (()
+	     (values (reverse locals) body))
+	    (((and ?head (local . ?-)) . ?rest)
+	     (loop rest (cons head locals)))
+	    (else
+	     (values (reverse locals) body)))))
+   
+   (with-trace 'wasm "gen-fun"
+      (with-access::global v (name import value type)
+	 (trace-item "fun=" name)
+	 (trace-item "type=" (shape type))
+	 ;; debug 
+	 (when *bbv-dump-cfg*
+	    (with-access::sfun value (args)
+	       (dump-cfg v (map local->reg args) l ".wasm.cfg")))
+	 (with-access::sfun value (loc args)
+	    (let ((params (map local->reg args)))
+	       
+	       (build-tree b params l)
+	       
+	       (set! l (register-allocation b v params l))
+	       (set! l (bbv b v params l))
+	       
+	       (let* ((locals (get-locals params l))
+		      (body (gen-body v l))
+		      (inits (gen-local-inits locals v l body)))
+		  `(comment ,(string-append (symbol->string (global-id v))
+				" in " (symbol->string (global-module v)))
+		      ,(with-loc loc
+			  `(func ,(wasm-sym name)
+			      
+			      ,@(if (eq? import 'export)
+				    `((export ,name))
+				    '())
+			      
+			      ,@(gen-params params)
+			      ,@(gen-result type)
+			      ,@(gen-locals locals)
+			      
+			      ,@(if (null? inits)
+				    body
+				    (multiple-value-bind (locals rest)
+				       (split-body body)
+				       (append locals
+					  (list '(comment "local initialization"))
+					  inits
+					  rest))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-body ...                                                     */
@@ -155,66 +181,72 @@
 ;*    wasm-type ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (wasm-type t::type #!optional (may-null #f))
-  (let ((id (type-id t))
-        (name (type-name t)))
-    (case id
-      ((obj) 'eqref)
-      ((nil) 'eqref)
-      ((magic) 'eqref)
-      ((unspecified) 'eqref)
-      ((bbool) 'i31ref)
-      ((class-field) 'eqref)
-      ((pair-nil) 'eqref)
-      ((cobj) 'eqref)
-      ((void*) 'i32) ;; A raw pointer into the linear memory
-      ((tvector) 'arrayref)
-      ((cnst) 'i31ref)
-      ((funptr) 'funcref)
-      ((bool) 'i32)
-      ((byte) 'i32)
-      ((ubyte) 'i32)
-      ((char) 'i32)
-      ((uchar) 'i32)
-      ((ucs2) 'i32)
-      ((int8) 'i32)
-      ((uint8) 'i32)
-      ((int16) 'i32)
-      ((uint16) 'i32)
-      ((int32) 'i32)
-      ((uint32) 'i32)
-      ((int64) 'i64)
-      ((uint64) 'i64)
-      ((int) 'i32)
-      ((uint) 'i32)
-      ((long) 'i64)
-      ((ulong) 'i64)
-      ((elong) 'i64)
-      ((uelong) 'i64)
-      ((llong) 'i64)
-      ((ullong) 'i64)
-      ((float) 'f32)
-      ((double) 'f64)
-      ((vector) '(ref $vector))
-      ((string bstring) '(ref $bstring))
-      (else 
-        (cond 
-          ((foreign-type? t) (error "wasm-gen" "unimplemented foreign type in WASM" (type-id t)))
-          ;; Classes
-          ((string-suffix? "_bglt" name) (if may-null `(ref null ,(wasm-sym name)) `(ref ,(wasm-sym name))))
-          ((tvec? t) (if may-null `(ref null ,(wasm-vector-type t)) `(ref ,(wasm-vector-type t))))
-          (else (if may-null 
-            `(ref null ,(wasm-sym (symbol->string (type-id t))))
-            `(ref ,(wasm-sym (symbol->string (type-id t)))))))))))
+   (let ((id (type-id t))
+	 (name (type-name t)))
+      (case id
+	 ((obj) 'eqref)
+	 ((nil) 'eqref)
+	 ((magic) 'eqref)
+	 ((unspecified) 'eqref)
+	 ((bbool) 'i31ref)
+	 ((class-field) 'eqref)
+	 ((pair-nil) 'eqref)
+	 ((cobj) 'eqref)
+	 ((void*) 'i32) ;; A raw pointer into the linear memory
+	 ((tvector) 'arrayref)
+	 ((cnst) 'i31ref)
+	 ((funptr) 'funcref)
+	 ((bool) 'i32)
+	 ((byte) 'i32)
+	 ((ubyte) 'i32)
+	 ((char) 'i32)
+	 ((uchar) 'i32)
+	 ((ucs2) 'i32)
+	 ((int8) 'i32)
+	 ((uint8) 'i32)
+	 ((int16) 'i32)
+	 ((uint16) 'i32)
+	 ((int32) 'i32)
+	 ((uint32) 'i32)
+	 ((int64) 'i64)
+	 ((uint64) 'i64)
+	 ((int) 'i32)
+	 ((uint) 'i32)
+	 ((long) 'i64)
+	 ((ulong) 'i64)
+	 ((elong) 'i64)
+	 ((uelong) 'i64)
+	 ((llong) 'i64)
+	 ((ullong) 'i64)
+	 ((float) 'f32)
+	 ((double) 'f64)
+	 ((vector) '(ref $vector))
+	 ((string bstring) '(ref $bstring))
+	 (else 
+	  (cond 
+	     ((foreign-type? t)
+	      (error "wasm-gen" "unimplemented foreign type in WASM" id))
+	     ;; Classes
+	     ((string-suffix? "_bglt" name)
+	      (if may-null `(ref null ,(wasm-sym name)) `(ref ,(wasm-sym name))))
+	     ((tvec? t)
+	      (if may-null `(ref null ,(wasm-vector-type t)) `(ref ,(wasm-vector-type t))))
+	     (else
+	      (if may-null 
+		  `(ref null ,(wasm-sym (symbol->string id)))
+		  `(ref ,(wasm-sym (symbol->string id))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-default-value ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (wasm-default-value type)
-   (case (type-id type)
-      ;; TODO: implement types
+(define (wasm-default-value ty)
+   (case (type-id ty)
       ((bool) '(i32.const 0))
       ((char) '(i32.const 0))
+      ((bchar) `(global.get $bchar-default-value))
       ((uchar) '(i32.const 0))
+      ((ucs2) '(i32.const 0))
+      ((bucs2) `(global.get $bucs2-default-value))
       ((byte) '(i32.const 0))
       ((ubyte) '(i32.const 0))
       ((int8) '(i32.const 0))
@@ -229,16 +261,30 @@
       ((uint) '(i32.const 0))
       ((long) '(i64.const 0))
       ((elong) '(i64.const 0))
+      ((uelong) '(i64.const 0))
+      ((ulong) '(i64.const 0))
       ((llong) '(i64.const 0))
+      ((ullong) '(i64.const 0))
       ((float) '(f32.const 0))
       ((double) '(f64.const 0))
       ((bint) `(global.get $bint-default-value))
+      ((bint8) `(global.get $bint8-default-value))
+      ((bint16) `(global.get $bint16-default-value))
+      ((bint32) `(global.get $bint32-default-value))
+      ((bint64) `(global.get $bint64-default-value))
+      ((buint8) `(global.get $buint8-default-value))
+      ((buint16) `(global.get $buint16-default-value))
+      ((buint32) `(global.get $buint32-default-value))
+      ((buint64) `(global.get $buint64-default-value))
+      ((belong) `(global.get $belong-default-value))
       ((pair) `(global.get $pair-default-value))
+      ((epair) `(global.get $epair-default-value))
       ((nil) (wasm-cnst-nil))
       ((pair-nil) (wasm-cnst-nil))
+      ((cell) `(global.get $cell-default-value))
       ((symbol) `(global.get $symbol-default-value))
       ((keyword) `(global.get $keyword-default-value))
-      ((bstring) `(global.get $bstring-default-value))
+      ((string bstring) `(global.get $bstring-default-value))
       ((ucs2string) `(global.get $ucs2string-default-value))
       ((regexp) `(global.get $regexp-default-value))
       ((vector) `(global.get $vector-default-value))
@@ -266,16 +312,31 @@
       ((file-output-port) `(global.get $file-output-port-default-value))
       ((input-port) `(global.get $input-port-default-value))
       ((file-input-port) `(global.get $file-input-port-default-value))
+      ((binary-port) `(global.get $binary-port-default-value))
       ((socket) `(global.get $socket-default-value))
       ((datagram-socket) `(global.get $datagram-socket-default-value))
       ((weakptr) `(global.get $weakptr-default-value))
       ((mmap) `(global.get $mmap-default-value))
+      ((process) `(global.get $process-default-value))
       ((custom) `(global.get $custom-default-value))
+      ((foreign) `(global.get $foreign-default-value))
+      ((exit) `(global.get $exit-default-value))
+      ((dynamic-env) `(global.get $dynamic-env-default-value))
+      ((object) `(global.get $object-default-value))
+      ((funptr) `(global.get $funptr-default-value))
+      ((unspecified) (wasm-cnst-unspec))
       ((obj) (wasm-cnst-unspec))
       (else
-       (if (foreign-type? type)
-	   (error "wasm" "Unknown foreign type for default value" (type-id type))
-	   (error "wasm" "No default init value for builtin type" (type-id type))))))
+       (cond
+	  ((isa? ty tclass)
+	   (with-access::tclass ty (name holder)
+	      `(ref.cast (ref ,(wasm-sym name))
+		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
+		     (global.get ,(wasm-sym (global-name holder)))))))
+	  ((foreign-type? ty)
+	   (error "wasm" "Unknown foreign type for default value" (type-id ty)))
+	  (else
+	   (error "wasm" "No default init value for builtin type" (type-id ty)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-vector-type ...                                             */
@@ -342,12 +403,84 @@
       l))
 
 ;*---------------------------------------------------------------------*/
+;*    gen-local-inits ...                                              */
+;*    -------------------------------------------------------------    */
+;*    As of 17sep2024, the wasm-as tool is not smart enough to         */
+;*    compute a full def/use analysis and sometimes it concludes       */
+;*    that a typed local variable is not initialized while it          */
+;*    practice it is, and then its compilation fails. To work          */
+;*    around this problem, the generated code includes                 */
+;*    dummy initializations of variables that could be considered      */
+;*    non-initialized by wasm-as.                                      */
+;*---------------------------------------------------------------------*/
+(define (gen-local-inits locals::pair-nil v::global l::pair-nil body)
+
+   (define (type-require-init? t)
+      (case (type-id t)
+	 ((obj int long double) #f)
+	 (else #t)))
+
+   (define (first-block-assigs l)
+      (with-trace 'wasm "first-block-assigs"
+	 (if (null? l)
+	     '()
+	     (with-access::block (car l) (first)
+		(let loop ((first first)
+			   (wl '()))
+		   (if (null? first)
+		       wl
+		       (let ((i (car first)))
+			  (with-access::rtl_ins i (fun dest)
+			     (trace-item "i=" (shape i) " -> " (typeof fun)
+				" " (typeof dest))
+			     (cond
+				((or (isa? fun rtl_go)
+				     (isa? fun rtl_switch)
+				     (isa? fun rtl_ifeq)
+				     (isa? fun rtl_ifne))
+				 wl)
+				((not (isa? dest rtl_reg))
+				 (loop (cdr first) wl))
+				((or (isa? fun rtl_mov)
+				     (isa? fun rtl_new)
+				     (isa? fun rtl_loadg))
+				 (loop (cdr first) (cons dest wl)))
+				(else
+				 (loop (cdr first) wl)))))))))))
+   
+   (define whitelist
+      (if (dispatcher-body? body)
+	  '()
+	  (first-block-assigs l)))
+
+   (with-trace 'wasm "gen-local-inits"
+      (trace-item "WL=" (map shape whitelist))
+      (filter-map (lambda (r::rtl_reg)
+		     (unless (memq r whitelist)
+			(let* ((t (rtl_reg-type r))
+			       (i (wasm-default-value t)))
+			   (when (type-require-init? t)
+			      (trace-item "init=" (reg-name r) "::"
+				 (shape t))
+			      `(local.set ,(wasm-sym (reg-name r))
+				  ,(wasm-default-value t))))))
+	 locals)))
+
+;*---------------------------------------------------------------------*/
 ;*    reg-name ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (reg-name reg) ;()
    (or (rtl_reg-debugname reg)
        (string-append (if (SawCIreg-var reg) "V" "R")
 	  (integer->string (SawCIreg-index reg)) )))
+
+;*---------------------------------------------------------------------*/
+;*    dispatcher-body? ...                                             */
+;*---------------------------------------------------------------------*/
+(define (dispatcher-body? body)
+   (match-case body
+      (((local $__label i32) . ?-) #t)
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-dispatcher-body ...                                          */

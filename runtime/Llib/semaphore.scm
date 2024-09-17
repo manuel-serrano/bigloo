@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Llib/semaphore.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/semaphore.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 20 09:27:10 2017                          */
-;*    Last change :  Sun Aug 25 09:10:42 2019 (serrano)                */
-;*    Copyright   :  2017-19 Manuel Serrano                            */
+;*    Last change :  Tue Sep 17 14:51:53 2024 (serrano)                */
+;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Semaphore                                                        */
 ;*=====================================================================*/
@@ -40,6 +40,8 @@
 	    __evenv)
    
    (extern  (macro $semaphore?::bool (::obj) "BGL_SEMAPHOREP"))
+   
+   (wasm    ($semaphore? "(ref.test (ref $semaphore) ~0)"))
    
    (java    (class foreign
 	       (method static $semaphore?::bool (::obj)

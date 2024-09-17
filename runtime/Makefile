@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    /tmp/BGL/bigloo/runtime/Makefile                                 */
+#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Sep 11 18:35:06 2024 (serrano)                */
+#*    Last change :  Tue Sep 17 15:16:13 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -384,7 +384,9 @@ WASMS = \
 	objs/$(WASMDIR_SYS)/Unsafe/ssr.wasm \
 	objs/$(WASMDIR_SYS)/Unsafe/url.wasm objs/$(WASMDIR_SYS)/Unsafe/uuid.wasm \
 	objs/$(WASMDIR_SYS)/Unsafe/aes.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/http.wasm objs/$(WASMDIR_SYS)/Unsafe/tar.wasm \
+	objs/$(WASMDIR_SYS)/Unsafe/http.wasm \
+        objs/$(WASMDIR_SYS)/Unsafe/tar.wasm \
+        objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \
 	$(LLIB:%=objs/$(WASMDIR_SYS)/Llib/%.wasm) \
 	$(IEEE:%=objs/$(WASMDIR_SYS)/Ieee/%.wasm) \
 	$(EVAL:%=objs/$(WASMDIR_SYS)/Eval/%.wasm) \
@@ -394,7 +396,6 @@ WASMS = \
 	$(R5RS:%=objs/$(WASMDIR_SYS)/R5rs/%.wasm) \
 	$(MATCH:%=objs/$(WASMDIR_SYS)/Match/%.wasm) \
 	$(LALR:%=objs/$(WASMDIR_SYS)/Lalr/%.wasm) \
-	# objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \
 	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm \
 	# objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm
 #*---------------------------------------------------------------------*/
@@ -1202,6 +1203,8 @@ objs/wasm_s/Ieee/string.wat: Ieee/string-generic.sch
 objs/wasm_u/Ieee/string.wat: Ieee/string-generic.sch
 objs/wasm_s/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_u/Ieee/symbol.wat: Ieee/symbol-generic.sch
+objs/wasm_s/Unsafe/bignumber.wat: Unsafe/bignumber-generic.sch
+objs/wasm_u/Unsafe/bignumber.wat: Unsafe/bignumber-generic.sch
 
 Wlib/runtime.wat: Wlib/runtime.wat.in
 	preallocs=`$(WASM_BINTS_PREALLOC)`; \

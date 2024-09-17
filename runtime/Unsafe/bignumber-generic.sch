@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../bigloo/bigloo/runtime/Unsafe/bignumber-generic.sch           */
+;*    .../project/bigloo/wasm/runtime/Unsafe/bignumber-generic.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Mon Sep  2 11:30:19 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 15:41:08 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -49,6 +49,12 @@
       (class foreign
 	 (method static $srand::void (::int) "srand")))
    
+   (wasm
+      ($make-bignum "(struct.new $bignum ~0)")
+      ($bignum-u16vect "(struct.get $bignum $u16vect ~0)")
+      ($fixnum->flonum "(f64.convert_i64_s ~0)")
+      ($flonum->fixnum "(i64.trunc_f64_s ~0)"))
+
    (extern
       ($make-bignum::bignum (::u16vector) "bgl_make_bignum")
       (macro $bignum-u16vect::u16vector (::bignum) "BGL_BIGNUM_U16VECT")
@@ -144,7 +150,7 @@
       ($bitnotbx::bignum ::bignum)))
 
 ;*---------------------------------------------------------------------*/
-;*    $string->integer-obj ...                                        */
+;*    $string->integer-obj ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    When no native bignum implementation is available, standard      */
 ;*    aritmethic operations do not promote their result because        */

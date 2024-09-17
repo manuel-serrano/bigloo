@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/unicode.scm      */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/unicode.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Dec 10 06:40:00 2023 (serrano)                */
+;*    Last change :  Tue Sep 17 14:41:23 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -86,6 +86,8 @@
 						"ucs2_string_to_utf8_string")
 	   (c-utf8-string->ucs2-string::ucs2string (::bstring)
 						   "utf8_string_to_ucs2_string"))
+
+   (wasm   (c-ucs2-string? "(ref.test (ref $ucs2string) ~0)"))
    
    (java   (class foreign
 	      (method static c-ucs2-string?::bool (::obj)

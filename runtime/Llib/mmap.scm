@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/mmap.scm         */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/mmap.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Sun Aug 25 09:10:30 2019 (serrano)                */
-;*    Copyright   :  2005-19 Manuel Serrano                            */
+;*    Last change :  Tue Sep 17 14:50:44 2024 (serrano)                */
+;*    Copyright   :  2005-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
 ;*    -------------------------------------------------------------    */
@@ -57,6 +57,8 @@
 	    (macro $mmap-wp::elong (::mmap) "BGL_MMAP_WP_GET")
 	    (macro $mmap-wp-set!::void (::mmap ::elong) "BGL_MMAP_WP_SET")
 	    (macro $mmap-bound-check?::bool (::elong ::elong) "BOUND_CHECK"))
+   
+   (wasm    ($mmap? "(ref.test (ref $mmap) ~0)"))
    
    (java    (class foreign
 	       (method static $mmap?::bool (::obj)

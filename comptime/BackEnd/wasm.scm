@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/BackEnd/wasm.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/wasm.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Sep 16 08:30:43 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 10:01:35 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -456,8 +456,22 @@
 		      (import "__runtime" "BEOA" (global $BEOA i31ref))
 		      (import "__js" "trace" (func $__trace (param i32)))
 
+		      (import "__runtime" "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value $bint))
 		      (import "__runtime" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value $bint))
+		      (import "__runtime" "BGL_BINT8_DEFAULT_VALUE" (global $bint8-default-value $bint8))
+		      (import "__runtime" "BGL_BINT16_DEFAULT_VALUE" (global $bint16-default-value $bint16))
+		      (import "__runtime" "BGL_BINT32_DEFAULT_VALUE" (global $bint32-default-value $bint32))
+		      (import "__runtime" "BGL_BINT64_DEFAULT_VALUE" (global $bint64-default-value $bint64))
+		      (import "__runtime" "BGL_BUINT8_DEFAULT_VALUE" (global $buint8-default-value $buint8))
+		      (import "__runtime" "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value $buint16))
+		      (import "__runtime" "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value $buint32))
+		      (import "__runtime" "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value $buint64))
+		      (import "__runtime" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value $buint64))
+		      (import "__runtime" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value $buint64))
+		      (import "__runtime" "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value $belong))
 		      (import "__runtime" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value $pair))
+		      (import "__runtime" "BGL_EPAIR_DEFAULT_VALUE" (global $epair-default-value $epair))
+		      (import "__runtime" "BGL_CELL_DEFAULT_VALUE" (global $cell-default-value $cell))
 		      (import "__runtime" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value $bstring))
 		      (import "__runtime" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value $symbol))
 		      (import "__runtime" "BGL_KEYWORD_DEFAULT_VALUE" (global $keyword-default-value $keyword))
@@ -486,6 +500,20 @@
 		      (import "__runtime" "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE" (global $file-output-port-default-value $file-output-port))
 		      (import "__runtime" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value $input-port))
 		      (import "__runtime" "BGL_FILE_INPUT_PORT_DEFAULT_VALUE" (global $file-input-port-default-value $file-input-port))
+		      (import "__runtime" "BGL_BINARY_PORT_DEFAULT_VALUE" (global $binary-port-default-value $file-input-port))
+		      (import "__runtime" "BGL_SOCKET_DEFAULT_VALUE" (global $socket-default-value))
+		      (import "__runtime" "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE" (global $datagram-socket-default-value))
+		      (import "__runtime" "BGL_WEAKPTR_DEFAULT_VALUE" (global $weakptr-default-value))
+		      (import "__runtime" "BGL_MMAP_DEFAULT_VALUE" (global $mmap-default-value))
+		      (import "__runtime" "BGL_PROCESS_DEFAULT_VALUE" (global $process-default-value))
+		      (import "__runtime" "BGL_CUSTOM_DEFAULT_VALUE" (global $custom-default-value))
+		      (import "__runtime" "BGL_FOREIGN_DEFAULT_VALUE" (global $foreign-default-value $foreign))
+		      (import "__runtime" "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value))
+		      (import "__runtime" "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value))
+		      (import "__runtime" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value))
+		      
+		      (import "__runtime" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result eqref)))
+		      (import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result eqref)))
 		      
 		      ,@(emit-imports))
 		   

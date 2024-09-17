@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/os.scm           */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/os.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Wed Jul 19 09:32:33 2023 (serrano)                */
+;*    Last change :  Tue Sep 17 14:28:03 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -155,10 +155,7 @@
 	    ($bgl-dlsym-get::obj (::custom) "bgl_dlsym_get")
 	    ($bgl-dlsym-set::obj (::custom ::obj) "bgl_dlsym_set"))
 
-	(wasm
-		;; TODO: implement the OS module in WASM
-		
-	    ($getenv? "(i32.const 0)")
+   (wasm    ($getenv? "(i32.const 0)")
 	    ($getenv "(array.new_fixed $bstring 0)")
 	    (c-getcwd "(throw $unimplemented)"))
 

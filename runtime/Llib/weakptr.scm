@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/weakptr.scm      */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/weakptr.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Stephane Epardaud                                 */
 ;*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-;*    Last change :  Fri Nov 26 13:01:45 2021 (serrano)                */
+;*    Last change :  Tue Sep 17 14:47:29 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Weak pointers.                                                   */
 ;*=====================================================================*/
@@ -53,7 +53,9 @@
 		  "bgl_weakptr_ref_set")
 	   ($make-weakptr::weakptr (::obj ::obj)
 		  "bgl_make_weakptr"))
-	   
+
+   (wasm   ($weakptr? "(ref.test (ref $weakptr) ~0)"))
+   
    (java   (class foreign
             (method static $weakptr?::bool (::obj)
                     "BGL_WEAKPTRP")

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/thread.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/thread.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Fri Sep 13 11:13:36 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 14:43:28 2024 (serrano)                */
 ;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -100,19 +100,19 @@
 	    (macro $thread-backend-set!::void (::obj)
 		   "BGL_THREAD_BACKEND_SET"))
 
-	(wasm
-		($dynamic-env? "(ref.test (ref $dynamic-env) ~0)")
-		($mutex? "(ref.test (ref $mutex) ~0)")
-		($make-mutex "(struct.new_default $mutex)")
-		($mutex-name "(struct.get $mutex $name ~0)")
-		($mutex-backend "(struct.get $mutex $backend ~0)")
-		;; TODO
-		($mutex-lock "(i32.const 1)")
-		($mutex-lock-prelock "(i32.const 1)")
-		($mutex-timed-lock "(i32.const 1)")
-		($mutex-unlock "(i32.const 1)")
-		($mutex-state "(struct.get $mutex $state ~0)"))
-	    
+   (wasm    ($dynamic-env? "(ref.test (ref $dynamic-env) ~0)")
+            ($mutex? "(ref.test (ref $mutex) ~0)")
+	    ($condvar? "(ref.test (ref $condvar) ~0)")
+	    ($make-mutex "(struct.new_default $mutex)")
+	    ($mutex-name "(struct.get $mutex $name ~0)")
+	    ($mutex-backend "(struct.get $mutex $backend ~0)")
+	    ;; TODO
+	    ($mutex-lock "(i32.const 1)")
+	    ($mutex-lock-prelock "(i32.const 1)")
+	    ($mutex-timed-lock "(i32.const 1)")
+	    ($mutex-unlock "(i32.const 1)")
+	    ($mutex-state "(struct.get $mutex $state ~0)"))
+
    (java    (class foreign
 	       (method static $dynamic-env?::bool (::obj)
 		       "BGL_DYNAMIC_ENVP")

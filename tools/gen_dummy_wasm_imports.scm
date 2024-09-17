@@ -27,11 +27,12 @@
                 (hashtable-put! already-generated id #t)
                 (parse-global id s)))))
 
+(define cnt 0)
+   
 (define (parse-func id sig)
    
-   (define cnt 0)
-   
    (define (emit-unimplemented)
+      (set! cnt (+fx cnt 1))
       ;; '((throw $unimplemented))
       `(call $not_implemented (i32.const ,cnt)))
    

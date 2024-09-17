@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/Init/parse_args.scm          */
+;*    .../prgm/project/bigloo/wasm/comptime/Init/parse_args.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Sep 13 14:12:40 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 16:09:50 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -153,6 +153,8 @@
       (case *target-language*
 	 ((jvm)
 	  (register-srfi! 'bigloo-jvm))
+	 ((wasm)
+	  (register-srfi! 'bigloo-wasm))
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (when *saw* (register-srfi! 'bigloo-saw))

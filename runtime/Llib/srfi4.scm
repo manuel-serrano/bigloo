@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/srfi4.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/srfi4.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Fri Nov 14 08:05:50 2014 (serrano)                */
-;*    Copyright   :  2006-14 Manuel Serrano                            */
+;*    Last change :  Tue Sep 17 14:45:14 2024 (serrano)                */
+;*    Copyright   :  2006-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
 ;*=====================================================================*/
@@ -225,6 +225,7 @@
 	   )
 
 	(wasm
+	   ($hvector? "(ref.test (ref $hvector) ~0)")
 	   ($s8vector? "(ref.test (ref $s8vector) ~0)")
 	   ($u8vector? "(ref.test (ref $u8vector) ~0)")
 	   ($s16vector? "(ref.test (ref $s16vector) ~0)")

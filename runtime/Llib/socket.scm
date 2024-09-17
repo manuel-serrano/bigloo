@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/socket.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/socket.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Fri Sep 13 12:14:12 2024 (serrano)                */
+;*    Last change :  Tue Sep 17 14:47:59 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -117,6 +117,9 @@
             ($datagram-socket-send::obj (::datagram-socket ::bstring ::bstring ::int)
 	       "bgl_datagram_socket_send"))
 
+   (wasm   (c-socket? "(ref.test (ref $socket) ~0)")
+           ($datagram-socket? "(ref.test (ref $datagram-socket) ~0)"))
+   
    (java    (class foreign
 	       (method static c-socket?::bool (::obj)
 		  "SOCKETP")

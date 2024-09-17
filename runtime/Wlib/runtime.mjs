@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Sep 17 07:28:54 2024 (serrano)                */
+/*    Last change :  Tue Sep 17 11:33:43 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -29,13 +29,13 @@ const argv = (globalThis.window && "Deno" in window)
 
 if (argv.length < 3) {
     console.error("ERROR: missing input WASM module file.");
-    exit(1);
+    process.exit(1);
 } else if (!existsSync(argv[2])) {
     console.error(`ERROR: file '${argv[2]}' doesn't exist.`);
-    exit(1);
+    process.exit(1);
 } else if (extname(argv[2]) != ".wasm") {
     console.error(`ERROR: input file '${argv[2]}' is not a WASM module.`);
-    exit(1);
+    process.exit(1);
 }
 
 /*---------------------------------------------------------------------*/
@@ -67,9 +67,9 @@ const wasm = await WebAssembly.compile(readFileSync(argv[2]));
 const instance = await WebAssembly.instantiate(wasm, {
    __js: {
       not_implemented: x => {
-	 console.error("not implemented", x);
-	 system.exit(1);
-      }
+	 console.error("*** WASM WARNING: function not implemented", x);
+      },
+      
       trace: function (x) {
          console.log("TRACE: " + x);
       },
@@ -189,6 +189,10 @@ const instance = await WebAssembly.instantiate(wasm, {
 
       exit: function (val) {
  	 process.exit(val);
+      },
+
+      signal: function (sig, hdl) {
+	 // console.log("NOT IMPLEMENTED SIGNAL sig=", sig, "hdl=", hdl);
       }
    },
 
@@ -229,28 +233,23 @@ const instance = await WebAssembly.instantiate(wasm, {
       atan2: Math.atan2,
       pow: Math.pow,
       randomf: Math.random,
-   },
-
-   __js_bignum: {
-      buffer_to_bignum: (offset, len, base) {
-	 console.log("O=", offset, len, base);
-	 return BigInt(0);
-      }
-      long_to_bignum: (value) {
-	 console.log("V=", value);
-	 return BigInt(value);
-      }
    }
+
+/*    __js_bignum: {                                                   */
+/*       long_to_bignum: (value) => {                                  */
+/* 	 return BigInt(value);                                         */
+/*       }                                                             */
+/*    }                                                                */
 });
 
 if (!instance.exports.bigloo_main) {
    console.error("ERROR: missing 'bigloo_main' symbol in WASM module file.");
-    exit(1);
+    process.exit(1);
 }
 
 if (!instance.exports.__js_bigloo_main) {
    console.error("ERROR: missing '__js_bigloo_main' symbol in WASM module file.");
-   exit(1);
+   process.exit(1);
 }
 
 // Call the Bigloo Scheme program!
