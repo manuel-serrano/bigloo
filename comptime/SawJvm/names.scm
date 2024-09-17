@@ -59,7 +59,8 @@
 	       (regexp        . regexp)
 	       (epair         . extended_pair)
 	       (dynamic-env   . bgldynamic)
-	       (procedure     . procedure) )))
+	       (procedure     . procedure)
+	       (procedure-l   . procedure))))
 
 ;;
 ;; Associate jvmtype to a type

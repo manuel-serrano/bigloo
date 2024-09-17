@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Mon Sep 16 16:37:49 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 17:14:59 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -79,9 +79,9 @@
 	    (macro make-l-procedure::procedure-l (::funptr ::int)
 		   "MAKE_L_PROCEDURE")		 
 	    					 
-	    (macro procedure-set!::obj (::procedure-l ::int ::obj)
+	    (macro procedure-set!::obj (::procedure ::int ::obj)
 		   "PROCEDURE_SET")			 
-	    (macro procedure-ref::obj (::procedure-l ::int)
+	    (macro procedure-ref::obj (::procedure ::int)
 		   "PROCEDURE_REF")			 
 
 	    (macro $procedure-attr-set!::obj (::procedure ::obj)
@@ -193,7 +193,7 @@
 	       (method static make-el-procedure::procedure-el (::int)
 		       "MAKE_EL_PROCEDURE")	 
 	       
-	       (method static make-l-procedure::procedure (::obj ::int)
+	       (method static make-l-procedure::procedure-l (::obj ::int)
 		       "MAKE_L_PROCEDURE")		 
 	       
 	       (method static procedure-set!::obj (::procedure ::int ::obj)
@@ -206,9 +206,9 @@
 	       (method static $procedure-attr::obj (::procedure)
 		       "PROCEDURE_ATTR")
 	       
-	       (method static procedure-l-set!::obj (::procedure ::int ::obj)
+	       (method static procedure-l-set!::obj (::procedure-l ::int ::obj)
 		       "PROCEDURE_L_SET")		  
-	       (method static procedure-l-ref::obj (::procedure ::int)
+	       (method static procedure-l-ref::obj (::procedure-l ::int)
 		       "PROCEDURE_L_REF")
 	       
 	       (method static procedure-el-set!::obj (::procedure-el ::int ::obj)

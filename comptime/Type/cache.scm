@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Thu Jan 11 11:35:10 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 17:02:34 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
@@ -67,6 +67,7 @@
 	   *struct*
 	   *unspec*
 	   *procedure*
+	   *procedure-l*
 	   *procedure-el*
 	   *exit*
 	   *foreign*
@@ -146,6 +147,7 @@
 			     (use-type! 'f64vector #f)))
    (set! *struct*        (use-type! 'struct #f))
    (set! *procedure*     (use-type! 'procedure #f))
+   (set! *procedure-l*   (use-type! 'procedure-l #f))
    (set! *procedure-el*  (use-type! 'procedure-el #f))
    (set! *unspec*        (use-type! 'unspecified #f))
    (set! *exit*          (use-type! 'exit #f))
@@ -215,6 +217,7 @@
 (define *hvectors*      'no-type-yet)
 (define *struct*        'no-type-yet)
 (define *procedure*     'no-type-yet)
+(define *procedure-l*   'no-type-yet)
 (define *procedure-el*  'no-type-yet)
 (define *unspec*        'no-type-yet)
 (define *exit*          'no-type-yet)
