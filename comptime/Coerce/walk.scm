@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Coerce/walk.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Coerce/walk.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:43:37 1995                          */
-;*    Last change :  Mon Mar 28 09:40:41 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 18 06:43:49 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We perform now coercions.                                        */
 ;*=====================================================================*/
@@ -26,7 +26,8 @@
 	    ast_remove
 	    coerce_pproto
 	    coerce_coerce
-	    coerce_convert)
+	    coerce_convert
+	    coerce_app)
    (export  (coerce-walk! ast)))
 
 ;*---------------------------------------------------------------------*/
@@ -34,6 +35,7 @@
 ;*---------------------------------------------------------------------*/
 (define (coerce-walk! ast)
    (pass-prelude "Coercions & Checks")
+   (init-app-cache!)
    (for-each (lambda (global)
 		(reset-ppmarge!)
 		(enter-function (global-id global))

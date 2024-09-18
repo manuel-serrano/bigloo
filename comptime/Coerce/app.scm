@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Sun Feb 11 08:57:27 2018 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 18 06:44:32 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
 ;*=====================================================================*/
@@ -22,8 +22,23 @@
 	    type_typeof
 	    ast_var
 	    ast_node
+	    ast_env
 	    coerce_coerce
-	    coerce_convert))
+	    coerce_convert)
+   (export  (init-app-cache!)))
+
+;*---------------------------------------------------------------------*/
+;*    init-app-cache! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (init-app-cache!)
+   (set! *eq* (find-global/module 'c-eq? 'foreign))
+   (set! *eqb* (find-global/module '$eqb? 'foreign)))
+
+;*---------------------------------------------------------------------*/
+;*    *eq* ...                                                         */
+;*---------------------------------------------------------------------*/
+(define *eq* #f)
+(define *eqb* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::app ...                                                */
@@ -57,13 +72,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    coerce-foreign-fx-app! ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (coerce-foreign-fx-app! fun callee::variable caller node to safe)
+(define (coerce-foreign-fx-app! cfun callee::variable caller node to safe)
+   
    (define (coerce-args! args types)
       (let loop ((actuals args)
 		 (types   types))
 	 (when (pair? actuals)
 	    (set-car! actuals (coerce! (car actuals) caller (car types) safe))
 	    (loop (cdr actuals) (cdr types)))))
+   
    (define (coerce-procedure args types loc)
       (coerce-args! (cdr args) (cdr types))
       (let ((clo (car args)))
@@ -74,22 +91,40 @@
 				     (shape (variable-type (var-variable clo)))
 				     "procedure"))
 	     (set-car! args (coerce! clo caller *procedure* safe)))))
+
+   (define (coerce-eq args types loc)
+      (cond
+	 ((and *eqb*
+	       (eq? (get-type (car args) #f) *bool*)
+	       (eq? (get-type (cadr args) #f) *bool*))
+	  ;; transform the call into a $eqb call
+	  (with-access::app node (fun)
+	     (var-variable-set! fun *eqb*))
+	  (set-car! args (coerce! (car args) caller *bool* safe))
+	  (set-car! (cdr args) (coerce! (cadr args) caller *bool* safe)))
+	 (else
+	  (coerce-args! args (cfun-args-type cfun)))))
+   
    (with-access::app node (args loc)
       ;; make-XXX-procedure are special, their first
       ;; argument is not really typable because it's not a Bigloo correct
       ;; value (in C it's a pointer to function).
-      (if (memq (global-id callee) make-procedure-ids)
-	  (coerce-procedure args (cfun-args-type fun) loc)
-	  (coerce-args! args (cfun-args-type fun))))
+      (cond
+	 ((eq? callee *eq*)
+	  (coerce-eq args (cfun-args-type cfun) loc))
+	 ((memq (global-id callee) make-procedure-ids)
+	  (coerce-procedure args (cfun-args-type cfun) loc))
+	 (else
+	  (coerce-args! args (cfun-args-type cfun)))))
    (convert! node (get-type node #f) to safe))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-foreign-va-app! ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (coerce-foreign-va-app! fun callee::variable caller node to safe)
+(define (coerce-foreign-va-app! cfun callee::variable caller node to safe)
    (let loop ((actuals (app-args node))
-	      (types   (cfun-args-type fun))
-	      (counter (fun-arity fun)))
+	      (types   (cfun-args-type cfun))
+	      (counter (fun-arity cfun)))
       (if (=fx counter -1)
 	  ;; this is the formals of a foreign va-args
 	  (let loop ((actuals actuals))

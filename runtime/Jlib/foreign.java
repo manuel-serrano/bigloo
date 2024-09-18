@@ -262,7 +262,17 @@ public final class foreign
 		  && (((bint) o1).value == ((bint) o2).value)));
       }
 
+   public static boolean EQBOOL(boolean o1, boolean o2)
+      {
+	 return (o1 == o2);
+      }
+
    public static boolean BOXED_EQ(Object o1, Object o2)
+      {
+	 return (o1 == o2);
+      }
+
+   public static boolean EQB(boolean o1, boolean o2)
       {
 	 return (o1 == o2);
       }

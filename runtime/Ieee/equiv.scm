@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Fri Nov  4 16:33:19 2022 (serrano)                */
+;*    Last change :  Wed Sep 18 06:45:10 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -46,10 +46,12 @@
 	    
 	    __evenv)
    
-   (extern  (infix macro c-eq?::bool (::obj ::obj) "=="))
+   (extern  (infix macro c-eq?::bool (::obj ::obj) "==")
+	    (infix macro $eqb?::bool (::bool ::bool) "=="))
    
    (java    (class foreign
 	       (method static c-eq?::bool (::obj ::obj) "EQ")
+	       (method static eqb?::bool (::obj ::obj) "EQB")
 	       (method static c-boxed-eq?::bool (::obj ::obj) "BOXED_EQ")))
    
    (export  (eqv?::bool ::obj ::obj)
@@ -59,6 +61,7 @@
    (pragma  (eqv? side-effect-free nesting fail-safe)
 	    (eq? side-effect-free nesting fail-safe)
 	    (c-eq? side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($eqb? side-effect-free nesting fail-safe)
 	    (equal? side-effect-free nesting fail-safe)))
 
 ;*---------------------------------------------------------------------*/
