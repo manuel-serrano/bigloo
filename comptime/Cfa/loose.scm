@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:02:51 1996                          */
-;*    Last change :  Sat Sep  4 15:13:19 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 18 07:41:48 2024 (serrano)                */
+;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Loosing approximations means values are going outside.           */
 ;*    Toping approximations means add top the sets.                    */
@@ -36,10 +36,9 @@
 (define (loose!::approx approx::approx owner)
    (trace (cfa 4) "loose!: " (shape approx) #\Newline)
    (with-access::approx approx (lost-stamp)
-      (if (<fx lost-stamp *cfa-stamp*)
-	  (begin
-	     (set! lost-stamp *cfa-stamp*)
-	     (for-each-approx-alloc loose-alloc! approx))))
+      (when (<fx lost-stamp *cfa-stamp*)
+	 (set! lost-stamp *cfa-stamp*)
+	 (for-each-approx-alloc loose-alloc! approx)))
    approx)
 
 ;*---------------------------------------------------------------------*/
