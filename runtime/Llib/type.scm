@@ -700,8 +700,8 @@
 
     ;; procedure
     (coerce procedure bool () ((lambda (x) #t)))
-;*     (coerce procedure-l procedure () ())                            */
-;*     (coerce procedure-el procedure () ())                           */
+    (coerce procedure-l bool () ((lambda (x) #t)))
+    (coerce procedure-el bool () ((lambda (x) #t)))
 ;*     (coerce procedure procedure-l () ())                            */
 ;*     (coerce procedure procedure-el () ())                           */
 

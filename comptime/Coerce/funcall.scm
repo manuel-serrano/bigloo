@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Mon Sep 16 17:17:36 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 20:15:05 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -22,6 +22,7 @@
 	    tools_location
 	    type_type
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_node
 	    ast_sexp
@@ -39,6 +40,9 @@
    (let ((error-msg (list 'quote (shape node)))
 	 (strength  (funcall-strength node))
 	 (nty (node-type node)))
+;*       (tprint "COERCE-FUNCALL node=" (shape node) " " strength      */
+;* 	 " nty=" (shape nty) " to=" (shape to)                         */
+;* 	 " gettype=" (shape (get-type node #f)))                       */
       (case strength
 	 ((elight)
 	  (if *optim-cfa-unbox-closure-args*
@@ -159,6 +163,7 @@
    (if (null? (funcall-args node))
        (funcall-args-set! node (list (toplevel-exp node)))
        (let ((callee (var-variable (car (funcall-functions node)))))
+;* 	  (tprint "N=" (shape node) " to=" (shape to))                 */
 	  (let loop ((actuals (funcall-args node))
 		     (formals (sfun-args (variable-value callee)))
 		     (prev 'dummy))
