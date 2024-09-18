@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Mon Jul 22 12:59:23 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 21:19:53 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
 	    (macro $symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
 	    (macro c-symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
 	    (macro set-symbol-plist::obj (::obj ::obj) "SET_SYMBOL_PLIST")
-	    (symbol-exists?::bool (::string) "symbol_exists_p")
+	    ($symbol-exists?::bool (::string) "symbol_exists_p")
 	    
             (macro c-keyword?::bool (::obj) "KEYWORDP")
             (macro $keyword?::bool (::obj) "KEYWORDP")
@@ -91,7 +91,7 @@
 		       "GET_SYMBOL_PLIST")
 	       (method static set-symbol-plist::obj (::symbol ::obj)
 		       "SET_SYMBOL_PLIST")
-	       (method static symbol-exists?::bool (::string)
+	       (method static $symbol-exists?::bool (::bstring)
 		       "symbol_exists_p")
 	       
 	       (method static c-keyword?::bool (::obj)
@@ -118,6 +118,7 @@
 		       "CCNST")))
    
    (export  (inline symbol?::bool ::obj)
+	    (inline symbol-exists?::bool ::bstring)
 	    (inline symbol->string::bstring ::symbol)
 	    (inline symbol->string!::bstring ::symbol)
 	    (inline string->symbol::symbol ::bstring)
@@ -211,6 +212,12 @@
 ;*    *gensym-counter* ...                                             */
 ;*---------------------------------------------------------------------*/
 (define *gensym-counter* 999)
+
+;*---------------------------------------------------------------------*/
+;*    symbol-exists? ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (symbol-exists? sym)
+   ($symbol-exists? sym))
 
 ;*---------------------------------------------------------------------*/
 ;*    gensym ...                                                       */
