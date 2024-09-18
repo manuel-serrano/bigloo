@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Aug  1 14:31:05 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 20:07:42 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -333,6 +333,8 @@
     (coerce weakptr obj () ())
     (coerce dynamic-env obj () ())
     (coerce procedure obj () ())
+    (coerce procedure-l obj () ())
+    (coerce procedure-el obj () ())
     (coerce struct obj () ())
     (coerce tstruct obj () ())
     (coerce pair obj () ())
@@ -698,6 +700,8 @@
 
     ;; procedure
     (coerce procedure bool () ((lambda (x) #t)))
+    (coerce procedure-l bool () ((lambda (x) #t)))
+    (coerce procedure-el bool () ((lambda (x) #t)))
     (coerce procedure-l procedure () ())
     (coerce procedure-el procedure () ())
     (coerce procedure procedure-l () ())

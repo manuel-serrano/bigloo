@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Mon Sep 16 16:50:54 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 21:03:35 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -137,6 +137,12 @@
 			      (and T (not X)))))
 	     allocs)
 	  *procedure-l*)
+	 ((set-every (lambda (a)
+			(when (isa? a make-procedure-app)
+			   (with-access::make-procedure-app a (T X)
+			      (and T X))))
+	     allocs)
+	  *procedure-el*)
 	 (else
 	  ty))))
 	 
