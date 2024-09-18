@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Wed Jun 16 15:56:02 2021 (serrano)                */
-;*    Copyright   :  2000-21 Manuel Serrano, see LICENSE file          */
+;*    Last change :  Wed Sep 18 07:55:03 2024 (serrano)                */
+;*    Copyright   :  2000-24 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
 ;*    generic operator. The key idea is that, if we call a function    */
@@ -33,6 +33,7 @@
 	    type_cache
 	    ast_var
 	    ast_node
+	    ast_env
 	    cfa_info
 	    cfa_info2
 	    cfa_loose
@@ -40,8 +41,14 @@
 	    cfa_cfa
 	    cfa_setup
 	    cfa_approx
-	    cfa_tvector)
+	    cfa_tvector
+	    backend_backend)
    (export  (cleanup-arithmetic-nodes! globals)))
+
+;*---------------------------------------------------------------------*/
+;*    *eq?* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *eq?* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    cleanup-arithmetic-nodes! ...                                    */
@@ -50,6 +57,7 @@
 ;*    arithmetic types, we allocate generic types.                     */
 ;*---------------------------------------------------------------------*/
 (define (cleanup-arithmetic-nodes! globals)
+   
    (define (cleanup-type t)
       (cond
 	 ((type? t)
@@ -60,6 +68,10 @@
 	  t)
 	 (else
 	  t)))
+
+   (when (backend-typed-eq (the-backend))
+      (set! *eq?* #f))
+   
    (for-each (lambda (node)
 		(with-access::arithmetic-app node (fun args)
 		   (let* ((f (var-variable fun))
@@ -243,6 +255,7 @@
 ;*    node-setup! ::pre-arithmetic-app ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::pre-arithmetic-app)
+   
    (define (unspecified-type l)
       (cond
 	 ((type? l)
@@ -252,6 +265,10 @@
 	  l)
 	 (else
 	  l)))
+
+   (unless *eq?*
+      (set! *eq?* (find-global/module 'c-eq? 'foreign)))
+   
    (with-access::pre-arithmetic-app node (fun args spec-types)
       (let* ((f (var-variable fun))
 	     (val (variable-value f)))
@@ -262,15 +279,15 @@
 	    (variable-type-set! f *_*)
 	    (node-type-set! node *_*))
 	 (cond
-	  ((sfun? val)
-	   (sfun-args-set! val (map unspecified-type (sfun-args val))))
-	  ((cfun? val)
-	   (let loop ((l (cfun-args-type val)))
-	      (if (pair? l)
-		  (set-car! l (unspecified-type (car l)))
-		  (loop (cdr l)))))
-	  (else
-	   (error "node-setup!" "Illegal arithmetic node" node)))
+	    ((sfun? val)
+	     (sfun-args-set! val (map unspecified-type (sfun-args val))))
+	    ((cfun? val)
+	     (let loop ((l (cfun-args-type val)))
+		(if (pair? l)
+		    (set-car! l (unspecified-type (car l)))
+		    (loop (cdr l)))))
+	    (else
+	     (error "node-setup!" "Illegal arithmetic node" node)))
 	 (set! *arithmetic-nodes* (cons node *arithmetic-nodes*))
 	 ;; then, we can setup the all thing
 	 (node-setup*! args)
@@ -286,11 +303,13 @@
 ;*    cfa! ::arithmetic-app ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa!::approx node::arithmetic-app)
+   
    (define (normalize-type type)
       ;; normalize arithmethic types
       (if (eq? type *int*)
 	  *long*
 	  type))
+   
    (define (find-first-specialized-type args-approx)
       ;; find the first non _ typed arguments
       (let loop ((args args-approx))
@@ -300,6 +319,7 @@
 		(if (eq? t *_*)
 		    (loop (cdr args))
 		    t)))))
+   
    (define (types-compatible? args-approx type spec-types)
       ;; check if all the arguments are either untyped yet or
       ;; all int or real
@@ -312,6 +332,7 @@
 			 (if (or (eq? t type) (eq? t *_*))
 			     (loop (cdr args))
 			     #f)))))))
+   
    (define (all-types-specialized? args-approx spec-types)
       ;; are all the approximated type already specialized?
       (let loop ((args args-approx))
@@ -322,6 +343,7 @@
 	     (loop (cdr args)))
 	    (else
 	     #f))))
+
    (with-access::arithmetic-app node (fun args approx spec-types)
       (trace (cfa 4) ">>> arithmetic: " (shape node) " "
 	     (shape approx) "\n    currently: " (shape approx) #\Newline)
@@ -343,7 +365,36 @@
 		   ;; the result
 		   (approx-set-type! approx ty)
 		   (continue-cfa! 'arithmetic-app)))
-	       ((unless (eq? (global-id (var-variable fun)) 'c-eq?))
+	       ((eq? (var-variable fun) *eq?*)
+		;; MS 18 sep 2014:
+		;; 
+		;; /!\ the variable eq? is assigned ony if the backend
+		;; uses typed-eq
+		;;
+		;; for typed backends (e.g., jvm), it is best to avoid
+		;; unboxed types sent to eq? because if these unboxed types
+		;; happen to be bool, this may result in inefficient
+		;; compilation. Consider the following fragment
+		;;   (eq? x::obj y::_)
+		;; if y can be typed bool, then the compilation will produce
+		;; The normal compilation generates
+		;;   (eq? x (bool->bbool y))
+		;; which is
+		;;   (eq? x (if y *btrue* *bfalse*))
+		;; however, it would have been better not to type y as bool
+		;; in order to produce
+		;;   (eq? x y)
+		;; 
+		(when (any (lambda (a)
+			      (let ((t (node-type a)))
+				 (or (eq? t *_*) (bigloo-type? t))))
+			 args)
+		   (for-each (lambda (a p)
+				(let ((t (node-type a)))
+				   (when (eq? t *_*)
+				      (approx-set-type! p *obj*))))
+		      args args-approx)))
+	       (else
 		(for-each (lambda (a) (loose! a 'all)) args-approx)
 		(approx-set-type! approx *obj*)))))
       ;; we are done

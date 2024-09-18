@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Sep 18 07:09:33 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 18:42:29 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -302,6 +302,7 @@
       ((struct) `(global.get $struct-default-value))
       ((class) `(global.get $class-default-value))
       ((procedure) `(global.get $procedure-default-value))
+      ((procedure-l) `(global.get $procedure-l-default-value))
       ((procedure-el) `(global.get $procedure-el-default-value))
       ((mutex) `(global.get $mutex-default-value))
       ((condvar) `(global.get $condvar-default-value))
@@ -468,7 +469,8 @@
 				  (when (and (pair? (cdr temp))
 					     (null? (cddr temp)))
 				     (car temp)))
-		      temps))
+		      temps)
+		   '())
 		  ((memq (car l) stack)
 		   (loop (cdr l) stack))
 		  (else
@@ -1114,13 +1116,9 @@
 ;*    inline-make-l-procedure ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (inline-make-l-procedure args)
-   `(struct.new $procedure
+   `(struct.new $procedure-l
        ;; Entry
        ,(gen-reg (car args))
-       ;; Attr
-       (global.get $BUNSPEC)
-       ;; Arity
-       (i32.const 0)
        ;; Env
        (array.new_default $vector ,(gen-reg (cadr args)))))
 
@@ -1128,7 +1126,7 @@
 ;*    inline-make-el-procedure ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (inline-make-el-procedure args)
-   `(array.new_default $vector ,(gen-reg (car args))))
+   `(array.new_default $procedure-el ,(gen-reg (car args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst-table-sym ...                                               */

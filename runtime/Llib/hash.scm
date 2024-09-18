@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Wed Sep 11 18:33:17 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 16:40:00 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -251,28 +251,27 @@
 	   (max-length 16384)
 	   (bucket-expansion 1.2)
 	   (persistent #f))
-    (let ((wk::long (case weak
-		       ;; integers are also used in the case construct
-		       ;; to let backend that use Scheme hashtables for
-		       ;; implementing symbols to bootstrap more easily
-		       ((keys 1) (weak-keys))
-		       ((data 2) (weak-data))
-		       ((both 3) (weak-both))
-		       ((none 0) (weak-none))
-		       ((open-string 8) (weak-open-string))
-		       ((string 4) (weak-string))
-		       ((#t) (weak-data))
-		       ((#f) (weak-none))
-		       ((8) (weak-open-string))
-		       (else (error "create-hashtable"
-				"Illegal weak argument"
-				weak)))))
+   (let ((wk::long (case weak
+		      ;; integers are also used in the case construct
+		      ;; to let backend that use Scheme hashtables for
+		      ;; implementing symbols to bootstrap more easily
+		      ((keys 1) (weak-keys))
+		      ((data 2) (weak-data))
+		      ((both 3) (weak-both))
+		      ((none 0) (weak-none))
+		      ((open-string 8) (weak-open-string))
+		      ((string 4) (weak-string))
+		      ((#t) (weak-data))
+		      ((#f) (weak-none))
+		      (else (error "create-hashtable"
+			       "Illegal weak argument"
+			       weak)))))
       (when persistent
 	 (if hash
-	    (error "create-hashtable"
-	       "Persistent hashtable cannot use custom hash function"
-	       hash)
-	    (set! hash 'persistent)))
+	     (error "create-hashtable"
+		"Persistent hashtable cannot use custom hash function"
+		hash)
+	     (set! hash 'persistent)))
       (if (or (=fx wk (weak-open-string)) (=fx wk (weak-string)))
 	  (cond
 	     (eqtest

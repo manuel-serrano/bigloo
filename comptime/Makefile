@@ -51,7 +51,7 @@ COMMONFLAGS	= -q \
 OGBFLAGS        = $(COMMONFLAGS) -Wall -O2 -rm -g $(BOOTFLAGS)
 # Bootstrap flag
 #BFLAGS		= $(OGBFLAGS)       
-BFLAGS		= $(COMMONFLAGS) -Wall -O2 -rm -g $(BOOTFLAGS)
+BFLAGS		= $(COMMONFLAGS) -Wall -O2 $(BOOTFLAGS)
 EFLAGS		=
 # Distribution flag
 BDISTFLAGS	= $(COMMONFLAGS) -O2 -rm -unsafe -s

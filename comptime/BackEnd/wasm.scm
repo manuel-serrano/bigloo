@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Sep 18 08:11:27 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 18:59:16 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1067,8 +1067,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-slfun ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (emit-cnst-slfun slfun global)
-   (emit-cnst-sfun/sgfun slfun global 'procedure))
+(define (emit-cnst-slfun fun global)
+   (let* ((actuals (app-args fun))
+	  (entry (car actuals))
+	  (vname (set-variable-name! global))
+	  (name (set-variable-name! (var-variable entry))))
+      `((global ,(wasm-sym vname)
+	   (mut (ref $procedure-l)) 
+	   (struct.new $procedure-l 
+	      (ref.func ,(wasm-sym name))
+	      (ref.null none))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-selfun ...                                             */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Sep 18 07:14:34 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 18:43:10 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -254,6 +254,13 @@
 	(global.get $BUNSPEC)
 	;; arity
 	(i32.const 0)
+	;; env
+	(global.get $vector-default-value)))
+  (global $procedure-l-default-value
+     (export "BGL_PROCEDURE_L_DEFAULT_VALUE") (ref $procedure-l)
+     (struct.new $procedure-l
+	;; entry
+	(ref.func $BOOLEANP)
 	;; env
 	(global.get $vector-default-value)))
   (global $procedure-el-default-value

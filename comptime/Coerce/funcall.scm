@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Thu Jul  8 11:28:14 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Sep 16 17:17:36 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
 ;*=====================================================================*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Sep 18 09:03:21 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 18:49:54 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -182,7 +182,7 @@
 	    ($procedure-length "(array.len (struct.get $procedure $env ~0))")
       
 	    (procedure-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
-	    (procedure-l-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
+	    (procedure-l-ref "(array.get $vector (struct.get $procedure-l $env ~0) ~1)")
 	    (procedure-el-ref "(array.get $vector ~0 ~1)")
 	    
 	    ($make-cell "(struct.new $cell ~0)")
@@ -224,7 +224,7 @@
 	       (method static make-el-procedure::procedure-el (::int)
 		       "MAKE_EL_PROCEDURE")	 
 	       
-	       (method static make-l-procedure::procedure (::obj ::int)
+	       (method static make-l-procedure::procedure-l (::obj ::int)
 		       "MAKE_L_PROCEDURE")		 
 	       
 	       (method static procedure-set!::obj (::procedure ::int ::obj)

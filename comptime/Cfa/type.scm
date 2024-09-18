@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Wed Sep 11 18:21:16 2024 (serrano)                */
+;*    Last change :  Mon Sep 16 16:50:54 2024 (serrano)                */
 ;*    Last change :  Mon Sep  9 10:56:44 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
@@ -101,11 +101,11 @@
 ;*    get-approx-type ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (get-approx-type approx node)
-   (let ((type (approx-type approx))
+   (let ((ty (approx-type approx))
 	 (allocs (approx-allocs approx)))
       (cond
 	 ((=fx (set-length allocs) 0)
-	  type)
+	  ty)
 	 ((approx-top? approx)
 	  *obj*)
 	 ((set-every make-vector-app? allocs)
@@ -116,13 +116,13 @@
 		 (tv (type-tvector item-type)))
 	     (cond
 		((type? tv) tv)
-		((eq? type *_*) *vector*)
-		(else type))))
+		((eq? ty *_*) *vector*)
+		(else ty))))
 	 ((set-every valloc/Cinfo+optim? allocs)
 	  (if (not (tvector-optimization?))
-	      (if (eq? type *_*)
+	      (if (eq? ty *_*)
 		  *vector*
-		  type)
+		  ty)
 	      (let* ((app (set-head allocs))
 		     (tv-type (get-vector-item-type app))
 		     (value-approx (valloc/Cinfo+optim-value-approx app))
@@ -130,18 +130,24 @@
 		     (tv (type-tvector item-type)))
 		 (cond
 		    ((type? tv) tv)
-		    ((eq? type *_*) *vector*)
-		    (else type)))))
+		    ((eq? ty *_*) *vector*)
+		    (else ty)))))
+	 ((set-every (lambda (a)
+			(when (isa? a make-procedure-app)
+			   (with-access::make-procedure-app a (T X)
+			      (and T (not X)))))
+	     allocs)
+	  *procedure-l*)
 	 (else
-	  type))))
+	  ty))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    type-variable! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-generic (type-variable! value::value variable::variable)
-   (let ((type (variable-type variable)))
+   (let ((ty (variable-type variable)))
       (cond
-	 ((not (type? type))
+	 ((not (type? ty))
 	  (set-variable-type! variable (get-default-type)))
 	 ((and (eq? type *_*) (not *optim-cfa?*))
 	  (set-variable-type! variable (get-default-type))))))
@@ -151,10 +157,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-variable! value::svar/Cinfo variable)
    (with-access::svar/Cinfo value (approx)
-      (let ((typ (get-approx-type approx value)))
-	 (trace (cfa 4) "   type-variable " (shape variable) " -> " (shape typ)
+      (let ((ty (get-approx-type approx value)))
+	 (trace (cfa 4) "   type-variable " (shape variable) " -> " (shape ty)
 	    #\Newline)
-	 (set-variable-type! variable typ))))
+	 (set-variable-type! variable ty))))
    
 ;*---------------------------------------------------------------------*/
 ;*    type-variable! ::scnst ...                                       */
@@ -209,7 +215,9 @@
 	      (variable-type-set! variable *obj*)
 	      (variable-type-set! variable (mark-null-type-ctor! ntype))))
 	 ((and (eq? otype *vector*) (tvec? ntype))
-	  (variable-type-set! variable (mark-null-type-ctor! ntype))))))
+	  (variable-type-set! variable (mark-null-type-ctor! ntype)))
+	 ((and (eq? otype *procedure*) (eq? ntype *procedure-l*))
+	  (variable-type-set! variable type)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mark-null-type-ctor! ...                                         */
