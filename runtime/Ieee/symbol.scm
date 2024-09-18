@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Wed Sep 18 16:35:10 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 21:19:53 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -139,6 +139,7 @@
 		       "CCNST")))
    
    (export  (inline symbol?::bool ::obj)
+	    (inline symbol-exists?::bool ::bstring)
 	    (inline symbol->string::bstring ::symbol)
 	    (inline symbol->string!::bstring ::symbol)
 	    (inline string->symbol::symbol ::bstring)
