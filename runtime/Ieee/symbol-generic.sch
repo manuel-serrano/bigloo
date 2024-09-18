@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Mon Sep  9 18:30:52 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 16:37:36 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -40,6 +40,13 @@
 		(open-string-hashtable-put! *symbol-table* string sym)
 		sym)))))
 
+;*---------------------------------------------------------------------*/
+;*    $$symbol-exists? ...                                             */
+;*---------------------------------------------------------------------*/
+(define ($$symbol-exists? sym)
+   (synchronize *symbol-mutex*
+      (open-string-hashtable-get *symbol-table* sym)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    keyword table                                                    */
 ;*---------------------------------------------------------------------*/

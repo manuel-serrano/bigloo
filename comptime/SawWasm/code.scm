@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Sep 17 17:08:45 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 07:09:33 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -87,8 +87,8 @@
 	     (values (reverse locals) body)))))
    
    (with-trace 'wasm "gen-fun"
-      (with-access::global v (name import value type)
-	 (trace-item "fun=" name)
+      (with-access::global v (id name import value type)
+	 (trace-item "fun=" id " " name)
 	 (trace-item "type=" (shape type))
 	 ;; debug 
 	 (when *bbv-dump-cfg*
@@ -242,6 +242,7 @@
 (define (wasm-default-value ty)
    (case (type-id ty)
       ((bool) '(i32.const 0))
+      ((bbool) (wasm-cnst-false))
       ((char) '(i32.const 0))
       ((bchar) `(global.get $bchar-default-value))
       ((uchar) '(i32.const 0))
@@ -333,6 +334,8 @@
 	      `(ref.cast (ref ,(wasm-sym name))
 		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
 		     (global.get ,(wasm-sym (global-name holder)))))))
+	  ((isa? ty tvec)
+	   `(array.new_fixed ,(wasm-vector-type ty) 0))
 	  ((foreign-type? ty)
 	   (error "wasm" "Unknown foreign type for default value" (type-id ty)))
 	  (else
@@ -351,31 +354,33 @@
 ;*    get-ref-tvector-type ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (get-ref-tvector-type vtype::type)
-  (case (type-id vtype)
-    ;; Use predefined vector type for common types.
-    ((obj) '$vector)
-    (else
-      (let ((type (assq vtype *tvector-types*)))
-        (if type
-          (cdr type)
-          (let ((sym (gensym "$tvecty"))
-                (wasm-vtype
-                  (case (type-id vtype)
-                    ;; i8 and i16 are allowed in array definitions in WASM, use them 
-                    ;; instead of i32 to avoid wasting space.
-                    ((bool) 'i8)
-                    ((byte) 'i8)
-                    ((ubyte) 'i8)
-                    ((char) 'i8)
-                    ((uchar) 'i8)
-                    ((int8) 'i8)
-                    ((uint8) 'i8)
-                    ((int16) 'i8)
-                    ((uint32) 'i8)
-                    (else (wasm-type vtype)))))
-            (set! *extra-types* (cons `(type ,sym (array (mut ,wasm-vtype))) *extra-types*))
-            (set! *tvector-types* (cons (cons vtype sym) *tvector-types*))
-            sym))))))
+   (if (eq? type-id vtype)
+       '$vector
+       (let ((type (assq vtype *tvector-types*)))
+	  (if type
+	      (cdr type)
+	      (let ((sym (gensym "$tvecty"))
+		    (wasm-vtype
+		       (case (type-id vtype)
+			  ;; i8 and i16 are allowed in array definitions in WASM, use them 
+			  ;; instead of i32 to avoid wasting space.
+			  ((bool) 'i8)
+			  ((byte) 'i8)
+			  ((ubyte) 'i8)
+			  ((char) 'i8)
+			  ((uchar) 'i8)
+			  ((int8) 'i8)
+			  ((uint8) 'i8)
+			  ((int16) 'i8)
+			  ((uint32) 'i8)
+			  (else (wasm-type vtype)))))
+		 (set! *extra-types*
+		    (cons `(type ,sym (array (mut ,wasm-vtype)))
+		       *extra-types*))
+		 (set! *tvector-types*
+		    (cons (cons vtype sym)
+		       *tvector-types*))
+		 sym)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-params ...                                                   */
@@ -421,6 +426,8 @@
 	 (else #t)))
 
    (define (first-block-assigs l)
+      ;; super simple heuristic, white list the variables
+      ;; assigned in the first basic block
       (with-trace 'wasm "first-block-assigs"
 	 (if (null? l)
 	     '()
@@ -447,13 +454,44 @@
 				 (loop (cdr first) (cons dest wl)))
 				(else
 				 (loop (cdr first) wl)))))))))))
+
+   (define (single-block-ref l)
+      ;; white list the variables that are used in
+      ;; a unique basic block
+      (with-trace 'wasm "single-block-ref"
+	 (let ((temps (map list locals)))
+	    (let loop ((l l)
+		       (stack '()))
+	       (cond
+		  ((null? l)
+		   (filter-map (lambda (temp)
+				  (when (and (pair? (cdr temp))
+					     (null? (cddr temp)))
+				     (car temp)))
+		      temps))
+		  ((memq (car l) stack)
+		   (loop (cdr l) stack))
+		  (else
+		   (with-access::block (car l) (first)
+		      (for-each (lambda (i)
+				   (with-access::rtl_ins i (dest)
+				      (let ((c (assq dest temps)))
+					 (when (pair? c)
+					    (unless (memq (car l) (cdr c))
+					       (set-cdr! c (cons (car l) (cdr c)))
+					       (trace-item (shape dest) " " (length (cdr c))))))))
+			 first))
+		   (loop (cdr l) (cons (car l) stack))))))))
    
    (define whitelist
       (if (dispatcher-body? body)
 	  '()
-	  (first-block-assigs l)))
+	  (delete-duplicates!
+	     (append (first-block-assigs l)
+		(single-block-ref l)))))
 
    (with-trace 'wasm "gen-local-inits"
+      (trace-item "locals=" (map shape locals))
       (trace-item "WL=" (map shape whitelist))
       (filter-map (lambda (r::rtl_reg)
 		     (unless (memq r whitelist)
@@ -591,33 +629,60 @@
   (with-access::rtl_fun fun (loc)
     (with-loc loc expr)))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-nil ...                                                */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-nil)
-  '(global.get $BNIL))
+   '(global.get $BNIL))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-false ...                                              */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-false)
-  '(global.get $BFALSE))
+   '(global.get $BFALSE))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-true ...                                               */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-true)
-  '(global.get $BTRUE))
+   '(global.get $BTRUE))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-unspec ...                                             */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-unspec)
-  '(global.get $BUNSPEC))
+   '(global.get $BUNSPEC))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-optional ...                                           */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-optional)
-  '(global.get $BOPTIONAL))
+   '(global.get $BOPTIONAL))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-key ...                                                */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-key)
-  '(global.get $BKEY))
+   '(global.get $BKEY))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-rest ...                                               */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-rest)
-  '(global.get $BREST))
+   '(global.get $BREST))
 
+;*---------------------------------------------------------------------*/
+;*    wasm-cnst-eoa ...                                                */
+;*---------------------------------------------------------------------*/
 (define (wasm-cnst-eoa)
-  '(global.get $BEOA))
+   '(global.get $BEOA))
 
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_nop ...                                           */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_nop args)
-  ;; Strangely, NOP is defined as returning the constant BUNSPEC...
-  (with-fun-loc fun (wasm-cnst-unspec)))
+   ;; Strangely, NOP is defined as returning the constant BUNSPEC...
+   (with-fun-loc fun (wasm-cnst-unspec)))
 
 (define-method (gen-expr fun::rtl_getfield args)
   (with-access::rtl_getfield fun (name objtype)

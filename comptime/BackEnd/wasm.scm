@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Sep 17 10:01:35 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 08:11:27 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -80,6 +80,7 @@
       (strict-type-cast #t)
       (pragma-support #t)
       (require-tailc #t)
+      (typed-eq #t)
       ; TODO: maybe remove these two checks
       (bound-check #f)
       (type-check #f)
@@ -511,6 +512,7 @@
 		      (import "__runtime" "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value))
 		      (import "__runtime" "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value))
 		      (import "__runtime" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value))
+		      (import "__runtime" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty))
 		      
 		      (import "__runtime" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result eqref)))
 		      (import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result eqref)))
@@ -1073,7 +1075,7 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-selfun fun global)
    (let ((vname (set-variable-name! global)))
-      `((global ,(wasm-sym vname) (ref null $vector) (ref.null none)))))
+      `((global ,(wasm-sym vname) (ref $procedure-el) (global.get $procedure-el-empty)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sgfun ...                                              */

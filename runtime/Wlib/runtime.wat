@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Sep 17 08:23:10 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 07:14:34 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -60,9 +60,11 @@
   ;; It is used to include the content of 'runtime.types'.
   #;TYPES
 
-  (global $BNIL (export "BNIL") i31ref (ref.i31 (i32.const 0)))
-  (global $BFALSE (export "BFALSE") i31ref (ref.i31 (i32.const 1)))
-  (global $BTRUE (export "BTRUE") i31ref (ref.i31 (i32.const 2)))
+  ;; /!\ DO NOT MODIFY THE FOLLOWING DEFINITIONS. 
+  ;; see comptime/SawWasm/code.scm
+  (global $BFALSE (export "BFALSE") i31ref (ref.i31 (i32.const 0)))
+  (global $BTRUE (export "BTRUE") i31ref (ref.i31 (i32.const 1)))
+  (global $BNIL (export "BNIL") i31ref (ref.i31 (i32.const 2)))
   (global $BUNSPEC (export "BUNSPEC") i31ref (ref.i31 (i32.const 3)))
   (global $BEOF (export "BEOF") i31ref (ref.i31 (i32.const 4))) ;; TODO: What value to choose for BEOF? Is it really a cnst?
   (global $BEOA (export "BEOA") i31ref (ref.i31 (i32.const 5)))
@@ -448,7 +450,12 @@
 	;; current-error-port
 	(global.get $output-port-default-value)
 	;; current-input-port
-	(global.get $input-port-default-value)))
+	(global.get $input-port-default-value)
+	;; module
+	(global.get $BUNSPEC)
+	;; abase
+	(global.get $BUNSPEC)
+	))
 
   (global $object-default-value
      (export "BGL_OBJECT_DEFAULT_VALUE") (ref $BgL_objectz00_bglt)
@@ -495,7 +502,7 @@
       ;; $error-handler
       (struct.new $pair (global.get $BUNSPEC) (global.get $BFALSE))
       
-      ;; $current-out-port
+      ;; $current-output-port
       (struct.new $file-output-port 
         ;; Name
         (array.new_fixed $bstring 6 
@@ -516,7 +523,7 @@
         (i32.const 0)
         ;; File descriptor
         (i32.const 1 #;(POSIX stdout fd)))
-      ;; $current-err-port
+      ;; $current-error-port
       (struct.new $file-output-port 
         ;; Name
         (array.new_fixed $bstring 6 
@@ -537,7 +544,7 @@
         (i32.const 0)
         ;; File descriptor
         (i32.const 2 #;(POSIX stderr fd)))
-      ;; $current-in-port
+      ;; $current-input-port
       (struct.new $file-input-port
         ;; Name
         (array.new_fixed $bstring 5
@@ -568,7 +575,12 @@
           ;; Buffer
           (array.new_default $bstring (i32.const 128)))
         ;; File descriptor
-        (i32.const 0 #;(POSIX stdin fd)))))
+        (i32.const 0 #;(POSIX stdin fd)))
+      ;; $module
+      (global.get $BUNSPEC)
+      ;; $abase
+      (global.get $BUNSPEC)
+      ))
 
   (func $BGL_CURRENT_DYNAMIC_ENV (export "BGL_CURRENT_DYNAMIC_ENV")
     (result (ref $dynamic-env))
@@ -577,33 +589,53 @@
   (func $BGL_ENV_CURRENT_OUTPUT_PORT (export "BGL_ENV_CURRENT_OUTPUT_PORT")
     (param $env (ref $dynamic-env))
     (result (ref $output-port))
-    (struct.get $dynamic-env $current-out-port (local.get $env)))
+    (struct.get $dynamic-env $current-output-port (local.get $env)))
 
   (func $BGL_ENV_CURRENT_ERROR_PORT (export "BGL_ENV_CURRENT_ERROR_PORT")
     (param $env (ref $dynamic-env))
     (result (ref $output-port))
-    (struct.get $dynamic-env $current-err-port (local.get $env)))
+    (struct.get $dynamic-env $current-error-port (local.get $env)))
 
   (func $BGL_ENV_CURRENT_INPUT_PORT (export "BGL_ENV_CURRENT_INPUT_PORT")
     (param $env (ref $dynamic-env))
     (result (ref $input-port))
-    (struct.get $dynamic-env $current-in-port (local.get $env)))
+    (struct.get $dynamic-env $current-input-port (local.get $env)))
 
   (func $BGL_ENV_CURRENT_OUTPUT_PORT_SET (export "BGL_ENV_CURRENT_OUTPUT_PORT_SET")
     (param $env (ref $dynamic-env))
     (param $port (ref $output-port))
-    (struct.set $dynamic-env $current-out-port (local.get $env) (local.get $port)))
+    (struct.set $dynamic-env $current-output-port (local.get $env) (local.get $port)))
 
   (func $BGL_ENV_CURRENT_ERROR_PORT_SET (export "BGL_ENV_CURRENT_ERROR_PORT_SET")
     (param $env (ref $dynamic-env))
     (param $port (ref $output-port))
-    (struct.set $dynamic-env $current-err-port (local.get $env) (local.get $port)))
+    (struct.set $dynamic-env $current-error-port (local.get $env) (local.get $port)))
 
   (func $BGL_ENV_CURRENT_INPUT_PORT_SET (export "BGL_ENV_CURRENT_INPUT_PORT_SET")
     (param $env (ref $dynamic-env))
     (param $port (ref $input-port))
-    (struct.set $dynamic-env $current-in-port (local.get $env) (local.get $port)))
+    (struct.set $dynamic-env $current-input-port (local.get $env) (local.get $port)))
 
+  (func $BGL_MODULE (export "BGL_MODULE")
+     (result eqref)
+     (struct.get $dynamic-env $module (global.get $current-dynamic-env)))
+  
+  (func $BGL_MODULE_SET (export "BGL_MODULE_SET")
+     (param $mod eqref)
+     (result eqref)
+     (struct.set $dynamic-env $module (global.get $current-dynamic-env) (local.get $mod))
+     (local.get $mod))
+  
+  (func $BGL_ABASE (export "BGL_ABASE")
+     (result eqref)
+     (struct.get $dynamic-env $abase (global.get $current-dynamic-env)))
+  
+  (func $BGL_ABASE_SET (export "BGL_ABASE_SET")
+     (param $abase eqref)
+     (result eqref)
+     (struct.set $dynamic-env $abase (global.get $current-dynamic-env) (local.get $abase))
+     (local.get $abase))
+  
   ;; --------------------------------------------------------
   ;; Boolean functions
   ;; --------------------------------------------------------
@@ -783,6 +815,10 @@
      (result (ref $procedure-el))
      (array.new_default $procedure-el (local.get $size)))
 
+  (global $procedure-el-empty (export "BGL_PROCEDURE_EL_EMPTY")
+     (ref $procedure-el)
+     (array.new_fixed $procedure-el 0))
+  
   (func $PROCEDURE_CORRECT_ARITYP (export "PROCEDURE_CORRECT_ARITYP")
     (param $p (ref $procedure)) 
     (param $i i32) 
@@ -902,6 +938,25 @@
       (then (global.set $tvector_descr_eqref (local.get $desc)) (return (global.get $BUNSPEC))))
     (global.get $BUNSPEC))
 
+  ;; --------------------------------------------------------
+  ;; Symbol and keywords functions
+  ;; --------------------------------------------------------
+  (func $set-symbol-plist (export "SET_SYMBOL_PLIST")
+     (param $sym eqref)
+     (param $val eqref)
+     (result eqref)
+     (struct.set $symbol $cval (ref.cast (ref $symbol) (local.get $sym))
+	(local.get $val))
+     (local.get $val))
+
+  (func $set-keyword-plist (export "SET_KEYWORD_PLIST")
+     (param $sym eqref)
+     (param $val eqref)
+     (result eqref)
+     (struct.set $keyword $cval (ref.cast (ref $keyword) (local.get $sym))
+	(local.get $val))
+     (local.get $val))
+  
   ;; --------------------------------------------------------
   ;; String functions
   ;; --------------------------------------------------------

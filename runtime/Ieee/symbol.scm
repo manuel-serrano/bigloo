@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Fri Sep  6 14:35:08 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 16:35:10 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -54,12 +54,12 @@
 	    (macro c-symbol->string::bstring (::obj) "SYMBOL_TO_STRING")
 	    (macro $symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
 	    (macro c-symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
-	    (macro set-symbol-plist::obj (::obj ::obj) "SET_SYMBOL_PLIST")
-	    (symbol-exists?::bool (::string) "symbol_exists_p")
+	    (macro $set-symbol-plist::obj (::obj ::obj) "SET_SYMBOL_PLIST")
+	    ($symbol-exists?::bool (::string) "symbol_exists_p")
 	    
-        (macro c-keyword?::bool (::obj) "KEYWORDP")
-        (macro $keyword?::bool (::obj) "KEYWORDP")
-		(macro $make-keyword::keyword (::bstring) "")
+	    (macro c-keyword?::bool (::obj) "KEYWORDP")
+	    (macro $keyword?::bool (::obj) "KEYWORDP")
+	    (macro $make-keyword::keyword (::bstring) "")
 	    (c-string->keyword::keyword (::string) "string_to_keyword")
 	    ($string->keyword::keyword (::string) "string_to_keyword")
 	    ($bstring->keyword::keyword (::bstring) "bstring_to_keyword")
@@ -67,25 +67,27 @@
 	    (macro $keyword->string::bstring (::keyword) "KEYWORD_TO_STRING")
 	    (macro c-keyword-plist::obj (::obj) "GET_KEYWORD_PLIST")
 	    (macro $keyword-plist::obj (::obj) "GET_KEYWORD_PLIST")
-	    (macro set-keyword-plist::obj (::obj ::obj) "SET_KEYWORD_PLIST")
+	    (macro $set-keyword-plist::obj (::obj ::obj) "SET_KEYWORD_PLIST")
 	    (macro cnst->integer::long (::obj) "CCNST"))
 
-	(wasm
-		(c-symbol? "(ref.test (ref $symbol) ~0)")
-		($symbol? "(ref.test (ref $symbol) ~0)")
-		($make-symbol "(struct.new $symbol ~0 (ref.null none))")
+   (wasm    (c-symbol? "(ref.test (ref $symbol) ~0)")
+            ($symbol? "(ref.test (ref $symbol) ~0)")
+	    ($make-symbol "(struct.new $symbol ~0 (global.get $BNIL))")
 	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
 	    (c-symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
+	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
+	    ($set-symbol-plist "(call $set-symbol-plist ~0 ~1)")
 		
 	    ($symbol->string "(struct.get $symbol $str (ref.cast (ref $symbol) ~0))")
 	    (c-symbol->string "(struct.get $symbol $str (ref.cast (ref $symbol) ~0))")
 
-		(c-keyword? "(ref.test (ref $keyword) ~0)")
-		($keyword? "(ref.test (ref $keyword) ~0)")
-		($make-keyword "(struct.new $keyword ~0 (ref.null none))")
+	    (c-keyword? "(ref.test (ref $keyword) ~0)")
+	    ($keyword? "(ref.test (ref $keyword) ~0)")
+	    ($make-keyword "(struct.new $keyword ~0 (global.get $BNIL))")
 	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	    (c-keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
-	)
+	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
+	    ($set-keyword-plist "(call $set-keyword-plist ~0 ~1)"))
    
    (java    (class foreign
 	       (method static c-symbol?::bool (::obj)
@@ -108,9 +110,9 @@
 		       "GET_SYMBOL_PLIST")
 	       (method static $symbol-plist::obj (::symbol)
 		       "GET_SYMBOL_PLIST")
-	       (method static set-symbol-plist::obj (::symbol ::obj)
+	       (method static $set-symbol-plist::obj (::symbol ::obj)
 		       "SET_SYMBOL_PLIST")
-	       (method static symbol-exists?::bool (::string)
+	       (method static $symbol-exists?::bool (::string)
 		       "symbol_exists_p")
 	       
 	       (method static c-keyword?::bool (::obj)
@@ -131,7 +133,7 @@
 		       "GET_KEYWORD_PLIST")
 	       (method static $keyword-plist::obj (::keyword)
 		       "GET_KEYWORD_PLIST")
-	       (method static set-keyword-plist::obj (::keyword ::obj)
+	       (method static $set-keyword-plist::obj (::keyword ::obj)
 		       "SET_KEYWORD_PLIST")
 	       (method static cnst->integer::long (::obj)
 		       "CCNST")))
@@ -161,12 +163,12 @@
 	    ($symbol->string args-safe fail-safe)
 	    (c-symbol-plist args-safe)
 	    ($symbol-plist args-safe)
-	    (set-symbol-plist args-safe)
+	    ($set-symbol-plist args-safe)
 	    (c-keyword->string args-safe fail-safe)
 	    ($keyword->string args-safe fail-safe)
 	    (c-keyword-plist args-safe)
 	    ($keyword-plist args-safe)
-	    (set-keyword-plist args-safe)
+	    ($set-keyword-plist args-safe)
 	    (cnst->integer args-safe)
 	    ($bstring->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol no-cfa-top nesting fail-safe)
@@ -225,6 +227,16 @@
 	       (symbol->string (car list))
 	       ($string-append (symbol->string (car list))
 			       (symbol-append (cdr list))))))))
+
+;*---------------------------------------------------------------------*/
+;*    symbol-exists? ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (symbol-exists? sym)
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       ($$symbol-exists? sym))
+      (else
+       ($symbol-exists? sym))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gensym-counter* ...                                             */
@@ -299,8 +311,8 @@
 	     ((null? pl)
 	      (let ((new (cons* key val (symbol-plist symbol))))
 		 (if (symbol? symbol)
-		     (set-symbol-plist symbol new)
-		     (set-keyword-plist symbol new))
+		     ($set-symbol-plist symbol new)
+		     ($set-keyword-plist symbol new))
 		 new))
 	     ((eq? (car pl) key)
 	      (set-car! (cdr pl) val))
@@ -324,8 +336,8 @@
 		  (set-cdr! (cdr old) (cddr l)))
 		 (else
 		  (if (symbol? symbol)
-		      (set-symbol-plist symbol (cddr l))
-		      (set-keyword-plist symbol (cddr l))))))
+		      ($set-symbol-plist symbol (cddr l))
+		      ($set-keyword-plist symbol (cddr l))))))
 	     (else
 	      (loop l (cddr l)))))
        (error "getprop" "argument is neither a symbol nor a keyword" symbol)))

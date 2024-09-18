@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evenv.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evenv.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Fri Mar 20 07:52:33 2020 (serrano)                */
+;*    Last change :  Wed Sep 18 17:04:56 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -13,11 +13,11 @@
 ;*---------------------------------------------------------------------*/
 (module __evenv
    
-   (import  __r4_symbols_6_4)
+   (import  __r4_symbols_6_4
+	    __object
+	    __error)
 
    (use     __type
- 	    __object
-	    __error
 	    __bigloo
 	    __structure
 	    __tvector

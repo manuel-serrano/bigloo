@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/type.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/type.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/bigloo.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bigloo.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Mon Sep 16 16:20:29 2024 (serrano)                */
+;*    Last change :  Wed Sep 18 09:03:21 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -159,8 +159,8 @@
 	    (export bigloo-exit-apply "bigloo_exit_apply")
 	    (export bigloo-exit-mutex "bgl_exit_mutex"))
 
-   (wasm    (__unspec__ "(ref.i31 (i32.const 3))")
-            (__eoa__ "(ref.null none)")
+   (wasm    (__unspec__ "(global.get $BUNSPEC)")
+            (__eoa__ "(global.get $BEOA)")
       
 	    ($make-cell "(struct.new $cell ~0)")
 	    ($make-stack-cell "(struct.new $cell ~0)")

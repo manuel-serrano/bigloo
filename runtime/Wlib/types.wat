@@ -40,8 +40,10 @@
    ;; TODO
    (rec
       (type $pair-nil (struct))
-      (type $symbol (struct (field $str (ref $bstring)) (field $cval eqref)))
-      (type $keyword (struct (field $str (ref $bstring)) (field $cval eqref)))
+      (type $symbol
+	 (struct (field $str (ref $bstring)) (field $cval (mut eqref))))
+      (type $keyword
+	 (struct (field $str (ref $bstring)) (field $cval (mut eqref))))
       (type $custom (struct (field $ident (mut (ref $bstring)))))
       (type $weakptr (struct)))
    
@@ -247,8 +249,10 @@
 	 (field $uncaught-exception-handler (mut eqref))
 	 (field $error-handler (mut eqref))
 	 
-	 ;; Current ports
-	 (field $current-out-port (mut (ref $output-port)))
-	 (field $current-err-port (mut (ref $output-port)))
-	 (field $current-in-port (mut (ref $input-port)))))
+	 (field $current-output-port (mut (ref $output-port)))
+	 (field $current-error-port (mut (ref $output-port)))
+	 (field $current-input-port (mut (ref $input-port)))
+
+	 (field $module (mut eqref))
+	 (field $abase (mut eqref))))
    )
