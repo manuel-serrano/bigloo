@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Sep 19 09:53:51 2024 (serrano)                */
+;*    Last change :  Thu Sep 19 16:04:57 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -507,13 +507,56 @@
 	 locals)))
 
 ;*---------------------------------------------------------------------*/
+;*    reg-debugname ...                                                */
+;*---------------------------------------------------------------------*/
+(define (reg-debugname reg::rtl_reg)
+   (with-access::rtl_reg reg (var debugname key)
+      (cond
+	 (debugname
+	  debugname)
+	 ((global? var)
+	  (with-access::global var (id module alias)
+	     (set! debugname
+		(bigloo-module-mangle (symbol->string (or alias id))
+		   (symbol->string module)))
+	     debugname))
+	 ((local? var)
+	  (with-access::local var (id)
+	     (set! debugname
+		(bigloo-mangle
+		   (string-append
+		      (symbol->string id) "_" (symbol->string key))))
+	     debugname))
+	 (else
+	  (set! debugname (symbol->string (gensym 'bbv)))
+	  debugname))))
+
+;*---------------------------------------------------------------------*/
 ;*    reg-name ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (reg-name reg) ;()
-   (or (rtl_reg-debugname reg)
-       (when (symbol? (rtl_reg-name reg)) (symbol->string! (rtl_reg-name reg)))
-       (string-append (if (SawCIreg-var reg) "V" "R")
-	  (integer->string (SawCIreg-index reg)))))
+   (with-access::rtl_reg reg (var debugname key)
+      (cond
+	 (debugname
+	  debugname)
+	 ((global? var)
+	  (with-access::global var (id module alias)
+	     (set! debugname
+		(bigloo-module-mangle (symbol->string (or alias id))
+		   (symbol->string module)))
+	     debugname))
+	 ((local? var)
+	  (with-access::local var (id)
+	     (set! debugname
+		(bigloo-mangle
+		   (string-append
+		      (symbol->string id) "_" (symbol->string key))))
+	     debugname))
+	 (else
+	  (set! debugname
+	     (string-append (if (SawCIreg-var reg) "V" "R")
+		(integer->string (SawCIreg-index reg))))
+	  debugname))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dispatcher-body? ...                                             */

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sat Sep 14 11:40:52 2024 (serrano)                */
+#*    Last change :  Thu Sep 19 07:27:03 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -166,6 +166,11 @@ FLOP_OBJ	= $(FLOP_FILE:%=Flop/%.o)
 COERCE_FILE	= walk pproto coerce app funcall apply convert
 
 COERCE_OBJ	= $(COERCE_FILE:%=Coerce/%.o)
+
+#*--- Prebox ----------------------------------------------------------*/
+PREBOX_FILE	= walk
+
+PREBOX_OBJ	= $(PREBOX_FILE:%=Prebox/%.o)
 
 #*--- Dataflow --------------------------------------------------------*/
 DATAFLOW_FILE	= walk
@@ -370,7 +375,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) $(READ_OBJ) \
                   $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) \
                   $(SAW_C_OBJ) $(SAW_WASM_OBJ) $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) \
                   $(ISA_OBJ) $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) \
-                  $(LIVENESS_OBJ)
+                  $(LIVENESS_OBJ) $(PREBOX_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
