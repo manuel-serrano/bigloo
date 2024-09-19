@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Sep 18 21:17:17 2024 (serrano)                */
+;*    Last change :  Thu Sep 19 22:19:22 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -702,6 +702,10 @@
     (coerce procedure bool () ((lambda (x) #t)))
     (coerce procedure-l bool () ((lambda (x) #t)))
     (coerce procedure-el bool () ((lambda (x) #t)))
+    (coerce procedure-l procedure () ())
+    (coerce procedure-el procedure () ())
+    (coerce procedure procedure-l () ())
+    (coerce procedure procedure-el () ())
 
     ;; struct
     (coerce struct bool () ((lambda (x) #t)))
