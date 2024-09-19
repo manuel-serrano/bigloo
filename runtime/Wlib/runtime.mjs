@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync } from 'node:fs';
+import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync } from 'node:fs';
 //import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
@@ -178,6 +178,16 @@ const instance = await WebAssembly.instantiate(wasm, {
          try {
             rmdirSync(path);
             return true;
+         } catch (err) {
+            return false;
+         }
+      },
+
+      is_dir: function (path_addr, path_length) {
+         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+         const path = loadSchemeString(buffer);
+         try {
+            return fstatSync(path).isDirectory();
          } catch (err) {
             return false;
          }

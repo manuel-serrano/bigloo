@@ -17,7 +17,8 @@
 	__structure)
    (import __hash)
    (export ($$bstring->symbol::symbol ::bstring)
-	   ($$bstring->keyword::keyword ::bstring)))
+	   ($$bstring->keyword::keyword ::bstring)
+	   ($$symbol-exists? sym)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol table                                                     */
