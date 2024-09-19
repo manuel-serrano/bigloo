@@ -16,11 +16,16 @@
   (import "__js" "argc" (global $js_argc i32))
   (import "__js" "get_arg" (func $js_get_arg (param i32 i32) (result i32)))
 
+  (import "__js" "is_tty" (func $js_is_tty (param i32) (result i32)))
   (import "__js" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
   (import "__js" "close_file" (func $js_close_file (param i32)))
   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
   (import "__js" "write_char" (func $js_write_char (param i32 i32)))
+  (import "__js" "file_exists" (func $js_file_exists (param i32 i32) (result i32)))
+  (import "__js" "file_delete" (func $js_file_delete (param i32 i32) (result i32)))
+  (import "__js" "dir_remove" (func $js_dir_remove (param i32 i32) (result i32)))
+  (import "__js" "is_dir" (func $js_is_dir (param i32 i32) (result i32)))
 
   (import "__js_math" "fmod" (func $fmod (param f64 f64) (result f64)))
   (import "__js_math" "exp" (func $exp (param f64) (result f64)))
@@ -2511,4 +2516,40 @@
 	    (then (i32.wrap_i64 (struct.get $bint $v (ref.cast (ref $bint) (local.get 0)))))
 	    (else (i32.const 0))))
      (global.get $BUNSPEC))
+
+   (func $rmdir
+		(export "rmdir")
+		(param $path (ref $bstring))
+		(result i32)
+		(call $store_string
+			(local.get $path)
+			(i32.const 128))
+		(return 
+			(call $js_dir_remove
+				(i32.const 128)
+				(array.len (local.get $path)))))
+
+	(func $unlink
+		(export "unlink")
+		(param $path (ref $bstring))
+		(result i32)
+		(call $store_string
+			(local.get $path)
+			(i32.const 128))
+		(return 
+			(call $js_file_delete
+				(i32.const 128)
+				(array.len (local.get $path)))))
+
+	(func $bgl_directoryp
+		(export "bgl_directoryp")
+		(param $path (ref $bstring))
+		(result i32)
+		(call $store_string
+			(local.get $path)
+			(i32.const 128))
+		(return 
+			(call $js_is_dir
+				(i32.const 128)
+				(array.len (local.get $path)))))
 )
