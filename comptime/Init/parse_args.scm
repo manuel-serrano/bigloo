@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul  3 15:56:16 2024 (serrano)                */
+;*    Last change :  Thu Sep 19 07:29:17 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -435,6 +435,11 @@
        (set! *optim-specialize-flonum?* #t))
       (("-fno-flop" (help "Disable flonum specialization"))
        (set! *optim-specialize-flonum?* #f))
+      ;; Box/unbox optimization
+      (("-fprebox" (help "Enable box/unbox optimization"))
+       (set! *optim-prebox?* #t))
+      (("-fno-prebox" (help "Disable box/unbox optimization"))
+       (set! *optim-prebox?* #f))
       ;; cfa optimizations
       (("-fcfa" (help "Enable CFA"))
        (set! *optim-cfa?* #t))
@@ -974,6 +979,8 @@
        (set! *pass* 'fxop))
       (("-flop" (help "Stop after the flonum specialization optimization"))
        (set! *pass* 'flop))
+      (("-prebox" (help "Stop after the prebox optimization"))
+       (set! *pass* 'prebox))
       (("-coerce" (help "Stop after the type coercing stage"))
        (set! *pass* 'coerce))
       (("-effect" (help "Stop after the effect stage"))
@@ -1310,6 +1317,7 @@
       (set! *optim-dataflow-types?* #t)
       (set! *optim-initflow?* #t)
       (set! *optim-tagged-fxop?* #t)
+      (set! *optim-prebox?* #t)
 ;*       (set! *local-exit?* #t)                                       */
       ;; (set! *optim-narrow?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)

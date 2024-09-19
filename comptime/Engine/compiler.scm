@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Jul  8 15:31:10 2024 (serrano)                */
+;*    Last change :  Thu Sep 19 07:27:50 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -70,6 +70,7 @@
 	    tailc_walk
 	    fxop_walk
 	    flop_walk
+	    prebox_walk
 	    coerce_walk
 	    reduce_walk
 	    cnst_walk
@@ -448,6 +449,13 @@
 	       (stop-on-pass 'fxop (lambda () (write-ast ast)))
 	       (check-sharing "fxop" ast)
 	       (check-type "fxop" ast #t #f))
+		       
+	    ;; Preboxing (or box-unbox) optimization
+	    (when *optim-prebox?*
+	       (set! ast (profile fxop (prebox-walk! ast)))
+	       (stop-on-pass 'prebox (lambda () (write-ast ast)))
+	       (check-sharing "prebox" ast)
+	       (check-type "prebox" ast #t #f))
 		       
 	    ;; now that type checks have been introduced, we recompute
 	    ;; the type dataflow analysis
