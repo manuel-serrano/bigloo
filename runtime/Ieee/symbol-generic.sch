@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Ieee/symbol-generic.sch     */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/symbol-generic.sch       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Wed Sep 18 16:37:36 2024 (serrano)                */
+;*    Last change :  Thu Sep 19 09:52:17 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -17,7 +17,8 @@
 	__structure)
    (import __hash)
    (export ($$bstring->symbol::symbol ::bstring)
-	   ($$bstring->keyword::keyword ::bstring)))
+	   ($$bstring->keyword::keyword ::bstring)
+	   ($$symbol-exists?::bool ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol table                                                     */

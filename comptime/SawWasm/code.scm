@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
+;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Sep 18 18:42:29 2024 (serrano)                */
+;*    Last change :  Thu Sep 19 09:53:51 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -363,8 +363,8 @@
 	      (let ((sym (gensym "$tvecty"))
 		    (wasm-vtype
 		       (case (type-id vtype)
-			  ;; i8 and i16 are allowed in array definitions in WASM, use them 
-			  ;; instead of i32 to avoid wasting space.
+			  ;; i8 and i16 are allowed in WASM array definitions
+			  ;; use them instead of i32 to avoid wasting space.
 			  ((bool) 'i8)
 			  ((byte) 'i8)
 			  ((ubyte) 'i8)
@@ -511,8 +511,9 @@
 ;*---------------------------------------------------------------------*/
 (define (reg-name reg) ;()
    (or (rtl_reg-debugname reg)
+       (when (symbol? (rtl_reg-name reg)) (symbol->string! (rtl_reg-name reg)))
        (string-append (if (SawCIreg-var reg) "V" "R")
-	  (integer->string (SawCIreg-index reg)) )))
+	  (integer->string (SawCIreg-index reg)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dispatcher-body? ...                                             */
@@ -608,28 +609,35 @@
 (define (gen-args args)
   (map (lambda (arg) (gen-reg arg)) args))
 
+;*---------------------------------------------------------------------*/
+;*    gen-reg ...                                                      */
+;*---------------------------------------------------------------------*/
 (define (gen-reg reg)
-  (if (isa? reg SawCIreg)
-    `(local.get ,(gen-reg/dest reg))
-    (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg))))
+   (if (isa? reg SawCIreg)
+       `(local.get ,(gen-reg/dest reg))
+       (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg))))
 
+;*---------------------------------------------------------------------*/
+;*    gen-reg/dest ...                                                 */
+;*---------------------------------------------------------------------*/
 (define (gen-reg/dest reg)
-  (if (rtl_reg-debugname reg)
-    (wasm-sym (rtl_reg-debugname reg))
-    (wasm-sym
-      (string-append
-        (if (SawCIreg-var reg) "V" "R")
-        (fixnum->string (SawCIreg-index reg))))))
+   (string->symbol (string-append "$" (reg-name reg))))
 
+;*---------------------------------------------------------------------*/
+;*    with-loc ...                                                     */
+;*---------------------------------------------------------------------*/
 (define (with-loc loc expr)
-  (let ((parsed-loc (parse-location loc)))
-    (if parsed-loc
-      `(@ ,parsed-loc ,expr)
-      expr)))
+   (let ((parsed-loc (parse-location loc)))
+      (if parsed-loc
+	  `(@ ,parsed-loc ,expr)
+	  expr)))
 
+;*---------------------------------------------------------------------*/
+;*    with-fun-loc ...                                                 */
+;*---------------------------------------------------------------------*/
 (define (with-fun-loc fun expr)
-  (with-access::rtl_fun fun (loc)
-    (with-loc loc expr)))
+   (with-access::rtl_fun fun (loc)
+      (with-loc loc expr)))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-cnst-nil ...                                                */
