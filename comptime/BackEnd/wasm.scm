@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Sep 19 10:55:06 2024 (serrano)                */
+;*    Last change :  Fri Sep 20 11:28:51 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -133,7 +133,8 @@
 	  (error "wasm-link" "More than one source file provided" sources))
 	 (else
 	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
-		 (runtime-file (find-file-in-path "bigloo_s.wat" *lib-dir*))
+		 (lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
+		 (runtime-file (find-file-in-path lib *lib-dir*))
 		 (runtime-mjs (find-file-in-path "runtime.mjs" *lib-dir*))
 		 (srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
 		 (objects (delete-duplicates! (append srcobj *o-files*) string=?)))

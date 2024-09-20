@@ -1,10 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/type.scm           */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/type.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Wed Sep 18 21:03:35 2024 (serrano)                */
-;*    Last change :  Mon Sep  9 10:56:44 2024 (serrano)                */
+;*    Last change :  Fri Sep 20 07:27:34 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -279,7 +278,9 @@
       (or (not (bigloo-type? vtype))
 	  (eq? ntype *obj*)
 	  (or (eq? vtype *pair*) (eq? vtype *epair*) )
-	  (and (tclass? vtype) (tclass? ntype) (type-subclass? vtype ntype))))
+	  (and (tclass? vtype) (tclass? ntype) (type-subclass? vtype ntype))
+	  (eq? vtype *procedure-l*)
+	  (eq? vtype *procedure-el*)))
    
    (with-access::var node (variable type)
       (when (and (global? variable) (eq? (global-import variable) 'static))

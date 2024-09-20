@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Sep 19 16:04:57 2024 (serrano)                */
+;*    Last change :  Fri Sep 20 08:31:02 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -91,9 +91,6 @@
 	 (trace-item "fun=" id " " name)
 	 (trace-item "type=" (shape type))
 	 ;; debug 
-	 (when *bbv-dump-cfg*
-	    (with-access::sfun value (args)
-	       (dump-cfg v (map local->reg args) l ".wasm.cfg")))
 	 (with-access::sfun value (loc args)
 	    (let ((params (map local->reg args)))
 	       
@@ -101,6 +98,11 @@
 	       
 	       (set! l (register-allocation b v params l))
 	       (set! l (bbv b v params l))
+	       (set! l (split-blocks l))
+	       
+	       (when *bbv-dump-cfg*
+		  (with-access::sfun value (args)
+		     (dump-cfg v (map local->reg args) l ".wasm.cfg")))
 	       
 	       (let* ((locals (get-locals params l))
 		      (body (gen-body v l))
@@ -143,39 +145,38 @@
 (define *extra-types* '())
 
 ;*---------------------------------------------------------------------*/
-;*    needs-dispatcher? ...                                            */
-;*---------------------------------------------------------------------*/
-(define (needs-dispatcher? l)
-   ;; if there is a single basic block or none,
-   ;; then we don't have any control flow
-   ;; and therefore we are sure that we don't need a dispatcher block.
-   (not (or (null? l) (null? (cdr l)))))
-
-;*---------------------------------------------------------------------*/
 ;*    get-locals ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (get-locals params l) ;()
+(define (get-locals params l)
    ;; Update all reg to ireg and return all regs not in params.
-   (let ((n 0) (regs '()))
-      (define (expr->ireg e)
-        (cond
-            ((isa? e SawCIreg))
-            ((rtl_reg? e) (widen!::SawCIreg e (index n))
-              (set! n (+fx n 1))
-              (set! regs (cons e regs)))
-            (else
-            (map expr->ireg (rtl_ins-args e)))))
-      (define (visit b::block)
-        (for-each
-          (lambda (ins)
-            (with-access::rtl_ins ins (dest fun args)
-              (if dest (expr->ireg dest))
-              (for-each expr->ireg args) ))
-          (block-first b) ))
-      (for-each expr->ireg params)
-      (set! regs '())
-      (for-each visit l)
-      regs ))
+   (define n 0)
+   (define regs '())
+   
+   (define (expr->ireg e)
+      (cond
+	 ((isa? e SawCIreg)
+	  #unspecified)
+	 ((rtl_reg? e)
+	  (widen!::SawCIreg e
+	     (index n))
+	  (set! n (+fx n 1))
+	  (set! regs (cons e regs)))
+	 (else
+	  (map expr->ireg (rtl_ins-args e)))))
+   
+   (define (visit! b::block)
+      (for-each (lambda (ins)
+		   (with-access::rtl_ins ins (dest fun args)
+		      (if dest (expr->ireg dest))
+		      (for-each expr->ireg args)))
+	 (block-first b)))
+   
+   (for-each expr->ireg params)
+   
+   (set! regs '())
+   (for-each visit! l)
+   
+   regs)
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-type ...                                                    */
@@ -419,7 +420,7 @@
 ;*    dummy initializations of variables that could be considered      */
 ;*    non-initialized by wasm-as.                                      */
 ;*---------------------------------------------------------------------*/
-(define (gen-local-inits locals::pair-nil v::global l::pair-nil body)
+(define (gen-local-inits locals::pair-nil v::global l::pair-nil wasm)
 
    (define (type-require-init? t)
       (case (type-id t)
@@ -430,8 +431,12 @@
       ;; super simple heuristic, white list the variables
       ;; assigned in the first basic block
       (with-trace 'wasm "first-block-assigs"
-	 (if (null? l)
-	     '()
+	 (cond
+	    ((null? l)
+	     '())
+	    ((head-loop? (car l) (cdr l))
+	     '())
+	    (else
 	     (with-access::block (car l) (first)
 		(let loop ((first first)
 			   (wl '()))
@@ -439,8 +444,7 @@
 		       wl
 		       (let ((i (car first)))
 			  (with-access::rtl_ins i (fun dest)
-			     (trace-item "i=" (shape i) " -> " (typeof fun)
-				" " (typeof dest))
+			     (trace-item "i=" (typeof fun) " " (shape dest))
 			     (cond
 				((or (isa? fun rtl_go)
 				     (isa? fun rtl_switch)
@@ -452,10 +456,35 @@
 				((or (isa? fun rtl_mov)
 				     (isa? fun rtl_new)
 				     (isa? fun rtl_loadg))
+				 (trace-item (shape dest))
+				 (loop (cdr first) (cons dest wl)))
+				((isa? fun rtl_call)
+				 ;; MS 20/09/2024: not sure that it is always
+				 ;; legal to continue with the next
+				 ;; instructions in case of a call...
+				 (trace-item (shape dest))
 				 (loop (cdr first) (cons dest wl)))
 				(else
-				 (loop (cdr first) wl)))))))))))
+				 (loop (cdr first) wl))))))))))))
 
+   (define (mark-temp! t::rtl_reg temps block)
+      (let ((c (assq t temps)))
+	 (when (pair? c)
+	    (unless (memq block (cdr c))
+	       (set-cdr! c (cons block (cdr c)))))))
+   
+   (define (mark-ins! i::rtl_ins temps block)
+      (with-access::rtl_ins i (dest args)
+	 (when (isa? dest rtl_reg)
+	    (mark-temp! dest temps block))
+	 (for-each (lambda (a)
+		      (cond
+			 ((isa? a rtl_reg)
+			  (mark-temp! a temps block))
+			 ((isa? a rtl_ins)
+			  (mark-ins! a temps block))))
+	    args)))
+   
    (define (single-block-ref l)
       ;; white list the variables that are used in
       ;; a unique basic block
@@ -465,28 +494,27 @@
 		       (stack '()))
 	       (cond
 		  ((null? l)
-		   (filter-map (lambda (temp)
-				  (when (and (pair? (cdr temp))
-					     (null? (cddr temp)))
-				     (car temp)))
-		      temps)
-		   '())
+		   (if (getenv "DEBUG_INITS")
+		       (begin
+			  (print "DEBUG_INITS...")
+			  '())
+		       (filter-map (lambda (temp)
+				      (when (and (pair? (cdr temp))
+						 (null? (cddr temp)))
+					 (trace-item (shape (car temp)))
+					 (car temp)))
+			  temps)))
 		  ((memq (car l) stack)
 		   (loop (cdr l) stack))
 		  (else
 		   (with-access::block (car l) (first)
 		      (for-each (lambda (i)
-				   (with-access::rtl_ins i (dest)
-				      (let ((c (assq dest temps)))
-					 (when (pair? c)
-					    (unless (memq (car l) (cdr c))
-					       (set-cdr! c (cons (car l) (cdr c)))
-					       (trace-item (shape dest) " " (length (cdr c))))))))
+				   (mark-ins! i temps (car l)))
 			 first))
 		   (loop (cdr l) (cons (car l) stack))))))))
    
    (define whitelist
-      (if (dispatcher-body? body)
+      (if (dispatcher? wasm)
 	  '()
 	  (delete-duplicates!
 	     (append (first-block-assigs l)
@@ -535,7 +563,7 @@
 ;*    reg-name ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (reg-name reg) ;()
-   (with-access::rtl_reg reg (var debugname key)
+   (with-access::rtl_reg reg (var debugname name key)
       (cond
 	 (debugname
 	  debugname)
@@ -553,15 +581,24 @@
 		      (symbol->string id) "_" (symbol->string key))))
 	     debugname))
 	 (else
-	  (set! debugname
-	     (string-append (if (SawCIreg-var reg) "V" "R")
-		(integer->string (SawCIreg-index reg))))
+	  (set! debugname (symbol->string name))
+;* 	     (string-append (if (SawCIreg-var reg) "V" "R")            */
+;* 		(integer->string (SawCIreg-index reg))))               */
 	  debugname))))
 
 ;*---------------------------------------------------------------------*/
-;*    dispatcher-body? ...                                             */
+;*    needs-dispatcher? ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (dispatcher-body? body)
+(define (needs-dispatcher? l)
+   ;; if there is a single basic block or none,
+   ;; then we don't have any control flow
+   ;; and therefore we are sure that we don't need a dispatcher block.
+   (not (or (null? l) (null? (cdr l)))))
+
+;*---------------------------------------------------------------------*/
+;*    dispatcher? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (dispatcher? body)
    (match-case body
       (((local $__label i32) . ?-) #t)
       (else #f)))
@@ -1242,14 +1279,14 @@
    (let ((functy (create-ref-func-type
 		    (wasm-type (rtl_lightfuncall-rettype fun))
 		    (map wasm-typeof-arg args)))
-	 (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
+	 (proc `(ref.cast (ref $procedure-l) ,(gen-reg (car args)))))
       (with-fun-loc fun 
 	 `(call_ref ,functy
 	     ,proc
 	     ,@(gen-args (cdr args))
 	     (ref.cast
 		(ref ,functy)
-		(struct.get $procedure $entry ,proc))))))
+		(struct.get $procedure-l $entry ,proc))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    typeof-arg ...                                                   */
@@ -1439,3 +1476,54 @@
 (define-method (gen-expr fun::rtl_protected args)
    ;; Strange, nothing to do...
    (gen-reg (car args)))
+
+;*---------------------------------------------------------------------*/
+;*    head-loop? ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (head-loop? hd::block blocks::pair-nil)
+   ;; is any of blocks pointing to hd?
+   (any (lambda (b)
+	   (with-access::block b (succs)
+	      (memq hd succs)))
+      blocks))
+
+;*---------------------------------------------------------------------*/
+;*    split-blocks ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (split-blocks blocks::pair-nil)
+   (with-trace 'wasm "split-blocks"
+      (cond
+	 ((null? blocks)
+	  (trace-item "empty body")
+	  blocks)
+	 ((head-loop? (car blocks) (cdr blocks))
+	  (trace-item "is loop head...")
+	  blocks)
+	 (else
+	  (with-access::block (car blocks) (first)
+	     (let loop ((first first)
+			(prelude '()))
+		(if (null? first)
+		    ;; no if in this block!
+		    blocks
+		    (let ((i (car first)))
+		       (with-access::rtl_ins i (fun)
+			  (if (or (isa? fun rtl_go)
+				  (isa? fun rtl_switch)
+				  (isa? fun rtl_ifeq)
+				  (isa? fun rtl_ifne))
+			      (let* ((go (instantiate::rtl_ins
+					    (fun (instantiate::rtl_go
+						    (to (car blocks))))
+					    (args '())))
+				     (nb (instantiate::block
+					    (label (length blocks))
+					    (succs (list (car blocks)))
+					    (first (reverse (cons go prelude))))))
+				 (trace-item "splitting first block...")
+				 (with-access::block (car blocks) (preds (ofirst first))
+				    (set! ofirst first)
+				    (set! preds (cons nb preds)))
+				 (cons nb blocks))
+			      (loop (cdr first) (cons i prelude))))))))))))
+   
