@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Sep 20 19:32:07 2024 (serrano)                */
+;*    Last change :  Sat Sep 21 07:11:35 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -64,6 +64,12 @@
    (static (wide-class SawCIreg::rtl_reg index)))
 
 ;*---------------------------------------------------------------------*/
+;*    compilation configuration ...                                    */
+;*---------------------------------------------------------------------*/
+(define *wasm-tailcall* #t)
+(define *wasm-split-inits* #t)
+
+;*---------------------------------------------------------------------*/
 ;*    wasm-gen ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (wasm-gen b::wasm v::global)
@@ -98,7 +104,8 @@
 	       
 	       (set! l (register-allocation b v params l))
 	       (set! l (bbv b v params l))
-	       (set! l (split-blocks l))
+	       (when *wasm-split-inits*
+		  (set! l (split-blocks l)))
 	       
 	       (when *bbv-dump-cfg*
 		  (with-access::sfun value (args)
@@ -809,8 +816,17 @@
     '(throw $fail)))
 
 (define-method (gen-expr fun::rtl_return args)
-  (with-fun-loc fun
-    `(return ,@(gen-args args))))
+   (with-fun-loc fun
+      (let ((expr (gen-args args)))
+	 (if *wasm-tailcall*
+	     (match-case expr
+		(((call . ?args))
+		 `(return_call ,@args))
+		((call-ref . ?args)
+		 `(return-call_ref ,@args))
+		(else
+		 `(return ,@expr)))
+	     `(return ,@expr)))))
 
 (define-method (gen-expr fun::rtl_go args)
   ; We can not return a list of WASM instruction there (as it is not the 
@@ -841,50 +857,54 @@
 ;*    gen-switch ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (gen-switch fun type patterns labels args gen-go gen-block-label)
-  (let ((else-bb #unspecified) (num2bb '()))
-    (define (add n bb)
+   
+   (define else-bb #unspecified)
+   (define num2bb '())
+   
+   (define (add n bb)
       (set! num2bb (cons (cons (intify n) bb) num2bb)))
-
-    (for-each (lambda (pat bb)
-      (if (eq? pat 'else)
-        (set! else-bb bb)
-        (for-each (lambda (n) (add n bb)) pat)))
+   
+   (for-each (lambda (pat bb)
+		(if (eq? pat 'else)
+		    (set! else-bb bb)
+		    (for-each (lambda (n) (add n bb)) pat)))
       patterns labels)
-      
-    (set! num2bb (sort num2bb (lambda (x y) (<fx (car x) (car y)))))
-    (let* ((nums (map car num2bb))
-            (min (car nums))
-            (max (car (last-pair nums)))
-            (n (length nums)))
+   
+   (set! num2bb (sort num2bb (lambda (x y) (<fx (car x) (car y)))))
+   
+   (let* ((nums (map car num2bb))
+	  (min (car nums))
+	  (max (car (last-pair nums)))
+	  (n (length nums)))
       
       ;; TODO: generate a binary search if the density is too low.
       ;;       see SawJvm/code.scm: rtl_switch gen-fun
-      
-
       (if gen-block-label
-        ;; Jump table using br_table
-        (with-fun-loc fun
-          `(br_table 
-            ,@(map gen-block-label (flat num2bb else-bb)) 
-            ,(gen-block-label else-bb) 
-            (i32.sub 
-              ,(if (need-cast-to-i32? type)
-                  `(i32.wrap_i64 ,@(gen-args args))
-                  (car (gen-args args)))
-              (i32.const ,min))))
+	  ;; Jump table using br_table
+	  (with-fun-loc fun
+	     `(br_table 
+		 ,@(map gen-block-label (flat num2bb else-bb)) 
+		 ,(gen-block-label else-bb) 
+		 (i32.sub 
+		    ,(if (need-cast-to-i32? type)
+			 `(i32.wrap_i64 ,@(gen-args args))
+			 (car (gen-args args)))
+		    (i32.const ,min))))
+	  ;; Binary search
+	  (with-fun-loc fun 
+	     `(comment "Binary search for switch"
+		 ,(emit-binary-search gen-go type 
+		     (gen-args args) 
+		     else-bb 
+		     (list->vector (map car num2bb)) 
+		     (list->vector (map cdr num2bb))))))))
 
-        ;; Binary search
-        (with-fun-loc fun 
-          `(comment "Binary search for switch"
-            ,(emit-binary-search gen-go type 
-              (gen-args args) 
-              else-bb 
-              (list->vector (map car num2bb)) 
-              (list->vector (map cdr num2bb)))))))))
-
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_switch ...                                        */
+;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_switch args)
-  (with-access::rtl_switch fun (type patterns labels)
-    (gen-switch fun type patterns labels args gen-go #f)))
+   (with-access::rtl_switch fun (type patterns labels)
+      (gen-switch fun type patterns labels args gen-go #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cmp-ops-for-type ...                                             */
@@ -964,7 +984,8 @@
 ;*    as-vector ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (as-vector arg vtype::type)
-   (if (eq? (type-id vtype) 'vector)
+   (if (or (eq? (type-id vtype) 'vector)
+	   (isa? vtype tvec))
        (gen-reg arg)
        (let ((vec-type (wasm-vector-type vtype)))
 	  `(ref.cast (ref ,vec-type) ,(gen-reg arg)))))
@@ -987,7 +1008,8 @@
 		      
 		      ,(cast-to-i32-if-needed (cadr args)))))
 	    (with-fun-loc fun 
-	       (if (and (eq? (type-id vtype) 'vector)
+	       (if (and #f
+			(eq? (type-id vtype) 'vector)
 			(not (eq? type *obj*)))
 		   `(ref.cast ,(wasm-type type) ,array-code)
 		   array-code))))))
