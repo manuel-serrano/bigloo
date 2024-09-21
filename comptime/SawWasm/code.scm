@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Sep 20 08:31:02 2024 (serrano)                */
+;*    Last change :  Fri Sep 20 19:32:07 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1517,13 +1517,18 @@
 						    (to (car blocks))))
 					    (args '())))
 				     (nb (instantiate::block
-					    (label (length blocks))
+					    (label 0)
 					    (succs (list (car blocks)))
 					    (first (reverse (cons go prelude))))))
 				 (trace-item "splitting first block...")
 				 (with-access::block (car blocks) (preds (ofirst first))
 				    (set! ofirst first)
 				    (set! preds (cons nb preds)))
+				 ;; shift all the block labels by one
+				 (for-each (lambda (b)
+					      (with-access::block b (label)
+						 (set! label (+fx label 1))))
+				    blocks)
 				 (cons nb blocks))
 			      (loop (cdr first) (cons i prelude))))))))))))
    
