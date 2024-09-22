@@ -145,35 +145,40 @@
 				     (field $header (mut i64))
 				     (field $widening (mut eqref)))))
    
-   ;; Ports
-   (type $port (sub 
+  ;; Ports
+   (type $port (sub
 		  (struct
 		     (field $name (mut (ref $bstring)))
 		     (field $chook (mut eqref)))))
-   
-   (type $output-port (sub $port 
+
+   (type $output-port (sub $port
 			 (struct
 			    (field $name (mut (ref $bstring)))
 			    (field $chook (mut eqref))
+			    (field $buffer (mut (ref $bstring)))
+			    (field $index (mut i32))
 			    (field $fhook (mut eqref))
 			    (field $flushbuf (mut eqref))
 			    (field $isclosed (mut i32)))))
-   (type $file-output-port (sub final $output-port 
-			      (struct 
+   (type $file-output-port (sub final $output-port
+			      (struct
 				 (field $name (mut (ref $bstring)))
 				 (field $chook (mut eqref))
+				 (field $buffer (mut (ref $bstring)))
+				 (field $index (mut i32))
 				 (field $fhook (mut eqref))
 				 (field $flushbuf (mut eqref))
 				 (field $isclosed (mut i32))
 				 (field $fd i32))))
-   (type $string-output-port (sub final $output-port 
-				(struct 
+   (type $string-output-port (sub final $output-port
+				(struct
 				   (field $name (mut (ref $bstring)))
 				   (field $chook (mut eqref))
+				   (field $buffer (mut (ref $bstring)))
+				   (field $index (mut i32))
 				   (field $fhook (mut eqref))
 				   (field $flushbuf (mut eqref))
-				   (field $isclosed (mut i32))
-				   (field $buffer (mut (ref $bstring))))))
+				   (field $isclosed (mut i32)))))
    
    (type $rgc (struct
 		 ;; We only uses i32 as arrays can only be indexed by 32 bits integers.

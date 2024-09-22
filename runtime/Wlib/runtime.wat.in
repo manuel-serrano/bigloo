@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Sep 18 18:43:10 2024 (serrano)                */
+;*    Last change :  Sun Sep 22 07:05:38 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -321,6 +321,10 @@
 	(global.get $bstring-default-value)
 	;; chook
 	(global.get $BUNSPEC)
+	;; buffer
+	(global.get $bstring-default-value)
+	;; index
+	(i32.const 0)
 	;; fhook
 	(global.get $BUNSPEC)
 	;; flushbuf
@@ -334,6 +338,10 @@
 	(global.get $bstring-default-value)
 	;; chook
 	(global.get $BUNSPEC)
+	;; buffer
+	(global.get $bstring-default-value)
+	;; index
+	(i32.const 0)
 	;; fhook
 	(global.get $BUNSPEC)
 	;; flushbuf
@@ -349,14 +357,16 @@
 	(global.get $bstring-default-value)
 	;; chook
 	(global.get $BUNSPEC)
+	;; buffer
+	(global.get $bstring-default-value)
+	;; index
+	(i32.const 0)
 	;; fhook
 	(global.get $BUNSPEC)
 	;; flushbuf
 	(global.get $BUNSPEC)
 	;; isclosed
-	(i32.const 0)
-	;; buffer
-	(global.get $bstring-default-value)))
+	(i32.const 0)))
   (global $rgc-default-value
      (export "BGL_RGC_DEFAULT_VALUE") (ref $rgc)
      (struct.new $rgc
@@ -511,7 +521,7 @@
       
       ;; $current-output-port
       (struct.new $file-output-port 
-        ;; Name
+        ;; name
         (array.new_fixed $bstring 6 
           (i32.const 0x73) ;; s
           (i32.const 0x74) ;; t
@@ -520,8 +530,12 @@
           (i32.const 0x75) ;; u
           (i32.const 0x74) ;; t
           )
-        ;; CHook
+        ;; chook
         (global.get $BUNSPEC)
+	;; buffer
+	(array.new_default $bstring (i32.const 8192))
+	;; index
+	(i32.const 0)
         ;; FHook
         (global.get $BUNSPEC)
         ;; Flushbuf
@@ -532,7 +546,7 @@
         (i32.const 1 #;(POSIX stdout fd)))
       ;; $current-error-port
       (struct.new $file-output-port 
-        ;; Name
+        ;; name
         (array.new_fixed $bstring 6 
           (i32.const 0x73) ;; s
           (i32.const 0x74) ;; t
@@ -541,11 +555,15 @@
           (i32.const 0x72) ;; r
           (i32.const 0x72) ;; r
           )
-        ;; CHook
+        ;; chook
         (global.get $BUNSPEC)
-        ;; FHook
+	;; buffer
+	(array.new_fixed $bstring 0)
+	;; index
+	(i32.const 0)
+        ;; fhook
         (global.get $BUNSPEC)
-        ;; Flushbuf
+        ;; flushbuf
         (global.get $BUNSPEC)
         ;; Is closed
         (i32.const 0)
@@ -553,7 +571,7 @@
         (i32.const 2 #;(POSIX stderr fd)))
       ;; $current-input-port
       (struct.new $file-input-port
-        ;; Name
+        ;; name
         (array.new_fixed $bstring 5
           (i32.const 0x73) ;; s
           (i32.const 0x74) ;; t
@@ -561,7 +579,7 @@
           (i32.const 0x69) ;; i
           (i32.const 0x6E) ;; n
           )
-        ;; CHook
+        ;; chook
         (global.get $BUNSPEC)
         ;; RGC
         (struct.new $rgc
@@ -1288,7 +1306,7 @@
   ;; Output port functions
   ;; --------------------------------------------------------
 
-  (func $store_substring
+ (func $store_substring
     (param $text (ref $bstring))
     (param $start i64)
     (param $end i64)
@@ -1296,14 +1314,14 @@
     (local $i i32)
     (local.set $i (i32.wrap_i64 (local.get $start)))
     (loop $loop
-      (if (i32.lt_u (local.get $i) (i32.wrap_i64 (local.get $end)))
-        (then
-          (i32.store8 (local.get $addr) (array.get $bstring (local.get $text) (local.get $i)))
-          (local.set $i (i32.add (local.get $i) (i32.const 1)))
-          (local.set $addr (i32.add (local.get $addr) (i32.const 1)))
-          (br $loop)))))
+       (if (i32.lt_u (local.get $i) (i32.wrap_i64 (local.get $end)))
+	   (then
+	      (i32.store8 (local.get $addr) (array.get $bstring (local.get $text) (local.get $i)))
+	      (local.set $i (i32.add (local.get $i) (i32.const 1)))
+	      (local.set $addr (i32.add (local.get $addr) (i32.const 1)))
+	      (br $loop)))))
   
-  (func $store_string
+   (func $store_string
     (param $text (ref $bstring))
     (param $addr i32)
     (call $store_substring
@@ -1312,76 +1330,148 @@
       (i64.extend_i32_u (array.len (local.get $text)))
       (local.get $addr)))
 
+  (func $memcpy
+     (param $dest i32)
+     (param $src (ref $bstring))
+     (param $i i32)
+     (param $len i32)
+     (loop $loop
+	(if (i32.lt_u (local.get $i) (local.get $len))
+	    (then
+	       (i32.store8 (i32.add (local.get $dest) (local.get $i))
+		  (array.get $bstring (local.get $src) (local.get $i)))
+	       (local.set $i (i32.add (local.get $i) (i32.const 1)))
+	       (br $loop)))))
+
+  ;; flush_output_port
+  (func $flush_output_port
+     (param $port (ref $file-output-port))
+     (local $buffer (ref $bstring))
+     (local $len i32)
+     (local.set $buffer
+	(struct.get $output-port $buffer (local.get $port)))
+     (local.set $len
+	(array.len (local.get $buffer)))
+     
+     (if (i32.gt_u (local.get $len) (i32.const 0))
+	 (then
+	    (call $memcpy
+	       (i32.const 128)
+	       (local.get $buffer)
+	       (i32.const 0)
+	       (local.get $len))
+	    (call $js_write_file
+	       (struct.get $file-output-port $fd (local.get $port))
+	       (i32.const 128)
+	       (local.get $len))
+	    (struct.set $output-port $index (local.get $port)
+	       (i32.const 0)))))
+     
+  ;; bgl_display_char
   (func $bgl_display_char (export "bgl_display_char")
      (param $c i32)
      (param $port (ref $output-port))
      (result eqref)
-     (local $old_buffer (ref $bstring))
      (local $new_buffer (ref $bstring))
+     (local $buffer (ref $bstring))
+     (local $index i32)
+     (local $len i32)
      
-     ;; FIXME: support other ports
-     (if (ref.test (ref $file-output-port) (local.get $port))
+     (local.set $buffer
+	(struct.get $output-port $buffer (local.get $port)))
+     (local.set $index
+	(struct.get $output-port $index (local.get $port)))
+     (local.set $len
+	(array.len (local.get $buffer)))
+     
+     (if (i32.lt_u (local.get $index) (local.get $len))
 	 (then
-	    (call $js_write_char
-	       (struct.get $file-output-port $fd
-		  (ref.cast (ref $file-output-port) (local.get $port)))
-	       (local.get $c)))
+	    (array.set $bstring (local.get $buffer) (local.get $index)
+	       (local.get $c))
+	    (struct.set $output-port $index (local.get $port)
+	       (i32.add (local.get $index) (i32.const 1))))
 	 (else
-	  (local.set $old_buffer 
-	     (struct.get $string-output-port $buffer
-		(ref.cast (ref $string-output-port) (local.get $port))))
-	  ;; Allocate space for new buffer.
-	  (local.set $new_buffer
-	     (array.new_default $bstring
-		(i32.add
-		   (array.len (local.get $old_buffer))
-		   (i32.const 1))))
-	  ;; Copy data to new buffer.
-	  (array.copy $bstring $bstring
-	     (local.get $new_buffer)
-	     (i32.const 0)
-	     (local.get $old_buffer)
-	     (array.len (local.get $old_buffer))
-	     (i32.const 0))
-	  (array.set $bstring
-	     (local.get $new_buffer)
-	     (array.len (local.get $old_buffer))
-	     (local.get $c))
-	  (struct.set $string-output-port $buffer
-	     (ref.cast (ref $string-output-port) (local.get $port))
-	     (local.get $new_buffer))))
+	  (if (ref.test (ref $file-output-port) (local.get $port))
+	      (then
+		 (call $flush_output_port
+		    (ref.cast (ref $file-output-port) (local.get $port)))
+		 (call $js_write_char
+		    (struct.get $file-output-port $fd
+		       (ref.cast (ref $file-output-port) (local.get $port)))
+		    (local.get $c)))
+	      (else
+	       ;; allocate space for new buffer
+	       (local.set $new_buffer
+		  (array.new_default $bstring
+		     (i32.add
+			(array.len (local.get $buffer))
+			(i32.const 16))))
+	       ;; copy data to new buffer
+	       (array.copy $bstring $bstring
+		  (local.get $new_buffer)
+		  (i32.const 0)
+		  (local.get $buffer)
+		  (local.get $len)
+		  (i32.const 0))
+	       (array.set $bstring
+		  (local.get $new_buffer)
+		  (local.get $len)
+		  (local.get $c))
+	       (struct.set $string-output-port $buffer
+		  (ref.cast (ref $string-output-port) (local.get $port))
+		  (local.get $new_buffer))))))
      (local.get $port))
 
+  ;; display_substring_file_port
   (func $display_substring_file_port
-    (param $text (ref $bstring))
-    (param $start i64)
-    (param $end i64)
-    (param $port (ref $file-output-port))
+     (param $text (ref $bstring))
+     (param $start i32)
+     (param $end i32)
+     (param $port (ref $file-output-port))
+     (local $buffer (ref $bstring))
+     (local $index i32)
+     (local $len i32)
+     (local $size i32)
 
-    (call $store_substring
-      (local.get $text)
-      (local.get $start)
-      (local.get $end)
-      (i32.const 128))
-    (call $js_write_file 
-      (struct.get $file-output-port $fd (ref.cast (ref $file-output-port) (local.get $port))) 
-      (i32.const 128) 
-      (i32.wrap_i64 
-        (i64.sub 
-          (local.get $end) 
-          (local.get $start)))))
+    (local.set $buffer
+	(struct.get $output-port $buffer (local.get $port)))
+     (local.set $index
+	(struct.get $output-port $index (local.get $port)))
+     (local.set $len
+	(array.len (local.get $buffer)))
+     (local.set $size
+	(i32.sub (local.get $end) (local.get $start)))
 
+     (if (i32.lt_u (i32.add (local.get $index) (local.get $size))
+	    (local.get $len))
+	 (then
+	    (array.copy $bstring $bstring
+	       (local.get $buffer)
+	       (local.get $index)
+	       (local.get $text)
+	       (local.get $size)
+	       (local.get $start))
+	    (struct.set $file-output-port $index
+	       (local.get $port) (i32.add (local.get $index)
+				    (local.get $size))))
+	 (else
+	  (call $flush_output_port (local.get $port))
+	  (call $js_write_file
+	     (struct.get $file-output-port $fd (local.get $port))
+	     (i32.const 128)
+	     (local.get $size)))))
+     
   (func $display_substring_string_port
     (param $text (ref $bstring))
-    (param $start i64)
-    (param $end i64)
+    (param $start i32)
+    (param $end i32)
     (param $port (ref $string-output-port))
 
     (local $length i32)
     (local $new_buffer (ref $bstring))
 
     ;; Allocate space for new buffer.
-    (local.set $length (i32.wrap_i64 (i64.sub (local.get $end) (local.get $start))))
+    (local.set $length (i32.sub (local.get $end) (local.get $start)))
     (local.set $new_buffer
       (array.new_default $bstring
         (i32.add 
@@ -1395,7 +1485,7 @@
       (local.get $length))
     (array.copy $bstring $bstring
       (local.get $new_buffer) (local.get $length)
-      (local.get $text) (i32.wrap_i64 (local.get $start))
+      (local.get $text) (local.get $start)
       (local.get $length))
 
     (struct.set $string-output-port $buffer
@@ -1413,14 +1503,14 @@
       (then 
         (call $display_substring_file_port 
           (ref.cast (ref $bstring) (local.get $text))
-          (local.get $start)
-          (local.get $end)
+          (i32.wrap_i64 (local.get $start))
+          (i32.wrap_i64 (local.get $end))
           (ref.cast (ref $file-output-port) (local.get $port))))
       (else
         (call $display_substring_string_port 
           (ref.cast (ref $bstring) (local.get $text))
-          (local.get $start)
-          (local.get $end)
+          (i32.wrap_i64 (local.get $start))
+          (i32.wrap_i64 (local.get $end))
           (ref.cast (ref $string-output-port) (local.get $port)))))
 
     (local.get $port))
@@ -1476,47 +1566,54 @@
     (param $buffer (ref $bstring))
     (result (ref $output-port))
     (struct.new $string-output-port
-      ;; Name
-      (array.new_data $bstring $string-output-port-name (i32.const 0) (i32.const 6))
-      ;; CHook
+      ;; name
+      (array.new_data $bstring $string-output-port-name
+	 (i32.const 0) (i32.const 6))
+      ;; chook
       (global.get $BUNSPEC)
+      ;; buffer
+      (array.new_fixed $bstring 0)
+      ;; index
+      (i32.const 0)
       ;; FHook
       (global.get $BUNSPEC)
       ;; Flushbuf
       (global.get $BUNSPEC)
       ;; Is closed
-      (i32.const 0)
-      ;; Buffer
-      (array.new_default $bstring (i32.const 128))))
+      (i32.const 0)))
 
   (func $bgl_open_output_file (export "bgl_open_output_file")
-    (param $path (ref $bstring))
-    (param $buffer (ref $bstring))
-    (result eqref)
-    (local $fd i32)
-    ;; TODO: support buffered output (for now, $buffer is ignored)
-    (call $store_string
-      (local.get $path)
-      (i32.const 128))
-    (local.set $fd
-      (call $js_open_file
-        (i32.const 128)
-        (array.len (local.get $path))
-        ;; WRITE-ONLY flag
-        (i32.const 1)))
-    (struct.new $file-output-port
-      ;; Name
-      (local.get $path)
-      ;; CHook
-      (global.get $BUNSPEC)
-      ;; FHook
-      (global.get $BUNSPEC)
-      ;; Flushbuf
-      (global.get $BUNSPEC)
-      ;; Is closed
-      (i32.const 0)
-      ;; File descriptor
-      (local.get $fd)))
+     (param $path (ref $bstring))
+     (param $buffer (ref $bstring))
+     (result eqref)
+     (local $fd i32)
+     ;; TODO: support buffered output (for now, $buffer is ignored)
+     (call $store_string
+	(local.get $path)
+	(i32.const 128))
+     (local.set $fd
+	(call $js_open_file
+	   (i32.const 128)
+	   (array.len (local.get $path))
+	   ;; WRITE-ONLY flag
+	   (i32.const 1)))
+     (struct.new $file-output-port
+	;; name
+	(local.get $path)
+	;; chook
+	(global.get $BUNSPEC)
+	;; buffer
+	(array.new_default $bstring (i32.const 8192))
+	;; index
+	(i32.const 0)
+	;; FHook
+	(global.get $BUNSPEC)
+	;; Flushbuf
+	(global.get $BUNSPEC)
+	;; Is closed
+	(i32.const 0)
+	;; File descriptor
+	(local.get $fd)))
 
   (func $close_string_output_port
     (param $port (ref $string-output-port))
