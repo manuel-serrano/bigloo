@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
+;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sat Sep 21 07:11:35 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 16:48:54 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -197,6 +197,7 @@
 	 ((magic) 'eqref)
 	 ((unspecified) 'eqref)
 	 ((bbool) 'i31ref)
+	 ((bchar) 'i31ref)
 	 ((class-field) 'eqref)
 	 ((pair-nil) 'eqref)
 	 ((cobj) 'eqref)
@@ -823,7 +824,7 @@
 		(((call . ?args))
 		 `(return_call ,@args))
 		((call-ref . ?args)
-		 `(return-call_ref ,@args))
+		 `(return_call_ref ,@args))
 		(else
 		 `(return ,@expr)))
 	     `(return ,@expr)))))
@@ -1280,8 +1281,7 @@
       `(if (result ,type)
 	   (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
 	   (then ;; Is a variadic function!
-	      (call 
-		 $generic_va_call 
+	      (call $generic_va_call 
 		 ,proc 
 		 (array.new_fixed $vector ,(-fx arg_count 1) ,@(gen-args (cdr args)))))
 	   (else
@@ -1350,9 +1350,8 @@
 ;*    gen-expr ::rtl_apply ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_apply args)
-   ;; TODO
-   (with-fun-loc fun 
-      `(comment "Apply" (throw $unimplemented))))
+   (with-fun-loc fun
+      `(call $apply ,@(gen-args args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_mov ...                                           */

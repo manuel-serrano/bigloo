@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/char.scm                */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/char.scm                 */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 21 10:09:50 1992                          */
-;*    Last change :  Fri Mar 11 17:38:53 2016 (serrano)                */
+;*    Last change :  Mon Sep 23 16:01:02 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.6 Characters (page 24, r4)                                     */
 ;*=====================================================================*/
@@ -50,9 +50,7 @@
 	    (infix macro c-char-and::uchar (::uchar ::uchar) "&")
 	    (macro c-char-not::uchar (::uchar) "~"))
 
-	(wasm  
-		(c-char? "(ref.test (ref $bchar) ~0)")
-	    (c-char=? "(i32.eq ~0 ~1)")
+   (wasm    (c-char=? "(i32.eq ~0 ~1)")
 	    (c-char<? "(i32.lt_u ~0 ~1)")
 	    (c-char>? "(i32.gt_u ~0 ~1)")
 	    (c-char<=? "(i32.le_u ~0 ~1)")
@@ -61,12 +59,7 @@
 	    (c-integer->char "(i32.wrap_i64 ~0)")
 	    (c-char-or "(i32.or ~0 ~1)")
 	    (c-char-and "(i32.and ~0 ~1)")
-	    (c-char-not "(i32.xor ~0 (i32.const 255))")
-		
-		;; TODO: implement WASM char
-		(c-char-upcase "~0")
-	    (c-char-downcase "~0")
-		)
+	    (c-char-not "(i32.xor ~0 (i32.const 255))"))
    
    (java    (class foreign
 	       (method static c-char?::bool (::obj) "CHARP")

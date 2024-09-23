@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Sep 19 22:19:22 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 16:08:39 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1066,7 +1066,7 @@
       ($void*->obj::foreign (::void*) "void_star_to_obj"))
 
    (wasm
-      ($bbool->bool "(ref.eq ~0 (global.get $BTRUE))")
+      ($bbool->bool "(i31.get_u ~0)")
       ($bool->bbool "(if (result i31ref) ~0 (then (global.get $BTRUE)) (else (global.get $BFALSE)))")
 
       ($double->real "(struct.new $real ~0)")
@@ -1260,12 +1260,12 @@
       ($llong->int64 "~0")
       ($llong->uint64 "~0")
 
-      ($char->bchar "(struct.new $bchar ~0)")
+      ($char->bchar "(ref.i31 (i32.add ~0 (i32.const 1000)))")
       ($char->uchar "~0")
-      ($uchar->bchar "(struct.new $bchar ~0)")
+      ($uchar->bchar "(ref.i31 (i32.add ~0 (i32.const 1000)))")
       ($uchar->char "~0")
-      ($bchar->char "(struct.get $bchar $v (ref.cast (ref $bchar) ~0))")
-      ($bchar->uchar "(struct.get $bchar $v (ref.cast (ref $bchar) ~0))")
+      ($bchar->char "(i32.sub (i31.get_u ~0) (i32.const 1000))")
+      ($bchar->uchar "(i32.sub (i31.get_u ~0) (i32.const 1000))")
       ($double->real "(struct.new $real ~0)")
       ($real->double "(struct.get $real $v ~0)")
       ($float->real "(struct.new $real (f64.promote_f32 ~0))")

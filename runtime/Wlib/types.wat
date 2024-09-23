@@ -89,8 +89,8 @@
    
    ;; Boxed numeric types
    (rec
-      (type $bbool (struct (field $v i8)))
-      (type $bchar (struct (field $v i8)))
+      ;; (type $bbool (struct (field $v i8)))
+      ;; (type $bchar (struct (field $v i8)))
       (type $bucs2 (struct (field $v i16)))
       (type $bint8 (struct (field $v i8)))
       (type $buint8 (struct (field $v i8)))
@@ -105,7 +105,7 @@
       (type $belong (struct (field $v i64)))
       (type $bllong (struct (field $v i64)))
       (type $real (struct (field $v f64))))
-   
+
    (rec (type $exit (struct 
 		       (field $userp (mut i64))
 		       (field $stamp (mut i64))
