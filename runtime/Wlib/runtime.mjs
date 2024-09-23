@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.mjs        */
+/*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.mjs              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */

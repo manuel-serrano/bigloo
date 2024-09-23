@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Mon Sep 16 07:35:25 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 07:33:45 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -117,12 +117,22 @@
       ;;        seems to have "phantom" predecessors. That is, predecessors
       ;;        that don't exist (were not visited but also do not show
       ;;        up in the dumped CFG).
-      (dom_tree_node-succs-set! node
-	 (filter-map (lambda (block) (hashtable-get visited block))
-	    (block-succs (dom_tree_node-block node))))
-      (dom_tree_node-preds-set! node
-	 (filter-map (lambda (block) (hashtable-get visited block))
-	    (block-preds (dom_tree_node-block node)))))
+      (let ((succs (filter-map (lambda (block) (hashtable-get visited block))
+		      (block-succs (dom_tree_node-block node))))
+	    (preds (filter-map (lambda (block) (hashtable-get visited block))
+		      (block-preds (dom_tree_node-block node)))))
+	 (cond
+	    ((pair? succs)
+	     (dom_tree_node-succs-set! node succs))
+	    ((pair? (block-succs (dom_tree_node-block node)))
+	     (error "update-succs-and-preds!" "Cannot find successor of"
+		(shape (dom_tree_node-block node)))))
+	 (cond
+	    ((pair? preds)
+	     (dom_tree_node-preds-set! node preds))
+	    ((pair? (block-preds (dom_tree_node-block node)))
+	     (error "update-succs-and-preds!" "Cannot find predecessor of"
+		(shape (dom_tree_node-block node)))))))
    
    ;; Assign node orders in reverse postorder.
    (define (update-orders! stack order)
@@ -297,12 +307,22 @@
 (define (flow-leaving node)
    
    (define (find-then-succ-by-block block)
-      (find (lambda (succ) (eq? (dom_tree_node-block succ) block))
-	 (dom_tree_node-succs node)))
+      (let ((succ (find (lambda (succ)
+			   (eq? (dom_tree_node-block succ) block))
+		     (dom_tree_node-succs node))))
+	 (or succ
+	     (error "find-then-succ-by-block"
+		"Cannot find then successor"
+		(shape block)))))
    
    (define (find-else-succ-by-block block)
-      (find (lambda (succ) (not (eq? (dom_tree_node-block succ) block)))
-	 (dom_tree_node-succs node)))
+      (let ((succ (find (lambda (succ)
+			   (not (eq? (dom_tree_node-block succ) block)))
+		     (dom_tree_node-succs node))))
+	 (or succ
+	     (error "find-else-succ-by-block"
+		"Cannot find else successor"
+		(shape block)))))
    
    (let ((res (filter-map (lambda (ins)
 			     (let ((fn (rtl_ins-fun ins)))
@@ -353,7 +373,19 @@
 ;*    back-edge? ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (back-edge? u v)
-   (>=fx (dom_tree_node-order u) (dom_tree_node-order v)))
+   (cond
+      ((or (not (dom_tree_node? u)) (not (fixnum? (dom_tree_node-order u))))
+       (error "back-edge?" "wrong u node"
+	  (if (dom_tree_node? u)
+	      (shape (dom_tree_node-block u))
+	      u)))
+      ((or (not (dom_tree_node? v)) (not (fixnum? (dom_tree_node-order v))))
+       (error "back-edge?" "wrong v node"
+	  (if (dom_tree_node? v)
+	      (shape (dom_tree_node-block v))
+	      v)))
+      (else
+       (>=fx (dom_tree_node-order u) (dom_tree_node-order v)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dominates? ...                                                   */
@@ -533,7 +565,12 @@
       (trace-item "z=" (when z (dom_tree_node-block-label z)))
       (trace-item "context=" (dump-context context))
       (let ((terminator (flow-leaving x)))
-	 (trace-item "terminator=" (car terminator))
+	 (trace-item "terminator="
+	    `(,(car terminator) ,@(map typeof (cdr terminator)))
+	    " "
+	    (if (and (pair? (cdr terminator)) (isa? (cadr terminator) rtl_ins))
+		(shape (cadr terminator))
+		""))
 	 (cond
 	    ((null? ys)
 	     (if (and z (not (eq? (car terminator) 'if)))

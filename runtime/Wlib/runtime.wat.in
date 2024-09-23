@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat.in     */
+;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.wat.in           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Sun Sep 22 07:05:38 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 08:38:25 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -1343,27 +1343,27 @@
 	       (local.set $i (i32.add (local.get $i) (i32.const 1)))
 	       (br $loop)))))
 
-  ;; flush_output_port
-  (func $flush_output_port
+  ;; flush_file_output_port
+  (func $flush_file_output_port
      (param $port (ref $file-output-port))
      (local $buffer (ref $bstring))
-     (local $len i32)
+     (local $index i32)
      (local.set $buffer
 	(struct.get $output-port $buffer (local.get $port)))
-     (local.set $len
-	(array.len (local.get $buffer)))
-     
-     (if (i32.gt_u (local.get $len) (i32.const 0))
+     (local.set $index
+	(struct.get $output-port $index (local.get $port)))
+
+     (if (i32.gt_u (local.get $index) (i32.const 0))
 	 (then
 	    (call $memcpy
 	       (i32.const 128)
 	       (local.get $buffer)
 	       (i32.const 0)
-	       (local.get $len))
+	       (local.get $index))
 	    (call $js_write_file
 	       (struct.get $file-output-port $fd (local.get $port))
 	       (i32.const 128)
-	       (local.get $len))
+	       (local.get $index))
 	    (struct.set $output-port $index (local.get $port)
 	       (i32.const 0)))))
      
@@ -1393,7 +1393,7 @@
 	 (else
 	  (if (ref.test (ref $file-output-port) (local.get $port))
 	      (then
-		 (call $flush_output_port
+		 (call $flush_file_output_port
 		    (ref.cast (ref $file-output-port) (local.get $port)))
 		 (call $js_write_char
 		    (struct.get $file-output-port $fd
@@ -1411,8 +1411,8 @@
 		  (local.get $new_buffer)
 		  (i32.const 0)
 		  (local.get $buffer)
-		  (local.get $len)
-		  (i32.const 0))
+		  (i32.const 0)
+		  (local.get $len))
 	       (array.set $bstring
 		  (local.get $new_buffer)
 		  (local.get $len)
@@ -1449,13 +1449,13 @@
 	       (local.get $buffer)
 	       (local.get $index)
 	       (local.get $text)
-	       (local.get $size)
-	       (local.get $start))
+	       (local.get $start)
+	       (local.get $size))
 	    (struct.set $file-output-port $index
-	       (local.get $port) (i32.add (local.get $index)
-				    (local.get $size))))
+	       (local.get $port)
+	       (i32.add (local.get $index) (local.get $size))))
 	 (else
-	  (call $flush_output_port (local.get $port))
+	  (call $flush_file_output_port (local.get $port))
 	  (call $js_write_file
 	     (struct.get $file-output-port $fd (local.get $port))
 	     (i32.const 128)
@@ -1530,21 +1530,19 @@
     (result eqref)
     (struct.get $string-output-port $buffer (local.get $port)))
 
-  (func $flush_file_output_port
-    (param $port (ref $file-output-port))
-    (result eqref)
-    ;; TODO: implement flush file output port
-    (global.get $BTRUE))
-
   (func $bgl_flush_output_port (export "bgl_flush_output_port")
-    (param $port (ref $output-port))
-    (result eqref)
-    
-    (if (ref.test (ref $string-output-port) (local.get $port))
-      (then (return (call $flush_string_output_port (ref.cast (ref $string-output-port) (local.get $port))))))
-    (if (ref.test (ref $file-output-port) (local.get $port))
-      (then (return (call $flush_file_output_port (ref.cast (ref $file-output-port) (local.get $port))))))
-    (unreachable))
+     (param $port (ref $output-port))
+     (result eqref)
+     
+     (if (ref.test (ref $file-output-port) (local.get $port))
+	 (then
+	    (call $flush_file_output_port
+	       (ref.cast (ref $file-output-port) (local.get $port)))
+	    (return (local.get $port)))
+	 (else
+	  (if (ref.test (ref $string-output-port) (local.get $port))
+	      (then (return (call $flush_string_output_port (ref.cast (ref $string-output-port) (local.get $port)))))
+	      (else (return (global.get $BUNSPEC)))))))
 
   (func $bgl_reset_output_string_port (export "bgl_reset_output_string_port")
     (param $port (ref $output-port))
