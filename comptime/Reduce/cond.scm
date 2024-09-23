@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/Reduce/cond.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/cond.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Sep 23 08:18:15 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 09:55:13 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
@@ -228,14 +228,15 @@
       (set! true (node-cond! true))
       (set! false (node-cond! false))
       (cond
-;* 	 ((and (isa? true literal) (isa? false literal)                */
-;* 	       (eq? (literal-value true) (literal-value false)))       */
-;* 	  (if (side-effect-safe? test)                                 */
-;* 	      true                                                     */
-;* 	      (instantiate::sequence                                   */
-;* 		 (loc loc)                                             */
-;* 		 (type type)                                           */
-;* 		 (nodes (list test true)))))                           */
+	 ((and (isa? true literal) (isa? false literal)
+	       (eq? (literal-value true) (literal-value false)))
+	  ;; remove tautological tests
+	  (if (side-effect-safe? test)
+	      true
+	      (instantiate::sequence
+		 (loc loc)
+		 (type type)
+		 (nodes (list test true)))))
 	 ((and (not (side-effect? test))
 	       (atom? true) (atom? false)
 	       (equal?
