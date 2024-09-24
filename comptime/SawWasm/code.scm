@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sat Sep 21 07:11:35 2024 (serrano)                */
+;*    Last change :  Sun Sep 22 16:10:23 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -68,6 +68,7 @@
 ;*---------------------------------------------------------------------*/
 (define *wasm-tailcall* #t)
 (define *wasm-split-inits* #t)
+(define *wasm-peephole* #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-gen ...                                                     */
@@ -1206,7 +1207,55 @@
 		((make-el-procedure) (inline-make-el-procedure args))
 		((cnst-table-set!) (inline-cnst-table-set! args))
 		((cnst-table-ref) (inline-cnst-table-ref args))
-		(else `(call ,(wasm-sym name) ,@(gen-args args))))))))
+		(else (peephole `(call ,(wasm-sym name) ,@(gen-args args)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    peephole ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (peephole expr)
+   (if *wasm-peephole*
+       (match-case expr
+	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
+	      (call $I64_TO_BINT ?num)
+	      (and ?tmp (local.get ?-)))
+	   ;; 2<
+	   `(if (ref.test (ref $bint) ,tmp)
+		(i64.lt_s ,num ,tmp)
+		,expr))
+	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
+	      (and ?tmp (local.get ?-))
+	      (call $I64_TO_BINT ?num))
+	   ;; 2<
+	   `(if (ref.test (ref $bint) ,tmp)
+		(i64.lt_s ,tmp ,num)
+		,expr))
+	  ((BGl_2ze3ze3zz__r4_numbers_6_5z00
+	      (call $I64_TO_BINT ?num)
+	      (and ?tmp (local.get ?-)))
+	   ;; 2>
+	   `(if (ref.test (ref $bint) ,tmp)
+		(i64.gt_s ,num ,tmp)
+		,expr))
+	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
+	      (and ?tmp (local.get ?-))
+	      (call $I64_TO_BINT ?num))
+	   ;; 2>
+	   `(if (ref.test (ref $bint) ,tmp)
+		(i64.gt_s ,tmp ,num)
+		,expr))
+	  ((or (BGl_2zb2zb2zz__r4_numbers_6_5z00
+		  (call $I64_TO_BINT ?num)
+		  (and ?tmp (local.get ?-)))
+	       (BGl_2zb2zb2zz__r4_numbers_6_5z00
+		  (and ?tmp (local.get ?-))
+		  (call $I64_TO_BINT ?num)))
+	   ;; 2+
+	   `(if (ref.test (ref $bint) ,tmp)
+		(call $I64_TO_BINT (i64.add ,num ,tmp))
+		,expr))
+	  (else
+	   expr))
+       expr))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-make-procedure ...                                        */
