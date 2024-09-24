@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
+;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sun Sep 22 16:10:23 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 16:48:54 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -198,6 +198,7 @@
 	 ((magic) 'eqref)
 	 ((unspecified) 'eqref)
 	 ((bbool) 'i31ref)
+	 ((bchar) 'i31ref)
 	 ((class-field) 'eqref)
 	 ((pair-nil) 'eqref)
 	 ((cobj) 'eqref)
@@ -420,11 +421,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    gen-local-inits ...                                              */
 ;*    -------------------------------------------------------------    */
-;*    As of 17sep2024, the wasm-as tool is not smart enough to         */
-;*    compute a full def/use analysis and sometimes it concludes       */
-;*    that a typed local variable is not initialized while it          */
-;*    practice it is, and then its compilation fails. To work          */
-;*    around this problem, the generated code includes                 */
+;*    As of 17sep2024, the wasm spec says:                             */
+;*                                                                     */
+;*        "Track initialisation status of locals during validation     */
+;*         and only allow local.get after a local.set/tee in the same  */
+;*         or a surrounding block."                                    */
+;*                                                                     */
+;*    (See https://github.com/WebAssembly/function-references/)        */
+;*                                                                     */
+;*    To work around this restriction, the generated code includes     */
 ;*    dummy initializations of variables that could be considered      */
 ;*    non-initialized by wasm-as.                                      */
 ;*---------------------------------------------------------------------*/
@@ -467,7 +472,7 @@
 				 (trace-item (shape dest))
 				 (loop (cdr first) (cons dest wl)))
 				((isa? fun rtl_call)
-				 ;; MS 20/09/2024: not sure that it is always
+				 ;; MS 20/09/2024: not sure if this is always
 				 ;; legal to continue with the next
 				 ;; instructions in case of a call...
 				 (trace-item (shape dest))
@@ -824,7 +829,7 @@
 		(((call . ?args))
 		 `(return_call ,@args))
 		((call-ref . ?args)
-		 `(return-call_ref ,@args))
+		 `(return_call_ref ,@args))
 		(else
 		 `(return ,@expr)))
 	     `(return ,@expr)))))
@@ -1329,8 +1334,7 @@
       `(if (result ,type)
 	   (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
 	   (then ;; Is a variadic function!
-	      (call 
-		 $generic_va_call 
+	      (call $generic_va_call 
 		 ,proc 
 		 (array.new_fixed $vector ,(-fx arg_count 1) ,@(gen-args (cdr args)))))
 	   (else
@@ -1399,9 +1403,8 @@
 ;*    gen-expr ::rtl_apply ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_apply args)
-   ;; TODO
-   (with-fun-loc fun 
-      `(comment "Apply" (throw $unimplemented))))
+   (with-fun-loc fun
+      `(call $apply ,@(gen-args args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_mov ...                                           */

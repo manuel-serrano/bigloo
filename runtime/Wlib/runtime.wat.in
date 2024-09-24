@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat.in     */
+;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.wat.in           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Sun Sep 22 07:05:38 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 12:50:16 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -12,6 +12,7 @@
 (module $__runtime
   (import "__js" "not_implemented" (func $not_implemented (param i32)))
   (import "__js" "trace" (func $js_trace (param i32))) ;; FIXME: remove
+  (import "__js" "internalError" (func $js_internal_error (param i32)))
 
   (import "__js" "argc" (global $js_argc i32))
   (import "__js" "get_arg" (func $js_get_arg (param i32 i32) (result i32)))
@@ -129,8 +130,8 @@
      (struct.new $bignum (array.new_fixed $u16vector 0)))
   
   (global $bchar-default-value
-     (export "BGL_BCHAR_DEFAULT_VALUE") (ref $bchar)
-     (struct.new $bchar (i32.const 0)))
+     (export "BGL_BCHAR_DEFAULT_VALUE") i31ref
+     (ref.i31 (i32.const 1000)))
   (global $bucs2-default-value
      (export "BGL_BUCS2_DEFAULT_VALUE") (ref $bucs2)
      (struct.new $bucs2 (i32.const 0)))
@@ -981,7 +982,45 @@
      (struct.set $keyword $cval (ref.cast (ref $keyword) (local.get $sym))
 	(local.get $val))
      (local.get $val))
+
   
+  ;; --------------------------------------------------------
+  ;; Character functions
+  ;; --------------------------------------------------------
+  (func $CHARP (export "CHARP")
+     (param $o eqref)
+     (result i32)
+     (if (ref.test i31ref (local.get $o))
+	 (then
+	    (if (i32.ge_u (i31.get_u (ref.cast i31ref (local.get $o)))
+		   (i32.const 1000))
+		(then (return (i32.le_u (i31.get_u (ref.cast i31ref (local.get $o)))
+				 (i32.const 1255))))
+		(else (return (i32.const 0)))))
+	 (else (return (i32.const 0)))))
+		   
+  (func $toupper (export "toupper")
+     (param $c i32)
+     (result i32)
+     (if (i32.ge_u (local.get $c) (i32.const 65))
+	 (then
+	    (if (i32.le_u (local.get $c) (i32.const 90))
+		(then (return (i32.add (local.get $c) (i32.const 32))))
+		(else (return (local.get $c)))))
+	 (else
+	  (return (local.get $c)))))
+
+  (func $tolower (export "tolower")
+     (param $c i32)
+     (result i32)
+     (if (i32.ge_u (local.get $c) (i32.const 97))
+	 (then
+	    (if (i32.le_u (local.get $c) (i32.const 122))
+		(then (return (i32.sub (local.get $c) (i32.const 32))))
+		(else (return (local.get $c)))))
+	 (else
+	  (return (local.get $c)))))
+     
   ;; --------------------------------------------------------
   ;; String functions
   ;; --------------------------------------------------------
@@ -1199,65 +1238,327 @@
      
      (local.get $list))
 
-  (func $generic_va_call (export "generic_va_call") (param $proc (ref $procedure)) (param $params (ref $vector)) (result eqref)
-    (local $entry funcref)
-    (local.set $entry (struct.get $procedure $entry (local.get $proc)))
-    (block $error
-    (block $0
-    (block $1
-    (block $2
-    (block $3
-    (block $4
-    (block $5
-      (br_table $0 $1 $2 $3 $4 $5 $error (i32.sub (i32.const -1) (struct.get $procedure $arity (local.get $proc)))))
+  ;; apply6
+  (func $apply6
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local $arg1 eqref)
+     (local $arg2 eqref)
+     (local $arg3 eqref)
+     (local $arg4 eqref)
+     (local $arg5 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg1 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg2 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg3 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg4 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg5 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (if (ref.eq (local.get $args) (global.get $BNIL))
+	 (then (return_call_ref $func6
+		  (local.get $proc)
+		  (local.get $arg0)
+		  (local.get $arg1)
+		  (local.get $arg2)
+		  (local.get $arg3)
+		  (local.get $arg4)
+		  (local.get $arg5)
+		  (ref.cast (ref $func6) (struct.get $procedure $entry (local.get $proc)))))
+	 (else (throw $fail))))
+  
+  ;; apply5
+  (func $apply5
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local $arg1 eqref)
+     (local $arg2 eqref)
+     (local $arg3 eqref)
+     (local $arg4 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg1 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg2 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg3 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg4 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (if (ref.eq (local.get $args) (global.get $BNIL))
+	 (then (return_call_ref $func5
+		  (local.get $proc)
+		  (local.get $arg0)
+		  (local.get $arg1)
+		  (local.get $arg2)
+		  (local.get $arg3)
+		  (local.get $arg4)
+		  (ref.cast (ref $func5) (struct.get $procedure $entry (local.get $proc)))))
+	 (else (throw $fail))))
+  
+  ;; apply4
+  (func $apply4
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local $arg1 eqref)
+     (local $arg2 eqref)
+     (local $arg3 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg1 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg2 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg3 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (if (ref.eq (local.get $args) (global.get $BNIL))
+	 (then (return_call_ref $func4
+		  (local.get $proc)
+		  (local.get $arg0)
+		  (local.get $arg1)
+		  (local.get $arg2)
+		  (local.get $arg3)
+		  (ref.cast (ref $func4) (struct.get $procedure $entry (local.get $proc)))))
+	 (else (throw $fail))))
+  
+  ;; apply3
+  (func $apply3
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local $arg1 eqref)
+     (local $arg2 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg1 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg2 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (if (ref.eq (local.get $args) (global.get $BNIL))
+	 (then (return_call_ref $func3
+		  (local.get $proc)
+		  (local.get $arg0)
+		  (local.get $arg1)
+		  (local.get $arg2)
+		  (ref.cast (ref $func3) (struct.get $procedure $entry (local.get $proc)))))
+	 (else (throw $fail))))
+  
+  ;; apply2
+  (func $apply2
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local $arg1 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg1 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (if (ref.eq (local.get $args) (global.get $BNIL))
+	 (then (return_call_ref $func2
+		  (local.get $proc)
+		  (local.get $arg0)
+		  (local.get $arg1)
+		  (ref.cast (ref $func2) (struct.get $procedure $entry (local.get $proc)))))
+	 (else (throw $fail))))
+  
+  ;; apply1
+  (func $apply1
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (if (ref.eq (local.get $args) (global.get $BNIL))
+	 (then (return_call_ref $func1
+		  (local.get $proc)
+		  (local.get $arg0)
+		  (ref.cast (ref $func1) (struct.get $procedure $entry (local.get $proc)))))
+	 (else (throw $fail))))
+  
+  ;; apply0
+  (func $apply0
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (if (ref.eq (local.get $args) (global.get $BNIL))
+	 (then (return_call_ref $func0
+		  (local.get $proc)
+		  (ref.cast (ref $func0) (struct.get $procedure $entry (local.get $proc)))))
+	 (else (throw $fail))))
 
-      ;; 5 mandatory argument
-      (return (call_ref $func6
-        (local.get $proc)
-        (array.get $vector (local.get $params) (i32.const 0))
-        (array.get $vector (local.get $params) (i32.const 1))
-        (array.get $vector (local.get $params) (i32.const 2))
-        (array.get $vector (local.get $params) (i32.const 3))
-        (array.get $vector (local.get $params) (i32.const 4))
-        (call $make_list_params (local.get $params) (i32.const 5))
-        (ref.cast (ref $func6) (local.get $entry)))))
-      ;; 4 mandatory argument
-      (return (call_ref $func5
-        (local.get $proc)
-        (array.get $vector (local.get $params) (i32.const 0))
-        (array.get $vector (local.get $params) (i32.const 1))
-        (array.get $vector (local.get $params) (i32.const 2))
-        (array.get $vector (local.get $params) (i32.const 3))
-        (call $make_list_params (local.get $params) (i32.const 4))
-        (ref.cast (ref $func5) (local.get $entry)))))
-      ;; 3 mandatory argument
-      (return (call_ref $func4
-        (local.get $proc)
-        (array.get $vector (local.get $params) (i32.const 0))
-        (array.get $vector (local.get $params) (i32.const 1))
-        (array.get $vector (local.get $params) (i32.const 2))
-        (call $make_list_params (local.get $params) (i32.const 3))
-        (ref.cast (ref $func4) (local.get $entry)))))
-      ;; 2 mandatory argument
-      (return (call_ref $func3
-        (local.get $proc)
-        (array.get $vector (local.get $params) (i32.const 0))
-        (array.get $vector (local.get $params) (i32.const 1))
-        (call $make_list_params (local.get $params) (i32.const 2))
-        (ref.cast (ref $func3) (local.get $entry)))))
-      ;; 1 mandatory argument
-      (return (call_ref $func2
-        (local.get $proc)
-        (array.get $vector (local.get $params) (i32.const 0))
-        (call $make_list_params (local.get $params) (i32.const 1))
-        (ref.cast (ref $func2) (local.get $entry)))))
-      ;; 0 mandatory argument
-      (return (call_ref $func1
-        (local.get $proc)
-        (call $make_list_params (local.get $params) (i32.const 0))
-        (ref.cast (ref $func1) (local.get $entry)))))
-    (unreachable))
+  ;; apply-1
+  (func $apply_1 
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (return_call_ref $func1
+	(local.get $proc)
+	(local.get $args)
+	(ref.cast (ref $func1) (struct.get $procedure $entry (local.get $proc)))))
+  
+  ;; apply-2
+  (func $apply_2
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (return_call_ref $func2
+	(local.get $proc)
+	(local.get $arg0)
+	(local.get $args)
+	(ref.cast (ref $func2) (struct.get $procedure $entry (local.get $proc)))))
+  
+  ;; apply-3
+  (func $apply_3
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arg0 eqref)
+     (local $arg1 eqref)
+     (local.set $arg0 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (local.set $arg1 (struct.get $pair $car (ref.cast (ref $pair) (local.get $args))))
+     (local.set $args (struct.get $pair $cdr (ref.cast (ref $pair) (local.get $args))))
+     (return_call_ref $func3
+	(local.get $proc)
+	(local.get $arg0)
+	(local.get $arg1)
+	(local.get $args)
+	(ref.cast (ref $func3) (struct.get $procedure $entry (local.get $proc)))))
+  
+  ;; apply
+  (func $apply (export "apply")
+     (param $proc (ref $procedure))
+     (param $args eqref)
+     (result eqref)
+     (local $arity i32)
+     (local $arg0 eqref)
+     (local $arg1 eqref)
+     (local $arg2 eqref)
+     (local $arg3 eqref)
+     (local $arg4 eqref)
+     (local $arg5 eqref)
+     (local.set $arity (struct.get $procedure $arity (local.get $proc)))
+     (block $error
+	(block $-3
+	   (block $-2
+	      (block $-1
+		 (block $0
+		    (block $1
+		       (block $2
+			  (block $3
+			     (block $4
+				(block $5
+				   (block $6
+				      (br_table $-3 $-2 $-1 $0 $1 $2 $3 $4 $5 $6 $error
+					 (i32.add (local.get $arity (i32.const 3)))))
+				   (return_call $apply6 (local.get $proc) (local.get $args)))
+				(return_call $apply5 (local.get $proc) (local.get $args)))
+			     (return_call $apply4 (local.get $proc) (local.get $args)))
+			  (return_call $apply3 (local.get $proc) (local.get $args)))
+		       (return_call $apply2 (local.get $proc) (local.get $args)))
+		    (return_call $apply1 (local.get $proc) (local.get $args)))
+		 (return_call $apply0 (local.get $proc) (local.get $args)))
+	      (return_call $apply_1 (local.get $proc) (local.get $args)))
+	   (return_call $apply_2 (local.get $proc) (local.get $args)))
+	(return_call $apply_3 (local.get $proc) (local.get $args)))
+     (call $js_internal_error (i32.const 0) (local.get $arity))
+     (throw $fail)
+     (unreachable))
+			     
+;* 			                                               */
+;*      (if (i32.ge_s (local.get $arity) (i32.const 0))                */
+;* 	 (then                                                         */
+;* 	    (call $js_trace (i32.const 100001))                        */
+;* 	    (call $js_trace (local.get $arity))                        */
+;* 	    (return (global.get $BUNSPEC)))                            */
+;* 	 (else                                                         */
+;* 	  (if (i32.eq (local.get $arity) (i32.const -1))               */
+;* 	      (then (return_call_ref $func1                            */
+;* 		       (local.get $proc)                               */
+;* 		       (local.get $arg)                                */
+;* 		       (ref.cast (ref $func1) (local.get $entry))))    */
+;* 	      (else                                                    */
+;* 	       (call $js_trace (i32.const 100001))                     */
+;* 	       (call $js_trace (local.get $arity))                     */
+;* 	       (return (global.get $BUNSPEC)))))))                     */
 
+  ;; generic_val_call
+  (func $generic_va_call (export "generic_va_call")
+     (param $proc (ref $procedure))
+     (param $params (ref $vector))
+     (result eqref)
+     (local $entry funcref)
+     (local.set $entry (struct.get $procedure $entry (local.get $proc)))
+     (block $error
+	(block $0
+	   (block $1
+	      (block $2
+		 (block $3
+		    (block $4
+		       (block $5
+			  (br_table $0 $1 $2 $3 $4 $5 $error (i32.sub (i32.const -1) (struct.get $procedure $arity (local.get $proc)))))
+		       ;; 5 mandatory arguments
+		       (return_call_ref $func6
+			  (local.get $proc)
+			  (array.get $vector (local.get $params) (i32.const 0))
+			  (array.get $vector (local.get $params) (i32.const 1))
+			  (array.get $vector (local.get $params) (i32.const 2))
+			  (array.get $vector (local.get $params) (i32.const 3))
+			  (array.get $vector (local.get $params) (i32.const 4))
+			  (call $make_list_params (local.get $params) (i32.const 5))
+			  (ref.cast (ref $func6) (local.get $entry))))
+		    ;; 4 mandatory arguments
+		    (return_call_ref $func5
+		       (local.get $proc)
+		       (array.get $vector (local.get $params) (i32.const 0))
+		       (array.get $vector (local.get $params) (i32.const 1))
+		       (array.get $vector (local.get $params) (i32.const 2))
+		       (array.get $vector (local.get $params) (i32.const 3))
+		       (call $make_list_params (local.get $params) (i32.const 4))
+		       (ref.cast (ref $func5) (local.get $entry))))
+		 ;; 3 mandatory arguments
+		 (return_call_ref $func4
+		    (local.get $proc)
+		    (array.get $vector (local.get $params) (i32.const 0))
+		    (array.get $vector (local.get $params) (i32.const 1))
+		    (array.get $vector (local.get $params) (i32.const 2))
+		    (call $make_list_params (local.get $params) (i32.const 3))
+		    (ref.cast (ref $func4) (local.get $entry))))
+	      ;; 2 mandatory arguments
+	      (return_call_ref $func3
+		 (local.get $proc)
+		 (array.get $vector (local.get $params) (i32.const 0))
+		 (array.get $vector (local.get $params) (i32.const 1))
+		 (call $make_list_params (local.get $params) (i32.const 2))
+		 (ref.cast (ref $func3) (local.get $entry))))
+	   ;; 1 mandatory argument
+	   (return_call_ref $func2
+	      (local.get $proc)
+	      (array.get $vector (local.get $params) (i32.const 0))
+	      (call $make_list_params (local.get $params) (i32.const 1))
+	      (ref.cast (ref $func2) (local.get $entry))))
+	;; 0 mandatory argument
+	(return_call_ref $func1
+	   (local.get $proc)
+	   (call $make_list_params (local.get $params) (i32.const 0))
+	   (ref.cast (ref $func1) (local.get $entry))))
+     (unreachable))
   
   ;; --------------------------------------------------------
   ;; OS functions
@@ -1343,27 +1644,27 @@
 	       (local.set $i (i32.add (local.get $i) (i32.const 1)))
 	       (br $loop)))))
 
-  ;; flush_output_port
-  (func $flush_output_port
+  ;; flush_file_output_port
+  (func $flush_file_output_port
      (param $port (ref $file-output-port))
      (local $buffer (ref $bstring))
-     (local $len i32)
+     (local $index i32)
      (local.set $buffer
 	(struct.get $output-port $buffer (local.get $port)))
-     (local.set $len
-	(array.len (local.get $buffer)))
-     
-     (if (i32.gt_u (local.get $len) (i32.const 0))
+     (local.set $index
+	(struct.get $output-port $index (local.get $port)))
+
+     (if (i32.gt_u (local.get $index) (i32.const 0))
 	 (then
 	    (call $memcpy
 	       (i32.const 128)
 	       (local.get $buffer)
 	       (i32.const 0)
-	       (local.get $len))
+	       (local.get $index))
 	    (call $js_write_file
 	       (struct.get $file-output-port $fd (local.get $port))
 	       (i32.const 128)
-	       (local.get $len))
+	       (local.get $index))
 	    (struct.set $output-port $index (local.get $port)
 	       (i32.const 0)))))
      
@@ -1393,7 +1694,7 @@
 	 (else
 	  (if (ref.test (ref $file-output-port) (local.get $port))
 	      (then
-		 (call $flush_output_port
+		 (call $flush_file_output_port
 		    (ref.cast (ref $file-output-port) (local.get $port)))
 		 (call $js_write_char
 		    (struct.get $file-output-port $fd
@@ -1411,8 +1712,8 @@
 		  (local.get $new_buffer)
 		  (i32.const 0)
 		  (local.get $buffer)
-		  (local.get $len)
-		  (i32.const 0))
+		  (i32.const 0)
+		  (local.get $len))
 	       (array.set $bstring
 		  (local.get $new_buffer)
 		  (local.get $len)
@@ -1432,8 +1733,8 @@
      (local $index i32)
      (local $len i32)
      (local $size i32)
-
-    (local.set $buffer
+     
+     (local.set $buffer
 	(struct.get $output-port $buffer (local.get $port)))
      (local.set $index
 	(struct.get $output-port $index (local.get $port)))
@@ -1449,13 +1750,18 @@
 	       (local.get $buffer)
 	       (local.get $index)
 	       (local.get $text)
-	       (local.get $size)
-	       (local.get $start))
+	       (local.get $start)
+	       (local.get $size))
 	    (struct.set $file-output-port $index
-	       (local.get $port) (i32.add (local.get $index)
-				    (local.get $size))))
+	       (local.get $port)
+	       (i32.add (local.get $index) (local.get $size))))
 	 (else
-	  (call $flush_output_port (local.get $port))
+	  (call $flush_file_output_port (local.get $port))
+	  (call $memcpy
+	     (i32.const 128)
+	       (local.get $text)
+	       (local.get $start)
+	       (local.get $size))
 	  (call $js_write_file
 	     (struct.get $file-output-port $fd (local.get $port))
 	     (i32.const 128)
@@ -1530,21 +1836,19 @@
     (result eqref)
     (struct.get $string-output-port $buffer (local.get $port)))
 
-  (func $flush_file_output_port
-    (param $port (ref $file-output-port))
-    (result eqref)
-    ;; TODO: implement flush file output port
-    (global.get $BTRUE))
-
   (func $bgl_flush_output_port (export "bgl_flush_output_port")
-    (param $port (ref $output-port))
-    (result eqref)
-    
-    (if (ref.test (ref $string-output-port) (local.get $port))
-      (then (return (call $flush_string_output_port (ref.cast (ref $string-output-port) (local.get $port))))))
-    (if (ref.test (ref $file-output-port) (local.get $port))
-      (then (return (call $flush_file_output_port (ref.cast (ref $file-output-port) (local.get $port))))))
-    (unreachable))
+     (param $port (ref $output-port))
+     (result eqref)
+
+     (if (ref.test (ref $file-output-port) (local.get $port))
+	 (then
+	    (call $flush_file_output_port
+	       (ref.cast (ref $file-output-port) (local.get $port)))
+	    (return (local.get $port)))
+	 (else
+	  (if (ref.test (ref $string-output-port) (local.get $port))
+	      (then (return (call $flush_string_output_port (ref.cast (ref $string-output-port) (local.get $port)))))
+	      (else (return (global.get $BUNSPEC)))))))
 
   (func $bgl_reset_output_string_port (export "bgl_reset_output_string_port")
     (param $port (ref $output-port))
@@ -2596,12 +2900,17 @@
           (local.set $i (i32.sub (local.get $i) (i32.const 1)))
           (br $loop))))
 
-    (drop (call $bigloo_main (ref.cast (ref $pair) (local.get $argv)))))
+    (drop
+       (call $bigloo_main (ref.cast (ref $pair) (local.get $argv)))))
 
   (func $BIGLOO_EXIT
      (export "BIGLOO_EXIT")
      (param eqref)
      (result eqref)
+     (drop
+	(call $bgl_flush_output_port
+	   (struct.get $dynamic-env $current-output-port
+	      (call $BGL_CURRENT_DYNAMIC_ENV))))
      (call $js_exit
 	(if (result i32)
 	    (ref.test (ref $bint) (local.get 0))

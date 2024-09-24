@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Jun 16 17:10:27 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Sep 23 09:55:13 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -195,14 +195,48 @@
       node))
 
 ;*---------------------------------------------------------------------*/
+;*    side-effect-safe? ...                                            */
+;*    -------------------------------------------------------------    */
+;*    This returns #t for forms that may be declared as doing a        */
+;*    side-effect (because for instance, it is an application          */
+;*    for which one arguments is a variable that is set somewhere),    */
+;*    that are known to be safe to reduce if they are an argument      */
+;*    to a predicate.                                                  */
+;*---------------------------------------------------------------------*/
+(define (side-effect-safe?::bool expr)
+   (cond
+      ((or (var? expr) (atom? expr) (kwote? expr))
+       #t)
+      ((vref? expr)
+       (every side-effect-safe? (vref-expr* expr)))
+      ((getfield? expr)
+       (every side-effect-safe? (getfield-expr* expr)))
+      ((not (app? expr))
+       #f)
+      (else
+       (with-access::app expr (fun args)
+	  (if (not (fun-side-effect (variable-value (var-variable fun))))
+	      (every side-effect-safe? args)
+	      #f)))))
+
+;*---------------------------------------------------------------------*/
 ;*    node-cond! ::conditional ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cond! node::conditional)
-   (with-access::conditional node (test true false type)
+   (with-access::conditional node (test true false type loc)
       (set! test (node-cond! test))
       (set! true (node-cond! true))
       (set! false (node-cond! false))
       (cond
+	 ((and (isa? true literal) (isa? false literal)
+	       (eq? (literal-value true) (literal-value false)))
+	  ;; remove tautological tests
+	  (if (side-effect-safe? test)
+	      true
+	      (instantiate::sequence
+		 (loc loc)
+		 (type type)
+		 (nodes (list test true)))))
 	 ((and (not (side-effect? test))
 	       (atom? true) (atom? false)
 	       (equal?

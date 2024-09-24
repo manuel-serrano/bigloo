@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/equiv.scm                 */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/equiv.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */

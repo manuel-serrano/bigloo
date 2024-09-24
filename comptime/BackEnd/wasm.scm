@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Sep 20 11:28:51 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 10:05:58 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -85,7 +85,8 @@
       (bound-check #f)
       (type-check #f)
       (force-register-gc-roots #f)
-      (string-literal-support #f)))
+      (string-literal-support #f)
+      (boxed-fixnums #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */
@@ -468,8 +469,8 @@
 		      (import "__runtime" "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value (ref $buint16)))
 		      (import "__runtime" "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value (ref $buint32)))
 		      (import "__runtime" "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value (ref $buint64)))
-		      (import "__runtime" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value (ref $buint64)))
-		      (import "__runtime" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $buint64)))
+		      (import "__runtime" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value i31ref))
+		      (import "__runtime" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $bucs2)))
 		      (import "__runtime" "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value (ref $belong)))
 		      (import "__runtime" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
 		      (import "__runtime" "BGL_EPAIR_DEFAULT_VALUE" (global $epair-default-value (ref $epair)))
@@ -609,6 +610,7 @@
 		  ((char=? c #\") (display "\\\""))
 		  ((char=? c #\\) (display "\\\\"))
 		  ((char=? c #\newline) (display "\\n"))
+		  ((char=? c #\tab) (display "\\t"))
 		  (else (display* "\\u" 
 			   (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
 			   (string-ref hex (char->integer (char-and c #\x0F)))
@@ -969,6 +971,8 @@
       (with-access::scnst value (class node)
 	 (trace-item "class=" class)
 	 (case class
+	    ((sinteger)
+	     (emit-cnst-integer node variable))
 	    ((sreal)
 	     (emit-cnst-real node variable))
 	    ((selong)
@@ -1032,6 +1036,20 @@
 	   ;; FIXME: remove the mut and null qualifiers
 	   (mut (ref $real)) 
 	   (struct.new $real (f64.const ,value))))))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-integer ...                                            */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-integer integer global)
+   (set-variable-name! global)
+   `((global 
+	,(wasm-sym (global-name global))
+	,@(if (eq? (global-import global) 'export)
+	      `((export ,(global-name global)))
+	      '())
+	;; FIXME: remove the mut and null qualifiers
+	(mut (ref $bint)) 
+	(struct.new $bint (i64.const ,integer)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-i32 ...                                                */

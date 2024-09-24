@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Wed Jul 10 11:01:48 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 09:31:57 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
@@ -33,6 +33,7 @@
 	    *make-fx-procedure*
 	    *make-va-procedure*
 	    *make-l-procedure*
+	    *long->bint*
 	    *double->real*
 	    *elong->belong*
 	    *llong->bllong*
@@ -65,6 +66,7 @@
 (define *make-fx-procedure* #f)
 (define *make-va-procedure* #f)
 (define *make-l-procedure* #f)
+(define *long->bint* #f)
 (define *double->real* #f)
 (define *elong->belong* #f)
 (define *llong->bllong* #f)
@@ -113,6 +115,8 @@
 		(get-global/module 'make-va-procedure 'foreign))
 	  (set! *make-l-procedure*
 		(get-global/module 'make-l-procedure 'foreign))
+	  (set! *long->bint*
+		(get-global/module '$long->bint 'foreign))
 	  (set! *double->real*
 		(get-global/module '$double->real 'foreign))
 	  (set! *elong->belong*
@@ -156,6 +160,7 @@
    (set! *long->int* #f)
    (set! *make-fx-procedure* #f)
    (set! *make-va-procedure* #f)
+   (set! *long->int* #f)
    (set! *double->real* #f)
    (set! *cons* #f)
    (set! *btrue* #f)

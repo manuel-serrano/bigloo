@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Sep 17 11:33:43 2024 (serrano)                */
+/*    Last change :  Tue Sep 24 09:08:45 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -59,6 +59,13 @@ function storeJSStringToScheme(string, addr) {
 const charBuffer = new Uint8Array(1);
 
 /*---------------------------------------------------------------------*/
+/*    internalErrors                                                   */
+/*---------------------------------------------------------------------*/
+const internalErrors = [
+   "apply: unsupported arity %d"
+];
+
+/*---------------------------------------------------------------------*/
 /*    wasm ...                                                         */
 /*---------------------------------------------------------------------*/
 //const wasm = await WebAssembly.compile(await readFile(argv[2]));
@@ -72,6 +79,11 @@ const instance = await WebAssembly.instantiate(wasm, {
       
       trace: function (x) {
          console.log("TRACE: " + x);
+      },
+
+      internalError: function (errno, val) {
+         console.error("*** INTERNAL-ERROR:",
+		       format(internalErrors[errno], val));
       },
 
       argc: argv.length - 2 /* ignore the path of NodeJS and of runtime.mjs. */,
