@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Sep 20 07:27:34 2024 (serrano)                */
+;*    Last change :  Tue Sep 24 07:32:01 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -470,8 +470,8 @@
 		    (set! type *obj*)
 		    node)
 		 (begin
-		    ;; check type-closures! (loc2glo.scm), non optimized closures
-		    ;; must return bigloo boxed types
+		    ;; check type-closures! (loc2glo.scm), non optimized
+		    ;; closures  must return bigloo boxed types
 		    (if (memq (funcall-strength node) '(light elight))
 			(set! type typ)
 			(set! type (get-bigloo-type typ)))
