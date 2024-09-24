@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Fri Sep  6 09:47:23 2024 (serrano)                */
+;*    Last change :  Tue Sep 24 07:57:38 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -30,6 +30,7 @@
 	    type_cache
 	    tools_shape
 	    tools_speek
+	    backend_backend
 	    ast_var
 	    ast_node
 	    ast_env
@@ -477,6 +478,15 @@
 ;*    type-closures! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (type-closures!)
+
+   (define backend-typed-closures
+      (with-access::backend (the-backend) (typed-closures)
+	 typed-closures))
+   
+   (define (bigloo-type::type ty::type)
+      (if backend-typed-closures
+	  (get-bigloo-defined-type ty)
+	  *obj*))
    
    (define (set-type! app::make-procedure-app)
       (with-access::make-procedure-app app (X T args)
@@ -487,7 +497,7 @@
 ;* 	    (for-each (lambda (a)                                      */
 ;* 			 (tprint "  a=" (shape a)))                    */
 ;* 	       (cdr (sfun-args sfun))))                                */
-	 (unless (or X T)
+	 (unless (or X (and backend-typed-closures T))
 	    ;; a non optimized procedure
 	    (let* ((var (var-variable (car args)))
 		   (sfun (variable-value var)))
