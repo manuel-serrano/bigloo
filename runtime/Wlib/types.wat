@@ -195,13 +195,15 @@
 			(struct
 			   (field $name (mut (ref $bstring)))
 			   (field $chook (mut eqref))
-			   (field $rgc (ref $rgc)))))
+			   (field $rgc (ref $rgc))
+			   (field $isclosed (mut i32)))))
    
    (type $file-input-port (sub $input-port
 			     (struct
 				(field $name (mut (ref $bstring)))
 				(field $chook (mut eqref))
 				(field $rgc (ref $rgc))
+				(field $isclosed (mut i32))
 				(field $fd i32))))
    
    (type $binary-port (sub (struct)))

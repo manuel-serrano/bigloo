@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/BackEnd/wasm.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/wasm.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Sep 23 10:05:58 2024 (serrano)                */
+;*    Last change :  Tue Sep 24 09:19:38 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -86,7 +86,10 @@
       (type-check #f)
       (force-register-gc-roots #f)
       (string-literal-support #f)
-      (boxed-fixnums #t)))
+      (boxed-fixnums #t)
+      ;; no subtyping for funcref
+      ;; see https://github.com/WebAssembly/function-references
+      (typed-closures #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */

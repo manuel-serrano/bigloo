@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Sep 17 14:53:01 2024 (serrano)                */
+;*    Last change :  Tue Sep 24 11:40:35 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -241,6 +241,7 @@
 	    ($output-port-flushbuf "(struct.get $output-port $flushbuf ~0)")
 	    ($output-port-flushbuf-set! "(struct.set $output-port $flushbuf ~0 ~1)")
 		
+	    (c-closed-input-port? "(struct.get $input-port $isclosed (ref.cast (ref $input-port) ~0))")
 	    ($closed-output-port? "(struct.get $output-port $isclosed (ref.cast (ref $output-port) ~0))")
 
 	    ($input-port-chook "(struct.get $port $chook ~0)")

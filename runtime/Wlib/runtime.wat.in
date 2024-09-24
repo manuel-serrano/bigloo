@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.wat.in           */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat.in     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Sep 23 12:50:16 2024 (serrano)                */
+;*    Last change :  Tue Sep 24 09:28:54 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM builtin runtime                                             */
@@ -395,7 +395,9 @@
 	;; chook
 	(global.get $BUNSPEC)
 	;; rgc
-	(global.get $rgc-default-value)))
+	(global.get $rgc-default-value)
+	;; isclosed
+	(i32.const 1)))
   (global $file-input-port-default-value
      (export "BGL_FILE_INPUT_PORT_DEFAULT_VALUE") (ref $file-input-port)
      (struct.new $file-input-port
@@ -405,6 +407,8 @@
 	(global.get $BUNSPEC)
 	;; rgc
 	(global.get $rgc-default-value)
+	;; isclosed
+	(i32.const 1)
 	;; fd
 	(i32.const 0)))
   (global $binary-port-default-value
@@ -572,36 +576,38 @@
         (i32.const 2 #;(POSIX stderr fd)))
       ;; $current-input-port
       (struct.new $file-input-port
-        ;; name
-        (array.new_fixed $bstring 5
-          (i32.const 0x73) ;; s
-          (i32.const 0x74) ;; t
-          (i32.const 0x64) ;; d
-          (i32.const 0x69) ;; i
-          (i32.const 0x6E) ;; n
-          )
-        ;; chook
-        (global.get $BUNSPEC)
-        ;; RGC
-        (struct.new $rgc
-          ;; EOF
-          (i32.const 0)
-          ;; Filepos
-          (i32.const 0)
-          ;; Forward
-          (i32.const 0)
-          ;; Bufpos
-          (i32.const 0)
-          ;; Matchstart
-          (i32.const 0)
-          ;; Matchstop
-          (i32.const 0)
-          ;; Lastchar
-          (i32.const 0x0A #;(ASCII NEWLINE '\n'))
-          ;; Buffer
-          (array.new_default $bstring (i32.const 128)))
-        ;; File descriptor
-        (i32.const 0 #;(POSIX stdin fd)))
+	 ;; name
+	 (array.new_fixed $bstring 5
+	    (i32.const 0x73) ;; s
+	    (i32.const 0x74) ;; t
+	    (i32.const 0x64) ;; d
+	    (i32.const 0x69) ;; i
+	    (i32.const 0x6E) ;; n
+	    )
+	 ;; chook
+	 (global.get $BUNSPEC)
+	 ;; RGC
+	 (struct.new $rgc
+	    ;; EOF
+	    (i32.const 0)
+	    ;; Filepos
+	    (i32.const 0)
+	    ;; Forward
+	    (i32.const 0)
+	    ;; Bufpos
+	    (i32.const 0)
+	    ;; Matchstart
+	    (i32.const 0)
+	    ;; Matchstop
+	    (i32.const 0)
+	    ;; Lastchar
+	    (i32.const 0x0A #;(ASCII NEWLINE '\n'))
+	    ;; Buffer
+	    (array.new_default $bstring (i32.const 128)))
+	 ;; is closed
+	 (i32.const 0)
+	 ;; File descriptor
+	 (i32.const 0 #;(POSIX stdin fd)))
       ;; $module
       (global.get $BUNSPEC)
       ;; $abase
@@ -1481,23 +1487,6 @@
      (throw $fail)
      (unreachable))
 			     
-;* 			                                               */
-;*      (if (i32.ge_s (local.get $arity) (i32.const 0))                */
-;* 	 (then                                                         */
-;* 	    (call $js_trace (i32.const 100001))                        */
-;* 	    (call $js_trace (local.get $arity))                        */
-;* 	    (return (global.get $BUNSPEC)))                            */
-;* 	 (else                                                         */
-;* 	  (if (i32.eq (local.get $arity) (i32.const -1))               */
-;* 	      (then (return_call_ref $func1                            */
-;* 		       (local.get $proc)                               */
-;* 		       (local.get $arg)                                */
-;* 		       (ref.cast (ref $func1) (local.get $entry))))    */
-;* 	      (else                                                    */
-;* 	       (call $js_trace (i32.const 100001))                     */
-;* 	       (call $js_trace (local.get $arity))                     */
-;* 	       (return (global.get $BUNSPEC)))))))                     */
-
   ;; generic_val_call
   (func $generic_va_call (export "generic_va_call")
      (param $proc (ref $procedure))
@@ -2380,52 +2369,55 @@
     (i32.lt_u (struct.get $rgc $forward (local.get $rgc)) (struct.get $rgc $bufpos (local.get $rgc))))
 
   (func $bgl_open_input_file (export "bgl_open_input_file")
-    (param $path (ref $bstring))
-    (param $buffer (ref $bstring))
-    (result eqref)
-    (local $fd i32)
-    (call $store_string
-      (local.get $path)
-      (i32.const 128))
-    (local.set $fd
-      (call $js_open_file
-        (i32.const 128)
-        (array.len (local.get $path))
-        ;; READ-ONLY flag
-        (i32.const 0)))
-    (struct.new $file-input-port
-      ;; Name
-      (local.get $path)
-      ;; CHook
-      (global.get $BUNSPEC)
-      ;; RGC
-      (struct.new $rgc
-        ;; EOF
-        (i32.const 0)
-        ;; Filepos
-        (i32.const 0)
-        ;; Forward
-        (i32.const 0)
-        ;; Bufpos
-        (i32.const 0)
-        ;; Matchstart
-        (i32.const 0)
-        ;; Matchstop
-        (i32.const 0)
-        ;; Lastchar
-        (i32.const 0x0A #;(ASCII NEWLINE '\n'))
-        ;; Buffer
-        (if (result (ref $bstring))
-          (ref.is_null (local.get $buffer))
-          (then (array.new_default $bstring (i32.const 4096)))
-          (else 
-            (if (result (ref $bstring))
-              (i32.eqz (array.len (local.get $buffer)))
-              (then (array.new_default $bstring (i32.const 4096)))
-              (else (ref.cast (ref $bstring) (local.get $buffer)))))))
-      ;; File descriptor
-      (local.get $fd)))
+     (param $path (ref $bstring))
+     (param $buffer (ref $bstring))
+     (result eqref)
+     (local $fd i32)
+     (call $store_string
+	(local.get $path)
+	(i32.const 128))
+     (local.set $fd
+	(call $js_open_file
+	   (i32.const 128)
+	   (array.len (local.get $path))
+	   ;; READ-ONLY flag
+	   (i32.const 0)))
+     (struct.new $file-input-port
+	;; Name
+	(local.get $path)
+	;; CHook
+	(global.get $BUNSPEC)
+	;; RGC
+	(struct.new $rgc
+	   ;; EOF
+	   (i32.const 0)
+	   ;; Filepos
+	   (i32.const 0)
+	   ;; Forward
+	   (i32.const 0)
+	   ;; Bufpos
+	   (i32.const 0)
+	   ;; Matchstart
+	   (i32.const 0)
+	   ;; Matchstop
+	   (i32.const 0)
+	   ;; Lastchar
+	   (i32.const 0x0A #;(ASCII NEWLINE '\n'))
+	   ;; Buffer
+	   (if (result (ref $bstring))
+	       (ref.is_null (local.get $buffer))
+	       (then (array.new_default $bstring (i32.const 4096)))
+	       (else 
+		(if (result (ref $bstring))
+		    (i32.eqz (array.len (local.get $buffer)))
+		    (then (array.new_default $bstring (i32.const 4096)))
+		    (else (ref.cast (ref $bstring) (local.get $buffer)))))))
+	;; isclosed
+	(i32.const 0)
+	;; File descriptor
+	(local.get $fd)))
 
+  ;; close_file_input_port
   (func $close_file_input_port
     (param $port (ref $file-input-port))
     (result eqref)
@@ -2433,21 +2425,25 @@
     (call $js_close_file (struct.get $file-input-port $fd (local.get $port)))
     (local.get $port))
 
+  ;; bgl_close_input_port
   (func $bgl_close_input_port (export "bgl_close_input_port")
-    (param $port (ref $input-port))
-    (result eqref)
-    
-    (local $rgc (ref $rgc))
-    (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
-
-    (struct.set $rgc $eof (local.get $rgc) (i32.const 1 #;TRUE))
-    ;; TODO: call chook
-
-    (if (ref.test (ref $file-input-port) (local.get $port))
-      (then (return (call $close_file_input_port (ref.cast (ref $file-input-port) (local.get $port))))))
-    
-    ;; Default implementation
-    (local.get $port))
+     (param $port (ref $input-port))
+     (result eqref)
+     
+     (local $rgc (ref $rgc))
+     (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+     
+     (struct.set $rgc $eof (local.get $rgc) (i32.const 1 #;TRUE))
+     ;; TODO: call chook
+     
+     ;; is closed
+     (struct.set $input-port $isclosed (local.get $port) (i32.const 1))
+     
+     (if (ref.test (ref $file-input-port) (local.get $port))
+	 (then (return (call $close_file_input_port (ref.cast (ref $file-input-port) (local.get $port))))))
+     
+     ;; Default implementation
+     (local.get $port))
 
   ;; --------------------------------------------------------
   ;; Hash functions
