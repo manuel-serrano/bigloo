@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Tue Sep 24 07:57:38 2024 (serrano)                */
+;*    Last change :  Tue Sep 24 09:26:06 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -502,14 +502,14 @@
 	    (let* ((var (var-variable (car args)))
 		   (sfun (variable-value var)))
 	       (variable-type-set! var
-		  (get-bigloo-defined-type (variable-type var)))
+		  (bigloo-type (variable-type var)))
 	       (for-each (lambda (a)
 			    (let* ((p (svar/Cinfo-approx (variable-value a)))
 				   (t (approx-type p)))
 			       ;; see type-node! ::funcall/Cinfo (type.scm)
 			       ;; for the funcall patching;
 			       ;; non-optimized closures return boxed values
-			       (variable-type-set! a (get-bigloo-defined-type t))))
+			       (variable-type-set! a (bigloo-type t))))
 		  (cdr (sfun-args sfun)))))))
 
    (when *optim-cfa-unbox-closure-args*
