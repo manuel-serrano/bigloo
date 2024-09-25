@@ -80,7 +80,13 @@
       (else
        (match-case type
 	  ((or (mut (ref ?type)) (ref ?type))
-	   `(global.get ,(symbol-append type '-default-value)))
+	   (case type
+	      ((eq)
+	       '(global.get $BUNSPEC))
+	      ((i31)
+	       '(ref.i31 (i32.const 0)))
+	      (else
+ 	       `(global.get ,(symbol-append type '-default-value)))))
 	  (else
 	   (error "wasm"
 	      (format "No default init value for builtin type: ~a" type)
