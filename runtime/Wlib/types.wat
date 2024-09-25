@@ -1,8 +1,8 @@
 (module $__types
    
-   (type $cnst-table (array (mut eqref)))
+   (type $cnst-table (array (mut (ref eq))))
    
-   (type $vector (array (mut eqref)))
+   (type $vector (array (mut (ref eq))))
    (type $dvector (array (mut f64)))
    (type $lvector (array (mut i64)))
    (type $bvector (array (mut i32)))
@@ -18,16 +18,16 @@
    (type $f64vector (array (mut f64)))
    
    (type $procedure (struct 
-		       (field $entry funcref)
-		       (field $attr (mut eqref))
+		       (field $entry (ref func))
+		       (field $attr (mut (ref eq)))
 		       (field $arity i32)
 		       (field $env (ref null $vector))))
-   ;;(type $tmpfun (struct (field funcref)))
+   ;;(type $tmpfun (struct (field (ref func))))
 
    (type $procedure-l (struct
-			 (field $entry funcref)
+			 (field $entry (ref func))
 			 (field $env (ref null $vector))))
-   (type $procedure-el (array (mut eqref)))
+   (type $procedure-el (array (mut (ref eq))))
    
    (tag $fail)
    
@@ -36,56 +36,59 @@
    (rec (type $ucs2string (array (mut i16))))
    
    (type $regexp (struct))
+
+   (type $opaque (struct))
    
    ;; TODO
    (rec
       (type $pair-nil (struct))
       (type $symbol
-	 (struct (field $str (ref $bstring)) (field $cval (mut eqref))))
+	 (struct (field $str (ref $bstring)) (field $cval (mut (ref eq)))))
       (type $keyword
-	 (struct (field $str (ref $bstring)) (field $cval (mut eqref))))
+	 (struct (field $str (ref $bstring)) (field $cval (mut (ref eq)))))
       (type $custom (struct (field $ident (mut (ref $bstring)))))
       (type $weakptr (struct)))
    
    ;; Functions types (for closures and variadic calls)
-   (type $func0 (func (param (ref $procedure)) (result eqref)))
-   (type $func1 (func (param (ref $procedure)) (param eqref) (result eqref)))
-   (type $func2 (func (param (ref $procedure)) (param eqref eqref) (result eqref)))
-   (type $func3 (func (param (ref $procedure)) (param eqref eqref eqref) (result eqref)))
-   (type $func4 (func (param (ref $procedure)) (param eqref eqref eqref eqref) (result eqref)))
-   (type $func5 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func6 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func7 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func8 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func9 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func10 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func11 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func12 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func13 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func14 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func15 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func16 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func17 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func18 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func19 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func20 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
-   (type $func21 (func (param (ref $procedure)) (param eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref eqref) (result eqref)))
+   (type $func0 (func (param (ref $procedure)) (result (ref eq))))
+   (type $func1 (func (param (ref $procedure)) (param (ref eq)) (result (ref eq))))
+   (type $func2 (func (param (ref $procedure)) (param (ref eq) (ref eq)) (result (ref eq))))
+   (type $func3 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func4 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func5 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func6 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func7 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func8 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func9 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func10 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func11 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func12 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func13 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func14 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func15 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func16 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func17 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func18 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func19 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func20 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
+   (type $func21 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
 
    ;; cells
-   (type $cell (struct (field $val (mut eqref))))
+   (type $cell (struct (field $val (mut (ref eq)))))
    
    ;; Pairs
    (rec
       (type $pair (sub (struct
-			  (field $car (mut eqref))
-			  (field $cdr (mut eqref)))))
+			  (field $car (mut (ref eq)))
+			  (field $cdr (mut (ref eq))))))
       (type $epair (sub $pair (struct 
-				 (field $car (mut eqref)) 
-				 (field $cdr (mut eqref)) 
-				 (field $cer (mut eqref))))))
+				 (field $car (mut (ref eq))) 
+				 (field $cdr (mut (ref eq))) 
+				 (field $cer (mut (ref eq)))))))
    
    ;; Bignums
-   (type $bignum (struct (field $u16vect (ref $u16vector))))
+   (type $bignum
+      (struct (field $u16vect (ref $u16vector))))
    
    ;; Boxed numeric types
    (rec
@@ -109,7 +112,7 @@
    (rec (type $exit (struct 
 		       (field $userp (mut i64))
 		       (field $stamp (mut i64))
-		       (field $protect (mut eqref))
+		       (field $protect (mut (ref eq)))
 		       (field $prev (mut (ref null $exit))))))
    (tag $bexception (param (ref $exit)) (param anyref))
    
@@ -120,15 +123,15 @@
    (type $class (struct
 		   (field $name (ref $symbol))
 		   (field $module (ref $symbol))
-		   (field $new_fun eqref)
+		   (field $new_fun (ref eq))
 		   (field $alloc_fun (ref $procedure))
 		   (field $nil_fun (ref $procedure))
-		   (field $nil eqref)
-		   (field $constructor eqref)
-		   (field $super eqref)
-		   (field $subclasses (mut eqref))
-		   (field $shrink eqref)
-		   (field $evdata (mut eqref))
+		   (field $nil (ref eq))
+		   (field $constructor (ref eq))
+		   (field $super (ref eq))
+		   (field $subclasses (mut (ref eq)))
+		   (field $shrink (ref eq))
+		   (field $evdata (mut (ref eq)))
 		   (field $ancestors (ref $vector))
 		   (field $virtual_fields (ref $vector))
 		   (field $direct_fields (mut (ref $vector)))
@@ -138,46 +141,46 @@
 		   (field $depth i64)))
    
    (type $struct (struct
-		    (field $key eqref)
+		    (field $key (ref eq))
 		    (field $values (ref $vector))))
    
    (type $BgL_objectz00_bglt (sub (struct
 				     (field $header (mut i64))
-				     (field $widening (mut eqref)))))
+				     (field $widening (mut (ref eq))))))
    
   ;; Ports
    (type $port (sub
 		  (struct
 		     (field $name (mut (ref $bstring)))
-		     (field $chook (mut eqref)))))
+		     (field $chook (mut (ref eq))))))
 
    (type $output-port (sub $port
 			 (struct
 			    (field $name (mut (ref $bstring)))
-			    (field $chook (mut eqref))
+			    (field $chook (mut (ref eq)))
 			    (field $buffer (mut (ref $bstring)))
 			    (field $index (mut i32))
-			    (field $fhook (mut eqref))
-			    (field $flushbuf (mut eqref))
+			    (field $fhook (mut (ref eq)))
+			    (field $flushbuf (mut (ref eq)))
 			    (field $isclosed (mut i32)))))
    (type $file-output-port (sub final $output-port
 			      (struct
 				 (field $name (mut (ref $bstring)))
-				 (field $chook (mut eqref))
+				 (field $chook (mut (ref eq)))
 				 (field $buffer (mut (ref $bstring)))
 				 (field $index (mut i32))
-				 (field $fhook (mut eqref))
-				 (field $flushbuf (mut eqref))
+				 (field $fhook (mut (ref eq)))
+				 (field $flushbuf (mut (ref eq)))
 				 (field $isclosed (mut i32))
 				 (field $fd i32))))
    (type $string-output-port (sub final $output-port
 				(struct
 				   (field $name (mut (ref $bstring)))
-				   (field $chook (mut eqref))
+				   (field $chook (mut (ref eq)))
 				   (field $buffer (mut (ref $bstring)))
 				   (field $index (mut i32))
-				   (field $fhook (mut eqref))
-				   (field $flushbuf (mut eqref))
+				   (field $fhook (mut (ref eq)))
+				   (field $flushbuf (mut (ref eq)))
 				   (field $isclosed (mut i32)))))
    
    (type $rgc (struct
@@ -194,14 +197,14 @@
    (type $input-port (sub $port
 			(struct
 			   (field $name (mut (ref $bstring)))
-			   (field $chook (mut eqref))
+			   (field $chook (mut (ref eq)))
 			   (field $rgc (ref $rgc))
 			   (field $isclosed (mut i32)))))
    
    (type $file-input-port (sub $input-port
 			     (struct
 				(field $name (mut (ref $bstring)))
-				(field $chook (mut eqref))
+				(field $chook (mut (ref eq)))
 				(field $rgc (ref $rgc))
 				(field $isclosed (mut i32))
 				(field $fd i32))))
@@ -232,9 +235,9 @@
    
    ;; Thread types
    (type $mutex (struct
-		   (field $name eqref)
-		   (field $backend eqref)
-		   (field $state eqref)))
+		   (field $name (ref eq))
+		   (field $backend (ref eq))
+		   (field $state (ref eq))))
    (type $condvar (struct))
    (type $semaphore (struct))
    
@@ -252,14 +255,14 @@
    (type $dynamic-env
       (struct 
 	 (field $exitd_top (mut (ref $exit)))
-	 (field $exitd_val (mut eqref))
-	 (field $uncaught-exception-handler (mut eqref))
-	 (field $error-handler (mut eqref))
+	 (field $exitd_val (mut (ref eq)))
+	 (field $uncaught-exception-handler (mut (ref eq)))
+	 (field $error-handler (mut (ref eq)))
 	 
 	 (field $current-output-port (mut (ref $output-port)))
 	 (field $current-error-port (mut (ref $output-port)))
 	 (field $current-input-port (mut (ref $input-port)))
 
-	 (field $module (mut eqref))
-	 (field $abase (mut eqref))))
+	 (field $module (mut (ref eq)))
+	 (field $abase (mut (ref eq)))))
    )

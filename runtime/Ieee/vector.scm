@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/vector.scm         */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/vector.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Fri Sep  6 14:15:39 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 09:00:20 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -58,8 +58,8 @@
    (wasm    ($free-vector-uncollectable "")
 	    ($make-vector "(array.new $vector ~1 (i32.wrap_i64 ~0))")
 	    ($make-vector-uncollectable "(array.new $vector ~1 (i32.wrap_i64 ~0))")
-	    ($create-vector "(array.new_default $vector (i32.wrap_i64 ~0))")
-	    ($create-vector-uncollectable "(array.new_default $vector (i32.wrap_i64 ~0))")
+	    ($create-vector "(array.new $vector (global.get $BUNSPEC) (i32.wrap_i64 ~0))")
+	    ($create-vector-uncollectable "(array.new $vector (global.get $BUNSPEC) (i32.wrap_i64 ~0))")
 	    ($vector? "(ref.test (ref $vector) ~0)")
 	    ($vector-length "(i64.extend_i32_u (array.len ~0))")
 	    ($vector-ref "(array.get $vector ~0 ~1)")

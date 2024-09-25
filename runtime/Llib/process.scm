@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/process.scm      */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/process.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Sun Aug 25 09:09:19 2019 (serrano)                */
+;*    Last change :  Wed Sep 25 09:09:05 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Process handling. This part is mostly compatible with            */
 ;*    STk. This code is extracted from STk by Erick Gallesio.          */
@@ -76,7 +76,7 @@
 		(c-run-process "(global.get $BUNSPEC)")
 		(c-unregister-process "(global.get $BUNSPEC)")
 		(c-process-list "(global.get $BUNSPEC)")
-		(c-process-nil "(struct.new_default $process)")
+		(c-process-nil "(struct.new $process)")
 		)
 
    (java    (class foreign

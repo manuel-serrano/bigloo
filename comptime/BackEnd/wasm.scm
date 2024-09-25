@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/wasm.scm       */
+;*    /priv/serrano2/bigloo/wasm/comptime/BackEnd/wasm.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Sep 24 09:19:38 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 07:34:34 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -87,7 +87,7 @@
       (force-register-gc-roots #f)
       (string-literal-support #f)
       (boxed-fixnums #t)
-      ;; no subtyping for funcref
+      ;; no subtyping for (ref func)
       ;; see https://github.com/WebAssembly/function-references
       (typed-closures #f)))
 
@@ -451,15 +451,18 @@
 			 (func $generic_va_call
 			    (param (ref $procedure))
 			    (param (ref $vector))
-			    (result eqref)))
-		      (import "__runtime" "BNIL" (global $BNIL i31ref))
-		      (import "__runtime" "BFALSE" (global $BFALSE i31ref))
-		      (import "__runtime" "BTRUE" (global $BTRUE i31ref))
-		      (import "__runtime" "BUNSPEC" (global $BUNSPEC i31ref))
-		      (import "__runtime" "BOPTIONAL" (global $BOPTIONAL i31ref))
-		      (import "__runtime" "BKEY" (global $BKEY i31ref))
-		      (import "__runtime" "BREST" (global $BREST i31ref))
-		      (import "__runtime" "BEOA" (global $BEOA i31ref))
+			    (result (ref eq))))
+		      (import "__runtime" "bgl_make_exit"
+			 (func $bgl_make_exit
+			    (result (ref $exit))))
+		      (import "__runtime" "BNIL" (global $BNIL (ref i31)))
+		      (import "__runtime" "BFALSE" (global $BFALSE (ref i31)))
+		      (import "__runtime" "BTRUE" (global $BTRUE (ref i31)))
+		      (import "__runtime" "BUNSPEC" (global $BUNSPEC (ref i31)))
+		      (import "__runtime" "BOPTIONAL" (global $BOPTIONAL (ref i31)))
+		      (import "__runtime" "BKEY" (global $BKEY (ref i31)))
+		      (import "__runtime" "BREST" (global $BREST (ref i31)))
+		      (import "__runtime" "BEOA" (global $BEOA (ref i31)))
 		      (import "__js" "trace" (func $__trace (param i32)))
 
 		      (import "__runtime" "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value (ref $bint)))
@@ -472,7 +475,7 @@
 		      (import "__runtime" "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value (ref $buint16)))
 		      (import "__runtime" "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value (ref $buint32)))
 		      (import "__runtime" "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value (ref $buint64)))
-		      (import "__runtime" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value i31ref))
+		      (import "__runtime" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value (ref i31)))
 		      (import "__runtime" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $bucs2)))
 		      (import "__runtime" "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value (ref $belong)))
 		      (import "__runtime" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
@@ -519,8 +522,8 @@
 		      (import "__runtime" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
 		      (import "__runtime" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
 		      
-		      (import "__runtime" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result eqref)))
-		      (import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result eqref)))
+		      (import "__runtime" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))
+		      (import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result (ref eq))))
 		      
 		      ,@(emit-imports))
 		   
@@ -884,7 +887,7 @@
 	 (struct `(struct
 		     ;; MUST BE the same fields as defined in runtime.types.
 		     (field $header (mut i64))
-		     (field $widening (mut eqref))
+		     (field $widening (mut (ref eq)))
 		     ,@(filter-map emit-slot (tclass-slots class)))))
       (if super
 	  `(type
@@ -908,7 +911,8 @@
 	    (cons 
 	       `(global ,(cnst-table-sym)
 		   (ref $cnst-table)
-		   (array.new_default $cnst-table
+		   (array.new $cnst-table
+		      (global.get $BUNSPEC)
 		      (i32.const ,(get-cnst-offset)))) globals)))
       
       (for-each-global!

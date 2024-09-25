@@ -1,7 +1,8 @@
 (module util
    (main main))
 
-(define already-generated (make-hashtable))
+(define idents (make-hashtable))
+
 (define (main x)
    (let ((module (apply append
 		    (call-with-input-file (cadr x) read)
@@ -11,21 +12,22 @@
 				  (let ((m (cddr (read p))))
 				     (filter-map (lambda (c)
 						    (match-case c
-						       ((import ?mod ?id ?decl) (parse-import mod id decl))))
+						       ((import ?mod ?id ?decl)
+							(parse-import mod id decl))))
 					(cdr m))))))
 		       (cddr x)))))
       (pp module)))
 
-(define (parse-import mod id import)
-    (match-case import
-        ((func . ?s) 
-            (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
-                (hashtable-put! already-generated id #t)
-                (parse-func id s)))
-        ((global . ?s) 
-            (when (and (should-generate? mod) (not (hashtable-contains? already-generated id)))
-                (hashtable-put! already-generated id #t)
-                (parse-global id s)))))
+(define (parse-import mod id decl)
+   (unless (hashtable-contains? idents id)
+      (hashtable-put! idents id #t)
+      (match-case decl
+	 ((func . ?s)
+	  (when (should-generate? mod)
+	     (parse-func id s)))
+	 ((global . ?s) 
+	  (when (should-generate? mod)
+	     (parse-global id s))))))
 
 (define cnt 0)
    
@@ -77,11 +79,18 @@
       ((f32) '(f32.const 0))
       ((f64) '(f64.const 0))
       ((eqref) '(global.get $BUNSPEC))
+      ((externref) '(ref.null none))
       (else
        (match-case type
 	  ((or (mut (ref ?type)) (ref ?type))
-	   `(global.get ,(symbol-append type '-default-value)))
+	   (case type
+	      ((eq)
+	       '(global.get $BUNSPEC))
+	      ((i31)
+	       (ref.i31 (i32.const 0)))
+	      (else
+	       `(global.get ,(symbol-append type '-default-value)))))
 	  (else
-	   (error "wasm"
+	   (error "gen_dummy_wasm_import"
 	      (format "No default init value for builtin type: ~a" type)
 	      sig))))))
