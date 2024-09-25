@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Tue Sep 24 12:28:41 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 18:53:25 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -59,7 +59,7 @@
 	 ((intern-sfun/Cinfo? fun)
 	  ;; if it is not an `intern-sfun/Cinfo', it means that the
 	  ;; procedure is unreachable and then we can ignore it.
-	  (with-access::intern-sfun/Cinfo fun (body args approx the-closure-global)
+	  (with-access::intern-sfun/Cinfo fun (body args approx the-closure-global strength)
 	     ;; the formals
 	     (trace (cfa 3) "  formal " (shape var)
 		" " (typeof (local-value var)) #\Newline)
@@ -79,7 +79,8 @@
 	     ;; and the function result
 	     (with-access::backend (the-backend) (typed-closures)
 		(if (or typed-closures
-			(not (isa? the-closure-global global)))
+			(not (isa? the-closure-global global))
+			(eq? strength 'elight))
 		    (set-variable-type! var (get-approx-type approx var))
 		    (variable-type-set! var *obj*)))
 	     (shrink! fun)
