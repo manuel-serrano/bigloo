@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Sep 23 16:48:54 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 14:28:40 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -193,19 +193,19 @@
    (let ((id (type-id t))
 	 (name (type-name t)))
       (case id
-	 ((obj) 'eqref)
-	 ((nil) 'eqref)
-	 ((magic) 'eqref)
-	 ((unspecified) 'eqref)
-	 ((bbool) 'i31ref)
-	 ((bchar) 'i31ref)
-	 ((class-field) 'eqref)
-	 ((pair-nil) 'eqref)
-	 ((cobj) 'eqref)
+	 ((obj) '(ref eq))
+	 ((nil) '(ref eq))
+	 ((magic) '(ref eq))
+	 ((unspecified) '(ref eq))
+	 ((bbool) '(ref i31))
+	 ((bchar) '(ref i31))
+	 ((class-field) '(ref eq))
+	 ((pair-nil) '(ref eq))
+	 ((cobj) '(ref eq))
 	 ((void*) 'i32) ;; A raw pointer into the linear memory
 	 ((tvector) 'arrayref)
-	 ((cnst) 'i31ref)
-	 ((funptr) 'funcref)
+	 ((cnst) '(ref i31))
+	 ((funptr) '(ref func))
 	 ((bool) 'i32)
 	 ((byte) 'i32)
 	 ((ubyte) 'i32)
@@ -238,11 +238,15 @@
 	      (error "wasm-gen" "unimplemented foreign type in WASM" id))
 	     ;; Classes
 	     ((string-suffix? "_bglt" name)
-	      (if may-null `(ref null ,(wasm-sym name)) `(ref ,(wasm-sym name))))
+	      (if (and #f may-null)
+		  `(ref null ,(wasm-sym name))
+		  `(ref ,(wasm-sym name))))
 	     ((tvec? t)
-	      (if may-null `(ref null ,(wasm-vector-type t)) `(ref ,(wasm-vector-type t))))
+	      (if (and #f may-null)
+		  `(ref null ,(wasm-vector-type t))
+		  `(ref ,(wasm-vector-type t))))
 	     (else
-	      (if may-null 
+	      (if (and #f may-null)
 		  `(ref null ,(wasm-sym (symbol->string id)))
 		  `(ref ,(wasm-sym (symbol->string id))))))))))
 
@@ -437,7 +441,7 @@
 
    (define (type-require-init? t)
       (case (type-id t)
-	 ((obj int long double bool) #f)
+	 ((int long double bool) #f)
 	 (else #t)))
 
    (define (first-block-assigs l)
@@ -982,8 +986,11 @@
 (define-method (gen-expr fun::rtl_valloc args)
   (with-access::rtl_valloc fun (type vtype)
     (with-fun-loc fun
-      `(array.new_default 
-        ,(wasm-vector-type vtype)
+      `(array.new ,(wasm-vector-type vtype)
+	,(if (isa? vtype tvec)
+	     (with-access::tvec vtype (item-type)
+		(wasm-default-value item-type))
+	     (wasm-default-value vtype))
         ,(cast-to-i32-if-needed (car args))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1004,7 +1011,7 @@
    ;; thus the i32.wrap_i64.
    (with-access::rtl_vref fun (type vtype)
       (let ((vec-type (wasm-vector-type vtype)))
-	 ;; If vtype is a vector of eqref (type vector), then
+	 ;; If vtype is a vector of (ref eq) (type vector), then
 	 ;; we need to explicitly insert a cast to the expected element
 	 ;; type. This is not required for typed vectors
 	 ;; as the WASM type has already the correct type.
@@ -1091,15 +1098,10 @@
        (wasm-cnst-rest))
       ((bignum? value)
        (if (=bx (fixnum->bignum (bignum->fixnum value)) value)
-	   (let* ((str (bignum->string value 16))
-		  (info (allocate-string str)))
-	      `(call $bgl_long_to_bignum (i64.const ,(bignum->fixnum value))))
-	   (error "wasm-gen" "big bignum literals not implemented" value)))
-;* 	   (let* ((str (bignum->string value 16))                      */
-;* 		  (info (allocate-string str)))                        */
-;* 	      `(call $bgl_data_to_bignum (i32.const 0)                 */
-;* 		  (i32.const ,(string-length str))                     */
-;* 		  (i32.const 16)))))                                   */
+	   `(call $bgl_long_to_bignum (i64.const ,(bignum->fixnum value)))
+	   `(call $bgl_string_to_bignum
+	       ,(gen-string-literal (bignum->string value 16))
+	       (i32.const 10))))
       ((string? value)
        ;; FIXME: implement C string constants
        `(array.new_default $bstring (i32.const ,(string-length value)))) 
@@ -1267,30 +1269,30 @@
 ;*---------------------------------------------------------------------*/
 (define (inline-make-procedure args)
    `(struct.new $procedure
-       ;; Entry
+       ;; entry
        ,(gen-reg (car args))
-       ;; Attr
+       ;; attr
        (global.get $BUNSPEC)
-       ;; Arity
+       ;; arity
        ,(gen-reg (cadr args))
-       ;; Env
-       (array.new_default $vector ,(gen-reg (caddr args)))))
+       ;; env
+       (array.new $vector (global.get $BUNSPEC) ,(gen-reg (caddr args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-make-l-procedure ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (inline-make-l-procedure args)
    `(struct.new $procedure-l
-       ;; Entry
+       ;; entry
        ,(gen-reg (car args))
-       ;; Env
-       (array.new_default $vector ,(gen-reg (cadr args)))))
+       ;; env
+       (array.new $vector (global.get $BUNSPEC) ,(gen-reg (cadr args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-make-el-procedure ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (inline-make-el-procedure args)
-   `(array.new_default $procedure-el ,(gen-reg (car args))))
+   `(array.new $procedure-el (global.get $BUNSPEC) ,(gen-reg (car args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst-table-sym ...                                               */
@@ -1302,7 +1304,7 @@
 ;*    inline-cnst-table-set! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (inline-cnst-table-set! args) 
-   `(block (result eqref) 
+   `(block (result (ref eq)) 
        (array.set $cnst-table 
 	  (global.get ,(cnst-table-sym))
 	  ,@(gen-args args)) 
@@ -1320,7 +1322,7 @@
 ;*    gen-expr ::rtl_funcall ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_funcall args)
-   (with-fun-loc fun (gen-expr-funcall/lightfuncall 'eqref args)))
+   (with-fun-loc fun (gen-expr-funcall/lightfuncall '(ref eq) args)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr-funcall/lightfuncall ...                                */
@@ -1336,7 +1338,8 @@
 	   (then ;; Is a variadic function!
 	      (call $generic_va_call 
 		 ,proc 
-		 (array.new_fixed $vector ,(-fx arg_count 1) ,@(gen-args (cdr args)))))
+		 (array.new_fixed $vector ,(-fx arg_count 1)
+		    ,@(gen-args (cdr args)))))
 	   (else
 	    (call_ref 
 	       ,func_type
@@ -1385,9 +1388,9 @@
       ((isa? o rtl_ins)
        (if (rtl_ins-dest o)
 	   (wasm-typeof-arg (rtl_ins-dest o))
-	   'eqref))
+	   '(ref eq)))
       (else
-       'eqref)))
+       '(ref eq))))
 
 ;*---------------------------------------------------------------------*/
 ;*    create-ref-func-type ...                                         */
@@ -1420,20 +1423,20 @@
    (define (gen-new-tclass fun args type constr)
       (with-access::tclass type (slots)
 	 (let* ((clazz (wasm-sym (type-class-name type)))
-		(alloc (if (every (lambda (s)
-				     (let ((t (slot-type s)))
-					(or (eq? t *obj*)
-					    (eq? t *long*)
-					    (eq? t *bool*)
-					    (eq? t *char*)
-					    (eq? t *real*))))
-			      slots)
+		(alloc (if (and #f
+				(every (lambda (s)
+					  (let ((t (slot-type s)))
+					     (or (eq? t *long*)
+						 (eq? t *bool*)
+						 (eq? t *char*)
+						 (eq? t *real*))))
+				   slots))
 			   `(struct.new_default ,clazz)
 			   `(struct.new ,clazz
 			       ;; header
 			       (i64.const 0)
 			       ;; widening
-			       (ref.null none)
+			       (global.get $BUNSPEC)
 			       ;; class fields
 			       ,@(filter-map (lambda (s)
 						(unless (>=fx (slot-virtual-num s) 0)
@@ -1456,22 +1459,23 @@
 ;*    gen-expr ::rtl_cast ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_cast args)
-   (let ((type (rtl_cast-totype fun)))
+   (let ((ty (rtl_cast-totype fun)))
       (cond
-	 ((eq? (type-id type) 'obj)
+	 ((eq? (type-id ty) 'obj)
+	  (if (eq? (typeof (car args)) ty)
+	      (gen-reg (car args))
+	      `(ref.cast ,(wasm-type ty #f) ,(gen-reg (car args)))))
+	 ((or (eq? (wasm-type ty) 'i32) (eq? (wasm-type ty) 'i64))
 	  (gen-reg (car args)))
-	 ;; FIXME: hack due to a bigloo bug (I think)
-	 ((or (eq? (wasm-type type) 'i32) (eq? (wasm-type type) 'i64))
-	  (gen-reg (car args)))
-	 ((and (eq? (type-id type) 'pair-nil)
+	 ((and (eq? (type-id ty) 'pair-nil)
 	       (memq (typeof-arg (car args)) '(pair nil)))
 	  (gen-reg (car args)))
 	 (else
 	  `(comment ,(string-append "CAST "
-			(symbol->string (type-id type))
+			(symbol->string (type-id ty))
 			" "
 			(symbol->string (type-id (rtl_cast-fromtype fun))))
-	      (ref.cast ,(wasm-type type #f) ,(gen-reg (car args))))))))
+	      (ref.cast ,(wasm-type ty #f) ,(gen-reg (car args))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_cast_null ...                                     */
@@ -1542,7 +1546,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_protect args)
    ;; TODO: correctly initialize exit object
-   (with-fun-loc fun '(struct.new_default $exit)))
+   (with-fun-loc fun '(call $bgl_make_exit)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_protected ...                                     */

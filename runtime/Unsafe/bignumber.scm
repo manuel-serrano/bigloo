@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Unsafe/bignumber.scm        */
+;*    /priv/serrano2/bigloo/wasm/runtime/Unsafe/bignumber.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
@@ -45,6 +45,8 @@
    (cond-expand
       ((and enable-gmp (not boot))
        (include "./Unsafe/bignumber-gmp.sch"))
+      (bigloo-wasm
+       (include "./Unsafe/bignumber-gmp.sch"))
       (else
        (include "./Unsafe/bignumber-generic.sch")))
    
@@ -69,8 +71,10 @@
       (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG"))
 
    (wasm
-      ($bignum? "(ref.test (ref $bignum) ~0)"))
-   
+      ($bignum? "(ref.test (ref $bignum) ~0)")
+      ($fixnum->bignum "(call $bgl_long_to_bignum ~0)")
+      ($elong->bignum "(call $bgl_long_to_bignum ~0)")
+      ($bignum->string "(call $bgl_bignum_to_string ~0)"))
    (java
       (class foreign
 	 (method static $bignum?::bool (::obj)

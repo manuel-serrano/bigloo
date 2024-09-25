@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
+#*    /priv/serrano2/bigloo/wasm/runtime/Makefile                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Sep 17 15:16:13 2024 (serrano)                */
+#*    Last change :  Wed Sep 25 12:53:31 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -691,7 +691,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
   objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
-  $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
+  $(WASMTYPES) Wlib/javascript.wat Wlib/bignum.wat Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
 	$(BIGLOO) -wasm -y -w $(WASMTYPES) \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
@@ -699,11 +699,8 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
-  $(WASMTYPES) Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
-	$(BIGLOO) -wasm -y -w $(WASMTYPES) \
-               Wlib/runtime.wat \
-               $(WASMS:%.wasm=%.wat) \
-               -o $@
+  $(WASMTYPES) Wlib/javascript.wat Wlib/bignum.wat Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
+	$(BIGLOO) -wasm -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm_u/%.wat: %.scm $(BOOTLIBDIR)/types.wat

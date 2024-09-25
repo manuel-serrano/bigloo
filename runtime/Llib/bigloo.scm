@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bigloo.scm         */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/bigloo.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Sep 18 18:49:54 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 09:25:07 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -167,15 +167,15 @@
 	    ($cell-ref "(struct.get $cell $val ~0)")
 	    ($cell? "(ref.test (ref $cell) ~0)")
       
-	    (c-cnst? "(ref.test i31ref ~0)")
+	    (c-cnst? "(ref.test (ref i31) ~0)")
       
 	    ;; These two functions are inlined by the WASM backend directly.
 	    (cnst-table-set! "(throw $unimplemented)")
 	    (cnst-table-ref "(throw $unimplemented)")
       
 	    ;; Opaque types not supported in WASM backend
-	    (c-opaque? "(i32.const 0)")
-	    (c-opaque-nil "(ref.null none)")
+	    (c-opaque? "(ref.test (ref $opaque) ~0)")
+	    (c-opaque-nil "(global.get $opaque-default-value)")
       
 	    ($procedure-arity "(struct.get $procedure $arity ~0)")
 	    ($procedure-attr "(struct.get $procedure $attr ~0)")

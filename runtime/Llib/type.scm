@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Sep 23 16:08:39 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 09:25:43 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1067,7 +1067,7 @@
 
    (wasm
       ($bbool->bool "(i31.get_u ~0)")
-      ($bool->bbool "(if (result i31ref) ~0 (then (global.get $BTRUE)) (else (global.get $BFALSE)))")
+      ($bool->bbool "(if (result (ref i31)) ~0 (then (global.get $BTRUE)) (else (global.get $BFALSE)))")
 
       ($double->real "(struct.new $real ~0)")
       ($elong->belong "(struct.new $belong ~0)")

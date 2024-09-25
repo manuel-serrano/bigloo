@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/thread.scm         */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/thread.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Tue Sep 17 14:43:28 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 09:08:30 2024 (serrano)                */
 ;*    Copyright   :  2004-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -103,7 +103,7 @@
    (wasm    ($dynamic-env? "(ref.test (ref $dynamic-env) ~0)")
             ($mutex? "(ref.test (ref $mutex) ~0)")
 	    ($condvar? "(ref.test (ref $condvar) ~0)")
-	    ($make-mutex "(struct.new_default $mutex)")
+	    ($make-mutex "(struct.new $mutex (global.get $BUNSPEC) (global.get $BUNSPEC) (global.get $BUNSPEC))")
 	    ($mutex-name "(struct.get $mutex $name ~0)")
 	    ($mutex-backend "(struct.get $mutex $backend ~0)")
 	    ;; TODO

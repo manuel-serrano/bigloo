@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/struct.scm         */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/struct.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 13:02:29 1992                          */
-;*    Last change :  Mon Sep  9 18:17:53 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 09:01:12 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Non R4Rs structure and SRFI-9 records.                           */
 ;*    -------------------------------------------------------------    */
@@ -70,8 +70,8 @@
 		
 	    ($make-struct "(struct.new $struct ~0 (array.new $vector ~2 ~1))")
 	    ($make-s-struct "(struct.new $struct ~0 (array.new $vector ~2 ~1))")
-	    ($create-struct "(struct.new $struct ~0 (array.new_default $vector ~1))")
-	    ($create-s-struct "(struct.new $struct ~0 (array.new_default $vector ~1))"))
+	    ($create-struct "(struct.new $struct ~0 (array.new $vector (global.get $BUNSPEC) ~1))")
+	    ($create-s-struct "(struct.new $struct ~0 (array.new $vector (global.get $BUNSPEC) ~1))"))
    
    (java    (class foreign
 	       (method static $struct-ref::obj (::struct ::int)
