@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Mon Sep 23 09:18:50 2024 (serrano)                */
+;*    Last change :  Mon Sep 23 10:06:51 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -515,7 +515,7 @@
 (define (cnst-alloc-integer integer loc)
    
    (define (lib-alloc-integer)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'integer) 'integer)
+      (let ((var (def-global-scnst! (make-typed-ident (gensym 'integer) 'bint)
 		    *module*
 		    integer
 		    'sinteger
