@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Sep 25 10:07:51 2024 (serrano)                */
+/*    Last change :  Wed Sep 25 13:09:05 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -162,6 +162,10 @@ const instance = await WebAssembly.instantiate(wasm, {
          writeSync(fd, charBuffer);
       },
 
+      write_bignum: (fd, n) => {
+	 writeSync(fd, n.toString());
+      },
+
       file_exists: function (path_addr, path_length) {
          const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
          const path = loadSchemeString(buffer);
@@ -258,10 +262,19 @@ const instance = await WebAssembly.instantiate(wasm, {
    },
 
    __js_bignum: {
-      bgl_long_to_bignum: (value) => BigInt(value),
-      show_bignum: (value) => {
-	 console.log("BN=", value);
-      }
+      zerobx: BigInt(0),
+      long_to_bignum: (value) => BigInt(value),
+      bignum_to_string: (value, addr) => {
+	 storeJSStringToScheme(value.toString(), addr)
+      },
+      string_to_bignum: (section, offset, len, radix) => {
+         const buf = new Uint8Array(instance.exports.memory.buffer, section, offset, length);
+	 return BigInt(loadSchemeString(buf));
+      },
+      bignum_add: (x, y) => x + y,
+      bignum_sub: (x, y) => x - y,
+      bignum_mul: (x, y) => x * y,
+      bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0)
    }
 });
 

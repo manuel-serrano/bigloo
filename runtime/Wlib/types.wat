@@ -88,7 +88,7 @@
    
    ;; Bignums
    (type $bignum
-      (struct (field $u16vect (ref $u16vector))))
+      (struct (field $bx externref)))
    
    ;; Boxed numeric types
    (rec

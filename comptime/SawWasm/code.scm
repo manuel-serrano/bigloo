@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Sep 25 07:35:07 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 14:28:40 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1096,15 +1096,14 @@
        (wasm-cnst-rest))
       ((bignum? value)
        (if (=bx (fixnum->bignum (bignum->fixnum value)) value)
+	   `(call $bgl_long_to_bignum (i64.const ,(bignum->fixnum value)))
 	   (let* ((str (bignum->string value 16))
-		  (info (allocate-string str)))
-	      `(call $bgl_long_to_bignum (i64.const ,(bignum->fixnum value))))
-	   (error "wasm-gen" "big bignum literals not implemented" value)))
-;* 	   (let* ((str (bignum->string value 16))                      */
-;* 		  (info (allocate-string str)))                        */
-;* 	      `(call $bgl_data_to_bignum (i32.const 0)                 */
-;* 		  (i32.const ,(string-length str))                     */
-;* 		  (i32.const 16)))))                                   */
+		  (info (allocate-string str))
+		  (section (car info))
+		  (offset (cdr info)))
+	      `(call $bgl_jsstring_to_bignum
+		  (i32.load ,section)
+		  (i32.const 0) (i32.const ,(string-length str))))))
       ((string? value)
        ;; FIXME: implement C string constants
        `(array.new_default $bstring (i32.const ,(string-length value)))) 

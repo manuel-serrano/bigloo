@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Sep 25 07:34:34 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 12:34:30 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1206,12 +1206,12 @@
 (define (require-import? global)
    (let ((value (global-value global))
 	 (import (global-import global)))
-      (and (or 
-	    (eq? import 'import)
-	    (and 
-	     (eq? import 'foreign)
-	     (not (and (or (isa? value cvar) (isa? value cfun)) (not (string-null? (global-qualified-type-name global)))))))
-	   (>fx (global-occurrence global) 0))))
+      (when (>fx (global-occurrence global) 0)
+	 (or (eq? import 'import)
+	     (and (eq? import 'foreign)
+		  (not (and (or (isa? value cvar)
+				(isa? value cfun))
+			    (not (string-null? (global-qualified-type-name global))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-module ...                                                  */

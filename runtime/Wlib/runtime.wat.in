@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Sep 25 07:45:16 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 12:58:10 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -85,7 +85,7 @@
      (struct.new $real (f64.const 0)))
   (global $bignum-default-value
      (export "BGL_BIGNUM_DEFAULT_VALUE") (ref $bignum)
-     (struct.new $bignum (array.new_fixed $u16vector 0)))
+     (struct.new $bignum (global.get $zerobx)))
   
   (global $bchar-default-value
      (export "BGL_BCHAR_DEFAULT_VALUE") (ref i31)
@@ -1820,6 +1820,26 @@
       (i64.extend_i32_u (array.len (local.get $text)))
       (local.get $port)))
 
+  (func $bgl_display_bignum (export "bgl_display_bignum")
+     (param $n (ref $bignum))
+     (param $port (ref $output-port))
+     (result (ref eq))
+     (if (ref.test (ref $file-output-port) (local.get $port))
+	 (then
+	    (call $js_write_bignum
+	       (struct.get $file-output-port $fd
+		  (ref.cast (ref $file-output-port) (local.get $port)))
+	       (struct.get $bignum $bx (local.get $n)))
+	    (return (local.get $port)))
+	 (else
+	  (return_call $bgl_display_string
+	     (call $load_string
+		(i32.const 128)
+		(call $bignum_to_string
+		   (struct.get $bignum $bx (local.get $n))
+		   (i32.const 128)))
+	     (local.get $port)))))
+
   (func $flush_string_output_port
     (param $port (ref $string-output-port))
     (result (ref eq))
@@ -2595,46 +2615,6 @@
      ;; CARE MS 16sep2024: TODO
      (global.get $bstring-default-value))
   
-  ;; --------------------------------------------------------
-  ;; bignum functions
-  ;; --------------------------------------------------------
-  (export "BGL_SAFE_PLUS_FX" (func $BGL_SAFE_PLUS_FX))
-  (export "BGL_SAFE_MUL_FX" (func $BGL_SAFE_MUL_FX))
-  (export "BGL_SAFE_MINUS_FX" (func $BGL_SAFE_MINUS_FX))
-  (export "BGL_SAFE_QUOTIENT_FX" (func $BGL_SAFE_QUOTIENT_FX))
-  
-  (func $BGL_SAFE_PLUS_FX
-     (param $x i64)
-     (param $y i64)
-     (result (ref eq))
-     (return
-	(call $I64_TO_BINT
-	   (i64.add (local.get $x) (local.get $y)))))
-
-  (func $BGL_SAFE_MUL_FX
-     (param $x i64)
-     (param $y i64)
-     (result (ref eq))
-     (return
-	(call $I64_TO_BINT
-	   (i64.mul (local.get $x) (local.get $y)))))
-
-  (func $BGL_SAFE_MINUS_FX
-     (param $x i64)
-     (param $y i64)
-     (result (ref eq))
-     (return
-	(call $I64_TO_BINT
-	   (i64.sub (local.get $x) (local.get $y)))))
-
-  (func $BGL_SAFE_QUOTIENT_FX
-     (param $x i64)
-     (param $y i64)
-     (result (ref eq))
-     (return
-	(call $I64_TO_BINT
-	   (i64.div_s (local.get $x) (local.get $y)))))
-
   ;; --------------------------------------------------------
   ;; Date functions
   ;; --------------------------------------------------------

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Wed Sep 25 11:08:56 2024 (serrano)                */
+;*    Last change :  Wed Sep 25 12:51:01 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -24,6 +24,7 @@
   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
   (import "__js" "write_char" (func $js_write_char (param i32 i32)))
+  (import "__js" "write_bignum" (func $js_write_bignum (param i32 externref)))
 
   (import "__js_math" "fmod" (func $fmod (param f64 f64) (result f64)))
   (import "__js_math" "exp" (func $exp (param f64) (result f64)))
@@ -52,6 +53,6 @@
   (import "__js" "exit" (func $js_exit (param i32)))
   (import "__js" "signal" (func $js_signal (param i32) (param (ref eq))))
 
-  (import "$__object" "BGl_classzd2nilzd2initz12z12zz__objectz00" (func $BGl_z62classzd2nilzd2initz12z70zz__objectz00 (param (ref $class)) (result (ref eq))))
-  (import "__js_bignum" "bgl_long_to_bignum" (func $bgl_long_to_bignum (param i64) (result externref)))
-  (import "__js_bignum" "show_bignum" (func $js_show_bignum (param externref))))
+  (import "$__object" "BGl_classzd2nilzd2initz12z12zz__objectz00" (func $BGl_z62classzd2nilzd2initz12z70zz__objectz00 (param (ref $class)) (result (ref eq)))))
+
+
