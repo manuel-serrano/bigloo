@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Sep 26 06:13:08 2024 (serrano)                */
+;*    Last change :  Thu Sep 26 07:57:16 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -676,6 +676,7 @@
 (define-method (do-push? fun::rtl_loadg) #t)
 (define-method (do-push? fun::rtl_nop) #t)
 (define-method (do-push? fun::rtl_funcall) #t)
+(define-method (do-push? fun::rtl_lightfuncall) #t)
 (define-method (do-push? fun::rtl_valloc) #t)
 (define-method (do-push? fun::rtl_vref) #t)
 (define-method (do-push? fun::rtl_vlength) #t)
