@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/bignum.wat         */
+;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/bignum.wat               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Wed Sep 25 18:17:00 2024 (serrano)                */
+;*    Last change :  Thu Sep 26 08:15:14 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript bignum implementation                                 */
@@ -13,7 +13,7 @@
    
    (import "__js_bignum" "zerobx" (global $zerobx externref))
    (import "__js_bignum" "long_to_bignum" (func $long_to_bignum (param i64) (result externref)))
-   (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32 i32) (result externref)))
+   (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_sub" (func $bignum_sub (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_mul" (func $bignum_mul (param externref externref) (result externref)))
@@ -34,7 +34,6 @@
       (result (ref $bignum))
       (return (struct.new $bignum
 		 (call $string_to_bignum
-		    (local.get $section)
 		    (local.get $offset)
 		    (local.get $len)
 		    (i32.const 10)))))
@@ -48,7 +47,6 @@
       (return
 	 (struct.new $bignum
 	    (call $string_to_bignum
-	       (i32.const 0)
 	       (i32.const 128)
 	       (array.len (local.get $s))
 	       (local.get $radix)))))

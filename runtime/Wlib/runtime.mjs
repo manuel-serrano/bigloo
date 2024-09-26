@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Sep 25 13:09:05 2024 (serrano)                */
+/*    Last change :  Thu Sep 26 08:11:41 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -267,8 +267,8 @@ const instance = await WebAssembly.instantiate(wasm, {
       bignum_to_string: (value, addr) => {
 	 storeJSStringToScheme(value.toString(), addr)
       },
-      string_to_bignum: (section, offset, len, radix) => {
-         const buf = new Uint8Array(instance.exports.memory.buffer, section, offset, length);
+      string_to_bignum: (offset, len, radix) => {
+         const buf = new Uint8Array(instance.exports.memory.buffer, offset, len);
 	 return BigInt(loadSchemeString(buf));
       },
       bignum_add: (x, y) => x + y,
