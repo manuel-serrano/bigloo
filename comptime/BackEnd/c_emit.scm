@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/c_emit.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/c_emit.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Wed Jul 17 11:32:47 2024 (serrano)                */
+;*    Last change :  Thu Sep 26 08:40:13 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -349,9 +349,11 @@
        (display (untrigraph (string-for-read value)) *c-port*)
        (display #\" *c-port*))
       ((fixnum? value)
+       (when (<fx value 0) (display "(" *c-port*))
        (display value *c-port*)
        (unless (eq? type *int*) 
-	  (display "L" *c-port*)))
+	  (display "L" *c-port*))
+       (when (<fx value 0) (display ")"  *c-port*)))
 ;*        (display "((" *c-port*)                                      */
 ;*        (display (string-sans-$ (type-name *long*)) *c-port*)        */
 ;*        (display ")" *c-port*)                                       */
