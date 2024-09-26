@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/pairlist.scm       */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/pairlist.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Thu Sep 26 08:56:25 2024 (serrano)                */
+;*    Last change :  Thu Sep 26 18:10:01 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -66,8 +66,6 @@
 	    ($car "(struct.get $pair $car ~0)")
 	    ($cdr "(struct.get $pair $cdr ~0)")
 	    ($cer "(struct.get $epair $cer ~0)")
-	    ($set-car! "(struct.set $pair $car ~0 ~1)")
-	    ($set-cdr! "(struct.set $pair $cdr ~0 ~1)")
 	    ($null? "(ref.eq (global.get $BNIL) ~0)"))
    
    (java    (class foreign
