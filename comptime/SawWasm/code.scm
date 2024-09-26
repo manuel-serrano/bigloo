@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Sep 25 14:28:40 2024 (serrano)                */
+;*    Last change :  Thu Sep 26 06:13:08 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1393,14 +1393,24 @@
        '(ref eq))))
 
 ;*---------------------------------------------------------------------*/
+;*    *functy* ...                                                     */
+;*    -------------------------------------------------------------    */
+;*    All procedure types generated for the current compiled module.   */
+;*---------------------------------------------------------------------*/
+(define *functy* '())
+
+;*---------------------------------------------------------------------*/
 ;*    create-ref-func-type ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (create-ref-func-type retty params)
-   (let ((sym (gensym (string-append "$functy@" (symbol->string! *module*)))))
-      (set! *extra-types*
-	 (cons `(type ,sym (func (param ,@params) (result ,retty)))
-	    *extra-types*))
-      sym))
+   (let* ((ty `(func (param ,@params) (result ,retty)))
+	  (os (assoc ty *functy*)))
+      (if (pair? os)
+	  (cdr os)
+	  (let ((sym (gensym (string-append "$functy@" (symbol->string! *module*)))))
+	     (set! *functy* (cons (cons ty sym) *functy*))
+	     (set! *extra-types* (cons `(type ,sym ,ty) *extra-types*))
+	     sym))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_apply ...                                         */
