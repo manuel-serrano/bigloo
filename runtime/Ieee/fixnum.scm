@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Sep 25 11:30:06 2024 (serrano)                */
+;*    Last change :  Fri Sep 27 13:42:24 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -248,7 +248,7 @@
 	    (macro $gefx::bint (::bint ::bint) "GEFX")
 	    (macro $egfx::bint (::bint ::bint) "EGFX"))
 
-   (wasm   ($fixnum? "(ref.test (ref $bint) ~0)")
+   (wasm   ($fixnum? "(call $INTEGERP ~0)")
 	   ($elong? "(ref.test (ref $belong) ~0)")
 	   ($llong? "(ref.test (ref $bllong) ~0)")
 	   ($int8? "(ref.test (ref $bint8) ~0)")

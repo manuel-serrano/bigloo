@@ -1,6 +1,32 @@
+;; -*- eval: (bee-mode) -*-
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/types.wat.in       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
+;*    Last change :  Fri Sep 27 16:04:40 2024 (serrano)                */
+;*    Copyright   :  2024 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Bigloo type declarations                                         */
+;*=====================================================================*/
+
 (module $__types
    
+   ;; -----------------------------------------------------------------
+   ;; Misc 
+   ;; -----------------------------------------------------------------
+
    (type $cnst-table (array (mut (ref eq))))
+
+   
+   ;; -----------------------------------------------------------------
+   ;; Primitive types 
+   ;; -----------------------------------------------------------------
+   
+   ;; -----------------------------------------------------------------
+   ;; Vectors 
+   ;; -----------------------------------------------------------------
+
    
    (type $vector (array (mut (ref eq))))
    (type $dvector (array (mut f64)))
@@ -32,8 +58,11 @@
    (tag $fail)
    
    ;; Boxed string
-   (rec (type $bstring (array (mut i8))))
-   (rec (type $ucs2string (array (mut i16))))
+
+   ;; -----------------------------------------------------------------
+   ;; Strings 
+   ;; -----------------------------------------------------------------
+   (@include "./wstrings.wat" type)
    
    (type $regexp (struct))
 
@@ -149,65 +178,11 @@
 				     (field $widening (mut (ref eq))))))
    
   ;; Ports
-   (type $port (sub
-		  (struct
-		     (field $name (mut (ref $bstring)))
-		     (field $chook (mut (ref eq))))))
-
-   (type $output-port (sub $port
-			 (struct
-			    (field $name (mut (ref $bstring)))
-			    (field $chook (mut (ref eq)))
-			    (field $buffer (mut (ref $bstring)))
-			    (field $index (mut i32))
-			    (field $fhook (mut (ref eq)))
-			    (field $flushbuf (mut (ref eq)))
-			    (field $isclosed (mut i32)))))
-   (type $file-output-port (sub final $output-port
-			      (struct
-				 (field $name (mut (ref $bstring)))
-				 (field $chook (mut (ref eq)))
-				 (field $buffer (mut (ref $bstring)))
-				 (field $index (mut i32))
-				 (field $fhook (mut (ref eq)))
-				 (field $flushbuf (mut (ref eq)))
-				 (field $isclosed (mut i32))
-				 (field $fd i32))))
-   (type $string-output-port (sub final $output-port
-				(struct
-				   (field $name (mut (ref $bstring)))
-				   (field $chook (mut (ref eq)))
-				   (field $buffer (mut (ref $bstring)))
-				   (field $index (mut i32))
-				   (field $fhook (mut (ref eq)))
-				   (field $flushbuf (mut (ref eq)))
-				   (field $isclosed (mut i32)))))
    
-   (type $rgc (struct
-		 ;; We only uses i32 as arrays can only be indexed by 32 bits integers.
-		 (field $eof (mut i32))
-		 (field $filepos (mut i32))
-		 (field $forward (mut i32))
-		 (field $bufpos (mut i32))
-		 (field $matchstart (mut i32))
-		 (field $matchstop (mut i32))
-		 (field $lastchar (mut i32))
-		 (field $buffer (mut (ref $bstring)))))
    
-   (type $input-port (sub $port
-			(struct
-			   (field $name (mut (ref $bstring)))
-			   (field $chook (mut (ref eq)))
-			   (field $rgc (ref $rgc))
-			   (field $isclosed (mut i32)))))
    
-   (type $file-input-port (sub $input-port
-			     (struct
-				(field $name (mut (ref $bstring)))
-				(field $chook (mut (ref eq)))
-				(field $rgc (ref $rgc))
-				(field $isclosed (mut i32))
-				(field $fd i32))))
+   
+   
    
    (type $binary-port (sub (struct)))
    
@@ -251,7 +226,14 @@
    (type $tvector (struct))
    (type $hvector (struct))
    
-   ;; Dynamic env (for multithreading)
+   ;; -----------------------------------------------------------------
+   ;; Ports 
+   ;; -----------------------------------------------------------------
+   (@include "./wports.wat" type)
+
+   ;; -----------------------------------------------------------------
+   ;; Dynamic environment 
+   ;; -----------------------------------------------------------------
    (type $dynamic-env
       (struct 
 	 (field $exitd_top (mut (ref $exit)))
@@ -259,10 +241,11 @@
 	 (field $uncaught-exception-handler (mut (ref eq)))
 	 (field $error-handler (mut (ref eq)))
 	 
-	 (field $current-output-port (mut (ref $output-port)))
-	 (field $current-error-port (mut (ref $output-port)))
-	 (field $current-input-port (mut (ref $input-port)))
+	 (field $current-output-port (mut (ref null $output-port)))
+	 (field $current-error-port (mut (ref null $output-port)))
+	 (field $current-input-port (mut (ref null $input-port)))
 
 	 (field $module (mut (ref eq)))
 	 (field $abase (mut (ref eq)))))
+
    )

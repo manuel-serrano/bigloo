@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    /priv/serrano2/bigloo/wasm/runtime/Makefile                      */
+#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Sep 25 12:53:31 2024 (serrano)                */
+#*    Last change :  Fri Sep 27 07:32:07 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -114,6 +114,14 @@ CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   cobject ci18n cresolv csaw cselect coverflow
 
 C_CLIB		= $(CLIB:%=Clib/%.c)
+
+#*---------------------------------------------------------------------*/
+#*    WAT objects                                                      */
+#*---------------------------------------------------------------------*/
+WLIB		= javascript runtime wwriter wports wstrings wbignum
+
+W_WLIB		= $(WLIB:%=Wlib/%.wat)
+
 
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
@@ -691,7 +699,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
   objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
-  $(WASMTYPES) Wlib/javascript.wat Wlib/bignum.wat Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
+  $(WASMTYPES) $(W_WLIB) $(WASMS:%.wasm=%.wat)
 	$(BIGLOO) -wasm -y -w $(WASMTYPES) \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
@@ -699,7 +707,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
-  $(WASMTYPES) Wlib/javascript.wat Wlib/bignum.wat Wlib/runtime.wat $(WASMS:%.wasm=%.wat)
+  $(WASMTYPES) $(W_WLIB) $(WASMS:%.wasm=%.wat)
 	$(BIGLOO) -wasm -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
@@ -1212,6 +1220,11 @@ Wlib/runtime.wat: Wlib/runtime.wat.in
            | sed -e "s/@BINTS_PREALLOC@/$$preallocs/" \
            | sed -e "s/@DOLLAR@/$$/g" \
            > $@
+
+Wlib/types.wat: Wlib/types.wat.in
+	$(BIGLOO) -i ../tools/gen_wasm_types.scm $< > $@ || (rm -f $@; exit 1)
+
+Wlib/types.wat: Wlib/wports.wat Wlib/wstrings.wat
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

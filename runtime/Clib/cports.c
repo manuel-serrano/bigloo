@@ -1,11 +1,11 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cports.c         */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cports.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue May 14 12:11:50 2024 (serrano)                */
+/*    Last change :  Fri Sep 27 10:33:51 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
-/*    Input ports handling                                             */
+/*    Input/Output ports native implementation.                        */
 /*=====================================================================*/
 #include <stdio.h>
 #include <errno.h>

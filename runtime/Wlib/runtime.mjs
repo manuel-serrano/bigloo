@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.mjs              */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.mjs        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Sep 26 08:11:41 2024 (serrano)                */
+/*    Last change :  Fri Sep 27 11:28:14 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -13,6 +13,7 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync } from 'node:fs';
+import { isatty } from "tty";
 //import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
@@ -133,10 +134,23 @@ const instance = await WebAssembly.instantiate(wasm, {
       },
 
       close_file: function (fd) {
+	 // TBR
          if (fd < 0)
             throw WebAssembly.RuntimeError("invalid file descriptor");
 
          closeSync(fd);
+      },
+
+      close_fd: function (fd) {
+         if (fd < 0) {
+            throw WebAssembly.RuntimeError("invalid file descriptor: " + fd);
+	 } else {
+            closeSync(fd);
+	 }
+      },
+
+      isatty: function (fd) {
+	 return isatty(fd);
       },
 
       read_file: function (fd, offset, length) {

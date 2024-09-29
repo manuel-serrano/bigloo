@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/relooper.scm         */
+;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/relooper.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Mon Sep 23 07:33:45 2024 (serrano)                */
+;*    Last change :  Fri Sep 27 07:25:56 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -316,10 +316,15 @@
 		(shape block)))))
    
    (define (find-else-succ-by-block block)
-      (let ((succ (find (lambda (succ)
-			   (not (eq? (dom_tree_node-block succ) block)))
-		     (dom_tree_node-succs node))))
+      (let* ((succs (dom_tree_node-succs node))
+	     (succ (find (lambda (succ)
+			    (not (eq? (dom_tree_node-block succ) block)))
+		      succs)))
 	 (or succ
+	     (when (and (pair? succs)
+			(pair? (cdr succs))
+			(eq? (car succs) (cadr succs)))
+		(car succs))
 	     (error "find-else-succ-by-block"
 		"Cannot find else successor"
 		(shape block)))))

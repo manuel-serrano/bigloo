@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/bignum.wat               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wbignum.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Thu Sep 26 08:15:14 2024 (serrano)                */
+;*    Last change :  Fri Sep 27 07:34:08 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    JavaScript bignum implementation                                 */
+;*    WASM/JavaScript bignum implementation                            */
 ;*=====================================================================*/
 
 (module $__runtime_bignum

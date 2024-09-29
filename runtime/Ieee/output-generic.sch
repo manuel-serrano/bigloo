@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Tue Sep 17 14:59:27 2024 (serrano)                */
+;*    Last change :  Sat Sep 28 07:34:57 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -16,14 +16,22 @@
    (export (bgl_write_char::obj ::bchar ::output-port)
            (bgl_display_fixnum::obj ::bint ::output-port)
            (bgl_display_elong::obj ::elong ::output-port)
+           (bgl_write_elong::obj ::elong ::output-port)
            (bgl_display_llong::obj ::llong ::output-port)
+           (bgl_write_llong::obj ::elong ::output-port)
+	   (bgl_display_bignum::obj ::bignum ::output-port)
+	   (bgl_write_bignum::obj ::bignum ::output-port)
 	   (inline $$display-fixnum::obj ::bint ::output-port)
 	   (inline $$write-procedure ::procedure ::output-port)
 	   ($$write-cnst ::obj ::output-port))
    (extern (export bgl_write_char "bgl_write_char")
            (export bgl_display_fixnum "bgl_display_fixnum")
            (export bgl_display_elong "bgl_display_elong")
-           (export bgl_display_llong "bgl_display_llong")))
+           (export bgl_write_elong "bgl_write_elong")
+           (export bgl_display_llong "bgl_display_llong")
+	   (export bgl_write_llong "bgl_write_llong")
+           (export bgl_display_bignum "bgl_display_bignum")
+	   (export bgl_write_bignum "bgl_write_bignum")))
 
 ;*---------------------------------------------------------------------*/
 ;*    alpha ...                                                        */
@@ -62,10 +70,37 @@
    (display-fixnum ($long->bint ($elong->long o)) op))
 
 ;*---------------------------------------------------------------------*/
+;*    bgl_write_elong ...                                              */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_elong o op)
+   (display "#e" op)
+   (display-fixnum ($long->bint ($elong->long o)) op))
+
+;*---------------------------------------------------------------------*/
 ;*    bgl_display_llong ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (bgl_display_llong o op)
    (display-fixnum ($long->bint ($llong->long o)) op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_llong ...                                              */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_llong o op)
+   (display "#l" op)
+   (display-fixnum ($long->bint ($llong->long o)) op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_display_bignum ...                                           */
+;*---------------------------------------------------------------------*/
+(define (bgl_display_bignum o op)
+   (display-string (bignum->string o) op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_bignum ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_bignum o op)
+   (display "#z" op)
+   (display-string (bignum->string o) op))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$display-fixnum ...                                             */
