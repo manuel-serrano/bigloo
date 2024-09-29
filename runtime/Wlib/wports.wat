@@ -748,9 +748,12 @@
 		(local.get $use) (local.get $err))
 	     
 	     ;; write the string that overflowed
-	     (call $flush_string (local.get $op)
-		(ref.cast (ref $bstring) (local.get $str)) (local.get $start)
-		(local.get $slen) (local.get $err))
+	     (if (i32.eqz (ref.eq (local.get $str) (ref.null none)))
+		 (then
+		    (call $flush_string (local.get $op)
+		       (ref.cast (ref $bstring) (local.get $str))
+		       (local.get $start)
+		       (local.get $slen) (local.get $err))))
 	     
 	     ;; update the port
 	     (if (ref.eq (local.get $op) (global.get $_stdout))
@@ -1268,7 +1271,7 @@
 	 (struct.new $file-input-port
 	    ;; name
 	    (array.new_data $bstring $stdin-name
-	       (i32.const 0) (i32.const 6))
+	       (i32.const 0) (i32.const 5))
 	    ;; chook
 	    (global.get $BUNSPEC)
 	    ;; isclosed
