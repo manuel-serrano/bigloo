@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Mon Sep 30 08:13:23 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 14:20:07 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -1269,7 +1269,7 @@
 		 ;; chook
 		 (global.get $BUNSPEC)
 		 ;; isclosed
-		 (i32.const 1)
+		 (i32.const 0)
 		 ;; sysclose
 		 (ref.func $_CLOSE)
 		 ;; sysseek

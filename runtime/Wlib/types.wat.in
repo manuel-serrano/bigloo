@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Mon Sep 30 08:53:38 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 14:22:05 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -57,12 +57,10 @@
    
    (tag $fail)
    
-   ;; Boxed string
-
    ;; -----------------------------------------------------------------
-   ;; Strings 
+   ;; String 
    ;; -----------------------------------------------------------------
-   (@include "./wstrings.wat" type)
+   (@include "./wstring.wat" type)
    
    (type $regexp (struct))
 
