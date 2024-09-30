@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Sep 25 12:08:41 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 08:02:46 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -98,8 +98,7 @@
 	    ;; TODO: maybe move string-set to its own function in the runtime
 	    ($string-set! "(block (result (ref eq)) (array.set $bstring ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))")
 	    ($string-bound-check? "(i64.lt_u ~0 ~1)")
-	    ($blit-string "(block (result (ref eq)) (array.copy $bstring $bstring ~2 (i32.wrap_i64 ~3) ~0 (i32.wrap_i64 ~1) (i32.wrap_i64 ~4)) (global.get $BUNSPEC))")
-	    ($string-shrink! "~0"))
+	    ($blit-string "(block (result (ref eq)) (array.copy $bstring $bstring ~2 (i32.wrap_i64 ~3) ~0 (i32.wrap_i64 ~1) (i32.wrap_i64 ~4)) (global.get $BUNSPEC))"))
 
    (java    (class foreign
 	       (method static $string?::bool (::obj)

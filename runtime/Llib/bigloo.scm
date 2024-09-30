@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Sep 25 09:25:07 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 10:28:13 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -168,10 +168,6 @@
 	    ($cell? "(ref.test (ref $cell) ~0)")
       
 	    (c-cnst? "(ref.test (ref i31) ~0)")
-      
-	    ;; These two functions are inlined by the WASM backend directly.
-	    (cnst-table-set! "(throw $unimplemented)")
-	    (cnst-table-ref "(throw $unimplemented)")
       
 	    ;; Opaque types not supported in WASM backend
 	    (c-opaque? "(ref.test (ref $opaque) ~0)")

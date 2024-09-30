@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Sep 25 11:23:29 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 09:32:29 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -75,6 +75,7 @@
       ($fixnum->bignum "(call $bgl_long_to_bignum ~0)")
       ($elong->bignum "(call $bgl_long_to_bignum ~0)")
       ($bignum->string "(call $bgl_bignum_to_string ~0)"))
+   
    (java
       (class foreign
 	 (method static $bignum?::bool (::obj)

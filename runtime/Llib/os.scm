@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/os.scm             */
+;*    /priv/serrano2/bigloo/wasm/runtime/Llib/os.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Sep 17 14:28:03 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 10:44:22 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -69,8 +69,8 @@
 	    (c-chmod::bool (::string ::bool ::bool ::bool) "bgl_chmod")
 	    (macro c-chmod-int::bool (::string ::int) "chmod")
 	    
-        (macro runtime-default-executable-name::string "BGL_DEFAULT_A_OUT")
-        (macro runtime-default-script-name::string "BGL_DEFAULT_A_BAT")
+	    (macro runtime-default-executable-name::string "BGL_DEFAULT_A_OUT")
+	    (macro runtime-default-script-name::string "BGL_DEFAULT_A_BAT")
 	    (macro runtime-os-class::string "OS_CLASS")
 	    (macro runtime-os-name::string "OS_NAME")
 	    (macro runtime-os-arch::string "OS_ARCH")
@@ -155,9 +155,9 @@
 	    ($bgl-dlsym-get::obj (::custom) "bgl_dlsym_get")
 	    ($bgl-dlsym-set::obj (::custom ::obj) "bgl_dlsym_set"))
 
-   (wasm    ($getenv? "(i32.const 0)")
-	    ($getenv "(array.new_fixed $bstring 0)")
-	    (c-getcwd "(throw $unimplemented)"))
+   (wasm    ($getenv? "(call $bgl_getenvp ~0)")
+	    ($getenv "(call $bgl_getenv ~0)")
+	    (c-getcwd "(call $bgl_getcwd)"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj

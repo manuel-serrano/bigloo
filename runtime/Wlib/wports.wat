@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wports.wat         */
+;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wports.wat               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Fri Sep 27 15:15:25 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 08:13:23 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -16,6 +16,7 @@
    ;; -----------------------------------------------------------------
 
    (data $string-output-port-name "string")
+   (data $string-input-port-name "string")
    (data $stdout-name "stdout")
    (data $stderr-name "stderr")
    (data $stdin-name "stdin")
@@ -250,38 +251,6 @@
 	 ;; err
 	 (i32.const 0)))
 
-   ;; rgc
-   (type $rgc
-      (struct
-	 (field $eof (mut i32))
-	 (field $filepos (mut i32))
-	 (field $forward (mut i32))
-	 (field $bufpos (mut i32))
-	 (field $matchstart (mut i32))
-	 (field $matchstop (mut i32))
-	 (field $lastchar (mut i32))
-	 (field $buf (mut (ref $bstring)))))
-
-   (global $rgc-default-value
-      (export "BGL_RGC_DEFAULT_VALUE") (ref $rgc)
-      (struct.new $rgc
-	 ;; eof
-	 (i32.const 0)
-	 ;; filepos
-	 (i32.const 0)
-	 ;; forward
-	 (i32.const 0)
-	 ;; bufpos
-	 (i32.const 0)
-	 ;; matchstart
-	 (i32.const 0)
-	 ;; matchstop
-	 (i32.const 0)
-	 ;; lastchar
-	 (i32.const 0)
-	 ;; buffer
-	 (global.get $bstring-default-value)))
-
    ;; input-port
    (type $input-port
       (sub $port
@@ -291,6 +260,7 @@
 	    (field $isclosed (mut i32))
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
 	    (field $rgc (ref $rgc)))))
 
    (global $input-port-default-value
@@ -306,6 +276,8 @@
 	 (ref.null $sysclose_t)
 	 ;; sysseek
 	 (ref.null $sysseek_t)
+	 ;; userseek
+	 (global.get $BUNSPEC)
 	 ;; rgc
 	 (global.get $rgc-default-value)))
 
@@ -318,18 +290,20 @@
 	    (field $isclosed (mut i32))
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
 	    (field $rgc (ref $rgc))
 	    (field $fd i32))))
 
    ;; file-input-port
    (type $file-input-port
-      (sub final $fd-input-port
+      (sub $fd-input-port
 	 (struct
 	    (field $name (mut (ref $bstring)))
 	    (field $chook (mut (ref eq)))
 	    (field $isclosed (mut i32))
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
 	    (field $rgc (ref $rgc))
 	    (field $fd i32))))
 
@@ -346,14 +320,67 @@
 	 (ref.null $sysclose_t)
 	 ;; sysseek
 	 (ref.null $sysseek_t)
+	 ;; userseek
+	 (global.get $BUNSPEC)
 	 ;; rgc
 	 (global.get $rgc-default-value)
 	 ;; fd
 	 (i32.const -1)))
 
+   ;; console-input-port
+   (type $console-input-port
+      (sub final $file-input-port
+	 (struct
+	    (field $name (mut (ref $bstring)))
+	    (field $chook (mut (ref eq)))
+	    (field $isclosed (mut i32))
+	    (field $sysclose (mut (ref null $sysclose_t)))
+	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
+	    (field $rgc (ref $rgc))
+	    (field $fd i32))))
+
+   ;; string-input-port
+   (type $string-input-port
+      (sub final $input-port
+	 (struct
+	    (field $name (mut (ref $bstring)))
+	    (field $chook (mut (ref eq)))
+	    (field $isclosed (mut i32))
+	    (field $sysclose (mut (ref null $sysclose_t)))
+	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
+	    (field $rgc (ref $rgc))
+	    (field $offset (mut i64)))))
+
+   (global $string-input-port-default-value
+      (export "BGL_STRING_INPUT_PORT_DEFAULT_VALUE") (ref $string-input-port)
+      (struct.new $string-input-port
+	 ;; name
+	 (global.get $bstring-default-value)
+	 ;; chook
+	 (global.get $BUNSPEC)
+	 ;; isclosed
+	 (i32.const 1)
+	 ;; sysclose
+	 (ref.null $sysclose_t)
+	 ;; sysseek
+	 (ref.null $sysseek_t)
+	 ;; userseek
+	 (global.get $BUNSPEC)
+	 ;; rgc
+	 (global.get $rgc-default-value)
+	 ;; offset
+	 (i64.const 0)))
+
    ;; -----------------------------------------------------------------
    ;; Common macros
    ;; -----------------------------------------------------------------
+   (func $EOF_OBJECTP (export "EOF_OBJECTP")
+      (param $v (ref eq))
+      (result i32)
+      (ref.eq (local.get $v) (global.get $BEOF)))
+
    (func $BGL_PORT_CLOSED_P
       (param $op (ref $port))
       (result i32)
@@ -373,6 +400,46 @@
       (result (ref eq))
 
       (return (struct.get $output-port $flushbuf (local.get $op))))
+
+   (func $BGL_INPUT_PORT_BUFFER (export "BGL_INPUT_PORT_BUFFER")
+      (param $ip (ref $input-port))
+      (result (ref $bstring))
+
+      (return
+	 (struct.get $rgc $buf
+	    (struct.get $input-port $rgc (local.get $ip)))))
+      
+   (func $BGL_INPUT_PORT_BUFSIZ (export "BGL_INPUT_PORT_BUFSIZ")
+      (param $ip (ref $input-port))
+      (result i64)
+
+      (return_call $STRING_LENGTH
+	 (call $BGL_INPUT_PORT_BUFFER (local.get $ip))))
+   
+   (func $BGL_INPUT_PORT_USEEK (export "BGL_INPUT_PORT_USEEK")
+      (param $ip (ref $input-port))
+      (result (ref eq))
+
+      (return (struct.get $input-port $userseek (local.get $ip))))
+
+   (func $BGL_INPUT_PORT_USEEK_SET (export "BGL_INPUT_PORT_USEEK_SET")
+      (param $ip (ref $input-port))
+      (param $seek (ref eq))
+
+      (struct.set $input-port $userseek (local.get $ip) (local.get $seek)))
+
+   (func $INPUT_PORT_FILEPOS (export "INPUT_PORT_FILEPOS")
+      (param $ip (ref $input-port))
+      (result i64)
+      (return (i64.extend_i32_u
+		 (struct.get $rgc $filepos
+		    (struct.get $input-port $rgc (local.get $ip))))))
+   
+   (func $INPUT_PORT_TOKENPOS (export "INPUT_PORT_TOKENPOS")
+      (param $ip (ref $input-port))
+      (result i64)
+      (return (i64.sub (call $INPUT_PORT_FILEPOS (local.get $ip))
+		 (call $RGC_BUFFER_MATCH_LENGTH (local.get $ip)))))
 
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -439,6 +506,83 @@
 	 (local.get $count))
 
       (return (local.get $count)))
+
+   ;; bgl_input_string_seek
+   (func $bgl_input_string_seek
+      (param $p (ref eq))
+      (param $posi32 i32)
+      (param $whence i32)
+
+      (local $ip (ref $string-input-port))
+      (local $rgc (ref $rgc))
+      (local $offset i64)
+      (local $pos i64)
+      (local.set $ip (ref.cast (ref $string-input-port) (local.get $p)))
+      (local.set $rgc (struct.get $string-input-port $rgc (local.get $ip)))
+      (local.set $offset (struct.get $string-input-port $offset (local.get $ip)))
+      (local.set $pos (i64.extend_i32_u (local.get $posi32)))
+      
+      (if (i64.eq (local.get $pos)
+	     (call $BGL_INPUT_PORT_BUFSIZ (local.get $ip)))
+	  (then
+	     (struct.set $rgc $eof (local.get $rgc) (i32.const 1))
+	     (return))
+	  (else
+	   (if (i64.ge_s (local.get $pos) (i64.const 0))
+	       (then
+		  (if (i64.lt_s (local.get $pos)
+			 (call $BGL_INPUT_PORT_BUFSIZ (local.get $ip)))
+		      (then
+			 (struct.set $rgc $filepos (local.get $rgc)
+			    (i32.wrap_i64
+			       (i64.add (local.get $pos) (local.get $offset))))
+			 (struct.set $rgc $matchstart (local.get $rgc)
+			    (i32.wrap_i64
+			       (i64.add (local.get $pos) (local.get $offset))))
+			 (struct.set $rgc $matchstop (local.get $rgc)
+			    (i32.wrap_i64
+			       (i64.add (local.get $pos) (local.get $offset))))
+			 (struct.set $rgc $forward (local.get $rgc)
+			    (i32.wrap_i64
+			       (i64.add (local.get $pos) (local.get $offset))))
+			 (return)))))))
+      
+      (throw $fail))
+
+
+   ;; reset_console
+   (func $reset_console (export "reset_console")
+      (param $ip (ref $input-port))
+      (result (ref eq))
+
+      (local $rgc (ref $rgc))
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+
+      (if (ref.test (ref $console-input-port) (local.get $ip))
+	  (then
+	     (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
+	     (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
+	     (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
+	     (struct.set $rgc $lastchar (local.get $rgc) (i32.const 0x0A))))
+
+      (return (global.get $BUNSPEC)))
+   
+   ;; reset_eof
+   (func $reset_eof (export "reset_eof")
+      (param $ip (ref $input-port))
+      (result i32)
+
+      (local $rgc (ref $rgc))
+
+      (if (result i32) (ref.test (ref $console-input-port) (local.get $ip))
+	  (then
+	     (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+	     (struct.set $rgc $eof (local.get $rgc) (i32.const 0))
+	     (drop (call $reset_console (local.get $ip)))
+	     (i32.const 1))
+	  (else
+	   (i32.const 0))))
+      
 
 ;*    ;; sysclose_string_output_port                                   */
 ;*    (func $syclose_string_output_port                                */
@@ -738,8 +882,8 @@
 	     (call $invoke_flush_hook
 		(struct.get $output-port $fhook (local.get $op))
 		(local.get $op)
-		(i64.add (i64.extend_i32_s (local.get $use))
-		   (i64.extend_i32_s (local.get $slen)))
+		(i64.add (i64.extend_i32_u (local.get $use))
+		   (i64.extend_i32_u (local.get $slen)))
 		(local.get $err))
 	     
 	     ;; write the buffer
@@ -776,8 +920,8 @@
 	   (call $invoke_flush_hook
 	      (struct.get $output-port $fhook (local.get $op))
 	      (local.get $op)
-	      (i64.add (i64.extend_i32_s (local.get $use))
-		 (i64.extend_i32_s (local.get $slen)))
+	      (i64.add (i64.extend_i32_u (local.get $use))
+		 (i64.extend_i32_u (local.get $slen)))
 	      (local.get $err))
 	   
 	   ;; this is an extensible buffer, that we increase iff it is full
@@ -1010,10 +1154,90 @@
 	 (ref.null $sysclose_t)
 	 ;; sysseek
 	 (ref.null $sysseek_t)
+	 ;; useseek
+	 (global.get $BUNSPEC)
 	 ;; rgc
 	 (local.get $rgc)
 	 ;; File descriptor
 	 (local.get $fd)))
+
+   ;; bgl_open_input_substring_bang
+   (func $bgl_open_input_substring_bang (export "bgl_open_input_substring_bang")
+      (param $buffer (ref $bstring))
+      (param $offset i64)
+      (param $end i64)
+      (result (ref $string-input-port))
+
+      (local $rgc (ref $rgc))
+      (local.set $rgc
+	 (struct.new $rgc
+	    ;; eof
+	    (i32.const 1)
+	    ;; filepos
+	    (i32.const 0)
+	    ;; forward
+	    (i32.const 0)
+	    ;; bufpos
+	    (i32.wrap_i64 (local.get $end))
+	    ;; matchstart
+	    (i32.wrap_i64 (local.get $offset))
+	    ;; matchstop
+	    (i32.wrap_i64 (local.get $offset))
+	    ;; lastchar
+	    (i32.const 13)
+	    ;; buffer
+	    (local.get $buffer)))
+      
+      (return
+	 (struct.new $string-input-port
+	    ;; name
+	    (array.new_data $bstring $string-input-port-name
+	       (i32.const 0) (i32.const 6))
+	    ;; chook
+	    (global.get $BUNSPEC)
+	    ;; isclosed
+	    (i32.const 0)
+	    ;; sysclose
+	    (ref.null $sysclose_t)
+	    ;; sysseek
+	    (ref.func $bgl_input_string_seek)
+	    ;; userseek
+	    (global.get $BUNSPEC)
+	    ;; rgc
+	    (local.get $rgc)
+	    ;; offset
+	    (local.get $offset))))
+   
+   ;; bgl_open_input_substring
+   (func $bgl_open_input_substring (export "bgl_open_input_substring")
+      (param $str (ref $bstring))
+      (param $offset i64)
+      (param $end i64)
+      (result (ref $string-input-port))
+
+      (local $len i64)
+      (local $buf (ref $bstring))
+      (local.set $len (i64.sub (local.get $end) (local.get $offset)))
+      (local.set $buf (array.new_default $bstring (i32.wrap_i64 (local.get $len))))
+
+      (array.copy $bstring $bstring (local.get $buf)
+	 (i32.const 0)
+	 (local.get $str)
+	 (i32.wrap_i64 (local.get $offset))
+	 (i32.wrap_i64 (local.get $len)))
+      
+      (return_call $bgl_open_input_substring_bang
+	 (local.get $buf) (local.get $offset)
+	 (i64.extend_i32_u (array.len (local.get $buf)))))
+     
+   ;; bgl_open_input_string
+   (func $bgl_open_input_string (export "bgl_open_input_string")
+      (param $str (ref $bstring))
+      (param $offset i64)
+      (result (ref $string-input-port))
+      (return_call $bgl_open_input_substring
+	 (local.get $str) (local.get $offset)
+	 (i64.extend_i32_u (array.len (local.get $str)))))
      
    ;; bgl_open_output_file
    (func $bgl_open_output_file (export "bgl_open_output_file")
@@ -1268,7 +1492,7 @@
 	    ;; File descriptor
 	    (i32.const 2)))
       (global.set $_stdin
-	 (struct.new $file-input-port
+	 (struct.new $console-input-port
 	    ;; name
 	    (array.new_data $bstring $stdin-name
 	       (i32.const 0) (i32.const 5))
@@ -1280,23 +1504,25 @@
 	    (ref.null $sysclose_t)
 	    ;; sysseek
 	    (ref.null $sysseek_t)
+	    ;; userseek
+	    (global.get $BUNSPEC)
 	    ;; rgc
 	    (struct.new $rgc
-	       ;; EOF
+	       ;; eof
 	       (i32.const 0)
-	       ;; Filepos
+	       ;; filepos
 	       (i32.const 0)
-	       ;; Forward
+	       ;; forward
 	       (i32.const 0)
-	       ;; Bufpos
+	       ;; bufpos
 	       (i32.const 0)
-	       ;; Matchstart
+	       ;; matchstart
 	       (i32.const 0)
-	       ;; Matchstop
+	       ;; matchstop
 	       (i32.const 0)
-	       ;; Lastchar
+	       ;; lastchar
 	       (i32.const 0x0A #;(ASCII NEWLINE '\n'))
-	       ;; Buffer
+	       ;; buffer
 	       (array.new_default $bstring (i32.const 128)))
 	    ;; fd
 	    (i32.const 0)))

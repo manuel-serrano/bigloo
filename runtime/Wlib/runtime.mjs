@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.mjs        */
+/*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.mjs              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Sep 27 11:28:14 2024 (serrano)                */
+/*    Last change :  Mon Sep 30 07:39:36 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -12,10 +12,11 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync } from 'node:fs';
+import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync } from "node:fs";
 import { isatty } from "tty";
 //import { readFile } from 'node:fs/promises';
-import { extname } from 'node:path';
+import { extname } from "node:path";
+import { format } from "node:util";
 
 /*---------------------------------------------------------------------*/
 /*    Minimalist command line parsing                                  */
@@ -83,10 +84,24 @@ const instance = await WebAssembly.instantiate(wasm, {
       },
 
       internalError: function (errno, val) {
-         console.error("*** INTERNAL-ERROR:",
+         console.error("*** INTERNAL-ERROR(" + errno +"):",
 		       format(internalErrors[errno], val));
       },
 
+      getcwd: process.cwd,
+
+      getenv: (addr, len) => {
+         const buffer = new Uint8Array(instance.exports.memory.buffer, addr, len);
+         const v = loadSchemeString(buffer);
+
+	 if (v in process.env) {
+	    storeJSStringToScheme(process.env[v], addr);
+	    return process.env[v].length;
+	 } else {
+	    return -1;
+	 } 
+      },
+      
       argc: argv.length - 2 /* ignore the path of NodeJS and of runtime.mjs. */,
 
       get_arg: function (idx, addr) {
@@ -279,7 +294,7 @@ const instance = await WebAssembly.instantiate(wasm, {
       zerobx: BigInt(0),
       long_to_bignum: (value) => BigInt(value),
       bignum_to_string: (value, addr) => {
-	 storeJSStringToScheme(value.toString(), addr)
+	 return storeJSStringToScheme(value.toString(), addr);
       },
       string_to_bignum: (offset, len, radix) => {
          const buf = new Uint8Array(instance.exports.memory.buffer, offset, len);

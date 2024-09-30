@@ -1,10 +1,10 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/types.wat.in       */
+;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/types.wat.in             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Fri Sep 27 16:04:40 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 08:53:38 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -229,6 +229,7 @@
    ;; -----------------------------------------------------------------
    ;; Ports 
    ;; -----------------------------------------------------------------
+   (@include "./wrgc.wat" type)
    (@include "./wports.wat" type)
 
    ;; -----------------------------------------------------------------

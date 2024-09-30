@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wbignum.wat        */
+;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wbignum.wat              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */

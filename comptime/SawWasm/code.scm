@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
+;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Sep 26 07:57:16 2024 (serrano)                */
+;*    Last change :  Mon Sep 30 11:22:39 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1305,7 +1305,7 @@
 ;*    inline-cnst-table-set! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (inline-cnst-table-set! args) 
-   `(block (result (ref eq)) 
+   `(block (result (ref eq))
        (array.set $cnst-table 
 	  (global.get ,(cnst-table-sym))
 	  ,@(gen-args args)) 

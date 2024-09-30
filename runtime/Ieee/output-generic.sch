@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Ieee/output-generic.sch     */
+;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/output-generic.sch       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
