@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/alloc.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cnst/alloc.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Mon Sep 23 10:06:51 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 14:16:05 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -41,6 +41,8 @@
 	    (get-cnst-offset)
 	    (get-cnst-set)
 	    (get-cnst-sexp)
+	    (get-cnst-sexp0)
+	    (get-cnst-sexp1)
 	    (get-cnst-table)
 	    (cnst-table-id)
 	    (cnst-alloc-string::node ::bstring <loc>)
@@ -98,13 +100,31 @@
 ;*    get-cnst-sexp ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (get-cnst-sexp)
-   (reverse! *global-sexp*))
+   (append (reverse *global-sexp0*) (reverse *global-sexp1*)))
 
 ;*---------------------------------------------------------------------*/
-;*    add-cnst-sexp! ...                                               */
+;*    get-cnst-sexp0 ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (add-cnst-sexp! sexp)
-   (set! *global-sexp* (cons sexp *global-sexp*)))
+(define (get-cnst-sexp0)
+   (reverse *global-sexp0*))
+
+;*---------------------------------------------------------------------*/
+;*    get-cnst-sexp1 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (get-cnst-sexp1)
+   (reverse *global-sexp1*))
+
+;*---------------------------------------------------------------------*/
+;*    add-cnst-sexp0! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (add-cnst-sexp0! sexp)
+   (set! *global-sexp0* (cons sexp *global-sexp0*)))
+
+;*---------------------------------------------------------------------*/
+;*    add-cnst-sexp1! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (add-cnst-sexp1! sexp)
+   (set! *global-sexp1* (cons sexp *global-sexp1*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst-info-create ...                                             */
@@ -134,7 +154,8 @@
 (define *vector-env*     '())
 (define *struct-env*     '())
 (define *global-set*     '())
-(define *global-sexp*    '())
+(define *global-sexp0*   '())
+(define *global-sexp1*   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *old-debug*                                                      */
@@ -248,7 +269,7 @@
 	    ;; that will enable the backend to generate ad-hoc code
 	    ;; for building the string at init-time.
 	    (with-access::ref ref (variable)
-	       (add-cnst-sexp!
+	       (add-cnst-sexp0!
 		  `(set! (@ ,(global-id variable) ,(global-module variable))
 		      ,(coerce!
 			  (instantiate::pragma
@@ -282,19 +303,20 @@
 		    'now))
 	    (vs (cnst-alloc-string bstring loc)))
 	 (hashtable-put! *ucs2string-env* string (cnst-info string var))
-	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				,(coerce!
-				  (instantiate::app
-				     (loc loc)
-				     (type *ucs2string*)
-				     (fun (instantiate::ref
-					     (loc loc)
-					     (type *ucs2string*)
-					     (variable *string->ucs2string*)))
-				     (args (list vs)))
-				  var
-				  (strict-node-type *ucs2string* *obj*)
-				  #f)))
+	 (add-cnst-sexp1!
+	    `(set! (@ ,(global-id var) ,(global-module var))
+		,(coerce!
+		    (instantiate::app
+		       (loc loc)
+		       (type *ucs2string*)
+		       (fun (instantiate::ref
+			       (loc loc)
+			       (type *ucs2string*)
+			       (variable *string->ucs2string*)))
+		       (args (list vs)))
+		    var
+		    (strict-node-type *ucs2string* *obj*)
+		    #f)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
@@ -333,19 +355,20 @@
 		    'now))
 	    (vs (cnst-alloc-string (symbol->string symbol) loc)))
 	 (hashtable-put! *symbol-env* symbol (cnst-info symbol var))
-	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				,(coerce!
-				  (instantiate::app
-				     (loc loc)
-				     (type *symbol*)
-				     (fun (instantiate::ref
-					     (loc loc)
-					     (type *symbol*)
-					     (variable *bstring->symbol*)))
-				     (args (list vs)))
-				  var
-				  (strict-node-type *symbol* *obj*)
-				  #f)))
+	 (add-cnst-sexp1!
+	    `(set! (@ ,(global-id var) ,(global-module var))
+		,(coerce!
+		    (instantiate::app
+		       (loc loc)
+		       (type *symbol*)
+		       (fun (instantiate::ref
+			       (loc loc)
+			       (type *symbol*)
+			       (variable *bstring->symbol*)))
+		       (args (list vs)))
+		    var
+		    (strict-node-type *symbol* *obj*)
+		    #f)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
@@ -396,19 +419,20 @@
 		    'now))
 	    (vs (cnst-alloc-string (keyword->string keyword) loc)))
 	 (hashtable-put! *keyword-env* keyword (cnst-info keyword var))
-	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				,(coerce!
-				  (instantiate::app
-				     (loc loc)
-				     (type *keyword*)
-				     (fun (instantiate::ref
-					     (loc loc)
-					     (type *keyword*)
-					     (variable *bstring->keyword*)))
-				     (args (list vs)))
-				  var
-				  (strict-node-type *keyword* *obj*)
-				  #f)))
+	 (add-cnst-sexp1!
+	    `(set! (@ ,(global-id var) ,(global-module var))
+		,(coerce!
+		    (instantiate::app
+		       (loc loc)
+		       (type *keyword*)
+		       (fun (instantiate::ref
+			       (loc loc)
+			       (type *keyword*)
+			       (variable *bstring->keyword*)))
+		       (args (list vs)))
+		    var
+		    (strict-node-type *keyword* *obj*)
+		    #f)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
@@ -847,9 +871,10 @@
 		    'now)))
 	 (if *shared-cnst?*
 	     (set! *list-env* (cons (cnst-info pair var) *list-env*)))
-	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-			     ,(coerce! (cnst-list pair) var
-				 (strict-node-type *pair* *obj*) #f)))
+	 (add-cnst-sexp1!
+	    `(set! (@ ,(global-id var) ,(global-module var))
+		,(coerce! (cnst-list pair) var
+		    (strict-node-type *pair* *obj*) #f)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
@@ -965,8 +990,9 @@
 		    'now)))
 	 (when *shared-cnst?*
 	    (set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
-	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				,(cnst-vector-node)))
+	 (add-cnst-sexp1!
+	    `(set! (@ ,(global-id var) ,(global-module var))
+		,(cnst-vector-node)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (strict-node-type *vector* (variable-type var)))
@@ -1066,8 +1092,9 @@
 		       'now)))
 	    (if *shared-cnst?*
 		(set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
-	    (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				   ,(cnst-vector-node)))
+	    (add-cnst-sexp1!
+	       `(set! (@ ,(global-id var) ,(global-module var))
+		   ,(cnst-vector-node)))
 	    (instantiate::ref
 	       (loc loc)
 	       (type vec-type)
@@ -1126,9 +1153,10 @@
 	    ;; we first need to compile the symbol holding the identifier
 	    ;; because this compilation modifies the *global-sexp*
 	    ;; variable.
-	    (add-cnst-sexp! `($tvector-descr-set!
-			      (@ ,(global-id var) ,(global-module var))
-			      (get-tvector-descriptor ,aid))))
+	    (add-cnst-sexp1!
+	       `($tvector-descr-set!
+		   (@ ,(global-id var) ,(global-module var))
+		   (get-tvector-descriptor ,aid))))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))
@@ -1194,8 +1222,9 @@
 		    'now)))
 	 (if *shared-cnst?*
 	     (set! *struct-env* (cons (cnst-info struct var) *struct-env*)))
-	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				,(cnst-struct-node)))
+	 (add-cnst-sexp1!
+	    `(set! (@ ,(global-id var) ,(global-module var))
+		,(cnst-struct-node)))
 	 (instantiate::ref
 	    (loc loc)
 	    (type (variable-type var))

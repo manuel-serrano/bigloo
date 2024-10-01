@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Tue Oct  1 13:32:12 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 14:15:06 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
@@ -105,7 +105,7 @@
 					     (let ((aux::int ($-fx i 1)))
 						(loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
-	 (append (get-cnst-sexp) (list sexp))))
+	 (append (get-cnst-sexp0) (list sexp) (get-cnst-sexp1))))
 
    (global-name-set! (get-cnst-table)
       (backend-cnst-table-name (the-backend) (get-cnst-offset)))
@@ -170,7 +170,7 @@
 					  (let ((aux::int ($-fx i 1)))
 					     (loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
-	 (append (get-cnst-sexp) (list sexp))))
+	 (append (get-cnst-sexp0) (list sexp) (get-cnst-sexp1))))
    
    (global-name-set! (get-cnst-table)
       (backend-cnst-table-name (the-backend) (get-cnst-offset)))
