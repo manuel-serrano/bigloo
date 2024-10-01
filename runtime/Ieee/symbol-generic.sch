@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/symbol-generic.sch       */
+;*    .../prgm/project/bigloo/wasm/runtime/Ieee/symbol-generic.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Thu Sep 19 09:52:17 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 10:10:14 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -37,7 +37,7 @@
       (let ((old (open-string-hashtable-get *symbol-table* string)))
 	 (if (symbol? old)
 	     old
-	     (let ((sym ($make-symbol string)))
+	     (let ((sym ($make-symbol (string-copy string))))
 		(open-string-hashtable-put! *symbol-table* string sym)
 		sym)))))
 

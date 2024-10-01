@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgc.scm           */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Rgc/rgc.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Sun Aug 25 09:12:22 2019 (serrano)                */
+;*    Last change :  Tue Oct  1 10:11:49 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -15,6 +15,10 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __rgc
+   
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       (include "Rgc/rgc-generic.sch")))
    
    (import  __error)
 
@@ -287,7 +291,11 @@
 ;*    rgc-buffer-escape-substring ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-escape-substring input-port start stop strict)
-   ($rgc-buffer-escape-substring input-port start stop strict))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-escape-substring input-port start stop strict))
+      (else
+       ($$rgc-buffer-escape-substring input-port start stop strict))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-length ...                                            */
@@ -317,49 +325,81 @@
 ;*    rgc-buffer-symbol ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-symbol::symbol input-port::input-port)
-   ($rgc-buffer-symbol input-port))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-symbol input-port))
+      (else
+       ($$rgc-buffer-symbol input-port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-subsymbol ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-subsymbol input-port start stop)
-   ($rgc-buffer-subsymbol input-port start stop))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-subsymbol input-port start stop))
+      (else
+       ($$rgc-buffer-subsymbol input-port start stop))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-downcase-symbol ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-downcase-symbol::symbol input-port::input-port)
-   ($rgc-buffer-downcase-subsymbol input-port 0 (rgc-buffer-length input-port)))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-downcase-subsymbol input-port 0 (rgc-buffer-length input-port)))
+      (else
+       ($$rgc-buffer-downcase-subsymbol input-port 0 (rgc-buffer-length input-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-downcase-subsymbol ...                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-downcase-subsymbol input-port::input-port start stop)
-   ($rgc-buffer-downcase-subsymbol input-port start stop))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-downcase-subsymbol input-port start stop))
+      (else
+       ($$rgc-buffer-downcase-subsymbol input-port start stop))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-upcase-symbol ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-upcase-symbol::symbol input-port::input-port)
-   ($rgc-buffer-upcase-subsymbol input-port 0 (rgc-buffer-length input-port)))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-upcase-subsymbol input-port 0 (rgc-buffer-length input-port)))
+      (else
+       ($$rgc-buffer-upcase-subsymbol input-port 0 (rgc-buffer-length input-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-upcase-subsymbol ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-upcase-subsymbol input-port::input-port start stop)
-   ($rgc-buffer-upcase-subsymbol input-port start stop))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-upcase-subsymbol input-port start stop))
+      (else
+       ($$rgc-buffer-upcase-subsymbol input-port start stop))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-keyword ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-keyword::keyword input-port::input-port)
-   ($rgc-buffer-keyword input-port))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-keyword input-port))
+      (else
+       ($$rgc-buffer-keyword input-port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-downcase-keyword ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-downcase-keyword::keyword input-port::input-port)
-   ($rgc-buffer-downcase-keyword input-port))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-downcase-keyword input-port))
+      (else
+       ($$rgc-buffer-downcase-keyword input-port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-upcase-keyword ...                                    */

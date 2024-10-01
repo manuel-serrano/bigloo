@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Oct  1 09:44:26 2024 (serrano)                */
+#*    Last change :  Tue Oct  1 10:56:58 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1211,6 +1211,8 @@ objs/wasm_s/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_u/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_s/Unsafe/bignumber.wat: Unsafe/bignumber-generic.sch
 objs/wasm_u/Unsafe/bignumber.wat: Unsafe/bignumber-generic.sch
+objs/wasm_s/Rgc/rgc.wat: Rgce/rgc-generic.sch
+objs/wasm_u/Rgc/rgc.wat: Rgc/rgc-generic.sch
 
 Wlib/runtime.wat: Wlib/runtime.wat.in
 	preallocs=`$(WASM_BINTS_PREALLOC)`; \

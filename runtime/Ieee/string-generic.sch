@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Fri Sep  6 14:32:36 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 11:06:56 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -336,49 +336,50 @@
    
    (let* ((len (-fx end start))
 	  (buf (make-string len)))
-      (let loop ((i 0))
+      (let loop ((i 0)
+		 (j 0))
 	 (if (<fx i len)
 	     (let ((c (string-ref-ur str (+fx start i))))
 		(cond
-		   ((not (char=? c "\\"))
-		    (string-set-ur! buf i c)
-		    (loop (+fx i 1) ))
+		   ((not (char=? c #\\))
+		    (string-set-ur! buf j c)
+		    (loop (+fx i 1) (+fx j 1)))
 		   ((<fx i (-fx len 1))
 		    (let ((nc (string-ref-ur str (+fx i (+fx start 1)))))
 		       (case nc
 			  ((#\000)
-			   (string-set-ur! buf i #\\)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #\\)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\n)
-			   (string-set-ur! buf i #\Newline)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #\Newline)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\t)
-			   (string-set-ur! buf i #\Tab)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #\Tab)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\b)
-			   (string-set-ur! buf i #a008)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #a008)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\r)
-			   (string-set-ur! buf i #\Return)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #\Return)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\f)
-			   (string-set-ur! buf i #a012)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #a012)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\v)
-			   (string-set-ur! buf i #a011)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #a011)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\\)
-			   (string-set-ur! buf i #\\)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #\\)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\')
-			   (string-set-ur! buf i #\')
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #\')
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\")
-			   (string-set-ur! buf i #\")
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #\")
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\a)
-			   (string-set-ur! buf i #a007)
-			   (loop (+fx i 2)))
+			   (string-set-ur! buf j #a007)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\x #\X)
 			   (if (<fx i (-fx len 3))
 			       (let* ((s1 (string-ref-ur str (+fx i (+fx start 2))))
@@ -387,13 +388,13 @@
 				      (n2 (XDIGIT_TO_BYTE s2)))
 				  (if (or (<fx n1 0) (<fx n2 0))
 				      (begin
-					 (string-set! buf i nc)
-					 (loop (+fx i 2)))
+					 (string-set! buf j nc)
+					 (loop (+fx i 2) (+fx j 1)))
 				      (begin
-					 (string-set! buf i
+					 (string-set! buf j
 					    (integer->char
 					       (+fx (*fx n1 16) n2)))
-					 (loop (+fx i 3)))))))
+					 (loop (+fx i 3) (+fx j 1)))))))
 			  ((#\u #\U)
 			   (error "bigloo_escape_C_string" "not supported" string))
 			  (else
@@ -407,21 +408,22 @@
 				      (n3 (DIGIT_TO_BYTE s3)))
 				  (if (or (<fx n1 0) (<fx n2 0) (<fx n3 0))
 				      (begin
-					 (string-set! buf i nc)
-					 (loop (+fx i 2)))
+					 (string-set! buf j nc)
+					 (loop (+fx i 2) (+fx j 1)))
 				      (begin
-					 (string-set! buf i
+					 (string-set! buf j
 					    (integer->char
 					       (+fx (*fx n1 64)
 						  (+fx (*fx n2 8) n3))))
-					 (loop (+fx i 3)))))
+					 (loop (+fx i 3) (+fx j 1)))))
 			       (begin
-				  (string-set! buf i 
-				     (loop (+fx i 2)))))))))
+				  (string-set! buf j c)
+				  (string-set! buf (+fx j 1) nc)
+				  (loop (+fx i 2) (+fx j 2))))))))
 		   (else
-		    (string-set-ur! buf i c)
-		    (loop (+fx i 1)))))
-	     (string-shrink! buf i)))))
+		    (string-set-ur! buf j c)
+		    (loop (+fx i 1) (+fx j 1)))))
+	     (string-shrink! buf j)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl_escape_scheme_string ...                                     */
@@ -429,20 +431,21 @@
 (define (bgl_escape_scheme_string str start end)
    (let* ((len (-fx end start))
 	  (buf (make-string len)))
-      (let loop ((i 0))
+      (let loop ((i 0)
+		 (j 0))
 	 (if (<fx i len)
 	     (let ((c (string-ref-ur str (+fx start i))))
 		(cond
-		   ((not (char=? c "\\"))
-		    (string-set-ur! buf i c)
-		    (loop (+fx i 1) ))
+		   ((not (char=? c #\\))
+		    (string-set-ur! buf j c)
+		    (loop (+fx i 1) (+fx j 1)))
 		   ((<fx i (-fx len 1))
 		    (let ((nc (string-ref-ur str (+fx i (+fx start 1)))))
 		       (if (char=? nc #\n)
 			   (string-set-ur! buf i #\Newline)
 			   (string-set-ur! buf i nc)))
-		    (loop (+fx i 2)))))
-	     (string-shrink! buf i)))
+		    (loop (+fx i 2) (+fx j 1)))))
+	     (string-shrink! buf j)))
       buf))
 
 ;*---------------------------------------------------------------------*/

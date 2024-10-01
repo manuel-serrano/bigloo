@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wstrings.wat             */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wstring.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Mon Sep 30 08:03:09 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 11:01:39 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM strings                                                     */
@@ -61,7 +61,11 @@
       (param $l i64)
       (result (ref $bstring))
 
-      (return_call $string_to_bstring_len (local.get $s)
-	 (i32.wrap_i64 (local.get $l))))
+      (if (i64.eq (call $STRING_LENGTH (local.get $s)) (local.get $l))
+	  (then
+	     (return (local.get $s)))
+	  (else
+	   (return_call $string_to_bstring_len (local.get $s)
+	      (i32.wrap_i64 (local.get $l))))))
    )
   

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Tue Oct  1 09:27:35 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 10:02:33 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -160,23 +160,6 @@
    ;; -----------------------------------------------------------------
    ;; Library functions
    ;; -----------------------------------------------------------------
-   
-   ;; rgc_buffer_substring
-   (func $rgc_buffer_substring (export "rgc_buffer_substring")
-      (param $port (ref $input-port))
-      (param $offset i64)
-      (param $end i64)
-      (result (ref $bstring))
-      (local $rgc (ref $rgc))
-      (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
-      (call $c_substring
-	 (struct.get $rgc $buf (local.get $rgc))
-	 (i64.add
-	    (i64.extend_i32_u (struct.get $rgc $matchstart (local.get $rgc)))
-	    (local.get $offset))
-	 (i64.add
-	    (i64.extend_i32_u (struct.get $rgc $matchstart (local.get $rgc)))
-	    (local.get $end))))
    
    ;; rgc_buffer_unget_char
    (func $rgc_buffer_unget_char (export "rgc_buffer_unget_char")
@@ -477,6 +460,27 @@
       (i32.lt_u (struct.get $rgc $forward (local.get $rgc))
 	 (struct.get $rgc $bufpos (local.get $rgc))))
 
+   ;; rgc_buffer_substring
+   (func $rgc_buffer_substring (export "rgc_buffer_substring")
+      (param $port (ref $input-port))
+      (param $offset i64)
+      (param $end i64)
+      (result (ref $bstring))
+      
+      (local $rgc (ref $rgc))
+      (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+      
+      (call $c_substring
+	 (struct.get $rgc $buf (local.get $rgc))
+	 (i64.add
+	    (i64.extend_i32_u (struct.get $rgc $matchstart (local.get $rgc)))
+	    (local.get $offset))
+	 (i64.add
+	    (i64.extend_i32_u (struct.get $rgc $matchstart (local.get $rgc)))
+	    (local.get $end))))
+
+   ;; rgc_buffer_symbol, see rgc-generic.sch
+   
    ;; rgc_buffer_flonum
    (func $rgc_buffer_flonum (export "rgc_buffer_flonum")
       (param $ip (ref $input-port))
