@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Oct  1 08:30:39 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 17:44:06 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -13,8 +13,10 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module saw_wasm_code
+   
    (include "Tools/trace.sch"
 	    "Tools/location.sch")
+   
    (import type_type
 	   ast_var
 	   ast_node
@@ -43,8 +45,9 @@
 	   saw_bbv-types
 	   saw_bbv-debug
 	   saw_wasm_relooper)
+   
    (export (wasm-gen b::wasm v::global)
-	   (wasm-type t::type #!optional (may-null #f))
+	   (wasm-type t::type #!key nullable)
 	   (wasm-default-value t::type)
 	   (wasm-vector-type t::type)
 	   (wasm-sym t::bstring)
@@ -60,15 +63,17 @@
 	   (cnst-table-sym)
 	   *allocated-strings*
 	   *extra-types*)
+   
    (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
-   (static (wide-class SawCIreg::rtl_reg index)))
+   
+   (static (wide-class SawLocalReg::rtl_reg
+	      index
+	      (nullable::bool (default #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compilation configuration ...                                    */
 ;*---------------------------------------------------------------------*/
-(define *wasm-tailcall* #t)
 (define *wasm-split-inits* #t)
-(define *wasm-peephole* #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-gen ...                                                     */
@@ -105,7 +110,7 @@
 	       
 	       (set! l (register-allocation b v params l))
 	       (set! l (bbv b v params l))
-	       (when *wasm-split-inits*
+	       (when (eq? *wasm-local-mode* 'eager)
 		  (set! l (split-blocks l)))
 	       
 	       (when *bbv-dump-cfg*
@@ -114,7 +119,9 @@
 	       
 	       (let* ((locals (get-locals params l))
 		      (body (gen-body v l))
-		      (inits (gen-local-inits locals v l body)))
+		      (inits (if (eq? *wasm-local-mode* 'eager)
+				 (gen-local-inits locals v l body)
+				 '())))
 		  `(comment ,(string-append (symbol->string (global-id v))
 				" in " (symbol->string (global-module v)))
 		      ,(with-loc loc
@@ -162,11 +169,12 @@
    
    (define (expr->ireg e)
       (cond
-	 ((isa? e SawCIreg)
+	 ((isa? e SawLocalReg)
 	  #unspecified)
 	 ((rtl_reg? e)
-	  (widen!::SawCIreg e
-	     (index n))
+	  (widen!::SawLocalReg e
+	     (index n)
+	     (nullable (eq? *wasm-local-mode* 'nullable)))
 	  (set! n (+fx n 1))
 	  (set! regs (cons e regs)))
 	 (else
@@ -189,23 +197,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    wasm-type ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (wasm-type t::type #!optional (may-null #f))
+(define (wasm-type t::type #!key nullable)
    (let ((id (type-id t))
 	 (name (type-name t)))
       (case id
-	 ((obj) '(ref eq))
-	 ((nil) '(ref eq))
-	 ((magic) '(ref eq))
-	 ((unspecified) '(ref eq))
-	 ((bbool) '(ref i31))
-	 ((bchar) '(ref i31))
-	 ((class-field) '(ref eq))
-	 ((pair-nil) '(ref eq))
-	 ((cobj) '(ref eq))
-	 ((void*) 'i32) ;; A raw pointer into the linear memory
-	 ((tvector) 'arrayref)
-	 ((cnst) '(ref i31))
-	 ((funptr) '(ref func))
+	 ((void*) 'i32)
+	 ((obj) (if nullable '(ref null eq) '(ref eq)))
+	 ((nil) (if nullable '(ref null eq) '(ref eq)))
+	 ((magic) (if nullable '(ref null eq) '(ref eq)))
+	 ((unspecified) (if nullable '(ref null eq) '(ref eq)))
+	 ((bbool) (if nullable '(ref null i31) '(ref i31)))
+	 ((bchar) (if nullable '(ref null i31) '(ref i31)))
+	 ((class-field) (if nullable '(ref null eq) '(ref eq)))
+	 ((pair-nil) (if nullable '(ref null eq) '(ref eq)))
+	 ((cobj) (if nullable '(ref null eq) '(ref eq)))
+	 ((tvector) (if nullable '(ref null array) '(ref array)))
+	 ((cnst) (if nullable '(ref null i31) '(ref i31)))
+	 ((funptr) (if nullable '(ref null func) '(ref func)))
 	 ((bool) 'i32)
 	 ((byte) 'i32)
 	 ((ubyte) 'i32)
@@ -230,23 +238,23 @@
 	 ((ullong) 'i64)
 	 ((float) 'f32)
 	 ((double) 'f64)
-	 ((vector) '(ref $vector))
-	 ((string bstring) '(ref $bstring))
+	 ((vector) (if nullable '(ref null $vector) '(ref $vector)))
+	 ((string bstring) (if nullable '(ref null $bstring) '(ref $bstring)))
 	 (else 
 	  (cond 
 	     ((foreign-type? t)
 	      (error "wasm-gen" "unimplemented foreign type in WASM" id))
 	     ;; Classes
 	     ((string-suffix? "_bglt" name)
-	      (if (and #f may-null)
+	      (if nullable
 		  `(ref null ,(wasm-sym name))
 		  `(ref ,(wasm-sym name))))
 	     ((tvec? t)
-	      (if (and #f may-null)
+	      (if nullable
 		  `(ref null ,(wasm-vector-type t))
 		  `(ref ,(wasm-vector-type t))))
 	     (else
-	      (if (and #f may-null)
+	      (if nullable
 		  `(ref null ,(wasm-sym (symbol->string id)))
 		  `(ref ,(wasm-sym (symbol->string id))))))))))
 
@@ -417,9 +425,10 @@
 ;*    gen-locals ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (gen-locals l)
-   (map (lambda (local)
-	   `(local ,(wasm-sym (reg-name local))
-	       ,(wasm-type (rtl_reg-type local))))
+   (map (lambda (local::SawLocalReg)
+	   (with-access::SawLocalReg local (nullable)
+	      `(local ,(wasm-sym (reg-name local))
+		  ,(wasm-type (rtl_reg-type local) :nullable nullable))))
       l))
 
 ;*---------------------------------------------------------------------*/
@@ -599,8 +608,6 @@
 	     debugname))
 	 (else
 	  (set! debugname (symbol->string name))
-;* 	     (string-append (if (SawCIreg-var reg) "V" "R")            */
-;* 		(integer->string (SawCIreg-index reg))))               */
 	  debugname))))
 
 ;*---------------------------------------------------------------------*/
@@ -711,9 +718,16 @@
 ;*    gen-reg ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (gen-reg reg)
-   (if (isa? reg SawCIreg)
-       `(local.get ,(gen-reg/dest reg))
-       (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg))))
+   (cond
+      ((not (isa? reg SawLocalReg))
+       (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg)))
+      ((SawLocalReg-nullable reg)
+       (let ((ty (wasm-type (rtl_reg-type reg) :nullable #t)))
+	  (if (pair? ty)
+	      `(ref.as_non_null (local.get ,(gen-reg/dest reg)))
+	      `(local.get ,(gen-reg/dest reg)))))
+      (else
+       `(local.get ,(gen-reg/dest reg)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-reg/dest ...                                                 */
@@ -1261,6 +1275,8 @@
 	   `(if (ref.test (ref $bint) ,tmp)
 		(call $make_bint (i64.add ,num ,tmp))
 		,expr))
+	  ((ref.cast ?ty (ref.as_non_null ?expr))
+	   `(ref.cast ,ty ,expr))
 	  (else
 	   expr))
        expr))
@@ -1475,7 +1491,7 @@
 	 ((eq? (type-id ty) 'obj)
 	  (if (eq? (typeof (car args)) ty)
 	      (gen-reg (car args))
-	      `(ref.cast ,(wasm-type ty #f) ,(gen-reg (car args)))))
+	      `(ref.cast ,(wasm-type ty) ,(gen-reg (car args)))))
 	 ((or (eq? (wasm-type ty) 'i32) (eq? (wasm-type ty) 'i64))
 	  (gen-reg (car args)))
 	 ((and (eq? (type-id ty) 'pair-nil)
@@ -1486,7 +1502,7 @@
 			(symbol->string (type-id ty))
 			" "
 			(symbol->string (type-id (rtl_cast-fromtype fun))))
-	      (ref.cast ,(wasm-type ty #f) ,(gen-reg (car args))))))))
+	      (ref.cast ,(wasm-type ty) ,(gen-reg (car args))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_cast_null ...                                     */

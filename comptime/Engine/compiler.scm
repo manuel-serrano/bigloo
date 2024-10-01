@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Sep 19 07:27:50 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 17:35:23 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -92,7 +92,7 @@
 	    backend_walk)
 
    (with    backend_c
-		backend_wasm
+            backend_wasm
 	    backend_jvm)
    
    (export  (compiler)))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/BackEnd/wasm.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/wasm.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Sep 25 12:34:30 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 18:28:56 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -158,7 +158,8 @@
 			    (display "#!/bin/sh\n")
 			    (display* (format "~a ~( ) $BIGLOOWASMOPT "
 					 *wasm-engine* *wasm-options*)
-			       runtime-mjs " " wasm " $*")
+			       (if *wasm-unsafe* *wasm-unsafe-options* "")
+			       " " runtime-mjs " " wasm " $*")
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*

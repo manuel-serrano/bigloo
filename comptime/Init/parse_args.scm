@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Sep 19 07:29:17 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 17:39:54 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -909,10 +909,14 @@
       (section "WASM specific options")
       (("-wat" (help "Do not assemble the generated .wat file"))
        (set! *pass* 'wat))
-      (("-wasm" ?string (help "Wasm engine"))
+      (("-wasm-engine" ?string (help "Wasm engine"))
        (set! *wasm-engine* string))
+      (("-wasm-unsafe" (help "Wasm unsafe executions"))
+       (set! *wasm-unsafe* #t))
       (("-wasm-opt" ?string (help "Wasm engine options"))
        (set! *wasm-options* (cons string *wasm-options*)))
+      (("-wasm-unsafe-opt" ?string (help "Wasm options for unsafe executions"))
+       (set! *wasm-unsafe-options* (cons string *wasm-unsafe-options*)))
       (("-wasmas" ?string (help "Wasm assembler"))
        (set! *wasmas* (cons string *wasmas*)))
       (("-wopt" ?string (help "Invoke wasmas with STRING"))
@@ -921,6 +925,20 @@
        (set! *wasm-use-relooper* #t))
       (("-fno-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))
        (set! *wasm-use-relooper* #f))
+      (("-fwasm-local-mode" ?mode (help "Local compilation mode (nullable, eager (*))"))
+       (set! *wasm-local-mode*
+	  (cond
+	     ((string=? mode "nullable") 'nullable)
+	     ((string=? mode "eager") 'eager)
+	     (else (error "parse-args" "Illegal mode" mode)))))
+      (("-fwasm-tailcall" (help "Enable wasm tailcall optimization (default)"))
+       (set! *wasm-tailcall* #t))
+      (("-fno-wasm-tailcall" (help "Disable wasm tailcall optimization"))
+       (set! *wasm-tailcall* #f))
+      (("-fwasm-peephole" (help "Enable wasm peephole optimization (default)"))
+       (set! *wasm-peephole* #t))
+      (("-fno-wasm-peephole" (help "Disable wasm peephole optimization"))
+       (set! *wasm-peephole* #f))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")

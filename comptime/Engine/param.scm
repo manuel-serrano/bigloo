@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Sep 19 07:28:38 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 17:36:45 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -250,7 +250,12 @@
 	    *wasmas*
 	    *wasmas-options*
 	    *wasm-options*
+	    *wasm-unsafe-options*
+	    *wasm-unsafe*
 	    *wasm-engine*
+	    *wasm-local-mode*
+	    *wasm-tailcall*
+	    *wasm-peephole*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -1245,11 +1250,46 @@
    '("-all"))
 
 ;*---------------------------------------------------------------------*/
+;*    *wasm-unsafe-options* ...                                        */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-unsafe-options*
+   "wasm engine unsafe options"
+   "--nowasm-bounds-checks --nowasm-enforce-bounds-checks  --experimental-wasm-skip-bounds-checks  --experimental-wasm-skip-null-checks --experimental-wasm-assume-ref-cast-succeeds")
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-unsafe* ...                                                */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-unsafe*
+   "wasm unsafe execution"
+   #f)
+
+;*---------------------------------------------------------------------*/
 ;*    *wasm-engine* ...                                                */
 ;*---------------------------------------------------------------------*/
 (param-define *wasm-engine*
    "wasm engine"
    "node")
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-local-mode* ...                                            */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-local-mode*
+   "wasm locals mode"
+   'eager)
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-tailcall* ...                                              */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-tailcall*
+   "wasm tailcall optimization"
+   #t)
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-peephole* ...                                              */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-peephole*
+   "wasm peephole optimizations"
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    *wasm-options* ...                                               */
