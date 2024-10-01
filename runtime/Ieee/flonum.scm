@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/flonum.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/flonum.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Mon Sep 16 15:38:06 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 09:32:13 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -103,7 +103,7 @@
 	    ($ceiling "(f64.ceil ~0)")
 	    ($roundfl "(f64.nearest ~0)")
 
-	    ($strtod "(f64.const nan)")
+	    ($strtod "(call $bgl_strtod ~0)")
 		
 	    (%double->llong-bits "(i64.reinterpret_f64 ~0)")
 	    (%llong-bits->double "(f64.reinterpret_i64 ~0)")

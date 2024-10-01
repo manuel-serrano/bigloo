@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.mjs              */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.mjs        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Sep 30 07:39:36 2024 (serrano)                */
+/*    Last change :  Tue Oct  1 09:37:32 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -288,6 +288,10 @@ const instance = await WebAssembly.instantiate(wasm, {
       atan2: Math.atan2,
       pow: Math.pow,
       randomf: Math.random,
+      strtod: (addr, len) => {
+         const buffer = new Uint8Array(instance.exports.memory.buffer, addr, len);
+	 return Number.parseFloat(loadSchemeString(buffer));
+      }
    },
 
    __js_bignum: {

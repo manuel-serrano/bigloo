@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Tue Oct  1 07:56:17 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 09:27:35 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -477,6 +477,30 @@
       (i32.lt_u (struct.get $rgc $forward (local.get $rgc))
 	 (struct.get $rgc $bufpos (local.get $rgc))))
 
+   ;; rgc_buffer_flonum
+   (func $rgc_buffer_flonum (export "rgc_buffer_flonum")
+      (param $ip (ref $input-port))
+      (result f64)
+      
+      (local $rgc (ref $rgc))
+      (local $buf (ref $bstring))
+      (local $stop i32)
+      (local $start i32)
+      
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+      (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
+      (local.set $stop (struct.get $rgc $matchstop (local.get $rgc)))
+      (local.set $start (struct.get $rgc $matchstart (local.get $rgc)))
+      
+      (call $store_substring (local.get $buf)
+	 (i64.extend_i32_u (local.get $start))
+	 (i64.extend_i32_u (local.get $stop))
+	 (i32.const 128))
+      
+      (return
+	 (return_call $js_strtod (i32.const 128)
+	    (i32.sub (local.get $stop) (local.get $start)))))
+      
    ;; rgc_buffer_integer
    (func $rgc_buffer_integer (export "rgc_buffer_integer")
       (param $ip (ref $input-port))

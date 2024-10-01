@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    /priv/serrano2/bigloo/wasm/runtime/Makefile                      */
+#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Sep 30 08:51:51 2024 (serrano)                */
+#*    Last change :  Tue Oct  1 09:44:26 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -119,7 +119,7 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*    WAT objects                                                      */
 #*---------------------------------------------------------------------*/
 WLIB		= javascript runtime wwriter wrgc wports wstring wbignum \
-                  wsystem
+                  wsystem wnumber
 
 W_WLIB		= $(WLIB:%=Wlib/%.wat)
 

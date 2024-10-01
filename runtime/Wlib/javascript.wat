@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/javascript.wat           */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/javascript.wat     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Mon Sep 30 07:53:37 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 09:35:59 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -42,6 +42,7 @@
    (import "__js_math" "atan2" (func $atan2 (param f64 f64) (result f64)))
    (import "__js_math" "pow" (func $pow (param f64 f64) (result f64)))
    (import "__js_math" "randomf" (func $RANDOMFL (result f64)))
+   (import "__js_math" "strtod" (func $js_strtod (param i32) (param i32) (result f64)))
    
    (import "__js_date" "current_seconds" (func $bgl_current_seconds (result i64)))
    (import "__js_date" "current_milliseconds" (func $bgl_current_milliseconds (result i64)))
@@ -63,9 +64,11 @@
       (param $length i32)
       (param $buffer (ref $bstring))
       (param $offset i32)
+      
       (local $str (ref $bstring))
       (local $i i32)
       (local.set $i (i32.const 0))
+      
       (loop $loop
 	 (if (i32.lt_u (local.get $i) (local.get $length))
 	     (then 
@@ -96,8 +99,10 @@
       (param $start i64)
       (param $end i64)
       (param $addr i32)
+      
       (local $i i32)
       (local.set $i (i32.wrap_i64 (local.get $start)))
+      
       (loop $loop
 	 (if (i32.lt_u (local.get $i) (i32.wrap_i64 (local.get $end)))
 	     (then
@@ -111,6 +116,7 @@
    (func $store_string
       (param $text (ref $bstring))
       (param $addr i32)
+      
       (call $store_substring
 	 (local.get $text)
 	 (i64.const 0)
