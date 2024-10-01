@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 07:31:11 2024                          */
-;*    Last change :  Fri Sep 27 07:47:11 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 07:45:55 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Native objects printing.                                         */
@@ -11,7 +11,15 @@
 
 (module $__runtime_writer
 
-   ;; PUTC
+   ;; -----------------------------------------------------------------
+   ;; Global constants 
+   ;; -----------------------------------------------------------------
+
+   ;; -----------------------------------------------------------------
+   ;; Library functions 
+   ;; -----------------------------------------------------------------
+
+    ;; PUTC
    (func $PUTC
       (param $c i32)
       (param $op (ref $output-port))
@@ -111,6 +119,14 @@
    ;; bgl_display_bignum, see output-generic.sch
    ;; bgl_write_bignum, see output-generic.sch
 
+   ;; bgl_write_char, see output-generic.sch
+   ;; bgl_display_char
+   (func $bgl_display_char (export "bgl_display_char")
+      (param $c i32)
+      (param $op (ref $output-port))
+      (result (ref eq))
+      (return_call $PUTC (local.get $c) (local.get $op)))
+
    ;; bgl_display_bignum
 ;*    (func $bgl_display_bignum (export "bgl_display_bignum")          */
 ;*       (param $n (ref $bignum))                                      */
@@ -131,15 +147,6 @@
 ;* 		    (struct.get $bignum $bx (local.get $n))            */
 ;* 		    (i32.const 128)))                                  */
 ;* 	      (local.get $port)))))                                    */
-
-   ;; bgl_display_char
-   (func $bgl_display_char (export "bgl_display_char")
-      (param $c i32)
-      (param $op (ref $output-port))
-      (result (ref eq))
-      (return_call $PUTC (local.get $c) (local.get $op)))
-
-   ;; bgl_write_char, see output-generic.sch
 
 ;*   ;; display_substring_file_port                                    */
 ;*   (func $display_substring_file_port                                */
@@ -257,13 +264,6 @@
 ;* 	 (local.get $port)))                                           */
 ;*                                                                     */
 ;*                                                                     */
-   ;; bgl_write_input_port
-   (func $bgl_write_input_port (export "bgl_write_input_port")
-      (param $o (ref $input-port))
-      (param $op (ref $output-port))
-      (result (ref eq))
-      (local.get $op))
-
    )
 
       

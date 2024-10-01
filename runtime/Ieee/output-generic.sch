@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/output-generic.sch       */
+;*    .../prgm/project/bigloo/wasm/runtime/Ieee/output-generic.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Sat Sep 28 07:34:57 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 07:49:00 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -23,6 +23,7 @@
 	   (bgl_write_bignum::obj ::bignum ::output-port)
 	   (inline $$display-fixnum::obj ::bint ::output-port)
 	   (inline $$write-procedure ::procedure ::output-port)
+	   (inline $$write-input-port ::input-port ::output-port)
 	   ($$write-cnst ::obj ::output-port))
    (extern (export bgl_write_char "bgl_write_char")
            (export bgl_display_fixnum "bgl_display_fixnum")
@@ -115,6 +116,16 @@
    (display "#<procedure:" op)
    (bgl_display_fixnum (procedure-arity o) op)
    (display ">" op))
+
+;*---------------------------------------------------------------------*/
+;*    $$write-input-port ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline ($$write-input-port o op)
+   (display-string "#<input-port:" op)
+   (display-string (input-port-name o) op)
+   (display-string "." op)
+   (bgl_display_fixnum (string-length (input-port-buffer o)) op)
+   (display-string ">" op))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-cnst-string ...                                            */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wports.wat               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wports.wat         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Mon Sep 30 14:20:07 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 08:58:58 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -808,7 +808,7 @@
 		   (ref.cast (ref $procedure)
 		      (struct.get $output-port $fhook (local.get $op)))
 		   (local.get $op)
-		   (call $I64_TO_BINT (local.get $slen))))
+		   (call $make_bint (local.get $slen))))
       
 	     (if (call $STRINGP (local.get $s))
 		 (then

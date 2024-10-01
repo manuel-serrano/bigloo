@@ -1,10 +1,10 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/runtime.wat.in           */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat.in     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Sep 30 07:52:00 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 08:17:38 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -58,6 +58,13 @@
      (i32.or
 	(ref.eq (local.get $o) (global.get $BFALSE))
 	(ref.eq (local.get $o) (global.get $BTRUE))))
+
+  (global $MAXVALFX (export "MAXVALFX") i64
+     (i64.const 9223372036854775807))
+  (global $MAXVALELONG (export "MAXVALELONG") i64
+     (i64.const 9223372036854775807))
+  (global $MAXVALLLONG (export "MAXVALLLONG") i64
+     (i64.const 9223372036854775807))
 
   ;; Bigloo types default value
   (global $funptr-default-value
@@ -1533,8 +1540,7 @@
   (export "RANDOMFL" (func $RANDOMFL))
 
   ;; fixnums
-  (export "I64_TO_BINT" (func $I64_TO_BINT))
-  (func $I64_TO_BINT
+  (func $make_bint (export "make_bint")
      (param $x i64)
      (result (ref $bint))
      (local $tmp i64)
@@ -1548,6 +1554,18 @@
 	 (else
 	  (return 
 	     (struct.new $bint (local.get $x))))))
+
+  (func $make_belong (export "make_belong")
+     (param $x i64)
+     (result (ref $belong))
+     (local $tmp i64)
+     (struct.new $belong (local.get $x)))
+
+  (func $make_bllong (export "make_bllong")
+     (param $x i64)
+     (result (ref $bllong))
+     (local $tmp i64)
+     (struct.new $bllong (local.get $x)))
 
   ;; flonums
   (export "bgl_double_to_ieee_string" (func $bgl_double_to_ieee_string))

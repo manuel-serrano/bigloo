@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/type.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/type.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Sep 25 09:25:43 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 08:30:09 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1086,7 +1086,7 @@
       ($int->bint "(struct.new $bint (i64.extend_i32_s ~0))")
       ($uint->bint "(struct.new $bint (i64.extend_i32_u ~0))")
       ;;($long->bint "(struct.new $bint ~0)")
-      ($long->bint "(call $I64_TO_BINT ~0)")
+      ($long->bint "(call $make_bint ~0)")
       ($ulong->bint "(struct.new $bint ~0)")
       ($int8->bint "(struct.new $bint (i64.extend_i32_s ~0))")
       ($uint8->bint "(struct.new $bint (i64.extend_i32_u ~0))")

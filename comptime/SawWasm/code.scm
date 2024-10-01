@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/code.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Sep 30 11:22:39 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 08:30:39 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1224,7 +1224,7 @@
    (if *wasm-peephole*
        (match-case expr
 	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
-	      (call $I64_TO_BINT ?num)
+	      (call $make_bint ?num)
 	      (and ?tmp (local.get ?-)))
 	   ;; 2<
 	   `(if (ref.test (ref $bint) ,tmp)
@@ -1232,13 +1232,13 @@
 		,expr))
 	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
 	      (and ?tmp (local.get ?-))
-	      (call $I64_TO_BINT ?num))
+	      (call $make_bint ?num))
 	   ;; 2<
 	   `(if (ref.test (ref $bint) ,tmp)
 		(i64.lt_s ,tmp ,num)
 		,expr))
 	  ((BGl_2ze3ze3zz__r4_numbers_6_5z00
-	      (call $I64_TO_BINT ?num)
+	      (call $make_bint ?num)
 	      (and ?tmp (local.get ?-)))
 	   ;; 2>
 	   `(if (ref.test (ref $bint) ,tmp)
@@ -1246,20 +1246,20 @@
 		,expr))
 	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
 	      (and ?tmp (local.get ?-))
-	      (call $I64_TO_BINT ?num))
+	      (call $make_bint ?num))
 	   ;; 2>
 	   `(if (ref.test (ref $bint) ,tmp)
 		(i64.gt_s ,tmp ,num)
 		,expr))
 	  ((or (BGl_2zb2zb2zz__r4_numbers_6_5z00
-		  (call $I64_TO_BINT ?num)
+		  (call $make_bint ?num)
 		  (and ?tmp (local.get ?-)))
 	       (BGl_2zb2zb2zz__r4_numbers_6_5z00
 		  (and ?tmp (local.get ?-))
-		  (call $I64_TO_BINT ?num)))
+		  (call $make_bint ?num)))
 	   ;; 2+
 	   `(if (ref.test (ref $bint) ,tmp)
-		(call $I64_TO_BINT (i64.add ,num ,tmp))
+		(call $make_bint (i64.add ,num ,tmp))
 		,expr))
 	  (else
 	   expr))

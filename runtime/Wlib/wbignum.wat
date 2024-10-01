@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wbignum.wat              */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wbignum.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Fri Sep 27 07:34:08 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 08:58:52 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -108,7 +108,7 @@
       (param $x i64)
       (param $y i64)
       (result (ref eq))
-      (return_call $I64_TO_BINT
+      (return_call $make_bint
 	 (i64.add (local.get $x) (local.get $y))))
 
    ;; BGL_SAFE_MUL_FX
@@ -116,7 +116,7 @@
      (param $x i64)
      (param $y i64)
      (result (ref eq))
-     (return_call $I64_TO_BINT
+     (return_call $make_bint
 	(i64.mul (local.get $x) (local.get $y))))
 
    ;; BGL_SAFE_MINUS_FX
@@ -124,7 +124,7 @@
      (param $x i64)
      (param $y i64)
      (result (ref eq))
-     (return_call $I64_TO_BINT
+     (return_call $make_bint
 	(i64.sub (local.get $x) (local.get $y))))
 
    ;; BGL_SAFE_QUOTIENT_FX
@@ -132,5 +132,5 @@
       (param $x i64)
       (param $y i64)
       (result (ref eq))
-      (return_call $I64_TO_BINT
+      (return_call $make_bint
 	 (i64.div_s (local.get $x) (local.get $y)))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Sep 17 15:00:27 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 07:49:32 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -686,7 +686,7 @@
 	      (else
 	       ($write-output-port ,obj ,port))))
 	  ((input-port? ,obj)
-	   ($write-input-port ,obj ,port))
+	   (write-input-port ,obj ,port))
 	  ((bignum? ,obj)
 	   (,$write/display-bignum ,obj ,port))
 	  ((homogeneous-vector? ,obj)
@@ -789,6 +789,16 @@
        ($write-procedure obj port))
       (else
        ($$write-procedure obj port))))
+   
+;*---------------------------------------------------------------------*/
+;*    write-input-port ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (write-input-port obj port)
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($write-input-port obj port))
+      (else
+       ($$write-input-port obj port))))
    
 ;*---------------------------------------------------------------------*/
 ;*    write-symbol ...                                                 */

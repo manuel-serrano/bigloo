@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wrgc.wat                 */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wrgc.wat           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Mon Sep 30 08:58:14 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 07:56:17 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -476,7 +476,152 @@
       
       (i32.lt_u (struct.get $rgc $forward (local.get $rgc))
 	 (struct.get $rgc $bufpos (local.get $rgc))))
-   
+
+   ;; rgc_buffer_integer
+   (func $rgc_buffer_integer (export "rgc_buffer_integer")
+      (param $ip (ref $input-port))
+      (result (ref eq))
+
+      (local $rgc (ref $rgc))
+      (local $buf (ref $bstring))
+      (local $stop i32)
+      (local $start i32)
+      (local $res i64)
+      (local $sign i64)
+      (local $maxvalfx i64)
+      (local $maxvalelong i64)
+      (local $maxvalllong i64)
+      (local $current i32)
+
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+      (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
+      (local.set $stop (struct.get $rgc $matchstop (local.get $rgc)))
+      (local.set $start (struct.get $rgc $matchstart (local.get $rgc)))
+      (local.set $res (i64.const 0))
+      (local.set $sign (i64.const 1))
+
+      ;; the sign
+      (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+	     (i32.const 43)) ;; #\+
+	  (then
+	     (local.set $start (i32.add (local.get $start) (i32.const 1))))
+	  (else
+	   (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+		  (i32.const 45)) ;; #\-
+	       (then
+		  (local.set $sign (i64.const -1))
+		  (local.set $start (i32.add (local.get $start) (i32.const 1)))))))
+
+      ;; skip the 0 padding
+      (loop $while
+	 (if (i32.lt_s (local.get $start) (local.get $stop))
+	     (then 
+		(if (i32.eq
+		       (array.get $bstring (local.get $buf) (local.get $start))
+		       (i32.const 48)) ;; #\0
+		    (then
+		       (local.set $start
+			  (i32.add (local.get $start) (i32.const 1)))
+		       (br $while))))))
+
+      ;; the true number decoding
+      (loop $while
+	 (if (i32.lt_s (local.get $start) (local.get $stop))
+	     (then
+		(local.set $current
+		   (i32.sub (array.get $bstring (local.get $buf) (local.get $start))
+		      (i32.const 48))) ;; #\0
+		(if (i64.gt_s (local.get $res)
+		       (i64.sub (i64.div_s (global.get $MAXVALELONG)
+				   (i64.const 10))
+			  (i64.const 9)))
+		    (then
+		       (return_call $buffer_llong
+			  (local.get $ip)
+			  (local.get $buf)
+			  (local.get $start)
+			  (local.get $stop)
+			  (local.get $res)
+			  (local.get $sign)))
+		    (else
+		     (local.set $res
+			(i64.add (i64.mul (local.get $res) (i64.const 10))
+			   (i64.extend_i32_s (local.get $current))))
+		     (local.set $start
+			(i32.add (local.get $start) (i32.const 1)))
+		     (br $while))))))
+
+      (if (i64.le_s (local.get $res) (global.get $MAXVALFX))
+	  (then
+	     (return_call $make_bint
+		(i64.mul (local.get $res) (local.get $sign))))
+	  (else
+	   (return_call $make_belong
+	      (i64.mul (local.get $res) (local.get $sign))))))
+
+   ;; buffer_llong
+   (func $buffer_llong
+      (param $ip (ref $input-port))
+      (param $buf (ref $bstring))
+      (param $start i32)
+      (param $stop i32)
+      (param $lres i64)
+      (param $sign i64)
+      (result (ref eq))
+
+      (local $current i32)
+
+      (loop $while
+	 (if (i32.lt_s (local.get $start) (local.get $stop))
+	     (then
+		(local.set $current
+		   (i32.sub
+		      (array.get $bstring (local.get $buf) (local.get $start))
+		      (i32.const 48))) ;; #\0
+		(if (i64.gt_s (local.get $lres)
+		       (i64.sub
+			  (i64.div_s (global.get $MAXVALLLONG) (i64.const 10))
+			  (i64.const 9)))
+		    (then
+		       (return_call $rgc_buffer_bignum (local.get $ip)))
+		    (else
+		     (local.set $lres
+			(i64.add (i64.mul (local.get $lres) (i64.const 10))
+			   (i64.extend_i32_s (local.get $current))))
+		     (local.set $start (i32.add (local.get $start) (i32.const 1)))
+		     (br $while))))))
+
+      (return_call $make_bllong
+	 (i64.mul (local.get $lres) (local.get $sign))))
+
+   ;; rgc_buffer_bignum
+   (func $rgc_buffer_bignum (export "rgc_buffer_bignum")
+      (param $ip (ref $input-port))
+      (result (ref $bignum))
+
+      (local $rgc (ref $rgc))
+      (local $buf (ref $bstring))
+      (local $stop i32)
+      (local $start i32)
+      (local $sz i32)
+      (local $tmp (ref $bstring))
+
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+      (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
+      (local.set $stop (struct.get $rgc $matchstop (local.get $rgc)))
+      (local.set $start (struct.get $rgc $matchstart (local.get $rgc)))
+      (local.set $sz (i32.sub (local.get $stop) (local.get $start)))
+      (local.set $tmp (array.new_default $bstring (local.get $sz)))
+
+      (array.copy $bstring $bstring
+	 (local.get $tmp)
+	 (i32.const 0)
+	 (local.get $buf)
+	 (local.get $start)
+	 (local.get $sz))
+
+      (return_call $bgl_string_to_bignum (local.get $tmp) (i32.const 10)))
+      
    )
 
 
