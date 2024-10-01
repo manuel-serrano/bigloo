@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Cnst/initialize.scm      */
+;*    .../prgm/project/bigloo/wasm/comptime/Cnst/initialize.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Fri Jun  3 14:41:10 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Oct  1 13:32:12 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
 ;*=====================================================================*/
@@ -105,7 +105,7 @@
 					     (let ((aux::int ($-fx i 1)))
 						(loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
-	 (cons sexp (get-cnst-sexp))))
+	 (append (get-cnst-sexp) (list sexp))))
 
    (global-name-set! (get-cnst-table)
       (backend-cnst-table-name (the-backend) (get-cnst-offset)))
@@ -170,7 +170,7 @@
 					  (let ((aux::int ($-fx i 1)))
 					     (loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
-	 (cons sexp (get-cnst-sexp))))
+	 (append (get-cnst-sexp) (list sexp))))
    
    (global-name-set! (get-cnst-table)
       (backend-cnst-table-name (the-backend) (get-cnst-offset)))
