@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Oct  1 17:39:54 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 08:17:02 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -913,6 +913,11 @@
        (set! *wasm-engine* string))
       (("-wasm-unsafe" (help "Wasm unsafe executions"))
        (set! *wasm-unsafe* #t))
+      (("-wasm-fixnum" ?size (help "Wasm fixnum size (private option, don't use)"))
+       (cond
+	  ((string=? size "31") (set! *wasm-fixnum* 31))
+	  ((string=? size "64") (set! *wasm-fixnum* 64))
+	  (else (error "-wasm-fixnum" "wrong size" size))))
       (("-wasm-opt" ?string (help "Wasm engine options"))
        (set! *wasm-options* (cons string *wasm-options*)))
       (("-wasm-unsafe-opt" ?string (help "Wasm options for unsafe executions"))
@@ -925,12 +930,10 @@
        (set! *wasm-use-relooper* #t))
       (("-fno-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))
        (set! *wasm-use-relooper* #f))
-      (("-fwasm-local-mode" ?mode (help "Local compilation mode (nullable, eager (*))"))
-       (set! *wasm-local-mode*
-	  (cond
-	     ((string=? mode "nullable") 'nullable)
-	     ((string=? mode "eager") 'eager)
-	     (else (error "parse-args" "Illegal mode" mode)))))
+      (("-fwasm-local-preinit" (help "Force local pre-init and avoid nullable types"))
+       (set! *wasm-local-preinit* #t))
+      (("-fno-wasm-local-preinit" (help "Dot not force local pre-init and use nullable types"))
+       (set! *wasm-local-preinit* #f))
       (("-fwasm-tailcall" (help "Enable wasm tailcall optimization (default)"))
        (set! *wasm-tailcall* #t))
       (("-fno-wasm-tailcall" (help "Disable wasm tailcall optimization"))

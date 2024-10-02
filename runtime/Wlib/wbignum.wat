@@ -3,13 +3,24 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Tue Oct  1 08:58:52 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 08:41:59 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
 ;*=====================================================================*/
 
-(module $__runtime_bignum
+(module $__bigloo_bignum
+   
+   ;; -----------------------------------------------------------------
+   ;; Type declarations 
+   ;; -----------------------------------------------------------------
+   
+   (type $bignum
+      (struct (field $bx externref)))
+      
+   ;; -----------------------------------------------------------------
+   ;; JavaScript imports 
+   ;; -----------------------------------------------------------------
    
    (import "__js_bignum" "zerobx" (global $zerobx externref))
    (import "__js_bignum" "long_to_bignum" (func $long_to_bignum (param i64) (result externref)))
@@ -20,6 +31,19 @@
    (import "__js_bignum" "bignum_cmp" (func $bignum_cmp (param externref externref) (result i32)))
    (import "__js_bignum" "bignum_to_string" (func $bignum_to_string (param externref i32) (result i32)))
 
+
+   ;; -----------------------------------------------------------------
+   ;; Global variables 
+   ;; -----------------------------------------------------------------
+
+   (global $bignum-default-value
+      (export "BGL_BIGNUM_DEFAULT_VALUE") (ref $bignum)
+      (struct.new $bignum (global.get $zerobx)))
+   
+   ;; -----------------------------------------------------------------
+   ;; Library functions 
+   ;; -----------------------------------------------------------------
+   
    ;; bgl_long_to_bignum
    (func $bgl_long_to_bignum (export "bgl_long_to_bignum")
       (param $n i64)

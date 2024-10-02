@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Sep  2 10:50:10 2024 (serrano)                */
+#*    Last change :  Wed Oct  2 09:06:30 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -129,6 +129,7 @@ wasmbackend=no # set to "no" not to install the Wasm back-end
 wasmas=wasm-as
 wasmopt=wasm-opt
 wasmjs=nodejs
+wasmfixnum=64
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh
@@ -792,6 +793,12 @@ while : ; do
     --wasm)
       wasmbackend=yes;;
 
+    --wasm-fixnum64)
+      wasmfixnum=64;;
+
+    --wasm-fixnum31)
+      wasmfixnum=31;;
+
     --wasm=*)
       wasmbackend="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -1285,7 +1292,9 @@ while : ; do
       echo "WASM configuration:"  >&2;
       echo "   --wasmas=file [wasm assembler]" >&2;
       echo "   --wasmopt=file [wasm optimizer]" >&2;
-      echo "   --wasmjs=file [JavaScript implementation (default nodejs)]" >&2;
+      echo "   --wasmjs=file [wasm implementation (default nodejs)]" >&2;
+      echo "   --wasm-fixnum64 [wasm fixnum 64bit]" >&2;
+      echo "   --wasm-fixnum31 [wasm fixnum 31bit]" >&2;
       echo "" >&2;
       echo "Misc:"  >&2;
       echo "   --custom-all-libs [use custom version for all third party libs]" >&2;
@@ -3930,6 +3939,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@SONAME@|$ldsoname|" \
 	      -e "s|@C_LINKER_SONAME_OPTION@|$ldsonameopt|" \
 	      -e "s|@C_LINKER_SHARED_OPTION@|$ldopt$ldbuildsharedopt|" \
+	      -e "s|@WASM_FIXNUM@|$wasmfixnum|" \
         > $p
     fi
   done
@@ -5140,6 +5150,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "WASMBACKEND=yes" >> $makefile_cfg
     $echo "WASM_AS=$wasmas" >> $makefile_cfg
     $echo "WASM_OPT=$wasmopt" >> $makefile_cfg
+    $echo "WASM_FIXNUM=$wasmfixnum" >> $makefile_cfg
   else
     $echo "" >> $makefile_cfg
     $echo "WASMBACKEND=no" >> $makefile_cfg

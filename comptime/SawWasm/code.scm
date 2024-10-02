@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Oct  1 17:44:06 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 08:10:49 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -66,7 +66,7 @@
    
    (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
    
-   (static (wide-class SawLocalReg::rtl_reg
+   (static (wide-class wasm_local::rtl_reg
 	      index
 	      (nullable::bool (default #f)))))
 
@@ -87,7 +87,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-fun b::wasm v::global l)
    
-   (define (split-body body)
+   (define (get-locals-and-instructions body)
       (let loop ((body body)
 		 (locals '()))
 	 (match-case body
@@ -110,18 +110,15 @@
 	       
 	       (set! l (register-allocation b v params l))
 	       (set! l (bbv b v params l))
-	       (when (eq? *wasm-local-mode* 'eager)
-		  (set! l (split-blocks l)))
+	       (set! l (split-blocks l))
 	       
 	       (when *bbv-dump-cfg*
 		  (with-access::sfun value (args)
 		     (dump-cfg v (map local->reg args) l ".wasm.cfg")))
 	       
 	       (let* ((locals (get-locals params l))
-		      (body (gen-body v l))
-		      (inits (if (eq? *wasm-local-mode* 'eager)
-				 (gen-local-inits locals v l body)
-				 '())))
+		      (body (gen-body v l locals)))
+
 		  `(comment ,(string-append (symbol->string (global-id v))
 				" in " (symbol->string (global-module v)))
 		      ,(with-loc loc
@@ -135,21 +132,27 @@
 			      ,@(gen-result type)
 			      ,@(gen-locals locals)
 			      
-			      ,@(if (null? inits)
-				    body
-				    (multiple-value-bind (locals rest)
-				       (split-body body)
-				       (append locals
-					  (list '(comment "local initialization"))
-					  inits
-					  rest))))))))))))
+			      ,@body)))))))))
+;* 				    body                               */
+;* 				    (multiple-value-bind (locals instructions) */
+;* 				       (get-locals-and-intructions body) */
+;* 				       (append locals                  */
+;* 					                               */
+;* 					  inits                        */
+;* 					  instructions))))))))))))     */
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-body ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (gen-body v::global blocks)
-   (or (relooper v blocks)
-       (gen-dispatcher-body blocks)))
+(define (gen-body v::global blocks locals)
+   (let ((inits (gen-local-inits v blocks locals))
+	 (relbody (relooper v blocks)))
+      (if relbody
+	  (append inits (list '(comment "local initialization")) relbody)
+	  (begin
+	     ;; when using the dispatcher methods, all locals must be nullable
+	     (for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
+	     (gen-dispatcher-body blocks)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *extra-types*                                                    */
@@ -163,18 +166,18 @@
 ;*    get-locals ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (get-locals params l)
-   ;; Update all reg to ireg and return all regs not in params.
+
    (define n 0)
    (define regs '())
    
    (define (expr->ireg e)
       (cond
-	 ((isa? e SawLocalReg)
+	 ((isa? e wasm_local)
 	  #unspecified)
 	 ((rtl_reg? e)
-	  (widen!::SawLocalReg e
+	  (widen!::wasm_local e
 	     (index n)
-	     (nullable (eq? *wasm-local-mode* 'nullable)))
+	     (nullable #f))
 	  (set! n (+fx n 1))
 	  (set! regs (cons e regs)))
 	 (else
@@ -201,18 +204,34 @@
    (let ((id (type-id t))
 	 (name (type-name t)))
       (case id
+	 ((bint)
+	  (if (=fx *wasm-fixnum* 64)
+	      (if nullable '(ref null $bint) '(ref $bint))
+	      (if nullable '(ref null i31) '(ref i31))))
 	 ((void*) 'i32)
 	 ((obj) (if nullable '(ref null eq) '(ref eq)))
-	 ((nil) (if nullable '(ref null eq) '(ref eq)))
+	 ((nil)
+	  (if (=fx *wasm-fixnum* 64)
+	      (if nullable '(ref null i31) '(ref i31))
+	      (if nullable '(ref null $bnil) '(ref $bnil))))
 	 ((magic) (if nullable '(ref null eq) '(ref eq)))
 	 ((unspecified) (if nullable '(ref null eq) '(ref eq)))
-	 ((bbool) (if nullable '(ref null i31) '(ref i31)))
-	 ((bchar) (if nullable '(ref null i31) '(ref i31)))
+	 ((bbool)
+	  (if (=fx *wasm-fixnum* 64)
+	      (if nullable '(ref null i31) '(ref i31))
+	      (if nullable '(ref null $bbool) '(ref $bbool))))
+	 ((bchar)
+	  (if (=fx *wasm-fixnum* 64)
+	      (if nullable '(ref null i31) '(ref i31))
+	      (if nullable '(ref null $bchar) '(ref $bchar))))
 	 ((class-field) (if nullable '(ref null eq) '(ref eq)))
 	 ((pair-nil) (if nullable '(ref null eq) '(ref eq)))
 	 ((cobj) (if nullable '(ref null eq) '(ref eq)))
 	 ((tvector) (if nullable '(ref null array) '(ref array)))
-	 ((cnst) (if nullable '(ref null i31) '(ref i31)))
+	 ((cnst)
+	  (if (=fx *wasm-fixnum* 64)
+	      (if nullable '(ref null i31) '(ref i31))
+	      (if nullable '(ref null $bcnst) '(ref $bcnst))))
 	 ((funptr) (if nullable '(ref null func) '(ref func)))
 	 ((bool) 'i32)
 	 ((byte) 'i32)
@@ -425,8 +444,8 @@
 ;*    gen-locals ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (gen-locals l)
-   (map (lambda (local::SawLocalReg)
-	   (with-access::SawLocalReg local (nullable)
+   (map (lambda (local::wasm_local)
+	   (with-access::wasm_local local (nullable)
 	      `(local ,(wasm-sym (reg-name local))
 		  ,(wasm-type (rtl_reg-type local) :nullable nullable))))
       l))
@@ -446,24 +465,24 @@
 ;*    dummy initializations of variables that could be considered      */
 ;*    non-initialized by wasm-as.                                      */
 ;*---------------------------------------------------------------------*/
-(define (gen-local-inits locals::pair-nil v::global l::pair-nil wasm)
-
+(define (gen-local-inits v::global blocks::pair-nil locals::pair-nil)
+   
    (define (type-require-init? t)
       (case (type-id t)
 	 ((int long double bool) #f)
 	 (else #t)))
-
-   (define (first-block-assigs l)
+   
+   (define (first-block-assigs blocks)
       ;; super simple heuristic, white list the variables
       ;; assigned in the first basic block
       (with-trace 'wasm "first-block-assigs"
 	 (cond
-	    ((null? l)
+	    ((null? blocks)
 	     '())
-	    ((head-loop? (car l) (cdr l))
+	    ((head-loop? (car blocks) (cdr blocks))
 	     '())
 	    (else
-	     (with-access::block (car l) (first)
+	     (with-access::block (car blocks) (first)
 		(let loop ((first first)
 			   (wl '()))
 		   (if (null? first)
@@ -492,7 +511,7 @@
 				 (loop (cdr first) (cons dest wl)))
 				(else
 				 (loop (cdr first) wl))))))))))))
-
+   
    (define (mark-temp! t::rtl_reg temps block)
       (let ((c (assq t temps)))
 	 (when (pair? c)
@@ -511,53 +530,54 @@
 			  (mark-ins! a temps block))))
 	    args)))
    
-   (define (single-block-ref l)
+   (define (single-block-ref blocks)
       ;; white list the variables that are used in
       ;; a unique basic block
       (with-trace 'wasm "single-block-ref"
 	 (let ((temps (map list locals)))
-	    (let loop ((l l)
+	    (let loop ((blocks blocks)
 		       (stack '()))
 	       (cond
-		  ((null? l)
-		   (if (getenv "DEBUG_INITS")
-		       (begin
-			  (print "DEBUG_INITS...")
-			  '())
-		       (filter-map (lambda (temp)
-				      (when (and (pair? (cdr temp))
-						 (null? (cddr temp)))
-					 (trace-item (shape (car temp)))
-					 (car temp)))
-			  temps)))
-		  ((memq (car l) stack)
-		   (loop (cdr l) stack))
+		  ((null? blocks)
+		   (filter-map (lambda (temp)
+				  (when (and (pair? (cdr temp))
+					     (null? (cddr temp)))
+				     (trace-item (shape (car temp)))
+				     (car temp)))
+		      temps))
+		  ((memq (car blocks) stack)
+		   (loop (cdr blocks) stack))
 		  (else
-		   (with-access::block (car l) (first)
+		   (with-access::block (car blocks) (first)
 		      (for-each (lambda (i)
-				   (mark-ins! i temps (car l)))
+				   (mark-ins! i temps (car blocks)))
 			 first))
-		   (loop (cdr l) (cons (car l) stack))))))))
+		   (loop (cdr blocks) (cons (car blocks) stack))))))))
    
    (define whitelist
-      (if (dispatcher? wasm)
-	  '()
-	  (delete-duplicates!
-	     (append (first-block-assigs l)
-		(single-block-ref l)))))
-
+      (delete-duplicates!
+	 (append (first-block-assigs blocks)
+	    (single-block-ref blocks))))
+   
    (with-trace 'wasm "gen-local-inits"
       (trace-item "locals=" (map shape locals))
       (trace-item "WL=" (map shape whitelist))
-      (filter-map (lambda (r::rtl_reg)
+      (filter-map (lambda (r::wasm_local)
 		     (unless (memq r whitelist)
 			(let* ((t (rtl_reg-type r))
 			       (i (wasm-default-value t)))
 			   (when (type-require-init? t)
 			      (trace-item "init=" (reg-name r) "::"
 				 (shape t))
-			      `(local.set ,(wasm-sym (reg-name r))
-				  ,(wasm-default-value t))))))
+			      (if *wasm-local-preinit*
+				  ;; force a local pre-init
+				  `(local.set ,(wasm-sym (reg-name r))
+				      ,(wasm-default-value t))
+				  (with-access::wasm_local r (nullable)
+				     ;; in nullable mode, don't pre-init
+				     ;; but force using a nullable type
+				     (set! nullable #t)
+				     #f))))))
 	 locals)))
 
 ;*---------------------------------------------------------------------*/
@@ -719,9 +739,9 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-reg reg)
    (cond
-      ((not (isa? reg SawLocalReg))
+      ((not (isa? reg wasm_local))
        (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg)))
-      ((SawLocalReg-nullable reg)
+      ((wasm_local-nullable reg)
        (let ((ty (wasm-type (rtl_reg-type reg) :nullable #t)))
 	  (if (pair? ty)
 	      `(ref.as_non_null (local.get ,(gen-reg/dest reg)))
@@ -1241,28 +1261,29 @@
 	      (call $make_bint ?num)
 	      (and ?tmp (local.get ?-)))
 	   ;; 2<
-	   `(if (ref.test (ref $bint) ,tmp)
+	   (=fx *wasm-fixnum* 64)
+	   `(if (ref.test (ref ,(wasm-type *bint*)) ,tmp)
 		(i64.lt_s ,num ,tmp)
 		,expr))
 	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
 	      (and ?tmp (local.get ?-))
 	      (call $make_bint ?num))
 	   ;; 2<
-	   `(if (ref.test (ref $bint) ,tmp)
+	   `(if (ref.test (ref ,(wasm-type *bint*)) ,tmp)
 		(i64.lt_s ,tmp ,num)
 		,expr))
 	  ((BGl_2ze3ze3zz__r4_numbers_6_5z00
 	      (call $make_bint ?num)
 	      (and ?tmp (local.get ?-)))
 	   ;; 2>
-	   `(if (ref.test (ref $bint) ,tmp)
+	   `(if (ref.test (ref ,(wasm-type *bint*)) ,tmp)
 		(i64.gt_s ,num ,tmp)
 		,expr))
 	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
 	      (and ?tmp (local.get ?-))
 	      (call $make_bint ?num))
 	   ;; 2>
-	   `(if (ref.test (ref $bint) ,tmp)
+	   `(if (ref.test (ref ,(wasm-type *bint*)) ,tmp)
 		(i64.gt_s ,tmp ,num)
 		,expr))
 	  ((or (BGl_2zb2zb2zz__r4_numbers_6_5z00
@@ -1272,7 +1293,7 @@
 		  (and ?tmp (local.get ?-))
 		  (call $make_bint ?num)))
 	   ;; 2+
-	   `(if (ref.test (ref $bint) ,tmp)
+	   `(if (ref.test (ref ,(wasm-type *bint*)) ,tmp)
 		(call $make_bint (i64.add ,num ,tmp))
 		,expr))
 	  ((ref.cast ?ty (ref.as_non_null ?expr))

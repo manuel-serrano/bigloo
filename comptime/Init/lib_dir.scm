@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Init/lib_dir.scm            */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Init/lib_dir.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Sep  4 08:39:02 2009                          */
-;*    Last change :  Tue Oct  3 08:57:00 2017 (serrano)                */
-;*    Copyright   :  2009-17 Manuel Serrano                            */
+;*    Last change :  Wed Oct  2 12:06:37 2024 (serrano)                */
+;*    Copyright   :  2009-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Processes the lib-dir-compilation parameter.                     */
 ;*=====================================================================*/

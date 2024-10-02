@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Oct  1 18:28:56 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 08:57:13 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -86,7 +86,7 @@
       (type-check #f)
       (force-register-gc-roots #f)
       (string-literal-support #f)
-      (boxed-fixnums #t)
+      (boxed-fixnums (=fx *wasm-fixnum* 64))
       ;; no subtyping for (ref func)
       ;; see https://github.com/WebAssembly/function-references
       (typed-closures #f)))
@@ -448,82 +448,85 @@
 	       `(module ,(wasm-sym (symbol->string *module*))
 		   
 		   (comment "Imports"
-		      (import "__runtime" "generic_va_call"
+		      (import "__bigloo" "generic_va_call"
 			 (func $generic_va_call
 			    (param (ref $procedure))
 			    (param (ref $vector))
 			    (result (ref eq))))
-		      (import "__runtime" "bgl_make_exit"
+		      (import "__bigloo" "bgl_make_exit"
 			 (func $bgl_make_exit
 			    (result (ref $exit))))
-		      (import "__runtime" "BNIL" (global $BNIL (ref i31)))
-		      (import "__runtime" "BFALSE" (global $BFALSE (ref i31)))
-		      (import "__runtime" "BTRUE" (global $BTRUE (ref i31)))
-		      (import "__runtime" "BUNSPEC" (global $BUNSPEC (ref i31)))
-		      (import "__runtime" "BOPTIONAL" (global $BOPTIONAL (ref i31)))
-		      (import "__runtime" "BKEY" (global $BKEY (ref i31)))
-		      (import "__runtime" "BREST" (global $BREST (ref i31)))
-		      (import "__runtime" "BEOA" (global $BEOA (ref i31)))
+		      (import "__bigloo" "make_bint"
+			 (func $make-bint
+			    (result ,(wasm-type *bint*))))
+		      (import "__bigloo" "BNIL" (global $BNIL ,(wasm-type *bnil*)))
+		      (import "__bigloo" "BFALSE" (global $BFALSE ,(wasm-type *bbool*)))
+		      (import "__bigloo" "BTRUE" (global $BTRUE ,(wasm-type *bbool*)))
+		      (import "__bigloo" "BUNSPEC" (global $BUNSPEC ,(wasm-type *unspec*)))
+		      (import "__bigloo" "BOPTIONAL" (global $BOPTIONAL ,(wasm-type *cnst*)))
+		      (import "__bigloo" "BKEY" (global $BKEY ,(wasm-type *cnst*)))
+		      (import "__bigloo" "BREST" (global $BREST ,(wasm-type *cnst*)))
+		      (import "__bigloo" "BEOA" (global $BEOA ,(wasm-type *cnst*)))
 		      (import "__js" "trace" (func $__trace (param i32)))
 
-		      (import "__runtime" "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value (ref $bint)))
-		      (import "__runtime" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value (ref $bint)))
-		      (import "__runtime" "BGL_BINT8_DEFAULT_VALUE" (global $bint8-default-value (ref $bint8)))
-		      (import "__runtime" "BGL_BINT16_DEFAULT_VALUE" (global $bint16-default-value (ref $bint16)))
-		      (import "__runtime" "BGL_BINT32_DEFAULT_VALUE" (global $bint32-default-value (ref $bint32)))
-		      (import "__runtime" "BGL_BINT64_DEFAULT_VALUE" (global $bint64-default-value (ref $bint64)))
-		      (import "__runtime" "BGL_BUINT8_DEFAULT_VALUE" (global $buint8-default-value (ref $buint8)))
-		      (import "__runtime" "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value (ref $buint16)))
-		      (import "__runtime" "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value (ref $buint32)))
-		      (import "__runtime" "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value (ref $buint64)))
-		      (import "__runtime" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value (ref i31)))
-		      (import "__runtime" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $bucs2)))
-		      (import "__runtime" "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value (ref $belong)))
-		      (import "__runtime" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
-		      (import "__runtime" "BGL_EPAIR_DEFAULT_VALUE" (global $epair-default-value (ref $epair)))
-		      (import "__runtime" "BGL_CELL_DEFAULT_VALUE" (global $cell-default-value (ref $cell)))
-		      (import "__runtime" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
-		      (import "__runtime" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
-		      (import "__runtime" "BGL_KEYWORD_DEFAULT_VALUE" (global $keyword-default-value (ref $keyword)))
-		      (import "__runtime" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
-		      (import "__runtime" "BGL_U8VECTOR_DEFAULT_VALUE" (global $u8vector-default-value (ref $u8vector)))
-		      (import "__runtime" "BGL_S8VECTOR_DEFAULT_VALUE" (global $s8vector-default-value (ref $s8vector)))
-		      (import "__runtime" "BGL_U16VECTOR_DEFAULT_VALUE" (global $u16vector-default-value (ref $u16vector)))
-		      (import "__runtime" "BGL_S16VECTOR_DEFAULT_VALUE" (global $s16vector-default-value (ref $s16vector)))
-		      (import "__runtime" "BGL_U32VECTOR_DEFAULT_VALUE" (global $u32vector-default-value (ref $u32vector)))
-		      (import "__runtime" "BGL_S32VECTOR_DEFAULT_VALUE" (global $s32vector-default-value (ref $s32vector)))
-		      (import "__runtime" "BGL_U64VECTOR_DEFAULT_VALUE" (global $u64vector-default-value (ref $u64vector)))
-		      (import "__runtime" "BGL_S64VECTOR_DEFAULT_VALUE" (global $s64vector-default-value (ref $s64vector)))
-		      (import "__runtime" "BGL_F32VECTOR_DEFAULT_VALUE" (global $f32vector-default-value (ref $f32vector)))
-		      (import "__runtime" "BGL_F64VECTOR_DEFAULT_VALUE" (global $f64vector-default-value (ref $f64vector)))
-		      (import "__runtime" "BGL_STRUCT_DEFAULT_VALUE" (global $struct-default-value (ref $struct)))
-		      (import "__runtime" "BGL_CLASS_DEFAULT_VALUE" (global $class-default-value (ref $class)))
-		      (import "__runtime" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
-		      (import "__runtime" "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value (ref $vector)))
-		      (import "__runtime" "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value (ref $mutex)))
-		      (import "__runtime" "BGL_CONDVAR_DEFAULT_VALUE" (global $condvar-default-value (ref $condvar)))
-		      (import "__runtime" "BGL_DATE_DEFAULT_VALUE" (global $date-default-value (ref $date)))
-		      (import "__runtime" "BGL_REAL_DEFAULT_VALUE" (global $real-default-value (ref $real)))
-		      (import "__runtime" "BGL_BIGNUM_DEFAULT_VALUE" (global $bignum-default-value (ref $bignum)))
-		      (import "__runtime" "BGL_PORT_DEFAULT_VALUE" (global $port-default-value (ref $port)))
-		      (import "__runtime" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
-		      (import "__runtime" "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE" (global $file-output-port-default-value (ref $file-output-port)))
-		      (import "__runtime" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
-		      (import "__runtime" "BGL_FILE_INPUT_PORT_DEFAULT_VALUE" (global $file-input-port-default-value (ref $file-input-port)))
-		      (import "__runtime" "BGL_BINARY_PORT_DEFAULT_VALUE" (global $binary-port-default-value (ref $file-input-port)))
-		      (import "__runtime" "BGL_SOCKET_DEFAULT_VALUE" (global $socket-default-value (ref $socket)))
-		      (import "__runtime" "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE" (global $datagram-socket-default-value (ref $datagram-socket)))
-		      (import "__runtime" "BGL_WEAKPTR_DEFAULT_VALUE" (global $weakptr-default-value (ref $weakptr)))
-		      (import "__runtime" "BGL_MMAP_DEFAULT_VALUE" (global $mmap-default-value (ref $mmap)))
-		      (import "__runtime" "BGL_PROCESS_DEFAULT_VALUE" (global $process-default-value (ref $process)))
-		      (import "__runtime" "BGL_CUSTOM_DEFAULT_VALUE" (global $custom-default-value (ref $custom)))
-		      (import "__runtime" "BGL_FOREIGN_DEFAULT_VALUE" (global $foreign-default-value (ref $foreign)))
-		      (import "__runtime" "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value (ref $dynamic-env)))
-		      (import "__runtime" "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value (ref $exit)))
-		      (import "__runtime" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
-		      (import "__runtime" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
+		      (import "__bigloo" "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value (ref func)))
+		      (import "__bigloo" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value ,(wasm-type *bint*)))
+		      (import "__bigloo" "BGL_BINT8_DEFAULT_VALUE" (global $bint8-default-value (ref $bint8)))
+		      (import "__bigloo" "BGL_BINT16_DEFAULT_VALUE" (global $bint16-default-value (ref $bint16)))
+		      (import "__bigloo" "BGL_BINT32_DEFAULT_VALUE" (global $bint32-default-value (ref $bint32)))
+		      (import "__bigloo" "BGL_BINT64_DEFAULT_VALUE" (global $bint64-default-value (ref $bint64)))
+		      (import "__bigloo" "BGL_BUINT8_DEFAULT_VALUE" (global $buint8-default-value (ref $buint8)))
+		      (import "__bigloo" "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value (ref $buint16)))
+		      (import "__bigloo" "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value (ref $buint32)))
+		      (import "__bigloo" "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value (ref $buint64)))
+		      (import "__bigloo" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value ,(wasm-type *bchar*)))
+		      (import "__bigloo" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $bucs2)))
+		      (import "__bigloo" "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value (ref $belong)))
+		      (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
+		      (import "__bigloo" "BGL_EPAIR_DEFAULT_VALUE" (global $epair-default-value (ref $epair)))
+		      (import "__bigloo" "BGL_CELL_DEFAULT_VALUE" (global $cell-default-value (ref $cell)))
+		      (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+		      (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
+		      (import "__bigloo" "BGL_KEYWORD_DEFAULT_VALUE" (global $keyword-default-value (ref $keyword)))
+		      (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+		      (import "__bigloo" "BGL_U8VECTOR_DEFAULT_VALUE" (global $u8vector-default-value (ref $u8vector)))
+		      (import "__bigloo" "BGL_S8VECTOR_DEFAULT_VALUE" (global $s8vector-default-value (ref $s8vector)))
+		      (import "__bigloo" "BGL_U16VECTOR_DEFAULT_VALUE" (global $u16vector-default-value (ref $u16vector)))
+		      (import "__bigloo" "BGL_S16VECTOR_DEFAULT_VALUE" (global $s16vector-default-value (ref $s16vector)))
+		      (import "__bigloo" "BGL_U32VECTOR_DEFAULT_VALUE" (global $u32vector-default-value (ref $u32vector)))
+		      (import "__bigloo" "BGL_S32VECTOR_DEFAULT_VALUE" (global $s32vector-default-value (ref $s32vector)))
+		      (import "__bigloo" "BGL_U64VECTOR_DEFAULT_VALUE" (global $u64vector-default-value (ref $u64vector)))
+		      (import "__bigloo" "BGL_S64VECTOR_DEFAULT_VALUE" (global $s64vector-default-value (ref $s64vector)))
+		      (import "__bigloo" "BGL_F32VECTOR_DEFAULT_VALUE" (global $f32vector-default-value (ref $f32vector)))
+		      (import "__bigloo" "BGL_F64VECTOR_DEFAULT_VALUE" (global $f64vector-default-value (ref $f64vector)))
+		      (import "__bigloo" "BGL_STRUCT_DEFAULT_VALUE" (global $struct-default-value (ref $struct)))
+		      (import "__bigloo" "BGL_CLASS_DEFAULT_VALUE" (global $class-default-value (ref $class)))
+		      (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
+		      (import "__bigloo" "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value (ref $vector)))
+		      (import "__bigloo" "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value (ref $mutex)))
+		      (import "__bigloo" "BGL_CONDVAR_DEFAULT_VALUE" (global $condvar-default-value (ref $condvar)))
+		      (import "__bigloo" "BGL_DATE_DEFAULT_VALUE" (global $date-default-value (ref $date)))
+		      (import "__bigloo" "BGL_REAL_DEFAULT_VALUE" (global $real-default-value (ref $real)))
+		      (import "__bigloo" "BGL_BIGNUM_DEFAULT_VALUE" (global $bignum-default-value (ref $bignum)))
+		      (import "__bigloo" "BGL_PORT_DEFAULT_VALUE" (global $port-default-value (ref $port)))
+		      (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
+		      (import "__bigloo" "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE" (global $file-output-port-default-value (ref $file-output-port)))
+		      (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
+		      (import "__bigloo" "BGL_FILE_INPUT_PORT_DEFAULT_VALUE" (global $file-input-port-default-value (ref $file-input-port)))
+		      (import "__bigloo" "BGL_BINARY_PORT_DEFAULT_VALUE" (global $binary-port-default-value (ref $file-input-port)))
+		      (import "__bigloo" "BGL_SOCKET_DEFAULT_VALUE" (global $socket-default-value (ref $socket)))
+		      (import "__bigloo" "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE" (global $datagram-socket-default-value (ref $datagram-socket)))
+		      (import "__bigloo" "BGL_WEAKPTR_DEFAULT_VALUE" (global $weakptr-default-value (ref $weakptr)))
+		      (import "__bigloo" "BGL_MMAP_DEFAULT_VALUE" (global $mmap-default-value (ref $mmap)))
+		      (import "__bigloo" "BGL_PROCESS_DEFAULT_VALUE" (global $process-default-value (ref $process)))
+		      (import "__bigloo" "BGL_CUSTOM_DEFAULT_VALUE" (global $custom-default-value (ref $custom)))
+		      (import "__bigloo" "BGL_FOREIGN_DEFAULT_VALUE" (global $foreign-default-value (ref $foreign)))
+		      (import "__bigloo" "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value (ref $dynamic-env)))
+		      (import "__bigloo" "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value (ref $exit)))
+		      (import "__bigloo" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
+		      (import "__bigloo" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
 		      
-		      (import "__runtime" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))
+		      (import "__bigloo" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))
 		      (import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result (ref eq))))
 		      
 		      ,@(emit-imports))
@@ -1041,8 +1044,7 @@
 	   ,@(if (eq? (global-import global) 'export)
 		 `((export ,(global-name global)))
 		 '())
-	   ;; FIXME: remove the mut and null qualifiers
-	   (mut (ref $real)) 
+	   (ref $real) 
 	   (struct.new $real (f64.const ,value))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1050,14 +1052,21 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-integer integer global)
    (set-variable-name! global)
-   `((global 
-	,(wasm-sym (global-name global))
-	,@(if (eq? (global-import global) 'export)
-	      `((export ,(global-name global)))
-	      '())
-	;; FIXME: remove the mut and null qualifiers
-	(mut (ref $bint)) 
-	(struct.new $bint (i64.const ,integer)))))
+   (if (backend-boxed-fixnums (the-backend))
+       `((global ,(wasm-sym (global-name global))
+	    ,@(if (eq? (global-import global) 'export)
+		  `((export ,(global-name global)))
+		  '())
+	    (ref $bint)
+	    ;; cannot use $make_bint as wasm requires global
+	    ;; variables to be initialized with constants only
+	    (struct.new $bint (i64.const ,integer))))
+       `((global ,(wasm-sym (global-name global))
+	    ,@(if (eq? (global-import global) 'export)
+		  `((export ,(global-name global)))
+		  '())
+	    (ref i31)
+	    `(ref.i31 (i32.wrap_i64 (i64.const ,integer)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-i32 ...                                                */
@@ -1224,7 +1233,7 @@
 	 (cond
 	    (library (symbol->string library))
 	    ((not (eq? module 'foreign)) (symbol->string module))
-	    (else "__runtime")))))
+	    (else "__bigloo")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-import ::value ...                                          */
@@ -1290,7 +1299,7 @@
 ;*    emit-memory ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (emit-memory)
-   `((import "__runtime" "memory" (memory 0))))
+   `((import "__bigloo" "memory" (memory 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-tmp-file-name ...                                           */

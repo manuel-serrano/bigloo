@@ -11,7 +11,7 @@
 ;*    This file is concatanated to runtime.wat to build bigloo_x.wat   */
 ;*=====================================================================*/
 
-(module $__runtime_javascript
+(module $__bigloo_javascript
    (import "__js" "not_implemented" (func $not_implemented (param i32)))
    (import "__js" "trace" (func $js_trace (param i32))) ;; FIXME: remove
    (import "__js" "internalError" (func $js_internal_error (param i32) (param i32)))

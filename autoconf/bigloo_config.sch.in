@@ -69,5 +69,6 @@
   (have-unistring . ,(=fx @BGL_HAVE_UNISTRING@ 1))
   (have-overflow . ,(=fx @BGL_HAVE_OVERFLOW@ 1))
   (have-alloca . ,(=fx @HAVE_ALLOCA@ 1))
-  (have-c99stackalloc . ,(=fx @HAVE_C99STACKALLOC@ 1)))
+  (have-c99stackalloc . ,(=fx @HAVE_C99STACKALLOC@ 1))
+  (wasm-fixnum . @WASM_FIXNUM@))
   

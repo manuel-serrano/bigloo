@@ -1,0 +1,127 @@
+;; -*- eval: (bee-mode) -*-
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wcnst31.wat.in     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Oct  2 10:56:25 2024                          */
+;*    Last change :  Wed Oct  2 14:10:14 2024 (serrano)                */
+;*    Copyright   :  2024 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    WASM implementation of constants with 31-bit unboxed fixnums.    */
+;*    -------------------------------------------------------------    */
+;*    When fixnums are unboxed, cnsts have to be allocated objects.    */
+;*=====================================================================*/
+
+(module $__bigloo_cnst
+   
+   ;; -----------------------------------------------------------------
+   ;; Type declarations 
+   ;; -----------------------------------------------------------------
+   
+   (type $bcnst (sub (struct)))
+
+   (type $bnil (sub $bcnst (struct)))
+   
+   (type $bunspecified (sub $bcnst (struct)))
+   
+   (type $bbool (sub $bcnst (struct (field $val i32))))
+   
+   (type $bchar (sub $bcnst (struct (field $val i8))))
+   
+   ;; -----------------------------------------------------------------
+   ;; Global constantes 
+   ;; -----------------------------------------------------------------
+   (global $bchar-default-value
+      (export "BGL_BCHAR_DEFAULT_VALUE") (ref $bchar)
+      (struct.new $bchar (i32.const 0)))
+   
+   (global $BFALSE (export "BFALSE") (ref $bbool)
+      (struct.new $bbool (i32.const 0)))
+   (global $BTRUE (export "BTRUE") (ref $bbool)
+      (struct.new $bbool (i32.const 1)))
+   (global $BNIL (export "BNIL") (ref $bnil)
+      (struct.new $bnil))
+   (global $BUNSPEC (export "BUNSPEC") (ref $bunspecified)
+      (struct.new $bunspecified))
+   (global $BEOF (export "BEOF") (ref $bcnst) 
+      (struct.new $bcnst))
+   (global $BEOA (export "BEOA") (ref $bcnst)
+      (struct.new $bcnst))
+   (global $BOPTIONAL (export "BOPTIONAL") (ref $bcnst)
+      (struct.new $bcnst))
+   (global $BKEY (export "BKEY") (ref $bcnst) 
+      (struct.new $bcnst))
+   (global $BREST (export "BREST") (ref $bcnst)
+      (struct.new $bcnst))
+   
+   ;; -----------------------------------------------------------------
+   ;; Library functions 
+   ;; -----------------------------------------------------------------
+   
+   ;; BOOLEANP
+   (func $BOOLEANP (export "BOOLEANP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bbool) (local.get $o)))
+   
+   ;; BBOOL
+   (func $BBOOL (export "BBOOL") (param $v i32) (result (ref $bbool))
+      (if (result (ref $bbool)) (local.get $v)
+	  (then (global.get $BTRUE))
+	  (else (global.get $BFALSE))))
+   
+   ;; CBOOL
+   (func $CBOOL (export "CBOOL") (param $o (ref $bbool)) (result i32)
+      (struct.get $bbool $val (local.get $o)))
+
+   ;; OBJ_TO_BOOL
+   (func $OBJ_TO_BOOL (export "OBJ_TO_BOOL")
+      (param $o (ref eq))
+      (result i32)
+      (if (result i32) (ref.eq (local.get $o) (global.get $BFALSE))
+	  (then (i32.const 0))
+	  (else (i32.const 1))))
+
+   ;; CHARP
+   (func $CHARP (export "CHARP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bchar) (local.get $o)))
+
+   ;; BCHAR
+   (func $BCHAR (export "BCHAR")
+      (param $v i32)
+      (result (ref $bchar))
+      (struct.new $bchar (local.get $v)))
+   
+   ;; CCHAR
+   (func $CCHAR (export "CCHAR")
+      (param $o (ref $bchar))
+      (result i32)
+      (struct.get $bchar $val (local.get $o)))
+   
+   ;; toupper
+   (func $toupper (export "toupper")
+      (param $c i32)
+      (result i32)
+      (if (i32.ge_u (local.get $c) (i32.const 97))
+	  (then
+	     (if (i32.le_u (local.get $c) (i32.const 122))
+		 (then (return (i32.sub (local.get $c) (i32.const 32))))
+		 (else (return (local.get $c)))))
+	  (else
+	   (return (local.get $c)))))
+   
+   ;; tolower
+   (func $tolower (export "tolower")
+      (param $c i32)
+      (result i32)
+      (if (i32.ge_u (local.get $c) (i32.const 65))
+	  (then
+	     (if (i32.le_u (local.get $c) (i32.const 90))
+		 (then (return (i32.add (local.get $c) (i32.const 32))))
+		 (else (return (local.get $c)))))
+	  (else
+	   (return (local.get $c)))))
+   
+   )

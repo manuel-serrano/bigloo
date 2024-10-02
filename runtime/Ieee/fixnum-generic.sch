@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Sun Sep  8 18:39:02 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 11:16:06 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -52,11 +52,11 @@
 (define ($$strtol string start radix)
    (let loop ((acc 0)
 	      (i (-fx (string-length string) 1))
-	      (k radix))
+	      (k 1))
       (if (>=fx i 0)
 	  (let* ((c (string-ref-ur string i))
 		 (n (char->num c)))
-	     (loop (+fx acc (*fx k n)) (-fx i 1) (*fx k radix )))
+	     (loop (+fx acc (*fx k n)) (-fx i 1) (*fx k radix)))
 	  acc)))
 
 ;*---------------------------------------------------------------------*/

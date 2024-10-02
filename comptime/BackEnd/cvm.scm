@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/BackEnd/cvm.scm              */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/cvm.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 28 11:46:28 2005                          */

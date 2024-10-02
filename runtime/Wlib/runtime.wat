@@ -1,39 +1,20 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat.in     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Oct  1 11:48:28 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 14:08:00 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
 ;*=====================================================================*/
 
-(module $__runtime
+(module $__bigloo
 
   ;; General bigloo memory
   (memory 1)
   (export "memory" (memory 0))
-
-  ;; /!\ DO NOT MODIFY THE FOLLOWING DEFINITIONS. 
-  ;; see comptime/SawWasm/code.scm
-  (global $BFALSE (export "BFALSE") (ref i31) (ref.i31 (i32.const 0)))
-  (global $BTRUE (export "BTRUE") (ref i31) (ref.i31 (i32.const 1)))
-  (global $BNIL (export "BNIL") (ref i31) (ref.i31 (i32.const 2)))
-  (global $BUNSPEC (export "BUNSPEC") (ref i31) (ref.i31 (i32.const 3)))
-  (global $BEOF (export "BEOF") (ref i31) (ref.i31 (i32.const 4))) ;; TODO: What value to choose for BEOF? Is it really a cnst?
-  (global $BEOA (export "BEOA") (ref i31) (ref.i31 (i32.const 5)))
-  (global $BOPTIONAL (export "BOPTIONAL") (ref i31) (ref.i31 (i32.const 0x102)))
-  (global $BKEY (export "BKEY") (ref i31) (ref.i31 (i32.const 0x106)))
-  (global $BREST (export "BREST") (ref i31) (ref.i31 (i32.const 0x103)))
-
-  ;; (type $bints-table (array (mut (ref eq))))
-  (type $bints-table (array (ref $bint)))
-  (global $BINTS (ref $bints-table) 
-     ;;(array.new_default $bints-table (i32.const @BINTS_PREALLOC_SIZE@))
-     @BINTS_PREALLOC@
-     )
 
   (func $bgl_internal_error (export "bgl_internal_error")
      (param $errno i32)
@@ -53,75 +34,16 @@
      (result (ref eq))
      (global.get $BUNSPEC))
   
-  (func $INTEGERP (export "INTEGERP")
-     (param $o (ref eq))
-     (result i32)
-     (ref.test (ref $bint) (local.get $o)))
-  
-  (func $CINT (export "CINT")
-     (param $o (ref $bint))
-     (result i64)
-     (return (struct.get $bint $v (local.get $o))))
-
-  (func $BOOLEANP (export "BOOLEANP")
-     (param $o (ref eq))
-     (result i32)
-     (i32.or
-	(ref.eq (local.get $o) (global.get $BFALSE))
-	(ref.eq (local.get $o) (global.get $BTRUE))))
-
-  (global $MAXVALFX (export "MAXVALFX") i64
-     (i64.const 9223372036854775807))
-  (global $MAXVALELONG (export "MAXVALELONG") i64
-     (i64.const 9223372036854775807))
-  (global $MAXVALLLONG (export "MAXVALLLONG") i64
-     (i64.const 9223372036854775807))
-
   ;; Bigloo types default value
   (global $funptr-default-value
      (export "BGL_FUNPTR_DEFAULT_VALUE") (ref func)
      (ref.func $BOOLEANP))
-  
-  (global $bint-default-value
-     (export "BGL_BINT_DEFAULT_VALUE") (ref $bint)
-     (struct.new $bint (i64.const 0)))
-  (global $bint8-default-value
-     (export "BGL_BINT8_DEFAULT_VALUE") (ref $bint8)
-     (struct.new $bint8 (i32.const 0)))
-  (global $bint16-default-value
-     (export "BGL_BINT16_DEFAULT_VALUE") (ref $bint16)
-     (struct.new $bint16 (i32.const 0)))
-  (global $bint32-default-value
-     (export "BGL_BINT32_DEFAULT_VALUE") (ref $bint32)
-     (struct.new $bint32 (i32.const 0)))
-  (global $bint64-default-value
-     (export "BGL_BINT64_DEFAULT_VALUE") (ref $bint64)
-     (struct.new $bint64 (i64.const 0)))
-  (global $buint8-default-value
-     (export "BGL_BUINT8_DEFAULT_VALUE") (ref $buint8)
-     (struct.new $buint8 (i32.const 0)))
-  (global $buint16-default-value
-     (export "BGL_BUINT16_DEFAULT_VALUE") (ref $buint16)
-     (struct.new $buint16 (i32.const 0)))
-  (global $buint32-default-value
-     (export "BGL_BUINT32_DEFAULT_VALUE") (ref $buint32)
-     (struct.new $buint32 (i32.const 0)))
-  (global $buint64-default-value
-     (export "BGL_BUINT64_DEFAULT_VALUE") (ref $buint64)
-     (struct.new $buint64 (i64.const 0)))
-  (global $belong-default-value
-     (export "BGL_BELONG_DEFAULT_VALUE") (ref $belong)
-     (struct.new $belong (i64.const 0)))
+
   (global $real-default-value
      (export "BGL_REAL_DEFAULT_VALUE") (ref $real)
      (struct.new $real (f64.const 0)))
-  (global $bignum-default-value
-     (export "BGL_BIGNUM_DEFAULT_VALUE") (ref $bignum)
-     (struct.new $bignum (global.get $zerobx)))
   
-  (global $bchar-default-value
-     (export "BGL_BCHAR_DEFAULT_VALUE") (ref i31)
-     (ref.i31 (i32.const 1000)))
+  
   (global $bucs2-default-value
      (export "BGL_BUCS2_DEFAULT_VALUE") (ref $bucs2)
      (struct.new $bucs2 (i32.const 0)))
@@ -137,9 +59,6 @@
      (export "BGL_CELL_DEFAULT_VALUE") (ref $cell)
      (struct.new $cell (global.get $BUNSPEC)))
   
-  (global $bstring-default-value
-     (export "BGL_BSTRING_DEFAULT_VALUE") (ref $bstring)
-     (array.new_fixed $bstring 0))
   (global $ucs2string-default-value
      (export "BGL_UCS2STRING_DEFAULT_VALUE") (ref $ucs2string)
      (array.new_fixed $ucs2string 0))
@@ -148,13 +67,6 @@
      (export "BGL_REGEXP_DEFAULT_VALUE") (ref $regexp)
      (struct.new $regexp))
   
-  (global $symbol-default-value
-     (export "BGL_SYMBOL_DEFAULT_VALUE") (ref $symbol)
-     (struct.new $symbol (global.get $bstring-default-value) (global.get $BNIL)))
-  (global $keyword-default-value
-     (export "BGL_KEYWORD_DEFAULT_VALUE") (ref $keyword)
-     (struct.new $keyword (global.get $bstring-default-value) (global.get $BNIL))
-     )
   (global $vector-default-value
      (export "BGL_VECTOR_DEFAULT_VALUE") (ref $vector)
      (array.new_fixed $vector 0))
@@ -258,45 +170,7 @@
      (export "BGL_PROCEDURE_EL_DEFAULT_VALUE") (ref $vector)
      (global.get $vector-default-value))
   
-  (global $class-default-value
-     (export "BGL_CLASS_DEFAULT_VALUE") (ref $class)
-     (struct.new $class
-	;; name
-	(global.get $symbol-default-value)
-	;; module
-	(global.get $symbol-default-value)
-	;; new_fun
-	(global.get $BUNSPEC)
-	;; alloc_fun
-	(global.get $procedure-default-value)
-	;; nil_fun
-	(global.get $procedure-default-value)
-	;; nil
-	(global.get $BUNSPEC)
-	;; constructor
-	(global.get $BUNSPEC)
-	;; super
-	(global.get $BUNSPEC)
-	;; subclasses
-	(global.get $pair-default-value)
-	;; shrink
-	(global.get $BUNSPEC)
-	;; evdata
-	(global.get $BUNSPEC)
-	;; ancestors
-	(global.get $vector-default-value)
-	;; virtual_fields
-	(global.get $vector-default-value)
-	;; direct_fields
-	(global.get $vector-default-value)
-	;; all_fields
-	(global.get $vector-default-value)
-	;; hash
-	(i64.const 0)
-	;; index
-	(i64.const 0)
-	;; depth
-	(i64.const 0)))
+  
   
   
   (global $binary-port-default-value
@@ -322,16 +196,6 @@
      (export "BGL_PROCESS_DEFAULT_VALUE") (ref $process)
      (struct.new $process))
   
-  (global $custom-default-value
-     (export "BGL_CUSTOM_DEFAULT_VALUE") (ref $custom)
-     (struct.new $custom
-	(global.get $bstring-default-value)))
-  (global $foreign-default-value
-     (export "BGL_FOREIGN_DEFAULT_VALUE") (ref $foreign)
-     (struct.new $foreign
-	(global.get $symbol-default-value)
-	(i32.const 0)))
-
   (global $exit-default-value
      (export "BGL_EXIT_DEFAULT_VALUE") (ref $exit)
      (struct.new $exit
@@ -377,14 +241,7 @@
      (export "BGL_OPAQUE_DEFAULT_VALUE") (ref $opaque)
      (struct.new $opaque))
 
-  (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE
-     (export "BGL_CLASS_INSTANCE_DEFAULT_VALUE")
-     (param $clazz (ref $class))
-     (result (ref $BgL_objectz00_bglt))
-     (local $ctor (ref $procedure))
-     (local.set $ctor (struct.get $class $nil_fun (local.get $clazz)))
-     (ref.cast (ref $BgL_objectz00_bglt)
-	(call $BGl_classzd2nilzd2zz__objectz00 (local.get $clazz))))  
+    
 
    ;; -----------------------------------------------------------------
    ;; Utilities
@@ -417,31 +274,6 @@
       (struct.get $struct $values (local.get $struct)) 
       (local.get $index) 
       (local.get $value))
-    (global.get $BUNSPEC))
-
-  ;; --------------------------------------------------------
-  ;; Boolean functions
-  ;; --------------------------------------------------------
-
-  (func $BBOOL (export "BBOOL") (param $v i32) (result (ref i31))
-    (if (result (ref i31)) (local.get $v)
-        (then (global.get $BTRUE))
-        (else (global.get $BFALSE))))
-
-  (func $CBOOL (export "CBOOL") (param $v (ref eq)) (result i32)
-    (if (result i32) (ref.eq (local.get $v) (global.get $BFALSE))
-      (then (i32.const 0))
-      (else (i32.const 1))))
-
-  ;; --------------------------------------------------------
-  ;; Custom functions
-  ;; --------------------------------------------------------
-
-  (func $CUSTOM_IDENTIFIER_SET (export "CUSTOM_IDENTIFIER_SET")
-    (param $custom (ref $custom))
-    (param $ident (ref $bstring))
-    (result (ref eq))
-    (struct.set $custom $ident (local.get $custom) (local.get $ident))
     (global.get $BUNSPEC))
 
   ;; --------------------------------------------------------
@@ -480,99 +312,6 @@
 	    (global.set $mvalues
 	       (array.new $vector (global.get $BUNSPEC) (local.get $n)))))
      (local.get $n))
-
-  ;; --------------------------------------------------------
-  ;; Class functions
-  ;; --------------------------------------------------------
-
-  (func $bgl_make_class (export "bgl_make_class")
-    (param $name (ref $symbol))
-    (param $module (ref $symbol))
-    (param $num i64)
-    (param $inheritance-num i64)
-    (param $super (ref eq))
-    (param $subclasses (ref eq))
-    (param $alloc (ref $procedure))
-    (param $hash i64)
-    (param $direct-fields (ref $vector))
-    (param $all-fields (ref $vector))
-    (param $constructor (ref eq))
-    (param $virtual-fields (ref $vector))
-    (param $new (ref eq))
-    (param $nil (ref $procedure))
-    (param $shrink (ref eq))
-    (param $depth i64)
-    (param $evdata (ref eq))
-    (result (ref $class))
-
-    (local $self (ref $class))
-    (local $ancestors (ref $vector))
-    (local.set $ancestors
-       (array.new $vector (global.get $BFALSE)
-	  (i32.add (i32.wrap_i64 (local.get $depth)) (i32.const 1))))
-    (if (i64.lt_u (local.get $depth) (i64.const 0))
-      (then 
-        (array.copy 
-          $vector $vector
-          (local.get $ancestors)
-          (i32.const 0)
-          (struct.get $class $ancestors
-	     (ref.cast (ref $class) (local.get $super)))
-          (i32.const 0)
-          (i32.wrap_i64 (local.get $depth)))))
-
-    (local.set $self 
-      (struct.new $class
-        (local.get $name)
-        (local.get $module)
-        (local.get $new)
-        (local.get $alloc)
-        (local.get $nil)
-        (global.get $BFALSE)
-        (local.get $constructor)
-        (local.get $super)
-        (local.get $subclasses)
-        (local.get $shrink)
-        (local.get $evdata)
-        (local.get $ancestors)
-        (local.get $virtual-fields)
-        (local.get $direct-fields)
-        (local.get $all-fields)
-        (local.get $hash)
-        (local.get $num)
-        (local.get $depth)))
-    
-    (array.set $vector (local.get $ancestors) (i32.wrap_i64 (local.get $depth)) (local.get $self))
-    (local.get $self)
-    )
-
-  (func $BGL_CLASS_SUBCLASSES_SET (export "BGL_CLASS_SUBCLASSES_SET")
-    (param $class (ref $class))
-    (param $subclasses (ref eq))
-    (result (ref eq))
-    (struct.set $class $subclasses (local.get $class) (local.get $subclasses))
-    (global.get $BUNSPEC))
-
-  (func $BGL_CLASS_DIRECT_FIELDS_SET (export "BGL_CLASS_DIRECT_FIELDS_SET")
-    (param $class (ref $class))
-    (param $direct_fields (ref $vector))
-    (result (ref eq))
-    (struct.set $class $direct_fields (local.get $class) (local.get $direct_fields))
-    (global.get $BUNSPEC))
-
-  (func $BGL_CLASS_ALL_FIELDS_SET (export "BGL_CLASS_ALL_FIELDS_SET")
-    (param $class (ref $class))
-    (param $all_fields (ref $vector))
-    (result (ref eq))
-    (struct.set $class $all_fields (local.get $class) (local.get $all_fields))
-    (global.get $BUNSPEC))
-
-  (func $BGL_CLASS_EVDATA_SET (export "BGL_CLASS_EVDATA_SET")
-    (param $class (ref $class))
-    (param $evdata (ref eq))
-    (result (ref eq))
-    (struct.set $class $evdata (local.get $class) (local.get $evdata))
-    (global.get $BUNSPEC))
 
   ;; --------------------------------------------------------
   ;; Cell functions
@@ -746,124 +485,6 @@
     (global.get $BUNSPEC))
 
   ;; --------------------------------------------------------
-  ;; Symbol and keywords functions
-  ;; --------------------------------------------------------
-  (func $set-symbol-plist (export "SET_SYMBOL_PLIST")
-     (param $sym (ref eq))
-     (param $val (ref eq))
-     (result (ref eq))
-     (struct.set $symbol $cval (ref.cast (ref $symbol) (local.get $sym))
-	(local.get $val))
-     (local.get $val))
-
-  (func $set-keyword-plist (export "SET_KEYWORD_PLIST")
-     (param $sym (ref eq))
-     (param $val (ref eq))
-     (result (ref eq))
-     (struct.set $keyword $cval (ref.cast (ref $keyword) (local.get $sym))
-	(local.get $val))
-     (local.get $val))
-
-  
-  ;; --------------------------------------------------------
-  ;; Character functions
-  ;; --------------------------------------------------------
-  (func $CHARP (export "CHARP")
-     (param $o (ref eq))
-     (result i32)
-     (if (ref.test (ref i31) (local.get $o))
-	 (then
-	    (if (i32.ge_u (i31.get_u (ref.cast (ref i31) (local.get $o)))
-		   (i32.const 1000))
-		(then (return (i32.le_u (i31.get_u (ref.cast (ref i31) (local.get $o)))
-				 (i32.const 1255))))
-		(else (return (i32.const 0)))))
-	 (else (return (i32.const 0)))))
-		   
-  (func $toupper (export "toupper")
-     (param $c i32)
-     (result i32)
-     (if (i32.ge_u (local.get $c) (i32.const 97))
-	 (then
-	    (if (i32.le_u (local.get $c) (i32.const 122))
-		(then (return (i32.sub (local.get $c) (i32.const 32))))
-		(else (return (local.get $c)))))
-	 (else
-	  (return (local.get $c)))))
-
-  (func $tolower (export "tolower")
-     (param $c i32)
-     (result i32)
-     (if (i32.ge_u (local.get $c) (i32.const 65))
-	 (then
-	    (if (i32.le_u (local.get $c) (i32.const 90))
-		(then (return (i32.add (local.get $c) (i32.const 32))))
-		(else (return (local.get $c)))))
-	 (else
-	  (return (local.get $c)))))
-     
-  ;; --------------------------------------------------------
-  ;; String functions
-  ;; --------------------------------------------------------
-
-  ;; TODO: maybe implement this as a generic function in scheme
-  (func $string_append 
-    (export "string_append") 
-    (param $a (ref $bstring)) 
-    (param $b (ref $bstring))
-    (result (ref $bstring))
-    (local $r (ref $bstring))
-    (local.set $r
-      (array.new_default $bstring 
-        (i32.add 
-          (array.len (local.get $a))
-          (array.len (local.get $b)))))
-    (array.copy $bstring $bstring (local.get $r) (i32.const 0) (local.get $a) (i32.const 0) (array.len (local.get $a)))
-    (array.copy $bstring $bstring (local.get $r) (array.len (local.get $a)) (local.get $b) (i32.const 0) (array.len (local.get $b)))
-    (local.get $r))
-
-  (func $string_append_3
-    (export "string_append_3")
-    (param $a (ref $bstring)) 
-    (param $b (ref $bstring))
-    (param $c (ref $bstring))
-    (result (ref $bstring))
-    (local $r (ref $bstring))
-    (local $l1 i32)
-    (local $l2 i32)
-    (local $l3 i32)
-    (local.set $l1 (array.len (local.get $a)))
-    (local.set $l2 (array.len (local.get $b)))
-    (local.set $l3 (array.len (local.get $c)))
-    (local.set $r
-      (array.new_default $bstring 
-        (i32.add 
-          (i32.add (local.get $l1) (local.get $l2))
-          (local.get $l3))))
-    (array.copy $bstring $bstring (local.get $r) (i32.const 0) (local.get $a) (i32.const 0) (local.get $l1))
-    (array.copy $bstring $bstring (local.get $r) (local.get $l1) (local.get $b) (i32.const 0) (local.get $l2))
-    (array.copy $bstring $bstring (local.get $r) (i32.add (local.get $l1) (local.get $l2)) (local.get $c) (i32.const 0) (local.get $l3))
-    (local.get $r))
-
-  (func $c_substring
-    (export "c_substring")
-    (param $str (ref $bstring))
-    (param $min i64)
-    (param $max i64)
-    (result (ref $bstring))
-    (local $len i32)
-    (local $r (ref $bstring))
-    (local.set $len (i32.wrap_i64 (i64.sub (local.get $max) (local.get $min))))
-    (local.set $r (array.new_default $bstring (local.get $len)))
-    (array.copy $bstring $bstring
-      (local.get $r)
-      (i32.const 0)
-      (local.get $str)
-      (i32.wrap_i64 (local.get $min))
-      (local.get $len))
-    (local.get $r))
-
-  ;; --------------------------------------------------------
   ;; Flonum builtin functions
   ;; --------------------------------------------------------
 
@@ -932,8 +553,10 @@
   (func $POP_EXIT (export "POP_EXIT") (result (ref eq))
     (call $POP_ENV_EXIT (global.get $current-dynamic-env)))
 
-  (func $EXITD_STAMP (export "EXITD_STAMP") (param $o (ref eq)) (result (ref $bint))
-    (struct.new $bint (struct.get $exit $stamp (ref.cast (ref $exit) (local.get $o)))))
+  (func $EXITD_STAMP (export "EXITD_STAMP") (param $o (ref eq))
+     (result (ref eq))
+     (call $make_bint
+	(struct.get $exit $stamp (ref.cast (ref $exit) (local.get $o)))))
 
   (func $EXITD_CALLCCP (export "EXITD_CALLCCP") (param $o (ref eq)) (result i32)
     (i32.const 0))
@@ -1550,34 +1173,6 @@
   (export "pow" (func $pow))
   (export "RANDOMFL" (func $RANDOMFL))
 
-  ;; fixnums
-  (func $make_bint (export "make_bint")
-     (param $x i64)
-     (result (ref $bint))
-     (local $tmp i64)
-     (local.set $tmp (i64.sub (local.get $x) (i64.const @BINTS_PREALLOC_START@)))
-     (if (i64.lt_u (local.get $tmp) (i64.const @BINTS_PREALLOC_SIZE@))
-	 (then
-	    (return
-	       (array.get $bints-table
-		  (global.get $BINTS)
-		  (i32.wrap_i64 (local.get $tmp)))))
-	 (else
-	  (return 
-	     (struct.new $bint (local.get $x))))))
-
-  (func $make_belong (export "make_belong")
-     (param $x i64)
-     (result (ref $belong))
-     (local $tmp i64)
-     (struct.new $belong (local.get $x)))
-
-  (func $make_bllong (export "make_bllong")
-     (param $x i64)
-     (result (ref $bllong))
-     (local $tmp i64)
-     (struct.new $bllong (local.get $x)))
-
   ;; flonums
   (export "bgl_double_to_ieee_string" (func $bgl_double_to_ieee_string))
   (export "bgl_float_to_ieee_string" (func $bgl_float_to_ieee_string))
@@ -1947,8 +1542,8 @@
 	      (call $BGL_CURRENT_DYNAMIC_ENV))))
      (call $js_exit
 	(if (result i32)
-	    (ref.test (ref $bint) (local.get 0))
-	    (then (i32.wrap_i64 (struct.get $bint $v (ref.cast (ref $bint) (local.get 0)))))
+	    (call $INTEGERP (local.get 0))
+	    (then (i32.wrap_i64 (call $OBJ_TO_INT (local.get 0))))
 	    (else (i32.const 0))))
      (global.get $BUNSPEC))
 )

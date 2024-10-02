@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Type/cache.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Type/cache.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Mon Sep 16 17:02:34 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 14:01:44 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
@@ -66,6 +66,7 @@
 	   *hvectors*
 	   *struct*
 	   *unspec*
+	   *cnst*
 	   *procedure*
 	   *procedure-l*
 	   *procedure-el*
@@ -150,6 +151,7 @@
    (set! *procedure-l*   (use-type! 'procedure-l #f))
    (set! *procedure-el*  (use-type! 'procedure-el #f))
    (set! *unspec*        (use-type! 'unspecified #f))
+   (set! *cnst*          (use-type! 'cnst #f))
    (set! *exit*          (use-type! 'exit #f))
    (set! *object*        (if (type-exists? 'object)
 			     (find-type 'object)
@@ -220,6 +222,7 @@
 (define *procedure-l*   'no-type-yet)
 (define *procedure-el*  'no-type-yet)
 (define *unspec*        'no-type-yet)
+(define *cnst*          'no-type-yet)
 (define *exit*          'no-type-yet)
 (define *object*        'no-type-yet)
 (define *class*         'no-type-yet)

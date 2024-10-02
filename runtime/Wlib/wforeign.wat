@@ -1,33 +1,36 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wnumber.wat        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wforeign.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*    Creation    :  Tue Oct  1 09:40:49 2024                          */
-;*    Last change :  Tue Oct  1 09:56:51 2024 (serrano)                */
+;*    Creation    :  Wed Oct  2 10:14:39 2024                          */
+;*    Last change :  Wed Oct  2 10:16:49 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    WASM numbers                                                     */
+;*    WASM foreign objects                                             */
 ;*=====================================================================*/
 
-(module $__runtime_number
+(module $__bigloo_foreign
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
    
+   (rec
+      (type $cobj
+	 (struct))
+      (type $foreign
+	 (struct
+	    (field $id (ref $symbol))
+	    (field $ptr i32))))
+   
    ;; -----------------------------------------------------------------
-   ;; Library functions 
+   ;; Global variables 
    ;; -----------------------------------------------------------------
-   (func $bgl_strtod (export "bgl_strtod")
-      (param $str (ref $bstring))
-      (result f64)
-      
-      (call $store_substring (local.get $str)
-	 (i64.const 0)
-	 (i64.extend_i32_u (array.len (local.get $str)))
-	 (i32.const 128))
-      
-      (return_call $js_strtod (i32.const 128)
-	 (array.len (local.get $str))))
-
+   
+   (global $foreign-default-value
+      (export "BGL_FOREIGN_DEFAULT_VALUE") (ref $foreign)
+      (struct.new $foreign
+	 (global.get $symbol-default-value)
+	 (i32.const 0)))
+   
    )

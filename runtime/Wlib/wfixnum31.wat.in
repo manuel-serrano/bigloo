@@ -1,0 +1,57 @@
+;; -*- eval: (bee-mode) -*-
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/wasm/runtime/Wlib/wfixnum31.wat.in       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
+;*    Last change :  Wed Oct  2 13:06:12 2024 (serrano)                */
+;*    Copyright   :  2024 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    WASM unboxed 31bit fixnum implementation                         */
+;*=====================================================================*/
+
+(module $__bigloo_fixnum31
+   
+   ;; -----------------------------------------------------------------
+   ;; Global variables 
+   ;; -----------------------------------------------------------------
+   
+   (global $bint-default-value
+      (export "BGL_BINT_DEFAULT_VALUE") (ref i31)
+      (ref.i31 (i32.const 0)))
+
+   ;; -----------------------------------------------------------------
+   ;; Fixnum macros 
+   ;; -----------------------------------------------------------------
+   
+   (func $INTEGERP (export "INTEGERP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref i31) (local.get $o)))
+  
+   (func $CINT (export "CINT")
+      (param $o (ref i31))
+      (result i64)
+      (i64.extend_i32_s (i31.get_s (local.get $o))))
+
+   (func $OBJ_TO_INT (export "OBJ_TO_INT")
+      (param $o (ref eq))
+      (result i64)
+      (call $CINT (ref.cast (ref i31) (local.get $o))))
+
+   (global $MAXVALFX (export "MAXVALFX") i64
+      (i64.const 2147483647))
+
+   ;; -----------------------------------------------------------------
+   ;; Library functions 
+   ;; -----------------------------------------------------------------
+
+   ;; make_bint
+   (func $make_bint (export "make_bint")
+      (param $x i64)
+      (result (ref i31))
+      (local $tmp i64)
+      (ref.i31 (i32.wrap_i64 (local.get $x))))
+
+   )
+

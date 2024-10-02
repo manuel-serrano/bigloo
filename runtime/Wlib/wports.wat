@@ -3,13 +3,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Oct  1 08:58:58 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 12:33:38 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
 ;*=====================================================================*/
 
-(module $__runtime_ports
+(module $__bigloo_ports
 
    ;; -----------------------------------------------------------------
    ;; Global constants 
@@ -827,8 +827,7 @@
 		  (if (i32.eqz (call $STRINGP (local.get $buf)))
 		      (then (return)))
 		  
-		  (local.set $cint
-		     (call $CINT (ref.cast (ref $bint) (local.get $s))))
+		  (local.set $cint (call $OBJ_TO_INT (local.get $s)))
 		  
 		  (if (i64.le_s (local.get $cint)
 			 (call $STRING_LENGTH

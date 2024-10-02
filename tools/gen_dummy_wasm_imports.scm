@@ -86,7 +86,7 @@
 	      ((eq)
 	       '(global.get $BUNSPEC))
 	      ((i31)
-	       (ref.i31 (i32.const 0)))
+	       '(ref.i31 (i32.const 0)))
 	      (else
  	       `(global.get ,(symbol-append type '-default-value)))))
 	  (else

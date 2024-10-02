@@ -1,14 +1,14 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Llib/bconfigure.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bconfigure.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Jul 16 13:08:10 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 11:19:52 2024 (serrano)                */
 ;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
-;*    In order to avoid daunting bootstrap problem, I have decided not */
+;*    In order to avoid daunting bootstrap problems, I have decided not*/
 ;*    to produce this file automatically. It is written and maintained */
 ;*    by (my) hand.                                                    */
 ;*=====================================================================*/
@@ -127,7 +127,8 @@
 	   (macro $cfg-boehm-gc::long "BGL_BOEHM_GC")
 	   (macro $cfg-saw-gc::long "BGL_SAW_GC")
 	   (macro $configure-have-alloca::bool "BGL_HAVE_ALLOCA")
-	   (macro $configure-have-c99stackalloc::bool "BGL_HAVE_C99STACKALLOC"))
+	   (macro $configure-have-c99stackalloc::bool "BGL_HAVE_C99STACKALLOC")
+	   (macro $configure-wasm-fixnum::long "BGL_WASM_FIXNUM"))
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
@@ -201,6 +202,8 @@
 	      (field static os-name::string "BGL_OS_NAME")
 	      (field static os-arch::string "BGL_OS_ARCH")
 	      (field static os-version::string "BGL_OS_VERSION")
+
+	      (field static wasm-fixnum::int "BGL_WASM_FIXNUM")
 	      "bigloo.configure"))
 
    (export    (bigloo-config #!optional config)
@@ -297,7 +300,8 @@
      (thread-local-storage . ,(cond-expand (bigloo-c $configure-thread-local-storage) (bigloo-jvm #f) (else $configure-thread-local-storage)))
      (have-spinlock . ,(cond-expand (bigloo-c $configure-have-spinlock) (bigloo-jvm #f) (else $configure-have-spinlock)))
      (have-alloca . ,(cond-expand (bigloo-c $configure-have-alloca) (bigloo-jvm #f) (else $configure-have-alloca)))
-     (have-c99-stack-alloc . ,(cond-expand (bigloo-c $configure-have-c99stackalloc) (bigloo-jvm #f) (else $configure-have-c99stackalloc)))))
+     (have-c99-stack-alloc . ,(cond-expand (bigloo-c $configure-have-c99stackalloc) (bigloo-jvm #f) (else $configure-have-c99stackalloc)))
+     (wasm-fixnum . ,$configure-wasm-fixnum)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */

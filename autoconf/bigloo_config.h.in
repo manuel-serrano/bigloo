@@ -459,6 +459,9 @@
 #undef BGL_JAR
 #define BGL_JAR "@BGL_JAR@"
 
+#undef BGL_WASM_FIXNUM
+#define BGL_WASM_FIXNUM @WASM_FIXNUM@
+
 #undef BGL_IMPORT
 #define BGL_IMPORT @BGL_IMPORT@
 

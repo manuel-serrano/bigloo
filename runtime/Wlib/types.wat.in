@@ -1,16 +1,16 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/types.wat.in             */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/types.wat.in       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Mon Sep 30 14:22:05 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 08:40:11 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
 ;*=====================================================================*/
 
-(module $__types
+(module $__bigloo_types
    
    ;; -----------------------------------------------------------------
    ;; Misc 
@@ -65,15 +65,12 @@
    (type $regexp (struct))
 
    (type $opaque (struct))
+
+   (@include "./wsymbols.wat" type)
    
    ;; TODO
    (rec
       (type $pair-nil (struct))
-      (type $symbol
-	 (struct (field $str (ref $bstring)) (field $cval (mut (ref eq)))))
-      (type $keyword
-	 (struct (field $str (ref $bstring)) (field $cval (mut (ref eq)))))
-      (type $custom (struct (field $ident (mut (ref $bstring)))))
       (type $weakptr (struct)))
    
    ;; Functions types (for closures and variadic calls)
@@ -112,28 +109,19 @@
 				 (field $car (mut (ref eq))) 
 				 (field $cdr (mut (ref eq))) 
 				 (field $cer (mut (ref eq)))))))
+
+   ;; fixnum and integers
+   (@include "./wfixnum.wat" type)
+   (@include "./wintegers.wat" type)
    
    ;; Bignums
-   (type $bignum
-      (struct (field $bx externref)))
+   (@include "./wbignum.wat" type)
    
    ;; Boxed numeric types
    (rec
       ;; (type $bbool (struct (field $v i8)))
       ;; (type $bchar (struct (field $v i8)))
       (type $bucs2 (struct (field $v i16)))
-      (type $bint8 (struct (field $v i8)))
-      (type $buint8 (struct (field $v i8)))
-      (type $bint16 (struct (field $v i16)))
-      (type $buint16 (struct (field $v i16)))
-      (type $bint32 (struct (field $v i32)))
-      (type $buint32 (struct (field $v i32)))
-      (type $bint64 (struct (field $v i64)))
-      (type $buint64 (struct (field $v i64)))
-      (type $bint (struct (field $v i64)))
-      (type $buint (struct (field $v i64)))
-      (type $belong (struct (field $v i64)))
-      (type $bllong (struct (field $v i64)))
       (type $real (struct (field $v f64))))
 
    (rec (type $exit (struct 
@@ -146,49 +134,16 @@
    ;; Exception raised for unimplemented code.
    (tag $unimplemented)
    
-   ;; Classes
-   (type $class (struct
-		   (field $name (ref $symbol))
-		   (field $module (ref $symbol))
-		   (field $new_fun (ref eq))
-		   (field $alloc_fun (ref $procedure))
-		   (field $nil_fun (ref $procedure))
-		   (field $nil (ref eq))
-		   (field $constructor (ref eq))
-		   (field $super (ref eq))
-		   (field $subclasses (mut (ref eq)))
-		   (field $shrink (ref eq))
-		   (field $evdata (mut (ref eq)))
-		   (field $ancestors (ref $vector))
-		   (field $virtual_fields (ref $vector))
-		   (field $direct_fields (mut (ref $vector)))
-		   (field $all_fields (mut (ref $vector)))
-		   (field $hash i64)
-		   (field $index i64)
-		   (field $depth i64)))
+   
    
    (type $struct (struct
 		    (field $key (ref eq))
 		    (field $values (ref $vector))))
    
-   (type $BgL_objectz00_bglt (sub (struct
-				     (field $header (mut i64))
-				     (field $widening (mut (ref eq))))))
    
   ;; Ports
    
-   
-   
-   
-   
-   
    (type $binary-port (sub (struct)))
-   
-   ;; Foreign type
-   (rec (type $cobj (struct)))
-   (type $foreign (struct
-		     (field $id (ref $symbol))
-		     (field $ptr i32)))
    
    ;; Date type
    (type $date (struct
@@ -230,6 +185,8 @@
    (@include "./wrgc.wat" type)
    (@include "./wports.wat" type)
 
+   (@include "./wobject.wat" type)
+   
    ;; -----------------------------------------------------------------
    ;; Dynamic environment 
    ;; -----------------------------------------------------------------
@@ -246,5 +203,9 @@
 
 	 (field $module (mut (ref eq)))
 	 (field $abase (mut (ref eq)))))
+
+   (@include "./wcustom.wat" type)
+   (@include "./wforeign.wat" type)
+   
 
    )

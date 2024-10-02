@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Oct  1 10:56:58 2024 (serrano)                */
+#*    Last change :  Wed Oct  2 09:03:18 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -118,8 +118,9 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*---------------------------------------------------------------------*/
 #*    WAT objects                                                      */
 #*---------------------------------------------------------------------*/
-WLIB		= javascript runtime wwriter wrgc wports wstring wbignum \
-                  wsystem wnumber
+WLIB		= javascript wcnst runtime wwriter wfixnum  wstring wsymbols \
+                  wrgc wports wintegers wbignum wsystem wreal wobject \
+                  wcustom wforeign
 
 W_WLIB		= $(WLIB:%=Wlib/%.wat)
 
@@ -376,7 +377,7 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
                   $(SCM_USR_SRC:%.scm=objs/$(CLASSDIR_USR)/bigloo/runtime/%.class)
 
 #*---------------------------------------------------------------------*/
-#*    WASM module files                                                  */
+#*    WASM module files                                                */
 #*---------------------------------------------------------------------*/
 # WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
                  $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
@@ -1214,20 +1215,26 @@ objs/wasm_u/Unsafe/bignumber.wat: Unsafe/bignumber-generic.sch
 objs/wasm_s/Rgc/rgc.wat: Rgce/rgc-generic.sch
 objs/wasm_u/Rgc/rgc.wat: Rgc/rgc-generic.sch
 
-Wlib/runtime.wat: Wlib/runtime.wat.in
+Wlib/wfixnum.wat: Wlib/wfixnum$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
 	preallocs=`$(WASM_BINTS_PREALLOC)`; \
-        echo "P=$preallocs"; \
 	cat $< \
+           | sed -e "s/-[*]- eval: (bee-mode) -[*]-/!!! GENERATED FILE, DON'T EDIT !!!/" \
            | sed -e "s/@BINTS_PREALLOC_SIZE@/$(WASM_BINTS_PREALLOC_SIZE)/g" \
            | sed -e "s/@BINTS_PREALLOC_START@/$(WASM_BINTS_PREALLOC_START)/g" \
            | sed -e "s/@BINTS_PREALLOC@/$$preallocs/" \
            | sed -e "s/@DOLLAR@/$$/g" \
            > $@
 
+Wlib/wcnst.wat: Wlib/wcnst$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
+	cat $< \
+           | sed -e "s/-[*]- eval: (bee-mode) -[*]-/!!! GENERATED FILE, DON'T EDIT !!!/" \
+           > $@
+
 Wlib/types.wat: Wlib/types.wat.in
 	$(BIGLOO) -i ../tools/gen_wasm_types.scm $< > $@ || (rm -f $@; exit 1)
 
-Wlib/types.wat: Wlib/wports.wat Wlib/wstring.wat
+Wlib/types.wat: Wlib/wports.wat Wlib/wstring.wat Wlib/wfixnum.wat \
+  Wlib/wintegers.wat Wlib/wbignum.wat Wlib/wcnst.wat
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

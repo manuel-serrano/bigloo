@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Llib/bexit.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bexit.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Fri Jul 12 12:44:52 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 14:37:37 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -51,7 +51,7 @@
 	    (macro call/cc-jump-exit::obj (::exit ::obj) "CALLCC_JUMP_EXIT")
 	    (macro $exitd->exit::exit (::obj) "EXITD_TO_EXIT")
 	    (macro exitd-call/cc?::bool (::obj) "EXITD_CALLCCP")
-	    (macro exitd-stamp::bint (::obj) "EXITD_STAMP")
+	    (macro exitd-stamp::obj (::obj) "EXITD_STAMP")
 	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP_AS_OBJ")
 	    (macro $env-get-exitd-top::obj (::dynamic-env) "BGL_ENV_EXITD_TOP_AS_OBJ")
 	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
@@ -84,10 +84,8 @@
 		    ($exitd-mutex-profile)
 		    ($failsafe-mutex-profile))))
 
-   (wasm
-	    ($exitd->exit "(ref.cast (ref $exit) ~0)")
-	    ($env-get-exitd-val "(struct.get $dynamic-env $exitd_val ~0)")
-		)
+   (wasm    ($exitd->exit "(ref.cast (ref $exit) ~0)")
+	    ($env-get-exitd-val "(struct.get $dynamic-env $exitd_val ~0)"))
 	    
    (java    (class foreign
 	       (method static push-exit!::obj (::exit ::long)
