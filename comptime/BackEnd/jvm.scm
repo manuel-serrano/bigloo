@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Mon Jul  8 15:27:34 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 14:48:35 2024 (serrano)                */
 ;*    Copyright   :  2012-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -67,7 +67,7 @@
    ;; the jvm prelude (hello message and *DEST* update)
    (pass-prelude "Jvm" start-jvm-emission!)
    (verbose 2 "      [module: " *module* " qualified type name: "
-	    (module->qualified-type *module*) "]"#\Newline)
+      (module->qualified-type *module*) "]"#\Newline)
    ;; CARE: BPS, fix the backend qualified name !!
    (jvm-qname-set! me (string->symbol (module->qualified-type *module*)))
    ;; if we are going to link and we have not found a main yet, we
@@ -81,7 +81,7 @@
 	     (let ((port (if (not (string? dest))
 			     (current-output-port)
 			     (open-output-file
-			      (string-append dir "/" dest)))))
+				(string-append dir "/" dest)))))
 		(jvmasdump classfile port)
 		(if (not (eq? port (current-output-port)))
 		    (close-output-port port)))
@@ -114,7 +114,7 @@
 		    (addsuffix (prefix (basename *dest*)))))))
       (emit (car l*) bname)
       (for-each (lambda (cf) (emit cf (jasname cf)))
-		(cdr l*) )
+	 (cdr l*) )
       (stop-on-pass 'cc (lambda () 'done))
       (stop-on-pass 'jvmas (lambda () 'done))
       (stop-on-pass 'jast (lambda () 'done)) ))
@@ -168,13 +168,10 @@
 
 (define (addsuffix name)
    (string-append name
-		  (case *pass*
-		     ((jast)
-		      ".jast")
-		     ((jvmas)
-		      ".jas")
-		     (else
-		      ".class"))))
+      (case *pass*
+	 ((jast) ".jast")
+	 ((jvmas) ".jas")
+	 (else ".class"))))
 
 (define (jasname cf)
    (match-case cf

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wbignum.wat        */
+;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wbignum.wat              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Wed Oct  2 08:41:59 2024 (serrano)                */
+;*    Last change :  Wed Oct  2 15:06:11 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -132,24 +132,71 @@
       (param $x i64)
       (param $y i64)
       (result (ref eq))
-      (return_call $make_bint
-	 (i64.add (local.get $x) (local.get $y))))
-
-   ;; BGL_SAFE_MUL_FX
-   (func $BGL_SAFE_MUL_FX (export "BGL_SAFE_MUL_FX")
-     (param $x i64)
-     (param $y i64)
-     (result (ref eq))
-     (return_call $make_bint
-	(i64.mul (local.get $x) (local.get $y))))
+      
+      (local $sx i64)
+      (local $sy i64)
+      (local $t i64)
+      
+      (local.set $sx (i64.shr_u (local.get $x) (i64.const 61)))
+      (local.set $sy (i64.shr_u (local.get $y) (i64.const 61)))
+      (local.set $t (i64.add (local.get $x) (local.get $y)))
+      
+      (if (i64.eq (local.get $x) (local.get $y))
+	  (then (return_call $make_bint (local.get $t)))
+	  (else
+	   (if (i64.eq (local.get $sx)
+		  (i64.shr_u (local.get $t) (i64.const 63)))
+	       (then
+		  (return_call $bgl_bignum_add
+		     (call $bgl_long_to_bignum (local.get $x))
+		     (call $bgl_long_to_bignum (local.get $y))))
+	       (else (return_call $make_bint (local.get $t)))))))
 
    ;; BGL_SAFE_MINUS_FX
    (func $BGL_SAFE_MINUS_FX (export "BGL_SAFE_MINUS_FX")
-     (param $x i64)
-     (param $y i64)
-     (result (ref eq))
-     (return_call $make_bint
-	(i64.sub (local.get $x) (local.get $y))))
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      
+      (local $sx i64)
+      (local $sy i64)
+      (local $t i64)
+      
+      (local.set $t (i64.sub (local.get $x) (local.get $y)))
+      
+      (if (i64.eqz (local.get $x))
+	  (then (return_call $make_bint (local.get $t)))
+	  (else
+	   (local.set $sx (i64.shr_u (local.get $x) (i64.const 61)))
+	   (local.set $sy (i64.shr_u (local.get $y) (i64.const 61)))
+	   (if (i32.eqz (i64.eq (local.get $x) (local.get $y)))
+	       (then (return_call $make_bint (local.get $t)))
+	       (else
+		(if (i64.eq (local.get $sx)
+		       (i64.shr_u (local.get $t) (i64.const 63)))
+		    (then
+		       (return_call $bgl_bignum_sub
+			  (call $bgl_long_to_bignum (local.get $x))
+			  (call $bgl_long_to_bignum (local.get $y))))
+		    (else (return_call $make_bint (local.get $t)))))))))
+
+   ;; BGL_SAFE_MUL_FX
+   (func $BGL_SAFE_MUL_FX (export "BGL_SAFE_MUL_FX")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      
+      (local $t i64)
+
+      (if (i64.eqz (local.get $y))
+	  (then (return_call $make_bint (local.get $y)))
+	  (else
+	   (local.set $t (i64.mul (local.get $x) (local.get $y)))
+	   (if (i64.eq (i64.div_s (local.get $t) (local.get $y)) (local.get $x))
+	       (then (return_call $make_bint (local.get $t)))
+	       (else (return_call $bgl_bignum_mul
+			(call $bgl_long_to_bignum (local.get $x))
+			(call $bgl_long_to_bignum (local.get $y))))))))
 
    ;; BGL_SAFE_QUOTIENT_FX
    (func $BGL_SAFE_QUOTIENT_FX (export "BGL_SAFE_QUOTIENT_FX")
