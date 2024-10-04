@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue May 14 12:11:50 2024 (serrano)                */
+/*    Last change :  Mon Sep 30 09:30:15 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1731,7 +1731,7 @@ bgl_open_input_descriptor(int fd, obj_t buffer) {
 /*    bgl_input_string_seek ...                                        */
 /*---------------------------------------------------------------------*/
 static void
-bgl_input_string_seek(obj_t port, long pos) {
+bgl_input_string_seek(obj_t port, long pos, int whence) {
    long offset = CREF(port)->input_string_port.offset;
    
    if (pos >= 0 && pos < BGL_INPUT_PORT_BUFSIZ(port)) {
