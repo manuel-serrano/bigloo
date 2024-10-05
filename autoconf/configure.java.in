@@ -102,4 +102,5 @@ public class configure {
   public static final byte[] BGL_OS_ARCH = "@OS_ARCH@".getBytes();
   public static final byte[] BGL_OS_VERSION = "@OS_VERSION@".getBytes();
   public static final int BGL_CLASS_DISPLAY_MIN_SIZE = 6;
+  public static final int BGL_WASM_FIXNUM = @WASM_FIXNUM@;
 }
