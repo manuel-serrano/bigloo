@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Wed Oct  2 13:06:12 2024 (serrano)                */
+;*    Last change :  Sun Oct  6 11:24:44 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unboxed 31bit fixnum implementation                         */
@@ -41,6 +41,9 @@
 
    (global $MAXVALFX (export "MAXVALFX") i64
       (i64.const 2147483647))
+
+   (global $MAXVALFX_BITSIZE (export "MAXVALFX_BITSIZE") i32
+      (i32.const 31))
 
    ;; -----------------------------------------------------------------
    ;; Library functions 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Oct  1 09:37:32 2024 (serrano)                */
+/*    Last change :  Sun Oct  6 11:17:12 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -296,7 +296,12 @@ const instance = await WebAssembly.instantiate(wasm, {
 
    __js_bignum: {
       zerobx: BigInt(0),
+      zerobxp: bx => bx === 0,
       long_to_bignum: (value) => BigInt(value),
+      bgl_safe_bignum_to_fixnum: (bx, bsz) => {
+	 if (bsz > 53) bsz = 52; // max support JS fixnums
+	 return BigInt.asUintN(2 * bsz, bx) - BigInt.asUintN(bsz, bx);
+      },
       bignum_to_string: (value, addr) => {
 	 return storeJSStringToScheme(value.toString(), addr);
       },

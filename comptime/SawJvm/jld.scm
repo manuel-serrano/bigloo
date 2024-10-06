@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/SawJvm/jld.scm              */
+;*    serrano/prgm/project/bigloo/wasm/comptime/SawJvm/jld.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Sun Jun 20 11:09:34 2010 (serrano)                */
-;*    Copyright   :  2000-10 Manuel Serrano                            */
+;*    Last change :  Sun Oct  6 10:34:37 2024 (serrano)                */
+;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
 ;*    the application).                                                */
@@ -405,6 +405,9 @@
 		   "\"")
 	    (print "export CLASSPATH")
 	    (newline)
+	    (print "if [ \"$BIGLOOJAVAOPT \" = \" \" ]; then")
+	    (print "  BIGLOOJAVAOPT=-Xss8m")
+	    (print "fi")
 	    (print "exec " *jvm-java* " "
 		   (if (not *purify*) (bigloo-config 'jvflags) "")
 		   " $BIGLOOJAVAOPT $BUGLOOJAVAOPT " (bigloo-config 'jflags)

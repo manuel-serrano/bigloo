@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Oct  2 08:57:13 2024 (serrano)                */
+;*    Last change :  Sun Oct  6 10:32:33 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -156,6 +156,9 @@
 		      (with-output-to-file target
 			 (lambda ()
 			    (display "#!/bin/sh\n")
+			    (display "if [ \"$BIGLOOWASMOPT \" = \" \" ]; then\n")
+			    (display "  BIGLOOWASMOPT=--stack-size=8192\n")
+			    (display "fi\n")
 			    (display* (format "~a ~( ) $BIGLOOWASMOPT "
 					 *wasm-engine* *wasm-options*)
 			       (if *wasm-unsafe* *wasm-unsafe-options* "")

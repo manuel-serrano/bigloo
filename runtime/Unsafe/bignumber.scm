@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Unsafe/bignumber.scm          */
+;*    .../prgm/project/bigloo/wasm/runtime/Unsafe/bignumber.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Sep 30 09:32:29 2024 (serrano)                */
+;*    Last change :  Sun Oct  6 11:46:47 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -53,7 +53,7 @@
    (extern
       (macro $bignum?::bool (::obj) "BIGNUMP")
       
-      (macro $bignum->fixnum-safe::obj (::obj) "BGL_SAFE_BX_TO_FX")
+      (macro $bignum->fixnum-safe::obj (::bignum) "BGL_SAFE_BX_TO_FX")
       (macro +fx-safe::obj (::long ::long) "BGL_SAFE_PLUS_FX")
       (macro -fx-safe::obj (::long ::long) "BGL_SAFE_MINUS_FX")
       (macro *fx-safe::obj (::long ::long) "BGL_SAFE_MUL_FX")
