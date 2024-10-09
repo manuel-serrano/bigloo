@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Sun Oct  6 11:05:28 2024 (serrano)                */
+;*    Last change :  Wed Oct  9 09:30:21 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -195,26 +195,10 @@
       (param $x i64)
       (param $y i64)
       (result (ref eq))
-      
-      (local $sx i32)
-      (local $sy i32)
-      (local $t i64)
-      
-      (local.set $sx (call $INTEGER_SIGN (local.get $x)))
-      (local.set $sy (call $INTEGER_SIGN (local.get $y)))
-      (local.set $t (i64.sub (local.get $x) (local.get $y)))
-      
-      (if (i32.eq (local.get $sx) (local.get $sy))
-	  (then
-	     (return_call $make_bint (local.get $t)))
-	  (else
-	   (if (i32.eq (local.get $sx) (call $INTEGER_SIGN (local.get $t)))
-	       (then
-		  (return_call $make_bint (local.get $t)))
-	       (else
-		(return_call $bgl_bignum_sub
-		   (call $bgl_long_to_bignum (local.get $x))
-		   (call $bgl_long_to_bignum (local.get $y))))))))
+
+      (return_call $BGL_SAFE_PLUS_FX
+	 (local.get $x)
+	 (i64.sub (i64.const 0) (local.get $y))))
 
    ;; BGL_SAFE_MUL_FX
    (func $BGL_SAFE_MUL_FX (export "BGL_SAFE_MUL_FX")
