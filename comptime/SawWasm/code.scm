@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Oct  2 08:10:49 2024 (serrano)                */
+;*    Last change :  Tue Oct 29 12:37:57 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -133,13 +133,6 @@
 			      ,@(gen-locals locals)
 			      
 			      ,@body)))))))))
-;* 				    body                               */
-;* 				    (multiple-value-bind (locals instructions) */
-;* 				       (get-locals-and-intructions body) */
-;* 				       (append locals                  */
-;* 					                               */
-;* 					  inits                        */
-;* 					  instructions))))))))))))     */
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-body ...                                                     */
@@ -867,8 +860,12 @@
 	     (match-case expr
 		(((call . ?args))
 		 `(return_call ,@args))
+		(((@ ?loc (call . ?args)))
+		 `(@ ,loc (return_call ,@args)))
 		((call-ref . ?args)
 		 `(return_call_ref ,@args))
+		((@ ?loc call-ref . ?args)
+		 `(@ ,loc (return_call_ref ,@args)))
 		(else
 		 `(return ,@expr)))
 	     `(return ,@expr)))))

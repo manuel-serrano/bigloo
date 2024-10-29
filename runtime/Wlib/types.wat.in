@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Wed Oct  2 08:40:11 2024 (serrano)                */
+;*    Last change :  Mon Oct 21 17:44:23 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -145,22 +145,6 @@
    
    (type $binary-port (sub (struct)))
    
-   ;; Date type
-   (type $date (struct
-		  (field $timezone (mut i64))
-		  (field $year (mut i32))
-		  (field $month (mut i32))
-		  (field $yday (mut i32))
-		  (field $wday (mut i32))
-		  (field $day (mut i32))
-		  (field $hour (mut i32))
-		  (field $minute (mut i32))
-		  (field $second (mut i32))
-		  (field $nanosecond (mut i64))
-		  (field $is-dst (mut i32))
-		  (field $is-gmt (mut i32))
-		  (field $time (mut i64))))
-   
    ;; Thread types
    (type $mutex (struct
 		   (field $name (ref eq))
@@ -186,6 +170,8 @@
    (@include "./wports.wat" type)
 
    (@include "./wobject.wat" type)
+
+   (@include "./wdate.wat" type)
    
    ;; -----------------------------------------------------------------
    ;; Dynamic environment 
