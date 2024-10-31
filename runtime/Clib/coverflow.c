@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/4.5a/runtime/Clib/coverflow.c        */
+/*    serrano/prgm/project/bigloo/nanh/runtime/Clib/coverflow.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Sat Aug 27 17:00:51 2022                          */
-/*    Last change :  Thu Dec  1 16:39:43 2022 (serrano)                */
-/*    Copyright   :  2022 manuel serrano                               */
+/*    Last change :  Tue Oct 29 15:34:08 2024 (serrano)                */
+/*    Copyright   :  2022-24 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Handling overflow in arithmetic when the C compiler does not     */
 /*    support builtin operations.                                      */

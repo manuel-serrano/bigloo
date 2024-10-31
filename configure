@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/configure                     */
+#*    serrano/prgm/project/bigloo/nanh/configure                       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 12 07:04:12 2024 (serrano)                */
+#*    Last change :  Wed Oct 23 18:35:25 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -17,8 +17,8 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.6a
-buildrelease=4.5b
+release=4.7a
+buildrelease=4.6a
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 biglooftp=ftp://ftp-sop.inria.fr/indes/fp/Bigloo
@@ -87,7 +87,6 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - blank (uninitalized) for automatic configuration of the
 #    position independent code compiler option
 cnanflags=-DBGL_NAN_TAGGING=0
-creservedflags=-DBGL_RESERVED_TAGGING=0
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
@@ -109,7 +108,7 @@ belong_prealloc_min=-10
 belong_prealloc_max=100
 
 bglnantagging=0
-bglreservedtagging=0
+bglfloatingpointtagging=0
 bglsmi=0
 
 #*--- Java back-end user configuration --------------------------------*/
@@ -539,7 +538,7 @@ while : ; do
       havebdb=1;
       pthreadlocalstorage=;
       pthreadsetname=;
-      bglreservedtagging=0;
+      bglfloatingpointtagging=1;
       action="all";;
 
     --bootdir=*)
@@ -956,8 +955,8 @@ while : ; do
     --nan-tagging)
       bglnantagging=1;;
       
-    --reserved-tagging)
-      bglreservedtagging=1;;
+    --dual-double-tagging)
+      bglfloatingpointtagging=1;;
       
     --smi)
       bglsmi=1;;
@@ -1315,6 +1314,7 @@ while : ; do
       echo "Experimental features:"  >&2;
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging (nan-tagging schema)" >&2;
+      echo "   --dual-double-tagging (dual-double-tagging schema)" >&2;
       echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
@@ -1361,6 +1361,9 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_saw_h=lib/bigloo/$release/bigloo_saw.h
   bigloo_pair_h=lib/bigloo/$release/bigloo_pair.h
   bigloo_real_h=lib/bigloo/$release/bigloo_real.h
+  bigloo_real_heap_h=lib/bigloo/$release/bigloo_real_heap.h
+  bigloo_real_ddt_h=lib/bigloo/$release/bigloo_real_ddt.h
+  bigloo_real_nan_h=lib/bigloo/$release/bigloo_real_nan.h
   bigloo_bignum_h=lib/bigloo/$release/bigloo_bignum.h
   bigloo_int_h=lib/bigloo/$release/bigloo_int.h
   bigloo_vector_h=lib/bigloo/$release/bigloo_vector.h
@@ -2301,15 +2304,15 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
 
-  if [ "$bglreservedtagging " != "0 " ]; then
+  if [ "$bglfloatingpointtagging " != "0 " ]; then
     if [ "$alignment" = "3" ]; then 
-      creservedflags="-DBGL_RESERVED_TAGGING=1";
+      customgc=yes;
     else
-      $echo "*** ERROR: Reserved-tagging requires 64bit platforms"
+      $echo "*** ERROR: Dual-double-tagging requires 64bit platforms"
       exit 1
     fi
   fi
-     
+  
   $echo "+ GC configuration ($customgc)..." >> $configurelog
   
   cgcflags="`$autoconf gcflags` $cgcflags" || exit 1
@@ -3687,7 +3690,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@INT_BIT_SIZE@|$intsize|" \
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
-              -e "s|@BGL_RESERVED_TAGGING@|$bglreservedtagging|" \
+              -e "s|@BGL_FLOATING_POINT_TAGGING@|$bglfloatingpointtagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
@@ -3791,6 +3794,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_FLAGS@|$cflags|" \
               -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_NANFLAGS@|$cnanflags|" \
+              -e "s|@C_DDTFLAGS@|$cddtflags|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_FP_OPTION@|$cfpflags|" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
@@ -3920,6 +3924,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_saw_h` $bigloo_saw_h
   cp runtime/Include/`basename $bigloo_pair_h` $bigloo_pair_h
   cp runtime/Include/`basename $bigloo_real_h` $bigloo_real_h
+  cp runtime/Include/`basename $bigloo_real_heap_h` $bigloo_real_heap_h
+  cp runtime/Include/`basename $bigloo_real_ddt_h` $bigloo_real_ddt_h
+  cp runtime/Include/`basename $bigloo_real_nan_h` $bigloo_real_nan_h
   cp runtime/Include/`basename $bigloo_bignum_h` $bigloo_bignum_h
   cp runtime/Include/`basename $bigloo_int_h` $bigloo_int_h
   cp runtime/Include/`basename $bigloo_vector_h` $bigloo_vector_h
@@ -4257,6 +4264,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
   $echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
+  $echo "CDDTFLAGS=$cddtflags" >> $makefile_cfg
   $echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
   $echo "LDBUILDOPTS=$ldbuildopts" >> $makefile_cfg
   
@@ -5314,6 +5322,7 @@ $echo "  options for debugging/profiling....... $cfpflags" >> $configurelog
 $echo "  options for stripping................. $csflags" >> $configurelog
 $echo "  options for PIC code.................. $cpicflags" >> $configurelog
 $echo "  options for NAN code.................. $cnanflags" >> $configurelog
+$echo "  options for DDT code.................. $cddtflags" >> $configurelog
 $echo "  options for profiling................. $cpflags" >> $configurelog
 $echo "  options for linking................... $extralibs" >> $configurelog
 $echo "  assembly.............................. $as" >> $configurelog
@@ -5437,11 +5446,6 @@ if [ "$summary" = "yes" ]; then
     $echo "  nan tagging................. $bglnantagging"
   else
     $echo "  nan tagging................. no"
-  fi
-  if [ $bglreservedtagging != "0" ]; then
-    $echo "  reserved tagging............ $bglreservedtagging"
-  else
-    $echo "  reserved tagging............ no"
   fi
   if [ $customgc = "yes" ];then
      $echo "  gc.......................... custom ($gclib-$release, v$gcversion)"

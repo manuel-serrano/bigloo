@@ -1,9 +1,9 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
-/*   Bigloo (4.6a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Wed Sep 18 09:27:51 PM CEST 2024    */
+/*   Bigloo (4.7a)                                                           */
+/*   Inria -- Sophia Antipolis (c)       Wed Oct 30 03:22:13 AM CET 2024     */
 /*===========================================================================*/
-/* COMPILATION: (/home/serrano/prgm/project/bigloo/bigloo/bin/bigloo -ldopt -L/home/serrano/prgm/project/bigloo/bigloo/libbacktrace/home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.6a  -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.6a -I Llib -lib-dir /home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.6a -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/bigloo/libuv/libuv-v1.48.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
+/* COMPILATION: (/home/serrano/prgm/project/bigloo/nanh/bin/bigloo -ldopt -L/home/serrano/prgm/project/bigloo/nanh/libbacktrace/home/serrano/prgm/project/bigloo/nanh/lib/bigloo/4.7a  -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/nanh/lib/bigloo/4.7a -I Llib -lib-dir /home/serrano/prgm/project/bigloo/nanh/lib/bigloo/4.7a -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/nanh/libuv/libuv-v1.48.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
 
 #ifndef __BGL___LIBUV_TYPES_H
 #define __BGL___LIBUV_TYPES_H

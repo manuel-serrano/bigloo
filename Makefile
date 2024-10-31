@@ -1,5 +1,5 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/Makefile                      */
+#*    serrano/prgm/project/bigloo/nanh/Makefile                        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */

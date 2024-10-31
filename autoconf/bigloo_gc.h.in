@@ -110,8 +110,8 @@
 #    define GC_REGISTER_DISPLACEMENT(o) GC_register_displacement(o)
 #  endif
 
-#  if (defined(TAG_STRUCT) && (TAG_STRUCT != 0) && !BGL_NAN_TAGGING)
-#    define STRUCT_DISPLACEMENT() GC_REGISTER_DISPLACEMENT(TAG_STRUCT) 
+#  if (defined(TAG_POINTER) && (TAG_POINTER != 0) && !BGL_NAN_TAGGING)
+#    define STRUCT_DISPLACEMENT() GC_REGISTER_DISPLACEMENT(TAG_POINTER) 
 #  else
 #    define STRUCT_DISPLACEMENT() 0
 #  endif

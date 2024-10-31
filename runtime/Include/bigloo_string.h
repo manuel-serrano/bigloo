@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Include/bigloo_string.h        */
+/*    .../prgm/project/bigloo/nanh/runtime/Include/bigloo_string.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun May 28 08:46:25 2023 (serrano)                */
-/*    Copyright   :  2016-23 Manuel Serrano                            */
+/*    Last change :  Tue Oct 29 13:13:00 2024 (serrano)                */
+/*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -51,7 +51,7 @@ BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string(obj_t);
 BGL_RUNTIME_DECL obj_t make_ucs2_string(int, ucs2_t);
    
 
-#if(BGL_HAVE_UNISTRING)
+#if (BGL_HAVE_UNISTRING)
 BGL_RUNTIME_DECL int bgl_strcoll(obj_t, obj_t);
 #endif					
 
@@ -59,7 +59,7 @@ BGL_RUNTIME_DECL int bgl_strcoll(obj_t, obj_t);
 /*    bgl_string ...                                                   */
 /*---------------------------------------------------------------------*/
 struct bgl_string {
-#if(!defined(TAG_STRING))
+#if (!defined(TAG_STRING))
    header_t header;
 #endif		
    long length;
@@ -81,13 +81,13 @@ struct bgl_ucs2_string {
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
-#if(defined(TAG_STRING))
+#if (defined(TAG_STRING))
 #   define BSTRING(p) BGL_BPTR((obj_t)((long)p + TAG_STRING))
 #   define CSTRING(p) BGL_CPTR((obj_t)((long)p - TAG_STRING))
-#   if(TAG_STRING == 0)
+#   if (TAG_STRING == 0)
 #      define STRINGP(c) \
-          ((c && ((((long)c)&TAG_MASK) == TAG_STRING)))
-#   elif(TAG_STRING == TAG_QNAN)
+          ((c && ((((long)c) & TAG_MASK) == TAG_STRING)))
+#   elif (TAG_STRING == TAG_QNAN)
 #      define STRINGP(c) \
           (((((long)c) & TAG_MASK) == TAG_STRING) && ((long) c) & NAN_MASK)
 #   else
@@ -117,7 +117,7 @@ struct bgl_ucs2_string {
 /*        DEFINE_STRING_START(f, a, 2),                      */
 /*          {45,46,0},                                       */
 /*        DEFINE_STRING_STOP(f, a, 2);                       */
-#if(defined(TAG_STRING))
+#if (defined(TAG_STRING))
 #  define DEFINE_STRING(name, aux, str, len) \
    static struct { __CNST_ALIGN long length; \
                       char string[len + 1]; } \

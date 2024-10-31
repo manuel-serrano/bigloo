@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
+/*    serrano/prgm/project/bigloo/nanh/runtime/Include/bigloo.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Aug  1 13:17:18 2024 (serrano)                */
+/*    Last change :  Tue Oct 29 13:19:04 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -252,7 +252,37 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
-#if (BGL_NAN_TAGGING)
+#if (BGL_FLOATING_POINT_TAGGING)
+#  define TAG_QNAN 0
+#  define TAG_REALZ 0                 /*  real zero             ...000 */
+#  define TAG_REALL 3                 /*  real lower range      ...011 */
+#  define TAG_REALU 4                 /*  real upper range      ...010 */
+#  define TAG_INT 1                   /*  integer tagging       ...001 */
+#  define TAG_POINTER 2               /*  pointer tagging       ...010 */
+#  define TAG_CNST 5                  /*  constant tagging      ...101 */
+#  define TAG_PAIR 6                  /*  pair tagging          ...110 */
+//#  define TAG_CELL 6                  /*  cell tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+#elif (!BGL_NAN_TAGGING)
+#  define TAG_QNAN 0
+#  define TAG_INT 0                   /*  integer tagging       ....00 */
+#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
+#  define TAG_CNST 2                  /*  constant tagging      ....10 */
+#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
+#  if (PTR_ALIGNMENT >= 3)
+#    define TAG_VECTOR 4              /*  vector tagging        ...100 */
+#    define TAG_CELL 5                /*  cell tagging          ...101 */
+#    define TAG_REAL 6                /*  real tagging          ...110 */
+#    define TAG_STRING 7              /*  string tagging        ...111 */
+#  endif
+#  if (PTR_ALIGNMENT == 2 && defined(BGL_TAG_CNST32))
+#    define TAG_OBJECT TAG_CNST
+#    undef BGL_CNST_SHIFT_INT16
+#    define BGL_CNST_SHIFT_INT16 8
+#    undef BGL_CNST_SHIFT_UCS2
+#    define BGL_CNST_SHIFT_UCS2 8
+#  endif
+#else
 #  define TAG_QNAN (0x7ff8UL<<48)
 #  define TAG_SNAN (0xfff8UL<<48)
 #  define TAG_INT (0x7ff9L<<48)       /*  int tagging       011...1000 */
@@ -265,62 +295,6 @@ extern "C" {
 #  define TAG_NANOBJECT (0xffffUL<<48)/*  object tagging    111...1110 */
 #  define TAG_STRING (0xfff9UL<<48)   /*  object tagging    111...1000 */
 #  define TAG_SYMBOL (0xfffaUL<<48)   /*  symbol tagging    111...1001 */
-#elif (BGL_GC == BGL_SAW_GC)    
-#  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
-#  define TAG_YOUNG 2                 /*  pointer tagging       ....10 */
-#  define TAG_CNST 3                  /*  constant tagging      ....11 */
-#elif (BGL_GC == BGL_BOEHM_GC) 
-#  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
-#  define TAG_CNST 2                  /*  constant tagging      ....10 */
-#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
-#elif (BGL_GC == BGL_NO_GC)
-#  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
-#  define TAG_CNST 2                  /*  constant tagging      ....10 */
-#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
-#else
-error "Unknown garbage collector type"
-#endif
-
-#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING && !BGL_RESERVED_TAGGING)
-#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
-#  define TAG_CELL 5                  /*  cell tagging          ...101 */
-#  define TAG_REAL 6                  /*  real tagging          ...110 */
-#  define TAG_STRING 7                /*  string tagging        ...111 */
-#endif
-
-#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING && BGL_RESERVED_TAGGING)
-#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
-#  define TAG_RESERVED 5              /*  reserved tagging      ...101 */
-#  define TAG_CELL 6                  /*  cell tagging          ...110 */
-#  define TAG_STRING 7                /*  string tagging        ...111 */
-
-#  undef TAG_MASKPOINTER
-#  define TAG_MASKPOINTER ((1 << PTR_ALIGNMENT -1) - 1)
-
-#  if (TAG_RESERVED & TAG_POINTER != TAG_POINTER)
-      || (TAG_RESERVED & TAG_VECTOR != 1 << PTR_ALIGNMENT)
-      || (TAG_RESERVED & TAG_CELL != 1 << PTR_ALIGNMENT)
-      || (TAG_RESERVED & TAG_STRING != 1 << PTR_ALIGNMENT)
-     error "illegal reserved tag..."
-#  endif
-#endif
-
-/* TBR 28aug2022, backward compatibility, to be remove */
-#define TAG_STRUCT TAG_POINTER
-
-#if (PTR_ALIGNMENT == 2 && defined(BGL_TAG_CNST32) && !BGL_NAN_TAGGING)
-#  define TAG_OBJECT TAG_CNST
-
-#  undef BGL_CNST_SHIFT_INT16
-#  define BGL_CNST_SHIFT_INT16 8
-#  undef BGL_CNST_SHIFT_UCS2
-#  define BGL_CNST_SHIFT_UCS2 8
 #endif
 
 #if (TAG_YOUNG)
@@ -402,15 +376,9 @@ error "Unknown garbage collector type"
 #  define BOLDP(r) ((((long)r) & TAG_MASK) == TAG_POINTER)
 #endif
 
-#if (BGL_GC == BGL_SAW_GC)
-#  define BASSIGN(field, value, obj) (bps_bassign(&(field), value, obj), BUNSPEC)
-#  define BMASSIGN(field, value) bps_bmassign(&(field), value)
-#  define BBACKPTR(field, value) BYOUNGP(value) ? bps_dobackptr(&(field), value) : 0
-#else
-#  define BASSIGN(field, value, obj) (((field) = (value)), BUNSPEC)
-#  define BMASSIGN(field, value) ((field) = (value))
-#  define BBACKPTR(field, value)
-#endif
+#define BASSIGN(field, value, obj) (((field) = (value)), BUNSPEC)
+#define BMASSIGN(field, value) ((field) = (value))
+#define BBACKPTR(field, value)
 
 /*---------------------------------------------------------------------*/
 /*    Type identifiers ...                                             */
@@ -438,7 +406,7 @@ error "Unknown garbage collector type"
 #endif   
 #define SOCKET_TYPE 15
 #define STRUCT_TYPE 16
-#if (!defined(TAG_REAL) && !BGL_NAN_TAGGING)
+#if ((!defined(TAG_REAL) && !BGL_NAN_TAGGING) || BGL_FLOATING_POINT_TAGGING)
 #  define REAL_TYPE 17
 #endif   
 #define PROCESS_TYPE 18
