@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Oct 31 13:49:46 2024 (serrano)                */
+#*    Last change :  Thu Oct 31 16:02:27 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -959,6 +959,9 @@ while : ; do
     --fl-tagging)
       bglfltagging=1;;
       
+    --fl-tagging-lb)
+      bglfltagging=2;;
+      
     --smi)
       bglsmi=1;;
       
@@ -1316,6 +1319,7 @@ while : ; do
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging (nan-tagging schema)" >&2;
       echo "   --fl-tagging (default $bglfltagging)" >&2;
+      echo "   --fl-tagging-lb (for experiment only, don't use because slow)" >&2;
       echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;

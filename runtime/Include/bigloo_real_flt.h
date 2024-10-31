@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Oct 31 13:36:53 2024 (serrano)                */
+/*    Last change :  Thu Oct 31 15:56:59 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -99,17 +99,30 @@ union bgl_fltobj {
 /*---------------------------------------------------------------------*/
 /*    tagging and boxing                                               */
 /*---------------------------------------------------------------------*/
-#define BGL_RIT_ROT_NBITS 64
-#define BGL_BIT_ROTL(_o, _u) ((obj_t)(((unsigned long)_o << (unsigned long)_u) | ((unsigned long)_o >> (BGL_RIT_ROT_NBITS - (unsigned long)_u))))
-#define BGL_BIT_ROTR(_o, _u) ((obj_t)(((unsigned long)_o >> (unsigned long)_u) | ((unsigned long)_o << (BGL_RIT_ROT_NBITS - (unsigned long)_u))))
-   
+#if (BGL_FL_TAGGING == 1)
+// FL tags encoded in 3 bits of the exponent
+#  define BGL_ROT_NBITS 64
+#  define BGL_ROT_BITS ((unsigned long)60)
+
+#  define BGL_BIT_ROTL(_o) \
+     ((obj_t)(((unsigned long)_o << BGL_ROT_BITS) \
+	      | ((unsigned long)_o >> (BGL_ROT_NBITS - BGL_ROT_BITS))))
+#  define BGL_BIT_ROTR(_o) \
+     ((obj_t)(((unsigned long)_o >> BGL_ROT_BITS) \
+	      | ((unsigned long)_o << (BGL_ROT_NBITS - BGL_ROT_BITS))))
+#else
+// FL tags encoded in the 3 least significant bits of the word
+#  define BGL_BIT_ROTL(_o) (_o)
+#  define BGL_BIT_ROTR(_o) (_o)
+#endif
+
 #define DOUBLE_TO_REAL(_d) \
-   (BGL_TAGGED_REALP(BGL_BIT_ROTR(BGL_ASOBJ(_d), 60)) \
-    ? BGL_BIT_ROTR(BGL_ASOBJ(_d), 60) \
+   (BGL_TAGGED_REALP(BGL_BIT_ROTR(BGL_ASOBJ(_d))) \
+    ? BGL_BIT_ROTR(BGL_ASOBJ(_d)) \
     : make_real(_d))
 #define REAL_TO_DOUBLE(_o) \
    (BGL_TAGGED_REALP(_o) \
-    ? (BGL_ASDOUBLE(BGL_BIT_ROTL(_o, 60))) \
+    ? (BGL_ASDOUBLE(BGL_BIT_ROTL(_o))) \
     : REAL(_o).val)
 
 #define FLOAT_TO_REAL(_d) DOUBLE_TO_REAL((double)(_d))
