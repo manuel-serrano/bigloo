@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Thu Oct 31 14:07:00 2024 (serrano)                */
+;*    Last change :  Thu Oct 31 14:10:13 2024 (serrano)                */
 ;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -67,7 +67,7 @@
 	   (macro $configure-c-strict-stdc::bool "BGL_STRICT_STDC")
 	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
 	   (macro $configure-c-nan-flag::string "C_NANFLAGS")
-	   (macro $configure-c-fl-flag::string "C_FLTFLAGS")
+	   (macro $configure-c-flt-flag::string "C_FLTFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
 	   (macro $configure-c-prof-flag::string "C_PROFILE_FLAGS")
            (macro $configure-c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
