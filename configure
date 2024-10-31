@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct 23 18:35:25 2024 (serrano)                */
+#*    Last change :  Thu Oct 31 13:45:35 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -955,7 +955,7 @@ while : ; do
     --nan-tagging)
       bglnantagging=1;;
       
-    --dual-double-tagging)
+    --floating-point-tagging)
       bglfloatingpointtagging=1;;
       
     --smi)
@@ -1314,7 +1314,7 @@ while : ; do
       echo "Experimental features:"  >&2;
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging (nan-tagging schema)" >&2;
-      echo "   --dual-double-tagging (dual-double-tagging schema)" >&2;
+      echo "   --floating-point-tagging (default $bglfloatingpointtagging)" >&2;
       echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
@@ -2308,7 +2308,7 @@ if [ "$action" != "bigloo_config_el" ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
     else
-      $echo "*** ERROR: Dual-double-tagging requires 64bit platforms"
+      $echo "*** ERROR: floating point tagging requires 64bit platforms"
       exit 1
     fi
   fi
