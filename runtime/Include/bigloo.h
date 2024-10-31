@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Oct 29 13:19:04 2024 (serrano)                */
+/*    Last change :  Thu Oct 31 13:59:15 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -252,7 +252,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
-#if (BGL_FLOATING_POINT_TAGGING)
+#if (BGL_FL_TAGGING)
 #  define TAG_QNAN 0
 #  define TAG_REALZ 0                 /*  real zero             ...000 */
 #  define TAG_REALL 3                 /*  real lower range      ...011 */
@@ -406,7 +406,7 @@ extern "C" {
 #endif   
 #define SOCKET_TYPE 15
 #define STRUCT_TYPE 16
-#if ((!defined(TAG_REAL) && !BGL_NAN_TAGGING) || BGL_FLOATING_POINT_TAGGING)
+#if ((!defined(TAG_REAL) && !BGL_NAN_TAGGING) || BGL_FL_TAGGING)
 #  define REAL_TYPE 17
 #endif   
 #define PROCESS_TYPE 18

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Oct 31 13:45:35 2024 (serrano)                */
+#*    Last change :  Thu Oct 31 13:49:46 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -87,6 +87,7 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - blank (uninitalized) for automatic configuration of the
 #    position independent code compiler option
 cnanflags=-DBGL_NAN_TAGGING=0
+cfltflags=$CFLTFLAGS
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
@@ -108,7 +109,7 @@ belong_prealloc_min=-10
 belong_prealloc_max=100
 
 bglnantagging=0
-bglfloatingpointtagging=0
+bglfltagging=0
 bglsmi=0
 
 #*--- Java back-end user configuration --------------------------------*/
@@ -538,7 +539,7 @@ while : ; do
       havebdb=1;
       pthreadlocalstorage=;
       pthreadsetname=;
-      bglfloatingpointtagging=1;
+      bglfltagging=1;
       action="all";;
 
     --bootdir=*)
@@ -955,8 +956,8 @@ while : ; do
     --nan-tagging)
       bglnantagging=1;;
       
-    --floating-point-tagging)
-      bglfloatingpointtagging=1;;
+    --fl-tagging)
+      bglfltagging=1;;
       
     --smi)
       bglsmi=1;;
@@ -1314,7 +1315,7 @@ while : ; do
       echo "Experimental features:"  >&2;
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging (nan-tagging schema)" >&2;
-      echo "   --floating-point-tagging (default $bglfloatingpointtagging)" >&2;
+      echo "   --fl-tagging (default $bglfltagging)" >&2;
       echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
@@ -1362,7 +1363,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_pair_h=lib/bigloo/$release/bigloo_pair.h
   bigloo_real_h=lib/bigloo/$release/bigloo_real.h
   bigloo_real_heap_h=lib/bigloo/$release/bigloo_real_heap.h
-  bigloo_real_ddt_h=lib/bigloo/$release/bigloo_real_ddt.h
+  bigloo_real_flt_h=lib/bigloo/$release/bigloo_real_flt.h
   bigloo_real_nan_h=lib/bigloo/$release/bigloo_real_nan.h
   bigloo_bignum_h=lib/bigloo/$release/bigloo_bignum.h
   bigloo_int_h=lib/bigloo/$release/bigloo_int.h
@@ -2304,11 +2305,11 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
 
-  if [ "$bglfloatingpointtagging " != "0 " ]; then
+  if [ "$bglfltagging " != "0 " ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
     else
-      $echo "*** ERROR: floating point tagging requires 64bit platforms"
+      $echo "*** ERROR: fl tagging (floating point tagging) requires 64bit platforms"
       exit 1
     fi
   fi
@@ -3690,7 +3691,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@INT_BIT_SIZE@|$intsize|" \
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
-              -e "s|@BGL_FLOATING_POINT_TAGGING@|$bglfloatingpointtagging|" \
+              -e "s|@BGL_FL_TAGGING@|$bglfltagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
@@ -3794,7 +3795,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_FLAGS@|$cflags|" \
               -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_NANFLAGS@|$cnanflags|" \
-              -e "s|@C_DDTFLAGS@|$cddtflags|" \
+              -e "s|@C_FLTFLAGS@|$cfltflags|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_FP_OPTION@|$cfpflags|" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
@@ -3925,7 +3926,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_pair_h` $bigloo_pair_h
   cp runtime/Include/`basename $bigloo_real_h` $bigloo_real_h
   cp runtime/Include/`basename $bigloo_real_heap_h` $bigloo_real_heap_h
-  cp runtime/Include/`basename $bigloo_real_ddt_h` $bigloo_real_ddt_h
+  cp runtime/Include/`basename $bigloo_real_flt_h` $bigloo_real_flt_h
   cp runtime/Include/`basename $bigloo_real_nan_h` $bigloo_real_nan_h
   cp runtime/Include/`basename $bigloo_bignum_h` $bigloo_bignum_h
   cp runtime/Include/`basename $bigloo_int_h` $bigloo_int_h
@@ -4264,7 +4265,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
   $echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
-  $echo "CDDTFLAGS=$cddtflags" >> $makefile_cfg
+  $echo "CFLTFLAGS=$cfltflags" >> $makefile_cfg
   $echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
   $echo "LDBUILDOPTS=$ldbuildopts" >> $makefile_cfg
   
@@ -5322,7 +5323,7 @@ $echo "  options for debugging/profiling....... $cfpflags" >> $configurelog
 $echo "  options for stripping................. $csflags" >> $configurelog
 $echo "  options for PIC code.................. $cpicflags" >> $configurelog
 $echo "  options for NAN code.................. $cnanflags" >> $configurelog
-$echo "  options for DDT code.................. $cddtflags" >> $configurelog
+$echo "  options for FLT code.................. $cfltflags" >> $configurelog
 $echo "  options for profiling................. $cpflags" >> $configurelog
 $echo "  options for linking................... $extralibs" >> $configurelog
 $echo "  assembly.............................. $as" >> $configurelog

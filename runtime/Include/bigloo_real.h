@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Oct 29 12:59:37 2024 (serrano)                */
+/*    Last change :  Thu Oct 31 13:59:22 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -24,7 +24,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    Specific configuration                                           */
 /*---------------------------------------------------------------------*/
-#if (BGL_FLOATING_POINT_TAGGING)
+#if (BGL_FL_TAGGING)
 #  include <bigloo_real_flt.h>
 #elif (BGL_NAN_TAGGING)
 #  include <bigloo_real_nan.h>

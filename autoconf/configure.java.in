@@ -21,6 +21,7 @@ public class configure {
   public static final int BGL_INT_BIT_SIZE = 32;
   public static final int BGL_ELONG_BIT_SIZE = 64;
   public static final boolean BGL_NAN_TAGGING = false;
+  public static final boolean BGL_FL_TAGGING = false;
   public static final byte[] SETJMP = "@SETJMP@".getBytes();
   public static final byte[] LONGJMP = "@LONGJMP@".getBytes();
   public static final boolean HAVE_BCOPY = (@HAVE_BCOPY@ == 1);
@@ -51,6 +52,7 @@ public class configure {
   public static final boolean STRICT_STDCC = (@BGL_STRICT_STDC@ == 1);  
   public static final byte[] C_PICFLAGS = "@C_PICFLAGS@".getBytes();
   public static final byte[] C_NANFLAGS = "@C_NANFLAGS@".getBytes();
+  public static final byte[] C_FLTFLAGS = "@C_FLTFLAGS@".getBytes();
   public static final byte[] C_COMPILER_O_OPTION = "@C_COMPILER_O_OPTION@".getBytes();
   public static final byte[] C_COMPILER_FP_OPTION = "@C_COMPILER_FP_OPTION@".getBytes();
   public static final byte[] C_COMPILER_DEBUG_OPTION = "@C_COMPILER_DEBUG_OPTION@".getBytes();
