@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Thu Oct 31 13:56:32 2024 (serrano)                */
+;*    Last change :  Thu Oct 31 14:07:00 2024 (serrano)                */
 ;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -67,7 +67,7 @@
 	   (macro $configure-c-strict-stdc::bool "BGL_STRICT_STDC")
 	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
 	   (macro $configure-c-nan-flag::string "C_NANFLAGS")
-	   (macro $configure-c-flt-flag::string "C_FLTFLAGS")
+	   (macro $configure-c-fl-flag::string "C_FLTFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
 	   (macro $configure-c-prof-flag::string "C_PROFILE_FLAGS")
            (macro $configure-c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -291,7 +291,7 @@
      (int-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-int-size) (else $$configure-int-size)))
      (elong-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-elong-size) (else $$configure-elong-size)))
      (nan-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-nan-tagging) (else $$configure-nan-tagging)))
-     (fl-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-flt-tagging) (else $$configure-fl-tagging)))
+     (fl-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-fl-tagging) (else $$configure-fl-tagging)))
      (have-unistring . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-have-unistring) (else $$configure-have-unistring)))
      (have-syslog . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-have-syslog) (else $$configure-have-syslog)))
      (have-getrlimit . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-have-getrlimit) (else $$configure-have-getrlimit)))
