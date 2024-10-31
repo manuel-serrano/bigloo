@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Aug  1 13:17:18 2024 (serrano)                */
+/*    Last change :  Tue Oct 29 21:27:43 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -311,7 +311,7 @@ error "Unknown garbage collector type"
 #  endif
 #endif
 
-/* TBR 28aug2022, backward compatibility, to be remove */
+/* TBR 28aug2022, backward compatibility, to be removed */
 #define TAG_STRUCT TAG_POINTER
 
 #if (PTR_ALIGNMENT == 2 && defined(BGL_TAG_CNST32) && !BGL_NAN_TAGGING)
