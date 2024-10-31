@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Oct 31 13:59:15 2024 (serrano)                */
+/*    Last change :  Thu Oct 31 19:43:53 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -202,6 +202,18 @@ extern "C" {
 /*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|_ ... ________________???|  */
 /*    +--------+--------+--------+--------|- ... -+--------+--------+  */
 /*                                                                     */
+/*    - flt == 1 || flt == 3:                                          */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*    |x???xxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  ...  |xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*       ^                                                          ^  */
+/*       |                          rotate 60                       |  */	
+/*       +--------------------------- < > --------------------------+  */
+/*    - flt == 2:                                                      */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  ...  |xxxxxxxx|xxxxx???|  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*                                                                     */
 /*---------------------------------------------------------------------*/
 #if (BGL_NAN_TAGGING) /* BGL_NAN_TAGGING */
 #  define TAG_MASK (0xffffUL << 48)
@@ -252,7 +264,8 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
-#if (BGL_FL_TAGGING)
+#if (BGL_FL_TAGGING == 1)
+// floating point tagging, 3 exponent bits
 #  define TAG_QNAN 0
 #  define TAG_REALZ 0                 /*  real zero             ...000 */
 #  define TAG_REALL 3                 /*  real lower range      ...011 */
@@ -261,7 +274,28 @@ extern "C" {
 #  define TAG_POINTER 2               /*  pointer tagging       ...010 */
 #  define TAG_CNST 5                  /*  constant tagging      ...101 */
 #  define TAG_PAIR 6                  /*  pair tagging          ...110 */
-//#  define TAG_CELL 6                  /*  cell tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+#elif (BGL_FL_TAGGING == 2)
+// floating point tagging, 3 least significant bits + boxed/header real
+#  define TAG_QNAN 0
+#  define TAG_REAL 1                  /*  boxed real            ...001 */
+#  define TAG_REALL 0                 /*  real lower range      ...000 */
+#  define TAG_REALU 3                 /*  real upper range      ...100 */
+#  define TAG_INT 2                   /*  integer tagging       ...010 */
+#  define TAG_POINTER 4               /*  pointer tagging       ...100 */
+#  define TAG_CNST 5                  /*  constant tagging      ...101 */
+#  define TAG_PAIR 6                  /*  pair tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+#elif (BGL_FL_TAGGING == 3)
+// floating point tagging 2 exponent bits + boxed/w-header real
+#  define TAG_QNAN 0
+#  define TAG_REAL 1                  /*  boxed real            ...001 */
+#  define TAG_REALL 3                 /*  real lower range      ...011 */
+#  define TAG_REALU 4                 /*  real upper range      ...010 */
+#  define TAG_INT 0                   /*  integer tagging       ...000 */
+#  define TAG_POINTER 2               /*  pointer tagging       ...010 */
+#  define TAG_CNST 5                  /*  constant tagging      ...101 */
+#  define TAG_PAIR 6                  /*  pair tagging          ...110 */
 #  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (!BGL_NAN_TAGGING)
 #  define TAG_QNAN 0
