@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Nov  1 13:04:08 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 19:31:08 2024 (serrano)                */
 /*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -280,6 +280,28 @@ file_dump_typenums_json(file_alloc_t *file, long i, FILE *f) {
 }
    
 /*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    file_dump_typenums_sexp ...                                      */
+/*---------------------------------------------------------------------*/
+static void
+file_dump_typenums_sexp(file_alloc_t *file, long i, FILE *f) {
+   long j;
+
+   fprintf(f, "#(");
+   if (file->lines[i].typecount >= 1) {
+      if (file->lines[i].typenums[0] >= 0) {
+	 fprintf(f, "\"%s\"", all_types[file->lines[i].typenums[0]].name);
+      }
+   }
+   for (j = file->lines[i].typecount - 1; j >= 1; j--) {
+      if (file->lines[i].typenums[j] >= 0) {
+	 fprintf(f, " \"%s\"", all_types[file->lines[i].typenums[j]].name);
+      }
+   }
+   fprintf(f, ")");
+}
+   
+/*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    file_dump_alloc_size ...                                         */
 /*---------------------------------------------------------------------*/
@@ -347,6 +369,42 @@ file_dump_alloc_size_json(const char *filename, void *data, void *arg) {
 	 }
       }
       fprintf(f, "]},\n");
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    file_dump_alloc_size_sexp ...                                    */
+/*---------------------------------------------------------------------*/
+void
+file_dump_alloc_size_sexp(const char *filename, void *data, void *arg) {
+   file_alloc_t *file = (file_alloc_t *)data;
+   FILE *f = (FILE *)arg;
+   int show = 0;
+   long i;
+
+   for (i = 0; i < file->size && !show; i++) {
+      if (file->lines[i].size > DUMP_LINE_SIZE_THRESHOLD) show = 1;
+   }
+
+   if (show) {
+      char *sep = "";
+      fprintf(f, "      (file: \"%s\"\n", file->filename);
+      qsort(file->lines, file->size, sizeof(line_alloc_t), linesizecmp);
+      fprintf(f, "       lines: (");
+      for (i = 0; i < file->size; i++) {
+	 if (file->lines[i].size > DUMP_LINE_SIZE_THRESHOLD) {
+	    fprintf(f, "%s(line: %ld kbsize: %ld %: %g count: %ld types: ",
+		    sep,
+		    file->lines[i].lineno,
+		    (file->lines[i].size / 1024),
+		    file->lines[i].count);
+	    file_dump_typenums_sexp(file, i, f);
+	    fprintf(f, ")");
+	    sep = "          ";
+	 }
+      }
+      fprintf(f, "))\n");
    }
 }
 
@@ -450,6 +508,40 @@ dump_types_cnt_json(FILE *f) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
+/*    dump_types_cnt_sexp ...                                          */
+/*---------------------------------------------------------------------*/
+void
+dump_types_cnt_sexp(FILE *f) {
+   long sum = 0;
+   long i;
+   char *sep = "     ";
+
+   qsort(all_types, types_number, sizeof(struct type), typecmp);
+   
+   for (i = 0; i < types_number; i++) {
+      sum += all_types[i].cnt;
+   }
+
+   fprintf(f, "  (types\n");
+   fprintf(f, "    (count %ld)\n", sum);
+   fprintf(f, "    (types\n", sum);
+
+   for (i = 0; i < types_number; i++) {
+      if ((all_types[i].cnt * 100 / sum) >= 1 ||
+	  ((double)(all_types[i].size)) / (1024. * 1024.) >= 1) {
+	 fprintf(f, " %s(%s (kbsize: %ld %: %g cnt: %ld))\n",
+		 sep,
+		 all_types[i].name,
+		 (all_types[i].size / 1024),
+		 ((double)(all_types[i].size * 100)) / alloc_size,
+		 all_types[i].cnt);
+      }
+   }
+   fprintf(f, "   ))\n");
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    alloc_dump_statistics ...                                        */
 /*---------------------------------------------------------------------*/
 void
@@ -477,9 +569,25 @@ alloc_dump_statistics_json(FILE *f) {
    fprintf(f, "     \"gc-count\": %d,\n", gc_number);
    fprintf(f, "     \"files\": [\n", gc_number);
    hashtable_foreach_arg(file_allocs, file_dump_alloc_size_json, f);
-   fprintf(f, "       null]\n", gc_number);
+   fprintf(f, "       null]\n");
    fprintf(f, "    },\n");
    dump_types_cnt_json(f);
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    alloc_dump_statistics_sexp ...                                   */
+/*---------------------------------------------------------------------*/
+void
+alloc_dump_statistics_sexp(FILE *f) {
+   fprintf(f, "  (alloc \n");
+   fprintf(f, "    (kbsize %ld)\n", alloc_size / 1024);
+   fprintf(f, "    (gc-count %d)\n", gc_number);
+   fprintf(f, "    (files\n", gc_number);
+   hashtable_foreach_arg(file_allocs, file_dump_alloc_size_sexp, f);
+   fprintf(f, "       )\n", gc_number);
+   fprintf(f, "   )\n");
+   dump_types_cnt_sexp(f);
 }
 
 /*---------------------------------------------------------------------*/

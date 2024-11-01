@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Fri Nov  1 15:44:52 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 18:59:54 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -35,22 +35,22 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real(double);
 /*    bgl_real ...                                                     */
 /*---------------------------------------------------------------------*/
 struct bgl_real {
-#if (!defined(TAG_HEADER))   
+#if (!defined(TAG_REAL))   
    header_t header;
 #endif   
    double val;
 };
 
-#define REAL(o) (CREAL(o)->real)
-#define REAL_SIZE  (sizeof(struct bgl_real))
-
-#if (!defined(TAG_HEADER))   
+#if (!defined(TAG_REAL))   
 #  define BREAL(p) BREF(p)
 #  define CREAL(p) CREF(p)
 #else
 #  define BREAL(p) ((obj_t)((long)p + TAG_REAL))
 #  define CREAL(p) ((obj_t)((long)p - TAG_REAL))
 #endif
+
+#define REAL(o) (CREAL(o)->real)
+#define REAL_SIZE  (sizeof(struct bgl_real))
 
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
@@ -95,18 +95,31 @@ union bgl_fltobj {
     | (BGL_REAL_TAG_MASK_TABLE << 8) \
     | (BGL_REAL_TAG_MASK_TABLE))
 
+// cast operations
 #define BGL_ASOBJ(_d) (((union bgl_fltobj)(_d))._obj)
 #define BGL_ASDOUBLE(_o) (((union bgl_fltobj)(_o))._double)
 
-#define BGL_TAGGED_REALP(_o) ((char)((BGL_REAL_TAG_MASK_TABLE32 << (char)((long)_o))) < 0)
-#define BGL_BOXED_REALP(_o) (POINTERP(_o) && (TYPE(_o) == REAL_TYPE))
+// BGL_TAGGED_REALP
+#define BGL_TAGGED_REALP(_o) \
+   ((char)((BGL_REAL_TAG_MASK_TABLE32 << (char)((long)_o))) < 0)
 
+// BGL_BOXED_REALP
+#if (defined(TAG_REAL))
+#  define BGL_BOXED_REALP(_o) \
+   (_o && ((((long)_o) & TAG_MASK) == TAG_REAL))
+#else
+#  define BGL_BOXED_REALP(_o) \
+   (POINTERP(_o) && (TYPE(_o) == REAL_TYPE))
+#endif
+
+// predicates
 #define FLONUMP(_o) (BGL_TAGGED_REALP(_o) || BGL_BOXED_REALP(_o))
 #define REALP(_o) FLONUMP(_o)
 
 #define BGL_REAL_CNST(name) name
 
-#if (!defined(TAG_HEADER))   
+// constants
+#if (!defined(TAG_REAL))   
 #define DEFINE_REAL(name, aux, flonum) \
   static struct { __CNST_ALIGN header_t header; double real; } \
      aux = { __CNST_FILLER MAKE_HEADER(REAL_TYPE, 0), flonum }; \

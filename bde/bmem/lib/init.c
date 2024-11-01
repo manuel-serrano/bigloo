@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Nov  1 12:52:42 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 19:20:39 2024 (serrano)                */
 /*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -22,12 +22,13 @@
 #   define RTLD_LAZY 0
 #endif
 
-extern void GC_dump_statistics(FILE *f);
 extern void GC_dump_statistics_json(FILE *f);
+extern void GC_dump_statistics_sexp(FILE *f);
 extern void GC_reset_statistics();
 extern void type_dump(FILE *f);
 extern void alloc_dump_statistics();
 extern void alloc_dump_statistics_json(FILE *f);
+extern void alloc_dump_statistics_sexp(FILE *f);
 
 extern long long GC_alloc_total();
 extern void bmem_init_wrapper(void *);
@@ -252,12 +253,10 @@ dump_statistics() {
       fprintf(f, "}\n");
    } else if (bmemdumpfmt == BMEMDUMPFORMAT_SEXP) {
       // text dump
-      fprintf(f, ";; sizes are expressed in word(e.g., 4 bytes)\n");
-      fprintf(f, "(monitor\n");
-      fprintf(f, " (info (exec \"%s\") (version \"%s\") (sizeof-word %d))\n",
+      fprintf(f, "(monitor (info (exec \"%s\") (version \"%s\") (sizeof-word %d))\n",
 	       e, VERSION, BMEMSIZEOFWORD);
-      GC_dump_statistics(f);
-      alloc_dump_statistics(f);
+      GC_dump_statistics_sexp(f);
+      alloc_dump_statistics_sexp(f);
       fprintf(f, ")\n");
       
       fprintf(stderr, "Total size: %lldMB(%lldKB)\n",

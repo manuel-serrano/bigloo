@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Fri Nov  1 13:04:24 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 19:22:18 2024 (serrano)                */
 /*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -68,8 +68,7 @@ GC_collect_hook(int heapsz, long livesz) {
       
    gc_alloc_size = 0;
    
-   //gcs_info = pa_cons(info, gcs_info);
-
+   gcs_info = pa_cons(info, gcs_info);
 }
 
 /*---------------------------------------------------------------------*/
@@ -89,7 +88,7 @@ gc_alloc_size_add(int size) {
 /*---------------------------------------------------------------------*/
 static void
 GC_dump_gc_sexp(gc_info_t *i, FILE *f) {
-   fprintf(f, "    (%lu #l%lu #l%lu #l%lu \"%s\" #l%lld)\n",
+   fprintf(f, "    (number: %lu alloc: #l%lu heap: #l%lu live: #l%lu lastfun: \"%s\" time: #l%lld)\n",
 	    i->number,
 	    BMEMSIZE(i->alloc_size),
 	    i->heap_size,
@@ -115,20 +114,6 @@ GC_dump_gc_json(gc_info_t *i, FILE *f) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    GC_dump_statistics ...                                           */
-/*---------------------------------------------------------------------*/
-void
-GC_dump_statistics(FILE *f) {
-   fprintf(f, "  (gc\n");
-   fprintf(f, "    ;; (gc-num alloc-sz heap-sz live-sz lastfunid time)\n");
-   for_each((void (*)(void *, void *))GC_dump_gc_sexp,
-	     pa_reverse(gcs_info),
-	     (void *)f);
-   fprintf(f, "   )\n");
-}
-
-/*---------------------------------------------------------------------*/
-/*    void                                                             */
 /*    GC_dump_statistics_json ...                                      */
 /*---------------------------------------------------------------------*/
 void
@@ -138,6 +123,19 @@ GC_dump_statistics_json(FILE *f) {
 		  pa_reverse(gcs_info),
 		  (void *)f);
    fprintf(f, ",\n");
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    GC_dump_statistics_sexp ...                                      */
+/*---------------------------------------------------------------------*/
+void
+GC_dump_statistics_sexp(FILE *f) {
+   fprintf(f, "  (gc\n");
+   for_each((void (*)(void *, void *))GC_dump_gc_sexp,
+	     pa_reverse(gcs_info),
+	     (void *)f);
+   fprintf(f, "   )\n");
 }
 
 /*---------------------------------------------------------------------*/
