@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Fri Nov  1 15:57:33 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 16:36:53 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -81,7 +81,7 @@ DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
 GC_API obj_t
 make_real( double real ) {
 #if (!defined(TAG_REALZ))
-   if (fpclassify(d) == FP_ZERO) {
+   if (((union { double d; long l; })(d)).l == 0) {
       return BGL_REAL_CNST(bgl_zero);
    } else
 #endif
