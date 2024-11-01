@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Sep 11 18:35:06 2024 (serrano)                */
+#*    Last change :  Sat Nov  2 00:42:48 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -828,11 +828,19 @@ objs/obj_u/$(COBJSUFFIX): objs/obj_u/%.c
 	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
+objs/obj_u/Eval/evaluate_comp.o: Eval/evaluate_comp.c
+	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
+        mv $(*D)-$(@F) $@
+
 objs/obj_s/$(COBJSUFFIX): objs/obj_s/%.c
 	$(CC) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
 objs/saw_u/$(COBJSUFFIX): objs/saw_u/%.c
+	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
+        mv $(*D)-$(@F) $@
+
+objs/saw_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
 	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
