@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/runtime/Include/bigloo.h        */
+/*    serrano/bigloo-nan/runtime/Include/bigloo.h                      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Oct 31 19:43:53 2024 (serrano)                */
+/*    Last change :  Thu Oct 31 23:50:53 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -217,6 +217,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #if (BGL_NAN_TAGGING) /* BGL_NAN_TAGGING */
 #  define TAG_MASK (0xffffUL << 48)
+#  define TAG_MASKPOINTER TAG_MASK
 #  define TAG_MASKOBJECT (0x7fffUL << 48)
 #  define NAN_MASK ((1UL << 48) - 1)
 #  define NAN_MASK_SIGNED (NAN_MASK | (1UL <<63))
@@ -331,14 +332,10 @@ extern "C" {
 #  define TAG_SYMBOL (0xfffaUL<<48)   /*  symbol tagging    111...1001 */
 #endif
 
-#if (TAG_YOUNG)
-#  define POINTERP(o) (((((long)BGL_CPTR(o)) & 1) == 0) && o)
+#if (TAG_POINTER != 0)
+#   define POINTERP(o) ((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER)
 #else
-#  if (TAG_POINTER != 0)
-#     define POINTERP(o) ((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER)
-#  else
-#     define POINTERP(o) (((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER) && BGL_CPTR(o))
-#  endif
+#   define POINTERP(o) (((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER) && BGL_CPTR(o))
 #endif
 
 #define BREF(r) BGL_BPTR((obj_t)((long)r + TAG_POINTER))

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/nanh/runtime/Include/bigloo_int.h        */
+/*    serrano/bigloo-nan/runtime/Include/bigloo_int.h                  */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Oct 29 14:24:35 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 11:19:18 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -282,9 +282,9 @@ static int __builtin_ssubl_overflow(long x, long y, long *res) {
 
 #if BGL_HAVE_OVERFLOW && TAG_INT != 0
 // see Ieee/fixnum.scm
-#  define BGL_ADDFX_OV(x, y, res) (__builtin_saddl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT(res), 0))
-#  define BGL_SUBFX_OV(x, y, res) (__builtin_ssubl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT(res), 0))
-#  define BGL_MULFX_OV(x, y, res) (__builtin_smull_overflow(CINT(x), y, (long*)&res) || (res = BINT(res), 0))
+#  define BGL_ADDFX_OV(x, y, res) (__builtin_saddl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
+#  define BGL_SUBFX_OV(x, y, res) (__builtin_ssubl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
+#  define BGL_MULFX_OV(x, y, res) (__builtin_smull_overflow(CINT(x), y, (long*)&res) || (res = BINT((long)res), 0))
 #endif
 
 #if !BGL_HAVE_OVERFLOW

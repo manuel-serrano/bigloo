@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    .../project/bigloo/nanh/runtime/Include/bigloo_real_nan.h        */
+/*    serrano/bigloo-nan/runtime/Include/bigloo_real_nan.h             */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
