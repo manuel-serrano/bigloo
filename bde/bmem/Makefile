@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/Makefile             */
+#*    serrano/prgm/project/bigloo/nanh/bde/bmem/Makefile               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Thu Jan 12 13:36:55 2023 (serrano)                */
-#*    Copyright   :  2003-23 Manuel Serrano                            */
+#*    Last change :  Fri Nov  1 12:52:59 2024 (serrano)                */
+#*    Copyright   :  2003-24 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -22,8 +22,8 @@ include ../../Makefile.misc
 SRC		= 
 INCLUDE		= 
 OBJECT		= $(SRC:%.scm=bmem/%.o)
-LIBSRC		= init.c  gchook.c trace.c alloc.c backtrace.c hash.c \
-                  wrapper.c
+LIBSRC		= init.c gchook.c trace.c alloc.c backtrace.c hash.c \
+                  wrapper.c list.c
 LIBINCLUDE	= bmem.h
 LIBOBJECT	= $(LIBSRC:%.c=lib/%.o)
 

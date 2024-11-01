@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo-nan/runtime/Include/bigloo.h                      */
+/*    serrano/prgm/project/bigloo/nanh/runtime/Include/bigloo.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Oct 31 23:50:53 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 15:47:02 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -267,6 +267,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #if (BGL_FL_TAGGING == 1)
 // floating point tagging, 3 exponent bits
+#  define TAG_FL_ROT_BITS ((unsigned long)60)
 #  define TAG_QNAN 0
 #  define TAG_REALZ 0                 /*  real zero             ...000 */
 #  define TAG_REALL 3                 /*  real lower range      ...011 */
@@ -289,6 +290,7 @@ extern "C" {
 #  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (BGL_FL_TAGGING == 3)
 // floating point tagging 2 exponent bits + boxed/w-header real
+#  define TAG_FL_ROT_BITS ((unsigned long)60)
 #  define TAG_QNAN 0
 #  define TAG_REAL 1                  /*  boxed real            ...001 */
 #  define TAG_REALL 3                 /*  real lower range      ...011 */

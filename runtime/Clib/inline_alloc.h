@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Wed Oct 30 13:37:37 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 15:53:42 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -166,6 +166,10 @@ make_cell(obj_t val) {
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
 
+#if (!defined(TAG_REALZ))
+DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
+#endif
+
 #if (!BGL_NAN_TAGGING) 
 static obj_t
 alloc_make_real(double d) {
@@ -179,12 +183,19 @@ alloc_make_real(double d) {
 
 GC_API obj_t
 make_real(double d) {
-   obj_t real;
-
-   GC_INLINE_MALLOC(real, REAL_SIZE, alloc_make_real(d));
-   BGL_INIT_REAL(real, d);
-
-   return BREAL(real);
+#if (!defined(TAG_REALZ))
+   if (fpclassify(d) == FP_ZERO) {
+      return BGL_REAL_CNST(bgl_zero);
+   } else
+#endif
+   {
+      obj_t real;
+   
+      GC_INLINE_MALLOC(real, REAL_SIZE, alloc_make_real(d));
+      BGL_INIT_REAL(real, d);
+      
+      return BREAL(real);
+   }
 }
 
 #endif

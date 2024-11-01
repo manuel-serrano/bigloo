@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Oct 31 20:45:16 2024 (serrano)                */
+/*    Last change :  Fri Nov  1 15:44:52 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -81,8 +81,14 @@ union bgl_fltobj {
 /*                                                                     */
 /*    This gorgeous trick is due to Marc Feeley.                       */
 /*---------------------------------------------------------------------*/
-#define BGL_REAL_TAG_MASK_TABLE \
-   ((1 << (7 - TAG_REALZ)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+#if defined(TAG_REALZ)
+#  define BGL_REAL_TAG_MASK_TABLE \
+     ((1 << (7 - TAG_REALZ)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+#else
+#  define BGL_REAL_TAG_MASK_TABLE \
+     ((1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+#endif
+
 #define BGL_REAL_TAG_MASK_TABLE32 \
    ((BGL_REAL_TAG_MASK_TABLE << 24) \
     | (BGL_REAL_TAG_MASK_TABLE << 16) \
@@ -118,17 +124,16 @@ union bgl_fltobj {
 /*---------------------------------------------------------------------*/
 /*    tagging and boxing                                               */
 /*---------------------------------------------------------------------*/
-#if (BGL_FL_TAGGING != 2)
+#if (defined(TAG_FL_ROT_BITS))
 // FL tags encoded in 3 bits of the exponent
 #  define BGL_ROT_NBITS 64
-#  define BGL_ROT_BITS ((unsigned long)60)
 
 #  define BGL_BIT_ROTL(_o) \
-     ((obj_t)(((unsigned long)_o << BGL_ROT_BITS) \
-	      | ((unsigned long)_o >> (BGL_ROT_NBITS - BGL_ROT_BITS))))
+     ((obj_t)(((unsigned long)_o << TAG_FL_ROT_BITS) \
+	      | ((unsigned long)_o >> (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
 #  define BGL_BIT_ROTR(_o) \
-     ((obj_t)(((unsigned long)_o >> BGL_ROT_BITS) \
-	      | ((unsigned long)_o << (BGL_ROT_NBITS - BGL_ROT_BITS))))
+     ((obj_t)(((unsigned long)_o >> TAG_FL_ROT_BITS) \
+	      | ((unsigned long)_o << (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
 #else
 // FL tags encoded in the 3 least significant bits of the word
 #  define BGL_BIT_ROTL(_o) (_o)

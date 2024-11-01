@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Clib/inline_alloc_thread.h     */
+/*    .../project/bigloo/nanh/runtime/Clib/inline_alloc_thread.h       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Thu Apr 19 08:09:48 2018 (serrano)                */
-/*    Copyright   :  2017-18 Manuel Serrano                            */
+/*    Last change :  Fri Nov  1 15:57:33 2024 (serrano)                */
+/*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
 /*=====================================================================*/
@@ -73,15 +73,24 @@ make_cell( obj_t val ) {
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
 
+#if (!defined(TAG_REALZ))
+DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
+#endif
+
 #if( !BGL_NAN_TAGGING ) 
 GC_API obj_t
 make_real( double real ) {
-   obj_t a_real;
+#if (!defined(TAG_REALZ))
+   if (fpclassify(d) == FP_ZERO) {
+      return BGL_REAL_CNST(bgl_zero);
+   } else
+#endif
+   {
+      obj_t a_real = GC_THREAD_MALLOC_ATOMIC( REAL_SIZE );
+      BGL_INIT_REAL( a_real, real );
 
-   a_real = GC_THREAD_MALLOC_ATOMIC( REAL_SIZE );
-   BGL_INIT_REAL( a_real, real );
-
-   return BREAL( a_real );
+      return BREAL( a_real );
+   }
 }
 #endif
 

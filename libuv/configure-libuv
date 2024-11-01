@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/libuv/configure-libuv         */
+#*    serrano/prgm/project/bigloo/nanh/libuv/configure-libuv           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Thu Nov 17 09:24:08 2022 (serrano)                */
-#*    Copyright   :  2009-22 Manuel Serrano                            */
+#*    Last change :  Fri Nov  1 16:21:40 2024 (serrano)                */
+#*    Copyright   :  2009-24 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the libuv.                              */
 #*=====================================================================*/
@@ -18,6 +18,7 @@ src=libuv-$libuvversion
  export CC="$cc" && \
  export CFLAGS="$cflags" && \
  export LDFLAGS="$lflags" && \
+ export LC_ALL=C && \
  sh autogen.sh && \
  ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir $libuvconfigureopt 2>&1 >> ../../configure.log || \
  (echo "configure libuv fail, see configure.log file." && exit 1)) || exit 1
