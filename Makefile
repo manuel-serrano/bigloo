@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Sep 12 07:08:09 2024 (serrano)                */
+#*    Last change :  Sat Nov  2 13:47:31 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -102,6 +102,7 @@ LOGMSG		= ""
 SUDO		= sudo
 
 BOOTCAPI	= no
+HOSTBOOTMAKEOPT	= -j -l 2.5
 
 #*---------------------------------------------------------------------*/
 #*    The directory that compose a version                             */
@@ -225,7 +226,7 @@ boot-c: checkgmake
 	  $(MAKE) -C runtime heap; \
 	fi
 	# touch the generic Scheme source files that must be
-	# recompiled ith the configured options (e.g., gmp or pcre2)
+	# recompiled with the configured options (e.g., gmp or pcre2)
 	$(MAKE) boot-touch-specific
 	$(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u
 
@@ -334,14 +335,14 @@ dohostboot:
 	$(MAKE) -C comptime -i touchall
 	$(MAKE) -C comptime hostboot BBFLAGS="-w -unsafeh"
 	$(MAKE) -C runtime heap-c BIGLOO=$(BOOTBINDIR)/bigloo
-	$(MAKE) -C comptime -i touchall
-	$(MAKE) -C comptime BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) -C comptime $(HOSTBOOTMAKEOPT) -i touchall
+	$(MAKE) -C comptime $(HOSTBOOTMAKEOPT) BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C runtime clean-quick
-	$(MAKE) -C runtime heap libs BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) -C runtime $(HOSTBOOTMAKEOPT) heap libs BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C bde clean boot BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) boot-bde BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C api clean-quick BIGLOO=$(BOOTBINDIR)/bigloo
-	$(MAKE) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR)
+	$(MAKE) $(HOSTBOOTMAKEOPT) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR)
 	@ echo "\e[1;34mhostboot\e[0m done..."
 
 #*---------------------------------------------------------------------*/

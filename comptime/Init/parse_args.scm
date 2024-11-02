@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Sep 19 07:29:17 2024 (serrano)                */
+;*    Last change :  Sat Nov  2 15:24:42 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -446,7 +446,6 @@
       (("-fno-cfa" (help "Disable CFA"))
        (set! *optim-cfa?* #f))
       (("-fcfa-arithmetic" (help "Enable arithmetic spec. (see -farithmetic-overflow)"))
-       (set! *arithmetic-overflow* #f)
        (set! *optim-cfa-fixnum-arithmetic?* #t)
        (set! *optim-cfa-flonum-arithmetic?* #t))
       (("-fno-cfa-arithmetic" (help "Disable arithmetic spec."))
