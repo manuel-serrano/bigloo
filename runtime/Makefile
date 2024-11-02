@@ -815,10 +815,10 @@ objs/saw_u/$(SCMOBJSUFFIX): %.scm
 objs/saw_s/$(SCMOBJSUFFIX): %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
 
-objs/obj_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+objs/obj_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
-objs/saw_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+objs/saw_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
 #*---------------------------------------------------------------------*/
@@ -828,19 +828,11 @@ objs/obj_u/$(COBJSUFFIX): objs/obj_u/%.c
 	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
-objs/obj_u/Eval/evaluate_comp.o: Eval/evaluate_comp.c
-	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
-        mv $(*D)-$(@F) $@
-
 objs/obj_s/$(COBJSUFFIX): objs/obj_s/%.c
 	$(CC) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
 objs/saw_u/$(COBJSUFFIX): objs/saw_u/%.c
-	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
-        mv $(*D)-$(@F) $@
-
-objs/saw_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
 	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
