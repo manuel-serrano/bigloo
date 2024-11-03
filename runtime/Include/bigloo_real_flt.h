@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sat Nov  2 23:25:27 2024 (serrano)                */
+/*    Last change :  Sun Nov  3 15:51:17 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -94,8 +94,10 @@ union bgl_fltobj {
 #define BGL_ASDOUBLE(_o) (((union bgl_fltobj)(_o))._double)
 
 // BGL_TAGGED_REALP
+/* #define BGL_TAGGED_REALP(_o) \                                      */
+/*    ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)_o) & 7))) < 0) */
 #define BGL_TAGGED_REALP(_o) \
-   ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)_o) & 7))) < 0)
+   (((int32_t)((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101) << (long)(_o)) < 0)
 
 // BGL_BOXED_REALP
 #if (defined(TAG_REAL))
@@ -155,6 +157,25 @@ union bgl_fltobj {
    (BGL_TAGGED_REALP(_o) \
     ? (BGL_ASDOUBLE(BGL_BIT_ROTL(_o))) \
     : REAL(_o).val)
+
+/* #undef DOUBLE_TO_REAL                                               */
+/* #define DOUBLE_TO_REAL _double_to_real                              */
+/*                                                                     */
+/* inline __attribute__((always_inline))                               */
+/* obj_t _double_to_real(double _d) {                                  */
+/*    obj_t result;                                                    */
+/*    char carry;                                                      */
+/*    __asm__("ror $60, %%rax;"                                        */
+/* 	   "bt  %%eax, %3;"                                            */
+/* 	   : "=@ccc"(carry), "=a"(result)                              */
+/* 	   : "a"(((union bgl_fltobj)(_d))._obj),                       */
+/* 	     "r"((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101));      */
+/*    if (carry) {                                                     */
+/*       return result;                                                */
+/*    } else {                                                         */
+/*       return make_real(_d);                                         */
+/*    }                                                                */
+/* }                                                                   */
 
 #define FLOAT_TO_REAL(_d) DOUBLE_TO_REAL((double)(_d))
 #define REAL_TO_FLOAT(_o) ((float)(REAL_TO_DOUBLE(_o)))
