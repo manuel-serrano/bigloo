@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/alloc.scm       */
+;*    serrano/prgm/project/bigloo/nanh/comptime/Cnst/alloc.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Sat Nov  2 22:45:06 2024 (serrano)                */
+;*    Last change :  Sun Nov  3 01:37:00 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -550,7 +550,7 @@
 ;*    cnst-alloc-real ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-real real loc)
-
+   
    (define (lib-alloc-real)
       (let ((var (def-global-scnst! (make-typed-ident (gensym 'real) 'real)
 		    *module*
@@ -562,13 +562,6 @@
 	    (loc loc)
 	    (type (variable-type var))
 	    (variable var))))
-
-   (define (read-alloc-real)
-      (let ((offset *cnst-offset*))
-	 (set! *cnst-offset* (+fx 1 *cnst-offset*))
-	 (set! *global-set* (cons real *global-set*))
-	 (set! *real-env* (cons (cons real offset) *real-env*))
-	 (make-cnst-table-ref offset *breal* loc)))
    
    (define (find-real)
       (let loop ((list *real-env*))
@@ -584,14 +577,10 @@
    (let ((old (find-real)))
       (cond
 	 (old
-	  (if (integer? old)
-	      (make-cnst-table-ref old *breal* loc)
-	      (instantiate::ref
-		 (loc loc)
-		 (type (variable-type old))
-		 (variable old))))
-	 ((bigloo-config 'fl-tagging)
-	  (read-alloc-real))
+	  (instantiate::ref
+	     (loc loc)
+	     (type (variable-type old))
+	     (variable old)))
 	 (else
 	  (lib-alloc-real)))))
 
