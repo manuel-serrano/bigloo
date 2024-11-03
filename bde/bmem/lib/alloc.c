@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Nov  1 19:31:08 2024 (serrano)                */
+/*    Last change :  Sun Nov  3 13:11:04 2024 (serrano)                */
 /*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -546,16 +546,20 @@ dump_types_cnt_sexp(FILE *f) {
 /*---------------------------------------------------------------------*/
 void
 alloc_dump_statistics() {
-   fprintf(stderr, "\n\n===================================================\n");
+   if (bmem_verbose >= 1) {
+      fprintf(stderr, "\n\n===================================================\n");
+   }
    if (bmem_color) {
       fprintf(stderr, "[0m[1;32mallocation size:[0m %.2fMB\n", (double)alloc_size / (1024. * 1024.));
    } else {
       fprintf(stderr, "allocation size: %.2fMB\n", (double)alloc_size / (1024. * 1024.));
    }
    fprintf(stderr, "gc count: %lu\n\n", gc_number);
-   hashtable_foreach(file_allocs, file_dump_alloc_size);
+   if (bmem_verbose >= 1) {
+      hashtable_foreach(file_allocs, file_dump_alloc_size);
 
-   dump_types_cnt();
+      dump_types_cnt();
+   }
 }
 
 /*---------------------------------------------------------------------*/
