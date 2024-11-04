@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Mon Sep 23 09:31:57 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 09:23:11 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
@@ -160,7 +160,7 @@
    (set! *long->int* #f)
    (set! *make-fx-procedure* #f)
    (set! *make-va-procedure* #f)
-   (set! *long->int* #f)
+   (set! *long->bint* #f)
    (set! *double->real* #f)
    (set! *cons* #f)
    (set! *btrue* #f)

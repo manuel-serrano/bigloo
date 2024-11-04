@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Mon Jul 22 13:11:50 2024 (serrano)                */
+;*    Last change :  Tue Oct  1 10:10:41 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
@@ -30,7 +30,7 @@
       (let ((old (assoc string *symbol-table*)))
 	 (if (pair? old)
 	     (cdr old)
-	     (let ((sym ($make-symbol string)))
+	     (let ((sym ($make-symbol (string-copy string))))
 		(set! *symbol-table* (cons (cons string sym) *symbol-table*))
 		sym)))))
 
