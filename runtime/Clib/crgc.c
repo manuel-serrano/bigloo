@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Dec  8 11:52:29 2023 (serrano)                */
+/*    Last change :  Tue Oct  1 08:38:18 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -740,7 +740,6 @@ rgc_buffer_bignum(obj_t ip) {
    long start = INPUT_PORT(ip).matchstart;
    long stop = INPUT_PORT(ip).matchstop;
    char *buf = (char *)&RGC_BUFFER_REF(ip, 0);
-   obj_t res;
    
    if ((stop < INPUT_PORT(ip).bufpos) && isspace(buf[ stop ])) {
       return bgl_string_to_bignum((char *)&RGC_BUFFER_REF(ip, start), 10);
