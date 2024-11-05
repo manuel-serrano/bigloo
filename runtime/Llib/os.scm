@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Nov  5 12:58:29 2024 (serrano)                */
+;*    Last change :  Tue Nov  5 18:05:38 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -1418,9 +1418,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    limit-value ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (limit-value val)
+(define (limit-value::long val)
    (cond
-      ((elong? val) val)
+      ((elong? val) (elong->fixnum val))
       ((fixnum? val) val)
       ((and (flonum? val) (infinitefl? val)) #e-1)
       (else (error "setrlimit!" "Illegal value" val))))
