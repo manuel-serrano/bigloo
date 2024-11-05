@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Sep 25 11:30:06 2024 (serrano)                */
+;*    Last change :  Tue Nov  5 09:05:58 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -966,6 +966,7 @@
 	    (lcms64::int64 . pair)
 	    (lcmu64::uint64 . pair)
 	    (exptfx::long ::long ::long)
+	    (exptfx/ov::obj ::long ::long)
 	    (expts32::int32 ::int32 ::int32)
 	    (exptu32::uint32 ::uint32 ::uint32)
 	    (expts64::int64 ::int64 ::int64)
@@ -2195,6 +2196,19 @@
       ((zerofx? y) 1)
       ((evenfx? y) (exptfx (*fx x x) (quotientfx y 2)))
       (else (*fx x (exptfx x (-fx y 1))))))
+
+;*---------------------------------------------------------------------*/
+;*    exptfx/ov ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (exptfx/ov x y)
+   (let loop ((x x)
+	      (y y))
+      (cond
+	 ((bignum? x) (exptbx x (fixnum->bignum y)))
+	 ((zerofx? y) 1)
+	 ((evenfx? y) (loop (*fx/ov x x) (quotientfx y 2)))
+	 (else (let ((n (loop x (-fx y 1))))
+		  (if (bignum? n) (*bx (fixnum->bignum x) n) (*fx x n)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expts32 ...                                                      */
