@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo-nan/runtime/Include/bigloo_int.h                  */
+/*    serrano/prgm/project/bigloo/flt/runtime/Include/bigloo_int.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Fri Nov  1 11:19:18 2024 (serrano)                */
+/*    Last change :  Fri Nov  8 11:24:23 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -274,33 +274,37 @@ static int __builtin_ssubl_overflow(long x, long y, long *res) {
 /*    as one of the following C macros that takes the address of the   */
 /*    local variable.                                                  */
 /*---------------------------------------------------------------------*/
-#if BGL_HAVE_OVERFLOW && TAG_INT == 0
+#if !BGL_HAVE_OVERFLOW
+extern bool_t __builtinsadd_overflow(int x, int y, int *res);
+extern bool_t __builtinsaddl_overflow(long x, long y, long *res);
+extern bool_t __builtinsub_overflow(int x, int y, int *res);
+extern bool_t __builtinsubl_overflow(long x, long y, long *res);
+extern bool_t __builtinmul_overflow(int x, int y, int *res);
+extern bool_t __builtinmull_overflow(long x, long y, long *res);
+#endif
+
+#if !BGL_NAN_TAGGING && TAG_INT == 0
 #  define BGL_ADDFX_OV(x, y, res) __builtin_saddl_overflow((long)x, (long)y, (long*)&res)
 #  define BGL_SUBFX_OV(x, y, res) __builtin_ssubl_overflow((long)x, (long)y, (long*)&res)
-#  define BGL_MULFX_OV(x, y, res) __builtin_smull_overflow((long)x, (long)y, (long*)&res)
+#  define BGL_MULFX_OV(x, y, res) __builtin_smull_overflow((long)x, CINT(y), (long*)&res)
 #endif
 
-#if BGL_HAVE_OVERFLOW && TAG_INT != 0
-// see Ieee/fixnum.scm
+#if !BGL_NAN_TAGGING && TAG_INT != 0
 #  define BGL_ADDFX_OV(x, y, res) (__builtin_saddl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
 #  define BGL_SUBFX_OV(x, y, res) (__builtin_ssubl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
-#  define BGL_MULFX_OV(x, y, res) (__builtin_smull_overflow(CINT(x), y, (long*)&res) || (res = BINT((long)res), 0))
+#  define BGL_MULFX_OV(x, y, res) (__builtin_smull_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
 #endif
 
-#if !BGL_HAVE_OVERFLOW
-extern bool_t bgl_saddl_overflow(long x, long y, long *res);
-extern bool_t bgl_subl_overflow(long x, long y, long *res);
-extern bool_t bgl_mull_overflow(long x, long y, long *res);
-
-#  define BGL_ADDFX_OV(x, y, res) bgl_saddl_overflow((long)x, (long)y, (long *)&res)
-#  define BGL_SUBFX_OV(x, y, res) bgl_subl_overflow((long)x, (long)y, (long *)&res)
-#  define BGL_MULFX_OV(x, y, res) bgl_mull_overflow((long)x, (long)y, (long *)&res)
+#if BGL_NAN_TAGGING
+#  define BGL_ADDFX_OV(x, y, res) (__builtin_sadd_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
+#  define BGL_SUBFX_OV(x, y, res) (__builtin_ssub_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
+#  define BGL_MULFX_OV(x, y, res) (__builtin_smul_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
 #endif
 
 #if TAG_INT == 0
 #   define BGL_ADDFX_SANS_OV(x, y) ((obj_t)(((long)(x)) + ((long)(y))))
 #   define BGL_SUBFX_SANS_OV(x, y) ((obj_t)(((long)(x)) - ((long)(y))))
-#   define BGL_MULFX_SANS_OV(x, y) ((obj_t)(((long)(x)) * ((long)(y))))
+#   define BGL_MULFX_SANS_OV(x, y) ((obj_t)(((long)(x)) * CINT((y))))
 #else
 #   define BGL_ADDFX_SANS_OV(x, y) (BINT(CINT(x) + CINT(y)))
 #   define BGL_SUBFX_SANS_OV(x, y) (BINT(CINT(x) - CINT(y)))
