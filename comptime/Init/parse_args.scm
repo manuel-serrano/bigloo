@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Nov  8 08:11:31 2024 (serrano)                */
+;*    Last change :  Fri Nov  8 09:12:24 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -549,7 +549,7 @@
        (set! *optim-uncell?* #t))
       (("-fno-uncell" (help "Disable cell removal"))
        (set! *optim-uncell?* #f))
-       (("-funsafe-cell" (help "Enable unsafe-cell generation"))
+       (("-funsafe-cell" (help "Enable unsafe-cell generation (enable from -O2)"))
 	(set! *optim-unsafe-cell?* #t))
        (("-fno-unsafe-cell" (help "Disable unsafe-cell generation"))
 	(set! *optim-unsafe-cell?* #f))
@@ -1325,6 +1325,7 @@
       ;; (set! *optim-narrow?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)
       (set! *optim-cfa-unbox-closure-args* #t)
+      (set! *optim-unsafe-cell?* #t)
       (unless (eq? *c-tail-call* #f)
 	 (set! *c-tail-call* #t)))
    
