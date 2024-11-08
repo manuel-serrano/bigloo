@@ -3416,6 +3416,22 @@ public final class foreign
       }
 
    // Open functions
+   public static cell BGL_MAKE_UNSAFE_CELL(Object o)
+      {
+	 return new cell(o);
+      }
+
+   public static Object BGL_UNSAFE_CELL_SET(cell o, Object v)
+      {
+	 o.car = v;
+	 return unspecified.unspecified;
+      }
+
+   public static Object BGL_UNSAFE_CELL_REF(cell o)
+      {
+	 return o.car;
+      }
+
    public static cell MAKE_CELL(Object o)
       {
 	 return new cell(o);

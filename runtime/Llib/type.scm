@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Oct 30 02:35:56 2024 (serrano)                */
+;*    Last change :  Fri Nov  8 07:26:53 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -92,6 +92,7 @@
     (subtype unspecified "obj_t" (obj))
     (subtype symbol "obj_t" (obj))
     (subtype keyword "obj_t" (obj))
+    (subtype unsafe-cell "obj_t" (cobj))
     (subtype cell "obj_t" (obj))
     (subtype exit "void *" (obj))
     (subtype foreign "obj_t" (obj))
@@ -126,7 +127,7 @@
 
     ;; we give now the foreign hierarchy
     (cobj "long" C)
-    
+
     (subtype char "unsigned char" (cobj))
     (subtype uchar "unsigned char" (cobj))
     (subtype ucs2 "ucs2_t" (cobj))

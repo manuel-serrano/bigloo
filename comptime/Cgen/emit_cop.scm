@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Jul 17 11:42:42 2024 (serrano)                */
+;*    Last change :  Fri Nov  8 08:09:44 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -660,14 +660,20 @@
    (with-access::cmake-box cop (value loc stackable)
       (emit-bdb-loc loc)
       (if (local? stackable)
-	  (begin
-	     (display "MAKE_CELL_STACK(" *c-port*)
+	  (let ((make-cell (if *optim-unsafe-cell?*
+			       "BGL_MAKE_UNSAFE_CELL_STACK"
+			       "MAKE_CELL_STACK")))
+	     (display make-cell *c-port*)
+	     (write-char #\( *c-port*)
 	     (emit-cop value)
 	     (write-char #\, *c-port*)
 	     (display (variable-name stackable) *c-port*)
 	     (write-char #\) *c-port*))
-	  (begin
-	     (display "MAKE_CELL(" *c-port*)
+	  (let ((make-cell (if *optim-unsafe-cell?*
+			       "BGL_MAKE_UNSAFE_CELL"
+			       "MAKE_CELL")))
+	     (display make-cell *c-port*)
+	     (write-char #\( *c-port*)
 	     (emit-cop value)
 	     (write-char #\) *c-port*)))
       #t))
@@ -677,30 +683,38 @@
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::cbox-ref)
    (with-access::cbox-ref cop (var loc type)
-      (emit-bdb-loc loc)
-      (unless (eq? type *obj*)
-	 (display "((" *c-port*)
-	 (display (type-name type) *c-port*)
-	 (display ")" *c-port*))
-      (display "CELL_REF(" *c-port*)
-      (emit-cop var)
-      (if (eq? type *obj*)
-	  (write-char #\) *c-port*)
-	  (display "))" *c-port*))
-      #t))
+      (let ((cell-ref (if *optim-unsafe-cell?*
+			  "BGL_UNSAFE_CELL_REF"
+			  "CELL_REF")))
+	 (emit-bdb-loc loc)
+	 (unless (eq? type *obj*)
+	    (display "((" *c-port*)
+	    (display (type-name type) *c-port*)
+	    (display ")" *c-port*))
+	 (display cell-ref *c-port*)
+	 (write-char #\( *c-port*)
+	 (emit-cop var)
+	 (if (eq? type *obj*)
+	     (write-char #\) *c-port*)
+	     (display "))" *c-port*))
+	 #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cop ::cbox-set! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::cbox-set!)
    (with-access::cbox-set! cop (var value loc)
-      (emit-bdb-loc loc)
-      (display "CELL_SET(" *c-port*)
-      (emit-cop var)
-      (display ", " *c-port*)
-      (emit-cop value)
-      (write-char #\) *c-port*)
-      #t))
+      (let ((cell-set (if *optim-unsafe-cell?*
+			  "BGL_UNSAFE_CELL_SET"
+			  "CELL_SET")))
+	 (emit-bdb-loc loc)
+	 (display cell-set *c-port*)
+	 (write-char #\( *c-port*)
+	 (emit-cop var)
+	 (display ", " *c-port*)
+	 (emit-cop value)
+	 (write-char #\) *c-port*)
+	 #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cop ::cset-ex-it ...                                        */
@@ -708,14 +722,14 @@
 (define-method (emit-cop cop::cset-ex-it)
    (with-access::cset-ex-it cop (exit jump-value body loc)
       (emit-bdb-loc loc)
-      (display "if( SET_EXIT(" *c-port*)
+      (display "if (SET_EXIT(" *c-port*)
       (emit-cop exit)
-      (display " ) ) { " *c-port*)
+      (display ")) { " *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
       (when (emit-cop jump-value) (display ";" *c-port*))
       (emit-bdb-loc loc)
       (display "} else {\n" *c-port*)
-      (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)
+      (display "#if (SIGSETJMP_SAVESIGS == 0)\n" *c-port*)
       (display "  // MS: CARE 5 jan 2021: see runtime/Clib/csystem.c\n" *c-port*)
       (display "  // bgl_restore_signal_handlers();\n" *c-port*)
       (display "#endif\n" *c-port*)
@@ -731,7 +745,7 @@
 (define-method (emit-cop cop::cjump-ex-it)
    (with-access::cjump-ex-it cop (exit value loc)
       (emit-bdb-loc loc)
-      (display "JUMP_EXIT( " *c-port*)
+      (display "JUMP_EXIT(" *c-port*)
       (emit-cop exit)
       (write-char #\, *c-port*)
       (emit-cop value)

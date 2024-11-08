@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Fri Nov  1 17:10:10 2024 (serrano)                */
+/*    Last change :  Fri Nov  8 07:39:12 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -43,6 +43,24 @@ make_epair(obj_t car, obj_t cdr, obj_t cer) {
    BGL_INIT_EPAIR(pair, car, cdr, cer);
    
    return BPAIR(pair);
+}
+
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    GC_API obj_t                                                     */
+/*    bgl_make_unsafe_cell ...                                         */
+/*---------------------------------------------------------------------*/
+#ifndef __BGL_MAKE_UNSAFE_CELL
+#define __BGL_MAKE_UNSAFE_CELL
+
+GC_API obj_t
+bgl_make_unsafe_cell(obj_t val) {
+   obj_t unsafe_cell;
+
+   unsafe_cell = (obj_t)GC_THREAD_MALLOC(BGL_UNSAFE_CELL_SIZE);
+   BGL_UNSAFE_CELL_SET(unsafe_cell, val);
+   return unsafe_cell;
 }
 
 #endif

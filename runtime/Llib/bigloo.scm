@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Mon Sep 16 17:14:59 2024 (serrano)                */
+;*    Last change :  Fri Nov  8 07:27:16 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -98,6 +98,13 @@
 		   "PROCEDURE_EL_SET")		 
 	    (macro procedure-el-ref::obj (::procedure-el ::int)
 		   "PROCEDURE_EL_REF")
+
+	    (macro $make-unsafe-cell::unsafe-cell (::obj)
+		   "BGL_MAKE_UNSAFE_CELL")
+	    (macro $unsafe-cell-ref::obj (::unsafe-cell)
+		   "BGL_UNSAFE_CELL_REF")
+	    (macro $unsafe-cell-set!::obj (::unsafe-cell ::obj)
+		   "BGL_UNSAFE_CELL_SET")
 	    
 	    (macro $make-cell::cell (::obj)
 		   "MAKE_YOUNG_CELL")
@@ -226,6 +233,13 @@
 		       "CELL_REF")
 	       (method static $cell?::bool (::obj)
 		       "CELLP")
+	       
+	       (method static $make-unsafe-cell::unsafe-cell (::obj)
+		       "BGL_MAKE_UNSAFE_CELL")
+	       (method static $unsafe-cell-set!::obj (::unsafe-cell ::obj)
+		       "BGL_UNSAFE_CELL_SET")
+	       (method static $unsafe-cell-ref::obj (::unsafe-cell)
+		       "BGL_UNSAFE_CELL_REF")
 	       
 	       (method static c-cnst?::bool (::obj)
 		       "CNSTP")
