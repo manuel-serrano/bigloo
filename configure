@@ -4,8 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Nov  1 22:58:12 2024 (serrano)                */
-#*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
+#*    Last change :  Fri Nov  8 11:40:08 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3349,6 +3348,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
   fi
 
+  int_sign_bit=`$autoconf signbit --type=int --alignment="$alignment"` || exit 1
   long_sign_bit=`$autoconf signbit --type=long --alignment="$alignment"` || exit 1
   elong_sign_bit=`$autoconf signbit --type=long --alignment=0` || exit 1
   llong_sign_bit=`$autoconf signbit --type="$longlong" --alignment=0` || exit 1
@@ -3741,6 +3741,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_LONGLONG@|$havelonglong|" \
               -e "s|@BGL_LONG_LIMBS@|$long_limbs|" \
               -e "s|@BGL_LONGLONG_LIMBS@|$longlong_limbs|" \
+              -e "s|@C_INT_SIGN_BIT@|$int_sign_bit|" \
               -e "s|@C_LONG_SIGN_BIT@|$long_sign_bit|" \
               -e "s|@C_ELONG_SIGN_BIT@|$elong_sign_bit|" \
               -e "s|@C_LLONG_SIGN_BIT@|$llong_sign_bit|" \

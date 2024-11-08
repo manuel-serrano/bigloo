@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Fri Nov  8 11:24:23 2024 (serrano)                */
+/*    Last change :  Fri Nov  8 11:26:00 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -304,11 +304,11 @@ extern bool_t __builtinmull_overflow(long x, long y, long *res);
 #if TAG_INT == 0
 #   define BGL_ADDFX_SANS_OV(x, y) ((obj_t)(((long)(x)) + ((long)(y))))
 #   define BGL_SUBFX_SANS_OV(x, y) ((obj_t)(((long)(x)) - ((long)(y))))
-#   define BGL_MULFX_SANS_OV(x, y) ((obj_t)(((long)(x)) * CINT((y))))
+#   define BGL_MULFX_SANS_OV(x, y) ((obj_t)(((long)(x)) * CINT(y)))
 #else
 #   define BGL_ADDFX_SANS_OV(x, y) (BINT(CINT(x) + CINT(y)))
 #   define BGL_SUBFX_SANS_OV(x, y) (BINT(CINT(x) - CINT(y)))
-#   define BGL_MULFX_SANS_OV(x, y) (BINT((x) * ((long)(y))))
+#   define BGL_MULFX_SANS_OV(x, y) (BINT(CINT(x) * CINT(y)))
 #endif
 
 /*---------------------------------------------------------------------*/
