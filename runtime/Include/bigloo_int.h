@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Jul  9 10:04:16 2024 (serrano)                */
+/*    Last change :  Fri Nov  8 11:18:59 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -275,9 +275,13 @@ static int __builtin_ssubl_overflow(long x, long y, long *res) {
 /*    local variable.                                                  */
 /*---------------------------------------------------------------------*/
 #if BGL_HAVE_OVERFLOW && TAG_INT == 0
-#  define BGL_ADDFX_OV(x, y, res) __builtin_saddl_overflow((long)x, (long)y, (long*)&res)
-#  define BGL_SUBFX_OV(x, y, res) __builtin_ssubl_overflow((long)x, (long)y, (long*)&res)
-#  define BGL_MULFX_OV(x, y, res) __builtin_smull_overflow((long)x, (long)y, (long*)&res)
+#  define BGL_ADDFX_OV(x, y, res) __builtin_saddl_overflow((long)x, (long)y, (long *)&res)
+#  define BGL_SUBFX_OV(x, y, res) __builtin_ssubl_overflow((long)x, (long)y, (long *)&res)
+#  define BGL_MULFX_OV(x, y, res) __builtin_smull_overflow((long)x, (long)y, (long *)&res)
+# if BGL_NAN_TAGGING
+#  define BGL_ADDFX_OV(x, y, res) (__builtin_sadd_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
+#  define BGL_SUBFX_OV(x, y, res) (__builtin_ssub_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
+#  define BGL_MULFX_OV(x, y, res) (__builtin_smul_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
 #else
 #  define BGL_ADDFX_OV(x, y, res) bgl_saddl_overflow(x, y, &res)
 #  define BGL_SUBFX_OV(x, y, res) bgl_subl_overflow(x, y, &res)
