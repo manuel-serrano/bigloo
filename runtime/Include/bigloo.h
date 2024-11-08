@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Oct 29 21:27:43 2024 (serrano)                */
+/*    Last change :  Fri Nov  8 07:31:16 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -717,6 +717,7 @@ union scmobj {
    } binary_port;
    
    /* cells (compiler and user values) */	
+   struct bgl_unsafe_cell unsafe_cell;
    struct bgl_cell cell;
 
    /* structures */
@@ -1504,7 +1505,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 	 
 #define BGL_ALLOC_STACK_FX_PROCEDURE(size) \
    char[ PROCEDURE_SIZE + ((size-1) * OBJ_SIZE) ]
-	 
+
 /*---------------------------------------------------------------------*/
 /*    Light procedures                                                 */
 /*---------------------------------------------------------------------*/
