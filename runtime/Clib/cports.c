@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cports.c         */
+/*    serrano/prgm/project/bigloo/flt/runtime/Clib/cports.c            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Sep 30 09:30:15 2024 (serrano)                */
+/*    Last change :  Sat Nov  9 10:40:54 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -496,14 +496,14 @@ bgl_input_mmap_seek(obj_t port, long pos) {
 /*---------------------------------------------------------------------*/
 #if (BGL_HAVE_FCNTL)
 static void
-timeout_set_port_blocking(char *fun, int fd, int bool) {
+timeout_set_port_blocking(char *fun, int fd, int flag) {
    int val;
 
    if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
       C_SYSTEM_FAILURE(BGL_IO_ERROR, fun, strerror(errno), BINT(fd));
    }
 
-   if (!bool) {
+   if (!flag) {
       val |= O_NONBLOCK;
    } else {
       val &= ~O_NONBLOCK;

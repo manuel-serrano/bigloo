@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/runtime/Clib/inline_alloc.h     */
+/*    serrano/prgm/project/bigloo/flt/runtime/Clib/inline_alloc.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Fri Nov  8 07:32:27 2024 (serrano)                */
+/*    Last change :  Sat Nov  9 10:36:33 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -195,6 +195,7 @@ make_cell(obj_t val) {
 
 #if (!defined(TAG_REALZ))
 DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
+DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #endif
 
 #if (!BGL_NAN_TAGGING) 
@@ -211,13 +212,17 @@ alloc_make_real(double d) {
 GC_API obj_t
 make_real(double d) {
 #if (!defined(TAG_REALZ))
-   if (((union { double d; long l; })(d)).l == 0) {
-      return BGL_REAL_CNST(bgl_zero);
+   if ((((union { double d; long l; })(d)).l << 1) == 0) {
+      if (((union { double d; long l; })(d)).l == 0) {
+	 return BGL_REAL_CNST(bgl_zero);
+      } else {
+	 return BGL_REAL_CNST(bgl_negative_zero);
+      }
    } else
 #endif
    {
       obj_t real;
-   
+
       GC_INLINE_MALLOC(real, REAL_SIZE, alloc_make_real(d));
       BGL_INIT_REAL(real, d);
       
