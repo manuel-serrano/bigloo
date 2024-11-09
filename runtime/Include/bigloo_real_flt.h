@@ -1,15 +1,17 @@
 /*=====================================================================*/
-/*    .../project/bigloo/nanh/runtime/Include/bigloo_real_flt.h        */
+/*    .../project/bigloo/flt/runtime/Include/bigloo_real_flt.h         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sun Nov  3 15:51:17 2024 (serrano)                */
+/*    Last change :  Sat Nov  9 08:32:43 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
 /*=====================================================================*/
 #ifndef BIGLOO_REAL_FLT_H 
 #define BIGLOO_REAL_FLT_H
+
+#include <stdbool.h>
 
 /*---------------------------------------------------------------------*/
 /*    Does someone really wants C++ here?                              */
@@ -149,33 +151,41 @@ union bgl_fltobj {
 #  define BGL_BIT_ROTR(_o) (_o)
 #endif
 
-#define DOUBLE_TO_REAL(_d) \
-   (BGL_TAGGED_REALP(BGL_BIT_ROTR(BGL_ASOBJ(_d))) \
-    ? BGL_BIT_ROTR(BGL_ASOBJ(_d)) \
-    : make_real(_d))
+/*---------------------------------------------------------------------*/
+/*    REAL_TO_DOUBLE                                                   */
+/*---------------------------------------------------------------------*/
 #define REAL_TO_DOUBLE(_o) \
    (BGL_TAGGED_REALP(_o) \
     ? (BGL_ASDOUBLE(BGL_BIT_ROTL(_o))) \
     : REAL(_o).val)
 
-/* #undef DOUBLE_TO_REAL                                               */
-/* #define DOUBLE_TO_REAL _double_to_real                              */
-/*                                                                     */
-/* inline __attribute__((always_inline))                               */
-/* obj_t _double_to_real(double _d) {                                  */
-/*    obj_t result;                                                    */
-/*    char carry;                                                      */
-/*    __asm__("ror $60, %%rax;"                                        */
-/* 	   "bt  %%eax, %3;"                                            */
-/* 	   : "=@ccc"(carry), "=a"(result)                              */
-/* 	   : "a"(((union bgl_fltobj)(_d))._obj),                       */
-/* 	     "r"((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101));      */
-/*    if (carry) {                                                     */
-/*       return result;                                                */
-/*    } else {                                                         */
-/*       return make_real(_d);                                         */
-/*    }                                                                */
-/* }                                                                   */
+/*---------------------------------------------------------------------*/
+/*    x86_64 assembly inline                                           */
+/*---------------------------------------------------------------------*/
+#if BGL_HAVE_ASM_X86_64
+#  define DOUBLE_TO_REAL _double_to_real
+
+inline __attribute__((always_inline))
+obj_t _double_to_real(double _d) {
+   obj_t result;
+   bool carry;
+   __asm__("ror $60, %%rax;"
+	   "bt  %%eax, %3;"
+	   : "=@ccc"(carry), "=a"(result)
+	   : "a"(((union bgl_fltobj)(_d))._obj),
+	     "r"((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101));
+   if (carry) {
+      return result;
+   } else {
+      return make_real(_d);
+   }
+}
+#else /* generic implementation */
+#  define DOUBLE_TO_REAL(_d) \
+     (BGL_TAGGED_REALP(BGL_BIT_ROTR(BGL_ASOBJ(_d))) \
+      ? BGL_BIT_ROTR(BGL_ASOBJ(_d)) \
+      : make_real(_d))
+#endif
 
 #define FLOAT_TO_REAL(_d) DOUBLE_TO_REAL((double)(_d))
 #define REAL_TO_FLOAT(_o) ((float)(REAL_TO_DOUBLE(_o)))

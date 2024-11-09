@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/nanh/configure                       */
+#*    serrano/prgm/project/bigloo/flt/configure                        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Nov  8 11:40:08 2024 (serrano)                */
+#*    Last change :  Sat Nov  9 08:46:04 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3150,6 +3150,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Does the system have overflow?
   overflow=`$autoconf overflow`
 
+  # Does the compiler supports x86_64 inline assembly instructions?
+  asmx86_64=`$autoconf asmx86_64`
+  
   # Does the system have sigsetmask?
   sigsetmask=`$autoconf sigsetmask` || exit 1
 
@@ -3725,6 +3728,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_GCCATTRS@|$gccattrs|" \
               -e "s|@BGL_HAVE_SYSLOG@|$syslog|" \
               -e "s|@BGL_HAVE_OVERFLOW@|$overflow|" \
+              -e "s|@BGL_HAVE_ASM_X86_64@|$asmx86_64|" \
               -e "s|@HAVE_SIGSETMASK@|$sigsetmask|" \
               -e "s|@HAVE_SIGPROCMASK@|$sigprocmask|" \
               -e "s|@HAVE_ALLOCA@|$alloca|" \
