@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon May  6 16:05:05 2024 (serrano)                */
+/*    Last change :  Sat Nov  9 09:20:40 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -36,7 +36,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_vector_copy(obj_t);
 /*    bgl_vector ...                                                   */
 /*---------------------------------------------------------------------*/
 struct bgl_vector {
-#if(!defined(TAG_VECTOR))
+#if (!defined(TAG_VECTOR))
    header_t header;
 #endif
    /* XXX-VECTOR_SIZE_TAG_NB_BIT bit long length (see VECTOR_LENGTH) */
@@ -66,7 +66,7 @@ struct bgl_hvector {
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
-#if(defined(TAG_VECTOR))
+#if (defined(TAG_VECTOR))
 #   define BVECTOR(p) BGL_BPTR((obj_t)((long)p + TAG_VECTOR))
 #   define CVECTOR(p) BGL_CPTR((obj_t)((unsigned long)p - TAG_VECTOR))
 #   if(TAG_VECTOR != 0) 
@@ -108,7 +108,7 @@ struct bgl_hvector {
 #define VECTOR_REF(v, i) ((&(VECTOR(v).obj0))[i])
 #define VECTOR_SET(v, i, o) BASSIGN(VECTOR_REF(v, i), o, v)
 
-#if(VECTOR_SIZE_TAG_NB_BIT != 0)
+#if (VECTOR_SIZE_TAG_NB_BIT != 0)
 #   define BGL_VLENGTH(v) (VECTOR(v).length & VECTOR_LENGTH_MASK)
 #else
 #   define BGL_VLENGTH(v) (VECTOR(v).length)
@@ -116,7 +116,7 @@ struct bgl_hvector {
 
 #define VECTOR_LENGTH(v) BGL_VLENGTH(v)
 
-#if(VECTOR_SIZE_TAG_NB_BIT != 0)
+#if (VECTOR_SIZE_TAG_NB_BIT != 0)
 #  define VECTOR_TAG_SET(v, tag) \
     (VECTOR(v).length = \
      (BGL_VLENGTH(v) | (((unsigned long) tag) << VECTOR_LENGTH_SHIFT)), \
@@ -128,7 +128,7 @@ struct bgl_hvector {
 #  define VECTOR_TAG(v) (0)
 #endif
 
-#if(VECTOR_SIZE_TAG_NB_BIT != 0)
+#if (VECTOR_SIZE_TAG_NB_BIT != 0)
 #   define BGL_VECTOR_SHRINK(v, l) \
    ((l >= 0 && l < BGL_VLENGTH(v)) ? \
     VECTOR(v).length = (l & ~VECTOR_LENGTH_MASK)), v : v)
@@ -333,7 +333,7 @@ BGL_RUNTIME_DECL obj_t alloc_hvector(int, int, int);
 /*---------------------------------------------------------------------*/
 /*    Vector stack allocation                                          */
 /*---------------------------------------------------------------------*/
-#if(BGL_HAVE_ALLOCA && defined(__GNUC__))
+#if (BGL_HAVE_ALLOCA && !BGL_NAN_TAGGING && defined(__GNUC__))
 #  if(!defined(TAG_VECTOR))
 #     define BGL_CREATE_STACK_VECTOR(len) \
       ({ \
