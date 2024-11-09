@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov  8 07:31:16 2024 (serrano)                */
+/*    Last change :  Sat Nov  9 09:22:32 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1503,9 +1503,14 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
    
 #define BGL_PROCEDURE_BYTE_SIZE(size) \
    (PROCEDURE_SIZE + ((size-1) * OBJ_SIZE))
-	 
-#define BGL_ALLOC_STACK_FX_PROCEDURE(size) \
-   char[ PROCEDURE_SIZE + ((size-1) * OBJ_SIZE) ]
+
+#if !BGL_NAN_TAGGING
+#  define BGL_ALLOC_STACK_FX_PROCEDURE(size) \
+     char[ PROCEDURE_SIZE + ((size-1) * OBJ_SIZE) ]
+#else
+#  define BGL_ALLOC_STACK_FX_PROCEDURE(size) \
+     GC_MALLOC(PROCEDURE_SIZE + ((size-1) * OBJ_SIZE))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Light procedures                                                 */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Nov  8 07:37:38 2024 (serrano)                */
+/*    Last change :  Sat Nov  9 09:19:39 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
@@ -48,7 +48,7 @@ struct bgl_unsafe_cell {
 #define BGL_UNSAFE_CELL_SET(_c, _v) BASSIGN(BGL_UNSAFE_CELL_REF(_c), _v, _c)
 
 /* stack allocation */
-#if (BGL_HAVE_ALLOCA && defined(__GNUC__))
+#if (BGL_HAVE_ALLOCA && !BGL_NAN_TAGGING && defined(__GNUC__))
 #   define BGL_MAKE_STACK_UNSAFE_CELL(v) \
         ({ obj_t an_object; \
            an_object = alloca(UNSAFE_CELL_SIZE); \
