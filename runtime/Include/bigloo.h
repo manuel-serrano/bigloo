@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Nov  9 09:22:32 2024 (serrano)                */
+/*    Last change :  Sat Nov  9 14:51:18 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -49,6 +49,7 @@ extern "C" {
 #include <setjmp.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include <ctype.h>
 #include <time.h>

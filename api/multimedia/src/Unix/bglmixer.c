@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/multimedia/src/Unix/bglmixer.c       */
+/*    .../project/bigloo/bigloo/api/multimedia/src/Unix/bglmixer.c     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb  3 15:25:23 2000                          */
-/*    Last change :  Thu Oct 29 06:49:52 2009 (serrano)                */
+/*    Last change :  Sat Nov  9 14:50:47 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    A control over the audio mixer for Bigloo. To a large extent     */
 /*    this file is inspired of mixctl.h by Sam Hawker                  */
@@ -30,8 +30,6 @@
 # endif
 #endif
 #include <bigloo.h>
-
-typedef int bool;
 
 /*---------------------------------------------------------------------*/
 /*    A private mixer structure                                        */

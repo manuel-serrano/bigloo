@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Dec  8 13:43:49 2023 (serrano)                */
+/*    Last change :  Sun Nov 10 06:40:14 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1429,14 +1429,14 @@ set_socket_io_ports(int s, obj_t sock, const char *who, obj_t inb, obj_t outb) {
 /*---------------------------------------------------------------------*/
 #if (BGL_HAVE_FCNTL)
 static void
-set_socket_blocking(int fd, int bool) {
+set_socket_blocking(int fd, int flag) {
    int val;
 
    if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
       socket_error("make-client-socket", "cannot get socket control", BUNSPEC);
    }
 
-   if (bool) {
+   if (flag) {
       val |= O_NONBLOCK;
    } else {
       val &= ~O_NONBLOCK;
