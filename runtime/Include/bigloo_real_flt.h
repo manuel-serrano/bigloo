@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sat Nov  9 10:55:42 2024 (serrano)                */
+/*    Last change :  Sun Nov 10 18:49:49 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -86,9 +86,13 @@ union bgl_fltobj {
 #if defined(TAG_REALZ)
 #  define BGL_REAL_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REALZ)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+#  define BGL_REAL_TAG_SET_BIT_TEST \
+     ((1 << TAG_REALU) | (1 << TAG_REALL) | (1 << TAG_REALZ))
 #else
 #  define BGL_REAL_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+#  define BGL_REAL_TAG_SET_BIT_TEST \
+     ((1 << TAG_REALU) | (1 << TAG_REALL))
 #endif
 
 // cast operations
@@ -162,7 +166,7 @@ union bgl_fltobj {
 /*---------------------------------------------------------------------*/
 /*    x86_64 assembly inline                                           */
 /*---------------------------------------------------------------------*/
-#if BGL_HAVE_ASM_X86_64 && 0
+#if BGL_HAVE_ASM_X86_64
 #  define DOUBLE_TO_REAL _double_to_real
 
 inline __attribute__((always_inline))
@@ -170,10 +174,10 @@ obj_t _double_to_real(double _d) {
    obj_t result;
    bool carry;
    __asm__("ror $60, %%rax;"
-	   "bt  %%eax, %3;"
+	   "bt  %%ax, %3;"
 	   : "=@ccc"(carry), "=a"(result)
 	   : "a"(((union bgl_fltobj)(_d))._obj),
-	     "r"((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101));
+	     "r"((uint16_t)(BGL_REAL_TAG_SET_BIT_TEST * 0x0101)));
    if (carry) {
       return result;
    } else {

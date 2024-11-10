@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Sat Nov  9 10:36:33 2024 (serrano)                */
+/*    Last change :  Sun Nov 10 18:23:33 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -222,10 +222,9 @@ make_real(double d) {
 #endif
    {
       obj_t real;
-
       GC_INLINE_MALLOC(real, REAL_SIZE, alloc_make_real(d));
       BGL_INIT_REAL(real, d);
-      
+
       return BREAL(real);
    }
 }
