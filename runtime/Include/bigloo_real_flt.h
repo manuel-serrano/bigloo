@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Nov 11 06:57:24 2024 (serrano)                */
+/*    Last change :  Mon Nov 11 18:04:05 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -115,7 +115,7 @@ union bgl_fltobj {
 #endif
 
 // predicates
-#if !defined(TAG_REALZ) && !defined(TAG_REAL) && 0
+#if !defined(TAG_REALZ) || !defined(TAG_REAL)
 #  define FLONUMP(_o) (BGL_TAGGED_REALP(_o) || BGL_BOXED_REALP(_o))
 #else
 #  define BGL_FLONUMP_TAG_MASK_TABLE \
