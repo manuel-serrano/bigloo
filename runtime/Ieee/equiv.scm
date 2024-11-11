@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/equiv.scm        */
+;*    serrano/prgm/project/bigloo/flt/runtime/Ieee/equiv.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Wed Sep 18 06:45:10 2024 (serrano)                */
+;*    Last change :  Mon Nov 11 07:02:47 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -82,8 +82,10 @@
       ((inexact? obj1)
        (and (inexact? obj2) (= obj1 obj2)))
       ((symbol? obj1)
-       (and (symbol? obj2)
-	    (string=? (symbol->string! obj1) (symbol->string! obj2))))
+       ;; MS 11nov2024, if too symbols are not eq? they are not eqv? either!
+       #f)
+;*        (and (symbol? obj2)                                          */
+;* 	    (string=? (symbol->string! obj1) (symbol->string! obj2)))) */
       ((foreign? obj1)
        (and (foreign? obj2) (foreign-eq? obj1 obj2)))
       ((weakptr? obj1)

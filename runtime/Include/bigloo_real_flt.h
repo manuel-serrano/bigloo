@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sun Nov 10 18:49:49 2024 (serrano)                */
+/*    Last change :  Mon Nov 11 06:57:24 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -108,14 +108,21 @@ union bgl_fltobj {
 // BGL_BOXED_REALP
 #if (defined(TAG_REAL))
 #  define BGL_BOXED_REALP(_o) \
-   (_o && ((((long)_o) & TAG_MASK) == TAG_REAL))
+     (_o && ((((long)_o) & TAG_MASK) == TAG_REAL))
 #else
 #  define BGL_BOXED_REALP(_o) \
-   (POINTERP(_o) && (TYPE(_o) == REAL_TYPE))
+     (POINTERP(_o) && (TYPE(_o) == REAL_TYPE))
 #endif
 
 // predicates
-#define FLONUMP(_o) (BGL_TAGGED_REALP(_o) || BGL_BOXED_REALP(_o))
+#if !defined(TAG_REALZ) && !defined(TAG_REAL) && 0
+#  define FLONUMP(_o) (BGL_TAGGED_REALP(_o) || BGL_BOXED_REALP(_o))
+#else
+#  define BGL_FLONUMP_TAG_MASK_TABLE \
+     ((1 << (7 - TAG_REAL)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+#  define FLONUMP(_o) (((int32_t)((uint32_t)BGL_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(_o)) < 0)
+#endif
+
 #define REALP(_o) FLONUMP(_o)
 
 #define BGL_REAL_CNST(name) name
