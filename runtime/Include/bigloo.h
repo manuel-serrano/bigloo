@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Nov 11 18:48:46 2024 (serrano)                */
+/*    Last change :  Tue Nov 12 19:40:41 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -277,7 +277,7 @@ extern "C" {
 #  define TAG_POINTER 2               /*  pointer tagging       ...010 */
 #  define TAG_CNST 5                  /*  constant tagging      ...101 */
 #  define TAG_PAIR 6                  /*  pair tagging          ...110 */
-#  define TAG_VECTOR 7                /*  vector tagging        ...111 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (BGL_FL_TAGGING == 2)
 // floating point tagging, 3 least significant bits + boxed/header real
 #  define TAG_QNAN 0
@@ -288,7 +288,7 @@ extern "C" {
 #  define TAG_POINTER 4               /*  pointer tagging       ...100 */
 #  define TAG_CNST 5                  /*  constant tagging      ...101 */
 #  define TAG_PAIR 6                  /*  pair tagging          ...110 */
-#  define TAG_VECTOR 7                /*  vector tagging        ...111 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (BGL_FL_TAGGING == 3)
 // floating point tagging 2 exponent bits + boxed/w-header real
 #  define TAG_FL_ROT_BITS ((unsigned long)60)
@@ -300,7 +300,7 @@ extern "C" {
 #  define TAG_POINTER 2               /*  pointer tagging       ...010 */
 #  define TAG_CNST 5                  /*  constant tagging      ...101 */
 #  define TAG_PAIR 6                  /*  pair tagging          ...110 */
-#  define TAG_VECTOR 7                /*  vector tagging        ...111 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (!BGL_NAN_TAGGING)
 #  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  integer tagging       ....00 */
