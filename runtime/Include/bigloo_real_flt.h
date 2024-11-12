@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Nov 11 18:05:31 2024 (serrano)                */
+/*    Last change :  Tue Nov 12 10:13:17 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -173,7 +173,7 @@ union bgl_fltobj {
 /*---------------------------------------------------------------------*/
 /*    x86_64 assembly inline                                           */
 /*---------------------------------------------------------------------*/
-#if BGL_HAVE_ASM_X86_64
+#if BGL_HAVE_ASM_X86_64 && (defined(TAG_FL_ROT_BITS))
 #  define DOUBLE_TO_REAL _double_to_real
 
 inline __attribute__((always_inline))
