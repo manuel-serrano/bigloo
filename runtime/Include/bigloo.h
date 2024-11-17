@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Nov 14 18:27:12 2024 (serrano)                */
+/*    Last change :  Sun Nov 17 11:38:28 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -364,17 +364,17 @@ error "Unknown garbage collector type"
 #define BGL_HEADER_SIZE_SHIFT (BGL_HEADER_TYPE_BIT_SIZE + BGL_HEADER_TYPE_SHIFT)
 #define BGL_HEADER_DATA_SHIFT (BGL_HEADER_SIZE_BIT_SIZE + BGL_HEADER_SIZE_SHIFT)
 
-#define BGL_HEADER_TYPE_MASK ((1 << BGL_HEADER_TYPE_BIT_SIZE) - 1)
-#define BGL_HEADER_SIZE_MASK ((1 << BGL_HEADER_SIZE_BIT_SIZE) - 1)
-#define BGL_HEADER_DATA_MASK ((1 << BGL_HEADER_DATA_BIT_SIZE) - 1)
-#define BGL_HEADER_FULLSIZE_MASK ((1 << BGL_HEADER_FULLSIZE_BIT_SIZE) - 1)
+#define BGL_HEADER_TYPE_MASK ((1L << BGL_HEADER_TYPE_BIT_SIZE) - 1)
+#define BGL_HEADER_SIZE_MASK ((1L << BGL_HEADER_SIZE_BIT_SIZE) - 1)
+#define BGL_HEADER_DATA_MASK ((1L << BGL_HEADER_DATA_BIT_SIZE) - 1)
+#define BGL_HEADER_FULLSIZE_MASK ((1L << BGL_HEADER_FULLSIZE_BIT_SIZE) - 1)
 
 #define BGL_HEADER_MAX_SIZE ((1 << BGL_HEADER_SIZE_BIT_SIZE) - 1)
 #define BGL_HEADER_MAX_FULLSIZE ((1 << BGL_HEADER_FULLSIZE_BIT_SIZE) - 1)
 
 // create a header from a type and a size
-#define BGL_MAKE_HEADER(_ty, _sz) \
-   ((header_t)((((long)(_ty)) << BGL_HEADER_TYPE_SHIFT) | (((_sz) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT)))
+#define BGL_MAKE_HEADER(_tydt, _sz) \
+   ((header_t)((((long)(_tydt)) << BGL_HEADER_TYPE_SHIFT) | (((_sz) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT)))
 
 // create a header from a header and a data
 #define BGL_MAKE_HEADER_DATA_ADD(_hd, _dt) \
@@ -382,7 +382,7 @@ error "Unknown garbage collector type"
 
 #define BGL_HEADER_TYPE(_hd)  \
    ((((unsigned long)(_hd)) >> BGL_HEADER_TYPE_SHIFT) & BGL_HEADER_TYPE_MASK)
-#define BGL_HEADER_TYPE_DATA(_hd)  \
+#define BGL_HEADER_TYPE_SIZE_DATA(_hd)  \
    ((((unsigned long)(_hd)) >> BGL_HEADER_TYPE_SHIFT))
 #define BGL_HEADER_SIZE(_hd)  \
    ((((unsigned long)(_hd)) >> BGL_HEADER_SIZE_SHIFT) & BGL_HEADER_SIZE_MASK)
@@ -482,7 +482,7 @@ error "Unknown garbage collector type"
 /*---------------------------------------------------------------------*/
 /*    Internal Bigloo's types.                                         */
 /*---------------------------------------------------------------------*/
-typedef long header_t;
+typedef unsigned long header_t;
 typedef int bool_t;
 typedef uint16_t ucs2_t;
 typedef union scmobj *obj_t;

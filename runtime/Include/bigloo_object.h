@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Nov 14 18:35:54 2024 (serrano)                */
+/*    Last change :  Sun Nov 17 10:58:53 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -106,7 +106,7 @@ typedef struct BgL_objectz00_bgl {
 
 #define BGL_OBJECT_HEADER_SIZE_SET(_o, _s) \
    (((obj_t)COBJECT(_o))->header = \
-    BGL_MAKE_HEADER(BGL_HEADER_TYPE(COBJECT(_o)->header), _s))
+    BGL_MAKE_HEADER(BGL_HEADER_TYPE_SIZE_DATA(COBJECT(_o)->header) & ~(BGL_HEADER_SIZE_MASK << (BGL_HEADER_SIZE_SHIFT - BGL_HEADER_SHIFT)), _s))
 
 #if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
 #  define BGL_OBJECT_INHERITANCE_NUM(_obj) \
