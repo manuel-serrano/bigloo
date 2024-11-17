@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 15 18:00:35 2024 (serrano)                */
+;*    Last change :  Sun Nov 17 10:47:03 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1494,7 +1494,6 @@
 ;*    exception-notify ::obj ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-generic (exception-notify exc::obj)
-   (tprint "EXN NOTIFY " (typeof exc))
    (let ((port (current-error-port)))
       (display "*** UNKNOWN EXCEPTION: " port)
       (write-circle exc port)
@@ -1513,14 +1512,12 @@
 ;*    exception-notify ::&error ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (exception-notify exc::&error)
-   (tprint "EXN.2 NOTIFY " (typeof exc))
    (error-notify exc))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::&io-write-error ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (exception-notify exc::&io-write-error)
-   (tprint "EXN.3 NOTIFY " (typeof exc))
    (with-access::&io-write-error exc (obj)
       (unless (eq? obj (current-error-port))
 	 (call-next-method))))
@@ -1529,7 +1526,6 @@
 ;*    exception-notify ::&warning ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (exception-notify exc::&warning)
-   (tprint "EXN.4 NOTIFY " (typeof exc))
    (warning-notify exc))
 
 ;*---------------------------------------------------------------------*/
