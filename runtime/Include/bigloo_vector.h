@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Nov  9 09:20:40 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 09:16:50 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -154,7 +154,7 @@ struct bgl_hvector {
 		   unsigned long length; \
 		   obj_t descr; \
 		   itype items[len]; } \
-      aux = { __CNST_FILLER MAKE_HEADER(TVECTOR_TYPE, 0), len, 0L,
+      aux = { __CNST_FILLER BGL_MAKE_HEADER(TVECTOR_TYPE, 0), len, 0L,
 	      
 #define DEFINE_TVECTOR_STOP(name, aux) \
 	   }; static obj_t name = BREF(&(aux.header))
@@ -165,7 +165,7 @@ struct bgl_hvector {
       an_object = MALLOC(sizeof(struct bgl_tvector_of_##_item_name)    \
                          +                                             \
                          ((_len-1) * sizeof(_item_type))),             \
-     (an_object->tvector).header = MAKE_HEADER(TVECTOR_TYPE, 0),   \
+     (an_object->tvector).header = BGL_MAKE_HEADER(TVECTOR_TYPE, 0),   \
      (an_object->tvector).length = _len,                             \
      (an_object->tvector).descr = _descr,                            \
        (BREF(an_object)); })
@@ -174,7 +174,7 @@ struct bgl_hvector {
     (an_object = MALLOC(sizeof(struct bgl_tvector_of_##_item_name)     \
                         +                                              \
                         ((_len-1) * sizeof(_item_type))),              \
-    (an_object->tvector).header = MAKE_HEADER(TVECTORYPE, 0),    \
+    (an_object->tvector).header = BGL_MAKE_HEADER(TVECTORYPE, 0),    \
     (an_object->tvector).length = _len,                              \
     (an_object->tvector).descr = _descr,                             \
        (BREF(an_object)))
@@ -340,7 +340,7 @@ BGL_RUNTIME_DECL obj_t alloc_hvector(int, int, int);
       obj_t vector; \
       long byte_size = VECTOR_SIZE + ((len-1) * OBJ_SIZE); \
       vector = alloca(byte_size); \
-      vector->vector.header = MAKE_HEADER(VECTOR_TYPE, 0); \
+      vector->vector.header = BGL_MAKE_HEADER(VECTOR_TYPE, 0); \
       vector->vector.length = len; \
       BVECTOR(vector); \
       })

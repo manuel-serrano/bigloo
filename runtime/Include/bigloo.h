@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Nov  9 14:51:18 2024 (serrano)                */
+/*    Last change :  Thu Nov 14 18:27:12 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -288,28 +288,11 @@ extern "C" {
 error "Unknown garbage collector type"
 #endif
 
-#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING && !BGL_RESERVED_TAGGING)
+#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING)
 #  define TAG_VECTOR 4                /*  vector tagging        ...100 */
 #  define TAG_CELL 5                  /*  cell tagging          ...101 */
 #  define TAG_REAL 6                  /*  real tagging          ...110 */
 #  define TAG_STRING 7                /*  string tagging        ...111 */
-#endif
-
-#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING && BGL_RESERVED_TAGGING)
-#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
-#  define TAG_RESERVED 5              /*  reserved tagging      ...101 */
-#  define TAG_CELL 6                  /*  cell tagging          ...110 */
-#  define TAG_STRING 7                /*  string tagging        ...111 */
-
-#  undef TAG_MASKPOINTER
-#  define TAG_MASKPOINTER ((1 << PTR_ALIGNMENT -1) - 1)
-
-#  if (TAG_RESERVED & TAG_POINTER != TAG_POINTER)
-      || (TAG_RESERVED & TAG_VECTOR != 1 << PTR_ALIGNMENT)
-      || (TAG_RESERVED & TAG_CELL != 1 << PTR_ALIGNMENT)
-      || (TAG_RESERVED & TAG_STRING != 1 << PTR_ALIGNMENT)
-     error "illegal reserved tag..."
-#  endif
 #endif
 
 /* TBR 28aug2022, backward compatibility, to be removed */
@@ -338,15 +321,6 @@ error "Unknown garbage collector type"
 #define CREFSLOW(r) BGL_CPTR((obj_t)((unsigned long)r & ~(TAG_MASK)))
 #define CREF(r) BGL_CPTR((obj_t)((long)r - TAG_POINTER))
 
-#if defined(TAG_RESERVED)
-#  define BGL_RESERVEDP(o) \
-     ((((long)BGL_CPTR(o)) & TAG_MASK) == TAG_RESERVED)
-#  define BRESERVED(r) BGL_BPTR((obj_t)((long)r + TAG_RESERVED))
-#else
-#  define BGL_RESERVEDP(o) POINTERP(o)
-#  define BRESERVED(r) BGL_BPTR((obj_t)((long)r + TAG_POINTER))
-#endif
-
 /*---------------------------------------------------------------------*/
 /*    Allocated objects                                                */
 /*    -------------------------------------------------------------    */
@@ -354,54 +328,72 @@ error "Unknown garbage collector type"
 /*                                                                     */
 /*    32 bit platforms:                                                */
 /*    +--------+--------+--------+--------+                            */
-/*    |tttttttt|tttttsss|ssssssss|sssssaaa|                            */
+/*    |ssssssss|ssssssss|sttttttt|tttttaaa|                            */
 /*    +--------+--------+--------+--------+                            */
 /*      a: 3 bits available for applications                           */
-/*      s: 16 bit size                                                 */
 /*      t: 12 bit type                                                 */
+/*      s: 16 bit size                                                 */
 /*                                                                     */
 /*    64 bit platforms:                                                */
 /*    +--------+........+--------+--------+--------+--------+--------+ */
-/*    |dddddddd|........|tttttttt|tttttttt|tttttsss|ssssssss|sssssaaa| */
+/*    |dddddddd|........|ssssssss|ssssssss|sssttttt|tttttttt|tttttaaa| */
 /*    +--------+........+--------+--------+--------+--------+--------+ */
 /*      a: 3 bits available for applications                           */
-/*      s: 16 bit size                                                 */
 /*      t: 20 bit type                                                 */   
+/*      s: 16 bit size                                                 */
 /*      d: 25 bit data                                                 */   
 /*---------------------------------------------------------------------*/
-#define HEADER_SHIFT 3
-#define HEADER_SIZE_BIT_SIZE 16
-#define SIZE_MASK ((1 << HEADER_SIZE_BIT_SIZE) - 1)
-#define TYPE_SHIFT (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE)
+#define BGL_HEADER_SHIFT 3
 
-#define MAKE_HEADER(_i, _sz) \
-   ((header_t)((((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT)))
-
-#if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
-#  define HEADER_TYPE_BIT_SIZE 20
-#  define HEADER_TYPE_MASK ((1 << BGL_HEADER_OBJECT_TYPE_SIZE) - 1)
-#  define HEADER_TYPE(_i) ((((unsigned long)(_i)) >> TYPE_SHIFT) & HEADER_TYPE_MASK)
-#  define HEADER_SANS_SIZE(_i) ((((unsigned long)(_i)) >> TYPE_SHIFT))
-#  define HEADER_DATA(_i) ((((unsigned long)(_i)) >> (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))
+#if (PTR_ALIGNMENT < 3 || BGL_NAN_TAGGING)
+// 32-bit and NaN-tagging configurations
+#  define BGL_HEADER_TYPE_BIT_SIZE 12
+#  define BGL_HEADER_TYPE_BIT_SIZE 16
+#  define BGL_HEADER_DATA_BIT_SIZE 0
 #else
-#  define HEADER_TYPE_BIT_SIZE ((sizeof(void *) << 3) - (TYPE_SHIFT))
-#  define HEADER_TYPE(_i) (((unsigned long)(_i)) >> TYPE_SHIFT)
-#  define HEADER_SANS_SIZE(_i) ((((unsigned long)(_i)) >> TYPE_SHIFT))
-#  define HEADER_DATA(_i) 0
+// 64-bit configuration
+#  define BGL_HEADER_TYPE_BIT_SIZE 20
+#  define BGL_HEADER_SIZE_BIT_SIZE 16
+#  define BGL_HEADER_DATA_BIT_SIZE 25
 #endif
 
-#define HEADER_SIZE(_h) (((_h) >> HEADER_SHIFT) & SIZE_MASK)
+#define BGL_HEADER_FULLSIZE_BIT_SIZE \
+   (BGL_HEADER_SIZE_BIT_SIZE + BGL_HEADER_DATA_BIT_SIZE)
 
-#define TYPE(_o) HEADER_TYPE(CREF(_o)->header)
+#define BGL_HEADER_TYPE_SHIFT (BGL_HEADER_SHIFT)
+#define BGL_HEADER_SIZE_SHIFT (BGL_HEADER_TYPE_BIT_SIZE + BGL_HEADER_TYPE_SHIFT)
+#define BGL_HEADER_DATA_SHIFT (BGL_HEADER_SIZE_BIT_SIZE + BGL_HEADER_SIZE_SHIFT)
+
+#define BGL_HEADER_TYPE_MASK ((1 << BGL_HEADER_TYPE_BIT_SIZE) - 1)
+#define BGL_HEADER_SIZE_MASK ((1 << BGL_HEADER_SIZE_BIT_SIZE) - 1)
+#define BGL_HEADER_DATA_MASK ((1 << BGL_HEADER_DATA_BIT_SIZE) - 1)
+#define BGL_HEADER_FULLSIZE_MASK ((1 << BGL_HEADER_FULLSIZE_BIT_SIZE) - 1)
+
+#define BGL_HEADER_MAX_SIZE ((1 << BGL_HEADER_SIZE_BIT_SIZE) - 1)
+#define BGL_HEADER_MAX_FULLSIZE ((1 << BGL_HEADER_FULLSIZE_BIT_SIZE) - 1)
+
+// create a header from a type and a size
+#define BGL_MAKE_HEADER(_ty, _sz) \
+   ((header_t)((((long)(_ty)) << BGL_HEADER_TYPE_SHIFT) | (((_sz) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT)))
+
+// create a header from a header and a data
+#define BGL_MAKE_HEADER_DATA_ADD(_hd, _dt) \
+   (((_hd) & ((1 << BGL_HEADER_DATA_SHIFT) - 1)) | ((_dt) << BGL_HEADER_DATA_SHIFT))
+
+#define BGL_HEADER_TYPE(_hd)  \
+   ((((unsigned long)(_hd)) >> BGL_HEADER_TYPE_SHIFT) & BGL_HEADER_TYPE_MASK)
+#define BGL_HEADER_TYPE_DATA(_hd)  \
+   ((((unsigned long)(_hd)) >> BGL_HEADER_TYPE_SHIFT))
+#define BGL_HEADER_SIZE(_hd)  \
+   ((((unsigned long)(_hd)) >> BGL_HEADER_SIZE_SHIFT) & BGL_HEADER_SIZE_MASK)
+#define BGL_HEADER_DATA(_hd)  \
+   ((((unsigned long)(_hd)) >> BGL_HEADER_DATA_SHIFT) & BGL_HEADER_DATA_MASK)
+#define BGL_HEADER_FULLSIZE(_hd)  \
+   ((((unsigned long)(_hd)) >> BGL_HEADER_SIZE_SHIFT) & BGL_HEADER_FULLSIZE_MASK)
+
+#define TYPE(_o) BGL_HEADER_TYPE(CREF(_o)->header)
        
 #define OBJ_SIZE ((long)(sizeof(obj_t)))
-
-#if (TAG_YOUNG)
-#  define BYOUNG(r) ((obj_t)((long)r + TAG_YOUNG))
-
-#  define BYOUNGP(r) ((((long)r) & TAG_MASK) == TAG_YOUNG)
-#  define BOLDP(r) ((((long)r) & TAG_MASK) == TAG_POINTER)
-#endif
 
 #if (BGL_GC == BGL_SAW_GC)
 #  define BASSIGN(field, value, obj) (bps_bassign(&(field), value, obj), BUNSPEC)
@@ -1028,7 +1020,7 @@ union scmobj {
       union scmobj *module;
       /* class index and inheritance index (64 bit platforms) */
       long index;
-      long inheritance_index;
+      unsigned long inheritance_index;
       /* depth in the inheritance tree */
       long depth;
       /* eval private data */
@@ -1224,7 +1216,7 @@ typedef obj_t (*function_t)();
                    obj_t (*va_entry)(); \
                    obj_t attr; \
                    int arity; } \
-      na = { __CNST_FILLER MAKE_HEADER(PROCEDURE_TYPE, 0), \
+      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
 	     (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1237,7 +1229,7 @@ typedef obj_t (*function_t)();
                    obj_t (*va_entry)(); \
                    obj_t attr; \
                    int arity; } \
-      na = { __CNST_FILLER MAKE_HEADER(PROCEDURE_TYPE, 0), \
+      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
              (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1457,7 +1449,7 @@ typedef obj_t (*function_t)();
 #define PROCEDURE_VA_ENTRY(fun) (obj_t)(PROCEDURE(fun).va_entry)
 
 #define PROCEDURE_ARITY(fun) (PROCEDURE(fun).arity)
-#define PROCEDURE_LENGTH(fun) (HEADER_SIZE(CREF(fun)->header))
+#define PROCEDURE_LENGTH(fun) (BGL_HEADER_SIZE(CREF(fun)->header))
    
 #define PROCEDURE_ATTR(fun) (PROCEDURE(fun).attr)
 #define PROCEDURE_ATTR_SET(fun, _v) (BASSIGN(PROCEDURE(fun).attr, (_v), fun), (_v))
@@ -1494,7 +1486,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #endif
    
 #define BGL_INIT_FX_PROCEDURE(_proc, _entry, _arity, _size) \
-   (_proc->procedure.header = MAKE_HEADER(PROCEDURE_TYPE, _size), \
+   (_proc->procedure.header = BGL_MAKE_HEADER(PROCEDURE_TYPE, _size), \
     _proc->procedure.entry = _entry, \
     _proc->procedure.va_entry = 0L, \
     _proc->procedure.attr = BUNSPEC, \
@@ -1572,7 +1564,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 		   obj_t env0; \
 		   obj_t env1; \
 		   obj_t env2; } \
-      na = { __CNST_FILLER MAKE_HEADER(PROCEDURE_TYPE, 0), \
+      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
 	     (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1591,7 +1583,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 		   obj_t env0; \
 		   obj_t env1; \
 		   obj_t env2; } \
-      na = { __CNST_FILLER MAKE_HEADER(PROCEDURE_TYPE, 0), \
+      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
              (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -2024,7 +2016,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #  define BGL_DATE_TIMEZONE(f) (BGL_DATE(f).timezone)
 #endif
    
-#define BGL_DATE_ISGMT(f) (HEADER_SIZE(CREF(f)->header) > 0)
+#define BGL_DATE_ISGMT(f) (BGL_HEADER_SIZE(CREF(f)->header) > 0)
 
 #define BGL_DATE_ISDST(f) (BGL_DATE(f).tm.tm_isdst)
 #define BGL_DATE_SECOND(f) (BGL_DATE(f).tm.tm_sec)
@@ -2635,7 +2627,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define MAKE_STACK(_size_, aux)                  \
    (aux = GC_MALLOC(STACK_SIZE + (long)_size_), \
-     aux->header = MAKE_HEADER(STACK_TYPE, 0),   \
+     aux->header = BGL_MAKE_HEADER(STACK_TYPE, 0),   \
      (BREF(aux)))
 
 /*---------------------------------------------------------------------*/

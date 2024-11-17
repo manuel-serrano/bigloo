@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Dec  8 07:58:06 2023 (serrano)                */
-/*    Copyright   :  2004-23 Manuel Serrano                            */
+/*    Last change :  Sat Nov 16 20:50:17 2024 (serrano)                */
+/*    Copyright   :  2004-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -311,7 +311,7 @@ obj_t
 bglpth_create_mutex( obj_t name ) {
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct bglpmutex ) );
 
-   m->mutex.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex.header = BGL_MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
    m->mutex.name = name;
 
    return BREF( m );
@@ -328,7 +328,7 @@ bglpth_create_spinlock( obj_t name ) {
 #if( BGL_HAVE_SPINLOCK )
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct bglpspinlock ) );
 
-   m->mutex.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex.header = BGL_MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
    m->mutex.name = name;
 
    return BREF( m );

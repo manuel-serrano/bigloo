@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Wed Jul 17 11:27:29 2024 (serrano)                */
+;*    Last change :  Fri Nov 15 08:02:28 2024 (serrano)                */
 ;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
@@ -58,7 +58,7 @@
 		      tname
 		      (map (lambda (i) (format "obj_t obj~a" i))
 			 (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nMAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nBGL_MAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
 		       tname vname
 		       (vector-length v)
 		       (map (lambda (i) (format "BINT( ~a )" i))
@@ -77,7 +77,7 @@
 		       tname
 		       (map (lambda (i) (format "obj_t obj~a" i))
 			  (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nMAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nBGL_MAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
 		       tname vname
 		       (vector-length v)
 		       (map (lambda (i) (format "BREF( &(~a[ ~a ].header) )" aname i))
@@ -87,7 +87,7 @@
 	     (pragma ,(format "static struct ~a ~a[] = { ~(, ) };"
 			 lname aname
 			 (map (lambda (i)
-				 (format "{ __CNST_FILLER MAKE_HEADER( LLONG_TYPE, 0 ), ~a }" i))
+				 (format "{ __CNST_FILLER BGL_MAKE_HEADER( LLONG_TYPE, 0 ), ~a }" i))
 			    l)))
 	     (pragma ,(format "~a; ~a" tdecl vdecl))
 	     (pragma::vector ,(format "\n#if( !defined( TAG_VECTOR ) )\nBVECTOR( &(~a.header) )\n#else\nBVECTOR( &(~a.len) )\n#endif\n" vname vname)))))

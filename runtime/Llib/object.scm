@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Jul 17 11:27:01 2024 (serrano)                */
+;*    Last change :  Fri Nov 15 18:00:35 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1462,12 +1462,13 @@
       (display class-name port)
       (if (nil? obj)
 	  (display " nil|" port)
-	  (let loop ((i 0))
-	     (if (=fx i len)
-		 (display #\| port)
-		 (begin
-		    (class-field-write/display (vector-ref-ur fields i))
-		    (loop (+fx i 1))))))))
+	  (display " ....|" port))))
+;* 	  (let loop ((i 0))                                            */
+;* 	     (if (=fx i len)                                           */
+;* 		 (display #\| port)                                    */
+;* 		 (begin                                                */
+;* 		    (class-field-write/display (vector-ref-ur fields i)) */
+;* 		    (loop (+fx i 1))))))))                             */
 
 ;*---------------------------------------------------------------------*/
 ;*    object-equal? ...                                                */
@@ -1493,6 +1494,7 @@
 ;*    exception-notify ::obj ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-generic (exception-notify exc::obj)
+   (tprint "EXN NOTIFY " (typeof exc))
    (let ((port (current-error-port)))
       (display "*** UNKNOWN EXCEPTION: " port)
       (write-circle exc port)
@@ -1511,12 +1513,14 @@
 ;*    exception-notify ::&error ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (exception-notify exc::&error)
+   (tprint "EXN.2 NOTIFY " (typeof exc))
    (error-notify exc))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::&io-write-error ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (exception-notify exc::&io-write-error)
+   (tprint "EXN.3 NOTIFY " (typeof exc))
    (with-access::&io-write-error exc (obj)
       (unless (eq? obj (current-error-port))
 	 (call-next-method))))
@@ -1525,6 +1529,7 @@
 ;*    exception-notify ::&warning ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (exception-notify exc::&warning)
+   (tprint "EXN.4 NOTIFY " (typeof exc))
    (warning-notify exc))
 
 ;*---------------------------------------------------------------------*/

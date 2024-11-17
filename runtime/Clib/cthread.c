@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Dec  8 08:59:27 2023 (serrano)                */
-/*    Copyright   :  2004-23 Manuel Serrano                            */
+/*    Last change :  Fri Nov 15 07:35:04 2024 (serrano)                */
+/*    Copyright   :  2004-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -102,7 +102,7 @@ static obj_t
 bgl_create_mutex_default(obj_t name) {
    obj_t m = GC_MALLOC(BGL_MUTEX_SIZE);
 
-   m->mutex.header = MAKE_HEADER(MUTEX_TYPE, BGL_MUTEX_SIZE);
+   m->mutex.header = BGL_MAKE_HEADER(MUTEX_TYPE, BGL_MUTEX_SIZE);
    m->mutex.name = name;
    m->mutex.sysmutex = 0L;
 
@@ -155,7 +155,7 @@ obj_t
 bgl_make_nil_mutex() {
    obj_t m = GC_MALLOC(BGL_MUTEX_SIZE);
 
-   m->mutex.header = MAKE_HEADER(MUTEX_TYPE, BGL_MUTEX_SIZE);
+   m->mutex.header = BGL_MAKE_HEADER(MUTEX_TYPE, BGL_MUTEX_SIZE);
    m->mutex.name = BUNSPEC;
    m->mutex.sysmutex = 0L;
 
@@ -171,7 +171,7 @@ obj_t
 bgl_create_condvar(obj_t name) {
    obj_t cv = GC_MALLOC(BGL_CONDVAR_SIZE);
 
-   cv->condvar.header = MAKE_HEADER(CONDVAR_TYPE, BGL_CONDVAR_SIZE);
+   cv->condvar.header = BGL_MAKE_HEADER(CONDVAR_TYPE, BGL_CONDVAR_SIZE);
    cv->condvar.name = name;
    cv->condvar.condvar = 0L;
 
@@ -211,7 +211,7 @@ obj_t
 bgl_make_nil_condvar() {
    obj_t m = GC_MALLOC(BGL_CONDVAR_SIZE);
 
-   m->condvar.header = MAKE_HEADER(CONDVAR_TYPE, BGL_CONDVAR_SIZE);
+   m->condvar.header = BGL_MAKE_HEADER(CONDVAR_TYPE, BGL_CONDVAR_SIZE);
    m->condvar.name = BUNSPEC;
    m->condvar.condvar = 0L;
 
@@ -243,7 +243,7 @@ make_dynamic_env() {
    
    obj_t env = GC_MALLOC(sizeof(struct bgl_dynamic_env));
 
-   env->dynamic_env.header = MAKE_HEADER(DYNAMIC_ENV_TYPE, 0);
+   env->dynamic_env.header = BGL_MAKE_HEADER(DYNAMIC_ENV_TYPE, 0);
    
    env->dynamic_env.current_output_port = BUNSPEC;
    env->dynamic_env.current_error_port = BUNSPEC;
