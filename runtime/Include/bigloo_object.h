@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Aug 21 08:32:34 2022 (serrano)                */
-/*    Copyright   :  2016-22 Manuel Serrano                            */
+/*    Last change :  Sun Nov 17 10:58:53 2024 (serrano)                */
+/*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
 /*=====================================================================*/
@@ -83,26 +83,17 @@ typedef struct BgL_objectz00_bgl {
 #  define BNANOBJECT(o) BOBJECT(o)
 #endif
 
-#if (defined(TAG_RESERVED))
-#  define BRESERVEDOBJECT(o) BRESERVED(o)
-#else
-#  define BRESERVEDOBJECT(o) BOBJECT(o)
-#endif
-
 /*---------------------------------------------------------------------*/
 /*    Object macros                                                    */
 /*---------------------------------------------------------------------*/
 #define BGL_MAX_CLASS_NUM() \
-   ((1L << HEADER_TYPE_BIT_SIZE) - 1)
-
-#define BGL_HEADER_OBJECT_TYPE_SIZE 20
-#define BGL_HEADER_OBJECT_TYPE_MASK ((1 << BGL_HEADER_OBJECT_TYPE_SIZE) - 1)
+   ((1L << BGL_HEADER_TYPE_BIT_SIZE) - 1)
 
 #define BGL_OBJECT_CLASS_NUM(_obj) \
-     (HEADER_TYPE(COBJECT(_obj)->header))
+     (BGL_HEADER_TYPE(COBJECT(_obj)->header))
 
-#define BGL_OBJECT_CLASS_NUM_SET(_1, _2) \
-   (((obj_t)COBJECT(_1))->header = MAKE_HEADER(_2, 0), BUNSPEC)
+#define BGL_OBJECT_CLASS_NUM_SET(_obj, _cnum) \
+   (((obj_t)COBJECT(_obj))->header = BGL_MAKE_HEADER(_cnum, 0), BUNSPEC)
    
 #define BGL_OBJECT_WIDENING(_obj) \
    (((object_bglt)(COBJECT(_obj)))->widening)
@@ -111,28 +102,15 @@ typedef struct BgL_objectz00_bgl {
    BASSIGN(BGL_OBJECT_WIDENING(_obj), _wdn, (obj_t)_obj)
 
 #define BGL_OBJECT_HEADER_SIZE(_obj) \
-   (HEADER_SIZE(COBJECT(_obj)->header))
+   (BGL_HEADER_SIZE(COBJECT(_obj)->header))
 
 #define BGL_OBJECT_HEADER_SIZE_SET(_o, _s) \
    (((obj_t)COBJECT(_o))->header = \
-    MAKE_HEADER(HEADER_SANS_SIZE(COBJECT(_o)->header), _s))
-
-#define BGL_OBJECT_HEADER_AAASIZE(_obj) \
-   (HEADER_AAASIZE(COBJECT(_obj)->header))
-
-#define BGL_OBJECT_HEADER_AAASIZE_SET(_o, _s, _a) \
-   (((obj_t)COBJECT(_o))->header = \
-    BGL_MAKE_HEADER_AAA(HEADER_SANS_SIZE(COBJECT(_o)->header), _s, _a))
+    BGL_MAKE_HEADER(BGL_HEADER_TYPE_SIZE_DATA(COBJECT(_o)->header) & ~(BGL_HEADER_SIZE_MASK << (BGL_HEADER_SIZE_SHIFT - BGL_HEADER_SHIFT)), _s))
 
 #if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
 #  define BGL_OBJECT_INHERITANCE_NUM(_obj) \
-     (HEADER_DATA(COBJECT(_obj)->header))
-
-#  define BGL_OBJECT_INHERITANCE_NUM_SET(_o, _d) \
-   (((obj_t)COBJECT(_o))->header = \
-    ((((obj_t)COBJECT(_o))->header \
-      & ((1 << (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE + HEADER_TYPE_BIT_SIZE)) - 1)) \
-     | ((_d << (TYPE_SHIFT + HEADER_TYPE_BIT_SIZE)))))
+     (BGL_HEADER_DATA(COBJECT(_obj)->header))
 #else
 #  define BGL_OBJECT_INHERITANCE_NUM(_obj) 0
 #endif
@@ -158,9 +136,9 @@ typedef struct BgL_objectz00_bgl {
    
 #define BGL_CLASS_INDEX(f) (BGL_CLASS(f).index)
    
-#define BGL_CLASS_NUM(f) ((BGL_CLASS(f).index) + BGL_CLASS(f).inheritance_index)
-   
 #define BGL_CLASS_INHERITANCE_INDEX(f) (BGL_CLASS(f).inheritance_index)
+
+#define BGL_CLASS_NUM(f) (BGL_CLASS_INDEX(f) + BGL_CLASS_INHERITANCE_INDEX(f))
    
 #define BGL_CLASS_DEPTH(f) (BGL_CLASS(f).depth)
    

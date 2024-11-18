@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Fri Nov  8 07:39:12 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 06:44:59 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -93,14 +93,19 @@ make_cell(obj_t val) {
 
 #if (!defined(TAG_REALZ))
 DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
+DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #endif
 
 #if (!BGL_NAN_TAGGING) 
 GC_API obj_t
 make_real(double d) {
 #if (!defined(TAG_REALZ))
-   if (((union { double d; long l; })(d)).l == 0) {
-      return BGL_REAL_CNST(bgl_zero);
+   if ((((union { double d; long l; })(d)).l << 1) == 0) {
+      if (((union { double d; long l; })(d)).l == 0) {
+	 return BGL_REAL_CNST(bgl_zero);
+      } else {
+	 return BGL_REAL_CNST(bgl_negative_zero);
+      }
    } else
 #endif
    {
@@ -124,7 +129,7 @@ make_belong(long elong) {
 
    a_elong = GC_THREAD_MALLOC_ATOMIC(ELONG_SIZE);
    
-   a_elong->elong.header = MAKE_HEADER(ELONG_TYPE, ELONG_SIZE);
+   a_elong->elong.header = BGL_MAKE_HEADER(ELONG_TYPE, ELONG_SIZE);
    a_elong->elong.val = elong;
 	
    return BREF(a_elong);
@@ -140,7 +145,7 @@ make_bllong(BGL_LONGLONG_T llong) {
 
    a_llong = GC_THREAD_MALLOC_ATOMIC(LLONG_SIZE);
    
-   a_llong->llong.header = MAKE_HEADER(LLONG_TYPE, LLONG_SIZE);
+   a_llong->llong.header = BGL_MAKE_HEADER(LLONG_TYPE, LLONG_SIZE);
    a_llong->llong.val = llong;
 	
    return BREF(a_llong);
@@ -157,7 +162,7 @@ bgl_make_bint32(int32_t l) {
 
    a_sint32 = GC_THREAD_MALLOC_ATOMIC(BGL_INT32_SIZE);
    
-   a_sint32->sint32.header = MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE);
+   a_sint32->sint32.header = BGL_MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE);
    a_sint32->sint32.val = l;
 	
    return BREF(a_sint32);
@@ -173,7 +178,7 @@ bgl_make_buint32(uint32_t l) {
 
    a_uint32 = GC_THREAD_MALLOC_ATOMIC(BGL_UINT32_SIZE);
    
-   a_uint32->uint32.header = MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE);
+   a_uint32->uint32.header = BGL_MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE);
    a_uint32->uint32.val = l;
 	
    return BREF(a_uint32);
@@ -190,7 +195,7 @@ bgl_make_bint64(int64_t l) {
 
    a_sint64 = GC_THREAD_MALLOC_ATOMIC(BGL_INT64_SIZE);
    
-   a_sint64->sint64.header = MAKE_HEADER(INT64_TYPE, BGL_INT64_SIZE);
+   a_sint64->sint64.header = BGL_MAKE_HEADER(INT64_TYPE, BGL_INT64_SIZE);
    a_sint64->sint64.val = l;
 	
    return BREF(a_sint64);
@@ -206,7 +211,7 @@ bgl_make_buint64(uint64_t l) {
 
    a_uint64 = GC_THREAD_MALLOC_ATOMIC(BGL_UINT64_SIZE);
    
-   a_uint64->uint64.header = MAKE_HEADER(UINT64_TYPE, BGL_UINT64_SIZE);
+   a_uint64->uint64.header = BGL_MAKE_HEADER(UINT64_TYPE, BGL_UINT64_SIZE);
    a_uint64->uint64.val = l;
 	
    return BREF(a_uint64);

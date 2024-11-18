@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Thu Aug  1 13:17:52 2024 (serrano)                */
+/*    Last change :  Thu Nov 14 18:28:19 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -58,7 +58,7 @@ bgl_dup_procedure(obj_t proc) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_init_fx_procedure(obj_t proc, obj_t (*entry)(), int arity, int size) {
-   if (size > (1 << HEADER_SIZE_BIT_SIZE)) {
+   if (size >= BGL_HEADER_MAX_SIZE) {
       C_FAILURE("make-fx-procedure", "Environment to large", BINT(size));
    } else {
       return BGL_INIT_FX_PROCEDURE(proc, entry, arity, size);
@@ -72,7 +72,7 @@ bgl_init_fx_procedure(obj_t proc, obj_t (*entry)(), int arity, int size) {
 BGL_RUNTIME_DEF
 obj_t
 make_fx_procedure(function_t entry, int arity, int size) {
-   if (size > (1 << HEADER_SIZE_BIT_SIZE)) {
+   if (size >= BGL_HEADER_MAX_SIZE) {
       C_FAILURE("make-fx-procedure", "Environment to large", BINT(size));
    } else {
       obj_t a_tproc = GC_MALLOC(BGL_PROCEDURE_BYTE_SIZE(size));
@@ -88,13 +88,13 @@ BGL_RUNTIME_DEF
 obj_t
 make_va_procedure(function_t entry, int arity, int size) {
 
-   if (size > (1 << HEADER_SIZE_BIT_SIZE)) {
+   if (size > BGL_HEADER_MAX_SIZE) {
       C_FAILURE("make-va-procedure", "Environment to large", BINT(size));
    } else {
       int byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
       obj_t a_tproc = GC_MALLOC(byte_size);
 	      
-      a_tproc->procedure.header = MAKE_HEADER(PROCEDURE_TYPE, size);
+      a_tproc->procedure.header = BGL_MAKE_HEADER(PROCEDURE_TYPE, size);
       a_tproc->procedure.entry = (obj_t (*)())va_generic_entry; 
       a_tproc->procedure.va_entry = entry;
       a_tproc->procedure.attr = BUNSPEC;
@@ -510,9 +510,10 @@ opt_generic_entry(obj_t proc, ...) {
 #endif   
 
 #if (!defined(TAG_VECTOR))
-   args->vector.header = MAKE_HEADER(VECTOR_TYPE, byte_size);
-#endif		
+   args->vector.header = BGL_MAKE_VECTOR_HEADER(args, VECTOR_TYPE, len);
+#else
    args->vector.length = len;
+#endif		
 
    args = BVECTOR(args);
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 20 11:26:29 1992                          */
-/*    Last change :  Tue Jan 30 20:16:31 2024 (serrano)                */
+/*    Last change :  Sun Nov 17 07:33:53 2024 (serrano)                */
 /*    Copyright   :  2006-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo APPLY                                                     */
@@ -40,9 +40,10 @@ opt_apply(obj_t proc, obj_t args_list) {
    args = (obj_t)alloca(byte_size);
 
 #if (!defined(TAG_VECTOR))
-   args->vector.header = MAKE_HEADER(VECTOR_TYPE, 0);
+   args->vector.header = BGL_MAKE_VECTOR_HEADER(args, VECTOR_TYPE, len);
+#else   
+   args->length = len;
 #endif		
-   args->vector.length = len;
    args = BVECTOR(args);
 
    /* fill the vector, up to arity argument */

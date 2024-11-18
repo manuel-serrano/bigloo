@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Tue Oct 29 14:18:11 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 06:48:44 2024 (serrano)                */
 /*    Copyright   :  2002-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -21,7 +21,7 @@ obj_t *c_allocated_char;
 
 obj_t bprof_port = BUNSPEC;
 
-BGL_RUNTIME_DEF header_t bgl_opaque_nil = MAKE_HEADER(OPAQUE_TYPE, 0);
+BGL_RUNTIME_DEF header_t bgl_opaque_nil = BGL_MAKE_HEADER(OPAQUE_TYPE, 0);
 
 /*---------------------------------------------------------------------*/
 /*    Global mutex                                                     */

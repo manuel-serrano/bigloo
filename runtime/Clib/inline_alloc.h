@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Sun Nov 10 18:23:33 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 06:44:12 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -241,7 +241,7 @@ alloc_make_belong(long l) {
 
    elong = (obj_t)GC_MALLOC_ATOMIC(ELONG_SIZE);
    
-   elong->elong.header = MAKE_HEADER(ELONG_TYPE, ELONG_SIZE);
+   elong->elong.header = BGL_MAKE_HEADER(ELONG_TYPE, ELONG_SIZE);
    elong->elong.val = l;
 
    return BREF(elong);
@@ -259,7 +259,7 @@ make_belong(long l) {
 
       GC_INLINE_MALLOC(elong, ELONG_SIZE, alloc_make_belong(l));
       
-      elong->elong.header = MAKE_HEADER(ELONG_TYPE, ELONG_SIZE);
+      elong->elong.header = BGL_MAKE_HEADER(ELONG_TYPE, ELONG_SIZE);
       elong->elong.val = l;
 
       return BREF(elong);
@@ -275,7 +275,7 @@ alloc_make_bllong(BGL_LONGLONG_T l) {
 
    llong = (obj_t)GC_MALLOC_ATOMIC(LLONG_SIZE);
    
-   llong->llong.header = MAKE_HEADER(LLONG_TYPE, LLONG_SIZE);
+   llong->llong.header = BGL_MAKE_HEADER(LLONG_TYPE, LLONG_SIZE);
    llong->llong.val = l;
 
    return BREF(llong);
@@ -290,7 +290,7 @@ make_bllong(BGL_LONGLONG_T l) {
 
    GC_INLINE_MALLOC(llong, LLONG_SIZE, alloc_make_bllong(l));
 
-   llong->llong.header = MAKE_HEADER(LLONG_TYPE, LLONG_SIZE);
+   llong->llong.header = BGL_MAKE_HEADER(LLONG_TYPE, LLONG_SIZE);
    llong->llong.val = l;
 
    return BREF(llong);
@@ -306,7 +306,7 @@ alloc_make_bint32(int32_t l) {
 
    int32 = (obj_t)GC_MALLOC_ATOMIC(BGL_INT32_SIZE);
    
-   int32->sint32.header = MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE);
+   int32->sint32.header = BGL_MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE);
    int32->sint32.val = l;
 
    return BREF(int32);
@@ -324,7 +324,7 @@ bgl_make_bint32(int32_t l) {
 
       GC_INLINE_MALLOC(int32, BGL_INT32_SIZE, alloc_make_bint32(l));
       
-      int32->sint32.header = MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE);
+      int32->sint32.header = BGL_MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE);
       int32->sint32.val = l;
 
       return BREF(int32);
@@ -340,7 +340,7 @@ alloc_make_buint32(uint32_t l) {
 
    int32 = (obj_t)GC_MALLOC_ATOMIC(BGL_UINT32_SIZE);
    
-   int32->uint32.header = MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE);
+   int32->uint32.header = BGL_MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE);
    int32->uint32.val = l;
 
    return BREF(int32);
@@ -358,7 +358,7 @@ bgl_make_buint32(uint32_t l) {
 
       GC_INLINE_MALLOC(int32, BGL_UINT32_SIZE, alloc_make_buint32(l));
       
-      int32->uint32.header = MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE);
+      int32->uint32.header = BGL_MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE);
       int32->uint32.val = l;
 
       return BREF(int32);
@@ -375,7 +375,7 @@ alloc_make_bint64(int64_t l) {
 
    int64 = (obj_t)GC_MALLOC_ATOMIC(BGL_INT64_SIZE);
    
-   int64->sint64.header = MAKE_HEADER(INT64_TYPE, BGL_INT64_SIZE);
+   int64->sint64.header = BGL_MAKE_HEADER(INT64_TYPE, BGL_INT64_SIZE);
    int64->sint64.val = l;
 
    return BREF(int64);
@@ -390,7 +390,7 @@ bgl_make_bint64(int64_t l) {
 
    GC_INLINE_MALLOC(int64, BGL_INT64_SIZE, alloc_make_bint64(l));
       
-   int64->sint64.header = MAKE_HEADER(INT64_TYPE, BGL_INT64_SIZE);
+   int64->sint64.header = BGL_MAKE_HEADER(INT64_TYPE, BGL_INT64_SIZE);
    int64->sint64.val = l;
 
    return BREF(int64);
@@ -405,7 +405,7 @@ alloc_make_buint64(uint64_t l) {
 
    int64 = (obj_t)GC_MALLOC_ATOMIC(BGL_UINT64_SIZE);
    
-   int64->uint64.header = MAKE_HEADER(UINT64_TYPE, BGL_UINT64_SIZE);
+   int64->uint64.header = BGL_MAKE_HEADER(UINT64_TYPE, BGL_UINT64_SIZE);
    int64->uint64.val = l;
 
    return BREF(int64);
@@ -420,7 +420,7 @@ bgl_make_buint64(uint64_t l) {
 
    GC_INLINE_MALLOC(int64, BGL_UINT64_SIZE, alloc_make_buint64(l));
       
-   int64->uint64.header = MAKE_HEADER(UINT64_TYPE, BGL_UINT64_SIZE);
+   int64->uint64.header = BGL_MAKE_HEADER(UINT64_TYPE, BGL_UINT64_SIZE);
    int64->uint64.val = l;
 
    return BREF(int64);

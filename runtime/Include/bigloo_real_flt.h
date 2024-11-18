@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Nov 12 10:13:17 2024 (serrano)                */
+/*    Last change :  Sun Nov 17 15:39:40 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -131,7 +131,7 @@ union bgl_fltobj {
 #if (!defined(TAG_REAL))   
 #define DEFINE_REAL(name, aux, flonum) \
   static struct { __CNST_ALIGN header_t header; double real; } \
-     aux = { __CNST_FILLER MAKE_HEADER(REAL_TYPE, 0), flonum }; \
+     aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }; \
   static const obj_t name = BREAL(&(aux.header))
 #else
 #define DEFINE_REAL(name, aux, flonum) \
@@ -203,7 +203,7 @@ obj_t _double_to_real(double _d) {
 
 #if (!defined(TAG_REAL))
 #  define BGL_INIT_REAL(an_object, _d) \
-     (an_object)->real.header = MAKE_HEADER(REAL_TYPE, REAL_SIZE); \
+     (an_object)->real.header = BGL_MAKE_HEADER(REAL_TYPE, REAL_SIZE); \
      (an_object)->real.val = _d;
 #else
 #  define BGL_INIT_REAL(an_object, _d) \

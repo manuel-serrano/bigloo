@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/nanh/runtime/Include/bigloo_string.h     */
+/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_string.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Oct 29 13:13:00 2024 (serrano)                */
+/*    Last change :  Mon Nov 18 09:53:52 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -62,7 +62,9 @@ struct bgl_string {
 #if (!defined(TAG_STRING))
    header_t header;
 #endif		
+#if (defined(TAG_STRING) || BGL_HEADER_DATA_BIT_SIZE == 0)
    long length;
+#endif
    unsigned char char0[1];
 };
 
@@ -129,7 +131,7 @@ struct bgl_ucs2_string {
          aux = { __CNST_FILLER len
 #  define DEFINE_STRING_STOP(name, aux) \
         }; static obj_t name = BSTRING(&(aux.length) 
-#else
+#elif (BGL_HEADER_DATA_BIT_SIZE == 0)
 #  define DEFINE_STRING(name, aux, str, len) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
@@ -143,15 +145,29 @@ struct bgl_ucs2_string {
          aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, 0), len
 #  define DEFINE_STRING_STOP(name, aux) \
         }; static obj_t name = BSTRING(&(aux.header))
+#else
+#  define DEFINE_STRING(name, aux, str, len) \
+      static struct { __CNST_ALIGN header_t header; \
+                      char string[len + 1]; } \
+         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, len) str }; \
+         static obj_t name = BSTRING(&(aux.header))
+#  define DEFINE_STRING_START(name, aux, len) \
+      static struct { __CNST_ALIGN header_t header; \
+                      char string[len + 1]; } \
+         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, 0)
+#  define DEFINE_STRING_STOP(name, aux) \
+        }; static obj_t name = BSTRING(&(aux.header))
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */
 /*---------------------------------------------------------------------*/
-#define STRING_LENGTH(s) STRING(s).length
-#define INVERSE_STRING_LENGTH(s) \
-   ((STRING_LENGTH(s) = (-STRING_LENGTH(s))), BUNSPEC)
-   
+#if (defined(TAG_STRING) || BGL_HEADER_DATA_BIT_SIZE == 0)
+#  define STRING_LENGTH(s) STRING(s).length
+#else
+#  define STRING_LENGTH(s) BGL_HEADER_FULLSIZE(STRING(s)->header)
+#endif
+
 #define BSTRING_TO_USTRING(s) (&(STRING(s).char0[0]))
 #define BSTRING_TO_STRING(s) ((char *)(BSTRING_TO_USTRING(s)))
 
@@ -164,8 +180,6 @@ struct bgl_ucs2_string {
 #define BGL_MEMCHR_DIFF(s1, s2) ((s1) - (s2))
 	 
 #define UCS2_STRING_LENGTH(s) UCS2_STRING(s).length
-#define INVERSE_UCS2_STRING_LENGTH(s) \
-   ((UCS2_STRING_LENGTH(s) = (-UCS2_STRING_LENGTH(s))), BUNSPEC)
 
 #define BUCS2_STRING_TO_UCS2_STRING(s) (&(UCS2_STRING(s).char0))
 

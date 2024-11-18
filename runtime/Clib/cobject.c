@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 08:08:56 2012                          */
-/*    Last change :  Sat Nov 13 18:52:19 2021 (serrano)                */
-/*    Copyright   :  2012-21 Manuel Serrano                            */
+/*    Last change :  Fri Nov 15 07:37:22 2024 (serrano)                */
+/*    Copyright   :  2012-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Bigloo object management.                                      */
 /*=====================================================================*/
@@ -26,23 +26,23 @@ bmem_set_allocation_type(long tname, long offset) {
 BGL_RUNTIME_DEF
 obj_t
 bgl_make_class(obj_t name, obj_t module,
-		long num, long inheritance_num,
-		obj_t super, obj_t sub,
-		obj_t alloc, long hash,
-		obj_t fd, obj_t allfd,
-		obj_t constr, obj_t virt, obj_t new, obj_t nil, obj_t shrink,
-		long depth, 
-		obj_t evdata) {
+	       long num, long inheritance_num,
+	       obj_t super, obj_t sub,
+	       obj_t alloc, long hash,
+	       obj_t fd, obj_t allfd,
+	       obj_t constr, obj_t virt, obj_t new, obj_t nil, obj_t shrink,
+	       long depth, 
+	       obj_t evdata) {
    obj_t klass;
 
    klass = GC_MALLOC_UNCOLLECTABLE(BGL_CLASS_SIZE + (sizeof(obj_t) * depth));
-
-   klass->class.header = MAKE_HEADER(CLASS_TYPE, 0);
+   
+   klass->class.header = BGL_MAKE_HEADER(CLASS_TYPE, 0);
    klass->class.name = name;
-
    klass->class.index = num;
    // only used no 64 bit platforms
-   klass->class.inheritance_index = inheritance_num << (HEADER_TYPE_BIT_SIZE);
+   //klass->class.inheritance_index = inheritance_num << (HEADER_TYPE_BIT_SIZE);
+   klass->class.inheritance_index = inheritance_num << (BGL_HEADER_DATA_SHIFT - BGL_HEADER_TYPE_SHIFT);
    klass->class.super = super;
    klass->class.subclasses = sub;
    klass->class.alloc_fun = alloc;

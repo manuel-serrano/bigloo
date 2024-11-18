@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Tue Oct 29 19:14:54 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 07:19:51 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -64,7 +64,7 @@ make_symbol(obj_t name) {
    symbol = GC_MALLOC_UNCOLLECTABLE(SYMBOL_SIZE);
 
 #if (!defined(TAG_SYMBOL))   
-   symbol->symbol.header = MAKE_HEADER(SYMBOL_TYPE, SYMBOL_SIZE);
+   symbol->symbol.header = BGL_MAKE_HEADER(SYMBOL_TYPE, SYMBOL_SIZE);
 #endif   
    symbol->symbol.string = name;
    symbol->symbol.cval = BNIL;
@@ -111,7 +111,7 @@ bgl_bstring_to_symbol(char *cname, long len) {
    } else {
       obj_t run = bucket, back = bucket;
       
-      while(!NULLP(run) &&
+      while (!NULLP(run) &&
 	     SYMBOL(CAR(run)).string &&
 	     !symbol_strcmp(SYMBOL(CAR(run)).string, cname, len))
          back = run, run = CDR(run);
@@ -172,7 +172,7 @@ symbol_exists_sans_lock_p(char *name, long hash_number) {
    if (NULLP(bucket)) {
       return 0;
    } else {
-      while(SYMBOL(CAR(bucket)).string &&
+      while (SYMBOL(CAR(bucket)).string &&
 	     strcmp((char *)BSTRING_TO_STRING(SYMBOL(CAR(bucket)).string),
 		     name)) {
 	 bucket = CDR(bucket);
@@ -223,7 +223,7 @@ bgl_symbol_genname(obj_t o, char *name) {
    strncpy(gn, name, 20);
    BGL_MUTEX_LOCK(symbol_mutex);
    
-   while(1) {
+   while (1) {
       sprintf(&gn[ n ], "%ld", ++gensym_counter);
 
       hn = get_hash_power_number(gn, SYMBOL_HASH_TABLE_SIZE_SHIFT);

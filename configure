@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Nov  9 08:46:04 2024 (serrano)                */
+#*    Last change :  Thu Nov 14 18:35:37 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -280,8 +280,9 @@ libuvconfigureopt=
 #* libuvversion=v1.40.0                                                */
 #* libuvversion=v1.43.0                                                */
 #* libuvversion=v1.44.2                                                */
-#libuvversion=v1.47.0
-libuvversion=v1.48.0
+#* libuvversion=v1.47.0
+#* libuvversion=v1.48.0                                                */
+libuvversion=v1.49.2
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
@@ -3986,7 +3987,7 @@ fi
 #*    bigloo_static.h                                                  */
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "bigloo_static" ]; then
-  $echo "/* Generated file, don't edit */" > $bigloo_static_h
+  $echo "/* Generated file (configure), don't edit */" > $bigloo_static_h
   $echo "" >> $bigloo_static_h
   $echo "#define BGL_ELONG_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
   $echo "#define BGL_ELONG_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
@@ -3994,32 +3995,32 @@ if [ $action = "all" -o $action = "bigloo_static" ]; then
   max=`expr $belong_prealloc_max - 1`;
   i=$belong_prealloc_min
   while expr $i "<" $max > /dev/null; do
-    $echo "  { .header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), .val = $i }, " >> $bigloo_static_h
+    $echo "  { .header = BGL_MAKE_HEADER(ELONG_TYPE, ELONG_SIZE), .val = $i }, " >> $bigloo_static_h
     i=`expr $i + 1`;
   done
-  $echo "  { .header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), .val = $i } }; " >> $bigloo_static_h
+  $echo "  { .header = BGL_MAKE_HEADER(ELONG_TYPE, ELONG_SIZE), .val = $i } }; " >> $bigloo_static_h
   $echo "" >> $bigloo_static_h
-  $echo "#if( !defined( BGL_CNST_SHIFT_INT32 ) )" >> $bigloo_static_h
+  $echo "#if (!defined(BGL_CNST_SHIFT_INT32 ))" >> $bigloo_static_h
   $echo "#define BGL_INT32_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
   $echo "#define BGL_INT32_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
   $echo "static struct bgl_sint32 bint32_allocated[] = { " >> $bigloo_static_h
   max=`expr $belong_prealloc_max - 1`;
   i=$belong_prealloc_min
   while expr $i "<" $max > /dev/null; do
-    $echo "  { .header = MAKE_HEADER( INT32_TYPE, BGL_INT32_SIZE ), .val = $i }, " >> $bigloo_static_h
+    $echo "  { .header = BGL_MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE), .val = $i }, " >> $bigloo_static_h
     i=`expr $i + 1`;
   done
-  $echo "  { .header = MAKE_HEADER( INT32_TYPE, BGL_INT32_SIZE ), .val = $i } }; " >> $bigloo_static_h
+  $echo "  { .header = BGL_MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE), .val = $i } }; " >> $bigloo_static_h
   $echo "" >> $bigloo_static_h
   $echo "#define BGL_UINT32_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
   $echo "static struct bgl_uint32 buint32_allocated[] = { " >> $bigloo_static_h
   max=`expr $belong_prealloc_max - 1`;
   i=0
   while expr $i "<" $max > /dev/null; do
-    $echo "  { .header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE ), .val = $i }, " >> $bigloo_static_h
+    $echo "  { .header = BGL_MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE), .val = $i }, " >> $bigloo_static_h
     i=`expr $i + 1`;
   done
-  $echo "  { .header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE ), .val = $i } }; " >> $bigloo_static_h
+  $echo "  { .header = BGL_MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE), .val = $i } }; " >> $bigloo_static_h
   $echo "#endif" >> $bigloo_static_h
 fi
 

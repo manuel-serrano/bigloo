@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Jul 17 11:27:01 2024 (serrano)                */
+;*    Last change :  Sun Nov 17 10:47:03 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1462,12 +1462,13 @@
       (display class-name port)
       (if (nil? obj)
 	  (display " nil|" port)
-	  (let loop ((i 0))
-	     (if (=fx i len)
-		 (display #\| port)
-		 (begin
-		    (class-field-write/display (vector-ref-ur fields i))
-		    (loop (+fx i 1))))))))
+	  (display " ....|" port))))
+;* 	  (let loop ((i 0))                                            */
+;* 	     (if (=fx i len)                                           */
+;* 		 (display #\| port)                                    */
+;* 		 (begin                                                */
+;* 		    (class-field-write/display (vector-ref-ur fields i)) */
+;* 		    (loop (+fx i 1))))))))                             */
 
 ;*---------------------------------------------------------------------*/
 ;*    object-equal? ...                                                */

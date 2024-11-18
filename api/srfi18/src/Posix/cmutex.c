@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Dec  8 14:13:57 2023 (serrano)                */
-/*    Copyright   :  2004-23 Manuel Serrano                            */
+/*    Last change :  Sat Nov 16 22:28:41 2024 (serrano)                */
+/*    Copyright   :  2004-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -326,7 +326,7 @@ obj_t
 srfi18_create_mutex(obj_t name) {
    obj_t m = GC_MALLOC(BGL_MUTEX_SIZE + sizeof(struct srfi18mutex));
 
-   m->mutex.header = MAKE_HEADER(MUTEX_TYPE, BGL_MUTEX_SIZE);
+   m->mutex.header = BGL_MAKE_HEADER(MUTEX_TYPE, BGL_MUTEX_SIZE);
    m->mutex.name = name;
 
    return BREF(m);

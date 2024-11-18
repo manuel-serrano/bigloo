@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Aug 16 16:56:24 1999                          */
-/*    Last change :  Sat Dec  9 13:27:30 2023 (serrano)                */
+/*    Last change :  Fri Nov 15 07:33:46 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The custom management.                                           */
 /*=====================================================================*/
@@ -65,7 +65,7 @@ create_custom(long len) {
 
    custom = GC_MALLOC_ATOMIC(CUSTOM_SIZE + len);
 
-   custom->custom.header = MAKE_HEADER(CUSTOM_TYPE, 0);
+   custom->custom.header = BGL_MAKE_HEADER(CUSTOM_TYPE, 0);
    custom->custom.final = 0L;
    custom->custom.identifier = 0L;
    custom->custom.equal = custom_default_equal;

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Nov  9 09:20:40 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 09:16:50 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -33,14 +33,21 @@ BGL_RUNTIME_DECL obj_t fill_vector(obj_t, long, obj_t);
 BGL_RUNTIME_DECL obj_t bgl_saw_vector_copy(obj_t);
 
 /*---------------------------------------------------------------------*/
+/*    VECTOR_LENGTH_FIELDP                                             */
+/*---------------------------------------------------------------------*/
+#define BGL_VECTOR_LENGTH_FIELDP \
+   (defined(TAG_VECTOR) || (BGL_HEADER_DATA_BIT_SIZE == 0))
+
+/*---------------------------------------------------------------------*/
 /*    bgl_vector ...                                                   */
 /*---------------------------------------------------------------------*/
 struct bgl_vector {
 #if (!defined(TAG_VECTOR))
    header_t header;
 #endif
-   /* XXX-VECTOR_SIZE_TAG_NB_BIT bit long length (see VECTOR_LENGTH) */
+#if BGL_VECTOR_LENGTH_FIELDP
    unsigned long length;
+#endif
    obj_t obj0;
 };             
 
@@ -90,12 +97,17 @@ struct bgl_hvector {
 /* structures. For Camloo it must be set to 8.                     */
 //#define VECTOR_SIZE_TAG_NB_BIT 8
 #define VECTOR_SIZE_TAG_NB_BIT 0
-#define VECTOR_SIZE_TAG ((unsigned long)(1 << VECTOR_SIZE_TAG_NB_BIT))
 
-#define VECTOR_LENGTH_SHIFT ((sizeof(long) << 3) - VECTOR_SIZE_TAG_NB_BIT)
-
-#define VECTOR_LENGTH_MASK \
-   (~(unsigned long)((VECTOR_SIZE_TAG -1) << VECTOR_LENGTH_SHIFT))
+/*---------------------------------------------------------------------*/
+/*    VECTOR_HEADER                                                    */
+/*---------------------------------------------------------------------*/
+#if BGL_VECTOR_LENGTH_FIELDP
+#  define BGL_MAKE_VECTOR_HEADER(_v, _t, _l) \
+     (_v->vector.length = _l, BGL_MAKE_HEADER(_t, 0))
+#else
+#  define BGL_MAKE_VECTOR_HEADER(_v, _t, _l) \
+     BGL_MAKE_HEADER(_t, _l)
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */
@@ -108,34 +120,28 @@ struct bgl_hvector {
 #define VECTOR_REF(v, i) ((&(VECTOR(v).obj0))[i])
 #define VECTOR_SET(v, i, o) BASSIGN(VECTOR_REF(v, i), o, v)
 
-#if (VECTOR_SIZE_TAG_NB_BIT != 0)
-#   define BGL_VLENGTH(v) (VECTOR(v).length & VECTOR_LENGTH_MASK)
+#if BGL_VECTOR_LENGTH_FIELDP
+#  define BGL_VLENGTH(_v) (VECTOR(_v).length)
+#  define BGL_VLENGTH_SET(_v, _l) (VECTOR(_v).length = _l)
 #else
-#   define BGL_VLENGTH(v) (VECTOR(v).length)
+#  define BGL_VLENGTH(_v) BGL_HEADER_FULLSIZE(CVECTOR(_v)->header)
+#  define BGL_VLENGTH_SET(_v, _l) (((obj_t)COBJECT(_v))->header = BGL_MAKE_HEADER(VECTOR_TYPE, _l))
 #endif
 
-#define VECTOR_LENGTH(v) BGL_VLENGTH(v)
+#define VECTOR_LENGTH(_v) BGL_VLENGTH(_v)
+#define VECTOR_LENGTH_SET(_v, _l) BGL_VLENGTH_SET(_v, _l)
 
-#if (VECTOR_SIZE_TAG_NB_BIT != 0)
-#  define VECTOR_TAG_SET(v, tag) \
-    (VECTOR(v).length = \
-     (BGL_VLENGTH(v) | (((unsigned long) tag) << VECTOR_LENGTH_SHIFT)), \
-     BUNSPEC)
-#  define VECTOR_TAG(v) \
-   ((VECTOR(v).length & ~VECTOR_LENGTH_MASK) >> VECTOR_LENGTH_SHIFT)
-#else
-#  define VECTOR_TAG_SET(v, tag) (BUNSPEC)
-#  define VECTOR_TAG(v) (0)
-#endif
+#define VECTOR_TAG_SET(v, tag) (BUNSPEC)
+#define VECTOR_TAG(v) (0)
 
-#if (VECTOR_SIZE_TAG_NB_BIT != 0)
-#   define BGL_VECTOR_SHRINK(v, l) \
-   ((l >= 0 && l < BGL_VLENGTH(v)) ? \
-    VECTOR(v).length = (l & ~VECTOR_LENGTH_MASK)), v : v)
+#if BGL_VECTOR_LENGTH_FIELDP
+#  define BGL_VECTOR_SHRINK(v, l) \
+     ((l >= 0 && l < BGL_VLENGTH(v)) ? VECTOR(v).length = (l), v : v)
 #else
-#   define BGL_VECTOR_SHRINK(v, l) \
-   ((l >= 0 && l < BGL_VLENGTH(v)) ? \
-    VECTOR(v).length = (l), v : v)
+#  define BGL_ARRAY_FULLSIZE_SET(_v, _l) \
+     (((obj_t)COBJECT(_v))->header = BGL_MAKE_HEADER(VECTOR_TYPE, _l))
+#  define BGL_VECTOR_SHRINK(_v, _l) \
+     ((_l >= 0 && _l < BGL_VLENGTH(_v)) ? BGL_ARRAY_FULLSIZE_SET(_v, _l), _v : _v)
 #endif
 
 #define BGL_VECTOR_BLIT(fun, dest, src, destidx, srcidx, size) \
@@ -154,7 +160,7 @@ struct bgl_hvector {
 		   unsigned long length; \
 		   obj_t descr; \
 		   itype items[len]; } \
-      aux = { __CNST_FILLER MAKE_HEADER(TVECTOR_TYPE, 0), len, 0L,
+      aux = { __CNST_FILLER BGL_MAKE_HEADER(TVECTOR_TYPE, 0), len, 0L,
 	      
 #define DEFINE_TVECTOR_STOP(name, aux) \
 	   }; static obj_t name = BREF(&(aux.header))
@@ -165,7 +171,7 @@ struct bgl_hvector {
       an_object = MALLOC(sizeof(struct bgl_tvector_of_##_item_name)    \
                          +                                             \
                          ((_len-1) * sizeof(_item_type))),             \
-     (an_object->tvector).header = MAKE_HEADER(TVECTOR_TYPE, 0),   \
+     (an_object->tvector).header = BGL_MAKE_HEADER(TVECTOR_TYPE, 0),   \
      (an_object->tvector).length = _len,                             \
      (an_object->tvector).descr = _descr,                            \
        (BREF(an_object)); })
@@ -174,7 +180,7 @@ struct bgl_hvector {
     (an_object = MALLOC(sizeof(struct bgl_tvector_of_##_item_name)     \
                         +                                              \
                         ((_len-1) * sizeof(_item_type))),              \
-    (an_object->tvector).header = MAKE_HEADER(TVECTORYPE, 0),    \
+    (an_object->tvector).header = BGL_MAKE_HEADER(TVECTORYPE, 0),    \
     (an_object->tvector).length = _len,                              \
     (an_object->tvector).descr = _descr,                             \
        (BREF(an_object)))
@@ -340,8 +346,7 @@ BGL_RUNTIME_DECL obj_t alloc_hvector(int, int, int);
       obj_t vector; \
       long byte_size = VECTOR_SIZE + ((len-1) * OBJ_SIZE); \
       vector = alloca(byte_size); \
-      vector->vector.header = MAKE_HEADER(VECTOR_TYPE, 0); \
-      vector->vector.length = len; \
+      vector->vector.header = BGL_MAKE_VECTOR_HEADER(vector, VECTOR_TYPE, len); \
       BVECTOR(vector); \
       })
 #   else

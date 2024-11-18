@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Nov  9 10:40:54 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 07:19:10 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -985,7 +985,7 @@ bgl_make_output_port(obj_t name,
    new_output_port = GC_MALLOC(OUTPUT_PORT_SIZE);
    
    new_output_port->output_port.port.header =
-      MAKE_HEADER(OUTPUT_PORT_TYPE, 0);
+      BGL_MAKE_HEADER(OUTPUT_PORT_TYPE, 0);
    
    new_output_port->port.name = name;
    new_output_port->port.stream = stream;
@@ -1383,7 +1383,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 	 new_input_port = GC_MALLOC(INPUT_PORT_SIZE);
    }
 
-   new_input_port->port.header = MAKE_HEADER(INPUT_PORT_TYPE, 0);
+   new_input_port->port.header = BGL_MAKE_HEADER(INPUT_PORT_TYPE, 0);
    new_input_port->port.kindof = kindof;
    new_input_port->port.name = name;
    new_input_port->port.stream.file = file;
