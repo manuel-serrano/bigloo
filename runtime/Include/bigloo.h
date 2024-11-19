@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Nov 17 11:38:28 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 12:12:45 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -348,7 +348,7 @@ error "Unknown garbage collector type"
 #if (PTR_ALIGNMENT < 3 || BGL_NAN_TAGGING)
 // 32-bit and NaN-tagging configurations
 #  define BGL_HEADER_TYPE_BIT_SIZE 12
-#  define BGL_HEADER_TYPE_BIT_SIZE 16
+#  define BGL_HEADER_SIZE_BIT_SIZE 16
 #  define BGL_HEADER_DATA_BIT_SIZE 0
 #else
 // 64-bit configuration
