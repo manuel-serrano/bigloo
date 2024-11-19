@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Tue Nov 19 07:44:23 2024 (serrano)                */
+;*    Last change :  Tue Nov 19 07:56:48 2024 (serrano)                */
 ;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
@@ -78,11 +78,11 @@
 		       tname
 		       (map (lambda (i) (format "obj_t obj~a" i))
 			  (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if (!defined(TAG_VECTOR)) \nBGL_MAKE_HEADER(VECTOR_TYPE, (unsigned long)~a),\n#endif\n#if (BGL_VECTOR_LENGTH_FIELD)\n ~a,\n#endif\n ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if (!defined(TAG_VECTOR)) \nBGL_MAKE_HEADER(VECTOR_TYPE, (unsigned long)~a),\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\n ~a,\n#endif\n ~(, ) }"
 		       tname vname
 		       (vector-length v)
 		       (vector-length v)
-		       (map (lambda (i) (format "BREF(&(~a[~a].header))" aname i))
+		       (map (lambda (i) (format "BREF((&(~a[~a].header)))" aname i))
 			  (iota (vector-length v))))))
 	 `(begin
 	     (pragma ,(format "struct ~a { __CNST_ALIGN header_t header; BGL_LONGLONG_T llong; };" lname))
