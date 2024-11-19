@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/capply.c         */
+/*    serrano/prgm/project/bigloo/flt/runtime/Clib/capply.c            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 20 11:26:29 1992                          */
-/*    Last change :  Sun Nov 17 07:33:53 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 07:26:00 2024 (serrano)                */
 /*    Copyright   :  2006-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo APPLY                                                     */
@@ -42,7 +42,7 @@ opt_apply(obj_t proc, obj_t args_list) {
 #if (!defined(TAG_VECTOR))
    args->vector.header = BGL_MAKE_VECTOR_HEADER(args, VECTOR_TYPE, len);
 #else   
-   args->length = len;
+   args->vector.length = len;
 #endif		
    args = BVECTOR(args);
 
