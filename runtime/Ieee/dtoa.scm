@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/dtoa.scm         */
+;*    serrano/prgm/project/bigloo/flt/runtime/Ieee/dtoa.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Fri Nov 15 08:02:28 2024 (serrano)                */
+;*    Last change :  Tue Nov 19 07:44:23 2024 (serrano)                */
 ;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
@@ -54,11 +54,11 @@
    (define (int-vector v)
       (let* ((vname (gensym 'v))
 	     (tname (gensym 'bgl_vector))
-	     (tdecl (format "struct ~a { __CNST_ALIGN\n#if (!defined(TAG_VECTOR))\n header_t header;\n#endif\n#if (BGL_VECTOR_LENGTH_FIELD)\n unsigned long len;\n#endif\n ~(; ); }"
+	     (tdecl (format "struct ~a { __CNST_ALIGN\n#if (!defined(TAG_VECTOR))\n header_t header;\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\n unsigned long len;\n#endif\n ~(; ); }"
 		      tname
 		      (map (lambda (i) (format "obj_t obj~a" i))
 			 (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if (!defined(TAG_VECTOR)) \nBGL_MAKE_HEADER(VECTOR_TYPE, (unsigned long)~a),\n#endif\n#if (BGL_VECTOR_LENGTH_FIELD)\n ~a,\n#endif\n ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if (!defined(TAG_VECTOR)) \nBGL_MAKE_HEADER(VECTOR_TYPE, (unsigned long)~a),\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\n ~a,\n#endif\n ~(, ) }"
 		       tname vname
 		       (vector-length v)
 		       (vector-length v)
@@ -74,7 +74,7 @@
 	     (aname (gensym 'a))
 	     (lname (gensym 'bgl_llong))
 	     (tname (gensym 'bgl_vector))
-	     (tdecl (format "struct ~a { __CNST_ALIGN \n#if (!defined(TAG_VECTOR))\nheader_t header;\n#endif\n#if (BGL_VECTOR_LENGTH_FIELD)\nunsigned long len;\n#endif\n ~(; ); }"
+	     (tdecl (format "struct ~a { __CNST_ALIGN \n#if (!defined(TAG_VECTOR))\nheader_t header;\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\nunsigned long len;\n#endif\n ~(; ); }"
 		       tname
 		       (map (lambda (i) (format "obj_t obj~a" i))
 			  (iota (vector-length v)))))
