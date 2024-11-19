@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Nov 19 12:12:45 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 17:00:58 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -374,7 +374,7 @@ error "Unknown garbage collector type"
 
 // create a header from a type and a size
 #define BGL_MAKE_HEADER(_tydt, _sz) \
-   ((header_t)((((long)(_tydt)) << BGL_HEADER_TYPE_SHIFT) | (((_sz) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT)))
+   ((header_t)(((((long)(_tydt)) << BGL_HEADER_TYPE_SHIFT) | (((unsigned long)(_sz)) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT)))
 
 // create a header from a header and a data
 #define BGL_MAKE_HEADER_DATA_ADD(_hd, _dt) \
