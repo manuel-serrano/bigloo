@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Nov 18 09:53:52 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 11:16:44 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -49,11 +49,16 @@ BGL_RUNTIME_DECL bool_t bigloo_string_cige(obj_t, obj_t);
 BGL_RUNTIME_DECL obj_t ucs2_to_utf8_string(ucs2_t *, long);
 BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string(obj_t);
 BGL_RUNTIME_DECL obj_t make_ucs2_string(int, ucs2_t);
-   
 
 #if (BGL_HAVE_UNISTRING)
 BGL_RUNTIME_DECL int bgl_strcoll(obj_t, obj_t);
 #endif					
+
+/*---------------------------------------------------------------------*/
+/*    BGL_STRING_LENGTH_FIELDP ...                                     */
+/*---------------------------------------------------------------------*/
+#define BGL_STRING_LENGTH_FIELDP \
+   (defined(TAG_STRING) || (BGL_HEADER_DATA_BIT_SIZE == 0))
 
 /*---------------------------------------------------------------------*/
 /*    bgl_string ...                                                   */
@@ -75,7 +80,7 @@ struct bgl_ucs2_string {
 };   
 
 #define STRING(o) (CSTRING(o)->string)
-#define UCS2_STRING(o)  (CUCS2STRING(o)->ucs2_string)
+#define UCS2_STRING(o) (CUCS2STRING(o)->ucs2_string)
 
 #define STRING_SIZE (sizeof(struct bgl_string))
 #define UCS2_STRING_SIZE (sizeof(struct bgl_ucs2_string))
@@ -108,6 +113,17 @@ struct bgl_ucs2_string {
 #define UCS2_STRINGP(c) (POINTERP(c) && (TYPE(c) == UCS2_STRING_TYPE))
 
 /*---------------------------------------------------------------------*/
+/*    BGL_MAKE_STRING_HEADER ...                                       */
+/*---------------------------------------------------------------------*/
+#if BGL_STRING_LENGTH_FIELDP
+#  define BGL_MAKE_STRING_HEADER(_v, _t, _l) \
+     (_v->string.length = _l, BGL_MAKE_HEADER(_t, 0))
+#else
+#  define BGL_MAKE_STRING_HEADER(_v, _t, _l) \
+     BGL_MAKE_HEADER(_t, _l)
+#endif
+
+/*---------------------------------------------------------------------*/
 /*    alloc                                                            */
 /*---------------------------------------------------------------------*/
 /* When producing C code for a compiler that is unable to    */
@@ -136,25 +152,25 @@ struct bgl_ucs2_string {
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       char string[len + 1]; } \
-         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, 0), len, str }; \
+         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0), len, str }; \
          static obj_t name = BSTRING(&(aux.header))
 #  define DEFINE_STRING_START(name, aux, len) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       char string[len + 1]; } \
-         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, 0), len
+         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0), len
 #  define DEFINE_STRING_STOP(name, aux) \
         }; static obj_t name = BSTRING(&(aux.header))
 #else
 #  define DEFINE_STRING(name, aux, str, len) \
       static struct { __CNST_ALIGN header_t header; \
                       char string[len + 1]; } \
-         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, len) str }; \
+         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, len), str }; \
          static obj_t name = BSTRING(&(aux.header))
 #  define DEFINE_STRING_START(name, aux, len) \
       static struct { __CNST_ALIGN header_t header; \
                       char string[len + 1]; } \
-         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, 0)
+         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0)
 #  define DEFINE_STRING_STOP(name, aux) \
         }; static obj_t name = BSTRING(&(aux.header))
 #endif
@@ -163,10 +179,14 @@ struct bgl_ucs2_string {
 /*    api                                                              */
 /*---------------------------------------------------------------------*/
 #if (defined(TAG_STRING) || BGL_HEADER_DATA_BIT_SIZE == 0)
-#  define STRING_LENGTH(s) STRING(s).length
+#  define BGL_STRING_LENGTH(_s) STRING(_s).length
+#  define BGL_STRING_LENGTH_SET(_s, _l) (STRING(_s).length = _l)
 #else
-#  define STRING_LENGTH(s) BGL_HEADER_FULLSIZE(STRING(s)->header)
+#  define BGL_STRING_LENGTH(_s) BGL_HEADER_FULLSIZE(STRING(_s).header)
+#  define BGL_STRING_LENGTH_SET(_s, _l) (((obj_t)COBJECT(_s))->header = BGL_MAKE_HEADER(STRING_TYPE, _l))
 #endif
+
+#define STRING_LENGTH(_s) BGL_STRING_LENGTH(_s)
 
 #define BSTRING_TO_USTRING(s) (&(STRING(s).char0[0]))
 #define BSTRING_TO_STRING(s) ((char *)(BSTRING_TO_USTRING(s)))

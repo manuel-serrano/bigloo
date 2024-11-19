@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Include/bigloo_vector.h        */
+/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_vector.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Nov 15 09:16:50 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 11:39:16 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -33,7 +33,7 @@ BGL_RUNTIME_DECL obj_t fill_vector(obj_t, long, obj_t);
 BGL_RUNTIME_DECL obj_t bgl_saw_vector_copy(obj_t);
 
 /*---------------------------------------------------------------------*/
-/*    VECTOR_LENGTH_FIELDP                                             */
+/*    BGL_VECTOR_LENGTH_FIELDP ...                                     */
 /*---------------------------------------------------------------------*/
 #define BGL_VECTOR_LENGTH_FIELDP \
    (defined(TAG_VECTOR) || (BGL_HEADER_DATA_BIT_SIZE == 0))
@@ -99,7 +99,7 @@ struct bgl_hvector {
 #define VECTOR_SIZE_TAG_NB_BIT 0
 
 /*---------------------------------------------------------------------*/
-/*    VECTOR_HEADER                                                    */
+/*    BGL_MAKE_VECTOR_HEADER ...                                       */
 /*---------------------------------------------------------------------*/
 #if BGL_VECTOR_LENGTH_FIELDP
 #  define BGL_MAKE_VECTOR_HEADER(_v, _t, _l) \

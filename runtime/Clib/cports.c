@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Nov 15 07:19:10 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 11:30:52 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -400,7 +400,7 @@ bgl_proc_read(obj_t port, char *b, long l) {
       /* won't read because the proc buffer is already filled */
       char *s = BSTRING_TO_STRING(buf);
       long p = CREF(port)->input_procedure_port.pbufpos;
-      long r = STRING_LENGTH(buf) - p;
+      long r = BGL_STRING_LENGTH(buf) - p;
 
       if (r <= l) {
 	 memmove(b, &s[ p ], r);
@@ -726,7 +726,7 @@ sysread_with_timeout(obj_t port, char *ptr, long num) {
 static long
 strseek(void *port, long offset, int whence) {
    obj_t buf = OUTPUT_PORT(port).buf;
-   int len = STRING_LENGTH(buf);
+   int len = BGL_STRING_LENGTH(buf);
    int cnt = BGL_OUTPUT_PORT_CNT(port);
 
    switch(whence) {
@@ -790,13 +790,13 @@ invoke_flush_hook(obj_t fhook, obj_t port, size_t slen, bool_t err) {
    BGL_MUTEX_LOCK(OUTPUT_PORT(port).mutex);
    
    if (STRINGP(s)) {
-      flush_string(port, BSTRING_TO_STRING(s), STRING_LENGTH(s), err);
+      flush_string(port, BSTRING_TO_STRING(s), BGL_STRING_LENGTH(s), err);
    } else {
       obj_t buf = BGL_OUTPUT_PORT_FLUSHBUF(port);
       
       if (INTEGERP(s) &&
 	  STRINGP(buf) &&
-	  (CINT(s) <= STRING_LENGTH(buf)) &&
+	  (CINT(s) <= BGL_STRING_LENGTH(buf)) &&
 	  (CINT(s) > 0)) {
 	 flush_string(port, BSTRING_TO_STRING(buf), CINT(s), err);
       }
@@ -818,7 +818,7 @@ output_flush(obj_t port, unsigned char *str, size_t slen, int is_read_flush, boo
       return BFALSE;
    } else {
       obj_t buf = OUTPUT_PORT(port).buf;
-      int len = STRING_LENGTH(buf);
+      int len = BGL_STRING_LENGTH(buf);
       size_t cnt = BGL_OUTPUT_PORT_CNT(port);
       long use = len - cnt;
       obj_t fhook = BGL_OUTPUT_PORT_FHOOK(port);
@@ -852,11 +852,11 @@ output_flush(obj_t port, unsigned char *str, size_t slen, int is_read_flush, boo
 	    } else {
 	       stdout_from = 0;
 	       OUTPUT_PORT(port).ptr = (char *)&STRING_REF(buf, 0);
-	       OUTPUT_PORT(port).end = (char *)&STRING_REF(buf, STRING_LENGTH(buf));
+	       OUTPUT_PORT(port).end = (char *)&STRING_REF(buf, BGL_STRING_LENGTH(buf));
 	    }
 	 } else {
 	    OUTPUT_PORT(port).ptr = (char *)&STRING_REF(buf, 0);
-	    OUTPUT_PORT(port).end = (char *)&STRING_REF(buf, STRING_LENGTH(buf));
+	    OUTPUT_PORT(port).end = (char *)&STRING_REF(buf, BGL_STRING_LENGTH(buf));
 	 }
       } else {
 	 /* invoke the flush hook, if any attached to the port */
@@ -1024,7 +1024,7 @@ bgl_output_port_buffer_set(obj_t port, obj_t buf) {
    
    OUTPUT_PORT(port).buf = buf;
    OUTPUT_PORT(port).ptr = (char *)&STRING_REF(buf, 0);
-   OUTPUT_PORT(port).end = (char *)&STRING_REF(buf, STRING_LENGTH(buf));
+   OUTPUT_PORT(port).end = (char *)&STRING_REF(buf, BGL_STRING_LENGTH(buf));
 }
 
 /*---------------------------------------------------------------------*/
@@ -1267,7 +1267,7 @@ get_output_string(obj_t port) {
       int cnt = BGL_OUTPUT_PORT_CNT(port);
 	 
       return string_to_bstring_len(BSTRING_TO_STRING(buf),
-				    STRING_LENGTH(buf) - cnt);
+				    BGL_STRING_LENGTH(buf) - cnt);
    } else {
       C_SYSTEM_FAILURE(
 	 BGL_IO_PORT_ERROR, "get-output-string", "Not a string port", port);
@@ -1317,7 +1317,7 @@ bgl_close_output_port(obj_t port) {
       if (PORT(port).kindof == KINDOF_STRING) {
 	 obj_t buf = OUTPUT_PORT(port).buf;
          int cnt = BGL_OUTPUT_PORT_CNT(port);
-	 res = bgl_string_shrink(buf, STRING_LENGTH(buf) - cnt);
+	 res = bgl_string_shrink(buf, BGL_STRING_LENGTH(buf) - cnt);
       } else {
 	 if (OUTPUT_PORT(port).err == 0) {
 	    output_flush(port, 0, 0, 0, 0);
@@ -1493,7 +1493,7 @@ bgl_input_port_buffer_set(obj_t ip, obj_t buffer) {
    INPUT_PORT(ip).lastchar = '\n';
    
    if (PORT(ip).kindof == KINDOF_STRING) {
-      BGL_INPUT_PORT_LENGTH_SET(ip, STRING_LENGTH(buffer));
+      BGL_INPUT_PORT_LENGTH_SET(ip, BGL_STRING_LENGTH(buffer));
    } else {
 #if (defined(RGC_0))
       STRING_SET(buffer, 0 , '\0');
@@ -1814,7 +1814,7 @@ bgl_open_input_substring(obj_t string, long offset, long end) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_open_input_string(obj_t buffer, long offset) {
-   return bgl_open_input_substring(buffer, offset, STRING_LENGTH(buffer));
+   return bgl_open_input_substring(buffer, offset, BGL_STRING_LENGTH(buffer));
 }
 
 /*---------------------------------------------------------------------*/
@@ -3112,8 +3112,8 @@ static ssize_t
 strwrite(obj_t port, void *str, size_t count) {
    obj_t buf = OUTPUT_PORT(port).buf;
    long cnt = BGL_OUTPUT_PORT_CNT(port);
-   long used = STRING_LENGTH(buf) - cnt;
-   long nlen = (STRING_LENGTH(buf) + count) * 2;
+   long used = BGL_STRING_LENGTH(buf) - cnt;
+   long nlen = (BGL_STRING_LENGTH(buf) + count) * 2;
    obj_t nbuf = make_string_sans_fill(nlen);
 
 #if DEBUG   
@@ -3138,7 +3138,7 @@ static ssize_t
 procwrite(obj_t port, void *str, size_t sz) {
    obj_t proc = VECTOR_REF(PORT(port).userdata, 0);
    obj_t buf = VECTOR_REF(PORT(port).userdata, 1);
-   int len = STRING_LENGTH(buf);
+   int len = BGL_STRING_LENGTH(buf);
 
    if (sz > len) {
       buf = make_string_sans_fill(sz + 1);
@@ -3148,11 +3148,11 @@ procwrite(obj_t port, void *str, size_t sz) {
       
    memcpy(&STRING_REF(buf, 0), str, sz);
    STRING_SET(buf, sz, '\0');
-   STRING_LENGTH(buf) = sz;
+   BGL_STRING_LENGTH_SET(buf, sz);
    
    BGL_PROCEDURE_CALL1(proc, buf);
    
-   STRING_LENGTH(buf) = len;
+   BGL_STRING_LENGTH_SET(buf, len);
 
    return sz;
 }
