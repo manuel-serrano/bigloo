@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Nov 17 11:38:28 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 16:59:08 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -400,7 +400,7 @@ extern "C" {
 /* #define BGL_MAKE_HEADER(_ty, _sz) \                                 */
 /*    ((header_t)((((long)(_ty)) << BGL_HEADER_TYPE_SHIFT) | (((_sz) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT))) */
 #define BGL_MAKE_HEADER(_ty, _sz) \
-   ((header_t)((((long)(_ty)) << BGL_HEADER_TYPE_SHIFT) | ((_sz) << BGL_HEADER_SIZE_SHIFT)))
+   ((header_t)((((long)(_ty)) << BGL_HEADER_TYPE_SHIFT) | (((unsigned long)(_sz)) << BGL_HEADER_SIZE_SHIFT)))
 
 // create a header from a header and a data
 #define BGL_MAKE_HEADER_DATA_ADD(_hd, _dt) \
