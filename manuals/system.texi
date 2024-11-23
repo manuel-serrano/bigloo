@@ -270,7 +270,8 @@ The function @code{getrlimit} expects as argument a resource and it
 returns two values: a soft and a hard limit. Both values are @code{elong}.
 
 The function @code{setrlimit!} accepts a resource, a soft limit, and a
-hard limit.  The soft and hard limits are @code{elong} values.  It
+hard limit.  The soft and hard limits are either a @code{elong} value or
+@code{+inf.0} to denote unlimited value. The function
 returns a boolean, which is @code{#t} if the limit has been changed, and
 @code{#f} otherwise.
 

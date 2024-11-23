@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Aug 28 14:06:12 2024 (serrano)                */
+;*    Last change :  Tue Nov  5 09:05:48 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1146,7 +1146,7 @@
       ((and (flonum? x) (flonum? y) (=fl x 0.0) (=fl y 0.0))
        1.0)
       ((and (fixnum? x) (fixnum? y) (>=fx y 0))
-       (exptfx x y))
+       (exptfx/ov x y))
       ((and (bignum? x) (bignum? y) (positivebx? y))
        (exptbx x y))
       ((bignum? x)

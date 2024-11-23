@@ -463,6 +463,13 @@
 ;;;
 ;;; CELL
 ;;;
+(define-inline-call $unsafe-cell-set! ; "UNSAFE_CELL_SET"
+   (code! me '(putfield ccar))
+   'no-value )
+
+(define-inline-call $unsafe-cell-ref ; "UNSAFE_CELL_REF"
+   (code! me '(getfield ccar)) )
+
 (define-inline-call cell-set! ; "CELL_SET"
    (code! me '(putfield ccar))
    'no-value )

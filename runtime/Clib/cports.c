@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Sep 27 10:33:51 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 07:19:10 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input/Output ports native implementation.                        */
 /*=====================================================================*/
@@ -496,14 +496,14 @@ bgl_input_mmap_seek(obj_t port, long pos) {
 /*---------------------------------------------------------------------*/
 #if (BGL_HAVE_FCNTL)
 static void
-timeout_set_port_blocking(char *fun, int fd, int bool) {
+timeout_set_port_blocking(char *fun, int fd, int flag) {
    int val;
 
    if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
       C_SYSTEM_FAILURE(BGL_IO_ERROR, fun, strerror(errno), BINT(fd));
    }
 
-   if (!bool) {
+   if (!flag) {
       val |= O_NONBLOCK;
    } else {
       val &= ~O_NONBLOCK;
@@ -985,7 +985,7 @@ bgl_make_output_port(obj_t name,
    new_output_port = GC_MALLOC(OUTPUT_PORT_SIZE);
    
    new_output_port->output_port.port.header =
-      MAKE_HEADER(OUTPUT_PORT_TYPE, 0);
+      BGL_MAKE_HEADER(OUTPUT_PORT_TYPE, 0);
    
    new_output_port->port.name = name;
    new_output_port->port.stream = stream;
@@ -1383,7 +1383,7 @@ bgl_make_input_port(obj_t name, FILE *file, obj_t kindof, obj_t buf) {
 	 new_input_port = GC_MALLOC(INPUT_PORT_SIZE);
    }
 
-   new_input_port->port.header = MAKE_HEADER(INPUT_PORT_TYPE, 0);
+   new_input_port->port.header = BGL_MAKE_HEADER(INPUT_PORT_TYPE, 0);
    new_input_port->port.kindof = kindof;
    new_input_port->port.name = name;
    new_input_port->port.stream.file = file;
@@ -1731,7 +1731,7 @@ bgl_open_input_descriptor(int fd, obj_t buffer) {
 /*    bgl_input_string_seek ...                                        */
 /*---------------------------------------------------------------------*/
 static void
-bgl_input_string_seek(obj_t port, long pos) {
+bgl_input_string_seek(obj_t port, long pos, int whence) {
    long offset = CREF(port)->input_string_port.offset;
    
    if (pos >= 0 && pos < BGL_INPUT_PORT_BUFSIZ(port)) {

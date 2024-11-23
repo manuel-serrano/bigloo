@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Sun Sep  8 11:30:27 2024 (serrano)                */
+/*    Last change :  Fri Nov 15 07:36:49 2024 (serrano)                */
 /*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -61,7 +61,7 @@ static obj_t
 make_bignum(size_t sz) {
    obj_t o = GC_MALLOC_ATOMIC(BIGNUM_ALLOC_SIZE(sz));
    
-   o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0);
+   o->bignum.header = BGL_MAKE_HEADER(BIGNUM_TYPE, 0);
    o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d);
    o->bignum.mpz._mp_alloc = sz;
 
@@ -70,7 +70,7 @@ make_bignum(size_t sz) {
 
 #define MAKE_STACK_BIGNUM(o, sz) \
    (o = alloca(BIGNUM_ALLOC_SIZE(sz)), \
-      o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0), \
+      o->bignum.header = BGL_MAKE_HEADER(BIGNUM_TYPE, 0), \
       o->bignum.mpz._mp_d = (mp_limb_t *)&(o->bignum.mp_d), \
       o->bignum.mpz._mp_alloc = sz, \
     BREF(o))
@@ -1252,7 +1252,7 @@ obj_t
 bgl_make_bignum(obj_t v) {
    obj_t o = GC_MALLOC(BIGNUM_SIZE);
    
-   o->bignum.header = MAKE_HEADER(BIGNUM_TYPE, 0);
+   o->bignum.header = BGL_MAKE_HEADER(BIGNUM_TYPE, 0);
    o->bignum.u16vect = v;
 
    return BREF(o);

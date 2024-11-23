@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Jul  3 11:17:26 2024 (serrano)                */
+;*    Last change :  Fri Nov  8 08:51:30 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -828,7 +828,10 @@
 		    (alloc (instantiate::cpragma
 			      (type *_*)
 			      (loc loc)
-			      (format (format "struct bgl_cell ~a"
+			      (format (format "~a ~a"
+					 (if *optim-unsafe-cell?*
+					     "struct bgl_unsafe_cell"
+					     "struct bgl_cell")
 					 (variable-name decl)))
 			      (args '()))))
 		(set! stackable decl)

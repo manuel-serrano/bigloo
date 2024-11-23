@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Oct  2 08:17:41 2024 (serrano)                */
+;*    Last change :  Fri Nov  8 08:10:44 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -97,6 +97,7 @@
 	    *optim-specialize-flonum?*
 	    *optim-stackable?*
 	    *optim-uncell?*
+	    *optim-unsafe-cell?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -1002,6 +1003,9 @@
    #f)
 (param-define *optim-uncell?*
    "Remove useless cells"
+   #f)
+(param-define *optim-unsafe-cell?*
+   "Use unsafe cell for shared captured variables"
    #f)
 
 ;*---------------------------------------------------------------------*/

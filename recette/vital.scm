@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Jul 12 16:49:41 2023 (serrano)                */
-;*    Copyright   :  2002-23 Manuel Serrano                            */
+;*    Last change :  Fri Nov 15 09:19:44 2024 (serrano)                */
+;*    Copyright   :  2002-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -748,9 +748,9 @@
 			  (srfi-0 (* 1 2))
 			  (else (+ 3 4)))
 	 2)
-   (test "cond-expand" (eval '(cond-expand
-				 (srfi-0 (* 1 2))
-				 (else (+ 3 4))))
+   (test "cond-expand(eval)" (eval '(cond-expand
+				     (srfi-0 (* 1 2))
+				     (else (+ 3 4))))
 	 2)
    (test "cond-expand" (cond-expand
 			  (srfi-that-does-not-exists (* 1 2))

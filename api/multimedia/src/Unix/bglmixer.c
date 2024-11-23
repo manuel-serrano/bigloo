@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/multimedia/src/Unix/bglmixer.c       */
+/*    .../project/bigloo/bigloo/api/multimedia/src/Unix/bglmixer.c     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb  3 15:25:23 2000                          */
-/*    Last change :  Thu Oct 29 06:49:52 2009 (serrano)                */
+/*    Last change :  Sun Nov 17 07:02:16 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    A control over the audio mixer for Bigloo. To a large extent     */
 /*    this file is inspired of mixctl.h by Sam Hawker                  */
@@ -30,8 +30,6 @@
 # endif
 #endif
 #include <bigloo.h>
-
-typedef int bool;
 
 /*---------------------------------------------------------------------*/
 /*    A private mixer structure                                        */
@@ -130,7 +128,7 @@ obj_t
 bgl_open_mixer( char *dname ) {
    struct mixer *mixer = (struct mixer *)GC_MALLOC( sizeof( struct mixer ) );
 
-   mixer->header = MAKE_HEADER( OPAQUE_TYPE, 0 );
+   mixer->header = BGL_MAKE_HEADER( OPAQUE_TYPE, 0 );
    mixer->device = (char *)GC_MALLOC( strlen( dname ) + 1 );
    strcpy( mixer->device, dname );
 
