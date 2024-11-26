@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Nov 26 05:26:36 2024 (serrano)                */
+/*    Last change :  Tue Nov 26 11:17:31 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -89,22 +89,18 @@ struct bgl_ucs2_string {
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
 #if (defined(TAG_STRING))
-#   define BSTRING(p) BGL_BPTR((obj_t)((long)p + TAG_STRING))
-#   define CSTRING(p) BGL_CPTR((obj_t)((long)p - TAG_STRING))
-#   if (TAG_STRING == 0)
-#      define BGL_STRINGP(c) \
-          ((c) && (((((long)c) - TAG_STRING) & TAG_MASK) == 0))
-#   elif (TAG_STRING == TAG_QNAN)
-#      define BGL_STRINGP(c) \
-          (((((long)c) & TAG_MASK) == TAG_STRING) && ((long) c) & NAN_MASK)
-#   else
-#      define BGL_STRINGP(c) \
-          (((((long)c) - TAG_STRING) & TAG_MASK) == 0)
-#   endif
+#  define BSTRING(p) BGL_BPTR((obj_t)((long)p + TAG_STRING))
+#  define CSTRING(p) BGL_CPTR((obj_t)((long)p - TAG_STRING))
+#  if (TAG_STRING != TAG_QNAN)
+#    define BGL_STRINGP(o) BGL_TAGGED_PTRP(o, TAG_STRING, TAG_MASK)
+#  else
+#    define BGL_STRINGP(o) \
+       (((((long)c) & TAG_MASK) == TAG_STRING) && ((long) c) & NAN_MASK)
+#  endif
 #else
-#   define BSTRING(p) BREF(p)
-#   define CSTRING(p) BGL_CPTR(((obj_t)((unsigned long)(p) - TAG_POINTER)))
-#   define BGL_STRINGP(c) (POINTERP(c) && (TYPE(c) == STRING_TYPE))
+#  define BSTRING(p) BREF(p)
+#  define CSTRING(p) BGL_CPTR(((obj_t)((unsigned long)(p) - TAG_POINTER)))
+#  define BGL_STRINGP(c) (POINTERP(c) && (TYPE(c) == STRING_TYPE))
 #endif
 
 #define STRINGP(o) BGL_STRINGP(o)

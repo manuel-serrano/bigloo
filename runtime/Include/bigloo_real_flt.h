@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Nov 26 05:18:58 2024 (serrano)                */
+/*    Last change :  Tue Nov 26 11:08:05 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -107,16 +107,9 @@ union bgl_fltobj {
 
 // BGL_BOXED_REALP
 #if (defined(TAG_REAL))
-#  if TAG_REAL != 0
-#    define BGL_BOXED_REALP(_o) \
-       ((((((long)_o) - TAG_REAL) & TAG_MASK) == 0))
-#  else
-#    define BGL_BOXED_REALP(_o) \
-       (_o && (((((long)_o) - TAG_REAL) & TAG_MASK) == 0))
-#  endif
+#  define BGL_BOXED_REALP(o) BGL_TAGGED_PTRP(o, TAG_REAL, TAG_MASK)
 #else
-#  define BGL_BOXED_REALP(_o) \
-     (POINTERP(_o) && (TYPE(_o) == REAL_TYPE))
+#  define BGL_BOXED_REALP(o) (POINTERP(o) && (TYPE(o) == REAL_TYPE))
 #endif
 
 // predicates

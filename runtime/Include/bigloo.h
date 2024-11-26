@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Nov 26 05:18:39 2024 (serrano)                */
+/*    Last change :  Tue Nov 26 11:04:32 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -263,6 +263,12 @@ extern "C" {
 #  define BGL_CNST_SHIFT_INT32 32
 #endif
 
+#define BGL_MASKP(o, tag, mask) \
+   ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
+
+#define BGL_TAGGED_PTRP(o, tag, mask) \
+   (((tag) || (o)) && BGL_MASKP(o, tag, mask))
+
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
@@ -335,11 +341,7 @@ extern "C" {
 #  define TAG_SYMBOL (0xfffaUL<<48)   /*  symbol tagging    111...1001 */
 #endif
 
-#if (TAG_POINTER != 0)
-#   define BGL_POINTERP(o) (((((long)BGL_CPTR(o)) - TAG_POINTER) & TAG_MASKPOINTER) == 0)
-#else
-#   define BGL_POINTERP(o) (((((long)BGL_CPTR(o)) - TAG_POINTER) & TAG_MASKPOINTER) == 0) && BGL_CPTR(o))
-#endif
+#define BGL_POINTERP(o) BGL_TAGGED_PTRP(o, TAG_POINTER, TAG_MASKPOINTER)
 
 #define POINTERP(o) BGL_POINTERP(o)
 
@@ -1619,11 +1621,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 /*    Symbols                                                          */
 /*---------------------------------------------------------------------*/
 #if (defined(TAG_SYMBOL))
-#  if TAG_SYMBOL != 0
-#    define BGL_SYMBOLP(c) ((c) && (((((long)c) - TAG_SYMBOL) & TAG_MASK) == 0))
-#  else
-#    define BGL_SYMBOLP(c) (((((long)c) - TAG_SYMBOL) & TAG_MASK) == 0)
-#  endif
+#  define BGL_SYMBOLP(c) BGL_TAGGED_PTRP(c, TAG_SYMBOL, TAG_MASK)
 #  define BSYMBOL(p) ((obj_t)((long)p + TAG_SYMBOL))
 #  define CSYMBOL(p) ((obj_t)((long)p - TAG_SYMBOL))
 #else   
