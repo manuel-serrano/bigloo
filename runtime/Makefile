@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Oct  2 09:03:18 2024 (serrano)                */
+#*    Last change :  Thu Oct  3 10:01:58 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -492,13 +492,13 @@ heap: heap-c
 heap-c: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
 	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
-	@ echo "\e[1;35m$(HEAPC_FILE)\e[0m  done."
+	@ echo "\e[1;35m$(HEAPC_FILE)\e[0m done."
 
 heap-jvm: .afile .jfile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
-	@ echo "\e[1;35m$(HEAPJVM_FILE)\e[0m  done."
+	@ echo "\e[1;35m$(HEAPJVM_FILE)\e[0m done."
 
 heap-wasm: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPWASM_FILE)
