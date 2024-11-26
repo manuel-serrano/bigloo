@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Nov 19 16:59:08 2024 (serrano)                */
+/*    Last change :  Tue Nov 26 05:18:39 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -336,10 +336,12 @@ extern "C" {
 #endif
 
 #if (TAG_POINTER != 0)
-#   define POINTERP(o) ((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER)
+#   define BGL_POINTERP(o) (((((long)BGL_CPTR(o)) - TAG_POINTER) & TAG_MASKPOINTER) == 0)
 #else
-#   define POINTERP(o) (((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER) && BGL_CPTR(o))
+#   define BGL_POINTERP(o) (((((long)BGL_CPTR(o)) - TAG_POINTER) & TAG_MASKPOINTER) == 0) && BGL_CPTR(o))
 #endif
+
+#define POINTERP(o) BGL_POINTERP(o)
 
 #define BREF(r) BGL_BPTR((obj_t)((long)r + TAG_POINTER))
 #define CREFSLOW(r) BGL_CPTR((obj_t)((unsigned long)r & ~(TAG_MASK)))
@@ -1617,14 +1619,20 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 /*    Symbols                                                          */
 /*---------------------------------------------------------------------*/
 #if (defined(TAG_SYMBOL))
-#  define SYMBOLP(c) ((c && ((((long)c)&TAG_MASK) == TAG_SYMBOL)))
+#  if TAG_SYMBOL != 0
+#    define BGL_SYMBOLP(c) ((c) && (((((long)c) - TAG_SYMBOL) & TAG_MASK) == 0))
+#  else
+#    define BGL_SYMBOLP(c) (((((long)c) - TAG_SYMBOL) & TAG_MASK) == 0)
+#  endif
 #  define BSYMBOL(p) ((obj_t)((long)p + TAG_SYMBOL))
 #  define CSYMBOL(p) ((obj_t)((long)p - TAG_SYMBOL))
 #else   
-#  define SYMBOLP(o) (POINTERP(o) && (TYPE(o) == SYMBOL_TYPE))
+#  define BGL_SYMBOLP(o) (POINTERP(o) && (TYPE(o) == SYMBOL_TYPE))
 #  define BSYMBOL(p) BREF(p)
 #  define CSYMBOL(p) CREF(p)
 #endif   
+
+#define SYMBOLP(o) BGL_SYMBOLP(o)
 
 #define SYMBOL(o) (CSYMBOL(o)->symbol)
    

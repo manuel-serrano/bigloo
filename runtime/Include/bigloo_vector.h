@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Nov 19 11:39:16 2024 (serrano)                */
+/*    Last change :  Tue Nov 26 05:27:36 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -77,15 +77,17 @@ struct bgl_hvector {
 #   define BVECTOR(p) BGL_BPTR((obj_t)((long)p + TAG_VECTOR))
 #   define CVECTOR(p) BGL_CPTR((obj_t)((unsigned long)p - TAG_VECTOR))
 #   if(TAG_VECTOR != 0) 
-#      define VECTORP(c) ((((long)c) & TAG_MASK) == TAG_VECTOR)
+#      define BGL_VECTORP(c) (((((long)c) - TAG_VECTOR) & TAG_MASK) == 0)
 #   else
-#      define VECTORP(c) ((c) && ((((long)c) & TAG_MASK) == TAG_VECTOR))
+#      define BGL_VECTORP(c) ((c) && (((((long)c) - TAG_VECTOR) & TAG_MASK) == 0))
 #   endif
 #else
 #   define BVECTOR(p) BREF(p)
 #   define CVECTOR(p) BGL_CPTR((obj_t)((unsigned long)(p) - TAG_POINTER))
-#   define VECTORP(c) (POINTERP(c) && (TYPE(c) == VECTOR_TYPE))
+#   define BGL_VECTORP(c) (POINTERP(c) && (TYPE(c) == VECTOR_TYPE))
 #endif
+
+#define VECTORP(o) BGL_VECTORP(o)
 
 #define TVECTORP(o) (POINTERP(o) && (TYPE(o) == TVECTOR_TYPE))
 #define BGL_HVECTORP(v) \
