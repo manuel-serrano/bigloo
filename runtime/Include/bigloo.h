@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Nov 26 11:04:32 2024 (serrano)                */
+/*    Last change :  Tue Nov 26 11:40:26 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -269,6 +269,9 @@ extern "C" {
 #define BGL_TAGGED_PTRP(o, tag, mask) \
    (((tag) || (o)) && BGL_MASKP(o, tag, mask))
 
+#define BGL_HEADER_PTRP(o, type) \
+   (BGL_POINTERP(o) && (TYPE(o) == (type)))
+
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
@@ -278,7 +281,7 @@ extern "C" {
 #  define TAG_QNAN 0
 #  define TAG_REALZ 0                 /*  real zero             ...000 */
 #  define TAG_REALL 3                 /*  real lower range      ...011 */
-#  define TAG_REALU 4                 /*  real upper range      ...010 */
+#  define TAG_REALU 4                 /*  real upper range      ...100 */
 #  define TAG_INT 1                   /*  integer tagging       ...001 */
 #  define TAG_POINTER 2               /*  pointer tagging       ...010 */
 #  define TAG_CNST 5                  /*  constant tagging      ...101 */
@@ -289,7 +292,7 @@ extern "C" {
 #  define TAG_QNAN 0
 #  define TAG_REAL 1                  /*  boxed real            ...001 */
 #  define TAG_REALL 0                 /*  real lower range      ...000 */
-#  define TAG_REALU 3                 /*  real upper range      ...100 */
+#  define TAG_REALU 3                 /*  real upper range      ...011 */
 #  define TAG_INT 2                   /*  integer tagging       ...010 */
 #  define TAG_POINTER 4               /*  pointer tagging       ...100 */
 #  define TAG_CNST 5                  /*  constant tagging      ...101 */
@@ -301,7 +304,7 @@ extern "C" {
 #  define TAG_QNAN 0
 #  define TAG_REAL 1                  /*  boxed real            ...001 */
 #  define TAG_REALL 3                 /*  real lower range      ...011 */
-#  define TAG_REALU 4                 /*  real upper range      ...010 */
+#  define TAG_REALU 4                 /*  real upper range      ...100 */
 #  define TAG_INT 0                   /*  integer tagging       ...000 */
 #  define TAG_POINTER 2               /*  pointer tagging       ...010 */
 #  define TAG_CNST 5                  /*  constant tagging      ...101 */
@@ -341,7 +344,7 @@ extern "C" {
 #  define TAG_SYMBOL (0xfffaUL<<48)   /*  symbol tagging    111...1001 */
 #endif
 
-#define BGL_POINTERP(o) BGL_TAGGED_PTRP(o, TAG_POINTER, TAG_MASKPOINTER)
+#define BGL_POINTERP(o) BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER)
 
 #define POINTERP(o) BGL_POINTERP(o)
 
@@ -376,7 +379,7 @@ extern "C" {
 #if (PTR_ALIGNMENT < 3 || BGL_NAN_TAGGING)
 // 32-bit and NaN-tagging configurations
 #  define BGL_HEADER_TYPE_BIT_SIZE 12
-#  define BGL_HEADER_TYPE_BIT_SIZE 16
+#  define BGL_HEADER_SIZE_BIT_SIZE 16
 #  define BGL_HEADER_DATA_BIT_SIZE 0
 #else
 // 64-bit configuration
