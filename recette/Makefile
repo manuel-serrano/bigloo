@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/recette/Makefile              */
+#*    serrano/prgm/project/bigloo/wasm/recette/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon Jun 24 09:27:00 2024 (serrano)                */
+#*    Last change :  Sat Nov 23 11:43:28 2024 (serrano)                */
 #*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -46,6 +46,8 @@ BCFLAGS         = $(BFLAGS) -afile .afile-c
 BJVMFLAGS       = $(BFLAGS) -afile .afile-jvm -jfile .jfile-jvm -g
 BPURIFYJVMFLAGS	=
 
+BWASMFLAGS      = $(BFLAGS) -afile .afile-wasm -g
+
 #*---------------------------------------------------------------------*/
 #*    Les objects destinations                                         */
 #*---------------------------------------------------------------------*/
@@ -75,6 +77,8 @@ OBJECT_C_FOREIGN= c-file.$(C_OBJ_EXTENSION)
 JVM_SPECIFIC	= external
 JVM_OBJECTS	= $(COMMON:%=%.class) $(JVM_SPECIFIC:%=%.class)
 OBJECT_JVM_FORE	= Point.class ArrayTest.class Intf.class
+
+WASM_OBJECTS	= $(COMMON:%=%.wat) $(WASM_SPECIFIC:%=%.wat)
 
 LN_OBJECTS	= $(C_OBJECTS:%.$(C_OBJ_EXTENSION)=%.ln)
 
@@ -116,8 +120,7 @@ recette-c: .etags .afile-c objs_c
 
 recette-bin: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
-	@ echo "Recette (C) Done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;Recette (C).\e[0m  done."
 
 saw:
 	$(MAKE) EFLAGS=-saw
@@ -127,11 +130,17 @@ new:
 new-jvm: 
 	$(MAKE) jvm BIGLOO=bigloo.new
 
-static: recette-static
+gstatic: recette-static
 recette-static: .afile-c objs_c $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) -static-bigloo
-	@ echo "Static Recette Done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;35mStatic Recette done.\e[0m  done."
+
+wasm: objs_wasm .afile-wasm
+	$(MAKE) recette-wasm
+
+recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%)
+	$(BIGLOO) -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm $(WASM_OBJECTS:%=objs_wasm/%)
+	@ echo "\e[1;Recette (WASM).\e[0m  done."
 
 jvm: recette-jvm-nojar
 recette-jvm-nojar: .jfile-jvm .afile-jvm 
@@ -139,8 +148,7 @@ recette-jvm-nojar: .jfile-jvm .afile-jvm
 
 recette-jvm: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
 	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -no-jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
-	@ echo "Recette (JVM) Done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;Recette (JVM).\e[0m  done."
 
 jvm-jar: recette-jvm-jar
 recette-jvm-jar: .jfile-jvm .afile-jvm 
@@ -148,8 +156,7 @@ recette-jvm-jar: .jfile-jvm .afile-jvm
 
 recette-jar: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
 	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(OBJECT_JVM_FORE:%=objs_jvm/%) $(JVM_OBJECTS:%=objs_jvm/%)
-	@ echo "Recette (JVM jar) Done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;Recette (JVM jar).\e[0m  done."
 
 djvm: recette-jvm-debug
 recette-jvm-debug: .jfile-jvm .afile-jvm
@@ -157,8 +164,7 @@ recette-jvm-debug: .jfile-jvm .afile-jvm
 
 recette-class-debug: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
 	$(BIGLOO) $(BFLAGS) -jvm $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
-	@ echo "Recette (JVM debug) Done..."
-	@ echo "-------------------------------"
+	@ echo "\e[1;Recette (JVM debug).\e[0m  done."
 
 jvm-purify:
 	$(MAKE) jvm BPURIFYJVMFLAGS=-jvm-purify
@@ -283,6 +289,12 @@ all.lint: $(LN_OBJECTS)
 	$(BGLAFILE) $(JVM_OBJECTS:%.class=%.scm) -o .afile-jvm
 
 #*---------------------------------------------------------------------*/
+#*    .afile-wasm                                                      */
+#*---------------------------------------------------------------------*/
+.afile-wasm:
+	$(BGLAFILE) $(WASM_OBJECTS:%.wat=%.scm) -o .afile-wasm
+
+#*---------------------------------------------------------------------*/
 #*    .scm.$(C_OBJ_EXTENSION)                                          */
 #*---------------------------------------------------------------------*/
 objs_c/%.$(C_OBJ_EXTENSION): %.scm
@@ -293,6 +305,12 @@ objs_c/%.$(C_OBJ_EXTENSION): %.scm
 #*---------------------------------------------------------------------*/
 objs_jvm/%.class: %.scm
 	$(BIGLOO) $(BFLAGS) -jvm $(BJVMFLAGS) $(BPURIFYJVMFLAGS) $(EFLAGS) -c $< -jvm-directory objs_jvm -o $(@F)
+
+#*---------------------------------------------------------------------*/
+#*    .scm.wat                                                         */
+#*---------------------------------------------------------------------*/
+objs_wasm/%.wat: %.scm
+	$(BIGLOO) $(BFLAGS) -wasm $(BWASMFLAGS) $(EFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    Specific compilations                                            */
@@ -314,6 +332,15 @@ objs_c/wind.$(C_OBJ_EXTENSION): wind.scm
 
 objs_jvm/wind.class: wind.scm
 	$(BIGLOO) $(BFLAGS) -call/cc -jvm $(BJVMFLAGS) $(BPURIFYJVMFLAGS) $(EFLAGS) -c $< -jvm-directory objs_jvm -o $(@F)
+
+objs_wasm/callcc.wat: callcc.scm
+	$(BIGLOO) $(BFLAGS) -call/cc -wasm $(BWASMFLAGS) $(EFLAGS) -c $< -o $@
+
+objs_wasm/fringe.wat: fringe.scm
+	$(BIGLOO) $(BFLAGS) -call/cc -wasm $(BWASMFLAGS) $(EFLAGS) -c $< -o $@
+
+objs_wasm/wind.wat: wind.scm
+	$(BIGLOO) $(BFLAGS) -call/cc -wasm $(BWASMFLAGS) $(EFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    .c.$(C_OBJ_EXTENSION)                                            */
@@ -346,6 +373,9 @@ objs_c:
 
 objs_jvm:
 	@ mkdir objs_jvm
+
+objs_wasm:
+	@ mkdir objs_wasm
 
 #*---------------------------------------------------------------------*/
 #*    misc/dump.XXX                                                    */
