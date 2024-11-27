@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Fri Aug 30 12:03:22 2024 (serrano)                */
+;*    Last change :  Wed Nov 27 17:14:08 2024 (serrano)                */
 ;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -52,7 +52,11 @@
 	      (sources '()))
       (if (null? objects)
 	  ;; and we launch the linking process
-	  (backend-link-objects (the-backend) sources)
+	  (with-handler
+	     (lambda (e)
+		(exception-notify e)
+		(exit 1))
+	     (backend-link-objects (the-backend) sources))
 	  (let* ((object   (car objects))
 		 (pref     (unprof-src-name (prefix object)))
 		 (bpref    (basename pref))

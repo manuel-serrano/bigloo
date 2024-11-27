@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sun Oct  6 10:32:33 2024 (serrano)                */
+;*    Last change :  Wed Nov 27 17:19:58 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -107,7 +107,11 @@
       (if (or (eq? *pass* 'cc)
 	      (and (string? *dest*) (string=? (suffix *dest*) "wat")))
 	  (when (string? *dest*) (rename-file result *dest*))
-	  (backend-link-objects me (list result)))))
+	  (with-handler
+	     (lambda (e)
+		(exception-notify e)
+		(raise e))
+	     (backend-link-objects me (list result))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-link-objects ...                                         */
