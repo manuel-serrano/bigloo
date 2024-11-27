@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Jun 16 15:14:07 2023 (serrano)                */
-/*    Copyright   :  2003-23 Manuel Serrano                            */
+/*    Last change :  Wed Nov 27 08:05:25 2024 (serrano)                */
+/*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -346,10 +346,10 @@ dump_types_cnt() {
    for (i = 0; i < types_number; i++) {
       if ((all_types[i].cnt * 100 / sum) >= 1 ||
 	  ((double)(all_types[i].size)) / (1024. * 1024.) >= 1) {
-	 fprintf(stderr, "   %-20s: %8.2fMB %5.2f%% [%8ld]\n",
+	 fprintf(stderr, "   %-20s: %10.2fMB %6.2f%% [%10ld]\n",
 		 all_types[i].name,
 		 ((double)(all_types[i].size)) / (1024. * 1024.),
-		 ((double)(all_types[i].size * 100)) / alloc_size,
+		 (((double)(all_types[i].size) / (double)alloc_size) * 100.),
 		 all_types[i].cnt);
       }
    }
