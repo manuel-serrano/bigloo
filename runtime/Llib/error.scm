@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Nov 15 19:11:25 2024 (serrano)                */
+;*    Last change :  Mon Nov 25 10:58:35 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -541,6 +541,11 @@
 (define (default-exception-handler val)
    (unless (isa? val &warning)
       (let ((retval (if (isa? val &error) 1 2)))
+	 (when (getenv "BIGLOODEBUG")
+	    (tprint "*** DEFAULT-EXCEPTION-HANDLER: " (typeof val))
+	    (if (isa? val &exception)
+		(exception-notify val)
+		(tprint val)))
 	 (unwind-stack-until! #f #f retval (lambda (x) (%exit retval)) #f)))
    #unspecified)
 
