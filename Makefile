@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Nov  5 07:51:02 2024 (serrano)                */
+#*    Last change :  Wed Nov 27 11:39:02 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -102,7 +102,7 @@ LOGMSG		= ""
 SUDO		= sudo
 
 BOOTCAPI	= no
-HOSTBOOTMAKEOPT	= -j -l 3.5
+HOSTBOOTMAKEOPT	= 
 
 #*---------------------------------------------------------------------*/
 #*    The directory that compose a version                             */
