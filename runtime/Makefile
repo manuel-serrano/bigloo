@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat Nov  2 00:42:48 2024 (serrano)                */
+#*    Last change :  Wed Nov 27 11:21:09 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -494,7 +494,7 @@ heap-c: .afile includes
 	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
 	@ echo "\e[1;35m$(HEAPC_FILE)\e[0m  done."
 
-heap-jvm: .afile .jfile includes
+heap-jvm: .afile .jfile includes lib-jvm_u
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)

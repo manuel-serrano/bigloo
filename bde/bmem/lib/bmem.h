@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Sat Mar  5 09:45:04 2022 (serrano)                */
-/*    Copyright   :  2003-22 Manuel Serrano                            */
+/*    Last change :  Wed Nov 27 08:05:35 2024 (serrano)                */
+/*    Copyright   :  2003-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -34,17 +34,17 @@
 /*---------------------------------------------------------------------*/
 /*    FAIL                                                             */
 /*---------------------------------------------------------------------*/
-#define FAIL( proc, msg, obj ) \
-   fprintf( stderr, "\n*** ERROR:%s\n%s -- %s\n", proc, msg, obj ), exit( -1 )
+#define FAIL(proc, msg, obj) \
+   fprintf(stderr, "\n*** ERROR:%s\n%s -- %s\n", proc, msg, obj), exit(-1)
 
 /*---------------------------------------------------------------------*/
 /*    MEMSIZE                                                          */
 /*---------------------------------------------------------------------*/
 /* #define BMEMSIZEOFWORD (4)                                          */
-/* #define BMEMSIZE( v )  ((v)/BMEMSIZEOFWORD)                         */
+/* #define BMEMSIZE(v)  ((v)/BMEMSIZEOFWORD)                         */
 
 #define BMEMSIZEOFWORD (1)
-#define BMEMSIZE( v ) v
+#define BMEMSIZE(v) v
 
 /*---------------------------------------------------------------------*/
 /*    Various types                                                    */
@@ -53,24 +53,24 @@ typedef void *(*fun_t)();
 
 typedef struct gc_info {
    unsigned long number;
-   unsigned long alloc_size;
-   unsigned long heap_size;
-   unsigned long live_size;
+   unsigned long long alloc_size;
+   unsigned long long heap_size;
+   unsigned long long live_size;
    void *lastfun;
    BGL_LONGLONG_T time;
 } gc_info_t;
 
 typedef struct fun_alloc_info {
    unsigned long gc_num;
-   unsigned long dsize;
-   unsigned long isize;
+   unsigned long long dsize;
+   unsigned long long isize;
    void *dtypes;
    void *itypes;
 } fun_alloc_info_t;
 
 typedef struct type_alloc_info {
    unsigned long num;
-   unsigned long size;
+   unsigned long long size;
 } type_alloc_info_t;
    
 typedef struct fun_info {
@@ -80,7 +80,7 @@ typedef struct fun_info {
 
 typedef struct alloc_info {
    long typenum;
-   long size;
+   unsigned long long size;
    char *function;
    char *filename;
    long lineno;
@@ -89,7 +89,7 @@ typedef struct alloc_info {
 
 typedef struct line_alloc {
    long lineno;
-   long size;
+   unsigned long long size;
    long count;
    unsigned int typecount;
    long *typenums;
@@ -97,7 +97,7 @@ typedef struct line_alloc {
 
 typedef struct file_alloc {
    char *filename;
-   long size;
+   unsigned long long size;
    line_alloc_t *lines;
 } file_alloc_t;
 
@@ -134,11 +134,11 @@ obj_t ident proto { \
 obj_t ident proto { \
    obj_t __res; \
    long otnum = bmem_get_alloc_type(); \
-   fprintf( stderr, ">>> wrap " #ident "\n..."); \
+   fprintf(stderr, ">>> wrap " #ident "\n..."); \
    bmem_set_alloc_type(tnum); \
    __res =  ____##ident call ; \
    bmem_set_alloc_type(otnum); \
-   fprintf( stderr, "<<< wrap " #ident "\n..."); \
+   fprintf(stderr, "<<< wrap " #ident "\n..."); \
    return __res; \
 }
 
@@ -170,19 +170,19 @@ extern pthread_key_t bmem_key2;
 extern pthread_key_t bmem_key3;
 extern pthread_mutex_t bmem_mutex;
 
-extern void mark_function( void *, long, long, long, int, int, long );
+extern void mark_function(void *, long, long, long, int, int, long);
 
-extern void *(*____pthread_getspecific)( pthread_key_t );
-extern int (*____pthread_setspecific)( pthread_key_t, void * );
-extern int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
-extern int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
+extern void *(*____pthread_getspecific)(pthread_key_t);
+extern int (*____pthread_setspecific)(pthread_key_t, void *);
+extern int (*____pthread_key_create)(pthread_key_t *, void (*)(void *));
+extern int (*____pthread_mutex_init)(pthread_mutex_t *, void *);
 
 extern void (*____GC_reset_allocated_bytes)();
-extern void *(*____GC_malloc)( size_t );
-extern void *(*____GC_realloc)( void *, size_t );
-extern void *(*____GC_malloc_atomic)( size_t );
-extern void *(*____GC_malloc_uncollectable)( size_t );
-extern void *(*____GC_add_gc_hook)( void (*)() );
+extern void *(*____GC_malloc)(size_t);
+extern void *(*____GC_realloc)(void *, size_t);
+extern void *(*____GC_malloc_atomic)(size_t);
+extern void *(*____GC_malloc_uncollectable)(size_t);
+extern void *(*____GC_add_gc_hook)(void (*)());
 extern BGL_LONGLONG_T (*____bgl_current_nanoseconds)();
 
 extern void (*____bgl_init_objects)();
@@ -190,11 +190,11 @@ extern void (*____bgl_init_objects)();
 extern void (*____bgl_init_trace_register)();
 extern obj_t (*____bgl_get_trace_stack)(int);
 
-extern void *(*____register_class )( void *, void *, void *,
+extern void *(*____register_class)(void *, void *, void *,
 				     long,
 				     void *, void *, void *,
 				     void *, void *,
-				     void *, void * );
+				     void *, void *);
 extern int (*____bgl_types_number)();
 
 /*---------------------------------------------------------------------*/
@@ -208,7 +208,7 @@ extern long bmem_get_alloc_type();
 /*---------------------------------------------------------------------*/
 /*    Functions                                                        */
 /*---------------------------------------------------------------------*/
-extern void GC_collect_hook( int, long );
+extern void GC_collect_hook(int, long);
 
 /*---------------------------------------------------------------------*/
 /*    Lists                                                            */
@@ -218,23 +218,23 @@ typedef struct pa_pair {
    void *cdr;
 } pa_pair_t;
 
-#define PA_PAIRP( l ) (l)
-#define PA_CAR( l ) ((l)->car)
-#define PA_CDR( l ) ((l)->cdr)
+#define PA_PAIRP(l) (l)
+#define PA_CAR(l) ((l)->car)
+#define PA_CDR(l) ((l)->cdr)
 
-extern void for_each( void (*)(void *, void *), pa_pair_t *, void * );
-extern void for_each_json( void (*)(void *, void *), pa_pair_t *, void * );
-extern pa_pair_t *pa_cons( void *, pa_pair_t * );
-extern pa_pair_t *pa_reverse( pa_pair_t * );
-extern pa_pair_t *pa_assq( void *, pa_pair_t * );
+extern void for_each(void (*)(void *, void *), pa_pair_t *, void *);
+extern void for_each_json(void (*)(void *, void *), pa_pair_t *, void *);
+extern pa_pair_t *pa_cons(void *, pa_pair_t *);
+extern pa_pair_t *pa_reverse(pa_pair_t *);
+extern pa_pair_t *pa_assq(void *, pa_pair_t *);
 
 /*---------------------------------------------------------------------*/
 /*    Trace                                                            */
 /*---------------------------------------------------------------------*/
-extern void *bgl_debug_trace_top( int );
-extern char *bgl_debug_trace_top_name( int );
-extern char *bgl_debug_trace_symbol_name( void * );
-extern char *bgl_debug_trace_symbol_name_json( void * );
+extern void *bgl_debug_trace_top(int);
+extern char *bgl_debug_trace_top_name(int);
+extern char *bgl_debug_trace_symbol_name(void *);
+extern char *bgl_debug_trace_symbol_name_json(void *);
 
 #if !BGL_HAVE_BACKTRACE
 typedef int (*backtrace_full_callback)();
