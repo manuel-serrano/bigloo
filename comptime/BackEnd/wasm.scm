@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sun Oct  6 10:32:33 2024 (serrano)                */
+;*    Last change :  Wed Nov 27 17:19:58 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -107,7 +107,11 @@
       (if (or (eq? *pass* 'cc)
 	      (and (string? *dest*) (string=? (suffix *dest*) "wat")))
 	  (when (string? *dest*) (rename-file result *dest*))
-	  (backend-link-objects me (list result)))))
+	  (with-handler
+	     (lambda (e)
+		(exception-notify e)
+		(raise e))
+	     (backend-link-objects me (list result))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-link-objects ...                                         */
@@ -133,8 +137,8 @@
 			  (delete-file tmp)))))))
 	 ((null? sources)
 	  (error "wasm-link" "No source file provided" *dest*))
-	 ((pair? (cdr sources))
-	  (error "wasm-link" "More than one source file provided" sources))
+;* 	 ((pair? (cdr sources))                                        */
+;* 	  (error "wasm-link" "More than one source file provided" sources)) */
 	 (else
 	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
 		 (lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
@@ -146,11 +150,12 @@
 		(format "~a ~( )" runtime-file objects)
 		" -> " tmp #\] #\Newline)
 	     (wat-merge (cons runtime-file objects) tmp)
-	     (let* ((wasm (string-append (prefix (car objects)) ".wasm"))
+	     (let* ((target (or *dest* "a.out"))
+		    (wasm (string-append target ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
 		(unwind-protect
-		   (let ((target (or *dest* "a.out")))
+		   (begin
 		      (exec cmd #t "wasm-as")
 		      (verbose 2 "      generating [" target #\] #\Newline)
 		      (with-output-to-file target
@@ -624,9 +629,10 @@
 		  ((char=? c #\\) (display "\\\\"))
 		  ((char=? c #\newline) (display "\\n"))
 		  ((char=? c #\tab) (display "\\t"))
-		  (else (display* "\\u" 
+		  (else (display* "\\u{" 
 			   (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
 			   (string-ref hex (char->integer (char-and c #\x0F)))
+			   "}"
 			   ))))
 	    (iter (+fx i 1))))
       (display "\""))
@@ -899,7 +905,7 @@
       (if super
 	  `(type
 	      ,(wasm-sym name) 
-	      (sub ,@(if (tclass-final? class) '(final) '())
+	      (sub ;; ,@(if (tclass-final? class) '(final) '())
 		 ,(wasm-sym (type-class-name super)) ,struct))
 	  #f)))
 

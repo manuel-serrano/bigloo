@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Coerce/funcall.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/funcall.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Wed Sep 18 20:15:05 2024 (serrano)                */
+;*    Last change :  Thu Nov 28 12:38:08 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -83,7 +83,8 @@
 				   (body (top-level-sexp->node
 					    `(let ((,a-tlen ,len))
 						(if (correct-arity? ,fun ,a-len)
-						    ,(convert! node nty to safe)
+						    ,(cast-if-not-obj loc nty to
+							(convert! node nty to safe))
 						    ,(make-arity-error-node
 							fun
 							error-msg
@@ -99,6 +100,19 @@
 			  (variable fun)))
 		    (lvtype-node! lnode)
 		    lnode)))))))
+
+;*---------------------------------------------------------------------*/
+;*    cast-if-not-obj ...                                              */
+;*---------------------------------------------------------------------*/
+(define (cast-if-not-obj loc from to node)
+   (if (eq? from *obj*)
+       node
+       (with-access::funcall node (type)
+	  (set! type *obj*)
+	  (instantiate::cast
+	     (loc loc)
+	     (type to)
+	     (arg node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-arity-error-node ...                                        */

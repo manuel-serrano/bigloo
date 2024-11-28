@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/apply.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/apply.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:58:26 1992                          */
-;*    Last change :  Mon Jun  7 16:57:13 2010 (serrano)                */
+;*    Last change :  Thu Nov 28 11:22:25 2024 (serrano)                */
 ;*                                                                     */
 ;*    On test differentes sortes d'apply                               */
 ;*---------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 (module apply
    (import  (main "main.scm")
 	    (alias-aux "alias_aux.scm"))
-   (extern  (macro c-dummy::obj (::obj . ::obj) ""))
+   (cond-expand (bigloo-c (extern (macro c-dummy::obj (::obj . ::obj) ""))))
    (java    (abstract-class c
 	       (method static dummy::obj (::obj ::obj) "c_dummy")
 	       "foo"))
@@ -108,7 +108,9 @@
 ;*    Bigloo1.9 was unable to compile this extern apply form.          */
 ;*---------------------------------------------------------------------*/
 (define (apply-dummy x y)
-   (apply c-dummy (cons x y)))
+   (cond-expand
+      (bigloo-c (apply c-dummy (cons x y)))
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-apply2 ...                                                  */

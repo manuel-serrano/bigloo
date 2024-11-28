@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Oct  3 10:01:58 2024 (serrano)                */
+#*    Last change :  Wed Nov 27 12:30:01 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -494,7 +494,7 @@ heap-c: .afile includes
 	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
 	@ echo "\e[1;35m$(HEAPC_FILE)\e[0m done."
 
-heap-jvm: .afile .jfile includes
+heap-jvm: .afile .jfile includes lib-jvm_u
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
@@ -640,17 +640,17 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib 
 #*---------------------------------------------------------------------*/
 .PHONY: jlib
 
-class_s/jlib:
+class_s/jlib: $(CLASSES)
 	(cd Jlib && \
          $(JAVAC) -classpath ../objs/class_s -d ../objs/class_s \
                   $(JCFLAGS) $(JLIB_SRC))
 
-class_u/jlib:
+class_u/jlib: $(CLASSES)
 	(cd Jlib && \
          $(JAVAC) -classpath ../objs/class_u -d ../objs/class_u \
                   $(JCFLAGS) $(JLIB_SRC))
 
-class_p/jlib:
+class_p/jlib: $(CLASSES)
 	(cd Jlib && \
          $(JAVAC) -classpath ../objs/class_p -d ../objs/class_p \
                   $(JCFLAGS) $(JLIB_SRC))

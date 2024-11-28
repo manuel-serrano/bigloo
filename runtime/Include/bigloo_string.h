@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun May 28 08:46:25 2023 (serrano)                */
-/*    Copyright   :  2016-23 Manuel Serrano                            */
+/*    Last change :  Mon Nov 25 16:13:50 2024 (serrano)                */
+/*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -134,13 +134,13 @@ struct bgl_ucs2_string {
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       char string[len + 1]; } \
-         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, 0), len, str }; \
+         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0), len, str }; \
          static obj_t name = BSTRING(&(aux.header))
 #  define DEFINE_STRING_START(name, aux, len) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       char string[len + 1]; } \
-         aux = { __CNST_FILLER MAKE_HEADER(STRING_TYPE, 0), len
+         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0), len
 #  define DEFINE_STRING_STOP(name, aux) \
         }; static obj_t name = BSTRING(&(aux.header))
 #endif

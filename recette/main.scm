@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/main.scm              */
+;*    serrano/prgm/project/bigloo/wasm/recette/main.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Mon Jun 24 09:27:06 2024 (serrano)                */
+;*    Last change :  Thu Nov 28 15:17:50 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -69,10 +69,10 @@
 	   module
 	   import1
 	   import2
-	   object
-	   object-sans
-	   object5
-	   object5-sans
+;* 	   object                                                      */
+;* 	   object-sans                                                 */
+;* 	   object5                                                     */
+;* 	   object5-sans                                                */
 	   hygiene
 	   wind
 	   dsssl
@@ -261,7 +261,7 @@
        (error 'recette "Illegal argument" else)))
    (if (string? *dumping*)
        (begin
-	  (dump-obj *dumping*)
+;* 	  (dump-obj *dumping*)                                         */
 	  (print #\Newline "------------------------------")
 	  (print (cond-expand
 		    (bigloo-c "C dump done...")
@@ -326,10 +326,10 @@
 	  (if-module '0cfa test-0cfa)
 	  (if-module 'sua test-sua)
 	  (if-module 'alias test-alias)
-	  (if-module 'object test-object)
-	  (if-module 'object-sans test-object-sans)
-	  (if-module 'object5 test-object5)
-	  (if-module 'object5-sans test-object5-sans)
+;* 	  (if-module 'object test-object)                              */
+;* 	  (if-module 'object-sans test-object-sans)                    */
+;* 	  (if-module 'object5 test-object5)                            */
+;* 	  (if-module 'object5-sans test-object5-sans)                  */
 	  (if-module 'hygiene test-hygiene)
 	  (if-module 'peek test-peek)
 	  (if-module 'unicode test-unicode)
