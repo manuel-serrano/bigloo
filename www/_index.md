@@ -3,11 +3,11 @@ ${ var doc = require( "hopdoc" ) }
 The Bigloo Programming Language
 -------------------------------
 
-The Bigloo programming is a strict-parenthetical-function programming
-language. It belongs to the Lisp programming language family, and more
-specifically, it is a descendant of the Scheme programming language.
-Its design is governed by one rule: enabling Scheme-based programming
-style where C(++) is usually required.
+The Bigloo programming language is a strict-parenthetical-function
+programming language. It belongs to the Lisp programming language
+family, and more specifically, it is a descendant of the Scheme
+programming language.  Its design is governed by one rule: enabling
+Scheme-based programming style where C(++) is usually required.
 
 Bigloo aims at being a practical programming language and a practical
 programming environment. For it offers features usually presented by

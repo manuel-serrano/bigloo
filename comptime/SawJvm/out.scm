@@ -189,6 +189,7 @@
      (vrai (field bbool (static) bbool "vrai"))
      ;; Fields/Methods of bigloo.cell
      (cell (class () "bigloo.cell"))
+     (unsafe-cell (class () "bigloo.cell"))
      (init_cell (method cell () void "<init>" obj))
      (ccar (field cell () obj "car"))
      ;; Fields/Methods of bigloo.pair

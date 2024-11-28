@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Oct  2 08:10:49 2024 (serrano)                */
+;*    Last change :  Sat Nov 23 12:08:33 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -133,13 +133,6 @@
 			      ,@(gen-locals locals)
 			      
 			      ,@body)))))))))
-;* 				    body                               */
-;* 				    (multiple-value-bind (locals instructions) */
-;* 				       (get-locals-and-intructions body) */
-;* 				       (append locals                  */
-;* 					                               */
-;* 					  inits                        */
-;* 					  instructions))))))))))))     */
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-body ...                                                     */
@@ -373,6 +366,11 @@
        (cond
 	  ((isa? ty tclass)
 	   (with-access::tclass ty (name holder)
+	      `(ref.cast (ref ,(wasm-sym name))
+		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
+		     (global.get ,(wasm-sym (global-name holder)))))))
+	  ((wclass? ty)
+	   (with-access::tclass (wclass-its-class ty) (name holder)
 	      `(ref.cast (ref ,(wasm-sym name))
 		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
 		     (global.get ,(wasm-sym (global-name holder)))))))
@@ -867,8 +865,12 @@
 	     (match-case expr
 		(((call . ?args))
 		 `(return_call ,@args))
+		(((@ ?loc (call . ?args)))
+		 `(@ ,loc (return_call ,@args)))
 		((call-ref . ?args)
 		 `(return_call_ref ,@args))
+		((@ ?loc call-ref . ?args)
+		 `(@ ,loc (return_call_ref ,@args)))
 		(else
 		 `(return ,@expr)))
 	     `(return ,@expr)))))

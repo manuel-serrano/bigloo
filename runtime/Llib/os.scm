@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Mon Sep 30 10:44:22 2024 (serrano)                */
+;*    Last change :  Tue Nov  5 18:05:38 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -312,7 +312,7 @@
 	    (syslog-facility::int ::symbol)
 	    (syslog-level::int ::symbol)
 	    (getrlimit::obj ::obj)
-	    (setrlimit!::bool ::obj ::elong ::elong)))
+	    (setrlimit!::bool ::obj ::obj ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Variables setup ...                                              */
@@ -1420,6 +1420,16 @@
       (else (bigloo-type-error id "integer-or-symbol" r))))
 
 ;*---------------------------------------------------------------------*/
+;*    limit-value ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (limit-value::long val)
+   (cond
+      ((elong? val) (elong->fixnum val))
+      ((fixnum? val) val)
+      ((and (flonum? val) (infinitefl? val)) #e-1)
+      (else (error "setrlimit!" "Illegal value" val))))
+	   
+;*---------------------------------------------------------------------*/
 ;*    getrlimit ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (getrlimit r)
@@ -1435,7 +1445,8 @@
 (define (setrlimit! r soft hard)
    (cond-expand
       ((and bigloo-c (config have-getrlimit #t))
-       ($setrlimit! (limit-resource-no r "setrlimit!") soft hard))
+       ($setrlimit! (limit-resource-no r "setrlimit!")
+	  (limit-value soft) (limit-value hard)))
       (else
        -1)))
 

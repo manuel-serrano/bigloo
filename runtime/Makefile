@@ -118,8 +118,8 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*---------------------------------------------------------------------*/
 #*    WAT objects                                                      */
 #*---------------------------------------------------------------------*/
-WLIB		= javascript wcnst runtime wwriter wfixnum  wstring wsymbols \
-                  wrgc wports wintegers wbignum wsystem wreal wobject \
+WLIB		= javascript wcnst runtime wwriter wfixnum wstring wsymbols \
+                  wrgc wports wintegers wbignum wsystem wreal wdate wobject \
                   wcustom wforeign
 
 W_WLIB		= $(WLIB:%=Wlib/%.wat)
@@ -971,10 +971,10 @@ objs/saw_u/$(SCMOBJSUFFIX): %.scm
 objs/saw_s/$(SCMOBJSUFFIX): %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
 
-objs/obj_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+objs/obj_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
-objs/saw_u/Eval/evaluate_comp.o: Eval/evaluate_comp.scm
+objs/saw_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
 #*---------------------------------------------------------------------*/
@@ -1234,7 +1234,7 @@ Wlib/types.wat: Wlib/types.wat.in
 	$(BIGLOO) -i ../tools/gen_wasm_types.scm $< > $@ || (rm -f $@; exit 1)
 
 Wlib/types.wat: Wlib/wports.wat Wlib/wstring.wat Wlib/wfixnum.wat \
-  Wlib/wintegers.wat Wlib/wbignum.wat Wlib/wcnst.wat
+  Wlib/wintegers.wat Wlib/wbignum.wat Wlib/wcnst.wat Wlib/wdate.wat
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

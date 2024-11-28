@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Dec  8 13:43:49 2023 (serrano)                */
+/*    Last change :  Fri Nov 15 07:32:47 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -468,7 +468,7 @@ make_bglhostent(obj_t hostaddr, struct hostent *hp) {
    struct bglhostent *bhp =
       (struct bglhostent *)GC_MALLOC(sizeof(struct bglhostent));
 
-   bhp->header = MAKE_HEADER(OPAQUE_TYPE, 0);
+   bhp->header = BGL_MAKE_HEADER(OPAQUE_TYPE, 0);
    bhp->hostaddr = hostaddr;
 
    if (hp) {
@@ -501,7 +501,7 @@ make_bglhostent_from_name(obj_t hostaddr, struct sockaddr* address, char *n) {
    char **l = (char **)GC_MALLOC(sizeof(char *) + 1);
    void *d;
 
-   bhp->header = MAKE_HEADER(OPAQUE_TYPE, 0);
+   bhp->header = BGL_MAKE_HEADER(OPAQUE_TYPE, 0);
    bhp->hostaddr = hostaddr;
    bhp->exptime = time(0L) + bgl_dns_cache_validity_timeout();
 
@@ -536,7 +536,7 @@ make_bglhostent_from_name(obj_t hostaddr, struct sockaddr* address, char *n) {
 /*---------------------------------------------------------------------*/
 static void
 bglhostent_fill_from_hostent(obj_t hostaddr, struct bglhostent *bhp, struct hostent *hp) {
-   bhp->header = MAKE_HEADER(OPAQUE_TYPE, 0);
+   bhp->header = BGL_MAKE_HEADER(OPAQUE_TYPE, 0);
    bhp->hostaddr = hostaddr;
 
    if (hp) {
@@ -1429,14 +1429,14 @@ set_socket_io_ports(int s, obj_t sock, const char *who, obj_t inb, obj_t outb) {
 /*---------------------------------------------------------------------*/
 #if (BGL_HAVE_FCNTL)
 static void
-set_socket_blocking(int fd, int bool) {
+set_socket_blocking(int fd, int flag) {
    int val;
 
    if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
       socket_error("make-client-socket", "cannot get socket control", BUNSPEC);
    }
 
-   if (bool) {
+   if (flag) {
       val |= O_NONBLOCK;
    } else {
       val &= ~O_NONBLOCK;
@@ -1587,7 +1587,7 @@ bgl_make_client_socket(obj_t hostname, int port, int timeo, obj_t inb, obj_t out
    
    /* Create a new Scheme socket object */
    a_socket = GC_MALLOC(SOCKET_SIZE);
-   a_socket->socket.header = MAKE_HEADER(SOCKET_TYPE, 0);
+   a_socket->socket.header = BGL_MAKE_HEADER(SOCKET_TYPE, 0);
    a_socket->socket.portnum = port;
    a_socket->socket.hostname = hname;
    a_socket->socket.hostip = BUNSPEC;
@@ -1653,7 +1653,7 @@ bgl_make_client_unix_socket(obj_t path, int timeo, obj_t inb, obj_t outb) {
 
    /* Create a new Scheme socket object */
    a_socket = GC_MALLOC(SOCKET_SIZE);
-   a_socket->socket.header = MAKE_HEADER(SOCKET_TYPE, 0);
+   a_socket->socket.header = BGL_MAKE_HEADER(SOCKET_TYPE, 0);
    a_socket->socket.hostname = path;
    a_socket->socket.portnum = -1;
    a_socket->socket.hostip = BFALSE;
@@ -1783,7 +1783,7 @@ bgl_make_server_socket(obj_t hostname, int portnum, int backlog, obj_t family) {
 
    /* Now we can create the socket object */
    a_socket = GC_MALLOC(SOCKET_SIZE);
-   a_socket->socket.header = MAKE_HEADER(SOCKET_TYPE, 0);
+   a_socket->socket.header = BGL_MAKE_HEADER(SOCKET_TYPE, 0);
    if (fam == AF_INET) {
      a_socket->socket.portnum = actual_port;
    } else if (fam == AF_INET6) {
@@ -1870,7 +1870,7 @@ bgl_make_server_unix_socket(obj_t path, int backlog) {
 
    /* Now we can create the socket object */
    a_socket = GC_MALLOC(SOCKET_SIZE);
-   a_socket->socket.header = MAKE_HEADER(SOCKET_TYPE, 0);
+   a_socket->socket.header = BGL_MAKE_HEADER(SOCKET_TYPE, 0);
    a_socket->socket.portnum = -1;
    a_socket->socket.hostname = path;
    a_socket->socket.hostip = BFALSE;
@@ -2083,7 +2083,7 @@ bgl_socket_accept(obj_t serv, bool_t errp, obj_t inb, obj_t outb) {
    a_socket = GC_MALLOC(SOCKET_SIZE);
 
    /* allocate and fill the new socket client for this connection */
-   a_socket->socket.header = MAKE_HEADER(SOCKET_TYPE, 0);
+   a_socket->socket.header = BGL_MAKE_HEADER(SOCKET_TYPE, 0);
    a_socket->socket.portnum = ntohs(sin.sin_port);
    a_socket->socket.hostname = BUNSPEC;
    a_socket->socket.hostip = BUNSPEC;
@@ -2863,7 +2863,7 @@ bgl_make_datagram_client_socket(obj_t hostname, int port, bool_t broadcast, obj_
 
    hname = string_to_bstring(hp->h_name);
   
-   a_socket->datagram_socket.header = MAKE_HEADER(DATAGRAM_SOCKET_TYPE, 0);
+   a_socket->datagram_socket.header = BGL_MAKE_HEADER(DATAGRAM_SOCKET_TYPE, 0);
    a_socket->datagram_socket.portnum = port;
    a_socket->datagram_socket.hostname = hname;
 /*    a_socket->datagram_socket.hostip = bgl_inet_ntop(AF_INET, &(server->sin_addr)); */
@@ -2963,7 +2963,7 @@ bgl_make_datagram_server_socket(int portnum, obj_t family) {
 
    /* Now we can create the socket object */
    sock = GC_MALLOC(SOCKET_SIZE);
-   sock->datagram_socket.header = MAKE_HEADER(DATAGRAM_SOCKET_TYPE, 0);
+   sock->datagram_socket.header = BGL_MAKE_HEADER(DATAGRAM_SOCKET_TYPE, 0);
    sock->datagram_socket.portnum = portnum;
    sock->datagram_socket.hostname = BUNSPEC;
    sock->datagram_socket.hostip = BFALSE;
@@ -3014,7 +3014,7 @@ bgl_make_datagram_unbound_socket(obj_t family) {
    }
 
    sock = GC_MALLOC(SOCKET_SIZE);
-   sock->datagram_socket.header = MAKE_HEADER(DATAGRAM_SOCKET_TYPE, 0);
+   sock->datagram_socket.header = BGL_MAKE_HEADER(DATAGRAM_SOCKET_TYPE, 0);
    sock->datagram_socket.portnum = 0;
    sock->datagram_socket.hostname = BUNSPEC;
    sock->datagram_socket.hostip = BFALSE;

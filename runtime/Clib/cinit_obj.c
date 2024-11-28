@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Thu Dec  2 15:02:50 2021 (serrano)                */
-/*    Copyright   :  2002-21 Manuel Serrano                            */
+/*    Last change :  Fri Nov 15 06:48:44 2024 (serrano)                */
+/*    Copyright   :  2002-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -21,20 +21,20 @@ obj_t *c_allocated_char;
 
 obj_t bprof_port = BUNSPEC;
 
-BGL_RUNTIME_DEF header_t bgl_opaque_nil = MAKE_HEADER( OPAQUE_TYPE, 0 );
+BGL_RUNTIME_DEF header_t bgl_opaque_nil = BGL_MAKE_HEADER(OPAQUE_TYPE, 0);
 
 /*---------------------------------------------------------------------*/
 /*    Global mutex                                                     */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t bigloo_mutex = BUNSPEC;
 BGL_RUNTIME_DEF obj_t bigloo_generic_mutex = BUNSPEC;
-DEFINE_STRING( bigloo_mutex_name, _1, "bigloo-mutex", 12 );
+DEFINE_STRING(bigloo_mutex_name, _1, "bigloo-mutex", 12);
 
 /*---------------------------------------------------------------------*/
 /*    Global floating point constants                                  */
 /*---------------------------------------------------------------------*/
 double bgl_nan(), bgl_infinity();
-#if( !BGL_NAN_TAGGING )
+#if (!BGL_NAN_TAGGING)
 BGL_RUNTIME_DEF obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
 #else
 BGL_RUNTIME_DEF union nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
@@ -43,7 +43,7 @@ BGL_RUNTIME_DEF union nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
 /*---------------------------------------------------------------------*/
 /*    Importations                                                     */
 /*---------------------------------------------------------------------*/
-extern obj_t string_to_obj( obj_t, obj_t, obj_t );
+extern obj_t string_to_obj(obj_t, obj_t, obj_t);
 extern void bgl_init_dynamic_env();
 extern void bgl_init_symbol_table();
 extern void bgl_init_socket();
@@ -55,7 +55,7 @@ extern void bgl_init_process_table();
 extern void bgl_init_dload();
 extern void bgl_init_bignum();
 extern void bgl_init_backtrace();
-#if( BGL_SAW == 1  && BGL_GC == BGL_SAW_GC )    
+#if (BGL_SAW == 1  && BGL_GC == BGL_SAW_GC)    
 extern void bgl_saw_init();
 #endif
 
@@ -63,7 +63,7 @@ extern void bgl_saw_init();
 /*    init_objects ...                                                 */
 /*---------------------------------------------------------------------*/
 void bgl_init_objects() {
-#if( BGL_SAW == 1  && BGL_GC == BGL_SAW_GC )    
+#if (BGL_SAW == 1  && BGL_GC == BGL_SAW_GC)    
    bgl_saw_init();
 #endif   
    bgl_init_dynamic_env();
@@ -77,14 +77,14 @@ void bgl_init_objects() {
    bgl_init_date();
    bgl_init_bignum();
 
-   bigloo_mutex = bgl_make_spinlock( bigloo_mutex_name );
-   bigloo_generic_mutex = bgl_make_spinlock( bigloo_mutex_name );
-   quote = string_to_symbol( "QUOTE" );
+   bigloo_mutex = bgl_make_spinlock(bigloo_mutex_name);
+   bigloo_generic_mutex = bgl_make_spinlock(bigloo_mutex_name);
+   quote = string_to_symbol("QUOTE");
 
-#if( !BGL_NAN_TAGGING )
-   bigloo_nan = DOUBLE_TO_REAL( bgl_nan() );
-   bigloo_infinity = DOUBLE_TO_REAL( bgl_infinity() );
-   bigloo_minfinity = DOUBLE_TO_REAL( -bgl_infinity() );
+#if (!BGL_NAN_TAGGING)
+   bigloo_nan = DOUBLE_TO_REAL(bgl_nan());
+   bigloo_infinity = DOUBLE_TO_REAL(bgl_infinity());
+   bigloo_minfinity = DOUBLE_TO_REAL(-bgl_infinity());
 #else
    bigloo_nan = (union nanobj){ real: bgl_nan() };
    bigloo_infinity = (union nanobj){ real: bgl_infinity() };
@@ -125,7 +125,7 @@ char *bgl_module_margins[] = { "",
 /*    bgl_init_module_debug_margin ...                                 */
 /*---------------------------------------------------------------------*/
 static char *
-margin( int level ) {
+margin(int level) {
 #define MAX_MODULE_DEBUG_LEVEL 16
    return bgl_module_margins[ bgl_module_debug_level < MAX_MODULE_DEBUG_LEVEL ?
 			      bgl_module_debug_level : MAX_MODULE_DEBUG_LEVEL ];
@@ -136,12 +136,12 @@ margin( int level ) {
 /*    bgl_init_module_debug_start ...                                  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
-bgl_init_module_debug_start( char *mod ) {
+bgl_init_module_debug_start(char *mod) {
    bgl_module_debug_level++;
-   fprintf( stderr, "%s>>> %s (%d)\n",
-	    margin( bgl_module_debug_level ),
+   fprintf(stderr, "%s>>> %s (%d)\n",
+	    margin(bgl_module_debug_level),
 	    mod,
-	    bgl_module_debug_level );
+	    bgl_module_debug_level);
 }
 
 /*---------------------------------------------------------------------*/
@@ -149,10 +149,10 @@ bgl_init_module_debug_start( char *mod ) {
 /*    bgl_init_module_debug_library ...                                */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
-bgl_init_module_debug_library( char *mod ) {
-   fprintf( stderr, "%s library (%s)\n",
-	    margin( bgl_module_debug_level ),
-	    mod );
+bgl_init_module_debug_library(char *mod) {
+   fprintf(stderr, "%s library (%s)\n",
+	    margin(bgl_module_debug_level),
+	    mod);
 }
 
 /*---------------------------------------------------------------------*/
@@ -160,10 +160,10 @@ bgl_init_module_debug_library( char *mod ) {
 /*    bgl_init_module_debug_object ...                                 */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
-bgl_init_module_debug_object( char *mod ) {
-   fprintf( stderr, "%s object (%s)\n",
-	    margin( bgl_module_debug_level ),
-	    mod );
+bgl_init_module_debug_object(char *mod) {
+   fprintf(stderr, "%s object (%s)\n",
+	    margin(bgl_module_debug_level),
+	    mod);
 }
 
 /*---------------------------------------------------------------------*/
@@ -171,10 +171,10 @@ bgl_init_module_debug_object( char *mod ) {
 /*    bgl_init_module_debug_string ...                                 */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
-bgl_init_module_debug_string( char *str ) {
-   fprintf( stderr, "%s %s\n",
-	    margin( bgl_module_debug_level ),
-	    str );
+bgl_init_module_debug_string(char *str) {
+   fprintf(stderr, "%s %s\n",
+	    margin(bgl_module_debug_level),
+	    str);
 }
 
 /*---------------------------------------------------------------------*/
@@ -182,11 +182,11 @@ bgl_init_module_debug_string( char *str ) {
 /*    bgl_init_module_debug_import ...                                 */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
-bgl_init_module_debug_import( char *mod, char *import ) {
-   fprintf( stderr, "%s import (%s) %s\n",
-	    margin( bgl_module_debug_level ),
+bgl_init_module_debug_import(char *mod, char *import) {
+   fprintf(stderr, "%s import (%s) %s\n",
+	    margin(bgl_module_debug_level),
 	    mod,
-	    import );
+	    import);
 }
 
 /*---------------------------------------------------------------------*/
@@ -194,8 +194,8 @@ bgl_init_module_debug_import( char *mod, char *import ) {
 /*    bgl_init_module_debug_end ...                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
-bgl_init_module_debug_end( char *mod ) {
-   fprintf( stderr, "%s<<< %s\n", margin( bgl_module_debug_level ), mod );
+bgl_init_module_debug_end(char *mod) {
+   fprintf(stderr, "%s<<< %s\n", margin(bgl_module_debug_level), mod);
    bgl_module_debug_level--;
 }
 
@@ -243,25 +243,25 @@ bgl_infinity() {
 /*    __debug ...                                                      */
 /*---------------------------------------------------------------------*/
 obj_t
-__debug( char *lbl, obj_t o ) {
-   fprintf( stderr, "%s:%d %s o=%p\n", __FILE__, __LINE__, lbl, o );
-   if( BGL_HVECTORP( o ) ) {
-      fprintf( stderr, "   hvector=%lu\n",BGL_HVECTOR_LENGTH( o ) );
-   } else if( REALP( o ) ) {
-      fprintf( stderr, "   real\n" );
-   } else if( PAIRP( o ) ) {
-      fprintf( stderr, "   pair\n" );
-   } else if( SYMBOLP( o ) ) {
-      fprintf( stderr, "   symbol=%s\n",
-	       BSTRING_TO_STRING( SYMBOL_TO_STRING( o ) ) );
-   } else if( INTEGERP( o ) ) {
-      fprintf( stderr, "   int=%ld\n",CINT( o ) );
-   } else if( REALP( o ) ) {
-      fprintf( stderr, "   real=%f\n",REAL_TO_DOUBLE( o ) );
-   } else if( BGL_OBJECTP( o ) ) {
-      fprintf( stderr, "   object=%ld\n", BGL_OBJECT_CLASS_NUM( o ) );
-   } else if( POINTERP( o ) ) {
-      fprintf( stderr, "   PTRP=%d TYPE=%ld\n", POINTERP( o ), TYPE( o ) );
+__debug(char *lbl, obj_t o) {
+   fprintf(stderr, "%s:%d %s o=%p\n", __FILE__, __LINE__, lbl, o);
+   if (BGL_HVECTORP(o)) {
+      fprintf(stderr, "   hvector=%lu\n",BGL_HVECTOR_LENGTH(o));
+   } else if (REALP(o)) {
+      fprintf(stderr, "   real\n");
+   } else if (PAIRP(o)) {
+      fprintf(stderr, "   pair\n");
+   } else if (SYMBOLP(o)) {
+      fprintf(stderr, "   symbol=%s\n",
+	       BSTRING_TO_STRING(SYMBOL_TO_STRING(o)));
+   } else if (INTEGERP(o)) {
+      fprintf(stderr, "   int=%ld\n",CINT(o));
+   } else if (REALP(o)) {
+      fprintf(stderr, "   real=%f\n",REAL_TO_DOUBLE(o));
+   } else if (BGL_OBJECTP(o)) {
+      fprintf(stderr, "   object=%ld\n", BGL_OBJECT_CLASS_NUM(o));
+   } else if (POINTERP(o)) {
+      fprintf(stderr, "   PTRP=%d TYPE=%ld\n", POINTERP(o), TYPE(o));
    }
    return o;
 }

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Oct  2 14:08:00 2024 (serrano)                */
+;*    Last change :  Mon Oct 21 17:46:26 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -118,36 +118,6 @@
      (export "BGL_CONDVAR_DEFAULT_VALUE") (ref $condvar)
      (struct.new $condvar))
   
-  (global $date-default-value
-     (export "BGL_DATE_DEFAULT_VALUE") (ref $date)
-     (struct.new $date
-	;; timezone
-	(i64.const 0)
-	;; year
-	(i32.const 0)
-	;; month
-	(i32.const 0)
-	;; yday
-	(i32.const 0)
-	;; wday
-	(i32.const 0)
-	;; day
-	(i32.const 0)
-	;; hour
-	(i32.const 0)
-	;; minute
-	(i32.const 0)
-	;; second
-	(i32.const 0)
-	;; nanosecond
-	(i64.const 0)
-	;; is-dst
-	(i32.const 0)
-	;; is-gmt
-	(i32.const 0)
-	;; time
-	(i64.const 0)))
-	
   (global $procedure-default-value
      (export "BGL_PROCEDURE_DEFAULT_VALUE") (ref $procedure)
      (struct.new $procedure
@@ -1192,11 +1162,6 @@
   ;; --------------------------------------------------------
   ;; Date functions
   ;; --------------------------------------------------------
-
-  (export "bgl_current_seconds" (func $bgl_current_seconds))
-  (export "bgl_current_milliseconds" (func $bgl_current_milliseconds))
-  (export "bgl_current_microseconds" (func $bgl_current_microseconds))
-  (export "bgl_current_nanoseconds" (func $bgl_current_nanoseconds))
 
   (type $stringarray (array (ref $bstring)))
 

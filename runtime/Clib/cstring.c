@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Sun Dec 10 08:41:54 2023 (serrano)                */
+/*    Last change :  Sun Nov 17 07:36:16 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -27,7 +27,7 @@ string_to_bstring_len(char *c_string, int len) {
    if (!c_string) c_string = "";
 
 #if (!defined(TAG_STRING))
-   string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+   string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
    string->string.length = len;
 
@@ -77,7 +77,7 @@ make_string(long len, unsigned char c) {
       string = GC_MALLOC_ATOMIC(STRING_SIZE + len);
 
 #if (!defined(TAG_STRING))
-      string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+      string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
       string->string.length = len;
 
@@ -100,7 +100,7 @@ make_string_sans_fill(long len) {
    obj_t string = GC_MALLOC_ATOMIC(STRING_SIZE + len);
 
 #if (!defined(TAG_STRING))
-   string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+   string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
    string->string.length = len;
 
@@ -128,7 +128,7 @@ string_append(obj_t s1, obj_t s2) {
    obj_t string = GC_MALLOC_ATOMIC(STRING_SIZE + l12);
 
 #if (!defined(TAG_STRING))
-   string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+   string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
    string->string.length = l12;
 
@@ -151,7 +151,7 @@ string_append_3(obj_t s1, obj_t s2, obj_t s3) {
    obj_t string = GC_MALLOC_ATOMIC(STRING_SIZE + l123);
 
 #if (!defined(TAG_STRING))
-   string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+   string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
    string->string.length = l123;
 
@@ -172,7 +172,7 @@ c_substring(obj_t src_string, long min, long max) {
    obj_t dst_string = GC_MALLOC_ATOMIC(STRING_SIZE + len);
 
 #if (!defined(TAG_STRING))
-   dst_string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+   dst_string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
    dst_string->string.length = len;
 
@@ -885,7 +885,7 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
    string = GC_MALLOC_ATOMIC(STRING_SIZE + len);
 
 #if (!defined(TAG_STRING))
-   string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+   string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
 
    dst = ((unsigned char *)(&string->string.char0));
@@ -1060,7 +1060,7 @@ bgl_escape_scheme_string(unsigned char *src, long start, long end) {
    string = GC_MALLOC_ATOMIC(STRING_SIZE + len);
 
 #if (!defined(TAG_STRING))
-   string->string.header = MAKE_HEADER(STRING_TYPE, 0);
+   string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
 #endif	
 
    dst = ((char *)(&(string->string.char0)));

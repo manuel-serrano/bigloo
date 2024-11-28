@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct  2 09:06:30 2024 (serrano)                */
+#*    Last change :  Sat Nov 23 11:33:20 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -18,7 +18,7 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=4.6a
-buildrelease=4.5b
+buildrelease=unstable
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 biglooftp=ftp://ftp-sop.inria.fr/indes/fp/Bigloo
@@ -87,7 +87,6 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - blank (uninitalized) for automatic configuration of the
 #    position independent code compiler option
 cnanflags=-DBGL_NAN_TAGGING=0
-creservedflags=-DBGL_RESERVED_TAGGING=0
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
@@ -540,6 +539,7 @@ while : ; do
       cfpflags="$cfpflags";
       bootflags="$bootflags -cg +rm";
       jvmbackend="yes";
+      wasmbackend=yes;
       mode=standard;
       configureinfo="yes";
       bee="full";
@@ -2331,15 +2331,6 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
 
-  if [ "$bglreservedtagging " != "0 " ]; then
-    if [ "$alignment" = "3" ]; then 
-      creservedflags="-DBGL_RESERVED_TAGGING=1";
-    else
-      $echo "*** ERROR: Reserved-tagging requires 64bit platforms"
-      exit 1
-    fi
-  fi
-     
   $echo "+ GC configuration ($customgc)..." >> $configurelog
   
   cgcflags="`$autoconf gcflags` $cgcflags" || exit 1
@@ -3367,6 +3358,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
   fi
 
+  int_sign_bit=`$autoconf signbit --type=int --alignment="$alignment"` || exit 1
   long_sign_bit=`$autoconf signbit --type=long --alignment="$alignment"` || exit 1
   elong_sign_bit=`$autoconf signbit --type=long --alignment=0` || exit 1
   llong_sign_bit=`$autoconf signbit --type="$longlong" --alignment=0` || exit 1
@@ -3769,6 +3761,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_LONGLONG@|$havelonglong|" \
               -e "s|@BGL_LONG_LIMBS@|$long_limbs|" \
               -e "s|@BGL_LONGLONG_LIMBS@|$longlong_limbs|" \
+              -e "s|@C_INT_SIGN_BIT@|$int_sign_bit|" \
               -e "s|@C_LONG_SIGN_BIT@|$long_sign_bit|" \
               -e "s|@C_ELONG_SIGN_BIT@|$elong_sign_bit|" \
               -e "s|@C_LLONG_SIGN_BIT@|$llong_sign_bit|" \
@@ -4006,7 +3999,7 @@ fi
 #*    bigloo_static.h                                                  */
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "bigloo_static" ]; then
-  $echo "/* Generated file, don't edit */" > $bigloo_static_h
+  $echo "/* Generated file (configure), don't edit */" > $bigloo_static_h
   $echo "" >> $bigloo_static_h
   $echo "#define BGL_ELONG_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
   $echo "#define BGL_ELONG_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
@@ -4014,32 +4007,32 @@ if [ $action = "all" -o $action = "bigloo_static" ]; then
   max=`expr $belong_prealloc_max - 1`;
   i=$belong_prealloc_min
   while expr $i "<" $max > /dev/null; do
-    $echo "  { .header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), .val = $i }, " >> $bigloo_static_h
+    $echo "  { .header = BGL_MAKE_HEADER(ELONG_TYPE, ELONG_SIZE), .val = $i }, " >> $bigloo_static_h
     i=`expr $i + 1`;
   done
-  $echo "  { .header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), .val = $i } }; " >> $bigloo_static_h
+  $echo "  { .header = BGL_MAKE_HEADER(ELONG_TYPE, ELONG_SIZE), .val = $i } }; " >> $bigloo_static_h
   $echo "" >> $bigloo_static_h
-  $echo "#if( !defined( BGL_CNST_SHIFT_INT32 ) )" >> $bigloo_static_h
+  $echo "#if (!defined(BGL_CNST_SHIFT_INT32 ))" >> $bigloo_static_h
   $echo "#define BGL_INT32_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
   $echo "#define BGL_INT32_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
   $echo "static struct bgl_sint32 bint32_allocated[] = { " >> $bigloo_static_h
   max=`expr $belong_prealloc_max - 1`;
   i=$belong_prealloc_min
   while expr $i "<" $max > /dev/null; do
-    $echo "  { .header = MAKE_HEADER( INT32_TYPE, BGL_INT32_SIZE ), .val = $i }, " >> $bigloo_static_h
+    $echo "  { .header = BGL_MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE), .val = $i }, " >> $bigloo_static_h
     i=`expr $i + 1`;
   done
-  $echo "  { .header = MAKE_HEADER( INT32_TYPE, BGL_INT32_SIZE ), .val = $i } }; " >> $bigloo_static_h
+  $echo "  { .header = BGL_MAKE_HEADER(INT32_TYPE, BGL_INT32_SIZE), .val = $i } }; " >> $bigloo_static_h
   $echo "" >> $bigloo_static_h
   $echo "#define BGL_UINT32_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
   $echo "static struct bgl_uint32 buint32_allocated[] = { " >> $bigloo_static_h
   max=`expr $belong_prealloc_max - 1`;
   i=0
   while expr $i "<" $max > /dev/null; do
-    $echo "  { .header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE ), .val = $i }, " >> $bigloo_static_h
+    $echo "  { .header = BGL_MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE), .val = $i }, " >> $bigloo_static_h
     i=`expr $i + 1`;
   done
-  $echo "  { .header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE ), .val = $i } }; " >> $bigloo_static_h
+  $echo "  { .header = BGL_MAKE_HEADER(UINT32_TYPE, BGL_UINT32_SIZE), .val = $i } }; " >> $bigloo_static_h
   $echo "#endif" >> $bigloo_static_h
 fi
 

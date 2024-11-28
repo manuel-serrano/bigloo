@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Jan  8 15:01:17 2024 (serrano)                */
+;*    Last change :  Thu Nov 14 05:24:13 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -275,42 +275,6 @@
        (reverse-proper-list! l)))) 
 	   
 ;*---------------------------------------------------------------------*/
-;*    collect-up-to ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (collect-up-to ignore kind port posp)
-   ;; move one character backward for the open-parenthesis
-   (let* ((name (input-port-name port))
-	  (po (-fx (input-port-position port) 1))
-	  (item (ignore)))
-      (if (eq? item *end-of-list*)
-	  '()
-	  (let loop ((acc (if posp
-			      (cons/loc item '() name po)
-			      (cons item '()))))
-	     (let ((item (ignore)))
-		(if (eq? item *end-of-list*)
-		    acc
-		    (loop (if posp
-			      (let ((po (input-port-last-token-position port)))
-				 (cons/loc item acc name po))
-			      (cons item acc)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    read-quote ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (read-quote kwote port ignore posp)
-   (if posp
-       (let* ((pos (input-port-position port))
-	      (obj (ignore)))
-	  (if (or (eof-object? obj) (eq? obj *end-of-list*))
-	      (read-error/loc pos "Illegal quotation" kwote port)
-	      (cons/loc kwote (cons obj '()) (input-port-name port) pos)))
-       (let ((obj (ignore)))
-	  (if (or (eof-object? obj) (eq? obj *end-of-list*))
-	      (read-error "Illegal quotation" kwote port)
-	      (cons kwote (cons obj '()))))))
-
-;*---------------------------------------------------------------------*/
 ;*    read-multi-line-comment ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (read-multi-line-comment port)
@@ -335,7 +299,6 @@
 ;*---------------------------------------------------------------------*/
 (define *sharp-grammar*
    (regular-grammar ()
-      
       ((: "a" (= 3 digit))
        (let ((string (the-string)))
 	  (integer->char (string->integer (the-substring 1 4)))))
@@ -466,6 +429,36 @@
 		     posp cycles par-open bra-open par-poses bra-poses)
 
       (define resolve #t)
+
+      (define (collect-up-to kind port posp)
+       ;; move one character backward for the open-parenthesis
+       (let* ((name (input-port-name port))
+	      (po (-fx (input-port-position port) 1))
+	      (item (ignore)))
+	  (if (eq? item *end-of-list*)
+	      '()
+	      (let loop ((acc (if posp
+				  (cons/loc item '() name po)
+				  (cons item '()))))
+		 (let ((item (ignore)))
+		    (if (eq? item *end-of-list*)
+			acc
+			(loop (if posp
+				  (let ((po (input-port-last-token-position port)))
+				     (cons/loc item acc name po))
+				  (cons item acc)))))))))
+      
+      (define (read-quote kwote port posp)
+       (if posp
+	   (let* ((pos (input-port-position port))
+		  (obj (ignore)))
+	      (if (or (eof-object? obj) (eq? obj *end-of-list*))
+		  (read-error/loc pos "Illegal quotation" kwote port)
+		  (cons/loc kwote (cons obj '()) (input-port-name port) pos)))
+	   (let ((obj (ignore)))
+	      (if (or (eof-object? obj) (eq? obj *end-of-list*))
+		  (read-error "Illegal quotation" kwote port)
+		  (cons kwote (cons obj '()))))))
       
       ;; newlines
       ((+ #\Newline)
@@ -605,13 +598,13 @@
       
       ;; quotations 
       ("'"
-       (read-quote 'quote (the-port) ignore posp))
+       (read-quote 'quote (the-port) posp))
       ("`"
-       (read-quote 'quasiquote (the-port) ignore posp))
+       (read-quote 'quasiquote (the-port) posp))
       (","
-       (read-quote 'unquote (the-port) ignore posp))
+       (read-quote 'unquote (the-port) posp))
       (",@"
-       (read-quote 'unquote-splicing (the-port) ignore posp))
+       (read-quote 'unquote-splicing (the-port) posp))
       
       ;; lists
       ((in "([")
@@ -620,7 +613,7 @@
        (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
 			  par-poses))
        ;; and then, we compute the result list...
-       (make-list! (collect-up-to ignore "list" (the-port) posp) (the-port)))
+       (make-list! (collect-up-to "list" (the-port) posp) (the-port)))
       ((in ")]")
        ;; we decrement the number of open parenthesis
        (set! par-open (-fx par-open 1))
@@ -645,7 +638,7 @@
        (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
 			  par-poses))
        (list->vector
-	  (reverse! (collect-up-to ignore "vector" (the-port) posp))))
+	  (reverse! (collect-up-to "vector" (the-port) posp))))
       
       ;; typed homogeneous vectors
       ((: "#" letterid "(")
@@ -657,34 +650,34 @@
 	  (cond
 	     ((string=? s "s8")
 	      (list->s8vector
-		 (reverse! (collect-up-to ignore "s8vector" (the-port) posp))))
+		 (reverse! (collect-up-to "s8vector" (the-port) posp))))
 	     ((string=? s "u8")
 	      (list->u8vector
-		 (reverse! (collect-up-to ignore "u8vector" (the-port) posp))))
+		 (reverse! (collect-up-to "u8vector" (the-port) posp))))
 	     ((string=? s "s16")
 	      (list->s16vector
-		 (reverse! (collect-up-to ignore "s16vector" (the-port) posp))))
+		 (reverse! (collect-up-to "s16vector" (the-port) posp))))
 	     ((string=? s "u16")
 	      (list->u16vector
-		 (reverse! (collect-up-to ignore "u16vector" (the-port) posp))))
+		 (reverse! (collect-up-to "u16vector" (the-port) posp))))
 	     ((string=? s "s32")
 	      (list->s32vector
-		 (reverse! (collect-up-to ignore "s32vector" (the-port) posp))))
+		 (reverse! (collect-up-to "s32vector" (the-port) posp))))
 	     ((string=? s "u32")
 	      (list->u32vector
-		 (reverse! (collect-up-to ignore "u32vector" (the-port) posp))))
+		 (reverse! (collect-up-to "u32vector" (the-port) posp))))
 	     ((string=? s "s64")
 	      (list->s64vector
-		 (reverse! (collect-up-to ignore "s64vector" (the-port) posp))))
+		 (reverse! (collect-up-to "s64vector" (the-port) posp))))
 	     ((string=? s "u64")
 	      (list->u64vector
-		 (reverse! (collect-up-to ignore "u64vector" (the-port) posp))))
+		 (reverse! (collect-up-to "u64vector" (the-port) posp))))
 	     ((string=? s "f32")
 	      (list->f32vector
-		 (reverse! (collect-up-to ignore "f32vector" (the-port) posp))))
+		 (reverse! (collect-up-to "f32vector" (the-port) posp))))
 	     ((string=? s "f64")
 	      (list->f64vector
-		 (reverse! (collect-up-to ignore "f64vector" (the-port) posp))))
+		 (reverse! (collect-up-to "f64vector" (the-port) posp))))
 	     (else
 	      (let* ((id (string->symbol
 			    (case (bigloo-case-sensitivity)
@@ -696,7 +689,7 @@
 				s)
 			       (else
 				(string-upcase! s)))))
-		     (l (reverse! (collect-up-to ignore "vector" (the-port) posp))))
+		     (l (reverse! (collect-up-to "vector" (the-port) posp))))
 		 (list->tvector id l))))))
       
       ;; tagged vectors (Camloo backward compatibility)
@@ -708,7 +701,7 @@
 			     par-poses))
 	  (list->vector
 	     (reverse!
-		(cons tag (collect-up-to ignore "vector" (the-port) posp))))))
+		(cons tag (collect-up-to "vector" (the-port) posp))))))
       
       ;; structures
       ("#{"
@@ -717,7 +710,7 @@
        (set! bra-open (+fx 1 bra-open))
        (set! bra-poses (cons (-fx (input-port-position (the-port)) 1)
 			  bra-poses))
-       (let* ((l (reverse! (collect-up-to ignore "structure" (the-port) posp)))
+       (let* ((l (reverse! (collect-up-to "structure" (the-port) posp)))
 	      (len (length l))
 	      (r (make-struct (car l) (-fx len 1) #unspecified)))
 	  (let loop ((i 0)
