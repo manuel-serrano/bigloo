@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Sun Sep  8 12:07:27 2024 (serrano)                */
+;*    Last change :  Fri Nov 29 06:53:43 2024 (serrano)                */
 ;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -46,6 +46,9 @@
 	 (else
 	  (symbol-append id 'fx))))
 
+   (define (fl id)
+      (symbol-append id 'fl))
+
    (match-case x
       ((?id (? expand-g-number?) (expand-g-number? y))
        (apply op x))
@@ -59,10 +62,30 @@
 		      (,(fx id) ,a ,b)
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
+      ((?id (and ?a (? flonum?)) (and ?b (? symbol?)))
+       (let ((nx `(if ($flonum? ,b)
+		      (,(fl id) ,a ,b)
+		      (,(symbol-append '|2| id) ,a ,b))))
+	  (e nx e)))
+      ((?id (and ?a (? symbol?)) (and ?b (? flonum?)))
+       (let ((nx `(if ($flonum? ,a)
+		      (,(fl id) ,a ,b)
+		      (,(symbol-append '|2| id) ,a ,b))))
+	  (e nx e)))
+      ((?id (and ?a (or (? fixnum?) (? flonum?))) ?b)
+       (let ((bid (gensym 'b)))
+	  (let ((nx `(let ((,bid ,b))
+			(,id ,a ,bid))))
+	     (e nx e))))
+      ((?id ?a (and ?b (or (? fixnum?) (? flonum?))))
+       (let ((aid (gensym 'a)))
+	  (let ((nx `(let ((,aid ,a))
+			(,id ,aid ,b))))
+	     (e nx e))))
       ((?id ?a (and ?b (? flonum?)))
        (let ((nx (if (symbol? a)
 		     `(if ($flonum? ,a)
-			  (,(symbol-append id 'fl) ,a ,b)
+			  (,(fl id) ,a ,b)
 			  (,(symbol-append '|2| id) ,a ,b))
 		     (let ((tmp (gensym 'a)))
 			`(let ((,tmp ,a)) (,id ,tmp ,b))))))
@@ -70,10 +93,15 @@
       ((?id (and ?a (? flonum?)) ?b)
        (let ((nx (if (symbol? b)
 		     `(if ($flonum? ,b)
-			  (,(symbol-append id 'fl) ,a ,b)
+			  (,(fl id) ,a ,b)
 			  (,(symbol-append '|2| id) ,a ,b))
 		     (let ((tmp (gensym 'b)))
 			`(let ((,tmp ,b)) (,id ,a ,tmp))))))
+	  (e nx e)))
+      ((?id (and ?a (? symbol?)) ?a)
+       (let ((nx `(if ($fixnum? ,a)
+		      (,(fx id) ,a ,a)
+		      ((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,a))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))
        (let ((nx `(if (and ($fixnum? ,a) ($fixnum? ,b))
