@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Read/src.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Read/src.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:44:03 1994                          */
-;*    Last change :  Wed Feb 10 11:16:07 2016 (serrano)                */
-;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 29 16:37:50 2024 (serrano)                */
+;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We read the source file                                          */
 ;*=====================================================================*/
@@ -107,21 +107,17 @@
 (define (open-src-file sfile)
    (reader-reset!)
    (set! *port*
-	 (if (string? sfile)
-	     (let ((found (find-file/path sfile *load-path*)))
-		(if found
-		    (let ((port (open-input-file found)))
-		       (if (input-port? port)
-			   (begin
-			      (reader-reset!)
-			      port)
-			   (error 'src-file->memory
-				  "Can't open such file"
-				  found)))
-		    (error 'src-file->memory
-			   "Can't find such file"
-			   sfile)))
-	     (current-input-port))))
+      (if (string? sfile)
+	  (let ((found (find-file/path sfile *load-path*)))
+	     (if found
+		 (let ((port (open-input-file found)))
+		    (if (input-port? port)
+			(begin
+			   (reader-reset!)
+			   port)
+			(error "src-file->memory" "Can't open such file" found)))
+		 (error "src-file->memory" "Can't find such file" sfile)))
+	  (current-input-port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    close-src-port ...                                               */

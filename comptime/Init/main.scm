@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Init/main.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Init/main.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 09:51:40 1993                          */
-;*    Last change :  Fri Nov  5 14:57:52 2004 (serrano)                */
-;*    Copyright   :  1992-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 29 16:38:39 2024 (serrano)                */
+;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The main entry point.                                            */
 ;*=====================================================================*/
