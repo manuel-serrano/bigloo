@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sun Nov 17 15:39:40 2024 (serrano)                */
+/*    Last change :  Fri Nov 29 14:49:28 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -105,10 +105,10 @@ union bgl_fltobj {
 #define BGL_TAG_IN_SETP(t, set) \
    ((((uint32_t)1 << ((long)(t))) & (~(uint32_t)0/0xff * (set))) != 0)
 
+/* #if !BGL_HAVE_ASM_X86_64                                            */
+/* #  define BGL_TAGGED_REALP(o) \                                     */
+/*      (((int32_t)((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0) */
 #if !BGL_HAVE_ASM_X86_64
-#  define BGL_TAGGED_REALP(o) \
-     (((int32_t)((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
-#elif 1
 #  define BGL_TAGGED_REALP(o) BGL_TAG_IN_SETP(o, BGL_REAL_TAG_SET)
 #else
 inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
@@ -116,7 +116,7 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
    __asm__("bt %%ax, %2;" /* get one bit of mask into carry (ax is index) */
 	   : "=@ccc"(carry)
 	   : "a"((uint16_t)((int64_t)_o)),
-	     "r"((uint16_t)(~(uint16_t)0/0xff * BGL_REAL_TAG_SET))); /* 0x1919 */
+	     "r"((uint16_t)((uint16_t)(~(uint16_t)0)/0xff * BGL_REAL_TAG_SET)));
    return carry;
 }
 #endif
