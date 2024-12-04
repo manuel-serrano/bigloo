@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Oct 21 17:46:26 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 15:05:59 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -137,11 +137,8 @@
 	;; env
 	(global.get $vector-default-value)))
   (global $procedure-el-default-value
-     (export "BGL_PROCEDURE_EL_DEFAULT_VALUE") (ref $vector)
-     (global.get $vector-default-value))
-  
-  
-  
+     (export "BGL_PROCEDURE_EL_DEFAULT_VALUE") (ref $procedure-el)
+     (array.new_fixed $procedure-el 0))
   
   (global $binary-port-default-value
      (export "BGL_BINARY_PORT_DEFAULT_VALUE") (ref $binary-port)

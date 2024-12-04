@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Tue Sep 17 14:45:14 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 15:17:43 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -203,21 +203,21 @@
 		  "BGL_F64_U8VSET")
 
 	   (macro $s8vector-copy!::void (::s8vector ::long ::s8vector ::long ::long)
-		  "BGL_SU8VECTOR_COPY")
+		  "BGL_S8VECTOR_COPY")
 	   (macro $u8vector-copy!::void (::u8vector ::long ::u8vector ::long ::long)
-		  "BGL_SU8VECTOR_COPY")
+		  "BGL_U8VECTOR_COPY")
 	   (macro $s16vector-copy!::void (::s16vector ::long ::s16vector ::long ::long)
-		  "BGL_SU16VECTOR_COPY")
+		  "BGL_S16VECTOR_COPY")
 	   (macro $u16vector-copy!::void (::u16vector ::long ::u16vector ::long ::long)
-		  "BGL_SU16VECTOR_COPY")
+		  "BGL_U16VECTOR_COPY")
 	   (macro $s32vector-copy!::void (::s32vector ::long ::s32vector ::long ::long)
-		  "BGL_SU32VECTOR_COPY")
+		  "BGL_S32VECTOR_COPY")
 	   (macro $u32vector-copy!::void (::u32vector ::long ::u32vector ::long ::long)
-		  "BGL_SU32VECTOR_COPY")
+		  "BGL_U32VECTOR_COPY")
 	   (macro $s64vector-copy!::void (::s64vector ::long ::s64vector ::long ::long)
-		  "BGL_SU64VECTOR_COPY")
+		  "BGL_S64VECTOR_COPY")
 	   (macro $u64vector-copy!::void (::u64vector ::long ::u64vector ::long ::long)
-		  "BGL_SU64VECTOR_COPY")
+		  "BGL_U64VECTOR_COPY")
 	   (macro $f32vector-copy!::void (::f32vector ::long ::f32vector ::long ::long)
 		  "BGL_F32VECTOR_COPY")
 	   (macro $f64vector-copy!::void (::f64vector ::long ::f64vector ::long ::long)

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Include/bigloo.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Nov 19 17:00:58 2024 (serrano)                */
+/*    Last change :  Wed Dec  4 15:13:52 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1930,6 +1930,9 @@ BGL_RUNTIME_DECL void weakptr_data_set(obj_t , obj_t );
 
 #define SOCKET_CHOOK(o) \
    (SOCKET(o).chook)
+
+#define BGL_DGETSOCKOPT(s, k) bgl_getsockopt(s, k)
+#define BGL_DSETSOCKOPT(s, k, v) bgl_setsockopt(s, k, v)
 
 /*---------------------------------------------------------------------*/
 /*    Datagram Socket ...                                              */

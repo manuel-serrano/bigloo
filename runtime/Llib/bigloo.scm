@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/bigloo.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bigloo.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Fri Nov  8 07:27:16 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 14:16:02 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -186,7 +186,8 @@
       
 	    (procedure-ref "(array.get $vector (struct.get $procedure $env ~0) ~1)")
 	    (procedure-l-ref "(array.get $vector (struct.get $procedure-l $env ~0) ~1)")
-	    (procedure-el-ref "(array.get $vector ~0 ~1)")
+	    (procedure-el-ref "(array.get $procedure-el ~0 ~1)")
+	    (procedure-el-set! "(block (result (ref i31)) (array.set $procedure-el ~0 ~1 ~2) (ref.i31 (i32.const 0)))")
 	    
 	    ($make-cell "(struct.new $cell ~0)")
 	    ($make-stack-cell "(struct.new $cell ~0)")

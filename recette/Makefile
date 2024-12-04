@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Sat Nov 23 11:43:28 2024 (serrano)                */
+#*    Last change :  Wed Dec  4 11:57:06 2024 (serrano)                */
 #*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -214,6 +214,7 @@ lintclean:
 distclean: lintclean
 	@- $(RM) -f -r objs_c
 	@- $(RM) -f -r objs_jvm
+	@- $(RM) -f -r objs_wasm
 	@- $(RM) -f recette
 	@- $(RM) -f recette-static
 	@- $(RM) -f recette.exe
@@ -221,6 +222,7 @@ distclean: lintclean
 	@- $(RM) -f recette-jvm.bat
 	@- $(RM) -f recette-jvm-jar
 	@- $(RM) -f recette-jvm-jar.jar
+	@- $(RM) -f recette.wasm
 	@- $(RM) -f recette.log
 	@- $(RM) -f misc/binary.BIN
 	@- $(RM) -f gc.log

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Mon Oct 21 17:44:23 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 12:38:47 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -69,9 +69,8 @@
    (@include "./wsymbols.wat" type)
    
    ;; TODO
-   (rec
-      (type $pair-nil (struct))
-      (type $weakptr (struct)))
+   (type $pair-nil (struct))
+   (type $weakptr (struct))
    
    ;; Functions types (for closures and variadic calls)
    (type $func0 (func (param (ref $procedure)) (result (ref eq))))
@@ -101,14 +100,13 @@
    (type $cell (struct (field $val (mut (ref eq)))))
    
    ;; Pairs
-   (rec
-      (type $pair (sub (struct
-			  (field $car (mut (ref eq)))
-			  (field $cdr (mut (ref eq))))))
-      (type $epair (sub $pair (struct 
-				 (field $car (mut (ref eq))) 
-				 (field $cdr (mut (ref eq))) 
-				 (field $cer (mut (ref eq)))))))
+   (type $pair (sub (struct
+		       (field $car (mut (ref eq)))
+		       (field $cdr (mut (ref eq))))))
+   (type $epair (sub $pair (struct 
+			      (field $car (mut (ref eq))) 
+			      (field $cdr (mut (ref eq))) 
+			      (field $cer (mut (ref eq))))))
 
    ;; fixnum and integers
    (@include "./wfixnum.wat" type)
@@ -118,17 +116,16 @@
    (@include "./wbignum.wat" type)
    
    ;; Boxed numeric types
-   (rec
-      ;; (type $bbool (struct (field $v i8)))
-      ;; (type $bchar (struct (field $v i8)))
-      (type $bucs2 (struct (field $v i16)))
-      (type $real (struct (field $v f64))))
+   ;; (type $bbool (struct (field $v i8)))
+   ;; (type $bchar (struct (field $v i8)))
+   (type $bucs2 (struct (field $v i16)))
+   (type $real (struct (field $v f64)))
 
-   (rec (type $exit (struct 
-		       (field $userp (mut i64))
-		       (field $stamp (mut i64))
-		       (field $protect (mut (ref eq)))
-		       (field $prev (mut (ref null $exit))))))
+   (type $exit (struct 
+		  (field $userp (mut i64))
+		  (field $stamp (mut i64))
+		  (field $protect (mut (ref eq)))
+		  (field $prev (mut (ref null $exit)))))
    (tag $bexception (param (ref $exit)) (param anyref))
    
    ;; Exception raised for unimplemented code.

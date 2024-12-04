@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Tue Sep 17 14:47:59 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 15:12:54 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -86,8 +86,8 @@
 	    ($getsockopt::obj (::socket ::keyword) "bgl_getsockopt")
 	    ($setsockopt!::obj (::socket ::keyword ::obj) "bgl_setsockopt")
 
-	    ($dgetsockopt::obj (::datagram-socket ::keyword) "bgl_getsockopt")
-	    ($dsetsockopt!::obj (::datagram-socket ::keyword ::obj) "bgl_setsockopt")
+	    ($dgetsockopt::obj (::datagram-socket ::keyword) "BGL_DGETSOCKOPT")
+	    ($dsetsockopt!::obj (::datagram-socket ::keyword ::obj) "BGL_DSETSOCKOPT")
 
 	    (macro $datagram-socket?::bool (::obj)
 		   "BGL_DATAGRAM_SOCKETP")

@@ -36,7 +36,7 @@
       (struct.new $bint8 (i32.const 0)))
    (global $bint16-default-value
       (export "BGL_BINT16_DEFAULT_VALUE") (ref $bint16)
-      (struct.new $buint16 (i32.const 0)))
+      (struct.new $bint16 (i32.const 0)))
    (global $bint32-default-value
       (export "BGL_BINT32_DEFAULT_VALUE") (ref $bint32)
       (struct.new $bint32 (i32.const 0)))

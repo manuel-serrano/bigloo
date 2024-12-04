@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Nov 27 17:19:58 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 11:52:34 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -242,7 +242,7 @@
     (define (remove-duplicate-types! modules)
        (filter! (lambda (d)
 		   (match-case d
-		      ((type ?n ???-)
+		      ((?- ?n ???-)
 		       (let ((key (symbol->string! n)))
 			  (unless (hashtable-contains? types key)
 			     (hashtable-put! types key #t)
@@ -323,24 +323,55 @@
 	     (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
 	  (error "wasm" "Cannot find wasm module" f)))
 
+   (define (collect-module modules key)
+      (filter (lambda (e) (eq? (car e) key)) modules))
+
+   (define (split-type-classes types)
+      (let loop ((types types)
+		 (noklass '())
+		 (klass '()))
+	 (if (null? types)
+	     (if (null? klass)
+		 (reverse! noklass)
+		 (reverse! (cons `(rec ,@(reverse! klass)) noklass)))
+	     (match-case (car types)
+		((?- ?n (sub ?- (struct (field $header . ?-) (field $widening . ?-) . ?-)))
+		 (loop (cdr types) noklass (cons (car types) klass)))
+		(else
+		 (loop (cdr types) (cons (car types) noklass) klass))))))
+   
    (let ((modules (append-map read-module files)))
       (collect-exports modules)
       (remove-scheme-imports! modules)
-      (remove-duplicate-imports! modules)
-      (remove-duplicate-tags! modules)
-      (remove-duplicate-recs! modules)
-      (remove-duplicate-types! modules)
+;*       (remove-duplicate-imports! modules)                           */
+;*       (remove-duplicate-tags! modules)                              */
+;*       (remove-duplicate-recs! modules)                              */
+;*       (remove-duplicate-types! modules)                             */
 
       ;; MS 30 aug2024, I don't know when the global variable *generate-exe*
       ;; (currently undefined because useless) should be true
       ;; (when *generate-exe* (remove-exports! modules))
       
-      (compute-initial-order modules)
+      ;; (compute-initial-order! modules)
+      
       (with-output-to-file target
 	 (lambda ()
 	    (wasm-pp
-	       (cons* 'module (wasm-module-name target)
-		  (sort-modules! modules)))))))
+	       `(module ,(wasm-module-name target)
+		  ,@(remove-duplicate-imports! (collect-module modules 'import))
+		  ,@(collect-module modules 'memory)
+		  ,@(split-type-classes
+		       (remove-duplicate-types!
+			  (append (collect-module modules 'type)
+			     (append-map cdr (collect-module modules 'rec)))))
+;* 		  ,@(remove-duplicate-recs! (collect-module modules 'rec)) */
+		  ,@(remove-duplicate-tags! (collect-module modules 'tag))
+		  ,@(collect-module modules 'export)
+		  ,@(collect-module modules 'global)
+		  ,@(collect-module modules 'data)
+		  ,@(collect-module modules 'func)
+		  ;;(sort-modules! modules)
+		  ))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-module-name ...                                             */
@@ -510,7 +541,7 @@
 		      (import "__bigloo" "BGL_STRUCT_DEFAULT_VALUE" (global $struct-default-value (ref $struct)))
 		      (import "__bigloo" "BGL_CLASS_DEFAULT_VALUE" (global $class-default-value (ref $class)))
 		      (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
-		      (import "__bigloo" "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value (ref $vector)))
+		      (import "__bigloo" "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value (ref $procedure-el)))
 		      (import "__bigloo" "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value (ref $mutex)))
 		      (import "__bigloo" "BGL_CONDVAR_DEFAULT_VALUE" (global $condvar-default-value (ref $condvar)))
 		      (import "__bigloo" "BGL_DATE_DEFAULT_VALUE" (global $date-default-value (ref $date)))
@@ -855,27 +886,29 @@
 ;*    emit-class-types ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-class-types class-list)
-  ;; Sorts classes such that all classes appear after their super class
-  ;; (if any). This is required by WASM: struct types must be defined after
-  ;; their supertype.
-
-  ;; TODO: emit classes that are mutually dependent in rec groups.
-  ;;       for that, compute the elementary cycles in the dependencies graph
-  ;;       using the Jordan algorithm, and generate a rec for each cycle.
-  (let ((orders (make-hashtable))
-        (current-order 0))
-    (define (dfs class)
-      (unless (hashtable-contains? orders class)
-        (let ((super (tclass-its-super class)))
-          (when super (dfs super)))
-        (hashtable-put! orders class current-order)
-        (set! current-order (+fx current-order 1))))
-    (for-each dfs class-list)
-    
-    (filter-map emit-class-type 
-      (sort (lambda (x y)
-	       (<fx (hashtable-get orders x) (hashtable-get orders y)))
-	 class-list))))
+   ;; Sorts classes such that all classes appear after their super class
+   ;; (if any). This is required by WASM: struct types must be defined after
+   ;; their supertype.
+   
+   ;; TODO: emit classes that are mutually dependent in rec groups.
+   ;;       for that, compute the elementary cycles in the dependencies graph
+   ;;       using the Jordan algorithm, and generate a rec for each cycle.
+   (let ((orders (make-hashtable))
+	 (current-order 0))
+      
+      (define (dfs class)
+	 (unless (hashtable-contains? orders class)
+	    (let ((super (tclass-its-super class)))
+	       (when super (dfs super)))
+	    (hashtable-put! orders class current-order)
+	    (set! current-order (+fx current-order 1))))
+      
+      (for-each dfs class-list)
+      
+      (filter-map emit-class-type 
+	 (sort (lambda (x y)
+		  (<fx (hashtable-get orders x) (hashtable-get orders y)))
+	    class-list))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-class-type ...                                              */
@@ -903,10 +936,8 @@
 		     (field $widening (mut (ref eq)))
 		     ,@(filter-map emit-slot (tclass-slots class)))))
       (if super
-	  `(type
-	      ,(wasm-sym name) 
-	      (sub ;; ,@(if (tclass-final? class) '(final) '())
-		 ,(wasm-sym (type-class-name super)) ,struct))
+	  `(type ,(wasm-sym name) 
+	      (sub ,(wasm-sym (type-class-name super)) ,struct))
 	  #f)))
 
 ;*---------------------------------------------------------------------*/

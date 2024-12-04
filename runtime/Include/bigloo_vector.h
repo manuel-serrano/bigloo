@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Include/bigloo_vector.h        */
+/*    .../prgm/project/bigloo/wasm/runtime/Include/bigloo_vector.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Nov 15 09:16:50 2024 (serrano)                */
+/*    Last change :  Wed Dec  4 15:19:49 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -310,17 +310,41 @@ BGL_RUNTIME_DECL obj_t alloc_hvector(int, int, int);
    memmove((void *)&BGL_S8VREF(target, tstart), (void *)&BGL_S8VREF(source, sstart), \
 	   (ssend - sstart))
    
+#define BGL_S8VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU8VECTOR_COPY(target, tstart, source, sstart, ssend)
+   
+#define BGL_U8VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU8VECTOR_COPY(target, tstart, source, sstart, ssend)
+   
 #define BGL_SU16VECTOR_COPY(target, tstart, source, sstart, ssend) \
    memmove((void *)&BGL_S16VREF(target, tstart), (void *)&BGL_S16VREF(source, sstart), \
       (ssend - sstart) * 2)
+   
+#define BGL_S16VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU16VECTOR_COPY(target, tstart, source, sstart, ssend)
+   
+#define BGL_U16VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU16VECTOR_COPY(target, tstart, source, sstart, ssend)
    
 #define BGL_SU32VECTOR_COPY(target, tstart, source, sstart, ssend) \
    memmove((void *)&BGL_S32VREF(target, tstart), (void *)&BGL_S32VREF(source, sstart), \
       (ssend - sstart) * 4)
    
+#define BGL_S32VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU32VECTOR_COPY(target, tstart, source, sstart, ssend)
+   
+#define BGL_U32VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU32VECTOR_COPY(target, tstart, source, sstart, ssend)
+   
 #define BGL_SU64VECTOR_COPY(target, tstart, source, sstart, ssend) \
    memmove((void *)&BGL_S64VREF(target, tstart), (void *)&BGL_S64VREF(source, sstart), \
       (ssend - sstart) * 8)
+   
+#define BGL_S64VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU64VECTOR_COPY(target, tstart, source, sstart, ssend)
+   
+#define BGL_U64VECTOR_COPY(target, tstart, source, sstart, ssend) \
+   BGL_SU64VECTOR_COPY(target, tstart, source, sstart, ssend)
    
 #define BGL_F32VECTOR_COPY(target, tstart, source, sstart, ssend) \
    memmove((void *)&BGL_F32VREF(target, tstart), (void *)&BGL_F32VREF(source, sstart), \

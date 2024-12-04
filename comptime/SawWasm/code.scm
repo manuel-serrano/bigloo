@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sat Nov 23 12:08:33 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 12:54:17 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -390,6 +390,7 @@
     (get-ref-tvector-type (tvec-item-type vtype))))
 
 (define *tvector-types* '())
+
 ;*---------------------------------------------------------------------*/
 ;*    get-ref-tvector-type ...                                         */
 ;*---------------------------------------------------------------------*/

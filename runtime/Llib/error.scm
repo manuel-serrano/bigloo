@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/error.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/error.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Nov 25 10:58:35 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 14:58:32 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -539,13 +539,9 @@
 ;*    default-exception-handler ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (default-exception-handler val)
+   (exception-notify val)
    (unless (isa? val &warning)
       (let ((retval (if (isa? val &error) 1 2)))
-	 (when (getenv "BIGLOODEBUG")
-	    (tprint "*** DEFAULT-EXCEPTION-HANDLER: " (typeof val))
-	    (if (isa? val &exception)
-		(exception-notify val)
-		(tprint val)))
 	 (unwind-stack-until! #f #f retval (lambda (x) (%exit retval)) #f)))
    #unspecified)
 

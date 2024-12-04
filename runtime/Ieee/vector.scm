@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/vector.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/vector.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Sep 25 09:00:20 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 16:25:51 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -64,10 +64,10 @@
 	    ($vector-length "(i64.extend_i32_u (array.len ~0))")
 	    ($vector-ref "(array.get $vector ~0 ~1)")
 	    ($vector-ref-ur "(array.get $vector ~0 ~1)")
-		($vector-bound-check? "(i64.lt_u ~0 ~1)")
-		($vector-tag-set! "(global.get $BUNSPEC)") ;; TODO: implement tags for WASM vectors
-		($vector-tag "(i32.const 0)")
-		($vector-shrink! "~0"))
+	    ($vector-bound-check? "(i64.lt_u ~0 ~1)")
+	    ($vector-tag-set! "(global.get $BUNSPEC)") ;; TODO: implement tags for WASM vectors
+	    ($vector-tag "(i32.const 0)")
+	    ($vector-shrink! "~0"))
 
    (java    (class foreign
 	       (method static $vector?::bool (::obj)
