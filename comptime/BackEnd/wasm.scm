@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Dec  4 18:29:58 2024 (serrano)                */
+;*    Last change :  Thu Dec  5 17:48:41 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -186,6 +186,7 @@
    (define exports-whitelist (create-hashtable :weak 'open-string))
    (define initial-order (create-hashtable :weak 'open-string))
    
+   
    (define (collect-exports modules)
       (for-each (lambda (d)
 		   (match-case d
@@ -326,6 +327,51 @@
    (define (collect-module modules key)
       (filter (lambda (e) (eq? (car e) key)) modules))
 
+   (define (sort-classes classes)
+
+      (define supers (create-hashtable :weak 'open-string))
+      (define depths (create-hashtable :weak 'open-string))
+      (define all (create-hashtable :weak 'open-string))
+
+      (define (class-super klass)
+	 (hashtable-get supers klass))
+      
+      (define (class-depth super)
+	 (let ((k (hashtable-get depths super)))
+	    (cond
+	       ((not k) 0)
+	       ((>fx k 0) k)
+	       (else (+fx 1 (class-depth (class-super super)))))))
+      
+      ;; mark all the classes
+      (for-each (lambda (k)
+		   (match-case k
+		      ((?- ?n (sub final ?super . ?-))
+		       (hashtable-put! all (symbol->string! n) k)
+		       (hashtable-put! supers (symbol->string! n) (symbol->string! super))
+		       (hashtable-put! depths (symbol->string! n) 0))
+		      ((?- ?n (sub ?super . ?-))
+		       (hashtable-put! all (symbol->string! n) k)
+		       (hashtable-put! supers (symbol->string! n) (symbol->string! super))
+		       (hashtable-put! depths (symbol->string! n) 0))))
+	 classes)
+
+      ;; compute the depth of each class
+      (for-each (lambda (k)
+		   (match-case k
+		      ((?- ?n (sub final ?super . ?-))
+		       (hashtable-put! depths (symbol->string! n) (+fx 1 (class-depth (symbol->string! super)))))
+		      ((?- ?n (sub ?super . ?-))
+		       (hashtable-put! depths (symbol->string! n) (+fx 1 (class-depth (symbol->string! super)))))))
+	 classes)
+
+      ;; sort the classes by depths
+      (map (lambda (k)
+	      (hashtable-get all k))
+	 (sort (lambda (k1 k2)
+		  (<fx (class-depth k1) (class-depth k2)))
+	    (map (lambda (k) (symbol->string! (cadr k))) classes))))
+      
    (define (collect-types modules)
       (append-map (lambda (e)
 		     (cond
@@ -341,8 +387,10 @@
 	 (if (null? types)
 	     (if (null? klass)
 		 (reverse! noklass)
-		 (reverse! (cons `(rec ,@(reverse! klass)) noklass)))
+		 (reverse! (cons `(rec ,@(sort-classes klass)) noklass)))
 	     (match-case (car types)
+		((?- ?n (sub final ?- (struct (field $header . ?-) (field $widening . ?-) . ?-)))
+		 (loop (cdr types) noklass (cons (car types) klass)))
 		((?- ?n (sub ?- (struct (field $header . ?-) (field $widening . ?-) . ?-)))
 		 (loop (cdr types) noklass (cons (car types) klass)))
 		(else
