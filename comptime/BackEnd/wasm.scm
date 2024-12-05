@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Dec  4 11:52:34 2024 (serrano)                */
+;*    Last change :  Wed Dec  4 18:29:58 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -326,6 +326,14 @@
    (define (collect-module modules key)
       (filter (lambda (e) (eq? (car e) key)) modules))
 
+   (define (collect-types modules)
+      (append-map (lambda (e)
+		     (cond
+			((eq? (car e) 'type) (list e))
+			((eq? (car e) 'rec) (cdr e))
+			(else '())))
+	 modules))
+
    (define (split-type-classes types)
       (let loop ((types types)
 		 (noklass '())
@@ -361,9 +369,7 @@
 		  ,@(remove-duplicate-imports! (collect-module modules 'import))
 		  ,@(collect-module modules 'memory)
 		  ,@(split-type-classes
-		       (remove-duplicate-types!
-			  (append (collect-module modules 'type)
-			     (append-map cdr (collect-module modules 'rec)))))
+		       (remove-duplicate-types! (collect-types modules)))
 ;* 		  ,@(remove-duplicate-recs! (collect-module modules 'rec)) */
 		  ,@(remove-duplicate-tags! (collect-module modules 'tag))
 		  ,@(collect-module modules 'export)
@@ -926,20 +932,35 @@
 		    ;; TODO: consider removing WASM mut qualifier for
 		    ;; read-only slots
 		    (mut ,(wasm-type cname)))))))
-   
-   
-   (let ((super (tclass-its-super class))
-	 (name (type-class-name class))
-	 (struct `(struct
-		     ;; MUST BE the same fields as defined in runtime.types.
-		     (field $header (mut i64))
-		     (field $widening (mut (ref eq)))
-		     ,@(filter-map emit-slot (tclass-slots class)))))
-      (if super
-	  `(type ,(wasm-sym name) 
-	      (sub ,(wasm-sym (type-class-name super)) ,struct))
-	  #f)))
 
+   (define (emit-regular-class class)
+      (let ((super (tclass-its-super class))
+	    (name (type-class-name class))
+	    (struct `(struct
+			;; MUST BE the same fields as defined in runtime.types.
+			(field $header (mut i64))
+			(field $widening (mut (ref eq)))
+			,@(filter-map emit-slot (tclass-slots class)))))
+	 (if super
+	     `(type ,(wasm-sym name) 
+		 (sub ,@(if (tclass-final? class) '(final) '())
+		    ,(wasm-sym (type-class-name super)) ,struct))
+	     #f)))
+
+   (define (emit-wide-class class)
+      (let ((name (type-class-name class))
+	    (struct `(struct
+			,@(filter-map emit-slot
+			     (filter (lambda (s)
+					(eq? (slot-class-owner s) class))
+				(tclass-slots class))))))
+	 `(type ,(wasm-sym name) ,struct)))
+
+   (with-access::tclass class (widening)
+      (if widening
+	  (emit-wide-class class)
+	  (emit-regular-class class))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototypes ...                                              */
 ;*---------------------------------------------------------------------*/

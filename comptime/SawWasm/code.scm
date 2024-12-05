@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Dec  4 12:54:17 2024 (serrano)                */
+;*    Last change :  Thu Dec  5 15:32:18 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1496,15 +1496,32 @@
 	    (when (pair? constr)
 	       (error "gen-expr" "Not supported." (shape constr)))
 	    (with-fun-loc fun alloc))))
+
+   (define (gen-new-wclass fun args type constr)
+      (with-access::wclass type (its-class)
+	 (with-access::tclass its-class (slots)
+	    (let* ((clazz (wasm-sym (type-class-name type)))
+		   (alloc `(struct.new ,clazz
+			      ;; class fields
+			      ,@(filter-map (lambda (s)
+					       (when (eq? (slot-class-owner s) its-class)
+						  (unless (>=fx (slot-virtual-num s) 0)
+						     (wasm-default-value (slot-type s)))))
+				   slots))))
+	       (with-fun-loc fun alloc)))))
    
    (with-access::rtl_new fun (type constr)
-      (if (isa? type tclass)
-	  (gen-new-tclass fun args type constr)
+      (cond
+	 ((isa? type tclass)
+	  (gen-new-tclass fun args type constr))
+	 ((isa? type wclass)
+	  (gen-new-wclass fun args type constr))
+	 (else
 	  (let ((alloc `(struct.new_default
 			   ,(wasm-sym (type-class-name type)))))
 	     (when (pair? constr)
 		(error "gen-expr" "Not supported." (shape constr)))
-	     (with-fun-loc fun alloc)))))
+	     (with-fun-loc fun alloc))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_cast ...                                          */

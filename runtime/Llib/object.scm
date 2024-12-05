@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/object.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/object.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Nov 17 10:47:03 2024 (serrano)                */
+;*    Last change :  Thu Dec  5 14:42:34 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -147,37 +147,42 @@
 	    (export bigloo-types-number "bgl_types_number"))
 
 	(wasm
-		;; FIXME: use an abstract super type to BgL_objectz00_bglt 
-		($as-object "(ref.cast (ref $BgL_objectz00_bglt) ~0)")
-		($object-widening "(struct.get $BgL_objectz00_bglt $widening ~0)")
-		(%object-class-num "(struct.get $BgL_objectz00_bglt $header ~0)")
-	    (%object? "(ref.test (ref $BgL_objectz00_bglt) ~0)")
+	   ;; FIXME: use an abstract super type to BgL_objectz00_bglt 
+	   ($as-object "(ref.cast (ref $BgL_objectz00_bglt) ~0)")
+	   ($object-widening "(struct.get $BgL_objectz00_bglt $widening ~0)")
+	   (%object-class-num "(struct.get $BgL_objectz00_bglt $header ~0)")
+	   (%object? "(ref.test (ref $BgL_objectz00_bglt) ~0)")
 
-	    ($as-vector "(ref.cast (ref $vector) ~0)")
-	    ($as-class "(ref.cast (ref $class) ~0)")
+	   ($class-nil "(struct.get $class $nil ~0)")
+	   ($class-nil-set! "(block (result (ref i31)) (struct.set $class $nil ~0 ~1) (ref.i31 (i32.const 0)))")
+	   
+	   ($as-vector "(ref.cast (ref $vector) ~0)")
+	   ($as-class "(ref.cast (ref $class) ~0)")
+	   
+	   ($classp "(ref.test (ref $class) ~0)")
+	   ($class-name "(struct.get $class $name ~0)")
+	   ($class-module "(struct.get $class $module ~0)")
+	   ($class-index "(struct.get $class $index ~0)")
+	   ($class-num "(struct.get $class $index ~0)")
+	   ($class-depth "(struct.get $class $depth ~0)")
+	   ($class-super "(struct.get $class $super ~0)")
+	   ($class-subclasses "(struct.get $class $subclasses ~0)")
+	   ;; FIXME: cast to ref $class should not be required...
+	   ($class-ancestors-ref "(array.get $vector (struct.get $class $ancestors (ref.cast (ref $class) ~0)) (i32.wrap_i64 ~1))")
+	   ($class-alloc-fun "(struct.get $class $alloc_fun ~0)")
+	   ($class-new-fun "(struct.get $class $new_fun ~0)")
+	   ($class-nil-fun "(struct.get $class $nil_fun ~0)")
+	   ($class-nil "(struct.get $class $nil ~0)")
+	   ($class-constructor "(struct.get $class $constructor ~0)")
+	   ($class-shrink "(struct.get $class $shrink ~0)")
+	   ($class-hash "(struct.get $class $hash ~0)")
+	   ($class-evdata "(struct.get $class $evdata ~0)")
+	   ($class-all-fields "(struct.get $class $all_fields ~0)")
+	   ($class-direct-fields "(struct.get $class $direct_fields ~0)")
+	   ($class-virtual-fields "(struct.get $class $virtual_fields ~0)")
 
-		($classp "(ref.test (ref $class) ~0)")
-		($class-name "(struct.get $class $name ~0)")
-		($class-module "(struct.get $class $module ~0)")
-	    ($class-index "(struct.get $class $index ~0)")
-	    ($class-num "(struct.get $class $index ~0)")
-	    ($class-depth "(struct.get $class $depth ~0)")
-	    ($class-super "(struct.get $class $super ~0)")
-	    ($class-subclasses "(struct.get $class $subclasses ~0)")
-		;; FIXME: cast to ref $class should not be required...
-	    ($class-ancestors-ref "(array.get $vector (struct.get $class $ancestors (ref.cast (ref $class) ~0)) (i32.wrap_i64 ~1))")
-	    ($class-alloc-fun "(struct.get $class $alloc_fun ~0)")
-	    ($class-new-fun "(struct.get $class $new_fun ~0)")
-	    ($class-nil-fun "(struct.get $class $nil_fun ~0)")
-	    ($class-nil "(struct.get $class $nil ~0)")
-	    ($class-constructor "(struct.get $class $constructor ~0)")
-	    ($class-shrink "(struct.get $class $shrink ~0)")
-	    ($class-hash "(struct.get $class $hash ~0)")
-	    ($class-evdata "(struct.get $class $evdata ~0)")
-	    ($class-all-fields "(struct.get $class $all_fields ~0)")
-	    ($class-direct-fields "(struct.get $class $direct_fields ~0)")
-	    ($class-virtual-fields "(struct.get $class $virtual_fields ~0)")
-		)
+	   ($object-widening-set! "(block (result (ref i31)) (struct.set $BgL_objectz00_bglt $widening ~0 ~1) (ref.i31 (i32.const 0)))")
+	   )
 
    (java    (class foreign
 	       (field static $bigloo-generic-mutex::mutex

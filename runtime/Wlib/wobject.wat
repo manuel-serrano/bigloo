@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Wed Oct  2 10:06:05 2024 (serrano)                */
+;*    Last change :  Thu Dec  5 14:45:37 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
@@ -22,8 +22,8 @@
 	 (field $module (ref $symbol))
 	 (field $new_fun (ref eq))
 	 (field $alloc_fun (ref $procedure))
-	 (field $nil_fun (ref $procedure))
-	 (field $nil (ref eq))
+	 (field $nil_fun (mut (ref $procedure)))
+	 (field $nil (mut (ref eq)))
 	 (field $constructor (ref eq))
 	 (field $super (ref eq))
 	 (field $subclasses (mut (ref eq)))

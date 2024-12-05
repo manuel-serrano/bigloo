@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Object/classgen.scm      */
+;*    .../prgm/project/bigloo/wasm/comptime/Object/classgen.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Mon Jul 22 11:08:44 2024 (serrano)                */
+;*    Last change :  Thu Dec  5 15:18:42 2024 (serrano)                */
 ;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -260,7 +260,7 @@
 			(type-name c))))
 	 `(,(make-typed-ident 'free-pragma tid)
 	   ,(string-append "((" tname
-	       ")BOBJECT( GC_MALLOC( sizeof(" sizeof ") )))"))))
+	       ")BOBJECT(GC_MALLOC(sizeof(" sizeof "))))"))))
 
    (define (init-widening new)
       (if (final-class? c)
@@ -345,7 +345,7 @@
 			(type-name w))))
 	 `(,(make-typed-ident 'free-pragma (type-id w))
 	   ,(string-append "((" tname
-	       ")BOBJECT( GC_MALLOC( sizeof(" sizeof ") )))"))))
+	       ")BOBJECT(GC_MALLOC( sizeof(" sizeof "))))"))))
    
    (define (nopragma-allocate w)
       (make-private-sexp 'new (type-id w)))
@@ -366,7 +366,8 @@
 	  (twide (make-typed-ident wide wid))
 	  (holder (tclass-holder c)))
       `(let ((,ttmp ,(make-private-sexp 'cast sid o))
-	     (,twide ,(if (backend-pragma-support (the-backend))
+	     (,twide ,(if (and (backend-pragma-support (the-backend))
+			       (eq? (backend-srfi0 (the-backend)) 'bigloo-c))
 			  (pragma-allocate w)
 			  (nopragma-allocate w))))
 	  ,(unsafe
