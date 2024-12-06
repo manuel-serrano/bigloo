@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:58:26 1992                          */
-;*    Last change :  Thu Nov 28 11:22:25 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 07:46:42 2024 (serrano)                */
 ;*                                                                     */
 ;*    On test differentes sortes d'apply                               */
 ;*---------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 (module apply
    (import  (main "main.scm")
 	    (alias-aux "alias_aux.scm"))
-   (cond-expand (bigloo-c (extern (macro c-dummy::obj (::obj . ::obj) ""))))
+   (extern (macro c-dummy::obj (::obj . ::obj) ""))
    (java    (abstract-class c
 	       (method static dummy::obj (::obj ::obj) "c_dummy")
 	       "foo"))

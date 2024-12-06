@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/struct.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/struct.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 13:02:29 1992                          */
-;*    Last change :  Wed Sep 25 09:01:12 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 08:33:44 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Non R4Rs structure and SRFI-9 records.                           */
 ;*    -------------------------------------------------------------    */
@@ -44,6 +44,10 @@
 		   "UNSAFE_STRUCT_REF")
 	    (macro u-struct-set!::obj (::struct ::int ::obj)
 		   "UNSAFE_STRUCT_SET")
+	    (macro $u-struct-ref::obj (::struct ::int)
+		   "UNSAFE_STRUCT_REF")
+	    (macro $u-struct-set!::obj (::struct ::int ::obj)
+		   "UNSAFE_STRUCT_SET")
 	    ;; the struct-key function takes ::obj (instead of ::symbol)
 	    ;; parameters because the key of the structure is used by
 	    ;; intext. intext stores non symbol into that field. to avoid
@@ -63,7 +67,8 @@
 		   "CREATE_S_STRUCT"))
 
    (wasm    ($struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
-            (u-struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
+            ($u-struct-ref "(array.get $vector (struct.get $struct $values ~0) ~1)")
+	    ($u-struct-set! "(block (result (ref i31)) (array.set $vector (struct.get $struct $values ~0) ~1 ~2) (ref.i31 (i32.const 0)))")
 	    ($struct-key "(struct.get $struct $key ~0)")
 	    ($struct? "(ref.test (ref $struct) ~0)")
 	    ($struct-length "(array.len (struct.get $struct $values ~0))")
@@ -81,6 +86,10 @@
 	       (method static u-struct-ref::obj (::struct ::int)
 		       "UNSAFE_STRUCT_REF")
 	       (method static u-struct-set!::obj (::struct ::int ::obj)
+		       "UNSAFE_STRUCT_SET")
+	       (method static $u-struct-ref::obj (::struct ::int)
+		       "UNSAFE_STRUCT_REF")
+	       (method static $u-struct-set!::obj (::struct ::int ::obj)
 		       "UNSAFE_STRUCT_SET")
 	       (method static $struct-key::obj (::struct)
 		       "STRUCT_KEY")

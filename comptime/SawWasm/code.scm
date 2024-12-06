@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Dec  5 15:32:18 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 07:47:39 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -111,7 +111,8 @@
 	       (set! l (register-allocation b v params l))
 	       (set! l (bbv b v params l))
 	       (set! l (split-blocks l))
-	       
+
+	       ;; see BIGLOOBBVDUMPCFG
 	       (when *bbv-dump-cfg*
 		  (with-access::sfun value (args)
 		     (dump-cfg v (map local->reg args) l ".wasm.cfg")))
@@ -370,10 +371,15 @@
 		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
 		     (global.get ,(wasm-sym (global-name holder)))))))
 	  ((wclass? ty)
-	   (with-access::tclass (wclass-its-class ty) (name holder)
-	      `(ref.cast (ref ,(wasm-sym name))
-		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
-		     (global.get ,(wasm-sym (global-name holder)))))))
+	   (with-access::wclass ty (its-class)
+	      (with-access::tclass its-class (name slots)
+		 `(ref.cast (ref ,(wasm-sym name))
+		     (struct.new ,(wasm-sym (type-class-name ty))
+			,@(filter-map (lambda (s)
+					 (when (eq? (slot-class-owner s) its-class)
+					    (unless (>=fx (slot-virtual-num s) 0)
+					       (wasm-default-value (slot-type s)))))
+			     slots))))))
 	  ((isa? ty tvec)
 	   `(array.new_fixed ,(wasm-vector-type ty) 0))
 	  ((foreign-type? ty)
@@ -1500,14 +1506,12 @@
    (define (gen-new-wclass fun args type constr)
       (with-access::wclass type (its-class)
 	 (with-access::tclass its-class (slots)
-	    (let* ((clazz (wasm-sym (type-class-name type)))
-		   (alloc `(struct.new ,clazz
-			      ;; class fields
-			      ,@(filter-map (lambda (s)
-					       (when (eq? (slot-class-owner s) its-class)
-						  (unless (>=fx (slot-virtual-num s) 0)
-						     (wasm-default-value (slot-type s)))))
-				   slots))))
+	    (let ((alloc `(struct.new ,(wasm-sym (type-class-name type))
+			     ,@(filter-map (lambda (s)
+					      (when (eq? (slot-class-owner s) its-class)
+						 (unless (>=fx (slot-virtual-num s) 0)
+						    (wasm-default-value (slot-type s)))))
+				  slots))))
 	       (with-fun-loc fun alloc)))))
    
    (with-access::rtl_new fun (type constr)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Wed Oct  2 12:33:38 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 09:08:54 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -650,13 +650,15 @@
    (func $bgl_close_output_port (export "bgl_close_output_port")
       (param $op (ref $output-port))
       (result (ref eq))
-      
+      (local $res (ref eq))
+
+      (local.set $res (local.get $op))
+
       (if (call $BGL_PORT_CLOSED_P (local.get $op))
 	  ;; the port is already closed
 	  (then
 	     (return (local.get $op)))
 	  (else
-	   
 	   (if (ref.test (ref $fd-output-port) (local.get $op))
 	       (then
 		  (if (i32.le_s
@@ -671,14 +673,22 @@
 			 ;; never close stdout nor stderr
 			 (return (local.get $op))))))
 
-	   (if (i32.eqz (ref.test (ref $string-output-port) (local.get $op)))
+	   (if (ref.test (ref $string-output-port) (local.get $op))
 	       (then
-		  (if (i32.eqz (struct.get $output-port $err (local.get $op)))
-		      (then
-			 (drop
-			    (call $output_flush (local.get $op)
-			       (ref.null none) (i32.const 0)
-			       (i32.const 0) (i32.const 0) (i32.const 0)))))))
+		  (local.set $res
+		     (call $bgl_string_shrink
+			(struct.get $string-output-port $buf
+			   (ref.cast (ref $string-output-port) (local.get $op)))
+			(i64.extend_i32_s
+			   (struct.get $string-output-port $index
+			      (ref.cast (ref $string-output-port) (local.get $op)))))))
+	       (else
+		(if (i32.eqz (struct.get $output-port $err (local.get $op)))
+		    (then
+		       (drop
+			  (call $output_flush (local.get $op)
+			     (ref.null none) (i32.const 0)
+			     (i32.const 0) (i32.const 0) (i32.const 0)))))))
 	   
 	   ;; mark it closed
 	   (struct.set $output-port $isclosed (local.get $op) (i32.const 1))
@@ -701,9 +711,9 @@
 		     (local.get $op)
 		     (struct.get $output-port $sysclose
 			(local.get $op)))
-		  (return (local.get $op)))
+		  (return (local.get $res)))
 	       (else
-		(return (local.get $op)))))))
+		(return (local.get $res)))))))
 
    ;; -----------------------------------------------------------------
    ;; Output flush functions 

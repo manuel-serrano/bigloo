@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Thu Nov 28 15:17:50 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 08:46:53 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -12,9 +12,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module main
-   
    (main   recette)
-   
    (import vital
 	   bps
 	   hash
@@ -49,7 +47,6 @@
 	   callcc
 	   fringe
 	   tail
-	   external
 	   sqic
 	   reval
 	   inline
@@ -69,10 +66,10 @@
 	   module
 	   import1
 	   import2
-;* 	   object                                                      */
-;* 	   object-sans                                                 */
-;* 	   object5                                                     */
-;* 	   object5-sans                                                */
+	   object
+	   object-sans
+	   object5
+	   object5-sans
 	   hygiene
 	   wind
 	   dsssl
@@ -87,6 +84,8 @@
 	   crypto
 	   crc
 	   ssr)
+   (cond-expand
+      (bigloo-jvm (import external_jvm)))
    (export (do-test name thunk good?)
 	   (test-module name file)
 	   *recette-port*
@@ -266,7 +265,7 @@
 	  (print (cond-expand
 		    (bigloo-c "C dump done...")
 		    (bigloo-jvm "JVM dump done...")
-		    (bigloo-.net ".NET dump done..."))))
+		    (bigloo-wasm "WASM dump done..."))))
        (begin
 	  (set! *recette-port* (open-output-file "recette.log"))
 	  (if (not (output-port? *recette-port*))
@@ -313,7 +312,6 @@
 		 (if-module 'wind test-wind)))
 	  (if-module 'dsssl test-dsssl)
 	  (if-module 'tail test-tail)
-	  (if-module 'external test-external)
 	  (if-module 'sqic test-sqic)
 	  (if-module 'eval test-eval)
 	  (if-module 'inline test-inline)
@@ -326,10 +324,10 @@
 	  (if-module '0cfa test-0cfa)
 	  (if-module 'sua test-sua)
 	  (if-module 'alias test-alias)
-;* 	  (if-module 'object test-object)                              */
-;* 	  (if-module 'object-sans test-object-sans)                    */
-;* 	  (if-module 'object5 test-object5)                            */
-;* 	  (if-module 'object5-sans test-object5-sans)                  */
+	  (if-module 'object test-object)
+	  (if-module 'object-sans test-object-sans)
+	  (if-module 'object5 test-object5)
+	  (if-module 'object5-sans test-object5-sans)
 	  (if-module 'hygiene test-hygiene)
 	  (if-module 'peek test-peek)
 	  (if-module 'unicode test-unicode)
@@ -340,10 +338,9 @@
 	  (if-module 'weakptr test-weakptr)
 	  (if-module 'crc test-crc)
 	  (if-module 'ssr test-ssr)
-	  (cond-expand
-	     (bigloo-.net #t)
-	     (else (if-module 'process test-process)))
+	  (if-module 'process test-process)
 	  (if-module 'wind (lambda () (test-wind-sans-handler recette-resume)))
+	  (cond-expand (bigloo-jvm (if-module 'external test-external)))
 	  (recette-resume 0))))
 
  

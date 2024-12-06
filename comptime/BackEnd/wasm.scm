@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Dec  5 17:48:41 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 10:21:33 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -89,7 +89,8 @@
       (boxed-fixnums (=fx *wasm-fixnum* 64))
       ;; no subtyping for (ref func)
       ;; see https://github.com/WebAssembly/function-references
-      (typed-closures #f)))
+      (typed-closures #f)
+      (varargs #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */
@@ -1247,7 +1248,11 @@
       (unless (eq? (global-import global) 'import)
 	 (let* ((actuals (app-args fun))
 		(entry (car actuals))
-		(arity (get-node-atom-value (cadr actuals)))
+		(arity (if (or
+			    (global-optional? (sfun-the-closure-global (global-value (var-variable entry))))
+			    (global-key? (sfun-the-closure-global (global-value (var-variable entry)))))
+			   -1
+			   (get-node-atom-value (cadr actuals))))
 		(vname (set-variable-name! global))
 		(name (set-variable-name! (var-variable entry))))
 	    `((global 

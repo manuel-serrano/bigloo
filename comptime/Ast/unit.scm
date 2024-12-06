@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/unit.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/unit.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Sat Mar  5 06:51:32 2022 (serrano)                */
+;*    Last change :  Fri Dec  6 18:09:20 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -29,6 +29,7 @@
 	    ast_local
 	    ast_sexp
 	    ast_let
+	    backend_backend
 	    object_class
 	    object_generic
 	    object_method
@@ -469,6 +470,8 @@
 	 (opts (dsssl-optionals args))
 	 (keys (dsssl-keys args)))
       (cond
+	 ((not (backend-varargs (the-backend)))
+	  (make-sfun-noopt-definition id module args body src class loc))
 	 ((pair? opts)
 	  (make-sfun-opt-definition opts id module args body src class loc))
 	 ((pair? keys)
@@ -723,6 +726,8 @@
 (define (make-sfun-noopt-definition id module args body src class loc)
    (let ((locals (parse-fun-args args src loc))
 	 (body (make-dsssl-function-prelude id args body user-error)))
+      (tprint "args=" args " body=" body)
+      (tprint "locals=" (map shape locals))
       (list (def-global-sfun! id args locals module class src 'now body))))
 
 ;*---------------------------------------------------------------------*/

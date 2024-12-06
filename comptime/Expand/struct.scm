@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/struct.scm           */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/struct.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  4 10:54:57 1995                          */
-;*    Last change :  Wed Mar 30 08:32:18 2011 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Dec  6 08:34:15 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define-struct' expansion                                    */
 ;*=====================================================================*/
@@ -117,7 +117,7 @@
 				     ,(if *unsafe-struct*
 					  `((@ struct-ref __structure) s ,i)
 					  `(if (eq? ((@ struct-key __structure) s) ',name)
-					       (u-struct-ref s ,i)
+					       ($u-struct-ref s ,i)
 					       (error
 						"struct-ref:not an instance of"
 						,(symbol->string name)
@@ -133,7 +133,7 @@
 				      ,(if *unsafe-struct*
 					   `((@ struct-set! __structure) s ,i v)
 					   `(if (eq? ((@ struct-key __structure) s) ',name)
-						(u-struct-set! s ,i v)
+						($u-struct-set! s ,i v)
 						(error
 						 "struct-set!:not an instance of"
 						 ,(symbol->string name)

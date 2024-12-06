@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Wlib/wbignum.wat              */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wbignum.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Wed Oct  9 09:30:21 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 10:34:45 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -58,7 +58,7 @@
       (result (ref $bignum))
       (return (struct.new $bignum (call $long_to_bignum (local.get $n)))))
 
-   ;;; bgl_jsstring_to_bignum
+   ;; bgl_jsstring_to_bignum
    (func $bgl_jsstring_to_bignum (export "bgl_jsstring_to_bignum")
       (param $section i32)
       (param $offset i32)
@@ -70,7 +70,7 @@
 		    (local.get $len)
 		    (i32.const 10)))))
    
-   ;;; bgl_string_to_bignum
+   ;; bgl_string_to_bignum
    (func $bgl_string_to_bignum (export "bgl_string_to_bignum")
       (param $s (ref $bstring))
       (param $radix i32)
@@ -82,6 +82,14 @@
 	       (i32.const 128)
 	       (array.len (local.get $s))
 	       (local.get $radix)))))
+
+   ;; bgl_string_to_integer_obj
+   (func $bgl_string_to_integer_obj (export "bgl_string_to_integer_obj")
+      (param $s (ref $bstring))
+      (param $radix i32)
+      (result (ref eq))
+      (return_call $BGL_SAFE_BX_TO_FX
+	 (call $bgl_string_to_bignum (local.get $s) (local.get $radix))))
    
    ;; bgl_bignum_to_string
    (func $bgl_bignum_to_string (export "bgl_bignum_to_string")
@@ -215,7 +223,6 @@
 	   (if (i64.eq (i64.div_s (local.get $t) (local.get $y)) (local.get $x))
 	       (then (return_call $make_bint (local.get $t)))
 	       (else
-		(call $js_trace (i32.const 77772))
 		(return_call $bgl_bignum_mul
 		   (call $bgl_long_to_bignum (local.get $x))
 		   (call $bgl_long_to_bignum (local.get $y))))))))

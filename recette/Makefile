@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Wed Dec  4 11:57:06 2024 (serrano)                */
+#*    Last change :  Fri Dec  6 08:01:43 2024 (serrano)                */
 #*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -74,7 +74,7 @@ C_SPECIFIC	= external_c big_file
 C_OBJECTS	= $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
 OBJECT_C_FOREIGN= c-file.$(C_OBJ_EXTENSION)
 
-JVM_SPECIFIC	= external
+JVM_SPECIFIC	= external_jvm
 JVM_OBJECTS	= $(COMMON:%=%.class) $(JVM_SPECIFIC:%=%.class)
 OBJECT_JVM_FORE	= Point.class ArrayTest.class Intf.class
 
@@ -120,7 +120,7 @@ recette-c: .etags .afile-c objs_c
 
 recette-bin: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
-	@ echo "\e[1;Recette (C).\e[0m  done."
+	@ echo "\e[1;34mrecette\e[0m done."
 
 saw:
 	$(MAKE) EFLAGS=-saw
@@ -133,14 +133,14 @@ new-jvm:
 gstatic: recette-static
 recette-static: .afile-c objs_c $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) -static-bigloo
-	@ echo "\e[1;35mStatic Recette done.\e[0m  done."
+	@ echo "\e[1;35m$@\e[0m done."
 
 wasm: objs_wasm .afile-wasm
 	$(MAKE) recette-wasm
 
 recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%)
 	$(BIGLOO) -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm $(WASM_OBJECTS:%=objs_wasm/%)
-	@ echo "\e[1;Recette (WASM).\e[0m  done."
+	@ echo "\e[1;36mrecette.wasm\e[0m done."
 
 jvm: recette-jvm-nojar
 recette-jvm-nojar: .jfile-jvm .afile-jvm 
@@ -148,7 +148,7 @@ recette-jvm-nojar: .jfile-jvm .afile-jvm
 
 recette-jvm: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
 	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -no-jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
-	@ echo "\e[1;Recette (JVM).\e[0m  done."
+	@ echo "\e[1;37m$@$(SCRIPTEXTENSION)\e[0m done."
 
 jvm-jar: recette-jvm-jar
 recette-jvm-jar: .jfile-jvm .afile-jvm 
@@ -156,7 +156,7 @@ recette-jvm-jar: .jfile-jvm .afile-jvm
 
 recette-jar: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
 	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(OBJECT_JVM_FORE:%=objs_jvm/%) $(JVM_OBJECTS:%=objs_jvm/%)
-	@ echo "\e[1;Recette (JVM jar).\e[0m  done."
+	@ echo "\e[1;38m$@$(SCRIPTEXTENSION)\e[0m done."
 
 djvm: recette-jvm-debug
 recette-jvm-debug: .jfile-jvm .afile-jvm
@@ -164,7 +164,7 @@ recette-jvm-debug: .jfile-jvm .afile-jvm
 
 recette-class-debug: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
 	$(BIGLOO) $(BFLAGS) -jvm $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
-	@ echo "\e[1;Recette (JVM debug).\e[0m  done."
+	@ echo "\e[1;39m$@$(SCRIPTEXTENSION)\e[0m done."
 
 jvm-purify:
 	$(MAKE) jvm BPURIFYJVMFLAGS=-jvm-purify

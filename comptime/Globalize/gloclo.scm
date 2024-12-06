@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Globalize/gloclo.scm     */
+;*    .../prgm/project/bigloo/wasm/comptime/Globalize/gloclo.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Thu Jul  8 11:29:31 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Dec  6 17:47:49 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -62,7 +62,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-opt/key-global-closure global)
    (let ((gloclo (find-global (symbol-append '_ (global-id global))
-			      (global-module global))))
+		    (global-module global))))
       (fill-gloclo! global gloclo)
       (sfun-the-closure-global-set! (global-value gloclo) global)
       gloclo))

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Nov 27 12:30:01 2024 (serrano)                */
+#*    Last change :  Fri Dec  6 08:29:53 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -64,6 +64,9 @@ WASM_BINTS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed)
 #*--- General flags ---------------------------------------------------*/
 # The Bigloo compilation option used the produce an heap file
 BHEAPFLAGS	= $(BOOTFLAGS) $(BFEATUREFLAGS) \
+                  -unsafe -q -mkheap -mklib -s -no-hello
+BHEAPFLAGSJVM	= $(BHEAPFLAGS) 
+BHEAPFLAGSWASM	= $(BOOTFLAGS) \
                   -unsafe -q -mkheap -mklib -s -no-hello
 #*--- Bigloo, common --------------------------------------------------*/
 BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm
@@ -496,13 +499,13 @@ heap-c: .afile includes
 
 heap-jvm: .afile .jfile includes lib-jvm_u
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
-	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
+	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGSJVM) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
 	@ echo "\e[1;35m$(HEAPJVM_FILE)\e[0m done."
 
 heap-wasm: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPWASM_FILE)
-	$(BIGLOO) -target wasm -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
+	$(BIGLOO) -wasm -target wasm -L $(BOOTLIBDIR) $(BHEAPFLAGSWASM) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPWASM_FILE)
 	@ echo "\e[1;35m$(HEAPWASM_FILE)\e[0m done."
 

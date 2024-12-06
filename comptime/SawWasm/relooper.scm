@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Fri Sep 27 07:25:56 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 08:38:58 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -83,7 +83,7 @@
 	 (lambda (e)
 	    (when (isa? e &exception)
 	       (exception-notify e))
-	    (tprint "giving with relooper: " (shape global))
+	    (tprint "relooper give up: " (shape global))
 	    #f)
 	 (if (compute-loop-headers tree)
 	     ;; the graph is reducible

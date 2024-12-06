@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Dec  4 15:05:59 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 11:19:17 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -343,7 +343,7 @@
       (i32.eq (local.get $arity) (local.get $i))
       (i32.and 
         (i32.lt_s (local.get $arity) (i32.const 0))
-        (i32.lt_s (i32.sub (i32.const -1) (local.get $i)) (local.get $arity)))))
+        (i32.le_s (i32.sub (i32.const -1) (local.get $i)) (local.get $arity)))))
 
   (func $PROCEDURE_SET (export "PROCEDURE_SET") 
     (param $p (ref $procedure)) 
@@ -885,7 +885,7 @@
      (throw $fail)
      (unreachable))
 			     
-  ;; generic_val_call
+  ;; generic_va_call
   (func $generic_va_call (export "generic_va_call")
      (param $proc (ref $procedure))
      (param $params (ref $vector))

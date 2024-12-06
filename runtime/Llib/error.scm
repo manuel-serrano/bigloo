@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Dec  4 14:58:32 2024 (serrano)                */
+;*    Last change :  Fri Dec  6 11:23:17 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -646,6 +646,7 @@
 		 ((symbol? type) (symbol->string type))
 		 (else "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
+      (tprint "*** TYPE-ERROR (tbr) msg=" msg " obj=" obj " type=" type)
       (instantiate::&type-error
 	 (fname fname)
 	 (location loc)
