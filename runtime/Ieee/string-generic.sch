@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Tue Oct  1 11:06:56 2024 (serrano)                */
+;*    Last change :  Sat Dec  7 08:13:20 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -57,7 +57,7 @@
 	   (export c_constant_string_to_string "c_constant_string_to_string")
 	   (export BOUND_CHECK "BOUND_CHECK")
 	   (export string_for_read "string_for_read")
-	   (export symbol_for_read "ssymbol_for_read")
+	   (export symbol_for_read "symbol_for_read")
 	   (export blit_string "blit_string")))
 
 ;*---------------------------------------------------------------------*/

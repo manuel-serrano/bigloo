@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Fri Dec  6 10:34:45 2024 (serrano)                */
+;*    Last change :  Sat Dec  7 19:17:31 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -24,7 +24,13 @@
    
    (import "__js_bignum" "zerobx" (global $zerobx externref))
    (import "__js_bignum" "zerobxp" (func $zerobxp (param externref) (result i32)))
+   (import "__js_bignum" "bgl_bignum_odd" (func $bgl_bignum_odd (param externref) (result i32)))
+   (import "__js_bignum" "bgl_bignum_even" (func $bgl_bignum_even (param externref) (result i32)))
    (import "__js_bignum" "bgl_safe_bignum_to_fixnum" (func $bgl_safe_bignum_to_fixnum (param externref) (param i32) (result i64)))
+   (import "__js_bignum" "bgl_bignum_to_long" (func $bgl_bignum_to_long (param externref) (result i64)))
+   (import "__js_bignum" "bgl_bignum_remainder" (func $bgl_bignum_remainder (param externref) (param externref) (result externref)))
+   (import "__js_bignum" "bgl_bignum_quotient" (func $bgl_bignum_quotient (param externref) (param externref) (result externref)))
+   (import "__js_bignum" "bgl_rand_bignum" (func $bgl_rand_bignum (param externref) (result externref)))
    (import "__js_bignum" "long_to_bignum" (func $long_to_bignum (param i64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))

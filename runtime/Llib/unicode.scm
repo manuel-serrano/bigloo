@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Sep 17 14:41:23 2024 (serrano)                */
+;*    Last change :  Sat Dec  7 08:18:40 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -12,6 +12,10 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __unicode
+   
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       (include "Llib/unicode-generic.sch")))
    
    (import  __error
 	    __param
@@ -87,7 +91,11 @@
 	   (c-utf8-string->ucs2-string::ucs2string (::bstring)
 						   "utf8_string_to_ucs2_string"))
 
-   (wasm   (c-ucs2-string? "(ref.test (ref $ucs2string) ~0)"))
+   (wasm   (c-ucs2-string? "(ref.test (ref $ucs2string) ~0)")
+           (c-ucs2-string-length "(i64.extend_i32_u (array.len ~0))")
+           (c-make-ucs2-string "(array.new $ucs2string ~1 (i32.wrap_i64 ~0))")
+	   (c-ucs2-string-ref "(array.get $ucs2string ~0)")
+	   (c-ucs2-string-set! "(block (result (ref eq)) (array.set $ucs2string ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))"))
    
    (java   (class foreign
 	      (method static c-ucs2-string?::bool (::obj)
@@ -175,6 +183,7 @@
 	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-normalize-utf16::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
+	    (utf8->utf16 ::bstring ::long)
 	    (utf8-string-ref::bstring ::bstring ::long)
 	    (utf8-string-index->string-index::long ::bstring ::long)
 	    (string-index->utf8-string-index::long ::bstring ::long)
@@ -1211,6 +1220,60 @@
    (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 2 3 4)
       (bit-rsh (char->integer c) 4)))
 
+;*---------------------------------------------------------------------*/
+;*    utf8->utf16 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (utf8->utf16 src::bstring index::long)
+   (let ((b0 (char->integer (string-ref src index))))
+      (cond
+	 ((<=fx b0 #x7f)
+	  (values b0 0))
+	 ((=fx b0 #xf8)
+	  (let* ((b1 (char->integer (string-ref src (+fx 1 index))))
+		 (b2 (char->integer (string-ref src (+fx 2 index))))
+		 (b3 (char->integer (string-ref src (+fx 3 index))))
+		 (u4u3 (bit-lsh (bit-and b3 #x3) 2))
+		 (xx (bit-and (bit-rsh b2 4) #x3))
+		 (wwww (bit-and b1 #xf))
+		 (u2u1 (bit-and (bit-rsh b1 4) #x3))
+		 (uuuu (bit-or u4u3 u2u1))
+		 (vvvv (-fx uuuu 1))
+		 (hi #x36))
+	     (let ((n (bit-or xx
+			 (bit-or (bit-lsh wwww 2)
+			    (bit-or (bit-lsh vvvv 6)
+			       (bit-lsh hi 10))))))
+		(values n 0))))
+	 ((=fx b0 #xfc)
+	  (let* ((b1 (char->integer (string-ref src (+fx 1 index))))
+		 (b2 (char->integer (string-ref src (+fx 2 index))))
+		 (b3 (char->integer (string-ref src (+fx 3 index))))
+		 (zzzzzz (bit-and b3 #x3f))
+		 (yyyy (bit-and b2 #xf))
+		 (hi #x37))
+	     (let ((n (bit-or zzzzzz
+			 (bit-or (bit-lsh yyyy 6)
+			    (bit-or hi 10)))))
+		(values n 0))))
+	 (else
+	  (let loop ((byte b0)
+		     (ucs2 b0)
+		     (bits 6)
+		     (index (+fx index 1)))
+	     (if (=fx (bit-and byte #x40) 0)
+		 (let ((ucs2 (bit-and ucs2 (-fx (bit-lsh 1 bits) 1))))
+		    (if (>=fx ucs2 #x10000)
+			(let ((ucs2 (-fx ucs2 #x10000)))
+			   (values (+fx (bit-and ucs2 #x3ff) #xdc00)
+			      (+fx (bit-rsh ucs2 10) #xd800)))
+			(values ucs2 0)))
+		 (let* ((next (char->integer (string-ref src index)))
+			(b0 (bit-lsh b0 1)))
+		    (loop (bit-lsh byte 1)
+		       (+fx (bit-lsh ucs2 6) (bit-and next #x3f))
+		       (+fx bits 5)
+		       (+fx index 1)))))))))
+	  
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-length ...                                           */
 ;*    -------------------------------------------------------------    */

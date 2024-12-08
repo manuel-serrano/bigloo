@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Fri Dec  6 11:19:17 2024 (serrano)                */
+;*    Last change :  Sat Dec  7 19:31:02 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -592,6 +592,14 @@
   ;; --------------------------------------------------------
   ;; funcall
   ;; --------------------------------------------------------
+  (func $funcall0
+     (param $proc (ref $procedure))
+     (result (ref eq))
+     (return_call_ref $func0
+	(local.get $proc)
+	(ref.cast (ref $func0)
+	   (struct.get $procedure $entry (local.get $proc)))))
+  
   (func $funcall1
      (param $proc (ref $procedure))
      (param $arg0 (ref eq))
@@ -601,6 +609,7 @@
 	(local.get $arg0)
 	(ref.cast (ref $func1)
 	   (struct.get $procedure $entry (local.get $proc)))))
+
 
   (func $funcall2
      (param $proc (ref $procedure))
@@ -612,6 +621,36 @@
 	(local.get $arg0)
 	(local.get $arg1)
 	(ref.cast (ref $func2)
+	   (struct.get $procedure $entry (local.get $proc)))))
+
+  (func $funcall3
+     (param $proc (ref $procedure))
+     (param $arg0 (ref eq))
+     (param $arg1 (ref eq))
+     (param $arg2 (ref eq))
+     (result (ref eq))
+     (return_call_ref $func3
+	(local.get $proc)
+	(local.get $arg0)
+	(local.get $arg1)
+	(local.get $arg2)
+	(ref.cast (ref $func3)
+	   (struct.get $procedure $entry (local.get $proc)))))
+
+  (func $funcall4
+     (param $proc (ref $procedure))
+     (param $arg0 (ref eq))
+     (param $arg1 (ref eq))
+     (param $arg2 (ref eq))
+     (param $arg3 (ref eq))
+     (result (ref eq))
+     (return_call_ref $func4
+	(local.get $proc)
+	(local.get $arg0)
+	(local.get $arg1)
+	(local.get $arg2)
+	(local.get $arg3)
+	(ref.cast (ref $func4)
 	   (struct.get $procedure $entry (local.get $proc)))))
   
   ;; --------------------------------------------------------

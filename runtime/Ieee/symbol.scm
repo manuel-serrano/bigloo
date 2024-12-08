@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Wed Sep 18 21:19:53 2024 (serrano)                */
+;*    Last change :  Sat Dec  7 09:27:21 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -87,7 +87,10 @@
 	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	    (c-keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
-	    ($set-keyword-plist "(call $set-keyword-plist ~0 ~1)"))
+	    ($set-keyword-plist "(call $set-keyword-plist ~0 ~1)")
+
+	    ($keyword->string "(struct.get $keyword $str (ref.cast (ref $symbol) ~0))")
+	    (c-keyword->string "(struct.get $keyword $str (ref.cast (ref $symbol) ~0))"))
    
    (java    (class foreign
 	       (method static c-symbol?::bool (::obj)

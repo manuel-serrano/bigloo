@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Fri Dec  6 18:09:20 2024 (serrano)                */
+;*    Last change :  Sat Dec  7 06:32:31 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -470,8 +470,6 @@
 	 (opts (dsssl-optionals args))
 	 (keys (dsssl-keys args)))
       (cond
-	 ((not (backend-varargs (the-backend)))
-	  (make-sfun-noopt-definition id module args body src class loc))
 	 ((pair? opts)
 	  (make-sfun-opt-definition opts id module args body src class loc))
 	 ((pair? keys)
@@ -500,56 +498,77 @@
 ;*    more details.                                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-sfun-opt-closure glo optionals id module args body src class loc)
-   (let ((arity (sfun-arity (global-value glo))))
-      (define (funcall opt)
-	 (let ((lopt (length optionals))
-	       (forms (map local-id (sfun-args (global-value glo))))
-	       (opts (map (lambda (o)
-			     (fast-id-of-id (car o) loc))
-			(sfun-optionals (global-value glo)))))
-	    `(,(let-sym) ,(map (lambda (v i)
-				  `(,v ($vector-ref-ur ,opt ,i)))
-			     (take (sfun-args-name (global-value glo)) arity)
-			     (iota arity))
-			 (case ($vector-length ,opt)
-			    ,@(map (lambda (i)
-				      `((,(+fx arity i))
-					(let* (,@(map (lambda (v j)
-							 `(,v ($vector-ref-ur ,opt ,j)))
-						    (take (drop forms arity) i)
-						    (iota i arity))
-						 ,@(if (<=fx i lopt)
-						       (drop optionals i)
-						       '()))
-					   (,glo
-					      ;; required unbound parameters
-					      ,@(take (sfun-args-name (global-value glo)) arity)
-					      ;; optional parameters
-					      ,@opts))))
-			       (iota (+fx lopt 1)))
-			    (else
-			     ,(if *unsafe-arity*
-				  #unspecified
-				  `((@ error __error)
-				    ',id
-				    ,(string-append
-					"wrong number of arguments: ["
-					(integer->string arity)
-					".." (integer->string (+ arity lopt))
-					"] expected, provided")
-				    ($vector-length ,opt))))))))
-      (let* ((id (symbol-append '_ id))
-	     (optid (gensym 'opt))
-	     (envid (gensym 'env))
-	     (opt (make-local-svar optid *vector*))
-	     (env (make-local-svar envid *procedure*))
-	     (g (def-global-sfun! id (list envid optid)
-		   (list env opt) module class
-		   src 'globalization
-		   (compile-expand (comptime-expand (funcall optid))))))
-	 (global-evaluable?-set! g #f)
-	 (global-type-set! g *obj*)
-	 g)))
+   
+   (define arity (sfun-arity (global-value glo)))
+
+   (define (funcall-vector opt)
+      (let ((lopt (length optionals))
+	    (forms (map local-id (sfun-args (global-value glo))))
+	    (opts (map (lambda (o)
+			  (fast-id-of-id (car o) loc))
+		     (sfun-optionals (global-value glo)))))
+	 `(,(let-sym) ,(map (lambda (v i)
+			       `(,v ($vector-ref-ur ,opt ,i)))
+			  (take (sfun-args-name (global-value glo)) arity)
+			  (iota arity))
+		      (case ($vector-length ,opt)
+			 ,@(map (lambda (i)
+				   `((,(+fx arity i))
+				     (let* (,@(map (lambda (v j)
+						      `(,v ($vector-ref-ur ,opt ,j)))
+						 (take (drop forms arity) i)
+						 (iota i arity))
+					      ,@(if (<=fx i lopt)
+						    (drop optionals i)
+						    '()))
+					(,glo
+					   ;; required unbound parameters
+					   ,@(take (sfun-args-name (global-value glo)) arity)
+					   ;; optional parameters
+					   ,@opts))))
+			    (iota (+fx lopt 1)))
+			 (else
+			  ,(if *unsafe-arity*
+			       #unspecified
+			       `((@ error __error)
+				 ',id
+				 ,(string-append
+				     "wrong number of arguments: ["
+				     (integer->string arity)
+				     ".." (integer->string (+ arity lopt))
+				     "] expected, provided")
+				 ($vector-length ,opt))))))))
+
+   (define (funcall-pair opt)
+      (let ((tmp (gensym 'vec)))
+	 `(let ((,tmp (list->vector ,opt)))
+	     ,(funcall-vector tmp))))
+
+   (if (backend-varargs (the-backend))
+       (let* ((id (symbol-append '_ id))
+	      (optid (gensym 'opt))
+	      (envid (gensym 'env))
+	      (opt (make-local-svar optid *vector*))
+	      (env (make-local-svar envid *procedure*))
+	      (g (def-global-sfun! id (list envid optid)
+		    (list env opt) module class
+		    src 'globalization
+		    (compile-expand (comptime-expand (funcall-vector optid))))))
+	  (global-evaluable?-set! g #f)
+	  (global-type-set! g *obj*)
+	  g)
+       (let* ((id (symbol-append '_ id))
+	      (optid (gensym 'opt))
+	      (envid (gensym 'env))
+	      (opt (make-local-svar optid *pair*))
+	      (env (make-local-svar envid *procedure*))
+	      (g (def-global-sfun! id (list envid optid)
+		    (list env opt) module class
+		    src 'globalization
+		    (compile-expand (comptime-expand (funcall-pair optid))))))
+	  (global-evaluable?-set! g #f)
+	  (global-type-set! g *obj*)
+	  g)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-sfun-key-definition ...                                     */
@@ -580,93 +599,113 @@
 ;*    See make-sfun-opt-closure.                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-sfun-key-closure glo keys id module args body src class loc)
-   (let ((arity (sfun-arity (global-value glo)))
-	 (iopt (gensym 'opt))
-	 (ienv (gensym 'env))
-	 (lopt (length keys))
-	 (l (gensym 'l))
-	 (search (gensym 'search))
-	 (check (gensym 'check))
-	 (var (gensym 'var)))
-      (define (all-keys keys)
-	 ;; compute the whole keywords set from the declaration
-	 (map (lambda (k)
-		 (symbol->keyword (fast-id-of-id (car k) loc)))
-	      keys))
-      (define (funcall)
-	 `(,(let-sym) ((,l (vector-length ,iopt)))
-	     (labels ((,search (k1 i)
-	         (if (=fx i ,l)
-		     -1
-		     ,(if (and *unsafe-arity*
-			       (or (not (global-evaluable? glo))
-				   *unsafe-eval*))
-			  `(,(let-sym) ((v ($vector-ref-ur ,iopt i)))
-			      (if (eq? v k1)
-				  (+fx i 1)
-				  (,search k1 (+fx i 2))))
-			  `(if (=fx i (-fx ,l 1))
-			       ((@ error __error)
-				',id
-				,(string-append
-				  "wrong number of arguments: ["
-				  (integer->string arity)
-				  ".." (integer->string (+ arity lopt))
-				  "] expected, provided")
-				($vector-length ,iopt))
-			       (let ((v ($vector-ref-ur ,iopt i)))
-				  (if (eq? v k1)
-				      (+fx i 1)
-				      (,search k1 (+fx i 2)))))))))
-		(let ,(map (lambda (v i)
-			      `(,v ($vector-ref-ur ,iopt ,i)))
-			   (take (sfun-args-name (global-value glo)) arity)
-			   (iota arity))
-		   (let* ,(map (lambda (p) (list (car p) (cadr p))) keys)
-		      ;; arity check in safe mode
-		      ,(if (and *unsafe-arity*
-			       (or (not (global-evaluable? glo))
-				   *unsafe-eval*))
-			   #unspecified
-			   `(labels ((,check (i)
-				(if (=fx i ,l)
-				    '()
-				    (if (memq (vector-ref ,iopt i)
-					      ',(all-keys keys))
-					(,check (+fx i 2))
-					((@ error __error)
-					 ',id
-					 "Illegal keyword argument"
-					 (vector-ref ,iopt i))))))
-			       (,check ,arity)))
-		      ,@(map (lambda (p)
-				(let* ((i (fast-id-of-id (car p) loc))
-				       (k1 (symbol->keyword i))
-				       (ind (gensym 'index)))
-				   `(,(let-sym) ((,ind (,search ,k1 ,arity)))
-				       (when (>=fx ,ind 0)
-					   (set! ,i ($vector-ref-ur ,iopt ,ind))))))
-			     keys)
-		      (,glo ,@(map (lambda (j)
-				      `($vector-ref-ur ,iopt ,j))
-				   (iota arity))
-			    ,@(append-map (lambda (p)
-					     (let ((id (fast-id-of-id
-							(car p) loc)))
-						(list
-						 (symbol->keyword id)
-						 id)))
-					  keys)))))))
-      (let* ((id (symbol-append '_ id))
-	     (opt (make-local-svar iopt *vector*))
-	     (env (make-local-svar ienv *procedure*))
-	     (g (def-global-sfun! id (list ienv iopt) (list env opt) module class
-		   src 'globalization
-		   (compile-expand
-		    (comptime-expand (funcall))))))
-	 (global-type-set! g *obj*)
-	 (global-evaluable?-set! g #f)
-	 g)))
+   
+   (define arity (sfun-arity (global-value glo)))
+   (define iopt (gensym 'opt))
+   (define ienv (gensym 'env))
+   (define lopt (length keys))
+   (define l (gensym 'l))
+   (define search (gensym 'search))
+   (define check (gensym 'check))
+   (define var (gensym 'var))
+   
+   (define (all-keys keys)
+      ;; compute the whole keywords set from the declaration
+      (map (lambda (k)
+	      (symbol->keyword (fast-id-of-id (car k) loc)))
+	 keys))
+   
+   (define (funcall-vector iopt)
+      `(,(let-sym) ((,l (vector-length ,iopt)))
+		   (labels ((,search (k1 i)
+			       (if (=fx i ,l)
+				   -1
+				   ,(if (and *unsafe-arity*
+					     (or (not (global-evaluable? glo))
+						 *unsafe-eval*))
+					`(,(let-sym) ((v ($vector-ref-ur ,iopt i)))
+						     (if (eq? v k1)
+							 (+fx i 1)
+							 (,search k1 (+fx i 2))))
+					`(if (=fx i (-fx ,l 1))
+					     ((@ error __error)
+					      ',id
+					      ,(string-append
+						  "wrong number of arguments: ["
+						  (integer->string arity)
+						  ".." (integer->string (+ arity lopt))
+						  "] expected, provided")
+					      ($vector-length ,iopt))
+					     (let ((v ($vector-ref-ur ,iopt i)))
+						(if (eq? v k1)
+						    (+fx i 1)
+						    (,search k1 (+fx i 2)))))))))
+		      (let ,(map (lambda (v i)
+				    `(,v ($vector-ref-ur ,iopt ,i)))
+			       (take (sfun-args-name (global-value glo)) arity)
+			       (iota arity))
+			 (let* ,(map (lambda (p) (list (car p) (cadr p))) keys)
+			    ;; arity check in safe mode
+			    ,(if (and *unsafe-arity*
+				      (or (not (global-evaluable? glo))
+					  *unsafe-eval*))
+				 #unspecified
+				 `(labels ((,check (i)
+					      (if (=fx i ,l)
+						  '()
+						  (if (memq (vector-ref ,iopt i)
+							 ',(all-keys keys))
+						      (,check (+fx i 2))
+						      ((@ error __error)
+						       ',id
+						       "Illegal keyword argument"
+						       (vector-ref ,iopt i))))))
+				     (,check ,arity)))
+			    ,@(map (lambda (p)
+				      (let* ((i (fast-id-of-id (car p) loc))
+					     (k1 (symbol->keyword i))
+					     (ind (gensym 'index)))
+					 `(,(let-sym) ((,ind (,search ,k1 ,arity)))
+						      (when (>=fx ,ind 0)
+							 (set! ,i ($vector-ref-ur ,iopt ,ind))))))
+				 keys)
+			    (,glo ,@(map (lambda (j)
+					    `($vector-ref-ur ,iopt ,j))
+				       (iota arity))
+			       ,@(append-map (lambda (p)
+						(let ((id (fast-id-of-id
+							     (car p) loc)))
+						   (list
+						      (symbol->keyword id)
+						      id)))
+				    keys)))))))
+   
+   (define (funcall-pair iopt)
+      (let ((tmp (gensym 'vec)))
+	 `(let ((,tmp (list->vector ,iopt)))
+	     ,(funcall-vector tmp))))
+   
+   (if (backend-varargs (the-backend))
+       (let* ((id (symbol-append '_ id))
+	      (opt (make-local-svar iopt *vector*))
+	      (env (make-local-svar ienv *procedure*))
+	      (g (def-global-sfun! id (list ienv iopt) (list env opt) module class
+		    src 'globalization
+		    (compile-expand
+		       (comptime-expand (funcall-vector iopt))))))
+	  (global-type-set! g *obj*)
+	  (global-evaluable?-set! g #f)
+	  g)
+       (let* ((id (symbol-append '_ id))
+	      (opt (make-local-svar iopt *pair*))
+	      (env (make-local-svar ienv *procedure*))
+	      (g (def-global-sfun! id (list ienv iopt) (list env opt) module class
+		    src 'globalization
+		    (compile-expand
+		       (comptime-expand (funcall-pair iopt))))))
+	  (global-type-set! g *obj*)
+	  (global-evaluable?-set! g #f)
+	  g)))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-fun-args ...                                               */
@@ -726,8 +765,6 @@
 (define (make-sfun-noopt-definition id module args body src class loc)
    (let ((locals (parse-fun-args args src loc))
 	 (body (make-dsssl-function-prelude id args body user-error)))
-      (tprint "args=" args " body=" body)
-      (tprint "locals=" (map shape locals))
       (list (def-global-sfun! id args locals module class src 'now body))))
 
 ;*---------------------------------------------------------------------*/

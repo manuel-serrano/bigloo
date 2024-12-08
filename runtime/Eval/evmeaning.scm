@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evmeaning.scm           */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evmeaning.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Sat Jul 20 10:44:40 2013 (serrano)                */
+;*    Last change :  Sat Dec  7 19:33:34 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -68,7 +68,11 @@
 	    (%eval-apply::obj (::procedure ::obj)
 			      "eval_apply"))
 
-	;; TODO: implement WASM port
+   (wasm    (%funcall-0 "(call $funcall0 ~0)")
+            (%funcall-1 "(call $funcall1 ~0 ~1)")
+	    (%funcall-2 "(call $funcall2 ~0 ~1 ~2)")
+	    (%funcall-3 "(call $funcall3 ~0 ~1 ~2 ~3)")
+	    (%funcall-4 "(call $funcall4 ~0 ~1 ~2 ~3 ~4)"))
    
    (java    (class foreign
 	       (method static %funcall-0::obj (::procedure)

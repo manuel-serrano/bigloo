@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/ucs2.scm                */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/ucs2.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 18 10:24:03 1997                          */
-;*    Last change :  Mon Mar  3 08:53:57 2014 (serrano)                */
+;*    Last change :  Sat Dec  7 08:36:49 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    UCS-2 Characters Scheme management.                              */
 ;*=====================================================================*/
@@ -49,25 +49,23 @@
 	    (infix macro c-ucs2<=?::bool (::ucs2 ::ucs2) "<=")
 	    (infix macro c-ucs2>=?::bool (::ucs2 ::ucs2) ">="))
 
-	(wasm
-		(c-ucs2? "(ref.test (ref $bucs2) ~0)")
-		(c-integer->ucs2 "~0")
-		(c-ucs2->integer "(struct.get $bucs2 $v ~0)")
-		(c-ucs2=? "(i32.eq ~0 ~1)")
+   (wasm    (c-ucs2? "(ref.test (ref $bucs2) ~0)")
+            (c-integer->ucs2 "~0")
+	    (c-ucs2->integer "(struct.get $bucs2 $v ~0)")
+	    (c-ucs2=? "(i32.eq ~0 ~1)")
 	    (c-ucs2<? "(i32.lt_u ~0 ~1)")
 	    (c-ucs2>? "(i32.gt_u ~0 ~1)")
 	    (c-ucs2<=? "(i32.le_u ~0 ~1)")
 	    (c-ucs2>=? "(i32.ge_u ~0 ~1)")
-		
-		;; TODO: implement WASM UCS2
-		(c-ucs2-letter? "(i32.const 0)")
-		(c-ucs2-digit? "(i32.const 0)")
-		(c-ucs2-upperp "(i32.const 0)")
-		(c-ucs2-lowerp "(i32.const 0)")
-		(c-ucs2-upcase "~0")
-		(c-ucs2-downcase "~0")
-		(c-ucs2-defined? "(i32.const 0)")
-		)
+      
+	    ;; TODO: implement WASM UCS2
+	    (c-ucs2-letter? "(i32.const 0)")
+	    (c-ucs2-digit? "(i32.const 0)")
+	    (c-ucs2-upperp "(i32.const 0)")
+	    (c-ucs2-lowerp "(i32.const 0)")
+	    (c-ucs2-upcase "~0")
+	    (c-ucs2-downcase "~0")
+	    (c-ucs2-defined? "(i32.const 0)"))
    
    (java    (class foreign
 	       (method static c-ucs2?::bool (::obj)
