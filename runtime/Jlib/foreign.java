@@ -1839,8 +1839,18 @@ public final class foreign
 	 return (o instanceof real);
       }
 
+   public static boolean BGL_FAST_REALP(Object o)
+      {
+	 return (o instanceof real);
+      }
+
    // Conversions
    public static double REAL_TO_DOUBLE(real n)
+      {
+	 return n.value;
+      }
+
+   public static double BGL_FAST_REAL_TO_DOUBLE(real n)
       {
 	 return n.value;
       }

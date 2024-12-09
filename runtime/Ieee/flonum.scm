@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/flonum.scm       */
+;*    serrano/prgm/project/bigloo/flt/runtime/Ieee/flonum.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Thu Oct 31 13:30:33 2024 (serrano)                */
+;*    Last change :  Mon Dec  9 17:16:55 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -34,6 +34,8 @@
    
    (extern  (macro $modf::double (::double ::void*) "modf")
 	    (macro $flonum?::bool (::obj) "REALP")
+	    (macro $fast-flonum?::bool (::obj) "BGL_FAST_REALP")
+	    (macro $fast-real->double::double (::real) "BGL_FAST_REAL_TO_DOUBLE")
 	    (infix macro $=fl::bool (::double ::double) "==")
 	    (infix macro $<fl::bool (::double ::double) "<")
 	    (infix macro $<=fl::bool (::double ::double) "<=")
@@ -87,6 +89,10 @@
    (java    (class foreign
 	       (method static $flonum?::bool (::obj)
 		  "REALP")
+	       (method static $fast-flonum?::bool (::obj)
+		  "BGL_FAST_REALP")
+	       (method static $fast-real->double::double (::real)
+		  "BGL_FAST_REAL_TO_DOUBLE")
 	       (method static $=fl::bool (::double ::double)
 		  "EQ_FL")
 	       (method static $<fl::bool (::double ::double)
@@ -240,6 +246,7 @@
 	    (inline randomfl::double))
    
    (pragma  ($flonum? no-alloc side-effect-free (predicate-of double) no-cfa-top nesting fail-safe)
+	    ($fast-flonum? no-alloc side-effect-free (predicate-of double) no-cfa-top nesting fail-safe)
 	    (real? no-alloc side-effect-free no-cfa-top nesting fail-safe)
 	    ($=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    ($>fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)

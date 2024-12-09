@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov 14 18:35:37 2024 (serrano)                */
+#*    Last change :  Mon Dec  9 07:56:21 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -964,6 +964,9 @@ while : ; do
       
     --fl-tagging-nz)
       bglfltagging=3;;
+      
+    --fl-tagging-1)
+      bglfltagging=4;;
       
     --smi)
       bglsmi=1;;

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../project/bigloo/nanh/runtime/Include/bigloo_real_heap.h       */
+/*    .../project/bigloo/flt/runtime/Include/bigloo_real_heap.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Oct 30 17:33:29 2024 (serrano)                */
+/*    Last change :  Mon Dec  9 07:42:59 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -65,7 +65,7 @@ struct bgl_real {
 #   define BGL_REAL_CNST(name) name
 #   define DEFINE_REAL(name, aux, flonum) \
       static struct { __CNST_ALIGN header_t header; double real; } \
-	 aux = { __CNST_FILLER MAKE_HEADER(REAL_TYPE, 0), flonum }; \
+	 aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }; \
       static const obj_t name = BREAL(&(aux.header))
 
 #   define FLONUMP(c) (POINTERP(c) && (TYPE(c) == REAL_TYPE))
@@ -73,6 +73,8 @@ struct bgl_real {
    
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)
 #endif
+
+#define BGL_FAST_FLONUMP(c) FLONUMP(c)
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */
@@ -95,7 +97,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real(double);
 #define REAL_TO_FLOAT(r) ((float)(REAL(r).val))
 
 #define BGL_INIT_REAL(an_object, d) \
-   IFN_REAL_TAG((an_object)->real.header = MAKE_HEADER(REAL_TYPE, REAL_SIZE)); \
+   IFN_REAL_TAG((an_object)->real.header = BGL_MAKE_HEADER(REAL_TYPE, REAL_SIZE)); \
    (an_object)->real.val = d;
 
 #if (BGL_GC_CUSTOM || !defined(__GNUC__))
@@ -109,7 +111,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real(double);
 
 #define BGL_MAKE_INLINE_REAL(d) \
    an_object = GC_MALLOC_ATOMIC(REAL_SIZE); \
-   IFN_REAL_TAG(an_object->real_t.header = MAKE_HEADER(REAL_TYPE, REAL_SIZE)); \
+   IFN_REAL_TAG(an_object->real_t.header = BGL_MAKE_HEADER(REAL_TYPE, REAL_SIZE)); \
    an_object->real.val = d; \
    BREAL(an_object)
 

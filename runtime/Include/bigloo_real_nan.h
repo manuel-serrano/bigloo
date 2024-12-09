@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo-nan/runtime/Include/bigloo_real_nan.h             */
+/*    .../project/bigloo/flt/runtime/Include/bigloo_real_nan.h         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Oct 29 13:58:22 2024 (serrano)                */
+/*    Last change :  Mon Dec  9 17:19:06 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NAN TAGGING REALs                                         */
@@ -44,6 +44,7 @@ union bgl_nanobj {
 #define FLONUMP(c) (((unsigned long)c >> 48 & 0x7ff8) != 0x7ff8)
 #define NANP(c) (((unsigned long)c == TAG_QNAN) || ((unsigned long)c == TAG_SNAN))
 #define REALP(c) (FLONUMP(c) || NANP(c))
+#define BGL_FAST_REALP(c) REALP(c)
 
 #define BGL_REAL_SET(o, v) BREAL(v)
 

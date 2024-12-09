@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Fri Nov 29 14:49:28 2024 (serrano)                */
+/*    Last change :  Mon Dec  9 15:06:41 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -132,10 +132,14 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 // predicates
 #if defined(TAG_REALZ) || !defined(TAG_REAL)
 #  define FLONUMP(o) (BGL_TAGGED_REALP(o) || BGL_BOXED_REALP(o))
+#  define BGL_FAST_REALP(o) BGL_TAGGED_REALP
 #else
 #  define BGL_FLONUMP_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REAL)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+#  define BGL_FAST_FLONUMP_TAG_MASK_TABLE \
+     ((1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
 #  define FLONUMP(o) (((int32_t)((uint32_t)BGL_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
+#  define BGL_FAST_REALP(o) (((int32_t)((uint32_t)BGL_FAST_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
 #endif
 
 #define REALP(o) FLONUMP(o)
@@ -164,10 +168,14 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 /*---------------------------------------------------------------------*/
 /*    REAL_TO_DOUBLE                                                   */
 /*---------------------------------------------------------------------*/
-#define REAL_TO_DOUBLE(o) \
-   (!BGL_POINTERP(o) \
-    ? (BGL_ASDOUBLE(BGL_BIT_ROTL(o))) \
-    : REAL(o).val)
+static double REAL_TO_DOUBLE(obj_t o) {
+   double d = BGL_ASDOUBLE(BGL_BIT_ROTL(o));
+   if (!BGL_POINTERP(o)) {
+      return d;
+   } else {
+      return ((struct bgl_real *)CREAL(o))->val;
+   }
+}
 
 /*---------------------------------------------------------------------*/
 /*    Constants and allocations                                        */
@@ -189,10 +197,14 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
    ((BGL_TAGGED_REALP(o) ? DOUBLE_TO_REAL(v) : ((REAL(o).val = v), o)))
 
 // allocations
-#define DOUBLE_TO_REAL(d) \
-   (BGL_TAGGED_REALP(BGL_BIT_ROTR(BGL_ASOBJ(d))) \
-      ? BGL_BIT_ROTR(BGL_ASOBJ(d)) \
-      : make_real(d))
+static obj_t DOUBLE_TO_REAL(double d) {
+   obj_t o = BGL_BIT_ROTR(BGL_ASOBJ(d));
+   if (BGL_TAGGED_REALP(o)) {
+      return o;
+   } else {
+      return make_real(d);
+   }
+}
 
 #define FLOAT_TO_REAL(d) DOUBLE_TO_REAL((double)(d))
 #define REAL_TO_FLOAT(o) ((float)(REAL_TO_DOUBLE(o)))

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov 27 11:39:02 2024 (serrano)                */
+#*    Last change :  Mon Dec  9 17:30:36 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -395,6 +395,7 @@ fullbootstrap-edit-log:
 	@ $(MAKE) -s revision
 
 fullbootstrap-sans-log:
+	cp $(BOOTBINDIR)/bigloo $(BOOTBINDIR)/bigloo.bootstrap
 	./configure --bootconfig $(CONFIGUREOPTS)
 	$(MAKE) fullbootstrap-sans-configure
 	$(MAKE) -C recette -i touchall
