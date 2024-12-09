@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Oct 31 13:59:22 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 14:58:50 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -28,8 +28,11 @@ extern "C" {
 #  include <bigloo_real_flt.h>
 #elif (BGL_NAN_TAGGING)
 #  include <bigloo_real_nan.h>
+	 aux = { __CNST_FILLER BGL_MAKE_HEADER( REAL_TYPE, 0 ), flonum }; \
+		   BGL_MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ); \
 #else
 #  include <bigloo_real_heap.h>
+		   BGL_MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ) \
 #endif
 
 /*---------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Tue Nov 26 08:19:37 2024 (serrano)                */
+#*    Last change :  Tue Nov 26 10:31:38 2024 (serrano)                */
 #*    Copyright   :  2009-24 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the libuv.                              */
@@ -19,7 +19,6 @@ end() {
 
 trap end EXIT
 
-echo "configure libuv with \"./configure --libdir=$bootdir/$fildir --includedir=$bootdir/$fildir $libuvconfigureopt\"" >> ../configure.log
 
 export CC="$cc"
 export CFLAGS="$cflags"
@@ -35,3 +34,13 @@ sh autogen.sh
 
 								    
 
+export CC="$cc"
+export CFLAGS="$cflags"
+export LDFLAGS="$lflags"
+export LC_ALL=C
+
+cd libuv-$libuvversion
+sh autogen.sh
+./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir $libuvconfigureopt 2>&1 >> ../../configure.log \
+  || (echo "configure libuv fail, see configure.log file." && exit 1) \
+  || exit 1

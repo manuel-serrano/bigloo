@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Nov 15 19:11:25 2024 (serrano)                */
+;*    Last change :  Fri Nov 29 17:19:37 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -521,6 +521,7 @@
 ;*    default-exception-handler ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (default-exception-handler val)
+   (exception-notify val)
    (unless (isa? val &warning)
       (let ((retval (if (isa? val &error) 1 2)))
 	 (unwind-stack-until! #f #f retval (lambda (x) (%exit retval)) #f)))
