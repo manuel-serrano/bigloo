@@ -4,21 +4,30 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Thu Nov 17 09:24:08 2022 (serrano)                */
-#*    Copyright   :  2009-22 Manuel Serrano                            */
+#*    Last change :  Tue Nov 26 10:31:38 2024 (serrano)                */
+#*    Copyright   :  2009-24 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the libuv.                              */
 #*=====================================================================*/
 
+# ending routine
+oldpwd=`pwd`
+
+end() {
+  cd $oldpwd
+}
+
+trap end EXIT
+
 echo "configure libuv with \"./configure --libdir=$bootdir/$fildir --includedir=$bootdir/$fildir $libuvconfigureopt\"" >> ../configure.log
 
-src=libuv-$libuvversion
+export CC="$cc"
+export CFLAGS="$cflags"
+export LDFLAGS="$lflags"
+export LC_ALL=C
 
-(cd $src && \
- export CC="$cc" && \
- export CFLAGS="$cflags" && \
- export LDFLAGS="$lflags" && \
- sh autogen.sh && \
- ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir $libuvconfigureopt 2>&1 >> ../../configure.log || \
- (echo "configure libuv fail, see configure.log file." && exit 1)) || exit 1
-
+cd libuv-$libuvversion
+sh autogen.sh
+./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir $libuvconfigureopt 2>&1 >> ../../configure.log \
+  || (echo "configure libuv fail, see configure.log file." && exit 1) \
+  || exit 1
