@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Fri Nov 29 06:53:43 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 09:56:46 2024 (serrano)                */
 ;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -50,8 +50,6 @@
       (symbol-append id 'fl))
 
    (match-case x
-      ((?id (? expand-g-number?) (expand-g-number? y))
-       (apply op x))
       ((?id (and ?a (? fixnum?)) (and ?b (? symbol?)))
        (let ((nx `(if ($fixnum? ,b)
 		      (,(fx id) ,a ,b)
@@ -118,10 +116,12 @@
 	  (e nx e)))
       
       ((?id ?a ?b)
-       (let* ((tmpa (gensym 'a))
-	      (tmpb (gensym 'b))
-	      (nx `(let* ((,tmpa ,a) (,tmpb ,b)) (,id ,tmpa ,tmpb))))
-	  (e nx e)))))
+       (if  (and (expand-g-number? a) (expand-g-number? b))
+	    (apply op x)
+	    (let* ((tmpa (gensym 'a))
+		   (tmpb (gensym 'b))
+		   (nx `(let* ((,tmpa ,a) (,tmpb ,b)) (,id ,tmpa ,tmpb))))
+	       (e nx e))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-g+ ...                                                    */
