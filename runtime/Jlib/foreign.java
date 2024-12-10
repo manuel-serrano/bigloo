@@ -1850,9 +1850,9 @@ public final class foreign
 	 return n.value;
       }
 
-   public static double BGL_FAST_REAL_TO_DOUBLE(real n)
+   public static double BGL_FAST_REAL_TO_DOUBLE(Object n)
       {
-	 return n.value;
+	 return ((real)n).value;
       }
 
    public static float REAL_TO_FLOAT(real n)

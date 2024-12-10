@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/flt/comptime/Expand/garith.scm       */
+;*    .../prgm/project/bigloo/flt/comptime/Expand/garith.scm.new       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Mon Dec  9 19:02:06 2024 (serrano)                */
+;*    Last change :  Mon Dec  9 19:08:05 2024 (serrano)                */
 ;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -61,13 +61,13 @@
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
       ((?id (and ?a (? flonum?)) (and ?b (? symbol?)))
-       (let ((nx `(if ($flonum? ,b)
-		      (,(fl id) ,a ,b)
+       (let ((nx `(if ($fast-flonum? ,b)
+		      (,(fl id) ,a ($fast-real->double ,b))
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? flonum?)))
-       (let ((nx `(if ($flonum? ,a)
-		      (,(fl id) ,a ,b)
+       (let ((nx `(if ($fast-flonum? ,a)
+		      (,(fl id) ($fast-real->double ,a) ,b)
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
       ((?id (and ?a (or (? fixnum?) (? flonum?))) ?b)
@@ -83,12 +83,20 @@
       ((?id (and ?a (? symbol?)) ?a)
        (let ((nx `(if ($fixnum? ,a)
 		      (,(fx id) ,a ,a)
-		      ((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,a))))
+		      ,(if *arithmetic-expand-flonum*
+			   `(if ($fast-flonum? ,a)
+				(,(fl id) ($fast-real->double ,a) ($fast-real->double ,a))
+				((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,a))
+			   `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,a)))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))
        (let ((nx `(if (and ($fixnum? ,a) ($fixnum? ,b))
 		      (,(fx id) ,a ,b)
-		      ((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))))
+		      ,(if *arithmetic-expand-flonum*
+			   `(if (and ($fast-flonum? ,a) ($fast-flonum? ,b) )
+				(,(fl id) ($fast-real->double ,a) ($fast-real->double ,b))
+				((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))
+			   `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b)))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) ?b)
        (let* ((tmp (gensym 'b))
@@ -98,7 +106,6 @@
        (let* ((tmp (gensym 'a))
 	      (nx `(let ((,tmp ,a)) (,id ,tmp ,b))))
 	  (e nx e)))
-      
       ((?id ?a ?b)
        (if  (and (expand-g-number? a) (expand-g-number? b))
 	    (apply op x)

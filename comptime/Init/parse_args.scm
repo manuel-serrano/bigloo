@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/nanh/comptime/Init/parse_args.scm        */
+;*    serrano/prgm/project/bigloo/flt/comptime/Init/parse_args.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Nov  8 09:12:24 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 07:23:12 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1364,6 +1364,7 @@
 			    (char->integer #\0))))
 	  ((#\6)
 	   (-O3!)
+	   (set! *arithmetic-expand-flonum* #t)
 	   (set! *optim-stackable?* #t)
 	   (set! *optim-uncell?* #t)
 	   (set! *optim* (-fx (char->integer (string-ref string 0))

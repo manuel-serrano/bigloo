@@ -93,6 +93,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real(double);
 #endif
 
 #define REAL_TO_DOUBLE(r) (REAL(r).val)
+#define BGL_FAST_REAL_TO_DOUBLE(r) REAL_TO_DOUBLE(r)
 #define FLOAT_TO_REAL(d) (DOUBLE_TO_REAL((double)(d)))
 #define REAL_TO_FLOAT(r) ((float)(REAL(r).val))
 

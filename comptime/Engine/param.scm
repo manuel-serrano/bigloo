@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Engine/param.scm     */
+;*    serrano/prgm/project/bigloo/flt/comptime/Engine/param.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Nov  8 08:10:44 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 07:22:40 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -103,6 +103,7 @@
 	    *arithmetic-genericity*
 	    *arithmetic-overflow*
 	    *arithmetic-new-overflow*
+	    *arithmetic-expand-flonum*
 	    *shared-cnst?*
 	    ;; -------------------------------------------------------------
 	    ;; warning, any change about this variable name must be reported
@@ -826,6 +827,7 @@
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
 (define *arithmetic-new-overflow* #t)
+(define *arithmetic-expand-flonum* #f)
 (param-define *shared-cnst?*
    "Shared constant compilation?"
    #t)

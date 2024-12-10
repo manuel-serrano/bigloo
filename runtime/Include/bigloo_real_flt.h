@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Dec  9 15:06:41 2024 (serrano)                */
+/*    Last change :  Tue Dec 10 07:20:48 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -132,7 +132,7 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 // predicates
 #if defined(TAG_REALZ) || !defined(TAG_REAL)
 #  define FLONUMP(o) (BGL_TAGGED_REALP(o) || BGL_BOXED_REALP(o))
-#  define BGL_FAST_REALP(o) BGL_TAGGED_REALP
+#  define BGL_FAST_REALP(o) BGL_TAGGED_REALP(o)
 #else
 #  define BGL_FLONUMP_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REAL)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
@@ -176,6 +176,8 @@ static double REAL_TO_DOUBLE(obj_t o) {
       return ((struct bgl_real *)CREAL(o))->val;
    }
 }
+
+#define BGL_FAST_REAL_TO_DOUBLE(o) BGL_ASDOUBLE(BGL_BIT_ROTL(o))
 
 /*---------------------------------------------------------------------*/
 /*    Constants and allocations                                        */

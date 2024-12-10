@@ -53,6 +53,7 @@ union bgl_nanobj {
 /*---------------------------------------------------------------------*/
 #define make_real(d) BREAL(d)
 #define REAL_TO_DOUBLE(r) CREAL(r)
+#define BGL_FAST_REAL_TO_DOUBLE(r) REAL_TO_DOUBLE(r)
 #define DOUBLE_TO_REAL(r) make_real(r)
 #define FLOAT_TO_REAL(d) (DOUBLE_TO_REAL((double)(d)))
 #define REAL_TO_FLOAT(r) ((float)(REAL_TO_DOUBLE(r)))
