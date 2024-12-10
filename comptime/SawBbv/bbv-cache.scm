@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Fri Dec 15 10:44:14 2023 (serrano)                */
-;*    Copyright   :  2017-23 Manuel Serrano                            */
+;*    Last change :  Tue Dec 10 08:30:44 2024 (serrano)                */
+;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
 ;*=====================================================================*/
@@ -37,7 +37,8 @@
 	    *string-bound-check*
 	    *string-length*
 	    *error*
-	    *number?*))
+	    *number?*
+	    *fast-flonum?*))
 
 ;*---------------------------------------------------------------------*/
 ;*    The cache registers definition                                   */
@@ -88,6 +89,7 @@
 (define *string-length* #f)
 (define *error* #f)
 (define *number?* #f)
+(define *fast-flonum?* #f)
 (define *type-norms* #f)
 
 ;*---------------------------------------------------------------------*/
@@ -132,7 +134,8 @@
       (set! *string-bound-check* (get-global/module '$string-bound-check? 'foreign))
       (set! *string-length* (get-global/module '$string-length 'foreign))
       (set! *error* (get-global/module 'error '__error))
-      (set! *number?* (get-global/module 'number? '__r4_numbers_6_5))))
+      (set! *number?* (get-global/module 'number? '__r4_numbers_6_5))
+      (set! *fast-flonum?* (get-global/module '$fast-flonum? 'foreign))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stop-bbv-cache! ...                                              */
@@ -177,4 +180,5 @@
    (set! *string-length* #f)
    (set! *error* #f)
    (set! *number?* #f)
+   (set! *fast-flonum?* #f)
    (set! *type-norms* #f))

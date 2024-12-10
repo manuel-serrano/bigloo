@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawBbv/bbv-specialize.scm     */
+;*    .../project/bigloo/flt/comptime/SawBbv/bbv-specialize.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul  2 14:46:29 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 09:29:23 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -704,6 +704,9 @@
 				   (bbv-ctxentry-types e)))
 			   (not (memq 'number (bbv-ctxentry-types e)))
 			   (not (memq *pair-nil* (bbv-ctxentry-types e)))
+			   (or (not (eq? type 'fast-flonum))
+			       (not (or (memq *breal* (bbv-ctxentry-types e))
+					(memq 'number (bbv-ctxentry-types e)))))
 			   (not (eq? type 'number)))
 		      ;; negative type simplification
 		      (trace-item "TCHECK-- type: " (shape type)

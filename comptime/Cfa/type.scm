@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/type.scm           */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/type.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Wed Sep 25 18:53:25 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 08:55:59 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -523,7 +523,7 @@
 	  (set! ftype *obj*)
 	  (set! type *obj*)
 	  node)
-	 (else
+	 ((backend-strict-type-cast (the-backend))
 	  (let ((ctype ftype))
 	     (set! type *obj*)
 	     (set! ftype *obj*)
@@ -531,7 +531,10 @@
 		 node
 		 (instantiate::cast
 		    (type ctype)
-		    (arg node))))))))
+		    (arg node)))))
+	 (else
+	  (set! type ftype)
+	  node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::vset! ...                                           */
