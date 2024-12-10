@@ -954,15 +954,19 @@ while : ; do
       mingw="yes";;
 
     --nan-tagging)
+      bglfltagging=0;
       bglnantagging=1;;
       
     --fl-tagging)
+      bglnantagging=0;
       bglfltagging=1;;
       
     --fl-tagging-lb)
+      bglnantagging=0;
       bglfltagging=2;;
       
     --fl-tagging-nz)
+      bglnantagging=0;
       bglfltagging=3;;
       
     --fl-tagging-1)
