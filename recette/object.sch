@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
+;; Bigloo (4.6a)
+;; Inria -- Sophia Antipolis     Tue Dec 10 09:58:47 AM CET 2024 
 ;; (bigloo.new -classgen object.scm)
 ;; ==========================================================
 
@@ -11,7 +11,7 @@
 ;; foo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-foo::foo x1257::long y1258::string z1259::string)
+    (inline make-foo::foo x1261::long y1262::string z1263::string)
     (inline foo?::bool ::obj)
     (foo-nil::foo)
     (inline foo-z::string ::foo)
@@ -24,7 +24,7 @@
 ;; gee
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-gee::gee x1253::obj y1254::obj)
+    (inline make-gee::gee x1258::obj y1259::obj)
     (inline gee?::bool ::obj)
     (gee-nil::gee)
     (inline gee-y::obj ::gee)
@@ -35,7 +35,7 @@
 ;; foo/l
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-foo/l::foo/l x1247::long y1248::string z1249::string dummy1250::obj)
+    (inline make-foo/l::foo/l x1252::long y1253::string z1254::string dummy1255::obj)
     (inline foo/l?::bool ::obj)
     (foo/l-nil::foo/l)
     (inline foo/l-dummy::obj ::foo/l)
@@ -50,7 +50,7 @@
 ;; titi
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-titi::titi x1245::int)
+    (inline make-titi::titi x1250::int)
     (inline titi?::bool ::obj)
     (titi-nil::titi)
     (inline titi-x::int ::titi)
@@ -59,7 +59,7 @@
 ;; toto
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-toto::toto x1239::int y1240::char yy1241::char z1242::obj t1243::obj)
+    (inline make-toto::toto x1244::int y1245::char yy1246::char z1247::obj t1248::obj)
     (inline toto?::bool ::obj)
     (toto-nil::toto)
     (inline toto-t::obj ::toto)
@@ -82,7 +82,7 @@
 ;; fin
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-fin::fin x1236::obj)
+    (inline make-fin::fin x1241::obj)
     (inline fin?::bool ::obj)
     (fin-nil::fin)
     (inline fin-x::obj ::fin)
@@ -91,7 +91,7 @@
 ;; sfin
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfin::sfin x1233::obj y1234::obj)
+    (inline make-sfin::sfin x1238::obj y1239::obj)
     (inline sfin?::bool ::obj)
     (sfin-nil::sfin)
     (inline sfin-y::obj ::sfin)
@@ -102,7 +102,7 @@
 ;; cfin
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cfin::cfin x1230::obj z1231::obj)
+    (inline make-cfin::cfin x1235::obj z1236::obj)
     (inline cfin?::bool ::obj)
     (cfin-nil::cfin)
     (inline cfin-z::obj ::cfin)
@@ -113,7 +113,7 @@
 ;; point
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-point::point x1227::obj y1228::obj)
+    (inline make-point::point x1232::obj y1233::obj)
     (inline point?::bool ::obj)
     (point-nil::point)
     (inline point-y::obj ::point)
@@ -124,7 +124,7 @@
 ;; pointc
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-pointc::pointc x1223::obj y1224::obj color1225::obj)
+    (inline make-pointc::pointc x1228::obj y1229::obj color1230::obj)
     (inline pointc?::bool ::obj)
     (pointc-nil::pointc)
     (inline pointc-color::obj ::pointc)
@@ -137,7 +137,7 @@
 ;; point3
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-point3::point3 x1219::obj y1220::obj z1221::obj)
+    (inline make-point3::point3 x1224::obj y1225::obj z1226::obj)
     (inline point3?::bool ::obj)
     (point3-nil::point3)
     (inline point3-z::obj ::point3)
@@ -150,7 +150,7 @@
 ;; readc
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-readc::readc x1217::obj)
+    (inline make-readc::readc x1221::obj)
     (inline readc?::bool ::obj)
     (readc-nil::readc)
     (inline readc-x::obj ::readc))))
@@ -166,7 +166,7 @@
 ;; virtual-2
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-virtual-2::virtual-2 z1213::obj t1214::obj)
+    (inline make-virtual-2::virtual-2 z1216::obj t1217::obj)
     (inline virtual-2?::bool ::obj)
     (virtual-2-nil::virtual-2)
     (inline virtual-2-w::obj ::virtual-2)
@@ -179,7 +179,7 @@
 ;; rec-1
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-rec-1::rec-1 f11211::rec-2)
+    (inline make-rec-1::rec-1 f11214::rec-2)
     (inline rec-1?::bool ::obj)
     (rec-1-nil::rec-1)
     (inline rec-1-f1::rec-2 ::rec-1)
@@ -188,7 +188,7 @@
 ;; rec-2
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-rec-2::rec-2 f21209::rec-1)
+    (inline make-rec-2::rec-2 f21212::rec-1)
     (inline rec-2?::bool ::obj)
     (rec-2-nil::rec-2)
     (inline rec-2-f2::rec-1 ::rec-2)
@@ -216,7 +216,7 @@
 ;; class/constr
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-class/constr::class/constr x1205::obj)
+    (inline make-class/constr::class/constr x1208::obj)
     (inline class/constr?::bool ::obj)
     (class/constr-nil::class/constr)
     (inline class/constr-x::obj ::class/constr)
@@ -225,7 +225,7 @@
 ;; class2/constr
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-class2/constr::class2/constr x1203::obj)
+    (inline make-class2/constr::class2/constr x1206::obj)
     (inline class2/constr?::bool ::obj)
     (class2/constr-nil::class2/constr)
     (inline class2/constr-x::obj ::class2/constr)
@@ -234,7 +234,7 @@
 ;; def-foo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-def-foo::def-foo x1201::obj)
+    (inline make-def-foo::def-foo x1204::obj)
     (inline def-foo?::bool ::obj)
     (def-foo-nil::def-foo)
     (inline def-foo-x::obj ::def-foo)
@@ -243,7 +243,7 @@
 ;; def-bar
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-def-bar::def-bar x1198::obj y1199::obj)
+    (inline make-def-bar::def-bar x1200::obj y1201::obj)
     (inline def-bar?::bool ::obj)
     (def-bar-nil::def-bar)
     (inline def-bar-y::obj ::def-bar)
@@ -254,7 +254,7 @@
 ;; def-gee
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-def-gee::def-gee x1193::obj y1194::obj z1195::obj)
+    (inline make-def-gee::def-gee x1196::obj y1197::obj z1198::obj)
     (inline def-gee?::bool ::obj)
     (def-gee-nil::def-gee)
     (inline def-gee-z::obj ::def-gee)
@@ -267,7 +267,7 @@
 ;; deftest
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-deftest::deftest x1191::obj)
+    (inline make-deftest::deftest x1194::obj)
     (inline deftest?::bool ::obj)
     (deftest-nil::deftest)
     (inline deftest-x::obj ::deftest)
@@ -276,7 +276,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; foo
-(define-inline (make-foo::foo x1257::long y1258::string z1259::string) (instantiate::foo (x x1257) (y y1258) (z z1259)))
+(define-inline (make-foo::foo x1261::long y1262::string z1263::string) (instantiate::foo (x x1261) (y y1262) (z z1263)))
 (define-inline (foo?::bool obj::obj) ((@ isa? __object) obj (@ foo object)))
 (define (foo-nil::foo) (class-nil (@ foo object)))
 (define-inline (foo-z::string o::foo) (-> |#!bigloo_wallow| o z))
@@ -287,7 +287,7 @@
 (define-inline (foo-x-set! o::foo v::long) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; gee
-(define-inline (make-gee::gee x1253::obj y1254::obj) (instantiate::gee (x x1253) (y y1254)))
+(define-inline (make-gee::gee x1258::obj y1259::obj) (instantiate::gee (x x1258) (y y1259)))
 (define-inline (gee?::bool obj::obj) ((@ isa? __object) obj (@ gee object)))
 (define (gee-nil::gee) (class-nil (@ gee object)))
 (define-inline (gee-y::obj o::gee) (-> |#!bigloo_wallow| o y))
@@ -296,7 +296,7 @@
 (define-inline (gee-x-set! o::gee v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; foo/l
-(define-inline (make-foo/l::foo/l x1247::long y1248::string z1249::string dummy1250::obj) (instantiate::foo/l (x x1247) (y y1248) (z z1249) (dummy dummy1250)))
+(define-inline (make-foo/l::foo/l x1252::long y1253::string z1254::string dummy1255::obj) (instantiate::foo/l (x x1252) (y y1253) (z z1254) (dummy dummy1255)))
 (define-inline (foo/l?::bool obj::obj) ((@ isa? __object) obj (@ foo/l object)))
 (define (foo/l-nil::foo/l) (class-nil (@ foo/l object)))
 (define-inline (foo/l-dummy::obj o::foo/l) (-> |#!bigloo_wallow| o dummy))
@@ -309,14 +309,14 @@
 (define-inline (foo/l-x-set! o::foo/l v::long) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; titi
-(define-inline (make-titi::titi x1245::int) (instantiate::titi (x x1245)))
+(define-inline (make-titi::titi x1250::int) (instantiate::titi (x x1250)))
 (define-inline (titi?::bool obj::obj) ((@ isa? __object) obj (@ titi object)))
 (define (titi-nil::titi) (class-nil (@ titi object)))
 (define-inline (titi-x::int o::titi) (-> |#!bigloo_wallow| o x))
 (define-inline (titi-x-set! o::titi v::int) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; toto
-(define-inline (make-toto::toto x1239::int y1240::char yy1241::char z1242::obj t1243::obj) (instantiate::toto (x x1239) (y y1240) (yy yy1241) (z z1242) (t t1243)))
+(define-inline (make-toto::toto x1244::int y1245::char yy1246::char z1247::obj t1248::obj) (instantiate::toto (x x1244) (y y1245) (yy yy1246) (z z1247) (t t1248)))
 (define-inline (toto?::bool obj::obj) ((@ isa? __object) obj (@ toto object)))
 (define (toto-nil::toto) (class-nil (@ toto object)))
 (define-inline (toto-t::obj o::toto) (-> |#!bigloo_wallow| o t))
@@ -324,7 +324,7 @@
 (define-inline (toto-z::obj o::toto) (-> |#!bigloo_wallow| o z))
 (define-inline (toto-z-set! o::toto v::obj) (set! (-> |#!bigloo_wallow| o z) v))
 (define-inline (toto-yy::char o::toto) (-> |#!bigloo_wallow| o yy))
-#f
+(define-inline (toto-yy-set! o::toto v::char) (set! (-> |#!bigloo_wallow| o yy) v))
 (define-inline (toto-y::char o::toto) (-> |#!bigloo_wallow| o y))
 (define-inline (toto-y-set! o::toto v::char) (set! (-> |#!bigloo_wallow| o y) v))
 (define-inline (toto-x::int o::toto) (-> |#!bigloo_wallow| o x))
@@ -336,14 +336,14 @@
 (define (value-nil::value) (class-nil (@ value object)))
 
 ;; fin
-(define-inline (make-fin::fin x1236::obj) (instantiate::fin (x x1236)))
+(define-inline (make-fin::fin x1241::obj) (instantiate::fin (x x1241)))
 (define-inline (fin?::bool obj::obj) ((@ isa? __object) obj (@ fin object)))
 (define (fin-nil::fin) (class-nil (@ fin object)))
 (define-inline (fin-x::obj o::fin) (-> |#!bigloo_wallow| o x))
 (define-inline (fin-x-set! o::fin v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; sfin
-(define-inline (make-sfin::sfin x1233::obj y1234::obj) (instantiate::sfin (x x1233) (y y1234)))
+(define-inline (make-sfin::sfin x1238::obj y1239::obj) (instantiate::sfin (x x1238) (y y1239)))
 (define-inline (sfin?::bool obj::obj) ((@ isa? __object) obj (@ sfin object)))
 (define (sfin-nil::sfin) (class-nil (@ sfin object)))
 (define-inline (sfin-y::obj o::sfin) (-> |#!bigloo_wallow| o y))
@@ -352,7 +352,7 @@
 (define-inline (sfin-x-set! o::sfin v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; cfin
-(define-inline (make-cfin::cfin x1230::obj z1231::obj) (instantiate::cfin (x x1230) (z z1231)))
+(define-inline (make-cfin::cfin x1235::obj z1236::obj) (instantiate::cfin (x x1235) (z z1236)))
 (define-inline (cfin?::bool obj::obj) ((@ isa? __object) obj (@ cfin object)))
 (define (cfin-nil::cfin) (class-nil (@ cfin object)))
 (define-inline (cfin-z::obj o::cfin) (-> |#!bigloo_wallow| o z))
@@ -361,7 +361,7 @@
 (define-inline (cfin-x-set! o::cfin v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; point
-(define-inline (make-point::point x1227::obj y1228::obj) (instantiate::point (x x1227) (y y1228)))
+(define-inline (make-point::point x1232::obj y1233::obj) (instantiate::point (x x1232) (y y1233)))
 (define-inline (point?::bool obj::obj) ((@ isa? __object) obj (@ point object)))
 (define (point-nil::point) (class-nil (@ point object)))
 (define-inline (point-y::obj o::point) (-> |#!bigloo_wallow| o y))
@@ -370,7 +370,7 @@
 (define-inline (point-x-set! o::point v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; pointc
-(define-inline (make-pointc::pointc x1223::obj y1224::obj color1225::obj) (instantiate::pointc (x x1223) (y y1224) (color color1225)))
+(define-inline (make-pointc::pointc x1228::obj y1229::obj color1230::obj) (instantiate::pointc (x x1228) (y y1229) (color color1230)))
 (define-inline (pointc?::bool obj::obj) ((@ isa? __object) obj (@ pointc object)))
 (define (pointc-nil::pointc) (class-nil (@ pointc object)))
 (define-inline (pointc-color::obj o::pointc) (-> |#!bigloo_wallow| o color))
@@ -381,7 +381,7 @@
 (define-inline (pointc-x-set! o::pointc v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; point3
-(define-inline (make-point3::point3 x1219::obj y1220::obj z1221::obj) (instantiate::point3 (x x1219) (y y1220) (z z1221)))
+(define-inline (make-point3::point3 x1224::obj y1225::obj z1226::obj) (instantiate::point3 (x x1224) (y y1225) (z z1226)))
 (define-inline (point3?::bool obj::obj) ((@ isa? __object) obj (@ point3 object)))
 (define (point3-nil::point3) (class-nil (@ point3 object)))
 (define-inline (point3-z::obj o::point3) (-> |#!bigloo_wallow| o z))
@@ -392,11 +392,11 @@
 (define-inline (point3-x-set! o::point3 v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; readc
-(define-inline (make-readc::readc x1217::obj) (instantiate::readc (x x1217)))
+(define-inline (make-readc::readc x1221::obj) (instantiate::readc (x x1221)))
 (define-inline (readc?::bool obj::obj) ((@ isa? __object) obj (@ readc object)))
 (define (readc-nil::readc) (class-nil (@ readc object)))
 (define-inline (readc-x::obj o::readc) (-> |#!bigloo_wallow| o x))
-#f
+(define-inline (readc-x-set! o::readc v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; virtual-1
 (define-inline (make-virtual-1::virtual-1) (instantiate::virtual-1))
@@ -406,7 +406,7 @@
 #f
 
 ;; virtual-2
-(define-inline (make-virtual-2::virtual-2 z1213::obj t1214::obj) (instantiate::virtual-2 (z z1213) (t t1214)))
+(define-inline (make-virtual-2::virtual-2 z1216::obj t1217::obj) (instantiate::virtual-2 (z z1216) (t t1217)))
 (define-inline (virtual-2?::bool obj::obj) ((@ isa? __object) obj (@ virtual-2 object)))
 (define (virtual-2-nil::virtual-2) (class-nil (@ virtual-2 object)))
 (define-inline (virtual-2-w::obj o::virtual-2) (-> |#!bigloo_wallow| o w))
@@ -414,19 +414,19 @@
 (define-inline (virtual-2-t::obj o::virtual-2) (-> |#!bigloo_wallow| o t))
 (define-inline (virtual-2-t-set! o::virtual-2 v::obj) (set! (-> |#!bigloo_wallow| o t) v))
 (define-inline (virtual-2-z::obj o::virtual-2) (-> |#!bigloo_wallow| o z))
-#f
+(define-inline (virtual-2-z-set! o::virtual-2 v::obj) (set! (-> |#!bigloo_wallow| o z) v))
 (define-inline (virtual-2-x::obj o::virtual-2) (-> |#!bigloo_wallow| o x))
 #f
 
 ;; rec-1
-(define-inline (make-rec-1::rec-1 f11211::rec-2) (instantiate::rec-1 (f1 f11211)))
+(define-inline (make-rec-1::rec-1 f11214::rec-2) (instantiate::rec-1 (f1 f11214)))
 (define-inline (rec-1?::bool obj::obj) ((@ isa? __object) obj (@ rec-1 object)))
 (define (rec-1-nil::rec-1) (class-nil (@ rec-1 object)))
 (define-inline (rec-1-f1::rec-2 o::rec-1) (-> |#!bigloo_wallow| o f1))
 (define-inline (rec-1-f1-set! o::rec-1 v::rec-2) (set! (-> |#!bigloo_wallow| o f1) v))
 
 ;; rec-2
-(define-inline (make-rec-2::rec-2 f21209::rec-1) (instantiate::rec-2 (f2 f21209)))
+(define-inline (make-rec-2::rec-2 f21212::rec-1) (instantiate::rec-2 (f2 f21212)))
 (define-inline (rec-2?::bool obj::obj) ((@ isa? __object) obj (@ rec-2 object)))
 (define (rec-2-nil::rec-2) (class-nil (@ rec-2 object)))
 (define-inline (rec-2-f2::rec-1 o::rec-2) (-> |#!bigloo_wallow| o f2))
@@ -453,28 +453,28 @@
 #f
 
 ;; class/constr
-(define-inline (make-class/constr::class/constr x1205::obj) (instantiate::class/constr (x x1205)))
+(define-inline (make-class/constr::class/constr x1208::obj) (instantiate::class/constr (x x1208)))
 (define-inline (class/constr?::bool obj::obj) ((@ isa? __object) obj (@ class/constr object)))
 (define (class/constr-nil::class/constr) (class-nil (@ class/constr object)))
 (define-inline (class/constr-x::obj o::class/constr) (-> |#!bigloo_wallow| o x))
 (define-inline (class/constr-x-set! o::class/constr v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; class2/constr
-(define-inline (make-class2/constr::class2/constr x1203::obj) (instantiate::class2/constr (x x1203)))
+(define-inline (make-class2/constr::class2/constr x1206::obj) (instantiate::class2/constr (x x1206)))
 (define-inline (class2/constr?::bool obj::obj) ((@ isa? __object) obj (@ class2/constr object)))
 (define (class2/constr-nil::class2/constr) (class-nil (@ class2/constr object)))
 (define-inline (class2/constr-x::obj o::class2/constr) (-> |#!bigloo_wallow| o x))
 (define-inline (class2/constr-x-set! o::class2/constr v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; def-foo
-(define-inline (make-def-foo::def-foo x1201::obj) (instantiate::def-foo (x x1201)))
+(define-inline (make-def-foo::def-foo x1204::obj) (instantiate::def-foo (x x1204)))
 (define-inline (def-foo?::bool obj::obj) ((@ isa? __object) obj (@ def-foo object)))
 (define (def-foo-nil::def-foo) (class-nil (@ def-foo object)))
 (define-inline (def-foo-x::obj o::def-foo) (-> |#!bigloo_wallow| o x))
 (define-inline (def-foo-x-set! o::def-foo v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; def-bar
-(define-inline (make-def-bar::def-bar x1198::obj y1199::obj) (instantiate::def-bar (x x1198) (y y1199)))
+(define-inline (make-def-bar::def-bar x1200::obj y1201::obj) (instantiate::def-bar (x x1200) (y y1201)))
 (define-inline (def-bar?::bool obj::obj) ((@ isa? __object) obj (@ def-bar object)))
 (define (def-bar-nil::def-bar) (class-nil (@ def-bar object)))
 (define-inline (def-bar-y::obj o::def-bar) (-> |#!bigloo_wallow| o y))
@@ -483,7 +483,7 @@
 (define-inline (def-bar-x-set! o::def-bar v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; def-gee
-(define-inline (make-def-gee::def-gee x1193::obj y1194::obj z1195::obj) (instantiate::def-gee (x x1193) (y y1194) (z z1195)))
+(define-inline (make-def-gee::def-gee x1196::obj y1197::obj z1198::obj) (instantiate::def-gee (x x1196) (y y1197) (z z1198)))
 (define-inline (def-gee?::bool obj::obj) ((@ isa? __object) obj (@ def-gee object)))
 (define (def-gee-nil::def-gee) (class-nil (@ def-gee object)))
 (define-inline (def-gee-z::obj o::def-gee) (-> |#!bigloo_wallow| o z))
@@ -494,7 +494,7 @@
 (define-inline (def-gee-x-set! o::def-gee v::obj) (set! (-> |#!bigloo_wallow| o x) v))
 
 ;; deftest
-(define-inline (make-deftest::deftest x1191::obj) (instantiate::deftest (x x1191)))
+(define-inline (make-deftest::deftest x1194::obj) (instantiate::deftest (x x1194)))
 (define-inline (deftest?::bool obj::obj) ((@ isa? __object) obj (@ deftest object)))
 (define (deftest-nil::deftest) (class-nil (@ deftest object)))
 (define-inline (deftest-x::obj o::deftest) (-> |#!bigloo_wallow| o x))

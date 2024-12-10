@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Dec 10 07:20:48 2024 (serrano)                */
+/*    Last change :  Tue Dec 10 11:48:01 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -55,6 +55,25 @@ struct bgl_real {
 #define REAL_SIZE  (sizeof(struct bgl_real))
 
 /*---------------------------------------------------------------------*/
+/*    tagging and boxing                                               */
+/*---------------------------------------------------------------------*/
+#if (defined(TAG_FL_ROT_BITS))
+// FL tags encoded in 3 bits of the exponent
+#  define BGL_ROT_NBITS 64
+
+#  define BGL_BIT_ROTL(o) \
+     ((obj_t)(((unsigned long)o << TAG_FL_ROT_BITS) \
+	      | ((unsigned long)o >> (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
+#  define BGL_BIT_ROTR(o) \
+     ((obj_t)(((unsigned long)o >> TAG_FL_ROT_BITS) \
+	      | ((unsigned long)o << (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
+#else
+// FL tags encoded in the 3 least significant bits of the word
+#  define BGL_BIT_ROTL(o) (o)
+#  define BGL_BIT_ROTR(o) (o)
+#endif
+
+/*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
 union bgl_fltobj {
@@ -100,17 +119,16 @@ union bgl_fltobj {
 #define BGL_ASDOUBLE(o) (((union bgl_fltobj)(o))._double)
 
 // BGL_TAGGED_REALP
+#if defined(TAG_FL_ROT_BITS)
+#  if !BGL_HAVE_ASM_X86_64
+#    define BGL_TAGGED_REALP(o) BGL_TAG_IN_SETP(o, BGL_REAL_TAG_SET)
+#    define BGL_TAG_IN_SETP(t, set) \
+       ((((uint32_t)1 << ((long)(t))) & (~(uint32_t)0/0xff * (set))) != 0)
 /* #define BGL_TAGGED_REALP(o) \                                      */
 /*    ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)o) & 7))) < 0) */
-#define BGL_TAG_IN_SETP(t, set) \
-   ((((uint32_t)1 << ((long)(t))) & (~(uint32_t)0/0xff * (set))) != 0)
-
-/* #if !BGL_HAVE_ASM_X86_64                                            */
 /* #  define BGL_TAGGED_REALP(o) \                                     */
 /*      (((int32_t)((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0) */
-#if !BGL_HAVE_ASM_X86_64
-#  define BGL_TAGGED_REALP(o) BGL_TAG_IN_SETP(o, BGL_REAL_TAG_SET)
-#else
+#  else
 inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
    bool carry;
    __asm__("bt %%ax, %2;" /* get one bit of mask into carry (ax is index) */
@@ -119,6 +137,10 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 	     "r"((uint16_t)((uint16_t)(~(uint16_t)0)/0xff * BGL_REAL_TAG_SET)));
    return carry;
 }
+#  endif
+#else
+#  define BGL_TAGGED_REALP(o) \
+     ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)o) & 7))) < 0)
 #endif
 
 
@@ -130,7 +152,7 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 #endif
 
 // predicates
-#if defined(TAG_REALZ) || !defined(TAG_REAL)
+#if defined(TAG_REALZ) || !defined(TAG_REAL) || !defined(TAG_FL_ROT_BITS)
 #  define FLONUMP(o) (BGL_TAGGED_REALP(o) || BGL_BOXED_REALP(o))
 #  define BGL_FAST_REALP(o) BGL_TAGGED_REALP(o)
 #else
@@ -147,30 +169,17 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 #define BGL_REAL_CNST(name) name
 
 /*---------------------------------------------------------------------*/
-/*    tagging and boxing                                               */
-/*---------------------------------------------------------------------*/
-#if (defined(TAG_FL_ROT_BITS))
-// FL tags encoded in 3 bits of the exponent
-#  define BGL_ROT_NBITS 64
-
-#  define BGL_BIT_ROTL(o) \
-     ((obj_t)(((unsigned long)o << TAG_FL_ROT_BITS) \
-	      | ((unsigned long)o >> (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
-#  define BGL_BIT_ROTR(o) \
-     ((obj_t)(((unsigned long)o >> TAG_FL_ROT_BITS) \
-	      | ((unsigned long)o << (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
-#else
-// FL tags encoded in the 3 least significant bits of the word
-#  define BGL_BIT_ROTL(o) (o)
-#  define BGL_BIT_ROTR(o) (o)
-#endif
-
-/*---------------------------------------------------------------------*/
 /*    REAL_TO_DOUBLE                                                   */
 /*---------------------------------------------------------------------*/
+#if defined(TAG_REAL)
+#  define BGL_POINTER_REALP(o) BGL_BOXED_REALP(o)
+#else
+#  define BGL_POINTER_REALP(o) BGL_POINTERP(o)
+#endif
+
 static double REAL_TO_DOUBLE(obj_t o) {
    double d = BGL_ASDOUBLE(BGL_BIT_ROTL(o));
-   if (!BGL_POINTERP(o)) {
+   if (!BGL_POINTER_REALP(o)) {
       return d;
    } else {
       return ((struct bgl_real *)CREAL(o))->val;
