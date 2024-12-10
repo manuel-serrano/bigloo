@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Dec  9 07:42:59 2024 (serrano)                */
+/*    Last change :  Tue Dec 10 10:49:50 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -74,7 +74,7 @@ struct bgl_real {
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)
 #endif
 
-#define BGL_FAST_FLONUMP(c) FLONUMP(c)
+#define BGL_FAST_REALP(c) FLONUMP(c)
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */
