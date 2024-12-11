@@ -1,10 +1,10 @@
 /* @CONFIGURE@ */
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/autoconf/bigloo_config.h.in          */
+/*    serrano/prgm/project/bigloo/flt/autoconf/bigloo_config.h.in      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep 22 15:03:58 2014 (serrano)                */
+/*    Last change :  Wed Dec 11 07:34:52 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo configuration stuff                                       */
 /*=====================================================================*/
@@ -84,6 +84,9 @@
 
 #undef BGL_ELONG_BIT_SIZE
 #define BGL_ELONG_BIT_SIZE @ELONG_BIT_SIZE@
+
+#undef BGL_TAGGING
+#define BGL_TAGGING @BGL_TAGGING@
 
 #undef BGL_NAN_TAGGING
 #define BGL_NAN_TAGGING @BGL_NAN_TAGGING@

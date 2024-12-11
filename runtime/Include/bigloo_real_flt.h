@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Dec 10 11:48:01 2024 (serrano)                */
+/*    Last change :  Wed Dec 11 07:58:34 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -58,23 +58,26 @@ struct bgl_real {
 /*    tagging and boxing                                               */
 /*---------------------------------------------------------------------*/
 #if (defined(TAG_FL_ROT_BITS))
+// ---------------------------
 // FL tags encoded in 3 bits of the exponent
 #  define BGL_ROT_NBITS 64
 
-#  define BGL_BIT_ROTL(o) \
-     ((obj_t)(((unsigned long)o << TAG_FL_ROT_BITS) \
-	      | ((unsigned long)o >> (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
-#  define BGL_BIT_ROTR(o) \
-     ((obj_t)(((unsigned long)o >> TAG_FL_ROT_BITS) \
-	      | ((unsigned long)o << (BGL_ROT_NBITS - TAG_FL_ROT_BITS))))
+#  define BGL_BIT_ROTL(o, n) \
+     ((obj_t)(((unsigned long)o << n) \
+	      | ((unsigned long)o >> (BGL_ROT_NBITS - n))))
+#  define BGL_BIT_ROTR(o, n) \
+     ((obj_t)(((unsigned long)o >> n) \
+	      | ((unsigned long)o << (BGL_ROT_NBITS - n))))
 #else
+// --
 // FL tags encoded in the 3 least significant bits of the word
-#  define BGL_BIT_ROTL(o) (o)
-#  define BGL_BIT_ROTR(o) (o)
+#  define BGL_BIT_ROTL(o, n) (o)
+#  define BGL_BIT_ROTR(o, n) (o)
 #endif
+// ---
 
 /*---------------------------------------------------------------------*/
-/*    tagging                                                          */
+/*    cast type                                                        */
 /*---------------------------------------------------------------------*/
 union bgl_fltobj {
    double _double;
@@ -103,23 +106,27 @@ union bgl_fltobj {
 /*    This gorgeous trick is due to Marc Feeley.                       */
 /*---------------------------------------------------------------------*/
 #if defined(TAG_REALZ)
+// -------------------
 #  define BGL_REAL_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REALZ)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
 #  define BGL_REAL_TAG_SET \
      ((1 << TAG_REALU) | (1 << TAG_REALL) | (1 << TAG_REALZ))
 #else
+// --
 #  define BGL_REAL_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
 #  define BGL_REAL_TAG_SET \
      ((1 << TAG_REALU) | (1 << TAG_REALL))
 #endif
+// ---
 
 // cast operations
 #define BGL_ASOBJ(d) (((union bgl_fltobj)(d))._obj)
 #define BGL_ASDOUBLE(o) (((union bgl_fltobj)(o))._double)
 
 // BGL_TAGGED_REALP
-#if defined(TAG_FL_ROT_BITS)
+#if BGL_TAGGING == BGL_TAGGING_FL || BGL_TAGGING == BGL_TAGGING_FLNZ
+// -----------------------------------------------------------------
 #  if !BGL_HAVE_ASM_X86_64
 #    define BGL_TAGGED_REALP(o) BGL_TAG_IN_SETP(o, BGL_REAL_TAG_SET)
 #    define BGL_TAG_IN_SETP(t, set) \
@@ -138,11 +145,21 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
    return carry;
 }
 #  endif
+#elif BGL_TAGGING == BGL_TAGGING_FLLB
+// ----------------------------------
+#  define BGL_TAGGED_REALP(o) \
+     ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)o) & TAG_MASK))) < 0)
+#elif BGL_TAGGING == BGL_TAGGING_FL1
+// ---------------------------------
+// ((o>>59)+13)>>1
+#  define BGL_TAGGED_REALP(o) \
+     ((BGL_BIT_ROTR(BGL_BIT_ROTR(o, TAG_FL_ROT_BITS) + TAG_FL_EXPONENT_SHIFT), 1) & TAG_MASK)
 #else
+// --
 #  define BGL_TAGGED_REALP(o) \
      ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)o) & 7))) < 0)
 #endif
-
+// ---
 
 // BGL_BOXED_REALP
 #if (defined(TAG_REAL))
@@ -153,9 +170,11 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 
 // predicates
 #if defined(TAG_REALZ) || !defined(TAG_REAL) || !defined(TAG_FL_ROT_BITS)
+// ----------------------------------------------------------------------
 #  define FLONUMP(o) (BGL_TAGGED_REALP(o) || BGL_BOXED_REALP(o))
 #  define BGL_FAST_REALP(o) BGL_TAGGED_REALP(o)
 #else
+// --
 #  define BGL_FLONUMP_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REAL)) | (1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
 #  define BGL_FAST_FLONUMP_TAG_MASK_TABLE \
@@ -163,6 +182,7 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 #  define FLONUMP(o) (((int32_t)((uint32_t)BGL_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
 #  define BGL_FAST_REALP(o) (((int32_t)((uint32_t)BGL_FAST_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
 #endif
+// ---
 
 #define REALP(o) FLONUMP(o)
 
@@ -177,8 +197,20 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
 #  define BGL_POINTER_REALP(o) BGL_POINTERP(o)
 #endif
 
+#if (BGL_TAGGING != BGL_TAGGING_FL1)
+// ---------------------------------
+#  define BGL_FAST_REAL_TO_DOUBLE(o) \
+     BGL_ASDOUBLE(BGL_BIT_ROTL(o, TAG_FL_ROT_BITS))
+#else
+// --
+#  define BGL_FAST_REAL_TO_DOUBLE(o) \
+   // ((o<<1)-13)<<59
+   BGL_ASDOUBLE(BGL_BIT_ROTL(BGL_BIT_ROTL(o, 1) - TAG_FL_EXPONENT_SHIFT, TAG_FL_ROT_BITS))
+#endif
+// ---
+
 static double REAL_TO_DOUBLE(obj_t o) {
-   double d = BGL_ASDOUBLE(BGL_BIT_ROTL(o));
+   double d = BGL_FAST_REAL_TO_DOUBLE(o);
    if (!BGL_POINTER_REALP(o)) {
       return d;
    } else {
@@ -186,30 +218,31 @@ static double REAL_TO_DOUBLE(obj_t o) {
    }
 }
 
-#define BGL_FAST_REAL_TO_DOUBLE(o) BGL_ASDOUBLE(BGL_BIT_ROTL(o))
-
 /*---------------------------------------------------------------------*/
 /*    Constants and allocations                                        */
 /*---------------------------------------------------------------------*/
 // constants
-#if (!defined(TAG_REAL))   
+#if (!defined(TAG_REAL))
+// ---------------------
 #define DEFINE_REAL(name, aux, flonum) \
   static struct { __CNST_ALIGN header_t header; double real; } \
      aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }; \
   static const obj_t name = BREAL(&(aux.header))
 #else
+// --
 #define DEFINE_REAL(name, aux, flonum) \
   static struct { double real; } \
      aux = { flonum }; \
   static const obj_t name = BREAL(&aux)
 #endif
+// ---
 
 #define BGL_REAL_SET(o, v) \
    ((BGL_TAGGED_REALP(o) ? DOUBLE_TO_REAL(v) : ((REAL(o).val = v), o)))
 
 // allocations
 static obj_t DOUBLE_TO_REAL(double d) {
-   obj_t o = BGL_BIT_ROTR(BGL_ASOBJ(d));
+   obj_t o = BGL_BIT_ROTR(BGL_ASOBJ(d), TAG_FL_ROT_BITS);
    if (BGL_TAGGED_REALP(o)) {
       return o;
    } else {
@@ -221,18 +254,23 @@ static obj_t DOUBLE_TO_REAL(double d) {
 #define REAL_TO_FLOAT(o) ((float)(REAL_TO_DOUBLE(o)))
 
 #if (!defined(TAG_REAL))
+// ---------------------
 #  define BGL_INIT_REAL(an_object, d) \
      (an_object)->real.header = BGL_MAKE_HEADER(REAL_TYPE, REAL_SIZE); \
      (an_object)->real.val = d;
 #else
+// --
 #  define BGL_INIT_REAL(an_object, d) \
      (an_object)->real.val = d;
 #endif
+// ---
 
 #if (BGL_GC_CUSTOM || !defined(__GNUC__))
+// --------------------------------------
 #  define MAKE_REAL(d) make_real(d)
 #  define BGL_MAKE_INLINE_REAL(d) MAKE_REAL(d)
 #else
+// --
 #  define MAKE_REAL(d) \
    ({ obj_t an_object = GC_MALLOC_ATOMIC(REAL_SIZE); \
       BGL_INIT_REAL(an_object, d);		\
@@ -243,6 +281,7 @@ static obj_t DOUBLE_TO_REAL(double d) {
      BGL_INIT_REAL(an_object, d); \
      BREAL(an_object)
 #endif
+// ---
 
 /*---------------------------------------------------------------------*/
 /*    C++                                                              */

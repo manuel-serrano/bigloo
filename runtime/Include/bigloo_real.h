@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Dec  9 07:42:12 2024 (serrano)                */
+/*    Last change :  Wed Dec 11 07:44:59 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -24,9 +24,9 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    Specific configuration                                           */
 /*---------------------------------------------------------------------*/
-#if (BGL_FL_TAGGING)
+#if (BGL_TAGGING == BGL_TAGGING_FL)
 #  include <bigloo_real_flt.h>
-#elif (BGL_NAN_TAGGING)
+#elif (BGL_TAGGING == BGL_TAGGING_NAN)
 #  include <bigloo_real_nan.h>
 #else
 #  include <bigloo_real_heap.h>

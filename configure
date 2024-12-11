@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Dec  9 07:56:21 2024 (serrano)                */
+#*    Last change :  Wed Dec 11 07:26:10 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -107,6 +107,7 @@ gcconfigurethreadsopt=--enable-thread
 belong_prealloc_min=-10
 belong_prealloc_max=100
 
+bgltagging=BGL_TAGGING_PLAIN
 bglnantagging=0
 bglfltagging=0
 bglsmi=0
@@ -539,6 +540,7 @@ while : ; do
       havebdb=1;
       pthreadlocalstorage=;
       pthreadsetname=;
+      bgltagging=BGL_TAGGING_FL;
       bglfltagging=1;
       action="all";;
 
@@ -953,23 +955,33 @@ while : ; do
     --mingw=yes)
       mingw="yes";;
 
+    --plain-tagging)
+      bgltagging=BGL_TAGGING_PLAIN;
+      bglfltagging=0;
+      bglnantagging=0;;
+      
     --nan-tagging)
+      bgltagging=BGL_TAGGING_NAN;
       bglfltagging=0;
       bglnantagging=1;;
       
     --fl-tagging)
+      bgltagging=BGL_TAGGING_FL;
       bglnantagging=0;
       bglfltagging=1;;
       
     --fl-tagging-lb)
+      bgltagging=BGL_TAGGING_FLLB;
       bglnantagging=0;
       bglfltagging=2;;
       
     --fl-tagging-nz)
+      bgltagging=BGL_TAGGING_FLNZ;
       bglnantagging=0;
       bglfltagging=3;;
       
     --fl-tagging-1)
+      bgltagging=BGL_TAGGING_FL1;
       bglfltagging=4;;
       
     --smi)
@@ -1328,7 +1340,9 @@ while : ; do
       echo "Experimental features:"  >&2;
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging (nan-tagging schema)" >&2;
+      echo "   --plain-tagging (plain-tagging schema)" >&2;
       echo "   --fl-tagging (default $bglfltagging)" >&2;
+      echo "   --fl-tagging-1 (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-lb (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-nz (for experiment only, don't use because slow)" >&2;
       echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
@@ -2320,6 +2334,15 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
 
+  if [ "$bgltagging " != "BGL_TAGGING_PLAIN " ]; then
+    if [ "$alignment" = "3" ]; then 
+      customgc=yes;
+    else
+      $echo "*** ERROR: fl tagging (floating point tagging) requires 64bit platforms"
+      exit 1
+    fi
+  fi
+  
   if [ "$bglfltagging " != "0 " ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
@@ -3709,6 +3732,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@PTR_ALIGNMENT@|$alignment|" \
               -e "s|@INT_BIT_SIZE@|$intsize|" \
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
+              -e "s|@BGL_TAGGING@|$bgltagging|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
               -e "s|@BGL_FL_TAGGING@|$bglfltagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \

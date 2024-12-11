@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Nov 26 11:19:33 2024 (serrano)                */
+/*    Last change :  Wed Dec 11 08:28:36 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -158,7 +158,7 @@ struct bgl_epair {
 #endif
 
 /* stack allocation (see BGL_EXITD_PUSH_PROTECT) */
-#if (BGL_HAVE_ALLOCA && !BGL_NAN_TAGGING)
+#if (BGL_HAVE_ALLOCA && (BGL_TAGGING != BGL_TAGGING_NAN))
 #  define MAKE_STACK_PAIR_TMP(a, d, __t) \
      (__t = alloca(PAIR_SIZE), BGL_INIT_PAIR(__t, a, d), BPAIR(__t))
 #  if (BGL_HAVE_ALLOCA && defined(__GNUC__))

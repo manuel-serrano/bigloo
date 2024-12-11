@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Nov 26 11:18:40 2024 (serrano)                */
+/*    Last change :  Wed Dec 11 08:28:56 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -337,7 +337,7 @@ BGL_RUNTIME_DECL obj_t alloc_hvector(int, int, int);
 /*---------------------------------------------------------------------*/
 /*    Vector stack allocation                                          */
 /*---------------------------------------------------------------------*/
-#if (BGL_HAVE_ALLOCA && !BGL_NAN_TAGGING && defined(__GNUC__))
+#if (BGL_HAVE_ALLOCA && (BGL_TAGGING != BGL_TAGGING_NAN) && defined(__GNUC__))
 #  if(!defined(TAG_VECTOR))
 #     define BGL_CREATE_STACK_VECTOR(len) \
       ({ \
