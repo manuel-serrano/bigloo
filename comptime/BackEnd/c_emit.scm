@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/c_emit.scm     */
+;*    serrano/prgm/project/bigloo/flt/comptime/BackEnd/c_emit.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Thu Sep 26 08:40:13 2024 (serrano)                */
+;*    Last change :  Wed Dec 11 15:16:44 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -367,6 +367,8 @@
 	   (display "BGL_INFINITY" *c-port*))
 	  ((infinitefl? value)
 	   (display "(-BGL_INFINITY)" *c-port*))
+	  (#t
+	   (display value *c-port*))
 	  (else
 	   (display "((" *c-port*)
 	   (display (string-sans-$ (type-name *real*)) *c-port*)
