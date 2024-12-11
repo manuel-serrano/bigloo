@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Mon Jul 10 14:04:01 2023 (serrano)                */
+#*    Last change :  Wed Dec 11 17:24:00 2024 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host libbacktrace library.                         */
 #*=====================================================================*/
@@ -56,6 +56,10 @@ fi
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
 #include <backtrace.h>
+
+static void cbe(void *data, const char *msg, int errnum) {
+   fprintf(stderr, "*** BACKTRACE ERROR:%s (%d)\n", msg, errnum);
+}
 
 int main( int argc, char *argv[] ) {
    struct backtrace_state *bt_state = backtrace_create_state(0L, 0, cbe, 0L);
