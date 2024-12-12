@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec 12 08:19:46 2024 (serrano)                */
+#*    Last change :  Thu Dec 12 12:08:21 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -4854,6 +4854,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       $echo "LIBBACKTRACEBOOTINCDIR=$bootdir/libbacktrace/libbacktrace-$libbacktraceversion" >> $makefile_cfg
     else
       $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
+      $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
       $echo "LIBBACKTRACEBOOTINCDIR=." >> $makefile_cfg
     fi
 

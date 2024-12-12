@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Wed Dec 11 17:24:00 2024 (serrano)                */
+#*    Last change :  Thu Dec 12 11:26:59 2024 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host libbacktrace library.                         */
 #*=====================================================================*/
@@ -13,7 +13,7 @@
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
 cflags=
-libbacktracelib="libbacktrace"
+libbacktracelib="backtrace"
 type=
 
 #*---------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ static void cbe(void *data, const char *msg, int errnum) {
 
 int main( int argc, char *argv[] ) {
    struct backtrace_state *bt_state = backtrace_create_state(0L, 0, cbe, 0L);
-   return bt_state != 0;
+   return bt_state == 0;
 }
 EOF
 
