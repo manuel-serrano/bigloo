@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    /tmp/TBR/bigloo-4.6a/configure                                   */
+#*    serrano/prgm/project/bigloo/bigloo/configure                     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec 12 16:36:47 2024 (serrano)                */
+#*    Last change :  Thu Dec 12 19:35:11 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -539,6 +539,7 @@ while : ; do
       pthreadlocalstorage=;
       pthreadsetname=;
       bglreservedtagging=0;
+      customlibbacktrace=yes;
       action="all";;
 
     --bootdir=*)
@@ -2902,7 +2903,7 @@ if [ "$libbacktrace " != "no " ]; then
     libbacktracelibs="-lbacktrace"
     havelibbacktrace=1;
     featureflags="-srfi enable-libbacktrace $featureflags";
-    extralibbacktrace=libbacktrace
+    extralibbacktrace=backtrace
     libbacktracebuildpath="\$(BOOTDIR)/libbacktrace\$(LIBDIR)/\$(FILDIR)"
     ldbuildopts="-L$bootdir/libbacktrace$libdir/$fildir $ldbuildopts"
     #lcustomflags="-L$bootdir/libbacktrace$libdir/$fildir $lcustomflags"

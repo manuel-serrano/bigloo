@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Mon Sep  2 11:30:19 2024 (serrano)                */
+;*    Last change :  Thu Dec 12 10:10:18 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -52,7 +52,12 @@
    (extern
       ($make-bignum::bignum (::u16vector) "bgl_make_bignum")
       (macro $bignum-u16vect::u16vector (::bignum) "BGL_BIGNUM_U16VECT")
-      
+
+      (export $bignum->fixnum-safe "BGL_SAFE_BX_TO_FX")
+      (export $+fx-safe "BGL_SAFE_PLUS_FX")
+      (export $-fx-safe "BGL_SAFE_MINUS_FX")
+      (export $*fx-safe "BGL_SAFE_MUL_FX")
+      (export $quotientfx-safe "BGL_SAFE_QUOTIENT_FX")
       (export $fixnum->bignum "bgl_long_to_bignum")
       (export $bignum->fixnum "bgl_bignum_to_long")
       (export $bignum->elong "bgl_bignum_to_elong")
@@ -111,6 +116,11 @@
       ($bignum->int64::int64 ::bignum)
       ($bignum->uint64::uint64 ::bignum)
       ($bignum-cmp::int ::bignum ::bignum)
+      ($bignum->fixnum-safe::obj ::obj)
+      ($+fx-safe::obj ::long ::long)
+      ($-fx-safe::obj ::long ::long)
+      ($*fx-safe::obj ::long ::long)
+      ($quotientfx-safe::obj ::long ::long)
       ($zerobx?::bool ::bignum)
       ($positivebx?::bool ::bignum)
       ($negativebx?::bool ::bignum)
@@ -442,6 +452,19 @@
       (else 0)))
 
 ;*---------------------------------------------------------------------*/
+;*    Overflow operations ...                                          */
+;*---------------------------------------------------------------------*/
+(define ($bignum->fixnum-safe x)
+   (let ((n ($bignum->fixnum x)))
+      (if (and n (=bx (fixnum->bignum n) x))
+	  n
+	  x)))
+(define ($+fx-safe x y) (+fx/ov x y))
+(define ($-fx-safe x y) (-fx/ov x y))
+(define ($*fx-safe x y) (*fx/ov x y))
+(define ($quotientfx-safe x y) (/fx/ov x y))
+
+;*---------------------------------------------------------------------*/
 ;*    Bignum addition and substraction                                 */
 ;*---------------------------------------------------------------------*/
 (define (bignum-add-nonneg x y)
@@ -629,7 +652,7 @@
        ($fixnum->bignum 1)))
 
 ;*---------------------------------------------------------------------*/
-;*    $exptbx ...                                                     */
+;*    $exptbx ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define ($exptbx x y)
    (cond

@@ -4,34 +4,10 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Apr  8 10:39:47 2021 (serrano)                */
+#*    Last change :  Thu Dec 12 08:15:10 2024 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for essential tools.                                       */
 #*=====================================================================*/
-
-#*---------------------------------------------------------------------*/
-#*    libtools                                                         */
-#*---------------------------------------------------------------------*/
-which libtoolize > /dev/null || which glibtoolize > /dev/null
-
-if [ "$?" = "1" ]; then
-  case $HOSTOS in
-    darwin)
-      echo "*** ERROR: Cannot find libtoolize nor glibtoolize"
-      echo "On MacOS X, you can install it with"
-      echo "  brew install libtool"
-      echo "abort"
-      exit 1
-      ;;
-      
-    *)
-      echo "*** ERROR: Cannot find libtoolize"
-      echo "Generally it is released with the \"libtool\" suite"
-      echo "abort"
-      exit 1
-      ;;
-  esac
-fi
 
 #*---------------------------------------------------------------------*/
 #*    make                                                             */
@@ -40,16 +16,6 @@ which make > /dev/null || which gmake > /dev/null
 
 if [ "$?" = "1" ]; then
   echo "*** ERROR: Cannot find \"make\", abort."
-  exit 1
-fi
-
-#*---------------------------------------------------------------------*/
-#*    autoconf                                                         */
-#*---------------------------------------------------------------------*/
-which autoconf > /dev/null
-
-if [ "$?" = "1" ]; then
-  echo "*** ERROR: Cannot find \"autoconf\", abort."
   exit 1
 fi
 
@@ -72,5 +38,3 @@ if [ "$?" = "1" ]; then
   echo "*** ERROR: Cannot find \"awk\", abort."
   exit 1
 fi
-
-
