@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Thu Dec 12 08:48:41 2024 (serrano)                */
+;*    Last change :  Thu Dec 12 10:10:18 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -454,7 +454,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    Overflow operations ...                                          */
 ;*---------------------------------------------------------------------*/
-(define ($bignum->fixnum-safe x) (or ($bignum->fixnum x) x))
+(define ($bignum->fixnum-safe x)
+   (let ((n ($bignum->fixnum x)))
+      (if (and n (=bx (fixnum->bignum n) x))
+	  n
+	  x)))
 (define ($+fx-safe x y) (+fx/ov x y))
 (define ($-fx-safe x y) (-fx/ov x y))
 (define ($*fx-safe x y) (*fx/ov x y))
