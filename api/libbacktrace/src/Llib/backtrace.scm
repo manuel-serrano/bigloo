@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec  2 15:51:35 2021                          */
-;*    Last change :  Fri Dec  3 17:31:42 2021 (serrano)                */
-;*    Copyright   :  2021 Manuel Serrano                               */
+;*    Last change :  Thu Dec 12 17:06:11 2024 (serrano)                */
+;*    Copyright   :  2021-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo libbacktrace binding                                      */
 ;*=====================================================================*/
@@ -21,7 +21,7 @@
 
    (extern ($backtrace-get::obj (::long ::long)
 	      "bgl_backtrace_get")
-	   ($backtrace-for-each::obj (::procedure)
+	   ($backtrace-for-each::void (::procedure)
 	      "bgl_backtrace_foreach")))
 
 ;*---------------------------------------------------------------------*/
@@ -40,4 +40,5 @@
 (define (backtrace-for-each proc)
    (unless (correct-arity? proc 3)
       (error "backtrace-for-each" "wrong procedure arity (3 expected)" proc))
-   ($backtrace-for-each proc))
+   ($backtrace-for-each proc)
+   #unspecified)
