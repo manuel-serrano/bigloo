@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec 11 07:00:56 2024 (serrano)                */
+/*    Last change :  Thu Dec 12 10:43:44 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -223,7 +223,7 @@ extern "C" {
 /*        |                         rotate 59                       |  */	
 /*        +-------------------------- < > --------------------------+  */
 /*---------------------------------------------------------------------*/
-#define BGL_TAGGING_PLAIN 1
+#define BGL_TAGGING_HEAP 1
 #define BGL_TAGGING_FL 2
 #define BGL_TAGGING_FLLB 3
 #define BGL_TAGGING_FLNZ 4
@@ -241,7 +241,7 @@ extern "C" {
   error wrong flnz tagging configuration
 #elif (BGL_FL_TAGGING == 4 && BGL_TAGGING != BGL_TAGGING_FL1)
   error wrong fl1 tagging configuration
-#elif (!BGL_FL_TAGGING && !BGL_NAN_TAGGING && BGL_TAGGING != BGL_TAGGING_PLAIN)
+#elif (!BGL_FL_TAGGING && !BGL_NAN_TAGGING && BGL_TAGGING != BGL_TAGGING_HEAP)
   error wrong plain tagging configuration
 #endif
 
@@ -346,18 +346,18 @@ extern "C" {
 #  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (BGL_TAGGING == BGL_TAGGING_FL1)
 // floating point tagging 1 exponent+1 bit + boxed/w-header real
-#  define TAG_FL_ROT_BITS ((unsigned long)59)
+#  define TAG_FL_ROT_BITS ((unsigned long)58)
 #  define TAG_QNAN 0
 #  define TAG_FL_EXPONENT_SHIFT 13
 #  define TAG_REAL 1                  /*  boxed real            ...001 */
-#  define TAG_REALL 6                 /*  real lower range      ...110 */
+#  define TAG_REALZ 6                 /*  real lower range      ...110 */
 #  define TAG_INT 0                   /*  integer tagging       ...000 */
 #  define TAG_POINTER 2               /*  pointer tagging       ...010 */
 #  define TAG_CNST 3                  /*  constant tagging      ...011 */
 #  define TAG_VECTOR 4                /*  vector tagging        ...100 */
 #  define TAG_PAIR 5                  /*  pair tagging          ...101 */
 #  define TAG_STRING 7                /*  string tagging        ...111 */
-#elif (BGL_TAGGING == BGL_TAGGING_PLAIN)
+#elif (BGL_TAGGING == BGL_TAGGING_HEAP)
 #  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  integer tagging       ....00 */
 #  define TAG_POINTER 1               /*  pointer tagging       ....01 */

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 11 07:26:10 2024 (serrano)                */
+#*    Last change :  Thu Dec 12 10:46:37 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -5488,11 +5488,7 @@ if [ "$summary" = "yes" ]; then
   $echo "Implementation details:"
   $echo "  tuning...................... $mode $tuning"
   $echo "  cc.......................... $cc ($coflags)"
-  if [ $bglnantagging != "0" ]; then
-    $echo "  nan tagging................. $bglnantagging"
-  else
-    $echo "  nan tagging................. no"
-  fi
+  $echo "  tagging..................... $bgltagging"
   if [ $customgc = "yes" ];then
      $echo "  gc.......................... custom ($gclib-$release, v$gcversion)"
   else
