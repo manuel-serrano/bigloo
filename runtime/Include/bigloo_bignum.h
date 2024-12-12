@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jul 26 08:58:25 2017                          */
-/*    Last change :  Thu Aug 29 10:57:19 2024 (serrano)                */
+/*    Last change :  Thu Dec 12 08:54:12 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo BIGNUMs                                                   */
@@ -92,12 +92,12 @@ extern obj_t bgl_safe_mul_llong(BGL_LONGLONG_T, BGL_LONGLONG_T);
 extern obj_t bgl_safe_quotient_llong(BGL_LONGLONG_T, BGL_LONGLONG_T);
 #else
 #  define BGL_BIGNUM_U16VECT(bx) (BIGNUM(bx).u16vect)
-
-#  define BGL_SAFE_BX_TO_FX(x) (x)
-#  define BGL_SAFE_PLUS_FX(x, y) BINT((x) + (y))
-#  define BGL_SAFE_MINUS_FX(x, y) BINT((x) - (y))
-#  define BGL_SAFE_MUL_FX(x, y) BINT((x) * (y))
-#  define BGL_SAFE_QUOTIENT_FX(x, y) BINT((x) / (y))
+// since bigloo4.6a, the fx-functions are implemented in bignumber-generic.sch
+/* #  define BGL_SAFE_BX_TO_FX(x) (x)                                  */
+/* #  define BGL_SAFE_PLUS_FX(x, y) BINT((x) + (y))                    */
+/* #  define BGL_SAFE_MINUS_FX(x, y) BINT((x) - (y))                   */
+/* #  define BGL_SAFE_MUL_FX(x, y) BINT((x) * (y))                     */
+/* #  define BGL_SAFE_QUOTIENT_FX(x, y) BINT((x) / (y))                */
 #  define BGL_SAFE_PLUS_ELONG(x, y) ELONG_TO_BELONG((x) + (y))
 #  define BGL_SAFE_MINUS_ELONG(x, y) ELONG_TO_BELONG((x) - (y))
 #  define BGL_SAFE_MUL_ELONG(x, y) ELONG_TO_BELONG((x) * (y))

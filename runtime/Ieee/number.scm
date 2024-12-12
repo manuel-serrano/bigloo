@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Tue Nov  5 09:05:48 2024 (serrano)                */
+;*    Last change :  Thu Dec 12 08:42:06 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -417,7 +417,7 @@
 	 (oppost 'begin))
       (case op
 	 ((+ - * /)
-	  (set! opfx (symbol-append opfx '-safe))
+	  (set! opfx (symbol-append opfx '/ov))
 	  (set! opelong (symbol-append opelong '-safe))
 	  (set! opllong (symbol-append opllong '-safe))
 	  (set! oppost '$bignum->fixnum-safe)))
