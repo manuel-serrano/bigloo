@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Dec 13 07:21:32 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 07:51:33 2024 (serrano)                */
 ;*    Copyright   :  2010-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various peephole optimizations:                                  */
@@ -60,8 +60,7 @@
    (set! *string-ref* (find-global/module 'string-ref '__r4_strings_6_7))
    (set! *string-ref-ur* (find-global/module 'string-ref '__r4_strings_6_7))
    (set! *substring* (find-global/module 'substring '__r4_strings_6_7))
-   (set! *symbol->string* (find-global/module 'symbol->string '__r4_symbols_6_4))
-   (set! *symbol->string!* (find-global/module 'symbol->string! '__r4_symbols_6_4)))
+   (set! *symbol->string* (find-global/module 'symbol->string '__r4_symbols_6_4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    clear-peephole-cache! ...                                        */
@@ -99,10 +98,8 @@
    (call-default-walker)
    (with-access::let-var node (body)
       (cond
-	 ((string-ref-app? body)
-	  (peephole-string-ref! node))
-	 (else
-	  node))))
+	 ((string-ref-app? body) (peephole-string-ref! node))
+	 (else node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-ref-app? ...                                              */
@@ -129,6 +126,21 @@
 ;*    peephole-string-ref! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (peephole-string-ref! node::let-var)
+
+   (define (normalize e::node env)
+      (cond
+	 ((isa? e var)
+	  (with-access::var e (variable)
+	     (let ((c (assq variable env)))
+		(if (pair? c)
+		    (normalize (cdr c) '())
+		    e))))
+	 ((isa? e let-var)
+	  (with-access::let-var e (body)
+	     (normalize body '())))
+	 (else
+	  e)))
+   
    (with-access::let-var node (body bindings)
       (with-access::app body (fun args)
 	 (let ((actual (normalize (car args) bindings)))
@@ -137,21 +149,4 @@
 		  (with-access::var fun (variable)
 		     (set! variable *symbol->string!*)))))))
    node)
-
-;*---------------------------------------------------------------------*/
-;*    normalize ...                                                    */
-;*---------------------------------------------------------------------*/
-(define (normalize e::node env)
-   (cond
-      ((isa? e var)
-       (with-access::var e (variable)
-	  (let ((c (assq variable env)))
-	     (if (pair? c)
-		 (normalize (cdr c) '())
-		 e))))
-      ((isa? e let-var)
-       (with-access::let-var e (body)
-	  (normalize body '())))
-      (else
-       e)))
 

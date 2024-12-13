@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Dec 13 05:34:20 2024 (serrano)                */
+#*    Last change :  Fri Dec 13 08:23:49 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -143,7 +143,8 @@ TYPE_OBJ	= $(TYPE_FILE:%=Type/%.o)
 
 #*--- expand ----------------------------------------------------------*/
 EXPAND_FILE	= eps assert case define expander garith iarith farith \
-                  if initial lambda let map struct exit object mvalue
+                  if initial lambda let map struct exit object mvalue \
+                  callcc
 
 EXPAND_OBJ	= $(EXPAND_FILE:%=Expand/%.o)
 
