@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec 13 10:22:11 2024 (serrano)                */
+#*    Last change :  Fri Dec 13 11:20:46 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -107,7 +107,7 @@ gcconfigurethreadsopt=--enable-thread
 belong_prealloc_min=-10
 belong_prealloc_max=100
 
-bgltagging=BGL_TAGGING_PLAIN
+bgltagging=BGL_TAGGING_HEAP
 bglnantagging=0
 bglfltagging=0
 bglsmi=0
@@ -955,8 +955,8 @@ while : ; do
     --mingw=yes)
       mingw="yes";;
 
-    --plain-tagging)
-      bgltagging=BGL_TAGGING_PLAIN;
+    --heap-tagging)
+      bgltagging=BGL_TAGGING_HEAP;
       bglfltagging=0;
       bglnantagging=0;;
       
@@ -1340,7 +1340,7 @@ while : ; do
       echo "Experimental features:"  >&2;
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging (nan-tagging schema)" >&2;
-      echo "   --plain-tagging (plain-tagging schema)" >&2;
+      echo "   --heap-tagging (heap-tagging schema)" >&2;
       echo "   --fl-tagging (default $bglfltagging)" >&2;
       echo "   --fl-tagging-1 (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-lb (for experiment only, don't use because slow)" >&2;
@@ -2334,7 +2334,7 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
 
-  if [ "$bgltagging " != "BGL_TAGGING_PLAIN " ]; then
+  if [ "$bgltagging " != "BGL_TAGGING_HEAP " ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
     else
