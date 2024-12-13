@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Dec 12 10:54:47 2024 (serrano)                */
+/*    Last change :  Fri Dec 13 09:22:48 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -21,6 +21,15 @@ extern "C" {
 #endif
 #ifdef __cplusplus_just_for_emacs_indent
 }
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    inline annotation                                                */
+/*---------------------------------------------------------------------*/
+#if HAVE_INLINE
+#  define INLINE inline __attribute__((always_inline))
+#else
+#  define INLINE static
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -137,7 +146,7 @@ union bgl_fltobj {
 /* #  define BGL_TAGGED_REALP(o) \                                     */
 /*      (((int32_t)((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0) */
 #  else
-inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
+INLINE bool BGL_TAGGED_REALP(obj_t _o) {
    bool carry;
    __asm__("bt %%ax, %2;" /* get one bit of mask into carry (ax is index) */
 	   : "=@ccc"(carry)
@@ -200,7 +209,7 @@ inline __attribute__((always_inline)) bool BGL_TAGGED_REALP(obj_t _o) {
      BGL_ASDOUBLE(BGL_BIT_ROTL(o, TAG_FL_ROT_BITS))
 #else
 // --
-static double BGL_FAST_REAL_TO_DOUBLE(obj_t o) {
+INLINE double BGL_FAST_REAL_TO_DOUBLE(obj_t o) {
    // ((o<<1)-13)<<59
    unsigned long t = BGL_BIT_ROTL(o, 1) - TAG_FL_EXPONENT_SHIFT;
    return BGL_ASDOUBLE(BGL_BIT_ROTL(t, TAG_FL_ROT_BITS));
@@ -217,7 +226,7 @@ static double BGL_FAST_REAL_TO_DOUBLE(obj_t o) {
 #  define BGL_POINTER_REALP(o) BGL_POINTERP(o)
 #endif
 
-static double REAL_TO_DOUBLE(obj_t o) {
+INLINE double REAL_TO_DOUBLE(obj_t o) {
    // fprintf(stderr, "REAL_TO_DOUBLE...\n");
    double d = BGL_FAST_REAL_TO_DOUBLE(o);
    if (!BGL_POINTER_REALP(o)) {
@@ -244,8 +253,7 @@ static double REAL_TO_DOUBLE(obj_t o) {
 #elif BGL_TAGGING == BGL_TAGGING_FL1
 // ---------------------------------
 // ((o>>59)+13)>>1
-static obj_t BGL_DOUBLE_TO_OBJ(double d) {
-   //fprintf(stderr, "BGL_DOUBLE_TO_OBJ d=%016lx rot=%016lx\n", BGL_ASLONG(d), BGL_BIT_ROTR(d, TAG_FL_ROT_BITS));
+INLINE obj_t BGL_DOUBLE_TO_OBJ(double d) {
    unsigned long t = BGL_BIT_ROTR(d, TAG_FL_ROT_BITS) + TAG_FL_EXPONENT_SHIFT;
    return BGL_ASOBJ(BGL_BIT_ROTR(t, 1));
 }
@@ -259,15 +267,11 @@ static obj_t BGL_DOUBLE_TO_OBJ(double d) {
 /*---------------------------------------------------------------------*/
 /*    DOUBLE_TO_REAL ...                                               */
 /*---------------------------------------------------------------------*/
-static obj_t DOUBLE_TO_REAL(double d) {
-   // fprintf(stderr, "----------------------\n");
+INLINE obj_t DOUBLE_TO_REAL(double d) {
    obj_t o = BGL_DOUBLE_TO_OBJ(d);
-   // fprintf(stderr, "DOUBLE_TO_REAL %g %016lx -> o=%016lx mask=%d tagged=%d\n", d, BGL_ASLONG(d), o, (long)o & 7, BGL_TAGGED_REALP(o));
    if (BGL_TAGGED_REALP(o)) {
-      // fprintf(stderr, "DOUBLE_TO_REAL.2 %g\n", REAL_TO_DOUBLE(o));
       return o;
    } else {
-      // fprintf(stderr, "DOUBLE_TO_REAL.3 %g\n", REAL_TO_DOUBLE(make_real(d)));
       return make_real(d);
    }
 }

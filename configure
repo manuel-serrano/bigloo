@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec 13 05:17:21 2024 (serrano)                */
+#*    Last change :  Fri Dec 13 09:20:56 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3169,6 +3169,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     musttail=`$autoconf musttail`
   fi
 
+  # Does the C compiler supports inline annotation?
+  inline=`$autoconf inline`
+
   # Does the system have sigpipe?
   sigpipe=`$autoconf sigpipe` || exit 1
 
@@ -3756,6 +3759,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_BCOPY@|$havebcopy|" \
               -e "s|@NB_WINDOW_REGISTER@|$window|" \
               -e "s|@HAVE_MUSTTAIL@|$musttail|" \
+              -e "s|@HAVE_INLINE@|$inline|" \
               -e "s|@HAVE_SIGPIPE@|$sigpipe|" \
               -e "s|@BGL_HAVE_GETGROUPS@|$getgroups|" \
               -e "s|@BGL_HAVE_IOCTL@|$ioctl|" \
