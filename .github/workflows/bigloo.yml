@@ -22,7 +22,7 @@ jobs:
       - run: sudo apt install -y libflac-dev
       - run: sudo apt install -y libmpg123-0 libmpg123-dev
       - run: sudo apt install -y libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev
-      - run: sudo apt install -y libunistring2 libunistring-dev
+      - run: sudo apt install -y libunistring-dev
       - run: sudo apt install -y libpulse-dev libpulse0
       - run: sudo apt install -y automake libtool
       - run: sudo apt install -y libgmp-dev libgmp3-dev libgmp10
