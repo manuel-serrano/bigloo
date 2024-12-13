@@ -16,7 +16,7 @@ jobs:
 
       - run: sudo apt -qq update
       - run: sudo apt install -y dh-make
-      - run: sudo apt install -y libssl1.1 libssl-dev
+      - run: sudo apt install -y libssl3 libssl-dev
       - run: sudo apt install -y dh-make libsqlite3-0 libsqlite3-dev
       - run: sudo apt install -y libasound2 libasound2-dev
       - run: sudo apt install -y libflac8 libflac-dev
