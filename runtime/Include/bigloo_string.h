@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Include/bigloo_string.h        */
+/*    .../prgm/project/bigloo/wasm/runtime/Include/bigloo_string.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Nov 25 16:13:50 2024 (serrano)                */
+/*    Last change :  Fri Dec 13 17:35:47 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -48,7 +48,7 @@ BGL_RUNTIME_DECL bool_t bigloo_string_cige(obj_t, obj_t);
 
 BGL_RUNTIME_DECL obj_t ucs2_to_utf8_string(ucs2_t *, long);
 BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string(obj_t);
-BGL_RUNTIME_DECL obj_t make_ucs2_string(int, ucs2_t);
+BGL_RUNTIME_DECL obj_t make_ucs2_string(long, ucs2_t);
    
 
 #if(BGL_HAVE_UNISTRING)

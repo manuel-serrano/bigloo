@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat Dec  7 19:18:35 2024 (serrano)                */
+/*    Last change :  Fri Dec 13 17:30:35 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -296,18 +296,18 @@ const instance = await WebAssembly.instantiate(wasm, {
 
    __js_bignum: {
       zerobx: BigInt(0),
-      zerobxp: bx => bx === 0,
-      bgl_bignum_odd: bx => bx % b2 === 1,
-      bgl_bignum_even: bx => bx % b2 === 0,
+      zerobxp: (bx) => bx === 0,
+      bgl_bignum_odd: (bx) => bx % b2 === 1,
+      bgl_bignum_even: (bx) => bx % b2 === 0,
       long_to_bignum: (value) => BigInt(value),
       bgl_safe_bignum_to_fixnum: (bx, bsz) => {
 	 if (bsz > 53) bsz = 52; // max support JS fixnums
 	 return BigInt.asUintN(2 * bsz, bx) - BigInt.asUintN(bsz, bx);
       },
       bgl_bignum_to_long: bx => BigInt.asIntN(64, bx),
-      bgl_bignum_remainder: (bx, by) => bx % by,
-      bgl_bignum_quotient: (bx, by) => bx / by,
-      bgl_rand_bignum: bx => bx ^ BigInt(Math.random() * 5379239846),
+      bignum_remainder: (bx, by) => bx % by,
+      bignum_quotient: (bx, by) => bx / by,
+      rand_bignum: bx => bx ^ BigInt(Math.random() * 5379239846),
       bignum_to_string: (value, addr) => {
 	 return storeJSStringToScheme(value.toString(), addr);
       },

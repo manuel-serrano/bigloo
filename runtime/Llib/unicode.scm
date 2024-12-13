@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sat Dec  7 08:18:40 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 16:27:38 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -49,13 +49,13 @@
    
    (extern (macro c-ucs2-string?::bool (::obj)
 		  "UCS2_STRINGP")
-	   (c-make-ucs2-string::ucs2string (::int ::ucs2)
+	   (c-make-ucs2-string::ucs2string (::long ::ucs2)
 					   "make_ucs2_string")
-	   (macro c-ucs2-string-length::int (::ucs2string)
+	   (macro c-ucs2-string-length::long (::ucs2string)
 		  "UCS2_STRING_LENGTH")
-	   (macro c-ucs2-string-ref::ucs2 (::ucs2string ::int)
+	   (macro c-ucs2-string-ref::ucs2 (::ucs2string ::long)
 		  "UCS2_STRING_REF")
-	   (macro c-ucs2-string-set!::obj (::ucs2string ::int ::ucs2)
+	   (macro c-ucs2-string-set!::obj (::ucs2string ::long ::ucs2)
 		  "UCS2_STRING_SET")
 	   
 	   (c-ucs2-string=?::bool (::ucs2string ::ucs2string)
@@ -81,7 +81,7 @@
 	   
 	   (c-ucs2-string-copy::ucs2string (::ucs2string)
 					   "c_ucs2_string_copy")
-	   ($subucs2-string::ucs2string (::ucs2string ::int ::int)
+	   ($subucs2-string::ucs2string (::ucs2string ::long ::long)
 					 "c_subucs2_string")
 	   (c-ucs2-string-append::ucs2string (::ucs2string ::ucs2string)
 					     "ucs2_string_append")
@@ -94,19 +94,19 @@
    (wasm   (c-ucs2-string? "(ref.test (ref $ucs2string) ~0)")
            (c-ucs2-string-length "(i64.extend_i32_u (array.len ~0))")
            (c-make-ucs2-string "(array.new $ucs2string ~1 (i32.wrap_i64 ~0))")
-	   (c-ucs2-string-ref "(array.get $ucs2string ~0)")
+	   (c-ucs2-string-ref "(array.get $ucs2string ~0 (i32.wrap_i64 ~1))")
 	   (c-ucs2-string-set! "(block (result (ref eq)) (array.set $ucs2string ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))"))
    
    (java   (class foreign
 	      (method static c-ucs2-string?::bool (::obj)
 		      "UCS2_STRINGP")
-	      (method static c-make-ucs2-string::ucs2string (::int ::ucs2)
+	      (method static c-make-ucs2-string::ucs2string (::long ::ucs2)
 		      "make_ucs2_string")
-	      (method static c-ucs2-string-length::int (::ucs2string)
+	      (method static c-ucs2-string-length::long (::ucs2string)
 		      "UCS2_STRING_LENGTH")
-	      (method static c-ucs2-string-ref::ucs2 (::ucs2string ::int)
+	      (method static c-ucs2-string-ref::ucs2 (::ucs2string ::long)
 		      "UCS2_STRING_REF")
-	      (method static c-ucs2-string-set!::obj (::ucs2string ::int ::ucs2)
+	      (method static c-ucs2-string-set!::obj (::ucs2string ::long ::ucs2)
 		      "UCS2_STRING_SET")
 	      
 	      (method static c-ucs2-string=?::bool (::ucs2string ::ucs2string)
@@ -132,7 +132,7 @@
 	      
 	      (method static c-ucs2-string-copy::ucs2string (::ucs2string)
 		      "c_ucs2_string_copy")
-	      (method static $subucs2-string::ucs2string (::ucs2string ::int ::int)
+	      (method static $subucs2-string::ucs2string (::ucs2string ::long ::long)
 		      "c_subucs2_string")
 	      (method static c-ucs2-string-append::ucs2string (::ucs2string ::ucs2string)
 		      "c_ucs2_string_append")
@@ -143,14 +143,14 @@
 		      "utf8_string_to_ucs2_string")))
    
    (export  (inline ucs2-string?::bool ::obj)
-	    (inline make-ucs2-string::ucs2string ::int
+	    (inline make-ucs2-string::ucs2string ::long
 		    #!optional (filler::ucs2 (char->ucs2 #\space)))
 	    (inline ucs2-string::ucs2string . ucs2s)
-	    (inline ucs2-string-length::int ::ucs2string)
-	    (inline ucs2-string-ref::ucs2 ::ucs2string ::int)
-	    (inline ucs2-string-set!::obj ::ucs2string ::int ::ucs2)
-	    (inline ucs2-string-ref-ur::ucs2 ::ucs2string ::int)
-	    (inline ucs2-string-set-ur!::obj ::ucs2string ::int ::ucs2)
+	    (inline ucs2-string-length::long ::ucs2string)
+	    (inline ucs2-string-ref::ucs2 ::ucs2string ::long)
+	    (inline ucs2-string-set!::obj ::ucs2string ::long ::ucs2)
+	    (inline ucs2-string-ref-ur::ucs2 ::ucs2string ::long)
+	    (inline ucs2-string-set-ur!::obj ::ucs2string ::long ::ucs2)
 	    (inline ucs2-string=?::bool ::ucs2string ::ucs2string)
 	    (inline ucs2-string-ci=?::bool ::ucs2string ::ucs2string)
 	    (inline ucs2-string<?::bool ::ucs2string ::ucs2string)
@@ -161,10 +161,10 @@
 	    (inline ucs2-string-ci>?::bool ::ucs2string ::ucs2string)
 	    (inline ucs2-string-ci<=?::bool ::ucs2string ::ucs2string)
 	    (inline ucs2-string-ci>=?::bool ::ucs2string ::ucs2string)
-	    (inline subucs2-string::ucs2string ::ucs2string ::int ::int)
-	    (inline subucs2-string-ur::ucs2string ::ucs2string ::int ::int)
-	    (inline ucs2-substring::ucs2string ::ucs2string ::int ::int)
-	    (inline ucs2-substring-ur::ucs2string ::ucs2string ::int ::int)
+	    (inline subucs2-string::ucs2string ::ucs2string ::long ::long)
+	    (inline subucs2-string-ur::ucs2string ::ucs2string ::long ::long)
+	    (inline ucs2-substring::ucs2string ::ucs2string ::long ::long)
+	    (inline ucs2-substring-ur::ucs2string ::ucs2string ::long ::long)
 	    (ucs2-string-append::ucs2string . ucs2-strings)
 	    (ucs2-string->list ::ucs2string)
 	    (list->ucs2-string::ucs2string ::obj)
@@ -1493,7 +1493,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8->8bits-fill! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (utf8->8bits-fill! nstr::bstring str::bstring len::int table)
+(define (utf8->8bits-fill! nstr::bstring str::bstring len::long table)
    
    (define (error-too-short r)
       (error "utf8->8bits"

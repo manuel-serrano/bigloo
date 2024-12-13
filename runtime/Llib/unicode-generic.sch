@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec  7 08:19:02 2024                          */
-;*    Last change :  Sat Dec  7 10:23:30 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 15:56:26 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable unicode implementation.                         */
@@ -16,7 +16,7 @@
    (import __bit
 	   __ucs2)
    (export (utf8_string_to_ucs2_string::ucs2string ::bstring)
-	   (ucs2_string_to_utf8_string::bstring ::ucs2string ::long))
+	   (ucs2_string_to_utf8_string::bstring ::ucs2string))
    (extern (export utf8_string_to_ucs2_string "utf8_string_to_ucs2_string")
 	   (export ucs2_string_to_utf8_string "ucs2_string_to_utf8_string")))
 
@@ -69,7 +69,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ucs2_string_to_utf8_string ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (ucs2_string_to_utf8_string::bstring src::ucs2string len::long)
+(define (ucs2_string_to_utf8_string::bstring src::ucs2string)
    
    (define (byte-set! str i n)
       (string-set! str i (integer->char n)))
@@ -77,7 +77,8 @@
    (define (ucs2-ref src i)
       (ucs2->integer (ucs2-string-ref src i)))
    
-   (let* ((utf8-len (ucs2-string-utf8-len src))
+   (let* ((len (ucs2-string-length src))
+	  (utf8-len (ucs2-string-utf8-len src))
 	  (result (make-string utf8-len #a000)))
       (if (=fx utf8-len len)
 	  (let loop ((i 0))

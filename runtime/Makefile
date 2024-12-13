@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat Dec  7 09:24:18 2024 (serrano)                */
+#*    Last change :  Fri Dec 13 15:57:25 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1213,11 +1213,11 @@ objs/wasm_s/Ieee/string.wat: Ieee/string-generic.sch
 objs/wasm_u/Ieee/string.wat: Ieee/string-generic.sch
 objs/wasm_s/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_u/Ieee/symbol.wat: Ieee/symbol-generic.sch
-objs/wasm_s/Unsafe/bignumber.wat: Unsafe/bignumber-generic.sch
-objs/wasm_u/Unsafe/bignumber.wat: Unsafe/bignumber-generic.sch
+objs/wasm_s/Unsafe/bignumber.wat: Unsafe/bignumber-gmp.sch
+objs/wasm_u/Unsafe/bignumber.wat: Unsafe/bignumber-gmp.sch
 objs/wasm_s/Rgc/rgc.wat: Rgce/rgc-generic.sch
 objs/wasm_u/Rgc/rgc.wat: Rgc/rgc-generic.sch
-objs/wasm_u/Rgc/unicode.wat: Rgc/unicode-generic.sch
+objs/wasm_u/Llib/unicode.wat: Llib/unicode-generic.sch
 
 Wlib/wfixnum.wat: Wlib/wfixnum$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
 	preallocs=`$(WASM_BINTS_PREALLOC)`; \

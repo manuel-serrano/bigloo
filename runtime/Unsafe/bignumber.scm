@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Sun Oct  6 11:46:47 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 16:01:13 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -70,12 +70,6 @@
       (macro $quotientelong-safe::obj (::elong ::elong) "BGL_SAFE_QUOTIENT_ELONG")
       (macro $quotientllong-safe::obj (::llong ::llong) "BGL_SAFE_QUOTIENT_LLONG"))
 
-   (wasm
-      ($bignum? "(ref.test (ref $bignum) ~0)")
-      ($fixnum->bignum "(call $bgl_long_to_bignum ~0)")
-      ($elong->bignum "(call $bgl_long_to_bignum ~0)")
-      ($bignum->string "(call $bgl_bignum_to_string ~0)"))
-   
    (java
       (class foreign
 	 (method static $bignum?::bool (::obj)

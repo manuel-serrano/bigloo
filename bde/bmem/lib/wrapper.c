@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/wrapper.c     */
+/*    serrano/prgm/project/bigloo/wasm/bde/bmem/lib/wrapper.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct  7 19:30:50 2021                          */
-/*    Last change :  Mon Nov 29 20:05:59 2021 (serrano)                */
-/*    Copyright   :  2021 Manuel Serrano                               */
+/*    Last change :  Fri Dec 13 17:43:24 2024 (serrano)                */
+/*    Copyright   :  2021-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo standard library wrappers                                 */
 /*=====================================================================*/
@@ -236,7 +236,7 @@ WRAP(c_substring,
 
 WRAP(make_ucs2_string,
      UCS2_STRING_TYPE_NUM,
-     (int len, ucs2_t c),
+     (long len, ucs2_t c),
      (len, c));
 
 /* symbol */

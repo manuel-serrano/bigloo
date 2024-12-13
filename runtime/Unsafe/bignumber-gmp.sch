@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/runtime/Unsafe/bignumber-gmp.sch       */
+;*    .../project/bigloo/wasm/runtime/Unsafe/bignumber-gmp.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:38:03 2024                          */
-;*    Last change :  Thu Aug 29 08:34:49 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 15:39:15 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bignumber gmp implementation                                     */
@@ -59,6 +59,18 @@
       
       ($bignum->flonum::double (::bignum) "bgl_bignum_to_flonum")
       ($flonum->bignum::bignum (::double) "bgl_flonum_to_bignum"))
+
+   (wasm
+      ($bignum? "(ref.test (ref $bignum) ~0)")
+      ($zerobx? "(call $zerobxp (struct.get $bignum $bx ~0))")
+      ($oddbx? "(call $bgl_bignum_odd (struct.get $bignum $bx ~0))")
+      ($evenbx? "(call $bgl_bignum_even (struct.get $bignum $bx ~0))")
+      ($fixnum->bignum "(call $bgl_long_to_bignum ~0)")
+      ($bignum->fixnum "(call $bgl_bignum_to_long (struct.get $bignum $bx ~0))")
+      ($bignum->elong "(call $bgl_bignum_to_long (struct.get $bignum $bx ~0))")
+      ($string->bignum "(call $bgl_string_to_bignum ~0 ~1)")
+      ($bignum->string "(call $bgl_bignum_to_string ~0)")
+      ($elong->bignum "(call $bgl_long_to_bignum ~0)"))
    
    (pragma
       ($fixnum->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)

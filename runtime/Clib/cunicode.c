@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cunicode.c       */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cunicode.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Fri Nov 15 07:29:58 2024 (serrano)                */
+/*    Last change :  Fri Dec 13 17:36:04 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -25,8 +25,8 @@ extern obj_t bgl_real_to_string(double);
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-make_ucs2_string(int len, ucs2_t c) {
-   obj_t   string;
+make_ucs2_string(long len, ucs2_t c) {
+   obj_t string;
    ucs2_t *cstring;
 
    if (len < 0) {

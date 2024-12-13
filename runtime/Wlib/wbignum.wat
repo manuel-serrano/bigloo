@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Sat Dec  7 19:17:31 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 16:40:18 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -28,9 +28,9 @@
    (import "__js_bignum" "bgl_bignum_even" (func $bgl_bignum_even (param externref) (result i32)))
    (import "__js_bignum" "bgl_safe_bignum_to_fixnum" (func $bgl_safe_bignum_to_fixnum (param externref) (param i32) (result i64)))
    (import "__js_bignum" "bgl_bignum_to_long" (func $bgl_bignum_to_long (param externref) (result i64)))
-   (import "__js_bignum" "bgl_bignum_remainder" (func $bgl_bignum_remainder (param externref) (param externref) (result externref)))
-   (import "__js_bignum" "bgl_bignum_quotient" (func $bgl_bignum_quotient (param externref) (param externref) (result externref)))
-   (import "__js_bignum" "bgl_rand_bignum" (func $bgl_rand_bignum (param externref) (result externref)))
+   (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref) (param externref) (result externref)))
+   (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref) (param externref) (result externref)))
+   (import "__js_bignum" "rand_bignum" (func $rand_bignum (param externref) (result externref)))
    (import "__js_bignum" "long_to_bignum" (func $long_to_bignum (param i64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))
@@ -148,6 +148,37 @@
       (return_call $bignum_cmp
 	 (struct.get $bignum $bx (local.get $x))
 	 (struct.get $bignum $bx (local.get $y))))
+
+   ;; bgl_bignum_quotient
+   (func $bgl_bignum_quotient (export "bgl_bignum_quotient")
+      (param $x (ref $bignum))
+      (param $y (ref $bignum))
+      (result (ref $bignum))
+      (return
+	 (struct.new $bignum
+	    (call $bignum_quotient
+	       (struct.get $bignum $bx (local.get $x))
+	       (struct.get $bignum $bx (local.get $y))))))
+   
+   ;; bgl_bignum_remainder
+   (func $bgl_bignum_remainder (export "bgl_bignum_remainder")
+      (param $x (ref $bignum))
+      (param $y (ref $bignum))
+      (result (ref $bignum))
+      (return
+	 (struct.new $bignum
+	    (call $bignum_remainder
+	       (struct.get $bignum $bx (local.get $x))
+	       (struct.get $bignum $bx (local.get $y))))))
+
+   ;; bgl_rand_bignum
+   (func $bgl_rand_bignum (export "bgl_rand_bignum")
+      (param $x (ref $bignum))
+      (result (ref $bignum))
+      (return
+	 (struct.new $bignum
+	    (call $rand_bignum
+	       (struct.get $bignum $bx (local.get $x))))))
 
    ;; BGL_SAFE_BX_TO_FX
    (func $BGL_SAFE_BX_TO_FX (export "BGL_SAFE_BX_TO_FX")
