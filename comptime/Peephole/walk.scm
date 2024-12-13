@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Dec 13 07:51:33 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 14:16:59 2024 (serrano)                */
 ;*    Copyright   :  2010-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various peephole optimizations:                                  */
@@ -60,7 +60,8 @@
    (set! *string-ref* (find-global/module 'string-ref '__r4_strings_6_7))
    (set! *string-ref-ur* (find-global/module 'string-ref '__r4_strings_6_7))
    (set! *substring* (find-global/module 'substring '__r4_strings_6_7))
-   (set! *symbol->string* (find-global/module 'symbol->string '__r4_symbols_6_4)))
+   (set! *symbol->string* (find-global/module 'symbol->string '__r4_symbols_6_4))
+   (set! *symbol->string!* (find-global/module 'symbol->string! '__r4_symbols_6_4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    clear-peephole-cache! ...                                        */
@@ -147,6 +148,8 @@
 	    (when (symbol->string-app? actual)
 	       (with-access::app actual (fun)
 		  (with-access::var fun (variable)
+		     (tprint "var=" (typeof variable)
+			" s=" (typeof *symbol->string!*))
 		     (set! variable *symbol->string!*)))))))
    node)
 
