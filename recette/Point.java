@@ -26,6 +26,6 @@ public class Point implements Intf {
     }
 
     public static int PointStatistics() {
-	return point_num + external.callback( 10 );
+	return point_num + external_jvm.callback( 10 );
     }
 }

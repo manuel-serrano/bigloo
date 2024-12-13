@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Nov  8 08:10:44 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 05:37:52 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -81,6 +81,7 @@
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
 	    *optim-dataflow-types?*
+	    *optim-peephole?*
 	    *optim-initflow?*
 	    *optim-sync-failsafe?*
 	    *optim-reduce-beta?*
@@ -961,6 +962,9 @@
    #t)
 (param-define *optim-dataflow-types?*
    "Enable dataflow optimization for types"
+   #f)
+(param-define *optim-peephole?*
+   "Enable peephole optimization for global variables"
    #f)
 (param-define *optim-initflow?*
    "Enable initflow optimization for global variables"

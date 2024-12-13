@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Oct  1 17:35:23 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 05:36:36 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -43,6 +43,7 @@
 	    ast_init
 	    ast_lvtype
 	    user_user
+	    peephole_walk
 	    type_env
 	    type_cache
 	    module_module
@@ -283,6 +284,13 @@
 	    ;; Flycheck and Flymake
 	    (stop-on-pass 'syntax-check (lambda () #unspecified))
 	 
+	    ;; early peephole optimizations
+	    (when *optim-peephole?*
+	       (set! ast (profile peephole (peephole-walk! ast))))
+	    (stop-on-pass 'peephole (lambda () (write-ast ast)))
+	    (check-sharing "peephole" ast)
+	    (check-type "peephole" ast #f #f)
+
 	    ;; compute the global init property
 	    (when *optim-initflow?*
 	       (set! ast (profile initflow (initflow-walk! ast))))

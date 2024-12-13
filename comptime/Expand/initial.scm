@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Sep  8 12:06:44 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 08:21:20 2024 (serrano)                */
 ;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -29,6 +29,7 @@
 	    expand_assert
 	    expand_object
 	    expand_multiple-values
+	    expand_callcc
 	    tools_misc
 	    tools_location
 	    tools_error
@@ -939,7 +940,15 @@
 	   (e `(file->string ,expr) e))
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
-   
+
+   ;; call-with-current-continuation
+   (install-O-comptime-expander
+      'call-with-current-continuation
+      expand-callcc)
+   (install-O-comptime-expander
+      'call/cc
+      expand-callcc)
+
    ;; inexact->exact
    (install-G-comptime-expander
     'inexact->exact
@@ -1265,12 +1274,14 @@
 ;*---------------------------------------------------------------------*/
 (define (%append-2-define)
    `(define (,%append-2-id l1::pair-nil l2)
-       (let ((head (cons '() l2)))
-	  (labels ((loop (prev tail)
-			 (if (pair? tail)
-			     (let ((new-prev (cons (car tail) l2)))
-				(set-cdr! prev new-prev)
-				(loop new-prev (cdr tail)))
-			     '())))
-	     (loop head l1)
-	     (cdr head)))))
+       (if (null? l1)
+	   l2
+	   (let ((head (cons '() l2)))
+	      (labels ((loop (prev tail)
+			  (if (pair? tail)
+			      (let ((new-prev (cons (car tail) l2)))
+				 (set-cdr! prev new-prev)
+				 (loop new-prev (cdr tail)))
+			      '())))
+		 (loop head l1)
+		 (cdr head))))))

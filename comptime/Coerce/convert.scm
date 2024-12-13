@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Fri Jul  5 10:42:44 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 08:24:00 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -27,6 +27,7 @@
 	    type_cache
 	    type_coercion
 	    type_env
+	    type_typeof
 	    ast_sexp
 	    ast_var
 	    ast_node
@@ -406,13 +407,14 @@
    (trace coerce "do-convert: " (shape coerce-op) " " (shape node)
 	  #\Newline)
    (if (eq? coerce-op #t)
-       (if (backend-strict-type-cast (the-backend))
+       (if (and (backend-strict-type-cast (the-backend))
+		(not (is-subtype? from to)))
 	   ;; The backend's strict-type-cast option has been added when
 	   ;; when working on the wasm backend. It ensures that the AST
 	   ;; no longer contains any implicit type cast after the coerce
 	   ;; pass. In theory, all backends should set the strict-type-cast
-	   ;; option to #t as an anti-reckless attitude, only the wasm
-	   ;; backend will it by default
+	   ;; option to #t as an anti-reckless attitude, but only the wasm
+	   ;; backend will set it by default
 	   (instantiate::cast
 	      (loc (node-loc node))
 	      (type to)

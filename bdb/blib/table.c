@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bdb/blib/table.c                     */
+/*    serrano/prgm/project/bigloo/bigloo/bdb/blib/table.c              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  unknown                                           */
 /*    Creation    :  Wed Jul 28 07:20:32 1999                          */
-/*    Last change :  Wed Jul 12 10:39:47 2000 (serrano)                */
+/*    Last change :  Thu Dec 12 10:20:58 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The mangling/demangling table management.                        */
 /*    -------------------------------------------------------------    */
@@ -25,7 +25,7 @@ struct bdb_fun_info { char *sname, *cname; };
 /*    the table that has been build by the compiler in -gbdb mode.     */
 /*---------------------------------------------------------------------*/
 obj_t
-bdb_table_to_list( obj_t bdb ) {
+bdb_table_to_list(obj_t bdb) {
    obj_t cla_info  = BNIL;
    obj_t glo_info  = BNIL;
    obj_t mod_info  = BNIL;
@@ -38,24 +38,24 @@ bdb_table_to_list( obj_t bdb ) {
    /* we start reading the signature for the table in,     */
    /* just to check that the compiled table format is      */
    /* compatible with this version of blib.                */
-   if( !(table_entry->sname == BDB_LIBRARY_MAGIC_NUMBER) ||
-       !(table_entry->cname == BDB_LIBRARY_MAGIC_NUMBER) ) {
-      fprintf( stderr,
+   if (!((long)table_entry->sname == BDB_LIBRARY_MAGIC_NUMBER) ||
+	 !((long)table_entry->cname == BDB_LIBRARY_MAGIC_NUMBER)) {
+      fprintf(stderr,
 	       "***ERROR: Incompatible versions -- "
 	       "Bigloo compiler/Bdb library");
-      exit( -1 );
+      exit(-1);
    } else {
       table_entry++;
    }
    
    /* we start fetching the module name and its            */
    /* C initialization function.                           */
-   mod_info  = string_to_bstring( table_entry->sname );
-   init_info = string_to_bstring( table_entry->cname );
+   mod_info  = string_to_bstring(table_entry->sname);
+   init_info = string_to_bstring(table_entry->cname);
    table_entry++;
 
    /* and the source files implementing this module.       */
-   while( ((int *)table_entry->sname) ) {
+   while (((int *)table_entry->sname)) {
       obj_t pair = MAKE_PAIR(string_to_bstring(table_entry->sname), src_info);
       src_info = pair;
       
@@ -63,13 +63,13 @@ bdb_table_to_list( obj_t bdb ) {
    }
    
    mod_lnum  = (long)table_entry->cname;
-   src_info  = MAKE_PAIR( init_info, src_info );
-   lnum_info = MAKE_PAIR( BINT( mod_lnum ), src_info );
-   mod_info  = MAKE_PAIR( mod_info, lnum_info );
+   src_info  = MAKE_PAIR(init_info, src_info);
+   lnum_info = MAKE_PAIR(BINT(mod_lnum), src_info);
+   mod_info  = MAKE_PAIR(mod_info, lnum_info);
    table_entry++;
    
    /* then we fetch global variables informations         */
-   while( *((int *)table_entry) && table_entry->sname ) {
+   while (*((int *)table_entry) && table_entry->sname) {
       char *fname, *sname, *cname;
       long lnum;
       obj_t pair = BNIL;
@@ -85,7 +85,7 @@ bdb_table_to_list( obj_t bdb ) {
       cname = table_entry->cname;
 
       /* is it a global function or a global variable ?   */
-      if( !cname ) {
+      if (!cname) {
 	 /* thie is a global function                     */
 	 char *bp_cname;
 	 obj_t pair2;
@@ -95,42 +95,42 @@ bdb_table_to_list( obj_t bdb ) {
 	 cname    = table_entry->sname;
 	 bp_cname = table_entry->cname;
 
-	 pair2 = MAKE_PAIR( cname ? string_to_bstring( cname ) : BUNSPEC,
-			    BINT( lnum ) );
-	 pair2 = MAKE_PAIR( pair2, string_to_bstring( bp_cname ) );
+	 pair2 = MAKE_PAIR(cname ? string_to_bstring(cname) : BUNSPEC,
+			    BINT(lnum));
+	 pair2 = MAKE_PAIR(pair2, string_to_bstring(bp_cname));
 	 table_entry++;
 	 
 	 /* this is a global function, we are now free    */
 	 /* to parse the local variables                  */
-	 while( table_entry->sname ) {
-	    pair = MAKE_PAIR( string_to_bstring( table_entry->sname ),
-			      string_to_bstring( table_entry->cname ) );
+	 while (table_entry->sname) {
+	    pair = MAKE_PAIR(string_to_bstring(table_entry->sname),
+			      string_to_bstring(table_entry->cname));
 
-	    entry = MAKE_PAIR( pair, entry );
+	    entry = MAKE_PAIR(pair, entry);
 
 	    table_entry++;
 	 }
 
-	 pair2 = MAKE_PAIR( pair2, BNIL );
-	 pair  = MAKE_PAIR( string_to_bstring( sname ), pair2 );
+	 pair2 = MAKE_PAIR(pair2, BNIL);
+	 pair  = MAKE_PAIR(string_to_bstring(sname), pair2);
       } else {
 	 /* this is a global variable.                    */
-	 pair = MAKE_PAIR( string_to_bstring( sname ),
-			   string_to_bstring( cname ) );
+	 pair = MAKE_PAIR(string_to_bstring(sname),
+			   string_to_bstring(cname));
       }
       
-      entry = MAKE_PAIR( pair, entry );
-      entry = MAKE_PAIR( string_to_bstring( fname ), entry );
+      entry = MAKE_PAIR(pair, entry);
+      entry = MAKE_PAIR(string_to_bstring(fname), entry);
 	 
       table_entry++;
-      glo_info = MAKE_PAIR( entry, glo_info );
+      glo_info = MAKE_PAIR(entry, glo_info);
    }
    table_entry++;
 
    /* then we fetch classes information                   */
-   while( *((int *)table_entry) && table_entry->sname ) {
-      cla_info = MAKE_PAIR( string_to_bstring( table_entry->sname ),
-			    cla_info );
+   while (*((int *)table_entry) && table_entry->sname) {
+      cla_info = MAKE_PAIR(string_to_bstring(table_entry->sname),
+			    cla_info);
       table_entry++;
    }
 
@@ -138,7 +138,7 @@ bdb_table_to_list( obj_t bdb ) {
    {
       obj_t aux;
 
-      aux = MAKE_PAIR( glo_info, cla_info );
-      return MAKE_PAIR( mod_info, aux );
+      aux = MAKE_PAIR(glo_info, cla_info);
+      return MAKE_PAIR(mod_info, aux);
    }
 }

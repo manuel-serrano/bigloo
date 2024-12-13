@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Fri Nov  8 11:26:14 2024 (serrano)                */
+;*    Last change :  Thu Dec 12 08:43:46 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1057,6 +1057,7 @@
  	    (inline *s64::int64 ::int64 ::int64)
  	    (inline *u64::uint64 ::uint64 ::uint64)
  	    (inline /fx::long ::long ::long)
+ 	    (inline /fx/ov::obj ::bint ::bint)
 	    (inline /elong::elong ::elong ::elong)
 	    (inline /llong::llong ::llong ::llong)
 	    (inline /s8::int8 ::int8 ::int8)
@@ -2036,6 +2037,14 @@
 
 (define-inline (/s64 z1 z2) ($/s64 z1 z2))
 (define-inline (/u64 z1 z2) ($/u64 z1 z2))
+
+(define-inline (/fx/ov z1 z2)
+   (if (=fx z2 0)
+       (cond
+	  ((>fx z1 0) +inf.0)
+	  ((<fx z1 0) -inf.0)
+	  (else +nan.0))
+       (/fx z1 z2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    neg ...                                                          */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/external.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/recette/external_jvm.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 25 11:52:25 2000                          */
-;*    Last change :  Thu Sep 18 11:03:34 2008 (serrano)                */
-;*    Copyright   :  2000-08 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 11:41:45 2024 (serrano)                */
+;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Jvm foreign interface tests                                  */
 ;*=====================================================================*/
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
-(module external
+(module external_jvm
    (include "test.sch") 
    (import  (main "main.scm"))
    (java (abstract-class intf
