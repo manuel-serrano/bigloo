@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec 13 05:17:21 2024 (serrano)                */
+#*    Last change :  Fri Dec 13 10:22:11 2024 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -21,7 +21,7 @@ release=4.6a
 buildrelease=unstable
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
-biglooftp=ftp://ftp-sop.inria.fr/indes/fp/Bigloo
+bigloohttp=http://www-sop.inria.fr/indes/fp/Bigloo/download
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
 
@@ -1743,14 +1743,14 @@ bootbigloobindir=`dirname $bootbigloo 2> /dev/null`
 if [ $bootmethod = "source" ]; then
   mkdir -p download
   if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
-    echo "downloading bigloo $buildrelease from $biglooftp"
-    wget $biglooftp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
+    echo "downloading bigloo $buildrelease from $bigloohttp"
+    wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
   else
     echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
   fi
 
   if [ $? != 0 ]; then
-    echo "command failed \"wget $biglooftp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
+    echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
     rm -f download/bigloo-$buildrelease.tar.gz
     wget --help > /dev/null 2> /dev/null
     
