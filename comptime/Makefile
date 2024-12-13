@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Sep 19 07:27:03 2024 (serrano)                */
+#*    Last change :  Fri Dec 13 05:34:20 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -349,10 +349,15 @@ ISA_FILE	= walk
 
 ISA_OBJ	        = $(ISA_FILE:%=Isa/%.o)
 
-#*--- defus -----------------------------------------------------------*/
+#*--- liveness --------------------------------------------------------*/
 LIVENESS_FILE	= liveness set types
 
 LIVENESS_OBJ 	= $(LIVENESS_FILE:%=Liveness/%.o)
+
+#*--- peephole --------------------------------------------------------*/
+PEEPHOLE_FILE	= walk
+
+PEEPHOLE_OBJ 	= $(PEEPHOLE_FILE:%=Peephole/%.o)
 
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
@@ -370,7 +375,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) $(READ_OBJ) \
                   $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) \
                   $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) \
                   $(ISA_OBJ) $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) \
-                  $(LIVENESS_OBJ) $(PREBOX_OBJ)
+                  $(LIVENESS_OBJ) $(PREBOX_OBJ) $(PEEPHOLE_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Nov  8 09:12:24 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 05:38:30 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -509,6 +509,10 @@
        (set! *optim-dataflow-types?* #t))
       (("-fno-dataflow-types" (help "Disable type dataflow optimizations"))
        (set! *optim-dataflow-types?* #f))
+      (("-fpeephole" (help "Enable init flow"))
+       (set! *optim-peephole?* #t))
+      (("-fno-peephole" (help "Disable init flow"))
+       (set! *optim-peephole?* #f))
       (("-finitflow" (help "Enable init flow"))
        (set! *optim-initflow?* #t))
       (("-fno-initflow" (help "Disable init flow"))
@@ -960,6 +964,8 @@
 	(set! *pass* 'fail))
        (("-abound" (help "Stop after the array bound checking stage"))
 	(set! *pass* 'abound))
+       (("-peephole" (help "Stop after the type peephole stage"))
+	(set! *pass* 'peephole))
        (("-initflow" (help "Stop after the type initflow stage"))
 	(set! *pass* 'initflow))
        (("-narrow" (help "Stop after the scope narrowing stage"))
@@ -1319,6 +1325,7 @@
       (set! *optim-cfa-flonum-arithmetic?* #t)
       (set! *optim-dataflow-types?* #t)
       (set! *optim-initflow?* #t)
+      (set! *optim-peephole?* #t)
       (set! *optim-tagged-fxop?* #t)
       (set! *optim-prebox?* #t)
 ;*       (set! *local-exit?* #t)                                       */

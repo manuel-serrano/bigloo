@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Sep  8 12:06:44 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 07:29:32 2024 (serrano)                */
 ;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -1265,12 +1265,14 @@
 ;*---------------------------------------------------------------------*/
 (define (%append-2-define)
    `(define (,%append-2-id l1::pair-nil l2)
-       (let ((head (cons '() l2)))
-	  (labels ((loop (prev tail)
-			 (if (pair? tail)
-			     (let ((new-prev (cons (car tail) l2)))
-				(set-cdr! prev new-prev)
-				(loop new-prev (cdr tail)))
-			     '())))
-	     (loop head l1)
-	     (cdr head)))))
+       (if (null? l1)
+	   l2
+	   (let ((head (cons '() l2)))
+	      (labels ((loop (prev tail)
+			  (if (pair? tail)
+			      (let ((new-prev (cons (car tail) l2)))
+				 (set-cdr! prev new-prev)
+				 (loop new-prev (cdr tail)))
+			      '())))
+		 (loop head l1)
+		 (cdr head))))))
