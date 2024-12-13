@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:53:05 1994                          */
-;*    Last change :  Sun Aug 25 09:15:18 2019 (serrano)                */
+;*    Last change :  Thu Dec 12 18:01:18 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    L'expansion des formes `',@                                      */
 ;*=====================================================================*/
@@ -145,19 +145,20 @@
 ;*    template-or-splice-list ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (template-or-splice-list d exp)
-    (cond ((null? exp) '('()))
-	  ((pair? exp)
-	   (cond ((eq? (car exp) 'unquote)
-		  (list (template d exp)))
-		 ((and (pair? (car exp)) (eq? (car (car exp))
-					      'unquote-splicing))
-		  (list (list 'eappend
-			      (template-or-splice d (car exp))
-			      (cons 'cons*
-				    (template-or-splice-list d (cdr exp))))))
-		 (else (cons (template-or-splice d (car exp))
-			     (template-or-splice-list d (cdr exp))))))
-	  (else (list (template-or-splice d exp)))))
+   (cond
+      ((null? exp) '('()))
+      ((pair? exp)
+       (cond ((eq? (car exp) 'unquote)
+	      (list (template d exp)))
+	     ((and (pair? (car exp)) (eq? (car (car exp)) 'unquote-splicing))
+	      (let ((a (template-or-splice d (car exp)))
+		    (r (template-or-splice-list d (cdr exp))))
+		 (if (equal? r '((quote ())))
+		     (list a)
+		     (list (list 'eappend a (cons 'cons* r))))))
+	     (else (cons (template-or-splice d (car exp))
+		      (template-or-splice-list d (cdr exp))))))
+      (else (list (template-or-splice d exp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    template-or-splice ...                                           */

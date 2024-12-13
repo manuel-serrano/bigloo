@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Mon Jul 10 14:04:01 2023 (serrano)                */
+#*    Last change :  Thu Dec 12 18:59:48 2024 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host libbacktrace library.                         */
 #*=====================================================================*/
@@ -13,7 +13,7 @@
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
 cflags=
-libbacktracelib="libbacktrace"
+libbacktracelib="backtrace"
 type=
 
 #*---------------------------------------------------------------------*/
@@ -57,9 +57,13 @@ fi
 cat > $file.c <<EOF
 #include <backtrace.h>
 
+static void cbe(void *data, const char *msg, int errnum) {
+   fprintf(stderr, "*** BACKTRACE ERROR:%s (%d)\n", msg, errnum);
+}
+
 int main( int argc, char *argv[] ) {
    struct backtrace_state *bt_state = backtrace_create_state(0L, 0, cbe, 0L);
-   return bt_state != 0;
+   return bt_state == 0;
 }
 EOF
 
@@ -69,9 +73,9 @@ EOF
 if eval "$BUILDSH $compile"; then
    eval "$HOSTSH $aout aaa aaa"
    ret_code=$?
-   \rm -f $file.*
-   rm -f $aout
-   rm -rf $aout*
+#*    \rm -f $file.*                                                   */
+#*    rm -f $aout                                                      */
+#*    rm -rf $aout*                                                    */
    if [ $ret_code = 0 ]; then
      echo "$libbacktracelib"
    else

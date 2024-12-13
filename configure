@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec 12 10:46:37 2024 (serrano)                */
+#*    Last change :  Thu Dec 12 19:35:11 2024 (serrano)                */
 #*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2527,6 +2527,8 @@ fi
 if [ "$libuv_is_enabled " = "yes " -a "$customlibuv " = "yes " ]; then
   $echo ""
 
+  $autoconfdir/tools || exit 1
+  
   $echo "+ Installing custom libuv ($libuvversion) source code."
   (cd libuv; . ./install-libuv) || exit 1
   
@@ -2952,7 +2954,7 @@ if [ "$libbacktrace " != "no " ]; then
     libbacktracelibs="-lbacktrace"
     havelibbacktrace=1;
     featureflags="-srfi enable-libbacktrace $featureflags";
-    extralibbacktrace=libbacktrace
+    extralibbacktrace=backtrace
     libbacktracebuildpath="\$(BOOTDIR)/libbacktrace\$(LIBDIR)/\$(FILDIR)"
     ldbuildopts="-L$bootdir/libbacktrace$libdir/$fildir $ldbuildopts"
     #lcustomflags="-L$bootdir/libbacktrace$libdir/$fildir $lcustomflags"
@@ -2982,6 +2984,7 @@ if [ "$libbacktrace " != "no " ]; then
     fi
   else
     havelibbacktrace=1;
+    libbacktracelibs="-l$extralibbacktrace"
     featureflags="-srfi enable-libbacktrace $featureflags";
   fi
 else
@@ -4914,6 +4917,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       $echo "LIBBACKTRACEBOOTINCDIR=$bootdir/libbacktrace/libbacktrace-$libbacktraceversion" >> $makefile_cfg
     else
       $echo "LIBBACKTRACECUSTOM=no" >> $makefile_cfg
+      $echo "LIBBACKTRACECUSTOMVERSION=$libbacktraceversion" >> $makefile_cfg
       $echo "LIBBACKTRACEBOOTINCDIR=." >> $makefile_cfg
     fi
 
