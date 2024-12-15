@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Thu Dec 12 10:10:18 2024 (serrano)                */
+;*    Last change :  Fri Dec 13 15:32:13 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -1134,7 +1134,7 @@
    (int64->uint64 ($bignum->int64 x)))
 
 ;*---------------------------------------------------------------------*/
-;*    $seed-rand ...                                                  */
+;*    $seed-rand ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define ($seed-rand seed)
    ($srand seed)
@@ -1154,7 +1154,7 @@
    (random-fill-u8vector! (make-u8vector len)))
 
 ;*---------------------------------------------------------------------*/
-;*    $randbx ...                                                     */
+;*    $randbx ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define ($randbx range::bignum)
    (let* ((range-bits (bignum-integer-length range))

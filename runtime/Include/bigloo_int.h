@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Fri Nov 15 08:00:26 2024 (serrano)                */
+/*    Last change :  Sun Dec 15 07:21:47 2024 (serrano)                */
 /*    Copyright   :  2017-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -290,9 +290,11 @@ extern bool_t __builtinmull_overflow(long x, long y, long *res);
 #endif
 
 #if !BGL_NAN_TAGGING && TAG_INT != 0
-#  define BGL_ADDFX_OV(x, y, res) (__builtin_saddl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
-#  define BGL_SUBFX_OV(x, y, res) (__builtin_ssubl_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
-#  define BGL_MULFX_OV(x, y, res) (__builtin_smull_overflow(CINT(x), CINT(y), (long*)&res) || (res = BINT((long)res), 0))
+#  define BGL_BINT_SANS_TAG(x) ((long)(x) & ~TAG_MASK)
+#  define BGL_BINT_WITH_TAG(x) ((obj_t)((long)(x) | TAG_INT))
+#  define BGL_ADDFX_OV(x, y, res) (__builtin_saddl_overflow(BGL_BINT_SANS_TAG(x), BGL_BINT_SANS_TAG(y), (long*)&res) || (res = BGL_BINT_WITH_TAG((long)res), 0))
+#  define BGL_SUBFX_OV(x, y, res) (__builtin_ssubl_overflow(BGL_BINT_SANS_TAG(x), BGL_BINT_SANS_TAG(y), (long*)&res) || (res = BGL_BINT_WITH_TAG((long)res), 0))
+#  define BGL_MULFX_OV(x, y, res) (__builtin_smull_overflow(BGL_BINT_SANS_TAG(x), CINT(y), (long*)&res) || (res = BGL_BINT_WITH_TAG((long)res), 0))
 #endif
 
 #if BGL_NAN_TAGGING
