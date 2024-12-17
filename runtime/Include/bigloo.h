@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec  4 15:13:52 2024 (serrano)                */
+/*    Last change :  Tue Dec 17 10:24:16 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1042,7 +1042,7 @@ union scmobj {
       union scmobj *current_display;
       /* multiple values */
       int mvalues_number;
-      union scmobj *mvalues[ 16 ];
+      union scmobj *mvalues[16];
       /* exceptions and call/cc */
       char *stack_bottom;
       union scmobj *exit_value;

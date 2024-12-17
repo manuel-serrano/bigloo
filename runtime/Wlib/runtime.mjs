@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Dec 13 17:30:35 2024 (serrano)                */
+/*    Last change :  Tue Dec 17 11:12:29 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -15,7 +15,7 @@
 import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync } from "node:fs";
 import { isatty } from "tty";
 //import { readFile } from 'node:fs/promises';
-import { extname } from "node:path";
+import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
 
 /*---------------------------------------------------------------------*/
@@ -101,6 +101,8 @@ const instance = await WebAssembly.instantiate(wasm, {
 	    return -1;
 	 } 
       },
+
+      file_separator: file_sep.charCodeAt(0),
       
       argc: argv.length - 2 /* ignore the path of NodeJS and of runtime.mjs. */,
 
@@ -302,7 +304,13 @@ const instance = await WebAssembly.instantiate(wasm, {
       long_to_bignum: (value) => BigInt(value),
       bgl_safe_bignum_to_fixnum: (bx, bsz) => {
 	 if (bsz > 53) bsz = 52; // max support JS fixnums
-	 return BigInt.asUintN(2 * bsz, bx) - BigInt.asUintN(bsz, bx);
+	 const u = BigInt.asUintN(bsz, bx);
+
+	 if (BigInt(u) === bx) {
+	    return u;
+	 } else {
+	    return 0;
+	 }
       },
       bgl_bignum_to_long: bx => BigInt.asIntN(64, bx),
       bignum_remainder: (bx, by) => bx % by,

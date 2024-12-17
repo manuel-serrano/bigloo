@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Dec 12 08:43:46 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 09:10:03 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -278,7 +278,7 @@
 	   ($elong->int16 "(i32.rem_s (i32.wrap_i64 ~0) (i32.const 0xFFFF))")
 	   ($elong->uint16 "(i32.rem_u (i32.wrap_i64 ~0) (i32.const 0xFFFF))")
 	   ($uint16->elong "(i64.extend_i32_u ~0)")
-	   ($int16->elong "(i64.extend_i32_s ~0)")
+	   ($int16->elong "(i64.extend_i32_s (i32.shr_s (i32.shl ~0 (i32.const 16)) (i32.const 16)))")
 	   
 	   ($elong->int32 "(i32.wrap_i64 ~0)")
 	   ($int32->elong  "(i64.extend_i32_s ~0)")

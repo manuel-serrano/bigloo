@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Dec 13 15:57:25 2024 (serrano)                */
+#*    Last change :  Tue Dec 17 09:45:55 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -123,7 +123,7 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*---------------------------------------------------------------------*/
 WLIB		= javascript wcnst runtime wwriter wfixnum wstring wsymbols \
                   wrgc wports wintegers wbignum wsystem wreal wdate wobject \
-                  wcustom wforeign
+                  wcustom wforeign wweakptr
 
 W_WLIB		= $(WLIB:%=Wlib/%.wat)
 

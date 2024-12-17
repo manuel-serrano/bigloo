@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Sat Dec  7 07:01:59 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 10:01:28 2024 (serrano)                */
 ;*    Copyright   :  2002-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -536,7 +536,7 @@
                 (let ((d (weakptr-data ptr2)))
 		   (and (pair? d)
 			(eq? (car d) ptr2)
-			(eq? (cdr d) 3))))
+			(eqv? (cdr d) 3))))
            #t)))
    (test "top level forms" (list order_foo1
 				 order_foo2
@@ -851,8 +851,8 @@
 	 s))
    (test "args-parse" (test-args-parse) (bit-or 31 (bit-or 32 64)))
    (cond-expand
-      (bigloo-.net
-       #t)
+      (bigloo-wasm
+       #unspecified)
       (else
        (test "process" (do ((i 0 (+ i 1)))
 			   ((>= i 5)

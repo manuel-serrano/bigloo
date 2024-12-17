@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Fri Dec  6 09:08:54 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 11:20:58 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -33,8 +33,18 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
+   (import "__js" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
+   (import "__js" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
+   (import "__js" "close_file" (func $js_close_file (param i32)))
+   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
+   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
+   (import "__js" "write_char" (func $js_write_char (param i32 i32)))
+   (import "__js" "write_bignum" (func $js_write_bignum (param i32 externref)))
+   
    (import "__js" "close_fd" (func $js_close_fd (param i32)))
    (import "__js" "isatty" (func $js_isatty (param i32) (result i32)))
+   (import "__js" "file_separator" (global $js_file_separator i32))
+   (import "__js" "file_delete" (func $js_file_delete (param i32) (param i32) (result i32)))
 
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -1338,6 +1348,34 @@
    ;; -----------------------------------------------------------------
    ;; Misc functions 
    ;; -----------------------------------------------------------------
+
+   ;; FILE_SEPARATOR
+   (global $FILE_SEPARATOR (export "FILE_SEPARATOR") i32
+      (global.get $js_file_separator))
+      
+   ;; fexists
+   (func $fexists (export "fexists")
+      (param $path (ref $bstring))
+      (result i32)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      (return_call $js_file_exists
+	 (i32.const 128)
+	 (array.len (local.get $path))))
+
+   ;; unlink
+   (func $unlink (export "unlink")
+      (param $path (ref $bstring))
+      (result i32)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return_call $js_file_delete
+	 (i32.const 128) (array.len (local.get $path))))
 
    ;; get_output_string
    (func $get_output_string (export "get_output_string")

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/control5.scm              */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/control5.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb 27 14:11:26 1998                          */
-;*    Last change :  Wed Jul  3 14:02:47 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 10:22:16 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    An implementation of the R5RS multiple values.                   */
 ;*=====================================================================*/
@@ -44,7 +44,7 @@
    (java    (class foreign
 	       (method static $get-mvalues-number::int ()
 		       "BGL_MVALUES_NUMBER")
-	       (method static  $set-mvalues-number!::int (::int)
+	       (method static $set-mvalues-number!::int (::int)
 		       "BGL_MVALUES_NUMBER_SET")
 	       (method static $get-mvalues-val::obj (::int)
 		       "BGL_MVALUES_VAL")

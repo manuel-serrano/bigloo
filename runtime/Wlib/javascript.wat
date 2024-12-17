@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Tue Oct  1 09:35:59 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 11:19:41 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -20,14 +20,6 @@
    (import "__js" "get_arg" (func $js_get_arg (param i32 i32) (result i32)))
    (import "__js" "getcwd" (func $js_getcwd (result i32)))
    (import "__js" "getenv" (func $js_getenv (param i32) (param i32) (result i32)))
-   
-   (import "__js" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
-   (import "__js" "close_file" (func $js_close_file (param i32)))
-   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
-   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
-   (import "__js" "write_char" (func $js_write_char (param i32 i32)))
-   (import "__js" "write_bignum" (func $js_write_bignum (param i32 externref)))
-   
    (import "__js_math" "fmod" (func $fmod (param f64 f64) (result f64)))
    (import "__js_math" "exp" (func $exp (param f64) (result f64)))
    (import "__js_math" "log" (func $log (param f64) (result f64)))
