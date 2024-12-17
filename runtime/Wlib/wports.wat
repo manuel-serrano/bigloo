@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Dec 17 11:20:58 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 13:55:35 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -26,6 +26,10 @@
    (global $BGL_IOFBF i32 (i32.const 2)) ;; fully buffered
    (global $BGL_IOEBF i32 (i32.const 3)) ;; extensible buffer
 
+   (global $BGL_BINARY_INPUT i32 (i32.const 0))
+   (global $BGL_BINARY_OUTPUT i32 (i32.const 1))
+   (global $BGL_BINARY_CLOSED i32 (i32.const 2))
+
    (global $WHENCE_SEEK_CUR i32 (i32.const 0))
    (global $WHENCE_SEEK_END i32 (i32.const 1))
 
@@ -45,6 +49,9 @@
    (import "__js" "isatty" (func $js_isatty (param i32) (result i32)))
    (import "__js" "file_separator" (global $js_file_separator i32))
    (import "__js" "file_delete" (func $js_file_delete (param i32) (param i32) (result i32)))
+   (import "__js" "make_dir" (func $js_make_dir (param i32) (param i32) (param i32) (result i32)))
+   (import "__js" "dir_remove" (func $js_dir_remove (param i32) (param i32) (result i32)))
+   (import "__js" "is_dir" (func $js_directoryp (param i32) (param i32) (result i32)))
 
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -70,6 +77,23 @@
    (type $sysflush_t
       (func (param (ref eq))
 	 (result (ref eq))))
+
+   ;; binary-port
+   (type $binary-port
+      (struct
+	 (field $name (mut (ref $bstring)))
+	 (field $fd i32)
+	 (field $io (mut i32))))
+
+   (global $binary-port-default-value
+      (export "BGL_BINARY_PORT_DEFAULT_VALUE") (ref $binary-port)
+      (struct.new $binary-port
+	 ;; name
+	 (global.get $bstring-default-value)
+	 ;; fd
+	 (i32.const 0)
+	 ;; io
+	 (i32.const 0)))
    
    ;; port
    (type $port
@@ -80,7 +104,7 @@
 	    (field $isclosed (mut i32))
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t))))))
-
+   
    (global $port-default-value
       (export "BGL_PORT_DEFAULT_VALUE") (ref $port)
       (struct.new $port
@@ -471,6 +495,18 @@
    ;; Primitive IO operations 
    ;; -----------------------------------------------------------------
 
+   ;; close_binary_port
+   (func $close_binary_port (export "close_binary_port")
+      (param $bp (ref $binary-port))
+      (result (ref $binary-port))
+      (if (i32.ne (struct.get $binary-port $io (local.get $bp))
+	     (global.get $BGL_BINARY_CLOSED))
+	  (then
+	     (call $js_close_file (struct.get $binary-port $fd (local.get $bp)))
+	     (struct.set $binary-port $io (local.get $bp)
+		(global.get $BGL_BINARY_CLOSED))))
+      (local.get $bp))
+   
    ;; _CLOSE
    (func $_CLOSE
       (param $op (ref eq))
@@ -1116,7 +1152,30 @@
    ;; -----------------------------------------------------------------
    ;; Opens functions 
    ;; -----------------------------------------------------------------
+   
+   ;; open_output_binary_file
+   (func $open_output_binary_file (export "open_output_binary_file")
+      (param $path (ref $bstring))
+      (result (ref eq))
 
+      (local $fd i32)
+      
+      ;; TODO: support buffered output (for now, $buf is ignored)
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      (local.set $fd
+	 (call $js_open_file
+	    (i32.const 128)
+	    (array.len (local.get $path))
+	    ;; WRITE-ONLY flag
+	    (i32.const 1)))
+      
+      (struct.new $binary-port
+	 (local.get $path)
+	 (local.get $fd)
+	 (global.get $BGL_BINARY_OUTPUT)))
+   
    ;; bgl_open_input_file
    (func $bgl_open_input_file (export "bgl_open_input_file")
       (param $path (ref $bstring))
@@ -1582,5 +1641,44 @@
 	 (global.get $_stderr))
       (struct.set $dynamic-env $current-input-port (local.get $denv)
 	 (global.get $_stdin)))
+
+   ;; -----------------------------------------------------------------
+   ;; directories 
+   ;; -----------------------------------------------------------------
+
+   (func $bgl_directoryp (export "bgl_directoryp")
+      (param $path (ref $bstring))
+      (result i32)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return_call $js_directoryp
+	 (i32.const 128) (array.len (local.get $path))))
+   
+   (func $make_dir (export "make_dir")
+      (param $path (ref $bstring))
+      (param $mod i32)
+      (result i32)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return_call $js_make_dir
+	 (i32.const 128) (array.len (local.get $path)) (local.get $mod)))
+
+   (func $delete_dir (export "delete_dir")
+      (param $path (ref $bstring))
+      (result i32)
+
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return_call $js_dir_remove
+	 (i32.const 128) (array.len (local.get $path))))
+   
    )
    

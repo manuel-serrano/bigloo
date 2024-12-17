@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Sep 24 11:40:35 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 15:42:32 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -251,7 +251,10 @@
 	    ($input-port-timeout "(i64.const 0)")
 	    ($input-port-timeout-set! "(i32.const 0)")
 	    ($output-port-timeout "(i64.const 0)")
-	    ($output-port-timeout-set! "(i32.const 0)"))
+	    ($output-port-timeout-set! "(i32.const 0)")
+
+	    (c-mkdir "(call $make_dir ~0 (i32.wrap_i64 ~1))")
+	    (c-delete-directory "(call $delete_dir ~0)"))
 
    (java    (class foreign
 	       (method static c-input-port?::bool  (::obj)

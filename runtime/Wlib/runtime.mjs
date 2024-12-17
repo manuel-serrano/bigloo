@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Dec 17 11:12:29 2024 (serrano)                */
+/*    Last change :  Tue Dec 17 14:25:26 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync } from "node:fs";
+import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync } from "node:fs";
 import { isatty } from "tty";
 //import { readFile } from 'node:fs/promises';
 import { extname, sep as file_sep } from "node:path";
@@ -197,7 +197,7 @@ const instance = await WebAssembly.instantiate(wasm, {
 	 writeSync(fd, n.toString());
       },
 
-      file_exists: function (path_addr, path_length) {
+      file_exists: (path_addr, path_length) => {
          const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
          const path = loadSchemeString(buffer);
          try {
@@ -208,39 +208,55 @@ const instance = await WebAssembly.instantiate(wasm, {
          }
       },
 
-      file_delete: function (path_addr, path_length) {
+      file_delete: (path_addr, path_length) => {
          const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
          const path = loadSchemeString(buffer);
          try {
-            unlinkSync(path);
-            return true;
+	    if (existsSync(path)) {
+               unlinkSync(path);
+               return false;
+	    } else {
+	       return true;
+	    }
          } catch (err) {
-            return false;
+            return true;
          }
       },
 
-      dir_remove: function (path_addr, path_length) {
+      dir_remove: (path_addr, path_length) => {
          const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
          const path = loadSchemeString(buffer);
          try {
             rmdirSync(path);
-            return true;
-         } catch (err) {
             return false;
+         } catch (err) {
+            return true;
          }
       },
 
-      is_dir: function (path_addr, path_length) {
+      is_dir: (path_addr, path_length) => {
          const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
          const path = loadSchemeString(buffer);
+
          try {
-            return fstatSync(path).isDirectory();
+            return lstatSync(path).isDirectory();
          } catch (err) {
             return false;
          }
       },
 
-      number_to_string: function (x, addr) {
+      make_dir: (path_addr, path_length, mod) => {
+         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+         const path = loadSchemeString(buffer);
+	 try {
+	    mkdirSync(path, {mod: mod});
+	    return true;
+	 } catch(e) {
+	    return false;
+	 }
+      },
+
+      number_to_string: (x, addr) => {
          return storeJSStringToScheme(x.toString(), addr);
       },
 

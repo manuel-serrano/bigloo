@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Dec 17 09:56:10 2024 (serrano)                */
+;*    Last change :  Tue Dec 17 14:04:28 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -139,10 +139,6 @@
      (export "BGL_PROCEDURE_EL_DEFAULT_VALUE") (ref $procedure-el)
      (array.new_fixed $procedure-el 0))
   
-  (global $binary-port-default-value
-     (export "BGL_BINARY_PORT_DEFAULT_VALUE") (ref $binary-port)
-     (struct.new $binary-port))
-
   (global $socket-default-value
      (export "BGL_SOCKET_DEFAULT_VALUE") (ref $socket)
      (struct.new $socket))
@@ -187,10 +183,16 @@
 	(ref.null none)
 	;; current-input-port
 	(ref.null none)
+	;; evstate
+	(global.get $BUNSPEC)
 	;; module
 	(global.get $BUNSPEC)
 	;; abase
 	(global.get $BUNSPEC)
+	;; lexical-stack
+	(global.get $BNIL)
+	;; top
+	(ref.null none)
 	))
 
   (global $object-default-value
@@ -1717,26 +1719,6 @@
 ;*     (call $js_close_file (struct.get $file-input-port $fd (local.get $port))) */
 ;*     (local.get $port))                                              */
 ;*                                                                     */
-;*   ;; bgl_close_input_port                                           */
-;*   (func $bgl_close_input_port (export "bgl_close_input_port")       */
-;*      (param $port (ref $input-port))                                */
-;*      (result (ref eq))                                              */
-;*                                                                     */
-;*      (local $rgc (ref $rgc))                                        */
-;*      (local.set $rgc (struct.get $input-port $rgc (local.get $port))) */
-;*                                                                     */
-;*      (struct.set $rgc $eof (local.get $rgc) (i32.const 1 #;TRUE))   */
-;*      ;; TODO: call chook                                            */
-;*                                                                     */
-;*      ;; is closed                                                   */
-;*      (struct.set $input-port $isclosed (local.get $port) (i32.const 1)) */
-;*                                                                     */
-;*      (if (ref.test (ref $file-input-port) (local.get $port))        */
-;* 	 (then (return (call $close_file_input_port (ref.cast (ref $file-input-port) (local.get $port)))))) */
-;*                                                                     */
-;*      ;; Default implementation                                      */
-;*      (local.get $port))                                             */
-
   ;; --------------------------------------------------------
   ;; Hash functions
   ;; --------------------------------------------------------
@@ -2116,10 +2098,16 @@
       (ref.null none)
       ;; $current-input-port
       (ref.null none)
+      ;; evstate
+      (global.get $BUNSPEC)
       ;; $module
       (global.get $BUNSPEC)
       ;; $abase
       (global.get $BUNSPEC)
+      ;; $lexical-stack
+      (global.get $BNIL)
+      ;; $top
+      (ref.null none)
       ))
 
   (func $BGL_CURRENT_DYNAMIC_ENV (export "BGL_CURRENT_DYNAMIC_ENV")
@@ -2178,7 +2166,108 @@
      (result (ref eq))
      (struct.set $dynamic-env $abase (global.get $current-dynamic-env) (local.get $abase))
      (local.get $abase))
+
+  (func $BGL_ENV_PUSH_TRACE (export "BGL_ENV_PUSH_TRACE")
+     (param $env (ref $dynamic-env))
+     (param $name (ref eq))
+     (param $loc (ref eq))
+     (result (ref eq))
+     
+     (local $tmp (ref $bgl_dframe))
+     (local.set $tmp
+	(struct.new $bgl_dframe (local.get $name) (local.get $loc)
+	   (struct.get $dynamic-env $top (local.get $env))))
+     (struct.set $dynamic-env $top (local.get $env) (local.get $tmp))
+     (return (global.get $BUNSPEC)))
   
+  (func $BGL_ENV_POP_TRACE (export "BGL_ENV_POP_TRACE")
+     (param $env (ref $dynamic-env))
+     (result (ref eq))
+
+     (struct.set $dynamic-env $top (local.get $env)
+	(struct.get $bgl_dframe $next
+	   (struct.get $dynamic-env $top (local.get $env))))
+     (return (global.get $BUNSPEC)))
+
+  (func $BGL_ENV_LEXICAL_STACK (export "BGL_ENV_LEXICAL_STACK")
+     (param $env (ref $dynamic-env))
+     (result (ref eq))
+
+     (struct.get $dynamic-env $lexical-stack (local.get $env)))
+  
+  (func $BGL_ENV_LEXICAL_STACK_SET (export "BGL_ENV_LEXICAL_STACK_SET")
+     (param $env (ref $dynamic-env))
+     (param $stk (ref eq))
+     (result (ref eq))
+
+     (struct.set $dynamic-env $lexical-stack (local.get $env)  (local.get $stk))
+     (return (global.get $BUNSPEC)))
+
+  (func $BGL_LEXICAL_STACK (export "BGL_LEXICAL_STACK")
+     (result (ref eq))
+
+     (return_call $BGL_ENV_LEXICAL_STACK
+	(global.get $current-dynamic-env)))
+
+  (func $BGL_LEXICAL_STACK_SET (export "BGL_LEXICAL_STACK_SET")
+     (param $stk (ref eq))
+     (result (ref eq))
+
+     (return_call $BGL_ENV_LEXICAL_STACK_SET
+	(global.get $current-dynamic-env)
+	(local.get $stk)))
+
+  (func $BGL_ENV_EVSTATE (export "BGL_ENV_EVSTATE")
+     (param $env (ref $dynamic-env))
+     (result (ref eq))
+
+     (struct.get $dynamic-env $evstate (local.get $env)))
+  
+  (func $BGL_ENV_EVSTATE_SET (export "BGL_ENV_EVSTATE_SET")
+     (param $env (ref $dynamic-env))
+     (param $state (ref eq))
+     (result (ref eq))
+
+     (struct.set $dynamic-env $evstate (local.get $env)  (local.get $state))
+     (return (global.get $BUNSPEC)))
+
+  (func $BGL_EVSTATE (export "BGL_EVSTATE")
+     (result (ref eq))
+
+     (return_call $BGL_ENV_EVSTATE
+	(global.get $current-dynamic-env)))
+
+  (func $BGL_EVSTATE_SET (export "BGL_EVSTATE_SET")
+     (param $stk (ref eq))
+     (result (ref eq))
+
+     (return_call $BGL_ENV_EVSTATE_SET
+	(global.get $current-dynamic-env)
+	(local.get $stk)))
+
+  ;; --------------------------------------------------------
+  ;; Eval
+  ;; --------------------------------------------------------
+
+  (func $_EVMEANING_ADDRESS (export "_EVMEANING_ADDRESS")
+     (param $o (ref eq))
+     (result (ref eq))
+     (return (struct.new $bgl_evmeaning_addr (local.get $o))))
+
+  (func $_EVMEANING_ADDRESS_REF (export "_EVMEANING_ADDRESS_REF")
+     (param $o (ref eq))
+     (result (ref eq))
+     (return (struct.get $bgl_evmeaning_addr $val
+		(ref.cast (ref $bgl_evmeaning_addr) (local.get $o)))))
+
+  (func $_EVMEANING_ADDRESS_SET (export "_EVMEANING_ADDRESS_SET")
+     (param $o (ref eq))
+     (param $v (ref eq))
+     (result (ref eq))
+     (struct.set $bgl_evmeaning_addr $val
+	(ref.cast (ref $bgl_evmeaning_addr) (local.get $o)) (local.get $v))
+     (return (global.get $BUNSPEC)))
+
   ;; --------------------------------------------------------
   ;; Main function
   ;; --------------------------------------------------------
