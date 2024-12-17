@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Wed Oct  2 08:51:54 2024 (serrano)                */
+;*    Last change :  Mon Dec 16 18:53:21 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM strings                                                     */
@@ -132,6 +132,13 @@
 	 (i32.wrap_i64 (local.get $min))
 	 (local.get $len))
       (local.get $r))
+
+   ;; BUCS2
+   (func $BUCS2
+      (export "BUCS2")
+      (param $v i32)
+      (result (ref $bucs2))
+      (struct.new $bucs2 (local.get $v) (i32.const 0)))
    
    )
   

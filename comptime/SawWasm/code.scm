@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Dec  6 07:47:39 2024 (serrano)                */
+;*    Last change :  Mon Dec 16 18:53:32 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1116,7 +1116,7 @@
       ((llong? value)
        `(i64.const ,value))
       ((ucs2? value)
-       `(struct.new $bucs2 (i32.const ,(ucs2->integer value))))
+       `(call $BUCS2 (i32.const ,(ucs2->integer value))))
       ((fixnum? value)
        ;; TODO: support other types
        (if (eq? (type-id type) 'int)

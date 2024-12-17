@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Wed Oct  2 11:16:06 2024 (serrano)                */
+;*    Last change :  Mon Dec 16 10:43:59 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -14,8 +14,10 @@
 ;*---------------------------------------------------------------------*/
 (directives
    (export (integer_to_string::bstring ::long ::long)
+	   ($integer->string/padding::bstring ::long ::long ::long)
 	   ($$strtol::long string::bstring start::long radix::long))
-   (extern (export integer_to_string "integer_to_string")))
+   (extern (export integer_to_string "integer_to_string")
+	   (export $integer->string/padding "integer->string/padding")))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer_to_string ...                                            */
@@ -36,6 +38,19 @@
 	     (string-set! aux 0 #\-))
 	  aux)))
 
+;*---------------------------------------------------------------------*/
+;*    $integer->string/padding ...                                     */
+;*---------------------------------------------------------------------*/
+(define ($integer->string/padding x padding radix)
+   (let* ((s (integer_to_string x radix))
+	  (l (string-length s)))
+      (if (<fx l padding)
+	  (if (>=fx x 0)
+	      (string-append (make-string (-fx padding l) #\0) s)
+	      (let ((s (integer_to_string (negfx x) radix)))
+		 (string-append "-" (make-string (-fx padding l) #\0) s)))
+	  s)))
+	 
 ;*---------------------------------------------------------------------*/
 ;*    integer-bits-count ...                                           */
 ;*---------------------------------------------------------------------*/

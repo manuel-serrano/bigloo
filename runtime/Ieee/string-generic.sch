@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Sat Dec  7 08:13:20 2024 (serrano)                */
+;*    Last change :  Mon Dec 16 09:35:59 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -508,6 +508,10 @@
 		    (string-set-ur! dst (++ w) #\\)
 		    (string-set-ur! dst (++ w) #\v)
 		    (set! esc #t))
+		   ((#\\)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\\)
+		    (set! esc #t))
 		   ((#\")
 		    (string-set-ur! dst (++ w) #\\)
 		    (string-set-ur! dst (++ w) #\")
@@ -516,7 +520,7 @@
 		    (if symbolp
 			(begin
 			   (string-set-ur! dst (++ w) #\\)
-			   (string-set-ur! dst (++ w) #\')
+			   (string-set-ur! dst (++ w) #\|)
 			   (set! esc #t))
 			(string-set-ur! dst (++ w) #\|)))
 		   (else
@@ -542,7 +546,7 @@
 ;*    symbol_for_read ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (symbol_for_read bstring)
-   (create_string_for_read bstring #f))
+   (create_string_for_read bstring #t))
 
 ;*---------------------------------------------------------------------*/
 ;*    blit_string ...                                                  */
