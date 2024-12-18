@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 09:16:42 2024                          */
-;*    Last change :  Wed Oct  2 10:08:34 2024 (serrano)                */
+;*    Last change :  Wed Dec 18 18:45:02 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM integers implementation independent (i.e., not fixnum).     */
@@ -75,14 +75,12 @@
    (func $make_belong (export "make_belong")
       (param $x i64)
       (result (ref $belong))
-      (local $tmp i64)
       (struct.new $belong (local.get $x)))
    
    ;; make_bllong
    (func $make_bllong (export "make_bllong")
       (param $x i64)
       (result (ref $bllong))
-      (local $tmp i64)
       (struct.new $bllong (local.get $x)))
    
    )

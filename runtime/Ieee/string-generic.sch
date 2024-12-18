@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Mon Dec 16 09:35:59 2024 (serrano)                */
+;*    Last change :  Wed Dec 18 09:07:17 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -13,7 +13,9 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
-   (import __bit)
+   (import __bit
+	   __unicode
+	   __ucs2)
    (export (bigloo_strcmp::bool ::bstring ::bstring)
 	   (bigloo_strncmp::bool ::bstring ::bstring ::long)
 	   (bigloo_strcmp_at::bool ::bstring ::bstring ::long)
@@ -345,7 +347,7 @@
 		    (string-set-ur! buf j c)
 		    (loop (+fx i 1) (+fx j 1)))
 		   ((<fx i (-fx len 1))
-		    (let ((nc (string-ref-ur str (+fx i (+fx start 1)))))
+		    (let ((nc (string-ref-ur str (+fx 1 (+fx start i)))))
 		       (case nc
 			  ((#\000)
 			   (string-set-ur! buf j #\\)
@@ -380,10 +382,13 @@
 			  ((#\a)
 			   (string-set-ur! buf j #a007)
 			   (loop (+fx i 2) (+fx j 1)))
+			  ((#\?)
+			   (string-set-ur! buf j #\?)
+			   (loop (+fx i 2) (+fx j 1)))
 			  ((#\x #\X)
 			   (if (<fx i (-fx len 3))
-			       (let* ((s1 (string-ref-ur str (+fx i (+fx start 2))))
-				      (s2 (string-ref-ur str (+fx i (+fx start 3))))
+			       (let* ((s1 (string-ref-ur str (+fx 2 (+fx start i))))
+				      (s2 (string-ref-ur str (+fx 3 (+fx start i))))
 				      (n1 (XDIGIT_TO_BYTE s1))
 				      (n2 (XDIGIT_TO_BYTE s2)))
 				  (if (or (<fx n1 0) (<fx n2 0))
@@ -394,16 +399,68 @@
 					 (string-set! buf j
 					    (integer->char
 					       (+fx (*fx n1 16) n2)))
-					 (loop (+fx i 3) (+fx j 1)))))))
+					 (loop (+fx i 4) (+fx j 1)))))))
 			  ((#\u #\U)
-			   (error "bigloo_escape_C_string" "not supported" string))
+			   (cond
+			      ((and (<fx i (-fx len 4))
+				    (char=? (string-ref-ur str (+fx 2 (+fx start i)))
+				       #\{))
+			       (let liip ((ii (+fx 3 (+fx start i)))
+					  (n 0))
+				  (if (=fx ii len)
+				      (begin
+					 (string-set! buf j c)
+					 (loop (+fx i 1) (+fx j 1)))
+				      (let ((c (string-ref-ur str ii)))
+					 (cond
+					    ((char=? c #\})
+					     (let* ((u (integer->ucs2 n))
+						    (s (make-ucs2-string 1 u))
+						    (t (ucs2-string->utf8-string s))
+						    (l (string-length t))
+						    (d (-fx ii (+fx 3 (+fx start i)))))
+						(blit-string! t 0 buf j l)
+						(set! len (-fx len d))
+						(loop (+fx i (+fx d 1)) (+fx j l))))
+					    ((isxdigit? c)
+					     (liip (+fx i 1)
+						(+fx (*fx n 16) (XDIGIT_TO_BYTE c))))
+					    (else
+					     (string-set! buf j c)
+					     (loop (+fx i 1) (+fx j 1))))))))
+			      ((<fx i (-fx len 5))
+			       (let* ((s1 (string-ref-ur str (+fx 2 (+fx start i))))
+				      (s2 (string-ref-ur str (+fx 3 (+fx start i))))
+				      (s3 (string-ref-ur str (+fx 4 (+fx start i))))
+				      (s4 (string-ref-ur str (+fx 5 (+fx start i)))))
+				  (if (and (isxdigit? s1) (isxdigit? s2)
+					   (isxdigit? s3) (isxdigit? s4))
+				      (let* ((n1 (XDIGIT_TO_BYTE s1))
+					     (n2 (XDIGIT_TO_BYTE s2))
+					     (n3 (XDIGIT_TO_BYTE s3))
+					     (n4 (XDIGIT_TO_BYTE s4))
+					     (n (+fx (bit-lsh n1 12)
+						   (+fx (bit-lsh n2 8)
+						      (+fx (bit-lsh n3 4)
+							 n4))))
+					     (u (integer->ucs2 n))
+					     (s (make-ucs2-string 1 u))
+					     (t (ucs2-string->utf8-string s))
+					     (l (string-length t)))
+					 (blit-string! t 0 buf j l)
+					 (set! len (-fx len (-fx 5 l)))
+					 (loop (+fx i 5) (+fx j l)))
+				      (begin
+					 (string-set-ur! buf j nc)
+					 (loop (+fx i 2) (+fx j 1))))))
+			      (else
+			       (string-set-ur! buf j nc)
+			       (loop (+fx i 2) (+fx j 1)))))
 			  (else
-			   (if (and (char-numeric? nc)
-				    (<fx i (-fx len 4)))
-			       (let* ((s1 (string-ref-ur str (+fx i (+fx start 2))))
-				      (s2 (string-ref-ur str (+fx i (+fx start 3))))
-				      (s3 (string-ref-ur str (+fx i (+fx start 4))))
-				      (n1 (DIGIT_TO_BYTE s1))
+			   (if (and (char-numeric? nc) (<fx i (-fx len 3)))
+			       (let* ((s2 (string-ref-ur str (+fx 2 (+fx start i))))
+				      (s3 (string-ref-ur str (+fx 3 (+fx start i))))
+				      (n1 (DIGIT_TO_BYTE nc))
 				      (n2 (DIGIT_TO_BYTE s2))
 				      (n3 (DIGIT_TO_BYTE s3)))
 				  (if (or (<fx n1 0) (<fx n2 0) (<fx n3 0))
@@ -411,14 +468,14 @@
 					 (string-set! buf j nc)
 					 (loop (+fx i 2) (+fx j 1)))
 				      (begin
-					 (string-set! buf j
+					 (string-set-ur! buf j
 					    (integer->char
 					       (+fx (*fx n1 64)
 						  (+fx (*fx n2 8) n3))))
-					 (loop (+fx i 3) (+fx j 1)))))
+					 (loop (+fx i 4) (+fx j 1)))))
 			       (begin
-				  (string-set! buf j c)
-				  (string-set! buf (+fx j 1) nc)
+				  (string-set-ur! buf j c)
+				  (string-set-ur! buf (+fx j 1) nc)
 				  (loop (+fx i 2) (+fx j 2))))))))
 		   (else
 		    (string-set-ur! buf j c)
@@ -529,10 +586,8 @@
 			(let ((n (char->integer c)))
 			   (string-set-ur! dst (++ w) #\\)
 			   (string-set-ur! dst (++ w) #\x)
-			   (string-set-ur! dst (++ w)
-			      (hexa (integer->char (bit-lsh n 4))))
-			   (string-set-ur! dst (++ w)
-			      (hexa (integer->char (bit-and n 7))))))))
+			   (string-set-ur! dst (++ w) (hexa (bit-lsh n 4)))
+			   (string-set-ur! dst (++ w) (hexa (bit-and n 7)))))))
 		(loop))
 	     (string-shrink! dst w)))))
 

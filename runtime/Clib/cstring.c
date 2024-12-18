@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cstring.c        */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cstring.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Sun Nov 17 07:36:16 2024 (serrano)                */
+/*    Last change :  Wed Dec 18 13:36:14 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -928,7 +928,7 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
             case '"': *dst++ = '\"'; src++;
 	       break;
 
-#if (defined(__STDC___))                          
+#if (defined(__STDC__))                          
             case 'a': *dst++ = '\a';
 	       break;
 
@@ -966,7 +966,31 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
 	       char s1 = *(src+1);
 
 	       if (!isxdigit(s1)) {
-		  *dst++ = *src++;
+		  if (s1 == '{') {
+		     int u = 0;
+		     unsigned char *src2 = src + 2;
+
+		     while (src2 < stop && (*src2 != '}')) {
+			u = (u * 16) + XDIGIT_TO_BYTE(*src2);
+			src2++;
+		     }
+
+		     if (*src2 == '}') {
+			obj_t ucs2, utf8;
+			ucs2 = make_ucs2_string(1, u);
+			utf8 = ucs2_string_to_utf8_string(ucs2);
+			memcpy(dst, BSTRING_TO_STRING(utf8), STRING_LENGTH(utf8));
+			src += (1 + (src2 - src));
+			dst += STRING_LENGTH(utf8);
+			len -= (5 - STRING_LENGTH(utf8));
+
+			break;
+		     } else {
+			*dst++ = *src++;
+		     }
+		  } else {
+		     *dst++ = *src++;
+		  }
 	       } else {
 		  char s2 = *(src+2);
 

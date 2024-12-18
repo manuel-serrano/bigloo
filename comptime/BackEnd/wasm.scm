@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Dec  6 10:21:33 2024 (serrano)                */
+;*    Last change :  Wed Dec 18 11:45:43 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -146,7 +146,8 @@
 		 (runtime-file (find-file-in-path lib *lib-dir*))
 		 (runtime-mjs (find-file-in-path "runtime.mjs" *lib-dir*))
 		 (srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
-		 (objects (delete-duplicates! (append srcobj *o-files*) string=?)))
+		 (objects (delete-duplicates!
+			     (append srcobj *o-files*) string=?)))
 	     (verbose 2 "      merging ["
 		(format "~a ~( )" runtime-file objects)
 		" -> " tmp #\] #\Newline)
@@ -349,11 +350,13 @@
 		   (match-case k
 		      ((?- ?n (sub final ?super . ?-))
 		       (hashtable-put! all (symbol->string! n) k)
-		       (hashtable-put! supers (symbol->string! n) (symbol->string! super))
+		       (hashtable-put! supers (symbol->string! n)
+			  (symbol->string! super))
 		       (hashtable-put! depths (symbol->string! n) 0))
 		      ((?- ?n (sub ?super . ?-))
 		       (hashtable-put! all (symbol->string! n) k)
-		       (hashtable-put! supers (symbol->string! n) (symbol->string! super))
+		       (hashtable-put! supers (symbol->string! n)
+			  (symbol->string! super))
 		       (hashtable-put! depths (symbol->string! n) 0))))
 	 classes)
 
@@ -361,9 +364,11 @@
       (for-each (lambda (k)
 		   (match-case k
 		      ((?- ?n (sub final ?super . ?-))
-		       (hashtable-put! depths (symbol->string! n) (+fx 1 (class-depth (symbol->string! super)))))
+		       (hashtable-put! depths (symbol->string! n)
+			  (+fx 1 (class-depth (symbol->string! super)))))
 		      ((?- ?n (sub ?super . ?-))
-		       (hashtable-put! depths (symbol->string! n) (+fx 1 (class-depth (symbol->string! super)))))))
+		       (hashtable-put! depths (symbol->string! n)
+			  (+fx 1 (class-depth (symbol->string! super)))))))
 	 classes)
 
       ;; sort the classes by depths
@@ -710,16 +715,21 @@
 	    (let ((c (string-ref s i))
 		  (hex "0123456789abcdef"))
 	       (cond 
-		  ((visible? c) (display c))
-		  ((char=? c #\") (display "\\\""))
-		  ((char=? c #\\) (display "\\\\"))
-		  ((char=? c #\newline) (display "\\n"))
-		  ((char=? c #\tab) (display "\\t"))
-		  (else (display* "\\u{" 
-			   (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
-			   (string-ref hex (char->integer (char-and c #\x0F)))
-			   "}"
-			   ))))
+		  ((visible? c)
+		   (display c))
+		  ((char=? c #\")
+		   (display "\\\""))
+		  ((char=? c #\\)
+		   (display "\\\\"))
+		  ((char=? c #\newline)
+		   (display "\\n"))
+		  ((char=? c #\tab)
+		   (display "\\t"))
+		  (else
+		   (display* "\\u{" 
+		      (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
+		      (string-ref hex (char->integer (char-and c #\x0F)))
+		      "}"))))
 	    (iter (+fx i 1))))
       (display "\""))
    

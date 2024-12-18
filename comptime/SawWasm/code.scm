@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Dec 16 18:53:32 2024 (serrano)                */
+;*    Last change :  Wed Dec 18 11:44:25 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1454,7 +1454,8 @@
 	  (os (assoc ty *functy*)))
       (if (pair? os)
 	  (cdr os)
-	  (let ((sym (gensym (string-append "$functy@" (symbol->string! *module*)))))
+	  (let ((sym (gensym
+			(string-append "$functy@" (symbol->string! *module*)))))
 	     (set! *functy* (cons (cons ty sym) *functy*))
 	     (set! *extra-types* (cons `(type ,sym ,ty) *extra-types*))
 	     sym))))

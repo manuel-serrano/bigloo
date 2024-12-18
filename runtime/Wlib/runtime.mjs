@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Dec 17 14:25:26 2024 (serrano)                */
+/*    Last change :  Wed Dec 18 16:00:30 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -75,6 +75,7 @@ const wasm = await WebAssembly.compile(readFileSync(argv[2]));
 
 const instance = await WebAssembly.instantiate(wasm, {
    __js: {
+      glup: () => { console.log("in glup"); return Date.now()},
       not_implemented: x => {
 	 console.error("*** WASM WARNING: function not implemented", x);
       },
@@ -270,13 +271,54 @@ const instance = await WebAssembly.instantiate(wasm, {
    },
 
    __js_date: {
-      current_seconds: () => BigInt(Math.trunc(Date.now() / 1000)),
-      current_milliseconds: () => BigInt(Math.trunc(Date.now())),
-      current_microseconds: () => BigInt(Math.trunc(Date.now() * 1000)),
-      current_nanoseconds: () => BigInt(Math.trunc(Date.now() * 1000000)),
+      epoch: new Date(1970),
+      current_milliseconds: () => Date.now(),
+      mkDate: (ms) => new Date(ms),
 
-      mktime: (year, month, day, hour, minute, second, millisecond) => (new Date(year, month, day, hour, minute, second, millisecond)).getTime(),
-      mktimegm: (year, month, day, hour, minute, second, millisecond) => (Date.UTC(year, month, day, hour, minute, second, millisecond)),
+      mktime: (year, month, day, hour, minute, second, millisecond, gmt) => gmt
+	 ? (new Date(Date.UTC(year, month, day, hour, minute, second, millisecond)))
+	 : (new Date(year, month, day, hour, minute, second, millisecond)),
+
+      getMilliseconds: (dt) => dt.getMilliseconds(),
+      setMilliseconds: (dt, ms) => dt.setMilliseconds(ms),
+      getSeconds: (dt) => dt.getSeconds(),
+      setSeconds: (dt, sec) => dt.setSeconds(sec),
+      getMinutes: (dt) => dt.getMinutes(),
+      setMinutes: (dt, min) => dt.setMinutes(min),
+      getHours: (dt) => dt.getHours(),
+      setHours: (dt, h) => dt.setHours(h),
+      getDay: (dt) => dt.getDate(),
+      setDay: (dt,) => dt.setDate(d),
+      getWday: (dt) => dt.getDay(),
+      getYday: (dt) => {
+	 const y = dt.getFullYear();
+	 const m = dt.getMonth();
+	 const d = dt.getDate();
+	 const d1 = new Date(y, m, d);
+	 const d0 = new Date(y, 0, 1);
+	 return (d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000);
+      },
+      getMonth: (dt) => dt.getMonth(),
+      setMonth: (dt, m) => dt.setMonth(m),
+      getYear: (dt) => dt.getFullYear(),
+      setYear: (dt, y) => dt.setFullYear(y),
+      getTimezone: (dt) => dt.getTimezoneOffset(),
+
+      isDst: (dt) => new Date(dt.valueOf()) !== dt.valueOf(), // MS 18dec2024, not sure!
+      getTime: (dt) => dt.valueOf() / 1000,
+      secondsToString: (sec, addr) => {
+	 const buf = new Date(sec * 1000).toString();
+
+	 storeJSStringToScheme(buf, addr);
+	 return buf.length;
+      },
+      secondsToUTCString: (sec, addr) => {
+	 const buf = new Date(sec * 1000).toUTCString();
+
+	 storeJSStringToScheme(buf, addr);
+	 return buf.length;
+      },
+      
 
       day_name: (day, longFormat, addr) =>
          storeJSStringToScheme((new Date(Date.UTC(2021, 1, day + 1)))

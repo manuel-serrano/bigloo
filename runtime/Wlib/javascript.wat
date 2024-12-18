@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Tue Dec 17 11:19:41 2024 (serrano)                */
+;*    Last change :  Wed Dec 18 15:46:03 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -35,15 +35,6 @@
    (import "__js_math" "pow" (func $pow (param f64 f64) (result f64)))
    (import "__js_math" "randomf" (func $RANDOMFL (result f64)))
    (import "__js_math" "strtod" (func $js_strtod (param i32) (param i32) (result f64)))
-   
-   (import "__js_date" "current_seconds" (func $bgl_current_seconds (result i64)))
-   (import "__js_date" "current_milliseconds" (func $bgl_current_milliseconds (result i64)))
-   (import "__js_date" "current_microseconds" (func $bgl_current_microseconds (result i64)))
-   (import "__js_date" "current_nanoseconds" (func $bgl_current_nanoseconds (result i64)))
-   (import "__js_date" "mktime" (func $js_date_mktime (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
-   (import "__js_date" "mktimegm" (func $js_date_mktimegm (param i32 i32 i32 i32 i32 i32 i64) (result i64)))
-   (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
-   (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
    
    (import "__js" "exit" (func $js_exit (param i32)))
    (import "__js" "signal" (func $js_signal (param i32) (param (ref eq))))

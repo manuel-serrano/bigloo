@@ -21,7 +21,7 @@
 	  (char->integer (string-ref ss 0))
 	  (if (=fx n 0)
 	      -1000
-	      (- n)))))
+	      (char->integer (string-ref ss 1))))))
 
 ;;
 ;; All-char-in-string
@@ -59,7 +59,7 @@
    (test "string-as-read.7" (ecs "\\\\") 92)
    (test "string-as-read.8" (ecs "\\'") 39)
    (test "string-as-read.9" (ecs "\\\"") 34)
-   (test "string-as-read.10" (ecs "\\a") 97)
+   (test "string-as-read.10" (if (memq (ecs "\\a") '(7 97)) #t #f) #t)
    (test "string-as-read.11" (ecs "\\?") 63)
    (test "string-as-read.12" (ecs "\\040") 32)
    (test "string-as-read.13" (ecs "\\000") 0)
