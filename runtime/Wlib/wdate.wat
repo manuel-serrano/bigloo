@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Oct 21 17:43:39 2024                          */
-;*    Last change :  Thu Dec 19 07:29:29 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 08:39:38 2024 (serrano)                */
 ;*    Copyright   :  2024 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dates                                                       */
@@ -122,7 +122,7 @@
 	    (local.get $hour)
 	    (local.get $min)
 	    (local.get $sec)
-	    (f64.convert_i64_u (i64.div_s (local.get $nsec) (i64.const 1000000)))
+	    (f64.convert_i64_s (i64.div_s (local.get $nsec) (i64.const 1000000)))
 	    (local.get $isgmt))
 	 (i32.const 0)))
 
@@ -140,7 +140,7 @@
       (param $isdst i32)
       (result (ref $date))
       (call $js_date_set_milliseconds (struct.get $date $dt (local.get $dt))
-	 (f64.convert_i64_u (i64.div_s (local.get $ns) (i64.const 1000000))))
+	 (f64.convert_i64_s (i64.div_s (local.get $ns) (i64.const 1000000))))
       (call $js_date_set_seconds (struct.get $date $dt (local.get $dt))
 	 (local.get $s))
       (call $js_date_set_minutes (struct.get $date $dt (local.get $dt))
@@ -252,7 +252,7 @@
     (param $ms i64)
     (result i64)
     (call $js_date_set_milliseconds (struct.get $date $dt (local.get $dt))
-       (f64.convert_i64_u (i64.div_s (local.get $ms) (i64.const 1000000))))
+       (f64.convert_i64_s (i64.div_s (local.get $ms) (i64.const 1000000))))
     (local.get $ms))
 
   (func $BGL_DATE_UPDATE_SECOND (export "BGL_DATE_UPDATE_SECOND")

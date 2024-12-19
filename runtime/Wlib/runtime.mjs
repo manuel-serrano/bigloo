@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Dec 19 07:42:22 2024 (serrano)                */
+/*    Last change :  Thu Dec 19 08:25:51 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -356,29 +356,40 @@ const instance = await WebAssembly.instantiate(wasm, {
    __js_bignum: {
       zerobx: BigInt(0),
       zerobxp: (bx) => bx === 0,
-      bgl_bignum_odd: (bx) => bx % b2 === 1,
-      bgl_bignum_even: (bx) => bx % b2 === 0,
+      bgl_bignum_odd: (bx) => bx % 2n === 1,
+      bgl_bignum_even: (bx) => bx % 2n === 0,
       long_to_bignum: (value) => BigInt(value),
-      bgl_safe_bignum_to_fixnum: (bx, bsz) => {
+      safe_bignum_to_fixnum: (bx, bsz) => {
 	 if (bsz > 53) bsz = 52; // max support JS fixnums
-	 const u = BigInt.asUintN(bsz, bx);
+	 const u = BigInt.asIntN(bsz, bx);
+	 const m = new Number(u);
 
-	 if (BigInt(u) === bx) {
-	    return u;
+	 if (m >= Number.MIN_SAFE_INTEGER && m <= Number.MAX_SAFE_INTEGER) {
+	    return m;
 	 } else {
 	    return 0;
 	 }
       },
-      bgl_bignum_to_long: bx => BigInt.asIntN(64, bx),
+      bignum_to_long: bx => BigInt.asIntN(64, bx),
       bignum_remainder: (bx, by) => bx % by,
       bignum_quotient: (bx, by) => bx / by,
+      seed_rand: () => Math.random(),
       rand_bignum: bx => bx ^ BigInt(Math.random() * 5379239846),
       bignum_to_string: (value, addr) => {
 	 return storeJSStringToScheme(value.toString(), addr);
       },
       string_to_bignum: (offset, len, radix) => {
          const buf = new Uint8Array(instance.exports.memory.buffer, offset, len);
-	 return BigInt(loadSchemeString(buf));
+	 const str = loadSchemeString(buf);
+	 if (str.match(/[a-fA-F]/)) {
+	    return BigInt("0x" + str);
+	 } else {
+	    try {
+	       return BigInt(str);
+	    } catch(e) {
+	       console.log("ERROR ", e);
+	    }
+	 }
       },
       bignum_add: (x, y) => x + y,
       bignum_sub: (x, y) => x - y,

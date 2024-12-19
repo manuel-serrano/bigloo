@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Tue Dec 17 13:55:43 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 09:01:35 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -20,8 +20,8 @@
 
    (type $bgl_dframe
       (struct
-	 (field $name (ref eq))
-	 (field $location (ref eq))
+	 (field $name (mut (ref eq)))
+	 (field $location (mut (ref eq)))
 	 (field $next (ref null $bgl_dframe))))
 
    (type $bgl_evmeaning_addr
@@ -64,9 +64,8 @@
    ;; String 
    ;; -----------------------------------------------------------------
    (@include "./wstring.wat" type)
+   (@include "./wregexp.wat" type)
    
-   (type $regexp (struct))
-
    (type $opaque (struct))
 
    (@include "./wsymbols.wat" type)

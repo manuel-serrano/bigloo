@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/number.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/number.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Sat Dec  9 10:46:07 2017 (serrano)                */
+;*    Last change :  Thu Dec 19 08:54:05 2024 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -281,22 +281,22 @@
    (test "string->number.18" (string->number "+1") 1)
    (test "string->number.10" (string->number "ABCDEF" 16) #xABCDEF)
    (test "string->number.11" (string->number "E3") #f)
-   (test "number->string" (number->string 0 2) "0")
-   (test "number->string" (number->string 0 8) "0")
-   (test "number->string" (number->string 0 10) "0")
-   (test "number->string" (number->string 0 16) "0")
-   (test "number->string" (number->string 7 2) "111")
-   (test "number->string" (number->string -7 2) "-111")
-   (test "number->string" (number->string 8 2) "1000")
-   (test "number->string" (number->string -8 2) "-1000")
-   (test "number->string" (number->string 9 2) "1001")
-   (test "number->string" (number->string -9 2) "-1001")
-   (test "number->string" (number->string 127 16) "7f")
-   (test "number->string" (number->string -127 16) "-7f")
-   (test "number->string" (number->string 127 8) "177")
-   (test "number->string" (number->string -127 8) "-177")
-   (test "number->string" (number->string #s32:-1732584194) "-1732584194")
-   (test "number->string" (number->string #u32:1732584194) "1732584194")
+   (test "number->string.1" (number->string 0 2) "0")
+   (test "number->string.2" (number->string 0 8) "0")
+   (test "number->string.3" (number->string 0 10) "0")
+   (test "number->string.4" (number->string 0 16) "0")
+   (test "number->string.5" (number->string 7 2) "111")
+   (test "number->string.6" (number->string -7 2) "-111")
+   (test "number->string.7" (number->string 8 2) "1000")
+   (test "number->string.8" (number->string -8 2) "-1000")
+   (test "number->string.9" (number->string 9 2) "1001")
+   (test "number->string.10" (number->string -9 2) "-1001")
+   (test "number->string.11" (number->string 127 16) "7f")
+   (test "number->string.12" (number->string -127 16) "-7f")
+   (test "number->string.13" (number->string 127 8) "177")
+   (test "number->string.14" (number->string -127 8) "-177")
+   (test "number->string.15" (number->string #s32:-1732584194) "-1732584194")
+   (test "number->string.16" (number->string #u32:1732584194) "1732584194")
    (test "elong.1" (find-runtime-type #e1) "elong")
    (test "elong.2" #e1 #e1)
    (test "elong.3" (elong? #exfeedabee) #t)

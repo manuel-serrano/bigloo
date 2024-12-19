@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Dec 17 10:24:16 2024 (serrano)                */
+/*    Last change :  Thu Dec 19 09:15:41 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2775,6 +2775,7 @@ BGL_RUNTIME_DECL obj_t bgl_mmap_nommap_set(obj_t, long, unsigned char);
 #endif
 
 #define STRTOD(x) strtod(x, 0L)
+#define BGL_STRTOEL(s, o, r) BGL_STRTOL(s, o, r)
    
 #if !BGL_HAVE_STRTOLL
 BGL_RUNTIME_DECL BGL_LONGLONG_T bgl_strtoll(const char *, char **, int);

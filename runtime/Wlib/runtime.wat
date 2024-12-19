@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Dec 18 17:18:53 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 08:58:08 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -61,10 +61,6 @@
   (global $ucs2string-default-value
      (export "BGL_UCS2STRING_DEFAULT_VALUE") (ref $ucs2string)
      (array.new_fixed $ucs2string 0))
-  
-  (global $regexp-default-value
-     (export "BGL_REGEXP_DEFAULT_VALUE") (ref $regexp)
-     (struct.new $regexp))
   
   (global $vector-default-value
      (export "BGL_VECTOR_DEFAULT_VALUE") (ref $vector)
@@ -2051,6 +2047,24 @@
      (return_call $BGL_ENV_EVSTATE_SET
 	(global.get $current-dynamic-env)
 	(local.get $stk)))
+
+  (func $BGL_ENV_SET_TRACE_LOCATION (export "BGL_ENV_SET_TRACE_LOCATION")
+     (param $env (ref $dynamic-env))
+     (param $o (ref eq))
+     (result (ref eq))
+     (struct.set $bgl_dframe $location
+	(struct.get $dynamic-env $top (local.get $env))
+	(local.get $o))
+     (local.get $o))
+
+  (func $BGL_ENV_SET_TRACE_NAME (export "BGL_ENV_SET_TRACE_NAME")
+     (param $env (ref $dynamic-env))
+     (param $o (ref eq))
+     (result (ref eq))
+     (struct.set $bgl_dframe $name
+	(struct.get $dynamic-env $top (local.get $env))
+	(local.get $o))
+     (local.get $o))
 
   ;; --------------------------------------------------------
   ;; Eval

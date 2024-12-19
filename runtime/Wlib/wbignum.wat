@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Fri Dec 13 16:40:18 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 08:31:34 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -26,12 +26,13 @@
    (import "__js_bignum" "zerobxp" (func $zerobxp (param externref) (result i32)))
    (import "__js_bignum" "bgl_bignum_odd" (func $bgl_bignum_odd (param externref) (result i32)))
    (import "__js_bignum" "bgl_bignum_even" (func $bgl_bignum_even (param externref) (result i32)))
-   (import "__js_bignum" "bgl_safe_bignum_to_fixnum" (func $bgl_safe_bignum_to_fixnum (param externref) (param i32) (result i64)))
-   (import "__js_bignum" "bgl_bignum_to_long" (func $bgl_bignum_to_long (param externref) (result i64)))
+   (import "__js_bignum" "safe_bignum_to_fixnum" (func $js_safe_bignum_to_fixnum (param externref) (param i32) (result f64)))
+   (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_long (param externref) (result f64)))
    (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref) (param externref) (result externref)))
    (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref) (param externref) (result externref)))
+   (import "__js_bignum" "seed_rand" (func $seed_rand))
    (import "__js_bignum" "rand_bignum" (func $rand_bignum (param externref) (result externref)))
-   (import "__js_bignum" "long_to_bignum" (func $long_to_bignum (param i64) (result externref)))
+   (import "__js_bignum" "long_to_bignum" (func $js_long_to_bignum (param f64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_sub" (func $bignum_sub (param externref externref) (result externref)))
@@ -39,7 +40,11 @@
    (import "__js_bignum" "bignum_cmp" (func $bignum_cmp (param externref externref) (result i32)))
    (import "__js_bignum" "bignum_to_string" (func $bignum_to_string (param externref i32) (result i32)))
 
-
+   (func $bgl_bignum_to_long (export "bgl_bignum_to_long")
+      (param $bx externref)
+      (result i64)
+      (i64.trunc_f64_s (call $js_bignum_to_long (local.get $bx))))
+      
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
@@ -62,7 +67,7 @@
    (func $bgl_long_to_bignum (export "bgl_long_to_bignum")
       (param $n i64)
       (result (ref $bignum))
-      (return (struct.new $bignum (call $long_to_bignum (local.get $n)))))
+      (return (struct.new $bignum (call $js_long_to_bignum (f64.convert_i64_s (local.get $n))))))
 
    ;; bgl_jsstring_to_bignum
    (func $bgl_jsstring_to_bignum (export "bgl_jsstring_to_bignum")
@@ -171,6 +176,11 @@
 	       (struct.get $bignum $bx (local.get $x))
 	       (struct.get $bignum $bx (local.get $y))))))
 
+   ;; bgl_seed_rand
+   (func $bgl_seed_rand (export "bgl_seed_rand")
+      (param $x i64)
+      (call $seed_rand))
+   
    ;; bgl_rand_bignum
    (func $bgl_rand_bignum (export "bgl_rand_bignum")
       (param $x (ref $bignum))
@@ -189,7 +199,7 @@
       (local $bx externref)
 
       (local.set $bx (struct.get $bignum $bx (local.get $n)))
-      (local.set $tmp (call $bgl_safe_bignum_to_fixnum (local.get $bx) (global.get $MAXVALFX_BITSIZE)))
+      (local.set $tmp (i64.trunc_f64_s (call $js_safe_bignum_to_fixnum (local.get $bx) (global.get $MAXVALFX_BITSIZE))))
 
       (if (i64.eqz (local.get $tmp))
 	  (then

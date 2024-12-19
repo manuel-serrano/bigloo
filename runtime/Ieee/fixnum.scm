@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Dec 19 08:17:52 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 09:13:05 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -225,7 +225,7 @@
 	   (infix macro $remainderu64::uint64 (::uint64 ::int64) "%")
 	   (macro $strtol::long (::string ::long ::long) "BGL_STRTOL")
 	   (macro $strtoul::long (::string ::long ::long) "BGL_STRTOUL")
-	   (macro strtoel::elong (::string ::long ::long) "BGL_STRTOL")
+	   (macro $strtoel::elong (::string ::long ::long) "BGL_STRTOEL")
 	   (macro $strtoeul::elong (::string ::long ::long) "BGL_STRTOUL")
 	   (macro $strtoll::llong (::string ::long ::long) "BGL_STRTOLL")
 	   (macro $strtoull::llong (::string ::long ::long) "BGL_STRTOULL")
@@ -773,7 +773,7 @@
 		  "strtol")
 	       (method static $strtoul::long (::string ::long ::long)
 		  "strtoul")
-	       (method static strtoel::elong (::string ::long ::long)
+	       (method static $strtoel::elong (::string ::long ::long)
 		  "strtoll")
 	       (method static $strtoeul::elong (::string ::long ::long)
 		  "strtoll")
@@ -2543,7 +2543,7 @@
 ;*---------------------------------------------------------------------*/
 (define (string->elong string #!optional (radix::long 10))
    (if (and (>=fx radix 2) (<=fx radix 36))
-       (strtoel string 0 radix)
+       ($strtoel string 0 radix)
        (error "string->elong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
