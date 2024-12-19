@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Oct 21 17:43:39 2024                          */
-;*    Last change :  Wed Dec 18 15:45:13 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 07:29:29 2024 (serrano)                */
 ;*    Copyright   :  2024 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dates                                                       */
@@ -18,9 +18,9 @@
    (import "__js_date" "epoch" (global $epoch externref))
    (import "__js_date" "current_milliseconds" (func $js_current_milliseconds (result f64)))
    (import "__js_date" "mkDate" (func $js_mkdate (param i32) (result externref)))
-   (import "__js_date" "mktime" (func $js_mktime (param i32 i32 i32 i32 i32 i32 i64 i32) (result externref)))
-   (import "__js_date" "getMilliseconds" (func $js_date_milliseconds (param externref) (result i64)))
-   (import "__js_date" "setMilliseconds" (func $js_date_set_milliseconds (param externref) (param i64)))
+   (import "__js_date" "mktime" (func $js_mktime (param i32 i32 i32 i32 i32 i32 f64 i32) (result externref)))
+   (import "__js_date" "getMilliseconds" (func $js_date_milliseconds (param externref) (result f64)))
+   (import "__js_date" "setMilliseconds" (func $js_date_set_milliseconds (param externref) (param f64)))
    (import "__js_date" "getSeconds" (func $js_date_seconds (param externref) (result i32)))
    (import "__js_date" "setSeconds" (func $js_date_set_seconds (param externref) (param i32)))
    (import "__js_date" "getMinutes" (func $js_date_minutes (param externref) (result i32)))
@@ -35,9 +35,9 @@
    (import "__js_date" "setMonth" (func $js_date_set_month (param externref) (param i32)))
    (import "__js_date" "getYear" (func $js_date_year (param externref) (result i32)))
    (import "__js_date" "setYear" (func $js_date_set_year (param externref) (param i32)))
-   (import "__js_date" "getTimezone" (func $js_date_timezone (param externref) (result i64)))
+   (import "__js_date" "getTimezone" (func $js_date_timezone (param externref) (result f64)))
    (import "__js_date" "isDst" (func $js_date_isdst (param externref) (result i32)))
-   (import "__js_date" "getTime" (func $js_date_time (param externref) (result i64)))
+   (import "__js_date" "getTime" (func $js_date_time (param externref) (result f64)))
    (import "__js_date" "secondsToString" (func $js_seconds_to_string (param i64) (param i32) (result i32)))
    (import "__js_date" "secondsToUTCString" (func $js_seconds_to_utc_string (param i64) (param i32) (result i32)))
    (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
@@ -79,17 +79,17 @@
 
    (func $bgl_current_milliseconds (export "bgl_current_milliseconds")
       (result i64)
-      (i64.trunc_f64_u (call $js_current_milliseconds)))
+      (i64.trunc_f64_s (call $js_current_milliseconds)))
 
    (func $bgl_current_seconds (export "bgl_current_seconds")
       (result i64)
-      (i64.div_u (call $bgl_current_milliseconds) (i64.const 1000)))
+      (i64.div_s (call $bgl_current_milliseconds) (i64.const 1000)))
    
    (func $bgl_nanoseconds_to_date (export "bgl_nanoseconds_to_date")
       (param $ns i64)
       (result (ref $date))
       (return_call $bgl_milliseconds_to_date
-	 (i64.div_u (local.get $ns) (i64.const 1000000))))
+	 (i64.div_s (local.get $ns) (i64.const 1000000))))
 
    (func $bgl_milliseconds_to_date (export "bgl_milliseconds_to_date")
       (param $ms i64)
@@ -100,7 +100,7 @@
       (param $ns i64)
       (result (ref $date))
       (return_call $bgl_milliseconds_to_date
-	 (i64.div_u (local.get $ns) (i64.const 1000000000))))
+	 (i64.div_s (local.get $ns) (i64.const 1000000000))))
 
    (func $bgl_make_date (export "bgl_make_date")
       (param $nsec i64)
@@ -122,7 +122,7 @@
 	    (local.get $hour)
 	    (local.get $min)
 	    (local.get $sec)
-	    (i64.div_u (local.get $nsec) (i64.const 1000000))
+	    (f64.convert_i64_u (i64.div_s (local.get $nsec) (i64.const 1000000)))
 	    (local.get $isgmt))
 	 (i32.const 0)))
 
@@ -140,7 +140,7 @@
       (param $isdst i32)
       (result (ref $date))
       (call $js_date_set_milliseconds (struct.get $date $dt (local.get $dt))
-	 (i64.div_u (local.get $ns) (i64.const 1000000)))
+	 (f64.convert_i64_u (i64.div_s (local.get $ns) (i64.const 1000000))))
       (call $js_date_set_seconds (struct.get $date $dt (local.get $dt))
 	 (local.get $s))
       (call $js_date_set_minutes (struct.get $date $dt (local.get $dt))
@@ -163,14 +163,16 @@
       (param $dt (ref $date))
       (result i64)
       (i64.mul (i64.const 1000000)
-	 (call $js_date_milliseconds
-	    (struct.get $date $dt (local.get $dt)))))
+	 (i64.trunc_f64_s
+	    (call $js_date_milliseconds
+	       (struct.get $date $dt (local.get $dt))))))
    
    (func $BGL_DATE_MILLISECOND (export "BGL_DATE_MILLISECOND")
       (param $dt (ref $date))
       (result i64)
-      (return_call $js_date_milliseconds
-	 (struct.get $date $dt (local.get $dt))))
+      (i64.trunc_f64_s
+	 (call $js_date_milliseconds
+	    (struct.get $date $dt (local.get $dt)))))
    
    (func $BGL_DATE_SECOND (export "BGL_DATE_SECOND")
       (param $dt (ref $date))
@@ -223,8 +225,9 @@
    (func $BGL_DATE_TIMEZONE (export "BGL_DATE_TIMEZONE")
       (param $dt (ref $date))
       (result i64)
-      (return_call $js_date_timezone
-	 (struct.get $date $dt (local.get $dt))))
+      (i64.trunc_f64_s
+	 (call $js_date_timezone
+	    (struct.get $date $dt (local.get $dt)))))
 
    (func $BGL_DATE_ISDST (export "BGL_DATE_ISDST")
       (param $dt (ref $date))
@@ -240,15 +243,16 @@
    (func $BGL_DATE_TIME (export "BGL_DATE_TIME")
       (param $dt (ref $date))
       (result i64)
-      (return_call $js_date_time
-	 (struct.get $date $dt (local.get $dt))))
+      (i64.trunc_f64_s
+	 (call $js_date_time
+	    (struct.get $date $dt (local.get $dt)))))
 
   (func $BGL_DATE_UPDATE_MILLISECOND (export "BGL_DATE_UPDATE_MILLISECOND")
     (param $dt (ref $date))
     (param $ms i64)
     (result i64)
     (call $js_date_set_milliseconds (struct.get $date $dt (local.get $dt))
-       (i64.div_u (local.get $ms) (i64.const 1000000)))
+       (f64.convert_i64_u (i64.div_s (local.get $ms) (i64.const 1000000))))
     (local.get $ms))
 
   (func $BGL_DATE_UPDATE_SECOND (export "BGL_DATE_UPDATE_SECOND")
@@ -292,17 +296,19 @@
    (func $bgl_date_to_nanoseconds (export "bgl_date_to_nanoseconds")
       (param $dt (ref $date))
       (result i64)
-      (return (i64.mul (call $js_date_time (struct.get $date $dt (local.get $dt))) (i64.const 1000))))
+      (i64.mul (i64.trunc_f64_s (call $js_date_time (struct.get $date $dt (local.get $dt)))) (i64.const 1000)))
 
    (func $bgl_date_to_milliseconds (export "bgl_date_to_milliseconds")
       (param $dt (ref $date))
       (result i64)
-      (return_call $js_date_time (struct.get $date $dt (local.get $dt))))
+      (i64.trunc_f64_s
+	 (call $js_date_time (struct.get $date $dt (local.get $dt)))))
    
    (func $bgl_date_to_seconds (export "bgl_date_to_seconds")
       (param $dt (ref $date))
       (result i64)
-      (return (i64.div_u (call $js_date_time (struct.get $date $dt (local.get $dt))) (i64.const 1000))))
+      (i64.div_s (i64.trunc_f64_s (call $js_date_time (struct.get $date $dt (local.get $dt))))
+	 (i64.const 1000)))
 
    (func $bgl_seconds_to_string (export "bgl_seconds_to_string")
       (param $sec i64)

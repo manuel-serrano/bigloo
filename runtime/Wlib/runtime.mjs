@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Dec 18 16:00:30 2024 (serrano)                */
+/*    Last change :  Thu Dec 19 07:42:22 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -274,7 +274,6 @@ const instance = await WebAssembly.instantiate(wasm, {
       epoch: new Date(1970),
       current_milliseconds: () => Date.now(),
       mkDate: (ms) => new Date(ms),
-
       mktime: (year, month, day, hour, minute, second, millisecond, gmt) => gmt
 	 ? (new Date(Date.UTC(year, month, day, hour, minute, second, millisecond)))
 	 : (new Date(year, month, day, hour, minute, second, millisecond)),
@@ -296,7 +295,7 @@ const instance = await WebAssembly.instantiate(wasm, {
 	 const d = dt.getDate();
 	 const d1 = new Date(y, m, d);
 	 const d0 = new Date(y, 0, 1);
-	 return (d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000);
+	 return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000));
       },
       getMonth: (dt) => dt.getMonth(),
       setMonth: (dt, m) => dt.setMonth(m),
@@ -305,7 +304,7 @@ const instance = await WebAssembly.instantiate(wasm, {
       getTimezone: (dt) => dt.getTimezoneOffset(),
 
       isDst: (dt) => new Date(dt.valueOf()) !== dt.valueOf(), // MS 18dec2024, not sure!
-      getTime: (dt) => dt.valueOf() / 1000,
+      getTime: (dt) => Math.trunc(dt.valueOf() / 1000),
       secondsToString: (sec, addr) => {
 	 const buf = new Date(sec * 1000).toString();
 

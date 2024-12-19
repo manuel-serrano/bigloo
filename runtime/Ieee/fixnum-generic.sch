@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Mon Dec 16 10:43:59 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 07:57:05 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -15,7 +15,8 @@
 (directives
    (export (integer_to_string::bstring ::long ::long)
 	   ($integer->string/padding::bstring ::long ::long ::long)
-	   ($$strtol::long string::bstring start::long radix::long))
+	   ($$strtol::long string::bstring start::long radix::long)
+	   ($$strtoll::llong string::bstring start::long radix::long))
    (extern (export integer_to_string "integer_to_string")
 	   (export $integer->string/padding "integer->string/padding")))
 
@@ -62,7 +63,7 @@
 	  (loop (+fx bits 1) (/fx ax radix)))))
 
 ;*---------------------------------------------------------------------*/
-;*    $$strtol ...                                                     */
+;*    BGL_STRTOL ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define ($$strtol string start radix)
    (let loop ((acc 0)
@@ -73,6 +74,12 @@
 		 (n (char->num c)))
 	     (loop (+fx acc (*fx k n)) (-fx i 1) (*fx k radix)))
 	  acc)))
+
+;*---------------------------------------------------------------------*/
+;*    $$strtoll ...                                                    */
+;*---------------------------------------------------------------------*/
+(define ($$strtoll string start radix)
+   ($$strtol string start radix))
 
 ;*---------------------------------------------------------------------*/
 ;*    num->char ...                                                    */
@@ -93,4 +100,3 @@
        (+fx 10 (-fx (char->integer char) (char->integer #\A))))
       (else
        (+fx 10 (-fx (char->integer char) (char->integer #\a))))))
-

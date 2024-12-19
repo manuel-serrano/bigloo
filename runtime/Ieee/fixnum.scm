@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Tue Dec 17 09:10:03 2024 (serrano)                */
+;*    Last change :  Thu Dec 19 08:17:52 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -227,7 +227,7 @@
 	   (macro $strtoul::long (::string ::long ::long) "BGL_STRTOUL")
 	   (macro strtoel::elong (::string ::long ::long) "BGL_STRTOL")
 	   (macro $strtoeul::elong (::string ::long ::long) "BGL_STRTOUL")
-	   (macro strtoll::llong (::string ::long ::long) "BGL_STRTOLL")
+	   (macro $strtoll::llong (::string ::long ::long) "BGL_STRTOLL")
 	   (macro $strtoull::llong (::string ::long ::long) "BGL_STRTOULL")
 	   ($fixnum->string::bstring  (::long ::long) "integer_to_string")
 	   
@@ -779,7 +779,7 @@
 		  "strtoll")
 	       (method static strtouel::elong (::string ::long ::long)
 		  "strtoull")
-	       (method static strtoll::llong (::string ::long ::long)
+	       (method static $strtoll::llong (::string ::long ::long)
 		  "strtoll")
 	       (method static $strtoull::llong (::string ::long ::long)
 		  "strtoull")
@@ -2551,7 +2551,11 @@
 ;*---------------------------------------------------------------------*/
 (define (string->llong string #!optional (radix::long 10))
    (if (and (>=fx radix 2) (<=fx radix 36))
-       (strtoll string 0 radix)
+       (cond-expand
+	  ((and (not bigloo-c) (not bigloo-jvm))
+	   ($$strtoll string 0 radix))
+	  (else
+	   ($strtoll string 0 radix)))
        (error "string->llong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/
