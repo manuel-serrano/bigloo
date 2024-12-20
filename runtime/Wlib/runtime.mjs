@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Dec 19 08:25:51 2024 (serrano)                */
+/*    Last change :  Fri Dec 20 15:48:44 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -54,6 +54,23 @@ function storeJSStringToScheme(string, addr) {
     memory.set(bytes);
     return bytes.length;
 }
+/*---------------------------------------------------------------------*/
+/*    string_to_bignum_radix ...                                       */
+/*---------------------------------------------------------------------*/
+function string_to_bignum_radix(str, radix) {
+   let n = 0n;
+   const kr = BigInt(radix);
+   const l = str.length;
+   
+   for (let i = 0; i < l; i++) {
+      const m = str.charCodeAt(i) - '0'.charCodeAt(0);
+      n = (n * kr) + BigInt(m);
+   }
+
+   return n;
+}
+
+console.log(string_to_bignum_radix("111110101111101010101", 2));
 
 /*---------------------------------------------------------------------*/
 /*    IO                                                               */
@@ -356,6 +373,8 @@ const instance = await WebAssembly.instantiate(wasm, {
    __js_bignum: {
       zerobx: BigInt(0),
       zerobxp: (bx) => bx === 0,
+      bxpositivep: (bx) => bx > 0n,
+      bxnegativep: (bx) => bx < 0n,
       bgl_bignum_odd: (bx) => bx % 2n === 1,
       bgl_bignum_even: (bx) => bx % 2n === 0,
       long_to_bignum: (value) => BigInt(value),
@@ -381,16 +400,17 @@ const instance = await WebAssembly.instantiate(wasm, {
       string_to_bignum: (offset, len, radix) => {
          const buf = new Uint8Array(instance.exports.memory.buffer, offset, len);
 	 const str = loadSchemeString(buf);
-	 if (str.match(/[a-fA-F]/)) {
-	    return BigInt("0x" + str);
-	 } else {
-	    try {
-	       return BigInt(str);
-	    } catch(e) {
-	       console.log("ERROR ", e);
-	    }
+	 switch(radix) {
+	    case 2: return string_to_bignum_radix(str, 2);
+	    case 8: return string_to_bignum_radix(str, 8);
+	    case 10: return BigInt(str);
+	    case 16: return BigInt("0x" + str);
+	    default: 
+	       console.log("Wong bignum radix", radix);
+	       return BigInt(0);
 	 }
       },
+      bignum_neg: (x) => -x,
       bignum_add: (x, y) => x + y,
       bignum_sub: (x, y) => x - y,
       bignum_mul: (x, y) => x * y,
@@ -407,6 +427,7 @@ if (!instance.exports.__js_bigloo_main) {
    console.error("ERROR: missing '__js_bigloo_main' symbol in WASM module file.");
    process.exit(1);
 }
+
 
 // Call the Bigloo Scheme program!
 instance.exports.__js_bigloo_main();

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Fri Dec 20 15:31:09 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 16:19:08 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -24,6 +24,8 @@
    
    (import "__js_bignum" "zerobx" (global $zerobx externref))
    (import "__js_bignum" "zerobxp" (func $zerobxp (param externref) (result i32)))
+   (import "__js_bignum" "bxpositivep" (func $bxpositivep (param externref) (result i32)))
+   (import "__js_bignum" "bxnegativep" (func $bxnegativep (param externref) (result i32)))
    (import "__js_bignum" "bgl_bignum_odd" (func $bgl_bignum_odd (param externref) (result i32)))
    (import "__js_bignum" "bgl_bignum_even" (func $bgl_bignum_even (param externref) (result i32)))
    (import "__js_bignum" "safe_bignum_to_fixnum" (func $js_safe_bignum_to_fixnum (param externref) (param i32) (result f64)))
@@ -34,6 +36,7 @@
    (import "__js_bignum" "rand_bignum" (func $rand_bignum (param externref) (result externref)))
    (import "__js_bignum" "long_to_bignum" (func $js_long_to_bignum (param f64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
+   (import "__js_bignum" "bignum_neg" (func $bignum_neg (param externref) (result externref)))
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_sub" (func $bignum_sub (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_mul" (func $bignum_mul (param externref externref) (result externref)))
@@ -62,6 +65,18 @@
       (param $n (ref $bignum))
       (result i32)
       (return_call $zerobxp (struct.get $bignum $bx (local.get $n))))
+   
+   ;; BXPOSITIVE
+   (func $BXPOSITIVE (export "BXPOSITIVE")
+      (param $n (ref $bignum))
+      (result i32)
+      (return_call $bxpositivep (struct.get $bignum $bx (local.get $n))))
+
+   ;; BXNEGATIVE
+   (func $BXNEGATIVE (export "BXNEGATIVE")
+      (param $n (ref $bignum))
+      (result i32)
+      (return_call $bxnegativep (struct.get $bignum $bx (local.get $n))))
    
    ;; bgl_long_to_bignum
    (func $bgl_long_to_bignum (export "bgl_long_to_bignum")
@@ -111,6 +126,15 @@
 	 (call $bignum_to_string
 	    (struct.get $bignum $bx (local.get $n))
 	    (i32.const 128))))
+
+   ;; bgl_bignum_neg
+   (func $bgl_bignum_neg (export "bgl_bignum_neg")
+      (param $x (ref $bignum))
+      (result (ref $bignum))
+      (return
+	 (struct.new $bignum
+	    (call $bignum_neg
+	       (struct.get $bignum $bx (local.get $x))))))
    
    ;; bgl_bignum_add
    (func $bgl_bignum_add (export "bgl_bignum_add")

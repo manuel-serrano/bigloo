@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Dec 18 11:44:25 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 15:59:06 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1144,7 +1144,8 @@
        (if (=bx (fixnum->bignum (bignum->fixnum value)) value)
 	   `(call $bgl_long_to_bignum (i64.const ,(bignum->fixnum value)))
 	   `(call $bgl_string_to_bignum
-	       ,(gen-string-literal (bignum->string value 16))
+	       ,(gen-string-literal
+		   (string-append "0x" (bignum->string value 16)))
 	       (i32.const 10))))
       ((string? value)
        ;; FIXME: implement C string constants
