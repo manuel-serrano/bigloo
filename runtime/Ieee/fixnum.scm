@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Dec 19 09:13:05 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 14:51:51 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -427,10 +427,7 @@
 	   ($remainders32 "(i32.rem_s ~0 ~1)")
 	   ($remainderu32 "(i32.rem_u ~0 ~1)")
 	   ($remainders64 "(i64.rem_s ~0 ~1)")
-	   ($remainderu64 "(i64.rem_u ~0 ~1)")
-
-	   ;; TODO: implement rand
-	   ($rand "(i32.const 0)"))
+	   ($remainderu64 "(i64.rem_u ~0 ~1)"))
 
    (java    (class foreign
 	       (field static $minvalfx::long "MIN_VALUE_FX")
@@ -2543,7 +2540,11 @@
 ;*---------------------------------------------------------------------*/
 (define (string->elong string #!optional (radix::long 10))
    (if (and (>=fx radix 2) (<=fx radix 36))
-       ($strtoel string 0 radix)
+       (cond-expand
+	  ((and (not bigloo-c) (not bigloo-jvm))
+	   ($$strtoel string 0 radix))
+	  (else
+	   ($strtoel string 0 radix)))
        (error "string->elong" "Illegal radix" radix)))
 
 ;*---------------------------------------------------------------------*/

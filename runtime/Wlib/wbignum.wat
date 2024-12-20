@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Thu Dec 19 08:31:34 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 15:31:09 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -280,4 +280,62 @@
       (param $y i64)
       (result (ref eq))
       (return_call $make_bint
-	 (i64.div_s (local.get $x) (local.get $y)))))
+	 (i64.div_s (local.get $x) (local.get $y))))
+
+   ;; BGL_SAFE_PLUS_ELONG
+   (func $BGL_SAFE_PLUS_ELONG (export "BGL_SAFE_PLUS_ELONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $BGL_SAFE_PLUS_FX (local.get $x) (local.get $y)))
+
+   ;; BGL_SAFE_MINUS_ELONG
+   (func $BGL_SAFE_MINUS_ELONG (export "BGL_SAFE_MINUS_ELONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $BGL_SAFE_MINUS_FX (local.get $x) (local.get $y)))
+
+   ;; BGL_SAFE_MUL_ELONG
+   (func $BGL_SAFE_MUL_ELONG (export "BGL_SAFE_MUL_ELONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $BGL_SAFE_MUL_FX (local.get $x) (local.get $y)))
+   
+   ;; BGL_SAFE_QUOTIENT_ELONG
+   (func $BGL_SAFE_QUOTIENT_ELONG (export "BGL_SAFE_QUOTIENT_ELONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $make_belong (i64.div_s (local.get $x) (local.get $y))))
+   
+   ;; BGL_SAFE_PLUS_LLONG
+   (func $BGL_SAFE_PLUS_LLONG (export "BGL_SAFE_PLUS_LLONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $BGL_SAFE_PLUS_FX (local.get $x) (local.get $y)))
+
+   ;; BGL_SAFE_MINUS_LLONG
+   (func $BGL_SAFE_MINUS_LLONG (export "BGL_SAFE_MINUS_LLONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $BGL_SAFE_MINUS_FX (local.get $x) (local.get $y)))
+
+   ;; BGL_SAFE_MUL_LLONG
+   (func $BGL_SAFE_MUL_LLONG (export "BGL_SAFE_MUL_LLONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $BGL_SAFE_MUL_FX (local.get $x) (local.get $y)))
+
+   ;; BGL_SAFE_QUOTIENT_LLONG
+   (func $BGL_SAFE_QUOTIENT_LLONG (export "BGL_SAFE_QUOTIENT_LLONG")
+      (param $x i64)
+      (param $y i64)
+      (result (ref eq))
+      (return_call $make_bllong (i64.div_s (local.get $x) (local.get $y))))
+   
+   )

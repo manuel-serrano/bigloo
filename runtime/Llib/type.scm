@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Dec 16 18:45:23 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 15:15:56 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1278,9 +1278,9 @@
       ($ubyte->char "~0")
       ($char->ubyte "~0")
 
-      ($elong->belong "(struct.new $belong ~0)")
-      ($uelong->belong "(struct.new $belong ~0)")
-      ($long->belong "(struct.new $belong ~0)")
+      ($elong->belong "(call $make_belong ~0)")
+      ($uelong->belong "(call $make_belong ~0)")
+      ($long->belong "(call $make_belong ~0)")
       ($long->elong "~0")
       ($long->uelong "~0")
       ($elong->long "~0")
@@ -1297,9 +1297,9 @@
       ($long->bint64 "(struct.new $bint64 ~0)")
       ($long->buint64 "(struct.new $buint64 ~0)")
 
-      ($llong->bllong "(struct.new $bllong ~0)")
-      ($ullong->bllong "(struct.new $bllong ~0)")
-      ($long->bllong "(struct.new $bllong ~0)")
+      ($llong->bllong "(call $make_bllong ~0)")
+      ($ullong->bllong "(call $make_bllong ~0)")
+      ($long->bllong "(call $make_bllong ~0)")
       ($long->llong "~0")
       ($long->ullong "~0")
       ($llong->long "~0")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Dec 18 11:45:43 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 15:23:13 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1206,13 +1206,19 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-i64 type value global)
    (set-variable-name! global)
-   `((global 
-	,(wasm-sym (global-name global))
-	,@(if (eq? (global-import global) 'export)
-	      `((export ,(global-name global)))
-	      '())
-	(ref ,type)
-	(struct.new ,type ,(emit-wasm-atom-value (global-type global) value)))))
+   (let ((val (emit-wasm-atom-value (global-type global) value)))
+      `((global 
+	   ,(wasm-sym (global-name global))
+	   ,@(if (eq? (global-import global) 'export)
+		 `((export ,(global-name global)))
+		 '())
+	   (ref ,type)
+	   ,(case type
+	       (($belong $bllong)
+		;; see ../runtime/Wlib/wintegers.wat
+		`(struct.new ,type ,val (i32.const 0)))
+	       (else
+		`(struct.new ,type ,val)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun ...                                               */

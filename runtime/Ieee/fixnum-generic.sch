@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Thu Dec 19 07:57:05 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 14:52:30 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -15,10 +15,13 @@
 (directives
    (export (integer_to_string::bstring ::long ::long)
 	   ($integer->string/padding::bstring ::long ::long ::long)
+	   (llong_to_string::bstring ::llong ::long)
 	   ($$strtol::long string::bstring start::long radix::long)
+	   ($$strtoel::elong string::bstring start::long radix::long)
 	   ($$strtoll::llong string::bstring start::long radix::long))
    (extern (export integer_to_string "integer_to_string")
-	   (export $integer->string/padding "integer->string/padding")))
+	   (export $integer->string/padding "integer->string/padding")
+	   (export llong_to_string "llong_to_string")))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer_to_string ...                                            */
@@ -51,7 +54,13 @@
 	      (let ((s (integer_to_string (negfx x) radix)))
 		 (string-append "-" (make-string (-fx padding l) #\0) s)))
 	  s)))
-	 
+
+;*---------------------------------------------------------------------*/
+;*    llong_to_string ...                                              */
+;*---------------------------------------------------------------------*/
+(define (llong_to_string x radix)
+   (integer_to_string x radix))
+
 ;*---------------------------------------------------------------------*/
 ;*    integer-bits-count ...                                           */
 ;*---------------------------------------------------------------------*/
@@ -74,6 +83,12 @@
 		 (n (char->num c)))
 	     (loop (+fx acc (*fx k n)) (-fx i 1) (*fx k radix)))
 	  acc)))
+
+;*---------------------------------------------------------------------*/
+;*    $$strtoel ...                                                    */
+;*---------------------------------------------------------------------*/
+(define ($$strtoel string start radix)
+   ($$strtol string start radix))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$strtoll ...                                                    */

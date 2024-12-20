@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Wed Dec 18 15:46:03 2024 (serrano)                */
+;*    Last change :  Fri Dec 20 15:02:08 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -105,6 +105,12 @@
 	 (i64.const 0)
 	 (i64.extend_i32_u (array.len (local.get $text)))
 	 (local.get $addr)))
+
+   ;; rand
+   (func $rand (export "rand")
+      (result i32)
+      (i32.wrap_i64
+	 (i64.trunc_f64_s (f64.mul (call $RANDOMFL) (f64.const 323948392783.)))))
    
    )
 
