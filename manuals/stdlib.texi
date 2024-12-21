@@ -292,13 +292,15 @@ Returns the last pair in the nonempty, possibly improper, @var{list}.
 @deffnx {library procedure} assv obj alist
 @deffnx {library procedure} assoc obj alist
 @deffnx {bigloo procedure} remq obj list
+@deffnx {bigloo procedure} remv obj list
 
 Returns a new list which is a copy of @var{list} with all items
 @code{eq?} to @var{obj} removed from it.
 @end deffn
 
 @deffn {bigloo procedure} remq! obj list
-Same as @code{remq} but in a destructive way.
+@deffnx {bigloo procedure} remv! obj list
+Same as @code{remq}, respectively @code{remv}, but in a destructive way.
 @end deffn
 
 @deffn {bigloo procedure} delete obj list [eq equal?]

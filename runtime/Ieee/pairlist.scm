@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/pairlist.scm             */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/pairlist.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Thu Sep 26 18:10:01 2024 (serrano)                */
+;*    Last change :  Sat Dec 21 09:47:55 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -56,7 +56,9 @@
 	    (export reverse "bgl_reverse")
 	    (export reverse! "bgl_reverse_bang")
 	    (export remq "bgl_remq")
-	    (export remq! "bgl_remq_bang"))
+	    (export remq! "bgl_remq_bang")
+	    (export remv "bgl_remv")
+	    (export remv! "bgl_remv_bang"))
 
    (wasm    ($pair? "(ref.test (ref $pair) ~0)")
             ($epair? "(ref.test (ref $epair) ~0)")
@@ -159,6 +161,8 @@
 	    (assoc ::obj ::pair-nil)
 	    (remq::pair-nil ::obj ::pair-nil)
 	    (remq!::pair-nil ::obj ::pair-nil)
+	    (remv::pair-nil ::obj ::pair-nil)
+	    (remv!::pair-nil ::obj ::pair-nil)
 	    (delete::pair-nil ::obj ::pair-nil #!optional (eq equal?))
 	    (delete!::pair-nil ::obj ::pair-nil #!optional (eq equal?))
 	    (reverse!::pair-nil ::pair-nil)
@@ -230,7 +234,8 @@
 	    (assq side-effect-free nesting (args-retescape))
 	    (assv side-effect-free nesting (args-retescape))
 	    (assoc side-effect-free nesting (args-retescape))
-	    (remq side-effect-free nesting (args-retescape))))
+	    (remq side-effect-free nesting (args-retescape))
+	    (remv side-effect-free nesting (args-retescape))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pair? ...                                                        */
@@ -775,6 +780,30 @@
                (cond ((null? (cdr prev))
                       y)
                      ((eq? (cadr prev) x)
+                      (set-cdr! prev (cddr prev))
+                      (loop prev))
+                     (else (loop (cdr prev))))))))
+
+;*---------------------------------------------------------------------*/
+;*    remv ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (remv x y)
+   (cond
+      ((null? y) y)
+      ((eqv? x (car y)) (remv x (cdr y)))
+      (else (cons (car y) (remv x (cdr y))))))
+
+;*---------------------------------------------------------------------*/
+;*    remv! ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (remv! x y)
+   (cond
+      ((null? y) y)
+      ((eqv? x (car y)) (remv! x (cdr y)))
+      (else (let loop ((prev y))
+               (cond ((null? (cdr prev))
+                      y)
+                     ((eqv? (cadr prev) x)
                       (set-cdr! prev (cddr prev))
                       (loop prev))
                      (else (loop (cdr prev))))))))

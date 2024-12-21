@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Thu Dec 19 08:58:08 2024 (serrano)                */
+;*    Last change :  Sat Dec 21 09:45:24 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -293,6 +293,10 @@
   
   (func $SET_CDR (export "SET_CDR") (param $p (ref $pair)) (param $v (ref eq)) (result (ref eq))
     (struct.set $pair $cdr (local.get $p) (local.get $v))
+    (global.get $BUNSPEC))
+
+  (func $SET_CER (export "SET_CER") (param $p (ref $epair)) (param $v (ref eq)) (result (ref eq))
+    (struct.set $epair $cer (local.get $p) (local.get $v))
     (global.get $BUNSPEC))
 
   ;; --------------------------------------------------------

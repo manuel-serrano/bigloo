@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/list.scm              */
+;*    serrano/prgm/project/bigloo/wasm/recette/list.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:21:42 1992                          */
-;*    Last change :  Tue Feb  6 08:29:01 2018 (serrano)                */
+;*    Last change :  Sat Dec 21 09:46:43 2024 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations primitives sur les listes                */
 ;*---------------------------------------------------------------------*/
@@ -140,11 +140,11 @@
    (test "list" (list 1 2 3) '(1 2 3))
    (test "list?.1" (list? '(1 2 . 4)) #f)
    (test "list?.2" (list? '(1 2 3 4)) #t)
-   (test "remq" (let ((x '(1 2 3 4))) (remq 2 x)) '(1 3 4))
-   (test "remq!" (let ((x '(1 2 3 4))) (remq! 2 x) x) '(1 3 4))
+   (test "remv" (let ((x '(1 2 3 4))) (remv 2 x)) '(1 3 4))
+   (test "remq!" (let ((x '(1 2 3 4))) (remv! 2 x) x) '(1 3 4))
    (test "delete" (let ((x '(1 2 (3 4) 5))) (delete '(3 4) x)) '(1 2 5))
    (test "delete!" (let ((x '(1 2 (3 4) 5))) (delete! '(3 4) x) x) '(1 2 5))
-   (test "memq.1" (memq 3 '(1 2 3 4 5)) '(3 4 5))
+   (test "memv.1" (memv 3 '(1 2 3 4 5)) '(3 4 5))
    (test "memq.2" (memq #\a '(1 2 3 4 5)) #f)
    (test "member.2" (member '(2 3) '((1 2) (2 3) (3 4) (4 5)))
 	 '((2 3) (3 4) (4 5)))
