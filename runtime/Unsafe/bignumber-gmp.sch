@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:38:03 2024                          */
-;*    Last change :  Fri Dec 13 15:39:15 2024 (serrano)                */
+;*    Last change :  Sat Dec 21 08:41:22 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bignumber gmp implementation                                     */
@@ -68,6 +68,7 @@
       ($fixnum->bignum "(call $bgl_long_to_bignum ~0)")
       ($bignum->fixnum "(call $bgl_bignum_to_long (struct.get $bignum $bx ~0))")
       ($bignum->elong "(call $bgl_bignum_to_long (struct.get $bignum $bx ~0))")
+      ($bignum->flonum "(call $bgl_bignum_to_flonum (struct.get $bignum $bx ~0))")
       ($string->bignum "(call $bgl_string_to_bignum ~0 ~1)")
       ($bignum->string "(call $bgl_bignum_to_string ~0)")
       ($elong->bignum "(call $bgl_long_to_bignum ~0)"))

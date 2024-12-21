@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Fri Dec 20 16:19:08 2024 (serrano)                */
+;*    Last change :  Sat Dec 21 08:26:40 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -30,6 +30,7 @@
    (import "__js_bignum" "bgl_bignum_even" (func $bgl_bignum_even (param externref) (result i32)))
    (import "__js_bignum" "safe_bignum_to_fixnum" (func $js_safe_bignum_to_fixnum (param externref) (param i32) (result f64)))
    (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_long (param externref) (result f64)))
+   (import "__js_bignum" "bignum_to_flonum" (func $bgl_bignum_to_flonum (param externref) (result f64)))
    (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref) (param externref) (result externref)))
    (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref) (param externref) (result externref)))
    (import "__js_bignum" "seed_rand" (func $seed_rand))
@@ -40,6 +41,8 @@
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_sub" (func $bignum_sub (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_mul" (func $bignum_mul (param externref externref) (result externref)))
+   (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref externref) (result externref)))
+   (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_cmp" (func $bignum_cmp (param externref externref) (result i32)))
    (import "__js_bignum" "bignum_to_string" (func $bignum_to_string (param externref i32) (result i32)))
 
@@ -168,6 +171,27 @@
 	    (call $bignum_mul
 	       (struct.get $bignum $bx (local.get $x))
 	       (struct.get $bignum $bx (local.get $y))))))
+   
+   ;; bgl_bignum_div
+   (func $bgl_bignum_div (export "bgl_bignum_div")
+      (param $x (ref $bignum))
+      (param $y (ref $bignum))
+      (result (ref $bignum))
+      (local $q (ref $bignum))
+      (local $r (ref $bignum))
+      (local.set $q
+	 (struct.new $bignum
+	    (call $bignum_quotient
+	       (struct.get $bignum $bx (local.get $x))
+	       (struct.get $bignum $bx (local.get $y)))))
+      (local.set $r
+	 (struct.new $bignum
+	    (call $bignum_remainder
+	       (struct.get $bignum $bx (local.get $x))
+	       (struct.get $bignum $bx (local.get $y)))))
+      (call $BGL_MVALUES_NUMBER_SET (i32.const 2))
+      (call $BGL_MVALUES_VAL_SET (i32.const 1) (local.get $r))
+      (return (local.get $q)))
    
    ;; bgl_bignum_cmp
    (func $bgl_bignum_cmp (export "bgl_bignum_cmp")

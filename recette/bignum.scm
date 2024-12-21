@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/bignum.scm            */
+;*    serrano/prgm/project/bigloo/wasm/recette/bignum.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 13 05:06:17 2008                          */
-;*    Last change :  Sun Sep  8 12:22:24 2024 (serrano)                */
+;*    Last change :  Sat Dec 21 08:47:06 2024 (serrano)                */
 ;*    Copyright   :  2008-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test bignums                                                     */

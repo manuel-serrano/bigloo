@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Dec 20 15:48:44 2024 (serrano)                */
+/*    Last change :  Sat Dec 21 07:33:41 2024 (serrano)                */
 /*    Copyright   :  2024 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -69,8 +69,6 @@ function string_to_bignum_radix(str, radix) {
 
    return n;
 }
-
-console.log(string_to_bignum_radix("111110101111101010101", 2));
 
 /*---------------------------------------------------------------------*/
 /*    IO                                                               */
@@ -372,19 +370,23 @@ const instance = await WebAssembly.instantiate(wasm, {
 
    __js_bignum: {
       zerobx: BigInt(0),
-      zerobxp: (bx) => bx === 0,
+      zerobxp: (bx) => bx === 0n,
       bxpositivep: (bx) => bx > 0n,
       bxnegativep: (bx) => bx < 0n,
-      bgl_bignum_odd: (bx) => bx % 2n === 1,
-      bgl_bignum_even: (bx) => bx % 2n === 0,
+      bgl_bignum_odd: (bx) => bx % 2n !== 0n,
+      bgl_bignum_even: (bx) => bx % 2n === 0n,
       long_to_bignum: (value) => BigInt(value),
       safe_bignum_to_fixnum: (bx, bsz) => {
 	 if (bsz > 53) bsz = 52; // max support JS fixnums
 	 const u = BigInt.asIntN(bsz, bx);
-	 const m = new Number(u);
+	 if (u === bx) {
+	    const m = new Number(u);
 
-	 if (m >= Number.MIN_SAFE_INTEGER && m <= Number.MAX_SAFE_INTEGER) {
-	    return m;
+	    if (m >= Number.MIN_SAFE_INTEGER && m <= Number.MAX_SAFE_INTEGER) {
+	       return m;
+	    } else {
+	       return 0;
+	    }
 	 } else {
 	    return 0;
 	 }
@@ -404,7 +406,13 @@ const instance = await WebAssembly.instantiate(wasm, {
 	    case 2: return string_to_bignum_radix(str, 2);
 	    case 8: return string_to_bignum_radix(str, 8);
 	    case 10: return BigInt(str);
-	    case 16: return BigInt("0x" + str);
+	    case 16: {
+	       if (str[0] === '-') {
+		  return 0n - BigInt("0x" + str.substring(1));
+	       } else {
+		  return BigInt("0x" + str);
+	       }
+	    }
 	    default: 
 	       console.log("Wong bignum radix", radix);
 	       return BigInt(0);
@@ -414,7 +422,10 @@ const instance = await WebAssembly.instantiate(wasm, {
       bignum_add: (x, y) => x + y,
       bignum_sub: (x, y) => x - y,
       bignum_mul: (x, y) => x * y,
-      bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0)
+      bignum_quotient: (x, y) => x / y,
+      bignum_remainder: (x, y) => x % y,
+      bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0),
+      bignum_to_flonum: x => Number(x)
    }
 });
 

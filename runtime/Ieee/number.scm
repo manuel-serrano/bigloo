@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/number.scm                */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/number.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
