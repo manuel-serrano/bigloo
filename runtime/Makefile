@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Dec 22 07:27:49 2024 (serrano)                */
+#*    Last change :  Tue Dec 24 10:17:03 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1211,6 +1211,8 @@ objs/wasm_s/Ieee/output.wat: Ieee/output-generic.sch
 objs/wasm_u/Ieee/output.wat: Ieee/output-generic.sch
 objs/wasm_s/Ieee/string.wat: Ieee/string-generic.sch
 objs/wasm_u/Ieee/string.wat: Ieee/string-generic.sch
+objs/wasm_s/Ieee/vector.wat: Ieee/vector-generic.sch
+objs/wasm_u/Ieee/vector.wat: Ieee/vector-generic.sch
 objs/wasm_s/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_u/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_s/Unsafe/bignumber.wat: Unsafe/bignumber-gmp.sch

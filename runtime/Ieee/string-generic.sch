@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Tue Dec 24 07:30:22 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 09:01:41 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -471,9 +471,8 @@
 						  (+fx (*fx n2 8) n3))))
 					 (loop (+fx i 4) (+fx j 1)))))
 			       (begin
-				  (string-set-ur! buf j c)
-				  (string-set-ur! buf (+fx j 1) nc)
-				  (loop (+fx i 2) (+fx j 2))))))))
+				  (string-set-ur! buf j nc)
+				  (loop (+fx i 2) (+fx j 1))))))))
 		   (else
 		    (string-set-ur! buf j c)
 		    (loop (+fx i 1) (+fx j 1)))))

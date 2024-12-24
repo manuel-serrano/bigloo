@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Tvector/access.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Tvector/access.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 13:33:40 1995                          */
-;*    Last change :  Wed Aug 28 17:41:21 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 10:10:23 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We install all the coercer and accessor for `tvector' types.     */
@@ -131,7 +131,7 @@
 				 #f
 				 'len descr-id)))
       
-      (define (make-jvm-alloc-tv)
+      (define (make-nodescr-alloc-tv)
 	 `(define-inline (,(make-typed-ident tv-alloc-id tv-id) ,(make-typed-ident 'len int-type-id))
 	     (let ((,(make-typed-ident 'v tv-id)
 		    ,(make-private-sexp 'valloc tv-id item-id int-type-id
@@ -151,7 +151,7 @@
       (define (make-alloc-tv)
 	 (if (backend-tvector-descr-support (the-backend))
 	     (make-c-alloc-tv)
-	     (make-jvm-alloc-tv)))
+	     (make-nodescr-alloc-tv)))
 	     
       (define (make-tv->vector)
 	 `(define-inline (,(symbol-append tv->vector-id '::vector)

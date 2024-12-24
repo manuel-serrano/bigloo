@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sun Dec 22 06:51:27 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 10:10:48 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -85,6 +85,7 @@
       (bound-check #f)
       (type-check #f)
       (force-register-gc-roots #f)
+      (tvector-descr-support #f)
       (string-literal-support #f)
       (boxed-fixnums (=fx *wasm-fixnum* 64))
       ;; no subtyping for (ref func)

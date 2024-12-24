@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 22 07:27:20 2024                          */
-;*    Last change :  Mon Dec 23 09:18:09 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 09:47:48 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM vectors                                                     */
@@ -30,6 +30,10 @@
    (type $bvector (array (mut i32)))
    (type $lvector (array (mut i64)))
    (type $dvector (array (mut f64)))
+   
+   (type $tvector-i32 (array (mut i32)))
+   (type $tvector-i64 (array (mut i64)))
+   (type $tvector-f64 (array (mut f64)))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -111,33 +115,24 @@
    (func $TVECTOR_DESCR (export "TVECTOR_DESCR")
       (param $v arrayref)
       (result (ref eq))
-      (if (ref.test (ref $u32vector) (local.get $v))
+      (if (ref.test (ref $tvector-i32) (local.get $v))
 	  (then (return (global.get $tvector_descr_i32))))
-      (if (ref.test (ref $u64vector) (local.get $v))
+      (if (ref.test (ref $tvector-i64) (local.get $v))
 	  (then (return (global.get $tvector_descr_i64))))
-      (if (ref.test (ref $f32vector) (local.get $v))
-	  (then (return (global.get $tvector_descr_f32))))
-      (if (ref.test (ref $f64vector) (local.get $v))
+      (if (ref.test (ref $tvector-f64) (local.get $v))
 	  (then (return (global.get $tvector_descr_f64))))
-      (if (ref.test (ref $vector) (local.get $v))
-	  (then (return (global.get $tvector_descr_eqref))))
-      (global.get $BUNSPEC))
+      (call $not_implemented (i32.const -1))
+      (return (global.get $BUNSPEC)))
    
    (func $TVECTOR_DESCR_SET (export "TVECTOR_DESCR_SET")
       (param $v arrayref)
       (param $desc (ref eq))
       (result (ref eq))
-      (if (ref.test (ref $u32vector) (local.get $v))
-	  (then (global.set $tvector_descr_i32 (local.get $desc)) (return (global.get $BUNSPEC))))
-      (if (ref.test (ref $u64vector) (local.get $v))
-	  (then (global.set $tvector_descr_i64 (local.get $desc)) (return (global.get $BUNSPEC))))
-      (if (ref.test (ref $f32vector) (local.get $v))
-	  (then (global.set $tvector_descr_f32 (local.get $desc)) (return (global.get $BUNSPEC))))
-      (if (ref.test (ref $f64vector) (local.get $v))
-	  (then (global.set $tvector_descr_f64 (local.get $desc)) (return (global.get $BUNSPEC))))
-      (if (ref.test (ref $vector) (local.get $v))
-	  (then (global.set $tvector_descr_eqref (local.get $desc)) (return (global.get $BUNSPEC))))
-      (global.get $BUNSPEC))
-   
-   
+      (if (ref.test (ref $tvector-i32) (local.get $v))
+	  (then (global.set $tvector_descr_i32 (local.get $desc))))
+      (if (ref.test (ref $tvector-i64) (local.get $v))
+	  (then (global.set $tvector_descr_i64 (local.get $desc))))
+      (if (ref.test (ref $tvector-f64) (local.get $v))
+	  (then (global.set $tvector_descr_f64 (local.get $desc))))
+      (local.get $desc))
    )
