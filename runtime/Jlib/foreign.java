@@ -2819,25 +2819,28 @@ public final class foreign
 	       switch (cn) {
 		  case (byte) '\0':
 		     result[j] = (byte) '\\';
-		  break;
+		     break;
 		  case (byte) 'n':
 		     result[j] = (byte) '\n';
-		  break;
+		     break;
 		  case (byte) 't':
 		     result[j] = (byte) '\t';
-		  break;
+		     break;
 		  case (byte) 'b':
 		     result[j] = (byte) '\b';
-		  break;
+		     break;
 		  case (byte) 'r':
 		     result[j] = (byte) '\r';
-		  break;
+		     break;
 		  case (byte) 'f':
 		     result[j] = (byte) '\f';
-		  break;
+		     break;
 		  case (byte) 'v':
 		     result[j] = (byte) 11;
-		  break;
+		     break;
+		  case (byte) 'a':
+		     result[j] = (byte) 7;
+		     break;
 		  default: {
 		     if (i + 2 < end) {
 			final byte s0 = src[i];
@@ -2864,10 +2867,10 @@ public final class foreign
 				 final byte s4 = src[i + 4];
 				 
 				 if( ((s0 == (byte) 'u') || (s0 == (byte) 'U'))
-				      && isxdigit(s1)
-				      && isxdigit(s2) 
-				      && isxdigit(s3) 
-				      && isxdigit(s4) ) {
+				     && isxdigit(s1)
+				     && isxdigit(s2) 
+				     && isxdigit(s3) 
+				     && isxdigit(s4) ) {
 				    final byte n1 = xdigit_to_byte( s1 );
 				    final byte n2 = xdigit_to_byte( s2 );
 				    final byte n3 = xdigit_to_byte( s3 );
@@ -2894,7 +2897,7 @@ public final class foreign
 			result[j] = cn;
 		     }
 		  }
-		  break;
+		     break;
 	       }
 	    }
 	 }

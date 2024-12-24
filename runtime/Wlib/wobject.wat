@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Thu Dec  5 14:45:37 2024 (serrano)                */
+;*    Last change :  Sun Dec 22 07:10:44 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
@@ -93,7 +93,9 @@
       (local $ctor (ref $procedure))
       (local.set $ctor (struct.get $class $nil_fun (local.get $clazz)))
       (ref.cast (ref $BgL_objectz00_bglt)
-	 (call $BGl_classzd2nilzd2zz__objectz00 (local.get $clazz))))
+	 (call $class-nil@__object (local.get $clazz))))
+;*       (ref.cast (ref $BgL_objectz00_bglt)                           */
+;* 	 (call $BGl_classzd2nilzd2zz__objectz00 (local.get $clazz))))  */
    
    ;; --------------------------------------------------------
    ;; Library functions

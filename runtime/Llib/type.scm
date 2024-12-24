@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Dec 20 15:15:56 2024 (serrano)                */
+;*    Last change :  Mon Dec 23 08:47:39 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -109,6 +109,7 @@
     (subtype opaque "obj_t" (obj))
 
     ;; srfi4 vectors
+    (subtype hvector "obj_t" (obj))
     (subtype s8vector "obj_t" (obj))
     (subtype u8vector "obj_t" (obj))
     (subtype s16vector "obj_t" (obj))
@@ -188,6 +189,7 @@
     (coerce obj ucs2string (c-ucs2-string?) ())
     (coerce obj real ($flonum?) ())
     (coerce obj vector ($vector?) ())
+    (coerce obj hvector ($hvector?) ())
     (coerce obj s8vector ($s8vector?) ())
     (coerce obj u8vector ($u8vector?) ())
     (coerce obj s16vector ($s16vector?) ())
@@ -304,6 +306,7 @@
     (coerce bstring obj () ())
     (coerce ucs2string obj () ())
     (coerce vector obj () ())
+    (coerce hvector obj () ())
     (coerce s8vector obj () ())
     (coerce u8vector obj () ())
     (coerce s16vector obj () ())
@@ -395,6 +398,7 @@
 
     ;; vector
     (coerce vector bool () ((lambda (x) #t)))
+    (coerce hvector bool () ((lambda (x) #t)))
     (coerce s8vector bool () ((lambda (x) #t)))
     (coerce u8vector bool () ((lambda (x) #t)))
     (coerce s16vector bool () ((lambda (x) #t)))
@@ -405,6 +409,27 @@
     (coerce u64vector bool () ((lambda (x) #t)))
     (coerce f32vector bool () ((lambda (x) #t)))
     (coerce f64vector bool () ((lambda (x) #t)))
+
+    (coerce s8vector hvector () ())
+    (coerce hvector s8vector (s8vector?) ())
+    (coerce u8vector hvector () ())
+    (coerce hvector u8vector (u8vector?) ())
+    (coerce s16vector hvector () ())
+    (coerce hvector s16vector (s16vector?) ())
+    (coerce u16vector hvector () ())
+    (coerce hvector u16vector (u16vector?) ())
+    (coerce s32vector hvector () ())
+    (coerce hvector s32vector (s32vector?) ())
+    (coerce u32vector hvector () ())
+    (coerce hvector u32vector (u32vector?) ())
+    (coerce s64vector hvector () ())
+    (coerce hvector s64vector (s64vector?) ())
+    (coerce u64vector hvector () ())
+    (coerce hvector u64vector (u64vector?) ())
+    (coerce f32vector hvector () ())
+    (coerce hvector f32vector (f32vector?) ())
+    (coerce f64vector hvector () ())
+    (coerce hvector f64vector (f64vector?) ())
 
     ;; bucs2
     (coerce bucs2 ucs2 () ($bucs2->ucs2))
@@ -742,6 +767,7 @@
     (coerce process bool () ((lambda (x) #t)))
 
     ;; srfi4 vectors
+    (coerce hvector bool () ((lambda (x) #t)))
     (coerce s8vector bool () ((lambda (x) #t)))
     (coerce u8vector bool () ((lambda (x) #t)))
     (coerce s16vector bool () ((lambda (x) #t)))

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Dec 19 09:19:10 2024 (serrano)                */
+#*    Last change :  Sun Dec 22 07:27:49 2024 (serrano)                */
 #*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -121,9 +121,9 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*---------------------------------------------------------------------*/
 #*    WAT objects                                                      */
 #*---------------------------------------------------------------------*/
-WLIB		= javascript wcnst runtime wwriter wfixnum wstring wsymbols \
-                  wrgc wports wintegers wbignum wsystem wreal wdate wobject \
-                  wcustom wforeign wweakptr wregexp
+WLIB		= wcnst wvector javascript runtime wwriter wfixnum \
+                  wstring wsymbols wrgc wports wintegers wbignum wsystem \
+                  wreal wdate wobject wcustom wforeign wweakptr wregexp 
 
 W_WLIB		= $(WLIB:%=Wlib/%.wat)
 
@@ -1238,7 +1238,8 @@ Wlib/types.wat: Wlib/types.wat.in
 	$(BIGLOO) -i ../tools/gen_wasm_types.scm $< > $@ || (rm -f $@; exit 1)
 
 Wlib/types.wat: Wlib/wports.wat Wlib/wstring.wat Wlib/wfixnum.wat \
-  Wlib/wintegers.wat Wlib/wbignum.wat Wlib/wcnst.wat Wlib/wdate.wat
+  Wlib/wintegers.wat Wlib/wbignum.wat Wlib/wcnst.wat Wlib/wdate.wat \
+  Wlib/wvector.wat
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/vector.scm            */
+;*    serrano/prgm/project/bigloo/wasm/recette/vector.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Wed Mar 13 07:13:58 2019 (serrano)                */
+;*    Last change :  Tue Dec 24 07:21:34 2024 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -29,7 +29,7 @@
  
 (define (foo n)
    (vector-ref (if (equal? 5 n) *number-images* *foo*) 0)
-   (prin-integer n)) 
+   (prin-integer n))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-vector ...                                                  */

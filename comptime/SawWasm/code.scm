@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sat Dec 21 07:49:04 2024 (serrano)                */
+;*    Last change :  Mon Dec 23 09:14:14 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -334,6 +334,7 @@
       ((s64vector) `(global.get $s64vector-default-value))
       ((f32vector) `(global.get $f32vector-default-value))
       ((f64vector) `(global.get $f64vector-default-value))
+      ((hvector) `(global.get $hvector-default-value))
       ((struct) `(global.get $struct-default-value))
       ((class) `(global.get $class-default-value))
       ((procedure) `(global.get $procedure-default-value))

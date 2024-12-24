@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/cplib.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/cplib.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Mon Sep  2 13:39:30 2024 (serrano)                */
+;*    Last change :  Sun Dec 22 06:42:30 2024 (serrano)                */
 ;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -27,6 +27,7 @@
 	    read_jvm
 	    module_java
 	    engine_param
+	    backend_backend
 	    backend_c_prototype
 	    tools_error)
    (export  (class-id->type-name::bstring ::symbol ::symbol)
@@ -156,13 +157,22 @@
 	  (let ((n (cond
 		      ((global? variable)
 		       (with-access::global variable (id module alias)
-			  (bigloo-module-mangle (symbol->string (or alias id))
-			     (symbol->string module))))
+			  (let ((n (symbol->string! (or alias id))))
+			     (if (or (backend-mangling (the-backend))
+				     (string-index n #\@))
+				 (bigloo-module-mangle n
+				    (symbol->string! module))
+				 (string-append n "@"
+				    (symbol->string! module))))))
 		      ((local? variable)
 		       (with-access::local variable (id key)
-			  (bigloo-mangle
-			     (string-append
-				(symbol->string id) "_" (integer->string key)))))
+			  (let ((name (string-append
+					 (symbol->string id)
+					 "_"
+					 (integer->string key))))
+			     (if (backend-mangling (the-backend))
+				 (bigloo-mangle name)
+				 name))))
 		      (else
 		       (internal-error "set-variable-name!"
 			  "Unknown variable king"

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Type/typeof.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Type/typeof.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Mon May 27 10:40:46 2024 (serrano)                */
+;*    Last change :  Mon Dec 23 09:11:20 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -65,6 +65,16 @@
       ((pair? kwote) *pair*)
       ((null? kwote) *bnil*)
       ((vector? kwote) *vector*)
+      ((s8vector? kwote) *s8vector*)
+      ((u8vector? kwote) *u8vector*)
+      ((s16vector? kwote) *s16vector*)
+      ((u16vector? kwote) *u16vector*)
+      ((s32vector? kwote) *s32vector*)
+      ((u32vector? kwote) *u32vector*)
+      ((s64vector? kwote) *s64vector*)
+      ((u64vector? kwote) *u64vector*)
+      ((f32vector? kwote) *f32vector*)
+      ((f64vector? kwote) *f64vector*)
       ((a-tvector? kwote) (a-tvector-type kwote))
       (else *obj*)))
 

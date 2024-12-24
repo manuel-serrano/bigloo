@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Wed Dec 18 13:36:14 2024 (serrano)                */
+/*    Last change :  Tue Dec 24 07:28:18 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -928,13 +928,8 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
             case '"': *dst++ = '\"'; src++;
 	       break;
 
-#if (defined(__STDC__))                          
             case 'a': *dst++ = '\a';
 	       break;
-
-            case '?': *dst++ = '\?';
-	       break;
-#endif                        
 
 	    case 'x':
 	    case 'X': {

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Fri Dec  6 17:48:23 2024 (serrano)                */
+;*    Last change :  Sun Dec 22 06:43:59 2024 (serrano)                */
 ;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
@@ -54,7 +54,8 @@
 	      (string-literal-support::bool (default #t))
 	      (boxed-fixnums::bool (default #f))
 	      (typed-closures::bool (default #t))
-	      (varargs::bool (default #t))))
+	      (varargs::bool (default #t))
+	      (mangling::bool (default #t))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)

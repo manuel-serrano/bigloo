@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Sat Dec 21 09:45:24 2024 (serrano)                */
+;*    Last change :  Sun Dec 22 07:28:53 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -62,40 +62,6 @@
      (export "BGL_UCS2STRING_DEFAULT_VALUE") (ref $ucs2string)
      (array.new_fixed $ucs2string 0))
   
-  (global $vector-default-value
-     (export "BGL_VECTOR_DEFAULT_VALUE") (ref $vector)
-     (array.new_fixed $vector 0))
-  (global $u8vector-default-value
-     (export "BGL_U8VECTOR_DEFAULT_VALUE") (ref $u8vector)
-     (array.new_fixed $u8vector 0))
-  (global $s8vector-default-value
-     (export "BGL_S8VECTOR_DEFAULT_VALUE") (ref $s8vector)
-     (array.new_fixed $s8vector 0))
-  (global $u16vector-default-value
-     (export "BGL_U16VECTOR_DEFAULT_VALUE") (ref $u16vector)
-     (array.new_fixed $u16vector 0))
-  (global $s16vector-default-value
-     (export "BGL_S16VECTOR_DEFAULT_VALUE") (ref $s16vector)
-     (array.new_fixed $s16vector 0))
-  (global $u32vector-default-value
-     (export "BGL_U32VECTOR_DEFAULT_VALUE") (ref $u32vector)
-     (array.new_fixed $u32vector 0))
-  (global $s32vector-default-value
-     (export "BGL_S32VECTOR_DEFAULT_VALUE") (ref $s32vector)
-     (array.new_fixed $s32vector 0))
-  (global $u64vector-default-value
-     (export "BGL_U64VECTOR_DEFAULT_VALUE") (ref $u64vector)
-     (array.new_fixed $u64vector 0))
-  (global $s64vector-default-value
-     (export "BGL_S64VECTOR_DEFAULT_VALUE") (ref $s64vector)
-     (array.new_fixed $s64vector 0))
-  (global $f32vector-default-value
-     (export "BGL_F32VECTOR_DEFAULT_VALUE") (ref $f32vector)
-     (array.new_fixed $f32vector 0))
-  (global $f64vector-default-value
-     (export "BGL_F64VECTOR_DEFAULT_VALUE") (ref $f64vector)
-     (array.new_fixed $f64vector 0))
-
   (global $struct-default-value
      (export "BGL_STRUCT_DEFAULT_VALUE") (ref $struct)
      (struct.new $struct (global.get $BUNSPEC) (global.get $vector-default-value)))
@@ -386,68 +352,6 @@
     (param $v (ref eq)) 
     (result (ref eq))
     (struct.set $procedure $attr (local.get $p) (local.get $v))
-    (global.get $BUNSPEC))
-
-  ;; --------------------------------------------------------
-  ;; Vector functions
-  ;; --------------------------------------------------------
-
-  (func $bgl_fill_vector (export "bgl_fill_vector")
-    (param $v (ref $vector))
-    (param $start i64)
-    (param $end i64)
-    (param $o (ref eq))
-    (result (ref eq))
-    (array.fill $vector 
-      (ref.cast (ref $vector) (local.get $v)) ;; FIXME: remove the cast
-      (i32.wrap_i64 (local.get $start)) 
-      (local.get $o)
-      (i32.wrap_i64 (i64.sub (local.get $end) (local.get $start))))
-    (global.get $BUNSPEC))
-  
-  ;; --------------------------------------------------------
-  ;; Typed vector functions
-  ;; --------------------------------------------------------
-
-  ;; TODO: better implementation of tvector descr
-
-  (global $tvector_descr_i8 (mut (ref eq)) (global.get $BUNSPEC))
-  (global $tvector_descr_i16 (mut (ref eq)) (global.get $BUNSPEC))
-  (global $tvector_descr_i32 (mut (ref eq)) (global.get $BUNSPEC))
-  (global $tvector_descr_i64 (mut (ref eq)) (global.get $BUNSPEC))
-  (global $tvector_descr_f32 (mut (ref eq)) (global.get $BUNSPEC))
-  (global $tvector_descr_f64 (mut (ref eq)) (global.get $BUNSPEC))
-  (global $tvector_descr_eqref (mut (ref eq)) (global.get $BUNSPEC))
-
-  (func $TVECTOR_DESCR (export "TVECTOR_DESCR")
-    (param $v arrayref)
-    (result (ref eq))
-    (if (ref.test (ref $u32vector) (local.get $v))
-      (then (return (global.get $tvector_descr_i32))))
-    (if (ref.test (ref $u64vector) (local.get $v))
-      (then (return (global.get $tvector_descr_i64))))
-    (if (ref.test (ref $f32vector) (local.get $v))
-      (then (return (global.get $tvector_descr_f32))))
-    (if (ref.test (ref $f64vector) (local.get $v))
-      (then (return (global.get $tvector_descr_f64))))
-    (if (ref.test (ref $vector) (local.get $v))
-      (then (return (global.get $tvector_descr_eqref))))
-    (global.get $BUNSPEC))
-
-  (func $TVECTOR_DESCR_SET (export "TVECTOR_DESCR_SET")
-    (param $v arrayref)
-    (param $desc (ref eq))
-    (result (ref eq))
-    (if (ref.test (ref $u32vector) (local.get $v))
-      (then (global.set $tvector_descr_i32 (local.get $desc)) (return (global.get $BUNSPEC))))
-    (if (ref.test (ref $u64vector) (local.get $v))
-      (then (global.set $tvector_descr_i64 (local.get $desc)) (return (global.get $BUNSPEC))))
-    (if (ref.test (ref $f32vector) (local.get $v))
-      (then (global.set $tvector_descr_f32 (local.get $desc)) (return (global.get $BUNSPEC))))
-    (if (ref.test (ref $f64vector) (local.get $v))
-      (then (global.set $tvector_descr_f64 (local.get $desc)) (return (global.get $BUNSPEC))))
-    (if (ref.test (ref $vector) (local.get $v))
-      (then (global.set $tvector_descr_eqref (local.get $desc)) (return (global.get $BUNSPEC))))
     (global.get $BUNSPEC))
 
   ;; --------------------------------------------------------

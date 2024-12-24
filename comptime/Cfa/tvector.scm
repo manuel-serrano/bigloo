@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/tvector.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/tvector.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Wed Aug 28 17:38:38 2024 (serrano)                */
+;*    Last change :  Sun Dec 22 15:29:32 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -20,6 +20,7 @@
    (import  engine_param
 	    module_type
 	    module_pragma
+	    backend_backend
 	    type_type
 	    type_cache
 	    type_env
@@ -45,11 +46,11 @@
 	    globalize_walk
 	    inline_inline
 	    inline_walk)
-   (export  (patch-vector-set!)
-	    (unpatch-vector-set!)
-	    (vector->tvector! globals)
-	    (add-make-vector! ::node)
+   (export  (vector->tvector! globals)
 	    (tvector-optimization?)
+	    (patch-vector-set!)
+	    (unpatch-vector-set!)
+	    (add-make-vector! ::node)
 	    (generic get-vector-item-type::type ::node)))
 
 ;*---------------------------------------------------------------------*/
@@ -62,6 +63,38 @@
 ;*---------------------------------------------------------------------*/
 (define (tvector-optimization?)
    (and (>=fx *optim* 3) (not *lib-mode*)))
+
+;*---------------------------------------------------------------------*/
+;*    vector->tvector! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (vector->tvector! globals)
+   (if (tvector-optimization?)
+       (begin
+	  (trace cfa
+	     "--------------------------------------"
+	     #\Newline "tvector-optimization! :" #\Newline
+	     (shape *make-vector-list*)
+	     #\Newline)
+	  (inline-setup! 'all)
+	  (multiple-value-bind (vectors tvectors)
+	     (collect-tvectors)
+	     (for-each (lambda (v)
+			  (when (eq? (node-type v) *_*)
+			     (node-type-set! v *vector*)))
+		vectors)
+	     (show-tvector tvectors)
+	     (trace (cfa 2) "tvectors: " (shape tvectors) #\Newline)
+	     (if (pair? tvectors)
+		 (let ((add-tree (declare-tvectors tvectors)))
+		    (trace (cfa 2)
+		       "additional-body: " (shape add-tree) #\Newline)
+		    (patch-tree! globals)
+		    (lvtype-ast! add-tree)
+		    add-tree)
+		 (begin
+		    (patch-tree! globals)
+		    '()))))
+       '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch-vector-set! ...                                            */
@@ -129,39 +162,6 @@
    #unspecified)
     
 ;*---------------------------------------------------------------------*/
-;*    vector->tvector! ...                                             */
-;*---------------------------------------------------------------------*/
-(define (vector->tvector! globals)
-   (if (tvector-optimization?)
-       (begin
-	  (trace cfa
-	     "--------------------------------------"
-	     #\Newline "tvector-optimization! :" #\Newline
-	     (shape *make-vector-list*)
-	     #\Newline)
-	  ;; we setup the inlining 
-	  (inline-setup! 'all)
-	  (multiple-value-bind (vectors tvectors)
-	     (get-tvectors)
-	     (for-each (lambda (v)
-			  (when (eq? (node-type v) *_*)
-			     (node-type-set! v *vector*)))
-		vectors)
-	     (show-tvector tvectors)
-	     (trace (cfa 2) "tvectors: " (shape tvectors) #\Newline)
-	     (if (pair? tvectors)
-		 (let ((add-tree (declare-tvectors tvectors)))
-		    (trace (cfa 2)
-		       "additional-body: " (shape add-tree) #\Newline)
-		    (patch-tree! globals)
-		    (lvtype-ast! add-tree)
-		    add-tree)
-		 (begin
-		    (patch-tree! globals)
-		    '()))))
-       '()))
-
-;*---------------------------------------------------------------------*/
 ;*    lists for quick access to vectors                                */
 ;*---------------------------------------------------------------------*/
 (define *make-vector-list* '())
@@ -174,24 +174,30 @@
        (set! *make-vector-list* (cons node *make-vector-list*))))
 
 ;*---------------------------------------------------------------------*/
-;*    get-tvectors ...                                                 */
+;*    collect-tvectors ...                                             */
 ;*    -------------------------------------------------------------    */
 ;*    We scan all declared vectors to find which of them can be        */
 ;*    optimized.                                                       */
 ;*---------------------------------------------------------------------*/
-(define (get-tvectors)
+(define (collect-tvectors)
+   
+   (define (can-be-tvector? type)
+      (with-access::backend (the-backend) (tvector-descr-support)
+	 (if tvector-descr-support
+	     (and (not (eq? type *_*)) (not (sub-type? type *obj*)))
+	     (memq type (list *real* *int* *long* *bool*)))))
+   
    (let loop ((apps *make-vector-list*)
 	      (vectors '())
 	      (tvectors '()))
       (if (null? apps)
 	  (values vectors tvectors)
 	  (let* ((app (car apps))
-		 (type (get-vector-item-type app)))
+		 (ty (get-vector-item-type app)))
 	     (trace (cfa 1)
-		    "vector: " (shape app) " item-type: " (shape type)
-		    " < " (type-class type) #\Newline)
-	     (if (and (not (eq? type *_*))
-		      (not (sub-type? type *obj*)))
+		"vector: " (shape app) " item-type: " (shape ty)
+		" < " (type-class ty) #\Newline)
+	     (if (can-be-tvector? ty)
 		 (loop (cdr apps) vectors (cons app tvectors))
 		 (loop (cdr apps) (cons app vectors) tvectors))))))
 
@@ -272,7 +278,7 @@
 ;*---------------------------------------------------------------------*/
 (define (patch-fun! variable)
    (let ((fun (variable-value variable)))
-      (trace (cfa 4) "Je patch l'arbre de " (shape variable) ": " #\Newline
+      (trace (cfa 4) "Patching tree " (shape variable) ": " #\Newline
 	     (shape (sfun-body fun)) #\Newline)
       (sfun-body-set! fun (patch! (sfun-body fun)))))
 
@@ -520,12 +526,9 @@
 	     (tv (get-approx-type approx node)))
 	 (if (and (tvec? tv) (not tvector?))
 	     (let* ((length-tv (symbol-append (type-id tv) '-length))
-		    (new-node  (sexp->node `(,length-tv ,(car expr*))
-					   '()
-					   loc
-					   'value)))
-		(node-type-set! new-node (get-tvector-length-type))
-		(inline-node new-node 1 '()))
+		    (n (sexp->node `(,length-tv ,(car expr*)) '() loc 'value)))
+		(node-type-set! n (get-tvector-length-type))
+		(inline-node n 1 '()))
 	     node))))
 
 ;*---------------------------------------------------------------------*/
@@ -548,13 +551,20 @@
    (with-access::app node (args loc)
       (patch*! args)
       (let* ((approx (cfa! (car args)))
-	     (type (get-approx-type approx (car args))))
-	 (if (or (eq? type *vector*) (isa? type tvec))
+	     (ty (get-approx-type approx (car args))))
+	 (cond
+	    ((or (eq? ty *vector*) (isa? ty tvec))
 	     (instantiate::literal
 		(loc loc)
 		(type (strict-node-type (get-type-atom #t) *bool*))
-		(value #t))
-	     node))))
+		(value #t)))
+	    ((not (or (eq? ty *obj*) (eq? ty *_*)))
+	     (instantiate::literal
+		(loc loc)
+		(type (strict-node-type (get-type-atom #t) *bool*))
+		(value #f)))
+	    (else
+	     node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch-vector->list! ...                                          */
@@ -565,13 +575,10 @@
       (let* ((approx (cfa! (car args)))
 	     (tv     (get-approx-type approx node)))
 	 (if (tvec? tv)
-	     (let* ((tv->list  (symbol-append (type-id tv) '->list))
-		    (new-node  (sexp->node `(,tv->list ,@args)
-					   '()
-					   loc
-					   'value)))
-		(node-type-set! new-node (node-type node))
-		new-node)
+	     (let* ((tv->list (symbol-append (type-id tv) '->list))
+		    (n (sexp->node `(,tv->list ,@args) '() loc 'value)))
+		(node-type-set! n (node-type node))
+		n)
 	     node))))
 
 ;*---------------------------------------------------------------------*/
@@ -580,16 +587,14 @@
 (define-method (patch! node::make-vector-app)
    (with-access::make-vector-app node (value-approx fun args loc tvector?)
       (patch*! args)
-      (let* ((type (approx-type value-approx))
-	     (tv   (type-tvector type)))
+      (let* ((ty (approx-type value-approx))
+	     (tv (type-tvector ty)))
+	 ;; (tprint "make-vector-app ty=" (shape ty) " tv=" (shape tv))
 	 (if (and (type? tv) tvector?)
-	     (let* ((make-tv   (symbol-append 'make- (type-id tv)))
-		    (new-node  (sexp->node `(,make-tv ,@args)
-				  '()
-				  loc
-				  'value)))
-		(node-type-set! new-node tv)
-		(inline-node new-node 1 '()))
+	     (let* ((make-tv (symbol-append 'make- (type-id tv)))
+		    (n (sexp->node `(,make-tv ,@args) '() loc 'value)))
+		(node-type-set! n tv)
+		(inline-node n 1 '()))
 	     node))))
 
 ;*---------------------------------------------------------------------*/
@@ -598,17 +603,14 @@
 (define-method (patch! node::valloc/Cinfo+optim)
    (with-access::valloc/Cinfo+optim node (value-approx expr* loc ftype)
       (patch*! expr*)
-      (let* ((type (approx-type value-approx))
-	     (tv (type-tvector type)))
+      (let* ((ty (approx-type value-approx))
+	     (tv (type-tvector ty)))
 	 (if (and (type? tv) (eq? ftype *_*))
 	     (let* ((create-tv (symbol-append 'allocate- (type-id tv)))
-		    (new-node  (sexp->node `(,create-tv ,@expr*)
-				  '()
-				  loc
-				  'value)))
-		(let ((n (inline-node new-node 1 '())))
-		   (lvtype-node! n)
-		   n))
+		    (n (sexp->node `(,create-tv ,@expr*) '() loc 'value)))
+		(let ((in (inline-node n 1 '())))
+		   (lvtype-node! in)
+		   in))
 	     (begin
 		(set! ftype (get-approx-type value-approx node))
 		node)))))
@@ -632,9 +634,9 @@
 		    node)
 		 (let* ((ty (get-approx-type approx node))
 			(tv-ref (symbol-append (type-id tv) '-ref))
-			(new-node (sexp->node `(,tv-ref ,@expr*) '() loc 'value)))
-		    (node-type-set! new-node (strict-node-type tv ty))
-		    (inline-node new-node 1 '())))))))
+			(n (sexp->node `(,tv-ref ,@expr*) '() loc 'value)))
+		    (node-type-set! n (strict-node-type tv ty))
+		    (inline-node n 1 '())))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch! ::vset!/Cinfo ...                                         */
@@ -648,7 +650,7 @@
 		 (tv (get-approx-type vec-approx node)))
 	     (if (not (tvec? tv))
 		 node
-		 (let* ((tv-set!  (symbol-append (type-id tv) '-set!))
-			(new-node (sexp->node `(,tv-set! ,@expr*) '() loc 'value)))
-		    (inline-node new-node 1 '())))))))
+		 (let* ((tv-set! (symbol-append (type-id tv) '-set!))
+			(n (sexp->node `(,tv-set! ,@expr*) '() loc 'value)))
+		    (inline-node n 1 '())))))))
 

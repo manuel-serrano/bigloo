@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Dec 20 15:23:13 2024 (serrano)                */
+;*    Last change :  Sun Dec 22 06:51:27 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -90,7 +90,8 @@
       ;; no subtyping for (ref func)
       ;; see https://github.com/WebAssembly/function-references
       (typed-closures #f)
-      (varargs #f)))
+      (varargs #f)
+      (mangling #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */
@@ -626,7 +627,8 @@
 		      (import "__bigloo" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
 		      
 		      (import "__bigloo" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))
-		      (import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result (ref eq))))
+		      ;;(import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result (ref eq))))
+		      (import "$__object" "class-nil@__object" (func $class-nil@__object (param (ref $class)) (result (ref eq))))
 		      
 		      ,@(emit-imports))
 		   

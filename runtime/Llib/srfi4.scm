@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Wed Dec  4 15:17:43 2024 (serrano)                */
+;*    Last change :  Mon Dec 23 09:01:28 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -60,20 +60,20 @@
 	   (macro $f32vector?::bool (::obj) "BGL_F32VECTORP")
 	   (macro $f64vector?::bool (::obj) "BGL_F64VECTORP")
 	   
-	   (macro $hvector-ident::int (::obj) "BGL_HVECTOR_IDENT")
+	   (macro $hvector-ident::int (::hvector) "BGL_HVECTOR_IDENT")
 	   
-	   (macro $hvector-length::long (::obj) "BGL_HVECTOR_LENGTH")
+	   (macro $hvector-length::long (::hvector) "BGL_HVECTOR_LENGTH")
 	   
-	   (macro $alloc-s8vector::s8vector (::int32) "BGL_ALLOC_S8VECTOR")
-	   (macro $alloc-u8vector::u8vector (::int32) "BGL_ALLOC_U8VECTOR")
-	   (macro $alloc-s16vector::s16vector (::int32) "BGL_ALLOC_S16VECTOR")
-	   (macro $alloc-u16vector::u16vector (::int32) "BGL_ALLOC_U16VECTOR")
-	   (macro $alloc-s32vector::s32vector (::int32) "BGL_ALLOC_S32VECTOR")
-	   (macro $alloc-u32vector::u32vector (::int32) "BGL_ALLOC_U32VECTOR")
-	   (macro $alloc-s64vector::s64vector (::int32) "BGL_ALLOC_S64VECTOR")
-	   (macro $alloc-u64vector::u64vector (::int32) "BGL_ALLOC_U64VECTOR")
-	   (macro $alloc-f32vector::f32vector (::int32) "BGL_ALLOC_F32VECTOR")
-	   (macro $alloc-f64vector::f64vector (::int32) "BGL_ALLOC_F64VECTOR")
+	   (macro $alloc-s8vector::s8vector (::long) "BGL_ALLOC_S8VECTOR")
+	   (macro $alloc-u8vector::u8vector (::long) "BGL_ALLOC_U8VECTOR")
+	   (macro $alloc-s16vector::s16vector (::long) "BGL_ALLOC_S16VECTOR")
+	   (macro $alloc-u16vector::u16vector (::long) "BGL_ALLOC_U16VECTOR")
+	   (macro $alloc-s32vector::s32vector (::long) "BGL_ALLOC_S32VECTOR")
+	   (macro $alloc-u32vector::u32vector (::long) "BGL_ALLOC_U32VECTOR")
+	   (macro $alloc-s64vector::s64vector (::long) "BGL_ALLOC_S64VECTOR")
+	   (macro $alloc-u64vector::u64vector (::long) "BGL_ALLOC_U64VECTOR")
+	   (macro $alloc-f32vector::f32vector (::long) "BGL_ALLOC_F32VECTOR")
+	   (macro $alloc-f64vector::f64vector (::long) "BGL_ALLOC_F64VECTOR")
 	   
 	   (macro $s8vector-ref::int8 (::s8vector ::long)
 		  "BGL_S8VREF")
@@ -239,16 +239,16 @@
 	   ($f32vector? "(ref.test (ref $f32vector) ~0)")
 	   ($f64vector? "(ref.test (ref $f64vector) ~0)")
 
-	   ($alloc-s8vector "(array.new_default $s8vector ~0)")
-	   ($alloc-u8vector "(array.new_default $u8vector ~0)")
-	   ($alloc-s16vector "(array.new_default $s16vector ~0)")
-	   ($alloc-u16vector "(array.new_default $u16vector ~0)")
-	   ($alloc-s32vector "(array.new_default $s32vector ~0)")
-	   ($alloc-u32vector "(array.new_default $u32vector ~0)")
-	   ($alloc-s64vector "(array.new_default $s64vector ~0)")
-	   ($alloc-u64vector "(array.new_default $u64vector ~0)")
-	   ($alloc-f32vector "(array.new_default $f32vector ~0)")
-	   ($alloc-f64vector "(array.new_default $f64vector ~0)")
+	   ($alloc-s8vector "(array.new_default $s8vector (i32.wrap_i64 ~0))")
+	   ($alloc-u8vector "(array.new_default $u8vector (i32.wrap_i64 ~0))")
+	   ($alloc-s16vector "(array.new_default $s16vector (i32.wrap_i64 ~0))")
+	   ($alloc-u16vector "(array.new_default $u16vector (i32.wrap_i64 ~0))")
+	   ($alloc-s32vector "(array.new_default $s32vector (i32.wrap_i64 ~0))")
+	   ($alloc-u32vector "(array.new_default $u32vector (i32.wrap_i64 ~0))")
+	   ($alloc-s64vector "(array.new_default $s64vector (i32.wrap_i64 ~0))")
+	   ($alloc-u64vector "(array.new_default $u64vector (i32.wrap_i64 ~0))")
+	   ($alloc-f32vector "(array.new_default $f32vector (i32.wrap_i64 ~0))")
+	   ($alloc-f64vector "(array.new_default $f64vector (i32.wrap_i64 ~0))")
 
 	   ($s8vector-ref "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
 	   ($s8vector-set! "(array.set $s8vector ~0 (i32.wrap_i64 ~1) ~2)")
@@ -353,7 +353,7 @@
 		 "BGL_ALLOC_U64VECTOR")
 	      (method static $alloc-f32vector::f32vector (::long)
 		 "BGL_ALLOC_F32VECTOR")
-	      (method static $alloc-f64vector::f64vector (::long)
+	      (method static $alloc-f64vector::f64vector (::int)
 		 "BGL_ALLOC_F64VECTOR")
 	      
 	      (method static $s8vector-ref::int8 (::s8vector ::long)

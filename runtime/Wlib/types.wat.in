@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Thu Dec 19 09:01:35 2024 (serrano)                */
+;*    Last change :  Sun Dec 22 07:32:28 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -31,20 +31,7 @@
    ;; -----------------------------------------------------------------
    ;; Vectors 
    ;; -----------------------------------------------------------------
-   (type $vector (array (mut (ref eq))))
-   (type $dvector (array (mut f64)))
-   (type $lvector (array (mut i64)))
-   (type $bvector (array (mut i32)))
-   (type $s8vector (array (mut i8)))
-   (type $s16vector (array (mut i16)))
-   (type $s32vector (array (mut i32)))
-   (type $s64vector (array (mut i64)))
-   (type $u8vector (array (mut i8)))
-   (type $u16vector (array (mut i16)))
-   (type $u32vector (array (mut i32)))
-   (type $u64vector (array (mut i64)))
-   (type $f32vector (array (mut f32)))
-   (type $f64vector (array (mut f64)))
+   (@include "./wvector.wat" type)
    
    (type $procedure (struct 
 		       (field $entry (ref func))
@@ -59,6 +46,7 @@
    (type $procedure-el (array (mut (ref eq))))
    
    (tag $fail)
+
    
    ;; -----------------------------------------------------------------
    ;; String 
@@ -156,7 +144,7 @@
    (type $process (struct))
    (type $mmap (struct))
    
-   (type $tvector (struct))
+   (type $tvector (struct (field $descr (ref eq))))
    (type $hvector (struct))
    
    ;; -----------------------------------------------------------------
