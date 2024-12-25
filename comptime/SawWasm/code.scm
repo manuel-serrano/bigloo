@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Dec 23 09:14:14 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 17:05:07 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -253,6 +253,7 @@
 	 ((double) 'f64)
 	 ((vector) (if nullable '(ref null $vector) '(ref $vector)))
 	 ((string bstring) (if nullable '(ref null $bstring) '(ref $bstring)))
+	 ((hvector) '(ref array))
 	 (else 
 	  (cond 
 	     ((foreign-type? t)

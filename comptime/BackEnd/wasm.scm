@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Dec 24 10:10:48 2024 (serrano)                */
+;*    Last change :  Wed Dec 25 06:59:07 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -190,7 +190,6 @@
    (define exports-whitelist (create-hashtable :weak 'open-string))
    (define initial-order (create-hashtable :weak 'open-string))
    
-   
    (define (collect-exports modules)
       (for-each (lambda (d)
 		   (match-case d
@@ -245,14 +244,20 @@
 	 modules))
 
     (define (remove-duplicate-types! modules)
-       (filter! (lambda (d)
-		   (match-case d
-		      ((?- ?n ???-)
-		       (let ((key (symbol->string! n)))
-			  (unless (hashtable-contains? types key)
-			     (hashtable-put! types key #t)
-			     #t)))
-		      (else #t)))
+       (filter-map (lambda (d)
+		      (match-case d
+			 ((type ?n ???-)
+			  (let ((key (symbol->string! n)))
+			     (unless (hashtable-contains? types key)
+				(hashtable-put! types key #t)
+				d)))
+			 ((rec . ?types)
+			  (let ((tys (remove-duplicate-types! types)))
+			     (if (pair? tys)
+				 `(rec ,@tys)
+				 #f)))
+			 (else
+			  d)))
 	  modules))
 
     (define (remove-exports! modules)
@@ -381,28 +386,36 @@
 	    (map (lambda (k) (symbol->string! (cadr k))) classes))))
       
    (define (collect-types modules)
-      (append-map (lambda (e)
-		     (cond
-			((eq? (car e) 'type) (list e))
-			((eq? (car e) 'rec) (cdr e))
-			(else '())))
+      (filter (lambda (e)
+		 (cond
+		    ((eq? (car e) 'type) e)
+		    ((eq? (car e) 'rec) e)
+		    (else #f)))
 	 modules))
 
    (define (split-type-classes types)
+      
+      (define (class-declaration? ty)
+	 (match-case ty
+	    ((type ?n (sub final ?- (struct (field $header . ?-) (field $widening . ?-) . ?-)))
+	     #t)
+	    ((type ?n (sub ?- (struct (field $header . ?-) (field $widening . ?-) . ?-)))
+	     #t)
+	    (else
+	     #f)))
+      
       (let loop ((types types)
 		 (noklass '())
 		 (klass '()))
-	 (if (null? types)
+	 (cond
+	    ((null? types)
 	     (if (null? klass)
 		 (reverse! noklass)
-		 (reverse! (cons `(rec ,@(sort-classes klass)) noklass)))
-	     (match-case (car types)
-		((?- ?n (sub final ?- (struct (field $header . ?-) (field $widening . ?-) . ?-)))
-		 (loop (cdr types) noklass (cons (car types) klass)))
-		((?- ?n (sub ?- (struct (field $header . ?-) (field $widening . ?-) . ?-)))
-		 (loop (cdr types) noklass (cons (car types) klass)))
-		(else
-		 (loop (cdr types) (cons (car types) noklass) klass))))))
+		 (reverse! (cons `(rec ,@(sort-classes klass)) noklass))))
+	    ((class-declaration? (car types))
+	     (loop (cdr types) noklass (cons (car types) klass)))
+	    (else
+	     (loop (cdr types) (cons (car types) noklass) klass)))))
    
    (let ((modules (append-map read-module files)))
       (collect-exports modules)
@@ -1216,12 +1229,7 @@
 		 `((export ,(global-name global)))
 		 '())
 	   (ref ,type)
-	   ,(case type
-	       (($belong $bllong)
-		;; see ../runtime/Wlib/wintegers.wat
-		`(struct.new ,type ,val (i32.const 0)))
-	       (else
-		`(struct.new ,type ,val)))))))
+	   (struct.new ,type ,val)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun ...                                               */

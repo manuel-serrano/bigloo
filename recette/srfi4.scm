@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/srfi4.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/srfi4.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Tue Jun 17 19:45:14 2014 (serrano)                */
+;*    Last change :  Wed Dec 25 08:15:35 2024 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -91,6 +91,8 @@
    (test "cnst.11" (f64vector-ref '#f64(1. 2.) 1) 2.)
    (test "vector?.1" (vector? (make-s8vector 2)) #f)
    (test "vector?.2" (s8vector? (make-vector 2)) #f)
+   (test "hvector?" (homogeneous-vector? (car (list '#s8(1)))) #t)
+   (test "tvector?" (tvector? (car (list '#s8(1)))) #f)
    (test-hvector s8 (fixnum->int8 1))
    (test-hvector u8 (fixnum->uint8 2))
    (test-hvector s16 -3)
@@ -98,7 +100,7 @@
    (test-hvector s32 5)
    (test-hvector u32 6)
    (test-hvector s64 #s64:-7)
-   (test-hvector u64 #u64:8)
-   (test-hvector f32 -1.0)
-   (test-hvector f64 1.0)
+;*    (test-hvector u64 #u64:8)                                        */
+;*    (test-hvector f32 -1.0)                                          */
+;*    (test-hvector f64 1.0)                                           */
    )

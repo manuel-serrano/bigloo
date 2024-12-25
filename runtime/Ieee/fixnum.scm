@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Fri Dec 20 14:51:51 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 19:53:19 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -272,7 +272,7 @@
 	   ($elong->int8 "(i32.rem_s (i32.wrap_i64 ~0) (i32.const 0xFF))")
 	   ($elong->uint8 "(i32.rem_u (i32.wrap_i64 ~0) (i32.const 0xFF))")
 	   ($uint8->elong "(i64.extend_i32_u ~0)")
-	   ($int8->elong "(i64.extend_i32_s ~0)")
+	   ($int8->elong "(i64.extend_i32_s (i32.shr_s (i32.shl ~0 (i32.const 24)) (i32.const 24)))")
 	   
 	   ;; TODO: should really wrap the result with rem_s?
 	   ($elong->int16 "(i32.rem_s (i32.wrap_i64 ~0) (i32.const 0xFFFF))")
@@ -281,11 +281,11 @@
 	   ($int16->elong "(i64.extend_i32_s (i32.shr_s (i32.shl ~0 (i32.const 16)) (i32.const 16)))")
 	   
 	   ($elong->int32 "(i32.wrap_i64 ~0)")
-	   ($int32->elong  "(i64.extend_i32_s ~0)")
+	   ($int32->elong  "(i64.shr_s (i64.shl (i64.extend_i32_u ~0) (i64.const 32)) (i64.const 32))")
 	   ($elong->uint32 "(i32.wrap_i64 ~0)")
 	   ($int32->llong  "(i64.extend_i32_s ~0)")
-	   ($uint32->elong  "(i64.extend_i32_u ~0)")
-	   ($uint32->llong  "(i64.extend_i32_u ~0)")
+	   ($uint32->elong  "(i64.shr_s (i64.shl (i64.extend_i32_u ~0) (i64.const 32)) (i64.const 32))")
+	   ($uint32->llong  "(i64.shr_s (i64.shl (i64.extend_i32_u ~0) (i64.const 32)) (i64.const 32))")
 	   ($uint32->uint64  "(i64.extend_i32_u ~0)")
 	   ($llong->uint32  "(i32.wrap_i64 ~0)")
 	   ($llong->int32  "(i32.wrap_i64 ~0)")

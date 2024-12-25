@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Dec 23 08:47:39 2024 (serrano)                */
+;*    Last change :  Wed Dec 25 10:27:40 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1248,11 +1248,11 @@
       ($long->int "(i32.wrap_i64 ~0)")
       ($long->uint "(i32.wrap_i64 ~0)")
       ($long->ulong "~0")
-      ($long->int8 "(i32.wrap_i64 ~0)")
+      ($long->int8 "(i32.wrap_i64 (i64.shr_s (i64.shl ~0 (i64.const 56)) (i64.const 56)))")
       ($long->uint8 "(i32.wrap_i64 ~0)")
-      ($long->int16 "(i32.wrap_i64 ~0)")
+      ($long->int16 "(i32.wrap_i64 (i64.shr_s (i64.shl ~0 (i64.const 48)) (i64.const 48)))")
       ($long->uint16 "(i32.wrap_i64 ~0)")
-      ($long->int32 "(i32.wrap_i64 ~0)")
+      ($long->int32 "(i32.wrap_i64 (i64.shr_s (i64.shl ~0 (i64.const 32)) (i64.const 32)))")
       ($long->uint32 "(i32.wrap_i64 ~0)")
       ($long->int64 "~0")
       ($long->uint64 "~0")

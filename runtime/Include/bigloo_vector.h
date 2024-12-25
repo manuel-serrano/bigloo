@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Dec  4 15:19:49 2024 (serrano)                */
+/*    Last change :  Tue Dec 24 17:52:47 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -206,6 +206,16 @@ struct bgl_hvector {
    ((struct { header_t header; unsigned long length; type obj[8]; } *)(CREF(o)))
    
 #define BGL_HVECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_S8VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_U8VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_S16VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_U16VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_S32VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_U32VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_S64VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_U64VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_F32VECTOR_LENGTH(v) (HVECTOR(v).length)
+#define BGL_F64VECTOR_LENGTH(v) (HVECTOR(v).length)
 
 #define BGL_HVECTOR_IDENT(v) (TYPE(v) - S8VECTOR_TYPE)
    

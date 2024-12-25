@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Fri Dec 20 14:52:30 2024 (serrano)                */
+;*    Last change :  Wed Dec 25 11:15:19 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -75,14 +75,20 @@
 ;*    BGL_STRTOL ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define ($$strtol string start radix)
-   (let loop ((acc 0)
-	      (i (-fx (string-length string) 1))
-	      (k 1))
-      (if (>=fx i 0)
+
+   (define l (string-length string))
+   
+   (define (loop acc i)
+      (if (<fx i l)
 	  (let* ((c (string-ref-ur string i))
 		 (n (char->num c)))
-	     (loop (+fx acc (*fx k n)) (-fx i 1) (*fx k radix)))
-	  acc)))
+	     (loop (+fx (*fx acc radix) n) (+fx i 1)))
+	  acc))
+   
+   (cond
+      ((<=fx (-fx l start) 0) 0)
+      ((char=? (string-ref string start) #\-) (negfx (loop 0 (+fx start 1))))
+      (else (loop 0 start))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$strtoel ...                                                    */

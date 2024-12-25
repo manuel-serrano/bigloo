@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Mon Dec 23 09:01:28 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 17:48:38 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -63,6 +63,16 @@
 	   (macro $hvector-ident::int (::hvector) "BGL_HVECTOR_IDENT")
 	   
 	   (macro $hvector-length::long (::hvector) "BGL_HVECTOR_LENGTH")
+	   (macro $s8vector-length::long (::s8vector) "BGL_S8VECTOR_LENGTH")
+	   (macro $u8vector-length::long (::u8vector) "BGL_U8VECTOR_LENGTH")
+	   (macro $s16vector-length::long (::s16vector) "BGL_S16VECTOR_LENGTH")
+	   (macro $u16vector-length::long (::u16vector) "BGL_U16VECTOR_LENGTH")
+	   (macro $s32vector-length::long (::s32vector) "BGL_S32VECTOR_LENGTH")
+	   (macro $u32vector-length::long (::u32vector) "BGL_U32VECTOR_LENGTH")
+	   (macro $s64vector-length::long (::s64vector) "BGL_S64VECTOR_LENGTH")
+	   (macro $u64vector-length::long (::u64vector) "BGL_U64VECTOR_LENGTH")
+	   (macro $f32vector-length::long (::f32vector) "BGL_F32VECTOR_LENGTH")
+	   (macro $f64vector-length::long (::f64vector) "BGL_F64VECTOR_LENGTH")
 	   
 	   (macro $alloc-s8vector::s8vector (::long) "BGL_ALLOC_S8VECTOR")
 	   (macro $alloc-u8vector::u8vector (::long) "BGL_ALLOC_U8VECTOR")
@@ -225,7 +235,6 @@
 	   )
 
 	(wasm
-	   ($hvector? "(ref.test (ref $hvector) ~0)")
 	   ($s8vector? "(ref.test (ref $s8vector) ~0)")
 	   ($u8vector? "(ref.test (ref $u8vector) ~0)")
 	   ($s16vector? "(ref.test (ref $s16vector) ~0)")
@@ -239,6 +248,17 @@
 	   ($f32vector? "(ref.test (ref $f32vector) ~0)")
 	   ($f64vector? "(ref.test (ref $f64vector) ~0)")
 
+	   ($s8vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($u8vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($s16vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($u16vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($s32vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($u32vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($s64vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($u64vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($f32vector-length "(i64.extend_i32_u (array.len ~0))")
+	   ($f64vector-length "(i64.extend_i32_u (array.len ~0))")
+
 	   ($alloc-s8vector "(array.new_default $s8vector (i32.wrap_i64 ~0))")
 	   ($alloc-u8vector "(array.new_default $u8vector (i32.wrap_i64 ~0))")
 	   ($alloc-s16vector "(array.new_default $s16vector (i32.wrap_i64 ~0))")
@@ -250,6 +270,7 @@
 	   ($alloc-f32vector "(array.new_default $f32vector (i32.wrap_i64 ~0))")
 	   ($alloc-f64vector "(array.new_default $f64vector (i32.wrap_i64 ~0))")
 
+	   ;;($s8vector-ref "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
 	   ($s8vector-ref "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
 	   ($s8vector-set! "(array.set $s8vector ~0 (i32.wrap_i64 ~1) ~2)")
 	   ($s8vector-ref-ur "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
@@ -334,6 +355,26 @@
 	      
 	      (method static $hvector-length::long (::obj)
 		 "BGL_HVECTOR_LENGTH")
+	      (method static $s8vector-length::long (::obj)
+		 "BGL_S8VECTOR_LENGTH")
+	      (method static $u8vector-length::long (::obj)
+		 "BGL_U8VECTOR_LENGTH")
+	      (method static $s16vector-length::long (::obj)
+		 "BGL_S16VECTOR_LENGTH")
+	      (method static $u16vector-length::long (::obj)
+		 "BGL_U16VECTOR_LENGTH")
+	      (method static $s32vector-length::long (::obj)
+		 "BGL_S32VECTOR_LENGTH")
+	      (method static $u32vector-length::long (::obj)
+		 "BGL_U32VECTOR_LENGTH")
+	      (method static $s64vector-length::long (::obj)
+		 "BGL_S64VECTOR_LENGTH")
+	      (method static $u64vector-length::long (::obj)
+		 "BGL_U64VECTOR_LENGTH")
+	      (method static $f32vector-length::long (::obj)
+		 "BGL_F32VECTOR_LENGTH")
+	      (method static $f64vector-length::long (::obj)
+		 "BGL_F64VECTOR_LENGTH")
 	      
 	      (method static $alloc-s8vector::s8vector (::long)
 		 "BGL_ALLOC_S8VECTOR")
@@ -691,16 +732,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    hvector-length ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (s8vector-length x) ($hvector-length x))
-(define-inline (u8vector-length x) ($hvector-length x))
-(define-inline (s16vector-length x) ($hvector-length x))
-(define-inline (u16vector-length x) ($hvector-length x))
-(define-inline (s32vector-length x) ($hvector-length x))
-(define-inline (u32vector-length x) ($hvector-length x))
-(define-inline (s64vector-length x) ($hvector-length x))
-(define-inline (u64vector-length x) ($hvector-length x))
-(define-inline (f32vector-length x) ($hvector-length x))
-(define-inline (f64vector-length x) ($hvector-length x))
+(define-inline (s8vector-length x) ($s8vector-length x))
+(define-inline (u8vector-length x) ($u8vector-length x))
+(define-inline (s16vector-length x) ($s16vector-length x))
+(define-inline (u16vector-length x) ($u16vector-length x))
+(define-inline (s32vector-length x) ($s32vector-length x))
+(define-inline (u32vector-length x) ($u32vector-length x))
+(define-inline (s64vector-length x) ($s64vector-length x))
+(define-inline (u64vector-length x) ($u64vector-length x))
+(define-inline (f32vector-length x) ($f32vector-length x))
+(define-inline (f64vector-length x) ($f64vector-length x))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-hvector-alloc ...                                         */

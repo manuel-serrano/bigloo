@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Abound/walk.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Abound/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Jun 16 15:48:50 2021 (serrano)                */
-;*    Copyright   :  2010-21 Manuel Serrano                            */
+;*    Last change :  Tue Dec 24 17:54:55 2024 (serrano)                */
+;*    Copyright   :  2010-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
 ;*=====================================================================*/
@@ -277,7 +277,7 @@
 			((eq? vtype *vector*)
 			 `($vector-length ,v))
 			((memq vtype *hvectors*)
-			 `($hvector-length ,v))
+			 `(,(symbol-append '$ (type-id vtype) '-length) ,v))
 			(else
 			 `($tvector-length ,v)))))
 		(if ($vector-bound-check? ,i ,l)

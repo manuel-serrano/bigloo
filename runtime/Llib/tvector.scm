@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 09:38:41 1995                          */
-;*    Last change :  Tue Dec 24 09:44:43 2024 (serrano)                */
+;*    Last change :  Wed Dec 25 09:34:19 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The typed vectors Scheme management.                             */
 ;*=====================================================================*/
@@ -53,8 +53,7 @@
 	   
 	   (export get-tvector-descriptor "get_tvector_descriptor"))
    
-   (wasm   ($tvector? "(ref.test (ref array) ~0)")
-           ($tvector-length "(i64.extend_i32_u (array.len ~0))"))
+   (wasm   ($tvector-length "(i64.extend_i32_u (array.len ~0))"))
 
    (java   (class foreign
 	      (method static $tvector?::bool (::obj)

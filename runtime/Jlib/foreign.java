@@ -4045,6 +4045,36 @@ public final class foreign
    public static int BGL_HVECTOR_LENGTH(Object o) {
       return ((hvector)o).len;
    }
+   public static int BGL_S8VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_U8VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_S16VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_U16VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_S32VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_U32VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_S64VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_U64VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_F32VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
+   public static int BGL_F64VECTOR_LENGTH(Object o) {
+      return ((hvector)o).len;
+   }
    public static int BGL_HVECTOR_IDENT(Object o) {
       return ((hvector)o).ident();
    }

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Sun Oct  6 11:25:07 2024 (serrano)                */
+;*    Last change :  Wed Dec 25 07:37:34 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -16,7 +16,9 @@
    ;; Type declarations 
    ;; -----------------------------------------------------------------
 
-   (type $bint (struct (field $v i64)))
+   (rec
+      (type $__dummy__ (struct (field $dummy (ref $bint))))
+      (type $bint (struct (field $v i64))))
    (type $bints-table (array (ref $bint)))
 
    ;; -----------------------------------------------------------------
