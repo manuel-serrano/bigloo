@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Tue Sep 17 14:50:44 2024 (serrano)                */
+;*    Last change :  Thu Dec 26 07:31:51 2024 (serrano)                */
 ;*    Copyright   :  2005-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
@@ -57,8 +57,6 @@
 	    (macro $mmap-wp::elong (::mmap) "BGL_MMAP_WP_GET")
 	    (macro $mmap-wp-set!::void (::mmap ::elong) "BGL_MMAP_WP_SET")
 	    (macro $mmap-bound-check?::bool (::elong ::elong) "BOUND_CHECK"))
-   
-   (wasm    ($mmap? "(ref.test (ref $mmap) ~0)"))
    
    (java    (class foreign
 	       (method static $mmap?::bool (::obj)
@@ -209,11 +207,11 @@
 (define-inline (mmap-ref::uchar mm::mmap i::elong)
    (if ($mmap-bound-check? i (mmap-length mm))
        (mmap-ref-ur mm i)
-       (error 'mmap-ref
-	      (string-append "index out of range [0.."
-			     (number->string (- (mmap-length mm) 1))
-			     "]")
-	      i)))
+       (error "mmap-ref"
+	  (string-append "index out of range [0.."
+	     (elong->string (-elong (mmap-length mm) #e1))
+	     "]")
+	  i)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap-set! ...                                                    */
@@ -221,11 +219,11 @@
 (define-inline (mmap-set!::obj mm::mmap i::elong c::uchar)
    (if ($mmap-bound-check? i (mmap-length mm))
        (mmap-set-ur! mm i c)
-       (error 'mmap-set!
-	      (string-append "index out of range [0.."
-			     (number->string (- (mmap-length mm) 1))
-			     "]")
-	      i)))
+       (error "mmap-set!"
+	  (string-append "index out of range [0.."
+	     (elong->string (-elong (mmap-length mm) #e1))
+	     "]")
+	  i)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap-substring ...                                               */
@@ -233,14 +231,14 @@
 (define (mmap-substring::bstring mm::mmap start end)
    (cond
       ((<elong end start)
-       (error 'mmap-substring "length too small" (-elong end start)))
+       (error "mmap-substring" "length too small" (-elong end start)))
       ((not ($mmap-bound-check? end (+elong #e1 (mmap-length mm))))
-       (error 'mmap-substring
-	      (string-append "start+length bigger than "
-			     (number->string (mmap-length mm)))
-	      end))
+       (error "mmap-substring"
+	  (string-append "start+length bigger than "
+	     (elong->string (mmap-length mm)))
+	  end))
       ((not ($mmap-bound-check? start (mmap-length mm)))
-       (error 'mmap-substring "Illegal index" start))
+       (error "mmap-substring" "Illegal index" start))
       (else
        (let ((r ($make-string/wo-fill (elong->fixnum (-elong end start)))))
 	  (let loop ((i start)
@@ -262,18 +260,18 @@
 	 ((<elong o #e0)
 	  (error "mmap-substring-set!" "Illegal index" o))
 	 ((not ($mmap-bound-check? o (+elong (mmap-length mm) #e1)))
-	  (error 'mmap-substring-set!
-		 (string-append "index out of range [0.."
-				(number->string (mmap-length mm))
-				"[")
-		 o))
+	  (error "mmap-substring-set!"
+	     (string-append "index out of range [0.."
+		(elong->string (mmap-length mm))
+		"[")
+	     o))
 	 ((not ($mmap-bound-check? (+elong o (fixnum->elong len))
-				   (+elong (mmap-length mm) #e1)))
-	  (error 'mmap-sbustring-set!
-		 (string-append "index out of range [0.."
-				(number->string (mmap-length mm) 1)
-				"]")
-		 (+ o len)))
+		  (+elong (mmap-length mm) #e1)))
+	  (error "mmap-sbustring-set!"
+	     (string-append "index out of range [0.."
+		(elong->string (mmap-length mm) 1)
+		"]")
+	     (+ o len)))
 	 (else
 	  (let loop ((i 0)
 		     (j o))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Dec 13 05:36:36 2024 (serrano)                */
+;*    Last change :  Thu Dec 26 09:22:18 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -347,8 +347,8 @@
 	    (check-sharing "flop" ast)
 	    (check-type "flop" ast #f #f)
 
-	    ;; we perform the inlining pass
-	    (set! ast (profile inline (inline-walk! ast 'all)))
+	    ;; inlining optimization
+	    (set! ast (profile inline (inline-walk! "Inline" ast 'all)))
 	    (stop-on-pass 'inline (lambda () (write-ast ast)))
 	    (check-sharing "inline" ast)
 	    (check-type "inline" ast #f #f)
@@ -368,7 +368,7 @@
 	    (check-sharing "beta" ast)
 	    (check-type "beta" ast #f #f)
 	    
-	    ;; we replace `failure' invokation by `error/location' when
+	    ;; replace `failure' invokation by `error/location' when
 	    ;; invoked in debug mode (to be performed after the coercion stage)
 	    (when (and (>=fx (bigloo-compiler-debug) 1) *error-localization*)
 	       (set! ast (profile fail (fail-walk! ast))))
@@ -401,8 +401,8 @@
 	    (check-sharing "cfa" ast)
 	    (check-type "cfa" ast #t #f)
 
-	    ;; now we have done the cfa, type election has been performed
-	    ;; we change the default type from *_* to *obj*.
+	    ;; Set the default type to obj so that newly created variable
+	    ;; will no longer be attached the _ type
 	    (set-default-type! *obj*)
 	    
 	    ;; the CFA has introduced type information that the dataflow
@@ -445,7 +445,7 @@
 	    (check-sharing "abound" ast)
 	    (check-type "abound" ast #t #f)
 
-	    ;; we introduce type coercion and checking
+	    ;; Introduction of type coercions and checks
 	    (set! ast (profile coerce (coerce-walk! ast)))
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
 	    (check-sharing "coerce" ast)
@@ -512,7 +512,7 @@
 
 	    ;; we re-perform the inlining pass in high optimization mode
 	    ;; in order to inline all type checkers.
-	    (set! ast (profile inline (inline-walk! ast 'reducer)))
+	    (set! ast (profile inline (inline-walk! "Inline+" ast 'reducer)))
 	    (set! ast (lvtype-ast! ast))
 	    (check-sharing "inline+" ast)
 	    (check-type "inline+" ast #t #t)

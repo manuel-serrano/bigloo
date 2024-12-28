@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Dec 17 15:42:32 2024 (serrano)                */
+;*    Last change :  Sat Dec 28 06:19:41 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -469,15 +469,15 @@
 	    (call-with-append-file ::bstring ::procedure)
 	    (call-with-output-string::bstring ::procedure)
 	    
-	    (inline input-port? ::obj)
-	    (inline input-string-port? ::obj)
-	    (inline input-procedure-port? ::obj)
-	    (inline input-gzip-port? ::obj)
-	    (inline input-mmap-port? ::obj)
-	    (inline output-port? ::obj)
+	    (inline input-port?::bool ::obj)
+	    (inline input-string-port?::bool ::obj)
+	    (inline input-procedure-port?::bool ::obj)
+	    (inline input-gzip-port?::bool ::obj)
+	    (inline input-mmap-port?::bool ::obj)
+	    (inline output-port?::bool ::obj)
 	    (inline port?::bool ::obj)
-	    (inline output-string-port? ::obj)
-	    (inline output-procedure-port? ::obj)
+	    (inline output-string-port?::bool ::obj)
+	    (inline output-procedure-port?::bool ::obj)
 	    
 	    (inline current-input-port::input-port) 
 	    (inline current-error-port::output-port)
@@ -893,10 +893,13 @@
 		   (c-current-error-port-set! denv old-error-port)
 		   (set! res (close-output-port port))))
 	     res)
-	  (error/errno $errno-io-port-error
-		       'with-error-to-string
-		       "can't open string"
-		       #unspecified))))
+	  (begin
+	     ;; some backends (such as wasm) have no "no-return" declaration
+	     ;; and needs an explicit return to type-check
+	     (error/errno $errno-io-port-error 'with-error-to-string
+		"can't open string"
+		#unspecified)
+	     ""))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-error-to-file@ ...                                   */
@@ -913,10 +916,9 @@
 		(begin
 		   (c-current-error-port-set! denv old-output-port)
 		   (close-output-port port))))
-	  (error/errno $errno-io-port-error
-		       'with-error-to-file
-		       "can't open file"
-		       string))))
+	  (error/errno $errno-io-port-error 'with-error-to-file
+	     "can't open file"
+	     string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-error-to-port ...                                           */

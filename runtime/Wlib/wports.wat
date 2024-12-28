@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Dec 17 13:55:35 2024 (serrano)                */
+;*    Last change :  Sat Dec 28 07:06:06 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -33,6 +33,8 @@
    (global $WHENCE_SEEK_CUR i32 (i32.const 0))
    (global $WHENCE_SEEK_END i32 (i32.const 1))
 
+   (global $default_io_bufsize (export "default_io_bufsize") i64 (i64.const 8192))
+   
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
@@ -921,7 +923,7 @@
       (local.set $len (array.len (local.get $buf)))
       (local.set $cnt (call $BGL_OUTPUT_PORT_CNT (local.get $op)))
       (local.set $use (struct.get $output-port $index (local.get $op)))
-	 
+
       ;; flush out the buffer, if needed
       (if (i32.sub (struct.get $output-port $bufmode (local.get $op))
 	     (global.get $BGL_IOEBF))
@@ -980,28 +982,24 @@
 	      (local.get $err))
 	   
 	   ;; this is an extensible buffer, that we increase iff it is full
-	   (if (i32.le_s (local.get $slen) (i32.const 0))
+	   (if (i32.add ;; actual or operator
+		  (i32.gt_s (local.get $slen) (i32.const 0))
+		  (i32.eq (local.get $cnt) (i32.const 0)))
 	       (then
-		  (return (local.get $op))))
-	   
-	   (if (i32.eqz (i32.eq (local.get $cnt) (i32.const 0)))
-	       (then
-		  (return (local.get $op))))
-	   
-	   (local.set $n
-	      (call_ref $syswrite_t
-		 (local.get $op)
-		 (ref.cast (ref $bstring) (local.get $str))
-		 (local.get $start)
-		 (local.get $slen)
-		 (ref.cast (ref $syswrite_t)
-		    (struct.get $output-port $syswrite (local.get $op)))))
-	   
-	   (if (i32.lt_s (local.get $n) (i32.const 0))
-	       (then
-		  (if (local.get $err)
+		  (local.set $n
+		     (call_ref $syswrite_t
+			(local.get $op)
+			(ref.cast (ref $bstring) (local.get $str))
+			(local.get $start)
+			(local.get $slen)
+			(ref.cast (ref $syswrite_t)
+			   (struct.get $output-port $syswrite
+			      (local.get $op)))))
+		  (if (i32.lt_s (local.get $n) (i32.const 0))
 		      (then
-			 (throw $fail)))))))
+			 (if (local.get $err)
+			     (then
+				(throw $fail)))))))))
 	   
       (return (local.get $op)))
 
@@ -1062,7 +1060,7 @@
       
       (local.set $buf (struct.get $output-port $buf (local.get $op)))
       (local.set $index (struct.get $output-port $index (local.get $op)))
-      
+
       (if (i32.gt_s (call $BGL_OUTPUT_PORT_CNT (local.get $op))
 	     (local.get $sz))
 	  (then
@@ -1118,7 +1116,7 @@
       (param $start i32)
       (param $count i32)
       (result i32)
-      
+
       (local $op (ref $output-port))
       (local $buf (ref $bstring))
       (local $used i32)
@@ -1145,8 +1143,11 @@
 	 (local.get $str)
 	 (local.get $start)
 	 (local.get $count))
-      
-      (struct.set $output-port $buf (local.get $op) (local.get $buf))
+
+      (struct.set $output-port $index (local.get $op)
+	 (i32.add (local.get $used) (local.get $count)))
+      (struct.set $output-port $buf (local.get $op)
+	 (local.get $nbuf))
       (return (local.get $count)))
 
    ;; -----------------------------------------------------------------

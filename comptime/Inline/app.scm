@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Inline/app.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Inline/app.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Tue Feb 26 09:05:35 2019 (serrano)                */
-;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Dec 26 09:31:15 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
 ;*=====================================================================*/
@@ -20,12 +20,14 @@
 	    type_type
 	    ast_var
 	    ast_node
+	    ast_lvtype
 	    module_library
 	    inline_walk
 	    inline_inline
 	    inline_size
 	    inline_simple
-	    inline_recursion)
+	    inline_recursion
+	    coerce_coerce)
    (export  (inline-app::node ::app ::long stack)
 	    (inline-app?::bool ::variable ::long ::long ::obj)))
 
@@ -33,41 +35,47 @@
 ;*    inline-app ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (inline-app node kfactor stack)
-   (let* ((callee (app-fun node))
-	  (var    (var-variable callee))
-	  (sfun   (variable-value var))
-	  (args   (app-args node))
-	  (loc    (node-loc node)))
-      (trace (inline inline+ 3) "inline-app: " (shape node)
-	 " mode=" *inline-mode*)
-      (cond
-	 ((not (sfun? sfun))
-	  node)
-	 ((or (inline-app? var kfactor (call-size node) stack)
-	      (inline-closure? var stack))
-	  (trace (inline inline+ 3) "~~~ inline-app: " (shape node)
-	     " mode=" *inline-mode* " is-recursive=" (is-recursive? var)
-	     #\Newline)	  
-	  (unless (eq? (sfun-class sfun) 'sifun)
-	     (set! *inlined-calls* (+fx *inlined-calls* 1)))
-	  (when (and (global? var) (global-library var))
-	     ;; MS 17feb2012, when inlining a library function,
-	     ;; marks that its module needs to be initialized
-	     (with-library-module! (global-module var)))
-	  (if (and *optim-loop-inlining?* (is-recursive? var))
-	      (inline-app-recursive node kfactor stack)
-	      (inline-app-simple node kfactor stack "simple")))
-	 (else
-	  node))))
+   (with-trace 'inline "inline-app"
+      (trace-item "mode=" *inline-mode*)
+      (trace-item "node=" (shape node))
+      (trace-item "node-type=" (shape (node-type node)))
+      (let* ((callee (app-fun node))
+	     (var    (var-variable callee))
+	     (sfun   (variable-value var))
+	     (args   (app-args node))
+	     (loc    (node-loc node)))
+	 (cond
+	    ((not (sfun? sfun))
+	     node)
+	    ((or (inline-app? var kfactor (call-size node) stack)
+		 (inline-closure? var stack))
+	     (trace-item "is-recursive=" (is-recursive? var))
+	     (unless (eq? (sfun-class sfun) 'sifun)
+		(set! *inlined-calls* (+fx *inlined-calls* 1)))
+	     (when (and (global? var) (global-library var))
+		;; MS 17feb2012, when inlining a library function,
+		;; marks that its module needs to be initialized
+		(with-library-module! (global-module var)))
+	     (let ((app (if (and *optim-loop-inlining?* (is-recursive? var))
+			    (inline-app-recursive node kfactor stack)
+			    (inline-app-simple node kfactor stack "simple"))))
+		(trace-item "node-type=" (shape (node-type node)))
+		(trace-item "app-type=" (shape (node-type app)))
+		(if (eq? *inline-mode* 'reducer)
+		    (coerce! app #unspecified (node-type node) #f)
+		    app)))
+	    (else
+	     node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-closure? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (inline-closure? var stack)
-   (when (and (pair? stack) (global? (car stack)))
-      (when (eq? var (sfun-the-closure-global (variable-value (car stack))))
-	 (and (or (local? var) (eq? (global-import var) 'static))
-	      (=fx (variable-occurrence var) 1)))))
+   (unless (eq? *inline-mode* 'reducer)
+      (when (and (pair? stack) (global? (car stack)))
+	 (when (eq? var (sfun-the-closure-global (variable-value (car stack))))
+	    (and (or (local? var) (eq? (global-import var) 'static))
+		 (=fx (variable-occurrence var) 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-size ...                                                    */

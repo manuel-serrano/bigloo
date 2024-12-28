@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Coerce/convert.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/convert.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Tue Dec 10 08:24:00 2024 (serrano)                */
+;*    Last change :  Fri Dec 27 09:35:55 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -114,33 +114,36 @@
 ;*    runtime-type-error/id ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (runtime-type-error/id loc ti id::symbol)
-   (trace coerce "   runtime-type-error/id: " (shape id) #\Newline)
-   (let ((fname (when (location? loc) (location-full-fname loc)))
-	 (pos (when (location? loc) (location-pos loc))))
-      `(failure
-	((@ type-error __error) ,fname ,pos
-				,(symbol->string (current-function))
-				,(symbol->string ti)
-				,id)
-	#f #f)))
+   (with-trace 'convert "runtime-type-error/id"
+      (trace-item "id=" (shape id))
+      (let ((fname (when (location? loc) (location-full-fname loc)))
+	    (pos (when (location? loc) (location-pos loc))))
+	 `(failure
+	     ((@ type-error __error) ,fname ,pos
+				     ,(symbol->string (current-function))
+				     ,(symbol->string ti)
+				     ,id)
+	     #f #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    runtime-type-error ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (runtime-type-error loc ti value::node)
-   (trace coerce "runtime-type-error: " (shape ti) "  " (shape value) #\Newline)
-   (let* ((aux (gensym 'aux))
-	  (uvalue (if (var? value)
-		      (duplicate::ref value
-			 (type *obj*))
-		      value))
-	  (res (top-level-sexp->node
-		`(let ((,(mark-symbol-non-user! (symbol-append aux '::obj))
-			#unspecified))
-		    ,(runtime-type-error/id loc ti aux))
-		loc)))
-      (set-cdr! (car (let-var-bindings res)) uvalue)
-      res))
+   (with-trace 'convert "runtime-type-error/id"
+      (trace-item "ti=" (shape ti))
+      (trace-item "value=" (shape value))
+      (let* ((aux (gensym 'aux))
+	     (uvalue (if (var? value)
+			 (duplicate::ref value
+			    (type *obj*))
+			 value))
+	     (res (top-level-sexp->node
+		     `(let ((,(mark-symbol-non-user! (symbol-append aux '::obj))
+			     #unspecified))
+			 ,(runtime-type-error/id loc ti aux))
+		     loc)))
+	 (set-cdr! (car (let-var-bindings res)) uvalue)
+	 res)))
 
 ;*---------------------------------------------------------------------*/
 ;*    convert-error ...                                                */
@@ -150,89 +153,92 @@
 ;*    stop the compilation.                                            */
 ;*---------------------------------------------------------------------*/
 (define (convert-error from to loc node)
-   (trace coerce "convert-error: " (shape from) " " (shape to) " " (shape node)
-      #\Newline)
-   (cond
-      ((and (not (eq? to *obj*)) (sub-type? to *obj*))
-       (let ((node (runtime-type-error loc (type-id to) node)))
-	  (type-warning/location loc (current-function) from to)
-	  (lvtype-node! node)
-	  (coerce! node #unspecified from #f)))
-      ((tclass? to)
-       (let ((node (runtime-type-error loc (type-id to) node)))
-	  (type-warning/location loc (current-function) from to)
-	  (lvtype-node! node)
-	  (coerce! node #unspecified from #f)))
-      ((not *warning-type-error*)
-       (cond
-	  ((or (eq? to *int*) (eq? to *long*)
-	       (eq? to *elong*)
-	       (eq? to *llong*)
-	       (eq? to *int8*)
-	       (eq? to *uint8*)
-	       (eq? to *int16*)
-	       (eq? to *uint16*)
-	       (eq? to *int32*)
-	       (eq? to *uint32*)
-	       (eq? to *int64*)
-	       (eq? to *uint64*))
-	   (let ((node (runtime-type-error loc (type-id to) node)))
-	      (type-warning/location loc (current-function) from to)
-	      (lvtype-node! node)
-	      (instantiate::sequence
-		 (type to)
-		 (nodes (list
-			   (coerce! node #unspecified from #f)
-			   (instantiate::literal (type to) (value 0)))))))
-	  ((eq? to *bool*)
-	   (let ((node (runtime-type-error loc (type-id to) node)))
-	      (type-warning/location loc (current-function) from to)
-	      (lvtype-node! node)
-	      (instantiate::sequence
-		 (type to)
-		 (nodes (list
-			   (coerce! node #unspecified from #f)
-			   (instantiate::literal (type to) (value 0)))))))
-	  ((eq? to *real*)
-	   (let ((node (runtime-type-error loc (type-id to) node)))
-	      (type-warning/location loc (current-function) from to)
-	      (lvtype-node! node)
-	      (instantiate::sequence
-		 (type to)
-		 (nodes (list
-			   (coerce! node #unspecified from #f)
-			   (instantiate::literal (type to) (value 0.0)))))))
-	  ((eq? to *char*)
-	   (let ((node (runtime-type-error loc (type-id to) node)))
-	      (type-warning/location loc (current-function) from to)
-	      (lvtype-node! node)
-	      (instantiate::sequence
-		 (type to)
-		 (nodes (list
-			   (coerce! node #unspecified from #f)
-			   (instantiate::literal (type to) (value #a000)))))))
-	  ((eq? to *schar*)
-	   (let ((node (runtime-type-error loc (type-id to) node)))
-	      (type-warning/location loc (current-function) from to)
-	      (lvtype-node! node)
-	      (instantiate::sequence
-		 (type *char*)
-		 (nodes (list
-			   (coerce! node #unspecified from #f)
-			   (instantiate::literal (type *char*) (value #a000)))))))
-	  ((eq? to *string*)
-	   (let ((node (runtime-type-error loc (type-id to) node)))
-	      (type-warning/location loc (current-function) from to)
-	      (lvtype-node! node)
-	      (instantiate::sequence
-		 (type to)
-		 (nodes (list
-			   (coerce! node #unspecified from #f)
-			   (instantiate::literal (type to) (value "")))))))
-	  (else
-	   (type-error/location loc (current-function) from to))))
-      (else
-       (type-error/location loc (current-function) from to))))
+   (with-trace 'convert "convert-error"
+      (trace-item "node=" (shape node))
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+      (trace-item "loc=" loc)
+      (cond
+	 ((and (not (eq? to *obj*)) (sub-type? to *obj*))
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (coerce! node #unspecified from #f)))
+	 ((tclass? to)
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (coerce! node #unspecified from #f)))
+	 ((not *warning-type-error*)
+	  (cond
+	     ((or (eq? to *int*) (eq? to *long*)
+		  (eq? to *elong*)
+		  (eq? to *llong*)
+		  (eq? to *int8*)
+		  (eq? to *uint8*)
+		  (eq? to *int16*)
+		  (eq? to *uint16*)
+		  (eq? to *int32*)
+		  (eq? to *uint32*)
+		  (eq? to *int64*)
+		  (eq? to *uint64*))
+	      (let ((node (runtime-type-error loc (type-id to) node)))
+		 (type-warning/location loc (current-function) from to)
+		 (lvtype-node! node)
+		 (instantiate::sequence
+		    (type to)
+		    (nodes (list
+			      (coerce! node #unspecified from #f)
+			      (instantiate::literal (type to) (value 0)))))))
+	     ((eq? to *bool*)
+	      (let ((node (runtime-type-error loc (type-id to) node)))
+		 (type-warning/location loc (current-function) from to)
+		 (lvtype-node! node)
+		 (instantiate::sequence
+		    (type to)
+		    (nodes (list
+			      (coerce! node #unspecified from #f)
+			      (instantiate::literal (type to) (value 0)))))))
+	     ((eq? to *real*)
+	      (let ((node (runtime-type-error loc (type-id to) node)))
+		 (type-warning/location loc (current-function) from to)
+		 (lvtype-node! node)
+		 (instantiate::sequence
+		    (type to)
+		    (nodes (list
+			      (coerce! node #unspecified from #f)
+			      (instantiate::literal (type to) (value 0.0)))))))
+	     ((eq? to *char*)
+	      (let ((node (runtime-type-error loc (type-id to) node)))
+		 (type-warning/location loc (current-function) from to)
+		 (lvtype-node! node)
+		 (instantiate::sequence
+		    (type to)
+		    (nodes (list
+			      (coerce! node #unspecified from #f)
+			      (instantiate::literal (type to) (value #a000)))))))
+	     ((eq? to *schar*)
+	      (let ((node (runtime-type-error loc (type-id to) node)))
+		 (type-warning/location loc (current-function) from to)
+		 (lvtype-node! node)
+		 (instantiate::sequence
+		    (type *char*)
+		    (nodes (list
+			      (coerce! node #unspecified from #f)
+			      (instantiate::literal (type *char*) (value #a000)))))))
+	     ((eq? to *string*)
+	      (let ((node (runtime-type-error loc (type-id to) node)))
+		 (type-warning/location loc (current-function) from to)
+		 (lvtype-node! node)
+		 (instantiate::sequence
+		    (type to)
+		    (nodes (list
+			      (coerce! node #unspecified from #f)
+			      (instantiate::literal (type to) (value "")))))))
+	     (else
+	      (type-error/location loc (current-function) from to))))
+	 (else
+	  (type-error/location loc (current-function) from to)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    convert! ...                                                     */
@@ -241,44 +247,46 @@
 ;*    convertion in between Bigloo objects must not be checked.        */
 ;*---------------------------------------------------------------------*/
 (define (convert! node from to safe)
-   (trace coerce
-      "convert: " (shape node) " " (shape from) " -> " (shape to)
-      "  (safe: " safe ")\n")
-   (if (eq? from to)
-       node
-       (let ((to (get-aliased-type to))
-	     (fro (get-aliased-type from)))
-	  (if (or (eq? fro to) (type-magic? fro))
-	      node
-	      (let ((coercer (find-coercer fro to))
-		    (loc (node-loc node)))
-		 (if (not (coercer? coercer))
-		     ;; There is no convertion between these types. 
-		     ;; Thus, it is a type error.
-		     (convert-error fro to loc node)
-		     (let loop ((checks (coercer-check-op coercer))
-				(coerces (coercer-coerce-op coercer))
-				(node node))
-			(cond
-			   ((null? checks)
-			    (if (null? coerces)
-				node
-				(internal-error "Illegal conversion"
-				   (shape from)
-				   (shape to))))
-			   ((null? coerces)
-			    (internal-error "Illegal conversion"
-			       (shape from)
-			       (shape to)))
-			   (else
-			    (loop (cdr checks)
-			       (cdr coerces)
-			       (make-one-conversion (cdar checks)
-				  (cdar coerces)
-				  (caar checks)
-				  (caar coerces)
-				  node
-				  safe)))))))))))
+   (with-trace 'convert "convert!"
+      (trace-item "node=" (shape node))
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+      (trace-item "safe=" safe)
+      (if (eq? from to)
+	  node
+	  (let ((to (get-aliased-type to))
+		(fro (get-aliased-type from)))
+	     (if (or (eq? fro to) (type-magic? fro))
+		 node
+		 (let ((coercer (find-coercer fro to))
+		       (loc (node-loc node)))
+		    (if (not (coercer? coercer))
+			;; There is no convertion between these types. 
+			;; Thus, it is a type error.
+			(convert-error fro to loc node)
+			(let loop ((checks (coercer-check-op coercer))
+				   (coerces (coercer-coerce-op coercer))
+				   (node node))
+			   (cond
+			      ((null? checks)
+			       (if (null? coerces)
+				   node
+				   (internal-error "Illegal conversion"
+				      (shape from)
+				      (shape to))))
+			      ((null? coerces)
+			       (internal-error "Illegal conversion"
+				  (shape from)
+				  (shape to)))
+			      (else
+			       (loop (cdr checks)
+				  (cdr coerces)
+				  (make-one-conversion (cdar checks)
+				     (cdar coerces)
+				     (caar checks)
+				     (caar coerces)
+				     node
+				     safe))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-one-conversion ...                                          */

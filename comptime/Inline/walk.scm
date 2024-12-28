@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Inline/walk.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Inline/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Thu Apr 13 10:34:48 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Dec 26 09:22:32 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
 ;*=====================================================================*/
@@ -23,7 +23,7 @@
 	    ast_remove
 	    ast_occur
 	    (inline-sfun! inline_inline))
-   (export  (inline-walk! <globals> ::symbol)
+   (export  (inline-walk! ::bstring <globals> ::symbol)
 	    (inline-setup! ::symbol)
 	    *kfactor*
 	    *inlined-calls*
@@ -38,9 +38,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    inline-walk! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (inline-walk! globals what)
+(define (inline-walk! name globals what)
    (assert (what) (memq what '(all reducer predicate)))
-   (pass-prelude "Inlining" reset-stat!)
+   (pass-prelude name reset-stat!)
    (trace (inline inline+ 0) "================ INLINING ================ "
       what "\n")
    ;; we setup the inlining

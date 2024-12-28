@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/typec.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Reduce/typec.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Thu Nov  3 11:06:44 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Dec 27 10:21:49 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -332,7 +332,7 @@
 		   (shape node) " => #t" #\Newline)
 		(let ((node (coerce! (instantiate::literal
 					(loc loc)
-					(type type)
+					(type *bool*)
 					(value #t))
 			       #unspecified
 			       type
@@ -347,7 +347,7 @@
 		   #\Newline)
 		(let ((node (coerce! (instantiate::literal
 					(loc loc)
-					(type type)
+					(type *bool*)
 					(value #f))
 			       #unspecified
 			       type

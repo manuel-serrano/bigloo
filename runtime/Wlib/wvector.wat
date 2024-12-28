@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 22 07:27:20 2024                          */
-;*    Last change :  Tue Dec 24 16:49:57 2024 (serrano)                */
+;*    Last change :  Thu Dec 26 06:34:21 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM vectors                                                     */
@@ -141,7 +141,7 @@
       (param $v (ref eq))
       (result i32)
       (if (ref.test (ref $f64vector) (local.get $v))
-	  (then (return (i32.const 8))))
+	  (then (return (i32.const 9))))
       (if (ref.test (ref $s64vector) (local.get $v))
 	  (then (return (i32.const 6))))
       (if (ref.test (ref $u64vector) (local.get $v))
@@ -159,7 +159,7 @@
       (if (ref.test (ref $u8vector) (local.get $v))
 	  (then (return (i32.const 1))))
       (if (ref.test (ref $f32vector) (local.get $v))
-	  (then (return (i32.const 9))))
+	  (then (return (i32.const 8))))
       (return (i32.const 0)))
 
    (func $BGL_HVECTOR_LENGTH (export "BGL_HVECTOR_LENGTH")

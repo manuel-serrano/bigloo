@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Tue Dec 24 09:01:41 2024 (serrano)                */
+;*    Last change :  Thu Dec 26 07:02:27 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -44,6 +44,7 @@
 	   (export bigloo_strcmp_at "bigloo_strcmp_at")
 	   (export bigloo_strncmp_at "bigloo_strncmp_at")
 	   (export bigloo_strncmp_ci "bigloo_strncmp_ci")
+	   (export bigloo_strcmp_ci_at "bigloo_strcmp_ci_at")
 	   (export bigloo_strncmp_ci_at "bigloo_strncmp_ci_at")
 	   (export bigloo_strcicmp "bigloo_strcicmp")
 	   (export bigloo_string_lt "bigloo_string_lt")
@@ -141,7 +142,7 @@
    (let* ((l1 (string-length o1))
 	  (l2 (string-length o2))
 	  (l (if (<fx l2 l3) l2 l3)))
-      (when (and (>=fx d 0) (>=fx l3 0) (<=fx (+fx l d) l1))
+      (when (and (>=fx d 0) (>=fx l3 0) (>=fx l2 l3) (<=fx (+fx l d) l1))
 	 (let loop ((i 0))
 	    (cond
 	       ((=fx i l)
@@ -181,8 +182,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char<? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
@@ -198,8 +199,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char<=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
@@ -215,8 +216,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char>? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
@@ -232,8 +233,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char>=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
@@ -249,8 +250,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char-ci=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char-ci<? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
@@ -266,8 +267,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char-ci=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char-ci<=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
@@ -283,8 +284,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char-ci=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char-ci>? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
@@ -300,8 +301,8 @@
 	  (min (minfx l1 l2)))
       (let for ((i 0))
 	 (cond
-	    ((and (char=? (string-ref-ur bst1 i) (string-ref-ur bst2 i))
-		  (<fx i min))
+	    ((and (<fx i min)
+		  (char-ci=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))
 	     (for (+fx i 1)))
 	    ((<fx i min)
 	     (char-ci>=? (string-ref-ur bst1 i) (string-ref-ur bst2 i)))

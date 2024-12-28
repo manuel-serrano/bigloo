@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Dec 24 17:54:55 2024 (serrano)                */
+;*    Last change :  Fri Dec 27 10:10:57 2024 (serrano)                */
 ;*    Copyright   :  2010-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
@@ -185,7 +185,7 @@
 		 (eq? v *u64vector-ref*)
 		 (eq? v *f32vector-ref*)
 		 (eq? v *f64vector-ref*))
-	     (lvtype-node
+	     (lvtype-node!
 		(with-access::app node (fun args loc)
 		   (array-ref node (car args) (cadr args) loc
 		      (global-type v)
@@ -193,7 +193,8 @@
 		      (car (cfun-args-type (global-value v)))
 		      (lambda (node v i)
 			 (duplicate::app node
-			    (args (list v i))))))))
+			    (args (list v i)))))))
+	     node)
 	    ((or (eq? v *s8vector-set!*)
 		 (eq? v *s16vector-set!*)
 		 (eq? v *s32vector-set!*)
@@ -204,7 +205,7 @@
 		 (eq? v *u64vector-set!*)
 		 (eq? v *f32vector-set!*)
 		 (eq? v *f64vector-set!*))
-	     (lvtype-node
+	     (lvtype-node!
 		(with-access::app node (fun args loc)
 		   (array-set! node (car args) (cadr args) loc
 		      (caddr (cfun-args-type (global-value v)))
@@ -213,7 +214,8 @@
 		      (lambda (node vec i)
 			 (with-access::app node (args)
 			    (duplicate::app node
-			       (args (list vec i (caddr args))))))))))
+			       (args (list vec i (caddr args)))))))))
+	     node)
 	    (else
 	     node)))))
 

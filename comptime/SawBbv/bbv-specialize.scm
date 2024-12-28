@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawBbv/bbv-specialize.scm     */
+;*    .../project/bigloo/wasm/comptime/SawBbv/bbv-specialize.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Tue Jul  2 14:46:29 2024 (serrano)                */
+;*    Last change :  Sat Dec 28 14:59:56 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -843,21 +843,6 @@
 		      (extend-ctx ctx dest
 			 (list (if (eq? type *obj*) (rtl_ins-type i) type)) #t
 			 :count 0)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-type ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-type i::rtl_ins)
-   (with-access::rtl_ins i (fun args)
-      (cond
-	 ((isa? fun rtl_mov)
-	  (rtl_ins-type (car args)))
-	 ((isa? fun rtl_call)
-	  (with-access::rtl_call fun (var)
-	     (with-access::variable var (value type)
-		type)))
-	 (else
-	  *obj*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-specialize-loadi ...                                     */

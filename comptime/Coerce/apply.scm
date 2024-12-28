@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Coerce/apply.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/apply.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Wed Aug 28 17:33:50 2024 (serrano)                */
+;*    Last change :  Fri Dec 27 07:47:21 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `apply' coercion                                            */
@@ -60,7 +60,9 @@
 	     (let* ((fun (make-local-svar 'fun *procedure*))
 		    (val (make-local-svar 'val *pair-nil*))
 		    (loc (node-loc node))
-		    (lval (lvtype-node (top-level-sexp->node `(length ,val) loc)))
+		    (lval (lvtype-node
+			     (top-level-sexp->node `(length ,val) loc)
+			     *long*))
 		    (len (gensym 'len))
 		    (body (lvtype-node
 			   (top-level-sexp->node
@@ -72,7 +74,8 @@
 						      loc
 						      caller 
 						      to)))
-			    loc)))
+			    loc)
+			   to))
 		    (lnode (instantiate::let-var
 			      (loc loc)
 			      (type (strict-node-type (node-type body) *obj*))

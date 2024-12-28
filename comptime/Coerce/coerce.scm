@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Coerce/coerce.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/coerce.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Jul 17 13:27:26 2024 (serrano)                */
+;*    Last change :  Fri Dec 27 07:09:27 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We coerce an Ast                                                 */
+;*    Introduce implicity type coercions                               */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -449,21 +449,22 @@
 ;*    coerce! ::let-var ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::let-var caller to safe)
-   (trace (coerce 3) "coercer ::let-var: " (shape node) " -> " (shape to)
-	  #\Newline)
-   (with-access::let-var node (type body bindings)
-      (inc-ppmarge!)
-      (for-each (lambda (binding)
-		   (pvariable-proto 3 (car binding))
-		   (set-cdr! binding (coerce! (cdr binding)
-					      caller 
-					      (local-type (car binding))
-					      safe)))
-		bindings)
-      (set! body (coerce! body caller to safe))
-      (set! type (strict-node-type (node-type body) type))
-      (dec-ppmarge!)
-      node))
+   (with-trace 'coerce "coerce! ::let-var"
+      (trace-item "to=" (shape to))
+      (trace-item "node=" (shape node))
+      (with-access::let-var node (type body bindings)
+	 (inc-ppmarge!)
+	 (for-each (lambda (binding)
+		      (pvariable-proto 3 (car binding))
+		      (set-cdr! binding
+			 (coerce! (cdr binding) caller
+			    (local-type (car binding)) safe)))
+	    bindings)
+	 (set! body (coerce! body caller to safe))
+	 (set! type (strict-node-type (node-type body) type))
+	 (dec-ppmarge!)
+	 (trace-item "type=" (shape type))
+	 node)))
  
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::set-ex-it ...                                          */
@@ -484,6 +485,22 @@
       (set! exit (coerce! exit caller *exit* safe))
       (set! value (coerce! value caller (get-type value #f) safe))
       (convert! node type to safe)))
+
+;*---------------------------------------------------------------------*/
+;*    coerce! ::retblock ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (coerce! node::retblock caller to safe)
+   (with-access::retblock node (body type)
+      (coerce! body caller (get-type node #f) safe)
+      (convert! node type to safe)))
+
+;*---------------------------------------------------------------------*/
+;*    coerce! ::return ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (coerce! node::return caller to safe)
+   (with-access::return node (value)
+      (coerce! value caller (get-type value #f) safe)
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    cast-obj ...                                                     */

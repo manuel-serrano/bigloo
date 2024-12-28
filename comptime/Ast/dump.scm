@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/dump.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/dump.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Mon Sep  9 19:20:27 2024 (serrano)                */
+;*    Last change :  Fri Dec 27 09:40:01 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -304,8 +304,9 @@
 (define-method (node->sexp node::setq)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(set! ,(node->sexp (setq-var node))
-			  ,(node->sexp (setq-value node)))))
+      `(,(shape-typed-node 'set! (node-type node))
+	,(node->sexp (setq-var node))
+	,(node->sexp (setq-value node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::conditional ...                                     */
@@ -313,10 +314,10 @@
 (define-method (node->sexp node::conditional) 
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(,(shape-typed-node 'if (node-type node))
-		     ,(node->sexp (conditional-test node))
-		     ,(node->sexp (conditional-true node))
-		     ,(node->sexp (conditional-false node)))))
+      `(,(shape-typed-node 'if (node-type node))
+	,(node->sexp (conditional-test node))
+	,(node->sexp (conditional-true node))
+	,(node->sexp (conditional-false node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::fail ...                                            */
@@ -324,9 +325,9 @@
 (define-method (node->sexp node::fail)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(failure ,(node->sexp (fail-proc node))
-			     ,(node->sexp (fail-msg node))
-			     ,(node->sexp (fail-obj node)))))
+      `(failure ,(node->sexp (fail-proc node))
+	  ,(node->sexp (fail-msg node))
+	  ,(node->sexp (fail-obj node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::switch ...                                          */
@@ -334,11 +335,11 @@
 (define-method (node->sexp node::switch)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(,(shape-typed-node 'case (node-type node))
-		     ,(node->sexp (switch-test node))
-		     ,@(map (lambda (clause)
-			       `(,(car clause) ,(node->sexp (cdr clause))))
-			    (switch-clauses node)))))
+      `(,(shape-typed-node 'case (node-type node))
+	,(node->sexp (switch-test node))
+	,@(map (lambda (clause)
+		  `(,(car clause) ,(node->sexp (cdr clause))))
+	     (switch-clauses node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::let-fun ...                                         */

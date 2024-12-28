@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tvector/tvector.scm         */
+;*    .../prgm/project/bigloo/wasm/comptime/Tvector/tvector.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 11:21:53 1995                          */
-;*    Last change :  Mon Nov 14 17:03:47 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Dec 28 05:41:01 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of `tvector' types.                              */
 ;*=====================================================================*/
@@ -48,21 +48,19 @@
    (let ((obj (find-type 'obj)))
       (if (not (type? obj))
 	  (user-error "declare-tvector-type!" "Unable to find `obj' type" exp)
-	  (let ((type (declare-subtype! tvect-id
-					(type-name obj)
-					(list 'obj)
-					'bigloo))
+	  (let ((ty (declare-subtype! tvect-id (type-name obj)
+		       (list 'obj) 'bigloo))
 		(item-type (use-type! item-id (find-location src))))
 	     ;; we create the tvector type
-	     (widen!::tvec type (item-type item-type))
+	     (widen!::tvec ty (item-type item-type))
 	     ;; we have declared the type, we add the coercion
 	     (produce-module-clause! (make-coercion-clause tvect-id))
 	     ;; we add the tvector for the C type emission
-	     (add-tvector-type! type)
+	     (add-tvector-type! ty)
 	     ;; we remember than a tvector type exists on item-type
-	     (type-tvector-set! item-type type)
+	     (type-tvector-set! item-type ty)
 	     ;; we are done
-	     type))))
+	     ty))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-tvector-types ...                                           */

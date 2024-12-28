@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/lvtype.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/lvtype.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Wed Jun 16 15:52:50 2021 (serrano)                */
+;*    Last change :  Fri Dec 27 07:45:07 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -23,7 +23,7 @@
 	    ast_var
 	    ast_node)
    (export  (lvtype-ast! ::pair-nil)
-	    (lvtype-node::node ::node)
+	    (lvtype-node::node ::node ::type)
 	    (generic lvtype-node! ::node)))
 
 ;*---------------------------------------------------------------------*/
@@ -47,9 +47,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (lvtype-node::node node::node)
-   (lvtype-node! node)
-   node)
+(define (lvtype-node::node node::node type::type)
+   (with-trace 'lvtype "lvtype-node"
+      (trace-item "node=" (shape node))
+      (trace-item "type=" (shape type))
+      (when (and type (eq? (node-type node) *_*))
+	 (node-type-set! node type))
+      (lvtype-node! node)
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ...                                                 */
@@ -110,7 +115,10 @@
    (with-access::app node (type fun args)
       (lvtype-node*! args)
       (when (eq? type *_*)
-	 (set! type (get-obj-type node)))))
+	 (with-access::var fun (variable)
+	    (if (eq? (variable-type variable) *_*)
+		(set! type (get-obj-type node))
+		(set! type (variable-type variable)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::app-ly ...                                        */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Dec  4 14:16:02 2024 (serrano)                */
+;*    Last change :  Sat Dec 28 06:04:55 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -750,7 +750,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bmem-reset!)
    (cond-expand
-      (bigloo-c ($bgl-bmem-reset))
+      (bigloo-c (begin ($bgl-bmem-reset) #t))
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -758,7 +758,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gc-verbose-set! bool)
    (cond-expand
-      (bigloo-c ($bgl-gc-verbose-set! bool))
+      (bigloo-c (begin ($bgl-gc-verbose-set! bool) #t))
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -766,7 +766,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gc #!key (finalize #t))
    (cond-expand
-      (bigloo-c (begin ($GC-collect) (when finalize ($GC-finalize))))
+      (bigloo-c (begin ($GC-collect) (when finalize ($GC-finalize)) #t))
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -774,7 +774,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (gc-finalize)
    (cond-expand
-      (bigloo-c ($GC-finalize))
+      (bigloo-c (begin ($GC-finalize) #t))
       (else #f)))
 
 ;*---------------------------------------------------------------------*/

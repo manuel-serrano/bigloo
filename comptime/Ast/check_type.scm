@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Ast/check_type.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/check_type.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Wed Jun 16 15:51:39 2021 (serrano)                */
-;*    Copyright   :  2000-21 Manuel Serrano                            */
+;*    Last change :  Fri Dec 27 09:53:38 2024 (serrano)                */
+;*    Copyright   :  2000-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -75,27 +75,27 @@
 ;*---------------------------------------------------------------------*/
 (define (err node t1 t2)
    (user-error/location (node-loc node)
-			(format "check-node-type (~a)" *check-type-pass*)
-			(format "Inconsistent type [~a], \"~a\" expected, \"~a\" provided" (typeof node) (shape t2) (shape t1))
-			(shape node)))
+      (format "check-node-type (~a)" *check-type-pass*)
+      (format "Inconsistent type [~a], \"~a\" expected, \"~a\" provided" (typeof node) (shape t2) (shape t1))
+      (shape node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    err-no-type ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (err-no-type node)
    (user-error/location (node-loc node)
-			(format "check-node-type (~a)" *check-type-pass*)
-			"Untyped node"
-			(shape node)))
+      (format "check-node-type (~a)" *check-type-pass*)
+      "Untyped node"
+      (shape node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    warn ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (warn node)
    (user-warning/location (node-loc node)
-			  "check-node-type: "
-			  (format "Inconsistent \"~a\" type" (typeof node))
-			  (shape node)))
+      "check-node-type: "
+      (format "Inconsistent \"~a\" type" (typeof node))
+      (shape node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-node-type ::node ...                                       */

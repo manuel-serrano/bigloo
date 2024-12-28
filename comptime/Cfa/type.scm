@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/type.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/type.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Tue Dec 10 08:55:59 2024 (serrano)                */
+;*    Last change :  Fri Dec 27 09:42:27 2024 (serrano)                */
 ;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -558,9 +558,11 @@
 ;*    type-node! ::setq ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::setq)
-   (with-access::setq node (var value)
+   (with-access::setq node (var value type)
       (set! value (type-node! value))
       (set! var (type-node! var))
+      (when (eq? type *_*)
+	 (set! type (node-type value)))
       node))
 
 ;*---------------------------------------------------------------------*/

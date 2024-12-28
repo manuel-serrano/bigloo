@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Sun Dec 22 07:28:53 2024 (serrano)                */
+;*    Last change :  Thu Dec 26 07:16:16 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -108,10 +108,6 @@
      (export "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE") (ref $datagram-socket)
      (struct.new $datagram-socket))
   
-  (global $mmap-default-value
-     (export "BGL_MMAP_DEFAULT_VALUE") (ref $mmap)
-     (struct.new $mmap))
-  
   (global $process-default-value
      (export "BGL_PROCESS_DEFAULT_VALUE") (ref $process)
      (struct.new $process))
@@ -155,6 +151,8 @@
 	(global.get $BNIL)
 	;; top
 	(ref.null none)
+	;; top-of-frame
+	(ref.null none)
 	))
 
   (global $object-default-value
@@ -166,7 +164,6 @@
   (global $opaque-default-value
      (export "BGL_OPAQUE_DEFAULT_VALUE") (ref $opaque)
      (struct.new $opaque))
-
     
 
    ;; -----------------------------------------------------------------
@@ -1819,6 +1816,8 @@
       (global.get $BNIL)
       ;; $top
       (ref.null none)
+      ;; $top-of-frame
+      (ref.null none)
       ))
 
   (func $BGL_CURRENT_DYNAMIC_ENV (export "BGL_CURRENT_DYNAMIC_ENV")
@@ -1878,6 +1877,21 @@
      (struct.set $dynamic-env $abase (global.get $current-dynamic-env) (local.get $abase))
      (local.get $abase))
 
+  (func $bgl_init_trace (export "bgl_init_trace")
+     (param $env (ref $dynamic-env))
+     (local $top (ref null $bgl_dframe))
+     (local.set $top (struct.get $dynamic-env $top (local.get $env)))
+
+     (struct.set $bgl_dframe $name (local.get $top) (global.get $BUNSPEC))
+     (struct.set $bgl_dframe $location (local.get $top) (global.get $BUNSPEC))
+     (struct.set $bgl_dframe $link (local.get $top) (ref.null none))
+     (call $BGL_ENV_SET_TOP_OF_FRAME (local.get $env) (local.get $top)))
+
+  (func $BGL_ENV_SET_TOP_OF_FRAME
+     (param $env (ref $dynamic-env))
+     (param $top (ref null $bgl_dframe))
+     (struct.set $dynamic-env $top-of-frame (local.get $env) (local.get $top)))
+  
   (func $BGL_ENV_PUSH_TRACE (export "BGL_ENV_PUSH_TRACE")
      (param $env (ref $dynamic-env))
      (param $name (ref eq))
@@ -1896,7 +1910,7 @@
      (result (ref eq))
 
      (struct.set $dynamic-env $top (local.get $env)
-	(struct.get $bgl_dframe $next
+	(struct.get $bgl_dframe $link
 	   (struct.get $dynamic-env $top (local.get $env))))
      (return (global.get $BUNSPEC)))
 

@@ -3,6 +3,7 @@
 	   tools_shape
 	   tools_trace
 	   type_type
+	   type_cache
 	   ast_var
 	   ast_node
 	   saw_lib)
@@ -91,6 +92,8 @@
       (dump* o ::output-port ::int)
       (dump-margin ::output-port ::int)
       (dump-ins-rhs o::rtl_ins p m)
+      (rtl_ins-type::type ::rtl_ins)
+      (rtl-type::type ::obj)
       ))
 
 ;*---------------------------------------------------------------------*/
@@ -458,3 +461,27 @@
    (display (map shape (rtl_new-constr o)) p)
    (dump-args args p))
 
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-type ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-type i::rtl_ins)
+   (with-access::rtl_ins i (fun args)
+      (cond
+	 ((isa? fun rtl_mov)
+	  (rtl-type (car args)))
+	 ((isa? fun rtl_call)
+	  (with-access::rtl_call fun (var)
+	     (with-access::variable var (value type)
+		type)))
+	 (else
+	  *obj*))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl-type ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (rtl-type o)
+   (cond
+      ((isa? o rtl_reg) (rtl_reg-type o))
+      ((isa? o rtl_ins) (rtl_ins-type o))
+      (else *obj*)))

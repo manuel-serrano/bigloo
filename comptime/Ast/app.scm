@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/app.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/app.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Thu Jul  8 11:26:09 2021 (serrano)                */
+;*    Last change :  Sat Dec 28 06:36:27 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -299,7 +299,7 @@
 	     ;; all optional arguments are provided
 	     (instantiate::app
 		(loc loc)
-		(type (strict-node-type *_* (variable-type v)))
+		(type *_*)
 		(fun  (if (closure? var) (duplicate::ref var) var))
 		(args actuals))
 	     ;; compile the optionals arguments in a left-to-right env
@@ -372,7 +372,7 @@
 		     ((null? keys)
 		      (instantiate::app
 			 (loc loc)
-			 (type (strict-node-type *_* (variable-type v)))
+			 (type *_*)
 			 (fun var)
 			 (args (append
 				(take args arity)
@@ -388,7 +388,7 @@
 			     (body (loop (cdr keys) '() nenv nstack)))
 			 (instantiate::let-var
 			    (loc loc)
-			    (type (strict-node-type *_* (variable-type v)))
+			    (type *_*)
 			    (bindings (list (cons var val)))
 			    (body body))))
 		     ((eq? (fast-id-of-id (caar keys) loc) (caar vals))
@@ -400,7 +400,7 @@
 			     (body (loop (cdr keys) (cdr vals) nenv nstack)))
 			 (instantiate::let-var
 			    (loc loc)
-			    (type (strict-node-type *_* (variable-type v)))
+			    (type *_*)
 			    (bindings (list (cons var val)))
 			    (body body))))
 		     (else
@@ -412,7 +412,7 @@
 			     (body (loop (cdr keys) vals nenv nstack)))
 			 (instantiate::let-var
 			    (loc loc)
-			    (type (strict-node-type *_* (variable-type v)))
+			    (type *_*)
 			    (bindings (list (cons var val)))
 			    (body body)))))))
 	    (if (any (lambda (v)
@@ -460,16 +460,16 @@
 	  ;; this is a regular direct call
 	  (let ((call (instantiate::app
 			 (loc loc)
-			 (type (strict-node-type *_* (variable-type v)))
+			 (type *_*)
 			 (fun  (if (closure? var) (duplicate::ref var) var))
 			 (args args))))
 	     (if (eq? (variable-type v) *void*)
 		 ;; the call is cast into obj
 		 (let ((unspec (instantiate::literal
-				  (type (strict-node-type (get-type-atom #unspecified) *obj*))
+				  (type (get-type-atom #unspecified))
 				  (value #unspecified))))
 		    (instantiate::sequence
-		       (type (strict-node-type *_* *obj*))
+		       (type *_*)
 		       (nodes (list call unspec))))
 		 call)))
 	 (else
@@ -498,14 +498,14 @@
 		 (l-node (sexp->node l-exp stack loc 'value))
 		 (l-var (let-var-body l-node))
 		 (app (make-fx-app-node
-		       loc var (reverse! (cons l-var f-args)))))
+			 loc var (reverse! (cons l-var f-args)))))
 	     (with-access::let-var l-node (body type)
 		(set! body app)
-		(set! type (strict-node-type *_* type)))
+		(set! type *_*))
 	     (clean-user-node! l-node))
 	  (loop (cdr old-args)
-		(+fx arity 1)
-		(cons (sexp->node (car old-args) stack loc 'value) f-args)))))
+	     (+fx arity 1)
+	     (cons (sexp->node (car old-args) stack loc 'value) f-args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    special-cfun? ...                                                */
@@ -538,7 +538,7 @@
 	     (node-type-set! (cadr args) *_*))
 	  (instantiate::app
 	     (loc loc)
-	     (type (strict-node-type *_* (variable-type variable)))
+	     (type *_*)
 	     (fun  var)
 	     (args args)))
 	 (($vector?)
@@ -547,7 +547,7 @@
 	  (node-type-set! (car args) *_*)
 	  (instantiate::app
 	     (loc loc)
-	     (type (strict-node-type *_* (variable-type variable)))
+	     (type *_*)
 	     (fun  var)
 	     (args args)))
 	 (($vector-length)
@@ -565,7 +565,7 @@
 	 (($vector-ref $vector-ref-ur)
 	  (instantiate::vref
 	     (loc loc)
-	     (type (strict-node-type *_* (global-type variable)))
+	     (type *_*)
 	     (c-format (string-append gname "($1,$2)"))
 	     (expr* args)
 	     (unsafe (string-suffix? "-ur" (symbol->string! (global-id variable))))
@@ -578,7 +578,7 @@
 	  (node-type-set! (caddr args) *_*)
 	  (instantiate::vset!
 	     (loc loc)
-	     (type (strict-node-type *unspec* (global-type variable)))
+	     (type *unspec*)
 	     (c-format (string-append gname "($1,$2,$3)"))
 	     (expr* args)
 	     (unsafe (eq? (global-id variable) '$vector-set-ur!))
@@ -594,8 +594,8 @@
 				   heap-format)))
 	     (instantiate::valloc
 		(loc loc)
-		(type (strict-node-type *_* (global-type variable)))
-		(ftype (strict-node-type *_* *obj*))
+		(type *_*)
+		(ftype *_*)
 		(c-format heap-format)
 		(otype (car (cfun-args-type (global-value variable))))
 		(expr* args))))

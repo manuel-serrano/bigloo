@@ -5397,9 +5397,9 @@ public final class foreign
 	 return stack_trace.get(depth);
       }
 
-   public static Object init_trace_stacksp(bgldynamic env)
+   public static void init_trace_stacksp(bgldynamic env)
       {
-	 return unspecified.unspecified;
+	 return ;
       }
       
    public static Object BGL_GET_TRACE_STACKSP()

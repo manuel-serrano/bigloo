@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Dec 24 17:05:07 2024 (serrano)                */
+;*    Last change :  Thu Dec 26 06:15:38 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -588,31 +588,6 @@
 	 locals)))
 
 ;*---------------------------------------------------------------------*/
-;*    reg-debugname ...                                                */
-;*---------------------------------------------------------------------*/
-(define (reg-debugname reg::rtl_reg)
-   (with-access::rtl_reg reg (var debugname key)
-      (cond
-	 (debugname
-	  debugname)
-	 ((global? var)
-	  (with-access::global var (id module alias)
-	     (set! debugname
-		(bigloo-module-mangle (symbol->string (or alias id))
-		   (symbol->string module)))
-	     debugname))
-	 ((local? var)
-	  (with-access::local var (id)
-	     (set! debugname
-		(bigloo-mangle
-		   (string-append
-		      (symbol->string id) "_" (symbol->string key))))
-	     debugname))
-	 (else
-	  (set! debugname (symbol->string (gensym 'bbv)))
-	  debugname))))
-
-;*---------------------------------------------------------------------*/
 ;*    reg-name ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (reg-name reg) ;()
@@ -842,7 +817,8 @@
 (define-method (gen-expr fun::rtl_setfield args)
   (with-access::rtl_setfield fun (name objtype)
     (with-fun-loc fun
-      `(struct.set ,(wasm-sym (type-class-name objtype)) ,(wasm-sym name) ,@(gen-args args)))))
+      `(struct.set ,(wasm-sym (type-class-name objtype))
+	  ,(wasm-sym name) ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_instanceof args)
   ; TODO: NOT IMPLEMENTED
@@ -1386,17 +1362,13 @@
       `(if (result ,type)
 	   (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
 	   (then ;; Is a variadic function!
-	      (call $generic_va_call 
-		 ,proc 
+	      (call $generic_va_call ,proc 
 		 (array.new_fixed $vector ,(-fx arg_count 1)
 		    ,@(gen-args (cdr args)))))
 	   (else
-	    (call_ref 
-	       ,func_type
-	       ,proc
+	    (call_ref ,func_type ,proc
 	       ,@(gen-args (cdr args)) 
-	       (ref.cast 
-		  (ref ,func_type) 
+	       (ref.cast (ref ,func_type) 
 		  (struct.get $procedure $entry ,proc)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1404,16 +1376,21 @@
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_lightfuncall args)
    ;; TODO: implement lightfuncall
-   (let ((functy (create-ref-func-type
-		    (wasm-type (rtl_lightfuncall-rettype fun))
-		    (map wasm-typeof-arg args)))
-	 (proc `(ref.cast (ref $procedure-l) ,(gen-reg (car args)))))
+   (let* ((fun0 (with-access::rtl_lightfuncall fun (funs) (car funs)))
+	  (functy (create-ref-func-type
+		     (wasm-type (rtl_lightfuncall-rettype fun))
+		     (map (lambda (a)
+			     (wasm-type (local-type a)))
+			(with-access::var fun0 (variable)
+			   (sfun-args (variable-value variable))))))
+	  (reg (gen-reg (car args)))
+	  (proc (if (eq? (rtl-type (car args)) *procedure-l*)
+		    reg
+		    `(ref.cast (ref $procedure-l) ,ref))))
       (with-fun-loc fun 
-	 `(call_ref ,functy
-	     ,proc
+	 `(call_ref ,functy ,proc
 	     ,@(gen-args (cdr args))
-	     (ref.cast
-		(ref ,functy)
+	     (ref.cast (ref ,functy)
 		(struct.get $procedure-l $entry ,proc))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1421,7 +1398,8 @@
 ;*---------------------------------------------------------------------*/
 (define (typeof-arg o)
    (cond
-      ((isa? o rtl_reg) (type-id (rtl_reg-type o)))
+      ((isa? o rtl_reg)
+       (type-id (rtl_reg-type o)))
       ((isa? o rtl_ins)
        (if (rtl_ins-dest o)
 	   (typeof-arg (rtl_ins-dest o))
@@ -1434,7 +1412,8 @@
 ;*---------------------------------------------------------------------*/
 (define (wasm-typeof-arg o)
    (cond
-      ((isa? o rtl_reg) (wasm-type (rtl_reg-type o)))
+      ((isa? o rtl_reg)
+       (wasm-type (rtl_reg-type o)))
       ((isa? o rtl_ins)
        (if (rtl_ins-dest o)
 	   (wasm-typeof-arg (rtl_ins-dest o))

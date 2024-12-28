@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Tue Oct  1 10:02:33 2024 (serrano)                */
+;*    Last change :  Sat Dec 28 07:52:27 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -46,6 +46,14 @@
 	 (i32.const 0)
 	 ;; buffer
 	 (global.get $bstring-default-value)))
+
+   
+   ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+
+   (import "__bigloo" "default_io_bufsize" (global $default_io_bufsize i64))
+
    
    ;; -----------------------------------------------------------------
    ;; Common macros
@@ -156,11 +164,19 @@
 	 (i32.add
 	    (struct.get $rgc $matchstart (local.get $rgc))
 	    (local.get $offset))))
+
+   (func $RGC_BUFFER_AVAILABLE (export "RGC_BUFFER_AVAILABLE")
+      (param $port (ref $input-port))
+      (result i32)
+      (local $rgc (ref $rgc))
+      (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+      (i32.sub (struct.get $rgc $bufpos (local.get $rgc))
+	 (struct.get $rgc $matchstop (local.get $rgc))))
    
    ;; -----------------------------------------------------------------
    ;; Library functions
    ;; -----------------------------------------------------------------
-   
+
    ;; rgc_buffer_unget_char
    (func $rgc_buffer_unget_char (export "rgc_buffer_unget_char")
       (param $port (ref $input-port))
@@ -649,6 +665,113 @@
 	 (local.get $sz))
 
       (return_call $bgl_string_to_bignum (local.get $tmp) (i32.const 10)))
+
+   ;; rgc_blit_string
+   (func $bgl_rgc_blit_string (export "bgl_rgc_blit_string")
+      (param $p (ref $input-port))
+      (param $s (ref $bstring))
+      (param $o i64)
+      (param $l i64)
+      (result i64)
+      
+      (local $rgc (ref $rgc))
+      (local $buf (ref $bstring))
+      (local $avail i32)
+      (local $o0 i64)
+      (local $size i64)
+      (local $r i64)
+
+      (if (call $BGL_PORT_CLOSED_P (local.get $p))
+	  (then (throw $fail)))
+
+      (local.set $rgc (struct.get $input-port $rgc (local.get $p)))
+      (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
+      (local.set $avail (call $RGC_BUFFER_AVAILABLE (local.get $p)))
+      
+      (call $RGC_START_MATCH (local.get $p))
+
+      (if (struct.get $rgc $eof (local.get $rgc))
+	  (then
+	     (if (i32.gt_u (i32.wrap_i64 (local.get $l)) (local.get $avail))
+		 (then (local.set $l (i64.extend_i32_u (local.get $avail)))))))
+
+      (if (i32.ge_u (local.get $avail) (i32.wrap_i64 (local.get $l)))
+	  (then
+	     (array.copy $bstring $bstring
+		(local.get $s)
+		(i32.wrap_i64 (local.get $o))
+		(local.get $buf)
+		(struct.get $rgc $matchstart (local.get $rgc))
+		(i32.wrap_i64 (local.get $l)))
+	     (struct.set $rgc $matchstart (local.get $rgc)
+		(i32.add (struct.get $rgc $matchstart (local.get $rgc))
+		   (i32.wrap_i64 (local.get $l))))
+	     (struct.set $rgc $forward (local.get $rgc)
+		(struct.get $rgc $matchstart (local.get $rgc)))
+	     (call $RGC_STOP_MATCH (local.get $p)
+		(i64.extend_i32_u (struct.get $rgc $matchstart (local.get $rgc))))
+	     
+	     (struct.set $rgc $filepos (local.get $rgc)
+		(i32.add (struct.get $rgc $filepos (local.get $rgc))
+		   (i32.wrap_i64 (local.get $l))))
+
+	     (return (local.get $l)))
+	  (else
+	   (local.set $o0 (local.get $o))
+
+	   (if (i32.gt_s (local.get $avail) (i32.const 0))
+	       (then
+		  (array.copy $bstring $bstring
+		     (local.get $s)
+		     (i32.wrap_i64 (local.get $o))
+		     (local.get $buf)
+		     (struct.get $rgc $matchstart (local.get $rgc))
+		     (local.get $avail))
+		  (local.set $o
+		     (i64.add (local.get $o)
+			(i64.extend_i32_u (local.get $avail))))
+		  (local.set $l
+		     (i64.sub (local.get $l)
+			(i64.extend_i32_u (local.get $avail))))))
+
+;* 	   (if (i64.gt_s (local.get $l) (i64.const 0))                 */
+;* 	       (then                                                   */
+;* 		  (loop $while                                         */
+;* 		     (if (i32.eqz (struct.get $rgc $eof (local.get $rgc))) */
+;* 			 (then                                         */
+;* 			    (if (i64.lt_s (local.get $l)               */
+;* 				   (global.get $default_io_bufsize))   */
+;* 				(then                                  */
+;* 				   (local.set $size (local.get $l)))   */
+;* 				(else                                  */
+;* 				 (local.set $size                      */
+;* 				    (global.get $default_io_bufsize)))) */
+;* 			    (local.set $r                              */
+;* 			       (call $sysread                          */
+;* 				  (local.get $p)                       */
+;* 				  (local.get $s)                       */
+;* 				  (i32.const 0)                        */
+;* 				  (local.get $size)))                  */
+;* 			                                               */
+;* 			    (local.set $o                              */
+;* 			       (i64.add (local.get $o) (local.get $r))) */
+;* 			    (local.set $l                              */
+;* 			       (i64.sub (local.get $l) (local.get $r))) */
+;* 			                                               */
+;* 			    (if (i64.gt_s (local.get $l) (i64.const 0)) */
+;* 				(then                                  */
+;* 				   (br $while))))))))                  */
+	   
+	   (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
+	   (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
+	   (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
+	   (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
+	   (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+	   (struct.set $rgc $filepos (local.get $rgc)
+	      (i32.add (struct.get $rgc $filepos (local.get $rgc))
+		 (i32.wrap_i64 (i64.sub (local.get $o) (local.get $o0)))))
+	   
+	   (return (i64.sub (local.get $o) (local.get $o0))))))
       
    )
 

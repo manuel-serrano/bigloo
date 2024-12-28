@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Wed Dec 25 11:15:19 2024 (serrano)                */
+;*    Last change :  Wed Dec 25 21:06:08 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -14,12 +14,16 @@
 ;*---------------------------------------------------------------------*/
 (directives
    (export (integer_to_string::bstring ::long ::long)
+	   (unsigned_to_string::bstring ::long ::long)
+	   (ullong_to_string::bstring ::long ::long)
 	   ($integer->string/padding::bstring ::long ::long ::long)
 	   (llong_to_string::bstring ::llong ::long)
 	   ($$strtol::long string::bstring start::long radix::long)
 	   ($$strtoel::elong string::bstring start::long radix::long)
 	   ($$strtoll::llong string::bstring start::long radix::long))
    (extern (export integer_to_string "integer_to_string")
+	   (export unsigned_to_string "unsigned_to_string")
+	   (export ullong_to_string "ullong_to_string")
 	   (export $integer->string/padding "integer->string/padding")
 	   (export llong_to_string "llong_to_string")))
 
@@ -41,6 +45,39 @@
 	  (when (<fx x 0)
 	     (string-set! aux 0 #\-))
 	  aux)))
+
+;*---------------------------------------------------------------------*/
+;*    unsigned_to_string ...                                           */
+;*---------------------------------------------------------------------*/
+(define (unsigned_to_string x radix)
+   
+   (define (integer-bits-count x radix)
+      (let loop ((bits 0)
+		 (ax x))
+	 (if (=u64 ax #u64:0)
+	     bits
+	     (loop (+fx bits 1) (/u64 ax radix)))))
+   
+   (let ((ux (fixnum->uint64 x))
+	 (ur (fixnum->uint64 radix)))
+      (if (=u64 x #u64:0)
+	  (make-string 1 #\0)
+	  (let* ((bits (integer-bits-count ux ur))
+		 (aux (make-string bits)))
+	     (string-set! aux (-fx bits 1) #a000)
+	     (let loop ((bits bits)
+			(ax ux))
+		(unless (=u64 ax #u64:0)
+		   (string-set! aux (-fx bits 1)
+		      (num->char (uint64->fixnum (remainderu64 ax radix))))
+		   (loop (-fx bits 1) (/u64 ax radix))))
+	     aux))))
+
+;*---------------------------------------------------------------------*/
+;*    ullong_to_string ...                                             */
+;*---------------------------------------------------------------------*/
+(define (ullong_to_string x radix)
+   (unsigned_to_string x radix))
 
 ;*---------------------------------------------------------------------*/
 ;*    $integer->string/padding ...                                     */

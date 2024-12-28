@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Dec 13 08:23:49 2024 (serrano)                */
+#*    Last change :  Fri Dec 27 07:36:25 2024 (serrano)                */
 #*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -164,7 +164,7 @@ FLOP_FILE	= walk
 FLOP_OBJ	= $(FLOP_FILE:%=Flop/%.o)
 
 #*--- coerce ----------------------------------------------------------*/
-COERCE_FILE	= walk pproto coerce app funcall apply convert
+COERCE_FILE	= walk pproto coerce app funcall apply convert postcnst
 
 COERCE_OBJ	= $(COERCE_FILE:%=Coerce/%.o)
 
@@ -507,6 +507,10 @@ bigloo.new:
 renew:
 	$(RM) -f $(BIGLOO_DEST).$(NEW_SUFFIX)
 	$(MAKE) new
+
+debugnew:
+	touch Init/main.scm
+	$(MAKE) new EFLAGS=-g
 
 bigloo.$(SHAREDSUFFIX):
 	$(MAKE) $(BIGLOO_DEST).$(SHAREDSUFFIX)

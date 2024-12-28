@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Tue Dec 24 17:48:38 2024 (serrano)                */
+;*    Last change :  Thu Dec 26 06:28:25 2024 (serrano)                */
 ;*    Copyright   :  2006-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -893,7 +893,7 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (define-list->hvector sign sz)
    (let* ((tid (symbol-append sign
-			      (string->symbol (integer->string sz)) 'vector))
+		  (string->symbol (integer->string sz)) 'vector))
 	  (list-> (symbol-append 'list-> tid))
 	  (cid (symbol-append '$alloc- tid))
 	  (vsetid (symbol-append '$ tid '-set!))

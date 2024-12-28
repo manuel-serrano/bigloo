@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Jlib/stackwriter.java        */
+/*    .../prgm/project/bigloo/wasm/runtime/Jlib/stackwriter.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 31 21:00:51 2001                          */
-/*    Last change :  Wed Nov  8 17:15:43 2006 (serrano)                */
-/*    Copyright   :  2001-06 Manuel Serrano                            */
+/*    Last change :  Sat Dec 28 05:59:57 2024 (serrano)                */
+/*    Copyright   :  2001-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The PrintWriter to display print stack trace                     */
 /*=====================================================================*/
@@ -48,7 +48,8 @@ public class stackwriter extends PrintWriter {
 
    private void demangle( final byte[] id ) throws IOException {
       if( bigloo.runtime.Llib.bigloo.bigloo_mangledp( id ) ) {
-	 final byte[] did = (byte[])bigloo.runtime.Llib.bigloo.bigloo_demangle( id );
+	 final byte[] did =
+	    (byte[])bigloo.runtime.Llib.bigloo.bigloo_demangle( id );
 
 	 for ( int i= 0 ; i < did.length ; ++i )
 	    _out.write( did[ i ] );

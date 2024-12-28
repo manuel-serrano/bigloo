@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Inline/inline.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Inline/inline.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Tue Nov  2 19:47:12 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Dec 27 09:59:02 2024 (serrano)                */
+;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -79,27 +79,29 @@
 ;*    inline-node ::var ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::var kfactor stack)
-   (with-access::var node (variable loc)
-      (if (and (>fx *optim* 0)
-	       (global? variable)
-	       (eq? (global-import variable) 'static)
-	       (not (global-eval? variable))
-	       (or (eq? (global-access variable) 'read)
-		   (and (eq? (global-init variable) #t)
-			(= (global-occurrencew variable) 1))))
-	  (cond
-	     ((and (atom? (global-src variable))
-		   (with-access::atom (global-src variable) (value)
-		      (not (bignum? value)))) 
-	      (trace inline "*** inlining global variable: " (shape variable)
-		 #\Newline)
-	      (alphatize '() '() loc (global-src variable)))
-	     ((and (kwote? (global-src variable)) (eq? *inline-mode* 'all))
-	      (trace inline "*** inlining global variable: " (shape variable))
-	      (alphatize '() '() loc (global-src variable)))
-	     (else
-	      node))
-	  node)))
+   (with-trace 'inline (format "inline-node ::~a" (typeof node))
+      (trace-item "node=" (shape node))
+      (trace-item "type=" (shape (node-type node)))
+      (with-access::var node (variable loc)
+	 (if (and (>fx *optim* 0)
+		  (global? variable)
+		  (eq? (global-import variable) 'static)
+		  (not (global-eval? variable))
+		  (or (eq? (global-access variable) 'read)
+		      (and (eq? (global-init variable) #t)
+			   (= (global-occurrencew variable) 1))))
+	     (cond
+		((and (atom? (global-src variable))
+		      (with-access::atom (global-src variable) (value)
+			 (not (bignum? value))))
+		 (trace-item "inlining global variable: " (shape variable))
+		 (alphatize '() '() loc (global-src variable)))
+		((and (kwote? (global-src variable)) (eq? *inline-mode* 'all))
+		 (trace-item "inlining global variable: " (shape variable))
+		 (alphatize '() '() loc (global-src variable)))
+		(else
+		 node))
+	     node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-node ::kwote ...                                          */

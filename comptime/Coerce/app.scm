@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Coerce/app.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/app.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Wed Sep 18 06:44:32 2024 (serrano)                */
+;*    Last change :  Fri Dec 27 07:38:27 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
@@ -44,24 +44,26 @@
 ;*    coerce! ::app ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::app caller to safe)
-   (trace (coerce 2) "coerce-app!: " (shape node) " -> " (shape to)
-	  #\Newline)
-   (let ((fun (var-variable (app-fun node))))
-      (if (and (global? fun) (cfun? (variable-value fun)))
-	  (coerce-foreign-app! fun caller node to safe)
-	  (coerce-bigloo-app! fun caller node to safe))))
+   (with-trace 'coerce "coerce! ::app"
+      (trace-item "to=" (shape to))
+      (trace-item "node=" (shape node))
+      (let ((fun (var-variable (app-fun node))))
+	 (if (and (global? fun) (cfun? (variable-value fun)))
+	     (coerce-foreign-app! fun caller node to safe)
+	     (coerce-bigloo-app! fun caller node to safe)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-foreign-app! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (coerce-foreign-app! callee::variable caller node to safe)
-   (trace (coerce 2) "coerce-foreign-app!: " (shape node) " -> " (shape to)
-	  #\Newline)
-   (let* ((ffun  (variable-value callee))
-	  (arity (fun-arity ffun)))
-      (if (>=fx arity 0)
-	  (coerce-foreign-fx-app! ffun callee caller node to safe)
-	  (coerce-foreign-va-app! ffun callee caller node to safe))))
+   (with-trace 'coerce "coerce-foreign-app!"
+      (trace-item "to=" (shape to))
+      (trace-item "node=" (shape node))
+      (let* ((ffun  (variable-value callee))
+	     (arity (fun-arity ffun)))
+	 (if (>=fx arity 0)
+	     (coerce-foreign-fx-app! ffun callee caller node to safe)
+	     (coerce-foreign-va-app! ffun callee caller node to safe)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-procedure-ids ...                                           */
@@ -147,24 +149,28 @@
 ;*    coerce-bigloo-app! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (coerce-bigloo-app! callee::variable caller node to safe)
-   (trace (coerce 2) "coerce-bigloo-app!: " (shape node) " "
-	  (shape (variable-type callee))
-	  "(" (shape (node-type node)) ") -> " (shape to) #\Newline)
-   (if (and (global? callee)
-	    (eq? (global-import callee) 'import)
-	    (pair? (sfun-args (variable-value callee)))
-	    (type? (car (sfun-args (variable-value callee)))))
-       (coerce-bigloo-extern-app! callee caller node to safe)
-       (coerce-bigloo-intern-app! callee caller node to safe)))
+   (with-trace 'coerce "coerce-bigloo-app!"
+      (trace-item "to=" (shape to))
+      (trace-item "from=" (shape (node-type node)))
+      (trace-item "callee=" (shape (variable-type callee)))
+      (trace-item "node=" (shape node))
+      (if (and (global? callee)
+	       (eq? (global-import callee) 'import)
+	       (pair? (sfun-args (variable-value callee)))
+	       (type? (car (sfun-args (variable-value callee)))))
+	  (coerce-bigloo-extern-app! callee caller node to safe)
+	  (coerce-bigloo-intern-app! callee caller node to safe))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-bigloo-intern-app! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (coerce-bigloo-intern-app! callee::variable caller node to safe)
-   (trace (coerce 2) "coerce-bigloo-intern-app!: " (shape node) " "
-	  (shape (variable-type callee))
-	  "(" (shape (node-type node)) ") -> " (shape to) #\Newline)
-   (let* ((fun   (variable-value callee))
+   (with-trace 'coerce "coerce-bigloo-intern-app!"
+      (trace-item "to=" (shape to))
+      (trace-item "from=" (shape (node-type node)))
+      (trace-item "callee=" (shape (variable-type callee)))
+      (trace-item "node=" (shape node))
+      (let* ((fun   (variable-value callee))
 	  (arity (sfun-arity fun))
 	  (sh    (shape callee))
 	  (ntype (get-type node #f)))
@@ -185,7 +191,7 @@
 		 (convert! node ntype to safe))
 	     (let ((type (local-type (car formals))))
 		(set-car! actuals (coerce! (car actuals) caller type safe))
-		(loop (cdr actuals) (cdr formals)))))))
+		(loop (cdr actuals) (cdr formals))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-bigloo-extern-app! ...                                    */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Sun Dec 22 15:29:32 2024 (serrano)                */
+;*    Last change :  Sat Dec 28 05:40:25 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -241,15 +241,15 @@
 ;*    declare-tvectors ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (declare-tvectors tvector)
-   ;; first we declare the tvectors
+   ;; first declare the tvectors
    (for-each (lambda (app)
 		(let ((type (get-vector-item-type app)))
 		   (with-access::type type (tvector id)
 		      (if (not (type? tvector))
 			  (let ((tv-id (symbol-append 'tv-of- id)))
 			     (set! tvector
-				   (module-tvector-clause tv-id id 'cfa #f)))))))
-	     tvector)
+				(module-tvector-clause tv-id id 'cfa #f)))))))
+      tvector)
    ;; now we just make the new ast for the typed vectors.
    (let ((old-default-type (get-default-type)))
       (set-default-type! *obj*)
@@ -635,14 +635,14 @@
 		 (let* ((ty (get-approx-type approx node))
 			(tv-ref (symbol-append (type-id tv) '-ref))
 			(n (sexp->node `(,tv-ref ,@expr*) '() loc 'value)))
-		    (node-type-set! n (strict-node-type tv ty))
+		    (node-type-set! n ty)
 		    (inline-node n 1 '())))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch! ::vset!/Cinfo ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::vset!/Cinfo)
-   (with-access::vset!/Cinfo node (expr* loc tvector? ftype)
+   (with-access::vset!/Cinfo node (expr* loc tvector? ftype approx)
       (patch*! expr*)
       (if tvector?
 	  node
@@ -650,7 +650,9 @@
 		 (tv (get-approx-type vec-approx node)))
 	     (if (not (tvec? tv))
 		 node
-		 (let* ((tv-set! (symbol-append (type-id tv) '-set!))
+		 (let* ((ty (get-approx-type approx node))
+			(tv-set! (symbol-append (type-id tv) '-set!))
 			(n (sexp->node `(,tv-set! ,@expr*) '() loc 'value)))
+		    (node-type-set! n ty)
 		    (inline-node n 1 '())))))))
 

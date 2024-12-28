@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Ast/alphatize.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/alphatize.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Jul  8 11:24:24 2021 (serrano)                */
+;*    Last change :  Fri Dec 27 09:58:17 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -160,7 +160,8 @@
 	     (cond
 		((eq? alpha #unspecified)
 		 (use-variable! var (node-loc node) 'value)
-		 (duplicate::closure node (loc (get-location node loc))))
+		 (duplicate::closure node
+		    (loc (get-location node loc))))
 		((variable? alpha)
 		 (use-variable! alpha (node-loc node) 'value)
 		 (duplicate::closure node
