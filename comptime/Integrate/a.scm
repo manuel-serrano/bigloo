@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Integrate/a.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Integrate/a.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Wed Jul  3 15:25:09 2024 (serrano)                */
+;*    Last change :  Mon Dec 30 06:38:46 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -21,6 +21,7 @@
 	    tools_error
 	    type_type
 	    engine_param
+	    backend_backend
 	    ast_var
 	    ast_node
 	    ast_dump
@@ -418,7 +419,7 @@
 		 (A A))
 	 (if (null? locals)
 	     (begin
-		(unless *local-exit?*
+		(unless (backend-local-exit (the-backend))
 		   (when (set-exit? node) (mark-set-exit! node)))
 		(node-A body host k A))
 	     (liip (cdr locals)
@@ -437,7 +438,7 @@
 	  (eq? (variable-id var) '$env-get-exitd-top)))
    
    (define (is-get-exitd-top-app? node)
-      (unless *local-exit?*
+      (unless (backend-local-exit (the-backend))
 	 (when *optim-return-goto?*
 	    (when (isa? node app)
 	       (with-access::app node (fun args)
@@ -468,7 +469,7 @@
       (let* ((exit (var-variable var))
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
-	 (when (and (not *local-exit?*)
+	 (when (and (not (backend-local-exit (the-backend)))
 		    (not *optim-return-goto?*)
 		    (not (sexit-detached? (local-value exit))))
 	    (with-access::sfun/Iinfo (local-value hdlg) (forceG?)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Dec 25 06:59:07 2024 (serrano)                */
+;*    Last change :  Mon Dec 30 06:36:03 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -92,7 +92,8 @@
       ;; see https://github.com/WebAssembly/function-references
       (typed-closures #f)
       (varargs #f)
-      (mangling #f)))
+      (mangling #f)
+      (local-exit #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */

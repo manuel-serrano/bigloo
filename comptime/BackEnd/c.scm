@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/BackEnd/c.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/c.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Jul  5 11:13:33 2024 (serrano)                */
+;*    Last change :  Mon Dec 30 06:35:42 2024 (serrano)                */
 ;*    Copyright   :  2003-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -87,7 +87,8 @@
 (define (build-cgen-backend)
    (instantiate::cgen
       (language 'c)
-      (srfi0 'bigloo-c)))
+      (srfi0 'bigloo-c)
+      (local-exit #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */

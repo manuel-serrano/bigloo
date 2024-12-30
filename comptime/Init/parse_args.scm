@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Dec 13 05:38:30 2024 (serrano)                */
+;*    Last change :  Mon Dec 30 06:40:43 2024 (serrano)                */
 ;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -560,10 +560,10 @@
        (("-fno-unsafe-cell" (help "Disable unsafe-cell generation"))
 	(set! *optim-unsafe-cell?* #f))
        ;; with-handler/bind-exit
-       (("-flocal-exit" (help "Inline with-handler and bind-exit"))
-	(set! *local-exit?* #t))
-       (("-fno-local-exit" (help "Compile with-handler and bind-exit in separate functions"))
-	(set! *local-exit?* #f))
+       (("-flocal-exit" (help "Backward compatibility option, no effect"))
+	#unspecified)
+       (("-fno-local-exit" (help "Backward compatibility option, no effect"))
+	#unspecified)
        ;; saw register allocation
        (("-fsaw-realloc" (help "Enable saw register re-allocation"))
 	(set! *saw-register-reallocation?* #t))

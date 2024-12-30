@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Thu Dec 26 07:16:16 2024 (serrano)                */
+;*    Last change :  Sat Dec 28 19:14:19 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -150,7 +150,10 @@
 	;; lexical-stack
 	(global.get $BNIL)
 	;; top
-	(ref.null none)
+	(struct.new $bgl_dframe
+	   (global.get $BUNSPEC)
+	   (global.get $BUNSPEC)
+	   (ref.null none))
 	;; top-of-frame
 	(ref.null none)
 	))
@@ -379,6 +382,12 @@
   ;; --------------------------------------------------------
   ;; Exit builtin functions
   ;; --------------------------------------------------------
+
+  (func $bgl_make_bexception (export "bgl_make_bexception")
+     (param $exit (ref $exit))
+     (param $val (ref eq))
+     (result (ref $bexception))
+     (return (struct.new $bexception (local.get $exit) (local.get $val))))
 
   (func $bgl_make_exit (export "bgl_make_exit")
      (result (ref $exit))
@@ -1781,44 +1790,47 @@
   ;; --------------------------------------------------------
 
   (global $current-dynamic-env (ref $dynamic-env) 
-    (struct.new $dynamic-env
-      ;; $exitd_top
-       (struct.new $exit
-	  (i64.const 0)
-	  (i64.const 0)
-	  (global.get $BNIL)
-	  (ref.null none))
-      ;; $exitd_val
-      (struct.new $pair
-	 (struct.new $pair
-	    (global.get $BUNSPEC)
-	    (global.get $BUNSPEC))
-	 (global.get $BUNSPEC))
-      ;; $uncaught-exception-handler
-      (global.get $BNIL)
-      ;; $error-handler
-      (struct.new $pair
-	 (global.get $BUNSPEC)
-	 (global.get $BFALSE))
-      ;; $current-output-port
-      (ref.null none)
-      ;; $current-error-port
-      (ref.null none)
-      ;; $current-input-port
-      (ref.null none)
-      ;; evstate
-      (global.get $BUNSPEC)
-      ;; $module
-      (global.get $BUNSPEC)
-      ;; $abase
-      (global.get $BUNSPEC)
-      ;; $lexical-stack
-      (global.get $BNIL)
-      ;; $top
-      (ref.null none)
-      ;; $top-of-frame
-      (ref.null none)
-      ))
+     (struct.new $dynamic-env
+	;; exitd_top
+	(struct.new $exit
+	   (i64.const 0)
+	   (i64.const 0)
+	   (global.get $BNIL)
+	   (ref.null none))
+	;; exitd_val
+	(struct.new $pair
+	   (struct.new $pair
+	      (global.get $BUNSPEC)
+	      (global.get $BUNSPEC))
+	   (global.get $BUNSPEC))
+	;; uncaught-exception-handler
+	(global.get $BNIL)
+	;; error-handler
+	(struct.new $pair
+	   (global.get $BUNSPEC)
+	   (global.get $BFALSE))
+	;; current-output-port
+	(ref.null none)
+	;; current-error-port
+	(ref.null none)
+	;; current-input-port
+	(ref.null none)
+	;; evstate
+	(global.get $BUNSPEC)
+	;; module
+	(global.get $BUNSPEC)
+	;; abase
+	(global.get $BUNSPEC)
+	;; lexical-stack
+	(global.get $BNIL)
+	;; top
+	(struct.new $bgl_dframe
+	   (global.get $BUNSPEC)
+	   (global.get $BUNSPEC)
+	   (ref.null none))
+	;; top-of-frame
+	(ref.null none)
+	))
 
   (func $BGL_CURRENT_DYNAMIC_ENV (export "BGL_CURRENT_DYNAMIC_ENV")
     (result (ref $dynamic-env))

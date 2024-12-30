@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/bexit.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/bexit.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Thu Dec 22 19:55:31 2016 (serrano)                */
+;*    Last change :  Sun Dec 29 06:55:59 2024 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -34,14 +34,14 @@
 ;*    test1                                                            */
 ;*---------------------------------------------------------------------*/
 (define (test1 . l)
-   (bind-exit (error)
-	  (labels ((sum (l)
-			(if (null? l)
-			    0
-			    (if (integer? (car l))
-				(+ (car l) (sum (cdr l)))
-				(error -1)))))
-	     (sum l))))
+   (bind-exit (err)
+      (labels ((sum (l)
+		  (if (null? l)
+		      0
+		      (if (integer? (car l))
+			  (+ (car l) (sum (cdr l)))
+			  (err -1)))))
+	 (sum l))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test2                                                            */
@@ -49,16 +49,16 @@
 (define (fake-call-with-current-continuation f)
    (bind-exit (c) (f c)))
 
-(define test2 (lambda l
-	       (fake-call-with-current-continuation
-		(lambda (error)
-		   (labels ((sum (l)
- 				 (if (null? l)
-				     0
-				     (if (integer? (car l))
-					 (+ (car l) (sum (cdr l)))
-					 (error -1)))))
-		      (sum l))))))
+(define (test2 . l)
+   (fake-call-with-current-continuation
+      (lambda (err)
+	 (labels ((sum (l)
+		     (if (null? l)
+			 0
+			 (if (integer? (car l))
+			     (+ (car l) (sum (cdr l)))
+			     (err -1)))))
+	    (sum l)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test4 ...                                                        */

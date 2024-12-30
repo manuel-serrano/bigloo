@@ -1,13 +1,13 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/Integrate/volatile.scm        */
+;*    .../prgm/project/bigloo/wasm/comptime/Integrate/volatile.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 12 08:55:10 2021                          */
-;*    Last change :  Fri Jul 12 19:08:27 2024 (serrano)                */
+;*    Last change :  Mon Dec 30 06:32:57 2024 (serrano)                */
 ;*    Copyright   :  2021-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Flag as "volatile" local variables that survive a set-exit       */
-;*    node. This is used only when  *local-exit?* is true.             */
+;*    node. This is used only when the backend supports local exits.   */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -30,8 +30,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    volatile! ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    Current all local variables of a function that uses a set-exit   */
-;*    are marked as volatile. An def/use analysis that works on        */
+;*    Currently all local variables of a function that uses a set-exit */
+;*    are marked as volatile. A def/use analysis that works on         */
 ;*    the node tree needs to be implemented to improve allocate        */
 ;*    temporaries in registers.                                        */
 ;*---------------------------------------------------------------------*/

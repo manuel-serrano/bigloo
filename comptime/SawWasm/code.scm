@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Dec 26 06:15:38 2024 (serrano)                */
+;*    Last change :  Sun Dec 29 07:38:38 2024 (serrano)                */
 ;*    Copyright   :  2024 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -139,14 +139,49 @@
 ;*    gen-body ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (gen-body v::global blocks locals)
-   (let ((inits (gen-local-inits v blocks locals))
-	 (relbody (relooper v blocks)))
-      (if relbody
-	  (append inits (list '(comment "local initialization")) relbody)
-	  (begin
-	     ;; when using the dispatcher methods, all locals must be nullable
-	     (for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
-	     (gen-dispatcher-body blocks)))))
+   
+   (define (plain-body)
+      (let ((inits (gen-local-inits v blocks locals))
+	    (relbody (relooper v blocks)))
+	 (if relbody
+	     (append inits (list '(comment "local initialization")) relbody)
+	     (begin
+		;; when using the dispatcher methods, all locals must be nullable
+		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
+		(gen-dispatcher-body blocks)))))
+
+   (let ((protect (get-protect-temp blocks)))
+      (if protect
+	  (let ((lbl (gensym '$try))
+		(ty (wasm-type (global-type v)))
+		(e (gensym '$exn)))
+	     `((comment "try block")
+	       (local.set ,e
+		  `(block ,lbl (result (ref null $bexception))
+		      (try_table (catch $BEXCEPTION ,lbl)
+			 ,@(plain-body))
+		      (return (ref.null none))))))
+	  (plain-body))))
+
+;*---------------------------------------------------------------------*/
+;*    get-protect-temp ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Scan all the function instructions to get the first (and         */
+;*    unique) rtl_protect instruction destination register.            */
+;*---------------------------------------------------------------------*/
+(define (get-protect-temp blocks::pair-nil)
+   
+   (define reg #f)
+
+   (define (check-protect i::rtl_ins)
+      (unless reg
+	 (with-access::rtl_ins i (fun dest)
+	    (when (isa? fun rtl_protect)
+	       (set! reg dest)))))
+   
+   (for-each (lambda (b) (for-each check-protect (block-first b))) blocks)
+   
+   reg)
 
 ;*---------------------------------------------------------------------*/
 ;*    *extra-types*                                                    */
@@ -1594,7 +1629,8 @@
 ;*    gen-expr ::rtl_jumpexit ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_jumpexit args)
-   (with-fun-loc fun `(throw $bexception ,@(gen-args args))))
+   (with-fun-loc fun
+      `(throw $BEXCEPTION (call $bgl_make_bexception ,@(gen-args args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_protect ...                                       */

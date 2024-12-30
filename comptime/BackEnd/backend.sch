@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
 ;; Bigloo (4.6a)
-;; Inria -- Sophia Antipolis     Sun Dec 15 07:25:15 AM CET 2024 
+;; Inria -- Sophia Antipolis     Mon Dec 23 10:10:50 AM CET 2024 
 ;; (bigloo BackEnd/backend.scm -classgen)
 ;; ==========================================================
 
@@ -13,6 +13,8 @@
   (export
     (inline backend?::bool ::obj)
     (backend-nil::backend)
+    (inline backend-local-exit::bool ::backend)
+    (inline backend-local-exit-set! ::backend ::bool)
     (inline backend-mangling::bool ::backend)
     (inline backend-mangling-set! ::backend ::bool)
     (inline backend-varargs::bool ::backend)
@@ -91,6 +93,8 @@
 ;; backend
 (define-inline (backend?::bool obj::obj) ((@ isa? __object) obj (@ backend backend_backend)))
 (define (backend-nil::backend) (class-nil (@ backend backend_backend)))
+(define-inline (backend-local-exit::bool o::backend) (-> |#!bigloo_wallow| o local-exit))
+(define-inline (backend-local-exit-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o local-exit) v))
 (define-inline (backend-mangling::bool o::backend) (-> |#!bigloo_wallow| o mangling))
 (define-inline (backend-mangling-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o mangling) v))
 (define-inline (backend-varargs::bool o::backend) (-> |#!bigloo_wallow| o varargs))
