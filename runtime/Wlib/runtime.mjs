@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat Dec 21 07:33:41 2024 (serrano)                */
-/*    Copyright   :  2024 manuel serrano                               */
+/*    Last change :  Sat Jan  4 09:03:25 2025 (serrano)                */
+/*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
 /*=====================================================================*/
@@ -104,7 +104,11 @@ const instance = await WebAssembly.instantiate(wasm, {
 		       format(internalErrors[errno], val));
       },
 
-      getcwd: process.cwd,
+      getcwd: (addr) => {
+	 const s = process.cwd();
+	 storeJSStringToScheme(s, addr);
+	 return s.length;
+      },
 
       getenv: (addr, len) => {
          const buffer = new Uint8Array(instance.exports.memory.buffer, addr, len);

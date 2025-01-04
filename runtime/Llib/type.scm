@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Dec 25 10:27:40 2024 (serrano)                */
+;*    Last change :  Fri Jan  3 06:39:00 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -212,7 +212,7 @@
     (coerce obj pair-nil (pair-or-null?) ())
     (coerce obj list (list?) ())
     (coerce obj cell () ())
-    (coerce obj exit () ())
+    (coerce obj exit () ($obj->exit))
     (coerce obj input-port (c-input-port?) ())
     (coerce obj output-port (c-output-port?) ())
     (coerce obj binary-port (c-binary-port?) ())
@@ -1088,9 +1088,11 @@
       
       (macro $uint32->ulong::ulong (::uint32) "(unsigned long)")
       (macro $uint32->long::long (::uint32) "(long)")
-      
+
+      (macro $obj->exit::exit (::obj) "(void *)")
       (macro $obj->void*::void* (::foreign) "FOREIGN_TO_COBJ")
       ($void*->obj::foreign (::void*) "void_star_to_obj"))
+      
 
    (wasm
       ($obj->bool "(call $OBJ_TO_BOOL ~0)")
@@ -1371,6 +1373,8 @@
       ($bucs2->ucs2 "(struct.get $bucs2 $v ~0)")
 
       ($cobj->obj "~0")
+
+      ($obj->exit "(ref.cast (ref $exit) ~0)")
       
       ;; FIXME: remove explicit cast to ref foreign
       ($obj->void* "(struct.get $foreign $ptr (ref.cast (ref $foreign) ~0))")
@@ -1587,7 +1591,8 @@
 	 
 	 (method static $uint32->ulong::ulong (::uint32) "BGL_INT32_ID")
 	 (method static $uint32->long::long (::uint32) "BGL_INT32_ID")
-	 
+
+	 (method static $obj->exit::exit (::obj) "BGL_OBJ_TO_EXIT")
 	 (method static $obj->void*::cobj (::void*) "FOREIGN_TO_COBJ")
 	 (method static $void*->obj::foreign (::void*) "void_star_to_obj")))
 

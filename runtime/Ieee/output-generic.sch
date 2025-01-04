@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Mon Dec 16 10:35:36 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Mon Dec 30 08:47:55 2024 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
 ;*=====================================================================*/
@@ -23,9 +23,11 @@
            (bgl_write_llong::obj ::elong ::output-port)
 	   (bgl_display_bignum::obj ::bignum ::output-port)
 	   (bgl_write_bignum::obj ::bignum ::output-port)
+	   (bgl_write_unknown::obj ::obj ::output-port)
 	   (inline $$display-fixnum::obj ::bint ::output-port)
 	   (inline $$write-procedure ::procedure ::output-port)
 	   (inline $$write-input-port ::input-port ::output-port)
+	   (inline $$write-output-port ::output-port ::output-port)
 	   ($$write-cnst ::obj ::output-port))
    (extern (export bgl_write_char "bgl_write_char")
 	   (export bgl_display_ucs2 "bgl_display_ucs2")
@@ -36,7 +38,8 @@
            (export bgl_display_llong "bgl_display_llong")
 	   (export bgl_write_llong "bgl_write_llong")
            (export bgl_display_bignum "bgl_display_bignum")
-	   (export bgl_write_bignum "bgl_write_bignum")))
+	   (export bgl_write_bignum "bgl_write_bignum")
+	   (export bgl_write_unknown "bgl_write_unknown")))
 
 ;*---------------------------------------------------------------------*/
 ;*    alpha ...                                                        */
@@ -125,6 +128,12 @@
    (display-string (bignum->string o) op))
 
 ;*---------------------------------------------------------------------*/
+;*    bgl_write_unknown ...                                            */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_unknown o op)
+   (display-string "#<unknown>" op))
+
+;*---------------------------------------------------------------------*/
 ;*    $$display-fixnum ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline ($$display-fixnum o op)
@@ -146,6 +155,14 @@
    (display-string (input-port-name o) op)
    (display-string "." op)
    (bgl_display_fixnum (string-length (input-port-buffer o)) op)
+   (display-string ">" op))
+
+;*---------------------------------------------------------------------*/
+;*    $$write-output-port ...                                          */
+;*---------------------------------------------------------------------*/
+(define-inline ($$write-output-port o op)
+   (display-string "#<output-port:" op)
+   (display-string (output-port-name o) op)
    (display-string ">" op))
 
 ;*---------------------------------------------------------------------*/

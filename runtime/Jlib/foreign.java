@@ -3518,14 +3518,19 @@ public final class foreign
 	 }
       }
 
+   public static exit BGL_OBJ_TO_EXIT(Object o)
+      {
+	 return (exit)o;
+      }
+      
    public static cobj FOREIGN_TO_COBJ(Object f)
       {
-	 return (cobj) f;
+	 return (cobj)f;
       }
 
    public static cobj obj_to_cobj(Object o)
       {
-	 return (cobj) o;
+	 return (cobj)o;
       }
 
    public static Object COBJ_TO_OBJ(cobj o)
@@ -5050,7 +5055,7 @@ public final class foreign
 	 return unspecified.unspecified;
       }
 
-   public static Object setexit()
+   public static exit setexit()
       {
 	 return new exit();
       }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Dec 30 06:36:03 2024 (serrano)                */
+;*    Last change :  Mon Dec 30 09:39:24 2024 (serrano)                */
 ;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -93,7 +93,7 @@
       (typed-closures #f)
       (varargs #f)
       (mangling #f)
-      (local-exit #t)))
+      (local-exit #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */

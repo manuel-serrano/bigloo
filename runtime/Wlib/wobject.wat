@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Sun Dec 22 07:10:44 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Sat Jan  4 08:49:25 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
 ;*=====================================================================*/
@@ -127,7 +127,7 @@
       (local.set $ancestors
 	 (array.new $vector (global.get $BFALSE)
 	    (i32.add (i32.wrap_i64 (local.get $depth)) (i32.const 1))))
-      (if (i64.lt_u (local.get $depth) (i64.const 0))
+      (if (i64.gt_u (local.get $depth) (i64.const 0))
 	  (then 
 	     (array.copy 
 		$vector $vector

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Tue Oct  1 11:19:40 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Sat Jan  4 09:06:26 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
 ;*=====================================================================*/
@@ -19,7 +19,7 @@
       (result (ref $bstring))
       (return_call $load_string
 	 (i32.const 128)
-	 (call $js_getcwd)))
+	 (call $js_getcwd (i32.const 128))))
 
    (func $bgl_getenvp (export "bgl_getenvp")
       (param $var (ref $bstring)) 

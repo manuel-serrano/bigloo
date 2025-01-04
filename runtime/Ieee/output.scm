@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Dec 16 10:25:57 2024 (serrano)                */
+;*    Last change :  Mon Dec 30 09:04:52 2024 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -148,7 +148,8 @@
 	       "bgl_ill_char_rep")
 	    
 	    (export write-2 "bgl_write_obj")
-	    (export display-2 "bgl_display_obj"))
+	    (export display-2 "bgl_display_obj")
+	    (export display-console "bgl_display_console"))
     
    (java    (class foreign
 	       (method static $write-char::obj (::bchar ::output-port)
@@ -224,6 +225,7 @@
 	    (write-2 obj ::output-port)
 	    (display obj . port)
 	    (display-2 obj ::output-port)
+	    (display-console obj)
 	    (write-char ::uchar #!optional (port (current-output-port)))
 	    (write-byte ::ubyte #!optional (port (current-output-port)))
 	    (inline write-char-2 ::uchar ::output-port)
@@ -249,6 +251,7 @@
 	    (fprintf ::output-port ::bstring . obj))
 
    (pragma  (display-2 no-init-flow no-cfa-top)
+	    (display-console no-init-flow no-cfa-top)
 	    (write-2 no-init-flow no-cfa-top)
 	    ($display-char nesting)
 	    ($write-char nesting)
@@ -677,13 +680,7 @@
 	  ((procedure? ,obj)
 	   (write-procedure ,obj ,port))
 	  ((output-port? ,obj)
-	   (cond
-	      ((output-string-port? ,obj)
-	       (display-string "#<output_string_port>" ,port))
-	      ((output-procedure-port? ,obj)
-	       (display-string "#<output_procedure_port>" ,port))
-	      (else
-	       ($write-output-port ,obj ,port))))
+	   (write-output-port ,obj ,port))
 	  ((input-port? ,obj)
 	   (write-input-port ,obj ,port))
 	  ((bignum? ,obj)
@@ -768,6 +765,13 @@
    (%write/display-2 obj port display))
 
 ;*---------------------------------------------------------------------*/
+;*    display-console ...                                              */
+;*---------------------------------------------------------------------*/
+(define (display-console obj)
+   (display-2 obj (current-output-port))
+   obj)
+
+;*---------------------------------------------------------------------*/
 ;*    write-2 ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (write-2 obj port)
@@ -798,6 +802,22 @@
        ($write-input-port obj port))
       (else
        ($$write-input-port obj port))))
+   
+;*---------------------------------------------------------------------*/
+;*    write-output-port ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (write-output-port obj port)
+   (cond
+      ((output-string-port? obj)
+       (display-string "#<output_string_port>" port))
+      ((output-procedure-port? obj)
+       (display-string "#<output_procedure_port>" port))
+      (else
+       (cond-expand
+	  ((or bigloo-c bigloo-jvm)
+	   ($write-output-port obj port))
+	  (else
+	   ($$write-output-port obj port))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    write-symbol ...                                                 */

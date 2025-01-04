@@ -69,12 +69,15 @@
 	   (instantiate::rtl_reg
 	      (type (find-type 'procedure))
 	      (var #f)
-	      (name (gensym)))
+	      (name (gensym 'f)))
 	   (instantiate::rtl_reg
 	      (type (variable-type (var-variable e)))
 	      (var #f)
-	      (name (gensym))) )
-       (instantiate::rtl_reg (type (get-type e #f)) (var #f) (name (gensym)))) )
+	      (name (gensym 'v))) )
+       (instantiate::rtl_reg
+	  (type (get-type e #f))
+	  (var #f)
+	  (name (gensym 'r)))) )
 
 (define (new-ureg::rtl_reg var::local) ; ()
    (instantiate::rtl_reg (type (local-type var)) (var var)) )

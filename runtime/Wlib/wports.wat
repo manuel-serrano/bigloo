@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Sat Dec 28 07:06:06 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Sat Jan  4 07:21:57 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
 ;*=====================================================================*/
@@ -409,6 +409,15 @@
 	 ;; offset
 	 (i64.const 0)))
 
+   ;; -----------------------------------------------------------------
+   ;; Predicates
+   ;; -----------------------------------------------------------------
+   (func $BGL_OUTPUT_PROCEDURE_PORTP (export "BGL_OUTPUT_PROCEDURE_PORTP")
+      (param $o (ref eq))
+      (result i32)
+      ;; procedure ports not implemented yet
+      (return (i32.const 0)))
+   
    ;; -----------------------------------------------------------------
    ;; Common macros
    ;; -----------------------------------------------------------------

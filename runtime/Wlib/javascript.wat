@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Fri Dec 20 15:02:08 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Sat Jan  4 09:08:24 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
 ;*    -------------------------------------------------------------    */
@@ -13,12 +13,12 @@
 
 (module $__bigloo_javascript
    (import "__js" "not_implemented" (func $not_implemented (param i32)))
-   (import "__js" "trace" (func $js_trace (param i32))) ;; FIXME: remove
+   (import "__js" "trace" (func $js_trace (param i32)))
    (import "__js" "internalError" (func $js_internal_error (param i32) (param i32)))
    
    (import "__js" "argc" (global $js_argc i32))
    (import "__js" "get_arg" (func $js_get_arg (param i32 i32) (result i32)))
-   (import "__js" "getcwd" (func $js_getcwd (result i32)))
+   (import "__js" "getcwd" (func $js_getcwd (param i32) (result i32)))
    (import "__js" "getenv" (func $js_getenv (param i32) (param i32) (result i32)))
    (import "__js_math" "fmod" (func $fmod (param f64 f64) (result f64)))
    (import "__js_math" "exp" (func $exp (param f64) (result f64)))

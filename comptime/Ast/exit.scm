@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/exit.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/exit.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 14:19:17 1995                          */
-;*    Last change :  Tue Aug 31 16:09:00 2021 (serrano)                */
+;*    Last change :  Thu Jan  2 17:39:11 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `set-exit' and `jmp-exit' management.                        */
 ;*=====================================================================*/
@@ -55,7 +55,7 @@
 				(loc loc)
 				(type (strict-node-type *obj* *_*))
 				(var (instantiate::ref
-					(type (strict-node-type *_* *exit*))
+					(type *exit*)
 					(loc loc)
 					(variable exit)))
 				(body body)
@@ -84,7 +84,7 @@
 				(loc loc)
 				(type (strict-node-type *obj* *_*))
 				(var (instantiate::ref
-					(type (strict-node-type *_* *exit*))
+					(type *exit*)
 					(loc loc)
 					(variable exit)))
 				(body body)

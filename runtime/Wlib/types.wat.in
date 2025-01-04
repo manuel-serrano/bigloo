@@ -4,8 +4,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Sun Dec 29 10:31:02 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Mon Dec 30 06:51:45 2024 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
 ;*=====================================================================*/
@@ -13,16 +13,18 @@
 (module $__bigloo_types
    
    ;; -----------------------------------------------------------------
+   ;; Exceptions 
+   ;; -----------------------------------------------------------------
+   
+   (tag $unimplemented)
+   (tag $fail)
+   (tag $BEXCEPTION (param (ref $bexception)))
+
+   ;; -----------------------------------------------------------------
    ;; Misc 
    ;; -----------------------------------------------------------------
 
    (type $cnst-table (array (mut (ref eq))))
-
-   (type $bgl_dframe
-      (struct
-	 (field $name (mut (ref eq)))
-	 (field $location (mut (ref eq)))
-	 (field $link (mut (ref null $bgl_dframe)))))
 
    (type $bgl_evmeaning_addr
       (struct
@@ -44,9 +46,6 @@
 			 (field $entry (ref func))
 			 (field $env (ref null $vector))))
    (type $procedure-el (array (mut (ref eq))))
-   
-   (tag $fail)
-
    
    ;; -----------------------------------------------------------------
    ;; String 
@@ -113,18 +112,9 @@
    (type $bucs2 (struct (field $v i16) (field $__dummy i16)))
    (type $real (struct (field $v f64)))
 
-   (type $exit (struct 
-		  (field $userp (mut i64))
-		  (field $stamp (mut i64))
-		  (field $protect (mut (ref eq)))
-		  (field $prev (mut (ref null $exit)))))
-   (type $bexception (struct
-			(field $exit (ref $exit))
-			(field $val (ref eq))))
-   (tag $BEXCEPTION (param (ref $bexception)))
+   
    
    ;; Exception raised for unimplemented code.
-   (tag $unimplemented)
    
    (type $struct (struct
 		    (field $key (ref eq))
@@ -157,28 +147,8 @@
    (@include "./wobject.wat" type)
 
    (@include "./wdate.wat" type)
-   
-   ;; -----------------------------------------------------------------
-   ;; Dynamic environment 
-   ;; -----------------------------------------------------------------
-   (type $dynamic-env
-      (struct 
-	 (field $exitd_top (mut (ref $exit)))
-	 (field $exitd_val (mut (ref eq)))
-	 (field $uncaught-exception-handler (mut (ref eq)))
-	 (field $error-handler (mut (ref eq)))
-	 
-	 (field $current-output-port (mut (ref null $output-port)))
-	 (field $current-error-port (mut (ref null $output-port)))
-	 (field $current-input-port (mut (ref null $input-port)))
 
-	 (field $evstate (mut (ref eq)))
-	 (field $module (mut (ref eq)))
-	 (field $abase (mut (ref eq)))
-
-	 (field $lexical-stack (mut (ref eq)))
-	 (field $top (mut (ref null $bgl_dframe)))
-	 (field $top-of-frame (mut (ref null $bgl_dframe)))))
+   (@include "./wdenv.wat" type)
 
    (@include "./wcustom.wat" type)
    (@include "./wforeign.wat" type)

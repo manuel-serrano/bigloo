@@ -296,7 +296,7 @@
      (jumpexit (method foreign () obj "jumpexit" obj obj))
      (debug_handler (method foreign () obj "debug_handler" bexception exit))
      (java_exception_handler (method foreign () obj "java_exception_handler" throwable exit))
-     (setexit (method foreign () obj "setexit"))
+     (setexit (method foreign () exit "setexit"))
      (bgl_string_to_bignum (method foreign () bignum "bgl_string_to_bignum" string))
      (BINT (method foreign () obj "BINT" int))
      ;   (math (class () "java.lang.Math"))

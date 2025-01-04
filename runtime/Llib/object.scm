@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Dec  5 14:42:34 2024 (serrano)                */
+;*    Last change :  Sat Jan  4 08:43:44 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -168,7 +168,7 @@
 	   ($class-super "(struct.get $class $super ~0)")
 	   ($class-subclasses "(struct.get $class $subclasses ~0)")
 	   ;; FIXME: cast to ref $class should not be required...
-	   ($class-ancestors-ref "(array.get $vector (struct.get $class $ancestors (ref.cast (ref $class) ~0)) (i32.wrap_i64 ~1))")
+	   ($class-ancestors-ref "(ref.cast (ref $class) (array.get $vector (struct.get $class $ancestors (ref.cast (ref $class) ~0)) (i32.wrap_i64 ~1)))")
 	   ($class-alloc-fun "(struct.get $class $alloc_fun ~0)")
 	   ($class-new-fun "(struct.get $class $new_fun ~0)")
 	   ($class-nil-fun "(struct.get $class $nil_fun ~0)")

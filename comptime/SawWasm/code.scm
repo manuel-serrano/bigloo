@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sun Dec 29 07:38:38 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Mon Dec 30 06:47:07 2024 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
 ;*=====================================================================*/
@@ -146,21 +146,65 @@
 	 (if relbody
 	     (append inits (list '(comment "local initialization")) relbody)
 	     (begin
-		;; when using the dispatcher methods, all locals must be nullable
+		;; when using the dispatcher methods,
+		;; all locals must be nullable
 		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
 		(gen-dispatcher-body blocks)))))
-
+   
    (let ((protect (get-protect-temp blocks)))
       (if protect
-	  (let ((lbl (gensym '$try))
+	  (let ((lblb (gensym '$try-bexit))
+		(lblc (gensym '$try))
 		(ty (wasm-type (global-type v)))
-		(e (gensym '$exn)))
+		($exit (wasm-sym (reg-name protect))))
 	     `((comment "try block")
-	       (local.set ,e
-		  `(block ,lbl (result (ref null $bexception))
-		      (try_table (catch $BEXCEPTION ,lbl)
-			 ,@(plain-body))
-		      (return (ref.null none))))))
+	       (local.set ,$exit (global.get $exit-default-value))
+	       (call $js_trace (i32.const 55555))
+	       (block ,lblc (result (ref eq))
+		  (call $BGL_RESTORE_TRACE_WITH_VALUE
+		     (call $bgl_exception_handler
+			(block ,lblb (result (ref $bexception))
+			   (try_table (catch $BEXCEPTION ,lblb)
+			      ,@(plain-body)
+			      (br ,lblc)))
+			(local.get ,$exit)))
+		  (br ,lblc))))
+	  (plain-body))))
+
+(define (gen-body.tbr v::global blocks locals)
+   
+   (define (plain-body)
+      (let ((inits (gen-local-inits v blocks locals))
+	    (relbody (relooper v blocks)))
+	 (if relbody
+	     (append inits (list '(comment "local initialization")) relbody)
+	     (begin
+		;; when using the dispatcher methods,
+		;; all locals must be nullable
+		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
+		(gen-dispatcher-body blocks)))))
+   
+   (let ((protect (get-protect-temp blocks)))
+      (if protect
+	  (let ((lble (gensym '$try-exn))
+		(lblb (gensym '$try-bexit))
+		(lblc (gensym '$try))
+		(ty (wasm-type (global-type v)))
+		($protect (wasm-sym (reg-name protect))))
+	     `((comment "try block")
+	       (local.set ,$protect (global.get $exit-default-value))
+	       (block ,lblc (result (ref eq))
+		  (block ,lble
+		     (try_table (catch_all ,lble)
+			(call $BGL_RESTORE_TRACE_WITH_VALUE
+			   (call $bgl_bexception_handler
+			      (block ,lblb (result (ref $bexception))
+				 (try_table (catch $BEXCEPTION ,lblb)
+				    ,@(plain-body)
+				    (br ,lblc)))
+			      (local.get ,$protect)))
+			(br ,lblc)))
+		  (global.get $BUNSPEC))))
 	  (plain-body))))
 
 ;*---------------------------------------------------------------------*/
@@ -289,6 +333,7 @@
 	 ((vector) (if nullable '(ref null $vector) '(ref $vector)))
 	 ((string bstring) (if nullable '(ref null $bstring) '(ref $bstring)))
 	 ((hvector) '(ref array))
+;;	 ((exit) '(ref null $exit))
 	 (else 
 	  (cond 
 	     ((foreign-type? t)
@@ -874,9 +919,10 @@
     `(struct.set $cell $val (ref.cast (ref $cell) ,(gen-reg (car args))) ,@(gen-args (cdr args)))))
 
 (define-method (gen-expr fun::rtl_fail args)
-  ;; TODO
-  (with-fun-loc fun 
-    '(throw $fail)))
+   (with-fun-loc fun
+      `(block
+	  (call $the_failure ,@(gen-args args))
+	  (unreachable))))
 
 (define-method (gen-expr fun::rtl_return args)
    (with-fun-loc fun

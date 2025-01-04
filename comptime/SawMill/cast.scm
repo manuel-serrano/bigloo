@@ -44,7 +44,7 @@
 		 (let ( (rr (instantiate::rtl_reg
 			       (type real)
 			       (var #f)
-			       (name (gensym)))) )
+			       (name (gensym 'd)))) )
 		    (let ( (x dest) )
 		       (rtl_ins-dest-set! ins rr)
 		       (cons (add-cast rr x) '()) ))))
@@ -60,7 +60,7 @@
 		 (let ( (rr (instantiate::rtl_reg
 			       (type t)
 			       (var #f)
-			       (name (gensym)))) )
+			       (name (gensym 'c)))) )
 		    (set-car! args rr)
 		    (cons (add-cast r rr) casts) ))))))
 
@@ -125,6 +125,9 @@
 
 (define-method (type-dest::type fun::rtl_cast args::pair-nil) ;(list expr)
    (rtl_cast-totype fun) )
+
+(define-method (type-dest::type fun::rtl_protect args::pair-nil) ;(list expr)
+   (find-type 'exit) )
 
 ;;
 (define-generic (type-args fun::rtl_fun);

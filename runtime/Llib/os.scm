@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/os.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/os.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Nov  5 18:05:38 2024 (serrano)                */
+;*    Last change :  Sat Jan  4 09:00:47 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -64,7 +64,7 @@
 	    (macro c-system::int  (::string) "system")
 	    (c-date::string () "c_date")
 	    (macro c-chdir::bool (::string) "chdir")
-	    (macro c-getcwd::string (::string ::int) "(char *)(long)getcwd")
+	    (macro $getcwd::string (::string ::int) "(char *)(long)getcwd")
 	    (macro $chdir::int (::string) "chdir")
 	    (c-chmod::bool (::string ::bool ::bool ::bool) "bgl_chmod")
 	    (macro c-chmod-int::bool (::string ::int) "chmod")
@@ -157,7 +157,7 @@
 
    (wasm    ($getenv? "(call $bgl_getenvp ~0)")
 	    ($getenv "(call $bgl_getenv ~0)")
-	    (c-getcwd "(call $bgl_getcwd)"))
+	    ($getcwd "(call $bgl_getcwd)"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -186,7 +186,7 @@
 		  "c_date")
 	       (method static c-chdir::bool (::string)
 		  "chdir")
-	       (method static c-getcwd::string (::string ::int)
+	       (method static $getcwd::string (::string ::int)
 		  "getcwd")
 	       (method static c-chmod::bool (::string ::bool ::bool ::bool)
 		  "bgl_chmod")
@@ -452,7 +452,7 @@
 ;*---------------------------------------------------------------------*/
 (define (pwd)
    (let ((string (make-string 1024)))
-      (c-getcwd string 1024)))
+      ($getcwd string 1024)))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    basename ...                                                     */

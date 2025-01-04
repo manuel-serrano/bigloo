@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Sun Dec 29 06:55:59 2024 (serrano)                */
+;*    Last change :  Thu Jan  2 10:49:26 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -107,6 +107,19 @@
    (let ((f (bind-exit (ex)
 	       (lambda () 345))))
       (f)))
+
+;*---------------------------------------------------------------------*/
+;*    test7 ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (test7)
+   (bind-exit (ex1)
+      (test7b ex1)
+      #f))
+
+(define (test7b kont)
+   (bind-exit (kont2)
+      (unless (eq? kont2 kont)
+	 (kont #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-stack-traces ...                                            */
@@ -216,6 +229,7 @@
 			  #f)))
 	 #t)
    (test "cfa" (test6) 345)
+   (test "nested" (test7) #t)
    (test "unwind.1" (eval '(unwind-protect 10 10)) 10)
    (test "unwind.2" (eval '(bind-exit (exit) (unwind-protect (exit 10) 9))) 10)
    (test "unwind.3" (eval '(bind-exit (exit) (unwind-protect 10 9))) 10)
