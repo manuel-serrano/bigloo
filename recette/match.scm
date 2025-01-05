@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/match.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/match.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 10 16:37:46 1992                          */
-;*    Last change :  Mon Jul 31 16:51:39 2006 (serrano)                */
+;*    Last change :  Sun Jan  5 09:54:47 2025 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de match-case                                           */
 ;*---------------------------------------------------------------------*/
@@ -174,12 +174,12 @@
 	 'else)
    (test "expand" (match-test-3 8) #t)
    (test "match-test-4" (match-test-4 '((labels ((gee (x) x)) gee) 1)) 'app)
-   (test "atom" (match-test-5 '(1 2 3)) 'else)
-   (test "atom" (match-test-5 '#(1 2 3)) 'atom)
-   (test "atom" (match-test-5 (make-s)) 'atom)
-   (test "structure" (is-in-circle? 10 p-int) #t)
-   (test "structure" (is-in-circle? 10 p-real) #t)
-   (test "structure" (begin (match-lambda (#{int-point} 'toto)) #t) #t)
+   (test "atom.1" (match-test-5 '(1 2 3)) 'else)
+   (test "atom.2" (match-test-5 '#(1 2 3)) 'atom)
+   (test "atom.3" (match-test-5 (make-s)) 'atom)
+   (test "structure.1" (is-in-circle? 10 p-int) #t)
+   (test "structure.2" (is-in-circle? 10 p-real) #t)
+   (test "structure.3" (begin (match-lambda (#{int-point} 'toto)) #t) #t)
    (test "??- vs trigraph" (pair? (expand '(match-case x ((??- . ?x) 1)))) #t)
    (test "match-eq.1" (match-eq (list 'toto "toto")) 'toto)
    (test "match-eq.2" (match-eq (list 'toto "tutu")) 'else)
@@ -193,13 +193,13 @@
    (test "match-non-linear.2" (match-non-linear '((* a) (* a))) 2)
    (test "match-non-linear.3" (match-non-linear '(1 2)) 3)
    (test "match-non-linear.4" (match-non-linear '(1 1)) 1)
-   (test "match-not" (match-not '(foo)) 1)
-   (test "match-not" (match-not '((foo))) 2)
-   (test "match-not" (match-not '(())) 3)
-   (test "match-not" (match-not 'foo) 4)
-   (test "match-string" (match-string '("a" b)) 1)
-   (test "match-string" (match-string '("a" c)) 2)
-   (test "match-string" (match-string '("a" d)) 3)
-   (test "match-string" (match-string '("a")) 3)
-   (test "match-string" (match-string '("a" c c)) 3))
+   (test "match-not.1" (match-not '(foo)) 1)
+   (test "match-not.2" (match-not '((foo))) 2)
+   (test "match-not.3" (match-not '(())) 3)
+   (test "match-not.4" (match-not 'foo) 4)
+   (test "match-string.1" (match-string '("a" b)) 1)
+   (test "match-string.2" (match-string '("a" c)) 2)
+   (test "match-string.3" (match-string '("a" d)) 3)
+   (test "match-string.4" (match-string '("a")) 3)
+   (test "match-string.5" (match-string '("a" c c)) 3))
  
