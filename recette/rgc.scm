@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/rgc.scm                      */
+;*    serrano/prgm/project/bigloo/wasm/recette/rgc.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  8 11:03:03 1994                          */
-;*    Last change :  Wed Apr 18 18:55:04 2012 (serrano)                */
+;*    Last change :  Sun Jan  5 20:09:56 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Quelques tests d'rgc                                             */
 ;*=====================================================================*/
@@ -278,18 +278,18 @@
       (test "read-chars.5" (test-read-chars 10 10) res)
       (test "read-chars.6" (test-read-chars 10 11) res)
       (test "read-chars.7" (test-read-chars 10 111) res)
-      (test "read-chars.8" (test-read-chars2 3 3 0) 3)
-      (test "read-chars.8b" (test-read-chars2 3 3 3) 6)
-      (test "read-chars.8c" (test-read-chars2 3 10 3) 6)
-      (test "read-chars.9" (test-read-chars3 3 3 0)
+      (test "read-chars2.1" (test-read-chars2 3 3 0) 3)
+      (test "read-chars2.2" (test-read-chars2 3 3 3) 6)
+      (test "read-chars2.3" (test-read-chars2 3 10 3) 6)
+      (test "read-chars3.1" (test-read-chars3 3 3 0)
 	 (test-read-chars4 6 3 0))
-      (test "read-chars.9b" (test-read-chars3 3 3 10)
+      (test "read-chars3.2" (test-read-chars3 3 3 10)
 	 (test-read-chars4 6 3 10))
-      (test "read-chars.9c" (test-read-chars3 10 3 10)
+      (test "read-chars3.3" (test-read-chars3 10 3 10)
 	 (test-read-chars4 20 3 10))
-      (test "read-chars.9d" (test-read-chars3 10 3 0)
+      (test "read-chars3.4" (test-read-chars3 10 3 0)
 	 (test-read-chars4 20 3 0))
-      (test "read-chars.10" (test-read-chars5 "123") "3")
-      (test "read-chars.11" (test-read-chars5 "12") "12")
-      (test "read-chars.12" (test-read-chars5 "1") "1"))
+      (test "read-chars5.1" (test-read-chars5 "123") "3")
+      (test "read-chars5.2" (test-read-chars5 "12") "12")
+      (test "read-chars5.3" (test-read-chars5 "1") "1"))
    (test "unread-chars" (test-unread) 1))
