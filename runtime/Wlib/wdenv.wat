@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Sat Jan  4 07:02:52 2025 (serrano)                */
+;*    Last change :  Sat Jan  4 09:40:30 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -14,7 +14,7 @@
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
-
+   
    (type $exit
       (struct 
 	 (field $userp (mut i64))
@@ -35,7 +35,8 @@
 	    (field $next (ref null $bgl_dframe_list))))
       
       (type $dynamic-env
-	 (struct 
+	 (struct
+	    (field $id i32)
 	    (field $exitd_top (mut (ref $exit)))
 	    (field $exitd_val (mut (ref eq)))
 	    (field $uncaught-exception-handler (mut (ref eq)))
@@ -75,10 +76,12 @@
 	 (global.get $BUNSPEC)
 	 ;; prev
 	 (ref.null none)))
-
+   
    (global $dynamic-env-default-value
       (export "BGL_DYNAMIC_ENV_DEFAULT_VALUE") (ref $dynamic-env)
       (struct.new $dynamic-env
+	 ;; id
+	 (i32.const 0)
 	 ;; exitd_top
 	 (global.get $exit-default-value)
 	 ;; exitd_val
@@ -118,6 +121,8 @@
    
    (global $current-dynamic-env (ref $dynamic-env) 
       (struct.new $dynamic-env
+	 ;; id
+	 (i32.const 3)
 	 ;; exitd_top
 	 (struct.new $exit
 	    (i64.const 0)
@@ -267,31 +272,28 @@
       (param $name (ref eq))
       (param $loc (ref eq))
       (result (ref eq))
-      
       (local $tmp (ref $bgl_dframe))
+      
       (local.set $tmp
-	 (struct.new $bgl_dframe (local.get $name) (local.get $loc)
-	    (struct.get $dynamic-env $top (local.get $env))))
-      (struct.set $dynamic-env $top (local.get $env) (local.get $tmp))
+	 (struct.new $bgl_dframe
+	    (local.get $name)
+	    (local.get $loc)
+	    (call $BGL_ENV_GET_TOP_OF_FRAME (local.get $env))))
+      (call $BGL_ENV_SET_TOP_OF_FRAME (local.get $env) (local.get $tmp))
+      
       (return (global.get $BUNSPEC)))
    
    (func $BGL_ENV_POP_TRACE
       (export "BGL_ENV_POP_TRACE")
       (param $env (ref $dynamic-env))
       (result (ref eq))
-      
-      (struct.set $dynamic-env $top (local.get $env)
+
+      (call $BGL_ENV_SET_TOP_OF_FRAME
+	 (local.get $env)
 	 (struct.get $bgl_dframe $link
 	    (struct.get $dynamic-env $top (local.get $env))))
+      
       (return (global.get $BUNSPEC)))
-   
-   (func $BGL_ENV_STORE_TRACE
-      (export "BGL_ENV_STORE_TRACE")
-      (param $env (ref $dynamic-env))
-      (call $BGL_ENV_EXIT_TRACES_SET (local.get $env)
-	 (struct.new $bgl_dframe_list
-	    (ref.as_non_null (call $BGL_ENV_GET_TOP_OF_FRAME (local.get $env)))
-	    (call $BGL_ENV_EXIT_TRACES (local.get $env)))))
    
    (func $BGL_ENV_RESTORE_TRACE
       (export "BGL_ENV_RESTORE_TRACE")
@@ -409,13 +411,15 @@
    ;; Exit and Exception 
    ;; -----------------------------------------------------------------
    
-   (func $bgl_make_bexception (export "bgl_make_bexception")
+   (func $bgl_make_bexception
+      (export "bgl_make_bexception")
       (param $exit (ref $exit))
       (param $val (ref eq))
       (result (ref $bexception))
       (return (struct.new $bexception (local.get $exit) (local.get $val))))
    
-   (func $bgl_make_exit (export "bgl_make_exit")
+   (func $bgl_make_exit
+      (export "bgl_make_exit")
       (result (ref $exit))
       (struct.new $exit
 	 (i64.const 0)
@@ -423,24 +427,154 @@
 	 (global.get $BNIL)
 	 (ref.null none)))
    
-   (func $bgl_exception_handler (export "bgl_exception_handler")
+   (func $bgl_exception_handler
+      (export "bgl_exception_handler")
       (param $exn (ref $bexception))
       (param $exit (ref $exit))
       (result (ref eq))
-      (call $js_trace (i32.const 66666))
       (if (i64.eqz (struct.get $exit $userp (local.get $exit)))
 	  (then
-	     (call $js_trace (i32.const 666662))
 	     (return (struct.get $bexception $val (local.get $exn))))
 	  (else
 	   (if (ref.eq (struct.get $bexception $exit (local.get $exn))
 		  (local.get $exit))
 	       (then
-		  (call $js_trace (i32.const 666663))
 		  (return (struct.get $bexception $val (local.get $exn))))
 	       (else
-		(call $js_trace (i32.const 666664))
 		(throw $BEXCEPTION (local.get $exn)))))))
+   
+   (func $BGL_ERROR_HANDLER_GET (export "BGL_ERROR_HANDLER_GET")
+      (result (ref eq))
+      (struct.get $dynamic-env $error-handler (global.get $current-dynamic-env)))
+   
+   (func $BGL_ENV_ERROR_HANDLER_GET
+      (export "BGL_ENV_ERROR_HANDLER_GET")
+      (param $env (ref $dynamic-env))
+      (result (ref eq))
+      (struct.get $dynamic-env $error-handler (local.get $env)))
+   
+   (func $BGL_ENV_ERROR_HANDLER_SET
+      (export "BGL_ENV_ERROR_HANDLER_SET") 
+      (param $env (ref $dynamic-env))
+      (param $hdl (ref eq)) 
+      (struct.set $dynamic-env $error-handler (local.get $env) (local.get $hdl)))
+   
+   (func $BGL_ERROR_HANDLER_SET
+      (export "BGL_ERROR_HANDLER_SET") 
+      (param $hdl (ref eq))
+      (return_call $BGL_ENV_ERROR_HANDLER_SET
+	 (global.get $current-dynamic-env) (local.get $hdl)))
+   
+   (func $BGL_ENV_ERROR_HANDLER_PUSH
+      (export "BGL_ENV_ERROR_HANDLER_PUSH")
+      (param $env (ref $dynamic-env))
+      (param $h (ref eq))
+      (param $hdl (ref eq))
+      (return_call $BGL_ENV_ERROR_HANDLER_SET
+	 (local.get $env)
+	 (struct.new $pair (local.get $h) (local.get $hdl))))
+   
+   (func $BGL_ERROR_HANDLER_PUSH (export "BGL_ERROR_HANDLER_PUSH") 
+      (param $h (ref eq))
+      (param $hdl (ref eq))
+      (return_call $BGL_ENV_ERROR_HANDLER_PUSH
+	 (global.get $current-dynamic-env) (local.get $h) (local.get $hdl)))
+   
+   (func $BGL_UNCAUGHT_EXCEPTION_HANDLER_GET
+      (export "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET") (result (ref eq))
+      (struct.get $dynamic-env $uncaught-exception-handler (global.get $current-dynamic-env)))
+   
+   (func $BGL_UNCAUGHT_EXCEPTION_HANDLER_SET
+      (export "BGL_UNCAUGHT_EXCEPTION_HANDLER_SET") (param $hdl (ref eq))
+      (struct.set $dynamic-env $uncaught-exception-handler (global.get $current-dynamic-env) (local.get $hdl)))
+   
+   ;; -----------------------------------------------------------------
+   ;; Exit
+   ;; -----------------------------------------------------------------
+   
+  (func $PUSH_ENV_EXIT (export "PUSH_ENV_EXIT") 
+    (param $env (ref $dynamic-env)) 
+    (param $v (ref $exit)) 
+    (param $protect i64) 
+    (result (ref eq))
+    (struct.set $exit $userp (local.get $v) (local.get $protect))
+    (struct.set $exit $prev (local.get $v) (struct.get $dynamic-env $exitd_top (local.get $env)))
+    (struct.set $dynamic-env $exitd_top (local.get $env) (local.get $v))
+    (global.get $BUNSPEC))
+
+  (func $PUSH_EXIT (export "PUSH_EXIT") 
+    (param $v (ref $exit)) 
+    (param $protect i64) 
+    (result (ref eq))
+    (call $PUSH_ENV_EXIT 
+        (global.get $current-dynamic-env)
+        (local.get $v) 
+        (local.get $protect)))
+
+  (func $POP_ENV_EXIT (export "POP_ENV_EXIT")
+    (param $env (ref $dynamic-env)) 
+    (result (ref eq))
+    (struct.set $dynamic-env $exitd_top
+        (local.get $env)
+	(ref.cast (ref $exit)
+	   (struct.get $exit $prev
+	      (struct.get $dynamic-env $exitd_top (local.get $env)))))
+    (global.get $BUNSPEC))
+
+  (func $POP_EXIT (export "POP_EXIT") (result (ref eq))
+    (call $POP_ENV_EXIT (global.get $current-dynamic-env)))
+
+  (func $EXITD_STAMP (export "EXITD_STAMP") (param $o (ref eq))
+     (result (ref eq))
+     (call $make_bint
+	(struct.get $exit $stamp (ref.cast (ref $exit) (local.get $o)))))
+
+  (func $EXITD_CALLCCP (export "EXITD_CALLCCP") (param $o (ref eq)) (result i32)
+    (i32.const 0))
+
+  (func $EXITD_TO_EXIT (export "EXITD_TO_EXIT") (param $o (ref eq)) (result (ref $exit))
+    (ref.cast (ref $exit) (local.get $o)))
+
+  (func $BGL_EXITD_PROTECT (export "BGL_EXITD_PROTECT") 
+    (param (ref $exit)) 
+    (result (ref eq))
+    (struct.get $exit $protect (local.get 0)))
+
+  (func $BGL_EXITD_PROTECT_SET (export "BGL_EXITD_PROTECT_SET") 
+    (param $e (ref $exit)) 
+    (param $p (ref eq)) 
+    (struct.set $exit $protect (local.get $e) (local.get $p)))
+
+  (func $BGL_EXITD_PUSH_PROTECT (export "BGL_EXITD_PUSH_PROTECT") 
+    (param $e (ref $exit)) 
+    (param $p (ref eq))
+    (call $BGL_EXITD_PROTECT_SET (local.get $e)
+      (struct.new $pair 
+        (local.get $p)
+        (struct.get $exit $protect (local.get $e)))))
+
+  (func $BGL_ENV_EXITD_TOP_AS_OBJ (export "BGL_ENV_EXITD_TOP_AS_OBJ") 
+      (param $env (ref $dynamic-env))
+      (result (ref eq))
+      (struct.get $dynamic-env $exitd_top (local.get $env)))
+   
+   (func $BGL_EXITD_TOP_AS_OBJ (export "BGL_EXITD_TOP_AS_OBJ")
+      (result (ref eq))
+      (call $BGL_ENV_EXITD_TOP_AS_OBJ (global.get $current-dynamic-env)))
+   
+   (func $BGL_EXITD_BOTTOMP (export "BGL_EXITD_BOTTOMP") (param $o (ref eq)) (result i32)
+      (ref.is_null
+	 (struct.get $exit $prev (ref.cast (ref $exit) (local.get $o)))))
+   
+   (func $BGL_ENV_EXITD_VAL_SET (export "BGL_ENV_EXITD_VAL_SET") 
+      (param $env (ref $dynamic-env)) 
+      (param $v (ref eq)) 
+      (result (ref eq))
+      (struct.set $dynamic-env $exitd_val (local.get $env) (local.get $v))
+      (global.get $BUNSPEC))
+   
+   (func $BGL_EXITD_VAL_SET (export "BGL_EXITD_VAL_SET") (param $v (ref eq)) (result (ref eq))
+      (call $BGL_ENV_EXITD_VAL_SET (global.get $current-dynamic-env) (local.get $v)))
    
    )
    

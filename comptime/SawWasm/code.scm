@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Dec 30 06:47:07 2024 (serrano)                */
+;*    Last change :  Sat Jan  4 09:39:21 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -159,7 +159,6 @@
 		($exit (wasm-sym (reg-name protect))))
 	     `((comment "try block")
 	       (local.set ,$exit (global.get $exit-default-value))
-	       (call $js_trace (i32.const 55555))
 	       (block ,lblc (result (ref eq))
 		  (call $BGL_RESTORE_TRACE_WITH_VALUE
 		     (call $bgl_exception_handler

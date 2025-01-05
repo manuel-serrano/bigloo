@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Dec 30 09:39:24 2024 (serrano)                */
-;*    Copyright   :  2024 Hubert Gruniaux and Manuel Serrano           */
+;*    Last change :  Sat Jan  4 14:38:39 2025 (serrano)                */
+;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
 ;*=====================================================================*/
@@ -82,8 +82,8 @@
       (require-tailc #t)
       (typed-eq #t)
       ; TODO: maybe remove these two checks
-      (bound-check #f)
-      (type-check #f)
+      (bound-check #t)
+      (type-check #t)
       (force-register-gc-roots #f)
       (tvector-descr-support #f)
       (string-literal-support #f)

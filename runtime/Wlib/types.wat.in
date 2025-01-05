@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Mon Dec 30 06:51:45 2024 (serrano)                */
+;*    Last change :  Sun Jan  5 08:42:59 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -34,18 +34,8 @@
    ;; Vectors 
    ;; -----------------------------------------------------------------
    (@include "./wvector.wat" type)
-   
-   (type $procedure (struct 
-		       (field $entry (ref func))
-		       (field $attr (mut (ref eq)))
-		       (field $arity i32)
-		       (field $env (ref null $vector))))
-   ;;(type $tmpfun (struct (field (ref func))))
 
-   (type $procedure-l (struct
-			 (field $entry (ref func))
-			 (field $env (ref null $vector))))
-   (type $procedure-el (array (mut (ref eq))))
+   (@include "./wprocedure.wat" type)
    
    ;; -----------------------------------------------------------------
    ;; String 
@@ -63,30 +53,6 @@
    (type $pair-nil (struct))
 
    
-   ;; Functions types (for closures and variadic calls)
-   (type $func0 (func (param (ref $procedure)) (result (ref eq))))
-   (type $func1 (func (param (ref $procedure)) (param (ref eq)) (result (ref eq))))
-   (type $func2 (func (param (ref $procedure)) (param (ref eq) (ref eq)) (result (ref eq))))
-   (type $func3 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func4 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func5 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func6 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func7 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func8 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func9 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func10 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func11 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func12 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func13 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func14 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func15 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func16 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func17 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func18 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func19 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func20 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-   (type $func21 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
-
    ;; cells
    (type $cell (struct (field $val (mut (ref eq)))))
    
