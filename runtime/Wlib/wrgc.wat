@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Sat Dec 28 07:52:27 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Sun Jan  5 10:50:00 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
 ;*=====================================================================*/
@@ -520,6 +520,54 @@
       (return
 	 (return_call $js_strtod (i32.const 128)
 	    (i32.sub (local.get $stop) (local.get $start)))))
+      
+   ;; rgc_buffer_fixnum
+   (func $rgc_buffer_fixnum (export "rgc_buffer_fixnum")
+      (param $ip (ref $input-port))
+      (result i64)
+      
+      (local $rgc (ref $rgc))
+      (local $buf (ref $bstring))
+      (local $stop i32)
+      (local $start i32)
+      (local $sign i64)
+      (local $res i64)
+      (local $current i32)
+      
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+      (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
+      (local.set $stop (struct.get $rgc $matchstop (local.get $rgc)))
+      (local.set $start (struct.get $rgc $matchstart (local.get $rgc)))
+      (local.set $res (i64.const 0))
+      (local.set $sign (i64.const 1))
+      
+      ;; the sign
+      (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+	     (i32.const 43)) ;; #\+
+	  (then
+	     (local.set $start (i32.add (local.get $start) (i32.const 1))))
+	  (else
+	   (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+		  (i32.const 45)) ;; #\-
+	       (then
+		  (local.set $sign (i64.const -1))
+		  (local.set $start (i32.add (local.get $start) (i32.const 1)))))))
+      
+      (loop $while
+	 (if (i32.lt_s (local.get $start) (local.get $stop))
+	     (then
+		(local.set $current
+		   (i32.sub (array.get $bstring (local.get $buf) (local.get $start))
+		      (i32.const 48))) ;; #\0
+		(local.set $res
+		   (i64.add (i64.mul (local.get $res) (i64.const 10))
+		      (i64.extend_i32_s (local.get $current))))
+		(local.set $start
+		   (i32.add (local.get $start) (i32.const 1)))
+		(br $while))))
+      
+      (return (i64.mul (local.get $res) (local.get $sign))))
+
       
    ;; rgc_buffer_integer
    (func $rgc_buffer_integer (export "rgc_buffer_integer")

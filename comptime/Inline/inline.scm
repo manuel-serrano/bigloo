@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Fri Dec 27 09:59:02 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jan  5 10:22:25 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -61,6 +61,7 @@
                       (not (eq? (global-import variable) 'static))))
 	     (inline-node inl-body kfactor (cons variable stack))
              inl-body)))
+	 (shape (sfun-body (variable-value variable))))
    (trace (inline inline+ 0)
       "--- END SCANNING: " (shape variable) " ----" #\Newline))
 

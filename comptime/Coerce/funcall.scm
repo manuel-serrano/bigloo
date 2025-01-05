@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Thu Nov 28 12:38:08 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jan  5 10:41:36 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
 ;*=====================================================================*/
@@ -145,21 +145,37 @@
       (coerce! node caller to #f)))
 
 ;*---------------------------------------------------------------------*/
+;*    coerce-eoa ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (coerce-eoa node)
+   (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
+      (lvtype-node! n)
+      n))
+
+;*---------------------------------------------------------------------*/
+;*    is-eoa? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (is-eoa? node)
+   (when (isa? node ref)
+      (with-access::ref node (variable)
+	 (when (global? variable)
+	    (with-access::global variable (id module)
+	       (and (eq? id '__eoa__) (eq? module 'foreign)))))))
+
+;*---------------------------------------------------------------------*/
 ;*    coerce-funcall-args! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (coerce-funcall-args! node caller to safe)
-   
-   (define (toplevel-exp node)
-      (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
-	 (lvtype-node! n)
-	 n))
-   
    (if (null? (funcall-args node))
-       (funcall-args-set! node (list (toplevel-exp node)))
+       (funcall-args-set! node (list (coerce-eoa node)))
        (let loop ((actuals (funcall-args node))
-		  (prev    'dummy))
+		  (prev 'dummy))
 	  (if (null? actuals)
-	      (set-cdr! prev (list (toplevel-exp node)))
+	      ;; Coerce might be called again after eoa has been introduced
+	      ;; but it cannot be introduced twice
+	      (if (is-eoa? (car prev))
+		  (set-cdr! prev '())
+		  (set-cdr! prev (list (coerce-eoa node))))
 	      (begin
 		 (set-car! actuals (coerce! (car actuals) caller *obj* safe))
 		 (loop (cdr actuals) actuals))))))
@@ -168,21 +184,16 @@
 ;*    coerce-funcall-elight-args! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (coerce-funcall-elight-args! node caller to safe)
-   
-   (define (toplevel-exp node)
-      (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
-	 (lvtype-node! n)
-	 n))
-   
    (if (null? (funcall-args node))
-       (funcall-args-set! node (list (toplevel-exp node)))
+       (funcall-args-set! node (list (coerce-eoa node)))
        (let ((callee (var-variable (car (funcall-functions node)))))
-;* 	  (tprint "N=" (shape node) " to=" (shape to))                 */
 	  (let loop ((actuals (funcall-args node))
 		     (formals (sfun-args (variable-value callee)))
 		     (prev 'dummy))
 	     (if (null? actuals)
-		 (set-cdr! prev (list (toplevel-exp node)))
+		 (if (is-eoa? (car prev))
+		     (set-cdr! prev '())
+		     (set-cdr! prev (list (coerce-eoa node))))
 		 (begin
 		    (set-car! actuals
 		       (coerce! (car actuals) caller (local-type (car formals))
