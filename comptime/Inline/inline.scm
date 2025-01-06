@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Sun Jan  5 10:22:25 2025 (serrano)                */
+;*    Last change :  Mon Jan  6 11:58:13 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -36,34 +36,32 @@
 ;*    inline-sfun! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (inline-sfun! variable kfactor stack)
-   (trace (inline inline+ 0)
-      "--- SCANNING: " (shape variable) " ---- kactor: " kfactor
-      " occurrence=" (variable-occurrence variable) #\Newline)
-   (let* ((sfun (variable-value variable))
-	  (isfun (if (isfun? sfun?)
-		     sfun
-		     (widen!::isfun sfun (original-body (sfun-body sfun)))))
-	  (o-body (isfun-original-body isfun))
-	  (inl-body (if (inline-app? variable *kfactor*
-			   (+fx 1 (length (sfun-args sfun))) '())
-			;; if at least one call to `variable' can be
-			;; inlined, we duplicate its body.
-			(begin
-			   (trace inline "DUPLICATING " (shape variable)
-			      "'s body" #\Newline)
-			   (alphatize '() '() #f o-body))
-			o-body)))
-      (sfun-body-set! sfun
-         (if (or (eq? *inline-mode* 'all)
-		 (or (>fx (variable-occurrence variable) 0)
-		     (eq? (variable-removable variable) 'cgen))
-                 (and (global? variable)
-                      (not (eq? (global-import variable) 'static))))
-	     (inline-node inl-body kfactor (cons variable stack))
-             inl-body)))
-	 (shape (sfun-body (variable-value variable))))
-   (trace (inline inline+ 0)
-      "--- END SCANNING: " (shape variable) " ----" #\Newline))
+   (with-trace 'inline "inline-sfun!"
+      (trace-item "variable=" (shape variable))
+      (trace-item "kfactor=" kfactor)
+      (trace-item "occurrence=" (variable-occurrence variable))
+      (let* ((sfun (variable-value variable))
+	     (isfun (if (isfun? sfun?)
+			sfun
+			(widen!::isfun sfun (original-body (sfun-body sfun)))))
+	     (o-body (isfun-original-body isfun))
+	     (inl-body (if (inline-app? variable *kfactor*
+			      (+fx 1 (length (sfun-args sfun))) '())
+			   ;; if at least one call to `variable' can be
+			   ;; inlined, we duplicate its body.
+			   (begin
+			      (trace inline "DUPLICATING " (shape variable)
+				 "'s body" #\Newline)
+			      (alphatize '() '() #f o-body))
+			   o-body)))
+	 (sfun-body-set! sfun
+	    (if (or (eq? *inline-mode* 'all)
+		    (or (>fx (variable-occurrence variable) 0)
+			(eq? (variable-removable variable) 'cgen))
+		    (and (global? variable)
+			 (not (eq? (global-import variable) 'static))))
+		(inline-node inl-body kfactor (cons variable stack))
+		inl-body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-node ...                                                  */
