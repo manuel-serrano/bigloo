@@ -1,5 +1,5 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/rgc_trap.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/recette/rgc_trap.scm            */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 14:24:02 1992                          */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat Jan  4 09:03:25 2025 (serrano)                */
+/*    Last change :  Mon Jan  6 08:36:44 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -195,7 +195,7 @@ const instance = await WebAssembly.instantiate(wasm, {
             throw WebAssembly.RuntimeError("invalid file descriptor");
 
          const memory = new Uint8Array(instance.exports.memory.buffer, offset, length);
-         const readBytes = readSync(fd, memory);
+         const readBytes = readSync(fd, memory, 0, length);
          return readBytes;
       },
 

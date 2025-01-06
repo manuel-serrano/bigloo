@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Sat Jan  4 07:21:57 2025 (serrano)                */
+;*    Last change :  Mon Jan  6 07:40:34 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -80,6 +80,14 @@
       (func (param (ref eq))
 	 (result (ref eq))))
 
+   ;; sysread_t
+   (type $sysread_t
+      (func (param (ref eq))
+	 (param (ref $bstring))
+	 (param i32)
+	 (param i32)
+	 (result i32)))
+   
    ;; binary-port
    (type $binary-port
       (struct
@@ -297,6 +305,7 @@
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
 	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc)))))
 
    (global $input-port-default-value
@@ -314,6 +323,8 @@
 	 (ref.null $sysseek_t)
 	 ;; userseek
 	 (global.get $BUNSPEC)
+	 ;; sysread
+	 (ref.null $sysread_t)
 	 ;; rgc
 	 (global.get $rgc-default-value)))
 
@@ -327,6 +338,7 @@
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
 	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
 	    (field $fd i32))))
 
@@ -340,6 +352,7 @@
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
 	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
 	    (field $fd i32))))
 
@@ -358,6 +371,8 @@
 	 (ref.null $sysseek_t)
 	 ;; userseek
 	 (global.get $BUNSPEC)
+	 ;; sysread
+	 (ref.null $sysread_t)
 	 ;; rgc
 	 (global.get $rgc-default-value)
 	 ;; fd
@@ -373,6 +388,7 @@
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
 	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
 	    (field $fd i32))))
 
@@ -386,6 +402,7 @@
 	    (field $sysclose (mut (ref null $sysclose_t)))
 	    (field $sysseek (mut (ref null $sysseek_t)))
 	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
 	    (field $offset (mut i64)))))
 
@@ -404,6 +421,8 @@
 	 (ref.null $sysseek_t)
 	 ;; userseek
 	 (global.get $BUNSPEC)
+	 ;; sysread
+	 (ref.null $sysread_t)
 	 ;; rgc
 	 (global.get $rgc-default-value)
 	 ;; offset
@@ -547,8 +566,8 @@
       (param $count i32)
       (result i32)
 
-      (local $op (ref $output-port))
-      (local.set $op (ref.cast (ref $output-port) (local.get $p)))
+      (local $op (ref $fd-output-port))
+      (local.set $op (ref.cast (ref $fd-output-port) (local.get $p)))
 
       (call $memcpy
 	 (i32.const 128)
@@ -557,13 +576,38 @@
 	 (local.get $count))
 
       (call $js_write_file
-	 (struct.get $fd-output-port $fd
-	    (ref.cast (ref $fd-output-port) (local.get $op)))
+	 (struct.get $fd-output-port $fd (local.get $op))
 	 (i32.const 128)
 	 (local.get $count))
 
       (return (local.get $count)))
 
+   ;; bgl_sysread
+   (func $bgl_sysread
+      (param $p (ref eq))
+      (param $buf (ref $bstring))
+      (param $start i32)
+      (param $size i32)
+      (result i32)
+
+      (local $nbread i32)
+      (local $ip (ref $fd-input-port))
+      (local.set $ip (ref.cast (ref $fd-input-port) (local.get $p)))
+
+      (local.set $nbread
+	 (call $js_read_file
+	    (struct.get $fd-input-port $fd (local.get $ip))
+	    (i32.const 128)
+	    (local.get $size)))
+
+      (call $load_string_in_buffer
+	 (i32.const 128)
+	 (local.get $nbread)
+	 (local.get $buf)
+	 (local.get $start))
+
+      (return (local.get $nbread)))
+   
    ;; bgl_input_string_seek
    (func $bgl_input_string_seek
       (param $p (ref eq))
@@ -1242,8 +1286,10 @@
 	 (ref.null $sysclose_t)
 	 ;; sysseek
 	 (ref.null $sysseek_t)
-	 ;; useseek
+	 ;; userseek
 	 (global.get $BUNSPEC)
+	 ;; sysread
+	 (ref.func $bgl_sysread)
 	 ;; rgc
 	 (local.get $rgc)
 	 ;; File descriptor
@@ -1291,6 +1337,8 @@
 	    (ref.func $bgl_input_string_seek)
 	    ;; userseek
 	    (global.get $BUNSPEC)
+	    ;; sysread
+	    (ref.null $sysread_t)
 	    ;; rgc
 	    (local.get $rgc)
 	    ;; offset
@@ -1622,6 +1670,8 @@
 	    (ref.null $sysseek_t)
 	    ;; userseek
 	    (global.get $BUNSPEC)
+	    ;; sysread
+	    (ref.func $bgl_sysread)
 	    ;; rgc
 	    (struct.new $rgc
 	       ;; eof

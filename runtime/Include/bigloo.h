@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Dec 19 09:15:41 2024 (serrano)                */
+/*    Last change :  Mon Jan  6 10:15:17 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2584,9 +2584,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define RGC_MATCH_FAIL(p) \
    (INPUT_PORT(p).matchstart++)
-
-#define RGC_FAILING_CHAR(p) \
-   ((unsigned int)(RGC_BUFFER_REF(p, INPUT_PORT(p).matchstart ]))
 
 #define RGC_BUFFER_AVAILABLE(o) \
    (INPUT_PORT(o).bufpos - INPUT_PORT(o).matchstop)

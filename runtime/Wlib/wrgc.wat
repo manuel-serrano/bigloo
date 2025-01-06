@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Sun Jan  5 10:50:00 2025 (serrano)                */
+;*    Last change :  Mon Jan  6 07:58:21 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -58,12 +58,29 @@
    ;; -----------------------------------------------------------------
    ;; Common macros
    ;; -----------------------------------------------------------------
+   (func $RGC_BUFFER_SET
+      (param $rgc (ref $rgc))
+      (param $offset i32)
+      (param $c i32)
+
+      (array.set $bstring 
+	 (struct.get $rgc $buf (local.get $rgc)) 
+	 (local.get $offset)
+	 (local.get $c)))
+
+   (func $RGC_BUFFER_SIZE
+      (param $rgc (ref $rgc))
+      (result i32)
+      (array.len (struct.get $rgc $buf (local.get $rgc))))
+		    
    (func $RGC_BUFFER_GET_CHAR (export "RGC_BUFFER_GET_CHAR")
       (param $port (ref $input-port))
       (param $index i64)
       (result i32)
+      
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+      
       (array.get $bstring 
 	 (struct.get $rgc $buf (local.get $rgc)) 
 	 (i32.wrap_i64 (local.get $index))))
@@ -73,9 +90,10 @@
       (result i64)
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
-      (i64.extend_i32_u (i32.sub
-			   (struct.get $rgc $matchstop (local.get $rgc)) 
-			   (struct.get $rgc $matchstart (local.get $rgc)))))
+      (i64.extend_i32_u
+	 (i32.sub
+	    (struct.get $rgc $matchstop (local.get $rgc)) 
+	    (struct.get $rgc $matchstart (local.get $rgc)))))
    
    (func $RGC_SET_FILEPOS (export "RGC_SET_FILEPOS")
       (param $port (ref $input-port))
@@ -324,8 +342,39 @@
 	 (i32.const 0)
 	 (array.len (local.get $buffer))))
    
-   ;; rgc_size_fill_file_buffer
-   (func $rgc_size_fill_file_buffer
+   ;; rgc_shift_buffer
+   (func $rgc_shift_buffer
+      (param $rgc (ref $rgc))
+      
+      (local $bufpos i32)
+      (local $matchstart i32)
+      (local $buffer (ref $bstring))
+      (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
+      (local.set $matchstart (struct.get $rgc $matchstart (local.get $rgc)))
+      (local.set $buffer (struct.get $rgc $buf (local.get $rgc)))
+      
+      (struct.set $rgc $lastchar (local.get $rgc)
+	 (array.get $bstring (local.get $buffer)
+	    (i32.sub (local.get $matchstart) (i32.const 1))))
+
+      (array.copy $bstring $bstring
+	 (local.get $buffer) (i32.const 0)
+	 (local.get $buffer) (local.get $matchstart)
+	 (i32.sub (local.get $bufpos) (local.get $matchstart)))
+
+      (struct.set $rgc $bufpos (local.get $rgc)
+	 (i32.sub (struct.get $rgc $bufpos (local.get $rgc))
+	    (local.get $matchstart)))
+      (struct.set $rgc $matchstop (local.get $rgc)
+	 (i32.sub (struct.get $rgc $matchstop (local.get $rgc))
+	    (local.get $matchstart)))
+      (struct.set $rgc $forward (local.get $rgc)
+	 (i32.sub (struct.get $rgc $forward (local.get $rgc))
+	    (local.get $matchstart)))
+      (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0)))
+	 
+   ;; rgc_fillsize_file_buffer
+   (func $rgc_fillsize_file_buffer
       (param $rgc (ref $rgc))
       (param $fd i32)
       (param $bufpos i32)
@@ -356,7 +405,7 @@
 	  (i32.le_s (local.get $nbread) (i32.const 0))
 	  (then (i32.const 0 #;FALSE))
 	  (else (i32.const 1 #;TRUE))))
-   
+
    ;; rgc_fill_file_buffer
    (func $rgc_fill_file_buffer
       (param $port (ref $file-input-port))
@@ -375,56 +424,25 @@
       (local.set $matchstart (struct.get $rgc $matchstart (local.get $rgc)))
       (local.set $buffer (struct.get $rgc $buf (local.get $rgc)))
       
+      (if (i32.lt_u (local.get $bufpos) (local.get $bufsize))
+	  (then (return_call $rgc_fillsize_file_buffer
+		   (local.get $rgc)
+		   (struct.get $file-input-port $fd (local.get $port))
+		   (local.get $bufpos)
+		   (i32.sub (local.get $bufsize) (local.get $bufpos)))))
+      
       (if (i32.gt_u (local.get $matchstart) (i32.const 0))
 	  (then
-	     (local.set $movesize
-		(i32.sub (local.get $bufpos) (local.get $matchstart)))
-	     
-	     (local.set $i (i32.const 0))
-	     (loop $for_loop
-		(if (i32.lt_u (local.get $i) (local.get $movesize))
-		    (then
-		       (array.set $bstring 
-			  (local.get $buffer) 
-			  (local.get $i) 
-			  (array.get $bstring
-			     (local.get $buffer)
-			     (i32.add 
-				(local.get $matchstart) 
-				(local.get $i)))
-			  (local.set $i (i32.add (local.get $i) (i32.const 1)))
-			  (br $for_loop)))))
-	     (local.set $bufpos
-		(i32.sub (local.get $bufpos) (local.get $matchstart)))
-	     (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
-	     (struct.set $rgc $matchstop (local.get $rgc) 
-		(i32.sub 
-		   (struct.get $rgc $matchstop (local.get $rgc))
-		   (local.get $matchstart)))
-	     (struct.set $rgc $forward (local.get $rgc) 
-		(i32.sub 
-		   (struct.get $rgc $forward (local.get $rgc))
-		   (local.get $matchstart)))
-	     (struct.set $rgc $matchstart (local.get $rgc)
-		(array.get $bstring (local.get $buffer)
-		   (i32.sub (local.get $matchstart) (i32.const 1))))
-	     
-	     (return_call $rgc_size_fill_file_buffer
+	     (call $rgc_shift_buffer (local.get $rgc))
+	     (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
+	     (return_call $rgc_fillsize_file_buffer
 		(local.get $rgc)
 		(struct.get $file-input-port $fd (local.get $port))
-		(local.get $bufpos) 
-		(i32.sub (local.get $bufsize) (local.get $bufpos)))))
-      
-      (if (i32.lt_u (local.get $bufpos) (local.get $bufsize))
-	  (then 
-	     (return_call $rgc_size_fill_file_buffer 
-		(local.get $rgc)
-		(struct.get $file-input-port $fd (local.get $port))
-		(local.get $bufpos) 
-		(i32.sub (local.get $bufsize) (local.get $bufpos)))))
-      
-      (call $rgc_double_buffer (local.get $rgc))
-      (return_call $rgc_fill_file_buffer (local.get $port)))
+		(local.get $bufpos)
+		(i32.sub (local.get $bufsize) (local.get $bufpos))))
+	  (else
+	   (call $rgc_double_buffer (local.get $rgc))
+	   (return_call $rgc_fill_file_buffer (local.get $port)))))
    
    ;; rgc_fill_buffer
    (func $rgc_fill_buffer (export "rgc_fill_buffer")
@@ -757,7 +775,8 @@
 	     (struct.set $rgc $forward (local.get $rgc)
 		(struct.get $rgc $matchstart (local.get $rgc)))
 	     (call $RGC_STOP_MATCH (local.get $p)
-		(i64.extend_i32_u (struct.get $rgc $matchstart (local.get $rgc))))
+		(i64.extend_i32_u
+		   (struct.get $rgc $matchstart (local.get $rgc))))
 	     
 	     (struct.set $rgc $filepos (local.get $rgc)
 		(i32.add (struct.get $rgc $filepos (local.get $rgc))
@@ -782,33 +801,38 @@
 		     (i64.sub (local.get $l)
 			(i64.extend_i32_u (local.get $avail))))))
 
-;* 	   (if (i64.gt_s (local.get $l) (i64.const 0))                 */
-;* 	       (then                                                   */
-;* 		  (loop $while                                         */
-;* 		     (if (i32.eqz (struct.get $rgc $eof (local.get $rgc))) */
-;* 			 (then                                         */
-;* 			    (if (i64.lt_s (local.get $l)               */
-;* 				   (global.get $default_io_bufsize))   */
-;* 				(then                                  */
-;* 				   (local.set $size (local.get $l)))   */
-;* 				(else                                  */
-;* 				 (local.set $size                      */
-;* 				    (global.get $default_io_bufsize)))) */
-;* 			    (local.set $r                              */
-;* 			       (call $sysread                          */
-;* 				  (local.get $p)                       */
-;* 				  (local.get $s)                       */
-;* 				  (i32.const 0)                        */
-;* 				  (local.get $size)))                  */
-;* 			                                               */
-;* 			    (local.set $o                              */
-;* 			       (i64.add (local.get $o) (local.get $r))) */
-;* 			    (local.set $l                              */
-;* 			       (i64.sub (local.get $l) (local.get $r))) */
-;* 			                                               */
-;* 			    (if (i64.gt_s (local.get $l) (i64.const 0)) */
-;* 				(then                                  */
-;* 				   (br $while))))))))                  */
+	   (if (i64.gt_s (local.get $l) (i64.const 0))
+	       (then
+		  (loop $while
+		     (if (i32.eqz (struct.get $rgc $eof (local.get $rgc)))
+			 (then
+			    (if (i64.lt_s (local.get $l)
+				   (global.get $default_io_bufsize))
+				(then
+				   (local.set $size (local.get $l)))
+				(else
+				 (local.set $size
+				    (global.get $default_io_bufsize))))
+			    (local.set $r
+			       (i64.extend_i32_u
+				  (call $bgl_sysread
+				     (local.get $p)
+				     (local.get $s)
+				     (i32.const 0)
+				     (i32.wrap_i64 (local.get $size)))))
+
+			    (if (i64.eqz (local.get $r))
+				(then
+				   (struct.set $rgc $eof
+				      (local.get $rgc) (i32.const 1)))
+				(else
+				 (local.set $o
+				    (i64.add (local.get $o) (local.get $r)))
+				 (local.set $l
+				    (i64.sub (local.get $l) (local.get $r)))
+				 (if (i64.gt_s (local.get $l) (i64.const 0))
+				     (then
+					(br $while))))))))))
 	   
 	   (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
 	   (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
@@ -820,8 +844,129 @@
 		 (i32.wrap_i64 (i64.sub (local.get $o) (local.get $o0)))))
 	   
 	   (return (i64.sub (local.get $o) (local.get $o0))))))
+
+   ;; rgc_reserve_space
+   (func $rgc_reserve_space
+      (param $rgc (ref $rgc))
+      (param $amount i32)
       
-   )
+      (local $matchstop i32)
+      (local $diff i32)
+      (local $bufpos i32)
+      
+      (local.set $matchstop (struct.get $rgc $matchstop (local.get $rgc)))
+      
+      (if (i32.ge_u (local.get $matchstop) (local.get $amount))
+	  (then (return)))
+      
+      (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
+      (if (i32.ge_u (i32.add (local.get $matchstop)
+		       (i32.sub (call $RGC_BUFFER_SIZE (local.get $rgc))
+			  (local.get $bufpos)))
+	     (local.get $amount))
+	  (then
+	     (local.set $diff
+		(i32.sub (local.get $amount) (local.get $matchstop)))
+	     (array.copy $bstring $bstring
+		(struct.get $rgc $buf (local.get $rgc))
+		(local.get $amount)
+		(struct.get $rgc $buf (local.get $rgc))
+		(local.get $matchstop)
+		(i32.sub (local.get $bufpos) (local.get $matchstop)))
+	     (struct.set $rgc $bufpos (local.get $rgc)
+		(i32.add (local.get $bufpos) (local.get $diff)))
+	     (struct.set $rgc $matchstop (local.get $rgc)
+		(i32.add (struct.get $rgc $matchstop (local.get $rgc))
+		   (local.get $diff))))
+	  (else
+	   (call $rgc_double_buffer (local.get $rgc))
+	   (return_call $rgc_reserve_space (local.get $rgc)
+	      (local.get $amount)))))
 
+   ;; rgc_buffer_insert_substring
+   (func $rgc_buffer_insert_substring
+      (export "rgc_buffer_insert_substring")
+      (param $ip (ref $input-port))
+      (param $str (ref $bstring))
+      (param $from i64)
+      (param $to i64)
+      (result i32)
 
+      (local $rgc (ref $rgc))
+      (local $matchstop i32)
+      (local $len i32)
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+      (local.set $len (i32.wrap_i64 (i64.sub (local.get $to) (local.get $from))))
+      
+      (if (call $BGL_PORT_CLOSED_P (local.get $ip))
+	  (then (return (i32.const 0))))
+
+      (if (i64.ge_u (local.get $from) (local.get $to))
+	  (then (return (i32.const 1))))
+	  
+      (call $rgc_reserve_space (local.get $rgc) (local.get $len))
+
+      (local.set $matchstop (struct.get $rgc $matchstop (local.get $rgc)))
+
+      (array.copy $bstring $bstring
+	 (struct.get $rgc $buf (local.get $rgc))
+	 (i32.sub (local.get $matchstop) (local.get $len))
+	 (local.get $str)
+	 (i32.wrap_i64 (local.get $from))
+	 (local.get $len))
+	 
+      (if (i32.ge_u (struct.get $rgc $filepos (local.get $rgc))
+	     (local.get $len))
+	  (then
+	     (struct.set $rgc $filepos (local.get $rgc)
+		(i32.sub (struct.get $rgc $filepos (local.get $rgc))
+		   (local.get $len))))
+	  (else
+	   (struct.set $rgc $filepos (local.get $rgc) (i32.const 0))))
+      
+      (local.set $matchstop (i32.sub (local.get $matchstop) (local.get $len)))
+      (struct.set $rgc $matchstop (local.get $rgc) (local.get $matchstop))
+      (struct.set $rgc $forward (local.get $rgc) (local.get $matchstop))
+      (struct.set $rgc $matchstart (local.get $rgc) (local.get $matchstop))
+      
+      (return (i32.const 1)))
    
+   ;; rgc_buffer_insert_char
+   (func $rgc_buffer_insert_char
+      (export "rgc_buffer_insert_char")
+      (param $ip (ref $input-port))
+      (param $c i32)
+      (result i32)
+      
+      (local $rgc (ref $rgc))
+      (local $matchstop i32)
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+      
+      (if (call $BGL_PORT_CLOSED_P (local.get $ip))
+	  (then (return (i32.const 0))))
+      
+      (call $rgc_reserve_space (local.get $rgc) (i32.const 1))
+      
+      (local.set $matchstop (struct.get $rgc $matchstop (local.get $rgc)))
+      
+      (call $RGC_BUFFER_SET (local.get $rgc)
+	 (i32.sub (local.get $matchstop) (i32.const 1))
+	 (local.get $c))
+      
+      (if (i32.ge_u (struct.get $rgc $filepos (local.get $rgc))
+	     (i32.const 1))
+	  (then
+	     (struct.set $rgc $filepos (local.get $rgc)
+		(i32.sub (struct.get $rgc $filepos (local.get $rgc))
+		   (i32.const 1))))
+	  (else
+	   (struct.set $rgc $filepos (local.get $rgc) (i32.const 0))))
+      
+      (local.set $matchstop (i32.sub (local.get $matchstop) (i32.const 1)))
+      (struct.set $rgc $matchstop (local.get $rgc) (local.get $matchstop))
+      (struct.set $rgc $forward (local.get $rgc) (local.get $matchstop))
+      (struct.set $rgc $matchstart (local.get $rgc) (local.get $matchstop))
+      
+      (return (i32.const 1)))
+   
+   )
