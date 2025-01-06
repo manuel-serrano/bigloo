@@ -761,6 +761,8 @@
 	     (if (i32.gt_u (i32.wrap_i64 (local.get $l)) (local.get $avail))
 		 (then (local.set $l (i64.extend_i32_u (local.get $avail)))))))
 
+      (call $js_trace (local.get $avail))
+      (call $js_trace (i32.wrap_i64 (local.get $l)))
       (if (i32.ge_u (local.get $avail) (i32.wrap_i64 (local.get $l)))
 	  (then
 	     (array.copy $bstring $bstring
