@@ -1,5 +1,5 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/port.scm              */
+;*    serrano/prgm/project/bigloo/wasm/recette/port.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */

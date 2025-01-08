@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Dec 30 09:04:52 2024 (serrano)                */
+;*    Last change :  Wed Jan  8 10:59:16 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -710,7 +710,11 @@
 	  ((custom? ,obj)
 	   ($write-custom ,obj ,port))
 	  ((binary-port? ,obj)
-	   ($write-binary-port ,obj ,port))
+	   (cond-expand
+	      ((and (not bigloo-c) (not bigloo-jvm))
+	       (display-string "#<binary-port>" ,port))
+	      (else
+	       ($write-binary-port ,obj ,port))))
 	  ((dynamic-env? ,obj)
 	   (cond-expand
 	      (bigloo-c ($write-dynamic-env ,obj ,port))

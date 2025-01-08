@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Unsafe/intext.scm             */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/intext.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Sep 25 09:25:23 2024 (serrano)                */
+;*    Last change :  Wed Jan  8 10:48:22 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -73,12 +73,10 @@
 	    (export string->obj "string_to_obj")
 	    (export obj->string "obj_to_string"))
 
-	(wasm
-		(cnst->integer "(i64.extend_i32_u (i31.get_u (ref.cast (ref i31) ~0)))")
-		(integer->cnst "(ref.i31 (i32.wrap_i64 ~0))")
-		(pointer? "(i32.const 1)") ;; all boxed types are sort of pointers
-		(size-of-long "(i64.const 8)") ;; i64 in WASM
-	)
+   (wasm    (cnst->integer "(i64.extend_i32_u (i31.get_u (ref.cast (ref i31) ~0)))")
+            (integer->cnst "(ref.i31 (i32.wrap_i64 ~0))")
+	    (pointer? "(i32.const 1)") ;; all boxed types are sort of pointers
+	    (size-of-long "(i64.const 8)")) ;; i64 in WASM
    
    (java    (class foreign
 	       (method static cnst->integer::long (::obj) "CCNST")

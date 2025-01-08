@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Mon Jan  6 07:40:34 2025 (serrano)                */
+;*    Last change :  Wed Jan  8 07:01:44 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -20,18 +20,22 @@
    (data $stdout-name "stdout")
    (data $stderr-name "stderr")
    (data $stdin-name "stdin")
+
+   (data $SET_INPUT_PORT_POSITION "set-input-port-position!")
+   (data $DOES_NOT_SUPPORT "operation not supported")
+   (data $INPUT_PROCEDURE_PORT "input-procedure-port")
+   (data $BAD_TYPE "wrong type")
+   (data $FLUSH "flush")
+   (data $PORT_CLOSED "port closed")
    
    (global $BGL_IONB i32 (i32.const 0))  ;; unubuffered
    (global $BGL_IOLBF i32 (i32.const 1)) ;; line buffered
    (global $BGL_IOFBF i32 (i32.const 2)) ;; fully buffered
    (global $BGL_IOEBF i32 (i32.const 3)) ;; extensible buffer
 
-   (global $BGL_BINARY_INPUT i32 (i32.const 0))
-   (global $BGL_BINARY_OUTPUT i32 (i32.const 1))
-   (global $BGL_BINARY_CLOSED i32 (i32.const 2))
-
    (global $WHENCE_SEEK_CUR i32 (i32.const 0))
    (global $WHENCE_SEEK_END i32 (i32.const 1))
+   (global $WHENCE_SEEK_SET i32 (i32.const 3))
 
    (global $default_io_bufsize (export "default_io_bufsize") i64 (i64.const 8192))
    
@@ -39,21 +43,25 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
-   (import "__js" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
-   (import "__js" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
-   (import "__js" "close_file" (func $js_close_file (param i32)))
-   (import "__js" "read_file" (func $js_read_file (param i32 i32 i32) (result i32)))
-   (import "__js" "write_file" (func $js_write_file (param i32 i32 i32)))
-   (import "__js" "write_char" (func $js_write_char (param i32 i32)))
-   (import "__js" "write_bignum" (func $js_write_bignum (param i32 externref)))
-   
-   (import "__js" "close_fd" (func $js_close_fd (param i32)))
-   (import "__js" "isatty" (func $js_isatty (param i32) (result i32)))
+   (import "__js_io" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
+   (import "__js_io" "close_file" (func $js_close_file (param i32)))
+   (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "path_size" (func $js_path_size (param i32) (param i32) (result i32)))
+   (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
+   (import "__js_io" "isatty" (func $js_isatty (param i32) (result i32)))
+   (import "__js_io" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
+   (import "__js_io" "write_file" (func $js_write_file (param i32 i32 i32) (result i32)))
+   (import "__js_io" "write_char" (func $js_write_char (param i32 i32)))
+   (import "__js_io" "write_bignum" (func $js_write_bignum (param i32 i32)))
+   (import "__js_io" "file_delete" (func $js_file_delete (param i32) (param i32) (result i32)))
+   (import "__js_io" "make_dir" (func $js_make_dir (param i32) (param i32) (param i32) (result i32)))
+   (import "__js_io" "dir_remove" (func $js_dir_remove (param i32) (param i32) (result i32)))
+   (import "__js_io" "is_dir" (func $js_directoryp (param i32) (param i32) (result i32)))
+   (import "__js_io" "read_dir_init" (func $js_read_dir_init (param i32) (param i32) (result externref)))
+   (import "__js_io" "read_dir_size" (func $js_read_dir_size (param externref) (result i32)))
+   (import "__js_io" "read_dir_entry" (func $js_read_dir_entry (param externref) (param i32) (param i32) (result i32)))
+
    (import "__js" "file_separator" (global $js_file_separator i32))
-   (import "__js" "file_delete" (func $js_file_delete (param i32) (param i32) (result i32)))
-   (import "__js" "make_dir" (func $js_make_dir (param i32) (param i32) (param i32) (result i32)))
-   (import "__js" "dir_remove" (func $js_dir_remove (param i32) (param i32) (result i32)))
-   (import "__js" "is_dir" (func $js_directoryp (param i32) (param i32) (result i32)))
 
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -87,23 +95,6 @@
 	 (param i32)
 	 (param i32)
 	 (result i32)))
-   
-   ;; binary-port
-   (type $binary-port
-      (struct
-	 (field $name (mut (ref $bstring)))
-	 (field $fd i32)
-	 (field $io (mut i32))))
-
-   (global $binary-port-default-value
-      (export "BGL_BINARY_PORT_DEFAULT_VALUE") (ref $binary-port)
-      (struct.new $binary-port
-	 ;; name
-	 (global.get $bstring-default-value)
-	 ;; fd
-	 (i32.const 0)
-	 ;; io
-	 (i32.const 0)))
    
    ;; port
    (type $port
@@ -340,7 +331,8 @@
 	    (field $userseek (mut (ref eq)))
 	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
-	    (field $fd i32))))
+	    (field $fd i32)
+	    (field $position (mut i32)))))
 
    ;; file-input-port
    (type $file-input-port
@@ -354,7 +346,8 @@
 	    (field $userseek (mut (ref eq)))
 	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
-	    (field $fd i32))))
+	    (field $fd i32)
+	    (field $position (mut i32)))))
 
    (global $file-input-port-default-value
       (export "BGL_FILE_INPUT_PORT_DEFAULT_VALUE") (ref $file-input-port)
@@ -376,7 +369,9 @@
 	 ;; rgc
 	 (global.get $rgc-default-value)
 	 ;; fd
-	 (i32.const -1)))
+	 (i32.const -1)
+	 ;; position
+	 (i32.const 0)))
 
    ;; console-input-port
    (type $console-input-port
@@ -390,7 +385,8 @@
 	    (field $userseek (mut (ref eq)))
 	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
-	    (field $fd i32))))
+	    (field $fd i32)
+	    (field $position (mut i32)))))
 
    ;; string-input-port
    (type $string-input-port
@@ -428,6 +424,22 @@
 	 ;; offset
 	 (i64.const 0)))
 
+   ;; procedure-input-port
+   (type $procedure-input-port
+      (sub final $input-port
+	 (struct
+	    (field $name (mut (ref $bstring)))
+	    (field $chook (mut (ref eq)))
+	    (field $isclosed (mut i32))
+	    (field $sysclose (mut (ref null $sysclose_t)))
+	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
+	    (field $rgc (ref $rgc))
+	    (field $proc (ref $procedure))
+	    (field $pbuffer (mut (ref eq)))
+	    (field $pbufpos (mut i32)))))
+   
    ;; -----------------------------------------------------------------
    ;; Predicates
    ;; -----------------------------------------------------------------
@@ -437,6 +449,22 @@
       ;; procedure ports not implemented yet
       (return (i32.const 0)))
    
+   (func $INPUT_STRING_PORTP (export "INPUT_STRING_PORTP")
+      (param $port (ref eq))
+      (result i32)
+      (ref.test (ref $string-input-port) (local.get $port)))
+
+   (func $INPUT_PROCEDURE_PORTP (export "INPUT_PROCEDURE_PORTP")
+      (param $port (ref eq))
+      (result i32)
+      (ref.test (ref $procedure-input-port) (local.get $port)))
+
+   (func $INPUT_GZIP_PORTP (export "INPUT_GZIP_PORTP")
+      (param $port (ref eq))
+      (result i32)
+      ;;(ref.test (ref $gzip-input-port) (local.get $port))
+      (i32.const 0))
+
    ;; -----------------------------------------------------------------
    ;; Common macros
    ;; -----------------------------------------------------------------
@@ -505,6 +533,21 @@
       (return (i64.sub (call $INPUT_PORT_FILEPOS (local.get $ip))
 		 (call $RGC_BUFFER_MATCH_LENGTH (local.get $ip)))))
 
+   (func $BGL_INPUT_PORT_LENGTH (export "BGL_INPUT_PORT_LENGTH")
+      (param $ip (ref $input-port))
+      (result i64)
+      (if (ref.test (ref $file-input-port) (local.get $ip))
+	  (then
+	     (return (i64.extend_i32_u
+			(call $js_file_size
+			   (struct.get $file-input-port $fd
+			      (ref.cast (ref $file-input-port) (local.get $ip)))))))
+	  (else
+	   (return (i64.extend_i32_u
+		      (array.len
+			 (struct.get $rgc $buf
+			    (struct.get $input-port $rgc (local.get $ip)))))))))
+
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
@@ -525,39 +568,55 @@
    ;; Primitive IO operations 
    ;; -----------------------------------------------------------------
 
-   ;; close_binary_port
-   (func $close_binary_port (export "close_binary_port")
-      (param $bp (ref $binary-port))
-      (result (ref $binary-port))
-      (if (i32.ne (struct.get $binary-port $io (local.get $bp))
-	     (global.get $BGL_BINARY_CLOSED))
-	  (then
-	     (call $js_close_file (struct.get $binary-port $fd (local.get $bp)))
-	     (struct.set $binary-port $io (local.get $bp)
-		(global.get $BGL_BINARY_CLOSED))))
-      (local.get $bp))
-   
    ;; _CLOSE
    (func $_CLOSE
       (param $op (ref eq))
       (if (ref.test (ref $fd-output-port) (local.get $op))
-	  (then (call $js_close_fd
+	  (then (call $js_close_file
 		   (struct.get $fd-output-port $fd
 		      (ref.cast (ref $fd-output-port) (local.get $op)))))
 	  (else
 	   (if (ref.test (ref $file-input-port) (local.get $op))
 	       (then
-		  (call $js_close_fd
+		  (call $js_close_file
 		     (struct.get $file-input-port $fd
 			(ref.cast (ref $file-input-port)
 			   (local.get $op)))))))))
       
    ;; _LSEEK
    (func $_LSEEK
-      (param $op (ref eq))
-      (param $i i32)
-      (param $j i32))
-   
+      (param $port (ref eq))
+      (param $offset i32)
+      (param $whence i32)
+      
+      (if (ref.test (ref $file-input-port) (local.get $port))
+	  (then
+	     (struct.set $file-input-port $position
+		(ref.cast (ref $file-input-port) (local.get $port))
+		(local.get $offset)))))
+
+   ;; bgl_input_file_seek
+   (func $bgl_input_file_seek
+      (param $p (ref eq))
+      (param $pos i32)
+      (param $whence i32)
+
+      (local $ip (ref $file-input-port))
+      (local $rgc (ref $rgc))
+      
+      (local.set $ip (ref.cast (ref $file-input-port) (local.get $p)))
+      (local.set $rgc (struct.get $file-input-port $rgc (local.get $ip)))
+
+      (struct.set $rgc $filepos (local.get $rgc) (local.get $pos))
+      (struct.set $rgc $eof (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+
+      (struct.set $file-input-port $position (local.get $ip) (local.get $pos)))
+      
    ;; bgl_syswrite
    (func $bgl_syswrite
       (param $p (ref eq))
@@ -575,10 +634,11 @@
 	 (local.get $start)
 	 (local.get $count))
 
-      (call $js_write_file
-	 (struct.get $fd-output-port $fd (local.get $op))
-	 (i32.const 128)
-	 (local.get $count))
+      (drop
+	 (call $js_write_file
+	    (struct.get $fd-output-port $fd (local.get $op))
+	    (i32.const 128)
+	    (local.get $count)))
 
       (return (local.get $count)))
 
@@ -592,13 +652,17 @@
 
       (local $nbread i32)
       (local $ip (ref $fd-input-port))
+      (local $position i32)
+      
       (local.set $ip (ref.cast (ref $fd-input-port) (local.get $p)))
+      (local.set $position (struct.get $fd-input-port $position (local.get $ip)))
 
       (local.set $nbread
 	 (call $js_read_file
 	    (struct.get $fd-input-port $fd (local.get $ip))
 	    (i32.const 128)
-	    (local.get $size)))
+	    (local.get $size)
+	    (local.get $position)))
 
       (call $load_string_in_buffer
 	 (i32.const 128)
@@ -606,7 +670,81 @@
 	 (local.get $buf)
 	 (local.get $start))
 
+      (struct.set $fd-input-port $position (local.get $ip)
+	 (i32.add (local.get $position) (local.get $nbread)))
+
       (return (local.get $nbread)))
+
+   ;; bgl_proc_read_buf
+   (func $bgl_proc_read_buf
+      (param $ip (ref $procedure-input-port))
+      (param $buf (ref $bstring))
+      (param $b (ref $bstring))
+      (param $start i32)
+      (param $l i32)
+      (result i32)
+      
+      (local $p i32)
+      (local $r i32)
+      
+      (local.set $p (struct.get $procedure-input-port $pbufpos (local.get $ip)))
+      (local.set $r (i32.sub (array.len (local.get $buf)) (local.get $p)))
+      
+      (if (i32.le_s (local.get $r) (local.get $l))
+	  (then
+	     (array.copy $bstring $bstring
+		(local.get $b) (local.get $start)
+		(local.get $buf) (local.get $p)
+		(local.get $r))
+	     (struct.set $procedure-input-port $pbuffer (local.get $ip) (global.get $BFALSE))
+	     (struct.set $procedure-input-port $pbufpos (local.get $ip) (i32.const 0))
+	     (return (local.get $r)))
+	  (else
+	   (array.copy $bstring $bstring
+	      (local.get $b) (local.get $start)
+	      (local.get $buf) (local.get $p)
+	      (local.get $l))
+	   (struct.set $procedure-input-port $pbufpos (local.get $ip)
+	      (i32.add (struct.get $procedure-input-port $pbufpos (local.get $ip))
+		 (local.get $l)))
+	   (return (local.get $l)))))
+   
+   ;; bgl_proc_read
+   (func $bgl_proc_read
+      (param $port (ref eq))
+      (param $b (ref $bstring))
+      (param $start i32)
+      (param $l i32)
+      (result i32)
+      
+      (local $ip (ref $procedure-input-port))
+      (local $buf (ref eq))
+      
+      (local.set $ip (ref.cast (ref $procedure-input-port) (local.get $port)))
+      (local.set $buf (struct.get $procedure-input-port $pbuffer (local.get $ip)))
+
+      (if (ref.test (ref $bstring) (local.get $buf))
+	  (then
+	     (return_call $bgl_proc_read_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
+		(local.get $b) (local.get $start) (local.get $l)))
+	  (else
+	   (local.set $buf (call $funcall0 (struct.get $procedure-input-port $proc (local.get $ip))))
+	   
+	   (if (ref.test (ref $bstring) (local.get $buf))
+	       (then
+		  (return_call $bgl_proc_read_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
+		     (local.get $b) (local.get $start) (local.get $l)))
+	       (else
+		(if (ref.eq (local.get $buf) (global.get $BFALSE))
+		    (then
+		       (struct.set $rgc $eof (struct.get $procedure-input-port $rgc (local.get $ip)) (i32.const 1))
+		       (return (i32.const 0)))
+		    (else
+		     (drop (call $the_failure
+			      (array.new_data $bstring $INPUT_PROCEDURE_PORT (i32.const 0) (i32.const 21))
+			      (array.new_data $bstring $BAD_TYPE (i32.const 0) (i32.const 10))
+			      (local.get $port)))
+		     (unreachable))))))))
    
    ;; bgl_input_string_seek
    (func $bgl_input_string_seek
@@ -682,33 +820,12 @@
 	     (drop (call $reset_console (local.get $ip)))
 	     (i32.const 1))
 	  (else
-	   (i32.const 0))))
-      
-
-;*    ;; sysclose_string_output_port                                   */
-;*    (func $syclose_string_output_port                                */
-;*       (param $op (ref $port))                                       */
-;*       (local $sp (ref $string-output-port))                         */
-;*       (local $r (ref eq))                                           */
-;*       (local.set $sp (ref.cast $string-output-port (local.get $op))) */
-;*                                                                     */
-;*       (local.set $r                                                 */
-;* 	 (struct.get $string-output-port $buf (local.get $p)))         */
-;*       (struct.set $string-output-port $buf (local.get $p)           */
-;* 	 (array.new_fixed $bstring 0))                                 */
-;*                                                                     */
-;*       (return $r))                                                  */
-;*                                                                     */
-;*    ;; sysclose_fd_output_port                                       */
-;*    (func $syclose_fd_output_port                                    */
-;*       (param $op (ref $port))                                       */
-;*       (local $fp (ref $fd-output-port))                             */
-;*       (local.set $fp (ref.cast $fd-output-port (local.get $op)))    */
-;*                                                                     */
-;*       (call $js_close_fd                                            */
-;* 	 (struct.get $fd-output-port $fd (local.get $fp)))             */
-;*                                                                     */
-;*       (return (local.get $op)))                                     */
+	   (if (result i32) (ref.test (ref $procedure-input-port) (local.get $ip))
+	       (then
+		  (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+		  (struct.set $rgc $eof (local.get $rgc) (i32.const 0))
+		  (i32.const 1))
+	       (else (i32.const 0))))))
 
    ;; bgl_close_input_port 
    (func $bgl_close_input_port (export "bgl_close_input_port")
@@ -746,7 +863,30 @@
 	     (return (local.get $ip)))
 	  (else
 	   (return (local.get $ip)))))
+
+   ;; bgl_input_port_seek
+   (func $bgl_input_port_seek
+      (export "bgl_input_port_seek")
+      (param $port (ref $input-port))
+      (param $pos i64)
+      (result (ref eq))
       
+      (local $sysseek (ref null $sysseek_t))
+      (local.set $sysseek (struct.get $input-port $sysseek (local.get $port)))
+
+      (if (ref.is_null (local.get $sysseek))
+	  (then
+	     (drop (call $the_failure
+		      (array.new_data $bstring $SET_INPUT_PORT_POSITION (i32.const 0) (i32.const 24))
+		      (array.new_data $bstring $DOES_NOT_SUPPORT (i32.const 0) (i32.const 23))
+		      (local.get $port)))
+	     (unreachable))
+	  (else
+	   (call_ref $sysseek_t (local.get $port) (i32.wrap_i64 (local.get $pos))
+	      (global.get $WHENCE_SEEK_SET)
+	      (local.get $sysseek))
+	   (return (local.get $port)))))
+   
    ;; bgl_close_output_port
    (func $bgl_close_output_port (export "bgl_close_output_port")
       (param $op (ref $output-port))
@@ -970,7 +1110,12 @@
       
       (if (call $BGL_PORT_CLOSED_P (local.get $op))
 	  ;; closed output-port
-	  (then (throw $fail)))
+	  (then
+	     (drop (call $the_failure
+		      (array.new_data $bstring $FLUSH (i32.const 0) (i32.const 4))
+		      (array.new_data $bstring $PORT_CLOSED (i32.const 0) (i32.const 11))
+		      (local.get $op)))
+	     (unreachable)))
       
       (local.set $buf (struct.get $output-port $buf (local.get $op)))
       (local.set $len (array.len (local.get $buf)))
@@ -1063,9 +1208,16 @@
       (param $start i32)
       (param $size i32)
       (result (ref eq))
-      (return_call $output_flush (local.get $op)
+      (call $output_flush (local.get $op)
 	 (local.get $str) (local.get $start) (local.get $size)
-	 (i32.const 0) (i32.const 1)))
+	 (i32.const 0) (i32.const 1))
+      (if (ref.is_null (struct.get $output-port $sysflush (local.get $op)))
+	  (then
+	     (return (global.get $BTRUE)))
+	  (else
+	   (return_call_ref $sysflush_t
+	      (local.get $op)
+	      (struct.get $output-port $sysflush (local.get $op))))))
 
    ;; $charbuf
    (global $charbuf (ref $bstring)
@@ -1207,29 +1359,6 @@
    ;; Opens functions 
    ;; -----------------------------------------------------------------
    
-   ;; open_output_binary_file
-   (func $open_output_binary_file (export "open_output_binary_file")
-      (param $path (ref $bstring))
-      (result (ref eq))
-
-      (local $fd i32)
-      
-      ;; TODO: support buffered output (for now, $buf is ignored)
-      (call $store_string
-	 (local.get $path)
-	 (i32.const 128))
-      (local.set $fd
-	 (call $js_open_file
-	    (i32.const 128)
-	    (array.len (local.get $path))
-	    ;; WRITE-ONLY flag
-	    (i32.const 1)))
-      
-      (struct.new $binary-port
-	 (local.get $path)
-	 (local.get $fd)
-	 (global.get $BGL_BINARY_OUTPUT)))
-   
    ;; bgl_open_input_file
    (func $bgl_open_input_file (export "bgl_open_input_file")
       (param $path (ref $bstring))
@@ -1248,6 +1377,9 @@
 	    (array.len (local.get $path))
 	    ;; READ-ONLY flag
 	    (i32.const 0)))
+
+      (if (i32.lt_s (local.get $fd) (i32.const 0))
+	  (then (return (global.get $BFALSE))))
       
       (local.set $rgc
 	 (struct.new $rgc
@@ -1255,6 +1387,8 @@
 	    (i32.const 0)
 	    ;; filepos
 	    (i32.const 0)
+	    ;; fillbarrier
+	    (i32.const -1)
 	    ;; forward
 	    (i32.const 0)
 	    ;; bufpos
@@ -1285,7 +1419,7 @@
 	 ;; sysclose
 	 (ref.null $sysclose_t)
 	 ;; sysseek
-	 (ref.null $sysseek_t)
+	 (ref.func $bgl_input_file_seek)
 	 ;; userseek
 	 (global.get $BUNSPEC)
 	 ;; sysread
@@ -1293,7 +1427,9 @@
 	 ;; rgc
 	 (local.get $rgc)
 	 ;; File descriptor
-	 (local.get $fd)))
+	 (local.get $fd)
+	 ;; position
+	 (i32.const 0)))
 
    ;; bgl_open_input_substring_bang
    (func $bgl_open_input_substring_bang (export "bgl_open_input_substring_bang")
@@ -1309,6 +1445,8 @@
 	    (i32.const 1)
 	    ;; filepos
 	    (i32.const 0)
+	    ;; fillbarrier
+	    (i32.const -1)
 	    ;; forward
 	    (i32.const 0)
 	    ;; bufpos
@@ -1363,7 +1501,7 @@
 	 (i32.wrap_i64 (local.get $len)))
       
       (return_call $bgl_open_input_substring_bang
-	 (local.get $buf) (local.get $offset)
+	 (local.get $buf) (i64.const 0)
 	 (i64.extend_i32_u (array.len (local.get $buf)))))
      
    ;; bgl_open_input_string
@@ -1375,10 +1513,105 @@
 	 (local.get $str) (local.get $offset)
 	 (i64.extend_i32_u (array.len (local.get $str)))))
      
-   ;; bgl_open_output_file
-   (func $bgl_open_output_file (export "bgl_open_output_file")
+   ;; bgl_open_input_c_string
+   (func $bgl_open_input_c_string (export "bgl_open_input_c_string")
+      (param $str (ref $bstring))
+      (result (ref $string-input-port))
+      (return_call $bgl_open_input_string (local.get $str) (i64.const 0)))
+
+   ;; bgl_reopen_input_c_string
+   (func $bgl_reopen_input_c_string (export "bgl_reopen_input_c_string")
+      (param $ip (ref $input-port))
+      (param $str (ref $bstring))
+      (result (ref eq))
+
+      (local $rgc (ref $rgc))
+      (local $buf (ref $bstring))
+      (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
+      (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
+
+      (if (i32.sub (array.len (local.get $buf)) (array.len (local.get $str)))
+	  (then
+	     (struct.set $rgc $buf
+		(local.get $rgc)
+		(array.new_default $bstring
+		   (array.len (local.get $str))))))
+
+      (struct.set $rgc $eof (local.get $rgc) (i32.const 1))
+      (struct.set $rgc $filepos (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $bufpos (local.get $rgc) (array.len (local.get $str)))
+      (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+      
+      (array.copy $bstring $bstring
+	 (struct.get $rgc $buf (local.get $rgc)) (i32.const 0)
+	 (local.get $str) (i32.const 0)
+	 (array.len (local.get $str)))
+
+      (return (local.get $ip)))
+
+   ;; bgl_open_input_procedure
+   (func $bgl_open_input_procedure
+      (export "bgl_open_input_procedure")
+      (param $fun (ref $procedure))
+      (param $buffer (ref $bstring))
+      (result (ref $input-port))
+      
+      (local $rgc (ref $rgc))
+      (local.set $rgc
+	 (struct.new $rgc
+	    ;; eof
+	    (i32.const 0)
+	    ;; filepos
+	    (i32.const 0)
+	    ;; fillbarrier
+	    (i32.const -1)
+	    ;; forward
+	    (i32.const 0)
+	    ;; bufpos
+	    (i32.const 0)
+	    ;; matchstart
+	    (i32.const 0)
+	    ;; matchstop
+	    (i32.const 0)
+	    ;; lastchar
+	    (i32.const 13)
+	    ;; buffer
+	    (local.get $buffer)))
+      
+      (return
+	 (struct.new $procedure-input-port
+	    ;; name
+	    (array.new_data $bstring $string-input-port-name
+	       (i32.const 0) (i32.const 6))
+	    ;; chook
+	    (global.get $BUNSPEC)
+	    ;; isclosed
+	    (i32.const 0)
+	    ;; sysclose
+	    (ref.null $sysclose_t)
+	    ;; sysseek
+	    (ref.null $sysseek_t)
+	    ;; userseek
+	    (global.get $BUNSPEC)
+	    ;; sysread
+	    (ref.func $bgl_proc_read)
+	    ;; rgc
+	    (local.get $rgc)
+	    ;; proc
+	    (local.get $fun)
+	    ;; pbuffer
+	    (global.get $BUNSPEC)
+	    ;; pbufpos
+	    (i32.const 0))))
+   
+   ;; open_output_file
+   (func $open_output_file
       (param $name (ref $bstring))
       (param $buf (ref $bstring))
+      (param $flags i32)
       (result (ref eq))
       
       (local $fd i32)
@@ -1391,43 +1624,57 @@
 	 (call $js_open_file
 	    (i32.const 128)
 	    (array.len (local.get $name))
-	    ;; WRITE-ONLY flag
-	    (i32.const 1)))
+	    (local.get $flags)))
       
       (if (i32.lt_s (local.get $fd) (i32.const 0))
-	  (then
-	     (return (global.get $BFALSE)))
-	  (else
-	   (return
-	      (struct.new $file-output-port
-		 ;; name
-		 (local.get $name)
-		 ;; chook
-		 (global.get $BUNSPEC)
-		 ;; isclosed
-		 (i32.const 0)
-		 ;; sysclose
-		 (ref.func $_CLOSE)
-		 ;; sysseek
-		 (ref.func $_LSEEK)
-		 ;; buf
-		 (local.get $buf)
-		 ;; index
-		 (i32.const 0)
-		 ;; bufmode
-		 (global.get $BGL_IONB)
-		 ;; syswrite
-		 (ref.func $bgl_syswrite)
-		 ;; fhook
-		 (global.get $BUNSPEC)
-		 ;; sysflush
-		 (ref.null $sysflush_t)
-		 ;; flushbuf
-		 (global.get $BUNSPEC)
-		 ;; err
-		 (i32.const 0)
-		 ;; fd
-		 (local.get $fd))))))
+	  (then (return (global.get $BFALSE))))
+      
+      (return
+	 (struct.new $file-output-port
+	    ;; name
+	    (local.get $name)
+	    ;; chook
+	    (global.get $BUNSPEC)
+	    ;; isclosed
+	    (i32.const 0)
+	    ;; sysclose
+	    (ref.func $_CLOSE)
+	    ;; sysseek
+	    (ref.func $_LSEEK)
+	    ;; buf
+	    (local.get $buf)
+	    ;; index
+	    (i32.const 0)
+	    ;; bufmode
+	    (global.get $BGL_IONB)
+	    ;; syswrite
+	    (ref.func $bgl_syswrite)
+	    ;; fhook
+	    (global.get $BUNSPEC)
+	    ;; sysflush
+	    (ref.null $sysflush_t)
+	    ;; flushbuf
+	    (global.get $BUNSPEC)
+	    ;; err
+	    (i32.const 0)
+	    ;; fd
+	    (local.get $fd))))
+
+   ;; bgl_open_output_file
+   (func $bgl_open_output_file (export "bgl_open_output_file")
+      (param $name (ref $bstring))
+      (param $buf (ref $bstring))
+      (result (ref eq))
+      (return_call $open_output_file (local.get $name) (local.get $buf)
+	 (i32.const 1)))
+
+   ;; bgl_append_output_file
+   (func $bgl_append_output_file (export "bgl_append_output_file")
+      (param $name (ref $bstring))
+      (param $buf (ref $bstring))
+      (result (ref eq))
+      (return_call $open_output_file (local.get $name) (local.get $buf)
+	 (i32.const 2)))
    
    ;; bgl_open_output_string
    (func $bgl_open_output_string (export "bgl_open_output_string")
@@ -1678,6 +1925,8 @@
 	       (i32.const 0)
 	       ;; filepos
 	       (i32.const 0)
+	       ;; fillbarrier
+	       (i32.const -1)
 	       ;; forward
 	       (i32.const 0)
 	       ;; bufpos
@@ -1691,6 +1940,8 @@
 	       ;; buffer
 	       (array.new_default $bstring (i32.const 128)))
 	    ;; fd
+	    (i32.const 0)
+	    ;; position
 	    (i32.const 0)))
 
       ;; update the current dynamic env
@@ -1739,6 +1990,58 @@
       
       (return_call $js_dir_remove
 	 (i32.const 128) (array.len (local.get $path))))
+
+
+   (func $bgl_directory_to_list (export "bgl_directory_to_list")
+      (param $name (ref $bstring))
+      (result (ref eq))
+
+      (local $arr externref)
+      (local $size i32)
+      (local $res (ref eq))
+
+      (call $store_string (local.get $name) (i32.const 128))
+
+      (local.set $arr
+	 (call $js_read_dir_init (i32.const 128) (array.len (local.get $name))))
+
+      (if (ref.is_null (local.get $arr))
+	  (then
+	     (return (global.get $BFALSE)))
+	  (else
+	   (local.set $size (i32.sub (call $js_read_dir_size (local.get $arr))
+			       (i32.const 1)))
+	   (local.set $res (global.get $BNIL))
+	   (loop $while
+	      (if (i32.lt_s (local.get $size) (i32.const 0))
+		  (then
+		     (return (local.get $res)))
+		  (else
+		   (local.set $res
+		      (struct.new $pair
+			 (call $load_string
+			    (i32.const 128)
+			    (call $js_read_dir_entry (local.get $arr)
+			       (local.get $size) (i32.const 128)))
+			 (local.get $res)))
+		   (local.set $size (i32.sub (local.get $size) (i32.const 1)))
+		   (br $while)))))))
    
+;*---------------------------------------------------------------------*/
+;*    files                                                            */
+;*---------------------------------------------------------------------*/
+
+   (func $bgl_file_size (export "bgl_file_size")
+      (param $path (ref $bstring))
+      (result i64)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return
+	 (i64.extend_i32_u
+	    (call $js_path_size
+	       (i32.const 128) (array.len (local.get $path))))))
    )
    

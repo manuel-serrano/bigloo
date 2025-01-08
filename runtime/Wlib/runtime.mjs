@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Jan  6 08:36:44 2025 (serrano)                */
+/*    Last change :  Wed Jan  8 06:55:37 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync } from "node:fs";
+import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync } from "node:fs";
 import { isatty } from "tty";
 //import { readFile } from 'node:fs/promises';
 import { extname, sep as file_sep } from "node:path";
@@ -82,6 +82,324 @@ const internalErrors = [
    "apply: unsupported arity %d"
 ];
 
+
+/*---------------------------------------------------------------------*/
+/*    __js_io ...                                                      */
+/*---------------------------------------------------------------------*/
+const __js_io = {
+   open_file: (path_addr, path_length, flags) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+
+      let fs_flags;
+      switch (flags) {
+         case 0: // read-only
+            fs_flags = 'r';
+            break;
+         case 1: // write-only
+            fs_flags = 'w';
+            break;
+         case 2: // write-only in append mode
+            fs_flags = 'a';
+            break;
+         default:
+            throw WebAssembly.RuntimeError("invalid open flags");
+      }
+
+      try {
+         return openSync(path, fs_flags);
+      } catch(e) {
+	 return -1;
+      }
+   },
+   
+   close_file: (fd) => {
+      closeSync(fd);
+   },
+
+   read_file: (fd, offset, length, position) => {
+      if (fd < 0) {
+         throw WebAssembly.RuntimeError("invalid file descriptor");
+      }
+      const memory = new Uint8Array(instance.exports.memory.buffer, offset, length, position);
+      const nbread = readSync(fd, memory, 0, length, position);
+      return nbread;
+   },
+
+   path_size: (path_addr, path_length) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+	 return lstatSync(path).size;
+      } catch (err) {
+         return -1;
+      }
+   },
+
+   file_size: (fd) => {
+      try {
+	 return fstatSync(fd).size;
+      } catch (err) {
+         return -1;
+      }
+   },
+
+   isatty: (fd) => {
+      return isatty(fd);
+   },
+   
+   file_exists: (path_addr, path_length) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+         accessSync(path, constants.F_OK);
+         return true;
+      } catch (err) {
+         return false;
+      }
+   },
+
+   file_delete: (path_addr, path_length) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+	 if (existsSync(path)) {
+            unlinkSync(path);
+            return false;
+	 } else {
+	    return true;
+	 }
+      } catch (err) {
+         return true;
+      }
+   },
+
+   dir_remove: (path_addr, path_length) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+         rmdirSync(path);
+         return false;
+      } catch (err) {
+         return true;
+      }
+   },
+
+   is_dir: (path_addr, path_length) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+
+      try {
+         return lstatSync(path).isDirectory();
+      } catch (err) {
+         return false;
+      }
+   },
+
+   make_dir: (path_addr, path_length, mod) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+	 mkdirSync(path, {mod: mod});
+	 return true;
+      } catch(e) {
+	 return false;
+      }
+   },
+
+   write_file: (fd, offset, length) => {
+      if (fd < 0) {
+         throw WebAssembly.RuntimeError("invalid file descriptor");
+      }
+
+      const buffer = new Uint8Array(instance.exports.memory.buffer, offset, length);
+      return writeSync(fd, buffer);
+   },
+      
+   write_char: (fd, c) => {
+      if (fd < 0) {
+         throw WebAssembly.RuntimeError("invalid file descriptor");
+      }
+      charBuffer[0] = c;
+      writeSync(fd, charBuffer);
+   },
+
+   write_bignum: (fd, n) => {
+      if (fd < 0) {
+         throw WebAssembly.RuntimeError("invalid file descriptor");
+      }
+      writeSync(fd, n.toString());
+   },
+
+   read_dir_init: (path_addr, path_length) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+	 return readdirSync(path);
+      } catch(e) {
+	 return null;
+      }
+   },
+
+   read_dir_size: (dir) => dir.length,
+   
+   read_dir_entry: (dir, num, addr) => {
+      return storeJSStringToScheme(dir[num], addr);
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    __js_math ...                                                    */
+/*---------------------------------------------------------------------*/
+const __js_math = {
+      fmod: (x, y) => x % y,
+      exp: Math.exp,
+      log: Math.log,
+      log2: Math.log2,
+      log10: Math.log10,
+      sin: Math.sin,
+      cos: Math.cos,
+      tan: Math.tan,
+      asin: Math.asin,
+      acos: Math.acos,
+      atan: Math.atan,
+      atan2: Math.atan2,
+      pow: Math.pow,
+      randomf: Math.random,
+      strtod: (addr, len) => {
+         const buffer = new Uint8Array(instance.exports.memory.buffer, addr, len);
+	 return Number.parseFloat(loadSchemeString(buffer));
+      }
+};
+
+/*---------------------------------------------------------------------*/
+/*    __js_date ...                                                    */
+/*---------------------------------------------------------------------*/
+const __js_date = {
+   epoch: new Date(1970),
+   current_milliseconds: () => Date.now(),
+   mkDate: (ms) => new Date(ms),
+   mktime: (year, month, day, hour, minute, second, millisecond, gmt) => gmt
+      ? (new Date(Date.UTC(year, month, day, hour, minute, second, millisecond)))
+      : (new Date(year, month, day, hour, minute, second, millisecond)),
+
+   getMilliseconds: (dt) => dt.getMilliseconds(),
+   setMilliseconds: (dt, ms) => dt.setMilliseconds(ms),
+   getSeconds: (dt) => dt.getSeconds(),
+   setSeconds: (dt, sec) => dt.setSeconds(sec),
+   getMinutes: (dt) => dt.getMinutes(),
+   setMinutes: (dt, min) => dt.setMinutes(min),
+   getHours: (dt) => dt.getHours(),
+   setHours: (dt, h) => dt.setHours(h),
+   getDay: (dt) => dt.getDate(),
+   setDay: (dt,) => dt.setDate(d),
+   getWday: (dt) => dt.getDay(),
+   getYday: (dt) => {
+      const y = dt.getFullYear();
+      const m = dt.getMonth();
+      const d = dt.getDate();
+      const d1 = new Date(y, m, d);
+      const d0 = new Date(y, 0, 1);
+      return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000));
+   },
+   getMonth: (dt) => dt.getMonth(),
+   setMonth: (dt, m) => dt.setMonth(m),
+   getYear: (dt) => dt.getFullYear(),
+   setYear: (dt, y) => dt.setFullYear(y),
+   getTimezone: (dt) => dt.getTimezoneOffset(),
+
+   isDst: (dt) => new Date(dt.valueOf()) !== dt.valueOf(), // MS 18dec2024, not sure!
+   getTime: (dt) => Math.trunc(dt.valueOf() / 1000),
+   secondsToString: (sec, addr) => {
+      const buf = new Date(sec * 1000).toString();
+
+      storeJSStringToScheme(buf, addr);
+      return buf.length;
+   },
+   secondsToUTCString: (sec, addr) => {
+      const buf = new Date(sec * 1000).toUTCString();
+
+      storeJSStringToScheme(buf, addr);
+      return buf.length;
+   },
+   
+
+   day_name: (day, longFormat, addr) =>
+      storeJSStringToScheme((new Date(Date.UTC(2021, 1, day + 1)))
+			       .toLocaleDateString(currentLocale, {
+				  weekday: (longFormat ? "long" : "short")
+			       }), addr),
+
+   month_name: (month, longFormat, addr) =>
+      storeJSStringToScheme((new Date(Date.UTC(2021, month)))
+			       .toLocaleDateString(currentLocale, {
+				  month: (longFormat ? "long" : "short")
+			       }), addr)
+};
+
+/*---------------------------------------------------------------------*/
+/*    __js_bignum                                                      */
+/*---------------------------------------------------------------------*/
+const __js_bignum = {
+   zerobx: BigInt(0),
+   zerobxp: (bx) => bx === 0n,
+   bxpositivep: (bx) => bx > 0n,
+   bxnegativep: (bx) => bx < 0n,
+   bgl_bignum_odd: (bx) => bx % 2n !== 0n,
+   bgl_bignum_even: (bx) => bx % 2n === 0n,
+   long_to_bignum: (value) => BigInt(value),
+   safe_bignum_to_fixnum: (bx, bsz) => {
+      if (bsz > 53) bsz = 52; // max support JS fixnums
+      const u = BigInt.asIntN(bsz, bx);
+      if (u === bx) {
+	 const m = new Number(u);
+
+	 if (m >= Number.MIN_SAFE_INTEGER && m <= Number.MAX_SAFE_INTEGER) {
+	    return m;
+	 } else {
+	    return 0;
+	 }
+      } else {
+	 return 0;
+      }
+   },
+   bignum_to_long: bx => BigInt.asIntN(64, bx),
+   bignum_remainder: (bx, by) => bx % by,
+   bignum_quotient: (bx, by) => bx / by,
+   seed_rand: () => Math.random(),
+   rand_bignum: bx => bx ^ BigInt(Math.random() * 5379239846),
+   bignum_to_string: (value, addr) => {
+      return storeJSStringToScheme(value.toString(), addr);
+   },
+   string_to_bignum: (offset, len, radix) => {
+      const buf = new Uint8Array(instance.exports.memory.buffer, offset, len);
+      const str = loadSchemeString(buf);
+      switch(radix) {
+	 case 2: return string_to_bignum_radix(str, 2);
+	 case 8: return string_to_bignum_radix(str, 8);
+	 case 10: return BigInt(str);
+	 case 16: {
+	    if (str[0] === '-') {
+	       return 0n - BigInt("0x" + str.substring(1));
+	    } else {
+	       return BigInt("0x" + str);
+	    }
+	 }
+	 default: 
+	    console.log("Wong bignum radix", radix);
+	    return BigInt(0);
+      }
+   },
+   bignum_neg: (x) => -x,
+   bignum_add: (x, y) => x + y,
+   bignum_sub: (x, y) => x - y,
+   bignum_mul: (x, y) => x * y,
+   bignum_quotient: (x, y) => x / y,
+   bignum_remainder: (x, y) => x % y,
+   bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0),
+   bignum_to_flonum: x => Number(x)
+};
+
 /*---------------------------------------------------------------------*/
 /*    wasm ...                                                         */
 /*---------------------------------------------------------------------*/
@@ -132,150 +450,6 @@ const instance = await WebAssembly.instantiate(wasm, {
          return storeJSStringToScheme(arg, addr);
       },
 
-      is_tty: function (fd) {
-         // FIXME: will not work in Deno as process is not imported globally.
-         switch (fd) {
-            case 0: // stdin
-               return process.stdin.isTTY;
-            case 1: // stdout
-               return process.stdout.isTTY;
-            case 2: // stderr
-               return process.stderr.isTTY;
-            default:
-               return false;
-         }
-      },
-
-      open_file: function (path_addr, path_length, flags) {
-         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
-         const path = loadSchemeString(buffer);
-
-         let fs_flags;
-         switch (flags) {
-               // In the following flags, we add the 's' which stands for synchronous mode.
-            case 0: // read-only
-               fs_flags = 'r';
-               break;
-            case 1: // write-only
-               fs_flags = 'w';
-               break;
-            case 2: // write-only in append mode
-               fs_flags = 'a';
-               break;
-            default:
-               throw WebAssembly.RuntimeError("invalid open flags");
-         }
-
-         const fd = openSync(path, fs_flags);
-         return fd;
-      },
-
-      close_file: function (fd) {
-	 // TBR
-         if (fd < 0)
-            throw WebAssembly.RuntimeError("invalid file descriptor");
-
-         closeSync(fd);
-      },
-
-      close_fd: function (fd) {
-         if (fd < 0) {
-            throw WebAssembly.RuntimeError("invalid file descriptor: " + fd);
-	 } else {
-            closeSync(fd);
-	 }
-      },
-
-      isatty: function (fd) {
-	 return isatty(fd);
-      },
-
-      read_file: function (fd, offset, length) {
-         if (fd < 0)
-            throw WebAssembly.RuntimeError("invalid file descriptor");
-
-         const memory = new Uint8Array(instance.exports.memory.buffer, offset, length);
-         const readBytes = readSync(fd, memory, 0, length);
-         return readBytes;
-      },
-
-      write_file: function (fd, offset, length) {
-         if (fd < 0) {
-            throw WebAssembly.RuntimeError("invalid file descriptor");
-	 }
-
-         const buffer = new Uint8Array(instance.exports.memory.buffer, offset, length);
-         writeSync(fd, buffer);
-      },
-      
-      write_char: (fd, c) => {
-	 charBuffer[0] = c;
-         writeSync(fd, charBuffer);
-      },
-
-      write_bignum: (fd, n) => {
-	 writeSync(fd, n.toString());
-      },
-
-      file_exists: (path_addr, path_length) => {
-         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
-         const path = loadSchemeString(buffer);
-         try {
-            accessSync(path, constants.F_OK);
-            return true;
-         } catch (err) {
-            return false;
-         }
-      },
-
-      file_delete: (path_addr, path_length) => {
-         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
-         const path = loadSchemeString(buffer);
-         try {
-	    if (existsSync(path)) {
-               unlinkSync(path);
-               return false;
-	    } else {
-	       return true;
-	    }
-         } catch (err) {
-            return true;
-         }
-      },
-
-      dir_remove: (path_addr, path_length) => {
-         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
-         const path = loadSchemeString(buffer);
-         try {
-            rmdirSync(path);
-            return false;
-         } catch (err) {
-            return true;
-         }
-      },
-
-      is_dir: (path_addr, path_length) => {
-         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
-         const path = loadSchemeString(buffer);
-
-         try {
-            return lstatSync(path).isDirectory();
-         } catch (err) {
-            return false;
-         }
-      },
-
-      make_dir: (path_addr, path_length, mod) => {
-         const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
-         const path = loadSchemeString(buffer);
-	 try {
-	    mkdirSync(path, {mod: mod});
-	    return true;
-	 } catch(e) {
-	    return false;
-	 }
-      },
-
       number_to_string: (x, addr) => {
          return storeJSStringToScheme(x.toString(), addr);
       },
@@ -289,148 +463,10 @@ const instance = await WebAssembly.instantiate(wasm, {
       }
    },
 
-   __js_date: {
-      epoch: new Date(1970),
-      current_milliseconds: () => Date.now(),
-      mkDate: (ms) => new Date(ms),
-      mktime: (year, month, day, hour, minute, second, millisecond, gmt) => gmt
-	 ? (new Date(Date.UTC(year, month, day, hour, minute, second, millisecond)))
-	 : (new Date(year, month, day, hour, minute, second, millisecond)),
-
-      getMilliseconds: (dt) => dt.getMilliseconds(),
-      setMilliseconds: (dt, ms) => dt.setMilliseconds(ms),
-      getSeconds: (dt) => dt.getSeconds(),
-      setSeconds: (dt, sec) => dt.setSeconds(sec),
-      getMinutes: (dt) => dt.getMinutes(),
-      setMinutes: (dt, min) => dt.setMinutes(min),
-      getHours: (dt) => dt.getHours(),
-      setHours: (dt, h) => dt.setHours(h),
-      getDay: (dt) => dt.getDate(),
-      setDay: (dt,) => dt.setDate(d),
-      getWday: (dt) => dt.getDay(),
-      getYday: (dt) => {
-	 const y = dt.getFullYear();
-	 const m = dt.getMonth();
-	 const d = dt.getDate();
-	 const d1 = new Date(y, m, d);
-	 const d0 = new Date(y, 0, 1);
-	 return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000));
-      },
-      getMonth: (dt) => dt.getMonth(),
-      setMonth: (dt, m) => dt.setMonth(m),
-      getYear: (dt) => dt.getFullYear(),
-      setYear: (dt, y) => dt.setFullYear(y),
-      getTimezone: (dt) => dt.getTimezoneOffset(),
-
-      isDst: (dt) => new Date(dt.valueOf()) !== dt.valueOf(), // MS 18dec2024, not sure!
-      getTime: (dt) => Math.trunc(dt.valueOf() / 1000),
-      secondsToString: (sec, addr) => {
-	 const buf = new Date(sec * 1000).toString();
-
-	 storeJSStringToScheme(buf, addr);
-	 return buf.length;
-      },
-      secondsToUTCString: (sec, addr) => {
-	 const buf = new Date(sec * 1000).toUTCString();
-
-	 storeJSStringToScheme(buf, addr);
-	 return buf.length;
-      },
-      
-
-      day_name: (day, longFormat, addr) =>
-         storeJSStringToScheme((new Date(Date.UTC(2021, 1, day + 1)))
-				  .toLocaleDateString(currentLocale, {
-				     weekday: (longFormat ? "long" : "short")
-				  }), addr),
-
-      month_name: (month, longFormat, addr) =>
-         storeJSStringToScheme((new Date(Date.UTC(2021, month)))
-				  .toLocaleDateString(currentLocale, {
-				     month: (longFormat ? "long" : "short")
-				  }), addr)
-   },
-
-   __js_math: {
-      fmod: (x, y) => x % y,
-      exp: Math.exp,
-      log: Math.log,
-      log2: Math.log2,
-      log10: Math.log10,
-      sin: Math.sin,
-      cos: Math.cos,
-      tan: Math.tan,
-      asin: Math.asin,
-      acos: Math.acos,
-      atan: Math.atan,
-      atan2: Math.atan2,
-      pow: Math.pow,
-      randomf: Math.random,
-      strtod: (addr, len) => {
-         const buffer = new Uint8Array(instance.exports.memory.buffer, addr, len);
-	 return Number.parseFloat(loadSchemeString(buffer));
-      }
-   },
-
-   __js_bignum: {
-      zerobx: BigInt(0),
-      zerobxp: (bx) => bx === 0n,
-      bxpositivep: (bx) => bx > 0n,
-      bxnegativep: (bx) => bx < 0n,
-      bgl_bignum_odd: (bx) => bx % 2n !== 0n,
-      bgl_bignum_even: (bx) => bx % 2n === 0n,
-      long_to_bignum: (value) => BigInt(value),
-      safe_bignum_to_fixnum: (bx, bsz) => {
-	 if (bsz > 53) bsz = 52; // max support JS fixnums
-	 const u = BigInt.asIntN(bsz, bx);
-	 if (u === bx) {
-	    const m = new Number(u);
-
-	    if (m >= Number.MIN_SAFE_INTEGER && m <= Number.MAX_SAFE_INTEGER) {
-	       return m;
-	    } else {
-	       return 0;
-	    }
-	 } else {
-	    return 0;
-	 }
-      },
-      bignum_to_long: bx => BigInt.asIntN(64, bx),
-      bignum_remainder: (bx, by) => bx % by,
-      bignum_quotient: (bx, by) => bx / by,
-      seed_rand: () => Math.random(),
-      rand_bignum: bx => bx ^ BigInt(Math.random() * 5379239846),
-      bignum_to_string: (value, addr) => {
-	 return storeJSStringToScheme(value.toString(), addr);
-      },
-      string_to_bignum: (offset, len, radix) => {
-         const buf = new Uint8Array(instance.exports.memory.buffer, offset, len);
-	 const str = loadSchemeString(buf);
-	 switch(radix) {
-	    case 2: return string_to_bignum_radix(str, 2);
-	    case 8: return string_to_bignum_radix(str, 8);
-	    case 10: return BigInt(str);
-	    case 16: {
-	       if (str[0] === '-') {
-		  return 0n - BigInt("0x" + str.substring(1));
-	       } else {
-		  return BigInt("0x" + str);
-	       }
-	    }
-	    default: 
-	       console.log("Wong bignum radix", radix);
-	       return BigInt(0);
-	 }
-      },
-      bignum_neg: (x) => -x,
-      bignum_add: (x, y) => x + y,
-      bignum_sub: (x, y) => x - y,
-      bignum_mul: (x, y) => x * y,
-      bignum_quotient: (x, y) => x / y,
-      bignum_remainder: (x, y) => x % y,
-      bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0),
-      bignum_to_flonum: x => Number(x)
-   }
+   __js_io,
+   __js_date,
+   __js_math,
+   __js_bignum,
 });
 
 if (!instance.exports.bigloo_main) {

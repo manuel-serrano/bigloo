@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Sun Jan  5 08:42:59 2025 (serrano)                */
+;*    Last change :  Wed Jan  8 08:46:48 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -109,6 +109,7 @@
    ;; -----------------------------------------------------------------
    (@include "./wrgc.wat" type)
    (@include "./wports.wat" type)
+   (@include "./wbinary.wat" type)
 
    (@include "./wobject.wat" type)
 

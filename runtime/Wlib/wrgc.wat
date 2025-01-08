@@ -3,13 +3,20 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Mon Jan  6 07:58:21 2025 (serrano)                */
+;*    Last change :  Wed Jan  8 11:25:07 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
 ;*=====================================================================*/
 
 (module $__runtime_rgc
+   
+   ;; -----------------------------------------------------------------
+   ;; Global constants 
+   ;; -----------------------------------------------------------------
+
+   (data $READ "read")
+   (data $IO_ERROR "IO error")
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -20,6 +27,7 @@
       (struct
 	 (field $eof (mut i32))
 	 (field $filepos (mut i32))
+	 (field $fillbarrier (mut i32))
 	 (field $forward (mut i32))
 	 (field $bufpos (mut i32))
 	 (field $matchstart (mut i32))
@@ -34,6 +42,8 @@
 	 (i32.const 0)
 	 ;; filepos
 	 (i32.const 0)
+	 ;; fillbarrier
+	 (i32.const -1)
 	 ;; forward
 	 (i32.const 0)
 	 ;; bufpos
@@ -372,96 +382,134 @@
 	 (i32.sub (struct.get $rgc $forward (local.get $rgc))
 	    (local.get $matchstart)))
       (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0)))
-	 
-   ;; rgc_fillsize_file_buffer
-   (func $rgc_fillsize_file_buffer
-      (param $rgc (ref $rgc))
-      (param $fd i32)
+
+   ;; sysread
+   (func $sysread
+      (param $port (ref $input-port))
+      (param $buf (ref $bstring))
+      (param $o i32)
+      (param $size i32)
+      (result i32)
+      
+      (local $r i32)
+      (local $sysread (ref null $sysread_t))
+      (local.set $sysread (struct.get $input-port $sysread (local.get $port)))
+      
+      (local.set $r
+	 (call_ref $sysread_t (local.get $port)
+	    (local.get $buf)
+	    (local.get $o)
+	    (local.get $size)
+	    (ref.cast (ref $sysread_t)
+	       (struct.get $input-port $sysread (local.get $port)))))
+      
+      (if (i32.lt_s (local.get $r) (i32.const 0))
+	  (then
+	     (drop (call $the_failure
+		      (array.new_data $bstring $READ (i32.const 0) (i32.const 5))
+		      (array.new_data $bstring $IO_ERROR (i32.const 0) (i32.const 8))
+		      (local.get $port)))
+	     (unreachable))
+	  (else
+	   (return (local.get $r)))))
+		       
+   ;; rgc_fillsize_buffer
+   (func $rgc_fillsize_buffer
+      (param $port (ref $input-port))
       (param $bufpos i32)
       (param $size i32)
       (result i32)
-      (local $nbread i32)
-      (local.set $nbread
-	 (call $js_read_file
-	    (local.get $fd)
-	    (i32.const 128)
-	    (local.get $size)))
-      (if (i32.le_s (local.get $nbread) (i32.const 0))
-	  ;; TODO: emit exceptions in case of error (when nbread < 0)
-	  (then
-	     (struct.set $rgc $eof (local.get $rgc) (i32.const 1 #;TRUE)))
-	  (else
-	   (call $load_string_in_buffer
-	      (i32.const 128)
-	      (local.get $nbread)
-	      (struct.get $rgc $buf (local.get $rgc))
-	      (local.get $bufpos))
-	   (local.set $bufpos
-	      (i32.add (local.get $bufpos) (local.get $nbread)))))
-      
-      (struct.set $rgc $bufpos (local.get $rgc) (local.get $bufpos))
-      
-      (if (result i32)
-	  (i32.le_s (local.get $nbread) (i32.const 0))
-	  (then (i32.const 0 #;FALSE))
-	  (else (i32.const 1 #;TRUE))))
 
-   ;; rgc_fill_file_buffer
-   (func $rgc_fill_file_buffer
-      (param $port (ref $file-input-port))
-      (result i32)
+      (local $fb i32)
       (local $rgc (ref $rgc))
-      (local $bufsize i32)
-      (local $bufpos i32)
-      (local $matchstart i32)
-      (local $movesize i32)
-      (local $i i32)
-      (local $buffer (ref $bstring))
-      
+      (local $r i32)
+      (local $buf (ref $bstring))
+
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
-      (local.set $bufsize (array.len (struct.get $rgc $buf (local.get $rgc))))
-      (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
-      (local.set $matchstart (struct.get $rgc $matchstart (local.get $rgc)))
-      (local.set $buffer (struct.get $rgc $buf (local.get $rgc)))
-      
-      (if (i32.lt_u (local.get $bufpos) (local.get $bufsize))
-	  (then (return_call $rgc_fillsize_file_buffer
-		   (local.get $rgc)
-		   (struct.get $file-input-port $fd (local.get $port))
-		   (local.get $bufpos)
-		   (i32.sub (local.get $bufsize) (local.get $bufpos)))))
-      
-      (if (i32.gt_u (local.get $matchstart) (i32.const 0))
+      (local.set $fb (struct.get $rgc $fillbarrier (local.get $rgc)))
+      (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
+
+      (if (i32.eqz (local.get $fb))
 	  (then
-	     (call $rgc_shift_buffer (local.get $rgc))
-	     (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
-	     (return_call $rgc_fillsize_file_buffer
-		(local.get $rgc)
-		(struct.get $file-input-port $fd (local.get $port))
-		(local.get $bufpos)
-		(i32.sub (local.get $bufsize) (local.get $bufpos))))
-	  (else
-	   (call $rgc_double_buffer (local.get $rgc))
-	   (return_call $rgc_fill_file_buffer (local.get $port)))))
-   
+	     (struct.set $rgc $bufpos (local.get $rgc) (local.get $bufpos))
+	     (return (i32.const 0))))
+
+      (if (i32.gt_s (local.get $fb) (i32.const 0))
+	  (then
+	     (if (i32.gt_s (local.get $size) (local.get $fb))
+		 (then
+		    (local.set $size (local.get $fb))))))
+
+      (local.set $r
+	 (call $sysread (local.get $port) (local.get $buf) (local.get $bufpos) (local.get $size)))
+
+      (if (i32.gt_s (local.get $fb) (i32.const 0))
+	  (then
+	     (struct.set $rgc $fillbarrier (local.get $rgc)
+		(i32.sub (local.get $fb) (local.get $r)))))
+
+      (local.set $bufpos (i32.add (local.get $bufpos) (local.get $r)))
+      (struct.set $rgc $bufpos (local.get $rgc) (local.get $bufpos))
+
+      (return (i32.gt_s (local.get $r) (i32.const 0))))
+
    ;; rgc_fill_buffer
    (func $rgc_fill_buffer (export "rgc_fill_buffer")
       (param $port (ref $input-port))
       (result i32)
+      
+      (local $bufsize i32)
+      (local $bufpos i32)
       (local $rgc (ref $rgc))
+      
+      (if (call $BGL_PORT_CLOSED_P (local.get $port))
+	  (then
+	     (drop (call $the_failure
+		      (array.new_data $bstring $READ (i32.const 0) (i32.const 5))
+		      (array.new_data $bstring $PORT_CLOSED (i32.const 0) (i32.const 11))
+		      (local.get $port)))
+	     (unreachable)))
+      
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+      (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
       
-      (struct.set $rgc $forward (local.get $rgc)
-	 (struct.get $rgc $bufpos (local.get $rgc)))
+      ;; the read reached end-of-buffer, update the forward ptr
+      (struct.set $rgc $forward (local.get $rgc) (local.get $bufpos))
+	 
+      ;; the input port that has seen its eof cannot be filled anymore 
       (if (struct.get $rgc $eof (local.get $rgc))
-	  (then (return (i32.const 0 #;FALSE))))
-      
-      (if (ref.test (ref $file-input-port) (local.get $port))
-	  (then 
-	     (return_call $rgc_fill_file_buffer 
-		(ref.cast (ref $file-input-port) (local.get $port)))))
-      
-      (i32.const 1 #;TRUE))
+	  (then
+	     (return (i32.const 0)))
+	  (else
+	   (local.set $bufsize (array.len (struct.get $rgc $buf (local.get $rgc))))
+	   (if (i32.lt_u (local.get $bufpos) (local.get $bufsize))
+	       (then
+		  ;; the buffer is not full, fill it
+		  (return_call $rgc_fillsize_buffer
+		     (local.get $port)
+		     (local.get $bufpos)
+		     (i32.sub (local.get $bufsize) (local.get $bufpos))))
+	       (else
+		(if (i32.gt_u (struct.get $rgc $matchstart (local.get $rgc)) (i32.const 0))
+		    ;; we are in the middle of a match, shift the buffer first
+		    (then
+		       (call $rgc_shift_buffer (local.get $rgc))
+		       (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
+		       (return_call $rgc_fillsize_buffer
+			  (local.get $port)
+			  (local.get $bufpos)
+			  (i32.sub (local.get $bufsize) (local.get $bufpos))))
+		    (else
+		     ;; the current token is too large for the buffer
+		     ;; we have to enlarge it.
+		     ;; Note: see rgc_size_fil_buffer for other
+		     ;; enlarge_buffer         
+		     (call $rgc_double_buffer (local.get $rgc))
+		     (local.set $bufsize (array.len (struct.get $rgc $buf (local.get $rgc))))
+		     (return_call $rgc_fillsize_buffer
+			(local.get $port)
+			(local.get $bufpos)
+			(i32.sub (local.get $bufsize) (local.get $bufpos))))))))))
    
    ;; rgc_file_charready
    (func $rgc_file_charready
@@ -472,6 +520,10 @@
       
       (if (struct.get $rgc $eof (local.get $rgc))
 	  (then (return (i32.const 0 #;FALSE))))
+
+      (if (i32.eqz (struct.get $rgc $bufpos (local.get $rgc)))
+	  (then
+	     (drop (call $rgc_fill_buffer (local.get $port)))))
       
       ;; FIXME: in java we also check the file position
       (i32.lt_u 
@@ -486,6 +538,13 @@
       (result i32)
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+
+      (if (call $BGL_PORT_CLOSED_P (local.get $port))
+	  (then (return (i32.const 0))))
+      
+      (if (i32.lt_u (struct.get $rgc $matchstop (local.get $rgc))
+	     (struct.get $rgc $bufpos (local.get $rgc)))
+	  (then (return (i32.const 1))))
       
       (if (ref.test (ref $file-input-port) (local.get $port))
 	  (then (return_call $rgc_file_charready
@@ -761,8 +820,6 @@
 	     (if (i32.gt_u (i32.wrap_i64 (local.get $l)) (local.get $avail))
 		 (then (local.set $l (i64.extend_i32_u (local.get $avail)))))))
 
-      (call $js_trace (local.get $avail))
-      (call $js_trace (i32.wrap_i64 (local.get $l)))
       (if (i32.ge_u (local.get $avail) (i32.wrap_i64 (local.get $l)))
 	  (then
 	     (array.copy $bstring $bstring
@@ -817,7 +874,7 @@
 				    (global.get $default_io_bufsize))))
 			    (local.set $r
 			       (i64.extend_i32_u
-				  (call $bgl_sysread
+				  (call $sysread
 				     (local.get $p)
 				     (local.get $s)
 				     (i32.const 0)

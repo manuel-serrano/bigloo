@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sat Dec 28 06:19:41 2024 (serrano)                */
+;*    Last change :  Wed Jan  8 18:00:02 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1683,7 +1683,11 @@
 ;*    directory->vector ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (directory->vector string)
-   ($directory->vector string))
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($directory->vector string))
+      (else
+       (list->vector ($directory->list string)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory->path-vector ...                                       */
