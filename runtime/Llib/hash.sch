@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/hash.sch                */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/hash.sch           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 15 07:24:23 2007                          */
-;*    Last change :  Wed Nov 20 13:20:14 2013 (serrano)                */
-;*    Copyright   :  2007-21 Manuel Serrano                            */
+;*    Last change :  Thu Jan  9 15:45:34 2025 (serrano)                */
+;*    Copyright   :  2007-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Hastable structure                                               */
 ;*=====================================================================*/
@@ -12,8 +12,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    %hashtable                                                       */
 ;*---------------------------------------------------------------------*/
+(define-macro (unsafe! val)
+   (set! *unsafe-struct* val)
+   #f)
+(unsafe! #t)
 (define-struct %hashtable size max-bucket-len buckets eqtest hashn weak
    max-length bucket-expansion)
+(unsafe! #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    table-get-hashnumber ...                                         */

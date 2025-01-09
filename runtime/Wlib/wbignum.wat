@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Sat Dec 21 08:26:40 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Thu Jan  9 16:10:49 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
 ;*=====================================================================*/
@@ -33,8 +33,9 @@
    (import "__js_bignum" "bignum_to_flonum" (func $bgl_bignum_to_flonum (param externref) (result f64)))
    (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref) (param externref) (result externref)))
    (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref) (param externref) (result externref)))
-   (import "__js_bignum" "seed_rand" (func $seed_rand))
+   (import "__js_bignum" "seed_rand" (func $seed_rand (param i32)))
    (import "__js_bignum" "rand_bignum" (func $rand_bignum (param externref) (result externref)))
+   (import "__js_bignum" "rand_fixnum" (func $rand_fixnum (result i32)))
    (import "__js_bignum" "long_to_bignum" (func $js_long_to_bignum (param f64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
    (import "__js_bignum" "bignum_neg" (func $bignum_neg (param externref) (result externref)))
@@ -227,7 +228,7 @@
    ;; bgl_seed_rand
    (func $bgl_seed_rand (export "bgl_seed_rand")
       (param $x i64)
-      (call $seed_rand))
+      (call $seed_rand (i32.wrap_i64 (local.get $x))))
    
    ;; bgl_rand_bignum
    (func $bgl_rand_bignum (export "bgl_rand_bignum")
@@ -237,6 +238,11 @@
 	 (struct.new $bignum
 	    (call $rand_bignum
 	       (struct.get $bignum $bx (local.get $x))))))
+
+   ;; rand
+   (func $rand (export "rand")
+      (result i32)
+      (return_call $rand_fixnum))
 
    ;; BGL_SAFE_BX_TO_FX
    (func $BGL_SAFE_BX_TO_FX (export "BGL_SAFE_BX_TO_FX")

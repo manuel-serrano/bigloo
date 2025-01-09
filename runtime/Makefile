@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Jan  9 07:40:55 2025 (serrano)                */
+#*    Last change :  Thu Jan  9 15:46:22 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -47,8 +47,6 @@ SCMCLASSSUFFIX	= %.class
 PBASE		= bigloo.runtime
 # The qualifier of the build library
 LIBSUFFIX	=
-# Wasm types
-WASMTYPES	= Wlib/types.wat
 # Wasm flags
 WFLAGS		= 
 # Wasm merge tool
@@ -705,29 +703,29 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
   objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
-  $(WASMTYPES) $(W_WLIB) $(WASMS:%.wasm=%.wat)
-	$(BIGLOO) -wasm -y -w $(WASMTYPES) \
+  Wlib/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
+	$(BIGLOO) -wasm -y -w Wlib/types.wat \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
 		-o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
-  $(WASMTYPES) $(W_WLIB) $(WASMS:%.wasm=%.wat)
+  Wlib/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
 	$(BIGLOO) -wasm -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
-objs/wasm_u/%.wat: %.scm $(BOOTLIBDIR)/types.wat
+objs/wasm_u/%.wat: %.scm
 	$(BIGLOO) -wasm $(WFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
 
-objs/wasm_s/%.wat: %.scm $(BOOTLIBDIR)/types.wat
+objs/wasm_s/%.wat: %.scm
 	$(BIGLOO) -wasm $(WFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
 
 objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat
-	$(BIGLOO) -i ../tools/gen_dummy_wasm_imports.scm $(WASMTYPES) $< > $@ || (rm -f $@; exit 1)
+	$(BIGLOO) -i ../tools/gen_dummy_wasm_imports.scm Wlib/types.wat $< > $@ || (rm -f $@; exit 1)
 
-$(BOOTLIBDIR)/types.wat: $(WASMTYPES)
+$(BOOTLIBDIR)/types.wat: Wlib/types.wat
 	cp $< $@
 
 #*---------------------------------------------------------------------*/
@@ -867,7 +865,7 @@ install-jvm:
         fi
 
 install-wasm:
-	cp $(WASMTYPES) $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
+	cp Wlib/types.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
 	cp Wlib/runtime.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
 	cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
 	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
@@ -1220,7 +1218,10 @@ objs/wasm_s/Unsafe/bignumber.wat: Unsafe/bignumber-gmp.sch
 objs/wasm_u/Unsafe/bignumber.wat: Unsafe/bignumber-gmp.sch
 objs/wasm_s/Rgc/rgc.wat: Rgc/rgc-generic.sch
 objs/wasm_u/Rgc/rgc.wat: Rgc/rgc-generic.sch
+objs/wasm_s/Llib/unicode.wat: Llib/unicode-generic.sch
 objs/wasm_u/Llib/unicode.wat: Llib/unicode-generic.sch
+objs/wasm_s/Llib/hash.wat: Llib/hash.sch
+objs/wasm_u/Llib/hash.wat: Llib/hash.sch
 
 Wlib/wfixnum.wat: Wlib/wfixnum$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
 	preallocs=`$(WASM_BINTS_PREALLOC)`; \
@@ -1260,3 +1261,5 @@ objs/saw_s/Llib/evobject.o: Llib/object.sch
 objs/saw_u/Llib/evobject.o: Llib/object.sch
 objs/obj_s/Clib/cregexp.o: Clib/cpcre.h Clib/cpcre2.h Clib/cregex.h
 objs/obj_u/Clib/cregexp.o: Clib/cpcre.h Clib/cpcre2.h Clib/cregex.h
+objs/obj_u/Llib/hash.o: Llib/hash.sch
+objs/obj_s/Llib/hash.o: Llib/hash.sch

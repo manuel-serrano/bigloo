@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jan  8 06:55:37 2025 (serrano)                */
+/*    Last change :  Thu Jan  9 16:09:09 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -82,6 +82,37 @@ const internalErrors = [
    "apply: unsupported arity %d"
 ];
 
+/*---------------------------------------------------------------------*/
+/*    Random                                                           */
+/*---------------------------------------------------------------------*/
+let S = false;
+const M = 2147483648n;
+const A = 1103515245n;
+const C = 12345n;
+   
+function seedRandom(seed) {
+   console.log("S=", seed);
+   S = BigInt(seed) % M;
+   return S;
+}
+
+function randBignum(bx) {
+   if (!S) {
+      return bx ^ BigInt(Math.random() * 5379239846);
+   } else {
+      S = (S * A + C);
+      return S % bx;
+   }
+}
+
+function randFixnum() {
+   if (!S) {
+      return Math.round(Math.random() * ((1 << 31) - 1));
+   } else {
+      S = (S * A + C) % M;
+      return Number(S);
+   }
+}
 
 /*---------------------------------------------------------------------*/
 /*    __js_io ...                                                      */
@@ -366,8 +397,9 @@ const __js_bignum = {
    bignum_to_long: bx => BigInt.asIntN(64, bx),
    bignum_remainder: (bx, by) => bx % by,
    bignum_quotient: (bx, by) => bx / by,
-   seed_rand: () => Math.random(),
-   rand_bignum: bx => bx ^ BigInt(Math.random() * 5379239846),
+   seed_rand: seedRandom,
+   rand_bignum: randBignum,
+   rand_fixnum: randFixnum,
    bignum_to_string: (value, addr) => {
       return storeJSStringToScheme(value.toString(), addr);
    },
