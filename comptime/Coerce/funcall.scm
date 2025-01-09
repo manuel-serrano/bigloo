@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Sun Jan  5 10:41:36 2025 (serrano)                */
+;*    Last change :  Thu Jan  9 10:56:49 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -83,8 +83,9 @@
 				   (body (top-level-sexp->node
 					    `(let ((,a-tlen ,len))
 						(if (correct-arity? ,fun ,a-len)
-						    ,(cast-if-not-obj loc nty to
-							(convert! node nty to safe))
+;* 						    ,(cast-if-not-obj loc nty to */
+;* 							(convert! node nty to safe)) */
+						    ,(convert! (cast-if-not-obj node) *obj* to safe)
 						    ,(make-arity-error-node
 							fun
 							error-msg
@@ -104,7 +105,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    cast-if-not-obj ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (cast-if-not-obj loc from to node)
+(define (cast-if-not-obj node)
+   (if (eq? (node-type node) *obj*)
+       node
+       (with-access::funcall node (type)
+	  (set! type *obj*)
+	  node)))
+
+(define (cast-if-not-obj-TBR loc from to node)
    (if (eq? from *obj*)
        node
        (with-access::funcall node (type)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jan  8 08:39:26 2025 (serrano)                */
+#*    Last change :  Thu Jan  9 07:40:55 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -665,15 +665,15 @@ class_p/jlib: $(CLASSES)
 .PHONY: lib-wasm lib-wasm_s lib-wasm_u libs-wasm
 
 libs-wasm:
-	@ $(MAKE) lib-wasm_u
 	@ $(MAKE) lib-wasm_s
+	@ $(MAKE) lib-wasm_u
 
 lib-wasm: lib-wasm_s
 lib-wasm_s: includes
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
-                WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_s \
+                WASMDIR_SYS=wasm_s WASMDIR_USR=wasm_s \
                 LIBSUFFIX=_s
 
 lib-wasm_u: includes
@@ -1218,7 +1218,7 @@ objs/wasm_s/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_u/Ieee/symbol.wat: Ieee/symbol-generic.sch
 objs/wasm_s/Unsafe/bignumber.wat: Unsafe/bignumber-gmp.sch
 objs/wasm_u/Unsafe/bignumber.wat: Unsafe/bignumber-gmp.sch
-objs/wasm_s/Rgc/rgc.wat: Rgce/rgc-generic.sch
+objs/wasm_s/Rgc/rgc.wat: Rgc/rgc-generic.sch
 objs/wasm_u/Rgc/rgc.wat: Rgc/rgc-generic.sch
 objs/wasm_u/Llib/unicode.wat: Llib/unicode-generic.sch
 

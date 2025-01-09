@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Wed Jan  8 11:25:07 2025 (serrano)                */
+;*    Last change :  Thu Jan  9 09:27:20 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -461,14 +461,15 @@
       (local $bufsize i32)
       (local $bufpos i32)
       (local $rgc (ref $rgc))
-      
+
       (if (call $BGL_PORT_CLOSED_P (local.get $port))
 	  (then
 	     (drop (call $the_failure
-		      (array.new_data $bstring $READ (i32.const 0) (i32.const 5))
+		      (array.new_data $bstring $READ (i32.const 0) (i32.const 4))
 		      (array.new_data $bstring $PORT_CLOSED (i32.const 0) (i32.const 11))
 		      (local.get $port)))
 	     (unreachable)))
+      (call $js_trace (i32.const 66666))
       
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
       (local.set $bufpos (struct.get $rgc $bufpos (local.get $rgc)))
@@ -807,7 +808,12 @@
       (local $r i64)
 
       (if (call $BGL_PORT_CLOSED_P (local.get $p))
-	  (then (throw $fail)))
+	  (then
+	     (drop (call $the_failure
+		      (array.new_data $bstring $READ (i32.const 0) (i32.const 4))
+		      (array.new_data $bstring $PORT_CLOSED (i32.const 0) (i32.const 11))
+		      (local.get $p)))
+	     (unreachable)))
 
       (local.set $rgc (struct.get $input-port $rgc (local.get $p)))
       (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
