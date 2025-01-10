@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Jan 10 08:12:58 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 11:05:08 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -740,7 +740,7 @@
 (define (escape-scheme-string str #!optional (start 0) (len (string-length str)))
    
    (define buf (make-string len))
-
+   
    (define (loop i j)
       (if (<fx i len)
 	  (let ((c (string-ref-ur str (+fx start i))))
@@ -750,16 +750,25 @@
 		 (loop (+fx i 1) (+fx j 1)))
 		((<fx i (-fx len 1))
 		 (let ((nc (string-ref-ur str (+fx i (+fx start 1)))))
-		    (if (char=? nc #\n)
-			(begin
-			   (string-set-ur! buf i #\Newline)
-			   (loop (+fx i 2) (+fx j 1)))
-			(begin
-			   (string-set-ur! buf j nc)
-			   (string-set-ur! buf (+fx j 1) nc)
-			   (loop (+fx i 2) (+fx j 2))))))))
+		    (cond
+		       ((char=? nc #\n)
+			(string-set-ur! buf j #\Newline)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((char=? nc #\")
+			(string-set-ur! buf j #\")
+			(loop (+fx i 2) (+fx j 1)))
+		       ((char=? nc #\\)
+			(string-set-ur! buf j #\\)
+			(loop (+fx i 2) (+fx j 1)))
+		       (else
+			(string-set-ur! buf j c)
+			(string-set-ur! buf (+fx j 1) nc)
+			(loop (+fx i 2) (+fx j 2))))))
+		(else
+		 (string-set-ur! buf j c)
+		 (loop (+fx i 1) (+fx j 1)))))
 	  (string-shrink! buf j)))
-
+   
    (loop 0 0))
 
 ;*---------------------------------------------------------------------*/

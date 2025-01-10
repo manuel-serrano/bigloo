@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Fri Jan 10 08:06:17 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 14:41:43 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -524,10 +524,8 @@
 	  (set! ,v (+fx ,v 1))
 	  _))
    
-   (define (hexa n)
-      (if (<fx n 10)
-	  (integer->char (+fx n (char->integer #\0)))
-	  (integer->char (+fx (-fx n 10) (char->integer #\a)))))
+   (define (octal n)
+      (integer->char (+fx n (char->integer #\0))))
    
    (let* ((len (string-length src))
 	  (dst (make-string (+fx (*fx len 4) 1)))
@@ -546,7 +544,7 @@
 		    (string-set-ur! dst (++ w) #\\)
 		    (string-set-ur! dst (++ w) #\t)
 		    (set! esc #t))
-		   ((#a011)
+		   ((#a008)
 		    (string-set-ur! dst (++ w) #\\)
 		    (string-set-ur! dst (++ w) #\b)
 		    (set! esc #t))
@@ -554,13 +552,13 @@
 		    (string-set-ur! dst (++ w) #\\)
 		    (string-set-ur! dst (++ w) #\r)
 		    (set! esc #t))
-		   ((#a012)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\f)
-		    (set! esc #t))
 		   ((#a011)
 		    (string-set-ur! dst (++ w) #\\)
 		    (string-set-ur! dst (++ w) #\v)
+		    (set! esc #t))
+		   ((#a012)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\f)
 		    (set! esc #t))
 		   ((#\\)
 		    (string-set-ur! dst (++ w) #\\)
@@ -582,9 +580,9 @@
 			(string-set-ur! dst (++ w) c)
 			(let ((n (char->integer c)))
 			   (string-set-ur! dst (++ w) #\\)
-			   (string-set-ur! dst (++ w) #\x)
-			   (string-set-ur! dst (++ w) (hexa (bit-lsh n 4)))
-			   (string-set-ur! dst (++ w) (hexa (bit-and n 7)))))))
+			   (string-set-ur! dst (++ w) (octal (/fx n 64)))
+			   (string-set-ur! dst (++ w) (octal (bit-and 7 (/fx n 8))))
+			   (string-set-ur! dst (++ w) (octal (bit-and 7 n)))))))
 		(loop))
 	     (string-shrink! dst w)))))
 

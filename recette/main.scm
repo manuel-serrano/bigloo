@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Fri Dec  6 08:46:53 2024 (serrano)                */
+;*    Last change :  Fri Jan 10 14:55:31 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -260,7 +260,7 @@
        (error 'recette "Illegal argument" else)))
    (if (string? *dumping*)
        (begin
-;* 	  (dump-obj *dumping*)                                         */
+	  (dump-obj *dumping*)
 	  (print #\Newline "------------------------------")
 	  (print (cond-expand
 		    (bigloo-c "C dump done...")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Jan 10 10:41:05 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 11:10:53 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -58,9 +58,7 @@
 	   type_tools
 	   cnst_node)
    
-   (export (build-wasm-backend)
-	   (wasm-pp code)
-	   *wasm-port*))
+   (export (build-wasm-backend)))
 
 ;*---------------------------------------------------------------------*/
 ;*    The backend                                                      */
@@ -451,7 +449,8 @@
 		  ,@(collect-module modules 'data)
 		  ,@(collect-module modules 'func)
 		  ;;(sort-modules! modules)
-		  ))))))
+		  )
+	       :scheme-string #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-module-name ...                                             */
@@ -682,7 +681,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    wasm-pp ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (wasm-pp l)
+(define (wasm-pp l #!key (scheme-string #t))
    
    (define margins
       '#(""
@@ -720,37 +719,49 @@
 		   (newline)
 		   (pp n (+fx depth 1)))
 	 l))
+
+   (define (char-visible? c)
+      (and (char>=? c #\x20) 
+	   (char<? c #\x7F) ;; exclude the DEL character (illegal in WASM text format)
+	   (not (char=? c #\")) 
+	   (not (char=? c #\\))))
    
+   (define (xdigit? c)
+      (or (and (char>=? c #\0) (char<=? c #\9))
+	  (and (char>=? c #\a) (char<=? c #\f))
+	  (and (char>=? c #\A) (char<=? c #\F))))
+       
+   (define (dump-scheme-string s)
+      (let ((l (string-length s)))
+	 (let loop ((i 0))
+	    (when (<fx i l)
+	       (let ((c (string-ref s i))
+		     (hex "0123456789abcdef"))
+		  (cond 
+		     ((char-visible? c)
+		      (display c)
+		      (loop (+fx i 1)))
+		     ((char=? c #\")
+		      (display "\\22")
+		      (loop (+fx i 1)))
+		     ((char=? c #\\)
+		      (display "\\5c")
+		      (loop (+fx i 1)))
+		     ((char=? c #\newline)
+		      (display "\\0a")
+		      (loop (+fx i 1)))
+		     (else
+		      (let ((n (char->integer c)))
+			 (display "\\")
+			 (display (string-ref hex (bit-rsh n 4)))
+			 (display (string-ref hex (bit-and n #xf)))
+			 (loop (+fx i 1))))))))))
+
    (define (dump-string s)
-      
-      (define (visible? c)
-	 (and 
-	  (char>=? c #\x20) 
-	  (char<? c #\x7F) ;; exclude the DEL character (illegal in WASM text format)
-	  (not (char=? c #\")) 
-	  (not (char=? c #\\))))
-      
       (display "\"")
-      (let iter ((i 0))
-	 (when (<fx i (string-length s))
-	    (let ((c (string-ref s i))
-		  (hex "0123456789abcdef"))
-	       (cond 
-		  ((visible? c)
-		   (display c))
-		  ((char=? c #\")
-		   (display "\\\""))
-		  ((char=? c #\\)
-		   (display "\\\\"))
-		  ((char=? c #\newline)
-		   (display "\\n"))
-		  ((char=? c #\tab)
-		   (display "\\t"))
-		  (else
-		   (display* "\\" 
-		      (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
-		      (string-ref hex (char->integer (char-and c #\x0F)))))))
-	    (iter (+fx i 1))))
+      (if scheme-string
+	  (dump-scheme-string s)
+	  (display s))
       (display "\""))
    
    (define (pp-arg a)
@@ -1333,7 +1344,8 @@
 
    (let ((section (car info))
 	 (offset (cdr info)))
-      `(data ,section ,@(split-long-data str 100 '()))))
+;*       `(data ,section ,@(split-long-data str 100 '()))              */
+      `(data ,section ,str)))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-strings ...                                                 */
