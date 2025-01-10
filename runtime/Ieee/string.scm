@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Jan 10 11:05:08 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 15:04:02 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -86,8 +86,8 @@
 						  "c_constant_string_to_string")
 	    
 	    (macro $string-bound-check?::bool (::long ::long) "BOUND_CHECK")
-	    ($string-for-read::bstring (::bstring) "string_for_read")
-	    ($symbol-for-read::bstring (::bstring) "symbol_for_read")
+;* 	    ($string-for-read::bstring (::bstring) "string_for_read")  */
+;* 	    ($symbol-for-read::bstring (::bstring) "symbol_for_read")  */
 	    ($blit-string::obj (::bstring ::long ::bstring ::long ::long)
 				"blit_string")
 	    (macro $string-shrink!::bstring (::bstring ::long) "bgl_string_shrink"))
@@ -170,10 +170,10 @@
 	       
 	       (method static $string-bound-check?::bool (::long ::long)
 		       "BOUND_CHECK")
-	       (method static $string-for-read::bstring (::bstring)
-		       "string_for_read")
-	       (method static $symbol-for-read::bstring (::bstring)
-		       "symbol_for_read")
+;* 	       (method static $string-for-read::bstring (::bstring)    */
+;* 		       "string_for_read")                              */
+;* 	       (method static $symbol-for-read::bstring (::bstring)    */
+;* 		       "symbol_for_read")                              */
 	       (method static $blit-string::obj (::bstring ::long ::bstring ::long ::long)
 		       "blit_string")
 	       (method static $make-string/wo-fill::bstring (::long)
@@ -222,7 +222,9 @@
 	    (string-downcase!::bstring ::bstring)
 	    (string-capitalize!::bstring ::bstring)
 	    (string-capitalize::bstring ::bstring)
+            (create-string-for-read::bstring ::bstring ::bool) 
 	    (inline string-for-read::bstring ::bstring)
+	    (inline symbol-for-read::bstring ::bstring)
 	    (inline string-as-read::bstring ::bstring)
 	    (escape-scheme-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
 	    (escape-C-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
@@ -719,10 +721,78 @@
    (string-capitalize! (string-copy string)))
 
 ;*---------------------------------------------------------------------*/
+;*    create-string-for-read ...                                       */
+;*---------------------------------------------------------------------*/
+(define (create-string-for-read src symbolp)
+   
+   (define-macro (++ v)
+      `(let ((_ ,v))
+	  (set! ,v (+fx ,v 1))
+	  _))
+   
+   (define (octal n)
+      (integer->char (+fx n (char->integer #\0))))
+   
+   (let* ((len (string-length src))
+	  (dst (make-string (+fx (*fx len 4) 1)))
+	  (r 0)
+	  (w 0))
+      (let loop ()
+	 (if (<fx r len)
+	     (let ((c (string-ref-ur src (++ r))))
+		(case c
+		   ((#\Newline)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\n))
+		   ((#\tab)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\t))
+		   ((#a008)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\b))
+		   ((#\Return)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\r))
+		   ((#a011)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\v))
+		   ((#a012)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\f))
+		   ((#\\)
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\\))
+		   ((#\")
+		    (string-set-ur! dst (++ w) #\\)
+		    (string-set-ur! dst (++ w) #\"))
+		   ((#\|)
+		    (if symbolp
+			(begin
+			   (string-set-ur! dst (++ w) #\\)
+			   (string-set-ur! dst (++ w) #\|))
+			(string-set-ur! dst (++ w) #\|)))
+		   (else
+		    (if (char>=? c #\space)
+			(string-set-ur! dst (++ w) c)
+			(let ((n (char->integer c)))
+			   (string-set-ur! dst (++ w) #\\)
+			   (string-set-ur! dst (++ w) (octal (/fx n 64)))
+			   (string-set-ur! dst (++ w) (octal (bit-and 7 (/fx n 8))))
+			   (string-set-ur! dst (++ w) (octal (bit-and 7 n)))))))
+		(loop))
+	     (string-shrink! dst w)))))
+
+;*---------------------------------------------------------------------*/
 ;*    @deffn string-for-read@ ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-for-read string)
-   ($string-for-read string))
+   (create-string-for-read string #f))
+
+;*---------------------------------------------------------------------*/
+;*    symbol-for-read ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (symbol-for-read string)
+   (create-string-for-read string #t))
 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    @deffn escape-C-string@ ...                                      *} */
@@ -772,7 +842,7 @@
    (loop 0 0))
 
 ;*---------------------------------------------------------------------*/
-;*    escape-C-string ...                                              */
+;*    @deffn escape-C-string@ ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (escape-C-string str #!optional (start 0) (len (string-length str)))
    

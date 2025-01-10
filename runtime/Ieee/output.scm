@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Wed Jan  8 10:59:16 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 15:06:40 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -830,7 +830,7 @@
    
    (define (wrt str)
       (display-string "|" port)
-      (display-string ($symbol-for-read str) port)
+      (display-string (symbol-for-read str) port)
       (display-string "|" port))
    
    (let* ((str (symbol->string! obj))

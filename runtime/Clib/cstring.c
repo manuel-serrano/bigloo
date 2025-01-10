@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Fri Jan 10 07:39:52 2025 (serrano)                */
+/*    Last change :  Fri Jan 10 15:06:18 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -1087,8 +1087,8 @@ bgl_escape_scheme_string__TBR_10jan2025(unsigned char *src, long start, long end
 /*    obj_t                                                            */
 /*    create_string_for_read ...                                       */
 /*---------------------------------------------------------------------*/
-obj_t
-create_string_for_read(obj_t bstring, int symbolp) {
+static obj_t
+create_string_for_read__TBR_10jan2025(obj_t bstring, int symbolp) {
    unsigned char *dst;
    unsigned char *src = (unsigned char *)BSTRING_TO_STRING(bstring);
    int  r, w, len = STRING_LENGTH(bstring);
@@ -1201,20 +1201,20 @@ create_string_for_read(obj_t bstring, int symbolp) {
 /*    obj_t                                                            */
 /*    string_for_read ...                                              */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
+static
 obj_t
-string_for_read(obj_t bstring) {
-  return create_string_for_read(bstring, 0);
+string_for_read__TBR_10jan2025(obj_t bstring) {
+  return create_string_for_read__TBR_10jan2025(bstring, 0);
 }
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    symbol_for_read ...                                              */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
+static
 obj_t
-symbol_for_read(obj_t bstring) {
-  return create_string_for_read(bstring, 1);
+symbol_for_read__TBR_10jan2025(obj_t bstring) {
+  return create_string_for_read__TBR_10jan2025(bstring, 1);
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Fri Jan 10 14:41:43 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 15:02:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
@@ -34,8 +34,8 @@
 	   (bigloo_string_cige::bool ::bstring ::bstring)
 	   (c_constant_string_to_string::bstring ::string)
 	   (BOUND_CHECK::bool ::long ::long)
-	   (string_for_read::bstring ::bstring)
-	   (symbol_for_read::bstring ::bstring)
+;* 	   (string_for_read::bstring ::bstring)                        */
+;* 	   (symbol_for_read::bstring ::bstring)                        */
 	   (blit_string::obj ::bstring ::long ::bstring ::long ::long))
    (extern (export bigloo_strcmp "bigloo_strcmp")
 	   (export bigloo_strncmp "bigloo_strncmp")
@@ -55,8 +55,8 @@
 	   (export bigloo_string_cige "bigloo_string_cige")
 	   (export c_constant_string_to_string "c_constant_string_to_string")
 	   (export BOUND_CHECK "BOUND_CHECK")
-	   (export string_for_read "string_for_read")
-	   (export symbol_for_read "symbol_for_read")
+;* 	   (export string_for_read "string_for_read")                  */
+;* 	   (export symbol_for_read "symbol_for_read")                  */
 	   (export blit_string "blit_string")))
 
 ;*---------------------------------------------------------------------*/
@@ -517,86 +517,76 @@
 ;*---------------------------------------------------------------------*/
 ;*    create_string_for_read ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (create_string_for_read src symbolp)
-   
-   (define-macro (++ v)
-      `(let ((_ ,v))
-	  (set! ,v (+fx ,v 1))
-	  _))
-   
-   (define (octal n)
-      (integer->char (+fx n (char->integer #\0))))
-   
-   (let* ((len (string-length src))
-	  (dst (make-string (+fx (*fx len 4) 1)))
-	  (esc #f)
-	  (r 0)
-	  (w 0))
-      (let loop ()
-	 (if (<fx r len)
-	     (let ((c (string-ref-ur src (++ r))))
-		(case c
-		   ((#\Newline)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\n)
-		    (set! esc #t))
-		   ((#\tab)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\t)
-		    (set! esc #t))
-		   ((#a008)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\b)
-		    (set! esc #t))
-		   ((#\Return)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\r)
-		    (set! esc #t))
-		   ((#a011)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\v)
-		    (set! esc #t))
-		   ((#a012)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\f)
-		    (set! esc #t))
-		   ((#\\)
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\\)
-		    (set! esc #t))
-		   ((#\")
-		    (string-set-ur! dst (++ w) #\\)
-		    (string-set-ur! dst (++ w) #\")
-		    (set! esc #t))
-		   ((#\|)
-		    (if symbolp
-			(begin
-			   (string-set-ur! dst (++ w) #\\)
-			   (string-set-ur! dst (++ w) #\|)
-			   (set! esc #t))
-			(string-set-ur! dst (++ w) #\|)))
-		   (else
-		    (if (char>=? c #\space)
-			(string-set-ur! dst (++ w) c)
-			(let ((n (char->integer c)))
-			   (string-set-ur! dst (++ w) #\\)
-			   (string-set-ur! dst (++ w) (octal (/fx n 64)))
-			   (string-set-ur! dst (++ w) (octal (bit-and 7 (/fx n 8))))
-			   (string-set-ur! dst (++ w) (octal (bit-and 7 n)))))))
-		(loop))
-	     (string-shrink! dst w)))))
-
-;*---------------------------------------------------------------------*/
-;*    string_for_read ...                                              */
-;*---------------------------------------------------------------------*/
-(define (string_for_read bstring)
-   (create_string_for_read bstring #f))
-
-;*---------------------------------------------------------------------*/
-;*    symbol_for_read ...                                              */
-;*---------------------------------------------------------------------*/
-(define (symbol_for_read bstring)
-   (create_string_for_read bstring #t))
+;* (define (create_string_for_read src symbolp)                        */
+;*                                                                     */
+;*    (define-macro (++ v)                                             */
+;*       `(let ((_ ,v))                                                */
+;* 	  (set! ,v (+fx ,v 1))                                         */
+;* 	  _))                                                          */
+;*                                                                     */
+;*    (define (octal n)                                                */
+;*       (integer->char (+fx n (char->integer #\0))))                  */
+;*                                                                     */
+;*    (let* ((len (string-length src))                                 */
+;* 	  (dst (make-string (+fx (*fx len 4) 1)))                      */
+;* 	  (r 0)                                                        */
+;* 	  (w 0))                                                       */
+;*       (let loop ()                                                  */
+;* 	 (if (<fx r len)                                               */
+;* 	     (let ((c (string-ref-ur src (++ r))))                     */
+;* 		(case c                                                */
+;* 		   ((#\Newline)                                        */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\n))                   */
+;* 		   ((#\tab)                                            */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\t))                   */
+;* 		   ((#a008)                                            */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\b))                   */
+;* 		   ((#\Return)                                         */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\r))                   */
+;* 		   ((#a011)                                            */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\v))                   */
+;* 		   ((#a012)                                            */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\f))                   */
+;* 		   ((#\\)                                              */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\\))                   */
+;* 		   ((#\")                                              */
+;* 		    (string-set-ur! dst (++ w) #\\)                    */
+;* 		    (string-set-ur! dst (++ w) #\"))                   */
+;* 		   ((#\|)                                              */
+;* 		    (if symbolp                                        */
+;* 			(begin                                         */
+;* 			   (string-set-ur! dst (++ w) #\\)             */
+;* 			   (string-set-ur! dst (++ w) #\|))            */
+;* 			(string-set-ur! dst (++ w) #\|)))              */
+;* 		   (else                                               */
+;* 		    (if (char>=? c #\space)                            */
+;* 			(string-set-ur! dst (++ w) c)                  */
+;* 			(let ((n (char->integer c)))                   */
+;* 			   (string-set-ur! dst (++ w) #\\)             */
+;* 			   (string-set-ur! dst (++ w) (octal (/fx n 64))) */
+;* 			   (string-set-ur! dst (++ w) (octal (bit-and 7 (/fx n 8)))) */
+;* 			   (string-set-ur! dst (++ w) (octal (bit-and 7 n))))))) */
+;* 		(loop))                                                */
+;* 	     (string-shrink! dst w)))))                                */
+;*                                                                     */
+;* {*---------------------------------------------------------------------*} */
+;* {*    string_for_read ...                                              *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (string_for_read bstring)                                   */
+;*    (create_string_for_read bstring #f))                             */
+;*                                                                     */
+;* {*---------------------------------------------------------------------*} */
+;* {*    symbol_for_read ...                                              *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (symbol_for_read bstring)                                   */
+;*    (create_string_for_read bstring #t))                             */
 
 ;*---------------------------------------------------------------------*/
 ;*    blit_string ...                                                  */
