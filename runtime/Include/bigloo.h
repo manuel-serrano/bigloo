@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jan  6 10:15:17 2025 (serrano)                */
+/*    Last change :  Fri Jan 10 09:41:10 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2602,6 +2602,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define RGC_MATCHSTOP(p) \
    (INPUT_PORT(p).matchstop)
+
+#define RGC_MATCHSTART(p) \
+   (INPUT_PORT(p).matchstart)
 
 /*---------------------------------------------------------------------*/
 /*    `exit' machinery                                                 */

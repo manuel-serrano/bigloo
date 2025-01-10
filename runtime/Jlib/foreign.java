@@ -2734,7 +2734,11 @@ public final class foreign
 
    public static byte[] bgl_string_shrink(byte[]src, int len)
       {
-	 return c_substring(src, 0, len);
+	 if (len < src.length) {
+	    return c_substring(src, 0, len);
+	 } else {
+	    return src;
+	 }
       }
 
    public static byte[] c_substring(byte[]src, int min, int max)
@@ -2933,7 +2937,7 @@ public final class foreign
 	 return (byte)(10 + (b - (byte) 'A'));
    }
    
-   public static byte[] bgl_escape_scheme_string(byte[]src, int start, int end)
+   public static byte[] __TBR_10jan2025__bgl_escape_scheme_string(byte[]src, int start, int end)
       {
 	 int w = 0;
 
@@ -6657,6 +6661,10 @@ public final class foreign
 	 return true;
       }
 
+   public static int RGC_MATCHSTART(input_port p) {
+      return p.matchstart;
+   }
+   
    public static int RGC_START_MATCH(input_port p)
       {
 	 return (p.forward = p.matchstart = p.matchstop);
@@ -6821,15 +6829,6 @@ public final class foreign
    public static byte[] rgc_buffer_substring(input_port p, int o, int e)
       {
 	 return c_substring(p.buffer, p.matchstart + o, p.matchstart + e);
-      }
-
-   public static byte[] rgc_buffer_escape_substring(input_port p, int o, int e, boolean strict )
-      {
-	 if( strict ) {
-	    return bgl_escape_scheme_string(p.buffer, p.matchstart + o, p.matchstart + e);
-	 } else {
-	    return bgl_escape_C_string(p.buffer, p.matchstart + o, p.matchstart + e);
-	 }
       }
 
    public static byte RGC_BUFFER_CHARACTER(input_port p)

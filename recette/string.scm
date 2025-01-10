@@ -308,6 +308,9 @@
    (test "escape.9" (char->integer (string-ref #"\X7E" 0)) #x7e)
    (test "escape.10" (char->integer (string-ref #"\XaE" 0)) #xae)
    (test "escape.11" (char->integer (string-ref #"\XAE" 0)) #xae)
+   (test "escape.12" "f\9g" (list->string '(#\f #\9 #\g)))
+   (test "escape.13" "f\12g" (list->string '(#\f #\1 #\2 #\g)))
+   (test "escape.14" "f\123g" (list->string '(#\f #\S #\g)))
    (test "escape(8bits)" (list "böig") '("böig"))
    (test "id"
       (scheme-id->c-id "INITIALIZE-IMPORTED-MODULES!_FOO")

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/string.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/string.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Sep 30 08:02:46 2024 (serrano)                */
+;*    Last change :  Fri Jan 10 08:12:58 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -22,7 +22,10 @@
        (include "Ieee/string-generic.sch")))
    
    (import  __error
-	    __param)
+	    __param
+	    __bit
+	    __unicode
+	    __ucs2)
    
    (use     __type
 	    __bigloo
@@ -75,10 +78,10 @@
 	    ($string-append-3::bstring (::bstring ::bstring ::bstring)
 					"string_append_3")
 	    
-	    ($escape-C-string::bstring (::string ::long ::long)
-				       "bgl_escape_C_string")
-	    ($escape-scheme-string::bstring (::string ::long ::long)
-					    "bgl_escape_scheme_string")
+;* 	    ($escape-C-string::bstring (::string ::long ::long)        */
+;* 				       "bgl_escape_C_string")          */
+;* 	    ($escape-scheme-string::bstring (::string ::long ::long)   */
+;* 					    "bgl_escape_scheme_string") */
 	    ($constant-string-to-string::bstring (::string)
 						  "c_constant_string_to_string")
 	    
@@ -158,10 +161,10 @@
 	       (method static $string-append-3::bstring (::bstring ::bstring ::bstring)
 		       "string_append_3")
 	       
-	       (method static $escape-C-string::bstring (::string ::long ::long)
-		       "bgl_escape_C_string")
-	       (method static $escape-scheme-string::bstring (::string ::long ::long)
-		       "bgl_escape_scheme_string")
+;* 	       (method static $escape-C-string::bstring (::string ::long ::long) */
+;* 		       "bgl_escape_C_string")                          */
+;* 	       (method static $escape-scheme-string::bstring (::string ::long ::long) */
+;* 		       "bgl_escape_scheme_string")                     */
 	       (method static $constant-string-to-string::bstring (::string)
 		       "c_constant_string_to_string")
 	       
@@ -221,8 +224,8 @@
 	    (string-capitalize::bstring ::bstring)
 	    (inline string-for-read::bstring ::bstring)
 	    (inline string-as-read::bstring ::bstring)
-	    (inline escape-scheme-string::bstring ::bstring)
-	    (inline escape-C-string::bstring ::bstring)
+	    (escape-scheme-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
+	    (escape-C-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
 	    (inline blit-string-ur! ::bstring ::long ::bstring ::long ::long)
 	    (blit-string! ::bstring ::long ::bstring ::long ::long)
 	    (inline string-shrink! ::bstring ::long)
@@ -721,27 +724,176 @@
 (define-inline (string-for-read string)
    ($string-for-read string))
 
-;*---------------------------------------------------------------------*/
-;*    @deffn escape-C-string@ ...                                      */
-;*    -------------------------------------------------------------    */
-;*    Backward compatibility                                           */
-;*---------------------------------------------------------------------*/
-(define-inline (escape-C-string str)
-   (string-as-read (substring str 1)))
-
+;* {*---------------------------------------------------------------------*} */
+;* {*    @deffn escape-C-string@ ...                                      *} */
+;* {*    -------------------------------------------------------------    *} */
+;* {*    Backward compatibility                                           *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define-inline (escape-C-string str)                                */
+;*    (string-as-read (substring str 1)))                              */
+;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    @deffn escape-scheme-string@ ...                                 */
 ;*    -------------------------------------------------------------    */
 ;*    Backward compatibility                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (escape-scheme-string str)
-   ($escape-scheme-string str 0 (string-length str)))
+(define (escape-scheme-string str #!optional (start 0) (len (string-length str)))
+   
+   (define buf (make-string len))
+
+   (define (loop i j)
+      (if (<fx i len)
+	  (let ((c (string-ref-ur str (+fx start i))))
+	     (cond
+		((not (char=? c #\\))
+		 (string-set-ur! buf j c)
+		 (loop (+fx i 1) (+fx j 1)))
+		((<fx i (-fx len 1))
+		 (let ((nc (string-ref-ur str (+fx i (+fx start 1)))))
+		    (if (char=? nc #\n)
+			(begin
+			   (string-set-ur! buf i #\Newline)
+			   (loop (+fx i 2) (+fx j 1)))
+			(begin
+			   (string-set-ur! buf j nc)
+			   (string-set-ur! buf (+fx j 1) nc)
+			   (loop (+fx i 2) (+fx j 2))))))))
+	  (string-shrink! buf j)))
+
+   (loop 0 0))
+
+;*---------------------------------------------------------------------*/
+;*    escape-C-string ...                                              */
+;*---------------------------------------------------------------------*/
+(define (escape-C-string str #!optional (start 0) (len (string-length str)))
+   
+   (define (xdigit->byte c)
+      (cond
+	 ((char-numeric? c)
+	  (-fx (char->integer c) (char->integer #\0)))
+	 ((and (char>=? c #\a) (char<=? c #\f))
+	  (+fx 10 (-fx (char->integer c) (char->integer #\a))))
+	 ((and (char>=? c #\A) (char<=? c #\F))
+	  (+fx 10 (-fx (char->integer c) (char->integer #\A))))
+	 (else
+	  -1)))
+   
+   (define (odigit->byte c)
+      (cond
+	 ((and (char>=? c #\0) (char<=? c #\7))
+	  (-fx (char->integer c) (char->integer #\0)))
+	 (else
+	  -1)))
+
+   (define buf (make-string len))
+
+   (define (loop\ i j nc)
+      (string-set! buf j nc)
+      (loop (+fx i 2) (+fx j 1)))
+   
+   (define (loop i j)
+      (if (=fx i len)
+	  (string-shrink! buf j)
+	  (let ((c (string-ref-ur str (+fx start i))))
+	     (cond
+		((not (char=? c #\\))
+		 (string-set-ur! buf j c)
+		 (loop (+fx i 1) (+fx j 1)))
+		((=fx i (-fx len 1))
+		 (string-set-ur! buf j c)
+		 (loop (+fx i 1) (+fx j 1)))
+		(else
+		 (let ((c1 (string-ref-ur str (+fx 1 (+fx start i)))))
+		    (case c1
+		       ((#\000)
+			(string-set-ur! buf j #\\)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\n)
+			(string-set-ur! buf j #\Newline)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\t)
+			(string-set-ur! buf j #\Tab)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\b)
+			(string-set-ur! buf j #a008)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\r)
+			(string-set-ur! buf j #\Return)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\f)
+			(string-set-ur! buf j #a012)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\v)
+			(string-set-ur! buf j #a011)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\\)
+			(string-set-ur! buf j #\\)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\')
+			(string-set-ur! buf j #\')
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\")
+			(string-set-ur! buf j #\")
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\a)
+			(string-set-ur! buf j #a007)
+			(loop (+fx i 2) (+fx j 1)))
+		       ((#\x #\X)
+			(if (<fx i (-fx len 3))
+			    (let* ((c2 (string-ref-ur str (+fx 2 (+fx start i))))
+				   (c3 (string-ref-ur str (+fx 3 (+fx start i))))
+				   (n2 (xdigit->byte c2))
+				   (n3 (xdigit->byte c3)))
+			       (if (or (<fx n2 0) (<fx n3 0))
+				   (loop\ i j c1)
+				   (let ((n (+fx (*fx n2 16) n3)))
+				      (string-set! buf j (integer->char n))
+				      (loop (+fx i 4) (+fx j 1)))))
+			    (loop\ i j c1)))
+		       ((#\u #\U)
+			(if (<fx i (-fx len 5))
+			    (let* ((c2 (string-ref-ur str (+fx 2 (+fx start i))))
+				   (c3 (string-ref-ur str (+fx 3 (+fx start i))))
+				   (c4 (string-ref-ur str (+fx 4 (+fx start i))))
+				   (c5 (string-ref-ur str (+fx 5 (+fx start i))))
+				   (n2 (xdigit->byte c2))
+				   (n3 (xdigit->byte c3))
+				   (n4 (xdigit->byte c4))
+				   (n5 (xdigit->byte c5)))
+			       (if (or (<fx n2 0) (<fx n3 0) (<fx n4 0) (<fx n5 0))
+				   (loop\ i j c1)
+				   (let* ((n (+fx (bit-lsh n2 12)
+						(+fx (bit-lsh n3 8)
+						   (+fx (bit-lsh n4 4)
+						      n5))))
+					  (u (integer->ucs2 n))
+					  (s (make-ucs2-string 1 u))
+					  (t (ucs2-string->utf8-string s))
+					  (l (string-length t)))
+				      (blit-string! t 0 buf j l)
+				      (loop (+fx i 6) (+fx j l)))))
+			    (loop\ i j c1)))
+		       (else
+			(if (<fx i (-fx len 3))
+			    (let* ((c2 (string-ref-ur str (+fx 2 (+fx start i))))
+				   (c3 (string-ref-ur str (+fx 3 (+fx start i))))
+				   (n1 (odigit->byte c1))
+				   (n2 (odigit->byte c2))
+				   (n3 (odigit->byte c3)))
+			       (if (or (<fx n1 0) (<fx n2 0) (<fx n3 0))
+				   (loop\ i j c1)
+				   (let ((n (+fx (*fx n1 64) (+fx (*fx n2 8) n3))))
+				      (string-set-ur! buf j (integer->char n))
+				      (loop (+fx i 4) (+fx j 1)))))
+			    (loop\ i j c1))))))))))
+
+   (loop 0 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-as-read@ ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-as-read str)
-   ($escape-C-string str 0 (string-length str)))
+   (escape-C-string str 0 (string-length str)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn blit-string-ur!@ ...                                      */

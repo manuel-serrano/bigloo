@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:49:25 2024                          */
-;*    Last change :  Thu Dec 26 07:02:27 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Fri Jan 10 08:06:17 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic portable string implementation.                          */
 ;*=====================================================================*/
@@ -32,8 +32,6 @@
 	   (bigloo_string_cile::bool ::bstring ::bstring)
 	   (bigloo_string_cigt::bool ::bstring ::bstring)
 	   (bigloo_string_cige::bool ::bstring ::bstring)
-	   (bgl_escape_C_string::bstring ::bstring ::long ::long)
-	   (bgl_escape_scheme_string::bstring ::bstring ::long ::long)
 	   (c_constant_string_to_string::bstring ::string)
 	   (BOUND_CHECK::bool ::long ::long)
 	   (string_for_read::bstring ::bstring)
@@ -55,8 +53,6 @@
 	   (export bigloo_string_cile "bigloo_string_cile")
 	   (export bigloo_string_cigt "bigloo_string_cigt")
 	   (export bigloo_string_cige "bigloo_string_cige")
-	   (export bgl_escape_C_string "bgl_escape_C_string")
-	   (export bgl_escape_scheme_string "bgl_escape_scheme_string")
 	   (export c_constant_string_to_string "c_constant_string_to_string")
 	   (export BOUND_CHECK "BOUND_CHECK")
 	   (export string_for_read "string_for_read")
@@ -312,195 +308,199 @@
 ;*---------------------------------------------------------------------*/
 ;*    bgl_escape_C_string ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (bgl_escape_C_string str start end)
-   
-   (define (isxdigit? c)
-      (or (char-numeric? c)
-	  (and (char>=? c #\a) (char<=? c #\f))
-	  (and (char>=? c #\A) (char<=? c #\F))))
-   
-   (define (XDIGIT_TO_BYTE c)
-      (cond
-	 ((char-numeric? c)
-	  (-fx (char->integer c) (char->integer #\0)))
-	 ((and (char>=? c #\a) (char<=? c #\f))
-	  (-fx (char->integer c) (char->integer #\a)))
-	 ((and (char>=? c #\A) (char<=? c #\F))
-	  (-fx (char->integer c) (char->integer #\A)))
-	 (else
-	  -1)))
-   
-   (define (DIGIT_TO_BYTE c)
-      (cond
-	 ((char-numeric? c)
-	  (-fx (char->integer c) (char->integer #\0)))
-	 (else
-	  -1)))
-   
-   (let* ((len (-fx end start))
-	  (buf (make-string len)))
-      (let loop ((i 0)
-		 (j 0))
-	 (if (<fx i len)
-	     (let ((c (string-ref-ur str (+fx start i))))
-		(cond
-		   ((not (char=? c #\\))
-		    (string-set-ur! buf j c)
-		    (loop (+fx i 1) (+fx j 1)))
-		   ((<fx i (-fx len 1))
-		    (let ((nc (string-ref-ur str (+fx 1 (+fx start i)))))
-		       (case nc
-			  ((#\000)
-			   (string-set-ur! buf j #\\)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\n)
-			   (string-set-ur! buf j #\Newline)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\t)
-			   (string-set-ur! buf j #\Tab)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\b)
-			   (string-set-ur! buf j #a008)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\r)
-			   (string-set-ur! buf j #\Return)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\f)
-			   (string-set-ur! buf j #a012)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\v)
-			   (string-set-ur! buf j #a011)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\\)
-			   (string-set-ur! buf j #\\)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\')
-			   (string-set-ur! buf j #\')
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\")
-			   (string-set-ur! buf j #\")
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\a)
-			   (string-set-ur! buf j #a007)
-			   (loop (+fx i 2) (+fx j 1)))
-			  ((#\x #\X)
-			   (if (<fx i (-fx len 3))
-			       (let* ((s1 (string-ref-ur str (+fx 2 (+fx start i))))
-				      (s2 (string-ref-ur str (+fx 3 (+fx start i))))
-				      (n1 (XDIGIT_TO_BYTE s1))
-				      (n2 (XDIGIT_TO_BYTE s2)))
-				  (if (or (<fx n1 0) (<fx n2 0))
-				      (begin
-					 (string-set! buf j nc)
-					 (loop (+fx i 2) (+fx j 1)))
-				      (begin
-					 (string-set! buf j
-					    (integer->char
-					       (+fx (*fx n1 16) n2)))
-					 (loop (+fx i 4) (+fx j 1)))))))
-			  ((#\u #\U)
-			   (cond
-			      ((and (<fx i (-fx len 4))
-				    (char=? (string-ref-ur str (+fx 2 (+fx start i)))
-				       #\{))
-			       (let liip ((ii (+fx 3 (+fx start i)))
-					  (n 0))
-				  (if (=fx ii len)
-				      (begin
-					 (string-set! buf j c)
-					 (loop (+fx i 1) (+fx j 1)))
-				      (let ((c (string-ref-ur str ii)))
-					 (cond
-					    ((char=? c #\})
-					     (let* ((u (integer->ucs2 n))
-						    (s (make-ucs2-string 1 u))
-						    (t (ucs2-string->utf8-string s))
-						    (l (string-length t))
-						    (d (-fx ii (+fx 3 (+fx start i)))))
-						(blit-string! t 0 buf j l)
-						(set! len (-fx len d))
-						(loop (+fx i (+fx d 1)) (+fx j l))))
-					    ((isxdigit? c)
-					     (liip (+fx i 1)
-						(+fx (*fx n 16) (XDIGIT_TO_BYTE c))))
-					    (else
-					     (string-set! buf j c)
-					     (loop (+fx i 1) (+fx j 1))))))))
-			      ((<fx i (-fx len 5))
-			       (let* ((s1 (string-ref-ur str (+fx 2 (+fx start i))))
-				      (s2 (string-ref-ur str (+fx 3 (+fx start i))))
-				      (s3 (string-ref-ur str (+fx 4 (+fx start i))))
-				      (s4 (string-ref-ur str (+fx 5 (+fx start i)))))
-				  (if (and (isxdigit? s1) (isxdigit? s2)
-					   (isxdigit? s3) (isxdigit? s4))
-				      (let* ((n1 (XDIGIT_TO_BYTE s1))
-					     (n2 (XDIGIT_TO_BYTE s2))
-					     (n3 (XDIGIT_TO_BYTE s3))
-					     (n4 (XDIGIT_TO_BYTE s4))
-					     (n (+fx (bit-lsh n1 12)
-						   (+fx (bit-lsh n2 8)
-						      (+fx (bit-lsh n3 4)
-							 n4))))
-					     (u (integer->ucs2 n))
-					     (s (make-ucs2-string 1 u))
-					     (t (ucs2-string->utf8-string s))
-					     (l (string-length t)))
-					 (blit-string! t 0 buf j l)
-					 (set! len (-fx len (-fx 5 l)))
-					 (loop (+fx i 5) (+fx j l)))
-				      (begin
-					 (string-set-ur! buf j nc)
-					 (loop (+fx i 2) (+fx j 1))))))
-			      (else
-			       (string-set-ur! buf j nc)
-			       (loop (+fx i 2) (+fx j 1)))))
-			  (else
-			   (if (and (char-numeric? nc) (<fx i (-fx len 3)))
-			       (let* ((s2 (string-ref-ur str (+fx 2 (+fx start i))))
-				      (s3 (string-ref-ur str (+fx 3 (+fx start i))))
-				      (n1 (DIGIT_TO_BYTE nc))
-				      (n2 (DIGIT_TO_BYTE s2))
-				      (n3 (DIGIT_TO_BYTE s3)))
-				  (if (or (<fx n1 0) (<fx n2 0) (<fx n3 0))
-				      (begin
-					 (string-set! buf j nc)
-					 (loop (+fx i 2) (+fx j 1)))
-				      (begin
-					 (string-set-ur! buf j
-					    (integer->char
-					       (+fx (*fx n1 64)
-						  (+fx (*fx n2 8) n3))))
-					 (loop (+fx i 4) (+fx j 1)))))
-			       (begin
-				  (string-set-ur! buf j nc)
-				  (loop (+fx i 2) (+fx j 1))))))))
-		   (else
-		    (string-set-ur! buf j c)
-		    (loop (+fx i 1) (+fx j 1)))))
-	     (string-shrink! buf j)))))
-
+;* (define (bgl_escape_C_string str start end)                         */
+;*                                                                     */
+;*    (define (isxdigit? c)                                            */
+;*       (or (char-numeric? c)                                         */
+;* 	  (and (char>=? c #\a) (char<=? c #\f))                        */
+;* 	  (and (char>=? c #\A) (char<=? c #\F))))                      */
+;*                                                                     */
+;*    (define (XDIGIT_TO_BYTE c)                                       */
+;*       (cond                                                         */
+;* 	 ((char-numeric? c)                                            */
+;* 	  (-fx (char->integer c) (char->integer #\0)))                 */
+;* 	 ((and (char>=? c #\a) (char<=? c #\f))                        */
+;* 	  (-fx (char->integer c) (char->integer #\a)))                 */
+;* 	 ((and (char>=? c #\A) (char<=? c #\F))                        */
+;* 	  (-fx (char->integer c) (char->integer #\A)))                 */
+;* 	 (else                                                         */
+;* 	  -1)))                                                        */
+;*                                                                     */
+;*    (define (DIGIT_TO_BYTE c)                                        */
+;*       (cond                                                         */
+;* 	 ((char-numeric? c)                                            */
+;* 	  (-fx (char->integer c) (char->integer #\0)))                 */
+;* 	 (else                                                         */
+;* 	  -1)))                                                        */
+;*                                                                     */
+;*    (let* ((len (-fx end start))                                     */
+;* 	  (buf (make-string len)))                                     */
+;*       (let loop ((i 0)                                              */
+;* 		 (j 0))                                                */
+;* 	 (if (<fx i len)                                               */
+;* 	     (let ((c (string-ref-ur str (+fx start i))))              */
+;* 		(cond                                                  */
+;* 		   ((not (char=? c #\\))                               */
+;* 		    (string-set-ur! buf j c)                           */
+;* 		    (loop (+fx i 1) (+fx j 1)))                        */
+;* 		   ((<fx i (-fx len 1))                                */
+;* 		    (let ((nc (string-ref-ur str (+fx 1 (+fx start i))))) */
+;* 		       (case nc                                        */
+;* 			  ((#\000)                                     */
+;* 			   (string-set-ur! buf j #\\)                  */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\n)                                       */
+;* 			   (string-set-ur! buf j #\Newline)            */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\t)                                       */
+;* 			   (string-set-ur! buf j #\Tab)                */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\b)                                       */
+;* 			   (string-set-ur! buf j #a008)                */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\r)                                       */
+;* 			   (string-set-ur! buf j #\Return)             */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\f)                                       */
+;* 			   (string-set-ur! buf j #a012)                */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\v)                                       */
+;* 			   (string-set-ur! buf j #a011)                */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\\)                                       */
+;* 			   (string-set-ur! buf j #\\)                  */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\')                                       */
+;* 			   (string-set-ur! buf j #\')                  */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\")                                       */
+;* 			   (string-set-ur! buf j #\")                  */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\a)                                       */
+;* 			   (string-set-ur! buf j #a007)                */
+;* 			   (loop (+fx i 2) (+fx j 1)))                 */
+;* 			  ((#\x #\X)                                   */
+;* 			   (if (<fx i (-fx len 3))                     */
+;* 			       (let* ((s1 (string-ref-ur str (+fx 2 (+fx start i)))) */
+;* 				      (s2 (string-ref-ur str (+fx 3 (+fx start i)))) */
+;* 				      (n1 (XDIGIT_TO_BYTE s1))         */
+;* 				      (n2 (XDIGIT_TO_BYTE s2)))        */
+;* 				  (if (or (<fx n1 0) (<fx n2 0))       */
+;* 				      (begin                           */
+;* 					 (string-set! buf j nc)        */
+;* 					 (loop (+fx i 2) (+fx j 1)))   */
+;* 				      (begin                           */
+;* 					 (string-set! buf j            */
+;* 					    (integer->char             */
+;* 					       (+fx (*fx n1 16) n2)))  */
+;* 					 (loop (+fx i 4) (+fx j 1))))))) */
+;* 			  ((#\u #\U)                                   */
+;* 			   (cond                                       */
+;* 			      ((and (<fx i (-fx len 4))                */
+;* 				    (char=? (string-ref-ur str (+fx 2 (+fx start i))) */
+;* 				       #\{))                           */
+;* 			       (let liip ((ii (+fx 3 (+fx start i)))   */
+;* 					  (n 0))                       */
+;* 				  (if (=fx ii len)                     */
+;* 				      (begin                           */
+;* 					 (string-set! buf j c)         */
+;* 					 (loop (+fx i 1) (+fx j 1)))   */
+;* 				      (let ((c (string-ref-ur str ii))) */
+;* 					 (cond                         */
+;* 					    ((char=? c #\})            */
+;* 					     (let* ((u (integer->ucs2 n)) */
+;* 						    (s (make-ucs2-string 1 u)) */
+;* 						    (t (ucs2-string->utf8-string s)) */
+;* 						    (l (string-length t)) */
+;* 						    (d (-fx ii (+fx 3 (+fx start i))))) */
+;* 						(blit-string! t 0 buf j l) */
+;* 						(set! len (-fx len d)) */
+;* 						(loop (+fx i (+fx d 1)) (+fx j l)))) */
+;* 					    ((isxdigit? c)             */
+;* 					     (liip (+fx i 1)           */
+;* 						(+fx (*fx n 16) (XDIGIT_TO_BYTE c)))) */
+;* 					    (else                      */
+;* 					     (string-set! buf j c)     */
+;* 					     (loop (+fx i 1) (+fx j 1)))))))) */
+;* 			      ((<fx i (-fx len 5))                     */
+;* 			       (let* ((s1 (string-ref-ur str (+fx 2 (+fx start i)))) */
+;* 				      (s2 (string-ref-ur str (+fx 3 (+fx start i)))) */
+;* 				      (s3 (string-ref-ur str (+fx 4 (+fx start i)))) */
+;* 				      (s4 (string-ref-ur str (+fx 5 (+fx start i))))) */
+;* 				  (if (and (isxdigit? s1) (isxdigit? s2) */
+;* 					   (isxdigit? s3) (isxdigit? s4)) */
+;* 				      (let* ((n1 (XDIGIT_TO_BYTE s1))  */
+;* 					     (n2 (XDIGIT_TO_BYTE s2))  */
+;* 					     (n3 (XDIGIT_TO_BYTE s3))  */
+;* 					     (n4 (XDIGIT_TO_BYTE s4))  */
+;* 					     (n (+fx (bit-lsh n1 12)   */
+;* 						   (+fx (bit-lsh n2 8) */
+;* 						      (+fx (bit-lsh n3 4) */
+;* 							 n4))))        */
+;* 					     (u (integer->ucs2 n))     */
+;* 					     (s (make-ucs2-string 1 u)) */
+;* 					     (t (ucs2-string->utf8-string s)) */
+;* 					     (l (string-length t)))    */
+;* 					 (blit-string! t 0 buf j l)    */
+;* 					 (set! len (-fx len (-fx 5 l))) */
+;* 					 (loop (+fx i 5) (+fx j l)))   */
+;* 				      (begin                           */
+;* 					 (string-set-ur! buf j nc)     */
+;* 					 (loop (+fx i 2) (+fx j 1)))))) */
+;* 			      (else                                    */
+;* 			       (string-set-ur! buf j nc)               */
+;* 			       (loop (+fx i 2) (+fx j 1)))))           */
+;* 			  (else                                        */
+;* 			   (if (and (char-numeric? nc) (<fx i (-fx len 3))) */
+;* 			       (let* ((s2 (string-ref-ur str (+fx 2 (+fx start i)))) */
+;* 				      (s3 (string-ref-ur str (+fx 3 (+fx start i)))) */
+;* 				      (n1 (DIGIT_TO_BYTE nc))          */
+;* 				      (n2 (DIGIT_TO_BYTE s2))          */
+;* 				      (n3 (DIGIT_TO_BYTE s3)))         */
+;* 				  (if (or (<fx n1 0) (<fx n2 0) (<fx n3 0)) */
+;* 				      (begin                           */
+;* 					 (string-set! buf j nc)        */
+;* 					 (loop (+fx i 2) (+fx j 1)))   */
+;* 				      (begin                           */
+;* 					 (string-set-ur! buf j         */
+;* 					    (integer->char             */
+;* 					       (+fx (*fx n1 64)        */
+;* 						  (+fx (*fx n2 8) n3)))) */
+;* 					 (loop (+fx i 4) (+fx j 1))))) */
+;* 			       (begin                                  */
+;* 				  (string-set-ur! buf j nc)            */
+;* 				  (loop (+fx i 2) (+fx j 1))))))))     */
+;* 		   (else                                               */
+;* 		    (string-set-ur! buf j c)                           */
+;* 		    (loop (+fx i 1) (+fx j 1)))))                      */
+;* 	     (string-shrink! buf j)))))                                */
+;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    bgl_escape_scheme_string ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (bgl_escape_scheme_string str start end)
-   (let* ((len (-fx end start))
-	  (buf (make-string len)))
-      (let loop ((i 0)
-		 (j 0))
-	 (if (<fx i len)
-	     (let ((c (string-ref-ur str (+fx start i))))
-		(cond
-		   ((not (char=? c #\\))
-		    (string-set-ur! buf j c)
-		    (loop (+fx i 1) (+fx j 1)))
-		   ((<fx i (-fx len 1))
-		    (let ((nc (string-ref-ur str (+fx i (+fx start 1)))))
-		       (if (char=? nc #\n)
-			   (string-set-ur! buf i #\Newline)
-			   (string-set-ur! buf i nc)))
-		    (loop (+fx i 2) (+fx j 1)))))
-	     (string-shrink! buf j)))
-      buf))
+;* (define (bgl_escape_scheme_string str start end)                    */
+;*    (let* ((len (-fx end start))                                     */
+;* 	  (buf (make-string len)))                                     */
+;*       (let loop ((i 0)                                              */
+;* 		 (j 0))                                                */
+;* 	 (if (<fx i len)                                               */
+;* 	     (let ((c (string-ref-ur str (+fx start i))))              */
+;* 		(cond                                                  */
+;* 		   ((not (char=? c #\\))                               */
+;* 		    (string-set-ur! buf j c)                           */
+;* 		    (loop (+fx i 1) (+fx j 1)))                        */
+;* 		   ((<fx i (-fx len 1))                                */
+;* 		    (let ((nc (string-ref-ur str (+fx i (+fx start 1))))) */
+;* 		       (if (char=? nc #\n)                             */
+;* 			   (begin                                      */
+;* 			      (string-set-ur! buf i #\Newline)         */
+;* 			      (loop (+fx i 2) (+fx j 1)))              */
+;* 			   (begin                                      */
+;* 			      (string-set-ur! buf j nc)                */
+;* 			      (string-set-ur! buf (+fx j 1) nc)        */
+;* 			      (loop (+fx i 2) (+fx j 2))))))))         */
+;* 	     (string-shrink! buf j)))                                  */
+;*       buf))                                                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    c_constant_string_to_string ...                                  */

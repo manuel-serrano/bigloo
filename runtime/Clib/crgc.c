@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Oct  1 08:38:18 2024 (serrano)                */
+/*    Last change :  Fri Jan 10 09:21:14 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -581,16 +581,16 @@ rgc_buffer_substring(obj_t ip, long offset, long end) {
 /*    obj_t                                                            */
 /*    rgc_buffer_escape_substring ...                                  */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-rgc_buffer_escape_substring(obj_t ip, long offset, long end, bool_t strict) {
-   long start = INPUT_PORT(ip).matchstart;
-   unsigned char *s = &RGC_BUFFER_REF(ip, start);
-   
-   if (strict)
-      return bgl_escape_scheme_string(s, offset, end);
-   else 
-      return bgl_escape_C_string(s, offset, end);
-}
+/* BGL_RUNTIME_DEF obj_t                                               */
+/* rgc_buffer_escape_substring(obj_t ip, long offset, long end, bool_t strict) { */
+/*    long start = INPUT_PORT(ip).matchstart;                          */
+/*    unsigned char *s = &RGC_BUFFER_REF(ip, start);                   */
+/*                                                                     */
+/*    if (strict)                                                      */
+/*       return bgl_escape_scheme_string(s, offset, end);              */
+/*    else                                                             */
+/*       return bgl_escape_C_string(s, offset, end);                   */
+/* }                                                                   */
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

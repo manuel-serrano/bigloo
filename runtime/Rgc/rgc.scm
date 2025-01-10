@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Tue Oct  1 10:11:49 2024 (serrano)                */
+;*    Last change :  Fri Jan 10 08:28:07 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -57,6 +57,8 @@
 		   "RGC_BUFFER_MATCH_LENGTH")
 	    (macro $rgc-set-filepos!::long (::input-port)
 		   "RGC_SET_FILEPOS")
+	    (macro $rgc-matchstart::long (::input-port)
+		   "RGC_MATCHSTART")
 	    (macro $rgc-start-match!::long (::input-port)
 		   "RGC_START_MATCH")
 	    (macro $rgc-stop-match!::long (::input-port ::long)
@@ -125,6 +127,8 @@
 		  "RGC_BUFFER_MATCH_LENGTH")
 	       (method static $rgc-set-filepos!::long (::input-port)
 		  "RGC_SET_FILEPOS")
+	       (method static $rgc-matchstart::long (::input-port)
+		  "RGC_MATCHSTART")
 	       (method static $rgc-start-match!::long (::input-port)
 		  "RGC_START_MATCH")
 	       (method static $rgc-stop-match!::long (::input-port ::long)
@@ -291,11 +295,12 @@
 ;*    rgc-buffer-escape-substring ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-escape-substring input-port start stop strict)
-    (cond-expand
-      ((or bigloo-c bigloo-jvm)
-       ($rgc-buffer-escape-substring input-port start stop strict))
-      (else
-       ($$rgc-buffer-escape-substring input-port start stop strict))))
+   (let ((buf (input-port-buffer input-port))
+	 (s (+fx start ($rgc-matchstart input-port)))
+	 (l (-fx stop start)))
+      (if strict
+	  (escape-scheme-string buf s l)
+	  (escape-C-string buf s l))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-length ...                                            */

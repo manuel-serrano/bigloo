@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jan  9 16:09:09 2025 (serrano)                */
+/*    Last change :  Fri Jan 10 07:41:13 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -91,7 +91,6 @@ const A = 1103515245n;
 const C = 12345n;
    
 function seedRandom(seed) {
-   console.log("S=", seed);
    S = BigInt(seed) % M;
    return S;
 }

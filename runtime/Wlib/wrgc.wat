@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Thu Jan  9 15:47:50 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 09:43:01 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -117,7 +117,14 @@
 	       (struct.get $rgc $matchstop (local.get $rgc))
 	       (struct.get $rgc $matchstart (local.get $rgc)))))
       (i64.extend_i32_u (struct.get $rgc $filepos (local.get $rgc))))
-   
+
+   (func $RGC_MATCHSTART (export "RGC_MATCHSTART")
+      (param $port (ref $input-port))
+      (result i64)
+      (local $rgc (ref $rgc))
+      (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+      (i64.extend_i32_u (struct.get $rgc $matchstart (local.get $rgc))))
+      
    (func $RGC_START_MATCH (export "RGC_START_MATCH")
       (param $port (ref $input-port))
       (result i64)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sat Jan  4 14:38:39 2025 (serrano)                */
+;*    Last change :  Fri Jan 10 10:41:05 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -330,8 +330,12 @@
    
    (define (read-module f)
       (if (file-exists? f)
-	  (let ((m (call-with-input-file f read)))
-	     (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
+	  (let ((strict (bigloo-strict-r5rs-strings)))
+	     (bigloo-strict-r5rs-strings-set! #t)
+	     (unwind-protect
+		(let ((m (call-with-input-file f read)))
+		   (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
+		(bigloo-strict-r5rs-strings-set! strict)))
 	  (error "wasm" "Cannot find wasm module" f)))
 
    (define (collect-module modules key)
@@ -743,10 +747,9 @@
 		  ((char=? c #\tab)
 		   (display "\\t"))
 		  (else
-		   (display* "\\u{" 
+		   (display* "\\" 
 		      (string-ref hex (bit-rsh (char->integer (char-and c #\xF0)) 4))
-		      (string-ref hex (char->integer (char-and c #\x0F)))
-		      "}"))))
+		      (string-ref hex (char->integer (char-and c #\x0F)))))))
 	    (iter (+fx i 1))))
       (display "\""))
    

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Tue Dec 24 07:28:18 2024 (serrano)                */
+/*    Last change :  Fri Jan 10 07:39:52 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -874,9 +874,9 @@ bigloo_string_cige(obj_t bst1, obj_t bst2) {
 /*    lues ne sont pas parsees. On donne donc la possibilite de le     */
 /*    faire avec cette fonction.                                       */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
+static 
 obj_t
-bgl_escape_C_string(unsigned char *src, long start, long end) {
+bgl_escape_C_string__TBR_10jan2025(unsigned char *src, long start, long end) {
    unsigned char *dst;
    obj_t string;
    long len = (end - start);
@@ -898,7 +898,7 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
 	 len--;
 	 
          switch (*++src) {
-            case '\0': *dst++ = '\\'; src++;
+            case '\0': *dst++ = '\\'; src++; len--;
 	       break;
 
             case 'n': *dst++ = '\n'; src++;
@@ -961,31 +961,7 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
 	       char s1 = *(src+1);
 
 	       if (!isxdigit(s1)) {
-		  if (s1 == '{') {
-		     int u = 0;
-		     unsigned char *src2 = src + 2;
-
-		     while (src2 < stop && (*src2 != '}')) {
-			u = (u * 16) + XDIGIT_TO_BYTE(*src2);
-			src2++;
-		     }
-
-		     if (*src2 == '}') {
-			obj_t ucs2, utf8;
-			ucs2 = make_ucs2_string(1, u);
-			utf8 = ucs2_string_to_utf8_string(ucs2);
-			memcpy(dst, BSTRING_TO_STRING(utf8), STRING_LENGTH(utf8));
-			src += (1 + (src2 - src));
-			dst += STRING_LENGTH(utf8);
-			len -= (5 - STRING_LENGTH(utf8));
-
-			break;
-		     } else {
-			*dst++ = *src++;
-		     }
-		  } else {
-		     *dst++ = *src++;
-		  }
+		  len++; *dst++ = '\\'; *dst++ = *src++;
 	       } else {
 		  char s2 = *(src+2);
 
@@ -1027,17 +1003,17 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
 
             default: {
 	       if (!isdigit(*src)) {
-		  *dst++ = *src++;
+		  len++; *dst++ = '\\'; *dst++ = *src++;
 	       } else {
 		  char s1 = *(src+1);
 
 		  if (!isdigit(s1)) {
-		     *dst++ = *src++;
+		     len++; *dst++ = '\\'; *dst++ = *src++;
 		  } else {
 		     char s2 = *(src+2);
 		     
 		     if (!isdigit(s2)) {
-			*dst++ = *src++;
+			len++; *dst++ = '\\'; *dst++ = *src++;
 		     } else {
 			unsigned char aux;
 	       
@@ -1068,9 +1044,8 @@ bgl_escape_C_string(unsigned char *src, long start, long end) {
 /*    -------------------------------------------------------------    */
 /*    This function only consider R5RS escape sequences.               */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
-obj_t
-bgl_escape_scheme_string(unsigned char *src, long start, long end) {
+static obj_t
+bgl_escape_scheme_string__TBR_10jan2025(unsigned char *src, long start, long end) {
    char *dst;
    obj_t string;
    long len = (end - start);
@@ -1090,7 +1065,13 @@ bgl_escape_scheme_string(unsigned char *src, long start, long end) {
          *dst++ = *src++;
       else {
 	 char c = *(src + 1);
-	 len--;
+	 
+	 if (c == 'n') {
+	    len--; *dst++ = '\n';
+	 } else {
+	    *dst++ = '\\';
+	    *dst++ = c;
+	 }
 	 *dst++ = ((c == 'n') ? '\n' : c);
          src += 2;
       }

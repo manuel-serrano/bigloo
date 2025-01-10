@@ -77,7 +77,7 @@
    (test "string-as-read.24" (string-as-read "\\'") #"\'")
    (test "string-as-read.25" (string-as-read "\\\"") #"\"")
    (test "string-as-read.26" (string-as-read "\\a") #"\a")
-   (test "string-as-read.27" (string-as-read "\\?") #"\?")
+   (test "string-as-read.27" (string-as-read "\\?") (list->string '(#\?)))
    (test "string-as-read.28" (string-as-read "\\040") #"\040")
    (test "string-as-read.29" (string-as-read "\\000") #"\000")
    (test "string-as-read.30" (string-as-read "\\001") #"\001")
