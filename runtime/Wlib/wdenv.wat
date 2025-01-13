@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Sat Jan  4 09:40:30 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 14:34:11 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -17,8 +17,8 @@
    
    (type $exit
       (struct 
-	 (field $userp (mut i64))
-	 (field $stamp (mut i64))
+	 (field $userp (mut i32))
+	 (field $stamp (mut i32))
 	 (field $protect (mut (ref eq)))
 	 (field $prev (mut (ref null $exit)))))
    
@@ -69,9 +69,9 @@
       (export "BGL_EXIT_DEFAULT_VALUE") (ref $exit)
       (struct.new $exit
 	 ;; userp
-	 (i64.const 0)
+	 (i32.const 0)
 	 ;; stamp
-	 (i64.const 0)
+	 (i32.const 0)
 	 ;; protect
 	 (global.get $BUNSPEC)
 	 ;; prev
@@ -125,8 +125,8 @@
 	 (i32.const 3)
 	 ;; exitd_top
 	 (struct.new $exit
-	    (i64.const 0)
-	    (i64.const 0)
+	    (i32.const 0)
+	    (i32.const 0)
 	    (global.get $BNIL)
 	    (ref.null none))
 	 ;; exitd_val
@@ -422,17 +422,35 @@
       (export "bgl_make_exit")
       (result (ref $exit))
       (struct.new $exit
-	 (i64.const 0)
-	 (i64.const 0)
+	 (i32.const 0)
+	 (i32.const 0)
 	 (global.get $BNIL)
 	 (ref.null none)))
+
+   (func $bgl_internal_handler
+      (export "bgl_internal_handler")
+      (param $exn (ref null exn))
+      (param $exit (ref $exit))
+      (result (ref eq))
+      (if (i32.eqz (struct.get $exit $userp (local.get $exit)))
+	  (then
+	     (call $js_trace (i32.const -11111112))
+	     (return (global.get $BUNSPEC)))
+	  (else
+	   (if (struct.get $exit $stamp (local.get $exit))
+	       (then
+		  (throw_ref (local.get $exn)))
+	       (else
+		  (call $js_trace (i32.const -11111113))
+		  (return (global.get $BUNSPEC)))))))
    
    (func $bgl_exception_handler
       (export "bgl_exception_handler")
       (param $exn (ref $bexception))
       (param $exit (ref $exit))
       (result (ref eq))
-      (if (i64.eqz (struct.get $exit $userp (local.get $exit)))
+      (struct.set $exit $stamp (local.get $exit) (i32.const 1))
+      (if (i32.eqz (struct.get $exit $userp (local.get $exit)))
 	  (then
 	     (return (struct.get $bexception $val (local.get $exn))))
 	  (else
@@ -497,7 +515,7 @@
     (param $v (ref $exit)) 
     (param $protect i64) 
     (result (ref eq))
-    (struct.set $exit $userp (local.get $v) (local.get $protect))
+    (struct.set $exit $userp (local.get $v) (i32.wrap_i64 (local.get $protect)))
     (struct.set $exit $prev (local.get $v) (struct.get $dynamic-env $exitd_top (local.get $env)))
     (struct.set $dynamic-env $exitd_top (local.get $env) (local.get $v))
     (global.get $BUNSPEC))
@@ -527,7 +545,8 @@
   (func $EXITD_STAMP (export "EXITD_STAMP") (param $o (ref eq))
      (result (ref eq))
      (call $make_bint
-	(struct.get $exit $stamp (ref.cast (ref $exit) (local.get $o)))))
+	(i64.extend_i32_s
+	   (struct.get $exit $stamp (ref.cast (ref $exit) (local.get $o))))))
 
   (func $EXITD_CALLCCP (export "EXITD_CALLCCP") (param $o (ref eq)) (result i32)
     (i32.const 0))

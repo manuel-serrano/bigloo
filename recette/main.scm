@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Mon Jan 13 07:40:40 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 14:23:23 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -305,14 +305,14 @@
 	  (if-module 'rgc-eval test-rgc-eval)
 	  (if-module 'rgc-insert test-rgc-insert)
 	  (if-module 'lalr test-lalr)
+	  (if-module 'sqic test-sqic)
+	  (if-module 'eval test-eval)
 	  (if-module 'input-port test-input-port)
 	  (if-module 'read test-read)
 	  (if-module 'mmap test-mmap)
           (if-module 'input-mmap-port test-input-mmap-port)
 	  (if-module 'dsssl test-dsssl)
 	  (if-module 'tail test-tail)
-	  (if-module 'sqic test-sqic)
-	  (if-module 'eval test-eval)
 	  (if-module 'inline test-inline)
 	  (if-module 'letrec test-letrec)
 	  (if-module 'macro test-macro)

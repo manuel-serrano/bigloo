@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sat Jan  4 09:39:21 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 14:28:50 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -154,23 +154,28 @@
    (let ((protect (get-protect-temp blocks)))
       (if protect
 	  (let ((lblb (gensym '$try-bexit))
+		(lble (gensym '$try-error))
 		(lblc (gensym '$try))
 		(ty (wasm-type (global-type v)))
 		($exit (wasm-sym (reg-name protect))))
 	     `((comment "try block")
 	       (local.set ,$exit (global.get $exit-default-value))
 	       (block ,lblc (result (ref eq))
-		  (call $BGL_RESTORE_TRACE_WITH_VALUE
-		     (call $bgl_exception_handler
-			(block ,lblb (result (ref $bexception))
-			   (try_table (catch $BEXCEPTION ,lblb)
-			      ,@(plain-body)
-			      (br ,lblc)))
-			(local.get ,$exit)))
-		  (br ,lblc))))
+		  (call $bgl_internal_handler
+		     (block ,lble (result exnref)
+			(try_table (result exnref) (catch_all_ref ,lble)
+			   (call $BGL_RESTORE_TRACE_WITH_VALUE
+			      (call $bgl_exception_handler
+				 (block ,lblb (result (ref $bexception))
+				    (try_table (catch $BEXCEPTION ,lblb)
+				       ,@(plain-body)
+				       (br ,lblc)))
+				 (local.get ,$exit)))
+			   (br ,lblc)))
+		     (local.get ,$exit)))))
 	  (plain-body))))
 
-(define (gen-body.tbr v::global blocks locals)
+(define (gen-body-sans-exn v::global blocks locals)
    
    (define (plain-body)
       (let ((inits (gen-local-inits v blocks locals))
@@ -185,25 +190,21 @@
    
    (let ((protect (get-protect-temp blocks)))
       (if protect
-	  (let ((lble (gensym '$try-exn))
-		(lblb (gensym '$try-bexit))
+	  (let ((lblb (gensym '$try-bexit))
 		(lblc (gensym '$try))
 		(ty (wasm-type (global-type v)))
-		($protect (wasm-sym (reg-name protect))))
+		($exit (wasm-sym (reg-name protect))))
 	     `((comment "try block")
-	       (local.set ,$protect (global.get $exit-default-value))
+	       (local.set ,$exit (global.get $exit-default-value))
 	       (block ,lblc (result (ref eq))
-		  (block ,lble
-		     (try_table (catch_all ,lble)
-			(call $BGL_RESTORE_TRACE_WITH_VALUE
-			   (call $bgl_bexception_handler
-			      (block ,lblb (result (ref $bexception))
-				 (try_table (catch $BEXCEPTION ,lblb)
-				    ,@(plain-body)
-				    (br ,lblc)))
-			      (local.get ,$protect)))
-			(br ,lblc)))
-		  (global.get $BUNSPEC))))
+		  (call $BGL_RESTORE_TRACE_WITH_VALUE
+		     (call $bgl_exception_handler
+			(block ,lblb (result (ref $bexception))
+			   (try_table (catch $BEXCEPTION ,lblb)
+			      ,@(plain-body)
+			      (br ,lblc)))
+			(local.get ,$exit)))
+		  (br ,lblc))))
 	  (plain-body))))
 
 ;*---------------------------------------------------------------------*/
