@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Mon Jan 13 08:08:22 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 11:33:27 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -466,6 +466,23 @@
 	    (field $proc (ref $procedure))
 	    (field $pbuffer (mut (ref eq)))
 	    (field $pbufpos (mut i32)))))
+
+   ;; mmap-input-port
+   (type $mmap-input-port
+      (sub final $input-port
+	 (struct 
+	    (field $name (mut (ref $bstring)))
+	    (field $chook (mut (ref eq)))
+	    (field $isclosed (mut i32))
+	    (field $sysclose (mut (ref null $sysclose_t)))
+	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
+	    (field $rgc (ref $rgc))
+	    (field $mmap (ref $mmap))
+	    (field $offset (mut i64))
+	    (field $start i64)
+	    (field $end i64))))
    
    ;; -----------------------------------------------------------------
    ;; Predicates
@@ -483,8 +500,7 @@
    (func $INPUT_MMAP_PORTP (export "INPUT_MMAP_PORTP")
       (param $port (ref eq))
       (result i32)
-      ;; (ref.test (ref $mmap-input-port) (local.get $port))
-      (return (i32.const 0)))
+      (ref.test (ref $mmap-input-port) (local.get $port)))
 
    (func $INPUT_PROCEDURE_PORTP (export "INPUT_PROCEDURE_PORTP")
       (param $port (ref eq))
@@ -583,15 +599,24 @@
       (result i64)
       (if (ref.test (ref $file-input-port) (local.get $ip))
 	  (then
-	     (return (i64.extend_i32_u
-			(call $js_file_size
-			   (struct.get $file-input-port $fd
-			      (ref.cast (ref $file-input-port) (local.get $ip)))))))
+	     (return
+		(i64.extend_i32_u
+		   (call $js_file_size
+		      (struct.get $file-input-port $fd
+			 (ref.cast (ref $file-input-port) (local.get $ip)))))))
 	  (else
-	   (return (i64.extend_i32_u
+	   (if (ref.test (ref $mmap-input-port) (local.get $ip))
+	       (then
+		  (return
+		     (call $BGL_MMAP_LENGTH
+			(struct.get $mmap-input-port $mmap
+			   (ref.cast (ref $mmap-input-port) (local.get $ip))))))
+	       (else
+		(return
+		   (i64.extend_i32_u
 		      (array.len
 			 (struct.get $rgc $buf
-			    (struct.get $input-port $rgc (local.get $ip)))))))))
+			    (struct.get $input-port $rgc (local.get $ip)))))))))))
 
    (func $INPUT_PORT_ON_FILEP
       (param $port (ref eq))
@@ -716,8 +741,6 @@
       (param $size i32)
       (result i32)
 
-      (call $js_trace (i32.const 88888))
-      
       (return (i32.const 0)))
    
    ;; bgl_sysread
@@ -823,7 +846,7 @@
 			      (array.new_data $bstring $BAD_TYPE (i32.const 0) (i32.const 10))
 			      (local.get $port)))
 		     (unreachable))))))))
-   
+
    ;; bgl_input_string_seek
    (func $bgl_input_string_seek
       (param $p (ref eq))
@@ -866,6 +889,86 @@
       
       (throw $fail))
 
+;; bgl_mmap_read
+   (func $bgl_mmap_read
+      (param $port (ref eq))
+      (param $b (ref $bstring))
+      (param $start i32)
+      (param $size i32)
+      (result i32)
+      
+      (local $ip (ref $mmap-input-port))
+      (local $mm (ref $mmap))
+      (local $available i32)
+      (local $n i32)
+      (local $m i32)
+      (local.set $ip (ref.cast (ref $mmap-input-port) (local.get $port)))
+      (local.set $mm (struct.get $mmap-input-port $mmap (local.get $ip)))
+      
+      (local.set $available
+	 (i32.wrap_i64
+	    (i64.sub (struct.get $mmap-input-port $end (local.get $ip))
+	       (struct.get $mmap-input-port $offset (local.get $ip)))))
+
+      (if (i32.gt_s (local.get $available) (i32.const 0))
+	  (then
+	     (if (i32.gt_s (local.get $available) (local.get $size))
+		 (then
+		    (local.set $n (local.get $size)))
+		 (else
+		  (local.set $n (local.get $available))))
+	     (loop $while
+		(if (i32.lt_s (local.get $m) (local.get $n))
+		    (then
+		       (array.set $bstring (local.get $b)
+			  (i32.add (local.get $start) (local.get $m))
+			  (call $BGL_MMAP_REF (local.get $mm)
+			     (i64.add
+				(struct.get $mmap-input-port $offset (local.get $ip))
+				(i64.extend_i32_u (local.get $m)))))
+		       (local.set $m (i32.add (local.get $m) (i32.const 1)))
+		       (br $while))))
+	     (struct.set $mmap-input-port $offset
+		(local.get $ip)
+		(i64.add (struct.get $mmap-input-port $offset (local.get $ip))
+		   (i64.extend_i32_u (local.get $n))))
+	     (if (i32.eq (local.get $n) (local.get $available))
+		 (then
+		    (struct.set $rgc $eof
+		       (struct.get $input-port $rgc (local.get $ip))
+		       (i32.const 1))))
+	     (return (local.get $n)))
+	  (else
+	   (return (i32.const 0)))))
+
+      ;; bgl_input_mmap_seek
+   (func $bgl_input_mmap_seek
+      (param $p (ref eq))
+      (param $pos i32)
+      (param $whence i32)
+      
+      (local $mp (ref $mmap-input-port))
+      (local $rgc (ref $rgc))
+      (local.set $mp (ref.cast (ref $mmap-input-port) (local.get $p)))
+      (local.set $rgc (struct.get $input-port $rgc (local.get $mp)))
+      
+      (if (i32.ge_s (local.get $pos) (i32.const 0))
+	  (then
+	     (if (i32.lt_s (local.get $pos)
+		    (i32.wrap_i64 (call $BGL_INPUT_PORT_LENGTH (local.get $mp))))
+		 (then
+		    (struct.set $mmap-input-port $offset (local.get $mp)
+		       (i64.add (struct.get $mmap-input-port $start (local.get $mp))
+			  (i64.extend_i32_u (local.get $pos))))
+		    (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
+		    (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
+		    (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
+		    (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))))))
+      
+      (if (i32.eq (local.get $pos)
+	     (i32.wrap_i64 (call $BGL_INPUT_PORT_LENGTH (local.get $mp))))
+	  (then
+	     (struct.set $rgc $eof (local.get $rgc) (i32.const 1)))))
 
    ;; reset_console
    (func $reset_console (export "reset_console")
@@ -1686,6 +1789,65 @@
 	    (global.get $BUNSPEC)
 	    ;; pbufpos
 	    (i32.const 0))))
+
+   ;; bgl_open_input_mmap
+   (func $bgl_open_input_mmap
+      (export "bgl_open_input_mmap")
+      (param $mmap (ref $mmap))
+      (param $buffer (ref $bstring))
+      (param $offset i64)
+      (param $end i64)
+      (result (ref $input-port))
+
+      (local $rgc (ref $rgc))
+      (local.set $rgc
+	 (struct.new $rgc
+	    ;; eof
+	    (i32.const 0)
+	    ;; filepos
+	    (i32.const 0)
+	    ;; fillbarrier
+	    (i32.const -1)
+	    ;; forward
+	    (i32.const 0)
+	    ;; bufpos
+	    (i32.const 0)
+	    ;; matchstart
+	    (i32.const 0)
+	    ;; matchstop
+	    (i32.const 0)
+	    ;; lastchar
+	    (i32.const 13)
+	    ;; buffer
+	    (local.get $buffer)))
+      
+      (return
+	 (struct.new $mmap-input-port
+	    ;; name
+	    (array.new_data $bstring $string-input-port-name
+	       (i32.const 0) (i32.const 6))
+	    ;; chook
+	    (global.get $BUNSPEC)
+	    ;; isclosed
+	    (i32.const 0)
+	    ;; sysclose
+	    (ref.null $sysclose_t)
+	    ;; sysseek
+	    (ref.func $bgl_input_mmap_seek)
+	    ;; userseek
+	    (global.get $BUNSPEC)
+	    ;; sysread
+	    (ref.func $bgl_mmap_read)
+	    ;; rgc
+	    (local.get $rgc)
+	    ;; mmap
+	    (local.get $mmap)
+	    ;; offset
+	    (local.get $offset)
+	    ;; start
+	    (local.get $offset)
+	    ;; end
+	    (local.get $end))))
    
    ;; open_output_file
    (func $open_output_file

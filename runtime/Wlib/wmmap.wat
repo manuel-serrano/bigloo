@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Sat Jan 11 06:29:21 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 13:48:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM mmap                                                        */
@@ -147,7 +147,7 @@
 		  (i32.const 1))
 	       (then
 		  (return
-		     (i32.load8_s (i32.const 128) )))
+		     (i32.load8_s (i32.const 128))))
 	       (else
 		(return (i32.const -1)))))))
 

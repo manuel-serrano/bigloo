@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat Jan 11 06:31:38 2025 (serrano)                */
+/*    Last change :  Mon Jan 13 13:43:05 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -152,6 +152,7 @@ const __js_io = {
       }
       const memory = new Uint8Array(instance.exports.memory.buffer, offset, length, position);
       const nbread = readSync(fd, memory, 0, length, position);
+
       return nbread;
    },
 
