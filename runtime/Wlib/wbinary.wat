@@ -142,8 +142,7 @@
       (local $fd i32)
       (local.set $fd (struct.get $binary-port $fd (local.get $port)))
       
-      (i32.store8 (i32.const 128) (i32.and (local.get $c) (i32.const 255)))
-      (call $js_write_file (local.get $fd) (i32.const 128) (i32.const 1))
+      (call $js_append_char (local.get $fd) (local.get $c))
 
       (return (global.get $BUNSPEC)))
 
@@ -183,7 +182,7 @@
       
       (call $memcpy
 	 (i32.const 128) (local.get $s) (i32.const 0) (array.len (local.get $s)))
-      (return_call $js_write_file (local.get $fd) (i32.const 128) (array.len (local.get $s))))
+      (return_call $js_append_file (local.get $fd) (i32.const 128) (array.len (local.get $s))))
 
    ;; bgl_input_string
    (func $bgl_input_string
@@ -245,21 +244,21 @@
       (call $memcpy
 	 (i32.const 128) (local.get $magic) (i32.const 0)
 	 (array.len (local.get $magic)))
-      (drop (call $js_write_file (local.get $fd) (i32.const 128) (i32.const 4)))
+      (drop (call $js_append_file (local.get $fd) (i32.const 128) (i32.const 4)))
 
       ;; obj size
       (i32.store8 (i32.const 128) (i32.and (local.get $len) (i32.const 255)))
       (i32.store8 (i32.const 129) (i32.and (i32.shr_u (local.get $len) (i32.const 8)) (i32.const 255)))
       (i32.store8 (i32.const 130) (i32.and (i32.shr_u (local.get $len) (i32.const 16)) (i32.const 255)))
       (i32.store8 (i32.const 131) (i32.and (i32.shr_u (local.get $len) (i32.const 24)) (i32.const 255)))
-      (drop (call $js_write_file (local.get $fd) (i32.const 128) (i32.const 4)))
+      (drop (call $js_append_file (local.get $fd) (i32.const 128) (i32.const 4)))
 
       ;; obj
       (call $memcpy
 	 (i32.const 128) (local.get $string) (i32.const 0)
 	 (array.len (local.get $string)))
       (drop
-	 (call $js_write_file (local.get $fd) (i32.const 128)
+	 (call $js_append_file (local.get $fd) (i32.const 128)
 	    (array.len (local.get $string))))
       
       (return (local.get $obj)))

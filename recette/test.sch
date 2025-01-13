@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/test.sch              */
+;*    serrano/prgm/project/bigloo/wasm/recette/test.sch                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:21:16 1992                          */
-;*    Last change :  Mon Jun 24 09:35:13 2024 (serrano)                */
+;*    Last change :  Mon Jan 13 07:44:29 2025 (serrano)                */
 ;*                                                                     */
 ;*    La macro qui fait un appel a la fonction de test                 */
 ;*---------------------------------------------------------------------*/
@@ -23,7 +23,7 @@
 ;*    when-call/cc ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-macro (when-call/cc . body)
-   (if (memq *target-language* '(jvm .net))
+   (if (memq *target-language* '(jvm wasm))
        #unspecified
        `(begin ,@body)))
 

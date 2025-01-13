@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Thu Dec 26 08:50:35 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Sat Jan 11 06:29:21 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM mmap                                                        */
 ;*=====================================================================*/
@@ -14,12 +14,33 @@
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
-   (type $mmap
-      (struct
-	 (field $bytes (ref $bstring))
-	 (field $name (ref eq))
-	 (field $rp (mut i64))
-	 (field $wp (mut i64))))
+   
+   (rec
+      (type $mmap
+	 (sub
+	    (struct
+	       (field $name (ref eq))
+	       (field $rp (mut i64))
+	       (field $wp (mut i64)))))
+      
+      (type $mmap-string
+	 (sub $mmap
+	    (struct
+	       (field $name (ref eq))
+	       (field $rp (mut i64))
+	       (field $wp (mut i64))
+	       (field $bytes (ref $bstring)))))
+      
+      (type $mmap-file
+	 (sub $mmap
+	    (struct
+	       (field $name (ref eq))
+	       (field $rp (mut i64))
+	       (field $wp (mut i64))
+	       (field $length (mut i32))
+	       (field $fin (mut i32))
+	       (field $fout (mut i32))))))
+   
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -28,11 +49,11 @@
    (global $mmap-default-value
       (export "BGL_MMAP_DEFAULT_VALUE") (ref $mmap)
       (struct.new $mmap
-	 (global.get $bstring-default-value)
 	 (global.get $BUNSPEC)
 	 (i64.const 0)
 	 (i64.const 0)))
 
+   
    ;; -----------------------------------------------------------------
    ;; Macros
    ;; -----------------------------------------------------------------
@@ -42,77 +63,216 @@
       (result i32)
       (ref.test (ref $mmap) (local.get $o)))
    
-   (func $BGL_MMAP_LENGTH (export "BGL_MMAP_LENGTH")
-      (param $s (ref $mmap))
-      (result i64)
-      (return (call $STRING_LENGTH (struct.get $mmap $bytes (local.get $s)))))
-   
    (func $BGL_MMAP_NAME (export "BGL_MMAP_NAME")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (result (ref eq))
-      (return (struct.get $mmap $bytes (local.get $s))))
+      (return (struct.get $mmap $name (local.get $o))))
+   
+   (func $BGL_MMAP_LENGTH (export "BGL_MMAP_LENGTH")
+      (param $o (ref $mmap))
+      (result i64)
+      (if (ref.test (ref $mmap-string) (local.get $o))
+	  (then
+	     (return_call $STRING_LENGTH
+		(struct.get $mmap-string $bytes
+		   (ref.cast (ref $mmap-string) (local.get $o)))))
+	  (else
+	   (return
+	      (i64.extend_i32_u
+		 (struct.get $mmap-file $length
+		    (ref.cast (ref $mmap-file) (local.get $o))))))))
    
    (func $BGL_MMAP_TO_STRING (export "BGL_MMAP_TO_STRING")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (result (ref $bstring))
-      (return (struct.get $mmap $bytes (local.get $s))))
+      
+      (local $fd i32)
+      (local $buf (ref $bstring))
+      (local $len i32)
+      (local $i i32)
+      (local $r i32)
+      
+      (if (ref.test (ref $mmap-string) (local.get $o))
+	  (then
+	     (return (struct.get $mmap-string $bytes
+			(ref.cast (ref $mmap-string) (local.get $o)))))
+	  (else
+	   (local.set $fd
+	      (struct.get $mmap-file $fin
+		 (ref.cast (ref $mmap-file) (local.get $o))))
+	   (local.set $len
+	      (struct.get $mmap-file $length
+		 (ref.cast (ref $mmap-file) (local.get $o))))
+	   (local.set $buf
+	      (array.new_default $bstring (local.get $len)))
+
+	   (loop $while
+	      (if (i32.lt_s (local.get $i) (local.get $len))
+		  (then
+		     (local.set $r
+			(call $js_read_file (local.get $fd)
+			   (i32.const 128)
+			   (i32.const 8192)
+			   (local.get $i)))
+		     (call $load_string_in_buffer
+			(i32.const 128)
+			(local.get $r)
+			(local.get $buf)
+			(local.get $i))
+		     (local.set $i (i32.add (local.get $i) (local.get $r)))
+		     (br $while))))
+			      
+	   (return (local.get $buf)))))
    
    (func $BGL_MMAP_REF (export "BGL_MMAP_REF")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (param $i i64)
       (result i32)
-      (array.get $bstring (struct.get $mmap $bytes (local.get $s))
-	 (i32.wrap_i64 (local.get $i))))
+      
+      (if (ref.test (ref $mmap-string) (local.get $o))
+	  (then
+	     (return
+		(array.get $bstring
+		   (struct.get $mmap-string $bytes
+		      (ref.cast (ref $mmap-string) (local.get $o)))
+		   (i32.wrap_i64 (local.get $i)))))
+	  (else
+	   (if (i32.eq
+		  (call $js_read_file
+		     (struct.get $mmap-file $fin
+			(ref.cast (ref $mmap-file) (local.get $o)))
+		     (i32.const 128)
+		     (i32.const 1)
+		     (i32.wrap_i64 (local.get $i)))
+		  (i32.const 1))
+	       (then
+		  (return
+		     (i32.load8_s (i32.const 128) )))
+	       (else
+		(return (i32.const -1)))))))
 
    (func $BGL_MMAP_SET (export "BGL_MMAP_SET")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (param $i i64)
       (param $c i32)
       (result (ref eq))
-      (array.set $bstring (struct.get $mmap $bytes (local.get $s))
-	 (i32.wrap_i64 (local.get $i))
-	 (local.get $c))
-      (return (local.get $s)))
+      (if (ref.test (ref $mmap-string) (local.get $o))
+	  (then
+	     (array.set $bstring
+		(struct.get $mmap-string $bytes
+		   (ref.cast (ref $mmap-string) (local.get $o)))
+		(i32.wrap_i64 (local.get $i))
+		(local.get $c)))
+	  (else
+	   (drop
+	      (call $js_write_char
+		 (struct.get $mmap-file $fout
+		    (ref.cast (ref $mmap-file) (local.get $o)))
+		 (local.get $c)
+		 (i32.wrap_i64 (local.get $i))))))
+      (return (local.get $o)))
 
    (func $BGL_MMAP_RP_GET (export "BGL_MMAP_RP_GET")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (result i64)
-      (struct.get $mmap $rp (local.get $s)))
+      (struct.get $mmap $rp (local.get $o)))
    
    (func $BGL_MMAP_RP_SET (export "BGL_MMAP_RP_SET")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (param $i i64)
-      (struct.set $mmap $rp (local.get $s) (local.get $i)))
+      (struct.set $mmap $rp (local.get $o) (local.get $i)))
    
    (func $BGL_MMAP_WP_GET (export "BGL_MMAP_WP_GET")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (result i64)
-      (struct.get $mmap $wp (local.get $s)))
+      (struct.get $mmap $wp (local.get $o)))
    
    (func $BGL_MMAP_WP_SET (export "BGL_MMAP_WP_SET")
-      (param $s (ref $mmap))
+      (param $o (ref $mmap))
       (param $i i64)
-      (struct.set $mmap $rp (local.get $s) (local.get $i)))
+      (struct.set $mmap $wp (local.get $o) (local.get $i)))
    
    ;; -----------------------------------------------------------------
    ;; Library functions
    ;; -----------------------------------------------------------------
 
+   (func $bgl_open_mmap
+      (export "bgl_open_mmap")
+      (param $fname (ref $bstring))
+      (param $r i32)
+      (param $w i32)
+      (result (ref $mmap))
+      
+      (local $mmap (ref $mmap-file))
+      (local.set $mmap
+	 (struct.new $mmap-file
+	    (local.get $fname)
+	    (i64.const 0)
+	    (i64.const 0)
+	    (i32.const -1)
+	    (i32.const -1)
+	    (i32.const -1)))
+      
+      (if (local.get $r)
+	  (then
+	     (call $store_string (local.get $fname) (i32.const 128))
+	     (struct.set $mmap-file $fin (local.get $mmap)
+		(call $js_open_file
+		   (i32.const 128)
+		   (array.len (local.get $fname))
+		   (i32.const 0)))
+	     (struct.set $mmap-file $length (local.get $mmap)
+		(call $js_file_size
+		   (struct.get $mmap-file $fin (local.get $mmap))))))
+      (if (local.get $w)
+	  (then
+	     (call $store_string (local.get $fname) (i32.const 128))
+	     (struct.set $mmap-file $fout (local.get $mmap)
+		(call $js_open_file
+		   (i32.const 128)
+		   (array.len (local.get $fname))
+		   (i32.const 2)))))
+      
+      (return (local.get $mmap)))
+   
    (func $bgl_string_to_mmap (export "bgl_string_to_mmap")
       (param $s (ref $bstring))
       (param $r i32)
       (param $w i32)
       (result (ref $mmap))
-      (struct.new $mmap
-	 (local.get $s)
+      (struct.new $mmap-string
 	 (local.get $s)
 	 (i64.const 0)
-	 (i64.const 0)))
+	 (i64.const 0)
+	 (local.get $s)))
 
    (func $bgl_close_mmap (export "bgl_close_mmap")
-      (param $m (ref $mmap))
+      (param $o (ref $mmap))
       (result (ref eq))
-      (local.get $m))
+      (if (ref.test (ref $mmap-file) (local.get $o))
+	  (then
+	     (if (i32.ge_s (struct.get $mmap-file $fin
+			      (ref.cast (ref $mmap-file) (local.get $o)))
+		    (i32.const 0))
+		 (then
+		    (call $js_close_file
+		       (struct.get $mmap-file $fin
+			  (ref.cast (ref $mmap-file) (local.get $o))))
+		    (struct.set $mmap-file $fin
+		       (ref.cast (ref $mmap-file) (local.get $o))
+		       (i32.const -1))))
+	     (if (i32.ge_s (struct.get $mmap-file $fout
+			      (ref.cast (ref $mmap-file) (local.get $o)))
+		    (i32.const 0))
+		 (then
+		    (call $js_close_file
+		       (struct.get $mmap-file $fout
+			  (ref.cast (ref $mmap-file) (local.get $o))))
+		    (struct.set $mmap-file $fin
+		       (ref.cast (ref $mmap-file) (local.get $o))
+		       (i32.const -1))))))
+
+      (global.get $BTRUE))
 	 
    )
   

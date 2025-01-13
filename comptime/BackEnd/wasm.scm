@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Jan 10 11:10:53 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 07:07:13 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -643,11 +643,11 @@
 		      (import "__bigloo" "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value (ref $exit)))
 		      (import "__bigloo" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
 		      (import "__bigloo" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
-		      
+
 		      (import "__bigloo" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))
 		      ;;(import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result (ref eq))))
 		      (import "$__object" "class-nil@__object" (func $class-nil@__object (param (ref $class)) (result (ref eq))))
-		      
+
 		      ,@(emit-imports))
 		   
 		   (comment "Memory" ,@(emit-memory))

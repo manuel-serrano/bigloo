@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jan 10 07:41:13 2025 (serrano)                */
+/*    Last change :  Sat Jan 11 06:31:38 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -130,12 +130,11 @@ const __js_io = {
             fs_flags = 'w';
             break;
          case 2: // write-only in append mode
-            fs_flags = 'a';
+            fs_flags = 'r+';
             break;
          default:
             throw WebAssembly.RuntimeError("invalid open flags");
       }
-
       try {
          return openSync(path, fs_flags);
       } catch(e) {
@@ -237,28 +236,45 @@ const __js_io = {
       }
    },
 
-   write_file: (fd, offset, length) => {
+   append_file: (fd, offset, length) => {
       if (fd < 0) {
          throw WebAssembly.RuntimeError("invalid file descriptor");
       }
 
       const buffer = new Uint8Array(instance.exports.memory.buffer, offset, length);
-      return writeSync(fd, buffer);
+      return writeSync(fd, buffer, 0, length);
+   },
+   
+   write_file: (fd, offset, length, position) => {
+      if (fd < 0) {
+         throw WebAssembly.RuntimeError("invalid file descriptor");
+      }
+
+      const buffer = new Uint8Array(instance.exports.memory.buffer, offset, length);
+      return writeSync(fd, buffer, 0, length, position);
    },
       
-   write_char: (fd, c) => {
+   append_char: (fd, c) => {
       if (fd < 0) {
          throw WebAssembly.RuntimeError("invalid file descriptor");
       }
       charBuffer[0] = c;
-      writeSync(fd, charBuffer);
+      return writeSync(fd, charBuffer, 0, 1);
+   },
+
+   write_char: (fd, c, position) => {
+      if (fd < 0) {
+         throw WebAssembly.RuntimeError("invalid file descriptor");
+      }
+      charBuffer[0] = c;
+      return writeSync(fd, charBuffer, 0, 1, position);
    },
 
    write_bignum: (fd, n) => {
       if (fd < 0) {
          throw WebAssembly.RuntimeError("invalid file descriptor");
       }
-      writeSync(fd, n.toString());
+      return writeSync(fd, n.toString());
    },
 
    read_dir_init: (path_addr, path_length) => {
@@ -270,12 +286,20 @@ const __js_io = {
 	 return null;
       }
    },
-
    read_dir_size: (dir) => dir.length,
-   
    read_dir_entry: (dir, num, addr) => {
       return storeJSStringToScheme(dir[num], addr);
-   }
+   },
+
+   mmap_init: (path_addr, path_length, read, write) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+	 return readFile(path);
+      } catch(e) {
+	 return null;
+      }
+   },
 }
 
 /*---------------------------------------------------------------------*/

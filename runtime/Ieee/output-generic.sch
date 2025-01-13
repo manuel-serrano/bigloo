@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Mon Dec 30 08:47:55 2024 (serrano)                */
+;*    Last change :  Mon Jan 13 11:24:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -23,6 +23,7 @@
            (bgl_write_llong::obj ::elong ::output-port)
 	   (bgl_display_bignum::obj ::bignum ::output-port)
 	   (bgl_write_bignum::obj ::bignum ::output-port)
+	   (bgl_write_mmap::obj ::mmap ::output-port)
 	   (bgl_write_unknown::obj ::obj ::output-port)
 	   (inline $$display-fixnum::obj ::bint ::output-port)
 	   (inline $$write-procedure ::procedure ::output-port)
@@ -39,6 +40,7 @@
 	   (export bgl_write_llong "bgl_write_llong")
            (export bgl_display_bignum "bgl_display_bignum")
 	   (export bgl_write_bignum "bgl_write_bignum")
+	   (export bgl_write_mmap "bgl_write_mmap")
 	   (export bgl_write_unknown "bgl_write_unknown")))
 
 ;*---------------------------------------------------------------------*/
@@ -98,7 +100,7 @@
 ;*    bgl_write_elong ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (bgl_write_elong o op)
-   (display "#e" op)
+   (display-string "#e" op)
    (display-fixnum ($long->bint ($elong->long o)) op))
 
 ;*---------------------------------------------------------------------*/
@@ -111,7 +113,7 @@
 ;*    bgl_write_llong ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (bgl_write_llong o op)
-   (display "#l" op)
+   (display-string "#l" op)
    (display-fixnum ($long->bint ($llong->long o)) op))
 
 ;*---------------------------------------------------------------------*/
@@ -124,8 +126,16 @@
 ;*    bgl_write_bignum ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (bgl_write_bignum o op)
-   (display "#z" op)
+   (display-string "#z" op)
    (display-string (bignum->string o) op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_mmap ...                                               */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_mmap o op)
+   (display-string "#<mmap:" op)
+   (display (mmap-name o) op)
+   (display-string ">" op))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl_write_unknown ...                                            */
@@ -143,7 +153,7 @@
 ;*    $$write-procedure ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline ($$write-procedure o op)
-   (display "#<procedure:" op)
+   (display-string "#<procedure:" op)
    (bgl_display_fixnum (procedure-arity o) op)
    (display ">" op))
 

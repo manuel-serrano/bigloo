@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Fri Jan 10 14:55:31 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 07:40:40 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -41,8 +41,8 @@
 	   rgc
 	   lalr
 	   input-port
-           input-mmap-port
 	   mmap
+           input-mmap-port
 	   read
 	   callcc
 	   fringe
@@ -293,6 +293,10 @@
 	  (if-module 'apply test-apply)
 	  (if-module 'globalisation test-globalisation)
 	  (if-module 'kapture test-kapture)
+	  (when *callcc?*
+	     (if-module 'callcc test-callcc)
+	     (if-module 'fringe test-fringe)
+	     (if-module 'wind test-wind))
 	  (if-module 'filtre test-filtre)
 	  (if-module 'match test-match)
 	  (if-module 'rgc test-rgc)
@@ -302,14 +306,9 @@
 	  (if-module 'rgc-insert test-rgc-insert)
 	  (if-module 'lalr test-lalr)
 	  (if-module 'input-port test-input-port)
-          (if-module 'input-mmap-port test-input-mmap-port)
-	  (if-module 'mmap test-mmap)
 	  (if-module 'read test-read)
-	  (if *callcc?*
-	      (begin
-		 (if-module 'callcc test-callcc)
-		 (if-module 'fringe test-fringe)
-		 (if-module 'wind test-wind)))
+	  (if-module 'mmap test-mmap)
+          (if-module 'input-mmap-port test-input-mmap-port)
 	  (if-module 'dsssl test-dsssl)
 	  (if-module 'tail test-tail)
 	  (if-module 'sqic test-sqic)

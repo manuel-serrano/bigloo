@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Jan  4 08:43:44 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 08:32:09 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -152,6 +152,7 @@
 	   ($object-widening "(struct.get $BgL_objectz00_bglt $widening ~0)")
 	   (%object-class-num "(struct.get $BgL_objectz00_bglt $header ~0)")
 	   (%object? "(ref.test (ref $BgL_objectz00_bglt) ~0)")
+	   (%object-type-number "(i64.const 0)")
 
 	   ($class-nil "(struct.get $class $nil ~0)")
 	   ($class-nil-set! "(block (result (ref i31)) (struct.set $class $nil ~0 ~1) (ref.i31 (i32.const 0)))")

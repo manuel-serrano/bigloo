@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Ieee/control.scm               */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/control.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Wed Jul  3 14:03:20 2024 (serrano)                */
+;*    Last change :  Mon Jan 13 07:46:24 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -22,6 +22,9 @@
 	    __tvector
 	    __bexit
 	    __bignum
+	    __bit
+	    __object
+	    __thread
 	    
 	    __r4_equivalence_6_2
 	    __r4_vectors_6_8
@@ -355,7 +358,7 @@
 				  (cont vals)))))))))
 
 (cond-expand
-   (bigloo-jvm
+   ((or bigloo-wasm bigloo-jvm)
     (define (call-cc proc) (bind-exit (exit) (proc exit)))))
 
 ;*---------------------------------------------------------------------*/

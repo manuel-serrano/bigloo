@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/mmap.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/mmap.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep  4 07:43:45 2005                          */
-;*    Last change :  Thu Nov  9 14:43:00 2006 (serrano)                */
-;*    Copyright   :  2005-06 Manuel Serrano                            */
+;*    Last change :  Mon Jan 13 07:53:18 2025 (serrano)                */
+;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MMAP testing                                                     */
 ;*=====================================================================*/

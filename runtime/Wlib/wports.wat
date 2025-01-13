@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Thu Jan  9 07:32:17 2025 (serrano)                */
+;*    Last change :  Mon Jan 13 08:08:22 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -39,7 +39,7 @@
    (global $WHENCE_SEEK_SET i32 (i32.const 3))
 
    (global $default_io_bufsize (export "default_io_bufsize") i64 (i64.const 8192))
-   
+
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
@@ -51,9 +51,11 @@
    (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
    (import "__js_io" "isatty" (func $js_isatty (param i32) (result i32)))
    (import "__js_io" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
-   (import "__js_io" "write_file" (func $js_write_file (param i32 i32 i32) (result i32)))
-   (import "__js_io" "write_char" (func $js_write_char (param i32 i32)))
-   (import "__js_io" "write_bignum" (func $js_write_bignum (param i32 i32)))
+   (import "__js_io" "append_file" (func $js_append_file (param i32 i32 i32) (result i32)))
+   (import "__js_io" "write_file" (func $js_write_file (param i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "append_char" (func $js_append_char (param i32 i32) (result i32)))
+   (import "__js_io" "write_char" (func $js_write_char (param i32 i32 i32) (result i32)))
+   (import "__js_io" "write_bignum" (func $js_write_bignum (param i32 i32 i32) (result i32)))
    (import "__js_io" "file_delete" (func $js_file_delete (param i32) (param i32) (result i32)))
    (import "__js_io" "make_dir" (func $js_make_dir (param i32) (param i32) (param i32) (result i32)))
    (import "__js_io" "dir_remove" (func $js_dir_remove (param i32) (param i32) (result i32)))
@@ -205,7 +207,8 @@
 	    (field $sysflush (mut (ref null $sysflush_t)))
 	    (field $flushbuf (mut (ref eq)))
 	    (field $err (mut i32))
-	    (field $fd i32))))
+	    (field $fd i32)
+	    (field $position (mut i32)))))
 
    (global $file-output-port-default-value
       (export "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE") (ref $file-output-port)
@@ -237,7 +240,9 @@
 	 ;; err
 	 (i32.const 0)
 	 ;; fd
-	 (i32.const -1)))
+	 (i32.const -1)
+	 ;; position
+	 (i32.const 0)))
 
    ;; string-output-port
    (type $string-output-port
@@ -520,7 +525,20 @@
 
       (return (struct.get $output-port $flushbuf (local.get $op))))
 
-   (func $BGL_INPUT_PORT_BUFFER (export "BGL_INPUT_PORT_BUFFER")
+   (func $BGL_OUTPUT_PORT_FILEPOS
+      (export "BGL_OUTPUT_PORT_FILEPOS")
+      (param $op (ref $output-port))
+      (result i64)
+      (if (ref.test (ref $file-output-port) (local.get $op))
+	  (then
+	     (return
+		(i64.extend_i32_u
+		   (struct.get $file-output-port $position
+		      (ref.cast (ref $file-output-port) (local.get $op))))))
+	  (else
+	   (return (i64.const 0)))))
+
+    (func $BGL_INPUT_PORT_BUFFER (export "BGL_INPUT_PORT_BUFFER")
       (param $ip (ref $input-port))
       (result (ref $bstring))
 
@@ -658,6 +676,8 @@
       (result i32)
 
       (local $op (ref $fd-output-port))
+      (local $fop (ref $file-output-port))
+      (local $nbwrite i32)
       (local.set $op (ref.cast (ref $fd-output-port) (local.get $p)))
 
       (call $memcpy
@@ -666,11 +686,25 @@
 	 (local.get $start)
 	 (local.get $count))
 
-      (drop
-	 (call $js_write_file
-	    (struct.get $fd-output-port $fd (local.get $op))
-	    (i32.const 128)
-	    (local.get $count)))
+      (if (ref.test (ref $file-output-port) (local.get $op))
+	  (then
+	     (local.set $fop (ref.cast (ref $file-output-port) (local.get $op)))
+	     (local.set $nbwrite
+		(call $js_write_file
+		   (struct.get $file-output-port $fd (local.get $fop))
+		   (i32.const 128)
+		   (local.get $count)
+		   (struct.get $file-output-port $position (local.get $fop))))
+	     (struct.set $file-output-port $position (local.get $fop)
+		(i32.add
+		   (local.get $nbwrite
+		      (struct.get $file-output-port $position (local.get $fop))))))
+	  (else
+	   (drop
+	      (call $js_append_file
+		 (struct.get $fd-output-port $fd (local.get $op))
+		 (i32.const 128)
+		 (local.get $count)))))
 
       (return (local.get $count)))
 
@@ -1704,7 +1738,9 @@
 	    ;; err
 	    (i32.const 0)
 	    ;; fd
-	    (local.get $fd))))
+	    (local.get $fd)
+	    ;; position
+	    (i32.const 0))))
 
    ;; bgl_open_output_file
    (func $bgl_open_output_file (export "bgl_open_output_file")
@@ -1719,8 +1755,16 @@
       (param $name (ref $bstring))
       (param $buf (ref $bstring))
       (result (ref eq))
-      (return_call $open_output_file (local.get $name) (local.get $buf)
-	 (i32.const 2)))
+      (local $op (ref eq))
+      (local.set $op
+	 (call $open_output_file (local.get $name) (local.get $buf)
+	    (i32.const 2)))
+      (if (ref.test (ref $file-output-port) (local.get $op))
+	  (then
+	     (struct.set $file-output-port $position
+		(ref.cast (ref $file-output-port) (local.get $op))
+		(i32.wrap_i64 (call $bgl_file_size (local.get $name))))))
+      (return (local.get $op)))
    
    ;; bgl_open_output_string
    (func $bgl_open_output_string (export "bgl_open_output_string")
@@ -1998,7 +2042,7 @@
       (if (call $js_isatty (i32.const 1))
 	  (then
 	     (global.set $_stdout
-		(struct.new $file-output-port
+		(struct.new $fd-output-port
 		   ;; name
 		   (array.new_data $bstring $stdout-name
 		      (i32.const 0) (i32.const 6))
@@ -2009,7 +2053,7 @@
 		   ;; sysclose
 		   (ref.null $sysclose_t)
 		   ;; sysseek
-		   (ref.func $_LSEEK)
+		   (ref.null $sysseek_t)
 		   ;; buf
 		   (array.new_default $bstring (i32.const 0))
 		   ;; index
@@ -2030,7 +2074,7 @@
 		   (i32.const 1))))
 	  (else
 	   (global.set $_stdout
-	      (struct.new $file-output-port
+	      (struct.new $fd-output-port
 		 ;; name
 		 (array.new_data $bstring $stdout-name
 		    (i32.const 0) (i32.const 6))
@@ -2041,7 +2085,7 @@
 		 ;; sysclose
 		 (ref.null $sysclose_t)
 		 ;; sysseek
-		 (ref.func $_LSEEK)
+		 (ref.null $sysseek_t)
 		 ;; buf
 		 (array.new_default $bstring (i32.const 8192))
 		 ;; index
@@ -2061,7 +2105,7 @@
 		 ;; File descriptor
 		 (i32.const 1)))))
       (global.set $_stderr
-	 (struct.new $file-output-port
+	 (struct.new $fd-output-port
 	    ;; name
 	    (array.new_data $bstring $stderr-name
 	       (i32.const 0) (i32.const 6))
@@ -2072,7 +2116,7 @@
 	    ;; sysclose
 	    (ref.null $sysclose_t)
 	    ;; sysseek
-	    (ref.func $_LSEEK)
+	    (ref.null $sysseek_t)
 	    ;; buf
 	    (array.new_default $bstring (i32.const 1))
 	    ;; index
