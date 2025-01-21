@@ -1,0 +1,210 @@
+diff -Naur gc-8.2.8.orig/alloc.c gc-8.2.8/alloc.c
+--- gc-8.2.8.orig/alloc.c	2024-09-08 22:49:54.000000000 +0200
++++ gc-8.2.8/alloc.c	2025-01-21 09:42:10.045032973 +0100
+@@ -765,6 +765,40 @@
+     RESTORE_CANCEL(cancel_state);
+ }
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++static void (*GC_gcollect_hook)(unsigned long, unsigned long) = 0;
++void GC_add_gc_hook(void (*f)(unsigned long, unsigned long)) {
++   GC_gcollect_hook = f;
++}
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: stop                                 */
++/*---------------------------------------------------------------------*/
++
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++static long allocated_bytes = 0;
++
++long GC_get_allocated_bytes() {
++   return allocated_bytes;
++}
++
++void GC_reset_allocated_bytes() {
++   GC_gcollect();
++   allocated_bytes = 0;
++}
++
++#ifdef KEEP_BACK_PTRS
++int GC_heap_info_available = 1;
++#else
++int GC_heap_info_available = 0;
++#endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
++
+ GC_INNER void (*GC_check_heap)(void) = 0;
+ GC_INNER void (*GC_print_all_smashed)(void) = 0;
+ 
+@@ -1134,6 +1168,16 @@
+         GC_check_tls();
+ #   endif
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++#   ifdef KEEP_BACK_PTRS
++    allocated_bytes += GC_get_bytes_since_gc();
++#   endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
++
+ #   ifndef NO_CLOCK
+       if (GC_print_stats)
+         GET_TIME(start_time);
+@@ -1231,6 +1275,18 @@
+                           COMMA_IF_USE_MUNMAP((unsigned long)
+                                               GC_unmapped_bytes));
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    if (GC_gcollect_hook) {
++       GC_gcollect_hook((unsigned long)GC_heapsize,
++			(unsigned long)(GC_atomic_in_use) +
++			(unsigned long)(GC_composite_in_use));
++    }
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    
+     /* Reset or increment counters for next cycle */
+     GC_n_attempts = 0;
+     GC_is_full_gc = FALSE;
+diff -Naur gc-8.2.8.orig/Makefile.am gc-8.2.8/Makefile.am
+--- gc-8.2.8.orig/Makefile.am	2024-09-08 22:49:54.000000000 +0200
++++ gc-8.2.8/Makefile.am	2025-01-21 09:43:36.781035421 +0100
+@@ -68,11 +68,18 @@
+ else
+ 
+ EXTRA_DIST += extra/gc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
+ libgc_la_SOURCES = \
+     allchblk.c alloc.c blacklst.c dbg_mlc.c \
+     dyn_load.c finalize.c gc_dlopen.c headers.c \
+     mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+-    obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c
++    obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c \
++    inline_alloc.c gc_intf.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ 
+ # C Library: Architecture Dependent
+ # ---------------------------------
+diff -Naur gc-8.2.8.orig/Makefile.in gc-8.2.8/Makefile.in
+--- gc-8.2.8.orig/Makefile.in	2024-09-08 22:50:53.000000000 +0200
++++ gc-8.2.8/Makefile.in	2025-01-21 09:44:57.345037696 +0100
+@@ -263,13 +263,20 @@
+ 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+ 	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
+ am__DEPENDENCIES_1 =
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
+ am__libgc_la_SOURCES_DIST = allchblk.c alloc.c blacklst.c dbg_mlc.c \
+ 	dyn_load.c finalize.c gc_dlopen.c headers.c mach_dep.c \
+ 	malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+ 	obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c \
+ 	win32_threads.c pthread_start.c pthread_support.c \
+ 	darwin_stop_world.c pthread_stop_world.c thread_local_alloc.c \
+-	backgraph.c checksums.c gcj_mlc.c fnlz_mlc.c extra/gc.c
++	backgraph.c checksums.c gcj_mlc.c fnlz_mlc.c extra/gc.c \
++        inline_alloc.c gc_intf.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@am__objects_1 =  \
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@	win32_threads.lo
+ @PTHREADS_TRUE@@SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_FALSE@am__objects_2 = pthread_start.lo \
+@@ -285,7 +292,11 @@
+ @ENABLE_DISCLAIM_TRUE@@SINGLE_GC_OBJ_FALSE@am__objects_9 =  \
+ @ENABLE_DISCLAIM_TRUE@@SINGLE_GC_OBJ_FALSE@	fnlz_mlc.lo
+ @PTHREAD_START_STANDALONE_TRUE@@SINGLE_GC_OBJ_TRUE@am__objects_10 = pthread_start.lo
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_FALSE@am_libgc_la_OBJECTS = allchblk.lo alloc.lo \
++@SINGLE_GC_OBJ_FALSE@	inline_alloc.lo gc_intf.lo \
+ @SINGLE_GC_OBJ_FALSE@	blacklst.lo dbg_mlc.lo dyn_load.lo \
+ @SINGLE_GC_OBJ_FALSE@	finalize.lo gc_dlopen.lo headers.lo \
+ @SINGLE_GC_OBJ_FALSE@	mach_dep.lo malloc.lo mallocx.lo mark.lo \
+@@ -303,6 +314,9 @@
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_4) $(am__objects_5) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_6) $(am__objects_7) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_8) $(am__objects_9)
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @NEED_ATOMIC_OPS_ASM_TRUE@@USE_INTERNAL_LIBATOMIC_OPS_TRUE@am__objects_11 = libatomic_ops/src/atomic_ops_sysdeps.lo
+ @USE_INTERNAL_LIBATOMIC_OPS_TRUE@nodist_libgc_la_OBJECTS = libatomic_ops/src/atomic_ops.lo \
+ @USE_INTERNAL_LIBATOMIC_OPS_TRUE@	$(am__objects_11)
+@@ -476,7 +490,11 @@
+ DEFAULT_INCLUDES = 
+ depcomp = $(SHELL) $(top_srcdir)/depcomp
+ am__maybe_remake_depfiles = depfiles
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (27 oct 2022)                                       */
++#*---------------------------------------------------------------------*/
+ am__depfiles_remade = ./$(DEPDIR)/allchblk.Plo ./$(DEPDIR)/alloc.Plo \
++	./$(DEPDIR)/inline_alloc.Plo ./$(DEPDIR)/gc_intf.Plo \
+ 	./$(DEPDIR)/backgraph.Plo ./$(DEPDIR)/blacklst.Plo \
+ 	./$(DEPDIR)/checksums.Plo ./$(DEPDIR)/darwin_stop_world.Plo \
+ 	./$(DEPDIR)/dbg_mlc.Plo ./$(DEPDIR)/dyn_load.Plo \
+@@ -516,6 +534,9 @@
+ 	tests/$(DEPDIR)/thread_leak_test.Po \
+ 	tests/$(DEPDIR)/threadkey_test.Po \
+ 	tests/$(DEPDIR)/trace_test.Po
++#*---------------------------------------------------------------------*/
++#*    Bigloo end (27 oct 2022)                                         */
++#*---------------------------------------------------------------------*/
+ am__mv = mv -f
+ CPPASCOMPILE = $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
+@@ -1132,7 +1153,10 @@
+ 	$(am__append_32)
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = bdw-gc.pc
+-@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c blacklst.c \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c inline_alloc.c gc_intf.c blacklst.c \
+ @SINGLE_GC_OBJ_FALSE@	dbg_mlc.c dyn_load.c finalize.c \
+ @SINGLE_GC_OBJ_FALSE@	gc_dlopen.c headers.c mach_dep.c malloc.c \
+ @SINGLE_GC_OBJ_FALSE@	mallocx.c mark.c mark_rts.c misc.c \
+@@ -1143,6 +1167,9 @@
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_8) $(am__append_9) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_10) $(am__append_11) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_12)
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_TRUE@libgc_la_SOURCES = extra/gc.c $(am__append_2) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__append_4) $(am__append_5) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__append_6) $(am__append_7) \
+@@ -1608,6 +1635,15 @@
+ 
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allchblk.Plo@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@ # am--include-marker
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline_alloc.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gc_intf.Plo@am__quote@
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backgraph.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backgraph.Plo@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blacklst.Plo@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checksums.Plo@am__quote@ # am--include-marker
