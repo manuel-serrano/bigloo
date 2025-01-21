@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Wed Aug 28 17:38:38 2024 (serrano)                */
+;*    Last change :  Tue Dec 24 06:58:06 2024 (serrano)                */
 ;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -45,11 +45,11 @@
 	    globalize_walk
 	    inline_inline
 	    inline_walk)
-   (export  (patch-vector-set!)
-	    (unpatch-vector-set!)
-	    (vector->tvector! globals)
-	    (add-make-vector! ::node)
+   (export  (vector->tvector! globals)
 	    (tvector-optimization?)
+	    (patch-vector-set!)
+	    (unpatch-vector-set!)
+	    (add-make-vector! ::node)
 	    (generic get-vector-item-type::type ::node)))
 
 ;*---------------------------------------------------------------------*/
@@ -62,6 +62,39 @@
 ;*---------------------------------------------------------------------*/
 (define (tvector-optimization?)
    (and (>=fx *optim* 3) (not *lib-mode*)))
+
+;*---------------------------------------------------------------------*/
+;*    vector->tvector! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (vector->tvector! globals)
+   (if (tvector-optimization?)
+       (begin
+	  (trace cfa
+	     "--------------------------------------"
+	     #\Newline "tvector-optimization! :" #\Newline
+	     (shape *make-vector-list*)
+	     #\Newline)
+	  ;; we setup the inlining 
+	  (inline-setup! 'all)
+	  (multiple-value-bind (vectors tvectors)
+	     (get-tvectors)
+	     (for-each (lambda (v)
+			  (when (eq? (node-type v) *_*)
+			     (node-type-set! v *vector*)))
+		vectors)
+	     (show-tvector tvectors)
+	     (trace (cfa 2) "tvectors: " (shape tvectors) #\Newline)
+	     (if (pair? tvectors)
+		 (let ((add-tree (declare-tvectors tvectors)))
+		    (trace (cfa 2)
+		       "additional-body: " (shape add-tree) #\Newline)
+		    (patch-tree! globals)
+		    (lvtype-ast! add-tree)
+		    add-tree)
+		 (begin
+		    (patch-tree! globals)
+		    '()))))
+       '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch-vector-set! ...                                            */
@@ -128,39 +161,6 @@
 		(local-type-set! (car (sfun-args f)) *obj*)))))
    #unspecified)
     
-;*---------------------------------------------------------------------*/
-;*    vector->tvector! ...                                             */
-;*---------------------------------------------------------------------*/
-(define (vector->tvector! globals)
-   (if (tvector-optimization?)
-       (begin
-	  (trace cfa
-	     "--------------------------------------"
-	     #\Newline "tvector-optimization! :" #\Newline
-	     (shape *make-vector-list*)
-	     #\Newline)
-	  ;; we setup the inlining 
-	  (inline-setup! 'all)
-	  (multiple-value-bind (vectors tvectors)
-	     (get-tvectors)
-	     (for-each (lambda (v)
-			  (when (eq? (node-type v) *_*)
-			     (node-type-set! v *vector*)))
-		vectors)
-	     (show-tvector tvectors)
-	     (trace (cfa 2) "tvectors: " (shape tvectors) #\Newline)
-	     (if (pair? tvectors)
-		 (let ((add-tree (declare-tvectors tvectors)))
-		    (trace (cfa 2)
-		       "additional-body: " (shape add-tree) #\Newline)
-		    (patch-tree! globals)
-		    (lvtype-ast! add-tree)
-		    add-tree)
-		 (begin
-		    (patch-tree! globals)
-		    '()))))
-       '()))
-
 ;*---------------------------------------------------------------------*/
 ;*    lists for quick access to vectors                                */
 ;*---------------------------------------------------------------------*/
@@ -548,8 +548,8 @@
    (with-access::app node (args loc)
       (patch*! args)
       (let* ((approx (cfa! (car args)))
-	     (type (get-approx-type approx (car args))))
-	 (if (or (eq? type *vector*) (isa? type tvec))
+	     (ty (get-approx-type approx (car args))))
+	 (if (or (eq? ty *vector*) (isa? ty tvec))
 	     (instantiate::literal
 		(loc loc)
 		(type (strict-node-type (get-type-atom #t) *bool*))
