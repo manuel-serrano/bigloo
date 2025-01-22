@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Mon Jul 10 15:51:50 2023 (serrano)                */
-#*    Copyright   :  1998-2023 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jan 21 09:38:00 2025 (serrano)                */
+#*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -42,6 +42,7 @@ POPULATION = Makefile \
   $(POP804) \
   $(POP822) \
   $(POP824) \
+  $(POP828) \
   sparc_linux_mach_dep.c \
   gc-7.1.tar.gz \
   $(CUSTOMGC).tar.gz
@@ -185,12 +186,19 @@ POP822 = install-gc-8.2.2 \
   libatomic_ops-7.6.14.tar.gz \
   Makefile-gc-8.2.2
 
-POP822 = install-gc-8.2.4 \
+POP824 = install-gc-8.2.4 \
   configure-gc-8.2.4 \
   configure-gc-8.2.4-android \
   gc-8.2.4.patch \
   libatomic_ops-7.8.0.tar.gz \
   Makefile-gc-8.2.4
+
+POP828 = install-gc-8.2.8 \
+  configure-gc-8.2.8 \
+  configure-gc-8.2.8-android \
+  gc-8.2.8.patch \
+  libatomic_ops-7.8.0.tar.gz \
+  Makefile-gc-8.2.8
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */

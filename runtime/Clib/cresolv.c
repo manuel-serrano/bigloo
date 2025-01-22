@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jun  6 11:04:39 2015                          */
-/*    Last change :  Fri Dec  8 09:53:03 2023 (serrano)                */
-/*    Copyright   :  2015-23 Manuel Serrano                            */
+/*    Last change :  Wed Jan 22 08:47:48 2025 (serrano)                */
+/*    Copyright   :  2015-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Resolv library binding (optional)                                */
 /*=====================================================================*/
@@ -137,23 +137,23 @@ static obj_t
 rr_format_mx(ns_msg *msg, int i) {
    ns_rr rr;
    char *name;
-   int len;
-   char *ex;
    obj_t host;
    obj_t pri;
    char dispbuf[ N ];
 	     
-   ns_parserr(msg, ns_s_an, i, &rr);
-   len = ns_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
-   ex = rindex(dispbuf, ' ');
-
-   if (ex) {
-      host = string_to_bstring_len(ex+ 1, len - (ex-dispbuf) - 2);
+   if (ns_parserr(msg, ns_s_an, i, &rr)) {
+      return BUNSPEC;
+   }
+   
+   if (ns_name_uncompress(ns_msg_base(*msg),ns_msg_end(*msg),
+			  ns_rr_rdata(rr),
+			  dispbuf, sizeof(dispbuf)) < 0) {
+      return BUNSPEC;
+   } else {
+      host = string_to_bstring(dispbuf);
       pri = BINT(ns_get16(ns_rr_rdata(rr)));
 
       return MAKE_PAIR(host, pri);
-   } else {
-      return BUNSPEC;
    }
 }
 #endif
@@ -171,7 +171,10 @@ rr_format_srv(ns_msg *msg, int i) {
    char *host;
    char dispbuf[ N ];
 	     
-   ns_parserr(msg, ns_s_an, i, &rr);
+   if (ns_parserr(msg, ns_s_an, i, &rr)) {
+      return BUNSPEC;
+   }
+   
    len = ns_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
    host = rindex(dispbuf, ' ');
 
@@ -228,7 +231,10 @@ rr_format_naptr(ns_msg *msg, int i) {
        C_SYSTEM_FAILURE(BGL_ERROR, "resolv", "Cannot compile regular expression", BUNSPEC);
    }
 	     
-   ns_parserr(msg, ns_s_an, i, &rr);
+   if (ns_parserr(msg, ns_s_an, i, &rr)) {
+      return BUNSPEC;
+   }
+   
    len = ns_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
    
    if (!regexec(&re, dispbuf, sizeof(pmatch) / sizeof(regmatch_t), pmatch, 0)) {
@@ -267,20 +273,20 @@ rr_format_naptr(ns_msg *msg, int i) {
 static obj_t
 rr_format_cname(ns_msg *msg, int i) {
    ns_rr rr;
-   char *name;
-   int len;
-   char *ex;
-   char dispbuf[ N ];
-	     
-   ns_parserr(msg, ns_s_an, i, &rr);
-   len = ns_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
-   ex = rindex(dispbuf, ' ');
+   char dispbuf[N];
 
-   if (ex) {
-      return string_to_bstring_len(ex+ 1, len - (ex-dispbuf) - 2);
-   } else {
+   if (ns_parserr(msg, ns_s_an, i, &rr)) {
       return BUNSPEC;
    }
+   
+   if (ns_name_uncompress(ns_msg_base(*msg),ns_msg_end(*msg),
+			  ns_rr_rdata(rr),
+			  dispbuf, sizeof(dispbuf)) < 0) {
+      return BUNSPEC;
+   } else {
+      return string_to_bstring(dispbuf);
+   }
+   
 }
 #endif
 
@@ -292,24 +298,20 @@ rr_format_cname(ns_msg *msg, int i) {
 static obj_t
 rr_format_txt(ns_msg *msg, int i) {
    ns_rr rr;
-   char *name;
-   int len;
-   char *ex2;
-   char dispbuf[ N ];
-	     
-   ns_parserr(msg, ns_s_an, i, &rr);
-   len = ns_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
-   ex2 = rindex(dispbuf, '\"');
+   char dispbuf[N];
 
-   if (ex2) {
-      char *ex;
-      *ex2 = 0;
-      ex = rindex(dispbuf, '\"');
-      
-      return string_to_bstring_len(ex+ 1, len - (ex-dispbuf) - 2);
-   } else {
+   if (ns_parserr(msg, ns_s_an, i, &rr)) {
       return BUNSPEC;
    }
+   
+   if (ns_name_uncompress(ns_msg_base(*msg),ns_msg_end(*msg),
+			  ns_rr_rdata(rr),
+			  dispbuf, sizeof(dispbuf)) < 0) {
+      return BUNSPEC;
+   } else {
+      return string_to_bstring(dispbuf);
+   }
+   
 }
 #endif
 
@@ -362,8 +364,16 @@ bgl_res_query(obj_t name, obj_t nsname) {
 
     l = res_query(BSTRING_TO_STRING(name), ns_c_any,
 		   nstyp, nsbuf, sizeof(nsbuf));
+    
     if (l < 0) {
-       C_SYSTEM_FAILURE(BGL_ERROR, "resolv", strerror(l), name);
+       char *errstr;
+       switch(h_errno) {
+	  case HOST_NOT_FOUND: errstr = "Unknown zone"; break;
+	  case NO_DATA: errstr = "No NS records for"; break;
+	  case TRY_AGAIN: errstr = "No response for NS query"; break;
+	  default: errstr = "Unexpected error";
+       }
+       C_SYSTEM_FAILURE(BGL_ERROR, "resolv", errstr, name);
        return BFALSE;
     } else {
        ns_initparse(nsbuf, l, &msg);
@@ -373,10 +383,16 @@ bgl_res_query(obj_t name, obj_t nsname) {
 	  int i;
 	  obj_t res = create_vector(l);
 	  fmt_t fmt = get_rr_format(nstyp);
+	  int j;
 
-	  for (i = 0; i < l; i++) {
-	     VECTOR_SET(res, i, fmt(&msg, i));
+	  for (i = 0, j = 0; i < l; i++) {
+	     obj_t o = fmt(&msg, i);
+	     if (o != BUNSPEC) {
+		VECTOR_SET(res, j++, o);
+	     }
 	  }
+
+	  VECTOR_LENGTH_SET(res, j);
 
 	  return res;
        }
