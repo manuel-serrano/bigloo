@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Nov 15 07:19:10 2024 (serrano)                */
+/*    Last change :  Fri Jan 24 06:55:13 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -91,14 +91,14 @@
 #else
 #  define _STREAM_TYPE BGL_STREAM_TYPE_FILE
 #  define _FD FILE * 
-#  define _LSEEK posix_lseek
-#  define _CLOSE posix_close
+#  define _LSEEK bgl_posix_lseek
+#  define _CLOSE bgl_posix_close
 #  define _FILENO
 #  define _PORT_FD(p) fileno(PORT_FILE(p))
 #  define _CREAT(name, mod) fopen(name, "wb")
 #  define _OPEN(name, flag, mod) fopen(name, "a+b")
 #  define _FSTAT(fd, buf) fstat(fileno(fd), buf)
-#  define _READ posix_read
+#  define _READ bgl_posix_read
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -145,19 +145,19 @@ struct bgl_output_timeout {
 /*---------------------------------------------------------------------*/
 /*    compatibility kit ISO C / POSIX 2001.                            */
 /*---------------------------------------------------------------------*/
-static ssize_t posix_write(obj_t port, void *buf, size_t count) {
+static ssize_t bgl_posix_write(obj_t port, void *buf, size_t count) {
    return (ssize_t)fwrite(buf, 1, count, PORT_FILE(port));
 }
 
-static long posix_lseek(FILE *f, long offset, int whence) {
+static long bgl_posix_lseek(FILE *f, long offset, int whence) {
    return fseek(f, offset, whence);
 }
 
-static int posix_close(FILE *f) {
+static int bgl_posix_close(FILE *f) {
    return fclose(f);
 }
 
-static ssize_t posix_read(FILE *f, void *buf, size_t count) {
+static ssize_t bgl_posix_read(FILE *f, void *buf, size_t count) {
    int n = fread(buf, 1, count, f);
 
    if (n != 0)
@@ -521,7 +521,7 @@ timeout_set_port_blocking(char *fun, int fd, int flag) {
 /*---------------------------------------------------------------------*/
 #if (defined(POSIX_FILE_OPS) && BGL_HAVE_SELECT && BGL_HAVE_FCNTL)
 static long
-posix_timed_write(obj_t port, void *buf, size_t num) {
+bgl_posix_timed_write(obj_t port, void *buf, size_t num) {
    struct bgl_output_timeout *tmt = PORT(port).timeout;
    int fd = PORT_FD(port);
    fd_set writefds;
@@ -582,7 +582,7 @@ syswrite_with_timeout(obj_t port, void *ptr, size_t num) {
    }
 
    /* wait for characters to be available */
-   return posix_timed_write(port, ptr, num);
+   return bgl_posix_timed_write(port, ptr, num);
 }
 
 /*---------------------------------------------------------------------*/
@@ -591,7 +591,7 @@ syswrite_with_timeout(obj_t port, void *ptr, size_t num) {
 /*---------------------------------------------------------------------*/
 #if (defined(POSIX_FILE_OPS) && BGL_HAVE_SELECT && BGL_HAVE_FCNTL)
 static long
-posix_timed_read(obj_t port, char *ptr, long num) {
+bgl_posix_timed_read(obj_t port, char *ptr, long num) {
    struct bgl_input_timeout *tmt = PORT(port).timeout;
    int fd = fileno(PORT_FILE(port));
    fd_set readfds;
@@ -713,7 +713,7 @@ sysread_with_timeout(obj_t port, char *ptr, long num) {
    }
 
    /* wait for characters to be available */
-   return posix_timed_read(port, ptr, num);
+   return bgl_posix_timed_read(port, ptr, num);
 #else
    return INPUT_PORT(port).sysread(port, ptr, num);
 #endif
@@ -1149,7 +1149,7 @@ bgl_open_output_file(obj_t name, obj_t buf) {
 				   BGL_STREAM_TYPE_FILE,
 				   KINDOF_PIPE,
 				   buf,
-				   posix_write,
+				   bgl_posix_write,
 				   (long (*)())_LSEEK,
 				   pclose);
    } else
