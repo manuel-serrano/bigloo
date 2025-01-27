@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/4.7a/configure                       */
+#*    serrano/prgm/project/bigloo/bigloo/configure                     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jan 27 10:31:09 2025 (serrano)                */
+#*    Last change :  Mon Jan 27 13:34:23 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -17,7 +17,7 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=4.7a
-buildrelease=unstable
+buildrelease=
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 bigloohttp=http://www-sop.inria.fr/indes/fp/Bigloo/download
