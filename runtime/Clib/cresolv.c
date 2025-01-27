@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jun  6 11:04:39 2015                          */
-/*    Last change :  Wed Jan 22 08:47:48 2025 (serrano)                */
+/*    Last change :  Sat Jan 25 09:01:18 2025 (serrano)                */
 /*    Copyright   :  2015-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Resolv library binding (optional)                                */
@@ -129,6 +129,62 @@ nstype(obj_t name) {
 #endif
 
 /*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_sprintrr ...                                                 */
+/*    -------------------------------------------------------------    */
+/*    A substitute to ns_sprintrr that is deprecated.                  */
+/*---------------------------------------------------------------------*/
+#if (BGL_HAVE_RESOLV)
+static int
+bgl_sprintrr(ns_msg *msg, ns_rr *rr, char *_1, char *_2, char *buf, size_t bufsz) {
+   char *tmpbuf = alloca(bufsz);
+   
+   if (ns_name_uncompress(ns_msg_base(*msg),
+			  ns_msg_end(*msg),
+			  ns_rr_rdata(*rr),
+			  tmpbuf, bufsz) < 0) {
+      return -1;
+   } else {
+      char *r = tmpbuf;
+      char *w = buf;
+
+      while (*r) {
+	 // replace '\.' with '.' and '\032' with ' '
+	 if (*r != '\\') {
+	    *w++ = *r++;
+	 } else {
+	    char n = *(r + 1);
+	    r += 2;
+
+	    switch (n) {
+	       case 0: 
+		  *w++ = 0;
+		  return (w - buf);
+
+	       case '.':
+		  *w++ = '.';
+		  break;
+		  
+	       case '0':
+		  if ((*r == '3') && (*(r+1) == '2')) {
+		     *w++ = ' ';
+		     r += 2;
+		     break;
+		  }
+		  
+	       default:
+		  *w++ = '\\';
+		  *w++ = n;
+	    }
+	 }
+      }
+      *w = 0;
+      return (w - buf);
+   }
+}
+#endif
+
+/*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    rr_format_mx ...                                                 */
 /*---------------------------------------------------------------------*/
@@ -145,9 +201,7 @@ rr_format_mx(ns_msg *msg, int i) {
       return BUNSPEC;
    }
    
-   if (ns_name_uncompress(ns_msg_base(*msg),ns_msg_end(*msg),
-			  ns_rr_rdata(rr),
-			  dispbuf, sizeof(dispbuf)) < 0) {
+   if (bgl_sprintrr(msg, &rr, 0L, 0L, dispbuf, sizeof(dispbuf)) < 0) {
       return BUNSPEC;
    } else {
       host = string_to_bstring(dispbuf);
@@ -175,7 +229,7 @@ rr_format_srv(ns_msg *msg, int i) {
       return BUNSPEC;
    }
    
-   len = ns_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
+   len = bgl_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
    host = rindex(dispbuf, ' ');
 
    if (host) {
@@ -235,7 +289,7 @@ rr_format_naptr(ns_msg *msg, int i) {
       return BUNSPEC;
    }
    
-   len = ns_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
+   len = bgl_sprintrr(msg, &rr, NULL, NULL, dispbuf, sizeof(dispbuf));
    
    if (!regexec(&re, dispbuf, sizeof(pmatch) / sizeof(regmatch_t), pmatch, 0)) {
       regfree(&re);
@@ -279,9 +333,7 @@ rr_format_cname(ns_msg *msg, int i) {
       return BUNSPEC;
    }
    
-   if (ns_name_uncompress(ns_msg_base(*msg),ns_msg_end(*msg),
-			  ns_rr_rdata(rr),
-			  dispbuf, sizeof(dispbuf)) < 0) {
+   if (bgl_sprintrr(msg, &rr, 0L, 0L, dispbuf, sizeof(dispbuf)) < 0) {
       return BUNSPEC;
    } else {
       return string_to_bstring(dispbuf);
@@ -304,9 +356,7 @@ rr_format_txt(ns_msg *msg, int i) {
       return BUNSPEC;
    }
    
-   if (ns_name_uncompress(ns_msg_base(*msg),ns_msg_end(*msg),
-			  ns_rr_rdata(rr),
-			  dispbuf, sizeof(dispbuf)) < 0) {
+   if (bgl_sprintrr(msg, &rr, 0L, 0L, dispbuf, sizeof(dispbuf)) < 0) {
       return BUNSPEC;
    } else {
       return string_to_bstring(dispbuf);
