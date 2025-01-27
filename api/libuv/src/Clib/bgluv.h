@@ -1,9 +1,9 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
 /*   Bigloo (4.6a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Wed Sep 18 09:27:51 PM CEST 2024    */
+/*   Inria -- Sophia Antipolis (c)       Sat Jan 25 08:13:55 AM CET 2025     */
 /*===========================================================================*/
-/* COMPILATION: (/home/serrano/prgm/project/bigloo/bigloo/bin/bigloo -ldopt -L/home/serrano/prgm/project/bigloo/bigloo/libbacktrace/home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.6a  -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.6a -I Llib -lib-dir /home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.6a -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/bigloo/libuv/libuv-v1.48.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
+/* COMPILATION: (/home/serrano/prgm/project/bigloo/4.6a/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/4.6a/lib/bigloo/4.6a -I Llib -lib-dir /home/serrano/prgm/project/bigloo/4.6a/lib/bigloo/4.6a -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/4.6a/libuv/libuv-v1.48.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
 
 #ifndef __BGL___LIBUV_TYPES_H
 #define __BGL___LIBUV_TYPES_H
