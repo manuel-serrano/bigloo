@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_int.h      */
+/*    serrano/prgm/project/bigloo/flt/runtime/Include/bigloo_int.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
@@ -28,7 +28,7 @@ extern "C" {
 
 #define BINT_NULL BINT(0)
 
-#if (!BGL_NAN_TAGGING && !BGL_SMI)
+#if ((BGL_TAGGING != BGL_TAGGING_NAN) && !BGL_SMI)
 /* normal tagging */
 #  define BGL_LONG_MIN (LONG_MIN >> TAG_SHIFT)
 #  define BGL_LONG_MAX (LONG_MAX >> TAG_SHIFT)
@@ -43,7 +43,7 @@ extern "C" {
 #  define GTFX(x, y) ((long)(x) > (long)(y))
 #  define GEFX(x, y) ((long)(x) >= (long)(y))
 #  define EGFX(x, y) ((long)(x) == (long)(y))
-#elif (!BGL_NAN_TAGGING && BGL_SMI)
+#elif ((BGL_TAGGING != BGL_TAGGING_NAN) && BGL_SMI)
 /* smi (int32) tatting */
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
@@ -269,9 +269,9 @@ static int __builtin_ssubl_overflow(long x, long y, long *res) {
 /*              WHATEVER-WITH-THE-OVERFLOW                             */
 /*              res)))                                                 */
 /*                                                                     */
-/*    This uses the special "$let" construct that introduced           */
+/*    This uses the special "$let" construct that introduces           */
 /*    unremovable variables. This enables $+fx/ov to be implemented    */
-/*    as one of the followin C macros that takes the address of the    */
+/*    as one of the following C macros that takes the address of the   */
 /*    local variable.                                                  */
 /*---------------------------------------------------------------------*/
 #if !BGL_HAVE_OVERFLOW
@@ -283,13 +283,13 @@ extern bool_t __builtinmul_overflow(int x, int y, int *res);
 extern bool_t __builtinmull_overflow(long x, long y, long *res);
 #endif
 
-#if !BGL_NAN_TAGGING && TAG_INT == 0
+#if (BGL_TAGGING != BGL_TAGGING_NAN) && TAG_INT == 0
 #  define BGL_ADDFX_OV(x, y, res) __builtin_saddl_overflow((long)x, (long)y, (long*)&res)
 #  define BGL_SUBFX_OV(x, y, res) __builtin_ssubl_overflow((long)x, (long)y, (long*)&res)
 #  define BGL_MULFX_OV(x, y, res) __builtin_smull_overflow((long)x, CINT(y), (long*)&res)
 #endif
 
-#if !BGL_NAN_TAGGING && TAG_INT != 0
+#if (BGL_TAGGING != BGL_TAGGING_NAN) && TAG_INT != 0
 #  define BGL_BINT_SANS_TAG(x) ((long)(x) & ~TAG_MASK)
 #  define BGL_BINT_WITH_TAG(x) ((obj_t)((long)(x) | TAG_INT))
 #  define BGL_ADDFX_OV(x, y, res) (__builtin_saddl_overflow(BGL_BINT_SANS_TAG(x), BGL_BINT_SANS_TAG(y), (long*)&res) || (res = BGL_BINT_WITH_TAG((long)res), 0))

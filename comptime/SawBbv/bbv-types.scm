@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-types.scm     */
+;*    .../prgm/project/bigloo/flt/comptime/SawBbv/bbv-types.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Fri Jun 28 10:11:08 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 08:35:05 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -903,6 +903,7 @@
 	    (cond
 	       ((fun-predicate-of val) => (lambda (t) t))
 	       ((eq? var *number?*) 'number)
+	       ((eq? var *fast-flonum?*) 'fast-flonum)
 	       (else #f))))))
 
 ;*---------------------------------------------------------------------*/

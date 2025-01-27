@@ -1,9 +1,9 @@
-${ var doc = require( "hopdoc" ) }
+${ var doc = require( "@hop/hopdoc" ) }
 ${ var config = require( hop.config ) }
-${ var texinfo = require( hop.texinfo ) }
+${ var texinfo = require( "@hop/texinfo" ) }
 ${ var xml = require( "./xml.js" ) }
 ${ var cfg = require( "./www.json" ) }
-${ var fontifier = require( hop.fontifier ) }
+${ var fontifier = require( "@hop/fontifier" ) }
 ${ var bibtex = require( "./_bibtex.hop" ) }
 
 

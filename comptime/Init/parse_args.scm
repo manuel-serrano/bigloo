@@ -1413,6 +1413,7 @@
 			    (char->integer #\0))))
 	  ((#\6)
 	   (-O3!)
+	   (set! *arithmetic-expand-flonum* #t)
 	   (set! *optim-stackable?* #t)
 	   (set! *optim-uncell?* #t)
 	   (set! *optim* (-fx (char->integer (string-ref string 0))

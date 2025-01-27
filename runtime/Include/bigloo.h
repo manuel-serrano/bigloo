@@ -203,9 +203,51 @@ extern "C" {
 /*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|_ ... ________________???|  */
 /*    +--------+--------+--------+--------|- ... -+--------+--------+  */
 /*                                                                     */
+/*    - flt == flt || flt == fltnz:                                    */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*    |x???xxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  ...  |xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*       ^                                                          ^  */
+/*       |                          rotate 60                       |  */	
+/*       +--------------------------- < > --------------------------+  */
+/*    - flt == fltlb:                                                  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  ...  |xxxxxxxx|xxxxx???|  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*       +--------------------------- < > --------------------------+  */
+/*    - flt == flt1:                                                   */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*    |xx???xxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  ...  |xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+--------+--------|- ... -+--------+--------+  */
+/*        ^                                                         ^  */
+/*        |                         rotate 59                       |  */	
+/*        +-------------------------- < > --------------------------+  */
 /*---------------------------------------------------------------------*/
-#if (BGL_NAN_TAGGING) /* BGL_NAN_TAGGING */
+#define BGL_TAGGING_HEAP 1
+#define BGL_TAGGING_FL 2
+#define BGL_TAGGING_FLLB 3
+#define BGL_TAGGING_FLNZ 4
+#define BGL_TAGGING_FL1 5
+#define BGL_TAGGING_NAN 6
+
+// sanity check to be removed (11 dec 2024)
+#if (BGL_NAN_TAGGING && (BGL_TAGGING != BGL_TAGGING_NAN))
+  error wrong nan tagging configuration
+#elif (BGL_FL_TAGGING == 1 && BGL_TAGGING != BGL_TAGGING_FL)
+  error wrong fl tagging configuration
+#elif (BGL_FL_TAGGING == 2 && BGL_TAGGING != BGL_TAGGING_FLLB)
+  error wrong fllb tagging configuration
+#elif (BGL_FL_TAGGING == 3 && BGL_TAGGING != BGL_TAGGING_FLNZ)
+  error wrong flnz tagging configuration
+#elif (BGL_FL_TAGGING == 4 && BGL_TAGGING != BGL_TAGGING_FL1)
+  error wrong fl1 tagging configuration
+#elif (!BGL_FL_TAGGING && !BGL_NAN_TAGGING && BGL_TAGGING != BGL_TAGGING_HEAP)
+  error wrong plain tagging configuration
+#endif
+
+#if (BGL_TAGGING == BGL_TAGGING_NAN) /* BGL_NAN_TAGGING */
 #  define TAG_MASK (0xffffUL << 48)
+#  define TAG_MASKPOINTER TAG_MASK
 #  define TAG_MASKOBJECT (0x7fffUL << 48)
 #  define NAN_MASK ((1UL << 48) - 1)
 #  define NAN_MASK_SIGNED (NAN_MASK | (1UL <<63))
@@ -250,10 +292,91 @@ extern "C" {
 #  define BGL_CNST_SHIFT_INT32 32
 #endif
 
+#if (BGL_TAGGING != BGL_TAGGING_NAN) //(!BGL_NAN_TAGGING)
+#  define BGL_MASKP(o, tag, mask) \
+     ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
+#else
+#  define BGL_MASKP(o, tag, mask) \
+     (((((long)(o)) - (tag)) & (mask)) == 0)
+#endif
+
+#define BGL_TAGGED_PTRP(o, tag, mask) \
+   (((tag) || (o)) && BGL_MASKP(o, tag, mask))
+
+#define BGL_HEADER_PTRP(o, type) \
+   (BGL_POINTERP(o) && (TYPE(o) == (type)))
+
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
-#if (BGL_NAN_TAGGING)
+#if (BGL_TAGGING == BGL_TAGGING_FL)
+// floating point tagging, 3 exponent bits
+#  define TAG_FL_ROT_BITS ((unsigned long)60)
+#  define TAG_QNAN 0
+#  define TAG_REALZ 0                 /*  real zero             ...000 */
+#  define TAG_REALL 3                 /*  real lower range      ...011 */
+#  define TAG_REALU 4                 /*  real upper range      ...100 */
+#  define TAG_INT 1                   /*  integer tagging       ...001 */
+#  define TAG_POINTER 2               /*  pointer tagging       ...010 */
+#  define TAG_CNST 5                  /*  constant tagging      ...101 */
+#  define TAG_PAIR 6                  /*  pair tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+#elif (BGL_TAGGING == BGL_TAGGING_FLLB)
+// floating point tagging, 3 least significant bits + boxed/header real
+#  define TAG_QNAN 0
+#  define TAG_REAL 1                  /*  boxed real            ...001 */
+#  define TAG_REALL 0                 /*  real lower range      ...000 */
+#  define TAG_REALU 3                 /*  real upper range      ...011 */
+#  define TAG_INT 2                   /*  integer tagging       ...010 */
+#  define TAG_POINTER 4               /*  pointer tagging       ...100 */
+#  define TAG_CNST 5                  /*  constant tagging      ...101 */
+#  define TAG_PAIR 6                  /*  pair tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+#elif (BGL_TAGGING == BGL_TAGGING_FLNZ)
+// floating point tagging 2 exponent bits + boxed/w-header real
+#  define TAG_FL_ROT_BITS ((unsigned long)60)
+#  define TAG_QNAN 0
+#  define TAG_REAL 1                  /*  boxed real            ...001 */
+#  define TAG_REALL 3                 /*  real lower range      ...011 */
+#  define TAG_REALU 4                 /*  real upper range      ...100 */
+#  define TAG_INT 0                   /*  integer tagging       ...000 */
+#  define TAG_POINTER 2               /*  pointer tagging       ...010 */
+#  define TAG_CNST 5                  /*  constant tagging      ...101 */
+#  define TAG_PAIR 6                  /*  pair tagging          ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+#elif (BGL_TAGGING == BGL_TAGGING_FL1)
+// floating point tagging 1 exponent+1 bit + boxed/w-header real
+#  define TAG_FL_ROT_BITS ((unsigned long)58)
+#  define TAG_QNAN 0
+#  define TAG_FL_EXPONENT_SHIFT 13
+#  define TAG_REAL 1                  /*  boxed real            ...001 */
+#  define TAG_REALZ 6                 /*  real lower range      ...110 */
+#  define TAG_INT 0                   /*  integer tagging       ...000 */
+#  define TAG_POINTER 2               /*  pointer tagging       ...010 */
+#  define TAG_CNST 3                  /*  constant tagging      ...011 */
+#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
+#  define TAG_PAIR 5                  /*  pair tagging          ...101 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
+#elif (BGL_TAGGING == BGL_TAGGING_HEAP)
+#  define TAG_QNAN 0
+#  define TAG_INT 0                   /*  integer tagging       ....00 */
+#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
+#  define TAG_CNST 2                  /*  constant tagging      ....10 */
+#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
+#  if (PTR_ALIGNMENT >= 3)
+#    define TAG_VECTOR 4              /*  vector tagging        ...100 */
+#    define TAG_CELL 5                /*  cell tagging          ...101 */
+#    define TAG_REAL 6                /*  real tagging          ...110 */
+#    define TAG_STRING 7              /*  string tagging        ...111 */
+#  endif
+#  if (PTR_ALIGNMENT == 2 && defined(BGL_TAG_CNST32))
+#    define TAG_OBJECT TAG_CNST
+#    undef BGL_CNST_SHIFT_INT16
+#    define BGL_CNST_SHIFT_INT16 8
+#    undef BGL_CNST_SHIFT_UCS2
+#    define BGL_CNST_SHIFT_UCS2 8
+#  endif
+#elif (BGL_TAGGING == BGL_TAGGING_NAN)
 #  define TAG_QNAN (0x7ff8UL<<48)
 #  define TAG_SNAN (0xfff8UL<<48)
 #  define TAG_INT (0x7ff9L<<48)       /*  int tagging       011...1000 */
@@ -264,58 +387,15 @@ extern "C" {
 #  define TAG_PAIR (0x7ffeUL<<48)     /*  pair tagging      011...1101 */
 #  define TAG_OBJECT (0x7fffUL<<48)   /*  object tagging    011...1110 */
 #  define TAG_NANOBJECT (0xffffUL<<48)/*  object tagging    111...1110 */
-#  define TAG_STRING (0xfff9UL<<48)   /*  object tagging    111...1000 */
+#  define TAG_STRING (0xfff9UL<<48)   /*  string tagging    111...1000 */
 #  define TAG_SYMBOL (0xfffaUL<<48)   /*  symbol tagging    111...1001 */
-#elif (BGL_GC == BGL_SAW_GC)    
-#  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
-#  define TAG_YOUNG 2                 /*  pointer tagging       ....10 */
-#  define TAG_CNST 3                  /*  constant tagging      ....11 */
-#elif (BGL_GC == BGL_BOEHM_GC) 
-#  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
-#  define TAG_CNST 2                  /*  constant tagging      ....10 */
-#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
-#elif (BGL_GC == BGL_NO_GC)
-#  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
-#  define TAG_CNST 2                  /*  constant tagging      ....10 */
-#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
 #else
-error "Unknown garbage collector type"
+  error wrong tagging configuration
 #endif
 
-#if (PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING)
-#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
-#  define TAG_CELL 5                  /*  cell tagging          ...101 */
-#  define TAG_REAL 6                  /*  real tagging          ...110 */
-#  define TAG_STRING 7                /*  string tagging        ...111 */
-#endif
+#define BGL_POINTERP(o) BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER)
 
-/* TBR 28aug2022, backward compatibility, to be removed */
-#define TAG_STRUCT TAG_POINTER
-
-#if (PTR_ALIGNMENT == 2 && defined(BGL_TAG_CNST32) && !BGL_NAN_TAGGING)
-#  define TAG_OBJECT TAG_CNST
-
-#  undef BGL_CNST_SHIFT_INT16
-#  define BGL_CNST_SHIFT_INT16 8
-#  undef BGL_CNST_SHIFT_UCS2
-#  define BGL_CNST_SHIFT_UCS2 8
-#endif
-
-#if (TAG_YOUNG)
-#  define POINTERP(o) (((((long)BGL_CPTR(o)) & 1) == 0) && o)
-#else
-#  if (TAG_POINTER != 0)
-#     define POINTERP(o) ((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER)
-#  else
-#     define POINTERP(o) (((((long)BGL_CPTR(o)) & TAG_MASKPOINTER) == TAG_POINTER) && BGL_CPTR(o))
-#  endif
-#endif
+#define POINTERP(o) BGL_POINTERP(o)
 
 #define BREF(r) BGL_BPTR((obj_t)((long)r + TAG_POINTER))
 #define CREFSLOW(r) BGL_CPTR((obj_t)((unsigned long)r & ~(TAG_MASK)))
@@ -345,7 +425,7 @@ error "Unknown garbage collector type"
 /*---------------------------------------------------------------------*/
 #define BGL_HEADER_SHIFT 3
 
-#if (PTR_ALIGNMENT < 3 || BGL_NAN_TAGGING)
+#if (PTR_ALIGNMENT < 3 || (BGL_TAGGING == BGL_TAGGING_NAN))
 // 32-bit and NaN-tagging configurations
 #  define BGL_HEADER_TYPE_BIT_SIZE 12
 #  define BGL_HEADER_SIZE_BIT_SIZE 16
@@ -373,67 +453,55 @@ error "Unknown garbage collector type"
 #define BGL_HEADER_MAX_FULLSIZE ((1 << BGL_HEADER_FULLSIZE_BIT_SIZE) - 1)
 
 // create a header from a type and a size
-#define BGL_MAKE_HEADER(_tydt, _sz) \
-   ((header_t)(((((long)(_tydt)) << BGL_HEADER_TYPE_SHIFT) | (((unsigned long)(_sz)) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT)))
+/* #define BGL_MAKE_HEADER(_ty, _sz) \                                 */
+/*    ((header_t)((((long)(_ty)) << BGL_HEADER_TYPE_SHIFT) | (((_sz) & BGL_HEADER_SIZE_MASK) << BGL_HEADER_SIZE_SHIFT))) */
+#define BGL_MAKE_HEADER(_ty, _sz) \
+   ((header_t)((((long)(_ty)) << BGL_HEADER_TYPE_SHIFT) | (((unsigned long)(_sz)) << BGL_HEADER_SIZE_SHIFT)))
 
 // create a header from a header and a data
 #define BGL_MAKE_HEADER_DATA_ADD(_hd, _dt) \
    (((_hd) & ((1 << BGL_HEADER_DATA_SHIFT) - 1)) | ((_dt) << BGL_HEADER_DATA_SHIFT))
 
 #define BGL_HEADER_TYPE(_hd)  \
-   ((((unsigned long)(_hd)) >> BGL_HEADER_TYPE_SHIFT) & BGL_HEADER_TYPE_MASK)
+   (((_hd) >> BGL_HEADER_TYPE_SHIFT) & BGL_HEADER_TYPE_MASK)
 #define BGL_HEADER_TYPE_SIZE_DATA(_hd)  \
-   ((((unsigned long)(_hd)) >> BGL_HEADER_TYPE_SHIFT))
+   (((_hd) >> BGL_HEADER_TYPE_SHIFT))
 #define BGL_HEADER_SIZE(_hd)  \
-   ((((unsigned long)(_hd)) >> BGL_HEADER_SIZE_SHIFT) & BGL_HEADER_SIZE_MASK)
+   (((_hd) >> BGL_HEADER_SIZE_SHIFT) & BGL_HEADER_SIZE_MASK)
 #define BGL_HEADER_DATA(_hd)  \
-   ((((unsigned long)(_hd)) >> BGL_HEADER_DATA_SHIFT) & BGL_HEADER_DATA_MASK)
+   (((_hd) >> BGL_HEADER_DATA_SHIFT) & BGL_HEADER_DATA_MASK)
 #define BGL_HEADER_FULLSIZE(_hd)  \
-   ((((unsigned long)(_hd)) >> BGL_HEADER_SIZE_SHIFT) & BGL_HEADER_FULLSIZE_MASK)
+   ((_hd) >> BGL_HEADER_SIZE_SHIFT)
 
 #define TYPE(_o) BGL_HEADER_TYPE(CREF(_o)->header)
        
 #define OBJ_SIZE ((long)(sizeof(obj_t)))
 
-#if (BGL_GC == BGL_SAW_GC)
-#  define BASSIGN(field, value, obj) (bps_bassign(&(field), value, obj), BUNSPEC)
-#  define BMASSIGN(field, value) bps_bmassign(&(field), value)
-#  define BBACKPTR(field, value) BYOUNGP(value) ? bps_dobackptr(&(field), value) : 0
-#else
-#  define BASSIGN(field, value, obj) (((field) = (value)), BUNSPEC)
-#  define BMASSIGN(field, value) ((field) = (value))
-#  define BBACKPTR(field, value)
-#endif
+#define BASSIGN(field, value, obj) (((field) = (value)), BUNSPEC)
+#define BMASSIGN(field, value) ((field) = (value))
+#define BBACKPTR(field, value)
 
 /*---------------------------------------------------------------------*/
 /*    Type identifiers ...                                             */
 /*---------------------------------------------------------------------*/
 #define NO_TYPE 0
-#define PAIR_TYPE 1
-#if (!defined(TAG_STRING))
-#  define STRING_TYPE 2
-#endif   
-#define VECTOR_TYPE 3
+#define PAIR_TYPE 1 // see TAG_PAIR
+#define STRING_TYPE 2 // see TAG_STRING
+#define VECTOR_TYPE 3 // see TAG_VECTOR
 #define PROCEDURE_TYPE 4
 #define UCS2_STRING_TYPE 5
 #define OPAQUE_TYPE 6
 #define CUSTOM_TYPE 7
 #define KEYWORD_TYPE 8
-#if (!defined(TAG_SYMBOL))
-#  define SYMBOL_TYPE 9
-#endif       
+#define SYMBOL_TYPE 9 // see TAG_SYMBOL
 #define STACK_TYPE 10
 #define INPUT_PORT_TYPE 11
 #define OUTPUT_PORT_TYPE 12
 #define DATE_TYPE 13
-#if (!defined(TAG_CELL))
-#  define CELL_TYPE 14
-#endif   
+#define CELL_TYPE 14 // see TAG_CELL
 #define SOCKET_TYPE 15
 #define STRUCT_TYPE 16
-#if (!defined(TAG_REAL) && !BGL_NAN_TAGGING)
-#  define REAL_TYPE 17
-#endif   
+#define REAL_TYPE 17 // see TAG_REAL
 #define PROCESS_TYPE 18
 #define FOREIGN_TYPE 19
 #define OUTPUT_STRING_PORT_TYPE 20
@@ -1597,14 +1665,16 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 /*    Symbols                                                          */
 /*---------------------------------------------------------------------*/
 #if (defined(TAG_SYMBOL))
-#  define SYMBOLP(c) ((c && ((((long)c)&TAG_MASK) == TAG_SYMBOL)))
+#  define BGL_SYMBOLP(c) BGL_TAGGED_PTRP(c, TAG_SYMBOL, TAG_MASK)
 #  define BSYMBOL(p) ((obj_t)((long)p + TAG_SYMBOL))
 #  define CSYMBOL(p) ((obj_t)((long)p - TAG_SYMBOL))
 #else   
-#  define SYMBOLP(o) (POINTERP(o) && (TYPE(o) == SYMBOL_TYPE))
+#  define BGL_SYMBOLP(o) (POINTERP(o) && (TYPE(o) == SYMBOL_TYPE))
 #  define BSYMBOL(p) BREF(p)
 #  define CSYMBOL(p) CREF(p)
 #endif   
+
+#define SYMBOLP(o) BGL_SYMBOLP(o)
 
 #define SYMBOL(o) (CSYMBOL(o)->symbol)
    

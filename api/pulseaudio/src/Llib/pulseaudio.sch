@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/pulseaudio/src/Llib/pulseaudio.sch        */
+;*    .../bigloo/bigloo/api/pulseaudio/src/Llib/pulseaudio.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Wed Jan 27 16:40:47 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Wed Jan 22 07:48:12 2025 (serrano)                */
+;*    Copyright   :  2011-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of PULSEAUDIO types and functions                     */
 ;*=====================================================================*/
@@ -22,7 +22,7 @@
       ;; misc
       (type $int* void* "int *")
       (macro $pa-get-headers-version::string () "pa_get_headers_version")
-      (macro $pa_strerror::string (::int) "pa_strerror")
+      (macro $pa_strerror::string (::int) "(char *)pa_strerror")
       (macro &int::$int* (::int) "&")
       (macro $string-null::string "0L")
 

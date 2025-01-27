@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cbinary.c        */
+/*    serrano/prgm/project/bigloo/flt/runtime/Clib/cbinary.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Fri Nov 15 07:28:17 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 11:49:26 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -270,10 +270,11 @@ input_obj(obj_t port) {
       char  string[ 1024 + STRING_SIZE ];
       obj_t res, strobj = (obj_t)string;
 
-#if (!defined(TAG_STRING) || defined(BUMPY_GC))
-      strobj->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
-#endif		
+#if (!defined(TAG_STRING))
+      strobj->string.header = BGL_MAKE_STRING_HEADER(strobj, STRING_TYPE, clen);
+#else
       strobj->string.length = clen;
+#endif
       
       if (!fread(BSTRING_TO_STRING(BSTRING(string)), clen, 1, file)) {
 	 C_SYSTEM_FAILURE(BGL_IO_READ_ERROR,
@@ -299,11 +300,12 @@ input_obj(obj_t port) {
 			   "input_obj",
 			   "can't allocate string", port);
 
-#if (!defined(TAG_STRING) || defined(BUMPY_GC))
-      string->string.header = BGL_MAKE_HEADER(STRING_TYPE, 0);
-#endif		
+#if (!defined(TAG_STRING))
+      string->string.header = BGL_MAKE_STRING_HEADER(string, STRING_TYPE, clen);
+#else
       string->string.length = clen;
-		
+#endif
+      
       if (!fread(BSTRING_TO_STRING(BSTRING(string)), clen, 1, file)) {
 	 C_SYSTEM_FAILURE(BGL_IO_READ_ERROR,
 			   "input_obj",

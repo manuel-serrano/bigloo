@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/api/multimedia/src/Unix/bglmixer.c     */
+/*    .../prgm/project/bigloo/api/multimedia/src/Unix/bglmixer.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb  3 15:25:23 2000                          */

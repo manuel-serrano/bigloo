@@ -51,7 +51,9 @@ void *(*____bstring_to_symbol)() = 0L;
 void *(*____bstring_to_keyword)() = 0L;
 
 /* real */
+#if (!BGL_NAN_TAGGING)
 void *(*____make_real)() = 0L;
+#endif
 
 /* threads & locks */
 void *(*____bgl_make_mutex)() = 0L;
@@ -126,8 +128,10 @@ bmem_init_wrapper(void *hdl) {
    LOADF(hdl, bstring_to_keyword);
 
    /* real */
+#if (!BGL_NAN_TAGGING)
    LOADF(hdl, make_real);
-
+#endif
+   
    /* threads & locks */
    LOADF(hdl, bgl_make_mutex);
    LOADF(hdl, bgl_make_spinlock);
@@ -252,10 +256,12 @@ WRAP(bstring_to_keyword,
      (n));
 
 /* real */
+#if (!BGL_NAN_TAGGING)
 WRAP(make_real,
      REAL_TYPE_NUM,
      (double d),
      (d));
+#endif
 
 /* threads & locks */
 WRAP(bgl_make_mutex,

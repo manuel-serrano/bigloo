@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cvector.c        */
+/*    serrano/prgm/project/bigloo/flt/runtime/Clib/cvector.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Sun Nov 17 07:36:25 2024 (serrano)                */
+/*    Last change :  Tue Nov 19 09:42:23 2024 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -65,9 +65,10 @@ create_vector(long len) {
       vector = GC_MALLOC(byte_size);
 
 #if (!defined(TAG_VECTOR))
-      vector->vector.header = BGL_MAKE_HEADER(VECTOR_TYPE, 0);
-#endif		
+      vector->vector.header = BGL_MAKE_VECTOR_HEADER(vector, VECTOR_TYPE, len);
+#elif BGL_VECTOR_LENGTH_FIELDP
       vector->vector.length = len;
+#endif		
 
       return BVECTOR(vector);
    }
@@ -94,9 +95,10 @@ create_vector_uncollectable(long len) {
       vector = GC_MALLOC_UNCOLLECTABLE(byte_size);
 
 #if (!defined(TAG_VECTOR))
-      vector->vector.header = BGL_MAKE_HEADER(VECTOR_TYPE, 0);
-#endif		
+      vector->vector.header = BGL_MAKE_VECTOR_HEADER(vector, VECTOR_TYPE, len);
+#elif BGL_VECTOR_LENGTH_FIELDP
       vector->vector.length = len;
+#endif		
 
       return BVECTOR(vector);
    }

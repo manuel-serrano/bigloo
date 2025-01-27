@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/dtoa.scm         */
+;*    serrano/prgm/project/bigloo/flt/runtime/Ieee/dtoa.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Fri Nov 15 08:02:28 2024 (serrano)                */
+;*    Last change :  Tue Nov 19 07:56:48 2024 (serrano)                */
 ;*    Copyright   :  2011-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
@@ -55,18 +55,19 @@
    (define (int-vector v)
       (let* ((vname (gensym 'v))
 	     (tname (gensym 'bgl_vector))
-	     (tdecl (format "struct ~a { __CNST_ALIGN\n#if( !defined( TAG_VECTOR ) )\n header_t header;\n#endif\n unsigned long len; ~(; ); }"
+	     (tdecl (format "struct ~a { __CNST_ALIGN\n#if (!defined(TAG_VECTOR))\n header_t header;\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\n unsigned long len;\n#endif\n ~(; ); }"
 		      tname
 		      (map (lambda (i) (format "obj_t obj~a" i))
 			 (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nBGL_MAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if (!defined(TAG_VECTOR)) \nBGL_MAKE_HEADER(VECTOR_TYPE, (unsigned long)~a),\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\n ~a,\n#endif\n ~(, ) }"
 		       tname vname
+		       (vector-length v)
 		       (vector-length v)
 		       (map (lambda (i) (format "BINT( ~a )" i))
 			  (vector->list v)))))
 	 `(begin
 	     (pragma ,(format "~a; ~a" tdecl vdecl))
-	     (pragma::vector ,(format "\n#if( !defined( TAG_VECTOR ) )\nBVECTOR( &(~a.header) )\n#else\nBVECTOR( &(~a.len) )\n#endif\n" vname vname)))))
+	     (pragma::vector ,(format "\n#if (!defined(TAG_VECTOR))\nBVECTOR(&(~a.header))\n#else\nBVECTOR(&(~a.len))\n#endif\n" vname vname)))))
 
    (define (llong-vector v)
       (let* ((l (vector->list v))
@@ -74,24 +75,25 @@
 	     (aname (gensym 'a))
 	     (lname (gensym 'bgl_llong))
 	     (tname (gensym 'bgl_vector))
-	     (tdecl (format "struct ~a { __CNST_ALIGN \n#if( !defined( TAG_VECTOR ) )\nheader_t header;\n#endif\n unsigned long len; ~(; ); }"
+	     (tdecl (format "struct ~a { __CNST_ALIGN \n#if (!defined(TAG_VECTOR))\nheader_t header;\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\nunsigned long len;\n#endif\n ~(; ); }"
 		       tname
 		       (map (lambda (i) (format "obj_t obj~a" i))
 			  (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nBGL_MAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if (!defined(TAG_VECTOR)) \nBGL_MAKE_HEADER(VECTOR_TYPE, (unsigned long)~a),\n#endif\n#if (BGL_VECTOR_LENGTH_FIELDP)\n ~a,\n#endif\n ~(, ) }"
 		       tname vname
 		       (vector-length v)
-		       (map (lambda (i) (format "BREF( &(~a[ ~a ].header) )" aname i))
+		       (vector-length v)
+		       (map (lambda (i) (format "BREF((&(~a[~a].header)))" aname i))
 			  (iota (vector-length v))))))
 	 `(begin
 	     (pragma ,(format "struct ~a { __CNST_ALIGN header_t header; BGL_LONGLONG_T llong; };" lname))
 	     (pragma ,(format "static struct ~a ~a[] = { ~(, ) };"
 			 lname aname
 			 (map (lambda (i)
-				 (format "{ __CNST_FILLER BGL_MAKE_HEADER( LLONG_TYPE, 0 ), ~a }" i))
+				 (format "{ __CNST_FILLER BGL_MAKE_HEADER(LLONG_TYPE, 0), ~a }" i))
 			    l)))
 	     (pragma ,(format "~a; ~a" tdecl vdecl))
-	     (pragma::vector ,(format "\n#if( !defined( TAG_VECTOR ) )\nBVECTOR( &(~a.header) )\n#else\nBVECTOR( &(~a.len) )\n#endif\n" vname vname)))))
+	     (pragma::vector ,(format "\n#if (!defined(TAG_VECTOR))\nBVECTOR(&(~a.header))\n#else\nBVECTOR(&(~a.len))\n#endif\n" vname vname)))))
    
    (cond-expand
       (bigloo-c

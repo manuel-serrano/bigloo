@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tools/misc.scm              */
+;*    serrano/prgm/project/bigloo/nanh/comptime/Tools/misc.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 16:54:25 1994                          */
-;*    Last change :  Tue Apr  5 09:39:36 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Oct 29 16:41:11 2024 (serrano)                */
+;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Various general tools                                            */
 ;*=====================================================================*/
