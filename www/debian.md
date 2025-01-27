@@ -1,6 +1,6 @@
 
-Debian
-------
+Debian/Ubuntu
+-------------
 
 Pre-compiled Bigloo version are available for Linux Debian
 and some of its variants. This version can be installed using

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 30 17:20:13 2015                          */
-/*    Last change :  Mon Jan 27 11:26:56 2025 (serrano)                */
+/*    Last change :  Mon Jan 27 17:43:35 2025 (serrano)                */
 /*    Copyright   :  2015-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Tools to build the Hop.js documentation.                         */
@@ -296,7 +296,7 @@ function compileSection(page) {
    let key = path.basename(path.dirname(page)).toLowerCase();
    let affix = "normal";
    let chap = findChapter(title);
-   
+
    if (key == "www") {
       key = alias[path.basename(page)];
    } else if (key == ".") {

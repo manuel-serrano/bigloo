@@ -7,7 +7,7 @@ ${ var www = require( "./www.js" ) }
 ${ var fs = require( "fs" ) }
 
 ${ var manual = texinfo.load( "../manuals/bigloo.texi", hop.locale, fontifier ) }
-${ var chapters = manual.chapters() }
+${ var chapters = manual.chapters(); undefined; }
 
 ${ var table = [] }
 
@@ -80,8 +80,8 @@ ${ for( let i = 1; i < chapters.length; i++ ) {
 	if( chapters[ i ].innerHTML === "Global Index" ) {
 	   fs.writeFileSync( path, "<html><script>window.location='./idx.html';</script></html>" );
     } else {
-   	   www.compileXML( chap, chapters[ i ].innerHTML, "manual", path, "manual-toc.js" ); }
+   	   www.compileXML( chap, chapters[ i ].innerHTML, "manual", path, "manual-toc.js" ); 
 	}
- }
+}}
 
 ${ manual.getChapterByTitle( chapters[ 1 ].innerHTML ) }
