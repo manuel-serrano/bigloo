@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon May  4 16:13:02 2020                          */
-#*    Last change :  Tue Jan  4 08:50:04 2022 (serrano)                */
-#*    Copyright   :  2020-22 Manuel Serrano                            */
+#*    Last change :  Mon Jan 27 13:25:24 2025 (serrano)                */
+#*    Copyright   :  2020-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    WWW Bigloo page                                                  */
 #*=====================================================================*/
@@ -109,7 +109,7 @@ index.html: _index.md www.js xml.js bigloo.svg www.json \
 #*---------------------------------------------------------------------*/
 idx.json: manual.html
 	$(HOP) $(HOPFLAGS) $(EFLAGS) -- \
-          ./www.js "html-to-idx" . $^ manual-chapter*.html > $@ \
+          ./www.js "html-to-idx" . -o $@ $^ manual-chapter*.html \
           || ($(RM) $@; exit 1)
 
 #*---------------------------------------------------------------------*/

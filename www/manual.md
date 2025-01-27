@@ -1,8 +1,8 @@
-${ var hopdoc = require( "hopdoc" ) }
+${ var hopdoc = require( "@hop/hopdoc" ) }
 ${ var config = require( hop.config ) }
-${ var texinfo = require( hop.texinfo ) }
+${ var texinfo = require( "@hop/texinfo" ) }
 ${ var xml = require( "./xml.js" ) }
-${ var fontifier = require( hop.fontifier ) }
+${ var fontifier = require( "@hop/fontifier" ) }
 ${ var www = require( "./www.js" ) }
 ${ var fs = require( "fs" ) }
 

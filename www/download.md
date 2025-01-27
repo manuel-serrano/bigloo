@@ -1,4 +1,4 @@
-${ var hopdoc = require( "hopdoc" ) }
+${ var hopdoc = require( "@hop/hopdoc" ) }
 ${ var config = require( hop.config ) }
 ${ var xml = require( "./xml.js" ) }
 ${ var www = require( "./www.js" ) }
