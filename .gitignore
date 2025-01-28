@@ -212,7 +212,8 @@ gc/gc-8.2.2_fth
 gc/gc-8.2.2_mt
 gc/gc-8.2.4
 gc/gc-8.2.4_mt
-gc/gc-8.2.4_mt
+gc/gc-8.2.8
+gc/gc-8.2.8_mt
 gc/preinst
 
 # libuv
@@ -225,6 +226,7 @@ libuv/libuv-v1.43.0/
 libuv/libuv-v1.44.2/
 libuv/libuv-v1.47.0/
 libuv/libuv-v1.48.0/
+libuv/libuv-v1.49.2/
 
 # xlib
 xlib/include/

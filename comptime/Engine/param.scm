@@ -104,6 +104,7 @@
 	    *arithmetic-genericity*
 	    *arithmetic-overflow*
 	    *arithmetic-new-overflow*
+	    *arithmetic-expand-flonum*
 	    *shared-cnst?*
 	    ;; -------------------------------------------------------------
 	    ;; warning, any change about this variable name must be reported
@@ -838,6 +839,7 @@
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
 (define *arithmetic-new-overflow* #t)
+(define *arithmetic-expand-flonum* #f)
 (param-define *shared-cnst?*
    "Shared constant compilation?"
    #t)

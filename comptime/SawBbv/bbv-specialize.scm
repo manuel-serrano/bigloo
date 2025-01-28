@@ -704,6 +704,9 @@
 				   (bbv-ctxentry-types e)))
 			   (not (memq 'number (bbv-ctxentry-types e)))
 			   (not (memq *pair-nil* (bbv-ctxentry-types e)))
+			   (or (not (eq? type 'fast-flonum))
+			       (not (or (memq *breal* (bbv-ctxentry-types e))
+					(memq 'number (bbv-ctxentry-types e)))))
 			   (not (eq? type 'number)))
 		      ;; negative type simplification
 		      (trace-item "TCHECK-- type: " (shape type)

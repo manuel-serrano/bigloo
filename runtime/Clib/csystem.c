@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csystem.c        */
+/*    serrano/prgm/project/bigloo/flt/runtime/Clib/csystem.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Tue Nov  5 12:34:03 2024 (serrano)                */
+/*    Last change :  Mon Nov 18 15:44:07 2024 (serrano)                */
 /*    Copyright   :  2002-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -752,7 +752,7 @@ bgl_getgroups() {
 	}
 	
 	if (seen_egid) {
-	   VECTOR(res).length--;
+	   VECTOR_LENGTH_SET(res, VECTOR_LENGTH(res) - 1);
 	} else {
 	   VECTOR_SET(res, i, BINT(egid));
 	}

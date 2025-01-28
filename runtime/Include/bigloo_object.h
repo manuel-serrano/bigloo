@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Include/bigloo_object.h        */
+/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_object.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Nov 17 10:58:53 2024 (serrano)                */
+/*    Last change :  Wed Dec 11 08:28:28 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -108,7 +108,7 @@ typedef struct BgL_objectz00_bgl {
    (((obj_t)COBJECT(_o))->header = \
     BGL_MAKE_HEADER(BGL_HEADER_TYPE_SIZE_DATA(COBJECT(_o)->header) & ~(BGL_HEADER_SIZE_MASK << (BGL_HEADER_SIZE_SHIFT - BGL_HEADER_SHIFT)), _s))
 
-#if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
+#if (PTR_ALIGNMENT >= 3 && (BGL_TAGGING != BGL_TAGGING_NAN))
 #  define BGL_OBJECT_INHERITANCE_NUM(_obj) \
      (BGL_HEADER_DATA(COBJECT(_obj)->header))
 #else
@@ -118,7 +118,7 @@ typedef struct BgL_objectz00_bgl {
 /*---------------------------------------------------------------------*/
 /*    BGL_ISA                                                          */
 /*---------------------------------------------------------------------*/
-#if (PTR_ALIGNMENT >= 3 && !BGL_NAN_TAGGING)
+#if (PTR_ALIGNMENT >= 3 && (BGL_TAGGING != BGL_TAGGING_NAN))
 #  define BGL_CONDEXPAND_ISA_ARCH64() 1
 #else
 #  define BGL_CONDEXPAND_ISA_ARCH64() 0

@@ -510,9 +510,10 @@ opt_generic_entry(obj_t proc, ...) {
 #endif   
 
 #if (!defined(TAG_VECTOR))
-   args->vector.header = BGL_MAKE_HEADER(VECTOR_TYPE, byte_size);
-#endif		
+   args->vector.header = BGL_MAKE_VECTOR_HEADER(args, VECTOR_TYPE, len);
+#else
    args->vector.length = len;
+#endif		
 
    args = BVECTOR(args);
 

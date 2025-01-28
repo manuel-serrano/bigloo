@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/hash.c        */
+/*    serrano/prgm/project/bigloo/nanh/bde/bmem/lib/hash.c             */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct  7 11:34:41 2021                          */
-/*    Last change :  Tue Oct 19 16:12:02 2021 (serrano)                */
-/*    Copyright   :  2021 Manuel Serrano                               */
+/*    Last change :  Fri Nov  1 13:26:49 2024 (serrano)                */
+/*    Copyright   :  2021-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    hashtables indexed by strings.                                   */
 /*=====================================================================*/
@@ -136,6 +136,23 @@ hashtable_foreach(hashtable_t *table, void (*proc)(const char *, void *data)) {
    for (i = 0; i < size; i++) {
       if (buckets[i].key) {
 	 proc(buckets[i].key, buckets[i].data);
+      }
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    hashtable_foreach_arg ...                                        */
+/*---------------------------------------------------------------------*/
+void
+hashtable_foreach_arg(hashtable_t *table, void (*proc)(const char *, void *data, void *arg), void *arg) {
+   long size = table->size;
+   hashbucketentry_t *buckets = table->buckets;
+   long i;
+
+   for (i = 0; i < size; i++) {
+      if (buckets[i].key) {
+	 proc(buckets[i].key, buckets[i].data, arg);
       }
    }
 }

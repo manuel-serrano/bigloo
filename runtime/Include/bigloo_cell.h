@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_cell.h     */
+/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_cell.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Nov 19 14:57:33 2024 (serrano)                */
+/*    Last change :  Tue Nov 26 11:23:58 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
@@ -81,12 +81,14 @@ struct bgl_cell {
 #if (defined(TAG_CELL))
 #   define BCELL(p) ((obj_t)((long)p + TAG_CELL))
 #   define CCELL(p) ((obj_t)((long)p - TAG_CELL))
-#   define CELLP(c) ((c && ((((long)c)&TAG_MASK) == TAG_CELL)))
+#   define BGL_CELLP(c) BGL_TAGGED_PTRP(c, TAG_CELL, TAG_MASK)
 #else
 #   define BCELL(p) BREF(p)
 #   define CCELL(p) CREF(p)
-#   define CELLP(c) (POINTERP(c) && (TYPE(c) == CELL_TYPE))
+#   define BGL_CELLP(c) (POINTERP(c) && (TYPE(c) == CELL_TYPE))
 #endif
+
+#define CELLP(o) BGL_CELLP(o)
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */

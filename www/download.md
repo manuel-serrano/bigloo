@@ -1,4 +1,4 @@
-${ var hopdoc = require( "hopdoc" ) }
+${ var hopdoc = require( "@hop/hopdoc" ) }
 ${ var config = require( hop.config ) }
 ${ var xml = require( "./xml.js" ) }
 ${ var www = require( "./www.js" ) }
@@ -39,10 +39,12 @@ tarball files at:
 [ftp://ftp-sop.inria.fr/indes/fp/Bigloo](ftp://ftp-sop.inria.fr/indes/fp/Bigloo)
 
 
-${ hopdoc.include( "debian.md" ) }
-
-${ hopdoc.include( "homebrew.md" ) }
-
 ${ hopdoc.include( "../INSTALL.md" ) }
+
+Debian/Ubuntu
+-------------
+
+On Debian and Ubuntu, Bigloo can be installed similarly to the github
+[CI script](https://github.com/manuel-serrano/bigloo/blob/master/.github/workflows/bigloo.yml).
 
 

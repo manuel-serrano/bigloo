@@ -1,7 +1,7 @@
-const doc = require( "hopdoc" );
+const doc = require( "@hop/hopdoc" );
 const config = require( hop.config );
-const texinfo = require( hop.texinfo );
-const fontifier = require( hop.fontifier );
+const texinfo = require( "@hop/texinfo" );
+const fontifier = require( "@hop/fontifier" );
 
 const manual = texinfo.load( "../manuals/bigloo.texi", hop.locale, fontifier );
 const chapters = manual.chapters();

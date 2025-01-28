@@ -1,11 +1,11 @@
 ;; @CONFIGURE@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/autoconf/bconfigure-generic.sch.in     */
+;*    .../project/bigloo/wasm/autoconf/bconfigure-generic.sch.in       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 16 13:12:00 2024                          */
-;*    Last change :  Tue Jul 16 13:53:24 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Mon Jan 27 18:45:05 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic configuration                                            */
 ;*=====================================================================*/
@@ -15,85 +15,85 @@
 ;*---------------------------------------------------------------------*/
 (directives
    (export 
-	   $$configure-release-number
-	   $$configure-specific-version
-	   $$configure-homeurl
-	   $$configure-shell
-	   $$configure-shell-mv
-	   $$configure-shell-rm
-       $$configure-c-compiler-style
-	   $$configure-c-compiler
-	   $$configure-c-ld
-	   $$configure-c-compiler-o-option
-	   $$configure-c-compiler-fp-option
-       $$configure-c-compiler-debug-option
-	   $$configure-c-compiler-optim-flag
-	   $$configure-c-compiler-rpath
-	   $$configure-c-flags
-	   $$configure-c-strict-stdc
-	   $$configure-c-pic-flag
-	   $$configure-c-nan-flag
-	   $$configure-c-strip-flag
-	   $$configure-c-prof-flag
-       $$configure-c-object-file-extension
-	   $$configure-c-string-split
-       $$configure-c-linker-style
-	   $$configure-c-linker-flags
-	   $$configure-c-linker-o-option
-       $$configure-c-linker-debug-option
-	   $$configure-c-linker-optim-flags
-	   $$configure-c-linker-soname-option
-	   $$configure-c-linker-shared-option
-	   $$configure-ld-library-dir
-	   $$configure-library-directory
-	   $$configure-non-custom-gc-directory
- 	   $$configure-zip-directory
- 	   $$configure-dll-directory
- 	   $$configure-user-libraries
-	   $$configure-c-beautifier
-	   $$configure-dirname-cmd
-	   $$configure-library-base-name
-	   $$configure-heap-debug-copt
- 	   $$configure-have-shared-library
-	   $$configure-shared-link-option
-	   $$configure-static-link-option
-	   $$configure-shared-lib-suffix
-	   $$configure-auto-finalizer
-	   $$configure-have-dlopen
-	   $$configure-dlopen-lib
-	   $$configure-have-bigloo-abort
-	   $$configure-java
-	   $$configure-jar
-	   $$configure-java-shell
-	   $$configure-jflags
-	   $$configure-jvflags
-	   $$configure-default-back-end
-	   $$configure-gc-lib
-	   $$configure-gc-custom
-	   $$configure-gc
-	   $$configure-have-bdb
-	   $$configure-dns-cache-enabled
-	   $$configure-big-endian
-	   $$configure-regexp-family
-	   $$configure-nan-tagging
-	   $$configure-int-size
-	   $$configure-elong-size
-	   $$configure-have-unistring
-	   $$configure-have-syslog
-	   $$configure-have-getrlimit
-	   $$configure-have-overflow
-	   $$configure-class-display-min-size
-	   $$configure-os-class
-	   $$configure-os-name
-	   $$configure-os-arch
-	   $$configure-os-version
-	   $$configure-thread-local-storage
-	   $$configure-have-spinlock
-	   $$cfg-no-gc
-	   $$cfg-boehm-gc
-	   $$cfg-saw-gc
-	   $$configure-have-alloca
-	   $$configure-have-c99stackalloc))
+      $$configure-release-number
+      $$configure-specific-version
+      $$configure-homeurl
+      $$configure-shell
+      $$configure-shell-mv
+      $$configure-shell-rm
+      $$configure-c-compiler-style
+      $$configure-c-compiler
+      $$configure-c-ld
+      $$configure-c-compiler-o-option
+      $$configure-c-compiler-fp-option
+      $$configure-c-compiler-debug-option
+      $$configure-c-compiler-optim-flag
+      $$configure-c-compiler-rpath
+      $$configure-c-flags
+      $$configure-c-strict-stdc
+      $$configure-c-pic-flag
+      $$configure-c-nan-flag
+      $$configure-c-strip-flag
+      $$configure-c-prof-flag
+      $$configure-c-object-file-extension
+      $$configure-c-string-split
+      $$configure-c-linker-style
+      $$configure-c-linker-flags
+      $$configure-c-linker-o-option
+      $$configure-c-linker-debug-option
+      $$configure-c-linker-optim-flags
+      $$configure-c-linker-soname-option
+      $$configure-c-linker-shared-option
+      $$configure-ld-library-dir
+      $$configure-library-directory
+      $$configure-non-custom-gc-directory
+      $$configure-zip-directory
+      $$configure-dll-directory
+      $$configure-user-libraries
+      $$configure-c-beautifier
+      $$configure-dirname-cmd
+      $$configure-library-base-name
+      $$configure-heap-debug-copt
+      $$configure-have-shared-library
+      $$configure-shared-link-option
+      $$configure-static-link-option
+      $$configure-shared-lib-suffix
+      $$configure-auto-finalizer
+      $$configure-have-dlopen
+      $$configure-dlopen-lib
+      $$configure-have-bigloo-abort
+      $$configure-java
+      $$configure-jar
+      $$configure-java-shell
+      $$configure-jflags
+      $$configure-jvflags
+      $$configure-default-back-end
+      $$configure-gc-lib
+      $$configure-gc-custom
+      $$configure-gc
+      $$configure-have-bdb
+      $$configure-dns-cache-enabled
+      $$configure-big-endian
+      $$configure-regexp-family
+      $$configure-fl-tagging
+      $$configure-int-size
+      $$configure-elong-size
+      $$configure-have-unistring
+      $$configure-have-syslog
+      $$configure-have-getrlimit
+      $$configure-have-overflow
+      $$configure-class-display-min-size
+      $$configure-os-class
+      $$configure-os-name
+      $$configure-os-arch
+      $$configure-os-version
+      $$configure-thread-local-storage
+      $$configure-have-spinlock
+      $$cfg-no-gc
+      $$cfg-boehm-gc
+      $$cfg-saw-gc
+      $$configure-have-alloca
+      $$configure-have-c99stackalloc))
 
 ;*---------------------------------------------------------------------*/
 ;*    definitions                                                      */
@@ -116,6 +116,7 @@
 (define $$configure-c-strict-stdc "@BGL_STRICT_STDC@")
 (define $$configure-c-pic-flag "@C_PICFLAGS@")
 (define $$configure-c-nan-flag "@C_NANFLAGS@")
+(define $$configure-c-flt-flag "@C_FLTFLAGS@")
 (define $$configure-c-strip-flag "@C_STRIP_FLAGS@")
 (define $$configure-c-prof-flag "@C_PROFILE_FLAGS@")
 (define $$configure-c-object-file-extension "@C_OBJECT_FILE_EXTENSION@")
@@ -161,6 +162,7 @@
 (define $$configure-nan-tagging #f)
 (define $$configure-int-size 32)
 (define $$configure-elong-size 32)
+(define $$configure-fl-tagging #f)
 (define $$configure-have-unistring #f)
 (define $$configure-have-syslog #f)
 (define $$configure-have-getrlimit #f)

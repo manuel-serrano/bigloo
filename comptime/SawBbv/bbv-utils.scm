@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Fri Jun 28 08:48:02 2024 (serrano)                */
+;*    Last change :  Tue Dec 10 08:38:36 2024 (serrano)                */
 ;*    Copyright   :  2017-24 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBB manipulations                                                */
@@ -60,6 +60,7 @@
       ((eq? x *long*) (or (eq? y *bint*) (eq? y 'number)))
       ((eq? x *real*) (or (eq? y *breal*) (eq? y 'number)))
       ((eq? x *breal*) (or (eq? y *real*) (eq? y 'number)))
+      ((eq? x 'fast-flonum) (or (eq? y *real*) (eq? y 'number)))
       ((or (eq? x 'number) (eq? y 'number)) #f)
       ((eq? y *pair-nil*) #f)
       (else (is-subtype? x y))))

@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Clib/inline_alloc.h       */
+/*    serrano/prgm/project/bigloo/flt/runtime/Clib/inline_alloc.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */

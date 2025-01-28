@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Clib/inline_alloc_thread.h     */
+/*    .../project/bigloo/nanh/runtime/Clib/inline_alloc_thread.h       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */

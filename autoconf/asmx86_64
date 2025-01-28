@@ -1,0 +1,113 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/flt/autoconf/asmx86_64               */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Sat Nov  9 09:06:48 2024 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Give the alignment on the current architecture                   */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=$CFLAGS
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if test -f $file.c; then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+D="$"
+
+cat > $file.c <<EOF
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#define TAG_REALU 4
+#define TAG_REALL 3
+
+#define BGL_REAL_TAG_MASK_TABLE \
+   ((1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
+
+union scmobj {
+  long integer;
+  long header;
+  struct { 
+     long header;
+     double value;
+  } real;
+};
+
+typedef union scmobj *obj_t;
+
+union bgl_fltobj {
+   double _double;
+   obj_t _obj;
+};
+
+inline __attribute__((always_inline))
+obj_t _double_to_real(double _d) {
+   obj_t result;
+   bool carry;
+   __asm__("ror ${D}60, %%rax;"
+	   "bt  %%eax, %3;"
+	   : "=@ccc"(carry), "=a"(result)
+	   : "a"(((union bgl_fltobj)(_d))._obj),
+	     "r"((uint32_t)BGL_REAL_TAG_MASK_TABLE * 0x1010101));
+   if (carry) {
+      return result;
+   } else {
+      return 0L;
+   }
+}
+
+int main () {
+  printf("%p\n", _double_to_real(3.14));
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo 1
+else
+   echo 0
+fi
+
+rm -rf $file.*
+rm -f $aout
+rm -rf $aout*

@@ -1,4 +1,4 @@
-${ var doc = require( "hopdoc" ) }
+${ var doc = require( "@hop/hopdoc" ) }
 
 The Bigloo Programming Language
 -------------------------------

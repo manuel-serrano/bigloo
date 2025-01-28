@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cinit_obj.c      */
+/*    serrano/prgm/project/bigloo/nanh/runtime/Clib/cinit_obj.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
@@ -37,7 +37,7 @@ double bgl_nan(), bgl_infinity();
 #if (!BGL_NAN_TAGGING)
 BGL_RUNTIME_DEF obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
 #else
-BGL_RUNTIME_DEF union nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
+BGL_RUNTIME_DEF union bgl_nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -86,9 +86,9 @@ void bgl_init_objects() {
    bigloo_infinity = DOUBLE_TO_REAL(bgl_infinity());
    bigloo_minfinity = DOUBLE_TO_REAL(-bgl_infinity());
 #else
-   bigloo_nan = (union nanobj){ real: bgl_nan() };
-   bigloo_infinity = (union nanobj){ real: bgl_infinity() };
-   bigloo_minfinity = (union nanobj){ real: -bgl_infinity() };
+   bigloo_nan = (union bgl_nanobj){ real: bgl_nan() };
+   bigloo_infinity = (union bgl_nanobj){ real: bgl_infinity() };
+   bigloo_minfinity = (union bgl_nanobj){ real: -bgl_infinity() };
 #endif
 }
 

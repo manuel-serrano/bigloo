@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/bmem.h           */
+/*    serrano/prgm/project/bigloo/nanh/bde/bmem/lib/bmem.h             */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
@@ -23,13 +23,14 @@
 /*    Identity                                                         */
 /*---------------------------------------------------------------------*/
 #define IDENT "bmem"
-#define VERSION "0.0.3"
+#define VERSION "0.0.4"
 
 /*---------------------------------------------------------------------*/
 /*    BMEMDUMPFORMAT                                                   */
 /*---------------------------------------------------------------------*/
-#define BMEMDUMPFORMAT_SEXP 0
+#define BMEMDUMPFORMAT_NONE 0
 #define BMEMDUMPFORMAT_JSON 1
+#define BMEMDUMPFORMAT_SEXP 2
 
 /*---------------------------------------------------------------------*/
 /*    FAIL                                                             */
@@ -260,7 +261,8 @@ typedef struct hashtable {
 extern hashtable_t *hashtable_create(long);
 extern void *hashtable_get(hashtable_t *, const char *);
 extern int hashtable_put(hashtable_t *, const char *, void *);
-extern void hashtable_foreach(hashtable_t *, void (*)(const char *, void*));
+extern void hashtable_foreach(hashtable_t *, void (*)(const char *, void *));
+extern void hashtable_foreach_arg(hashtable_t *, void (*)(const char *, void *, void *), void *);
 
 /*---------------------------------------------------------------------*/
 /*    Types                                                            */

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_pair.h     */
+/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_pair.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Nov  9 09:19:54 2024 (serrano)                */
+/*    Last change :  Wed Dec 11 08:28:36 2024 (serrano)                */
 /*    Copyright   :  2016-24 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -79,26 +79,26 @@ struct bgl_epair {
 #if (defined(TAG_PAIR))
 #   define BPAIR(p) BGL_BPTR((long)p + TAG_PAIR)
 #   define CPAIR(p) ((union scmobj *)(((long)BGL_CPTR(p)) - TAG_PAIR))
-#   if (TAG_PAIR != 0)
-#      define PAIRP(c) ((((long)c) & TAG_MASK) == TAG_PAIR)
-#   else
-#      define PAIRP(c) ((c && ((((long)c) & TAG_MASK) == TAG_PAIR)))
-#   endif
+#   define BGL_PAIRP(c) BGL_TAGGED_PTRP(c, TAG_PAIR, TAG_MASK)
 #else
 #   define BPAIR(p) BREF(p)
 #   define CPAIR(p) CREF(p)
-#   define PAIRP(c) (POINTERP(c) && (TYPE(c) == PAIR_TYPE))
+#   define BGL_PAIRP(c) (POINTERP(c) && (TYPE(c) == PAIR_TYPE))
 #endif
 
+#define PAIRP(o) BGL_PAIRP(o)
+
 #if (BGL_GC == BGL_BOEHM_GC && TAG_PAIR)
-#   define EPAIRP(c) \
+#   define BGL_EPAIRP(c) \
       (PAIRP(c) && \
        (((long)GC_size(CPAIR(c))) >= EPAIR_SIZE) && \
        (EPAIR(c).eheader == BINT(EPAIR_TYPE)))
 #else
-#   define EPAIRP(c) \
+#   define BGL_EPAIRP(c) \
        (PAIRP(c) && (HEADER_SIZE(CREF(c )->header) == EPAIR_SIZE))
 #endif
+
+#define EPAIRP(o) BGL_EPAIRP(o)
 
 /*---------------------------------------------------------------------*/
 /*    alloc ...                                                        */
@@ -158,7 +158,7 @@ struct bgl_epair {
 #endif
 
 /* stack allocation (see BGL_EXITD_PUSH_PROTECT) */
-#if (BGL_HAVE_ALLOCA && !BGL_NAN_TAGGING)
+#if (BGL_HAVE_ALLOCA && (BGL_TAGGING != BGL_TAGGING_NAN))
 #  define MAKE_STACK_PAIR_TMP(a, d, __t) \
      (__t = alloca(PAIR_SIZE), BGL_INIT_PAIR(__t, a, d), BPAIR(__t))
 #  if (BGL_HAVE_ALLOCA && defined(__GNUC__))
