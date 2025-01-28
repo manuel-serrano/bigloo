@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jan  6 11:11:36 2025 (serrano)                */
+#*    Last change :  Tue Jan 21 09:34:55 2025 (serrano)                */
 #*    Last change :  Thu May 14 09:43:33 2020 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
@@ -315,7 +315,8 @@ customgc=yes
 #gccustom=gc-8.0.2
 #gccustom=gc-8.0.4
 #gccustom=gc-8.2.2
-gccustom=gc-8.2.4
+#gccustom=gc-8.2.4
+gccustom=gc-8.2.8
 gcversion=
 gcbump=0
 cgcflags=
