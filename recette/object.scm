@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Fri Jan 31 17:01:56 2025 (serrano)                */
+;*    Last change :  Sun Feb  2 09:00:35 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -230,7 +230,7 @@
 		 (eq? (foo/l-dummy (vector-ref bis 5))
 		      (vector-ref bis 3))
 		 (eq? (vector-ref bis 4) (vector-ref bis 5))
-		 (eq? (readc-x (vector-ref obj 6))
+		 (eqv? (readc-x (vector-ref obj 6))
 		      (readc-x (vector-ref bis 6))))))))
 
 ;*---------------------------------------------------------------------*/
