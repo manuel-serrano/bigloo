@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Tue Dec 10 07:32:59 2024 (serrano)                */
+;*    Last change :  Fri Jan 31 08:05:37 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -87,6 +87,8 @@
 	    (macro $randomfl::double () "RANDOMFL"))
 
    (wasm    ($flonum? "(ref.test (ref $real) ~0)")
+            ($fast-flonum? "(ref.test (ref $real) ~0)")
+	    ($fast-real->double "(struct.get $real $v (ref.cast (ref $real) ~0))")
 	    ($=fl "(f64.eq ~0 ~1)")
 	    ($<fl "(f64.lt ~0 ~1)")
 	    ($<=fl "(f64.le ~0 ~1)")

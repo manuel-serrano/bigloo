@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Jan 13 08:32:09 2025 (serrano)                */
+;*    Last change :  Sat Feb  1 18:47:12 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -173,7 +173,6 @@
 	   ($class-alloc-fun "(struct.get $class $alloc_fun ~0)")
 	   ($class-new-fun "(struct.get $class $new_fun ~0)")
 	   ($class-nil-fun "(struct.get $class $nil_fun ~0)")
-	   ($class-nil "(struct.get $class $nil ~0)")
 	   ($class-constructor "(struct.get $class $constructor ~0)")
 	   ($class-shrink "(struct.get $class $shrink ~0)")
 	   ($class-hash "(struct.get $class $hash ~0)")

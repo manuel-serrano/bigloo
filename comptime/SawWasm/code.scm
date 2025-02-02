@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Jan 13 14:28:50 2025 (serrano)                */
+;*    Last change :  Sat Feb  1 10:48:49 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -61,6 +61,7 @@
 	   (gen-ins ins::rtl_ins)
 	   (gen-switch fun type patterns labels args gen-go gen-block-label)
 	   (cnst-table-sym)
+	   (wasm-slot-recursive?::bool slot::slot)
 	   *allocated-strings*
 	   *extra-types*)
    
@@ -274,8 +275,7 @@
 ;*    wasm-type ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (wasm-type t::type #!key nullable)
-   (let ((id (type-id t))
-	 (name (type-name t)))
+   (let ((id (type-id t)))
       (case id
 	 ((bint)
 	  (if (=fx *wasm-fixnum* 64)
@@ -333,24 +333,31 @@
 	 ((vector) (if nullable '(ref null $vector) '(ref $vector)))
 	 ((string bstring) (if nullable '(ref null $bstring) '(ref $bstring)))
 	 ((hvector) '(ref array))
-;;	 ((exit) '(ref null $exit))
-	 (else 
-	  (cond 
-	     ((foreign-type? t)
-	      (error "wasm-gen" "unimplemented foreign type in WASM" id))
-	     ;; Classes
-	     ((string-suffix? "_bglt" name)
-	      (if nullable
-		  `(ref null ,(wasm-sym name))
-		  `(ref ,(wasm-sym name))))
-	     ((tvec? t)
-	      (if nullable
-		  `(ref null ,(wasm-vector-type t))
-		  `(ref ,(wasm-vector-type t))))
-	     (else
-	      (if nullable
-		  `(ref null ,(wasm-sym (symbol->string id)))
-		  `(ref ,(wasm-sym (symbol->string id))))))))))
+	 ;;	 ((exit) '(ref null $exit))
+	 (else
+	  (let ((name (type-name t)))
+	     (cond 
+		((foreign-type? t)
+		 (error "wasm-gen" "unimplemented foreign type in WASM" id))
+		;; Classes
+;* 		((wclass? t)                                           */
+;* 		 (with-access::wclass t (its-class)                    */
+;* 		    (wasm-type its-class :nullable nullable)))         */
+		((or (tclass? t) (wclass? t))
+		 (if nullable
+		     `(ref null ,(wasm-sym name))
+		     `(ref ,(wasm-sym name))))
+		((string-suffix? "_bglt" name)
+		 (error "wasm-type" (format "expected be a tclass ~s" name)
+		    (typeof t)))
+		((tvec? t)
+		 (if nullable
+		     `(ref null ,(wasm-vector-type t))
+		     `(ref ,(wasm-vector-type t))))
+		(else
+		 (if nullable
+		     `(ref null ,(wasm-sym (symbol->string id)))
+		     `(ref ,(wasm-sym (symbol->string id)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-default-value ...                                           */
@@ -454,14 +461,13 @@
 		     (global.get ,(wasm-sym (global-name holder)))))))
 	  ((wclass? ty)
 	   (with-access::wclass ty (its-class)
-	      (with-access::tclass its-class (name slots)
-		 `(ref.cast (ref ,(wasm-sym name))
-		     (struct.new ,(wasm-sym (type-class-name ty))
-			,@(filter-map (lambda (s)
-					 (when (eq? (slot-class-owner s) its-class)
-					    (unless (>=fx (slot-virtual-num s) 0)
-					       (wasm-default-value (slot-type s)))))
-			     slots))))))
+	      (with-access::tclass its-class (name slots its-super)
+		 `(struct.new ,(wasm-sym (type-class-name ty))
+		     ,@(filter-map (lambda (s)
+				      (when (eq? (slot-class-owner s) its-class)
+					 (unless (>=fx (slot-virtual-num s) 0)
+					    (wasm-default-value (slot-type s)))))
+			  slots)))))
 	  ((isa? ty tvec)
 	   `(array.new_fixed ,(wasm-vector-type ty) 0))
 	  ((foreign-type? ty)
@@ -1537,32 +1543,46 @@
    (gen-reg (car args)))
 
 ;*---------------------------------------------------------------------*/
+;*    wasm-slot-recursive? ...                                         */
+;*    -------------------------------------------------------------    */
+;*    This function implements an over-approximaation of the           */
+;*    recursive field detection.                                       */
+;*    -------------------------------------------------------------    */
+;*    Becase of WASM strict typing, it is not possible to initialize   */
+;*    classes such as:                                                 */
+;*                                                                     */
+;*       (class a FIELDA::b)                                           */
+;*       (class b FIELDB::a)                                           */
+;*                                                                     */
+;*    To solve that problem, recursive fields, FIELDA and FIELDB in    */
+;*    this example are declared nullable.                              */
+;*---------------------------------------------------------------------*/
+(define (wasm-slot-recursive? slot::slot)
+   (or (tclass? (slot-type slot)) (wclass? (slot-type slot))))
+
+;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_new ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_new args)
+
+   (define (slot-default-value s)
+      (if (wasm-slot-recursive? s)
+	  `(ref.null none)
+	  (wasm-default-value (slot-type s))))
    
    (define (gen-new-tclass fun args type constr)
       (with-access::tclass type (slots)
 	 (let* ((clazz (wasm-sym (type-class-name type)))
-		(alloc (if (and #f
-				(every (lambda (s)
-					  (let ((t (slot-type s)))
-					     (or (eq? t *long*)
-						 (eq? t *bool*)
-						 (eq? t *char*)
-						 (eq? t *real*))))
-				   slots))
-			   `(struct.new_default ,clazz)
-			   `(struct.new ,clazz
-			       ;; header
-			       (i64.const 0)
-			       ;; widening
-			       (global.get $BUNSPEC)
-			       ;; class fields
-			       ,@(filter-map (lambda (s)
-						(unless (>=fx (slot-virtual-num s) 0)
-						   (wasm-default-value (slot-type s))))
-				    slots)))))
+		(alloc `(struct.new ,clazz
+			   ;; header
+			   (i64.const 0)
+			   ;; widening
+			   (global.get $BUNSPEC)
+			   ;; class fields
+			   ,@(filter-map (lambda (s)
+					    (unless (>=fx (slot-virtual-num s) 0)
+					       (slot-default-value s)))
+				slots))))
 	    (when (pair? constr)
 	       (error "gen-expr" "Not supported." (shape constr)))
 	    (with-fun-loc fun alloc))))
@@ -1574,7 +1594,7 @@
 			     ,@(filter-map (lambda (s)
 					      (when (eq? (slot-class-owner s) its-class)
 						 (unless (>=fx (slot-virtual-num s) 0)
-						    (wasm-default-value (slot-type s)))))
+						    (slot-default-value s))))
 				  slots))))
 	       (with-fun-loc fun alloc)))))
    

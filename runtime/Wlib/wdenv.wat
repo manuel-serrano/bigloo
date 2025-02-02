@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Mon Jan 13 14:34:11 2025 (serrano)                */
+;*    Last change :  Fri Jan 31 13:27:17 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -53,7 +53,9 @@
 	    (field $lexical-stack (mut (ref eq)))
 	    (field $top (mut (ref null $bgl_dframe)))
 	    (field $top-of-frame (mut (ref null $bgl_dframe)))
-	    (field $exit-traces (mut (ref null $bgl_dframe_list))))))
+	    (field $exit-traces (mut (ref null $bgl_dframe_list)))
+
+	    (field $thread-backend (mut (ref eq))))))
    
    (rec
       (type $bexception
@@ -62,8 +64,15 @@
 	    (field $val (ref eq)))))
    
    ;; -----------------------------------------------------------------
+   ;; Data 
+   ;; -----------------------------------------------------------------
+   (data $default_internal_error "wasm internal error")
+   
+   ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
+   (global $bgl_internal_error (mut (ref null eq))
+      (ref.null none))
    
    (global $exit-default-value
       (export "BGL_EXIT_DEFAULT_VALUE") (ref $exit)
@@ -113,6 +122,8 @@
 	 (ref.null none)
 	 ;; exit-traces
 	 (ref.null none)
+	 ; thread-backend
+	 (global.get $BUNSPEC)
 	 ))
    
    ;; --------------------------------------------------------
@@ -164,6 +175,8 @@
 	 (ref.null none)
 	 ;; exit-traces
 	 (ref.null none)
+	 ; thread-backend
+	 (global.get $BUNSPEC)
 	 ))
    
    (func $BGL_CURRENT_DYNAMIC_ENV
@@ -354,6 +367,37 @@
 	 (global.get $current-dynamic-env)
 	 (local.get $stk)))
    
+   (func $BGL_ENV_THREAD_BACKEND
+      (export "BGL_ENV_THREAD_BACKEND")
+      (param $env (ref $dynamic-env))
+      (result (ref eq))
+      (struct.get $dynamic-env $thread-backend (local.get $env)))
+   
+   (func $BGL_ENV_THREAD_BACKEND_SET
+      (export "BGL_ENV_THREAD_BACKEND_SET")
+      (param $env (ref $dynamic-env))
+      (param $be (ref eq))
+      (result (ref eq))
+      
+      (struct.set $dynamic-env $thread-backend (local.get $env)  (local.get $be))
+      (return (global.get $BUNSPEC)))
+   
+   (func $BGL_THREAD_BACKEND
+      (export "BGL_THREAD_BACKEND")
+      (result (ref eq))
+      
+      (return_call $BGL_ENV_THREAD_BACKEND
+	 (global.get $current-dynamic-env)))
+   
+   (func $BGL_THREAD_BACKEND_SET
+      (export "BGL_THREAD_BACKEND_SET")
+      (param $be (ref eq))
+      (result (ref eq))
+      
+      (return_call $BGL_ENV_THREAD_BACKEND_SET
+	 (global.get $current-dynamic-env)
+	 (local.get $be)))
+   
    (func $BGL_ENV_EVSTATE
       (export "BGL_ENV_EVSTATE")
       (param $env (ref $dynamic-env))
@@ -427,11 +471,31 @@
 	 (global.get $BNIL)
 	 (ref.null none)))
 
+   (func $bgl_internal_error_get
+      (result (ref eq))
+      (local $tmp (ref eq))
+      (if (ref.is_null (global.get $bgl_internal_error))
+	  (then
+	     (return
+		(array.new_data $bstring $default_internal_error
+		   (i32.const 0)
+		   (i32.const 19))))
+	  (else
+	   (local.set $tmp
+	      (ref.cast (ref eq) (global.get $bgl_internal_error)))
+	   (global.set $bgl_internal_error (ref.null none))
+	   (return (local.get $tmp)))))
+
+   (func $bgl_internal_error_set
+      (param $e (ref eq))
+      (global.set $bgl_internal_error (local.get $e)))
+
    (func $bgl_internal_handler
       (export "bgl_internal_handler")
       (param $exn (ref null exn))
       (param $exit (ref $exit))
       (result (ref eq))
+      (local $cell (ref $cell))
       (if (i32.eqz (struct.get $exit $userp (local.get $exit)))
 	  (then
 	     (call $js_trace (i32.const -11111112))
@@ -441,8 +505,14 @@
 	       (then
 		  (throw_ref (local.get $exn)))
 	       (else
-		  (call $js_trace (i32.const -11111113))
-		  (return (global.get $BUNSPEC)))))))
+		(local.set $cell
+		   (ref.cast (ref $cell)
+		      (struct.get $pair $cdr
+			 (ref.cast (ref $pair)
+			    (call $BGL_ERROR_HANDLER_GET)))))
+		(struct.set $cell $val (local.get $cell)
+		   (call $bgl_internal_error_get))
+		(return (local.get $cell)))))))
    
    (func $bgl_exception_handler
       (export "bgl_exception_handler")

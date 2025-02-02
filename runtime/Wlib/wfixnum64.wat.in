@@ -4,13 +4,19 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Wed Dec 25 07:37:34 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Fri Jan 31 11:37:04 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
 ;*=====================================================================*/
 
 (module $__bigloo_fixnum64
+   
+   ;; -----------------------------------------------------------------
+   ;; Data 
+   ;; -----------------------------------------------------------------
+
+   (data $div0_internal_error "division by 0")
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -79,5 +85,29 @@
 	   (return 
 	      (struct.new $bint (local.get $x))))))
 
+   (func $check_zero64 (export "check_zero64")
+      (param $x i64)
+      (result i64)
+      (if (i64.eqz (local.get $x))
+	  (then
+	     (call $bgl_internal_error_set
+		(array.new_data $bstring $div0_internal_error
+		   (i32.const 0)
+		   (i32.const 13)))
+	     (throw $fail))
+	  (else (return (local.get $x)))))
+
+   (func $check_zero32 (export "check_zero32")
+      (param $x i32)
+      (result i32)
+      (if (i32.eqz (local.get $x))
+	  (then
+	     (call $bgl_internal_error_set
+		(array.new_data $bstring $div0_internal_error
+		   (i32.const 0)
+		   (i32.const 13)))
+	     (throw $fail))
+	  (else (return (local.get $x)))))
+      
    )
 

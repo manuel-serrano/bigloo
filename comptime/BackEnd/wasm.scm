@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Jan 13 07:07:13 2025 (serrano)                */
+;*    Last change :  Sun Feb  2 07:10:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -982,13 +982,10 @@
 ;*    emit-class-types ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-class-types class-list)
+   
    ;; Sorts classes such that all classes appear after their super class
    ;; (if any). This is required by WASM: struct types must be defined after
    ;; their supertype.
-   
-   ;; TODO: emit classes that are mutually dependent in rec groups.
-   ;;       for that, compute the elementary cycles in the dependencies graph
-   ;;       using the Jordan algorithm, and generate a rec for each cycle.
    (let ((orders (make-hashtable))
 	 (current-order 0))
       
@@ -1012,16 +1009,20 @@
 (define (emit-class-type class)
    
    (define (emit-slot slot)
-      (with-access::slot slot (type virtual-num name)
+      (with-access::slot slot (type virtual-num name read-only?)
 	 (let ((cname (slot-type slot)))
 	    (if (>=fx virtual-num 0)
 		;; TODO: what to do with virtual-num >= 0
 		#f 
 		`(field 
-		    ,(wasm-sym (slot-name slot)) 
-		    ;; TODO: consider removing WASM mut qualifier for
-		    ;; read-only slots
-		    (mut ,(wasm-type cname)))))))
+		    ,(wasm-sym (slot-name slot))
+		    ,(if (and #f read-only?)
+			 ;; the current initialization of class
+			 ;; instances does not permit to mark
+			 ;; class field immutable
+			 (wasm-type cname)
+			 `(mut ,(wasm-type cname
+				   :nullable (wasm-slot-recursive? slot)))))))))
 
    (define (emit-regular-class class)
       (let ((super (tclass-its-super class))

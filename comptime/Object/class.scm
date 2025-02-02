@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Object/class.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Object/class.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Mon Aug 26 14:39:51 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Feb  1 11:02:15 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
 ;*=====================================================================*/
@@ -481,5 +481,3 @@
 	 (tclass-virtual-slots-number-set! class local-vnum)
 	 ;; and we store the slots
 	 (tclass-slots-set! class cslots))))
-
-       

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/object.scm            */
+;*    serrano/prgm/project/bigloo/wasm/recette/object.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Thu Nov  3 12:06:24 2022 (serrano)                */
+;*    Last change :  Fri Jan 31 17:01:56 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -505,5 +505,4 @@
 	 (test "dsssl generic.16" (g to "name" #f to to -2 3) 110)
 	 (test "dsssl generic.17" (g to "name" #f to to -2) 110)
 	 (test "dsssl generic.18" (g to "name" #f to to) 110))))
-
       
