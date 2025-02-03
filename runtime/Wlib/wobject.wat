@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Sat Jan  4 08:49:25 2025 (serrano)                */
+;*    Last change :  Mon Feb  3 07:59:35 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
@@ -197,5 +197,125 @@
       (result (ref eq))
       (struct.set $class $evdata (local.get $class) (local.get $evdata))
       (global.get $BUNSPEC))
+
+   ;; bgl_make_generic
+   (func $bgl_make_generic (export "bgl_make_generic")
+      (param $proc (ref $procedure))
+      (result (ref $procedure))
+      (local $arity i32)
+      (local $res (ref $procedure))
+      (local.set $arity (struct.get $procedure $arity (local.get $proc)))
+      ;; dummy initialization
+      (local.set $res (global.get $procedure-default-value))
+      (block $default
+	 (block $1
+	    (block $2
+	       (block $3
+		  (block $4
+		     (block $5
+			(br_table $1 $2 $3 $4 $5 $default
+			   (local.get $arity))
+			(local.set $res
+			   (call $MAKE_FX_PROCEDURE
+			      (ref.func $generic_entry5)
+			      (local.get $arity)
+			      (i32.const 4))))
+		     (local.set $res
+			(call $MAKE_FX_PROCEDURE
+			   (ref.func $generic_entry4)
+			   (local.get $arity)
+			   (i32.const 4))))
+		  (local.set $res
+		     (call $MAKE_FX_PROCEDURE
+			(ref.func $generic_entry3)
+			(local.get $arity)
+			(i32.const 4))))
+	       (local.set $res
+		  (call $MAKE_FX_PROCEDURE
+		     (ref.func $generic_entry2)
+		     (local.get $arity)
+		     (i32.const 4))))
+	    (local.set $res
+	       (call $MAKE_FX_PROCEDURE
+		  (ref.func $generic_entry1)
+		  (local.get $arity)
+		  (i32.const 4))))
+	 (local.set $res
+	    (call $MAKE_FX_PROCEDURE
+	       (ref.func $generic_entry)
+	       (local.get $arity)
+	       (i32.const 4))))
+      (call $PROCEDURE_SET (local.get $res) (i32.const 3) (local.get $proc))
+      (return (local.get $res)))
+
+   (func $generic_entry1
+      (param $proc (ref $procedure))
+      (param $a1 (ref eq))
+      (result (ref eq))
+      (return_call $funcall1
+	 (ref.cast (ref $procedure)
+	    (call $PROCEDURE_REF (local.get $proc) (i32.const 3)))
+	 (local.get $a1)))
+
+   (func $generic_entry2
+      (param $proc (ref $procedure))
+      (param $a1 (ref eq))
+      (param $a2 (ref eq))
+      (result (ref eq))
+      (return_call $funcall2
+	 (ref.cast (ref $procedure)
+	    (call $PROCEDURE_REF (local.get $proc) (i32.const 3)))
+	 (local.get $a1)
+	 (local.get $a2)))
+
+   (func $generic_entry3
+      (param $proc (ref $procedure))
+      (param $a1 (ref eq))
+      (param $a2 (ref eq))
+      (param $a3 (ref eq))
+      (result (ref eq))
+      (return_call $funcall3
+	 (ref.cast (ref $procedure)
+	    (call $PROCEDURE_REF (local.get $proc) (i32.const 3)))
+	 (local.get $a1)
+	 (local.get $a2)
+	 (local.get $a3)))
+
+   (func $generic_entry4
+      (param $proc (ref $procedure))
+      (param $a1 (ref eq))
+      (param $a2 (ref eq))
+      (param $a3 (ref eq))
+      (param $a4 (ref eq))
+      (result (ref eq))
+      (return_call $funcall4
+	 (ref.cast (ref $procedure)
+	    (call $PROCEDURE_REF (local.get $proc) (i32.const 3)))
+	 (local.get $a1)
+	 (local.get $a2)
+	 (local.get $a3)
+	 (local.get $a4)))
+
+   (func $generic_entry5
+      (param $proc (ref $procedure))
+      (param $a1 (ref eq))
+      (param $a2 (ref eq))
+      (param $a3 (ref eq))
+      (param $a4 (ref eq))
+      (param $a5 (ref eq))
+      (result (ref eq))
+      (return_call $funcall5
+	 (ref.cast (ref $procedure)
+	    (call $PROCEDURE_REF (local.get $proc) (i32.const 3)))
+	 (local.get $a1)
+	 (local.get $a2)
+	 (local.get $a3)
+	 (local.get $a4)
+	 (local.get $a5)))
+
+   (func $generic_entry
+      (param $proc (ref $procedure))
+      (result (ref eq))
+      (return (global.get $BUNSPEC)))
    
    )

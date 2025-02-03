@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Expand/initial.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/initial.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Fri Dec 13 08:21:20 2024 (serrano)                */
-;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb  3 13:56:14 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -43,7 +43,9 @@
 	    ast_node
 	    ast_var
 	    ast_sexp
-	    ast_private)
+	    ast_private
+	    ast_glo-decl
+	    module_module)
    (export  (install-initial-expander)
 	    (%append-2-define)))
 
@@ -1273,15 +1275,20 @@
 ;*    infered as returning a pair-nil value.                           */
 ;*---------------------------------------------------------------------*/
 (define (%append-2-define)
-   `(define (,%append-2-id l1::pair-nil l2)
-       (if (null? l1)
-	   l2
-	   (let ((head (cons '() l2)))
-	      (labels ((loop (prev tail)
-			  (if (pair? tail)
-			      (let ((new-prev (cons (car tail) l2)))
-				 (set-cdr! prev new-prev)
-				 (loop new-prev (cdr tail)))
-			      '())))
-		 (loop head l1)
-		 (cdr head))))))
+   (let ((proto `(,%append-2-id l1::pair-nil l2)))
+      (let ((g (declare-global-sfun! %append-2-id #f (cdr proto) *module*
+		  'static 'sfun proto #f)))
+	 (global-eval?-set! g #f)
+	 (global-evaluable?-set! g #f))
+      `(define ,proto
+	  (if (null? l1)
+	      l2
+	      (let ((head (cons '() l2)))
+		 (labels ((loop (prev tail)
+			     (if (pair? tail)
+				 (let ((new-prev (cons (car tail) l2)))
+				    (set-cdr! prev new-prev)
+				    (loop new-prev (cdr tail)))
+				 '())))
+		    (loop head l1)
+		    (cdr head)))))))

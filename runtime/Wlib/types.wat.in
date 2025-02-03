@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Wed Jan  8 08:46:48 2025 (serrano)                */
+;*    Last change :  Mon Feb  3 11:43:42 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -26,10 +26,17 @@
 
    (type $cnst-table (array (mut (ref eq))))
 
+   (type $bgl_evmeaning_getter
+      (func (result (ref eq))))
+   
+   (type $bgl_evmeaning_setter
+      (func (param (ref eq)) (result (ref eq))))
+   
    (type $bgl_evmeaning_addr
       (struct
-	 (field $val (mut (ref eq)))))
-   
+	 (field $get (ref $bgl_evmeaning_getter))
+	 (field $set (ref $bgl_evmeaning_setter))))
+
    ;; -----------------------------------------------------------------
    ;; Vectors 
    ;; -----------------------------------------------------------------

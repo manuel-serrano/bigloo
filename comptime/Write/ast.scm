@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Write/ast.scm               */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Write/ast.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:29:03 1994                          */
-;*    Last change :  Fri Mar 18 11:43:48 2011 (serrano)                */
-;*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb  3 13:47:50 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast pretty-printer                                           */
 ;*=====================================================================*/
@@ -122,4 +122,6 @@
 		     " removable: " (with-output-to-string
 				       (lambda ()
 					  (display (global-removable g))))
+		     " evaluable?: " (if (global-evaluable? g) "#t" "#f")
+		     " eval?: " (if (global-eval? g) "#t" "#f")
 		     "]")))

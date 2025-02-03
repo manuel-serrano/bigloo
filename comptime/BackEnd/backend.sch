@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.6a)
-;; Inria -- Sophia Antipolis     Mon Dec 23 10:10:50 AM CET 2024 
+;; Bigloo (4.7a)
+;; Inria -- Sophia Antipolis     Wed Jan 29 07:13:17 AM CET 2025 
 ;; (bigloo BackEnd/backend.scm -classgen)
 ;; ==========================================================
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/glo_decl.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/glo_decl.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Sun Apr 14 08:27:05 2019 (serrano)                */
+;*    Last change :  Mon Feb  3 15:52:49 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -342,6 +342,7 @@
       (global-type-set! global type-res)
       ;; foreign variable can be evaluated
       (global-evaluable?-set! global #f)
+      (global-eval?-set! global #f)
       ;; we return the global
       global))
    

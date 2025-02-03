@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgcrules.scm      */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Rgc/rgcrules.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:45:00 1998                          */
-;*    Last change :  Sun Aug 25 09:11:30 2019 (serrano)                */
+;*    Last change :  Mon Feb  3 19:07:55 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the function `rules->tree' that translate */
 ;*    (canonicalize) the user set of clauses into on tree that         */
@@ -208,13 +208,13 @@
 ;*    special-char-match? ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (special-char-match? char)
-   (pair? (assq char *special-match-char*)))
+   (pair? (assv char *special-match-char*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    special-match-char->rule-number ...                              */
 ;*---------------------------------------------------------------------*/
 (define (special-match-char->rule-number char)
-   (cdr (assq char *special-match-char*)))
+   (cdr (assv char *special-match-char*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *submatch-count* ...                                             */
@@ -239,7 +239,7 @@
 ;*    add-predicate-match! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (add-predicate-match! match predicate)
-   (let ((cell (assq match *predicates*)))
+   (let ((cell (assv match *predicates*)))
       (if (pair? cell)
 	  (set-cdr! cell (cons predicate (cdr cell)))
 	  (set! *predicates* (cons (cons match (list predicate))
@@ -249,7 +249,7 @@
 ;*    predicate-match ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (predicate-match match::int)
-   (let ((cell (assq match *predicates*)))
+   (let ((cell (assv match *predicates*)))
       (if (pair? cell)
 	  (cdr cell)
 	  #f)))

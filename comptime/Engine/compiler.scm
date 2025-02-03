@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Jan  5 10:38:49 2025 (serrano)                */
+;*    Last change :  Mon Feb  3 13:51:17 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -233,7 +233,7 @@
 	    (unit-sexp*-add! (get-toplevel-unit) c1)
 	    (when (>=fx *optim* 2)
 	       (unit-sexp*-add-head! (get-toplevel-unit)
-				     (list (%append-2-define)))))
+		  (list (%append-2-define)))))
 			  
 	 ;; we check error occurred while building the ast
 	 (pass-postlude #unspecified)

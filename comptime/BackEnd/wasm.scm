@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sun Feb  2 07:10:56 2025 (serrano)                */
+;*    Last change :  Mon Feb  3 11:28:55 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1069,16 +1069,19 @@
 		   (ref $cnst-table)
 		   (array.new $cnst-table
 		      (global.get $BUNSPEC)
-		      (i32.const ,(get-cnst-offset)))) globals)))
+		      (i32.const ,(get-cnst-offset))))
+	       globals)))
       
       (for-each-global!
 	 (lambda (global)
-	    (if (and (require-prototype? global)
-		     (not (scnst? (global-value global)))
-		     (not (require-import? global)))
-		(let ((prototype (emit-prototype (global-value global) global)))
-		   (when prototype (set! globals (cons prototype globals)))))))
-      globals))
+	    (when (and (require-prototype? global)
+		       (not (scnst? (global-value global)))
+		       (not (require-import? global)))
+	       (let ((prototype (emit-prototype (global-value global) global)))
+		  (when prototype
+		     (set! globals (cons prototype globals)))))))
+      
+      (append globals (emit-wasm-eval-accessors))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototype ...                                               */

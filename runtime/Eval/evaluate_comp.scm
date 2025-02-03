@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/runtime/Eval/evaluate_comp.scm         */
+;*    .../prgm/project/bigloo/wasm/runtime/Eval/evaluate_comp.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sun Sep  8 11:55:22 2024 (serrano)                */
-;*    Copyright   :  2011-24 Manuel Serrano                            */
+;*    Last change :  Mon Feb  3 18:25:30 2025 (serrano)                */
+;*    Copyright   :  2011-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -340,7 +340,7 @@
    (with-access::ev_global var (name mod loc)
       (let ( (g (evmodule-find-global mod name)) )
 	 (if g
-	     (if (eq? (eval-global-tag g) 1)
+	     (if (=fx (eval-global-tag g) 1)
 		 (EVA '(global read cell) (name)
 		      (__evmeaning_address-ref (eval-global-value g)) )
 		 (EVA '(global read direct) (name)
@@ -936,7 +936,7 @@
        (with-access::ev_global expr (name mod loc)
 	  (let ( (g (evmodule-find-global mod name)) )
 	     (if g
-		 (if (eq? (eval-global-tag g) 1)
+		 (if (=fx (eval-global-tag g) 1)
 		     (vector 4 g)
 		     (vector 5 g) )
 		 (vector 0 (comp expr stk)) ))))

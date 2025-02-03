@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  5 08:42:14 2025                          */
-;*    Last change :  Sun Jan  5 09:53:10 2025 (serrano)                */
+;*    Last change :  Mon Feb  3 08:18:04 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM procedure and funcall                                       */
@@ -142,6 +142,12 @@
       (array.set $vector (struct.get $procedure $env (local.get $p)) (local.get $i) (local.get $v))
       (global.get $BUNSPEC))
    
+   (func $PROCEDURE_REF (export "PROCEDURE_REF") 
+      (param $p (ref $procedure)) 
+      (param $i i32) 
+      (result (ref eq))
+      (array.get $vector (struct.get $procedure $env (local.get $p)) (local.get $i)))
+   
    (func $PROCEDURE_L_SET (export "PROCEDURE_L_SET") 
       (param $p (ref $procedure-l)) 
       (param $i i32)
@@ -240,6 +246,24 @@
 	 (local.get $arg2)
 	 (local.get $arg3)
 	 (ref.cast (ref $func4)
+	    (struct.get $procedure $entry (local.get $proc)))))
+
+   (func $funcall5
+      (param $proc (ref $procedure))
+      (param $arg0 (ref eq))
+      (param $arg1 (ref eq))
+      (param $arg2 (ref eq))
+      (param $arg3 (ref eq))
+      (param $arg4 (ref eq))
+      (result (ref eq))
+      (return_call_ref $func5
+	 (local.get $proc)
+	 (local.get $arg0)
+	 (local.get $arg1)
+	 (local.get $arg2)
+	 (local.get $arg3)
+	 (local.get $arg4)
+	 (ref.cast (ref $func5)
 	    (struct.get $procedure $entry (local.get $proc)))))
    
    ;; --------------------------------------------------------

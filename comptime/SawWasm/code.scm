@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sat Feb  1 10:48:49 2025 (serrano)                */
+;*    Last change :  Mon Feb  3 07:59:04 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -55,13 +55,14 @@
 	   (wasm-cnst-false)
 	   (wasm-cnst-true)
 	   (wasm-cnst-unspec)
+	   (emit-wasm-eval-accessors::pair-nil)
 	   (emit-wasm-atom-value type value)
 	   (gen-reg reg)
 	   (gen-basic-block b)
 	   (gen-ins ins::rtl_ins)
 	   (gen-switch fun type patterns labels args gen-go gen-block-label)
 	   (cnst-table-sym)
-	   (wasm-slot-recursive?::bool slot::slot)
+	   (wasm-slot-recursive?::bool slot)
 	   *allocated-strings*
 	   *extra-types*)
    
@@ -1239,29 +1240,67 @@
           (name (global-name var))
           (macro-code (global-qualified-type-name var)))
       (with-fun-loc fun
-	 (if (and (isa? (global-value var) cvar)
+	 (cond
+	    ((and (isa? (global-value var) cvar)
 		  (not (string-null? macro-code)))
 	     (expand-wasm-macro (call-with-input-string macro-code read)
-		(gen-args args))
-	     `(global.get ,(wasm-sym (global-name (rtl_loadg-var fun))))))))
+		(gen-args args)))
+	    (else
+	     `(global.get ,(wasm-sym name)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_globalref ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_globalref args)
-   ;; TODO: what is the difference with rtl_loadg?
-   ;; Should we also support WASM macro expansion here?
+   (set! eval-globals (cons (rtl_globalref-var fun) eval-globals))
    (with-fun-loc fun 
-      `(global.get ,(wasm-sym (global-name (rtl_globalref-var fun))))))
+      `(call $__EVMEANING_ADDRESS
+	  (ref.func ,(wasm-global-getter-sym (rtl_globalref-var fun)))
+	  (ref.func ,(wasm-global-setter-sym (rtl_globalref-var fun))))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-globals ...                                                 */
+;*---------------------------------------------------------------------*/
+(define eval-globals '())
+
+;*---------------------------------------------------------------------*/
+;*    wasm-global-getter-sym ...                                       */
+;*---------------------------------------------------------------------*/
+(define (wasm-global-getter-sym v::global)
+   (wasm-sym (string-append "__GET:" (global-name v))))
+
+;*---------------------------------------------------------------------*/
+;*    wasm-global-setter-sym ...                                       */
+;*---------------------------------------------------------------------*/
+(define (wasm-global-setter-sym v::global)
+   (wasm-sym (string-append "__SET:" (global-name v))))
+
+;*---------------------------------------------------------------------*/
+;*    emit-wasm-eval-accessors ...                                     */
+;*---------------------------------------------------------------------*/
+(define (emit-wasm-eval-accessors::pair-nil)
+   (append-map (lambda (v)
+		  (list 
+		     `(func ,(wasm-global-getter-sym v)
+			 (result (ref eq))
+			 (global.get ,(wasm-sym (global-name v))))
+		     `(func ,(wasm-global-setter-sym v)
+			 (param $v (ref eq))
+			 (result (ref eq))
+			 (global.set ,(wasm-sym (global-name v))
+			    (ref.cast ,(wasm-type (global-type v))
+			       (local.get $v)))
+			 (global.get $BUNSPEC))))
+      eval-globals))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_storeg ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_storeg args)
-   (with-fun-loc fun 
-      `(global.set 
-	  ,(wasm-sym (global-name (rtl_storeg-var fun))) 
-	  ,@(gen-args args))))
+   (let* ((var (rtl_storeg-var fun))
+          (name (global-name var)))
+      (with-fun-loc fun
+	 `(global.set ,(wasm-sym name) ,@(gen-args args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-sym ...                                                     */
@@ -1557,7 +1596,7 @@
 ;*    To solve that problem, recursive fields, FIELDA and FIELDB in    */
 ;*    this example are declared nullable.                              */
 ;*---------------------------------------------------------------------*/
-(define (wasm-slot-recursive? slot::slot)
+(define (wasm-slot-recursive? slot)
    (or (tclass? (slot-type slot)) (wclass? (slot-type slot))))
 
 ;*---------------------------------------------------------------------*/

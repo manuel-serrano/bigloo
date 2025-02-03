@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Rgc/rgccompile.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Rgc/rgccompile.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 07:46:39 1998                          */

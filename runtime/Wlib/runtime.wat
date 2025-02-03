@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Sat Jan  4 20:13:22 2025 (serrano)                */
+;*    Last change :  Mon Feb  3 09:51:44 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -355,6 +355,11 @@
     (result i64)
     (i64.extend_i32_u (struct.get $foreign $ptr (local.get $obj))))
 
+  (func $FOREIGN_TYPE_NAME (export "FOREIGN_TYPE_NAME")
+     (param (ref eq))
+     (result (ref $bstring))
+     (return (array.new_fixed $bstring 1 (i32.const 0x5f))))
+  
   ;; --------------------------------------------------------
   ;; lockf function and constants
   ;; --------------------------------------------------------
@@ -438,24 +443,31 @@
   ;; Eval
   ;; --------------------------------------------------------
 
-  (func $_EVMEANING_ADDRESS (export "_EVMEANING_ADDRESS")
+  (func $__EVMEANING_ADDRESS (export "__EVMEANING_ADDRESS")
+     (param $get (ref $bgl_evmeaning_getter))
+     (param $set (ref $bgl_evmeaning_setter))
+     (result (ref eq))
+     (return (struct.new $bgl_evmeaning_addr
+		(local.get $get)
+		(local.get $set))))
+
+  (func $__EVMEANING_ADDRESS_REF (export "__EVMEANING_ADDRESS_REF")
      (param $o (ref eq))
      (result (ref eq))
-     (return (struct.new $bgl_evmeaning_addr (local.get $o))))
+     (return_call_ref $bgl_evmeaning_getter
+	(ref.cast (ref $bgl_evmeaning_getter)
+	   (struct.get $bgl_evmeaning_addr $get
+	      (ref.cast (ref $bgl_evmeaning_addr) (local.get $o))))))
 
-  (func $_EVMEANING_ADDRESS_REF (export "_EVMEANING_ADDRESS_REF")
-     (param $o (ref eq))
-     (result (ref eq))
-     (return (struct.get $bgl_evmeaning_addr $val
-		(ref.cast (ref $bgl_evmeaning_addr) (local.get $o)))))
-
-  (func $_EVMEANING_ADDRESS_SET (export "_EVMEANING_ADDRESS_SET")
+  (func $__EVMEANING_ADDRESS_SET (export "__EVMEANING_ADDRESS_SET")
      (param $o (ref eq))
      (param $v (ref eq))
      (result (ref eq))
-     (struct.set $bgl_evmeaning_addr $val
-	(ref.cast (ref $bgl_evmeaning_addr) (local.get $o)) (local.get $v))
-     (return (global.get $BUNSPEC)))
+     (return_call_ref $bgl_evmeaning_setter
+	(local.get $v)
+	(ref.cast (ref $bgl_evmeaning_setter)
+	   (struct.get $bgl_evmeaning_addr $set
+	      (ref.cast (ref $bgl_evmeaning_addr) (local.get $o))))))
 
   ;; --------------------------------------------------------
   ;; Main function
