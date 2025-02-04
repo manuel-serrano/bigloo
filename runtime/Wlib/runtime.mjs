@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Jan 13 13:43:05 2025 (serrano)                */
+/*    Last change :  Tue Feb  4 16:40:39 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -113,6 +113,16 @@ function randFixnum() {
    }
 }
 
+
+/*---------------------------------------------------------------------*/
+/*    __js_system                                                      */
+/*---------------------------------------------------------------------*/
+const __js_system = {
+   command_line_size: () => process.argv.length,
+   command_line_entry: (num, addr) => storeJSStringToScheme(process.argv[num], addr),
+   executable_name: (addr) => storeJSStringToScheme(process.argv[0], addr)
+}
+
 /*---------------------------------------------------------------------*/
 /*    __js_io ...                                                      */
 /*---------------------------------------------------------------------*/
@@ -161,6 +171,16 @@ const __js_io = {
       const path = loadSchemeString(buffer);
       try {
 	 return lstatSync(path).size;
+      } catch (err) {
+         return -1;
+      }
+   },
+
+   last_modification_time: (path_addr, path_length) => {
+      const buffer = new Uint8Array(instance.exports.memory.buffer, path_addr, path_length);
+      const path = loadSchemeString(buffer);
+      try {
+	 return lstatSync(path).mtime;
       } catch (err) {
          return -1;
       }
@@ -523,6 +543,7 @@ const instance = await WebAssembly.instantiate(wasm, {
    __js_date,
    __js_math,
    __js_bignum,
+   __js_system
 });
 
 if (!instance.exports.bigloo_main) {

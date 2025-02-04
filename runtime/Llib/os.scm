@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sat Jan  4 09:00:47 2025 (serrano)                */
+;*    Last change :  Tue Feb  4 16:56:42 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -157,7 +157,9 @@
 
    (wasm    ($getenv? "(call $bgl_getenvp ~0)")
 	    ($getenv "(call $bgl_getenv ~0)")
-	    ($getcwd "(call $bgl_getcwd)"))
+	    ($getcwd "(call $bgl_getcwd)")
+	    (*the-command-line* "(call $bgl_command_line)")
+	    (*the-executable-name* "(call $bgl_executable_name)"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj

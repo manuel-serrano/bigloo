@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/system.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/system.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct 17 07:53:29 2002                          */
-;*    Last change :  Mon Feb  6 16:00:08 2012 (serrano)                */
-;*    Copyright   :  2002-12 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 16:35:04 2025 (serrano)                */
+;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test system features                                             */
 ;*=====================================================================*/
@@ -59,7 +59,8 @@
    (test "os-class" (string? (os-class)) #t)
    (test "os-name" (string? (os-name)) #t)
    (test "os-version" (string? (os-version)) #t)
-   (test "sleep" (sleep 15) 15)
+   (cond-expand
+      ((not bigloo-wasm) (test "sleep" (sleep 15) 15)))
    (test "file-modification-time" (elong? (file-modification-time "main.scm"))
 	 #t)
    (test "unix-path->list" (list? (unix-path->list

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Mon Jan 13 11:33:27 2025 (serrano)                */
+;*    Last change :  Tue Feb  4 17:41:35 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -48,6 +48,7 @@
    (import "__js_io" "close_file" (func $js_close_file (param i32)))
    (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
    (import "__js_io" "path_size" (func $js_path_size (param i32) (param i32) (result i32)))
+   (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32) (param i32) (result f64)))
    (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
    (import "__js_io" "isatty" (func $js_isatty (param i32) (result i32)))
    (import "__js_io" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
@@ -2438,6 +2439,20 @@
 	 (i64.extend_i32_u
 	    (call $js_path_size
 	       (i32.const 128) (array.len (local.get $path))))))
+   
+   (func $bgl_last_modification_time (export "bgl_last_modification_time")
+      (param $path (ref $bstring))
+      (result i64)
+
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return
+	 (i64.trunc_f64_s
+	    (call $js_last_modification_time
+	       (i32.const 128) (array.len (local.get $path))))))
+   
 
    )
    
