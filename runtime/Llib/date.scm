@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Dec 18 15:51:26 2024 (serrano)                */
-;*    Copyright   :  2003-24 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 09:42:47 2025 (serrano)                */
+;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -515,14 +515,19 @@
 ;*    blit-int2! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (blit-int2! buf w int)
-   (if (<fx int 10)
-       (begin
-	  (string-set! buf w #\0)
-	  (blit-digit! buf (+fx w 1) int))
-       (begin
-	  (blit-digit! buf w (/fx int 10))
-	  (blit-digit! buf (+fx w 1) (modulofx int 10))))
-   2)
+   (cond
+      ((<fx int 0)
+       (string-set! buf w #\-)
+       (blit-int2! buf (+fx w 1) (negfx int))
+       3)
+      ((<fx int 10)
+       (string-set! buf w #\0)
+       (blit-digit! buf (+fx w 1) int)
+       2)
+      (else
+       (blit-digit! buf w (/fx int 10))
+       (blit-digit! buf (+fx w 1) (modulofx int 10))
+       2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    blit-int! ...                                                    */
@@ -719,17 +724,6 @@
    (define (rfc-string date tz)
       (let ((buf (make-string 32 #\space))
 	    (w 0))
-;* 	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d ~a~2,0d~2,0d"        */
-;* 	     (day-aname (date-wday date))                              */
-;* 	     (date-day date)                                           */
-;* 	     (month-aname (date-month date))                           */
-;* 	     (date-year date)                                          */
-;* 	     (date-hour date)                                          */
-;* 	     (date-minute date)                                        */
-;* 	     (date-second date)                                        */
-;* 	     (if (<fx tz 0) "-" "+")                                   */
-;* 	     (absfx (/fx tz 3600))                                     */
-;* 	     (absfx (remainder tz 3600)))                              */
 	 ;; date-aname
 	 (set! w (+fx w (blit-buf! buf w (day-aname (date-wday date)))))
 	 (string-set! buf w #\,)

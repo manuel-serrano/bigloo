@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expddefine.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/expddefine.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Sun Aug 25 09:13:48 2019 (serrano)                */
-;*    Copyright   :  2001-19 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 10:37:15 2025 (serrano)                */
+;*    Copyright   :  2001-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
 ;*=====================================================================*/
@@ -313,7 +313,7 @@
 		 (define ,fun (procedure->generic ,proc))
 		 (register-generic! ,id
 		    (lambda ,(cons f0
-				(if (memq #!optional formals)
+				(if (and (list? formals) (memq #!optional formals))
 				    (dsssl-formals->names formals)
 				    formals))
 		       ,(if (pair? body)

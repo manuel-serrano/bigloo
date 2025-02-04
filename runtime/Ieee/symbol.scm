@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Sat Dec  7 09:27:21 2024 (serrano)                */
+;*    Last change :  Tue Feb  4 08:05:09 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -72,7 +72,7 @@
 
    (wasm    (c-symbol? "(ref.test (ref $symbol) ~0)")
             ($symbol? "(ref.test (ref $symbol) ~0)")
-	    ($make-symbol "(struct.new $symbol ~0 (global.get $BNIL))")
+	    ($make-symbol "(call $make-symbol ~0 (global.get $BNIL))")
 	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
 	    (c-symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
 	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
@@ -83,14 +83,14 @@
 
 	    (c-keyword? "(ref.test (ref $keyword) ~0)")
 	    ($keyword? "(ref.test (ref $keyword) ~0)")
-	    ($make-keyword "(struct.new $keyword ~0 (global.get $BNIL))")
+	    ($make-keyword "(call $make-keyword ~0 (global.get $BNIL))")
 	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	    (c-keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
 	    ($set-keyword-plist "(call $set-keyword-plist ~0 ~1)")
 
-	    ($keyword->string "(struct.get $keyword $str (ref.cast (ref $symbol) ~0))")
-	    (c-keyword->string "(struct.get $keyword $str (ref.cast (ref $symbol) ~0))"))
+	    ($keyword->string "(struct.get $keyword $str (ref.cast (ref $keyword) ~0))")
+	    (c-keyword->string "(struct.get $keyword $str (ref.cast (ref $keyword) ~0))"))
    
    (java    (class foreign
 	       (method static c-symbol?::bool (::obj)
@@ -356,13 +356,13 @@
 ;*    keyword->string ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (keyword->string keyword)
-   (string-copy (c-keyword->string keyword)))
+   (string-copy ($keyword->string keyword)))
 
 ;*---------------------------------------------------------------------*/
 ;*    keyword->string! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (keyword->string! keyword)
-   (c-keyword->string keyword))
+   ($keyword->string keyword))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->keyword ...                                              */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 09:56:44 2024                          */
-;*    Last change :  Wed Oct  2 09:59:07 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Tue Feb  4 08:00:07 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM Symbols and keywords                                        */
 ;*=====================================================================*/
@@ -18,7 +18,7 @@
    (type $symbol
       (struct (field $str (ref $bstring)) (field $cval (mut (ref eq)))))
    (type $keyword
-      (struct (field $str (ref $bstring)) (field $cval (mut (ref eq)))))
+      (struct (field $dummy i8) (field $str (ref $bstring)) (field $cval (mut (ref eq))) ))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -29,7 +29,23 @@
       (struct.new $symbol (global.get $bstring-default-value) (global.get $BNIL)))
    (global $keyword-default-value
       (export "BGL_KEYWORD_DEFAULT_VALUE") (ref $keyword)
-      (struct.new $keyword (global.get $bstring-default-value) (global.get $BNIL)))
+      (struct.new $keyword (i32.const 0) (global.get $bstring-default-value) (global.get $BNIL)))
+   
+   ;; --------------------------------------------------------
+   ;; Constructors 
+   ;; --------------------------------------------------------
+   
+   (func $make-symbol (export "bgl_make_symbol")
+      (param $str (ref $bstring))
+      (param $cval (ref eq))
+      (result (ref $symbol))
+      (return (struct.new $symbol (local.get $str) (local.get $cval))))
+   
+   (func $make-keyword (export "bgl_make_keyword")
+      (param $str (ref $bstring))
+      (param $cval (ref eq))
+      (result (ref $keyword))
+      (return (struct.new $keyword (i32.const 0) (local.get $str) (local.get $cval))))
    
    ;; --------------------------------------------------------
    ;; Library functions 

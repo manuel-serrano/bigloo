@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/object5.scm           */
+;*    serrano/prgm/project/bigloo/wasm/recette/object5.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Mon Jun  4 09:21:22 2018 (serrano)                */
-;*    Copyright   :  2000-18 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 11:02:24 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing with-access and instantiate.                             */
 ;*=====================================================================*/
@@ -149,23 +149,23 @@
       #t)
    (test "-nil.3" (object8? (instantiate::object8 (value 0))) #t)
    (test "-nil.4" (object8? (eval '(instantiate::object8 (value 0)))) #t)
-   (eval '(define-generic (show o) 1))
-   (eval '(define-generic (show2 o) 0))
-   (eval '(define-generic (show3 o . p) (apply + p)))
-   (eval '(define-generic (show4 o q . p) (apply + p)))
-   (eval '(define-method (show o::object5) 5))
-   (eval '(define-method (show o::object6) 6))
-   (eval '(define-method (show3 o::object6 . p) (+ 6 (car p))))
-   (eval '(define-method (show4 o::object6 q . p) (+ 6 q (car p))))
-   (test "eval.generic.1" (eval '(show (instantiate::object5))) 5)
-   (test "eval.generic.2" (eval '(show (instantiate::object6))) 6)
-   (test "eval.generic.3" (eval '(show #f)) 1)
-   (test "eval.generic.4" (eval '(show3 #f)) 0)
-   (test "eval.generic.5" (eval '(show3 #f 5)) 5)
-   (test "eval.generic.6" (eval '(show3 (instantiate::object6) 4)) 10)
-   (test "eval.generic.7" (eval '(show4 #f #f)) 0)
-   (test "eval.generic.8" (eval '(show4 #f #f 5)) 5)
-   (test "eval.generic.9" (eval '(show4 (instantiate::object6) 1 3)) 10)
+   (test "eval.generic.1" (begin (eval '(define-generic (show o) 1)) #t) #t)
+   (test "eval.generic.2" (begin (eval '(define-generic (show2 o) 0)) #t) #t)
+   (test "eval.generic.3" (begin (eval '(define-generic (show3 o . p) (apply + p))) #t) #t)
+   (test "eval.generic.4" (begin (eval '(define-generic (show4 o q . p) (apply + p))) #t) #t)
+   (test "eval.generic.5" (begin (eval '(define-method (show o::object5) 5)) #t) #t)
+   (test "eval.generic.6" (begin (eval '(define-method (show o::object6) 6)) #t) #t)
+   (test "eval.generic.7" (begin (eval '(define-method (show3 o::object6 . p) (+ 6 (car p)))) #t) #t)
+   (test "eval.generic.8" (begin (eval '(define-method (show4 o::object6 q . p) (+ 6 q (car p)))) #t) #t)
+   (test "eval.generic.9" (eval '(show (instantiate::object5))) 5)
+   (test "eval.generic.10" (eval '(show (instantiate::object6))) 6)
+   (test "eval.generic.11" (eval '(show #f)) 1)
+   (test "eval.generic.12" (eval '(show3 #f)) 0)
+   (test "eval.generic.13" (eval '(show3 #f 5)) 5)
+   (test "eval.generic.14" (eval '(show3 (instantiate::object6) 4)) 10)
+   (test "eval.generic.15" (eval '(show4 #f #f)) 0)
+   (test "eval.generic.16" (eval '(show4 #f #f 5)) 5)
+   (test "eval.generic.17" (eval '(show4 (instantiate::object6) 1 3)) 10)
    (test "eval.generic-apply.1"
       (eval '(apply show (list #f))) 1)
    (test "eval.generic-apply.2"

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evaluate.scm     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evaluate.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri May 24 13:38:57 2024 (serrano)                */
-;*    Copyright   :  2010-24 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 07:46:03 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/

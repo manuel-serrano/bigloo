@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_avar.scm       */
+;*    .../prgm/project/bigloo/wasm/runtime/Eval/evaluate_avar.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:40:08 2011                          */
-;*    Last change :  Fri Nov 30 09:25:02 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 07:48:02 2025 (serrano)                */
+;*    Copyright   :  2011-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute free/closed variable for the lambda-based evaluator      */
 ;*=====================================================================*/

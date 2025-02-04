@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/dsssl.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/dsssl.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 31 09:21:59 1998                          */
-;*    Last change :  Mon Nov 11 08:39:25 2013 (serrano)                */
+;*    Last change :  Tue Feb  4 08:45:25 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    DSSSL funcall tests                                              */
 ;*=====================================================================*/
@@ -276,9 +276,34 @@
 ;*---------------------------------------------------------------------*/
 (define (test-dsssl)
    (test-module "dsssl" "dsssl.scm")
-   (test "dsssl" (foo 1 2 3 4 i: 5) '(1 2 3 4 i: 5 j: 1))
-   (test "dsssl" (foo 1 2 3 4 i: 5 j: 3) '(1 2 3 4 i: 5 j: 3))
-   (test "dsssl" ((lambda (x y #!optional z #!rest r #!key i (j 1))
+   (test "keyword.1" (eq? :foo foo:) #t)
+   (test "keyword.2" (eq? :foo bar:) #f)
+   (test "keyword.3" (eq? :foo :Foo) #f)
+   (test "keyword.4" (eq? (string->keyword "foo") foo:) #t)
+   (test "keyword.5" (eq? (string->keyword "foo") :foo) #t)
+   (test "keyword.6" (eq? (string->keyword "foo:") foo:) #f)
+   (let* ((dt (current-date))
+	  (res (date->seconds dt)))
+      (test "keyword.7" ((if (> res 0) dt->sec list) 1 x: dt) res))
+   (test "keyword.8" (dsssl-bug :foo #f) #f)
+   (test "keyword.9" (let* ((p (open-input-string "bar: :bar"))
+			    (s0 (keyword->string (read p)))
+			    (s1 (keyword->string (read p))))
+			(string-append s0 " " s1))
+      "bar bar")
+   (test "keyword.10" (let* ((s0 (keyword->string :bar))
+			    (s1 (keyword->string bar:)))
+		      (string-append s0 " " s1))
+      "bar bar")
+   (test "keyword.11" (call-with-output-string
+			 (lambda (p)
+			    (display :bar p)
+			    (display " " p)
+			    (display bar: p)))
+      ":bar :bar")
+   (test "dsssl.1" (foo 1 2 3 4 i: 5) '(1 2 3 4 i: 5 j: 1))
+   (test "dsssl.2" (foo 1 2 3 4 i: 5 j: 3) '(1 2 3 4 i: 5 j: 3))
+   (test "dsssl.3" ((lambda (x y #!optional z #!rest r #!key i (j 1))
 		     (list x y z i: i j: j))
 		  3 4 5 i: 6 i: 7)
 	 '(3 4 5 i: 6 j: 1))
@@ -286,16 +311,16 @@
 			 (list x y z i: i j: j))
 		      3 4 5 i: 6 i: 7)
 	 '(3 4 5 i: 6 j: 1))
-   (test "eval" (test-dsssl-eval) #t)
-   (test "eval" (eval '(dsssl 1 2 3 4 i: 5)) '(1 2 3 4 i: 5 j: 1))
-   (test "eval-eps" (eval '(begin
+   (test "eval.1" (test-dsssl-eval) #t)
+   (test "eval.2" (eval '(dsssl 1 2 3 4 i: 5)) '(1 2 3 4 i: 5 j: 1))
+   (test "eval-eps.3" (eval '(begin
 			      (define-macro (DSSSL-mac x)
 				 x)
 			      ((lambda (x y #!optional z #!rest r #!key i (j (DSSSL-mac 1)))
 				  (list x y z i: i j: j))
 			       3 4 5 i: 6 i: 7)))
 	 '(3 4 5 i: 6 j: 1))
-   (test "dsssl" (eval '((lambda (x y #!optional z #!rest r #!key i (j 1))
+   (test "dsssl.4" (eval '((lambda (x y #!optional z #!rest r #!key i (j 1))
 			    (list x y z i: i j: j))
 			 3 4 5 i: 6 i: 7))
 	 '(3 4 5 i: 6 j: 1))
@@ -306,8 +331,8 @@
    (test "lexical.3" (let ((equal? (lambda (a b) #f)))
 			((car (list dsssl-lexical)) '(1 2) (list 1 2)))
 	 #t)
-   (test "optional+key" (connect 3) '(3 . "localhost"))
-   (test "optional+key" (connect 3 hostname: "hueco") '(3 . "hueco"))
+   (test "optional+key.1" (connect 3) '(3 . "localhost"))
+   (test "optional+key.2" (connect 3 hostname: "hueco") '(3 . "hueco"))
    (test "optional+rest+key"
 	 (eval '((lambda (x y #!optional z #!rest r #!key i (j 1))
 		    (list x y z r: r i: i j: j))
@@ -511,16 +536,6 @@
 		     (current-input-port)
 		     (current-output-port))
 	 0)
-   (test "keyword.1" (eq? :foo foo:) #t)
-   (test "keyword.2" (eq? :foo bar:) #f)
-   (test "keyword.3" (eq? :foo :Foo) #f)
-   (test "keyword.4" (eq? (string->keyword "foo") foo:) #t)
-   (test "keyword.5" (eq? (string->keyword "foo") :foo) #t)
-   (test "keyword.6" (eq? (string->keyword "foo:") foo:) #f)
-   (let* ((dt (current-date))
-	  (res (date->seconds dt)))
-      (test "keyword.7" ((if (> res 0) dt->sec list) 1 x: dt) res))
-   (test "keyword.8" (dsssl-bug :foo #f) #f)
    (test "dssss11.1" (dsssl11 3 4 5 i: 6 i: 7 8 9)
 	 '(3 4 5 i: 6 j: 1 (8 9)))
    (test "dssss11.2" (apply dsssl11 '(3 4 5 i: 6 i: 7 8 9))

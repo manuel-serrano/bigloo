@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Mon Feb  3 07:59:35 2025 (serrano)                */
+;*    Last change :  Tue Feb  4 10:46:31 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
@@ -207,44 +207,106 @@
       (local.set $arity (struct.get $procedure $arity (local.get $proc)))
       ;; dummy initialization
       (local.set $res (global.get $procedure-default-value))
-      (block $default
-	 (block $1
-	    (block $2
-	       (block $3
-		  (block $4
-		     (block $5
-			(br_table $1 $2 $3 $4 $5 $default
-			   (local.get $arity))
-			(local.set $res
-			   (call $MAKE_FX_PROCEDURE
-			      (ref.func $generic_entry5)
-			      (local.get $arity)
-			      (i32.const 4))))
+      (block $done
+	 (block $default
+	    (block $-5
+	       (block $-4
+		  (block $-3
+		     (block $-2
+			(block $-1
+			   (block $0
+			      (block $1
+				 (block $2
+				    (block $3
+				       (block $4
+					  (block $5
+					     (br_table $-5 $-4 $-3 $-2 $-1
+						$0
+						$1 $2 $3 $4 $5 $default
+						(i32.add (local.get $arity)
+						   (i32.const 5))))
+					  ;; $5
+					  (local.set $res
+					     (call $MAKE_FX_PROCEDURE
+						(ref.func $generic_entry5)
+						(local.get $arity)
+						(i32.const 4)))
+					  (br $done))
+				       ;; $4
+				       (local.set $res
+					  (call $MAKE_FX_PROCEDURE
+					     (ref.func $generic_entry4)
+					     (local.get $arity)
+					     (i32.const 4)))
+				       (br $done))
+				    ;; $3
+				    (local.set $res
+				       (call $MAKE_FX_PROCEDURE
+					  (ref.func $generic_entry3)
+					  (local.get $arity)
+					  (i32.const 4)))
+				    (br $done))
+				 ;; $2
+				 (local.set $res
+				    (call $MAKE_FX_PROCEDURE
+				       (ref.func $generic_entry2)
+				       (local.get $arity)
+				       (i32.const 4)))
+				 (br $done))
+			      ;; $1
+			      (local.set $res
+				 (call $MAKE_FX_PROCEDURE
+				    (ref.func $generic_entry1)
+				    (local.get $arity)
+				    (i32.const 4)))
+			      (br $done))
+			   ;; $0
+			   (throw $fail)
+			   (unreachable))
+			;; $-1
+			(throw $fail)
+			(unreachable))
+		     ;; $-2
 		     (local.set $res
-			(call $MAKE_FX_PROCEDURE
-			   (ref.func $generic_entry4)
+			(call $MAKE_VA_PROCEDURE
+			   (ref.func $generic_entry2)
 			   (local.get $arity)
-			   (i32.const 4))))
+			   (i32.const 4)))
+		     (br $done))
+		  ;; $-3
 		  (local.set $res
-		     (call $MAKE_FX_PROCEDURE
+		     (call $MAKE_VA_PROCEDURE
 			(ref.func $generic_entry3)
 			(local.get $arity)
-			(i32.const 4))))
+			(i32.const 4)))
+		  (br $done))
+	       ;; $-4
 	       (local.set $res
-		  (call $MAKE_FX_PROCEDURE
-		     (ref.func $generic_entry2)
+		  (call $MAKE_VA_PROCEDURE
+		     (ref.func $generic_entry4)
 		     (local.get $arity)
-		     (i32.const 4))))
+		     (i32.const 4)))
+	       (br $done))
+	    ;; $-5
 	    (local.set $res
-	       (call $MAKE_FX_PROCEDURE
-		  (ref.func $generic_entry1)
+	       (call $MAKE_VA_PROCEDURE
+		  (ref.func $generic_entry5)
 		  (local.get $arity)
-		  (i32.const 4))))
-	 (local.set $res
-	    (call $MAKE_FX_PROCEDURE
-	       (ref.func $generic_entry)
-	       (local.get $arity)
-	       (i32.const 4))))
+		  (i32.const 4)))
+	    (br $done))
+	 (if (i32.lt_s (local.get $arity) (i32.const 0))
+	     (then
+		(local.set $res
+		   (call $MAKE_VA_PROCEDURE
+		      (ref.func $generic_entry)
+		      (local.get $arity)
+		      (i32.const 4))))
+	     (else
+	      (local.set $res
+		 (call $MAKE_FX_PROCEDURE
+		    (ref.func $generic_entry)
+		    (local.get $arity)
+		    (i32.const 4))))))
       (call $PROCEDURE_SET (local.get $res) (i32.const 3) (local.get $proc))
       (return (local.get $res)))
 

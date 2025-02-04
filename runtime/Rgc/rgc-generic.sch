@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  1 10:13:29 2024                          */
-;*    Last change :  Fri Jan 10 10:44:18 2025 (serrano)                */
+;*    Last change :  Tue Feb  4 08:37:18 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Rgc generic implementation                                       */
@@ -65,7 +65,12 @@
 ;*    $$rgc-buffer-keyword ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline ($$rgc-buffer-keyword ip::input-port)
-   (string->keyword (rgc-buffer-substring ip 0 (rgc-buffer-length ip))))
+   (let* ((start ($rgc-matchstart ip))
+	  (end (rgc-buffer-length ip))
+	  (str (if (=fx ($rgc-buffer-get-char ip start) (char->integer #\:))
+		   (rgc-buffer-substring ip 1 end)
+		   (rgc-buffer-substring ip 0 (-fx end 1)))))
+      (string->keyword str)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$rgc-buffer-upcase-keyword ...                                  */

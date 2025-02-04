@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/date.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/date.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  5 10:03:10 2003                          */
-;*    Last change :  Wed Nov 18 19:11:52 2015 (serrano)                */
-;*    Copyright   :  2003-15 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 09:38:47 2025 (serrano)                */
+;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test date features                                               */
 ;*=====================================================================*/
@@ -31,6 +31,8 @@
    (let* ((d1 (current-date))
 	  (s1 (date->seconds d1)))
       (test "seconds->date.3" (seconds->date s1) d1))
+   (test "date->seconds" (> (date->seconds (current-date)) 0) #t)
+   (test "date->string" (string? (date->string (current-date))) #t)
    (test "date-day.1" (date-day (make-date :sec 1 :min 1 :hour 1
 				   :day 19 :month 2 :year 2000))
 	 19)

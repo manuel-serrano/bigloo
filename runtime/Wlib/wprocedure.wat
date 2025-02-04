@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  5 08:42:14 2025                          */
-;*    Last change :  Mon Feb  3 08:18:04 2025 (serrano)                */
+;*    Last change :  Tue Feb  4 11:28:43 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM procedure and funcall                                       */
@@ -103,6 +103,16 @@
 	 (global.get $BUNSPEC)
 	 (local.get $arity)
 	 (array.new $vector (global.get $BUNSPEC) (local.get $size))))
+
+   (func $MAKE_VA_PROCEDURE (export "MAKE_VA_PROCEDURE")
+      ;; an alias to MAKE_FX_PROCEDURE
+      (param $entry (ref func))
+      (param $arity i32)
+      (param $size i32)
+      (result (ref $procedure))
+      (return_call
+	 $MAKE_FX_PROCEDURE
+	 (local.get $entry) (local.get $arity) (local.get $size)))
    
    (func $MAKE_L_PROCEDURE (export "MAKE_L_PROCEDURE")
       (param $entry (ref func))
