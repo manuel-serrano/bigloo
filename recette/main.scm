@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Tue Feb  4 12:01:24 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 09:39:18 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -336,10 +336,10 @@
 	  (if-module 'weakptr test-weakptr)
 	  (if-module 'crc test-crc)
 	  (if-module 'ssr test-ssr)
-	  (if-module 'process test-process)
-	  (if-module 'wind (lambda () (test-wind-sans-handler recette-resume)))
-	  (cond-expand (bigloo-jvm (if-module 'external test-external)))
 	  (if-module 'unicode test-unicode)
+	  (if-module 'process test-process)
+	  (cond-expand (bigloo-jvm (if-module 'external test-external)))
+	  (if-module 'wind (lambda () (test-wind-sans-handler recette-resume)))
 	  (recette-resume 0))))
 
  

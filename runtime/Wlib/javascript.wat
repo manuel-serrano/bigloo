@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Thu Jan  9 16:22:34 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 11:15:23 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -12,6 +12,7 @@
 ;*=====================================================================*/
 
 (module $__bigloo_javascript
+   
    (import "__js" "not_implemented" (func $not_implemented (param i32)))
    (import "__js" "trace" (func $js_trace (param i32)))
    (import "__js" "internalError" (func $js_internal_error (param i32) (param i32)))
@@ -105,6 +106,26 @@
 	 (i64.const 0)
 	 (i64.extend_i32_u (array.len (local.get $text)))
 	 (local.get $addr)))
+
+   ;; store_ucs2string
+   (func $store_ucs2string
+      (param $text (ref $ucs2string))
+      (param $addr i32)
+
+      (local $i i32)
+      (local $len i32)
+      (local.set $len (array.len (local.get $text)))
+      
+      (loop $loop
+	 (if (i32.lt_u (local.get $i) (local.get $len))
+	     (then
+		(i32.store8 (local.get $addr) 
+		   (i32.and (array.get $ucs2string (local.get $text) (local.get $i)) (i32.const 255)))
+		(i32.store8 (i32.add (local.get $addr) (i32.const 1))
+		   (i32.shr_u (array.get $ucs2string (local.get $text) (local.get $i)) (i32.const 8)))
+		(local.set $addr (i32.add (local.get $addr) (i32.const 2)))
+		(local.set $i (i32.add (local.get $i) (i32.const 1)))
+		(br $loop)))))
 
    )
 

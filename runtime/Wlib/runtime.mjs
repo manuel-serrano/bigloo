@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Feb  5 07:52:00 2025 (serrano)                */
+/*    Last change :  Wed Feb  5 10:09:13 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -47,13 +47,25 @@ const currentLocale = globalThis?.navigator.languages[0] || "en-US";
 
 const schemeStringDecoder = new TextDecoder();
 const schemeStringEncoder = new TextEncoder();
-function loadSchemeString(buffer) { return schemeStringDecoder.decode(buffer); }
+
+const ucs2StringDecoder = new TextDecoder("ucs-2");
+const ucs2StringEncoder = new TextEncoder("ucs-2");
+
+function loadSchemeString(buffer) {
+   return schemeStringDecoder.decode(buffer);
+}
+
+function loadUCS2String(buffer) {
+   return ucs2StringDecoder.decode(buffer);
+}
+
 function storeJSStringToScheme(string, addr) {
     const memory = new Uint8Array(instance.exports.memory.buffer, addr);
     const bytes = schemeStringEncoder.encode(string);
     memory.set(bytes);
     return bytes.length;
 }
+
 /*---------------------------------------------------------------------*/
 /*    string_to_bignum_radix ...                                       */
 /*---------------------------------------------------------------------*/
@@ -121,6 +133,39 @@ const __js_system = {
    command_line_size: () => process.argv.length,
    command_line_entry: (num, addr) => storeJSStringToScheme(process.argv[num], addr),
    executable_name: (addr) => storeJSStringToScheme(process.argv[0], addr)
+}
+
+/*---------------------------------------------------------------------*/
+/*    __js_unicode ...                                                 */
+/*---------------------------------------------------------------------*/
+const __js_unicode = {
+   // character functions
+   ucs2_toupper: (n) => String.fromCharCode(n).toUpperCase().charCodeAt(0),
+   ucs2_tolower: (n) => String.fromCharCode(n).toLowerCase().charCodeAt(0),
+   ucs2_upperp: (n) => String.fromCharCode(n).toUpperCase().charCodeAt(0) === n,
+   ucs2_lowerp: (n) => String.fromCharCode(n).toLowerCase().charCodeAt(0) === n,
+   ucs2_letterp: (n) => {
+      const s = String.fromCharCode(n);
+      return /^\S$/.test(s) && /^\D$/.test(s);
+   },
+   ucs2_digitp: (n) => /^\d$/.test(String.fromCharCode(n)),
+   ucs2_whitespacep: (n) => /^\s$/.test(String.fromCharCode(n)),
+   ucs2_definedp: (n) => {
+      try {
+	 String.fromCharCode(n).toLowerCase().charCodeAt(0);
+	 return 1;
+      } catch(e) {
+	 return 0;
+      }
+   }
+/*    // string functions                                              */
+/*    ucs2_strcmp: (x, xlen, y, ylen) => {                             */
+/*       const bufx = new Uint8Array(instance.exports.memory.buffer, x, xlen); */
+/*       const strx = loadUCS2String(bufx);                            */
+/*       const bufy = new Uint8Array(instance.exports.memory.buffer, x, xlen); */
+/*       const stry = loadUCS2String(bufy);                            */
+/*       return 0;                                                     */
+/*    }                                                                */
 }
 
 /*---------------------------------------------------------------------*/
@@ -547,7 +592,8 @@ const instance = await WebAssembly.instantiate(wasm, {
    __js_date,
    __js_math,
    __js_bignum,
-   __js_system
+   __js_system,
+   __js_unicode
 });
 
 if (!instance.exports.bigloo_main) {

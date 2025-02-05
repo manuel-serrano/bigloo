@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Wed Feb  5 07:01:22 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 09:52:49 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -72,11 +72,14 @@
    
    ;; Bignums
    (@include "./wbignum.wat" type)
+
+   ;; unicode
+   (@include "./wunicode.wat" type)
    
    ;; Boxed numeric types
    ;; (type $bbool (struct (field $v i8)))
    ;; (type $bchar (struct (field $v i8)))
-   (type $bucs2 (struct (field $v i16) (field $__dummy i16)))
+
    (type $real (struct (field $v f64)))
 
    

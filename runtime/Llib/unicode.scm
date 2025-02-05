@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Dec 13 16:27:38 2024 (serrano)                */
+;*    Last change :  Wed Feb  5 09:57:12 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -91,9 +91,7 @@
 	   (c-utf8-string->ucs2-string::ucs2string (::bstring)
 						   "utf8_string_to_ucs2_string"))
 
-   (wasm   (c-ucs2-string? "(ref.test (ref $ucs2string) ~0)")
-           (c-ucs2-string-length "(i64.extend_i32_u (array.len ~0))")
-           (c-make-ucs2-string "(array.new $ucs2string ~1 (i32.wrap_i64 ~0))")
+   (wasm   (c-make-ucs2-string "(array.new $ucs2string ~1 (i32.wrap_i64 ~0))")
 	   (c-ucs2-string-ref "(array.get $ucs2string ~0 (i32.wrap_i64 ~1))")
 	   (c-ucs2-string-set! "(block (result (ref eq)) (array.set $ucs2string ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))"))
    
@@ -634,7 +632,7 @@
 	 (if (null? e)
 	     table
 	     (let* ((n (car e))
-		    (o (assq n table)))
+		    (o (assv n table)))
 		(if o
 		    (let ((st (cdr o)))
 		       (set-cdr! o (loop (cadr e) st))
@@ -1513,7 +1511,7 @@
 	 (string-for-read (substring str r (minfx len (+fx r 10))))))
 
    (define (table->8bits subtable r w n)
-      (let liip ((subtable (assq n table))
+      (let liip ((subtable (assv n table))
 		 (nr (+fx r 1)))
 	 (cond
 	    ((not subtable)
@@ -1525,7 +1523,7 @@
 	     (error-too-short r))
 	    (else
 	     (let ((nc (char->integer (string-ref str nr))))
-		(liip (assq nc (cdr subtable)) (+fx nr 1)))))))
+		(liip (assv nc (cdr subtable)) (+fx nr 1)))))))
 
    (let loop ((r 0)
 	      (w 0))
@@ -1539,7 +1537,7 @@
 		 (loop (+fx r 1) (+fx w 1)))
 		((<fx n #xc2)
 		 (error-ill r))
-		((and table (assq n table))
+		((and table (assv n table))
 		 =>
 		 (lambda (subtable)
 		    (loop (table->8bits subtable r w n) (+fx w 1))))
@@ -1782,5 +1780,3 @@
 		    (loop (+fx i 1) 'ucs2))
 		   (else
 		    'utf16)))))))
-   
-   

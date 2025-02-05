@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Wed Feb  5 07:40:26 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 11:48:10 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -26,6 +26,8 @@
 	   (bgl_write_mmap::obj ::mmap ::output-port)
 	   (bgl_write_process::obj ::process ::output-port)
 	   (bgl_write_unknown::obj ::obj ::output-port)
+	   (bgl_display_ucs2string::obj ::ucs2string ::output-port)
+	   (bgl_write_utf8string::obj ::bstring ::output-port)
 	   (inline $$display-fixnum::obj ::bint ::output-port)
 	   (inline $$write-procedure ::procedure ::output-port)
 	   (inline $$write-input-port ::input-port ::output-port)
@@ -43,7 +45,9 @@
 	   (export bgl_write_bignum "bgl_write_bignum")
 	   (export bgl_write_mmap "bgl_write_mmap")
 	   (export bgl_write_process "bgl_write_process")
-	   (export bgl_write_unknown "bgl_write_unknown")))
+	   (export bgl_write_unknown "bgl_write_unknown")
+	   (export bgl_display_ucs2string "bgl_display_ucs2string")
+	   (export bgl_write_utf8string "bgl_write_utf8string")))
 
 ;*---------------------------------------------------------------------*/
 ;*    alpha ...                                                        */
@@ -202,3 +206,23 @@
       ((null? o) (write-cnst-string '() op))
       ((eq? o #unspecified) (write-cnst-string #unspecified op))
       (else (display "#<???>" op))))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_display_ucs2string ...                                       */
+;*---------------------------------------------------------------------*/
+(define (bgl_display_ucs2string s op)
+   (let ((len (ucs2-string-length s)))
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (let ((c (ucs2->integer (ucs2-string-ref s i))))
+	       (when (<fx c 256)
+		  ($display-byte c op))
+	       (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_utf8string ...                                         */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_utf8string s op)
+   (display "#u\"" op)
+   (display-string s op)
+   (display "\"" op))

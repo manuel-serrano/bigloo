@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Fri Jan 10 15:06:40 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 12:14:07 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -948,8 +948,7 @@
 ;*    write-ucs2string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (write-ucs2string obj port)
-   ($write-utf8string (string-for-read (ucs2-string->utf8-string obj))
-		      port))
+   ($write-utf8string (string-for-read (ucs2-string->utf8-string obj)) port))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-date ...                                                 */
