@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Dec  9 17:30:36 2024 (serrano)                */
-#*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Feb  5 17:37:19 2025 (serrano)                */
+#*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -180,11 +180,14 @@ checkconf:
 	fi
 
 boot: boot-c
+	$(MAKE) boot-bde
+	$(MAKE) boot-api
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
         fi
-	$(MAKE) boot-bde
-	$(MAKE) boot-api
+	if [ "$(WASMBACKEND)" = "yes" ]; then \
+	  $(MAKE) boot-wasm; \
+        fi
 	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
 	  $(MAKE) boot-bglpkg; \
         fi
@@ -229,9 +232,6 @@ boot-c: checkgmake
 	# recompiled with the configured options (e.g., gmp or pcre2)
 	$(MAKE) boot-touch-specific
 	$(MAKE) -C runtime lib && $(MAKE) -C runtime lib_u
-	if [ "$(WASMBACKEND)" = "yes" ]; then \
-	  $(MAKE) boot-wasm; \
-        fi
 
 # This touches the runtime file that depends on some platform
 # configurations and that needs to be re-compiled because
@@ -348,7 +348,7 @@ dohostboot:
 	$(MAKE) -C bde clean boot BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) boot-bde BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C api clean-quick BIGLOO=$(BOOTBINDIR)/bigloo
-	$(MAKE) $(HOSTBOOTMAKEOPT) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR) JVMBACKEND=no ENABLE_BGLPKG=no
+	$(MAKE) $(HOSTBOOTMAKEOPT) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR)
 	@ echo "\e[1;34mhostboot\e[0m done..."
 
 #*---------------------------------------------------------------------*/
