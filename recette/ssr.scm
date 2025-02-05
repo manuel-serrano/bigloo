@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/ssr.scm               */
+;*    serrano/prgm/project/bigloo/wasm/recette/ssr.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olivier Melancon                                  */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Thu Jun 27 07:24:14 2024 (serrano)                */
+;*    Last change :  Wed Feb  5 09:34:50 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    ssr graphs                                                       */
 ;*=====================================================================*/
@@ -20,7 +20,7 @@
 ;*    compatibility kit                                                */
 ;*---------------------------------------------------------------------*/
 (define-macro (make-table)
-   '(create-hashtable :eqtest eq?))
+   '(create-hashtable :eqtest eqv?))
 (define-macro (table-set! set key . val)
    (if (pair? val)
        `(hashtable-put! ,set ,key ,(car val))
@@ -121,7 +121,7 @@
   (define (test-graph-redirect! graph node other)
     (define incoming '())
     (test-graph-edges-for-each
-      (lambda (from to) (if (eq? to node) (set! incoming (cons from incoming))))
+      (lambda (from to) (if (eqv? to node) (set! incoming (cons from incoming))))
       graph)
     (set! incoming (filter (lambda (f) (not (= f node))) incoming)) ;; remove self redirect
     (for-each
@@ -222,7 +222,7 @@
 		   (begin
 		      (for-each pp (map instruction-repr minimal)))
 		   (find-minimal-example minimal))
-	       (let ((without (filter (lambda (i) (not (eq? i (car instructions)))) minimal)))
+	       (let ((without (filter (lambda (i) (not (eqv? i (car instructions)))) minimal)))
 		  (if (equal?
 			 (run interpret-instructions without)
 			 (get-expected-result interpret-instructions without))

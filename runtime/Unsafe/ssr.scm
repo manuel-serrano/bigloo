@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/ssr.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/ssr.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olivier Melancon                                  */
 ;*    Creation    :  Fri Jun 21 15:42:17 2024                          */
-;*    Last change :  Thu Jun 27 07:22:29 2024 (serrano)                */
-;*    Copyright   :  2024 Olivier Melancon                             */
+;*    Last change :  Wed Feb  5 09:33:28 2025 (serrano)                */
+;*    Copyright   :  2024-25 Olivier Melancon                          */
 ;*    -------------------------------------------------------------    */
 ;*    ssr                                                              */
 ;*    -------------------------------------------------------------    */
@@ -74,7 +74,7 @@
 ;*    compatibility kit                                                */
 ;*---------------------------------------------------------------------*/
 (define-macro (make-table)
-   '(create-hashtable :eqtest eq?))
+   '(create-hashtable :eqtest eqv?))
 (define-macro (table-set! set key . val)
    (if (pair? val)
        `(hashtable-put! ,set ,key ,(car val))
@@ -284,7 +284,7 @@
   (= (graph-source graph) x))
 (define (parent? graph x p)
   ;; use eq? to treat case where x's parent is #f
-  (eq? p (get-parent graph x)))
+  (eqv? p (get-parent graph x)))
 (define (friend? graph x f)
   (let ((friends (table-ref (graph-friends graph) x #f)))
     (if friends (set-contains? friends f) #f)))
