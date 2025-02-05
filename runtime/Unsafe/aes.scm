@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/aes.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/aes.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Tue Aug 27 07:52:07 2024 (serrano)                */
-;*    Copyright   :  2005-24 Chris Veness                              */
+;*    Last change :  Wed Feb  5 15:39:02 2025 (serrano)                */
+;*    Copyright   :  2005-25 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
 ;*    -------------------------------------------------------------    */
@@ -291,7 +291,7 @@
 		  (start (+fx (noncesize) (*fx b (blocksize)))))
 
 	      (let+ ((ref ((string? plaintext) u8string-ref)
-			  ((mmap? plaintext) mmap-ref)))
+			  ((mmap? plaintext) mmap-ref-ur)))
 		 (for (i 0) (<fx i blocklength) (+fx i 1)
 		      (let* ((j (+fx (*fx b (blocksize)) i))
 			     (p (ref plaintext j))
@@ -428,13 +428,13 @@
 ;*    u8string-ref ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (u8string-ref::int s::bstring i::int)
-   (char->integer (string-ref s i)))
+   (char->integer (string-ref-ur s i)))
 
 ;*---------------------------------------------------------------------*/
 ;*    u8string-set! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (u8string-set! s::bstring i::int v::int)
-   (string-set! s i (integer->char v)))
+   (string-set-ur! s i (integer->char v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    aes-password->key ...                                            */
