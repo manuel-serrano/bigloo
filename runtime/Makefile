@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Feb  5 09:53:04 2025 (serrano)                */
+#*    Last change :  Wed Feb  5 16:08:10 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -705,15 +705,15 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
   objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
-  Wlib/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
-	$(BIGLOO) -wasm -y -w Wlib/types.wat \
+  $(BOOTLIBDIR)/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
+	$(BIGLOO) -wasm -y -w $(BOOTLIBDIR)/types.wat \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
 		-o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
-  Wlib/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
+  $(BOOTLIBDIR)/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
 	$(BIGLOO) -wasm -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
@@ -725,10 +725,10 @@ objs/wasm_s/%.wat: %.scm
 
 objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat
-	$(BIGLOO) -i ../tools/gen_dummy_wasm_imports.scm Wlib/types.wat $< > $@ || (rm -f $@; exit 1)
+	$(BIGLOO) -i ../tools/gen_dummy_wasm_imports.scm $(BOOTLIBDIR)/types.wat $< > $@ || (rm -f $@; exit 1)
 
-$(BOOTLIBDIR)/types.wat: Wlib/types.wat
-	cp $< $@
+#* $(BOOTLIBDIR)/types.wat: Wlib/types.wat                             */
+#* 	cp $< $@                                                       */
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -867,7 +867,7 @@ install-jvm:
         fi
 
 install-wasm:
-	cp Wlib/types.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
+	cp $(BOOTLIBDIR)/types.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
 	cp Wlib/runtime.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
 	cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
 	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
@@ -1240,13 +1240,13 @@ Wlib/wcnst.wat: Wlib/wcnst$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
            | sed -e "s/-[*]- eval: (bee-mode) -[*]-/!!! GENERATED FILE, DON'T EDIT !!!/" \
            > $@
 
-Wlib/types.wat: Wlib/types.wat.in
+$(BOOTLIBDIR)/types.wat: Wlib/types.wat.in
 	$(BIGLOO) -i ../tools/gen_wasm_types.scm $< > $@ || (rm -f $@; exit 1)
 
-Wlib/types.wat: Wlib/wports.wat Wlib/wstring.wat Wlib/wfixnum.wat \
+$(BOOTLIBDIR)/types.wat: Wlib/wports.wat Wlib/wstring.wat Wlib/wfixnum.wat \
   Wlib/wintegers.wat Wlib/wbignum.wat Wlib/wcnst.wat Wlib/wdate.wat \
   Wlib/wvector.wat Wlib/wmmap.wat Wlib/wdenv.wat Wlib/wprocedure.wat \
-  Wlib/wbinary.wat
+  Wlib/wbinary.wat Wlib/wunicode.wat
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */
