@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Feb  3 09:51:44 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 07:16:06 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -66,19 +66,6 @@
      (export "BGL_STRUCT_DEFAULT_VALUE") (ref $struct)
      (struct.new $struct (global.get $BUNSPEC) (global.get $vector-default-value)))
 
-  (global $mutex-default-value
-     (export "BGL_MUTEX_DEFAULT_VALUE") (ref $mutex)
-     (struct.new $mutex
-	;; name
-	(global.get $BUNSPEC)
-	;; backend
-	(global.get $BUNSPEC)
-	;; state
-	(global.get $BUNSPEC)))
-  (global $condvar-default-value
-     (export "BGL_CONDVAR_DEFAULT_VALUE") (ref $condvar)
-     (struct.new $condvar))
-  
   (global $socket-default-value
      (export "BGL_SOCKET_DEFAULT_VALUE") (ref $socket)
      (struct.new $socket))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Tue Feb  4 16:41:52 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 07:04:11 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
@@ -98,5 +98,5 @@
       (result (ref eq))
 
       (return (global.get $BNIL)))
-   
+
    )

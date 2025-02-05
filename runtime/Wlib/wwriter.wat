@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 07:31:11 2024                          */
 ;*    Last change :  Tue Oct  1 07:45:55 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Native objects printing.                                         */
 ;*=====================================================================*/

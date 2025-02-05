@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Tue Feb  4 09:42:47 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 07:47:22 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -516,10 +516,6 @@
 ;*---------------------------------------------------------------------*/
 (define (blit-int2! buf w int)
    (cond
-      ((<fx int 0)
-       (string-set! buf w #\-)
-       (blit-int2! buf (+fx w 1) (negfx int))
-       3)
       ((<fx int 10)
        (string-set! buf w #\0)
        (blit-digit! buf (+fx w 1) int)
@@ -637,7 +633,7 @@
 (define (day-name day)
    (cond
       ((<fx day 1)
-       (error 'day-name "Illegal day number" day))
+       (error "day-name" "Illegal day number" day))
       ((>fx day 7)
        ($date-day-name (+fx 1 (remainderfx day 7))))
       (else
@@ -649,7 +645,7 @@
 (define (day-aname day)
    (cond
       ((<fx day 1)
-       (error 'day-aname "Illegal day number" day))
+       (error "day-aname" "Illegal day number" day))
       ((>fx day 7)
        ($date-day-aname (+fx 1 (remainderfx day 7))))
       (else
@@ -661,7 +657,7 @@
 (define (month-name month)
    (cond
       ((<fx month 1)
-       (error 'month-aname "Illegal month number" month))
+       (error "month-aname" "Illegal month number" month))
       ((>fx month 12)
        ($date-month-name (+fx 1 (remainderfx month 12))))
       (else
@@ -673,7 +669,7 @@
 (define (month-aname month)
    (cond
       ((<fx month 1)
-       (error 'month-aname "Illegal month number" month))
+       (error "month-aname" "Illegal month number" month))
       ((>fx month 12)
        ($date-month-aname (+fx 1 (remainderfx month 12))))
       (else
@@ -752,9 +748,9 @@
 	 (string-set! buf w (if (<fx tz 0) #\- #\+))
 	 (set! w (+fx w 1))
 	 ;; tz/3600
-	 (set! w (+fx w (blit-int2! buf w (/fx tz 3600))))
-	 ;; tz%3600
-	 (set! w (+fx w (blit-int2! buf w (remainderfx tz 3600))))
+	 (set! w (+fx w (blit-int2! buf w (/fx (absfx tz) 3600))))
+	 ;; (tz%3600)/60
+	 (set! w (+fx w (blit-int2! buf w (/fx (remainderfx (absfx tz) 3600) 60))))
 	 (string-shrink! buf w)))
    
    (let ((tz (date-timezone date)))

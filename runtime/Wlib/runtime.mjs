@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Feb  4 16:40:39 2025 (serrano)                */
+/*    Last change :  Wed Feb  5 07:52:00 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -354,9 +354,13 @@ const __js_date = {
    epoch: new Date(1970),
    current_milliseconds: () => Date.now(),
    mkDate: (ms) => new Date(ms),
-   mktime: (year, month, day, hour, minute, second, millisecond, gmt) => gmt
-      ? (new Date(Date.UTC(year, month, day, hour, minute, second, millisecond)))
-      : (new Date(year, month, day, hour, minute, second, millisecond)),
+   mktime: (year, month, day, hour, minute, second, millisecond, gmt) => {
+      if (gmt) {
+	 return new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
+      } else {
+	 return new Date(year, month - 1, day, hour, minute, second, millisecond);
+      }
+   },
 
    getMilliseconds: (dt) => dt.getMilliseconds(),
    setMilliseconds: (dt, ms) => dt.setMilliseconds(ms),
@@ -368,7 +372,7 @@ const __js_date = {
    setHours: (dt, h) => dt.setHours(h),
    getDay: (dt) => dt.getDate(),
    setDay: (dt,) => dt.setDate(d),
-   getWday: (dt) => dt.getDay(),
+   getWday: (dt) => dt.getDay() + 1,
    getYday: (dt) => {
       const y = dt.getFullYear();
       const m = dt.getMonth();
@@ -377,14 +381,14 @@ const __js_date = {
       const d0 = new Date(y, 0, 1);
       return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000));
    },
-   getMonth: (dt) => dt.getMonth(),
+   getMonth: (dt) => dt.getMonth() + 1,
    setMonth: (dt, m) => dt.setMonth(m),
    getYear: (dt) => dt.getFullYear(),
    setYear: (dt, y) => dt.setFullYear(y),
-   getTimezone: (dt) => dt.getTimezoneOffset(),
+   getTimezone: (dt) => dt.getTimezoneOffset() * 60,
 
    isDst: (dt) => new Date(dt.valueOf()) !== dt.valueOf(), // MS 18dec2024, not sure!
-   getTime: (dt) => Math.trunc(dt.valueOf() / 1000),
+   getTime: (dt) => dt.valueOf(),
    secondsToString: (sec, addr) => {
       const buf = new Date(sec * 1000).toString();
 

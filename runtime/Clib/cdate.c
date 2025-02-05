@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cdate.c          */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cdate.c            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Fri Nov 15 07:34:05 2024 (serrano)                */
-/*    Copyright   :  2003-24 Manuel Serrano                            */
+/*    Last change :  Wed Feb  5 08:47:49 2025 (serrano)                */
+/*    Copyright   :  2003-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*    See http://www.catb.org/esr/time-programming/#_improvements      */
@@ -306,8 +306,6 @@ bgl_make_date(BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int ye
    date = GC_MALLOC_ATOMIC(BGL_DATE_SIZE);
    date->date.header = BGL_MAKE_HEADER(DATE_TYPE, istz);
 
-/*    fprintf(stderr, "make_date ns=%lld s=%d m=%d hr=%d mday=%d mon=%d year=%d tz=%d istz=%d isdst=%d\n", */
-/* 	    ns,  s,  m,  hr,  mday,  mon,  year, tz, istz, isdst)   ; */
    return bgl_update_date(BREF(date), ns, s, m, hr, mday, mon, year, tz, istz, isdst);
 }
 

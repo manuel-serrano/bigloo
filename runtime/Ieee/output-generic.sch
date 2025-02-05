@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Mon Jan 13 11:24:56 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 07:40:26 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -24,6 +24,7 @@
 	   (bgl_display_bignum::obj ::bignum ::output-port)
 	   (bgl_write_bignum::obj ::bignum ::output-port)
 	   (bgl_write_mmap::obj ::mmap ::output-port)
+	   (bgl_write_process::obj ::process ::output-port)
 	   (bgl_write_unknown::obj ::obj ::output-port)
 	   (inline $$display-fixnum::obj ::bint ::output-port)
 	   (inline $$write-procedure ::procedure ::output-port)
@@ -41,6 +42,7 @@
            (export bgl_display_bignum "bgl_display_bignum")
 	   (export bgl_write_bignum "bgl_write_bignum")
 	   (export bgl_write_mmap "bgl_write_mmap")
+	   (export bgl_write_process "bgl_write_process")
 	   (export bgl_write_unknown "bgl_write_unknown")))
 
 ;*---------------------------------------------------------------------*/
@@ -135,6 +137,14 @@
 (define (bgl_write_mmap o op)
    (display-string "#<mmap:" op)
    (display (mmap-name o) op)
+   (display-string ">" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_process ...                                            */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_process o op)
+   (display-string "#<process:" op)
+   (display (process-pid o) op)
    (display-string ">" op))
 
 ;*---------------------------------------------------------------------*/

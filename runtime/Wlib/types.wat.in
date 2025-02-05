@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Mon Feb  3 11:43:42 2025 (serrano)                */
+;*    Last change :  Wed Feb  5 07:01:22 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -37,16 +37,10 @@
 	 (field $get (ref $bgl_evmeaning_getter))
 	 (field $set (ref $bgl_evmeaning_setter))))
 
-   ;; -----------------------------------------------------------------
-   ;; Vectors 
-   ;; -----------------------------------------------------------------
    (@include "./wvector.wat" type)
 
    (@include "./wprocedure.wat" type)
    
-   ;; -----------------------------------------------------------------
-   ;; String 
-   ;; -----------------------------------------------------------------
    (@include "./wstring.wat" type)
    (@include "./wregexp.wat" type)
    (@include "./wmmap.wat" type)
@@ -87,20 +81,10 @@
 
    
    
-   ;; Exception raised for unimplemented code.
-   
    (type $struct (struct
 		    (field $key (ref eq))
 		    (field $values (ref $vector))))
    
-   
-   ;; Thread types
-   (type $mutex (struct
-		   (field $name (ref eq))
-		   (field $backend (ref eq))
-		   (field $state (ref eq))))
-   (type $condvar (struct))
-   (type $semaphore (struct))
    
    ;; Network
    (type $socket (struct))
@@ -111,9 +95,6 @@
    (type $tvector (struct (field $descr (ref eq))))
    (type $hvector (struct))
    
-   ;; -----------------------------------------------------------------
-   ;; Ports 
-   ;; -----------------------------------------------------------------
    (@include "./wrgc.wat" type)
    (@include "./wports.wat" type)
    (@include "./wbinary.wat" type)
@@ -126,6 +107,8 @@
 
    (@include "./wcustom.wat" type)
    (@include "./wforeign.wat" type)
+   (@include "./wsystem.wat" type)
+   (@include "./wthread.wat" type)
    
 
    )
