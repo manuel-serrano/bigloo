@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Feb  5 16:08:10 2025 (serrano)                */
+#*    Last change :  Wed Feb  5 16:36:30 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -670,6 +670,7 @@ libs-wasm:
 
 lib-wasm: lib-wasm_s
 lib-wasm_s: includes
+	$(MAKE) $(BOOTLIBDIR)/types.wat
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
@@ -677,6 +678,7 @@ lib-wasm_s: includes
                 LIBSUFFIX=_s
 
 lib-wasm_u: includes
+	$(MAKE) $(BOOTLIBDIR)/types.wat
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
@@ -792,6 +794,7 @@ boot-jvm:
 
 boot-wasm:
 	@ $(MAKE) heap-wasm
+	@ $(MAKE) $(BOOTLIBDIR)/types.wat
 	@ $(MAKE) lib-wasm_s
 	@ $(MAKE) lib-wasm_u
 
