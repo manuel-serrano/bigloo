@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Feb  5 16:36:30 2025 (serrano)                */
+#*    Last change :  Thu Feb  6 07:56:21 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -869,15 +869,19 @@ install-jvm:
              chmod $(MODFILE) $(ZIPDIR)/bigloo_u.zip; \
         fi
 
-install-wasm:
-	cp $(BOOTLIBDIR)/types.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
+install-wasm: install-wasm-runtime
+	if [ $(BOOTLIBDIR) != $(DESTDIR)$(LIBDIR)/$(FILDIR) ]; then \
+	  cp $(BOOTLIBDIR)/types.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat; \
+	  cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap; \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap; \
+	  cp $(BOOTLIBDIR)/bigloo_s.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat; \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat; \
+	  cp $(BOOTLIBDIR)/bigloo_u.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat; \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat; \
+        fi
+
+install-wasm-runtime:
 	cp Wlib/runtime.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
-	cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
-	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
-	cp $(BOOTLIBDIR)/bigloo_s.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat
-	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat
-	cp $(BOOTLIBDIR)/bigloo_u.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat
-	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat
 
 install-bee:
 	$(MAKE) install-lib LIB=libbigloo_p-$(RELEASE)
