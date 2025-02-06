@@ -34,6 +34,14 @@
 ;;   (import "__js_unicode" "ucs2_strcmp" (func $js_ucs2_strcmp (param i32) (param i32) (param i32) (param i32) (result i32)))
    
    ;; -----------------------------------------------------------------
+   ;; Global variables 
+   ;; -----------------------------------------------------------------
+   
+  (global $ucs2string-default-value
+     (export "BGL_UCS2STRING_DEFAULT_VALUE") (ref $ucs2string)
+     (array.new_fixed $ucs2string 0))
+  
+   ;; -----------------------------------------------------------------
    ;; Macros
    ;; -----------------------------------------------------------------
 

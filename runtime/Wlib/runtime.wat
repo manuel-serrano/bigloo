@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Feb  5 07:16:06 2025 (serrano)                */
+;*    Last change :  Thu Feb  6 08:02:20 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -58,10 +58,6 @@
      (export "BGL_CELL_DEFAULT_VALUE") (ref $cell)
      (struct.new $cell (global.get $BUNSPEC)))
   
-  (global $ucs2string-default-value
-     (export "BGL_UCS2STRING_DEFAULT_VALUE") (ref $ucs2string)
-     (array.new_fixed $ucs2string 0))
-  
   (global $struct-default-value
      (export "BGL_STRUCT_DEFAULT_VALUE") (ref $struct)
      (struct.new $struct (global.get $BUNSPEC) (global.get $vector-default-value)))
@@ -87,7 +83,10 @@
      (export "BGL_OPAQUE_DEFAULT_VALUE") (ref $opaque)
      (struct.new $opaque))
     
-
+  (global $tvector-default-value
+     (export "BGL_TVECTOR_DEFAULT_VALUE") (ref array)
+     (array.new_fixed $bstring 0))
+  
    ;; -----------------------------------------------------------------
    ;; Utilities
    ;; -----------------------------------------------------------------

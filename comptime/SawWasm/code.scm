@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Feb  3 07:59:04 2025 (serrano)                */
+;*    Last change :  Thu Feb  6 08:01:05 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -453,6 +453,7 @@
       ((funptr) `(global.get $funptr-default-value))
       ((unspecified) (wasm-cnst-unspec))
       ((obj) (wasm-cnst-unspec))
+      ((tvector) `(global.get $tvector-default-value))
       (else
        (cond
 	  ((isa? ty tclass)
