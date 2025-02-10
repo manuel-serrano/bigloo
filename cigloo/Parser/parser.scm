@@ -38,7 +38,7 @@
        < > __asm__ asm auto break case char const __const continue default do double
        else enum extern float for fortran goto if int long register FILE
        return short signed sizeof static _Static_assert struct switch typedef union unsigned
-       void volatile while __attribute__ inline __inline__ __inline
+       void volatile while __attribute__ __attribute inline __inline__ __inline
        __extension__ obj_t
        restrict __restrict__ __restrict
        __gnuc_va_list __builtin_va_list _Bool _Float128 )
@@ -832,8 +832,14 @@
         ((gcc-attribute gcc-attributes)
           #unspecified))
 
-      (gcc-attribute
-         ((__attribute__ PAR-OPEN PAR-OPEN gcc-attribute-list PAR-CLO PAR-CLO)
+      (attribute-spec
+         ((__attribute__)
+          #unspecified)
+         ((__attribute)
+          #unspecified))
+      
+      (gcc-attribute-values
+         ((attribute-spec PAR-OPEN PAR-OPEN gcc-attribute-list PAR-CLO PAR-CLO)
           #unspecified))
 
       (gcc-attribute-list

@@ -74,7 +74,7 @@
      "_Float128"))
 
 (define *gcc-keyword-list*
-   '("__asm__" "__attribute__" "inline" "__inline__" "__inline" "__extension__" "__gnuc_va_list" "__builtin_va_list"))
+   '("__asm__" "__attribute__" "__attribute" "inline" "__inline__" "__inline" "__extension__" "__gnuc_va_list" "__builtin_va_list"))
 
 ;*---------------------------------------------------------------------*/
 ;*    lexer initialization                                             */
@@ -185,7 +185,8 @@
 
       ;; character constant
       ((: (? #\L) #\' (or (out #\\ #\') (: #\\ all)
-                         (: #\\ (in #\x #\X) (>= 2 xdigit)))  #\')
+                         (: #\\ (in #\x #\X) (** 1 4 xdigit))
+                         (: #\\ (** 1 3 odigit)))  #\')
        (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; string constant
