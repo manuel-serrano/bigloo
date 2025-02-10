@@ -35,13 +35,13 @@
       (CONSTANT PAR-OPEN PAR-CLO BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO
        SEMI-COMMA COMMA DOT LDOTS -> ! % ^ & * = / + ~ - >> << BOR != ==
        <<= >>= += -= *= /= %= ^= &= OR= ++ -- ID && OR ? : TYPE-ID <= >=
-       < > asm auto break case char const __const continue default do double
+       < > __asm__ asm auto break case char const __const continue default do double
        else enum extern float for fortran goto if int long register FILE
-       return short signed sizeof static struct switch typedef union unsigned
+       return short signed sizeof static _Static_assert struct switch typedef union unsigned
        void volatile while __attribute__ inline __inline__ __inline
        __extension__ obj_t
        restrict __restrict__ __restrict
-       __gnuc_va_list)
+       __gnuc_va_list __builtin_va_list _Bool _Float128 )
  
       ;; we build the overall list in a inversed way in order to
       ;; remove a shift/reduce in the grammar.
@@ -49,7 +49,11 @@
        (()
 	'())
        ((start external-definition)
-	`(,external-definition ,@start))
+        ;; since we return an empty-list for top-level C11 _Static_assert statements
+        ;; we check here for that case and just return the the rest of the definitions
+        (if (not (eq? external-definition '()))
+            `(,external-definition ,@start)
+            start))
        ((start c++-definition)
 	`(,@c++-definition ,@start)))
 
@@ -57,7 +61,9 @@
        ((function-definition)
 	function-definition)
        ((declaration)
-	declaration))
+	declaration)
+       ((static-assert-statement)
+        '()))
 
       (c++-definition
        ((extern CONSTANT BRA-OPEN c++-declarations BRA-CLO)
@@ -76,6 +82,7 @@
       (c++-declarations
        ((declaration)
 	(list declaration))
+       
        ((c++-declarations declaration)
 	`(,declaration ,@c++-declarations)))
       
@@ -136,23 +143,23 @@
 		     init-declarator-list)))
       
       (declaration-specifiers
-       ((gcc-attribute declaration-specifiers)
+       ((__extension__ declaration-specifiers)
          declaration-specifiers)
+       ((inline-specifier declaration-specifiers)
+        declaration-specifiers)
+       ((gcc-attributes declaration-specifiers)
+        declaration-specifiers)
+       ((gcc-attributes)
+        '())
        ((storage-class-specifier)
-	`(,storage-class-specifier))
-       ((storage-class-specifier gcc-attributes)
 	`(,storage-class-specifier))
        ((storage-class-specifier declaration-specifiers)
 	`(,storage-class-specifier ,@declaration-specifiers))
        ((type-specifier)
 	`(,type-specifier))
-       ((type-specifier gcc-attributes)
-	`(,type-specifier))
        ((type-specifier declaration-specifiers)
 	`(,type-specifier ,@declaration-specifiers))
        ((type-qualifier-specifier)
-	`(,type-qualifier-specifier))
-       ((type-qualifier-specifier gcc-attributes)
 	`(,type-qualifier-specifier))
        ((type-qualifier-specifier declaration-specifiers)
 	`(,type-qualifier-specifier ,@declaration-specifiers)))
@@ -164,33 +171,24 @@
 	`(,init-declarator ,@init-declarator-list)))
       
       (init-declarator
-       ((declarator)
+       ((declarator optional-gcc-attributes)
 	declarator)
-       ((declarator gcc-attributes)
-	declarator)
-       ((declarator = initializer)
-	`(,declarator ,initializer))
-       ((declarator = initializer gcc-attributes)
+       ((declarator optional-gcc-attributes = initializer)
 	`(,declarator ,initializer)))
       
       (storage-class-specifier
        ((typedef)
 	(ast-storage-class-spec (car typedef) 'typedef))
-       ((__extension__ typedef)
-	(ast-storage-class-spec (car typedef) 'typedef))
        ((extern)
-	(ast-storage-class-spec (car extern) 'extern))
-       ((__extension__ extern)
 	(ast-storage-class-spec (car extern) 'extern))
        ((static)
 	(ast-storage-class-spec (car static) 'static))
        ((auto)
 	(ast-storage-class-spec (car auto) 'auto))
        ((register)
-	(ast-storage-class-spec (car register) 'register))
-       ((__inline)
-	(ast-storage-class-spec (car __inline) 'inline)))
+	(ast-storage-class-spec (car register) 'register)))
 
+      
       (type-qualifier-specifier
        ((const)
 	(ast-type-qualifier-spec (car const) 'const))
@@ -224,8 +222,12 @@
 	(ast-type-spec (car float) 'float "float" #unspecified))
        ((double)
 	(ast-type-spec (car double) 'double "double" #unspecified))
+       ((_Float128)
+        (ast-type-spec (car _Float128) '_Float128 "_Float128" #unspecified))
+       ((_Bool)
+        (ast-type-spec (car _Bool) '_Bool "_Bool" #unspecified))
        ((void)
-	(ast-type-spec (car void) 'void "void" #unspecified))
+        (ast-type-spec (car void) 'void "void" #unspecified))
        ((obj_t)
 	(ast-type-spec (car obj_t) 'obj_t "obj" #unspecified))
        ((struct-or-union-specifier)
@@ -240,21 +242,30 @@
 		       enum-specifier))
        ((__gnuc_va_list)
         (ast-type-spec (car __gnuc_va_list) '__gnuc_va_list "__gnuc_va_list" #unspecified))
+       ((__builtin_va_list)
+        (ast-type-spec (car __builtin_va_list) '__builtin_va_list "__builtin_va_list" #unspecified))
        ((TYPE-ID)
 	(ast-type-spec (car TYPE-ID) 'TYPE-ID (cadr TYPE-ID) #unspecified)))
-      
+
+
+      (optional-gcc-attributes
+         (()
+          #unspecified)
+         ((gcc-attributes)
+          #unspecified))
+        
       (struct-or-union-specifier
-       ((struct-or-union identifier BRA-OPEN struct-declaration-list BRA-CLO)
+       ((struct-or-union identifier BRA-OPEN struct-declaration-list BRA-CLO optional-gcc-attributes)
 	(ast-struct-spec (car struct-or-union)
 			 (cdr struct-or-union)
 			 identifier
 			 struct-declaration-list))
-       ((struct-or-union TYPE-ID BRA-OPEN struct-declaration-list BRA-CLO)
+       ((struct-or-union TYPE-ID BRA-OPEN struct-declaration-list BRA-CLO optional-gcc-attributes)
 	(ast-struct-spec (car struct-or-union)
 			 (cdr struct-or-union)
 			 (ast-ident (car TYPE-ID) (cadr TYPE-ID))
 			 struct-declaration-list))
-       ((struct-or-union BRA-OPEN struct-declaration-list BRA-CLO)
+       ((struct-or-union BRA-OPEN struct-declaration-list BRA-CLO optional-gcc-attributes)
 	(let* ((id (ast-ident #f (symbol->string
 				  (gensym (string-append *iname* "__s")))))
 	       (result (ast-struct-spec (car struct-or-union)
@@ -265,21 +276,21 @@
 	  (set! *anonymous-struct-alist*
 		(cons (list result) *anonymous-struct-alist*))
 	  result))
-       ((struct-or-union identifier)
+       ((struct-or-union identifier optional-gcc-attributes)
 	(ast-struct-spec (car struct-or-union)
 			 (cdr struct-or-union)
 			 identifier
 			 '()))
-       ((struct-or-union TYPE-ID)
+       ((struct-or-union TYPE-ID optional-gcc-attributes)
 	(ast-struct-spec (car struct-or-union)
 			 (cdr struct-or-union)
 			 (ast-ident (car TYPE-ID) (cadr TYPE-ID))
 			 '())))
       
       (struct-or-union
-       ((struct)
+       ((struct optional-gcc-attributes)
 	(cons (car struct) 'struct))
-       ((union)
+       ((union optional-gcc-attributes)
 	(cons (car union) 'union)))
       
       (struct-declaration-list
@@ -289,7 +300,7 @@
 	`(,struct-declaration ,@struct-declaration-list)))
       
       (struct-declaration
-       ((type-specifier-list struct-declarator-list SEMI-COMMA)
+       ((type-specifier-list struct-declarator-list optional-gcc-attributes SEMI-COMMA)
 	`(,type-specifier-list ,struct-declarator-list)))
       
       (struct-declarator-list
@@ -299,12 +310,14 @@
 	`(,struct-declarator ,@struct-declarator-list)))
       
       (struct-declarator
-       ((declarator)
-	declarator)
-       ((: constant-expr)
-	(ast-decl : #f #f))
-       ((declarator : constant-expr)
-	declarator))
+         (()
+          (ast-decl (gensym "anonymous_member") #f #f))
+         ((declarator)
+          declarator)
+         ((: constant-expr)
+          (ast-decl : #f #f))
+         ((declarator : constant-expr)
+          declarator))
       
       (enum-specifier
        ((enum BRA-OPEN enumerator-list BRA-CLO)
@@ -315,54 +328,45 @@
 	(ast-enum-spec (car enum) identifier #f)))
       
       (enumerator-list
+         (()
+          '())
        ((enumerator)
 	`(,enumerator))
        ((enumerator COMMA enumerator-list)
 	`(,enumerator ,@enumerator-list)))
       
       (enumerator
-       ((identifier)
+       ((identifier optional-gcc-attributes)
 	identifier)
-       ((identifier = constant-expr)
+       ((identifier optional-gcc-attributes = constant-expr)
 	identifier))
       
       (declarator
        ((declarator2)
 	(ast-decl #f #f declarator2))
-;       ((declarator2 gcc-attributes)
-;	(ast-decl #f #f declarator2))
        ((pointer declarator2)
 	(ast-decl #f pointer declarator2)))
        
       (declarator2
        ((identifier) 
 	(ast-decl2 #f identifier #f #f #f #f #f))
-;       ((identifier gcc-attribute)
-;	(ast-decl2 #f identifier #f #f #f #f #f))
        ((PAR-OPEN declarator PAR-CLO)
         (ast-decl2 #f #f declarator #f #f #f #f))
-;       ((PAR-OPEN declarator PAR-CLO gcc-attribute)
-;	(ast-decl2 #f #f declarator #f #f #f #f))
        ((declarator2 ANGLE-OPEN ANGLE-CLO)
         (ast-decl2 #f #f #f declarator2 '() #f #f))
-;       ((declarator2 ANGLE-OPEN ANGLE-CLO gcc-attribute)
-;	(ast-decl2 #f #f #f declarator2 '() #f #f))
        ((declarator2 ANGLE-OPEN constant-expr ANGLE-CLO)
         (ast-decl2 #f #f #f declarator2 constant-expr #f #f))
-;       ((declarator2 ANGLE-OPEN constant-expr ANGLE-CLO gcc-attribute)
-;	(ast-decl2 #f #f #f declarator2 constant-expr #f #f))
        ((declarator2 PAR-OPEN PAR-CLO)
         (ast-decl2 #f #f #f declarator2 #f '() #f))
-;       ((declarator2 PAR-OPEN PAR-CLO gcc-attribute)
-;	(ast-decl2 #f #f #f declarator2 #f '() #f))
+       ; ((declarator2 PAR-OPEN void PAR-CLO)
+       ;  (ast-decl2 #f #f #f declarator2 #f '() #f))
+       ((declarator2 PAR-OPEN parameter-type-list PAR-CLO gcc-asm)
+        (ast-decl2 #f #f #f declarator2 #f parameter-type-list #f))
        ((declarator2 PAR-OPEN parameter-type-list PAR-CLO)
         (ast-decl2 #f #f #f declarator2 #f parameter-type-list #f))
-;       ((declarator2 PAR-OPEN parameter-type-list PAR-CLO gcc-attribute)
-;	(ast-decl2 #f #f #f declarator2 #f parameter-type-list #f))
        ((declarator2 PAR-OPEN parameter-identifier-list PAR-CLO)
-        (ast-decl2 #f #f #f declarator2 #f #f parameter-identifier-list)) )
-;       ((declarator2 PAR-OPEN parameter-identifier-list PAR-CLO gcc-attribute)
-;	(ast-decl2 #f #f #f declarator2 #f #f parameter-identifier-list)))
+        (ast-decl2 #f #f #f declarator2 #f #f parameter-identifier-list)))
+
       
       (pointer
        ((*)
@@ -415,9 +419,9 @@
 	`(,parameter-declaration ,@parameter-list)))
       
       (parameter-declaration
-       ((type-specifier-list declarator)
+       ((type-specifier-list declarator optional-gcc-attributes)
 	(ast-para-decl #f type-specifier-list declarator #f))
-       ((type-name)
+       ((type-name optional-gcc-attributes)
 	(ast-para-decl #f #f #f type-name)))
       
       (type-name
@@ -485,15 +489,15 @@
 	`(,postfix-expr "[]"))
        ((postfix-expr PAR-OPEN argument-expr-list PAR-CLO)
 	`(,postfix-expr "(" ,argument-expr-list ")"))
-       ((postfix-expr DOT identifier)
-	`(,postfix-expr "." ,identifier))
-       ((postfix-expr -> identifier)
-	`(,postfix-expr "->" ,identifier))
+       ((postfix-expr DOT member-name)
+	`(,postfix-expr "." ,member-name))
+       ((postfix-expr -> member-name)
+	`(,postfix-expr "->" ,member-name))
        ((postfix-expr ++)
 	`(,postfix-expr "++"))
        ((postfix-expr --)
 	`(,postfix-expr "--")))
-      
+
       (argument-expr-list
        ((assignment-expr)
 	#unspecified)
@@ -512,8 +516,19 @@
        ((sizeof unary-expr)
 	`("sizeof(" ,unary-expr ")"))
        ((sizeof PAR-OPEN type-name PAR-CLO)
-	`("sizeof(" ,type-name ")")))
-      
+	`("sizeof(" ,type-name ")"))
+       ;; expressions of the form a = {5, 6, 9}
+       ((BRA-OPEN expr BRA-CLO)
+        #unspecified)
+       ;;; gcc statement expressions
+       ((PAR-OPEN compound-statement PAR-CLO)
+        #unspecified)
+       ;; this is necessary to correctly parse multiple string
+       ;; literals which are automatically concatenated in C
+       ;; (e.g., "dog" "cat" -> "dogcat")
+       ((constants)
+        #unspecified))
+
       (unary-operator
        ((&)
 	&)
@@ -529,10 +544,10 @@
 	!))
       
       (cast-expr
-       ((unary-expr)
-	unary-expr)
-       ((PAR-OPEN type-name PAR-CLO cast-expr)
-	`("(" ,type-name ,")" ,cast-expr)))
+         ((unary-expr)
+          unary-expr)
+         ((PAR-OPEN optional-gcc-attributes type-name PAR-CLO cast-expr)
+          `("(" ,type-name ,")" ,cast-expr)))
       
       (multiplicative-expr
        ((cast-expr)
@@ -613,14 +628,22 @@
       (conditional-expr
        ((logical-or-expr)
 	logical-or-expr)
-       ((logical-or-expr@lexp1 ? logical-or-expr@lexp2 : conditional-expr)
-	`(,lexp1 "?" ,lexp2 ":" ,conditional-expr)))
-      
+       ((logical-or-expr@lexp1 ? expr : conditional-expr)
+	`(,lexp1 "?" ,expr ":" ,conditional-expr)))
+   
       (assignment-expr
        ((conditional-expr)
 	conditional-expr)
+       ((DOT identifier assignment-operator assignment-expr)
+        `(, identifier ,assignment-operator ,assignment-expr))
        ((unary-expr assignment-operator assignment-expr)
 	`(,unary-expr ,assignment-operator ,assignment-expr)))
+
+      (member-name
+         ((identifier)
+          identifier)
+         ((TYPE-ID)
+          TYPE-ID))
       
       (assignment-operator
        ((=)
@@ -646,11 +669,12 @@
        ((OR=)
 	OR=))
       
-      (expr
+      (expr  
        ((assignment-expr)
 	assignment-expr)
        ((expr COMMA assignment-expr)
 	`(,expr ,assignment-expr)))
+
       
       (constant-expr
        ((conditional-expr)
@@ -668,7 +692,12 @@
        ((iteration-statement) 
 	#unspecified)
        ((jump-statement) 
-	#unspecified))
+	#unspecified)
+       ((static-assert-statement)
+        #unspecified)
+       ((gcc-attribute-statement)
+        #unspecified))
+      
       
       (labeled-statement
        ((identifier : statement)
@@ -680,13 +709,19 @@
       
       (compound-statement
        ((BRA-OPEN BRA-CLO)
-	#unspecified)
-       ((BRA-OPEN statement-list BRA-CLO)
-	#unspecified)
-       ((BRA-OPEN declaration-list BRA-CLO)
-	declaration-list)
-       ((BRA-OPEN declaration-list statement-list BRA-CLO)
-	declaration-list))
+	'())
+       ((BRA-OPEN declaration-statement-list BRA-CLO)
+	declaration-statement-list))
+
+      (declaration-statement-list
+         ((declaration-list)
+          declaration-list)
+         ((statement-list)
+          '())
+         ((declaration-list declaration-statement-list)
+          (append declaration-list declaration-statement-list))
+         ((statement-list declaration-statement-list)
+          declaration-statement-list))
        
       (declaration-list
        ((declaration)
@@ -697,7 +732,7 @@
       (statement-list
        ((statement)
 	#unspecified)
-       ((statement-list statement)
+       ((statement statement-list)
 	#unspecified))
       
       (expression-statement
@@ -734,6 +769,14 @@
        ((for PAR-OPEN expr SEMI-COMMA expr SEMI-COMMA PAR-CLO statement)
 	#unspecified)
        ((for PAR-OPEN expr SEMI-COMMA expr SEMI-COMMA expr PAR-CLO statement)
+	#unspecified)
+       ((for PAR-OPEN declaration SEMI-COMMA PAR-CLO statement)
+	#unspecified)
+       ((for PAR-OPEN declaration SEMI-COMMA expr PAR-CLO statement)
+	#unspecified)
+       ((for PAR-OPEN declaration  expr SEMI-COMMA PAR-CLO statement)
+	#unspecified)
+       ((for PAR-OPEN declaration  expr SEMI-COMMA expr PAR-CLO statement)
 	#unspecified))
       
       (jump-statement
@@ -746,29 +789,36 @@
        ((return SEMI-COMMA)
 	#unspecified)
        ((return expr SEMI-COMMA)
-	#unspecified))
+	#unspecified)
+       )
 
+      ;; handle C11 _Static_assert keyword
+      (static-assert-statement
+         ((_Static_assert PAR-OPEN expr PAR-CLO SEMI-COMMA)
+          #unspecified))
+
+      ;; handle attributes modifying expressions and statements 
+      (gcc-attribute-statement
+         ((gcc-attribute SEMI-COMMA)
+          #unspecified))
+      
       (function-definition
        ((declarator function-body)
 	(ast-fun-def #f #f '() declarator function-body))
-       ((inline-specifier declarator function-body)
-	(ast-fun-def #f #f '() declarator function-body))
        ((declaration-specifiers declarator function-body)
-	(ast-fun-def #f #f declaration-specifiers declarator function-body))
-       ((inline-specifier declaration-specifiers declarator function-body)
 	(ast-fun-def #f #f declaration-specifiers declarator function-body)))
 
       (inline-specifier
        ((inline)
 	#unspecified)
        ((__inline__)
-	#unspecified))
+	#unspecified)
+       ((__inline)
+        #unspecified))
 	
       (function-body
        ((compound-statement)
-	#unspecified)
-       ((declaration-list compound-statement)
-	declaration-list))
+	compound-statement))
       
       (identifier
        ((ID)
@@ -776,30 +826,84 @@
 
       ;; This is not an ANSI syntax. This is a Gcc specific syntax in order
       ;; to be able to parse the __attribute__ expression. 
-      (gcc-attributes
+      (gcc-attributes 
         ((gcc-attribute)
           #unspecified)
         ((gcc-attribute gcc-attributes)
           #unspecified))
 
       (gcc-attribute
-       ((__attribute__ PAR-OPEN gcc-attribute-values PAR-CLO)
-	#unspecified))
-
-      (gcc-attribute-values
-       ((PAR-OPEN gcc-attribute-list PAR-CLO)
-	#unspecified)
-       ((PAR-OPEN gcc-attribute-list gcc-attribute-values PAR-CLO)
-	#unspecified))
+         ((__attribute__ PAR-OPEN PAR-OPEN gcc-attribute-list PAR-CLO PAR-CLO)
+          #unspecified))
 
       (gcc-attribute-list
-       ((gcc-attribute-value)
-	#unspecified)
-       ((gcc-attribute-value COMMA gcc-attribute-list)
-	#unspecified))
+         (()
+          #unspecified)
+         ((gcc-attrib)
+          #unspecified)
+         ((gcc-attrib COMMA gcc-attribute-list)))
+
+       (gcc-attrib
+          ((ID)
+           #unspecified)
+          ((ID PAR-OPEN gcc-attrib-params PAR-CLO)
+           #unspecified))
+
+       (gcc-attrib-params
+          (()
+           #unspecified)
+          ((ID)
+           #unspecified)
+          ((ID PAR-OPEN type-name PAR-CLO)
+           #unspecified)
+          ((ID COMMA expr)
+           #unspecified)
+          ((expr)
+           #unspecified))
        
-      (gcc-attribute-value
-       ((ID)
-	#unspecified)
-       ((CONSTANT)
-	#unspecified))))
+      ;; __asm__ is Gcc specific syntax
+      ;; this currently only handles __asm__ statements of the form   __asm__ ("" "__isoc99_fscanf")
+      ;; used in directing standard functions to specific implementations.
+      (gcc-asm
+         ((asm-keyword asm-qualifiers PAR-OPEN asm-instructions PAR-CLO)
+          #unspecified))
+
+      (asm-keyword
+         ((asm)
+          #unspecified)
+         ((__asm__)
+          #unspecified))
+      
+      (asm-qualifier
+         ((volatile)
+          #unspecified)
+         ((inline)
+          #unspecified))
+      
+      (asm-qualifiers
+         (()
+          #unspecified)
+         ((asm-qualifier asm-qualifiers)
+          #unspecified))
+
+      (asm-instruction
+         ((constants)
+          #unspecified))
+
+      ;; this is really only useful for handling the fact that C will
+      ;; concatenate adjacent string constants (e.g., "start" "end" -> "startend")
+      ;; This is used in a number of cases, most notably in __asm__ expressions of the
+      ;; form  __asm__ ("" "__isoc99_fscanf")
+      (constants
+         ((CONSTANT)
+          #unspecified)
+         ((CONSTANT constants)
+          #unspecified))
+      
+      (asm-instructions
+         (()
+          #unspecified)
+         ((asm-instruction asm-instructions)
+          #unspecified))
+
+      ))
