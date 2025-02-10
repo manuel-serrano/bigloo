@@ -838,7 +838,7 @@
          ((__attribute)
           #unspecified))
       
-      (gcc-attribute-values
+      (gcc-attribute
          ((attribute-spec PAR-OPEN PAR-OPEN gcc-attribute-list PAR-CLO PAR-CLO)
           #unspecified))
 
