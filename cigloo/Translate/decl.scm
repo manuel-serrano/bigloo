@@ -107,7 +107,7 @@
 ;*---------------------------------------------------------------------*/
 (define (correct-storage-class-spec? storage-spec)
    (or (null? storage-spec)
-       (and (pair? storage-spec) (null? (cdr storage-spec)))))
+      (and (pair? storage-spec) (null? (cdr storage-spec)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-spec-of-decl-spec ...                                       */

@@ -89,7 +89,9 @@
 			(cdr alias-pair)))
 	  (s-ident (struct-spec-id sspec))
 	  (s-id    (ident-id s-ident))
-	  (b-id    (string-append "s-" s-id))
+	  (b-id    (string-append (if (eq? (struct-spec-class sspec) 'struct)
+                                      "s-"
+                                      "u-") s-id))
 	  (c-name  (cond 
 		    ;; Use the typedef as the c-name if available.
 		    (alias
@@ -230,7 +232,11 @@
 	      (tspcs   tspecs))
       (cond
 	 ((null? tspcs)
-	  (fun unsigned signed long longlong short tspec))
+          (if (and (or unsigned signed) (not tspec))
+              ;; If we have unsigned or signed type specifiers but no type spec assume int  
+              (fun unsigned signed long longlong short
+                 (ast-type-spec 'int 'int "int" #unspecified))
+              (fun unsigned signed long longlong short tspec)))
 	 (else
 	  (let ((ts (car tspcs)))
 	     (if (type-qualifier-spec? ts)
@@ -252,91 +258,98 @@
 			   short
 			   tspec
 			   (cdr tspcs))))
-		((signed)
-		 (if signed
-		     (error/ast 'signed "Duplicate type specification" ts)
-		     (loop unsigned
-			   ts
-			   long
-			   longlong
-			   short
-			   tspec
-			   (cdr tspcs))))	
-		(else
-		 (cond
-		    (tspec
-		     (error/ast (type-spec-class ts) "Illegal type" ts))
-		    ((eq? (type-spec-class ts) 'short)
-		     (if (and (not long)
-			      (not longlong)
-			      (not short)
-			      (not tspec))
-			 (loop unsigned
-			       signed
-			       #f
-			       #f
-			       ts
-			       #f
-			       (cdr tspcs))
-			 (error/ast 'type4 "Illegal type" ts)))
-		    ((eq? (type-spec-class ts) 'long)
-		     (cond
-			((and (not longlong)
-			      (not short)
-			      (not tspec))
-			 (if long
-			     (loop unsigned
-				   signed
-				   #f
-				   ts
-				   #f
-				   #f
-				   (cdr tspcs))
-			     (loop unsigned
-				   signed
-				   ts
-				   #f
-				   #f
-				   #f
-				   (cdr tspcs))))
-			(else
-			 (error/ast 'type5 "Illegal type" ts))))
-		    ((eq? (type-spec-class ts) 'longlong)
-		     (cond
-			((and (not longlong)
-			      (not short)
-			      (not tspec))
-			 (if long
-			     (loop unsigned
-				signed
-				#f
+                    ((signed)
+                     (if signed
+                         (error/ast 'signed "Duplicate type specification" ts)
+                         (loop unsigned
+                            ts
+                            long
+                            longlong
+                            short
+                            tspec
+                            (cdr tspcs))))	
+                    (else
+                     (cond
+                        ;; We want to also support the compound types of
+                        ;; the form 'unsigned short int' so we explicitly check to
+                        ;; see if the last tspec is not 'int' before indicating
+                        ;; an error.
+                        ((and tspec
+                            (pair? tspec)
+                            (>= 1 (length tspec))
+                            (not (eq? (type-spec-class (car tspec)) 'int)))
+                         (error/ast (type-spec-class ts) "Illegal type" ts))
+                        ((eq? (type-spec-class ts) 'short)
+                         (if (and (not long)
+                                (not longlong)
+                                (not short)
+                                (not tspec))
+                             (loop unsigned
+                                signed
+                                #f
+                                #f
+                                ts
+                                #f
+                                (cdr tspcs))
+                             (error/ast 'type4 "Illegal type" ts)))
+                        ((eq? (type-spec-class ts) 'long)
+                         (cond
+                            ((and (not longlong)
+                                (not short)
+                                (not tspec))
+                             (if long
+                                 (loop unsigned
+                                    signed
+                                    #f
+                                    ts
+                                    #f
+                                    #f
+                                    (cdr tspcs))
+                                 (loop unsigned
+                                    signed
+                                    ts
+                                    #f
+                                    #f
+                                    #f
+                                    (cdr tspcs))))
+                            (else
+                             (error/ast 'type5 "Illegal type" ts))))
+                        ((eq? (type-spec-class ts) 'longlong)
+                         (cond
+                            ((and (not longlong)
+                                (not short)
+                                (not tspec))
+                             (if long
+                                 (loop unsigned
+                                    signed
+                                    #f
 				;; this is the only place the longlong flag is 
-				;; changed ot something other than #f
-				ts
-				#f
-				#f
-				(cdr tspcs))
-			     ;; we really shouldn't get here
-			     (loop unsigned
-				signed
-				ts
-				#f
-				#f
-				#f
-				(cdr tspcs))))
-			(else
-			 (error/ast 'type6 "Illegal type" ts))))
-		    ((eq? (type-spec-class ts) 'int)
-		     (cond
-			(short
-			 (loop unsigned
-			       signed
-			       short
-			       #f
-			       #f
-			       short
-			       (cdr tspcs)))
-			(long
+                                    ;; changed ot something other than #f
+                                    ts
+                                    #f
+                                    #f
+                                    (cdr tspcs))
+                                 ;; we really shouldn't get here
+                                 (loop unsigned
+                                    signed
+                                    ts
+                                    #f
+                                    #f
+                                    #f
+                                    (cdr tspcs))))
+                            (else
+                             (error/ast 'type6 "Illegal type" ts))))
+                        ((eq? (type-spec-class ts) 'int)
+                         (cond
+                            (short
+                             (loop unsigned
+                                signed
+                                short
+                                #f
+                                #f
+                                short
+                                (cdr tspcs)))
+                            (long
 			 (loop unsigned
 			       signed
 			       long
@@ -352,7 +365,7 @@
 			       #f
 			       ts
 			       (cdr tspcs)))))
-		    (else
+                        (else
 		     (loop unsigned
 			   signed
 			   long

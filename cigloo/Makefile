@@ -27,7 +27,7 @@ CIGLOO_DEST	= $(BOOTBINDIR)/cigloo$(EXE_SUFFIX)
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
 #*---------------------------------------------------------------------*/
-BFLAGS		= -lib-dir $(BOOTLIBDIR) -afile .afile -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
+BFLAGS		= -export-exports -lib-dir $(BOOTLIBDIR) -afile .afile -g3 -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
 EFLAGS		=
 
 #*---------------------------------------------------------------------*/

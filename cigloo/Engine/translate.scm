@@ -93,10 +93,12 @@
 ;*    translate-ast ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (translate-ast ast)
+  
    (if (not (ast? ast))
        'ignore
        (ast-case ast
 	  ((fun-def)
+       
 	   (translate-function-definition ast))
 	  ((declare)
 	   (translate-declaration ast))

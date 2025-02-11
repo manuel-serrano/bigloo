@@ -92,7 +92,10 @@
 	  (? (or long-suffix
 		 (: long-suffix unsigned-suffix)
 		 unsigned-suffix
-		 (: unsigned-suffix long-suffix))))
+		 (: unsigned-suffix long-suffix)
+                 (: long-suffix long-suffix unsigned-suffix)
+                 (: long-suffix long-suffix)
+                 (: unsigned-suffix long-suffix long-suffix))))
        (list 'INTEGER-CONSTANT (the-string)))
 
       ;; floating-point constant
@@ -173,7 +176,7 @@
 	'done)
        ((DEFINE-VAR ID value)
 	(if *define*
-	    (let ((cell  (assq value *c-type-alist*))
+            (let ((cell  (assq value *c-type-alist*))
 		  (coord DEFINE-VAR)
 		  (m-id  (car ID)))
 	       (cond
@@ -273,7 +276,13 @@
        ((CHAR-CONSTANT)
 	'char)
        ((INTEGER-CONSTANT)
-	'long)
+        (cond
+           ((pregexp-match ".*(u|U)|(l|L)(l|L)$" (car INTEGER-CONSTANT))
+            'ulonglong)
+           ((pregexp-match ".*(l|L)(l|L)$" (car INTEGER-CONSTANT))
+            'longlong)
+           (else
+            'long)))
        ((FLOAT-CONSTANT)
 	'double)
        ((???)

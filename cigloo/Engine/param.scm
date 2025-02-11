@@ -137,8 +137,11 @@
      (file*       . "file")
      (short       . "short")
      (int         . "int")
+     (uint        . "uint")
      (long        . "long")
-     (longlong    . "llong") 
+     (ulong       . "ulong")
+     (longlong    . "llong")
+     (ulonglong    . "ullong")
      (signed      . "sint")
      (unsigned    . "uint")
      (float       . "float")
@@ -148,14 +151,16 @@
    '((char     . "uchar")
      (short    . "ushort")
      (int      . "uint")
-     (long     . "ulong")))
+     (long     . "ulong")
+     (longlong . "ullong")))
 
    
 (define *c-signed-type-alist*
-   '((char     . "schar")
+   '((char     . "char")
      (short    . "short")
      (int      . "int")
-     (long     . "long")))
+     (long     . "long")
+     (longlong . "llong")))
 
 (define *default-type* "int")
 
