@@ -696,7 +696,9 @@
        ((static-assert-statement)
         #unspecified)
        ((gcc-attribute-statement)
-        #unspecified))
+        #unspecified)
+       ((gcc-asm-statment)
+        '()))
       
       
       (labeled-statement
@@ -789,12 +791,15 @@
        ((return SEMI-COMMA)
 	#unspecified)
        ((return expr SEMI-COMMA)
-	#unspecified)
-       )
+	#unspecified))
 
       ;; handle C11 _Static_assert keyword
       (static-assert-statement
          ((_Static_assert PAR-OPEN expr PAR-CLO SEMI-COMMA)
+          #unspecified))
+
+      (gcc-asm-statment
+         ((gcc-asm SEMI-COMMA)
           #unspecified))
 
       ;; handle attributes modifying expressions and statements 
