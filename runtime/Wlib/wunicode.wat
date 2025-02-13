@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  5 09:51:39 2025                          */
-;*    Last change :  Wed Feb  5 13:50:11 2025 (serrano)                */
+;*    Last change :  Thu Feb  6 09:25:57 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unicode strings and characters                              */
@@ -14,9 +14,13 @@
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
-   
-   (type $bucs2 (struct (field $v i16) (field $__dummy i16)))
-   (type $ucs2string (array (mut i16)))
+
+   (rec
+      (type $__dummy_bucs2 (field $dummy i16))
+      (type $bucs2 (struct (field $v i16))))
+   (rec
+      (type $__dummy_ucs2string (field $dummy i8))
+      (type $ucs2string (array (mut i16))))
 
    ;; -----------------------------------------------------------------
    ;; JavaScript imports 
