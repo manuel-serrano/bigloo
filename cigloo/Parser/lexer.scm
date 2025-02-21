@@ -55,6 +55,7 @@
      "__restrict"
      "__restrict__"
      "return"
+     "_Static_assert" ; C11 Keyword
      "short"
      "signed"
      "sizeof"
@@ -68,10 +69,12 @@
      "volatile"
      "while"
      "FILE"
-     "obj_t"))
+     "obj_t"
+     "_Bool"
+     "_Float128"))
 
 (define *gcc-keyword-list*
-   '("__attribute__" "inline" "__inline__" "__inline" "__extension__" "__gnuc_va_list"))
+   '("__asm__" "__attribute__" "__attribute" "inline" "__inline__" "__inline" "__extension__" "__gnuc_va_list" "__builtin_va_list"))
 
 ;*---------------------------------------------------------------------*/
 ;*    lexer initialization                                             */
@@ -165,7 +168,10 @@
 	  (? (or long-suffix
 		 (: long-suffix unsigned-suffix)
 		 unsigned-suffix
-		 (: unsigned-suffix long-suffix))))
+		 (: unsigned-suffix long-suffix)
+                 (: long-suffix long-suffix)
+                 (: unsigned-suffix long-suffix long-suffix)
+                 (: long-suffix long-suffix unsigned-suffix))))
        (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; floating-point constant
@@ -178,11 +184,13 @@
        (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; character constant
-      ((: (? #\L) #\' (+ all) #\')
+      ((: (? #\L) #\' (or (out #\\ #\') (: #\\ all)
+                         (: #\\ (in #\x #\X) (** 1 4 xdigit))
+                         (: #\\ (** 1 3 odigit)))  #\')
        (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; string constant
-      ((: (? #\L) #\" (* (out #\")) #\")
+      ((: (? #\L) #\" (* (or (out #a000 #\\ #\") (: #\\ all))) #\")
        (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; operators
