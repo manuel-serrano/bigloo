@@ -31,6 +31,7 @@
 ;*    cigloo ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (cigloo)
+
    ;; the reader settup
    (init-lexer!)
    (if (string? *dest*)
@@ -53,6 +54,7 @@
 ;*    engine ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (engine)
+   ;(bigloo-debug-set! 300)
    ;; first of all, we emit identification comment and
    ;; the include Bigloo clauses.
    (if (>=fx *verbose* 0)
