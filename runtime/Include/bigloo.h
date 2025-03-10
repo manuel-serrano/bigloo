@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 15:12:46 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 17:51:31 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1215,11 +1215,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 /*    Constants                                                        */
 /*---------------------------------------------------------------------*/
-#if (TAG_CNST != 0)
-#  define BGL_TAG_CNSTP(o) ((((unsigned long)o) & TAG_MASK) == TAG_CNST)
-#else
-#  define BGL_TAG_CNSTP(o) ((o) && ((((long)o) & TAG_MASK) == TAG_CNST))
-#endif
+#define BGL_TAG_CNSTP(c) BGL_TAGGED_PTRP(c, TAG_CNST, TAG_MASK)
 
 #if (BGL_NAN_TAGGING) /* BGL_NAN_TAGGING */
 #  define BGL_TAG_BCNST(c) (obj_t)TAG(c << 32, TAG_SHIFT, TAG_CNST)
@@ -1279,7 +1275,7 @@ typedef obj_t (*function_t)();
 #define BREST BCNST(28L)
 #define BKEY BCNST(30L)
 
-#if (!BGL_NAN_TAGGING)
+#if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING)
 #  define BGL_NULL_OR_UNSPECIFIEDP(obj) \
    ((((long)(obj)) & ((TAG_MASK << 1) + 1)) == (long)BNIL)
 #else
