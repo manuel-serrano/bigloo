@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 10:28:11 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 12:51:32 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -323,7 +323,7 @@ extern "C" {
      (((((long)(o)) - (tag)) & (mask)) == 0)
 #elif (BGL_TAGGING == BGL_TAGGING_NUN) // NUN TAGGING
 #  define BGL_MASKP(o, tag, mask) \
-     ((((long)(o)) >> 48) == 0)
+  (((long)(o) & (mask | (0xffffUL << 48))) == mask)
 #else                                 // OTHER TAGGING
 #  define BGL_MASKP(o, tag, mask) \
      ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)

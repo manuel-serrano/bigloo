@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar 10 10:24:21 2025 (serrano)                */
+#*    Last change :  Mon Mar 10 11:35:28 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -937,11 +937,14 @@ while : ; do
       mode=benchmark;;
 
     --debug)
+      cstrip="no";
+      strip="no";
       cflags="$cflags -g";
       bflags="$bflags -cg";;
 
     --debug2)
-      cstrip="";
+      cstrip="no";
+      strip="no";
       cflags="$cflags -g";
       bflags="-cg -q";;
 
