@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Mon Mar 10 09:48:44 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 13:34:12 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -24,12 +24,12 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    Integers                                                         */
 /*---------------------------------------------------------------------*/
-#define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
-
 #define BINT_NULL BINT(0)
 
 #if ((BGL_TAGGING != BGL_TAGGING_NAN) && !BGL_SMI)
 /* normal tagging */
+#  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+
 #  define BGL_LONG_MIN (LONG_MIN >> TAG_SHIFT)
 #  define BGL_LONG_MAX (LONG_MAX >> TAG_SHIFT)
 
@@ -45,6 +45,8 @@ extern "C" {
 #  define EGFX(x, y) ((long)(x) == (long)(y))
 #elif (BGL_TAGGING == BGL_TAGGING_NUN)
 /* nun tagging */
+#  define INTEGERP(o) ((((unsigned long)o) >> 48) == (TAG_INT >> 48))
+
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
@@ -60,6 +62,8 @@ extern "C" {
 #  define EGFX(x, y) ((long)(x) == (long)(y))
 #elif ((BGL_TAGGING != BGL_TAGGING_NAN) && BGL_SMI)
 /* smi (int32) tagging */
+#  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
@@ -75,6 +79,8 @@ extern "C" {
 #  define EGFX(x, y) ((long)(x) == (long)(y))
 #else
 /* nan tagging */      
+#  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
