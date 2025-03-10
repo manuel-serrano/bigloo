@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar 10 11:35:28 2025 (serrano)                */
+#*    Last change :  Mon Mar 10 18:32:20 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1925,8 +1925,9 @@ if [ "$alignment" = "3" ]; then
     intsize=32
   elif [ "$bglsmi " != "0 " ]; then
     intsize=32
+  elif [ "$bglnuntagging " != "0 " ]; then
   else
-    intsize=61
+    intsize=32
   fi
   elongsize=64
 else
