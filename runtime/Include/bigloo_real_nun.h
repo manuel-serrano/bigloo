@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Mar 10 10:27:12 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 10:37:50 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NuN TAGGING REALs                                         */
@@ -52,12 +52,14 @@ union bgl_nunobj {
 #define BGL_BITS_AS_OBJ(b) (((union bgl_nunobj){ bits: b }).obj)
 
 #define BREAL(d) BGL_BITS_AS_OBJ(BGL_DOUBLE_AS_BITS(d) + BGL_NUN_FL_OFFSET)
-#define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(d) - BGL_NUN_FL_OFFSET)
-
-#define BGL_REAL_CNST(name) name.ptr
+#define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(p) - BGL_NUN_FL_OFFSET)
 
 #define DEFINE_REAL(name, aux, _flonum) \
-   static const union bgl_nunobj name = BREAL(_flonum)
+   static const union bgl_nunobj aux = { _flonum }; \
+   static const union bgl_nunobj *name = &aux;
+
+#define BGL_REAL_CNST(name) \
+   ((obj_t)((((union bgl_nunobj *)(name))->bits + BGL_NUN_FL_OFFSET)))
 
 /*---------------------------------------------------------------------*/
 /*    FLONUMP ...                                                      */
