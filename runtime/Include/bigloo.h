@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 14:59:17 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 15:12:46 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -327,7 +327,7 @@ extern "C" {
 
 // BGL_POINTERP  
 #if (BGL_TAGGING == BGL_TAGGING_NUN)   // NUN TAGGING
-#  define BGL_POINTERP(o) ((o >> 48) === 0)
+#  define BGL_POINTERP(o) (BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER) && (((unsigned long)(o) >> 48) == 0))
 #else                                  // OTHER TAGGING
 #  define BGL_POINTERP(o) BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER)
 #endif   
@@ -337,7 +337,7 @@ extern "C" {
 // BGL_TAGGED_PTRP  
 #if (BGL_TAGGING == BGL_TAGGING_NUN)   // NUN TAGGING
 #  define BGL_TAGGED_PTRP(o, tag, mask) \
-  (((tag) || (o)) && BGL_MASKP(o, tag, mask) && (o >> 48) === 0)
+  (((tag) || (o)) && BGL_MASKP(o, tag, mask) && (((unsigned long)(o) >> 48) == 0))
 #else                                  // OTHER TAGGING 
 #  define BGL_TAGGED_PTRP(o, tag, mask) \
   (((tag) || (o)) && BGL_MASKP(o, tag, mask))
