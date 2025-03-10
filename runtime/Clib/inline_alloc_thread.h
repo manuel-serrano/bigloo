@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/nanh/runtime/Clib/inline_alloc_thread.h       */
+/*    .../project/bigloo/bigloo/runtime/Clib/inline_alloc_thread.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Tue Nov 26 10:04:50 2024 (serrano)                */
-/*    Copyright   :  2017-24 Manuel Serrano                            */
+/*    Last change :  Mon Mar 10 10:30:14 2025 (serrano)                */
+/*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
 /*=====================================================================*/
@@ -96,7 +96,7 @@ DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
 DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #endif
 
-#if (!BGL_NAN_TAGGING) 
+#if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
 GC_API obj_t
 make_real(double d) {
 #if (!defined(TAG_REALZ))

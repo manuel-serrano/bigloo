@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Mar 10 09:38:16 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 10:27:12 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NuN TAGGING REALs                                         */
@@ -51,8 +51,8 @@ union bgl_nunobj {
 #define BGL_BITS_AS_DOUBLE(b) (((union bgl_nunobj){ bits: b }).real)
 #define BGL_BITS_AS_OBJ(b) (((union bgl_nunobj){ bits: b }).obj)
 
-#define BREAL(d) BGL_BITS_AS_OBJ(BGL_DOUBLE_AS_BITS(d) + BGL_NUM_FL_OFFSET)
-#define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(d) - BGL_NUM_FL_OFFSET)
+#define BREAL(d) BGL_BITS_AS_OBJ(BGL_DOUBLE_AS_BITS(d) + BGL_NUN_FL_OFFSET)
+#define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(d) - BGL_NUN_FL_OFFSET)
 
 #define BGL_REAL_CNST(name) name.ptr
 
@@ -62,9 +62,9 @@ union bgl_nunobj {
 /*---------------------------------------------------------------------*/
 /*    FLONUMP ...                                                      */
 /*---------------------------------------------------------------------*/
-INLINE bool FLONUMP(obj_t _o) {
+INLINE bool FLONUMP(obj_t o) {
    unsigned long tag = ((unsigned long)o) >> 48;
-   return l && l != 0xffff;
+   return tag && tag != 0xffff;
 }
 
 #define REALP(c) (FLONUMP(c))

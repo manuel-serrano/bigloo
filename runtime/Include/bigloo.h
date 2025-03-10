@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 10:20:43 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 10:28:11 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -824,7 +824,7 @@ union scmobj {
    struct bgl_struct structure;
 
    /* floating point numbers */
-#if (!BGL_NAN_TAGGING)
+#if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING)
    struct bgl_real real;
 #endif   
 

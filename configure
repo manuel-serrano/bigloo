@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar 10 10:09:29 2025 (serrano)                */
+#*    Last change :  Mon Mar 10 10:24:21 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1412,6 +1412,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_real_heap_h=lib/bigloo/$release/bigloo_real_heap.h
   bigloo_real_flt_h=lib/bigloo/$release/bigloo_real_flt.h
   bigloo_real_nan_h=lib/bigloo/$release/bigloo_real_nan.h
+  bigloo_real_nun_h=lib/bigloo/$release/bigloo_real_nun.h
   bigloo_bignum_h=lib/bigloo/$release/bigloo_bignum.h
   bigloo_int_h=lib/bigloo/$release/bigloo_int.h
   bigloo_vector_h=lib/bigloo/$release/bigloo_vector.h
@@ -4012,6 +4013,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_real_heap_h` $bigloo_real_heap_h
   cp runtime/Include/`basename $bigloo_real_flt_h` $bigloo_real_flt_h
   cp runtime/Include/`basename $bigloo_real_nan_h` $bigloo_real_nan_h
+  cp runtime/Include/`basename $bigloo_real_nun_h` $bigloo_real_nun_h
   cp runtime/Include/`basename $bigloo_bignum_h` $bigloo_bignum_h
   cp runtime/Include/`basename $bigloo_int_h` $bigloo_int_h
   cp runtime/Include/`basename $bigloo_vector_h` $bigloo_vector_h

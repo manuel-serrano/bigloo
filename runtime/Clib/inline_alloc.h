@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/runtime/Clib/inline_alloc.h      */
+/*    .../prgm/project/bigloo/bigloo/runtime/Clib/inline_alloc.h       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Tue Nov 26 10:04:30 2024 (serrano)                */
-/*    Copyright   :  2017-24 Manuel Serrano                            */
+/*    Last change :  Mon Mar 10 10:30:02 2025 (serrano)                */
+/*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
 /*=====================================================================*/
@@ -198,7 +198,7 @@ DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
 DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #endif
 
-#if (!BGL_NAN_TAGGING) 
+#if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
 static obj_t
 alloc_make_real(double d) {
    obj_t real;
