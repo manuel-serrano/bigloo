@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 08:55:41 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 10:20:43 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -265,7 +265,7 @@ extern "C" {
   error wrong flnz tagging configuration
 #elif (BGL_FL_TAGGING == 4 && BGL_TAGGING != BGL_TAGGING_FL1)
   error wrong fl1 tagging configuration
-#elif (!BGL_FL_TAGGING && !BGL_NAN_TAGGING && BGL_TAGGING != BGL_TAGGING_HEAP)
+#elif (!BGL_FL_TAGGING && !BGL_NAN_TAGGING && !BGL_NUN_TAGGING && BGL_TAGGING != BGL_TAGGING_HEAP)
   error wrong plain tagging configuration
 #endif
   

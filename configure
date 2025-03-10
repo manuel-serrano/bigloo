@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar 10 08:54:00 2025 (serrano)                */
+#*    Last change :  Mon Mar 10 10:09:29 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1793,26 +1793,34 @@ bootbigloo="`echo $_bootmethod | awk -F: '{print $2}'`"
 bootbigloobindir=`dirname $bootbigloo 2> /dev/null`
 
 if [ $bootmethod = "source" ]; then
-  mkdir -p download
-  if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
-    echo "downloading bigloo $buildrelease from $bigloohttp"
-    wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
-  else
-    echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
-  fi
-
-  if [ $? != 0 ]; then
-    echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
-    rm -f download/bigloo-$buildrelease.tar.gz
-    wget --help > /dev/null 2> /dev/null
-    
-    if [ $? != 0 ]; then
-      echo "probably because \"wget\" is missing."
+  if [ "$BGLBUILDBINDIR " =  " " ]; then
+    echo "!!! NOTE: set BGLBUILDBINDIR=<bigloo-bin-dir> to cross compile"
+    echo "with an already installed bigloo and to avoid downloading and"
+    echo "installing a fresh bigloo environment."
+    mkdir -p download
+    if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
+      echo "downloading bigloo $buildrelease from $bigloohttp"
+      wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
+    else
+      echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
     fi
-    
-    exit 1
+
+    if [ $? != 0 ]; then
+      echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
+      rm -f download/bigloo-$buildrelease.tar.gz
+      wget --help > /dev/null 2> /dev/null
+      
+      if [ $? != 0 ]; then
+	echo "probably because \"wget\" is missing."
+      fi
+      
+      exit 1
+    else
+      bootbindir=$PWD/download/bin
+      bootbigloo=$bootbindir/bigloo
+    fi
   else
-    bootbindir=$PWD/download/bin
+    bootbindir=$BGLBUILDBINDIR
     bootbigloo=$bootbindir/bigloo
   fi
 fi
@@ -3763,6 +3771,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_TAGGING@|$bgltagging|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
+              -e "s|@BGL_NUN_TAGGING@|$bglnuntagging|" \
               -e "s|@BGL_FL_TAGGING@|$bglfltagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
