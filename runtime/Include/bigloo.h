@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 17:51:31 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 18:07:31 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1236,6 +1236,12 @@ typedef obj_t (*function_t)();
     ((long)(((unsigned long)BGL_TAG_CCNST(o)) & 0xffff))
 #  define CCNST_MASK(o) \
     (o & 0xffff)
+#if (BGL_TAGGING == BGL_TAGGING_NUN)
+#  define CNSTP(o) BGL_TAG_CNSTP(o)
+#  define CNST32P(o) ((((unsigned long)o) >> 48) == 0)
+#  define BCNST(o) BGL_TAG_BCNST(o)
+#  define CCNST(o) BGL_TAG_CCNST(o)
+#  define CCNST_MASK(o) (o)
 #else  /* !BGL_TAG_CNST32 */
 #  define CNSTP(o) BGL_TAG_CNSTP(o)
 #  define CNST32P(o) 1
