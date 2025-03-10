@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 13:30:31 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 14:59:17 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -316,21 +316,32 @@ extern "C" {
 #  define BGL_CNST_SHIFT_INT32 32
 #endif
 
-
-// BGL_MASLP
+// BGL_MASKP
 #if (BGL_TAGGING == BGL_TAGGING_NAN)   // NAN TAGGING
 #  define BGL_MASKP(o, tag, mask) \
      (((((long)(o)) - (tag)) & (mask)) == 0)
-#elif (BGL_TAGGING == BGL_TAGGING_NUN) // NUN TAGGING
-#  define BGL_MASKP(o, tag, mask) \
-  (((long)(o) & (mask | (0xffffUL << 48))) == mask)
 #else                                 // OTHER TAGGING
 #  define BGL_MASKP(o, tag, mask) \
      ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
 #endif
-  
-#define BGL_TAGGED_PTRP(o, tag, mask) \
-   (((tag) || (o)) && BGL_MASKP(o, tag, mask))
+
+// BGL_POINTERP  
+#if (BGL_TAGGING == BGL_TAGGING_NUN)   // NUN TAGGING
+#  define BGL_POINTERP(o) ((o >> 48) === 0)
+#else                                  // OTHER TAGGING
+#  define BGL_POINTERP(o) BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER)
+#endif   
+#define POINTERP(o) BGL_POINTERP(o)
+
+
+// BGL_TAGGED_PTRP  
+#if (BGL_TAGGING == BGL_TAGGING_NUN)   // NUN TAGGING
+#  define BGL_TAGGED_PTRP(o, tag, mask) \
+  (((tag) || (o)) && BGL_MASKP(o, tag, mask) && (o >> 48) === 0)
+#else                                  // OTHER TAGGING 
+#  define BGL_TAGGED_PTRP(o, tag, mask) \
+  (((tag) || (o)) && BGL_MASKP(o, tag, mask))
+#endif  
 
 #define BGL_HEADER_PTRP(o, type) \
    (BGL_POINTERP(o) && (TYPE(o) == (type)))
@@ -431,10 +442,6 @@ extern "C" {
 #else
   error wrong tagging configuration
 #endif
-
-#define BGL_POINTERP(o) BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER)
-
-#define POINTERP(o) BGL_POINTERP(o)
 
 #define BREF(r) BGL_BPTR((obj_t)((long)r + TAG_POINTER))
 #define CREFSLOW(r) BGL_CPTR((obj_t)((unsigned long)r & ~(TAG_MASK)))
