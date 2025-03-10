@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/runtime/Include/bigloo.h         */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Dec 12 10:43:44 2024 (serrano)                */
+/*    Last change :  Mon Mar 10 08:55:41 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -180,13 +180,34 @@ extern "C" {
 /*    64 nan tagging:                                                  */
 /*    -------------------------------------------------------------    */
 /*    - pointers (vector, cell, real):                                 */
-/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*    +--------+--------+-------+- ... --+--------+--------+--------+  */
 /*    |x1111111|1111????|.........pointer...........................|  */
-/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*    +--------+--------+-------+- ... --+--------+--------+--------+  */
 /*                                                                     */
 /*    - int32:                                                         */
 /*    +--------+--------+- ... -+--------+--------+--------+--------+  */
 /*    |x1111111|1111????|.......|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*                                                                     */
+/*    -------------------------------------------------------------    */
+/*    64 nun tagging:                                                  */
+/*    -------------------------------------------------------------    */
+/*    - pointers (vector, cell, real):                                 */
+/*    +--------+--------+-------+- ... --+--------+--------+--------+  */
+/*    |00000000|..................pointer........................???|  */
+/*    +--------+--------+-------+- ... --+--------+--------+--------+  */
+/*                                                                     */
+/*    - int32:                                                         */
+/*    +--------+--------+-------+- ... --+--------+--------+--------+  */
+/*    |11111111|................|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+-------+- ... --+--------+--------+--------+  */
+/*                                                                     */
+/*    - floats + (1 << 49):                                            */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*    |00000001|xxxxxxxx|.......|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*    +--------+--------+- ... -+--------+--------+--------+--------+  */
+/*    |11111110|xxxxxxxx|.......|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|  */
 /*    +--------+--------+- ... -+--------+--------+--------+--------+  */
 /*                                                                     */
 /*    -------------------------------------------------------------    */
@@ -229,10 +250,13 @@ extern "C" {
 #define BGL_TAGGING_FLNZ 4
 #define BGL_TAGGING_FL1 5
 #define BGL_TAGGING_NAN 6
+#define BGL_TAGGING_NUN 7
 
 // sanity check to be removed (11 dec 2024)
 #if (BGL_NAN_TAGGING && (BGL_TAGGING != BGL_TAGGING_NAN))
   error wrong nan tagging configuration
+#elif (BGL_NUN_TAGGING && (BGL_TAGGING != BGL_TAGGING_NUN))
+  error wrong nun tagging configuration
 #elif (BGL_FL_TAGGING == 1 && BGL_TAGGING != BGL_TAGGING_FL)
   error wrong fl tagging configuration
 #elif (BGL_FL_TAGGING == 2 && BGL_TAGGING != BGL_TAGGING_FLLB)
@@ -244,7 +268,7 @@ extern "C" {
 #elif (!BGL_FL_TAGGING && !BGL_NAN_TAGGING && BGL_TAGGING != BGL_TAGGING_HEAP)
   error wrong plain tagging configuration
 #endif
-
+  
 #if (BGL_TAGGING == BGL_TAGGING_NAN) /* BGL_NAN_TAGGING */
 #  define TAG_MASK (0xffffUL << 48)
 #  define TAG_MASKPOINTER TAG_MASK
@@ -292,14 +316,19 @@ extern "C" {
 #  define BGL_CNST_SHIFT_INT32 32
 #endif
 
-#if (BGL_TAGGING != BGL_TAGGING_NAN) //(!BGL_NAN_TAGGING)
-#  define BGL_MASKP(o, tag, mask) \
-     ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
-#else
+
+// BGL_MASLP
+#if (BGL_TAGGING == BGL_TAGGING_NAN)   // NAN TAGGING
 #  define BGL_MASKP(o, tag, mask) \
      (((((long)(o)) - (tag)) & (mask)) == 0)
+#elif (BGL_TAGGING == BGL_TAGGING_NUN) // NUN TAGGING
+#  define BGL_MASKP(o, tag, mask) \
+     ((((long)(o)) >> 48) == 0)
+#else                                 // OTHER TAGGING
+#  define BGL_MASKP(o, tag, mask) \
+     ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
 #endif
-
+  
 #define BGL_TAGGED_PTRP(o, tag, mask) \
    (((tag) || (o)) && BGL_MASKP(o, tag, mask))
 
@@ -376,6 +405,16 @@ extern "C" {
 #    undef BGL_CNST_SHIFT_UCS2
 #    define BGL_CNST_SHIFT_UCS2 8
 #  endif
+#elif (BGL_TAGGING == BGL_TAGGING_NUN)
+#  define TAG_QNAN 0
+#  define TAG_INT (0xffffUL << 48)    /*  int tagging                  */
+#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
+#  define TAG_CNST 2                  /*  constant tagging      ....10 */
+#  define TAG_PAIR 3                  /*  pair tagging          ....11 */
+#  define TAG_VECTOR 4                /*  vector tagging        ...100 */
+#  define TAG_CELL 5                  /*  cell tagging          ...101 */
+#  define TAG____y 6                  /*  ??? tagging           ...110 */
+#  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (BGL_TAGGING == BGL_TAGGING_NAN)
 #  define TAG_QNAN (0x7ff8UL<<48)
 #  define TAG_SNAN (0xfff8UL<<48)

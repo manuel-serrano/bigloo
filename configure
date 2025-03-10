@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar  3 12:48:47 2025 (serrano)                */
+#*    Last change :  Mon Mar 10 08:54:00 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -110,6 +110,7 @@ belong_prealloc_max=100
 #bgltagging=BGL_TAGGING_HEAP
 bgltagging=BGL_TAGGING_FL
 bglnantagging=0
+bglnuntagging=0
 #bglfltagging=0
 bglfltagging=1
 bglsmi=0
@@ -962,30 +963,43 @@ while : ; do
     --heap-tagging)
       bgltagging=BGL_TAGGING_HEAP;
       bglfltagging=0;
-      bglnantagging=0;;
+      bglnantagging=0;
+      bglnuntagging=0;;
       
     --nan-tagging)
       bgltagging=BGL_TAGGING_NAN;
       bglfltagging=0;
-      bglnantagging=1;;
+      bglnantagging=1;
+      bglnuntagging=0;;
       
+    --nun-tagging)
+      bgltagging=BGL_TAGGING_NUN;
+      bglfltagging=0;
+      bglnantagging=0;
+      bglnuntagging=1;;
+    
     --fl-tagging)
       bgltagging=BGL_TAGGING_FL;
       bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=1;;
       
     --fl-tagging-lb)
       bgltagging=BGL_TAGGING_FLLB;
       bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=2;;
       
     --fl-tagging-nz)
       bgltagging=BGL_TAGGING_FLNZ;
       bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=3;;
       
     --fl-tagging-1)
       bgltagging=BGL_TAGGING_FL1;
+      bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=4;;
       
     --smi)
@@ -1910,6 +1924,7 @@ else
   bgltagging=BGL_TAGGING_HEAP
   bglfltagging=0
   bglnantagging=0
+  bglnuntagging=0
 fi
 
 #*---------------------------------------------------------------------*/
