@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Mon Mar 10 13:34:12 2025 (serrano)                */
+/*    Last change :  Mon Mar 10 13:55:11 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -26,7 +26,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #define BINT_NULL BINT(0)
 
-#if ((BGL_TAGGING != BGL_TAGGING_NAN) && !BGL_SMI)
+#if ((BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN) && !BGL_SMI)
 /* normal tagging */
 #  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
 
@@ -50,10 +50,10 @@ extern "C" {
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
-#  define BINT(i) ((obj_t)(((long)((int32_t)i)) + TAG_INT))
-#  define CINT(i) ((long)((int32_t)((long)((long)i))) - TAG_INT)
-#  define ADDFX(x, y) (obj_t)(CINT(x) + (long)y)
-#  define SUBFX(x, y) BINT((long)(x) - ((long)(y)))
+#  define BINT(i) ((obj_t)(((unsigned long)((uint32_t)i)) + TAG_INT))
+#  define CINT(i) ((long)(((int32_t)(((unsigned long)i) - TAG_INT))))
+#  define ADDFX(x, y) BINT(CINT(x) + CINT(y))
+#  define SUBFX(x, y) BINT(CINT(x) - CINT(y))
 
 #  define LTFX(x, y) ((long)(x) < (long)(y))
 #  define LEFX(x, y) ((long)(x) <= (long)(y))
