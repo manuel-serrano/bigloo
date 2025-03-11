@@ -116,7 +116,7 @@ POPULATION	= Makefile README $(EMACS_SOURCES) $(OLD_SOURCES) \
 #*---------------------------------------------------------------------*/
 all: $(EMACSBRAND)
 
-emacs22 emacs23 emacs24 emacs25 emacs26 emacs27 emacs28 emacs29:
+emacs22 emacs23 emacs24 emacs25 emacs26 emacs27 emacs28 emacs29 emacs30:
 	(expr=load-path; \
           for p in . $(LOADPATH); do \
              expr="(cons \"../$$p\" (cons \"$$p\" $$expr))"; \
@@ -185,6 +185,7 @@ install.emacs26: doinstall
 install.emacs27: doinstall
 install.emacs28: doinstall
 install.emacs29: doinstall
+install.emacs30: doinstall
 install.xemacs: doinstall
 
 install.generic:
