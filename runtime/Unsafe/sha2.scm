@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/sha2.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/sha2.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Fri Sep 22 08:32:56 2017 (serrano)                */
-;*    Copyright   :  2008-21 Wayne Richards, Manuel Serrano            */
+;*    Last change :  Tue Mar 11 07:21:21 2025 (serrano)                */
+;*    Copyright   :  2008-25 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
 ;*=====================================================================*/
@@ -200,7 +200,7 @@
       (match-case x
 	 (()
 	  #u32:0)
-	 ((?- ?a)<
+	 ((?- ?a)
 	  (e a e))
 	 ((?- ?a . ?b)
 	  (e `(addu32 ,a (u32+ ,@b)) e)))))

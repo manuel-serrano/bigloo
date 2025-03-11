@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 18:09:15 2025 (serrano)                */
+/*    Last change :  Tue Mar 11 07:43:54 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -302,7 +302,7 @@ extern "C" {
 
 #  define BGL_CNSTP(o, header, shift) \
      (CNST32P(o) && (((unsigned long)(o) & (long)(((long)1 << (shift)) -1)) == CCNST_MASK((long)header)))
-#  define BGL_CNST_TO_BCNST(o, mask, header, shift, type)	\
+#  define BGL_CNST_TO_BCNST(o, mask, header, shift, type) \
      ((obj_t)(header + ((unsigned long)((type)(o)) << shift)))
 #  define BGL_BCNST_TO_CNST(o, mask, shift, type) \
      ((type)CCNST_MASK((unsigned long)(o) >> shift))  
@@ -312,7 +312,7 @@ extern "C" {
 #define BGL_CNST_SHIFT_INT16 16
 #define BGL_CNST_SHIFT_UCS2 16
 
-#if (PTR_ALIGNMENT >= 3)
+#if (PTR_ALIGNMENT >= 3 && BGL_TAGGING != BGL_TAGGING_NUN)
 #  define BGL_CNST_SHIFT_INT32 32
 #endif
 
