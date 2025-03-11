@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Mar 11 07:21:21 2025 (serrano)                */
+;*    Last change :  Tue Mar 11 08:12:52 2025 (serrano)                */
 ;*    Copyright   :  2008-25 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
@@ -82,23 +82,6 @@
    (import __param
 	   __hmac
 	   __tvector)
-
-   ;; >>> TBR when debug done
-   (import __r4_output_6_10_3
-            
-            __r4_numbers_6_5_fixnum
-            __r4_numbers_6_5_flonum
-            __r4_numbers_6_5
-            __r4_equivalence_6_2
-            __r4_vectors_6_8
-            __r4_booleans_6_1
-            __r4_characters_6_6
-            __r4_symbols_6_4
-            __r4_pairs_and_lists_6_3
-            __r4_strings_6_7
-            __r4_ports_6_10_1
-            __r4_control_features_6_9)
-   ;; <<< TBR when debug done
 
    (from   __srfi4)
    

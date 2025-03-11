@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Mar 10 10:37:50 2025 (serrano)                */
+/*    Last change :  Tue Mar 11 11:27:21 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NuN TAGGING REALs                                         */
@@ -33,14 +33,14 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
+BGL_RUNTIME_DECL union bgl_nunobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
 
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
 union bgl_nunobj {
    double real;
-   long bits;
+   unsigned long bits;
    obj_t obj;
 };
 
@@ -55,11 +55,10 @@ union bgl_nunobj {
 #define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(p) - BGL_NUN_FL_OFFSET)
 
 #define DEFINE_REAL(name, aux, _flonum) \
-   static const union bgl_nunobj aux = { _flonum }; \
-   static const union bgl_nunobj *name = &aux;
+   static const union bgl_nunobj name = { _flonum }
 
 #define BGL_REAL_CNST(name) \
-   ((obj_t)((((union bgl_nunobj *)(name))->bits + BGL_NUN_FL_OFFSET)))
+   ((obj_t)(name.bits + BGL_NUN_FL_OFFSET))
 
 /*---------------------------------------------------------------------*/
 /*    FLONUMP ...                                                      */

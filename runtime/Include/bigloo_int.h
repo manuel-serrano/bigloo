@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Mon Mar 10 15:41:16 2025 (serrano)                */
+/*    Last change :  Tue Mar 11 10:25:40 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -50,8 +50,8 @@ extern "C" {
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
-#  define BINT(i) ((obj_t)(((unsigned long)((uint32_t)i)) + TAG_INT))
-#  define CINT(i) ((long)(((int32_t)(((unsigned long)i) - TAG_INT))))
+#  define BINT(i) ((obj_t)(((unsigned long)((uint32_t)(i))) + TAG_INT))
+#  define CINT(i) ((long)(((int32_t)(((unsigned long)(i)) - TAG_INT))))
 #  define ADDFX(x, y) BINT(CINT(x) + CINT(y))
 #  define SUBFX(x, y) BINT(CINT(x) - CINT(y))
 
@@ -174,8 +174,10 @@ extern "C" {
 #define BGL_BUINT8_TO_UINT8(o) \
    BGL_BCNST_TO_CNST(o, 0xffL, BGL_CNST_SHIFT_INT16, uint8_t)
 
+// MS 11mar2025, int16 conversions must be applied as uint16 not to
+// propagate the number sign
 #define BGL_INT16_TO_BINT16(i) \
-   BGL_CNST_TO_BCNST(i, 0xffffL, BINT16H, BGL_CNST_SHIFT_INT16, int16_t)
+   BGL_CNST_TO_BCNST(i, 0xffffL, BINT16H, BGL_CNST_SHIFT_INT16, uint16_t)
 #define BGL_UINT16_TO_BUINT16(i) \
    BGL_CNST_TO_BCNST(i, 0xffffL, BUINT16H, BGL_CNST_SHIFT_INT16, uint16_t)
 	    
