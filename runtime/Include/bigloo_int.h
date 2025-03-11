@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Mar 11 10:25:40 2025 (serrano)                */
+/*    Last change :  Tue Mar 11 13:41:58 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -164,8 +164,10 @@ extern "C" {
 #define BGL_INT64P(o) (POINTERP(o) && (TYPE(o) == INT64_TYPE))
 #define BGL_UINT64P(o) (POINTERP(o) && (TYPE(o) == UINT64_TYPE))
 
+// MS 11mar2025, int8 conversions must be applied as uint8 not to
+// propagate the number sign
 #define BGL_INT8_TO_BINT8(i) \
-   BGL_CNST_TO_BCNST(i, 0xffL, BINT8H, BGL_CNST_SHIFT_INT16, int8_t)
+   BGL_CNST_TO_BCNST(i, 0xffL, BINT8H, BGL_CNST_SHIFT_INT16, uint8_t)
 #define BGL_UINT8_TO_BUINT8(i) \
    BGL_CNST_TO_BCNST(i, 0xffL, BUINT8H, BGL_CNST_SHIFT_INT16, uint8_t)
 
