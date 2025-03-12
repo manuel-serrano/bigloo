@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Dec 13 14:16:59 2024 (serrano)                */
-;*    Copyright   :  2010-24 Manuel Serrano                            */
+;*    Last change :  Tue Mar  4 10:48:54 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various peephole optimizations:                                  */
 ;*      - (string-ref (symbol->string e) n)                            */
@@ -148,8 +148,6 @@
 	    (when (symbol->string-app? actual)
 	       (with-access::app actual (fun)
 		  (with-access::var fun (variable)
-		     (tprint "var=" (typeof variable)
-			" s=" (typeof *symbol->string!*))
 		     (set! variable *symbol->string!*)))))))
    node)
 
