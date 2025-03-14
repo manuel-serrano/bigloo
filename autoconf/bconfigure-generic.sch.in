@@ -75,6 +75,7 @@
 	   $$configure-big-endian::bool
 	   $$configure-regexp-family::bstring
 	   $$configure-nan-tagging::bool
+	   $$configure-nun-tagging::bool
 	   $$configure-fl-tagging::bool
 	   $$configure-int-size::int
 	   $$configure-elong-size::int
@@ -160,6 +161,7 @@
 (define $$configure-big-endian::bool #t)
 (define $$configure-regexp-family::bstring "pregexp")
 (define $$configure-nan-tagging::bool #f)
+(define $$configure-nun-tagging::bool #f)
 (define $$configure-fl-tagging::bool #f)
 (define $$configure-int-size::int 32)
 (define $$configure-elong-size::int 32)

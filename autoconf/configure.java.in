@@ -21,6 +21,7 @@ public class configure {
   public static final int BGL_INT_BIT_SIZE = 32;
   public static final int BGL_ELONG_BIT_SIZE = 64;
   public static final boolean BGL_NAN_TAGGING = false;
+  public static final boolean BGL_NUN_TAGGING = false;
   public static final boolean BGL_FL_TAGGING = false;
   public static final byte[] SETJMP = "@SETJMP@".getBytes();
   public static final byte[] LONGJMP = "@LONGJMP@".getBytes();

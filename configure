@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar 10 11:35:28 2025 (serrano)                */
+#*    Last change :  Tue Mar 11 17:57:02 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2906,7 +2906,7 @@ if [ "$regexp " = " " ]; then
     extralibs="-l$extrapcre $extralibs"
     regexp=pcre
 
-    if [ `$autoconf pcrefreestudy` = "yes" ]; then
+    if [ `$autoconf pcrefreestudy --cflags=$cflags` = "yes" ]; then
       regexphasfreestudy=1
     fi
   else
