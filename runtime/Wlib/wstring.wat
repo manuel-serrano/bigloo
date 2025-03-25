@@ -137,7 +137,7 @@
       (export "BUCS2")
       (param $v i32)
       (result (ref $bucs2))
-      (struct.new $bucs2 (local.get $v) (i32.const 0)))
+      (struct.new $bucs2 (local.get $v)))
    
    )
   
