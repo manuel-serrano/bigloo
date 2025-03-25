@@ -78,7 +78,7 @@
 	    (act     #f)
 	    (eof?    #f)
 	    (debug   (>=fx (bigloo-debug) (lalr-debug))))
-	 
+         
 	 (let loop ((sp 0))
 	    (set! state (vector-ref stack sp))
 	    (set! acts (vector-ref action-table state))
@@ -110,6 +110,8 @@
 	    (when debug
 	       (display "LALR TRACE: input=" (current-error-port))
 	       (write in (current-error-port))
+               (display " attr= " (current-error-port))
+               (write attr (current-error-port))
 	       (display " state=" (current-error-port))
 	       (write state (current-error-port))
 	       (display " sp=" (current-error-port))

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/runtime/Include/bigloo_int.h     */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_int.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sun Dec 15 07:21:47 2024 (serrano)                */
-/*    Copyright   :  2017-24 Manuel Serrano                            */
+/*    Last change :  Tue Mar 11 13:41:58 2025 (serrano)                */
+/*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
 /*=====================================================================*/
@@ -24,12 +24,12 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    Integers                                                         */
 /*---------------------------------------------------------------------*/
-#define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
-
 #define BINT_NULL BINT(0)
 
-#if ((BGL_TAGGING != BGL_TAGGING_NAN) && !BGL_SMI)
+#if ((BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN) && !BGL_SMI)
 /* normal tagging */
+#  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+
 #  define BGL_LONG_MIN (LONG_MIN >> TAG_SHIFT)
 #  define BGL_LONG_MAX (LONG_MAX >> TAG_SHIFT)
 
@@ -43,8 +43,27 @@ extern "C" {
 #  define GTFX(x, y) ((long)(x) > (long)(y))
 #  define GEFX(x, y) ((long)(x) >= (long)(y))
 #  define EGFX(x, y) ((long)(x) == (long)(y))
+#elif (BGL_TAGGING == BGL_TAGGING_NUN)
+/* nun tagging */
+#  define INTEGERP(o) ((((unsigned long)o) >> 48) == (TAG_INT >> 48))
+
+#  define BGL_LONG_MIN (INT32_MIN)
+#  define BGL_LONG_MAX (INT32_MAX)
+
+#  define BINT(i) ((obj_t)(((unsigned long)((uint32_t)(i))) + TAG_INT))
+#  define CINT(i) ((long)(((int32_t)(((unsigned long)(i)) - TAG_INT))))
+#  define ADDFX(x, y) BINT(CINT(x) + CINT(y))
+#  define SUBFX(x, y) BINT(CINT(x) - CINT(y))
+
+#  define LTFX(x, y) ((long)(x) < (long)(y))
+#  define LEFX(x, y) ((long)(x) <= (long)(y))
+#  define GTFX(x, y) ((long)(x) > (long)(y))
+#  define GEFX(x, y) ((long)(x) >= (long)(y))
+#  define EGFX(x, y) ((long)(x) == (long)(y))
 #elif ((BGL_TAGGING != BGL_TAGGING_NAN) && BGL_SMI)
-/* smi (int32) tatting */
+/* smi (int32) tagging */
+#  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
@@ -60,6 +79,8 @@ extern "C" {
 #  define EGFX(x, y) ((long)(x) == (long)(y))
 #else
 /* nan tagging */      
+#  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
@@ -143,8 +164,10 @@ extern "C" {
 #define BGL_INT64P(o) (POINTERP(o) && (TYPE(o) == INT64_TYPE))
 #define BGL_UINT64P(o) (POINTERP(o) && (TYPE(o) == UINT64_TYPE))
 
+// MS 11mar2025, int8 conversions must be applied as uint8 not to
+// propagate the number sign
 #define BGL_INT8_TO_BINT8(i) \
-   BGL_CNST_TO_BCNST(i, 0xffL, BINT8H, BGL_CNST_SHIFT_INT16, int8_t)
+   BGL_CNST_TO_BCNST(i, 0xffL, BINT8H, BGL_CNST_SHIFT_INT16, uint8_t)
 #define BGL_UINT8_TO_BUINT8(i) \
    BGL_CNST_TO_BCNST(i, 0xffL, BUINT8H, BGL_CNST_SHIFT_INT16, uint8_t)
 
@@ -153,8 +176,10 @@ extern "C" {
 #define BGL_BUINT8_TO_UINT8(o) \
    BGL_BCNST_TO_CNST(o, 0xffL, BGL_CNST_SHIFT_INT16, uint8_t)
 
+// MS 11mar2025, int16 conversions must be applied as uint16 not to
+// propagate the number sign
 #define BGL_INT16_TO_BINT16(i) \
-   BGL_CNST_TO_BCNST(i, 0xffffL, BINT16H, BGL_CNST_SHIFT_INT16, int16_t)
+   BGL_CNST_TO_BCNST(i, 0xffffL, BINT16H, BGL_CNST_SHIFT_INT16, uint16_t)
 #define BGL_UINT16_TO_BUINT16(i) \
    BGL_CNST_TO_BCNST(i, 0xffffL, BUINT16H, BGL_CNST_SHIFT_INT16, uint16_t)
 	    
@@ -283,13 +308,13 @@ extern bool_t __builtinmul_overflow(int x, int y, int *res);
 extern bool_t __builtinmull_overflow(long x, long y, long *res);
 #endif
 
-#if (BGL_TAGGING != BGL_TAGGING_NAN) && TAG_INT == 0
+#if (BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN) && TAG_INT == 0
 #  define BGL_ADDFX_OV(x, y, res) __builtin_saddl_overflow((long)x, (long)y, (long*)&res)
 #  define BGL_SUBFX_OV(x, y, res) __builtin_ssubl_overflow((long)x, (long)y, (long*)&res)
 #  define BGL_MULFX_OV(x, y, res) __builtin_smull_overflow((long)x, CINT(y), (long*)&res)
 #endif
 
-#if (BGL_TAGGING != BGL_TAGGING_NAN) && TAG_INT != 0
+#if (BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN) && TAG_INT != 0
 #  define BGL_BINT_SANS_TAG(x) ((long)(x) & ~TAG_MASK)
 #  define BGL_BINT_WITH_TAG(x) ((obj_t)((long)(x) | TAG_INT))
 #  define BGL_ADDFX_OV(x, y, res) (__builtin_saddl_overflow(BGL_BINT_SANS_TAG(x), BGL_BINT_SANS_TAG(y), (long*)&res) || (res = BGL_BINT_WITH_TAG((long)res), 0))
@@ -297,7 +322,7 @@ extern bool_t __builtinmull_overflow(long x, long y, long *res);
 #  define BGL_MULFX_OV(x, y, res) (__builtin_smull_overflow(BGL_BINT_SANS_TAG(x), CINT(y), (long*)&res) || (res = BGL_BINT_WITH_TAG((long)res), 0))
 #endif
 
-#if BGL_NAN_TAGGING
+#if BGL_NAN_TAGGING || BGL_NUN_TAGGING
 #  define BGL_ADDFX_OV(x, y, res) (__builtin_sadd_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
 #  define BGL_SUBFX_OV(x, y, res) (__builtin_ssub_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))
 #  define BGL_MULFX_OV(x, y, res) (__builtin_smul_overflow(CINT(x), CINT(y), (int *)&res) || (res = BINT((long)res), 0))

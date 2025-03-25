@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jan 27 18:28:39 2025 (serrano)                */
+#*    Last change :  Tue Mar 11 17:57:02 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -110,6 +110,7 @@ belong_prealloc_max=100
 #bgltagging=BGL_TAGGING_HEAP
 bgltagging=BGL_TAGGING_FL
 bglnantagging=0
+bglnuntagging=0
 #bglfltagging=0
 bglfltagging=1
 bglsmi=0
@@ -959,11 +960,14 @@ while : ; do
       mode=benchmark;;
 
     --debug)
+      cstrip="no";
+      strip="no";
       cflags="$cflags -g";
       bflags="$bflags -cg";;
 
     --debug2)
-      cstrip="";
+      cstrip="no";
+      strip="no";
       cflags="$cflags -g";
       bflags="-cg -q";;
 
@@ -985,30 +989,43 @@ while : ; do
     --heap-tagging)
       bgltagging=BGL_TAGGING_HEAP;
       bglfltagging=0;
-      bglnantagging=0;;
+      bglnantagging=0;
+      bglnuntagging=0;;
       
     --nan-tagging)
       bgltagging=BGL_TAGGING_NAN;
       bglfltagging=0;
-      bglnantagging=1;;
+      bglnantagging=1;
+      bglnuntagging=0;;
       
+    --nun-tagging)
+      bgltagging=BGL_TAGGING_NUN;
+      bglfltagging=0;
+      bglnantagging=0;
+      bglnuntagging=1;;
+    
     --fl-tagging)
       bgltagging=BGL_TAGGING_FL;
       bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=1;;
       
     --fl-tagging-lb)
       bgltagging=BGL_TAGGING_FLLB;
       bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=2;;
       
     --fl-tagging-nz)
       bgltagging=BGL_TAGGING_FLNZ;
       bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=3;;
       
     --fl-tagging-1)
       bgltagging=BGL_TAGGING_FL1;
+      bglnantagging=0;
+      bglnuntagging=0;
       bglfltagging=4;;
       
     --smi)
@@ -1429,6 +1446,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_real_heap_h=lib/bigloo/$release/bigloo_real_heap.h
   bigloo_real_flt_h=lib/bigloo/$release/bigloo_real_flt.h
   bigloo_real_nan_h=lib/bigloo/$release/bigloo_real_nan.h
+  bigloo_real_nun_h=lib/bigloo/$release/bigloo_real_nun.h
   bigloo_bignum_h=lib/bigloo/$release/bigloo_bignum.h
   bigloo_int_h=lib/bigloo/$release/bigloo_int.h
   bigloo_vector_h=lib/bigloo/$release/bigloo_vector.h
@@ -1810,26 +1828,34 @@ bootbigloo="`echo $_bootmethod | awk -F: '{print $2}'`"
 bootbigloobindir=`dirname $bootbigloo 2> /dev/null`
 
 if [ $bootmethod = "source" ]; then
-  mkdir -p download
-  if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
-    echo "downloading bigloo $buildrelease from $bigloohttp"
-    wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
-  else
-    echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
-  fi
-
-  if [ $? != 0 ]; then
-    echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
-    rm -f download/bigloo-$buildrelease.tar.gz
-    wget --help > /dev/null 2> /dev/null
-    
-    if [ $? != 0 ]; then
-      echo "probably because \"wget\" is missing."
+  if [ "$BGLBUILDBINDIR " =  " " ]; then
+    echo "!!! NOTE: set BGLBUILDBINDIR=<bigloo-bin-dir> to cross compile"
+    echo "with an already installed bigloo and to avoid downloading and"
+    echo "installing a fresh bigloo environment."
+    mkdir -p download
+    if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
+      echo "downloading bigloo $buildrelease from $bigloohttp"
+      wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
+    else
+      echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
     fi
-    
-    exit 1
+
+    if [ $? != 0 ]; then
+      echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
+      rm -f download/bigloo-$buildrelease.tar.gz
+      wget --help > /dev/null 2> /dev/null
+      
+      if [ $? != 0 ]; then
+	echo "probably because \"wget\" is missing."
+      fi
+      
+      exit 1
+    else
+      bootbindir=$PWD/download/bin
+      bootbigloo=$bootbindir/bigloo
+    fi
   else
-    bootbindir=$PWD/download/bin
+    bootbindir=$BGLBUILDBINDIR
     bootbigloo=$bootbindir/bigloo
   fi
 fi
@@ -1930,6 +1956,8 @@ if [ "$alignment" = "3" ]; then
     intsize=32
   elif [ "$bglsmi " != "0 " ]; then
     intsize=32
+  elif [ "$bglnuntagging " != "0 " ]; then
+    intsize=32
   else
     intsize=61
   fi
@@ -1937,6 +1965,11 @@ if [ "$alignment" = "3" ]; then
 else
   intsize=30
   elongsize=32
+  # force float heap tagging on 32-bit architectures
+  bgltagging=BGL_TAGGING_HEAP
+  bglfltagging=0
+  bglnantagging=0
+  bglnuntagging=0
 fi
 
 #*---------------------------------------------------------------------*/
@@ -2904,7 +2937,7 @@ if [ "$regexp " = " " ]; then
     extralibs="-l$extrapcre $extralibs"
     regexp=pcre
 
-    if [ `$autoconf pcrefreestudy` = "yes" ]; then
+    if [ `$autoconf pcrefreestudy --cflags=$cflags` = "yes" ]; then
       regexphasfreestudy=1
     fi
   else
@@ -3785,6 +3818,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_TAGGING@|$bgltagging|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
+              -e "s|@BGL_NUN_TAGGING@|$bglnuntagging|" \
               -e "s|@BGL_FL_TAGGING@|$bglfltagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
@@ -4026,6 +4060,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_real_heap_h` $bigloo_real_heap_h
   cp runtime/Include/`basename $bigloo_real_flt_h` $bigloo_real_flt_h
   cp runtime/Include/`basename $bigloo_real_nan_h` $bigloo_real_nan_h
+  cp runtime/Include/`basename $bigloo_real_nun_h` $bigloo_real_nun_h
   cp runtime/Include/`basename $bigloo_bignum_h` $bigloo_bignum_h
   cp runtime/Include/`basename $bigloo_int_h` $bigloo_int_h
   cp runtime/Include/`basename $bigloo_vector_h` $bigloo_vector_h

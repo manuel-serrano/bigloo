@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/runtime/Clib/cinit_obj.c        */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cinit_obj.c      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Fri Nov 15 06:48:44 2024 (serrano)                */
-/*    Copyright   :  2002-24 Manuel Serrano                            */
+/*    Last change :  Tue Mar 11 11:26:42 2025 (serrano)                */
+/*    Copyright   :  2002-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -34,10 +34,13 @@ DEFINE_STRING(bigloo_mutex_name, _1, "bigloo-mutex", 12);
 /*    Global floating point constants                                  */
 /*---------------------------------------------------------------------*/
 double bgl_nan(), bgl_infinity();
-#if (!BGL_NAN_TAGGING)
-BGL_RUNTIME_DEF obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
-#else
+
+#if (BGL_TAGGING == BGL_TAGGING_NAN)
 BGL_RUNTIME_DEF union bgl_nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
+#elif (BGL_TAGGING == BGL_TAGGING_NUN)
+BGL_RUNTIME_DEF union bgl_nunobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
+#else
+BGL_RUNTIME_DEF obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -81,14 +84,18 @@ void bgl_init_objects() {
    bigloo_generic_mutex = bgl_make_spinlock(bigloo_mutex_name);
    quote = string_to_symbol("QUOTE");
 
-#if (!BGL_NAN_TAGGING)
-   bigloo_nan = DOUBLE_TO_REAL(bgl_nan());
-   bigloo_infinity = DOUBLE_TO_REAL(bgl_infinity());
-   bigloo_minfinity = DOUBLE_TO_REAL(-bgl_infinity());
-#else
+#if (BGL_TAGGING == BGL_TAGGING_NAN)
    bigloo_nan = (union bgl_nanobj){ real: bgl_nan() };
    bigloo_infinity = (union bgl_nanobj){ real: bgl_infinity() };
    bigloo_minfinity = (union bgl_nanobj){ real: -bgl_infinity() };
+#elif (BGL_TAGGING == BGL_TAGGING_NUN)
+   bigloo_nan = (union bgl_nunobj){ real: bgl_nan() };
+   bigloo_infinity = (union bgl_nunobj){ real: bgl_infinity() };
+   bigloo_minfinity = (union bgl_nunobj){ real: -bgl_infinity() };
+#else
+   bigloo_nan = DOUBLE_TO_REAL(bgl_nan());
+   bigloo_infinity = DOUBLE_TO_REAL(bgl_infinity());
+   bigloo_minfinity = DOUBLE_TO_REAL(-bgl_infinity());
 #endif
 }
 

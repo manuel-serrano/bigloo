@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bconfigure.scm     */
+;*    .../prgm/project/bigloo/bigloo/runtime/Llib/bconfigure.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Oct  2 11:19:52 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano                            */
+;*    Last change :  Fri Mar 14 09:23:57 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -111,6 +111,7 @@
 	   (macro $configure-big-endian::bool "BGL_BIG_ENDIAN")
 	   (macro $configure-regexp-family::string "BGL_REGEXP_FAMILY")
 	   (macro $configure-nan-tagging::bool "BGL_NAN_TAGGING")
+	   (macro $configure-nun-tagging::bool "BGL_NUN_TAGGING")
 	   (macro $configure-fl-tagging::bool "BGL_FL_TAGGING")
 	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
@@ -196,6 +197,7 @@
 	      (field static int-size::int "BGL_INT_BIT_SIZE")
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
 	      (field static nan-tagging::bool "BGL_NAN_TAGGING")
+	      (field static nun-tagging::bool "BGL_NUN_TAGGING")
 	      (field static fl-tagging::bool "BGL_FL_TAGGING")
 	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
 	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
@@ -293,6 +295,7 @@
      (int-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-int-size) (else $$configure-int-size)))
      (elong-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-elong-size) (else $$configure-elong-size)))
      (nan-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-nan-tagging) (else $$configure-nan-tagging)))
+     (nun-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-nun-tagging) (else $$configure-nun-tagging)))
      (fl-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-fl-tagging) (else $$configure-fl-tagging)))
      (have-unistring . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-have-unistring) (else $$configure-have-unistring)))
      (have-syslog . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-have-syslog) (else $$configure-have-syslog)))

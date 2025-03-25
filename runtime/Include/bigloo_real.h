@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_real.h        */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_real.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Dec 12 10:44:41 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Mon Mar 10 09:13:50 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
 /*=====================================================================*/
@@ -28,6 +28,8 @@ extern "C" {
 #  include <bigloo_real_heap.h>
 #elif (BGL_TAGGING == BGL_TAGGING_NAN)
 #  include <bigloo_real_nan.h>
+#elif (BGL_TAGGING == BGL_TAGGING_NUN)
+#  include <bigloo_real_nun.h>
 #else
 #  include <bigloo_real_flt.h>
 #endif

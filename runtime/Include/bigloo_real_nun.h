@@ -1,15 +1,15 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Include/bigloo_real_nan.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_real_nun.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Mar 10 09:14:27 2025 (serrano)                */
+/*    Last change :  Tue Mar 11 11:27:21 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
-/*    Bigloo NaN TAGGING REALs                                         */
+/*    Bigloo NuN TAGGING REALs                                         */
 /*=====================================================================*/
-#ifndef BIGLOO_REAL_NAN_H 
-#define BIGLOO_REAL_NAN_H
+#ifndef BIGLOO_REAL_NUN_H 
+#define BIGLOO_REAL_NUN_H
 
 /*---------------------------------------------------------------------*/
 /*    Does someone really wants C++ here?                              */
@@ -22,30 +22,55 @@ extern "C" {
 #endif
 
 /*---------------------------------------------------------------------*/
+/*    inline annotation                                                */
+/*---------------------------------------------------------------------*/
+#if HAVE_INLINE
+#  define INLINE inline __attribute__((always_inline))
+#else
+#  define INLINE static
+#endif
+
+/*---------------------------------------------------------------------*/
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL union bgl_nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
+BGL_RUNTIME_DECL union bgl_nunobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
 
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
-union bgl_nanobj {
+union bgl_nunobj {
    double real;
-   obj_t ptr;
+   unsigned long bits;
+   obj_t obj;
 };
-      
-#define BREAL(_n) (((union bgl_nanobj){ real: _n }).ptr)
-#define CREAL(_p) (((union bgl_nanobj){ ptr: _p }).real)
 
-#define BGL_REAL_CNST(name) name.ptr
+#define BGL_NUN_FL_OFFSET (1ULL << 49)
+
+#define BGL_DOUBLE_AS_BITS(d) (((union bgl_nunobj){ real: d }).bits)
+#define BGL_OBJ_AS_BITS(d) (((union bgl_nunobj){ obj: d }).bits)
+#define BGL_BITS_AS_DOUBLE(b) (((union bgl_nunobj){ bits: b }).real)
+#define BGL_BITS_AS_OBJ(b) (((union bgl_nunobj){ bits: b }).obj)
+
+#define BREAL(d) BGL_BITS_AS_OBJ(BGL_DOUBLE_AS_BITS(d) + BGL_NUN_FL_OFFSET)
+#define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(p) - BGL_NUN_FL_OFFSET)
+
 #define DEFINE_REAL(name, aux, _flonum) \
-   static const union bgl_nanobj name = { real: _flonum }; \
+   static const union bgl_nunobj name = { _flonum }
 
-#define FLONUMP(c) (((unsigned long)c >> 48 & 0x7ff8) != 0x7ff8)
-#define NANP(c) (((unsigned long)c == TAG_QNAN) || ((unsigned long)c == TAG_SNAN))
-#define REALP(c) (FLONUMP(c) || NANP(c))
+#define BGL_REAL_CNST(name) \
+   ((obj_t)(name.bits + BGL_NUN_FL_OFFSET))
+
+/*---------------------------------------------------------------------*/
+/*    FLONUMP ...                                                      */
+/*---------------------------------------------------------------------*/
+INLINE bool FLONUMP(obj_t o) {
+   unsigned long tag = ((unsigned long)o) >> 48;
+   return tag && tag != 0xffff;
+}
+
+#define REALP(c) (FLONUMP(c))
+
 #define BGL_FAST_REALP(c) REALP(c)
-
 #define BGL_REAL_SET(o, v) BREAL(v)
 
 /*---------------------------------------------------------------------*/

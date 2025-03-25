@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 16 13:12:00 2024                          */
-;*    Last change :  Mon Jan 27 18:45:05 2025 (serrano)                */
+;*    Last change :  Tue Mar 25 08:50:10 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic configuration                                            */
@@ -75,6 +75,7 @@
       $$configure-dns-cache-enabled
       $$configure-big-endian
       $$configure-regexp-family
+      $$configure-nun-tagging
       $$configure-fl-tagging
       $$configure-int-size
       $$configure-elong-size
@@ -160,6 +161,7 @@
 (define $$configure-big-endian #t)
 (define $$configure-regexp-family "pregexp")
 (define $$configure-nan-tagging #f)
+(define $$configure-nun-tagging #f)
 (define $$configure-int-size 32)
 (define $$configure-elong-size 32)
 (define $$configure-fl-tagging #f)

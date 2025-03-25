@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/nanh/bde/bmem/Makefile               */
+#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Fri Nov  1 12:52:59 2024 (serrano)                */
-#*    Copyright   :  2003-24 Manuel Serrano                            */
+#*    Last change :  Sat Mar 15 07:44:07 2025 (serrano)                */
+#*    Copyright   :  2003-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -48,9 +48,9 @@ LDBMEMOPTS	=
 #*---------------------------------------------------------------------*/
 #*    Targets                                                          */
 #*---------------------------------------------------------------------*/
-.PHONY: lib bmemrun
+.PHONY: lib bmemrun 
 
-all: lib bmemrun
+all: lib bmemrun etc/bmemrun-gdb
 
 #*--- bmemrun ---------------------------------------------------------*/
 bmemrun: $(BOOTBINDIR)/$(BMEMRUN_EXE)

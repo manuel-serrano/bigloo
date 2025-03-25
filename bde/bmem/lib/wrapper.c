@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/bde/bmem/lib/wrapper.c          */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/wrapper.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct  7 19:30:50 2021                          */
-/*    Last change :  Fri Dec 13 17:43:24 2024 (serrano)                */
-/*    Copyright   :  2021-24 Manuel Serrano                            */
+/*    Last change :  Tue Mar 11 07:59:23 2025 (serrano)                */
+/*    Copyright   :  2021-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo standard library wrappers                                 */
 /*=====================================================================*/
@@ -51,7 +51,7 @@ void *(*____bstring_to_symbol)() = 0L;
 void *(*____bstring_to_keyword)() = 0L;
 
 /* real */
-#if (!BGL_NAN_TAGGING)
+#if (BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN)
 void *(*____make_real)() = 0L;
 #endif
 
@@ -128,7 +128,7 @@ bmem_init_wrapper(void *hdl) {
    LOADF(hdl, bstring_to_keyword);
 
    /* real */
-#if (!BGL_NAN_TAGGING)
+#if (BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN)
    LOADF(hdl, make_real);
 #endif
    
@@ -256,7 +256,7 @@ WRAP(bstring_to_keyword,
      (n));
 
 /* real */
-#if (!BGL_NAN_TAGGING)
+#if (BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN)
 WRAP(make_real,
      REAL_TYPE_NUM,
      (double d),

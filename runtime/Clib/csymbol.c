@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/runtime/Clib/csymbol.c          */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csymbol.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Fri Nov 15 07:19:51 2024 (serrano)                */
+/*    Last change :  Sat Mar 15 08:02:36 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -87,7 +87,7 @@ symbol_strcmp(obj_t o1, char *o2, long l2) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bstring_to_symbol ...                                            */
+/*    bgl_bstring_to_symbol ...                                        */
 /*---------------------------------------------------------------------*/
 static obj_t
 bgl_bstring_to_symbol(char *cname, long len) {

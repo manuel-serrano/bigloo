@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    .../prgm/project/bigloo/bigloo/bde/bmem-ng/etc/bmemrun.in        */
+#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/etc/bmemrun.in       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Sun Dec  5 09:36:39 2021 (serrano)                */
-#*    Copyright   :  2003-21 Manuel Serrano                            */
+#*    Last change :  Sat Mar 15 07:37:35 2025 (serrano)                */
+#*    Copyright   :  2003-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
 #*=====================================================================*/
@@ -112,5 +112,10 @@ if [ "$thread " != " " ]; then
   export BMEMTHREAD=$thread
 fi  
 
-libbacktrace=$bmemdir/libbacktrace.so
-LD_PRELOAD="$lib$libextra $libbacktrace" $exe $args
+if [ -f $bmemdir/libbacktrace.so ]; then
+  libbacktrace=$bmemdir/libbacktrace.so
+else
+  libbacktrace=
+fi
+
+LD_PRELOAD="$lib $libextra $libbacktrace" $exe $args

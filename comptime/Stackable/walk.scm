@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 12 08:33:01 2020                          */
-;*    Last change :  Tue Jun 22 19:09:58 2021 (serrano)                */
-;*    Copyright   :  2020-21 Manuel Serrano                            */
+;*    Last change :  Mon Mar  3 12:45:03 2025 (serrano)                */
+;*    Copyright   :  2020-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Mark "stackable" expressions, that is expression that can        */
 ;*    possibly be stack allocated.                                     */
@@ -113,6 +113,13 @@
 (define-walk-method (stackable node::node escp::bool depth::long ctx::pair)
    (set! escp #t)
    (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    stackable ::make-box ...                                         */
+;*---------------------------------------------------------------------*/
+(define-walk-method (stackable node::make-box escp::bool depth::long ctx::pair)
+   (when escp
+      (escape! node ctx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    stackable ::var ...                                              */
