@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 18 10:24:03 1997                          */
-;*    Last change :  Tue Mar 25 19:23:01 2025 (serrano)                */
+;*    Last change :  Wed Mar 26 08:46:33 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    UCS-2 Characters Scheme management.                              */
 ;*=====================================================================*/
@@ -50,7 +50,7 @@
 	    (infix macro c-ucs2>=?::bool (::ucs2 ::ucs2) ">="))
 
    (wasm    (c-integer->ucs2 "~0")
-	    (c-ucs2->integer "(struct.get $bucs2 $v)")
+	    (c-ucs2->integer "(struct.get $bucs2 $v ~0)")
 	    (c-ucs2=? "(i32.eq ~0 ~1)")
 	    (c-ucs2<? "(i32.lt_u ~0 ~1)")
 	    (c-ucs2>? "(i32.gt_u ~0 ~1)")
