@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/runtime/Makefile              */
+#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Mar 12 08:02:29 2025 (serrano)                */
+#*    Last change :  Thu Apr 24 15:47:46 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -55,6 +55,10 @@ WASMMERE	= $(BOOTDIR)/tools
 WASM_BINTS_PREALLOC_SIZE = 100
 WASM_BINTS_PREALLOC_START = -10
 WASM_BINTS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed) (quote @DOLLAR@bints-table) $(WASM_BINTS_PREALLOC_SIZE) (map (lambda (i) (list (quote struct.new) (quote @DOLLAR@bint) (list (quote i64.const) i))) (iota $(WASM_BINTS_PREALLOC_SIZE) $(WASM_BINTS_PREALLOC_START))))) (exit 0))"
+
+WASM_BCHARS_PREALLOC_SIZE = 127
+WASM_BCHARS_PREALLOC_START = 0
+WASM_BCHARS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed) (quote @DOLLAR@bints-table) $(WASM_BCHARS_PREALLOC_SIZE) (map (lambda (i) (list (quote struct.new) (quote @DOLLAR@bint) (list (quote i64.const) i))) (iota $(WASM_BCHARS_PREALLOC_SIZE) $(WASM_BCHARS_PREALLOC_START))))) (exit 0))"
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
@@ -1243,7 +1247,10 @@ Wlib/wfixnum.wat: Wlib/wfixnum$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.
            > $@
 
 Wlib/wcnst.wat: Wlib/wcnst$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
+	preallocs=`$(WASM_BCHATS_PREALLOC)`; \
 	cat $< \
+           | sed -e "s/@BCHARS_PREALLOC_SIZE@/$(WASM_BCHARS_PREALLOC_SIZE)/g" \
+           | sed -e "s/@BCHARS_PREALLOC@/$$preallocs/" \
            | sed -e "s/-[*]- eval: (bee-mode) -[*]-/!!! GENERATED FILE, DON'T EDIT !!!/" \
            > $@
 

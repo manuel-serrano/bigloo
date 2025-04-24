@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csymbol.c        */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/csymbol.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Sat Mar 15 08:02:36 2025 (serrano)                */
+/*    Last change :  Thu Apr 24 16:04:22 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -21,6 +21,9 @@ extern bool_t bigloo_strcmp(obj_t, obj_t);
 /*    Global C variables                                               */
 /*---------------------------------------------------------------------*/
 static obj_t c_symtab = BUNSPEC;
+static long c_symtab_size_shift = SYMBOL_HASH_TABLE_SIZE_SHIFT;
+static long c_symtab_size = 1 << SYMBOL_HASH_TABLE_SIZE_SHIFT;
+static long c_symtab_cnt = 0;
 
 /*---------------------------------------------------------------------*/
 /*    Symbol mutex                                                     */
@@ -35,7 +38,7 @@ DEFINE_STRING(symbol_mutex_name, _1, "symbol-mutex", 12);
 void
 bgl_init_symbol_table() {
    if (!VECTORP(c_symtab)) {
-      c_symtab = make_vector_uncollectable(SYMBOL_HASH_TABLE_SIZE, BNIL);
+      c_symtab = make_vector_uncollectable(c_symtab_size, BNIL);
       symbol_mutex = bgl_make_spinlock(symbol_mutex_name);
    }
 }
@@ -43,6 +46,8 @@ bgl_init_symbol_table() {
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_get_symtab ...                                               */
+/*    -------------------------------------------------------------    */
+/*    Used by bmem.                                                    */
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_get_symtab() {
@@ -86,6 +91,35 @@ symbol_strcmp(obj_t o1, char *o2, long l2) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    resize_table ...                                                 */
+/*---------------------------------------------------------------------*/
+static obj_t
+resize_table(obj_t old_table, long new_shift) {
+   obj_t new_table = make_vector_uncollectable(1 << new_shift, BNIL);
+   long old_size = VECTOR_LENGTH(old_table);
+   long i;
+
+   for (i = 0; i < old_size; i++) {
+      obj_t run = VECTOR_REF(old_table, i);
+      
+      while (!NULLP(run)) {
+	 obj_t s = CAR(run);
+	 obj_t n = SYMBOL(s).string;
+	 long l = STRING_LENGTH(n);
+	 long h = get_hash_power_number_len(BSTRING_TO_STRING(n), new_shift, l);
+	 obj_t b = VECTOR_REF(new_table, h);
+	 
+	 VECTOR_SET(new_table, h, MAKE_PAIR(s, b));
+	 run = CDR(run);
+      }
+   }
+
+   GC_free(old_table);
+   return new_table;
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_bstring_to_symbol ...                                        */
 /*---------------------------------------------------------------------*/
@@ -94,18 +128,15 @@ bgl_bstring_to_symbol(char *cname, long len) {
    long hash_number;
    obj_t bucket;
 
-   hash_number =
-      get_hash_power_number_len(cname, SYMBOL_HASH_TABLE_SIZE_SHIFT, len);
-
    BGL_MUTEX_LOCK(symbol_mutex);
+   hash_number = get_hash_power_number_len(cname, c_symtab_size_shift, len);
    bucket = VECTOR_REF(c_symtab, hash_number);
-   
+
    if (NULLP(bucket)) {
       obj_t symbol = make_symbol(string_to_bstring_len(cname, len));
       obj_t pair = MAKE_PAIR(symbol, BNIL);
-
       VECTOR_SET(c_symtab, hash_number, pair);
-      
+	 
       BGL_MUTEX_UNLOCK(symbol_mutex);
       return symbol;
    } else {
@@ -119,6 +150,13 @@ bgl_bstring_to_symbol(char *cname, long len) {
       if (!NULLP(run)) {
 	 BGL_MUTEX_UNLOCK(symbol_mutex);
          return CAR(run);
+      } else if (c_symtab_cnt++ > c_symtab_size * 4) {
+	 c_symtab_size_shift++;
+	 c_symtab_size = 1 << c_symtab_size_shift;
+	 c_symtab = resize_table(c_symtab, c_symtab_size_shift);
+	 BGL_MUTEX_UNLOCK(symbol_mutex);
+
+	 return bgl_bstring_to_symbol(cname, len);
       } else {
 	 obj_t symbol = make_symbol(string_to_bstring_len(cname, len));
 	 obj_t pair = MAKE_PAIR(symbol, BNIL);
@@ -193,7 +231,7 @@ symbol_exists_sans_lock_p(char *name, long hash_number) {
 BGL_RUNTIME_DEF int
 symbol_exists_p(char *name) {
    int r;
-   long hn = get_hash_power_number(name, SYMBOL_HASH_TABLE_SIZE_SHIFT);
+   long hn = get_hash_power_number(name, c_symtab_size_shift);
 
    BGL_MUTEX_LOCK(symbol_mutex);
    r = symbol_exists_sans_lock_p(name, hn);
@@ -226,7 +264,7 @@ bgl_symbol_genname(obj_t o, char *name) {
    while (1) {
       sprintf(&gn[ n ], "%ld", ++gensym_counter);
 
-      hn = get_hash_power_number(gn, SYMBOL_HASH_TABLE_SIZE_SHIFT);
+      hn = get_hash_power_number(gn, c_symtab_size_shift);
 
       if (!symbol_exists_sans_lock_p(gn, hn)) break;
    }
@@ -237,6 +275,7 @@ bgl_symbol_genname(obj_t o, char *name) {
    /* and store the object in the hash table */
    pair = MAKE_PAIR(o, VECTOR_REF(c_symtab, hn));
    VECTOR_SET(c_symtab, hn, pair);
+   c_symtab_cnt++;
    
    BGL_MUTEX_UNLOCK(symbol_mutex);
    
