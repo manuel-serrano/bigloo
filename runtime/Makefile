@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Apr 24 15:47:46 2025 (serrano)                */
+#*    Last change :  Thu Apr 24 18:33:23 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1247,7 +1247,7 @@ Wlib/wfixnum.wat: Wlib/wfixnum$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.
            > $@
 
 Wlib/wcnst.wat: Wlib/wcnst$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
-	preallocs=`$(WASM_BCHATS_PREALLOC)`; \
+	preallocs=`$(WASM_BCHARS_PREALLOC)`; \
 	cat $< \
            | sed -e "s/@BCHARS_PREALLOC_SIZE@/$(WASM_BCHARS_PREALLOC_SIZE)/g" \
            | sed -e "s/@BCHARS_PREALLOC@/$$preallocs/" \
