@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Apr 24 18:33:23 2025 (serrano)                */
+#*    Last change :  Thu Apr 24 19:15:05 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1252,6 +1252,7 @@ Wlib/wcnst.wat: Wlib/wcnst$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
            | sed -e "s/@BCHARS_PREALLOC_SIZE@/$(WASM_BCHARS_PREALLOC_SIZE)/g" \
            | sed -e "s/@BCHARS_PREALLOC@/$$preallocs/" \
            | sed -e "s/-[*]- eval: (bee-mode) -[*]-/!!! GENERATED FILE, DON'T EDIT !!!/" \
+           | sed -e "s/@DOLLAR@/$$/g" \
            > $@
 
 $(BOOTLIBDIR)/types.wat: Wlib/types.wat.in
