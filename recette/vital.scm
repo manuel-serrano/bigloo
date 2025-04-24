@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Tue Dec 17 14:08:22 2024 (serrano)                */
-;*    Copyright   :  2002-24 Manuel Serrano                            */
+;*    Last change :  Thu Apr 24 14:05:40 2025 (serrano)                */
+;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -416,6 +416,7 @@
    (test "eqv? char.4" (eqv? (char->integer #\') 39) #t)
    (test "eqv? char.5" (eqv? (integer->char 255) #a255) #t)
    (test "eqv? char.6" (char=? (integer->char 255) #a255) #t)
+   (test "eqv? char.7" (eqv? (integer->char 255) (car (list #a255))) #t)
    (test "eqv? symbol.1" (eqv? 'a 'a) #t)
    (test "eqv? symbol.2" (eqv? 'a 'A) #f)
    (test "eqv? symbol.3" (eqv? 'A 'A) #t)
