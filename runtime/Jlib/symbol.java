@@ -50,10 +50,10 @@ public class symbol extends obj
       int i;
 
       for (i = 0; i < old_size; i++) {
-	 for (bucket run = table[i]; (run != null) ; run = run.next) {
+	 for (bucket run = old_table[i]; (run != null) ; run = run.next) {
 	    symbol symb = run.symb;
 	    int hash = foreign.get_hash_power_number(symb.string, new_shift);
-	    table[hash] = new bucket(symb, table[hash]);
+	    new_table[hash] = new bucket(symb, new_table[hash]);
 	 }
       }
       

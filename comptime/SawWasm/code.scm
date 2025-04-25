@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Feb  6 08:01:05 2025 (serrano)                */
+;*    Last change :  Fri Apr 25 07:36:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -156,6 +156,38 @@
    (let ((protect (get-protect-temp blocks)))
       (if protect
 	  (let ((lblb (gensym '$try-bexit))
+		(lblc (gensym '$try))
+		(ty (wasm-type (global-type v)))
+		($exit (wasm-sym (reg-name protect))))
+	     `((comment "try block")
+	       (local.set ,$exit (global.get $exit-default-value))
+	       (block ,lblc (result (ref eq))
+		  (call $BGL_RESTORE_TRACE_WITH_VALUE
+		     (call $bgl_exception_handler
+			(block ,lblb (result (ref $bexception))
+			   (try_table (catch $BEXCEPTION ,lblb)
+			      ,@(plain-body)
+			      (br ,lblc)))
+			(local.get ,$exit)))
+		  (br ,lblc))))
+	  (plain-body))))
+
+(define (gen-body-trap-not-used v::global blocks locals)
+   
+   (define (plain-body)
+      (let ((inits (gen-local-inits v blocks locals))
+	    (relbody (relooper v blocks)))
+	 (if relbody
+	     (append inits (list '(comment "local initialization")) relbody)
+	     (begin
+		;; when using the dispatcher methods,
+		;; all locals must be nullable
+		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
+		(gen-dispatcher-body blocks)))))
+   
+   (let ((protect (get-protect-temp blocks)))
+      (if protect
+	  (let ((lblb (gensym '$try-bexit))
 		(lble (gensym '$try-error))
 		(lblc (gensym '$try))
 		(ty (wasm-type (global-type v)))
@@ -177,37 +209,7 @@
 		     (local.get ,$exit)))))
 	  (plain-body))))
 
-(define (gen-body-sans-exn v::global blocks locals)
-   
-   (define (plain-body)
-      (let ((inits (gen-local-inits v blocks locals))
-	    (relbody (relooper v blocks)))
-	 (if relbody
-	     (append inits (list '(comment "local initialization")) relbody)
-	     (begin
-		;; when using the dispatcher methods,
-		;; all locals must be nullable
-		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
-		(gen-dispatcher-body blocks)))))
-   
-   (let ((protect (get-protect-temp blocks)))
-      (if protect
-	  (let ((lblb (gensym '$try-bexit))
-		(lblc (gensym '$try))
-		(ty (wasm-type (global-type v)))
-		($exit (wasm-sym (reg-name protect))))
-	     `((comment "try block")
-	       (local.set ,$exit (global.get $exit-default-value))
-	       (block ,lblc (result (ref eq))
-		  (call $BGL_RESTORE_TRACE_WITH_VALUE
-		     (call $bgl_exception_handler
-			(block ,lblb (result (ref $bexception))
-			   (try_table (catch $BEXCEPTION ,lblb)
-			      ,@(plain-body)
-			      (br ,lblc)))
-			(local.get ,$exit)))
-		  (br ,lblc))))
-	  (plain-body))))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    get-protect-temp ...                                             */
