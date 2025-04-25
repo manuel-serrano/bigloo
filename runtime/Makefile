@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Apr 24 19:15:05 2025 (serrano)                */
+#*    Last change :  Fri Apr 25 07:18:31 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -58,7 +58,7 @@ WASM_BINTS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed)
 
 WASM_BCHARS_PREALLOC_SIZE = 127
 WASM_BCHARS_PREALLOC_START = 0
-WASM_BCHARS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed) (quote @DOLLAR@bints-table) $(WASM_BCHARS_PREALLOC_SIZE) (map (lambda (i) (list (quote struct.new) (quote @DOLLAR@bint) (list (quote i64.const) i))) (iota $(WASM_BCHARS_PREALLOC_SIZE) $(WASM_BCHARS_PREALLOC_START))))) (exit 0))"
+WASM_BCHARS_PREALLOC = bigloo -eval "(begin (print (cons* (quote array.new_fixed) (quote @DOLLAR@bchars-table) $(WASM_BCHARS_PREALLOC_SIZE) (map (lambda (i) (list (quote struct.new) (quote @DOLLAR@bchar) (list (quote i32.const) i))) (iota $(WASM_BCHARS_PREALLOC_SIZE) $(WASM_BCHARS_PREALLOC_START))))) (exit 0))"
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
