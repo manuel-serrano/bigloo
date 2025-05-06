@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue May  6 08:37:05 2025 (serrano)                */
+;*    Last change :  Tue May  6 11:48:38 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -55,9 +55,10 @@
    (set! *bigloo-cmd-name* (car args))
    (set! *bigloo-args* args)
    (do-parse-args (cdr args))
-   ;; register allocation
-   (when (eq? *saw-register-allocation?* #unspecified)
-      (set! *saw-register-allocation?* (eq? *target-language* 'wasm)))
+   ;; debug
+   (when (getenv "BIGLOOTRACE")
+      (unless (> (bigloo-debug) 0)
+	 (bigloo-debug-set! 1)))
    ;; we setup the heap name
    (when *user-heap-name* (set! *heap-name* *user-heap-name*))
    ;; profiling test

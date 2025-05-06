@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue May  6 09:13:21 2025 (serrano)                */
+;*    Last change :  Tue May  6 15:01:58 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -1134,7 +1134,7 @@
 ;*---------------------------------------------------------------------*/
 (param-define *saw-register-allocation?*
    "Enable/disable saw register allocation"
-   #unspecified)
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw-register-allocation-onexpression?* ...                      */
