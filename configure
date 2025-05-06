@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Mar 11 17:57:02 2025 (serrano)                */
+#*    Last change :  Tue May  6 08:33:37 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -133,7 +133,7 @@ wasmbackend=no # set to "no" not to install the Wasm back-end
 wasmas=wasm-as
 wasmopt=wasm-opt
 wasmjs=nodejs
-wasmfixnum=64
+wasmfixnum=31
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh

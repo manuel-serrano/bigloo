@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Dec 30 06:40:43 2024 (serrano)                */
-;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue May  6 08:37:05 2025 (serrano)                */
+;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -55,6 +55,9 @@
    (set! *bigloo-cmd-name* (car args))
    (set! *bigloo-args* args)
    (do-parse-args (cdr args))
+   ;; register allocation
+   (when (eq? *saw-register-allocation?* #unspecified)
+      (set! *saw-register-allocation?* (eq? *target-language* 'wasm)))
    ;; we setup the heap name
    (when *user-heap-name* (set! *heap-name* *user-heap-name*))
    ;; profiling test
