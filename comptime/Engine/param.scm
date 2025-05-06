@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue May  6 08:35:25 2025 (serrano)                */
+;*    Last change :  Tue May  6 09:13:21 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -1286,7 +1286,7 @@
 ;*---------------------------------------------------------------------*/
 (param-define *wasm-local-preinit* 
    "force local preinit in order to avoid nullable types"
-   #t)
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *wasm-tailcall* ...                                              */
