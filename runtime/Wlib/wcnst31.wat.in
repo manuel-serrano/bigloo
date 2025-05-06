@@ -4,8 +4,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:56:25 2024                          */
-;*    Last change :  Wed Oct  2 14:10:14 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Thu Apr 24 15:48:51 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM implementation of constants with 31-bit unboxed fixnums.    */
 ;*    -------------------------------------------------------------    */
@@ -28,12 +28,18 @@
    
    (type $bchar (sub $bcnst (struct (field $val i8))))
    
+   (type $bchars-table (array (ref $bchar)))
+   
    ;; -----------------------------------------------------------------
    ;; Global constantes 
    ;; -----------------------------------------------------------------
    (global $bchar-default-value
       (export "BGL_BCHAR_DEFAULT_VALUE") (ref $bchar)
       (struct.new $bchar (i32.const 0)))
+   
+   (global $BCHARS (ref $bchars-table) 
+      @BCHARS_PREALLOC@
+      )
    
    (global $BFALSE (export "BFALSE") (ref $bbool)
       (struct.new $bbool (i32.const 0)))
@@ -92,7 +98,15 @@
    (func $BCHAR (export "BCHAR")
       (param $v i32)
       (result (ref $bchar))
-      (struct.new $bchar (local.get $v)))
+      (if (i32.lt_u (local.get $v) (i32.const @BCHARS_PREALLOC_SIZE@))
+	  (then
+	     (return
+		(array.get $bchars-table
+		   (global.get $BCHARS)
+		   (local.get $v))))
+	  (else
+	   (return 
+	      (struct.new $bchar (local.get $v))))))
    
    ;; CCHAR
    (func $CCHAR (export "CCHAR")
