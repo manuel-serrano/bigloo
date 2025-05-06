@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Apr 25 07:36:56 2025 (serrano)                */
+;*    Last change :  Tue May  6 10:58:22 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -152,23 +152,40 @@
 		;; all locals must be nullable
 		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
 		(gen-dispatcher-body blocks)))))
+
+   (define (body-sans-locals body)
+      (match-case body
+	 (((local . ?-) . ?rest) (body-sans-locals rest))
+	 (else body)))
+   
+   (define (body-locals body)
+      (match-case body
+	 (((and ?decl (local . ?-)) . ?rest) (cons decl (body-locals rest)))
+	 (else '())))
+
+   (define (local.get var)
+      (if *wasm-local-preinit*
+	  `(local.get ,var)
+	  `(ref.as_non_null (local.get ,var))))
    
    (let ((protect (get-protect-temp blocks)))
       (if protect
 	  (let ((lblb (gensym '$try-bexit))
 		(lblc (gensym '$try))
 		(ty (wasm-type (global-type v)))
-		($exit (wasm-sym (reg-name protect))))
+		($exit (wasm-sym (reg-name protect)))
+		(body (plain-body)))
 	     `((comment "try block")
+	       ,@(body-locals body)
 	       (local.set ,$exit (global.get $exit-default-value))
 	       (block ,lblc (result (ref eq))
 		  (call $BGL_RESTORE_TRACE_WITH_VALUE
 		     (call $bgl_exception_handler
 			(block ,lblb (result (ref $bexception))
 			   (try_table (catch $BEXCEPTION ,lblb)
-			      ,@(plain-body)
+			      ,@(body-sans-locals body)
 			      (br ,lblc)))
-			(local.get ,$exit)))
+			,(local.get $exit)))
 		  (br ,lblc))))
 	  (plain-body))))
 
@@ -208,8 +225,6 @@
 			   (br ,lblc)))
 		     (local.get ,$exit)))))
 	  (plain-body))))
-
-
 
 ;*---------------------------------------------------------------------*/
 ;*    get-protect-temp ...                                             */
@@ -701,23 +716,6 @@
 	 (else
 	  (set! debugname (symbol->string name))
 	  debugname))))
-
-;*---------------------------------------------------------------------*/
-;*    needs-dispatcher? ...                                            */
-;*---------------------------------------------------------------------*/
-(define (needs-dispatcher? l)
-   ;; if there is a single basic block or none,
-   ;; then we don't have any control flow
-   ;; and therefore we are sure that we don't need a dispatcher block.
-   (not (or (null? l) (null? (cdr l)))))
-
-;*---------------------------------------------------------------------*/
-;*    dispatcher? ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (dispatcher? body)
-   (match-case body
-      (((local $__label i32) . ?-) #t)
-      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-dispatcher-body ...                                          */
