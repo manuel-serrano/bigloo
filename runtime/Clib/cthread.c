@@ -73,7 +73,7 @@ BGL_RUNTIME_DEF obj_t (*bgl_create_spinlock)(obj_t) = &bgl_create_mutex_default;
 BGL_RUNTIME_DEF void (*bgl_gc_start_blocking)(void) = &bgl_act0_default;
 BGL_RUNTIME_DEF void (*bgl_gc_stop_blocking)(void) = &bgl_act0_default;
 
-BGL_RUNTIME_DEF void *(*bgl_gc_do_blocking)(void (*fun)(), void *) = &bgl_gc_do_blocking_default;
+BGL_RUNTIME_DEF void *(*bgl_gc_do_blocking)(void (*fun)(void*), void *) = &bgl_gc_do_blocking_default;
 
 BGL_RUNTIME_DEF obj_t (*bgl_multithread_dynamic_denv)() = &denv_get;
 

@@ -57,7 +57,8 @@ cat > $file.c <<EOF
 #include <errno.h>
 #include <signal.h>
 
-extern ssize_t sendfile();
+extern ssize_t sendfile(int out_fd, int in_fd, off_t* offset,
+                        size_t count);
 
 int main( int argc, char *argv[] ) {
    char buffer [50];

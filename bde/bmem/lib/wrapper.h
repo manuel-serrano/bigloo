@@ -19,7 +19,7 @@ extern void bmem_init_wrapper(void *);
 extern void *(*____create_vector)(int);
 extern void *(*____create_vector_uncollectable)(int);
 
-extern void *(*____make_fx_procedure)(void *(*)(), int, int);
-extern void *(*____make_va_procedure)(void *(*)(), int, int);
+extern void *(*____make_fx_procedure)(function_t, int, int);
+extern void *(*____make_va_procedure)(function_t, int, int);
 
 #endif
