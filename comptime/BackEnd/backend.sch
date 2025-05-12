@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.6a)
-;; Inria -- Sophia Antipolis     Mon Sep 23 09:27:15 AM CEST 2024 
+;; Bigloo (4.7a)
+;; Inria -- Sophia Antipolis     Mon May 12 09:37:46 AM CEST 2025 
 ;; (bigloo BackEnd/backend.scm -classgen)
 ;; ==========================================================
 
@@ -13,6 +13,10 @@
   (export
     (inline backend?::bool ::obj)
     (backend-nil::backend)
+    (inline backend-retblock::bool ::backend)
+    (inline backend-retblock-set! ::backend ::bool)
+    (inline backend-typed-closures::bool ::backend)
+    (inline backend-typed-closures-set! ::backend ::bool)
     (inline backend-boxed-fixnums::bool ::backend)
     (inline backend-boxed-fixnums-set! ::backend ::bool)
     (inline backend-string-literal-support::bool ::backend)
@@ -85,6 +89,10 @@
 ;; backend
 (define-inline (backend?::bool obj::obj) ((@ isa? __object) obj (@ backend backend_backend)))
 (define (backend-nil::backend) (class-nil (@ backend backend_backend)))
+(define-inline (backend-retblock::bool o::backend) (-> |#!bigloo_wallow| o retblock))
+(define-inline (backend-retblock-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o retblock) v))
+(define-inline (backend-typed-closures::bool o::backend) (-> |#!bigloo_wallow| o typed-closures))
+(define-inline (backend-typed-closures-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o typed-closures) v))
 (define-inline (backend-boxed-fixnums::bool o::backend) (-> |#!bigloo_wallow| o boxed-fixnums))
 (define-inline (backend-boxed-fixnums-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o boxed-fixnums) v))
 (define-inline (backend-string-literal-support::bool o::backend) (-> |#!bigloo_wallow| o string-literal-support))

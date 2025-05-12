@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Tue Sep 24 07:52:36 2024 (serrano)                */
-;*    Copyright   :  2003-24 Manuel Serrano                            */
+;*    Last change :  Mon May 12 10:14:23 2025 (serrano)                */
+;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/
@@ -53,7 +53,8 @@
 	      (force-register-gc-roots::bool (default #t))
 	      (string-literal-support::bool (default #t))
 	      (boxed-fixnums::bool (default #f))
-	      (typed-closures::bool (default #t))))
+	      (typed-closures::bool (default #t))
+	      (retblock::bool (default #t))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)
