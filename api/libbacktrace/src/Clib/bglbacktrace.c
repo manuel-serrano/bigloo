@@ -44,12 +44,11 @@ static int
 backtrace_foreach_cb(void *data, uintptr_t pc, const char *filename, int lineno, const char *function) {
    obj_t proc = (obj_t)data;
    
-   return PROCEDURE_ENTRY(proc)
+   return BGL_PROCEDURE_CALL3
       (proc,
        filename ? string_to_bstring((char *)filename) : BUNSPEC,
        BINT(lineno),
-       function ? string_to_bstring((char *)function) : BUNSPEC,
-       BEOA)
+       function ? string_to_bstring((char *)function) : BUNSPEC)
       != BFALSE;
 }
 

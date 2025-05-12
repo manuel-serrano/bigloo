@@ -31,7 +31,7 @@
 extern long get_hash_number( char * );
 extern long get_hash_number_from_int( unsigned long );
 extern long bgl_types_number();
-extern obj_t create_vector();
+extern obj_t create_vector(long);
 
 /*---------------------------------------------------------------------*/
 /*    Exportations ...                                                 */
