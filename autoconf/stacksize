@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr  5 08:43:23 2002                          */
-#*    Last change :  Mon Jul 10 13:57:32 2023 (serrano)                */
-#*    Copyright   :  2002-23 Manuel Serrano                            */
+#*    Last change :  Mon May 12 09:32:54 2025 (serrano)                */
+#*    Copyright   :  2002-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if the stack is large enough for compiling Bigloo.         */
 #*=====================================================================*/
@@ -42,7 +42,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="gcc $cflags $file.c -o $aout >/dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -99,7 +99,6 @@ if eval "$BUILDSH $compile"; then
    fi
 fi
 
-#rm -f $aout
-#rm -rf $aout*
+rm -f $aout* 2> /dev/null
 
 echo $status
