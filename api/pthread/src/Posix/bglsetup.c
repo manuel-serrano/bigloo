@@ -63,7 +63,7 @@ bglpth_setup_gc() {
    extern void *GC_do_blocking();
 #endif
    
-   bgl_gc_do_blocking = (void *(*)())&GC_do_blocking;
+   bgl_gc_do_blocking = (void* (*)(void (*)(void*), void*))&GC_do_blocking;
 #endif
 
    GC_init();

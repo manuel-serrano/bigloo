@@ -57,7 +57,7 @@ bgl_dup_procedure(obj_t proc) {
 /*    bgl_init_fx_procedure ...                                        */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_init_fx_procedure(obj_t proc, obj_t (*entry)(), int arity, int size) {
+bgl_init_fx_procedure(obj_t proc, function_t entry, int arity, int size) {
    if (size >= BGL_HEADER_MAX_SIZE) {
       C_FAILURE("make-fx-procedure", "Environment to large", BINT(size));
    } else {

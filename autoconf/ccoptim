@@ -100,7 +100,7 @@ EOF
 
 cat > $file1.c <<EOF
 #include <stdlib.h>
-extern int gcc3xxx_bug();
+extern int gcc3xxx_bug( int x );
 
 int foo( int x ) {
    return x + 1;

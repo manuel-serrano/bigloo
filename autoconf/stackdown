@@ -53,29 +53,34 @@ rm -f $aout.exe 2> /dev/null
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-#include <stdio.h> 
+#include <stdio.h>
+typedef void (*stack_dir_tracker)(long addr, void* t);
 
-void (*f)();
+stack_dir_tracker f; 
 
-void direction(long new_addr, void (*g)()) {
+void alt_direction(long new_addr, void* g) {
+     puts( "why are we here"); 
+}
+
+void direction(long new_addr, void* g) {
    static long *old_addr;
    static int flag = 0;
 
    if (!flag) {
      old_addr = &new_addr;
      flag++;
-     g(2, (void (*)())&printf);
+     ((stack_dir_tracker) g)(2, g);
    } else if (flag == 1) {
      flag++;
      (old_addr > &new_addr) ? puts("1") : puts("0");
    } else {
      flag++;
-     g(3,  (void (*)())&puts);;
+     ((stack_dir_tracker)g )(3,  &direction);;
    }
 }
 
 int main(int argc, char *argv[]) {
-   f = argc > 10 ? (void (*)())&puts : &direction;
+   f = argc > 10 ? &alt_direction : &direction;
    f(1, f);
 }
 EOF

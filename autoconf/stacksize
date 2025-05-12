@@ -42,7 +42,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout >/dev/null"
+compile="gcc $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -58,7 +58,7 @@ rm -f $aout.exe 2> /dev/null
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-int (*fun)();
+int (*fun)(int x, int y);
 int glob;
 
 int foo( int x, int y ) {
@@ -99,7 +99,7 @@ if eval "$BUILDSH $compile"; then
    fi
 fi
 
-rm -f $aout
-rm -rf $aout*
+#rm -f $aout
+#rm -rf $aout*
 
 echo $status
