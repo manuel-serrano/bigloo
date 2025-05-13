@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Mon May 12 10:21:17 2025 (serrano)                */
+;*    Last change :  Mon May 12 10:27:47 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -406,8 +406,6 @@
 	       (or (not *optim-return-goto?*)
 		   (and (not (eq? (car k) 'tail))
 			(not (backend-retblock (the-backend))))))
-;* 	    (set! forceG?                                              */
-;* 	       (not *optim-return-goto?*))                             */
 	    (set! xhdl? #t))))
    
    (with-access::let-fun node (body)
