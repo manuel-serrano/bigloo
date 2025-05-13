@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Feb  3 13:51:17 2025 (serrano)                */
+;*    Last change :  Mon May 12 10:15:41 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -502,8 +502,7 @@
 	    (check-type "cnst" ast #t #t)
 	    
 	    ;; the set-exit=>return transformation pass
-	    (when (and *optim-return?*
-		       (backend-pragma-support (the-backend)))
+	    (when (and *optim-return?* (backend-retblock (the-backend)))
 	       (set! ast (profile return (return-walk! ast)))
 	       (set! ast (lvtype-ast! ast)))
 	    (stop-on-pass 'return (lambda () (write-ast ast)))

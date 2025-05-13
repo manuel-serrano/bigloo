@@ -46,7 +46,7 @@ gcollect_verbose(unsigned long heapsz, unsigned long use) {
 GC_API void
 bgl_gc_verbose_set(bool_t verbose) {
 #if((BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM)
-   extern void GC_add_gc_hook(void (*f)());
+  extern void GC_add_gc_hook(void (*f)(unsigned long, unsigned long));
    
    if (verbose) {
       fprintf(stderr, "bgl_gc_verbose on...\n");

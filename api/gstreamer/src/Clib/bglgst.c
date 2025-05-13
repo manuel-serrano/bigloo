@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t void_star_to_obj();
+BGL_RUNTIME_DECL obj_t void_star_to_obj(void*);
 extern obj_t bgl_gst_bin_elements_set( obj_t, obj_t );
 
 /*---------------------------------------------------------------------*/
@@ -473,12 +473,15 @@ bgl_gst_invoke_callbacks() {
    }
 }
 
+
+typedef obj_t (*constr_t)(void*, obj_t);
+
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    gst_registry_list_to_obj ...                                     */
 /*---------------------------------------------------------------------*/
 static obj_t
-gst_registry_list_to_obj( GList *glist, obj_t (*constr)() ) {
+gst_registry_list_to_obj(GList *glist, constr_t constr) {
    obj_t res = BNIL;
    obj_t last = 0L;
    GList *gl = glist;
@@ -513,7 +516,7 @@ obj_t
 bgl_gst_registry_get_element_factory_list( GstRegistry *reg ) {
    return gst_registry_list_to_obj(
       gst_registry_get_feature_list( reg, GST_TYPE_ELEMENT_FACTORY ),
-      &bgl_gst_element_factory_new );
+      (constr_t)&bgl_gst_element_factory_new );
 }
 
 /*---------------------------------------------------------------------*/
@@ -533,7 +536,7 @@ obj_t
 bgl_gst_registry_get_feature_list_by_plugin( GstRegistry *reg, char *name ) {
    return gst_registry_list_to_obj(
       gst_registry_get_feature_list_by_plugin( reg, name ),
-      &gst_feature_to_obj );
+      (constr_t)&gst_feature_to_obj );
 }
 
 /*---------------------------------------------------------------------*/
@@ -544,7 +547,7 @@ obj_t
 bgl_gst_registry_get_plugin_list( GstRegistry *reg ) {
    return gst_registry_list_to_obj(
       gst_registry_get_plugin_list( reg ),
-      &bgl_gst_plugin_new );
+      (constr_t)&bgl_gst_plugin_new );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1068,7 +1071,7 @@ bgl_gst_buffer_set_string( GstBuffer *buf, obj_t str )
 /*    bgl_gst_message_error_parser ...                                 */
 /*---------------------------------------------------------------------*/
 char *
-bgl_gst_message_error_parser( GstMessage *msg, void (*parser)() ) {
+bgl_gst_message_error_parser( GstMessage *msg, void (*parser)(GstMessage*, GError**, gchar**) ) {
    GError *err;
    char *debug;
    char *str;

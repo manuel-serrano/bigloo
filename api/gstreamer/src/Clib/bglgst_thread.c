@@ -29,8 +29,8 @@
 extern void bglpth_thread_cleanup( void *arg );
 extern void bglpth_thread_env_create( void *thread, obj_t bglthread );
 extern void bglpth_thread_init( void *self, char *stack_bottom );
-extern obj_t bglpth_thread_thunk();
-void *bglpth_thread_new();
+extern obj_t bglpth_thread_thunk(void*);
+void *bglpth_thread_new(obj_t);
 
 /*---------------------------------------------------------------------*/
 /*    GRealThread                                                      */

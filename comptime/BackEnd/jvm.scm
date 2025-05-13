@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Wed Oct  2 14:48:35 2024 (serrano)                */
-;*    Copyright   :  2012-24 Manuel Serrano                            */
+;*    Last change :  Mon May 12 10:15:06 2025 (serrano)                */
+;*    Copyright   :  2012-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
 ;*=====================================================================*/
@@ -58,7 +58,8 @@
       (debug-support '(jvm))
       (bound-check #f)
       (type-check #f)
-      (force-register-gc-roots #f)))
+      (force-register-gc-roots #f)
+      (retblock #f)))
    
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */

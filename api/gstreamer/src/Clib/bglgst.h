@@ -44,7 +44,7 @@ extern obj_t bgl_gst_static_pad_template_new( GstStaticPadTemplate * );
 /*---------------------------------------------------------------------*/
 extern bool_t bgl_gst_objectp( obj_t );
 extern obj_t bgl_gst_object_to_obj( GstObject *, obj_t );
-extern GstObject *bgl_gst_object_to_gstobject();
+extern GstObject *bgl_gst_object_to_gstobject(obj_t);
 extern obj_t bgl_closure_gcmark( obj_t );
 extern obj_t bgl_closure_gcunmark( obj_t );
 extern obj_t bgl_gst_lock();

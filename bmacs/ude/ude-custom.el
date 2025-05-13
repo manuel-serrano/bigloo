@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  8 07:29:03 1998                          */
-;*    Last change :  Wed Feb 22 14:42:08 2012 (serrano)                */
+;*    Last change :  Thu Mar 20 08:42:37 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `Unix Development Environment' custom environment. This      */
 ;*    file contains all the Ude defcustom and Ude defface.             */
@@ -510,10 +510,11 @@
 
 (condition-case ()
     ;; sometimes I hate emacs :-(
-    ;; Why do I have to plut a condition-case here???
+    ;; Why do I have to put a condition-case here???
     (defface ude-invisible-face
       (list (list '((class color))
-		  (list ':foreground (face-background 'ude-italic-face))))
+		  (list ':foreground
+			(or (face-background 'ude-italic-face) 'unspecified))))
       "Bee face to display italic text."
       :group 'ude)
   (error '()))

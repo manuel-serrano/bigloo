@@ -18,72 +18,82 @@
 #include <wrapper.h>
 
 /* pair */
-void *(*____make_pair)() = 0L;
+void *(*____make_pair)(obj_t, obj_t) = 0L;
 
 /* vectors */
-void *(*____create_vector)() = 0L;
-void *(*____create_vector_uncollectable)() = 0L;
+void *(*____create_vector)(int) = 0L;
+void *(*____create_vector_uncollectable)(int) = 0L;
 
 /* procedures */
-void *(*____make_fx_procedure)() = 0L;
-void *(*____make_va_procedure)() = 0L;
+void *(*____make_fx_procedure)(function_t, int,  int) = 0L;
+void *(*____make_va_procedure)(function_t , int,  int) = 0L;
 
 /* internals */
 void *(*____make_dynamic_env)() = 0L;
 
 /* cell */
-void *(*____make_cell)() = 0L;
+obj_t (*____make_cell)(obj_t) = 0L;
 
 /* strings */
-void *(*____string_to_bstring_len)() = 0L;
-void *(*____string_to_bstring)() = 0L;
-void *(*____make_string)() = 0L;
-void *(*____make_string_sans_fill)() = 0L;
-void *(*____string_append)() = 0L;
-void *(*____c_substring)() = 0L;
+void *(*____string_to_bstring_len)(char*, int) = 0L;
+void *(*____string_to_bstring)(char*) = 0L;
+void *(*____make_string)(long, unsigned char) = 0L;
+void *(*____make_string_sans_fill)(long) = 0L;
+void *(*____string_append)(obj_t, obj_t) = 0L;
+void *(*____c_substring)(obj_t, long, long) = 0L;
 
-void *(*____make_ucs2_string)() = 0L;
+void *(*____make_ucs2_string)(int, ucs2_t) = 0L;
    
 /* symbol */
-void *(*____bstring_to_symbol)() = 0L;
+void *(*____bstring_to_symbol)(obj_t) = 0L;
 
 /* keyword */
-void *(*____bstring_to_keyword)() = 0L;
+void *(*____bstring_to_keyword)(obj_t) = 0L;
 
 /* real */
 #if (BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN)
-void *(*____make_real)() = 0L;
+void *(*____make_real)(double) = 0L;
 #endif
 
 /* threads & locks */
-void *(*____bgl_make_mutex)() = 0L;
-void *(*____bgl_make_spinlock)() = 0L;
+void *(*____bgl_make_mutex)(obj_t) = 0L;
+void *(*____bgl_make_spinlock)(obj_t) = 0L;
 
 /* ports */
-void *(*____bgl_open_output_string)() = 0L;
-void *(*____bgl_make_output_port)() = 0L;
-void *(*____bgl_make_input_port)() = 0L;
+void *(*____bgl_open_output_string)(obj_t) = 0L;
+void *(*____bgl_make_output_port)(obj_t, bgl_stream_t, int,
+                                  obj_t, obj_t,
+                                  ssize_t (*write)(void *, void *, size_t),
+                                  long (*seek)(void *, long, int),
+                                  int (*close)(void*)) = 0L;
+void *(*____bgl_make_input_port)(obj_t, FILE*, obj_t, obj_t) = 0L;
 
 /* classes */
-void *(*____bgl_make_class)() = 0L;
-void *(*____create_struct)() = 0L;
+void *(*____bgl_make_class)(obj_t, obj_t, long, long,
+                            obj_t, obj_t,
+                            obj_t, long,
+                            obj_t, obj_t,
+                            obj_t, obj_t, obj_t, obj_t, obj_t,
+                            long, 
+                            obj_t) = 0L;
+void *(*____create_struct)(obj_t key, int len) = 0L;
 
 /* bignums */
-void *(*____bgl_bignum_add)() = 0L;
-void *(*____bgl_bignum_sub)() = 0L;
-void *(*____bgl_bignum_mul)() = 0L;
-void *(*____bgl_bignum_div)() = 0L;
-void *(*____bgl_bignum_expt)() = 0L;
-void *(*____bgl_bignum_quotient)() = 0L;
-void *(*____bgl_bignum_remainder)() = 0L;
-void *(*____bgl_bignum_or)() = 0L;
-void *(*____bgl_bignum_xor)() = 0L;
-void *(*____bgl_bignum_and)() = 0L;
-void *(*____bgl_bignum_mask)() = 0L;
-void *(*____bgl_bignum_not)() = 0L;
-void *(*____bgl_long_to_bignum)() = 0L;
-void *(*____bgl_bignum_lsh)() = 0L;
-void *(*____bgl_bignum_rsh)() = 0L;
+void *(*____bgl_bignum_add)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_sub)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_mul)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_div)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_expt)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_quotient)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_remainder)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_or)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_xor)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_and)(obj_t, obj_t) = 0L;
+void *(*____bgl_bignum_mask)(obj_t, long) = 0L;
+void *(*____bgl_bignum_not)(obj_t) = 0L;
+void *(*____bgl_long_to_bignum)(long) = 0L;
+void *(*____bgl_bignum_lsh)(obj_t, long) = 0L;
+void *(*____bgl_bignum_rsh)(obj_t, long) = 0L;
    
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -193,12 +203,12 @@ WRAP(create_vector_uncollectable,
 /* procedure */
 WRAP(make_fx_procedure,
      PROCEDURE_TYPE_NUM,
-     (obj_t (*e)(), int a, int s),
-     ((void *(*)())e, a, s));
+     (function_t e, int a, int s),
+     ((function_t)e, a, s));
 WRAP(make_va_procedure,
      PROCEDURE_TYPE_NUM,
-     (obj_t (*e)(), int a, int s),
-     ((void *(*)())e, a, s));
+     (function_t e, int a, int s),
+     ((function_t)e, a, s));
 
 /* internal */
 WRAP(make_dynamic_env,
@@ -281,7 +291,7 @@ WRAP(bgl_open_output_string,
 WRAP(bgl_make_output_port,
      OUTPUT_PORT_TYPE_NUM,
      (obj_t n, bgl_stream_t s, int t, obj_t k, obj_t b,
-      ssize_t (*write)(), long (*seek)(), int (*close)()),
+      ssize_t (*write)(void*, void*, size_t), long (*seek)(void*, long, int), int (*close)(void*)),
      (n, s, t, k, b, write, seek, close));
 WRAP(bgl_make_input_port,
      INPUT_PORT_TYPE_NUM,

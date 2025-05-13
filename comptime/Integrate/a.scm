@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Mon Dec 30 06:38:46 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon May 12 10:21:17 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
 ;*    -------------------------------------------------------------    */
@@ -403,9 +403,11 @@
 	    ;; MS 11oct2020: I'm not so sure that it is correct
 	    ;; not to force globalization if not tail
 	    (set! forceG?
-	       (or (not *optim-return-goto?*) (not (eq? (car k) 'tail))))
-	    (set! forceG?
-	       (not *optim-return-goto?*))
+	       (or (not *optim-return-goto?*)
+		   (and (not (eq? (car k) 'tail))
+			(not (backend-retblock (the-backend))))))
+;* 	    (set! forceG?                                              */
+;* 	       (not *optim-return-goto?*))                             */
 	    (set! xhdl? #t))))
    
    (with-access::let-fun node (body)

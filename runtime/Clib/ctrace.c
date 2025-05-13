@@ -27,7 +27,7 @@ BGL_RUNTIME_DEF void (*bgl_walk_trace_stack)(obj_t) = &default_walk_trace_stack;
 /*    bgl_init_trace_register ...                                      */
 /*---------------------------------------------------------------------*/
 void
-bgl_init_trace_register(void (*i)(), obj_t (*g)(int), void (*w)(obj_t)) {
+bgl_init_trace_register(void (*i)(obj_t), obj_t (*g)(int), void (*w)(obj_t)) {
    bgl_init_trace = i;
 
    bgl_get_trace_stack = (g ? g : no_get_trace_stack);

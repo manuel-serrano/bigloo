@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
 ;; Bigloo (4.7a)
-;; Inria -- Sophia Antipolis     Wed Jan 29 07:13:17 AM CET 2025 
+;; Inria -- Sophia Antipolis     Mon May 12 10:25:30 AM CEST 2025 
 ;; (bigloo BackEnd/backend.scm -classgen)
 ;; ==========================================================
 
@@ -19,6 +19,8 @@
     (inline backend-mangling-set! ::backend ::bool)
     (inline backend-varargs::bool ::backend)
     (inline backend-varargs-set! ::backend ::bool)
+    (inline backend-retblock::bool ::backend)
+    (inline backend-retblock-set! ::backend ::bool)
     (inline backend-typed-closures::bool ::backend)
     (inline backend-typed-closures-set! ::backend ::bool)
     (inline backend-boxed-fixnums::bool ::backend)
@@ -99,6 +101,8 @@
 (define-inline (backend-mangling-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o mangling) v))
 (define-inline (backend-varargs::bool o::backend) (-> |#!bigloo_wallow| o varargs))
 (define-inline (backend-varargs-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o varargs) v))
+(define-inline (backend-retblock::bool o::backend) (-> |#!bigloo_wallow| o retblock))
+(define-inline (backend-retblock-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o retblock) v))
 (define-inline (backend-typed-closures::bool o::backend) (-> |#!bigloo_wallow| o typed-closures))
 (define-inline (backend-typed-closures-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o typed-closures) v))
 (define-inline (backend-boxed-fixnums::bool o::backend) (-> |#!bigloo_wallow| o boxed-fixnums))

@@ -309,7 +309,7 @@ bglerror(int err, int rw) {
 /*    bgl_syswrite ...                                                 */
 /*---------------------------------------------------------------------*/
 ssize_t
-bgl_syswrite(obj_t port, const void *buf, size_t nbyte) {
+bgl_syswrite(void* port, void *buf, size_t nbyte) {
 #if POSIX_FILE_OPS
    return write(PORT_FD(port), buf, nbyte);
 #else
@@ -970,9 +970,9 @@ bgl_make_output_port(obj_t name,
 		      int stream_type,
 		      obj_t kindof,
 		      obj_t buf,
-		      ssize_t (*write)(),
-		      long (*seek)(),
-		      int (*close)()) {
+                     ssize_t (*write)(void* , void*, size_t),
+                     long (*seek)(void*, long, int),
+		      int (*close)(void*)) {
    obj_t new_output_port;
 
    if (!STRINGP(buf)) {
@@ -1124,8 +1124,8 @@ bgl_file_to_output_port(FILE *f, obj_t buf) {
 				KINDOF_FILE, 
 				buf, 
 				bgl_syswrite,
-				(long (*)())_LSEEK,
-				_CLOSE);
+                               (long (*)(void*, long, int))_LSEEK,
+                               (int (*)(void*))_CLOSE);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1149,9 +1149,9 @@ bgl_open_output_file(obj_t name, obj_t buf) {
 				   BGL_STREAM_TYPE_FILE,
 				   KINDOF_PIPE,
 				   buf,
-				   bgl_posix_write,
-				   (long (*)())_LSEEK,
-				   pclose);
+                                  (ssize_t (*)(void*, void*, size_t))bgl_posix_write,
+                                  (long (*)(void*, long, int))_LSEEK,
+                                  (int (*)(void*))pclose);
    } else
 #endif
    {
@@ -1172,9 +1172,9 @@ bgl_open_output_file(obj_t name, obj_t buf) {
 				      _STREAM_TYPE,
 				      KINDOF_FILE,
 				      buf,
-				      bgl_syswrite,
-				      (long (*)())_LSEEK,
-				      _CLOSE);
+                                     (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+                                     (long (*)(void*, long, int))_LSEEK,
+				     (int (*)(void*)) _CLOSE);
    }
 }
 
@@ -1196,9 +1196,9 @@ bgl_append_output_file(obj_t name, obj_t buf) {
 				      _STREAM_TYPE,
 				      KINDOF_FILE,
 				      buf, 
-				      bgl_syswrite,
-				      (long (*)())_LSEEK,
-				      _CLOSE);
+                                     (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+                                     (long (*)(void*, long, int))_LSEEK,
+                                     (int (*)(void*)) _CLOSE);
       }
    }
 }
@@ -1213,12 +1213,11 @@ bgl_open_output_string(obj_t buf) {
 
    if (!port_name) port_name = string_to_bstring("string");
 
-   obj_t port = bgl_make_output_port(port_name,
-				     (bgl_stream_t)0,
-				     BGL_STREAM_TYPE_CHANNEL,
-				     KINDOF_STRING,
-				     buf,
-				     strwrite, strseek, 0);
+   obj_t port = bgl_make_output_port(
+       port_name, (bgl_stream_t)0, BGL_STREAM_TYPE_CHANNEL, KINDOF_STRING, buf,
+       (ssize_t (*)(void *, void *, size_t))strwrite,
+       (long (*)(void *, long, int))strseek,
+       0);
    PORT_CHANNEL(port) = port;
    OUTPUT_PORT(port).bufmode = BGL_IOEBF;
    OUTPUT_PORT(port).sysflush = (obj_t (*)(void *))get_output_string;
@@ -1239,7 +1238,7 @@ bgl_open_output_procedure(obj_t proc, obj_t flush, obj_t close, obj_t buf) {
 				     BGL_STREAM_TYPE_CHANNEL,
 				     KINDOF_PROCEDURE,
 				     make_string_sans_fill(0),
-				     procwrite, 0L, 0L);
+				     (ssize_t (*) (void*, void*, size_t))procwrite, 0L, 0L);
    /* MS, 9 apri 2009: used to be create_vector(5)! */
    obj_t udata = create_vector(4);
    
@@ -2144,9 +2143,9 @@ bgl_init_io() {
 				      _STREAM_TYPE,
 				      KINDOF_CONSOLE,
 				      make_string_sans_fill(0),
-				      bgl_syswrite,
-				      (long (*)())_LSEEK,
-				      _CLOSE);
+                                     (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+                                     (long (*)(void*, long, int))_LSEEK,
+				     (int (*)(void*))_CLOSE);
       /* in order for the flush to work (with concurrent reads) */
       /* bufmode must never be BGL_IOEBF.                       */
       OUTPUT_PORT(_stdout).bufmode = BGL_IOLBF;
@@ -2156,18 +2155,18 @@ bgl_init_io() {
 				      _STREAM_TYPE,
 				      KINDOF_FILE,
 				      make_string_sans_fill(8192),
-				      bgl_syswrite,
-				      (long (*)())_LSEEK,
-				      _CLOSE);
+				      (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+				      (long (*)(void*, long, int))_LSEEK,
+				      (int (*)(void*))_CLOSE);
    }
    _stderr = bgl_make_output_port(string_to_bstring("stderr"),
 				   (bgl_stream_t)_FILENO(stderr),
 				   _STREAM_TYPE,
 				   KINDOF_CONSOLE,
 				   make_string_sans_fill(1), 
-				   bgl_syswrite,
-				   (long (*)())_LSEEK,
-				   _CLOSE);
+				   (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+				   (long (*)(void*, long, int))_LSEEK,
+				   (int (*)(void*))_CLOSE);
    _stdin = bgl_make_input_port(string_to_bstring("stdin"),
 				 stdin,
 				 KINDOF_CONSOLE,
@@ -2946,7 +2945,7 @@ bgl_sendchars(obj_t ip, obj_t op, long sz, long offset) {
 #ifdef DEBUG_SENDCHARS   
 	 fprintf(stderr, "bgl_sendchars.5: p=%p/%p sz=%d offset=%d\n", ip, op, sz, offset);
 #endif	    
-	 bgl_gc_do_blocking(&gc_sendfile, &si);
+	 bgl_gc_do_blocking((void (*)(void*))&gc_sendfile, &si);
 
 	 n = si.res;
 #ifdef DEBUG_SENDCHARS   
@@ -3075,7 +3074,7 @@ bgl_sendfile(obj_t name, obj_t op, long sz, long offset) {
 	 si.port = op;
 	 si.off = (offset > 0 ? (off_t *)(&offset) : 0);
 
-	 bgl_gc_do_blocking(&gc_sendfile, &si);
+	 bgl_gc_do_blocking((void (*)(void*))&gc_sendfile, &si);
 
 	 n = si.res;
 	 
@@ -3279,9 +3278,9 @@ bgl_open_pipes(obj_t name) {
 				       BGL_STREAM_TYPE_FD,
 				       KINDOF_PIPE,
 				       make_string_sans_fill(0),
-				       bgl_syswrite,
-				       (long (*)())lseek,
-				       close);
+				       (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+				       (long (*)(void*, long, int))lseek,
+				       (int (*)(void*))close);
       obj_t in = bgl_make_input_port(name,
 				      fdopen(pipefd[ 0 ], "r"),
 				      KINDOF_PIPE,

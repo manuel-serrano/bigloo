@@ -637,6 +637,13 @@ struct bgl_dframe {
    struct bgl_dframe *link;
 };
 
+/* function type */
+#if !BGL_STRICT_STDC
+typedef obj_t (*function_t)();
+#else 
+typedef void* function_t;
+#endif
+
 /* bigloo polymorphic type */
 union scmobj {
    /* integer */
@@ -663,8 +670,8 @@ union scmobj {
    /* procedure (closures) */
    struct procedure {
       header_t header;    
-      union scmobj *(*entry)();
-      union scmobj *(*va_entry)();
+      function_t entry;
+     function_t va_entry;
       union scmobj *attr;
       int arity;
       union scmobj *obj0;
@@ -672,7 +679,7 @@ union scmobj {
 
    /* light procedures (results of the CFA optimization) */
    struct procedure_light {
-      union scmobj *(*entry)();
+      function_t entry;
       union scmobj  *obj0;
    } procedure_light;
 
@@ -1204,8 +1211,7 @@ union scmobj {
    struct bgl_semaphore semaphore;
 };
 
-/* function type */
-typedef obj_t (*function_t)();
+
 
 /*---------------------------------------------------------------------*/
 /*    The garbage collector                                            */
@@ -2807,7 +2813,7 @@ BGL_RUNTIME_DECL obj_t bgl_make_buint32(uint32_t);
 BGL_RUNTIME_DECL obj_t bgl_make_bint64(int64_t);
 BGL_RUNTIME_DECL obj_t bgl_make_buint64(uint64_t);
 
-BGL_RUNTIME_DECL obj_t bgl_make_output_port(obj_t, bgl_stream_t, int, obj_t, obj_t, ssize_t (*)(), long (*)(), int (*)());
+BGL_RUNTIME_DECL obj_t bgl_make_output_port(obj_t, bgl_stream_t,  int,  obj_t, obj_t, ssize_t (*)(void *, void *, size_t), long int (*)(void *, long int,  int), int (*)(void*));
 BGL_RUNTIME_DECL void bgl_output_port_buffer_set(obj_t, obj_t);   
 BGL_RUNTIME_DECL obj_t bgl_close_output_port(obj_t);
 BGL_RUNTIME_DECL obj_t get_output_string(obj_t);
@@ -2906,7 +2912,7 @@ BGL_RUNTIME_DECL void (*bgl_gc_stop_blocking)(void);
 #endif
    
 #if (BGL_GC_HAVE_DO_BLOCKING)
-BGL_RUNTIME_DECL void *(*bgl_gc_do_blocking)(void (*fun)(), void *);
+BGL_RUNTIME_DECL void *(*bgl_gc_do_blocking)(void (*fun)(void*), void *);
 #endif
    
 BGL_RUNTIME_DECL obj_t bgl_make_client_socket(obj_t, int, int, obj_t, obj_t, obj_t);
@@ -2920,7 +2926,7 @@ BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname(obj_t);
 BGL_RUNTIME_DECL obj_t bgl_getsockopt(obj_t, obj_t);
 BGL_RUNTIME_DECL obj_t bgl_setsockopt(obj_t, obj_t, obj_t);
 
-BGL_RUNTIME_DECL void bgl_init_trace_register(void (*i)(), obj_t (*g)(int), void (*w)(obj_t));
+BGL_RUNTIME_DECL void bgl_init_trace_register(void (*)(obj_t), obj_t(*)(int), void (*)(obj_t));
 BGL_RUNTIME_DECL void (*bgl_init_trace)(obj_t);
 BGL_RUNTIME_DECL obj_t (*bgl_get_trace_stack)(int);
 
