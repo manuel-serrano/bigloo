@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/flt/runtime/Include/bigloo_real_flt.h         */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_real_flt.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Fri Dec 13 09:22:48 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Wed May 14 10:00:03 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
 /*=====================================================================*/
@@ -210,7 +210,7 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 #else
 // --
 INLINE double BGL_FAST_REAL_TO_DOUBLE(obj_t o) {
-   // ((o<<1)-13)<<59
+   // ((o<<1)-13)<<58
    unsigned long t = BGL_BIT_ROTL(o, 1) - TAG_FL_EXPONENT_SHIFT;
    return BGL_ASDOUBLE(BGL_BIT_ROTL(t, TAG_FL_ROT_BITS));
 }
