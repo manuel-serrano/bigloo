@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue May 13 17:26:22 2025 (serrano)                */
+/*    Last change :  Sun May 18 09:46:38 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -678,7 +678,7 @@ union scmobj {
    struct procedure {
       header_t header;    
       function_t entry;
-     function_t va_entry;
+      function_t va_entry;
       union scmobj *attr;
       int arity;
       union scmobj *obj0;
