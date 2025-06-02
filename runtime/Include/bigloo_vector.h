@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_vector.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_vector.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Dec 11 08:28:56 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Mon Jun  2 14:04:57 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -35,8 +35,11 @@ BGL_RUNTIME_DECL obj_t bgl_saw_vector_copy(obj_t);
 /*---------------------------------------------------------------------*/
 /*    BGL_VECTOR_LENGTH_FIELDP ...                                     */
 /*---------------------------------------------------------------------*/
-#define BGL_VECTOR_LENGTH_FIELDP \
-   (defined(TAG_VECTOR) || (BGL_HEADER_DATA_BIT_SIZE == 0))
+#if (defined(TAG_VECTOR))
+#  define BGL_VECTOR_LENGTH_FIELDP 1
+#else
+#  define BGL_VECTOR_LENGTH_FIELDP (BGL_HEADER_DATA_BIT_SIZE == 0)
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    bgl_vector ...                                                   */

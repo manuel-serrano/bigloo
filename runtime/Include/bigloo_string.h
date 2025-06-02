@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_string.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_string.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Nov 26 11:17:31 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Mon Jun  2 14:05:05 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -57,8 +57,11 @@ BGL_RUNTIME_DECL int bgl_strcoll(obj_t, obj_t);
 /*---------------------------------------------------------------------*/
 /*    BGL_STRING_LENGTH_FIELDP ...                                     */
 /*---------------------------------------------------------------------*/
-#define BGL_STRING_LENGTH_FIELDP \
-   (defined(TAG_STRING) || (BGL_HEADER_DATA_BIT_SIZE == 0))
+#if (defined(TAG_STRING))
+#  define BGL_STRING_LENGTH_FIELDP 1
+#else
+#  define BGL_STRING_LENGTH_FIELDP (BGL_HEADER_DATA_BIT_SIZE == 0)
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    bgl_string ...                                                   */
