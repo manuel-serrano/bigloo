@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Mar 11 07:50:22 2025 (serrano)                */
+/*    Last change :  Sun May 18 09:46:38 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -329,7 +329,11 @@ extern "C" {
 #if (BGL_TAGGING == BGL_TAGGING_NUN)   // NUN TAGGING
 #  define BGL_POINTERP(o) (BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER) && (((unsigned long)(o) >> 48) == 0))
 #else                                  // OTHER TAGGING
-#  define BGL_POINTERP(o) BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER)
+#  if (TAG_POINTER == 0)  
+#    define BGL_POINTERP(o) ((o) && BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER))
+#  else  
+#    define BGL_POINTERP(o) BGL_MASKP(o, TAG_POINTER, TAG_MASKPOINTER)
+#  endif  
 #endif   
 #define POINTERP(o) BGL_POINTERP(o)
 
@@ -399,11 +403,14 @@ extern "C" {
 #  define TAG_STRING 7                /*  string tagging        ...111 */
 #elif (BGL_TAGGING == BGL_TAGGING_HEAP)
 #  define TAG_QNAN 0
-#  define TAG_INT 0                   /*  integer tagging       ....00 */
-#  define TAG_POINTER 1               /*  pointer tagging       ....01 */
 #  define TAG_CNST 2                  /*  constant tagging      ....10 */
 #  define TAG_PAIR 3                  /*  pair tagging          ....11 */
-#  if (PTR_ALIGNMENT >= 3)
+#  if (PTR_ALIGNMENT < 3)
+#    define TAG_INT 1                 /*  integer tagging       ....01 */
+#    define TAG_POINTER 0             /*  pointer tagging       ....00 */
+#  else
+#    define TAG_INT 0                 /*  integer tagging       ....00 */
+#    define TAG_POINTER 1             /*  pointer tagging       ....01 */
 #    define TAG_VECTOR 4              /*  vector tagging        ...100 */
 #    define TAG_CELL 5                /*  cell tagging          ...101 */
 #    define TAG_REAL 6                /*  real tagging          ...110 */
@@ -671,7 +678,7 @@ union scmobj {
    struct procedure {
       header_t header;    
       function_t entry;
-     function_t va_entry;
+      function_t va_entry;
       union scmobj *attr;
       int arity;
       union scmobj *obj0;

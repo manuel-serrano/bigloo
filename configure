@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue May  6 08:33:37 2025 (serrano)                */
+#*    Last change :  Wed May 14 17:50:18 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -108,11 +108,11 @@ belong_prealloc_min=-10
 belong_prealloc_max=100
 
 #bgltagging=BGL_TAGGING_HEAP
-bgltagging=BGL_TAGGING_FL
+bgltagging=BGL_TAGGING_FL1
 bglnantagging=0
 bglnuntagging=0
 #bglfltagging=0
-bglfltagging=1
+bglfltagging=4
 bglsmi=0
       
 
@@ -553,8 +553,8 @@ while : ; do
       havebdb=1;
       pthreadlocalstorage=;
       pthreadsetname=;
-      bgltagging=BGL_TAGGING_FL;
-      bglfltagging=1;
+      bgltagging=BGL_TAGGING_FL1;
+      bglfltagging=4;
       action="all";;
 
     --bootdir=*)
