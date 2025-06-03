@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Feb  3 11:28:55 2025 (serrano)                */
+;*    Last change :  Tue Jun  3 07:51:15 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -163,18 +163,55 @@
 		      (verbose 2 "      generating [" target #\] #\Newline)
 		      (with-output-to-file target
 			 (lambda ()
-			    (display "#!/bin/sh\n")
-			    (display "if [ \"$BIGLOOWASMOPT \" = \" \" ]; then\n")
-			    (display "  BIGLOOWASMOPT=--stack-size=8192\n")
-			    (display "fi\n")
-			    (display* (format "~a ~( ) $BIGLOOWASMOPT "
-					 *wasm-engine* *wasm-options*)
-			       (if *wasm-unsafe* *wasm-unsafe-options* "")
-			       " " runtime-mjs " " wasm " $*")
+			    (display 
+			       (sed wasm-script
+				  `(("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
+				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
+				    ("@WASM@" . ,wasm))))
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
 		      (delete-file tmp)))))))))
+
+
+;*---------------------------------------------------------------------*/
+;*    sed ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (sed string substitutions)
+   (let loop ((string string)
+	      (substitutions substitutions))
+      (if (null? substitutions)
+	  string
+	  (loop (pregexp-replace* (caar substitutions)
+		   string
+		   (cdar substitutions))
+	     (cdr substitutions)))))
+
+;*---------------------------------------------------------------------*/
+;*    wasm-script ...                                                  */
+;*---------------------------------------------------------------------*/
+(define wasm-script "#!/bin/sh
+JS=${JS:-node}
+
+BIGLOOLIBDIR=@LIBDIR@
+
+NODE=${NODE:-node}
+NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref @NODEOPTMUNSAFE@}
+
+MOZJS=${MOJZ:-js128}
+MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls}
+
+case $JS in
+  \"node\")
+     $NODE $NODEOPT $BIGLOOLIBDIR/runtime-node.mjs @WASM@ $*;;
+
+  \"mozjs\")
+     $MOZJS $MOZJSOPT -m $BIGLOOLIBDIR/runtime-mozjs.mjs @WASM@ $*;;
+
+  *)
+     echo \"*** ERROR: unsupported JS engine: $JS\" >&2
+     exit 1;;
+esac")
 
 ;*---------------------------------------------------------------------*/
 ;*    wat-merge ...                                                    */

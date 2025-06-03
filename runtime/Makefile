@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Apr 25 07:18:31 2025 (serrano)                */
+#*    Last change :  Tue Jun  3 08:32:04 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -885,7 +885,9 @@ install-wasm: install-wasm-runtime
         fi
 
 install-wasm-runtime:
-	cp Wlib/runtime.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
+	cp Wlib/runtime-common.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime-common.mjs
+	cp Wlib/runtime-node.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime-node.mjs
+	cp Wlib/runtime-mozjs.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime-mozjs.mjs
 
 install-bee:
 	$(MAKE) install-lib LIB=libbigloo_p-$(RELEASE)
@@ -913,7 +915,9 @@ uninstall-jvm:
 
 uninstall-wasm:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime.mjs
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime-common.mjs
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime-node.mjs
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime-mozjs.mjs
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat
