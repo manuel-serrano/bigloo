@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jun  3 11:51:53 2025 (serrano)                */
+/*    Last change :  Tue Jun  3 15:30:03 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -618,13 +618,21 @@ async function run(argv) {
    }
 
    // Call the Bigloo Scheme program!
-   instance.exports.__js_bigloo_main();
+   try {
+      instance.exports.__js_bigloo_main();
+   } catch(e) {
+      print("*** ERROR", e);
+      print(e.stack);
+      quit(3);
+   }
 }
 
 try {
    run(process.argv);
 } catch(e) {
    print("*** ERROR", e);
+   print(e.stack);
+   quit(4);
 }
 
 // js128 -P wasm_gc -P wasm_exnref -P wasm_tail_calls runtime-mozjs.mjs a.out.wasm

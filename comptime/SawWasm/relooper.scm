@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Tue May  6 11:34:51 2025 (serrano)                */
+;*    Last change :  Tue Jun  3 14:45:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -549,11 +549,11 @@
 		   (do-branch x l context))
 		  ((if ?e ?t ?f)
 		   ;; handle ifeq and ifne
-		   `((if ,(gen-reg e)
-			 (then ,@(do-branch x t
-				    (cons `(if-then-else ,z) context)))
-			 (else ,@(do-branch x f
-				    (cons `(if-then-else ,z) context))))))
+		   (list `(if ,(gen-reg e)
+			      (then ,@(do-branch x t
+					 (cons `(if-then-else ,z) context)))
+			      (else ,@(do-branch x f
+					 (cons `(if-then-else ,z) context))))))
 		  ((switch ?fun ?type ?patterns ?labels ?args)
 		   (list (gen-switch fun type patterns labels args 
 			    (lambda (to) (do-branch x to context))
@@ -616,3 +616,33 @@
 	  `((loop ,@(code-for-x (cons `(loop-headed-by ,x) context))))
 	  (code-for-x context))))
 
+;* {*---------------------------------------------------------------------*} */
+;* {*    br-on-cast ...                                                   *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (br-on-cast expr)                                           */
+;*    (match-case expr                                                 */
+;*       ((if (@ ?loc (ref.test (ref ?ty) (local.get ?v))) (then . ?t) (else . ?e)) */
+;*        (let ((b1 (gensym '$b1))                                     */
+;* 	     (b2 (gensym '$b2)))                                       */
+;* 	  `(block ,b1 (result ???)                                     */
+;* 	      ,(uncast t ty                                            */
+;* 		  `(block ,b2 (result ??)                              */
+;* 		      (br_on_cast ,b (ref ,ty) (local.get ,v))         */
+;* 		      (block ,@e)                                      */
+;* 		      (br ,b1))))))                                    */
+;*       (else                                                         */
+;*        expr)))                                                      */
+;*                                                                     */
+;* {*---------------------------------------------------------------------*} */
+;* {*    uncast ...                                                       *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (uncast expr ty v block)                                    */
+;*    (match-case expr                                                 */
+;*       ((ref.cast (ref ?ety (local.get ?ev)))                        */
+;*        (if (and (eq? ety ty) (eq? ev v))                            */
+;* 	   block                                                       */
+;* 	   expr))                                                      */
+;*       (else                                                         */
+;*        (if (pair? expr)                                             */
+;* 	   (map! (lambda (x) (uncast x ty v)) expr)                    */
+;* 	   expr))))                                                    */

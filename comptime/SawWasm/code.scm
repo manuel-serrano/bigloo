@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue May  6 10:58:22 2025 (serrano)                */
+;*    Last change :  Tue Jun  3 13:39:35 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -58,7 +58,6 @@
 	   (emit-wasm-eval-accessors::pair-nil)
 	   (emit-wasm-atom-value type value)
 	   (gen-reg reg)
-	   (gen-basic-block b)
 	   (gen-ins ins::rtl_ins)
 	   (gen-switch fun type patterns labels args gen-go gen-block-label)
 	   (cnst-table-sym)
@@ -764,7 +763,7 @@
 ;*    gen-basic-block ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (gen-basic-block b)
-  (filter-map gen-ins (block-first b)))
+   (filter-map gen-ins (block-first b)))
 
 (define-generic (do-push? fun::rtl_fun) #f)
 
@@ -787,17 +786,20 @@
   (let ((retty (variable-type (rtl_call-var fun))))
     (not (eq? (type-id retty) 'void))))
 
-; TODO: implement do-push? for other types
-
+;*---------------------------------------------------------------------*/
+;*    gen-ins ...                                                      */
+;*---------------------------------------------------------------------*/
 (define (gen-ins ins::rtl_ins)
-  (with-access::rtl_ins ins (dest fun args)
-    (if dest
-      `(local.set ,(gen-reg/dest dest) ,(gen-expr fun args))
-      ;; We need to add an explicit drop if the instruction push
-      ;; some data to the stack. Indeed, at the end of each block
-      ;; the stack must be empty (all pushed values must have been
-      ;; popped).
-      (if (do-push? fun) `(drop ,(gen-expr fun args)) (gen-expr fun args)))))
+   (with-access::rtl_ins ins (dest fun args)
+      (if dest
+	  `(local.set ,(gen-reg/dest dest) ,(gen-expr fun args))
+	  ;; We need to add an explicit drop if the instruction push
+	  ;; some data to the stack. Indeed, at the end of each block
+	  ;; the stack must be empty (all pushed values must have been
+	  ;; popped).
+	  (if (do-push? fun)
+	      `(drop ,(gen-expr fun args))
+	      (gen-expr fun args)))))
 
 (define-generic (gen-expr fun::rtl_fun args) #unspecified)
 
@@ -909,7 +911,6 @@
 	  ,(wasm-sym name) ,@(gen-args args)))))
 
 (define-method (gen-expr fun::rtl_instanceof args)
-  ; TODO: NOT IMPLEMENTED
   (with-fun-loc fun `(INSTANCEOF ,@(gen-args args))))
 
 (define-method (gen-expr fun::rtl_makebox args)
@@ -957,12 +958,12 @@
     `(block ,@(gen-go (rtl_go-to fun)))))
 
 (define-method (gen-expr fun::rtl_ifne args)
-  (with-fun-loc fun
-    `(if ,@(gen-args args) (then ,@(gen-go (rtl_ifne-then fun))))))
+   (with-fun-loc fun
+      `(if ,@(gen-args args) (then ,@(gen-go (rtl_ifne-then fun))))))
 
 (define-method (gen-expr fun::rtl_ifeq args)
-  (with-fun-loc fun
-    `(if (i32.eqz ,@(gen-args args)) (then ,@(gen-go (rtl_ifeq-then fun))))))
+   (with-fun-loc fun
+      `(if (i32.eqz ,@(gen-args args)) (then ,@(gen-go (rtl_ifeq-then fun))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    intify ...                                                       */
@@ -1060,18 +1061,19 @@
 ;*    emit-binary-search ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (emit-binary-search gen-go type args else-bb patterns blocks)
-  (multiple-value-bind (lt gt const) (cmp-ops-for-type type)
-    (let helper ((low 0)
-                (high (-fx (vector-length patterns) 1)))
-      (if (<fx high low)
-        `(block ,@(gen-go else-bb))
-        (let ((middle (quotient (+fx low high) 2)))
-          `(if (,gt (,const ,(vector-ref patterns middle)) ,@args)
-            (then ,(helper low (-fx middle 1)))
-            (else
-              (if (,lt (,const ,(vector-ref patterns middle)) ,@args)
-                (then ,(helper (+fx middle 1) high))
-                (else ,@(gen-go (vector-ref blocks middle)))))))))))
+   (multiple-value-bind (lt gt const)
+      (cmp-ops-for-type type)
+      (let helper ((low 0)
+		   (high (-fx (vector-length patterns) 1)))
+	 (if (<fx high low)
+	     `(block ,@(gen-go else-bb))
+	     (let ((middle (quotient (+fx low high) 2)))
+		`(if (,gt (,const ,(vector-ref patterns middle)) ,@args)
+		     (then ,(helper low (-fx middle 1)))
+		     (else
+		      (if (,lt (,const ,(vector-ref patterns middle)) ,@args)
+			  (then ,(helper (+fx middle 1) high))
+			  (else ,@(gen-go (vector-ref blocks middle)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flat ...                                                         */
@@ -1806,4 +1808,3 @@
 				    blocks)
 				 (cons nb blocks))
 			      (loop (cdr first) (cons i prelude))))))))))))
-   
