@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Jun  3 07:51:15 2025 (serrano)                */
+;*    Last change :  Tue Jun  3 11:34:38 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -145,7 +145,6 @@
 	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
 		 (lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
-		 (runtime-mjs (find-file-in-path "runtime.mjs" *lib-dir*))
 		 (srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
 		 (objects (delete-duplicates!
 			     (append srcobj *o-files*) string=?)))
