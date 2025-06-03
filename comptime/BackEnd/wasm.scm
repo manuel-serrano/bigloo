@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Jun  3 11:34:38 2025 (serrano)                */
+;*    Last change :  Tue Jun  3 11:55:17 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -205,7 +205,7 @@ case $JS in
      $NODE $NODEOPT $BIGLOOLIBDIR/runtime-node.mjs @WASM@ $*;;
 
   \"mozjs\")
-     $MOZJS $MOZJSOPT -m $BIGLOOLIBDIR/runtime-mozjs.mjs @WASM@ $*;;
+     $MOZJS $MOZJSOPT -m $BIGLOOLIBDIR/runtime-mozjs.mjs - @WASM@ $*;;
 
   *)
      echo \"*** ERROR: unsupported JS engine: $JS\" >&2

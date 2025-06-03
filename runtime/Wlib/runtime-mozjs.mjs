@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jun  3 10:25:28 2025 (serrano)                */
+/*    Last change :  Tue Jun  3 11:51:53 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding.                                  */
@@ -13,7 +13,7 @@
 /*    Compatibility kit                                                */
 /*---------------------------------------------------------------------*/
 const process = {
-   argv: ["js", "runtime-moz.mjs", "a.out.wasm"].concat(scriptArgs),
+   argv: ["js", "runtime-moz.mjs"].concat(scriptArgs),
    env: { HOME: os.getenv("HOME") },
    exit: n => quit(n > 127 ? 1 : n)
 }
