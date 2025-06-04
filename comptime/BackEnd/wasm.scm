@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Jun  3 11:55:17 2025 (serrano)                */
+;*    Last change :  Wed Jun  4 07:40:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -198,7 +198,7 @@ NODE=${NODE:-node}
 NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref @NODEOPTMUNSAFE@}
 
 MOZJS=${MOJZ:-js128}
-MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls}
+MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls --wasm-compiler=optimizing }
 
 case $JS in
   \"node\")
