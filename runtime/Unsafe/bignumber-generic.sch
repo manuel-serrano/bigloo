@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../bigloo/bigloo/runtime/Unsafe/bignumber-generic.sch           */
+;*    /tmp/TBR/bigloo-4.7a/runtime/Unsafe/bignumber-generic.sch        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Fri Dec 13 15:32:13 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Wed Jun  4 10:27:56 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -154,7 +154,7 @@
       ($bitnotbx::bignum ::bignum)))
 
 ;*---------------------------------------------------------------------*/
-;*    $string->integer-obj ...                                        */
+;*    $string->integer-obj ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    When no native bignum implementation is available, standard      */
 ;*    aritmethic operations do not promote their result because        */
@@ -257,7 +257,7 @@
 	 (cond ((=fx (bignum-digit-ref x i) 0)
 		(loop (-fx i 1)))
 	       ((=fx i 0)
-		bignum-zero)
+		(bignum-zero))
 	       (else
 		(bignum-sign-set! x sign)
 		(if (=fx i (-fx (bignum-length x) 1))
@@ -368,7 +368,9 @@
 			  (loop2 (+fx i 1) (quotientu64 x (bignum-radix))))
 		       r)))))))
 
-(define preallocated-bignums
+(define *preallocated-bignums* #unspecified)
+
+(define (get-preallocated-bignums)
    (let ((v (make-vector 33 #f)))
       (let loop ((i 0) (n -16))
 	 (if (<fx 16 n)
@@ -377,14 +379,23 @@
 		(vector-set! v i ($fixnum->bignum-fresh n))
 		(loop (+fx i 1) (+fx n 1)))))))
 
+(define (preallocated-bignums)
+   (unless (vector? *preallocated-bignums*)
+      (set! *preallocated-bignums* (get-preallocated-bignums)))
+   *preallocated-bignums*)
+
 (define ($fixnum->bignum n)
    (if (or (<fx n -16) (<fx 16 n))
        ($fixnum->bignum-fresh n)
-       (vector-ref preallocated-bignums (+fx n 16))))
+       (vector-ref (preallocated-bignums) (+fx n 16))))
 
-(define bignum-zero
-   ($fixnum->bignum 0))
+(define *bignum-zero* #unspecified)
 
+(define (bignum-zero)
+   (unless (bignum? *bignum-zero*)
+      (set! *bignum-zero* ($fixnum->bignum 0)))
+   *bignum-zero*)
+   
 ;*---------------------------------------------------------------------*/
 ;*    Bignum comparison                                                */
 ;*---------------------------------------------------------------------*/
@@ -589,7 +600,7 @@
    (bignum-sum2 x y (bignum-sign x) (-fx 1 (bignum-sign y))))
 
 (define ($negbx x)
-   ($-bx bignum-zero x))
+   ($-bx (bignum-zero) x))
 
 (define (bignum+ . args)
    (if (pair? args)
@@ -597,7 +608,7 @@
 	  (if (pair? lst)
 	      (loop ($+bx n (car lst)) (cdr lst))
 	      n))
-       bignum-zero))
+       (bignum-zero)))
 
 (define (bignum- x . args)
    (if (pair? args)
@@ -814,7 +825,7 @@
    (define (div x y lenx leny)
       (if (<fx lenx leny)
 	  
-	  (cons bignum-zero x)
+	  (cons (bignum-zero) x)
 	  
 	  (let ((r (make-bignum (+fx (-fx lenx leny) 2))))
 	     
@@ -882,7 +893,7 @@
 
 (define ($lcmbx x y)
    (if (or ($zerobx? x) ($zerobx? y))
-       bignum-zero
+       (bignum-zero)
        ($quotientbx
 	($absbx ($*bx x y))
 	($gcdbx x y))))
@@ -1041,7 +1052,7 @@
 	  ($+bx
 	   ($fixnum->bignum radix-minus-1)
 	   ($fixnum->bignum 1))))
-      (let loop ((n bignum-zero) (lst (reverse digit-list)))
+      (let loop ((n (bignum-zero)) (lst (reverse digit-list)))
 	 (if (pair? lst)
 	     (loop ($+bx ($*bx n big-radix)
 			 ($fixnum->bignum (car lst)))
