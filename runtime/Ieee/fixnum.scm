@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/flt/runtime/Ieee/fixnum.scm          */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/fixnum.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Dec 12 08:43:46 2024 (serrano)                */
+;*    Last change :  Thu Jun  5 08:34:12 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -13,13 +13,13 @@
 ;*---------------------------------------------------------------------*/
 (module __r4_numbers_6_5_fixnum
    
-    (cond-expand
+   (cond-expand
       ((and (not bigloo-c) (not bigloo-jvm))
        (include "Ieee/fixnum-generic.sch")))
    
-    (import  __error
-	     __param
-	     __bignum)
+   (import  __error
+	    __param
+	    __bignum)
    
    (use     __type
 	    __bigloo
@@ -35,7 +35,7 @@
 	    __r4_pairs_and_lists_6_3
 	    
 	    __evenv)
-
+   
    (extern (macro $fixnum?::bool (::obj) "INTEGERP")
 	   (macro $elong?::bool (::obj) "ELONGP")
 	   (macro $llong?::bool (::obj) "LLONGP")
@@ -238,7 +238,7 @@
 	   ($uelong->string::bstring  (::elong ::long) "unsigned_to_string")
 	   ($ullong->string::bstring  (::llong ::long) "ullong_to_string")
 	   (macro $rand::int () "rand"))
-
+   
    ;; tagged fixnum operation, for the C backend only
    (extern  (macro $addfx::bint (::bint ::bint) "ADDFX")
 	    (macro $subfx::bint (::bint ::bint) "SUBFX")
@@ -247,7 +247,7 @@
 	    (macro $gtfx::bint (::bint ::bint) "GTFX")
 	    (macro $gefx::bint (::bint ::bint) "GEFX")
 	    (macro $egfx::bint (::bint ::bint) "EGFX"))
-
+   
    (java    (class foreign
 	       (field static $minvalfx::long "MIN_VALUE_FX")
 	       (field static $maxvalfx::long "MAX_VALUE_FX")
@@ -281,7 +281,7 @@
 		  "ELONG_TO_LLONG")
 	       (method static $llong->elong::elong (::llong)
 		  "LLONG_TO_ELONG")
-
+	       
 	       (method static $elong->int8::int8 (::elong)
 		  "ELONG_TO_INT8")
 	       (method static $int8->elong::elong (::int8)
@@ -332,7 +332,7 @@
 		  "LLONG_TO_INT64")
 	       (method static $uint64->llong::llong (::uint64)
 		  "INT64_TO_LLONG")
-
+	       
  	       (method static $=fx::bool (::long ::long)
 		  "EQ_FX")
 	       (method static $=elong::bool (::elong ::elong)
@@ -660,7 +660,7 @@
 	    (inline int64->elong::elong ::int64)
 	    (inline uint64->elong::elong ::uint64)
 	    (inline uint64->uint32::uint32 ::uint64)
-
+	    
 	    (inline fixnum->int8::int8 ::long)
 	    (inline fixnum->uint8::uint8 ::long)
 	    (inline int8->fixnum::long ::int8)
@@ -1325,17 +1325,17 @@
 	    ($negelong no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	    ($negllong no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	    (random side-effect-free no-cfa-top nesting (effect)))
-
+   
    (cond-expand
       (bigloo-c
        (pragma
 	  ($addfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	    ($subfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	    ($ltfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	    ($lefx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	    ($gtfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	    ($gefx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
-	    ($egfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)))))
+	  ($subfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($ltfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($lefx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($gtfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($gefx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	  ($egfx no-alloc side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer? ...                                                     */

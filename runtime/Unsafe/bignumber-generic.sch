@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /tmp/TBR/bigloo-4.7a/runtime/Unsafe/bignumber-generic.sch        */
+;*    .../bigloo/bigloo/runtime/Unsafe/bignumber-generic.sch           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Wed Jun  4 10:27:56 2025 (serrano)                */
+;*    Last change :  Thu Jun  5 08:31:27 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -368,9 +368,7 @@
 			  (loop2 (+fx i 1) (quotientu64 x (bignum-radix))))
 		       r)))))))
 
-(define *preallocated-bignums* #unspecified)
-
-(define (get-preallocated-bignums)
+(define *preallocated-bignums*
    (let ((v (make-vector 33 #f)))
       (let loop ((i 0) (n -16))
 	 (if (<fx 16 n)
@@ -380,8 +378,6 @@
 		(loop (+fx i 1) (+fx n 1)))))))
 
 (define (preallocated-bignums)
-   (unless (vector? *preallocated-bignums*)
-      (set! *preallocated-bignums* (get-preallocated-bignums)))
    *preallocated-bignums*)
 
 (define ($fixnum->bignum n)
@@ -389,11 +385,10 @@
        ($fixnum->bignum-fresh n)
        (vector-ref (preallocated-bignums) (+fx n 16))))
 
-(define *bignum-zero* #unspecified)
+(define *bignum-zero*
+   ($fixnum->bignum 0))
 
 (define (bignum-zero)
-   (unless (bignum? *bignum-zero*)
-      (set! *bignum-zero* ($fixnum->bignum 0)))
    *bignum-zero*)
    
 ;*---------------------------------------------------------------------*/
@@ -1059,16 +1054,16 @@
 		   (cdr lst))
 	     n))))
 
-(define ($bignum->fixnum x) ;; returns #f on fixnum overflow
+(define ($bignum->fixnum x) ;; returns 0 on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n 0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
 		(if (<fx n (bignum-min-fixnum-div-radix))
-		    #f
+		    0
 		    (let ((m (*fx n (bignum-radix)))
 			  (d (bignum-digit-ref x i)))
 		       (if (<fx m (+fx (bignum-min-fixnum) d))
-			   #f
+			   0
 			   (loop (-fx m d)
 				 (-fx i 1))))))
 	       (($negativebx? x)
@@ -1076,18 +1071,18 @@
 	       ((not (=fx n (bignum-min-fixnum)))
 		(-fx 0 n))
 	       (else
-		#f)))))
+		0)))))
 
-(define ($bignum->elong x) ;; returns #f on fixnum overflow
+(define ($bignum->elong x) ;; returns 0 on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n::elong #e0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
 		(if (<elong n (bignum-min-elong-div-radix))
-		    #f
+		    #e0
 		    (let ((m (*elong n (bignum-elong-radix)))
 			  (d ($long->elong (bignum-digit-ref x i))))
 		       (if (<elong m (+elong (bignum-min-elong) d))
-			   #f
+			   #e0
 			   (loop (-elong m d)
 				 (-fx i 1))))))
 	       (($negativebx? x)
@@ -1095,18 +1090,18 @@
 	       ((not (=elong n (bignum-min-elong)))
 		(-elong #e0 n))
 	       (else
-		#f)))))
+		#e0)))))
 
-(define ($bignum->llong x) ;; returns #f on fixnum overflow
+(define ($bignum->llong x) ;; returns 0 on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n::llong #l0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
 		(if (<llong n (bignum-min-llong-div-radix))
-		    #f
+		    #l0
 		    (let ((m (*llong n (bignum-llong-radix)))
 			  (d ($long->llong (bignum-digit-ref x i))))
 		       (if (<llong m (+llong (bignum-min-llong) d))
-			   #f
+			   #l0
 			   (loop (-llong m d)
 				 (-fx i 1))))))
 	       (($negativebx? x)
@@ -1114,18 +1109,18 @@
 	       ((not (=llong n (bignum-min-llong)))
 		(-llong #l0 n))
 	       (else
-		#f)))))
+		#l0)))))
 
-(define ($bignum->int64 x) ;; returns #f on fixnum overflow
+(define ($bignum->int64 x) ;; returns 0 on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n::int64 #s64:0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
 		(if (<s64 n (bignum-min-int64-div-radix))
-		    #f
+		    #s64:0
 		    (let ((m (*s64 n (bignum-int64-radix)))
 			  (d ($long->int64 (bignum-digit-ref x i))))
 		       (if (<s64 m (+s64 (bignum-min-int64) d))
-			   #f
+			   #s64:0
 			   (loop (-s64 m d)
 				 (-fx i 1))))))
 	       (($negativebx? x)
@@ -1133,7 +1128,7 @@
 	       ((not (=s64 n (bignum-min-int64)))
 		(-s64 #l0 n))
 	       (else
-		#f)))))
+		#s64:0)))))
 
 (define ($bignum->uint64 x) ;; returns #f on fixnum overflow
    (int64->uint64 ($bignum->int64 x)))
