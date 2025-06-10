@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sat Jan  4 08:23:01 2025 (serrano)                */
+;*    Last change :  Thu Jun  5 08:34:59 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -213,6 +213,12 @@
    (import  __r4_input_6_10_2
 	    __object)
 
+   (cond-expand
+      (enable-gmp
+       (use __bignum))
+      (else
+       (import __bignum)))
+
    (use     __type
 	    __bigloo
 	    __param
@@ -229,7 +235,6 @@
 	    __ucs2
 	    __thread
 	    __bexit
-	    __bignum
 	    __date
 	    __srfi4
 	    __regexp

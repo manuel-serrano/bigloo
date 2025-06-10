@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Feb  4 16:56:42 2025 (serrano)                */
+;*    Last change :  Thu Jun  5 08:35:05 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -20,11 +20,16 @@
    (import  __error
 	    __param)
    
+   (cond-expand
+      (enable-gmp
+       (use __bignum))
+      (else
+       (import __bignum)))
+
    (use     __type
 	    __bigloo
 	    __tvector
 	    __bexit
-	    __bignum
 	    __object
 	    __thread
 	    __rgc

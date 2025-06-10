@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/rsa.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/rsa.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Tue Jun 17 08:15:39 2014 (serrano)                */
-;*    Copyright   :  2005-14 Chris Veness                              */
+;*    Last change :  Thu Jun  5 08:35:36 2025 (serrano)                */
+;*    Copyright   :  2005-25 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the RSA asymmetric    */
 ;*    cipher.                                                          */
@@ -15,6 +15,12 @@
 ;*---------------------------------------------------------------------*/
 (module __rsa
 
+   (cond-expand
+      (enable-gmp
+       (use __bignum))
+      (else
+       (import __bignum)))
+
    (use    __type
 	   __bigloo
 	   __tvector
@@ -23,7 +29,6 @@
 	   __thread
 	   __rgc
 	   __bit
-	   __bignum
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum
 	   __r4_numbers_6_5_flonum
