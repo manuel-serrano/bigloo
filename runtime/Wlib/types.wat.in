@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Wed Feb  5 09:52:49 2025 (serrano)                */
+;*    Last change :  Wed Jun 11 16:45:45 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -96,7 +96,6 @@
    (type $process (struct))
    
    (type $tvector (struct (field $descr (ref eq))))
-   (type $hvector (struct))
    
    (@include "./wrgc.wat" type)
    (@include "./wports.wat" type)

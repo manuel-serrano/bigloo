@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Sep  2 14:47:09 2024 (serrano)                */
+;*    Last change :  Wed Jun 11 16:55:13 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -414,7 +414,7 @@
 ;*---------------------------------------------------------------------*/
 (define (for-each-global! proc::procedure . env)
    (hashtable-for-each (if (null? env) *Genv* (car env))
-		       (lambda (k bucket) (for-each proc (cdr bucket)))))
+      (lambda (k bucket) (for-each proc (cdr bucket)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    global-bucket-position                                           */

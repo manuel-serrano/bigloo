@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Jun  4 07:40:54 2025 (serrano)                */
+;*    Last change :  Wed Jun 11 16:51:17 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -139,9 +139,7 @@
 			  (delete-file tmp)))))))
 	 ((null? sources)
 	  (error "wasm-link" "No source file provided" *dest*))
-;* 	 ((pair? (cdr sources))                                        */
-;* 	  (error "wasm-link" "More than one source file provided" sources)) */
-	 (else
+	 (*static-bigloo?*
 	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
 		 (lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
@@ -170,7 +168,9 @@
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
-		      (delete-file tmp)))))))))
+		      (delete-file tmp))))))
+	 (else
+	  (tprint "SHARED WASM ...NOT IMPLEMENTED YET")))))
 
 
 ;*---------------------------------------------------------------------*/
@@ -216,7 +216,7 @@ esac")
 ;*    wat-merge ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (wat-merge files target)
-
+   
    (define exports (create-hashtable :weak 'open-string))
    (define imports (create-hashtable :weak 'open-string))
    (define tags (create-hashtable :weak 'open-string))
@@ -235,7 +235,7 @@ esac")
 		      ((func ?- (export ?n) ???-)
 		       (hashtable-put! exports n #t))))
 	 modules))
-
+   
    (define (remove-scheme-imports! modules)
       (filter! (lambda (d)
 		  (match-case d
@@ -244,7 +244,7 @@ esac")
 			  (not (hashtable-contains? exports n))))
 		     (else #t)))
 	 modules))
-
+   
    (define (remove-duplicate-imports! modules)
       (filter! (lambda (d)
 		  (match-case d
@@ -255,7 +255,7 @@ esac")
 			    #t)))
 		     (else #t)))
 	 modules))
-
+   
    (define (remove-duplicate-tags! modules)
       (filter! (lambda (d)
 		  (match-case d
@@ -266,7 +266,7 @@ esac")
 			    #t)))
 		     (else #t)))
 	 modules))
-
+   
    (define (remove-duplicate-recs! modules)
       (filter! (lambda (d)
 		  (match-case d
@@ -277,83 +277,83 @@ esac")
 			    #t)))
 		     (else #t)))
 	 modules))
-
-    (define (remove-duplicate-types! modules)
-       (filter-map (lambda (d)
-		      (match-case d
-			 ((type ?n ???-)
-			  (let ((key (symbol->string! n)))
-			     (unless (hashtable-contains? types key)
-				(hashtable-put! types key #t)
-				d)))
-			 ((rec . ?types)
-			  (let ((tys (remove-duplicate-types! types)))
-			     (if (pair? tys)
-				 `(rec ,@tys)
-				 #f)))
-			 (else
-			  d)))
-	  modules))
-
-    (define (remove-exports! modules)
-       
-       (hashtable-put! exports-whitelist "memory" #t)
-
-       ;; trivial exports
-       (filter! (lambda (d)
+   
+   (define (remove-duplicate-types! modules)
+      (filter-map (lambda (d)
+		     (match-case d
+			((type ?n ???-)
+			 (let ((key (symbol->string! n)))
+			    (unless (hashtable-contains? types key)
+			       (hashtable-put! types key #t)
+			       d)))
+			((rec . ?types)
+			 (let ((tys (remove-duplicate-types! types)))
+			    (if (pair? tys)
+				`(rec ,@tys)
+				#f)))
+			(else
+			 d)))
+	 modules))
+   
+   (define (remove-exports! modules)
+      
+      (hashtable-put! exports-whitelist "memory" #t)
+      
+      ;; trivial exports
+      (filter! (lambda (d)
+		  (match-case d
+		     ((export ?n ???-) (hashtable-contains? exports-whitelist n))
+		     (else #t)))
+	 modules)
+      
+      (for-each (lambda (d)
 		   (match-case d
-		      ((export ?n ???-) (hashtable-contains? exports-whitelist n))
-		      (else #t)))
-	  modules)
-       
-       (for-each (lambda (d)
-		    (match-case d
-		       ((global ?id (export ?n) . ?r)
-			(unless (hashtable-contains? exports-whitelist n)
-			   (set-cdr! d (cons id r))))
-		       ((func ?id (export ?n) . ?r)
-			(unless (hashtable-contains? exports-whitelist n)
-			   (set-cdr! d (cons id r))))))
-	  modules))
-    
-    (define (compute-initial-order modules)
-       (let ((index 0))
-	  (for-each (lambda (d)
-		       (let ((key (cer d)))
-			  (unless (hashtable-contains? initial-order key)
-			     (hashtable-put! initial-order key index)
-			     (set! index (+fx index 1)))))
-	     modules)))
-
-    (define (sort-modules! modules)
-       
-       (define orders
-	  '((import 0)
-	    (memory 1)
-	    (type 2)
-	    (rec 2)
-	    (tag 3)
-	    (export 4)
-	    (global 5)
-	    (data 6)
-	    (func 7)))
-       
-       (define (order-of x)
-	  (let ((r (assq (car x) orders)))
-	     (if r
-		 (cadr r)
-		 1000)))
-       
-       (sort modules
-	  (lambda (x y)
-	     (let ((xorder (order-of x))
-		   (yorder (order-of y)))
-		(if (=fx xorder yorder)
-		    (<fx (hashtable-get initial-order (cer x))
-		       (hashtable-get initial-order (cer y)))
-		    (<fx xorder yorder))))))
-    
-  (define (hash-key-of x)
+		      ((global ?id (export ?n) . ?r)
+		       (unless (hashtable-contains? exports-whitelist n)
+			  (set-cdr! d (cons id r))))
+		      ((func ?id (export ?n) . ?r)
+		       (unless (hashtable-contains? exports-whitelist n)
+			  (set-cdr! d (cons id r))))))
+	 modules))
+   
+   (define (compute-initial-order modules)
+      (let ((index 0))
+	 (for-each (lambda (d)
+		      (let ((key (cer d)))
+			 (unless (hashtable-contains? initial-order key)
+			    (hashtable-put! initial-order key index)
+			    (set! index (+fx index 1)))))
+	    modules)))
+   
+   (define (sort-modules! modules)
+      
+      (define orders
+	 '((import 0)
+	   (memory 1)
+	   (type 2)
+	   (rec 2)
+	   (tag 3)
+	   (export 4)
+	   (global 5)
+	   (data 6)
+	   (func 7)))
+      
+      (define (order-of x)
+	 (let ((r (assq (car x) orders)))
+	    (if r
+		(cadr r)
+		1000)))
+      
+      (sort modules
+	 (lambda (x y)
+	    (let ((xorder (order-of x))
+		  (yorder (order-of y)))
+	       (if (=fx xorder yorder)
+		   (<fx (hashtable-get initial-order (cer x))
+		      (hashtable-get initial-order (cer y)))
+		   (<fx xorder yorder))))))
+   
+   (define (hash-key-of x)
       (let ((p (open-output-string)))
 	 (write x p)
 	 (get-output-string p)))
@@ -371,16 +371,16 @@ esac")
 		   (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
 		(bigloo-strict-r5rs-strings-set! strict)))
 	  (error "wasm" "Cannot find wasm module" f)))
-
+   
    (define (collect-module modules key)
       (filter (lambda (e) (eq? (car e) key)) modules))
-
+   
    (define (sort-classes classes)
-
+      
       (define supers (create-hashtable :weak 'open-string))
       (define depths (create-hashtable :weak 'open-string))
       (define all (create-hashtable :weak 'open-string))
-
+      
       (define (class-super klass)
 	 (hashtable-get supers klass))
       
@@ -405,7 +405,7 @@ esac")
 			  (symbol->string! super))
 		       (hashtable-put! depths (symbol->string! n) 0))))
 	 classes)
-
+      
       ;; compute the depth of each class
       (for-each (lambda (k)
 		   (match-case k
@@ -416,14 +416,14 @@ esac")
 		       (hashtable-put! depths (symbol->string! n)
 			  (+fx 1 (class-depth (symbol->string! super)))))))
 	 classes)
-
+      
       ;; sort the classes by depths
       (map (lambda (k)
 	      (hashtable-get all k))
 	 (sort (lambda (k1 k2)
 		  (<fx (class-depth k1) (class-depth k2)))
 	    (map (lambda (k) (symbol->string! (cadr k))) classes))))
-      
+   
    (define (collect-types modules)
       (filter (lambda (e)
 		 (cond
@@ -431,7 +431,7 @@ esac")
 		    ((eq? (car e) 'rec) e)
 		    (else #f)))
 	 modules))
-
+   
    (define (split-type-classes types)
       
       (define (class-declaration? ty)
@@ -463,7 +463,7 @@ esac")
 ;*       (remove-duplicate-tags! modules)                              */
 ;*       (remove-duplicate-recs! modules)                              */
 ;*       (remove-duplicate-types! modules)                             */
-
+      
       ;; MS 30 aug2024, I don't know when the global variable *generate-exe*
       ;; (currently undefined because useless) should be true
       ;; (when *generate-exe* (remove-exports! modules))
@@ -474,18 +474,18 @@ esac")
 	 (lambda ()
 	    (wasm-pp
 	       `(module ,(wasm-module-name target)
-		  ,@(remove-duplicate-imports! (collect-module modules 'import))
-		  ,@(collect-module modules 'memory)
-		  ,@(split-type-classes
-		       (remove-duplicate-types! (collect-types modules)))
+		   ,@(remove-duplicate-imports! (collect-module modules 'import))
+		   ,@(collect-module modules 'memory)
+		   ,@(split-type-classes
+			(remove-duplicate-types! (collect-types modules)))
 ;* 		  ,@(remove-duplicate-recs! (collect-module modules 'rec)) */
-		  ,@(remove-duplicate-tags! (collect-module modules 'tag))
-		  ,@(collect-module modules 'export)
-		  ,@(collect-module modules 'global)
-		  ,@(collect-module modules 'data)
-		  ,@(collect-module modules 'func)
-		  ;;(sort-modules! modules)
-		  )
+		   ,@(remove-duplicate-tags! (collect-module modules 'tag))
+		   ,@(collect-module modules 'export)
+		   ,@(collect-module modules 'global)
+		   ,@(collect-module modules 'data)
+		   ,@(collect-module modules 'func)
+		   ;;(sort-modules! modules)
+		   )
 	       :scheme-string #f)))))
 
 ;*---------------------------------------------------------------------*/
@@ -599,113 +599,117 @@ esac")
       (with-output-to-port *wasm-port*
 	 (lambda ()
 	    (wasm-pp
-	       `(module ,(wasm-sym (symbol->string *module*))
-		   
-		   (comment "Imports"
-		      (import "__bigloo" "generic_va_call"
-			 (func $generic_va_call
-			    (param (ref $procedure))
-			    (param (ref $vector))
-			    (result (ref eq))))
-		      (import "__bigloo" "bgl_make_exit"
-			 (func $bgl_make_exit
-			    (result (ref $exit))))
-		      (import "__bigloo" "make_bint"
-			 (func $make-bint
-			    (result ,(wasm-type *bint*))))
-		      (import "__bigloo" "BNIL" (global $BNIL ,(wasm-type *bnil*)))
-		      (import "__bigloo" "BFALSE" (global $BFALSE ,(wasm-type *bbool*)))
-		      (import "__bigloo" "BTRUE" (global $BTRUE ,(wasm-type *bbool*)))
-		      (import "__bigloo" "BUNSPEC" (global $BUNSPEC ,(wasm-type *unspec*)))
-		      (import "__bigloo" "BOPTIONAL" (global $BOPTIONAL ,(wasm-type *cnst*)))
-		      (import "__bigloo" "BKEY" (global $BKEY ,(wasm-type *cnst*)))
-		      (import "__bigloo" "BREST" (global $BREST ,(wasm-type *cnst*)))
-		      (import "__bigloo" "BEOA" (global $BEOA ,(wasm-type *cnst*)))
-		      (import "__js" "trace" (func $__trace (param i32)))
-
-		      (import "__bigloo" "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value (ref func)))
-		      (import "__bigloo" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value ,(wasm-type *bint*)))
-		      (import "__bigloo" "BGL_BINT8_DEFAULT_VALUE" (global $bint8-default-value (ref $bint8)))
-		      (import "__bigloo" "BGL_BINT16_DEFAULT_VALUE" (global $bint16-default-value (ref $bint16)))
-		      (import "__bigloo" "BGL_BINT32_DEFAULT_VALUE" (global $bint32-default-value (ref $bint32)))
-		      (import "__bigloo" "BGL_BINT64_DEFAULT_VALUE" (global $bint64-default-value (ref $bint64)))
-		      (import "__bigloo" "BGL_BUINT8_DEFAULT_VALUE" (global $buint8-default-value (ref $buint8)))
-		      (import "__bigloo" "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value (ref $buint16)))
-		      (import "__bigloo" "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value (ref $buint32)))
-		      (import "__bigloo" "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value (ref $buint64)))
-		      (import "__bigloo" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value ,(wasm-type *bchar*)))
-		      (import "__bigloo" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $bucs2)))
-		      (import "__bigloo" "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value (ref $belong)))
-		      (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
-		      (import "__bigloo" "BGL_EPAIR_DEFAULT_VALUE" (global $epair-default-value (ref $epair)))
-		      (import "__bigloo" "BGL_CELL_DEFAULT_VALUE" (global $cell-default-value (ref $cell)))
-		      (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
-		      (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
-		      (import "__bigloo" "BGL_KEYWORD_DEFAULT_VALUE" (global $keyword-default-value (ref $keyword)))
-		      (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
-		      (import "__bigloo" "BGL_U8VECTOR_DEFAULT_VALUE" (global $u8vector-default-value (ref $u8vector)))
-		      (import "__bigloo" "BGL_S8VECTOR_DEFAULT_VALUE" (global $s8vector-default-value (ref $s8vector)))
-		      (import "__bigloo" "BGL_U16VECTOR_DEFAULT_VALUE" (global $u16vector-default-value (ref $u16vector)))
-		      (import "__bigloo" "BGL_S16VECTOR_DEFAULT_VALUE" (global $s16vector-default-value (ref $s16vector)))
-		      (import "__bigloo" "BGL_U32VECTOR_DEFAULT_VALUE" (global $u32vector-default-value (ref $u32vector)))
-		      (import "__bigloo" "BGL_S32VECTOR_DEFAULT_VALUE" (global $s32vector-default-value (ref $s32vector)))
-		      (import "__bigloo" "BGL_U64VECTOR_DEFAULT_VALUE" (global $u64vector-default-value (ref $u64vector)))
-		      (import "__bigloo" "BGL_S64VECTOR_DEFAULT_VALUE" (global $s64vector-default-value (ref $s64vector)))
-		      (import "__bigloo" "BGL_F32VECTOR_DEFAULT_VALUE" (global $f32vector-default-value (ref $f32vector)))
-		      (import "__bigloo" "BGL_F64VECTOR_DEFAULT_VALUE" (global $f64vector-default-value (ref $f64vector)))
-		      (import "__bigloo" "BGL_STRUCT_DEFAULT_VALUE" (global $struct-default-value (ref $struct)))
-		      (import "__bigloo" "BGL_CLASS_DEFAULT_VALUE" (global $class-default-value (ref $class)))
-		      (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
-		      (import "__bigloo" "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value (ref $procedure-el)))
-		      (import "__bigloo" "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value (ref $mutex)))
-		      (import "__bigloo" "BGL_CONDVAR_DEFAULT_VALUE" (global $condvar-default-value (ref $condvar)))
-		      (import "__bigloo" "BGL_DATE_DEFAULT_VALUE" (global $date-default-value (ref $date)))
-		      (import "__bigloo" "BGL_REAL_DEFAULT_VALUE" (global $real-default-value (ref $real)))
-		      (import "__bigloo" "BGL_BIGNUM_DEFAULT_VALUE" (global $bignum-default-value (ref $bignum)))
-		      (import "__bigloo" "BGL_PORT_DEFAULT_VALUE" (global $port-default-value (ref $port)))
-		      (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
-		      (import "__bigloo" "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE" (global $file-output-port-default-value (ref $file-output-port)))
-		      (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
-		      (import "__bigloo" "BGL_FILE_INPUT_PORT_DEFAULT_VALUE" (global $file-input-port-default-value (ref $file-input-port)))
-		      (import "__bigloo" "BGL_BINARY_PORT_DEFAULT_VALUE" (global $binary-port-default-value (ref $file-input-port)))
-		      (import "__bigloo" "BGL_SOCKET_DEFAULT_VALUE" (global $socket-default-value (ref $socket)))
-		      (import "__bigloo" "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE" (global $datagram-socket-default-value (ref $datagram-socket)))
-		      (import "__bigloo" "BGL_WEAKPTR_DEFAULT_VALUE" (global $weakptr-default-value (ref $weakptr)))
-		      (import "__bigloo" "BGL_MMAP_DEFAULT_VALUE" (global $mmap-default-value (ref $mmap)))
-		      (import "__bigloo" "BGL_PROCESS_DEFAULT_VALUE" (global $process-default-value (ref $process)))
-		      (import "__bigloo" "BGL_CUSTOM_DEFAULT_VALUE" (global $custom-default-value (ref $custom)))
-		      (import "__bigloo" "BGL_FOREIGN_DEFAULT_VALUE" (global $foreign-default-value (ref $foreign)))
-		      (import "__bigloo" "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value (ref $dynamic-env)))
-		      (import "__bigloo" "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value (ref $exit)))
-		      (import "__bigloo" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
-		      (import "__bigloo" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
-
-		      (import "__bigloo" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))
-		      ;;(import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result (ref eq))))
-		      (import "$__object" "class-nil@__object" (func $class-nil@__object (param (ref $class)) (result (ref eq))))
-
-		      ,@(emit-imports))
-		   
-		   (comment "Memory" ,@(emit-memory))
-		   
-		   ;; FIXME: allow custom name for types.wat file
-		   (comment "Primitive types"
-		      ,@(let ((tname (find-file-in-path "types.wat" *lib-dir*)))
-			   (if tname
-			       (match-case (call-with-input-file tname read)
-				  ((module (? symbol?) . ?body)
-				   body)
-				  (else
-				   (error "wasm" "Illegal module format" tname)))
-			       (error "wasm" "Cannot find types.wat file in path"
-				  *lib-dir*))))
-		   
-		   (comment "Class types" ,@(emit-class-types classes))
-		   (comment "Extra types" ,@(reverse *extra-types*))
-		   (comment "Globals" ,@(emit-prototypes))
-		   (comment "Constants" ,@(emit-cnsts))
-		   (comment "String data" ,@(emit-strings))
-		   (comment "Functions" ,@compiled-funcs))))))
+	       `(comment "-*- mode: bee -*-"
+		   (module ,(wasm-sym (symbol->string *module*))
+		      ,@(if *wasm-local-preinit* (list (emit-default-constants)) '())
+		      (comment "imports"
+			 ,@(emit-imports))
+		      
+		      #;(comment "std imports"
+			 (import "__bigloo" "generic_va_call"
+			    (func $generic_va_call
+			       (param (ref $procedure))
+			       (param (ref $vector))
+			       (result (ref eq))))
+			 (import "__bigloo" "bgl_make_exit"
+			    (func $bgl_make_exit
+			       (result (ref $exit))))
+			 (import "__bigloo" "make_bint"
+			    (func $make-bint
+			       (result ,(wasm-type *bint*))))
+			 (import "__bigloo" "BNIL" (global $BNIL ,(wasm-type *bnil*)))
+			 (import "__bigloo" "BFALSE" (global $BFALSE ,(wasm-type *bbool*)))
+			 (import "__bigloo" "BTRUE" (global $BTRUE ,(wasm-type *bbool*)))
+			 (import "__bigloo" "BUNSPEC" (global $BUNSPEC ,(wasm-type *unspec*)))
+			 (import "__bigloo" "BOPTIONAL" (global $BOPTIONAL ,(wasm-type *cnst*)))
+			 (import "__bigloo" "BKEY" (global $BKEY ,(wasm-type *cnst*)))
+			 (import "__bigloo" "BREST" (global $BREST ,(wasm-type *cnst*)))
+			 (import "__bigloo" "BEOA" (global $BEOA ,(wasm-type *cnst*)))
+			 (import "__js" "trace" (func $__trace (param i32)))
+			 
+			 (import "__bigloo" "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value (ref func)))
+			 (import "__bigloo" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value ,(wasm-type *bint*)))
+			 (import "__bigloo" "BGL_BINT8_DEFAULT_VALUE" (global $bint8-default-value (ref $bint8)))
+			 (import "__bigloo" "BGL_BINT16_DEFAULT_VALUE" (global $bint16-default-value (ref $bint16)))
+			 (import "__bigloo" "BGL_BINT32_DEFAULT_VALUE" (global $bint32-default-value (ref $bint32)))
+			 (import "__bigloo" "BGL_BINT64_DEFAULT_VALUE" (global $bint64-default-value (ref $bint64)))
+			 (import "__bigloo" "BGL_BUINT8_DEFAULT_VALUE" (global $buint8-default-value (ref $buint8)))
+			 (import "__bigloo" "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value (ref $buint16)))
+			 (import "__bigloo" "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value (ref $buint32)))
+			 (import "__bigloo" "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value (ref $buint64)))
+			 (import "__bigloo" "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value ,(wasm-type *bchar*)))
+			 (import "__bigloo" "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $bucs2)))
+			 (import "__bigloo" "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value (ref $belong)))
+			 (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
+			 (import "__bigloo" "BGL_EPAIR_DEFAULT_VALUE" (global $epair-default-value (ref $epair)))
+			 (import "__bigloo" "BGL_CELL_DEFAULT_VALUE" (global $cell-default-value (ref $cell)))
+			 (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+			 (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
+			 (import "__bigloo" "BGL_KEYWORD_DEFAULT_VALUE" (global $keyword-default-value (ref $keyword)))
+			 (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+			 (import "__bigloo" "BGL_U8VECTOR_DEFAULT_VALUE" (global $u8vector-default-value (ref $u8vector)))
+			 (import "__bigloo" "BGL_S8VECTOR_DEFAULT_VALUE" (global $s8vector-default-value (ref $s8vector)))
+			 (import "__bigloo" "BGL_U16VECTOR_DEFAULT_VALUE" (global $u16vector-default-value (ref $u16vector)))
+			 (import "__bigloo" "BGL_S16VECTOR_DEFAULT_VALUE" (global $s16vector-default-value (ref $s16vector)))
+			 (import "__bigloo" "BGL_U32VECTOR_DEFAULT_VALUE" (global $u32vector-default-value (ref $u32vector)))
+			 (import "__bigloo" "BGL_S32VECTOR_DEFAULT_VALUE" (global $s32vector-default-value (ref $s32vector)))
+			 (import "__bigloo" "BGL_U64VECTOR_DEFAULT_VALUE" (global $u64vector-default-value (ref $u64vector)))
+			 (import "__bigloo" "BGL_S64VECTOR_DEFAULT_VALUE" (global $s64vector-default-value (ref $s64vector)))
+			 (import "__bigloo" "BGL_F32VECTOR_DEFAULT_VALUE" (global $f32vector-default-value (ref $f32vector)))
+			 (import "__bigloo" "BGL_F64VECTOR_DEFAULT_VALUE" (global $f64vector-default-value (ref $f64vector)))
+			 (import "__bigloo" "BGL_STRUCT_DEFAULT_VALUE" (global $struct-default-value (ref $struct)))
+			 (import "__bigloo" "BGL_CLASS_DEFAULT_VALUE" (global $class-default-value (ref $class)))
+			 (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
+			 (import "__bigloo" "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value (ref $procedure-el)))
+			 (import "__bigloo" "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value (ref $mutex)))
+			 (import "__bigloo" "BGL_CONDVAR_DEFAULT_VALUE" (global $condvar-default-value (ref $condvar)))
+			 (import "__bigloo" "BGL_DATE_DEFAULT_VALUE" (global $date-default-value (ref $date)))
+			 (import "__bigloo" "BGL_REAL_DEFAULT_VALUE" (global $real-default-value (ref $real)))
+			 (import "__bigloo" "BGL_BIGNUM_DEFAULT_VALUE" (global $bignum-default-value (ref $bignum)))
+			 (import "__bigloo" "BGL_PORT_DEFAULT_VALUE" (global $port-default-value (ref $port)))
+			 (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
+			 (import "__bigloo" "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE" (global $file-output-port-default-value (ref $file-output-port)))
+			 (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
+			 (import "__bigloo" "BGL_FILE_INPUT_PORT_DEFAULT_VALUE" (global $file-input-port-default-value (ref $file-input-port)))
+			 (import "__bigloo" "BGL_BINARY_PORT_DEFAULT_VALUE" (global $binary-port-default-value (ref $file-input-port)))
+			 (import "__bigloo" "BGL_SOCKET_DEFAULT_VALUE" (global $socket-default-value (ref $socket)))
+			 (import "__bigloo" "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE" (global $datagram-socket-default-value (ref $datagram-socket)))
+			 (import "__bigloo" "BGL_WEAKPTR_DEFAULT_VALUE" (global $weakptr-default-value (ref $weakptr)))
+			 (import "__bigloo" "BGL_MMAP_DEFAULT_VALUE" (global $mmap-default-value (ref $mmap)))
+			 (import "__bigloo" "BGL_PROCESS_DEFAULT_VALUE" (global $process-default-value (ref $process)))
+			 (import "__bigloo" "BGL_CUSTOM_DEFAULT_VALUE" (global $custom-default-value (ref $custom)))
+			 (import "__bigloo" "BGL_FOREIGN_DEFAULT_VALUE" (global $foreign-default-value (ref $foreign)))
+			 (import "__bigloo" "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value (ref $dynamic-env)))
+			 (import "__bigloo" "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value (ref $exit)))
+			 (import "__bigloo" "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
+			 (import "__bigloo" "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
+			 
+			 (import "__bigloo" "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))
+			 ;;(import "$__object" "BGl_classzd2nilzd2zz__objectz00" (func $BGl_classzd2nilzd2zz__objectz00 (param (ref $class)) (result (ref eq))))
+			 (import "$__object" "class-nil@__object" (func $class-nil@__object (param (ref $class)) (result (ref eq))))
+			 
+			 ,@(emit-imports))
+		      
+		      (comment "Memory" ,@(emit-memory))
+		      
+		      ;; FIXME: allow custom name for types.wat file
+		      (comment "Primitive types"
+			 ,@(let ((tname (find-file-in-path "types.wat" *lib-dir*)))
+			      (if tname
+				  (match-case (call-with-input-file tname read)
+				     ((module (? symbol?) . ?body)
+				      body)
+				     (else
+				      (error "wasm" "Illegal module format" tname)))
+				  (error "wasm" "Cannot find types.wat file in path"
+				     *lib-dir*))))
+		      
+		      (comment "Class types" ,@(emit-class-types classes))
+		      (comment "Extra types" ,@(reverse *extra-types*))
+		      (comment "Globals" ,@(emit-prototypes))
+		      (comment "Constants" ,@(emit-cnsts))
+		      (comment "String data" ,@(emit-strings))
+		      (comment "Functions" ,@compiled-funcs)))))))
    
    (stop-emission!))
 
@@ -1428,9 +1432,9 @@ esac")
 	 (module (global-module variable)))
       (let ((is-macro (isa? variable cfun)))
 	 (cond
-	    (library (symbol->string library))
-	    ((not (eq? module 'foreign)) (symbol->string module))
-	    (else "__bigloo")))))
+	    (library (string-append "$" (symbol->string library)))
+	    ((not (eq? module 'foreign)) (string-append "$" (symbol->string module)))
+	    (else ($bigloo))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-import ::value ...                                          */
@@ -1470,9 +1474,7 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (emit-import/sfun/cfun args-type variable)
    (set-variable-name! variable)
-   `(import 
-       ,(wasm-module variable)
-       ,(global-name variable)
+   `(import ,(wasm-module variable) ,(global-name variable)
        ,(emit-func-signature args-type variable)))
 
 ;*---------------------------------------------------------------------*/
@@ -1496,7 +1498,7 @@ esac")
 ;*    emit-memory ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (emit-memory)
-   `((import "__bigloo" "memory" (memory 0))))
+   `((import ,($bigloo) "memory" (memory 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-tmp-file-name ...                                           */
@@ -1521,3 +1523,94 @@ esac")
       (if (string? f)
 	  f
 	  (error "wasm" (format "Cannot find \"~a\" in path" file) path))))
+
+;*---------------------------------------------------------------------*/
+;*    get-imports ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (get-imports)
+   (let ((globals '()))
+      (for-each-global!
+	 (lambda (global)
+	    (with-access::global global (import)
+	       (when (memq import '(import foreign))
+		  (set! globals (cons global globals))))))
+      globals))
+
+;*---------------------------------------------------------------------*/
+;*    wasm-imports ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (wasm-imports)
+   (filter-map (lambda (g)
+	   (emit-import (global-value g) g))
+      (get-imports)))
+
+
+;*---------------------------------------------------------------------*/
+;*    emit-default-constants ...                                       */
+;*---------------------------------------------------------------------*/
+(define (emit-default-constants)
+   `(comment "pre-init constants"
+       (import ,($bigloo) "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value (ref func)))
+       (import ,($bigloo) "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value ,(wasm-type *bint*)))
+       (import ,($bigloo) "BGL_BINT8_DEFAULT_VALUE" (global $bint8-default-value (ref $bint8)))
+       (import ,($bigloo) "BGL_BINT16_DEFAULT_VALUE" (global $bint16-default-value (ref $bint16)))
+       (import ,($bigloo) "BGL_BINT32_DEFAULT_VALUE" (global $bint32-default-value (ref $bint32)))
+       (import ,($bigloo) "BGL_BINT64_DEFAULT_VALUE" (global $bint64-default-value (ref $bint64)))
+       (import ,($bigloo) "BGL_BUINT8_DEFAULT_VALUE" (global $buint8-default-value (ref $buint8)))
+       (import ,($bigloo) "BGL_BUINT16_DEFAULT_VALUE" (global $buint16-default-value (ref $buint16)))
+       (import ,($bigloo) "BGL_BUINT32_DEFAULT_VALUE" (global $buint32-default-value (ref $buint32)))
+       (import ,($bigloo) "BGL_BUINT64_DEFAULT_VALUE" (global $buint64-default-value (ref $buint64)))
+       (import ,($bigloo) "BGL_BCHAR_DEFAULT_VALUE" (global $bchar-default-value ,(wasm-type *bchar*)))
+       (import ,($bigloo) "BGL_BUCS2_DEFAULT_VALUE" (global $bucs2-default-value (ref $bucs2)))
+       (import ,($bigloo) "BGL_BELONG_DEFAULT_VALUE" (global $belong-default-value (ref $belong)))
+       (import ,($bigloo) "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
+       (import ,($bigloo) "BGL_EPAIR_DEFAULT_VALUE" (global $epair-default-value (ref $epair)))
+       (import ,($bigloo) "BGL_CELL_DEFAULT_VALUE" (global $cell-default-value (ref $cell)))
+       (import ,($bigloo) "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+       (import ,($bigloo) "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
+       (import ,($bigloo) "BGL_KEYWORD_DEFAULT_VALUE" (global $keyword-default-value (ref $keyword)))
+       (import ,($bigloo) "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+       (import ,($bigloo) "BGL_U8VECTOR_DEFAULT_VALUE" (global $u8vector-default-value (ref $u8vector)))
+       (import ,($bigloo) "BGL_S8VECTOR_DEFAULT_VALUE" (global $s8vector-default-value (ref $s8vector)))
+       (import ,($bigloo) "BGL_U16VECTOR_DEFAULT_VALUE" (global $u16vector-default-value (ref $u16vector)))
+       (import ,($bigloo) "BGL_S16VECTOR_DEFAULT_VALUE" (global $s16vector-default-value (ref $s16vector)))
+       (import ,($bigloo) "BGL_U32VECTOR_DEFAULT_VALUE" (global $u32vector-default-value (ref $u32vector)))
+       (import ,($bigloo) "BGL_S32VECTOR_DEFAULT_VALUE" (global $s32vector-default-value (ref $s32vector)))
+       (import ,($bigloo) "BGL_U64VECTOR_DEFAULT_VALUE" (global $u64vector-default-value (ref $u64vector)))
+       (import ,($bigloo) "BGL_S64VECTOR_DEFAULT_VALUE" (global $s64vector-default-value (ref $s64vector)))
+       (import ,($bigloo) "BGL_F32VECTOR_DEFAULT_VALUE" (global $f32vector-default-value (ref $f32vector)))
+       (import ,($bigloo) "BGL_F64VECTOR_DEFAULT_VALUE" (global $f64vector-default-value (ref $f64vector)))
+       (import ,($bigloo) "BGL_STRUCT_DEFAULT_VALUE" (global $struct-default-value (ref $struct)))
+       (import ,($bigloo) "BGL_CLASS_DEFAULT_VALUE" (global $class-default-value (ref $class)))
+       (import ,($bigloo) "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
+       (import ,($bigloo) "BGL_PROCEDURE_EL_DEFAULT_VALUE" (global $procedure-el-default-value (ref $procedure-el)))
+       (import ,($bigloo) "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value (ref $mutex)))
+       (import ,($bigloo) "BGL_CONDVAR_DEFAULT_VALUE" (global $condvar-default-value (ref $condvar)))
+       (import ,($bigloo) "BGL_DATE_DEFAULT_VALUE" (global $date-default-value (ref $date)))
+       (import ,($bigloo) "BGL_REAL_DEFAULT_VALUE" (global $real-default-value (ref $real)))
+       (import ,($bigloo) "BGL_BIGNUM_DEFAULT_VALUE" (global $bignum-default-value (ref $bignum)))
+       (import ,($bigloo) "BGL_PORT_DEFAULT_VALUE" (global $port-default-value (ref $port)))
+       (import ,($bigloo) "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
+       (import ,($bigloo) "BGL_FILE_OUTPUT_PORT_DEFAULT_VALUE" (global $file-output-port-default-value (ref $file-output-port)))
+       (import ,($bigloo) "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
+       (import ,($bigloo) "BGL_FILE_INPUT_PORT_DEFAULT_VALUE" (global $file-input-port-default-value (ref $file-input-port)))
+       (import ,($bigloo) "BGL_BINARY_PORT_DEFAULT_VALUE" (global $binary-port-default-value (ref $file-input-port)))
+       (import ,($bigloo) "BGL_SOCKET_DEFAULT_VALUE" (global $socket-default-value (ref $socket)))
+       (import ,($bigloo) "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE" (global $datagram-socket-default-value (ref $datagram-socket)))
+       (import ,($bigloo) "BGL_WEAKPTR_DEFAULT_VALUE" (global $weakptr-default-value (ref $weakptr)))
+       (import ,($bigloo) "BGL_MMAP_DEFAULT_VALUE" (global $mmap-default-value (ref $mmap)))
+       (import ,($bigloo) "BGL_PROCESS_DEFAULT_VALUE" (global $process-default-value (ref $process)))
+       (import ,($bigloo) "BGL_CUSTOM_DEFAULT_VALUE" (global $custom-default-value (ref $custom)))
+       (import ,($bigloo) "BGL_FOREIGN_DEFAULT_VALUE" (global $foreign-default-value (ref $foreign)))
+       (import ,($bigloo) "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value (ref $dynamic-env)))
+       (import ,($bigloo) "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value (ref $exit)))
+       (import ,($bigloo) "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
+       (import ,($bigloo) "BGL_PROCEDURE_EL_EMPTY" (global $procedure-el-empty (ref $procedure-el)))
+       
+       (import ,($bigloo) "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref eq))))))
+
+;*---------------------------------------------------------------------*/
+;*    $bigloo ...                                                      */
+;*---------------------------------------------------------------------*/
+(define ($bigloo)
+   (if *unsafe-library* "$bigloo_u" "$bigloo_s"))

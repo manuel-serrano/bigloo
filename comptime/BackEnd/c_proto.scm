@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/c_proto.scm      */
+;*    .../prgm/project/bigloo/wasm/comptime/BackEnd/c_proto.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Tue Jul  9 10:23:56 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 11 16:33:07 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -68,7 +68,7 @@
        (if (and (require-prototype? global)
 		(not (scnst? (global-value global))))
 	   (emit-prototype (global-value global) global))))
-   ;; since cnst-table is a hack, it nevers appears but it is used
+   ;; cnst-table never appears explicitly but it is used
    ;; by a bunch of C macros (this variable cannot appears because
    ;; it has a strange name).
    (let ((cnst-init (get-cnst-table)))
