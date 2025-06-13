@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Jun 11 16:51:17 2025 (serrano)                */
+;*    Last change :  Thu Jun 12 07:49:49 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -140,10 +140,10 @@
 	 ((null? sources)
 	  (error "wasm-link" "No source file provided" *dest*))
 	 (*static-bigloo?*
-	  (let* ((tmp (make-tmp-file-name (or *dest* "bigloo") "wat"))
+	  (let* ((srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
+		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
 		 (lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
-		 (srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
 		 (objects (delete-duplicates!
 			     (append srcobj *o-files*) string=?)))
 	     (verbose 2 "      merging ["
@@ -154,9 +154,9 @@
 		    (wasm (string-append target ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
+		(exec cmd #t "wasm-as")
 		(unwind-protect
 		   (begin
-		      (exec cmd #t "wasm-as")
 		      (verbose 2 "      generating [" target #\] #\Newline)
 		      (with-output-to-file target
 			 (lambda ()
@@ -170,8 +170,33 @@
 		   (when *rm-tmp-files*
 		      (delete-file tmp))))))
 	 (else
-	  (tprint "SHARED WASM ...NOT IMPLEMENTED YET")))))
-
+	  (let* ((srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
+		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
+		 (objects (delete-duplicates!
+			     (append srcobj *o-files*) string=?)))
+	     (verbose 2 "      merging ["
+		(format "~( )" objects)
+		" -> " tmp #\] #\Newline)
+	     (wat-merge objects tmp)
+	     (let* ((target (or *dest* "a.out"))
+		    (wasm (string-append target ".wasm"))
+		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
+		(verbose 2 "      assembling [" cmd #\] #\Newline)
+		(exec cmd #t "wasm-as")
+		(unwind-protect
+		   (begin
+		      (verbose 2 "      generating [" target #\] #\Newline)
+		      (with-output-to-file target
+			 (lambda ()
+			    (display 
+			       (sed wasm-script
+				  `(("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
+				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
+				    ("@WASM@" . ,wasm))))
+			    (newline)))
+		      (chmod target 'read 'write 'execute))
+		   (when *rm-tmp-files*
+		      (delete-file tmp)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sed ...                                                          */
@@ -455,7 +480,7 @@ esac")
 	     (loop (cdr types) noklass (cons (car types) klass)))
 	    (else
 	     (loop (cdr types) (cons (car types) noklass) klass)))))
-   
+
    (let ((modules (append-map read-module files)))
       (collect-exports modules)
       (remove-scheme-imports! modules)
@@ -473,19 +498,29 @@ esac")
       (with-output-to-file target
 	 (lambda ()
 	    (wasm-pp
-	       `(module ,(wasm-module-name target)
-		   ,@(remove-duplicate-imports! (collect-module modules 'import))
-		   ,@(collect-module modules 'memory)
-		   ,@(split-type-classes
-			(remove-duplicate-types! (collect-types modules)))
+	       `(comment "-*- mode: bee -*-"
+		   (module ,(wasm-module-name target)
+		      (comment ";; imports")
+		      ,@(remove-duplicate-imports!
+			   (collect-module modules 'import))
+		      (comment ";; memory")
+		      ,@(collect-module modules 'memory)
+		      (comment ";; types")
+		      ,@(split-type-classes
+			   (remove-duplicate-types! (collect-types modules)))
 ;* 		  ,@(remove-duplicate-recs! (collect-module modules 'rec)) */
-		   ,@(remove-duplicate-tags! (collect-module modules 'tag))
-		   ,@(collect-module modules 'export)
-		   ,@(collect-module modules 'global)
-		   ,@(collect-module modules 'data)
-		   ,@(collect-module modules 'func)
-		   ;;(sort-modules! modules)
-		   )
+		      (comment ";; tags")
+		      ,@(remove-duplicate-tags! (collect-module modules 'tag))
+		      (comment ";; export")
+		      ,@(collect-module modules 'export)
+		      (comment ";; global")
+		      ,@(collect-module modules 'global)
+		      (comment ";; data")
+		      ,@(collect-module modules 'data)
+		      (comment ";; func")
+		      ,@(collect-module modules 'func)
+		      ;;(sort-modules! modules)
+		      ))
 	       :scheme-string #f)))))
 
 ;*---------------------------------------------------------------------*/
@@ -588,20 +623,21 @@ esac")
    (let ((compiled-funcs (backend-compile-functions me))
 	 (classes (filter (lambda (t) (>fx (type-occurrence t) 0)) (get-class-list))))
       
-      (hashtable-put! *defined-ids* "BFALSE" #t)
-      (hashtable-put! *defined-ids* "BTRUE" #t)
-      (hashtable-put! *defined-ids* "BUNSPEC" #t)
-      (hashtable-put! *defined-ids* "BOPTIONAL" #t)
-      (hashtable-put! *defined-ids* "BKEY" #t)
-      (hashtable-put! *defined-ids* "BREST" #t)
-      (hashtable-put! *defined-ids* "BEOA" #t)
+;*       (hashtable-put! *defined-ids* "BFALSE" #t)                    */
+;*       (hashtable-put! *defined-ids* "BTRUE" #t)                     */
+;*       (hashtable-put! *defined-ids* "BUNSPEC" #t)                   */
+;*       (hashtable-put! *defined-ids* "BOPTIONAL" #t)                 */
+;*       (hashtable-put! *defined-ids* "BKEY" #t)                      */
+;*       (hashtable-put! *defined-ids* "BREST" #t)                     */
+;*       (hashtable-put! *defined-ids* "BEOA" #t)                      */
       
       (with-output-to-port *wasm-port*
 	 (lambda ()
 	    (wasm-pp
 	       `(comment "-*- mode: bee -*-"
 		   (module ,(wasm-sym (symbol->string *module*))
-		      ,@(if *wasm-local-preinit* (list (emit-default-constants)) '())
+		      ,@(if *wasm-local-preinit*
+			    (list (emit-default-constants)) '())
 		      (comment "imports"
 			 ,@(emit-imports))
 		      
@@ -690,15 +726,21 @@ esac")
 			 
 			 ,@(emit-imports))
 		      
-		      (comment "Memory" ,@(emit-memory))
+		      (comment "memory" ,@(emit-memory))
 		      
 		      ;; FIXME: allow custom name for types.wat file
-		      (comment "Primitive types"
-			 ,@(let ((tname (find-file-in-path "types.wat" *lib-dir*)))
+		      (comment "types and tags"
+			 ,@(let ((tname (find-file-in-path "bigloo_s.wat" *lib-dir*)))
 			      (if tname
 				  (match-case (call-with-input-file tname read)
 				     ((module (? symbol?) . ?body)
-				      body)
+				      (filter-map (lambda (e)
+						     (match-case e
+							((tag . ?-) e)
+							((type . ?-) e)
+							((rec . ?-) e)
+							(else #f)))
+					 body))
 				     (else
 				      (error "wasm" "Illegal module format" tname)))
 				  (error "wasm" "Cannot find types.wat file in path"
@@ -1401,14 +1443,28 @@ esac")
 ;*    emit-imports ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (emit-imports)
-   (let ((imports '()))
-      (for-each-global! (lambda (global)
-			   (when (and (require-import? global) (not (scnst? global)))
-			      (let ((import (emit-import (global-value global) global)))
-				 (when (and import (not (hashtable-contains? *defined-ids* (global-name global))))
-				    (hashtable-put! *defined-ids* (global-name global) #t)
-				    (set! imports (cons import imports)))))))
-      imports))
+   
+   (define imports '())
+   
+   (define (import-global global)
+      '(tprint "G=" (shape global) " " (global-name global) " id=" (global-id global) " qtn="
+	    (global-qualified-type-name global)
+	    " tof=" (typeof (global-value global))
+	    " R=" (require-import? global)
+	    " C=" (scnst? global))
+      (when (and (require-import? global) (not (scnst? global)))
+	 
+	 (let ((import (emit-import (global-value global) global)))
+	    (when (and import (not (hashtable-contains? *defined-ids* (global-name global))))
+	       (hashtable-put! *defined-ids* (global-name global) #t)
+	       (set! imports (cons import imports))))))
+
+   ;; $BUNSPEC is explicitly introduced by the wasm backend
+   ;; so it needs to be marked as used
+   (let ((g (find-global/module '__unspec__ 'foreign)))
+      (global-occurrence-set! g (+fx (global-occurrence g) 1)))
+   (for-each-global! import-global)
+   imports)
 
 ;*---------------------------------------------------------------------*/
 ;*    require-import? ...                                              */
@@ -1419,9 +1475,8 @@ esac")
       (when (>fx (global-occurrence global) 0)
 	 (or (eq? import 'import)
 	     (and (eq? import 'foreign)
-		  (not (and (or (isa? value cvar)
-				(isa? value cfun))
-			    (not (string-null? (global-qualified-type-name global))))))))))
+		  (or (not (isa? value cvar)) (not (isa? value cfun)))
+		  (string-null? (global-qualified-type-name global)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-module ...                                                  */

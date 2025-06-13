@@ -614,7 +614,7 @@
 
   (func $EXITD_STAMP (export "EXITD_STAMP") (param $o (ref eq))
      (result (ref eq))
-     (call $make_bint
+     (call $BINT
 	(i64.extend_i32_s
 	   (struct.get $exit $stamp (ref.cast (ref $exit) (local.get $o))))))
 

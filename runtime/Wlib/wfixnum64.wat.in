@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Fri Jan 31 11:37:04 2025 (serrano)                */
+;*    Last change :  Thu Jun 12 09:20:16 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -51,7 +51,7 @@
    (func $CINT (export "CINT")
       (param $o (ref $bint))
       (result i64)
-      (struct.get $bint $v (ref.cast (ref $bint) (local.get $o))))
+      (struct.get $bint $v (local.get $o)))
 
    (func $OBJ_TO_INT (export "OBJ_TO_INT")
       (param $o (ref eq))
@@ -68,8 +68,8 @@
    ;; Library functions 
    ;; -----------------------------------------------------------------
 
-   ;; make_bint
-   (func $make_bint (export "make_bint")
+   ;; BINT
+   (func $BINT (export "BINT")
       (param $x i64)
       (result (ref $bint))
       (local $tmp i64)

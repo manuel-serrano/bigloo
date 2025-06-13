@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Wed Nov 27 17:14:08 2024 (serrano)                */
-;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun 12 07:57:46 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
 ;*    -------------------------------------------------------------    */
@@ -56,7 +56,7 @@
 	     (lambda (e)
 		(exception-notify e)
 		(exit 1))
-	     (backend-link-objects (the-backend) sources))
+	     (backend-link-objects (the-backend) (reverse sources)))
 	  (let* ((object   (car objects))
 		 (pref     (unprof-src-name (prefix object)))
 		 (bpref    (basename pref))

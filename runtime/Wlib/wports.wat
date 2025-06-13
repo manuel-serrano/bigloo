@@ -1245,7 +1245,7 @@
 		   (ref.cast (ref $procedure)
 		      (struct.get $output-port $fhook (local.get $op)))
 		   (local.get $op)
-		   (call $make_bint (local.get $slen))))
+		   (call $BINT (local.get $slen))))
       
 	     (if (call $STRINGP (local.get $s))
 		 (then

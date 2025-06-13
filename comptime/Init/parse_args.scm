@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue May  6 11:48:38 2025 (serrano)                */
+;*    Last change :  Thu Jun 12 07:39:04 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -348,7 +348,7 @@
 	  (set! *target-language* 'jvm)))
       ;; wasm code generation
       (pass wasm
-	 (("-wasm" (help "Compile module to WASM .wat file"))
+	 (("-wasm" (help "Compile module to WASM .wasm file"))
 	  (set! *heap-name* *heap-wasm-name*)
 	  (set! *obj-suffix* '("wat"))
 	  (set! *target-language* 'wasm)))

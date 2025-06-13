@@ -258,10 +258,10 @@
       (if (i64.eqz (local.get $tmp))
 	  (then
 	     (if (call $zerobxp (local.get $bx))
-		 (then (return (call $make_bint (i64.const 0))))
+		 (then (return (call $BINT (i64.const 0))))
 		 (else (return (local.get $n)))))
 	  (else
-	   (return (call $make_bint (local.get $tmp))))))
+	   (return (call $BINT (local.get $tmp))))))
 
    ;; INTEGER_SIGN
    (func $INTEGER_SIGN
@@ -292,12 +292,12 @@
 	  (then
 	     (if (i32.eq (local.get $sx) (call $INTEGER_SIGN (local.get $t)))
 		 (then
-		    (return_call $make_bint (local.get $t)))
+		    (return_call $BINT (local.get $t)))
 		 (else
 		    (return_call $bgl_bignum_add
 		       (call $bgl_long_to_bignum (local.get $x))
 		       (call $bgl_long_to_bignum (local.get $y))))))
-	  (else (return_call $make_bint (local.get $t)))))
+	  (else (return_call $BINT (local.get $t)))))
 
    ;; BGL_SAFE_MINUS_FX
    (func $BGL_SAFE_MINUS_FX (export "BGL_SAFE_MINUS_FX")
@@ -318,11 +318,11 @@
       (local $t i64)
       
       (if (i64.eqz (local.get $y))
-	  (then (return_call $make_bint (local.get $y)))
+	  (then (return_call $BINT (local.get $y)))
 	  (else
 	   (local.set $t (i64.mul (local.get $x) (local.get $y)))
 	   (if (i64.eq (i64.div_s (local.get $t) (local.get $y)) (local.get $x))
-	       (then (return_call $make_bint (local.get $t)))
+	       (then (return_call $BINT (local.get $t)))
 	       (else
 		(return_call $bgl_bignum_mul
 		   (call $bgl_long_to_bignum (local.get $x))
@@ -333,7 +333,7 @@
       (param $x i64)
       (param $y i64)
       (result (ref eq))
-      (return_call $make_bint
+      (return_call $BINT
 	 (i64.div_s (local.get $x) (local.get $y))))
 
    ;; BGL_SAFE_PLUS_ELONG

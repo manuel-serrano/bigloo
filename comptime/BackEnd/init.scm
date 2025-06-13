@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/init.scm            */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/init.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Fri Aug 28 08:41:36 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun 12 09:12:18 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -51,7 +51,7 @@
 ;*    make-module-init ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-module-init)
-
+   
    (define (ubody-sans-debug)
       `(if require-initialization
 	   (begin
@@ -59,7 +59,7 @@
 	      ,(when *dlopen-init-gc* (backend-gc-init (the-backend)))
 	      ,@(unit-init-calls))
 	   #unspecified))
-
+   
    (define (ubody-debug)
       (let ((tmp (gensym 'tmp)))
 	 `(if require-initialization
@@ -93,11 +93,12 @@
 			 ,ubody
 			 ,(if (backend-pragma-support (the-backend))
 			      `(let ((s::string
-				      (pragma::string
-				       ,(format "~s" (symbol->string *module*)))))
+					(pragma::string
+					   ,(format "~s"
+					       (symbol->string *module*)))))
 				  (module-init-error s from))
 			      `(module-init-error ,(symbol->string *module*)
-						  from)))))
+				  from)))))
 	  (cvar (make-local-svar 'checksum *long*))
 	  (nvar (make-local-svar 'from *string*))
 	  (node (let ((node (sexp->node body (list cvar nvar) '() 'value)))

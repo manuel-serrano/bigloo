@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sat Dec 28 06:04:55 2024 (serrano)                */
+;*    Last change :  Thu Jun 12 09:00:24 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -166,8 +166,8 @@
 	    (export bigloo-exit-apply "bigloo_exit_apply")
 	    (export bigloo-exit-mutex "bgl_exit_mutex"))
 
-   (wasm    (__unspec__ "(global.get $BUNSPEC)")
-            (__eoa__ "(global.get $BEOA)")
+   (wasm    ;;(__unspec__ "(global.get $BUNSPEC)")
+            ;;(__eoa__ "(global.get $BEOA)")
       
 	    ($make-cell "(struct.new $cell ~0)")
 	    ($make-stack-cell "(struct.new $cell ~0)")

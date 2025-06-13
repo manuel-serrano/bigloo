@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Jan  3 06:39:00 2025 (serrano)                */
+;*    Last change :  Thu Jun 12 09:20:35 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -840,9 +840,9 @@
       (macro $bint->ubyte::ubyte (::bint) "(unsigned char)CINT")
       (macro $bint->short::short (::bint) "(short)CINT")
       (macro $bint->ushort::ushort (::bint) "(unsigned short)CINT")
-      (macro $bint->int::int (::bint) "CINT")
+      (macro $bint->int::int (::bint) "(int)CINT")
       (macro $bint->uint::uint (::bint) "(unsigned int)CINT")
-      (macro $bint->long::long (::bint) "(long)CINT")
+      (macro $bint->long::long (::bint) "CINT")
       (macro $bint->ulong::ulong (::bint) "(unsigned long)CINT")
       (macro $bint->int8::int8 (::bint) "(int8_t)CINT")
       (macro $bint->uint8::uint8 (::bint) "(uint8_t)CINT")
@@ -1109,23 +1109,18 @@
       
       ($long->int "(i32.wrap_i64 ~0)")
 
-      ($byte->bint "(call $make_bint (i64.extend_i32_s ~0))")
-      ($ubyte->bint "(call $make_bint (i64.extend_i32_u ~0))")
-      ($short->bint "(call $make_bint (i64.extend_i32_s ~0))")
-      ($ushort->bint "(call $make_bint (i64.extend_i32_u ~0))")
-      ($int->bint "(call $make_bint (i64.extend_i32_s ~0))")
-      ($uint->bint "(call $make_bint (i64.extend_i32_u ~0))")
-      ;;($long->bint "(call $make_bint ~0)")
-      ($long->bint "(call $make_bint ~0)")
-      ($ulong->bint "(call $make_bint ~0)")
-      ($int8->bint "(call $make_bint (i64.extend_i32_s ~0))")
-      ($uint8->bint "(call $make_bint (i64.extend_i32_u ~0))")
-      ($int16->bint "(call $make_bint (i64.extend_i32_s ~0))")
-      ($uint16->bint "(call $make_bint (i64.extend_i32_u ~0))")
-      ($int32->bint "(call $make_bint (i64.extend_i32_s ~0))")
-      ($uint32->bint "(call $make_bint (i64.extend_i32_u ~0))")
-      ($int64->bint "(call $make_bint ~0)")
-      ($uint64->bint "(call $make_bint ~0)")
+      ($byte->bint "(call $BINT (i64.extend_i32_s ~0))")
+      ($ubyte->bint "(call $BINT (i64.extend_i32_u ~0))")
+      ($short->bint "(call $BINT (i64.extend_i32_s ~0))")
+      ($ushort->bint "(call $BINT (i64.extend_i32_u ~0))")
+      ($int->bint "(call $BINT (i64.extend_i32_s ~0))")
+      ($uint->bint "(call $BINT (i64.extend_i32_u ~0))")
+      ($int8->bint "(call $BINT (i64.extend_i32_s ~0))")
+      ($uint8->bint "(call $BINT (i64.extend_i32_u ~0))")
+      ($int16->bint "(call $BINT (i64.extend_i32_s ~0))")
+      ($uint16->bint "(call $BINT (i64.extend_i32_u ~0))")
+      ($int32->bint "(call $BINT (i64.extend_i32_s ~0))")
+      ($uint32->bint "(call $BINT (i64.extend_i32_u ~0))")
       
       ($bint->byte "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->char "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
@@ -1134,16 +1129,12 @@
       ($bint->ushort "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->int "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->uint "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
-      ($bint->long "(call $CINT ~0)")
-      ($bint->ulong "(call $CINT ~0)")
       ($bint->int8 "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->uint8 "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->int16 "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->uint16 "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->int32 "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
       ($bint->uint32 "(i32.wrap_i64 (call $OBJ_TO_INT ~0))")
-      ($bint->int64 "(call $CINT ~0)")
-      ($bint->uint64 "(call $CINT ~0)")
 
       ($ubyte->byte "~0")
       ($byte->ubyte "~0")
@@ -1290,12 +1281,8 @@
       ($llong->int64 "~0")
       ($llong->uint64 "~0")
 
-      ($char->bchar "(call $BCHAR ~0)")
       ($char->uchar "~0")
-      ($uchar->bchar "(call $BCHAR ~0)")
       ($uchar->char "~0")
-      ($bchar->char "(call $CCHAR ~0)")
-      ($bchar->uchar "(call $CCHAR ~0)")
       ($double->real "(struct.new $real ~0)")
       ($real->double "(struct.get $real $v ~0)")
       ($float->real "(struct.new $real (f64.promote_f32 ~0))")

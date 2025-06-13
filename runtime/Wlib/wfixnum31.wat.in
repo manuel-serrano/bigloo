@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Fri Jan 31 11:36:47 2025 (serrano)                */
+;*    Last change :  Thu Jun 12 09:20:03 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unboxed 31bit fixnum implementation                         */
@@ -55,8 +55,8 @@
    ;; Library functions 
    ;; -----------------------------------------------------------------
 
-   ;; make_bint
-   (func $make_bint (export "make_bint")
+   ;; BINT
+   (func $BINT (export "BINT")
       (param $x i64)
       (result (ref i31))
       (local $tmp i64)

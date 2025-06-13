@@ -729,7 +729,7 @@
 
       (if (i64.le_s (local.get $res) (global.get $MAXVALFX))
 	  (then
-	     (return_call $make_bint
+	     (return_call $BINT
 		(i64.mul (local.get $res) (local.get $sign))))
 	  (else
 	   (return_call $make_belong
