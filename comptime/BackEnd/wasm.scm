@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Jun 12 07:49:49 2025 (serrano)                */
+;*    Last change :  Fri Jun 13 15:49:02 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1444,14 +1444,22 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (emit-imports)
    
-   (define imports '())
+   (define imports
+      `((import "$bigloo" "BNIL"
+	   (global $BNIL (ref $bnil)))
+	(import ,($bigloo) "generic_va_call"
+	   (func $generic_va_call
+	      (param (ref $procedure))
+	      (param (ref $vector))
+	      (result (ref eq))))
+	(import ,($bigloo) "the_failure"
+	   (func $the_failure
+	      (param (ref eq))
+	      (param (ref eq))
+	      (param (ref eq))
+	      (result (ref eq))))))
    
    (define (import-global global)
-      '(tprint "G=" (shape global) " " (global-name global) " id=" (global-id global) " qtn="
-	    (global-qualified-type-name global)
-	    " tof=" (typeof (global-value global))
-	    " R=" (require-import? global)
-	    " C=" (scnst? global))
       (when (and (require-import? global) (not (scnst? global)))
 	 
 	 (let ((import (emit-import (global-value global) global)))

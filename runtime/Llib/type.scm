@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Jun 12 09:20:35 2025 (serrano)                */
+;*    Last change :  Fri Jun 13 14:49:18 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1095,9 +1095,6 @@
       
 
    (wasm
-      ($obj->bool "(call $OBJ_TO_BOOL ~0)")
-      ($bbool->bool "(call $CBOOL ~0)")
-      ($bool->bbool "(call $BBOOL ~0)")
 
       ($double->real "(struct.new $real ~0)")
       ($elong->belong "(call $make_belong ~0)")

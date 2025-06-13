@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Wed Jun 11 16:45:45 2025 (serrano)                */
+;*    Last change :  Fri Jun 13 15:55:38 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -58,13 +58,7 @@
    (type $cell (struct (field $val (mut (ref eq)))))
    
    ;; Pairs
-   (type $pair (sub (struct
-		       (field $car (mut (ref eq)))
-		       (field $cdr (mut (ref eq))))))
-   (type $epair (sub $pair (struct 
-			      (field $car (mut (ref eq))) 
-			      (field $cdr (mut (ref eq))) 
-			      (field $cer (mut (ref eq))))))
+   (@include "./wpair.wat" type)
 
    ;; fixnum and integers
    (@include "./wfixnum.wat" type)

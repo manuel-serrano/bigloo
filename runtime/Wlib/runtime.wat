@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Mar 25 19:23:47 2025 (serrano)                */
+;*    Last change :  Fri Jun 13 15:57:57 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -46,13 +46,6 @@
   (global $bucs2-default-value
      (export "BGL_BUCS2_DEFAULT_VALUE") (ref $bucs2)
      (struct.new $bucs2 (i32.const 0)))
-  
-  (global $pair-default-value
-     (export "BGL_PAIR_DEFAULT_VALUE") (ref $pair)
-     (struct.new $pair (global.get $BUNSPEC) (global.get $BNIL)))
-  (global $epair-default-value
-     (export "BGL_EPAIR_DEFAULT_VALUE") (ref $epair)
-     (struct.new $epair (global.get $BUNSPEC) (global.get $BNIL) (global.get $BUNSPEC)))
   
   (global $cell-default-value
      (export "BGL_CELL_DEFAULT_VALUE") (ref $cell)
