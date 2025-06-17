@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Jan  8 18:00:02 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 11:16:10 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -154,7 +154,7 @@
 	    (macro c-rename-file::int (::string ::string) "rename")
 	    (macro $truncate-file::int (::string ::long) "truncate")
 	    (macro $ftruncate::int (::output-port ::long) "bgl_output_port_truncate")
-	    (macro c-mkdir::bool (::string ::long) "!BGL_MKDIR")
+	    (macro c-mkdir::bool (::string ::long) "BGL_MKDIR")
 	    
 	    (macro $port-isatty?::bool (::output-port) "bgl_port_isatty")
  	    (macro $output-port-name::bstring (::output-port) "OUTPUT_PORT_NAME")
@@ -251,10 +251,7 @@
 	    ($input-port-timeout "(i64.const 0)")
 	    ($input-port-timeout-set! "(i32.const 0)")
 	    ($output-port-timeout "(i64.const 0)")
-	    ($output-port-timeout-set! "(i32.const 0)")
-
-	    (c-mkdir "(call $make_dir ~0 (i32.wrap_i64 ~1))")
-	    (c-delete-directory "(call $delete_dir ~0)"))
+	    ($output-port-timeout-set! "(i32.const 0)"))
 
    (java    (class foreign
 	       (method static c-input-port?::bool  (::obj)

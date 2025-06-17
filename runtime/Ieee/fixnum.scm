@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/fixnum.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/fixnum.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Jun  5 08:34:12 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 11:12:21 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -248,8 +248,7 @@
 	    (macro $gefx::bint (::bint ::bint) "GEFX")
 	    (macro $egfx::bint (::bint ::bint) "EGFX"))
    
-   (wasm   ($fixnum? "(call $INTEGERP ~0)")
-	   ($elong? "(ref.test (ref $belong) ~0)")
+   (wasm   ($elong? "(ref.test (ref $belong) ~0)")
 	   ($llong? "(ref.test (ref $bllong) ~0)")
 	   ($int8? "(ref.test (ref $bint8) ~0)")
 	   ($uint8? "(ref.test (ref $buint8) ~0)")

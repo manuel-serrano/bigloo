@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Fri Jan 31 08:05:37 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 11:33:20 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -107,8 +107,6 @@
 	    ($ceiling "(f64.ceil ~0)")
 	    ($roundfl "(f64.nearest ~0)")
 
-	    ($strtod "(call $bgl_strtod ~0)")
-		
 	    (%double->llong-bits "(i64.reinterpret_f64 ~0)")
 	    (%llong-bits->double "(f64.reinterpret_i64 ~0)")
 	    (%float->int-bits "(i32.reinterpret_f32 ~0)")

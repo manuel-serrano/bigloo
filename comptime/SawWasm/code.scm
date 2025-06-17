@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Jun 16 09:19:04 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 12:31:00 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -437,6 +437,8 @@
        (cond
 	  ((isa? ty tclass)
 	   (with-access::tclass ty (name holder)
+	      (global-occurrence-set! holder
+		 (+fx 1 (global-occurrence holder)))
 	      `(ref.cast (ref ,(wasm-sym name))
 		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
 		     (global.get ,(wasm-sym (global-name holder)))))))

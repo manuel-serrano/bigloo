@@ -18,7 +18,7 @@
    ;; -----------------------------------------------------------------
    ;; Library functions 
    ;; -----------------------------------------------------------------
-   (func $bgl_strtod (export "bgl_strtod")
+   (func $STRTOD (export "STRTOD")
       (param $str (ref $bstring))
       (result f64)
       

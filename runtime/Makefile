@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Jun 16 16:22:45 2025 (serrano)                */
+#*    Last change :  Tue Jun 17 11:07:28 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -707,6 +707,7 @@ touch-wasm:
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
   $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
 	$(WASM_OPT) -all $(WASM_OPT_FLAGS) $< -o $@
+	@ echo "\e[1;33m$(@)\e[0m done"
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \

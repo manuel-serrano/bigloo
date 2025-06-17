@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Include/bigloo.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun May 18 09:46:38 2025 (serrano)                */
+/*    Last change :  Tue Jun 17 11:16:27 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2667,7 +2667,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 /*---------------------------------------------------------------------*/
 /*    BGL_MKDIR                                                        */
 /*---------------------------------------------------------------------*/
-#define BGL_MKDIR(a, b) (mkdir(a, (mode_t)b))
+#define BGL_MKDIR(a, b) (!mkdir(a, (mode_t)b))
    
 /*---------------------------------------------------------------------*/
 /*    RGC macros                                                       */

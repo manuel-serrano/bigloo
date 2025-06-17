@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Feb  4 17:41:35 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 11:17:59 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -2363,10 +2363,10 @@
       
       (return_call $js_directoryp
 	 (i32.const 128) (array.len (local.get $path))))
-   
-   (func $make_dir (export "make_dir")
+
+   (func $BGL_MKDIR (export "BGL_MKDIR")
       (param $path (ref $bstring))
-      (param $mod i32)
+      (param $mod i64)
       (result i32)
       
       (call $store_string
@@ -2374,9 +2374,10 @@
 	 (i32.const 128))
       
       (return_call $js_make_dir
-	 (i32.const 128) (array.len (local.get $path)) (local.get $mod)))
-
-   (func $delete_dir (export "delete_dir")
+	 (i32.const 128) (array.len (local.get $path))
+	 (i32.wrap_i64 (local.get $mod))))
+   
+   (func $rmdir (export "rmdir")
       (param $path (ref $bstring))
       (result i32)
 

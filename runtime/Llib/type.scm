@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Jun 16 13:42:35 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 12:33:27 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1099,8 +1099,6 @@
       ($obj->bool "(call $OBJ_TO_BOOL ~0)")
       
       ($double->real "(struct.new $real ~0)")
-      ($elong->belong "(call $make_belong ~0)")
-      ($llong->bllong "(call $make_bllong ~0)")
       ($int32->bint32 "(struct.new $bint32 ~0)")
       ($uint32->buint32 "(struct.new $buint32 ~0)")
       ($int64->bint64 "(struct.new $bint64 ~0)")
@@ -1292,9 +1290,9 @@
       ($ubyte->char "~0")
       ($char->ubyte "~0")
 
-      ($elong->belong "(call $make_belong ~0)")
-      ($uelong->belong "(call $make_belong ~0)")
-      ($long->belong "(call $make_belong ~0)")
+;*       ($elong->belong "(call $make_belong ~0)")                     */
+;*       ($uelong->belong "(call $make_belong ~0)")                    */
+;*       ($long->belong "(call $make_belong ~0)")                      */
       ($long->elong "~0")
       ($long->uelong "~0")
       ($elong->long "~0")
@@ -1311,9 +1309,9 @@
       ($long->bint64 "(struct.new $bint64 ~0)")
       ($long->buint64 "(struct.new $buint64 ~0)")
 
-      ($llong->bllong "(call $make_bllong ~0)")
-      ($ullong->bllong "(call $make_bllong ~0)")
-      ($long->bllong "(call $make_bllong ~0)")
+;*       ($llong->bllong "(call $make_bllong ~0)")                     */
+;*       ($ullong->bllong "(call $make_bllong ~0)")                    */
+;*       ($long->bllong "(call $make_bllong ~0)")                      */
       ($long->llong "~0")
       ($long->ullong "~0")
       ($llong->long "~0")
