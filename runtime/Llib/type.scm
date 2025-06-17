@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Jun 13 14:49:18 2025 (serrano)                */
+;*    Last change :  Mon Jun 16 13:42:35 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -835,23 +835,23 @@
       (macro $int64->bint::bint (::int64) "BINT")
       (macro $uint64->bint::bint (::uint64) "BINT")
       
-      (macro $bint->byte::byte (::bint) "(signed char)CINT")
-      (macro $bint->char::char (::bint) "(signed char)CINT")
-      (macro $bint->ubyte::ubyte (::bint) "(unsigned char)CINT")
-      (macro $bint->short::short (::bint) "(short)CINT")
-      (macro $bint->ushort::ushort (::bint) "(unsigned short)CINT")
-      (macro $bint->int::int (::bint) "(int)CINT")
-      (macro $bint->uint::uint (::bint) "(unsigned int)CINT")
+      (macro $bint->byte::byte (::bint) "BGL_CINT_AS_CHAR")
+      (macro $bint->char::char (::bint) "BGL_CINT_AS_CHAR")
+      (macro $bint->ubyte::ubyte (::bint) "BGL_CINT_AS_UCHAR")
+      (macro $bint->short::short (::bint) "BGL_CINT_AS_SHORT")
+      (macro $bint->ushort::ushort (::bint) "BGL_CINT_AS_USHORT")
+      (macro $bint->int::int (::bint) "BGL_CINT_AS_INT")
+      (macro $bint->uint::uint (::bint) "BGL_CINT_AS_UINT")
       (macro $bint->long::long (::bint) "CINT")
-      (macro $bint->ulong::ulong (::bint) "(unsigned long)CINT")
-      (macro $bint->int8::int8 (::bint) "(int8_t)CINT")
-      (macro $bint->uint8::uint8 (::bint) "(uint8_t)CINT")
-      (macro $bint->int16::int16 (::bint) "(int16_t)CINT")
-      (macro $bint->uint16::uint16 (::bint) "(uint16_t)CINT")
-      (macro $bint->int32::int32 (::bint) "(int32_t)CINT")
-      (macro $bint->uint32::uint32 (::bint) "(uint32_t)CINT")
-      (macro $bint->int64::int64 (::bint) "(int64_t)CINT")
-      (macro $bint->uint64::uint64 (::bint) "(uint64_t)CINT")
+      (macro $bint->ulong::ulong (::bint) "BGL_CINT_AS_ULONG")
+      (macro $bint->int8::int8 (::bint) "BGL_CINT_AS_INT8")
+      (macro $bint->uint8::uint8 (::bint) "BGL_CINT_AS_UINT8")
+      (macro $bint->int16::int16 (::bint) "BGL_CINT_AS_INT16")
+      (macro $bint->uint16::uint16 (::bint) "BGL_CINT_AS_UINT16")
+      (macro $bint->int32::int32 (::bint) "BGL_CINT_AS_INT32")
+      (macro $bint->uint32::uint32 (::bint) "BGL_CINT_AS_UINT32")
+      (macro $bint->int64::int64 (::bint) "BGL_CINT_AS_INT64")
+      (macro $bint->uint64::uint64 (::bint) "BGL_CINT_AS_UINT64")
       
       (macro $ubyte->byte::byte (::ubyte) "(signed char)")
       (macro $byte->ubyte::ubyte (::byte) "(unsigned char)")
@@ -1096,6 +1096,8 @@
 
    (wasm
 
+      ($obj->bool "(call $OBJ_TO_BOOL ~0)")
+      
       ($double->real "(struct.new $real ~0)")
       ($elong->belong "(call $make_belong ~0)")
       ($llong->bllong "(call $make_bllong ~0)")

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Engine/heap.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/heap.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Tue Sep  3 06:42:24 2024 (serrano)                */
-;*    Copyright   :  2007-24 Manuel Serrano                            */
+;*    Last change :  Mon Jun 16 12:44:38 2025 (serrano)                */
+;*    Copyright   :  2007-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
 ;*=====================================================================*/
@@ -37,12 +37,18 @@
    (initialize-Genv!)
    (initialize-Tenv!)
    ;; we dump all the heap specified on the command line
-   (for-each dump-heap names))
+   (with-access::backend (the-backend) ((backend-dump-heap dump-heap))
+      (let ((dump-heap (or backend-dump-heap generic-dump-heap)))
+	 (for-each (lambda (heap)
+		      (multiple-value-bind (heap includes Genv Tenv)
+			 (read-heap heap)
+			 (dump-heap heap includes Genv Tenv)))
+	    names))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-heap ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (dump-heap heap)
+(define (read-heap heap)
    (let ((fname (if (file-exists? heap)
 		    heap
 		    (find-file/path heap *lib-dir*))))
@@ -86,36 +92,42 @@
 		       ;; the package/module association
 		       (when (backend-qualified-types (the-backend))
 			  (for-each-global!
-			   (lambda (new)
-			      (add-qualified-type!
-			       (global-module new)
-			       (global-qualified-type-name new)
-			       (shape new)))))
+			     (lambda (new)
+				(add-qualified-type!
+				   (global-module new)
+				   (global-qualified-type-name new)
+				   (shape new)))))
 		       ;; we add all the heap modules
 		       (hashtable-for-each
-			Genv
-			(lambda (k bucket)
-			   (for-each (lambda (new)
-					(heap-module-list (global-module new)))
-				     (cdr bucket))))
-		       (with-output-to-port (current-error-port)
-			  (lambda ()
-			     (print "(heap \"" heap "\"")
-			     (print " (variables")
-			     (dump-Genv Genv)
-			     (print " )\n")
-			     (print " (types")
-			     (dump-Tenv Tenv)
-			     (print " )")
-			     (when (pair? includes)
-				(print " (includes")
-				(print includes)
-				(print " )"))
-			     (print ")\n"))))
+			  Genv
+			  (lambda (k bucket)
+			     (for-each (lambda (new)
+					  (heap-module-list (global-module new)))
+				(cdr bucket))))
+		       (values heap includes Genv Tenv))
 		    (close-binary-port port))))
 	  (let ((m (format "Cannot open heap file ~s" heap)))
 	     (error "dump-heap" m *lib-dir*)
 	     #f))))
+	  
+;*---------------------------------------------------------------------*/
+;*    generic-dump-heap ...                                            */
+;*---------------------------------------------------------------------*/
+(define (generic-dump-heap heap includes Genv Tenv)
+   (with-output-to-port (current-error-port)
+      (lambda ()
+	 (print "(heap \"" heap "\"")
+	 (print " (variables")
+	 (dump-Genv Genv)
+	 (print " )\n")
+	 (print " (types")
+	 (dump-Tenv Tenv)
+	 (print " )")
+	 (when (pair? includes)
+	    (print " (includes")
+	    (print includes)
+	    (print " )"))
+	 (print ")\n"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-Genv ...                                                    */
@@ -182,14 +194,14 @@
 ;*---------------------------------------------------------------------*/
 (define (dump-Tenv Tenv)
    (hashtable-for-each Tenv
-		       (lambda (k new)
-			  (let* ((id  (type-id new))
-				 (name (type-name new)))
-			     (if (tclass? new)
-				 (with-access::tclass new (its-super slots)
-				    (print "   "
-					   `(class ,(shape new)
-					       (super ,(shape its-super))
-					       ,@(map shape slots))))
-				 (print "   " `(type ,id (name ,name))))))))
+      (lambda (k new)
+	 (let* ((id  (type-id new))
+		(name (type-name new)))
+	    (if (tclass? new)
+		(with-access::tclass new (its-super slots)
+		   (print "   "
+		      `(class ,(shape new)
+			  (super ,(shape its-super))
+			  ,@(map shape slots))))
+		(print "   " `(type ,id (name ,name))))))))
 

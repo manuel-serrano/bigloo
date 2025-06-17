@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 10:13:23 1993                          */
-;*    Last change :  Fri Aug 30 12:06:34 2024 (serrano)                */
-;*    Copyright   :  1993-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun 16 10:07:02 2025 (serrano)                */
+;*    Copyright   :  1993-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The system's engine (some kind of dispatcher between the linker, */
 ;*    the interpreter and the compiler).                               */
@@ -41,16 +41,16 @@
 	   (user-warning "engine" "Ignoring additional files" (cdr *c-files*)))
        (set! *rm-tmp-files* #f)
        (profile ccomp (cc-compiler (prefix (car *c-files*))
-				   (if (string? *dest*)
-				       (prefix *dest*)
-				       #f))))
+			 (if (string? *dest*)
+			     (prefix *dest*)
+			     #f))))
       ((null? *o-files*)
        (profile interp (interp version
-			       *verbose*
-			       *src-files*
-			       *startup-file*
-			       (string-append (car *lib-dir*) "/scheme-files")
-			       *bigloo-args*)))
+			  *verbose*
+			  *src-files*
+			  *startup-file*
+			  (string-append (car *lib-dir*) "/scheme-files")
+			  *bigloo-args*)))
       (else
        (link))))
 
@@ -66,10 +66,10 @@
 		 (string-set! str (-fx (string-length str) 1) #\:)
 		 (verbose 0 str #\Newline))
 	      (loop (cdr src)
-		    (string-append (if (string? (car src))
-				       (car src)
-				       (symbol->string (car src)))
-				   " "
-				   str))))))
+		 (string-append (if (string? (car src))
+				    (car src)
+				    (symbol->string (car src)))
+		    " "
+		    str))))))
 
 

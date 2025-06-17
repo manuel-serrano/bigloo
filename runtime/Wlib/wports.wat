@@ -65,7 +65,7 @@
    (import "__js_io" "read_dir_size" (func $js_read_dir_size (param externref) (result i32)))
    (import "__js_io" "read_dir_entry" (func $js_read_dir_entry (param externref) (param i32) (param i32) (result i32)))
 
-   (import "__js" "file_separator" (global $js_file_separator i32))
+   (import "__js_io" "file_separator" (global $js_file_separator i32))
 
    ;; -----------------------------------------------------------------
    ;; Type declarations 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon May 12 10:15:41 2025 (serrano)                */
+;*    Last change :  Mon Jun 16 10:05:31 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -165,11 +165,11 @@
       (profile itype (install-type-cache!))
       
       ;; when the vector->tvector optimization is enabled we have to
-      ;; patch the types of vector-set! familly function.
+      ;; patch the types of vector-set! family functions.
       (profile vect (patch-vector-set!))
 
       ;; when the cfa pair tracking is enabled we have to
-      ;; patch the types of vector-set! familly function.
+      ;; patch the types of set-cxr! family functions.
       (profile pair (patch-pair-set!))
 
       ;; before parsing the modules, declare that we are currently compiling

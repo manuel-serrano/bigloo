@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Jun  3 13:39:35 2025 (serrano)                */
+;*    Last change :  Mon Jun 16 09:19:04 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -186,43 +186,6 @@
 			      (br ,lblc)))
 			,(local.get $exit)))
 		  (br ,lblc))))
-	  (plain-body))))
-
-(define (gen-body-trap-not-used v::global blocks locals)
-   
-   (define (plain-body)
-      (let ((inits (gen-local-inits v blocks locals))
-	    (relbody (relooper v blocks)))
-	 (if relbody
-	     (append inits (list '(comment "local initialization")) relbody)
-	     (begin
-		;; when using the dispatcher methods,
-		;; all locals must be nullable
-		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
-		(gen-dispatcher-body blocks)))))
-   
-   (let ((protect (get-protect-temp blocks)))
-      (if protect
-	  (let ((lblb (gensym '$try-bexit))
-		(lble (gensym '$try-error))
-		(lblc (gensym '$try))
-		(ty (wasm-type (global-type v)))
-		($exit (wasm-sym (reg-name protect))))
-	     `((comment "try block")
-	       (local.set ,$exit (global.get $exit-default-value))
-	       (block ,lblc (result (ref eq))
-		  (call $bgl_internal_handler
-		     (block ,lble (result exnref)
-			(try_table (result exnref) (catch_all_ref ,lble)
-			   (call $BGL_RESTORE_TRACE_WITH_VALUE
-			      (call $bgl_exception_handler
-				 (block ,lblb (result (ref $bexception))
-				    (try_table (catch $BEXCEPTION ,lblb)
-				       ,@(plain-body)
-				       (br ,lblc)))
-				 (local.get ,$exit)))
-			   (br ,lblc)))
-		     (local.get ,$exit)))))
 	  (plain-body))))
 
 ;*---------------------------------------------------------------------*/

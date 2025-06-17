@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Mon May 12 10:14:23 2025 (serrano)                */
+;*    Last change :  Mon Jun 16 12:51:57 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
@@ -57,7 +57,8 @@
 	      (retblock::bool (default #t))
 	      (varargs::bool (default #t))
 	      (mangling::bool (default #t))
-	      (local-exit::bool (default #f))))
+	      (local-exit::bool (default #f))
+	      (dump-heap::obj (default #f))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)

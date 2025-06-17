@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Jun 13 15:55:52 2025 (serrano)                */
+#*    Last change :  Mon Jun 16 16:22:45 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -49,8 +49,8 @@ PBASE		= bigloo.runtime
 LIBSUFFIX	=
 # Wasm flags
 WFLAGS		= 
-# Wasm merge tool
-WASMMERE	= $(BOOTDIR)/tools
+# Wasm as
+WASMAS		= wasm-as -all
 # Wasm preallocate ints length
 WASM_BINTS_PREALLOC_SIZE = 100
 WASM_BINTS_PREALLOC_START = -10
@@ -124,9 +124,9 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*    WAT objects                                                      */
 #*---------------------------------------------------------------------*/
 WLIB		= wcnst wvector javascript runtime wprocedure wwriter wfixnum \
-                  wstring wsymbols wrgc wports wintegers wbignum wsystem \
+                  wstring wsymbols wpair wrgc wports wintegers wbignum wsystem \
                   wreal wdate wobject wcustom wforeign wweakptr wregexp \
-                  wmmap wdenv wbinary wthread wunicode wpair
+                  wmmap wdenv wbinary wthread wunicode 
 
 W_WLIB		= $(WLIB:%=Wlib/%.wat)
 
@@ -689,15 +689,15 @@ lib-wasm_u: includes
                 WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_u \
                 LIBSUFFIX=_u
 
-one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
+one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
+  $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
+
+$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
+  $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
+	$(WASMAS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
 
 WASM_OPT ?= wasm-opt
 # WASM_OPT_FLAGS=-O3 --gufa -O3 -g
-WASM_OPT_FLAGS=-O0 -g
-WASM_AS ?= wasm-as
-WASM_AS_FLAGS=-all -g
-WASM_MERGE=wasm-merge
-WASM_MERGE_FLAGS=-all -g --rename-export-conflicts
 
 .PHONY: touch-wasm
 touch-wasm:
@@ -875,13 +875,16 @@ install-jvm:
 
 install-wasm: install-wasm-runtime
 	if [ $(BOOTLIBDIR) != $(DESTDIR)$(LIBDIR)/$(FILDIR) ]; then \
-	  cp $(BOOTLIBDIR)/types.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/types.wat; \
 	  cp $(BOOTLIBDIR)/bigloo.wheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap; \
 	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo.wheap; \
 	  cp $(BOOTLIBDIR)/bigloo_s.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat; \
 	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wat; \
 	  cp $(BOOTLIBDIR)/bigloo_u.wat $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat; \
 	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wat; \
+	  cp $(BOOTLIBDIR)/bigloo_s.wasm $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wasm; \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_s.wasm; \
+	  cp $(BOOTLIBDIR)/bigloo_u.wasm $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wasm; \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_u.wasm; \
         fi
 
 install-wasm-runtime:

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Fri Jun 13 15:57:57 2025 (serrano)                */
+;*    Last change :  Mon Jun 16 16:34:31 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -16,6 +16,11 @@
   (memory 1)
   (export "memory" (memory 0))
 
+  (import "__js" "$__bigloo_main"
+     (func $__bigloo_main
+	(param (ref $pair))
+	(result (ref eq))))
+  
   (func $bgl_internal_error (export "bgl_internal_error")
      (param $errno i32)
      (param $val i32)
@@ -452,7 +457,7 @@
   ;; Main function
   ;; --------------------------------------------------------
 
-  (func $main (export "__js_bigloo_main")
+  (func $main (export "__bigloo_main")
     (local $i i32)
     (local $argv (ref eq))
     (local.set $i (i32.sub (global.get $js_argc) (i32.const 1)))
@@ -471,7 +476,7 @@
     (call $bgl_init_io)
     
     (drop
-       (call $bigloo_main (ref.cast (ref $pair) (local.get $argv)))))
+       (call $__bigloo_main (ref.cast (ref $pair) (local.get $argv)))))
 
   (func $BIGLOO_EXIT
      (export "BIGLOO_EXIT")

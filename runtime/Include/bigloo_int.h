@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_int.h      */
+/*    .../prgm/project/bigloo/wasm/runtime/Include/bigloo_int.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Mar 11 13:41:58 2025 (serrano)                */
+/*    Last change :  Mon Jun 16 13:42:45 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -35,6 +35,23 @@ extern "C" {
 
 #  define BINT(i) (obj_t)TAG(i, TAG_SHIFT, TAG_INT)
 #  define CINT(o) (long)UNTAG(o, TAG_SHIFT, TAG_INT)
+
+#  define BGL_CINT_AS_CHAR(o) ((signed char)CINT(o))
+#  define BGL_CINT_AS_UCHAR(o) ((unsigned char)CINT(o))
+#  define BGL_CINT_AS_SHORT(o) ((short)CINT(o))
+#  define BGL_CINT_AS_USHORT(o) ((unsigned short)CINT(o))
+#  define BGL_CINT_AS_INT(o) ((int)CINT(o))
+#  define BGL_CINT_AS_UINT(o) ((unsigned int)CINT(o))
+#  define BGL_CINT_AS_ULONG(o) ((unsigned long)CINT(o))
+#  define BGL_CINT_AS_INT8(o) ((int8)CINT(o))
+#  define BGL_CINT_AS_UINT8(o) ((uint8)CINT(o))
+#  define BGL_CINT_AS_INT16(o) ((int16)CINT(o))
+#  define BGL_CINT_AS_UINT16(o) ((uint16)CINT(o))
+#  define BGL_CINT_AS_INT32(o) ((int32)CINT(o))
+#  define BGL_CINT_AS_UINT32(o) ((uint32)CINT(o))
+#  define BGL_CINT_AS_INT64(o) ((int64)CINT(o))
+#  define BGL_CINT_AS_UINT64(o) ((uint64)CINT(o))
+
 #  define ADDFX(x, y) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
 #  define SUBFX(x, y) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
 
