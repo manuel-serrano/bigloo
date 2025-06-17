@@ -1,0 +1,54 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wpair.wat          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
+;*    Last change :  Fri Jun 13 16:04:54 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    WASM pairs                                                     */
+;*=====================================================================*/
+
+(module $__bigloo_pair
+   
+   ;; -----------------------------------------------------------------
+   ;; Type declarations 
+   ;; -----------------------------------------------------------------
+   (type $pair (sub (struct
+		       (field $car (mut (ref eq)))
+		       (field $cdr (mut (ref eq))))))
+   (type $epair (sub $pair (struct 
+			      (field $car (mut (ref eq))) 
+			      (field $cdr (mut (ref eq))) 
+			      (field $cer (mut (ref eq))))))
+   
+   ;; -----------------------------------------------------------------
+   ;; Global variables 
+   ;; -----------------------------------------------------------------
+
+   (global $pair-default-value
+      (export "BGL_PAIR_DEFAULT_VALUE") (ref $pair)
+      (struct.new $pair (global.get $BUNSPEC) (global.get $BNIL)))
+   (global $epair-default-value
+      (export "BGL_EPAIR_DEFAULT_VALUE") (ref $epair)
+      (struct.new $epair (global.get $BUNSPEC) (global.get $BNIL) (global.get $BUNSPEC)))
+
+   ;; -----------------------------------------------------------------
+   ;; Macros
+   ;; -----------------------------------------------------------------
+   
+   (func $PAIRP (export "PAIRP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $pair) (local.get $o)))
+
+   (func $EPAIRP (export "EPAIRP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $epair) (local.get $o)))
+
+   (func $NULLP (export "NULLP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.eq (global.get $BNIL) (local.get $o))))
+   

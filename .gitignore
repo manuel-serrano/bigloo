@@ -91,6 +91,9 @@ comptime/Tools/license.scm
 runtime/Jlib/configure.java
 runtime/Llib/bconfigure-generic.sch
 
+runtime/Wlib/wcnst.wat
+runtime/Wlib/wfixnum.wat
+
 # recette
 recette/objs_c
 
