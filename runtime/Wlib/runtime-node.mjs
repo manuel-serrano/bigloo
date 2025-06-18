@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jun 17 13:11:59 2025 (serrano)                */
+/*    Last change :  Wed Jun 18 13:02:57 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -337,6 +337,7 @@ function __js_bignum() {
 function __js_system() {
    const self = {
       self: undefined,
+      
       argc: argv.length - 2,
       
       command_line_size: () => process.argv.length,
