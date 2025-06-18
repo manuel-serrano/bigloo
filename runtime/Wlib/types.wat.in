@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Mon Jun 16 16:18:46 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 09:51:40 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -20,6 +20,10 @@
    (tag $fail)
    (tag $BEXCEPTION (param (ref $bexception)))
 
+   (export "$unimplemented" (tag $unimplemented))
+   (export "$fail" (tag $fail))
+   (export "$BEXCEPTION" (tag $BEXCEPTION))
+   
    ;; -----------------------------------------------------------------
    ;; Misc 
    ;; -----------------------------------------------------------------

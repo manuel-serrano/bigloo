@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Jun 17 11:17:59 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 13:52:40 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -2089,11 +2089,8 @@
 
    ;; get_output_string
    (func $get_output_string (export "get_output_string")
-      (param $p (ref eq))
+      (param $op (ref $output-port))
       (result (ref $bstring))
-
-      (local $op (ref $output-port))
-      (local.set $op (ref.cast (ref $output-port) (local.get $p)))
 
       (return_call $string_to_bstring_len
 	 (struct.get $output-port $buf (local.get $op))
@@ -2103,7 +2100,8 @@
    (func $get_output_string_as_refeq
       (param $p (ref eq))
       (result (ref eq))
-      (return_call $get_output_string (local.get $p)))
+      (return_call $get_output_string
+	 (ref.cast (ref $output-port)  (local.get $p))))
 
    ;; bgl_output_port_buffer_set
    (func $bgl_output_port_buffer_set (export "bgl_output_port_buffer_set")

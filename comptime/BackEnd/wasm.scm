@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Jun 17 10:57:30 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 12:55:50 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -147,9 +147,6 @@
 		 (runtime-file (find-file-in-path lib *lib-dir*))
 		 (objects (delete-duplicates!
 			     (append srcobj *o-files*) string=?)))
-	     (verbose 2 "      merging ["
-		(format "~a ~( )" runtime-file objects)
-		" -> " tmp #\] #\Newline)
 	     (wat-merge (cons runtime-file objects) tmp)
 	     (let* ((target (or *dest* "a.out"))
 		    (wasm (string-append target ".wasm"))
@@ -176,9 +173,6 @@
 		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
 		 (objects (delete-duplicates!
 			     (append srcobj *o-files*) string=?)))
-	     (verbose 2 "      merging ["
-		(format "~( )" objects)
-		" -> " tmp #\] #\Newline)
 	     (wat-merge objects tmp)
 	     (let* ((target (or *dest* "a.out"))
 		    (wasm (string-append target ".wasm"))
@@ -230,10 +224,10 @@ MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls --wasm-compil
 
 case $JS in
   \"node\")
-     $NODE $NODEOPT $BIGLOOLIBDIR/runtime-node.mjs @STATIC@ @WASM@ $*;;
+     $NODE $NODEOPT $NODEOPTEXTRA $BIGLOOLIBDIR/runtime-node.mjs @STATIC@ @WASM@ $*;;
 
   \"mozjs\")
-     $MOZJS $MOZJSOPT -m $BIGLOOLIBDIR/runtime-mozj.mjs - @STATIC@ @WASM@ $*;;
+     $MOZJS $MOZJSOPT $MOZJSOPTEXTRA -m $BIGLOOLIBDIR/runtime-mozj.mjs - @STATIC@ @WASM@ $*;;
 
   *)
      echo \"*** ERROR: unsupported JS engine: $JS\" >&2
@@ -276,6 +270,13 @@ esac")
    (define (remove-duplicate-imports! modules)
       (filter! (lambda (d)
 		  (match-case d
+		     ((import ?m ?n (tag ?t ???-))
+		      (let ((key (string-append m "@" n))
+			    (tagkey (symbol->string! t)))
+			 (unless (or (hashtable-contains? imports key)
+				     (hashtable-contains? tags tagkey))
+			    (hashtable-put! imports key #t)
+			    #t)))
 		     ((import ?m ?n ???-)
 		      (let ((key (string-append m "@" n)))
 			 (unless (hashtable-contains? imports key)
@@ -483,8 +484,12 @@ esac")
 	     (loop (cdr types) noklass (cons (car types) klass)))
 	    (else
 	     (loop (cdr types) (cons (car types) noklass) klass)))))
+
+   (verbose 2 "      merging [" (format "~( )" files) " -> " target #\] #\Newline)
    
-   (let ((modules (append-map read-module files)))
+   (let* ((modules (append-map read-module files))
+	  ;; tags must be collected before the imports
+	  (tags (remove-duplicate-tags! (collect-module modules 'tag))))
       (collect-exports modules)
       (remove-scheme-imports! modules)
       
@@ -501,7 +506,7 @@ esac")
 		   ,@(split-type-classes
 			(remove-duplicate-types! (collect-types modules)))
 		   (comment "tags")
-		   ,@(remove-duplicate-tags! (collect-module modules 'tag))
+		   ,@tags
 		   (comment "export")
 		   ,@(collect-module modules 'export)
 		   (comment "global")
@@ -602,7 +607,7 @@ esac")
 						  (set! fixpoint #f))))
 				  slots))))
 	       (get-class-list)))))
-   
+
    ;; Registers functions defined in this module to avoid importing them.
    ;; This is required as some files in the standard library redefine in Scheme
    ;; some C functions used by the C backend.
@@ -620,29 +625,10 @@ esac")
 	       `(module ,(wasm-sym (symbol->string *module*))
 		   ,@(if *wasm-local-preinit*
 			 (list (emit-default-constants)) '())
-		   (comment "imports"
-		      ,@(emit-imports))
 		   
+		   (comment "imports" ,@(emit-imports))
 		   (comment "memory" ,@(emit-memory))
-		   
-		   ;; FIXME: allow custom name for types.wat file
-		   (comment "types and tags"
-		      ,@(let ((tname (find-file-in-path "bigloo_s.wat" *lib-dir*)))
-			   (if tname
-			       (match-case (call-with-input-file tname read)
-				  ((module (? symbol?) . ?body)
-				   (filter-map (lambda (e)
-						  (match-case e
-						     ((tag . ?-) e)
-						     ((type . ?-) e)
-						     ((rec . ?-) e)
-						     (else #f)))
-				      body))
-				  (else
-				   (error "wasm" "Illegal module format" tname)))
-			       (error "wasm" "Cannot find types.wat file in path"
-				  *lib-dir*))))
-		   
+		   (comment "types and tags" ,@(emit-types-and-tags))
 		   (comment "Class types" ,@(emit-class-types classes))
 		   (comment "Extra types" ,@(reverse *extra-types*))
 		   (comment "Globals" ,@(emit-prototypes))
@@ -651,6 +637,35 @@ esac")
 		   (comment "Functions" ,@compiled-funcs))))))
    
    (stop-emission!))
+
+;*---------------------------------------------------------------------*/
+;*    emit-types-and-tags ...                                          */
+;*---------------------------------------------------------------------*/
+(define (emit-types-and-tags)
+   
+   (define (import-tag e)
+      (match-case e
+	 ((tag ?id . ?params)
+	  `(import ,($bigloo) ,(symbol->string id)
+	      (tag ,id ,@params)))
+	 (else
+	  (error "import-tag" "Illegal tag" e))))
+   
+   (let ((tname (find-file-in-path "bigloo_s.wat" *lib-dir*)))
+      (if tname
+	  (match-case (call-with-input-file tname read)
+	     ((module (? symbol?) . ?body)
+	      (filter-map (lambda (e)
+			     (match-case e
+				((tag . ?-) (import-tag e))
+				((type . ?-) e)
+				((rec . ?-) e)
+				(else #f)))
+		 body))
+	     (else
+	      (error "wasm" "Illegal module format" tname)))
+	  (error "wasm" "Cannot find types.wat file in path"
+	     *lib-dir*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *wasm-port* ...                                                  */
@@ -1342,7 +1357,9 @@ esac")
 (define (emit-imports)
    
    (define imports
-      `((import ,($bigloo) "BNIL"
+      `((import "__js" "trace"
+	   (func $js_trace (param i32)))
+	(import ,($bigloo) "BNIL"
 	   (global $BNIL (ref $bnil)))
 	(import ,($bigloo) "BOPTIONAL"
 	   (global $BOPTIONAL (ref $bcnst)))
@@ -1376,14 +1393,18 @@ esac")
 	      (param (ref $procedure))
 	      (param (ref $vector))
 	      (result (ref eq))))
+	(import ,($bigloo) "__EVMEANING_ADDRESS"
+	   (func $__EVMEANING_ADDRESS
+	      (param (ref $bgl_evmeaning_getter))
+	      (param (ref $bgl_evmeaning_setter))
+	      (result (ref eq))))
 	(import ,($bigloo) "bgl_long_to_bignum"
-	   (func $bgl_long_to_bignum (export "bgl_long_to_bignum")
+	   (func $bgl_long_to_bignum
 	      (param i64)
 	      (result (ref $bignum))))
 	(import ,($bigloo) "bgl_string_to_bignum"
-	   (func $bgl_string_to_bignum (export "bgl_string_to_bignum")
-	      (param i32)
-	      (param i32)
+	   (func $bgl_string_to_bignum
+	      (param (ref $bstring))
 	      (param i32)
 	      (result (ref $bignum))))
 	(import ,($bigloo) "the_failure"
@@ -1400,6 +1421,8 @@ esac")
 	      (param (ref $bexception))
 	      (param (ref $exit))
 	      (result (ref eq))))
+	(import ,($bigloo) "BGL_STORE_TRACE"
+	   (func $BGL_STORE_TRACE))
 	(import ,($bigloo) "BGL_RESTORE_TRACE_WITH_VALUE"
 	   (func $BGL_RESTORE_TRACE_WITH_VALUE
 	      (param (ref eq))
@@ -1551,7 +1574,6 @@ esac")
    (filter-map (lambda (g)
 	   (emit-import (global-value g) g))
       (get-imports)))
-
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-default-constants ...                                       */

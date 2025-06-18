@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Jun 16 16:34:31 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 10:44:00 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -474,6 +474,7 @@
           (br $loop))))
 
     (call $bgl_init_io)
+    (call $bgl_init_trace (call $BGL_CURRENT_DYNAMIC_ENV))
     
     (drop
        (call $__bigloo_main (ref.cast (ref $pair) (local.get $argv)))))

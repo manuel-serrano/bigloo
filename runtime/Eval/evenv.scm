@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Wed Sep 18 17:04:56 2024 (serrano)                */
+;*    Last change :  Tue Jun 17 13:31:33 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -56,6 +56,8 @@
 		       "__EVMEANING_ADDRESS_REF")
 	       (method static __evmeaning_address-set!::obj (::procedure ::obj)
 		       "__EVMEANING_ADDRESS_SET")))
+
+   (wasm    (__evmeaning_address "(call __EVMEANING_ADDRESS (ref.cast (ref $bgl_evmeaning_getter ~0)) (ref.cast (ref $bgl_evmeaning_setter) ~1))"))
    
    (export  (init-the-global-environment!)
 	    (inline make-eval-global ::symbol ::obj ::obj)

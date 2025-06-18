@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Jun 17 11:07:28 2025 (serrano)                */
+#*    Last change :  Wed Jun 18 10:05:08 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -692,13 +692,6 @@ lib-wasm_u: includes
 one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
   $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
 
-$(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
-  $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
-	$(WASMAS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
-
-WASM_OPT ?= wasm-opt
-# WASM_OPT_FLAGS=-O3 --gufa -O3 -g
-
 .PHONY: touch-wasm
 touch-wasm:
 	@ touch $(WASMS:objs//%.wasm=%.scm)
@@ -706,14 +699,14 @@ touch-wasm:
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
   $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
-	$(WASM_OPT) -all $(WASM_OPT_FLAGS) $< -o $@
+	$(WASMAS) $< -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
   objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
   $(BOOTLIBDIR)/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
-	$(BIGLOO) -wasm -y -w $(BOOTLIBDIR)/types.wat \
+	$(BIGLOO) -wasm -y -w \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
 		-o $@

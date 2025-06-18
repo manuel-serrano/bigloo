@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Fri Jan 10 10:17:02 2025 (serrano)                */
+#*    Last change :  Wed Jun 18 10:53:50 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -138,9 +138,16 @@ recette-static: .afile-c objs_c $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=obj
 wasm: objs_wasm .afile-wasm
 	$(MAKE) recette-wasm
 
+wasm-static: objs_wasm .afile-wasm
+	$(MAKE) recette-wasm-static
+
 recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%)
 	$(BIGLOO) -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm $(WASM_OBJECTS:%=objs_wasm/%)
 	@ echo "\e[1;36mrecette.wasm\e[0m done."
+
+recette-wasm-static: $(WASM_OBJECTS:%=objs_wasm/%)
+	$(BIGLOO) -static-bigloo -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm-static $(WASM_OBJECTS:%=objs_wasm/%)
+	@ echo "\e[1;36mrecette.wasm-static\e[0m done."
 
 jvm: recette-jvm-nojar
 recette-jvm-nojar: .jfile-jvm .afile-jvm 
@@ -223,6 +230,7 @@ distclean: lintclean
 	@- $(RM) -f recette-jvm-jar
 	@- $(RM) -f recette-jvm-jar.jar
 	@- $(RM) -f recette.wasm
+	@- $(RM) -f recette.wasm-static
 	@- $(RM) -f recette.log
 	@- $(RM) -f misc/binary.BIN
 	@- $(RM) -f gc.log

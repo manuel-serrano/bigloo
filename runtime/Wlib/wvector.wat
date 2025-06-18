@@ -193,7 +193,7 @@
       (return (global.get $BUNSPEC)))
    
    (func $TVECTOR_DESCR_SET (export "TVECTOR_DESCR_SET")
-      (param $v arrayref)
+      (param $v (ref array))
       (param $desc (ref eq))
       (result (ref eq))
       (if (ref.test (ref $tvector-f64) (local.get $v))

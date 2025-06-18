@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Thu Jan  9 16:10:49 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 13:14:16 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -26,8 +26,8 @@
    (import "__js_bignum" "zerobxp" (func $zerobxp (param externref) (result i32)))
    (import "__js_bignum" "bxpositivep" (func $bxpositivep (param externref) (result i32)))
    (import "__js_bignum" "bxnegativep" (func $bxnegativep (param externref) (result i32)))
-   (import "__js_bignum" "bgl_bignum_odd" (func $bgl_bignum_odd (param externref) (result i32)))
-   (import "__js_bignum" "bgl_bignum_even" (func $bgl_bignum_even (param externref) (result i32)))
+   (import "__js_bignum" "bignum_odd" (func $bignum_odd (param externref) (result i32)))
+   (import "__js_bignum" "bignum_even" (func $bignum_even (param externref) (result i32)))
    (import "__js_bignum" "safe_bignum_to_fixnum" (func $js_safe_bignum_to_fixnum (param externref) (param i32) (result f64)))
    (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_long (param externref) (result f64)))
    (import "__js_bignum" "bignum_to_flonum" (func $bgl_bignum_to_flonum (param externref) (result f64)))
@@ -124,6 +124,7 @@
    ;; bgl_bignum_to_string
    (func $bgl_bignum_to_string (export "bgl_bignum_to_string")
       (param $n (ref $bignum))
+      (param $r i32)
       (result (ref $bstring))
       (return_call $load_string
 	 (i32.const 128)
@@ -391,5 +392,15 @@
       (param $y i64)
       (result (ref eq))
       (return_call $make_bllong (i64.div_s (local.get $x) (local.get $y))))
+
+   (func $bgl_bignum_odd (export "bgl_bignum_odd")
+      (param $n (ref $bignum))
+      (result i32)
+      (return_call $bignum_odd (struct.get $bignum $bx (local.get $n))))
+
+   (func $bgl_bignum_even (export "bgl_bignum_even")
+      (param $n (ref $bignum))
+      (result i32)
+      (return_call $bignum_even (struct.get $bignum $bx (local.get $n))))
    
    )

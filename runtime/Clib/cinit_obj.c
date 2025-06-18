@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cinit_obj.c      */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cinit_obj.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Tue Mar 11 11:26:42 2025 (serrano)                */
+/*    Last change :  Wed Jun 18 10:41:26 2025 (serrano)                */
 /*    Copyright   :  2002-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */

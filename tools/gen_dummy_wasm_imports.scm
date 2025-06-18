@@ -5,7 +5,11 @@
 
 (define (main x)
    (let ((module (apply append
-		    (call-with-input-file (cadr x) read)
+		    (filter (lambda (e)
+			       (match-case e
+				  ((type . ?-) #t)
+				  (else #f)))
+		       (cddr (call-with-input-file (cadr x) read)))
 		    (map (lambda (f)
 			    (call-with-input-file f
 			       (lambda (p)
@@ -16,7 +20,7 @@
 							(parse-import mod id decl))))
 					(cdr m))))))
 		       (cddr x)))))
-      (pp module)))
+      (pp `(module $__bigloo_dummy_module ,@module))))
 
 (define (parse-import mod id decl)
    (unless (hashtable-contains? idents id)

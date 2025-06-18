@@ -116,7 +116,7 @@
    ;; close_binary_port
    (func $close_binary_port (export "close_binary_port")
       (param $bp (ref $binary-port))
-      (result (ref $binary-port))
+      (result (ref eq))
       (if (i32.ne (struct.get $binary-port $io (local.get $bp))
 	     (global.get $BGL_BINARY_CLOSED))
 	  (then

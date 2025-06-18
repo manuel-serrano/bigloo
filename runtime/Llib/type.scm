@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Jun 17 12:33:27 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 13:21:49 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1353,7 +1353,6 @@
       ($string->bstring "~0")
       ($bstring->string "~0")
 
-      ($ucs2->bucs2 "(call $BUCS2 ~0)")
       ($bucs2->ucs2 "(struct.get $bucs2 $v ~0)")
 
       ($cobj->obj "~0")

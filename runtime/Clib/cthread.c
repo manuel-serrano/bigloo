@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cthread.c        */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cthread.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Nov 15 07:35:04 2024 (serrano)                */
-/*    Copyright   :  2004-24 Manuel Serrano                            */
+/*    Last change :  Wed Jun 18 10:38:34 2025 (serrano)                */
+/*    Copyright   :  2004-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -273,7 +273,6 @@ make_dynamic_env() {
    env->dynamic_env.top_of_frame = 0L;
    env->dynamic_env.exit_traces = BNIL;
    env->dynamic_env.backtrace = 0L;
-
    env->dynamic_env.debug_alist = BNIL;
 
    env->dynamic_env.thread_backend = BUNSPEC;
@@ -292,7 +291,7 @@ make_dynamic_env() {
    env->dynamic_env.parameters = BNIL;
    
    for (i = 0; i < 32; i++) {
-      env->dynamic_env.sig_handlers[ i ] = BFALSE;
+      env->dynamic_env.sig_handlers[i] = BFALSE;
    }
 
    env->dynamic_env.user_data = BNIL;

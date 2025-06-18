@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cmain.c          */
+/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cmain.c            */
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Thu Aug 29 10:57:23 2024 (serrano)                */
+/*    Last change :  Wed Jun 18 10:36:46 2025 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -201,7 +201,7 @@ _bigloo_main(int argc,
 
       /* store the stack bottom address */
       BGL_ENV_STACK_BOTTOM_SET(BGL_CURRENT_DYNAMIC_ENV(), (char *)&mega_size);
-      
+
       /* initialize constants */
       bgl_init_eval_cnst();
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Fri Dec  8 09:48:32 2023 (serrano)                */
+/*    Last change :  Wed Jun 18 11:36:35 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Execution traces (mainly for error reporting)                    */
 /*=====================================================================*/
@@ -40,11 +40,11 @@ bgl_init_trace_register(void (*i)(obj_t), obj_t (*g)(int), void (*w)(obj_t)) {
 /*---------------------------------------------------------------------*/
 static void
 default_init_trace(obj_t env) {
-   BGL_DYNAMIC_ENV(env).top.name = BUNSPEC;
-   BGL_DYNAMIC_ENV(env).top.location = BUNSPEC;
-   BGL_DYNAMIC_ENV(env).top.link = 0;
+   BGL_DYNAMIC_ENV(env).top_init.name = BUNSPEC;
+   BGL_DYNAMIC_ENV(env).top_init.location = BUNSPEC;
+   BGL_DYNAMIC_ENV(env).top_init.link = 0;
 
-   BGL_ENV_SET_TOP_OF_FRAME(env, &(BGL_DYNAMIC_ENV(env).top));
+   BGL_ENV_SET_TOP_OF_FRAME(env, &(BGL_DYNAMIC_ENV(env).top_init));
 }
 
 /*---------------------------------------------------------------------*/

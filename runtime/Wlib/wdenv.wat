@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Fri Jan 31 13:27:17 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 14:15:59 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -29,10 +29,10 @@
 	    (field $location (mut (ref eq)))
 	    (field $link (mut (ref null $bgl_dframe)))))
       
-      (type $bgl_dframe_list
+      (type $bgl_exit_trace_list
 	 (struct
 	    (field $head (ref $bgl_dframe))
-	    (field $next (ref null $bgl_dframe_list))))
+	    (field $next (ref null $bgl_exit_trace_list))))
       
       (type $dynamic-env
 	 (struct
@@ -51,9 +51,8 @@
 	    (field $abase (mut (ref eq)))
 	    
 	    (field $lexical-stack (mut (ref eq)))
-	    (field $top (mut (ref null $bgl_dframe)))
-	    (field $top-of-frame (mut (ref null $bgl_dframe)))
-	    (field $exit-traces (mut (ref null $bgl_dframe_list)))
+	    (field $top-of-frame (mut (ref $bgl_dframe)))
+	    (field $exit-traces (mut (ref null $bgl_exit_trace_list)))
 
 	    (field $thread-backend (mut (ref eq))))))
    
@@ -113,13 +112,11 @@
 	 (global.get $BUNSPEC)
 	 ;; lexical-stack
 	 (global.get $BNIL)
-	 ;; top
+	 ;; top-of-frame
 	 (struct.new $bgl_dframe
 	    (global.get $BUNSPEC)
 	    (global.get $BUNSPEC)
 	    (ref.null none))
-	 ;; top-of-frame
-	 (ref.null none)
 	 ;; exit-traces
 	 (ref.null none)
 	 ; thread-backend
@@ -166,13 +163,11 @@
 	 (global.get $BUNSPEC)
 	 ;; lexical-stack
 	 (global.get $BNIL)
-	 ;; top
+	 ;; top-of-frame
 	 (struct.new $bgl_dframe
 	    (global.get $BUNSPEC)
 	    (global.get $BUNSPEC)
 	    (ref.null none))
-	 ;; top-of-frame
-	 (ref.null none)
 	 ;; exit-traces
 	 (ref.null none)
 	 ; thread-backend
@@ -250,32 +245,49 @@
    (func $bgl_init_trace
       (export "bgl_init_trace")
       (param $env (ref $dynamic-env))
-      (local $top (ref null $bgl_dframe))
-      (local.set $top (struct.get $dynamic-env $top (local.get $env)))
+      (local $top (ref $bgl_dframe))
+
+      (local.set $top
+	 (struct.new $bgl_dframe
+	    (global.get $BUNSPEC)
+	    (global.get $BUNSPEC)
+	    (ref.null none)))
       
-      (struct.set $bgl_dframe $name (local.get $top) (global.get $BUNSPEC))
-      (struct.set $bgl_dframe $location (local.get $top) (global.get $BUNSPEC))
-      (struct.set $bgl_dframe $link (local.get $top) (ref.null none))
       (call $BGL_ENV_SET_TOP_OF_FRAME (local.get $env) (local.get $top)))
    
    (func $BGL_ENV_GET_TOP_OF_FRAME
       (param $env (ref $dynamic-env))
-      (result (ref null $bgl_dframe))
+      (result (ref $bgl_dframe))
       (struct.get $dynamic-env $top-of-frame (local.get $env)))
-   
+
+   (func $bgl_dframe_length
+      ;; debug
+      (param $l (ref null $bgl_dframe))
+      (result i32)
+      (if (result i32) (ref.is_null (local.get $l))
+	  (then
+	     (i32.const 0))
+	  (else
+	   (i32.add (i32.const 1)
+	      (call $bgl_dframe_length
+		 (struct.get $bgl_dframe $link (local.get $l)))))))
+		
    (func $BGL_ENV_SET_TOP_OF_FRAME
       (param $env (ref $dynamic-env))
-      (param $tof (ref null $bgl_dframe))
-      (struct.set $dynamic-env $top-of-frame (local.get $env) (local.get $tof)))
+      (param $tof (ref $bgl_dframe))
+      (call $js_trace (i32.const 11110))
+      (call $js_trace (call $bgl_dframe_length (local.get $tof)))
+      (struct.set $dynamic-env $top-of-frame
+	 (local.get $env) (local.get $tof)))
    
    (func $BGL_ENV_EXIT_TRACES
       (param $env (ref $dynamic-env))
-      (result (ref $bgl_dframe_list))
-      (ref.as_non_null (struct.get $dynamic-env $exit-traces (local.get $env))))
+      (result (ref null $bgl_exit_trace_list))
+      (struct.get $dynamic-env $exit-traces (local.get $env)))
    
    (func $BGL_ENV_EXIT_TRACES_SET
       (param $env (ref $dynamic-env))
-      (param $traces (ref null $bgl_dframe_list))
+      (param $traces (ref null $bgl_exit_trace_list))
       (struct.set $dynamic-env $exit-traces (local.get $env)
 	 (local.get $traces)))
    
@@ -286,7 +298,8 @@
       (param $loc (ref eq))
       (result (ref eq))
       (local $tmp (ref $bgl_dframe))
-      
+
+      (call $js_trace (i32.const 11111))
       (local.set $tmp
 	 (struct.new $bgl_dframe
 	    (local.get $name)
@@ -301,10 +314,17 @@
       (param $env (ref $dynamic-env))
       (result (ref eq))
 
+      (call $js_trace (i32.const 11112))
+      (call $js_trace
+	 (call $bgl_dframe_length
+	    (struct.get $bgl_dframe $link
+	       (struct.get $dynamic-env $top-of-frame (local.get $env)))))
+			 
       (call $BGL_ENV_SET_TOP_OF_FRAME
 	 (local.get $env)
-	 (struct.get $bgl_dframe $link
-	    (struct.get $dynamic-env $top (local.get $env))))
+	 (ref.as_non_null
+	    (struct.get $bgl_dframe $link
+	       (struct.get $dynamic-env $top-of-frame (local.get $env)))))
       
       (return (global.get $BUNSPEC)))
    
@@ -313,10 +333,10 @@
       (param $env (ref $dynamic-env))
       (call $BGL_ENV_SET_TOP_OF_FRAME
 	 (local.get $env)
-	 (struct.get $bgl_dframe_list $head
+	 (struct.get $bgl_exit_trace_list $head
 	    (call $BGL_ENV_EXIT_TRACES (local.get $env))))
       (call $BGL_ENV_EXIT_TRACES_SET (local.get $env)
-	 (struct.get $bgl_dframe_list $next
+	 (struct.get $bgl_exit_trace_list $next
 	    (call $BGL_ENV_EXIT_TRACES (local.get $env)))))
    
    (func $BGL_ENV_RESTORE_TRACE_WITH_VALUE
@@ -325,6 +345,19 @@
       (result (ref eq))
       (call $BGL_ENV_RESTORE_TRACE (local.get $env))
       (return (local.get $value)))
+
+   (func $BGL_ENV_STORE_TRACE
+      (param $env (ref $dynamic-env))
+      (call $BGL_ENV_EXIT_TRACES_SET
+	 (local.get $env)
+	 (struct.new $bgl_exit_trace_list
+	    (call $BGL_ENV_GET_TOP_OF_FRAME (local.get $env))
+	    (call $BGL_ENV_EXIT_TRACES (local.get $env)))))
+
+   (func $BGL_STORE_TRACE
+      (export "BGL_STORE_TRACE")
+      (return_call $BGL_ENV_STORE_TRACE
+	 (global.get $current-dynamic-env)))
    
    (func $BGL_RESTORE_TRACE_WITH_VALUE
       (export "BGL_RESTORE_TRACE_WITH_VALUE")
@@ -332,9 +365,9 @@
       ;; (see comptime/SawWasm/code.scm)
       (param $value (ref eq))
       (result (ref eq))
-;*      (return_call $BGL_ENV_RESTORE_TRACE_WITH_VALUE                 */
-;* 	(call $BGL_CURRENT_DYNAMIC_ENV)                                */
-      (local.get $value))
+      (return_call $BGL_ENV_RESTORE_TRACE_WITH_VALUE
+	 (call $BGL_CURRENT_DYNAMIC_ENV)
+	 (local.get $value)))
    
    (func $BGL_ENV_LEXICAL_STACK
       (export "BGL_ENV_LEXICAL_STACK")
@@ -436,7 +469,7 @@
       (param $o (ref eq))
       (result (ref eq))
       (struct.set $bgl_dframe $location
-	 (struct.get $dynamic-env $top (local.get $env))
+	 (struct.get $dynamic-env $top-of-frame (local.get $env))
 	 (local.get $o))
       (local.get $o))
    
@@ -446,7 +479,7 @@
       (param $o (ref eq))
       (result (ref eq))
       (struct.set $bgl_dframe $name
-	 (struct.get $dynamic-env $top (local.get $env))
+	 (struct.get $dynamic-env $top-of-frame (local.get $env))
 	 (local.get $o))
       (local.get $o))
    
@@ -498,7 +531,6 @@
       (local $cell (ref $cell))
       (if (i32.eqz (struct.get $exit $userp (local.get $exit)))
 	  (then
-	     (call $js_trace (i32.const -11111112))
 	     (return (global.get $BUNSPEC)))
 	  (else
 	   (if (struct.get $exit $stamp (local.get $exit))

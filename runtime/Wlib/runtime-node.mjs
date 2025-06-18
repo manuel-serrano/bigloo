@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jun 17 08:19:18 2025 (serrano)                */
+/*    Last change :  Tue Jun 17 13:11:59 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -13,7 +13,7 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync } from "node:fs";
-import { isatty } from "tty";
+import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
 
@@ -273,8 +273,8 @@ function __js_bignum() {
       zerobxp: (bx) => bx === 0n,
       bxpositivep: (bx) => bx > 0n,
       bxnegativep: (bx) => bx < 0n,
-      bgl_bignum_odd: (bx) => bx % 2n !== 0n,
-      bgl_bignum_even: (bx) => bx % 2n === 0n,
+      bignum_odd: (bx) => bx % 2n !== 0n,
+      bignum_even: (bx) => bx % 2n === 0n,
       long_to_bignum: (value) => BigInt(value),
       safe_bignum_to_fixnum: (bx, bsz) => {
 	 if (bsz > 53) bsz = 52; // max support JS fixnums
@@ -684,7 +684,7 @@ async function runDouble(client, rts) {
 
    const instanceRts = await WebAssembly.instantiate(wasmRts, __jsRts);
    __jsClient.__bigloo = instanceRts.exports;
-   
+
    const instanceClient = await WebAssembly.instantiate(wasmClient, __jsClient);
 
    __js_link_instance(__jsClient, instanceClient, instanceClient);

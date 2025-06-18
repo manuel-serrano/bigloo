@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jun 17 11:16:27 2025 (serrano)                */
+/*    Last change :  Wed Jun 18 11:38:23 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1188,7 +1188,7 @@ union scmobj {
       /* the debug information */
       union scmobj *debug_alist;
       /* stack traces */
-      struct bgl_dframe top;
+      struct bgl_dframe top_init;
       struct bgl_dframe *top_of_frame;
       union scmobj *exit_traces;
       void *backtrace;

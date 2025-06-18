@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Jun 17 12:31:00 2025 (serrano)                */
+;*    Last change :  Tue Jun 17 15:38:41 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -170,6 +170,27 @@
    (let ((protect (get-protect-temp blocks)))
       (if protect
 	  (let ((lblb (gensym '$try-bexit))
+		(lblc (gensym '$try))
+		(ty (wasm-type (global-type v)))
+		($exn (gensym '$exn))
+		($exit (wasm-sym (reg-name protect)))
+		(body (plain-body)))
+	     `((comment "try block")
+	       ,@(body-locals body)
+	       (local ,$exn (ref $bexception))
+	       (local.set ,$exit (global.get $exit-default-value))
+	       (try
+		  (do
+		     (call $BGL_STORE_TRACE)
+		     ,@(body-sans-locals body))
+		  (catch $BEXCEPTION
+		     (local.set ,$exn)
+		     (call $js_trace (i32.const 99998))
+		     (return_call $BGL_RESTORE_TRACE_WITH_VALUE
+			(call $bgl_exception_handler
+			   (local.get ,$exn)
+			   (local.get ,$exit)))))))
+	  #;(let ((lblb (gensym '$try-bexit))
 		(lblc (gensym '$try))
 		(ty (wasm-type (global-type v)))
 		($exit (wasm-sym (reg-name protect)))
