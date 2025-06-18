@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Mon Feb  3 13:56:14 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 17:51:55 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -13,7 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module expand_install
-   (include "Tools/location.sch")
+   (include "Tools/location.sch"
+	    "BackEnd/backend.sch")
    (import  expand_if
 	    expand_lambda
 	    expand_define
@@ -45,7 +46,8 @@
 	    ast_sexp
 	    ast_private
 	    ast_glo-decl
-	    module_module)
+	    module_module
+	    backend_backend)
    (export  (install-initial-expander)
 	    (%append-2-define)))
 
@@ -326,22 +328,24 @@
    (install-O-comptime-expander
     'eqv?
     (lambda (x::obj e::procedure)
+       (define (eq-char? x)
+	  (and (char? x) (not (backend-typed-eq (the-backend)))))
        (match-case x
 	  ((?- ?a1 ?a2)
 	   (if (and (number? a1) (number? a2))
 	       (= a1 a2)
-	       `(,(if (or (char? a1)
-			  (char? a2)
+	       `(,(if (or (eq-char? a1)
+			  (eq-char? a2)
 			  (and (pair? a1)
 			       (eq? (car a1) 'quote)
 			       (or (fixnum? (cadr a1))
-				   (char? (cadr a1))
+				   (eq-char? (cadr a1))
 				   (symbol? (cadr a1))
 				   (keyword? (cadr a1))))
 			  (and (pair? a2)
 			       (eq? (car a2) 'quote)
 			       (or (fixnum? (cadr a2))
-				   (char? (cadr a2))
+				   (eq-char? (cadr a2))
 				   (symbol? (cadr a2))
 				   (keyword? (cadr a2)))))
 		      'eq?
