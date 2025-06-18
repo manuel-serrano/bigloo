@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Jan 10 15:04:02 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 16:12:12 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -930,7 +930,9 @@
 				      (loop (+fx i 4) (+fx j 1)))))
 			    (loop\ i j c1)))
 		       ((#\u #\U)
-			(if (<fx i (-fx len 5))
+			(cond
+			   ((and (<fx i (-fx len 5))
+				 (not (char=? (string-ref-ur str (+fx 2 (+fx start i))) #\{)))
 			    (let* ((c2 (string-ref-ur str (+fx 2 (+fx start i))))
 				   (c3 (string-ref-ur str (+fx 3 (+fx start i))))
 				   (c4 (string-ref-ur str (+fx 4 (+fx start i))))
@@ -950,8 +952,26 @@
 					  (t (ucs2-string->utf8-string s))
 					  (l (string-length t)))
 				      (blit-string! t 0 buf j l)
-				      (loop (+fx i 6) (+fx j l)))))
-			    (loop\ i j c1)))
+				      (loop (+fx i 6) (+fx j l))))))
+			   ((and (<fx i (-fx len 4))
+				 (char=? (string-ref-ur str (+fx 2 (+fx start i))) #\{)
+				 (not (char=? (string-ref-ur str (+fx 3 (+fx start i))) #\})))
+			    (let loopu ((k 3)
+					(n 0))
+			       (let ((c (string-ref-ur str (+fx (+fx start i) k))))
+				  (if (char=? c #\})
+				      (let* ((u (integer->ucs2 n))
+					     (s (make-ucs2-string 1 u))
+					     (t (ucs2-string->utf8-string s))
+					     (l (string-length t)))
+					 (blit-string! t 0 buf j l)
+					 (loop (+fx 1 (+fx i k)) (+fx j l)))
+				      (let ((d (xdigit->byte c)))
+					 (if (<fx d 0)
+					     (loop\ i j c1)
+					     (loopu (+fx k 1) (+fx (*fx n 16) d))))))))
+			   (else
+			    (loop\ i j c1))))
 		       (else
 			(if (<fx i (-fx len 3))
 			    (let* ((c2 (string-ref-ur str (+fx 2 (+fx start i))))

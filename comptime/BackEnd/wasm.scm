@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Jun 18 12:53:05 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 13:39:00 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -173,7 +173,9 @@
 		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
 		 (objects (delete-duplicates!
 			     (append srcobj *o-files*) string=?)))
-	     (wat-merge objects tmp)
+	     (if (pair? (cdr objects))
+		 (wat-merge objects tmp)
+		 (set! tmp (car objects)))
 	     (let* ((target (or *dest* "a.out"))
 		    (wasm (string-append target ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
@@ -394,7 +396,7 @@ esac")
    (define (read-module f)
       (if (file-exists? f)
 	  (let ((strict (bigloo-strict-r5rs-strings)))
-	     (bigloo-strict-r5rs-strings-set! #t)
+	     (bigloo-strict-r5rs-strings-set! #f)
 	     (unwind-protect
 		(let ((m (call-with-input-file f read)))
 		   (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
@@ -736,13 +738,13 @@ esac")
 		      (display c)
 		      (loop (+fx i 1)))
 		     ((char=? c #\")
-		      (display "\\22")
+		      (display "\\u{22}")
 		      (loop (+fx i 1)))
 		     ((char=? c #\\)
-		      (display "\\5c")
+		      (display "\\u{5c}")
 		      (loop (+fx i 1)))
 		     ((char=? c #\newline)
-		      (display "\\0a")
+		      (display "\\u{0a}")
 		      (loop (+fx i 1)))
 		     (else
 		      (let ((n (char->integer c)))
@@ -1421,6 +1423,8 @@ esac")
 	      (param (ref $bexception))
 	      (param (ref $exit))
 	      (result (ref eq))))
+;* 	(import ,($bigloo) "BGL_DYNAMIC_ENV_DEFAULT_VALUE"             */
+;* 	   (global $BGL_DYNAMIC_ENV_DEFAULT_VALUE (ref $dynamic-env))) */
 	(import ,($bigloo) "BGL_STORE_TRACE"
 	   (func $BGL_STORE_TRACE))
 	(import ,($bigloo) "BGL_RESTORE_TRACE_WITH_VALUE"

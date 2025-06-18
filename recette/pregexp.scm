@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/pregexp.scm             */
+;*    serrano/prgm/project/bigloo/recette/pregexp.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Tue Jun 17 14:00:42 2025 (serrano)                */
+;*    Last change :  Fri Dec  9 11:08:23 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Portable regular expressions test suit for Scheme                */
 ;*    Dorai Sitaram                                                    */
@@ -110,6 +110,7 @@
     (pregexp-match "p.t" "pet")
     ("pet")
 
+
     (pregexp-match "\\d\\d" "0 dear, 1 have to read catch 22 before 9")
     ("22")
 
@@ -181,7 +182,7 @@
     ("lather; rinse; repeat;" " repeat;")
 
     )
-
+   
    (pregexp-test
 
     (pregexp-match date-re "jan 1, 1970")
@@ -195,72 +196,72 @@
 		     "*\\1*")
     "the *nina*, the _pinta_, and the _santa maria_"
 
-;*     (pregexp-replace* "_(.+?)_"                                     */
-;* 		      "the _nina_, the _pinta_, and the _santa maria_" */
-;* 		      "*\\1*")                                         */
-;*     "the *nina*, the *pinta*, and the *santa maria*"                */
-;*                                                                     */
-;*     (pregexp-replace "(\\S+) (\\S+) (\\S+)"                         */
-;* 		     "eat to live"                                     */
-;* 		     "\\3 \\2 \\1")                                    */
-;*     "live to eat"                                                   */
-;*                                                                     */
-;*     (pregexp-match "[ac-]" "b")                                     */
-;*     #f                                                              */
-;*                                                                     */
-;*     (pregexp-match "[-ac]" "b")                                     */
-;*     #f                                                              */
-;*                                                                     */
-;*     (pregexp-match "([a-z]+) and \\1"                               */
-;* 		   "billions and billions")                            */
-;*     ("billions and billions" "billions")                            */
-;*                                                                     */
-;*     (pregexp-match "([a-z]+) and \\1"                               */
-;* 		   "billions and millions")                            */
-;*     #f                                                              */
-;*                                                                     */
-;*     (pregexp-replace* "(\\S+) \\1"                                  */
-;* 		      "now is the the time for all good men to to come to the aid of of the party" */
-;* 		      "\\1")                                           */
-;*     "now is the time for all good men to come to the aid of the party" */
-;*                                                                     */
-;*     (pregexp-replace* "(\\d+)\\1"                                   */
-;* 		      "123340983242432420980980234"                    */
-;* 		      "{\\1,\\1}")                                     */
-;*     "12{3,3}40983{24,24}3242{098,098}0234"                          */
-;*                                                                     */
-;*     (pregexp-match "^(?:[a-z]*})*([a-z]+)$" "/usr/local/bin/mzscheme") */
-;*     ("/usr/local/bin/mzscheme" "mzscheme")                          */
-;*                                                                     */
-;*     (pregexp-match "(?i:hearth)" "HeartH")                          */
-;*     ("HeartH")                                                      */
-;*                                                                     */
-;*     (pregexp-match "(?x: a   lot)" "alot")                          */
-;*     ("alot")                                                        */
-;*                                                                     */
-;*     (pregexp-match "(?x: a  \\  lot)" "a lot")                      */
-;*     ("a lot")                                                       */
-;*                                                                     */
-;*     (pregexp-match "(?x:                                            */
-;*     a \\ man  \\; \\   # ignore                                     */
-;*     a \\ plan \\; \\   # me                                         */
-;*     a \\ canal         # completely                                 */
-;*     )"                                                              */
-;*                    "a man; a plan; a canal")                        */
-;*     ("a man; a plan; a canal")                                      */
-;*                                                                     */
-;*     (pregexp-match "(?ix:                                           */
-;*     a \\ man  \\; \\   # ignore                                     */
-;*     a \\ plan \\; \\   # me                                         */
-;*     a \\ canal         # completely                                 */
-;*     )"                                                              */
-;* 		   "A Man; a Plan; a Canal")                           */
-;*     ("A Man; a Plan; a Canal")                                      */
-;*                                                                     */
-;*     (pregexp-match "(?i:the (?-i:TeX)book)"                         */
-;* 		   "The TeXbook")                                      */
-;*     ("The TeXbook")                                                 */
-;*                                                                     */
+    (pregexp-replace* "_(.+?)_"
+		      "the _nina_, the _pinta_, and the _santa maria_"
+		      "*\\1*")
+    "the *nina*, the *pinta*, and the *santa maria*"
+
+    (pregexp-replace "(\\S+) (\\S+) (\\S+)"
+		     "eat to live"
+		     "\\3 \\2 \\1")
+    "live to eat"
+
+    (pregexp-match "[ac-]" "b")
+    #f
+
+    (pregexp-match "[-ac]" "b")
+    #f
+
+    (pregexp-match "([a-z]+) and \\1"
+		   "billions and billions")
+    ("billions and billions" "billions")
+
+    (pregexp-match "([a-z]+) and \\1"
+		   "billions and millions")
+    #f
+
+    (pregexp-replace* "(\\S+) \\1"
+		      "now is the the time for all good men to to come to the aid of of the party"
+		      "\\1")
+    "now is the time for all good men to come to the aid of the party"
+
+    (pregexp-replace* "(\\d+)\\1"
+		      "123340983242432420980980234"
+		      "{\\1,\\1}")
+    "12{3,3}40983{24,24}3242{098,098}0234"
+
+    (pregexp-match "^(?:[a-z]*/)*([a-z]+)$" "/usr/local/bin/mzscheme")
+    ("/usr/local/bin/mzscheme" "mzscheme")
+
+    (pregexp-match "(?i:hearth)" "HeartH")
+    ("HeartH")
+
+    (pregexp-match "(?x: a   lot)" "alot")
+    ("alot")
+
+    (pregexp-match "(?x: a  \\  lot)" "a lot")
+    ("a lot")
+
+    (pregexp-match "(?x:
+    a \\ man  \\; \\   # ignore
+    a \\ plan \\; \\   # me
+    a \\ canal         # completely
+    )"
+                   "a man; a plan; a canal")
+    ("a man; a plan; a canal")
+
+    (pregexp-match "(?ix:
+    a \\ man  \\; \\   # ignore
+    a \\ plan \\; \\   # me
+    a \\ canal         # completely
+    )"
+		   "A Man; a Plan; a Canal")
+    ("A Man; a Plan; a Canal")
+
+    (pregexp-match "(?i:the (?-i:TeX)book)"
+		   "The TeXbook")
+    ("The TeXbook")
+
     (pregexp-match "f(ee|i|o|um)" "a small, final fee")
     ("fi" "i")
 
@@ -304,7 +305,6 @@
     ((38 . 43))
 
     )
-   
    (pregexp-test
 
     (pregexp-match ip-re1
@@ -364,14 +364,14 @@
     (pregexp-match "(?x: s  e  * k )" "seeeeek")
     ("seeeeek")
 
-;*     (pregexp-match "(?x: t  #matches t                              */
-;*     h          #   matches h                                        */
-;*     e           ###   matches e                                     */
-;*     \\              # # # matches space                             */
-;*     \\;          #  matches ;                                       */
-;*     )"                                                              */
-;* 		   "the ;")                                            */
-;*     ("the ;")                                                       */
+    (pregexp-match "(?x: t  #matches t
+    h          #   matches h
+    e           ###   matches e
+    \\              # # # matches space
+    \\;          #  matches ;
+    )"
+		   "the ;")
+    ("the ;")
 
     (pregexp-split ":" "/bin:/usr/bin:/usr/bin/X11:/usr/local/bin")
     ("/bin" "/usr/bin" "/usr/bin/X11" "/usr/local/bin")

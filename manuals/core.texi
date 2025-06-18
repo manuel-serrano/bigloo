@@ -33,11 +33,12 @@ that compose the body of a module (see @ref{Modules}).
 @section Syntax
 @cindex Syntax
 
-The syntax of Bigloo is that of Scheme (a parenthesis based one) with two
-exceptions: type information and multi-line comments. Type information is 
-supplied when identifiers are introduced (via @code{lambda}, @code{let}, 
-@code{define}, ...) and those identifiers holding type information are 
-referred to as typed identifiers.
+The syntax of Bigloo is that of Scheme (a parenthesis based one) with
+three exceptions: type information, multi-line comments, and extended
+strings escape characters. Type information is supplied when identifiers
+are introduced (via @code{lambda}, @code{let}, @code{define}, ...) and
+those identifiers holding type information are referred to as typed
+identifiers.
 
 @cindex Typed identifier
 They are defined by the following grammar:
@@ -65,6 +66,30 @@ are defined as:
        	       | #| <comment-text> (<comment> <comment-text>)* |#
 <comment-text> @expansion{} <character sequence not containing #| or |#>
 @end smallexample
+
+@cindex Strings literal
+A Bigloo string literal is defined by:
+
+@smallexample
+<string>       @expansion{} <bgl-string> | <r5rs-string>
+<r5rs-string>  a normal R5RS string or a Bigloo string
+<bgl-string>   #"<character>*"
+<character>    @expansion{} any character but the character \
+               | \\ | \n | \t | \b | \r | \f | \v | \"
+               | \x<hex><hex>
+               | \ux<hex><hex><hex><hex>
+               | \u\@{<hex>@}
+               | \u@{<hex><hex>@}
+               | \u@{<hex><hex><hex>@}
+               | \u@{<hex><hex><hex><hex>@}
+<hex>          @expansion{} an hexa-decimal digit             
+@end smallexample
+
+@deffn {bigloo function} bigloo-strict-r5rs-string
+@deffnx {bigloo function} bigloo-strict-r5rs-string-set! bool
+If @code{#t} r5rs-string literals are restricted to the official R5Rs
+character set. Otherwise, they are interpreted as Bigloo string.
+@end deffn
 
 @c ------------------------------------------------------------------- @c
 @c    Comments                                                         @c
