@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Jun 17 15:38:41 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 11:45:23 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -185,7 +185,6 @@
 		     ,@(body-sans-locals body))
 		  (catch $BEXCEPTION
 		     (local.set ,$exn)
-		     (call $js_trace (i32.const 99998))
 		     (return_call $BGL_RESTORE_TRACE_WITH_VALUE
 			(call $bgl_exception_handler
 			   (local.get ,$exn)

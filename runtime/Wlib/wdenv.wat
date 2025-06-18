@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Tue Jun 17 14:15:59 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 11:44:15 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -275,8 +275,8 @@
    (func $BGL_ENV_SET_TOP_OF_FRAME
       (param $env (ref $dynamic-env))
       (param $tof (ref $bgl_dframe))
-      (call $js_trace (i32.const 11110))
-      (call $js_trace (call $bgl_dframe_length (local.get $tof)))
+;*       (call $js_trace (i32.const 11110))                            */
+;*       (call $js_trace (call $bgl_dframe_length (local.get $tof)))   */
       (struct.set $dynamic-env $top-of-frame
 	 (local.get $env) (local.get $tof)))
    
@@ -299,7 +299,7 @@
       (result (ref eq))
       (local $tmp (ref $bgl_dframe))
 
-      (call $js_trace (i32.const 11111))
+;*       (call $js_trace (i32.const 11111))                            */
       (local.set $tmp
 	 (struct.new $bgl_dframe
 	    (local.get $name)
@@ -314,11 +314,11 @@
       (param $env (ref $dynamic-env))
       (result (ref eq))
 
-      (call $js_trace (i32.const 11112))
-      (call $js_trace
-	 (call $bgl_dframe_length
-	    (struct.get $bgl_dframe $link
-	       (struct.get $dynamic-env $top-of-frame (local.get $env)))))
+;*       (call $js_trace (i32.const 11112))                            */
+;*       (call $js_trace                                               */
+;* 	 (call $bgl_dframe_length                                      */
+;* 	    (struct.get $bgl_dframe $link                              */
+;* 	       (struct.get $dynamic-env $top-of-frame (local.get $env))))) */
 			 
       (call $BGL_ENV_SET_TOP_OF_FRAME
 	 (local.get $env)
