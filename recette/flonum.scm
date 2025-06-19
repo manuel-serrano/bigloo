@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/flonum.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/flonum.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 11:59:37 1992                          */
-;*    Last change :  Wed Oct  7 12:28:07 2015 (serrano)                */
+;*    Last change :  Thu Jun 19 11:11:58 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test un peu les flotants (il le faut bien).                   */
 ;*---------------------------------------------------------------------*/
@@ -66,12 +66,12 @@
    (test "flonum.13" (let ((p (open-input-string "-1e-2")))
 			(read p))
       -1e-2)
-   (test "flonum.14" (check-inexact? (-fl (fixnum->flonum $minvalfx) 1.0)) #t)
-   (test "flonum.15" (check-inexact? (fixnum->flonum $minvalfx)) #t)
-   (when (=fx (-fx (flonum->fixnum (+fl (fixnum->flonum $minvalfx) 1.0)) 1)
-	    $minvalfx)
-      (test "flonum.16" (check-inexact? (+fl (fixnum->flonum $maxvalfx) 1.0)) #t)
-      (test "flonum.17" (check-inexact? (fixnum->flonum $maxvalfx)) #t))
+   (test "flonum.14" (check-inexact? (-fl (fixnum->flonum (minvalfx)) 1.0)) #t)
+   (test "flonum.15" (check-inexact? (fixnum->flonum (minvalfx))) #t)
+   (when (=fx (-fx (flonum->fixnum (+fl (fixnum->flonum (minvalfx)) 1.0)) 1)
+	    (minvalfx))
+      (test "flonum.16" (check-inexact? (+fl (fixnum->flonum (maxvalfx)) 1.0)) #t)
+      (test "flonum.17" (check-inexact? (fixnum->flonum (maxvalfx))) #t))
    (test "flonum.18" (check-inexact? 5.0) #t)
    (test "flonum.18" (check-inexact? -5.0) #t)
    (test ">=fl" (if (>=fl 0.0 3.0) 1 2) 2)

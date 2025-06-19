@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Jun 18 13:39:00 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 18:13:47 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -91,8 +91,17 @@
       (typed-closures #f)
       (varargs #f)
       (mangling #f)
-      (local-exit #f)
-      (dump-heap dump-heap)))
+      (local-exit #f)))
+
+;*---------------------------------------------------------------------*/
+;*    backend-initialize! ::wasm ...                                   */
+;*---------------------------------------------------------------------*/
+(define-method (backend-initialize! o::wasm)
+   (unregister-srfi! 'bint61)
+   (unregister-srfi! 'bint64)
+   (if (=fx *wasm-fixnum* 64)
+       (register-srfi! 'bint64)
+       (register-srfi! 'bint31)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */
@@ -504,6 +513,8 @@ esac")
 			(collect-module modules 'import))
 		   (comment "memory")
 		   ,@(collect-module modules 'memory)
+		   (comment "elements")
+		   ,@(collect-module modules 'elem)
 		   (comment "types")
 		   ,@(split-type-classes
 			(remove-duplicate-types! (collect-types modules)))
@@ -631,6 +642,7 @@ esac")
 		   (comment "imports" ,@(emit-imports))
 		   (comment "memory" ,@(emit-memory))
 		   (comment "types and tags" ,@(emit-types-and-tags))
+		   (comment "Elements" ,@(emit-elements))
 		   (comment "Class types" ,@(emit-class-types classes))
 		   (comment "Extra types" ,@(reverse *extra-types*))
 		   (comment "Globals" ,@(emit-prototypes))
@@ -748,9 +760,10 @@ esac")
 		      (loop (+fx i 1)))
 		     (else
 		      (let ((n (char->integer c)))
-			 (display "\\")
+			 (display "\\u{")
 			 (display (string-ref hex (bit-rsh n 4)))
 			 (display (string-ref hex (bit-and n #xf)))
+			 (display "}")
 			 (loop (+fx i 1))))))))))
 
    (define (dump-string s)
@@ -797,6 +810,24 @@ esac")
       (write (car l))
       (map (lambda (a) (display " ") (pp-arg a)) (cdr l))
       (display ")"))
+
+   (define (pp-i32const l)
+      (let ((n (cadr l)))
+	 (display "(")
+	 (write (car l))
+	 (display " ")
+	 (cond
+	    ((fixnum? n)
+	     (display (fixnum->int32 n)))
+	    ((llong? n)
+	     (display (llong->int32 n)))
+	    ((symbol? n)
+	     ;; we get one, when a read wat file contains an hexa number
+	     (display n))
+	    (else
+	     (error "pp-i32const" (format "Illegal i32 type (~a)" (typeof n)) n)))
+	 (map (lambda (a) (display " ") (pp-arg a)) (cddr l))
+	 (display ")")))
    
    (define (pp-comment l depth)
       (match-case l
@@ -836,7 +867,7 @@ esac")
 	     ((local) (pp-oneline l))
 	     ((field) (pp-oneline l))
 	     ((mut) (pp-oneline l))
-	     ((i32.const) (pp-oneline l))
+	     ((i32.const) (pp-i32const l))
 	     ((i64.const) (pp-oneline l))
 	     ((f32.const) (pp-oneline l))
 	     ((f64.const) (pp-oneline l))
@@ -1078,6 +1109,24 @@ esac")
 		     (set! globals (cons prototype globals)))))))
       
       (append globals (emit-wasm-eval-accessors))))
+
+;*---------------------------------------------------------------------*/
+;*    emit-elements ...                                                */
+;*---------------------------------------------------------------------*/
+(define (emit-elements)
+   (let ((ids '()))
+      (for-each-global!
+	 (lambda (g)
+	    (when (and (eq? (global-module g) *module*)
+		       (sfun? (global-value g)))
+	       (with-access::sfun (global-value g) (the-closure-global)
+		  (when (variable? the-closure-global)
+		     (set! ids
+			(cons (wasm-sym (variable-name the-closure-global))
+			   ids)))))))
+      (if (pair? ids)
+	  `((elem declare func ,@ids))
+	  '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototype ...                                               */
@@ -1794,18 +1843,3 @@ esac")
 		 (if nullable
 		     `(ref null ,(wasm-sym (symbol->string id)))
 		     `(ref ,(wasm-sym (symbol->string id)))))))))))
-
-
-;*---------------------------------------------------------------------*/
-;*    dump-heap ...                                                    */
-;*---------------------------------------------------------------------*/
-(define (dump-heap heap includes Genv Tenv)
-   (print "const __bigloo = {")
-   (hashtable-for-each Genv
-      (lambda (k bucket)
-	 (for-each (lambda (global)
-		      (set-variable-name! global)
-		      (let ((qname (global-name global)))
-			 (print "   " qname ": instance.exports." qname " // " (global-module global))))
-	    (cdr bucket))))
-   (print "}"))

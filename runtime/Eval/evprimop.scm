@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evprimop.scm     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evprimop.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Mon Jun 24 09:21:12 2024 (serrano)                */
+;*    Last change :  Thu Jun 19 09:37:24 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -97,6 +97,8 @@
 	    (eval-srfi? __expander_srfi0)
 	    (compile-srfi? __expander_srfi0)
 	    (expand-cond-expand __expander_srfi0)
+	    (srfi-eval-list __expander_srfi0)
+	    (srfi-compile-list __expander_srfi0)
 	    (args-parse-usage __expander_args)
 	    __evobject
  	    (eval-find-module __evmodule)

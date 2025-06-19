@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Wed Dec 25 10:37:47 2024 (serrano)                */
+;*    Last change :  Thu Jun 19 11:04:40 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -359,8 +359,12 @@
    (test "eabs.1" (= (abs #e0) #e0) #t)
    (test "eabs.2" (= (abs #e1) #e1) #t)
    (test "eabs.3" (= (abs #e-1) #e1) #t)
-   (test "eabs.4" (= (abs (- #e2147483648)) #e2147483648) #t)
-   (test "eabs.5" (= (abs (- #e9223372036854775808)) #e9223372036854775808) #t)
+   (cond-expand
+      (bint31
+       (test "eabs.4" (= (abs (- #e1073741823)) #e1073741823) #t))
+      (else
+       (test "eabs.4" (= (abs (- #e2147483648)) #e2147483648) #t)
+       (test "eabs.5" (= (abs (- #e9223372036854775808)) #e9223372036854775808) #t)))
    (test "labs.1" (= (abs #l0) #l0) #t)
    (test "labs.2" (= (abs #l1) #l1) #t)
    (test "labs.3" (= (abs #l-1) #l1) #t)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Jun 18 11:45:23 2025 (serrano)                */
+;*    Last change :  Wed Jun 18 18:10:28 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -125,16 +125,12 @@
 				" in " (symbol->string (global-module v)))
 		      ,(with-loc loc
 			  `(func ,(wasm-sym name)
-			      
-			      ,@(if (eq? import 'export)
-				    `((export ,name))
-				    '())
-			      
+			      ,@(if (eq? import 'export) `((export ,name)) '())
 			      ,@(gen-params params)
 			      ,@(gen-result type)
 			      ,@(gen-locals locals)
-			      
-			      ,@body)))))))))
+			      ,@body
+			      (unreachable))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-body ...                                                     */

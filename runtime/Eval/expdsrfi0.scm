@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdsrfi0.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/expdsrfi0.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue May  9 09:00:48 2023 (serrano)                */
-;*    Copyright   :  2001-23 Manuel Serrano                            */
+;*    Last change :  Thu Jun 19 09:35:31 2025 (serrano)                */
+;*    Copyright   :  2001-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -66,7 +66,9 @@
 	    (eval-srfi?::bool ::symbol)
 	    (compile-srfi?::bool ::symbol)
 	    (register-srfi! ::symbol)
-	    (unregister-srfi! ::symbol)))
+	    (unregister-srfi! ::symbol)
+	    (srfi-eval-list::pair-nil)
+	    (srfi-compile-list::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-major-version ...                                         */
