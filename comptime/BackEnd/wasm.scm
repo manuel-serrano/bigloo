@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Jun 18 18:13:47 2025 (serrano)                */
+;*    Last change :  Fri Jun 20 10:50:20 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1117,13 +1117,16 @@ esac")
    (let ((ids '()))
       (for-each-global!
 	 (lambda (g)
-	    (when (and (eq? (global-module g) *module*)
-		       (sfun? (global-value g)))
-	       (with-access::sfun (global-value g) (the-closure-global)
-		  (when (variable? the-closure-global)
-		     (set! ids
-			(cons (wasm-sym (variable-name the-closure-global))
-			   ids)))))))
+	    (if (and (require-prototype? g)
+		     (eq? (global-module g) *module*)
+		     (scnst? (global-value g)))
+		(let ((value (global-value g)))
+		   (with-access::scnst value (class node)
+		      (when (memq class '(sfun sgfun selfun slfun))
+			 (let* ((actuals (app-args node))
+				(entry (car actuals))
+				(name (set-variable-name! (var-variable entry))))
+			    (set! ids (cons (wasm-sym name) ids)))))))))
       (if (pair? ids)
 	  `((elem declare func ,@ids))
 	  '())))
