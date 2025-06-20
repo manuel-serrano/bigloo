@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Thu Jun 12 09:20:16 2025 (serrano)                */
+;*    Last change :  Thu Jun 19 11:18:05 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -38,6 +38,14 @@
    (global $bint-default-value
       (export "BGL_BINT_DEFAULT_VALUE") (ref $bint)
       (struct.new $bint (i64.const 0)))
+
+   (global $BGL_LONG_MIN
+      (export "BGL_LONG_MIN") i64
+      (i64.const -9223372036854775808))
+   
+   (global $BGL_LONG_MAX
+      (export "BGL_LONG_MAX") i64
+      (i64.const 9223372036854775807))
 
    ;; -----------------------------------------------------------------
    ;; Fixnum macros 

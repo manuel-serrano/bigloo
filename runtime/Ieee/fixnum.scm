@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Tue Jun 17 11:12:21 2025 (serrano)                */
+;*    Last change :  Thu Jun 19 11:18:43 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -258,8 +258,6 @@
 	   ($uint32? "(ref.test (ref $buint32) ~0)")
 	   ($int64? "(ref.test (ref $bint64) ~0)")
 	   ($uint64? "(ref.test (ref $buint64) ~0)")
-	   ($minvalfx "(i64.const -9223372036854775808)")
-	   ($maxvalfx "(i64.const 9223372036854775807)")
 	   ($minvalelong "(i64.const -9223372036854775808)")
 	   ($maxvalelong "(i64.const 9223372036854775807)")
 	   ($minvalllong "(i64.const -9223372036854775808)")

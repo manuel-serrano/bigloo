@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Thu Jan  2 10:49:26 2025 (serrano)                */
+;*    Last change :  Fri Jun 20 08:33:54 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -230,9 +230,12 @@
 	 #t)
    (test "cfa" (test6) 345)
    (test "nested" (test7) #t)
-   (test "unwind.1" (eval '(unwind-protect 10 10)) 10)
-   (test "unwind.2" (eval '(bind-exit (exit) (unwind-protect (exit 10) 9))) 10)
-   (test "unwind.3" (eval '(bind-exit (exit) (unwind-protect 10 9))) 10)
+   (test "unwind.1" (unwind-protect 10 10) 10)
+   (test "unwind.2" (bind-exit (exit) (unwind-protect (exit 10) 9)) 10)
+   (test "unwind.3" (bind-exit (exit) (unwind-protect 10 9)) 10)
+   (test "unwind-eval.1" (eval '(unwind-protect 10 10)) 10)
+   (test "unwind-eval.2" (eval '(bind-exit (exit) (unwind-protect (exit 10) 9))) 10)
+   (test "unwind-eval.3" (eval '(bind-exit (exit) (unwind-protect 10 9))) 10)
    (test "trace stack.1" (test-stack-traces) #t)
    (test "trace stack.2" (test-trace-stack) #t)
    (test "trace stack.3" (test-trace-stack2) #t)
