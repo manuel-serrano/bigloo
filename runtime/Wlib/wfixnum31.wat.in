@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Thu Jun 19 11:17:10 2025 (serrano)                */
+;*    Last change :  Fri Jun 20 14:25:13 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unboxed 31bit fixnum implementation                         */
@@ -28,10 +28,10 @@
 
    (global $BGL_LONG_MIN
       (export "BGL_LONG_MIN") i64
-      (i64.const -2147483648))
+      (i64.const -1073741824))
    (global $BGL_LONG_MAX
       (export "BGL_LONG_MAX") i64
-      (i64.const 2147483647))
+      (i64.const 1073741823))
 
    ;; -----------------------------------------------------------------
    ;; Fixnum macros 

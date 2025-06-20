@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Jun 20 10:50:20 2025 (serrano)                */
+;*    Last change :  Fri Jun 20 11:44:37 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1124,9 +1124,10 @@ esac")
 		   (with-access::scnst value (class node)
 		      (when (memq class '(sfun sgfun selfun slfun))
 			 (let* ((actuals (app-args node))
-				(entry (car actuals))
-				(name (set-variable-name! (var-variable entry))))
-			    (set! ids (cons (wasm-sym name) ids)))))))))
+				(entry (car actuals)))
+			    (when (variable? entry)
+			       (let ((name (set-variable-name! (var-variable entry))))
+				  (set! ids (cons (wasm-sym name) ids)))))))))))
       (if (pair? ids)
 	  `((elem declare func ,@ids))
 	  '())))

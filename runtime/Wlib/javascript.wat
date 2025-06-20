@@ -91,7 +91,7 @@
 	 (if (i32.lt_u (local.get $i) (i32.wrap_i64 (local.get $end)))
 	     (then
 		(i32.store8 (local.get $addr)
-		   (array.get $bstring (local.get $text) (local.get $i)))
+		   (array.get_u $bstring (local.get $text) (local.get $i)))
 		(local.set $i (i32.add (local.get $i) (i32.const 1)))
 		(local.set $addr (i32.add (local.get $addr) (i32.const 1)))
 		(br $loop)))))
@@ -120,9 +120,9 @@
 	 (if (i32.lt_u (local.get $i) (local.get $len))
 	     (then
 		(i32.store8 (local.get $addr) 
-		   (i32.and (array.get $ucs2string (local.get $text) (local.get $i)) (i32.const 255)))
+		   (i32.and (array.get_u $ucs2string (local.get $text) (local.get $i)) (i32.const 255)))
 		(i32.store8 (i32.add (local.get $addr) (i32.const 1))
-		   (i32.shr_u (array.get $ucs2string (local.get $text) (local.get $i)) (i32.const 8)))
+		   (i32.shr_u (array.get_u $ucs2string (local.get $text) (local.get $i)) (i32.const 8)))
 		(local.set $addr (i32.add (local.get $addr) (i32.const 2)))
 		(local.set $i (i32.add (local.get $i) (i32.const 1)))
 		(br $loop)))))

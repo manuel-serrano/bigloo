@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Tue Jun 17 13:14:16 2025 (serrano)                */
+;*    Last change :  Fri Jun 20 11:48:50 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -36,7 +36,7 @@
    (import "__js_bignum" "seed_rand" (func $seed_rand (param i32)))
    (import "__js_bignum" "rand_bignum" (func $rand_bignum (param externref) (result externref)))
    (import "__js_bignum" "rand_fixnum" (func $rand_fixnum (result i32)))
-   (import "__js_bignum" "long_to_bignum" (func $js_long_to_bignum (param f64) (result externref)))
+   (import "__js_bignum" "double_to_bignum" (func $js_double_to_bignum (param f64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
    (import "__js_bignum" "bignum_neg" (func $bignum_neg (param externref) (result externref)))
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))
@@ -86,7 +86,13 @@
    (func $bgl_long_to_bignum (export "bgl_long_to_bignum")
       (param $n i64)
       (result (ref $bignum))
-      (return (struct.new $bignum (call $js_long_to_bignum (f64.convert_i64_s (local.get $n))))))
+      (return (struct.new $bignum (call $js_double_to_bignum (f64.convert_i64_s (local.get $n))))))
+
+   ;; bgl_flonum_to_bignum
+   (func $bgl_flonum_to_bignum (export "bgl_flonum_to_bignum")
+      (param $n f64)
+      (result (ref $bignum))
+      (return (struct.new $bignum (call $js_double_to_bignum (local.get $n)))))
 
    ;; bgl_jsstring_to_bignum
    (func $bgl_jsstring_to_bignum (export "bgl_jsstring_to_bignum")

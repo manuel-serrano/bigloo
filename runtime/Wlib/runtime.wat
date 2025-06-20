@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Jun 18 10:44:00 2025 (serrano)                */
+;*    Last change :  Fri Jun 20 11:32:25 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -99,7 +99,7 @@
 	(if (i32.lt_u (local.get $i) (local.get $len))
 	    (then
 	       (i32.store8 (i32.add (local.get $dest) (local.get $i))
-		  (array.get $bstring (local.get $src) (local.get $i)))
+		  (array.get_u $bstring (local.get $src) (local.get $i)))
 	       (local.set $i (i32.add (local.get $i) (i32.const 1)))
 	       (br $loop)))))
   
@@ -282,7 +282,8 @@
                 (i64.shl
                   (local.get $r)
                   (i64.const 5))
-                (i64.extend_i32_u (array.get $bstring (local.get $str) (local.get $i))))))
+                (i64.extend_i32_u
+		   (array.get_u $bstring (local.get $str) (local.get $i))))))
           (local.set $i (i32.add (local.get $i) (i32.const 1)))
           (br $for-loop))))
     (i64.and

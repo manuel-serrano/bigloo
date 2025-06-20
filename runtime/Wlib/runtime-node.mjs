@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jun 18 13:02:57 2025 (serrano)                */
+/*    Last change :  Fri Jun 20 11:52:08 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -275,7 +275,7 @@ function __js_bignum() {
       bxnegativep: (bx) => bx < 0n,
       bignum_odd: (bx) => bx % 2n !== 0n,
       bignum_even: (bx) => bx % 2n === 0n,
-      long_to_bignum: (value) => BigInt(value),
+      double_to_bignum: (value) => BigInt(value),
       safe_bignum_to_fixnum: (bx, bsz) => {
 	 if (bsz > 53) bsz = 52; // max support JS fixnums
 	 const u = BigInt.asIntN(bsz, bx);

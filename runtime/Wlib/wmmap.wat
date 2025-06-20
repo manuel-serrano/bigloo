@@ -132,7 +132,7 @@
       (if (ref.test (ref $mmap-string) (local.get $o))
 	  (then
 	     (return
-		(array.get $bstring
+		(array.get_u $bstring
 		   (struct.get $mmap-string $bytes
 		      (ref.cast (ref $mmap-string) (local.get $o)))
 		   (i32.wrap_i64 (local.get $i)))))

@@ -1463,7 +1463,7 @@
 		       (if (i32.gt_s (local.get $sz) (i32.const 0))
 			   (then
 			      (local.set $c
-				 (array.get $bstring (local.get $str)
+				 (array.get_u $bstring (local.get $str)
 				    (local.get $start)))
 			      (local.set $start
 				 (i32.add (local.get $start) (i32.const 1)))

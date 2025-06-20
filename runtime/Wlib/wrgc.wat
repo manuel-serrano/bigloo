@@ -91,7 +91,7 @@
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
       
-      (array.get $bstring 
+      (array.get_u $bstring 
 	 (struct.get $rgc $buf (local.get $rgc)) 
 	 (i32.wrap_i64 (local.get $index))))
    
@@ -175,7 +175,7 @@
       (result i32)
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
-      (array.get $bstring 
+      (array.get_u $bstring 
 	 (struct.get $rgc $buf (local.get $rgc))
 	 (struct.get $rgc $matchstart (local.get $rgc))))
    
@@ -184,7 +184,7 @@
       (result i32)
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
-      (array.get $bstring 
+      (array.get_u $bstring 
 	 (struct.get $rgc $buf (local.get $rgc))
 	 (struct.get $rgc $matchstart (local.get $rgc))))
    
@@ -194,7 +194,7 @@
       (result i32)
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
-      (array.get $bstring 
+      (array.get_u $bstring 
 	 (struct.get $rgc $buf (local.get $rgc))
 	 (i32.add
 	    (struct.get $rgc $matchstart (local.get $rgc))
@@ -251,7 +251,7 @@
 	     (i32.const 0))
 	  (then
 	     (i32.eq
-		(array.get $bstring
+		(array.get_u $bstring
 		   (struct.get $rgc $buf (local.get $rgc))
 		   (i32.sub
 		      (struct.get $rgc $matchstart (local.get $rgc))
@@ -287,7 +287,7 @@
 	   (struct.set $rgc $forward (local.get $rgc) (i32.wrap_i64 (local.get $forward)))
 	   (struct.set $rgc $bufpos (local.get $rgc) (i32.wrap_i64 (local.get $bufpos)))
 	   (i32.eq
-	      (array.get $bstring 
+	      (array.get_u $bstring 
 		 (struct.get $rgc $buf (local.get $rgc)) 
 		 (i32.wrap_i64 (local.get $forward)))
 	      (i32.const 0x0A #;(ASCII NEWLINE '\n'))))))
@@ -371,7 +371,7 @@
       (local.set $buffer (struct.get $rgc $buf (local.get $rgc)))
       
       (struct.set $rgc $lastchar (local.get $rgc)
-	 (array.get $bstring (local.get $buffer)
+	 (array.get_u $bstring (local.get $buffer)
 	    (i32.sub (local.get $matchstart) (i32.const 1))))
 
       (array.copy $bstring $bstring
@@ -626,12 +626,12 @@
       (local.set $sign (i64.const 1))
       
       ;; the sign
-      (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+      (if (i32.eq (array.get_u $bstring (local.get $buf) (local.get $start))
 	     (i32.const 43)) ;; #\+
 	  (then
 	     (local.set $start (i32.add (local.get $start) (i32.const 1))))
 	  (else
-	   (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+	   (if (i32.eq (array.get_u $bstring (local.get $buf) (local.get $start))
 		  (i32.const 45)) ;; #\-
 	       (then
 		  (local.set $sign (i64.const -1))
@@ -641,7 +641,7 @@
 	 (if (i32.lt_s (local.get $start) (local.get $stop))
 	     (then
 		(local.set $current
-		   (i32.sub (array.get $bstring (local.get $buf) (local.get $start))
+		   (i32.sub (array.get_u $bstring (local.get $buf) (local.get $start))
 		      (i32.const 48))) ;; #\0
 		(local.set $res
 		   (i64.add (i64.mul (local.get $res) (i64.const 10))
@@ -677,12 +677,12 @@
       (local.set $sign (i64.const 1))
 
       ;; the sign
-      (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+      (if (i32.eq (array.get_u $bstring (local.get $buf) (local.get $start))
 	     (i32.const 43)) ;; #\+
 	  (then
 	     (local.set $start (i32.add (local.get $start) (i32.const 1))))
 	  (else
-	   (if (i32.eq (array.get $bstring (local.get $buf) (local.get $start))
+	   (if (i32.eq (array.get_u $bstring (local.get $buf) (local.get $start))
 		  (i32.const 45)) ;; #\-
 	       (then
 		  (local.set $sign (i64.const -1))
@@ -693,7 +693,7 @@
 	 (if (i32.lt_s (local.get $start) (local.get $stop))
 	     (then 
 		(if (i32.eq
-		       (array.get $bstring (local.get $buf) (local.get $start))
+		       (array.get_u $bstring (local.get $buf) (local.get $start))
 		       (i32.const 48)) ;; #\0
 		    (then
 		       (local.set $start
@@ -705,7 +705,7 @@
 	 (if (i32.lt_s (local.get $start) (local.get $stop))
 	     (then
 		(local.set $current
-		   (i32.sub (array.get $bstring (local.get $buf) (local.get $start))
+		   (i32.sub (array.get_u $bstring (local.get $buf) (local.get $start))
 		      (i32.const 48))) ;; #\0
 		(if (i64.gt_s (local.get $res)
 		       (i64.sub (i64.div_s (global.get $MAXVALELONG)
@@ -752,7 +752,7 @@
 	     (then
 		(local.set $current
 		   (i32.sub
-		      (array.get $bstring (local.get $buf) (local.get $start))
+		      (array.get_u $bstring (local.get $buf) (local.get $start))
 		      (i32.const 48))) ;; #\0
 		(if (i64.gt_s (local.get $lres)
 		       (i64.sub

@@ -286,13 +286,13 @@
       (if (i32.eqz (i32.eq (local.get $nbread) (i32.const 4)))
 	  (then (return (global.get $BEOF))))
       
-      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 128)) (array.get $bstring (local.get $magic) (i32.const 0))))
+      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 128)) (array.get_u $bstring (local.get $magic) (i32.const 0))))
 	  (then (local.set $err (i32.const 1))))
-      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 129)) (array.get $bstring (local.get $magic) (i32.const 1))))
+      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 129)) (array.get_u $bstring (local.get $magic) (i32.const 1))))
 	  (then (local.set $err (i32.const 1))))
-      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 130)) (array.get $bstring (local.get $magic) (i32.const 2))))
+      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 130)) (array.get_u $bstring (local.get $magic) (i32.const 2))))
 	  (then (local.set $err (i32.const 1))))
-      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 131)) (array.get $bstring (local.get $magic) (i32.const 3))))
+      (if (i32.eqz (i32.eq (i32.load8_u (i32.const 131)) (array.get_u $bstring (local.get $magic) (i32.const 3))))
 	  (then (local.set $err (i32.const 1))))
 
       (if (i32.gt_s (local.get $err) (i32.const 0))

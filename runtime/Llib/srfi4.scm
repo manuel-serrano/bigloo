@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Thu Dec 26 06:28:25 2024 (serrano)                */
-;*    Copyright   :  2006-24 Manuel Serrano                            */
+;*    Last change :  Fri Jun 20 11:40:15 2025 (serrano)                */
+;*    Copyright   :  2006-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
 ;*=====================================================================*/
@@ -271,24 +271,24 @@
 	   ($alloc-f64vector "(array.new_default $f64vector (i32.wrap_i64 ~0))")
 
 	   ;;($s8vector-ref "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
-	   ($s8vector-ref "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
+	   ($s8vector-ref "(array.get_s $s8vector ~0 (i32.wrap_i64 ~1))")
 	   ($s8vector-set! "(array.set $s8vector ~0 (i32.wrap_i64 ~1) ~2)")
-	   ($s8vector-ref-ur "(array.get $s8vector ~0 (i32.wrap_i64 ~1))")
+	   ($s8vector-ref-ur "(array.get_s $s8vector ~0 (i32.wrap_i64 ~1))")
 	   ($s8vector-set-ur! "(array.set $s8vector ~0 (i32.wrap_i64 ~1) ~2)")
 
-	   ($u8vector-ref "(array.get $u8vector ~0 (i32.wrap_i64 ~1))")
+	   ($u8vector-ref "(array.get_u $u8vector ~0 (i32.wrap_i64 ~1))")
 	   ($u8vector-set! "(array.set $u8vector ~0 (i32.wrap_i64 ~1) ~2)")
-	   ($u8vector-ref-ur "(array.get $u8vector ~0 (i32.wrap_i64 ~1))")
+	   ($u8vector-ref-ur "(array.get_u $u8vector ~0 (i32.wrap_i64 ~1))")
 	   ($u8vector-set-ur! "(array.set $u8vector ~0 (i32.wrap_i64 ~1) ~2)")
 
-	   ($s16vector-ref "(array.get $s16vector ~0 (i32.wrap_i64 ~1))")
+	   ($s16vector-ref "(array.get_s $s16vector ~0 (i32.wrap_i64 ~1))")
 	   ($s16vector-set! "(array.set $s16vector ~0 (i32.wrap_i64 ~1) ~2)")
-	   ($s16vector-ref-ur "(array.get $s16vector ~0 (i32.wrap_i64 ~1))")
+	   ($s16vector-ref-ur "(array.get_s $s16vector ~0 (i32.wrap_i64 ~1))")
 	   ($s16vector-set-ur! "(array.set $s16vector ~0 (i32.wrap_i64 ~1) ~2)")
 
-	   ($u16vector-ref "(array.get $u16vector ~0 (i32.wrap_i64 ~1))")
+	   ($u16vector-ref "(array.get_u $u16vector ~0 (i32.wrap_i64 ~1))")
 	   ($u16vector-set! "(array.set $u16vector ~0 (i32.wrap_i64 ~1) ~2)")
-	   ($u16vector-ref-ur "(array.get $u16vector ~0 (i32.wrap_i64 ~1))")
+	   ($u16vector-ref-ur "(array.get_u $u16vector ~0 (i32.wrap_i64 ~1))")
 	   ($u16vector-set-ur! "(array.set $u16vector ~0 (i32.wrap_i64 ~1) ~2)")
 
 	   ($s32vector-ref "(array.get $s32vector ~0 (i32.wrap_i64 ~1))")
