@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Wed Jun 18 11:44:15 2025 (serrano)                */
+;*    Last change :  Sun Jun 22 09:32:07 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -41,6 +41,8 @@
 	    (field $exitd_val (mut (ref eq)))
 	    (field $uncaught-exception-handler (mut (ref eq)))
 	    (field $error-handler (mut (ref eq)))
+	    (field $error-notifiers (mut (ref eq)))
+	    (field $interrupt-notifier (mut (ref eq)))
 	    
 	    (field $current-output-port (mut (ref null $output-port)))
 	    (field $current-error-port (mut (ref null $output-port)))
@@ -98,6 +100,10 @@
 	 (global.get $BUNSPEC)
 	 ;; error-handler
 	 (global.get $BUNSPEC)
+	 ;; error-notifiers
+	 (global.get $BNIL)
+	 ;; interrupt-notifier
+	 (global.get $BNIL)
 	 ;; current-output-port
 	 (ref.null none)
 	 ;; current-error-port
@@ -149,6 +155,10 @@
 	 (struct.new $pair
 	    (global.get $BUNSPEC)
 	    (global.get $BFALSE))
+	 ;; error-notifiers
+	 (global.get $BNIL)
+	 ;; interrupt-notifier
+	 (global.get $BNIL)
 	 ;; current-output-port
 	 (ref.null none)
 	 ;; current-error-port
@@ -563,15 +573,15 @@
 	       (else
 		(throw $BEXCEPTION (local.get $exn)))))))
    
-   (func $BGL_ERROR_HANDLER_GET (export "BGL_ERROR_HANDLER_GET")
-      (result (ref eq))
-      (struct.get $dynamic-env $error-handler (global.get $current-dynamic-env)))
-   
    (func $BGL_ENV_ERROR_HANDLER_GET
       (export "BGL_ENV_ERROR_HANDLER_GET")
       (param $env (ref $dynamic-env))
       (result (ref eq))
       (struct.get $dynamic-env $error-handler (local.get $env)))
+   
+   (func $BGL_ERROR_HANDLER_GET (export "BGL_ERROR_HANDLER_GET")
+      (result (ref eq))
+      (struct.get $dynamic-env $error-handler (global.get $current-dynamic-env)))
    
    (func $BGL_ENV_ERROR_HANDLER_SET
       (export "BGL_ENV_ERROR_HANDLER_SET") 
@@ -607,6 +617,53 @@
    (func $BGL_UNCAUGHT_EXCEPTION_HANDLER_SET
       (export "BGL_UNCAUGHT_EXCEPTION_HANDLER_SET") (param $hdl (ref eq))
       (struct.set $dynamic-env $uncaught-exception-handler (global.get $current-dynamic-env) (local.get $hdl)))
+   
+   (func $BGL_ENV_ERROR_NOTIFIERS_GET
+      (export "BGL_ENV_ERROR_NOTIFIERS_GET")
+      (param $env (ref $dynamic-env))
+      (result (ref eq))
+      (struct.get $dynamic-env $error-notifiers (local.get $env)))
+   
+   (func $BGL_ERROR_NOTIFIERS_GET (export "BGL_ERROR_NOTIFIERS_GET")
+      (result (ref eq))
+      (struct.get $dynamic-env $error-notifiers (global.get $current-dynamic-env)))
+   
+   (func $BGL_ENV_ERROR_NOTIFIERS_SET
+      (export "BGL_ENV_ERROR_NOTIFIERS_SET") 
+      (param $env (ref $dynamic-env))
+      (param $hdl (ref eq))
+      (result (ref eq))
+      (struct.set $dynamic-env $error-notifiers (local.get $env) (local.get $hdl))
+      (return (local.get $hdl)))
+   
+   (func $BGL_ERROR_NOTIFIERS_SET
+      (export "BGL_ERROR_NOTIFIERS_SET") 
+      (param $hdl (ref eq))
+      (result (ref eq))
+      (return_call $BGL_ENV_ERROR_NOTIFIERS_SET
+	 (global.get $current-dynamic-env) (local.get $hdl)))
+   
+   (func $BGL_ENV_INTERRUPT_NOTIFIER_GET
+      (export "BGL_ENV_INTERRUPT_NOTIFIER_GET")
+      (param $env (ref $dynamic-env))
+      (result (ref eq))
+      (struct.get $dynamic-env $interrupt-notifier (local.get $env)))
+   
+   (func $BGL_INTERRUPT_NOTIFIER_GET (export "BGL_INTERRUPT_NOTIFIER_GET")
+      (result (ref eq))
+      (struct.get $dynamic-env $interrupt-notifier (global.get $current-dynamic-env)))
+   
+   (func $BGL_ENV_INTERRUPT_NOTIFIER_SET
+      (export "BGL_ENV_INTERRUPT_NOTIFIER_SET") 
+      (param $env (ref $dynamic-env))
+      (param $hdl (ref eq)) 
+      (struct.set $dynamic-env $interrupt-notifier (local.get $env) (local.get $hdl)))
+   
+   (func $BGL_INTERRUPT_NOTIFIER_SET
+      (export "BGL_INTERRUPT_NOTIFIER_SET") 
+      (param $hdl (ref eq))
+      (return_call $BGL_ENV_INTERRUPT_NOTIFIER_SET
+	 (global.get $current-dynamic-env) (local.get $hdl)))
    
    ;; -----------------------------------------------------------------
    ;; Exit

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Fri Jun 20 11:32:25 2025 (serrano)                */
+;*    Last change :  Sun Jun 22 09:10:24 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -66,6 +66,10 @@
   (global $datagram-socket-default-value
      (export "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE") (ref $datagram-socket)
      (struct.new $datagram-socket))
+
+  (global $semaphore-default-value
+     (export "BGL_SEMAPHOE_DEFAULT_VALUE") (ref $semaphore)
+     (struct.new $semaphore))
   
   (global $process-default-value
      (export "BGL_PROCESS_DEFAULT_VALUE") (ref $process)
@@ -84,7 +88,11 @@
   (global $tvector-default-value
      (export "BGL_TVECTOR_DEFAULT_VALUE") (ref array)
      (array.new_fixed $bstring 0))
-  
+
+  (global $BGL_AUTO_FINALIZER
+     (export "BGL_AUTO_FINALIZER") i32
+     (i32.const 0))
+     
    ;; -----------------------------------------------------------------
    ;; Utilities
    ;; -----------------------------------------------------------------

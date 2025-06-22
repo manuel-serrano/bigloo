@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Wed Feb  5 11:48:10 2025 (serrano)                */
+;*    Last change :  Sun Jun 22 08:53:38 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -28,6 +28,14 @@
 	   (bgl_write_unknown::obj ::obj ::output-port)
 	   (bgl_display_ucs2string::obj ::ucs2string ::output-port)
 	   (bgl_write_utf8string::obj ::bstring ::output-port)
+	   (bgl_write_opaque::obj ::obj ::output-port)
+	   (bgl_write_regexp::obj ::regexp ::output-port)
+	   (bgl_write_foreign::obj ::foreign ::output-port)
+	   (bgl_write_semaphore::obj ::semaphore ::output-port)
+	   (bgl_write_socket::obj ::socket ::output-port)
+	   (bgl_write_datagram_socket::obj ::datagram-socket ::output-port)
+	   (bgl_write_custom::obj ::obj ::output-port)
+	   (bgl_ill_char_rep::obj ::uchar)
 	   (inline $$display-fixnum::obj ::bint ::output-port)
 	   (inline $$write-procedure ::procedure ::output-port)
 	   (inline $$write-input-port ::input-port ::output-port)
@@ -47,7 +55,15 @@
 	   (export bgl_write_process "bgl_write_process")
 	   (export bgl_write_unknown "bgl_write_unknown")
 	   (export bgl_display_ucs2string "bgl_display_ucs2string")
-	   (export bgl_write_utf8string "bgl_write_utf8string")))
+	   (export bgl_write_utf8string "bgl_write_utf8string")
+	   (export bgl_write_opaque "bgl_write_opaque")
+	   (export bgl_write_regexp "bgl_write_regexp")
+	   (export bgl_write_foreign "bgl_write_foreign")
+	   (export bgl_write_semaphore "bgl_write_semaphore")
+	   (export bgl_write_socket "bgl_write_socket")
+	   (export bgl_write_datagram_socket "bgl_write_datagram_socket")
+	   (export bgl_write_custom "bgl_write_custom")
+	   (export bgl_ill_char_rep "bgl_ill_char_rep")))
 
 ;*---------------------------------------------------------------------*/
 ;*    alpha ...                                                        */
@@ -226,3 +242,65 @@
    (display "#u\"" op)
    (display-string s op)
    (display "\"" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_opaque ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_opaque o op)
+   (display "#<opaque>" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_regexp ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_regexp r op)
+   (display "#<regexp:" op)
+   (display (regexp-pattern r) op)
+   (display ">" op))
+   
+;*---------------------------------------------------------------------*/
+;*    bgl_write_foreign ...                                            */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_foreign f op)
+   (display "#<foreign>" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_semaphore ...                                          */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_semaphore s op)
+   (display "#<semaphore>" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_socket ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_socket s op)
+   (display "#<socket:" op)
+   (display (socket-hostname s) op)
+   (display "." op)
+   (display (socket-port-number s) op)
+   (display ">" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_datagram_socket ...                                    */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_datagram_socket d op)
+   (display "#<datagram-socket:" op)
+   (display (socket-hostname d) op)
+   (display "." op)
+   (display (socket-port-number d) op)
+   (display ">" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_write_custom ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bgl_write_custom c op)
+   (display "#<custom>" op))
+
+;*---------------------------------------------------------------------*/
+;*    bgl_ill_char_rep ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bgl_ill_char_rep c)
+   (let ((n (char->integer c)))
+      (cond
+	 ((<fx n 10) (string-append "#a00" n))
+	 ((<fx n 100) (string-append "#a0" n))
+	 (else (string-append "#a" n)))))

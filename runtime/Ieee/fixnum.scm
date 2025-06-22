@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Jun 19 11:18:43 2025 (serrano)                */
+;*    Last change :  Sun Jun 22 08:46:12 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1155,6 +1155,8 @@
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
 	    (unsigned->string::bstring ::obj #!optional (radix::long 16))
 	    (inline strtol::long ::bstring radix start)
+	    (inline strtoeul::elong ::bstring radix start)
+	    (inline strtoull::llong ::bstring radix start)
 	    (string->integer::long ::bstring #!optional (radix::long 10) (start::long 0))
 	    (elong->string::bstring ::elong . pair)
 	    (string->elong::elong ::bstring #!optional (radix::long 10))
@@ -2519,6 +2521,26 @@
        ($$strtol string start radix))
       (else
        ($strtol string start radix) )))
+
+;*---------------------------------------------------------------------*/
+;*    strtoeul ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (strtoeul string start radix)
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       ($$strtoeul string start radix))
+      (else
+       ($strtoeul string start radix) )))
+
+;*---------------------------------------------------------------------*/
+;*    strtoull ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (strtoull string start radix)
+   (cond-expand
+      ((and (not bigloo-c) (not bigloo-jvm))
+       ($$strtoull string start radix))
+      (else
+       ($strtoull string start radix) )))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->integer ...                                              */

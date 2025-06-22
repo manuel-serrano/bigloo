@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Fri Jan 10 08:28:07 2025 (serrano)                */
+;*    Last change :  Sun Jun 22 08:42:50 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -410,7 +410,11 @@
 ;*    rgc-buffer-upcase-keyword ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-upcase-keyword::keyword input-port::input-port)
-   ($rgc-buffer-upcase-keyword input-port))
+    (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       ($rgc-buffer-upcase-keyword input-port))
+      (else
+       ($$rgc-buffer-upcase-keyword input-port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-position ...                                          */

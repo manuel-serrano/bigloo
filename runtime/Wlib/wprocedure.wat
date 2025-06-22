@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  5 08:42:14 2025                          */
-;*    Last change :  Tue Feb  4 11:28:43 2025 (serrano)                */
+;*    Last change :  Sun Jun 22 09:18:18 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM procedure and funcall                                       */
@@ -4493,6 +4493,12 @@
       (call $js_internal_error (i32.const 0) (local.get $arity))
       (throw $fail)
       (unreachable))
+
+   (func $eval_apply (export "eval_apply")
+      (param $proc (ref $procedure))
+      (param $args (ref eq))
+      (result (ref eq))
+      (return_call $apply (local.get $proc) (local.get $args)))
    
    ;; generic_va_call
    (func $generic_va_call (export "generic_va_call")

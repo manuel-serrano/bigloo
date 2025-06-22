@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Wed Dec 25 21:06:08 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Sun Jun 22 08:47:41 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
 ;*=====================================================================*/
@@ -20,7 +20,9 @@
 	   (llong_to_string::bstring ::llong ::long)
 	   ($$strtol::long string::bstring start::long radix::long)
 	   ($$strtoel::elong string::bstring start::long radix::long)
-	   ($$strtoll::llong string::bstring start::long radix::long))
+	   ($$strtoeul::elong string::bstring start::long radix::long)
+	   ($$strtoll::llong string::bstring start::long radix::long)
+	   ($$strtoull::llong string::bstring start::long radix::long))
    (extern (export integer_to_string "integer_to_string")
 	   (export unsigned_to_string "unsigned_to_string")
 	   (export ullong_to_string "ullong_to_string")
@@ -134,9 +136,21 @@
    ($$strtol string start radix))
 
 ;*---------------------------------------------------------------------*/
+;*    $$strtoeul ...                                                   */
+;*---------------------------------------------------------------------*/
+(define ($$strtoeul string start radix)
+   ($$strtol string start radix))
+
+;*---------------------------------------------------------------------*/
 ;*    $$strtoll ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define ($$strtoll string start radix)
+   ($$strtol string start radix))
+
+;*---------------------------------------------------------------------*/
+;*    $$strtoull ...                                                   */
+;*---------------------------------------------------------------------*/
+(define ($$strtoull string start radix)
    ($$strtol string start radix))
 
 ;*---------------------------------------------------------------------*/
