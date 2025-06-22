@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jun 20 11:52:15 2025 (serrano)                */
+/*    Last change :  Sun Jun 22 10:00:49 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -375,12 +375,19 @@ function __js_bignum() {
 	       return BigInt(0);
 	 }
       },
+      bignum_abs: (x) => x < 0 ? -x : x,
+      bignum_gcd: (x, y) => { console.log("TODO"); },
+      bignum_lcm: (x, y) => { console.log("TODO"); },
       bignum_neg: (x) => -x,
       bignum_add: (x, y) => x + y,
       bignum_sub: (x, y) => x - y,
       bignum_mul: (x, y) => x * y,
       bignum_quotient: (x, y) => x / y,
       bignum_remainder: (x, y) => x % y,
+      bignum_xor: (x, y) => x ^ y,
+      bignum_and: (x, y) => x & y,
+      bignum_or: (x, y) => x | y,
+      bignum_not: (x, y) => ~x,
       bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0),
       bignum_to_flonum: x => Number(x)
    };
