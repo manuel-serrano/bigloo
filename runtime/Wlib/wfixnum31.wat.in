@@ -4,13 +4,21 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Fri Jun 20 14:25:13 2025 (serrano)                */
+;*    Last change :  Mon Jun 23 05:31:15 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unboxed 31bit fixnum implementation                         */
 ;*=====================================================================*/
 
 (module $__bigloo_fixnum31
+
+   ;; -----------------------------------------------------------------
+   ;; JavaScript imports 
+   ;; -----------------------------------------------------------------
+   
+    (import "__js_bignum" "bignum_lsh" (func $bignum_lsh (param externref) (param f64) (result externref)))
+   (import "__js_bignum" "bignum_mask" (func $bignum_rsh (param externref) (param f64) (result externref)))
+   (import "__js_bignum" "bignum_mask" (func $bignum_mask (param externref) (param f64) (result externref)))
    
    ;; -----------------------------------------------------------------
    ;; Data 
@@ -93,5 +101,38 @@
 	     (throw $fail))
 	  (else (return (local.get $x)))))
       
+   ;; bgl_bignum_lsh
+   (func $bgl_bignum_lsh (export "bgl_bignum_lsh")
+      (param $x (ref $bignum))
+      (param $o (ref i31))
+      (result (ref $bignum))
+      (return
+	 (struct.new $bignum
+	    (call $bignum_lsh
+	       (struct.get $bignum $bx (local.get $x))
+	       (f64.convert_i32_s (i31.get_s (local.get $o)))))))
+   
+   ;; bgl_bignum_rsh
+   (func $bgl_bignum_rsh (export "bgl_bignum_rsh")
+      (param $x (ref $bignum))
+      (param $o (ref i31))
+      (result (ref $bignum))
+      (return
+	 (struct.new $bignum
+	    (call $bignum_rsh
+	       (struct.get $bignum $bx (local.get $x))
+	       (f64.convert_i32_s (i31.get_s (local.get $o)))))))
+   
+   ;; bgl_bignum_mask
+   (func $bgl_bignum_mask (export "bgl_bignum_mask")
+      (param $x (ref $bignum))
+      (param $o (ref i31))
+      (result (ref $bignum))
+      (return
+	 (struct.new $bignum
+	    (call $bignum_mask
+	       (struct.get $bignum $bx (local.get $x))
+	       (f64.convert_i32_s (i31.get_s (local.get $o)))))))
+   
    )
 

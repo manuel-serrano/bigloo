@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Sun Jun 22 09:59:40 2025 (serrano)                */
+;*    Last change :  Mon Jun 23 05:26:17 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -30,6 +30,7 @@
    (import "__js_bignum" "bignum_even" (func $bignum_even (param externref) (result i32)))
    (import "__js_bignum" "safe_bignum_to_fixnum" (func $js_safe_bignum_to_fixnum (param externref) (param i32) (result f64)))
    (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_long (param externref) (result f64)))
+   (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_llong (param externref) (result f64)))
    (import "__js_bignum" "bignum_to_flonum" (func $bgl_bignum_to_flonum (param externref) (result f64)))
    (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref) (param externref) (result externref)))
    (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref) (param externref) (result externref)))
@@ -94,6 +95,12 @@
       (param $n i64)
       (result (ref $bignum))
       (return (struct.new $bignum (call $js_double_to_bignum (f64.convert_i64_s (local.get $n))))))
+
+   ;; bgl_llong_to_bignum
+   (func $bgl_llong_to_bignum (export "bgl_llong_to_bignum")
+      (param $n i64)
+      (result (ref $bignum))
+      (return_call $bgl_long_to_bignum (local.get $n)))
 
    ;; bgl_flonum_to_bignum
    (func $bgl_flonum_to_bignum (export "bgl_flonum_to_bignum")
