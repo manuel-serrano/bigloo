@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Wed Jun 18 11:44:15 2025 (serrano)                */
+;*    Last change :  Fri Jun 20 14:34:25 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -313,13 +313,6 @@
       (export "BGL_ENV_POP_TRACE")
       (param $env (ref $dynamic-env))
       (result (ref eq))
-
-;*       (call $js_trace (i32.const 11112))                            */
-;*       (call $js_trace                                               */
-;* 	 (call $bgl_dframe_length                                      */
-;* 	    (struct.get $bgl_dframe $link                              */
-;* 	       (struct.get $dynamic-env $top-of-frame (local.get $env))))) */
-			 
       (call $BGL_ENV_SET_TOP_OF_FRAME
 	 (local.get $env)
 	 (ref.as_non_null
