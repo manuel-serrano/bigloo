@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Jun  5 08:33:29 2025 (serrano)                */
+;*    Last change :  Sun Jun 22 08:45:46 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -330,11 +330,11 @@
       ((: "e" (? (in "-+")) (+ digit))
        (string->elong (the-substring 1 (the-length)) 10))
       ((: "ex" (+ xdigit))
-       ($strtoeul (the-substring 2 (the-length)) 0 16))
+       (strtoeul (the-substring 2 (the-length)) 0 16))
       ((: "l" (? (in "-+")) (+ digit))
        (string->llong (the-substring 1 (the-length)) 10))
       ((: "lx" (+ xdigit))
-       ($strtoull (the-substring 2 (the-length)) 0 16))
+       (strtoull (the-substring 2 (the-length)) 0 16))
       ((: "x" (? (in "-+")) (+ (in (uncase (in ("09af"))))))
        (string->integer-obj (the-substring 1 (the-length)) 16))
       ;; bignums
