@@ -689,8 +689,8 @@ Create an exact fixnum integer from the fixnum value @var{int}.
 @deffnx {bigloo procedure} maxvalfx
 @deffnx {bigloo procedure} minvalelong
 @deffnx {bigloo procedure} maxvalelong
-@deffnx {bigloo procedure} minvalllong
-@deffnx {bigloo procedure} maxvalllong
+@deffnx {bigloo procedure} minvallong
+@deffnx {bigloo procedure} maxvallong
 Returns the minimal value (respectively the maximal value) for fix 
 integers.
 @end deffn
@@ -751,13 +751,13 @@ integers.
 @deffnx {bigloo procedure} <fx i1 i2
 @deffnx {bigloo procedure} <fl r1 r2
 @deffnx {bigloo procedure} <elong r1 r2
-@deffnx {bigloo procedure} <lllong r1 r2
+@deffnx {bigloo procedure} <llong r1 r2
 @deffnx {bigloo procedure} <bx r1 r2
 @deffnx {procedure} > z1 z2 z3 @dots{}
 @deffnx {bigloo procedure} >fx i1 i2
 @deffnx {bigloo procedure} >fl r1 r2
 @deffnx {bigloo procedure} >elong r1 r2
-@deffnx {bigloo procedure} >lllong r1 r2
+@deffnx {bigloo procedure} >llong r1 r2
 @deffnx {bigloo procedure} >bx r1 r2
 @deffnx {procedure} <= z1 z2 z3 @dots{}
 @deffnx {bigloo procedure} <=fx i1 i2

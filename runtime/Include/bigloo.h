@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun May 18 09:46:38 2025 (serrano)                */
+/*    Last change :  Tue Jun 24 07:32:49 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -320,9 +320,12 @@ extern "C" {
 #if (BGL_TAGGING == BGL_TAGGING_NAN)   // NAN TAGGING
 #  define BGL_MASKP(o, tag, mask) \
      (((((long)(o)) - (tag)) & (mask)) == 0)
+#elif (1 && BGL_TAGGING == BGL_TAGGING_NUN) // NUN TAGGING
+#  define BGL_MASKP(o, tag, mask) \
+      (((((long)(o)) - (tag)) & (mask)) == 0)
 #else                                 // OTHER TAGGING
 #  define BGL_MASKP(o, tag, mask) \
-     ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
+      ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
 #endif
 
 // BGL_POINTERP  
@@ -337,18 +340,23 @@ extern "C" {
 #endif   
 #define POINTERP(o) BGL_POINTERP(o)
 
-
 // BGL_TAGGED_PTRP  
 #if (BGL_TAGGING == BGL_TAGGING_NUN)   // NUN TAGGING
-#  define BGL_TAGGED_PTRP(o, tag, mask) \
+#  define BGL_TAGGED_PTRP_OLD(o, tag, mask) \
   (((tag) || (o)) && BGL_MASKP(o, tag, mask) && (((unsigned long)(o) >> 48) == 0))
+#  define BGL_TAGGED_PTRP_NEW(o, tag, mask) \
+  (((tag) || (o)) && BGL_MASKP(o, tag, mask | (0xffffl << 48)))
+#  define BGL_TAGGED_PTRP(o, tag, mask) \
+  BGL_TAGGED_PTRP_NEW(o, tag, mask)
 #else                                  // OTHER TAGGING 
 #  define BGL_TAGGED_PTRP(o, tag, mask) \
   (((tag) || (o)) && BGL_MASKP(o, tag, mask))
 #endif  
 
+// BGL_HEADER_PTRP
 #define BGL_HEADER_PTRP(o, type) \
    (BGL_POINTERP(o) && (TYPE(o) == (type)))
+
 
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
