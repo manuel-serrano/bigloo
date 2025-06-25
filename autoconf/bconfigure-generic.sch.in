@@ -4,8 +4,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 16 13:12:00 2024                          */
-;*    Last change :  Tue Jul 16 13:53:24 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Wed Jun 25 09:54:30 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic configuration                                            */
 ;*=====================================================================*/
@@ -79,6 +79,7 @@
 	   $$configure-fl-tagging::bool
 	   $$configure-int-size::int
 	   $$configure-elong-size::int
+	   $$configure-ptr-alignment::int
 	   $$configure-have-unistring::bool
 	   $$configure-have-syslog::bool
 	   $$configure-have-getrlimit::bool
@@ -165,6 +166,7 @@
 (define $$configure-fl-tagging::bool #f)
 (define $$configure-int-size::int 32)
 (define $$configure-elong-size::int 32)
+(define $$configure-ptr-aligment::int 64)
 (define $$configure-have-unistring::bool #f)
 (define $$configure-have-syslog::bool #f)
 (define $$configure-have-getrlimit::bool #f)
