@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Jun 25 13:09:20 2025 (serrano)                */
+/*    Last change :  Wed Jun 25 16:53:48 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NuN TAGGING REALs                                         */
@@ -71,7 +71,7 @@ INLINE bool FLONUMP(obj_t o) {
 #define REALP(c) (FLONUMP(c))
 
 #define BGL_FAST_REALP(c) REALP(c)
-#define BGL_FAST_REALSP(c, d) (REALP(c), REALP(d))
+#define BGL_FAST_REALSP(c, d) (REALP(c) && REALP(d))
 #define BGL_REAL_SET(o, v) BREAL(v)
 
 /*---------------------------------------------------------------------*/
