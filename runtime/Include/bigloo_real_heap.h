@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Jun 25 16:45:43 2025 (serrano)                */
+/*    Last change :  Wed Jun 25 16:48:26 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -76,7 +76,7 @@ struct bgl_real {
 
 #define BGL_FAST_REALP(c) FLONUMP(c)
 
-#if (define(TAG_REAL))
+#if (defined(TAG_REAL))
 #  define BGL_FAST_REALSP(c, d) (CREAL(c) | CREAL(d) === 0)
 #else
 #  define BGL_FAST_REALSP(c, d) (FLONUMP(c) && FLONUMP(d))
