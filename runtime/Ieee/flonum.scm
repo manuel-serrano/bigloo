@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/flt/runtime/Ieee/flonum.scm          */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/flonum.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
