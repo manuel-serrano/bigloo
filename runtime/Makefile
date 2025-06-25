@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jun 25 17:17:15 2025 (serrano)                */
+#*    Last change :  Wed Jun 25 17:18:53 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -513,7 +513,7 @@ lib-c_p: includes
 one-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
 	$(MAKE) one-share-lib-c LIBSUFFIXTHREAD=
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
-	  $(MAKE) one-share-lib-c LIBSUFFIXTHREAD=_mt
+	  $(MAKE) one-share-lib-c LIBSUFFIXTHREAD=_mt; \
 	fi
 
 $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJECTS)
