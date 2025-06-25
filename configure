@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun 25 17:06:03 2025 (serrano)                */
+#*    Last change :  Wed Jun 25 17:36:35 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2256,6 +2256,8 @@ if [ "$threadsupport " = "no " ]; then
    pthreadcondvtimedwait=0
    pthreadtimedjoin=0
    pthreadsetname=0
+   avahi=no
+   mqtt=no
 elif [ $hostos = "mingw" ]; then
   # MinGW pre-test
   if [ "$threadsupport " = " " ]; then
