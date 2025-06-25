@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun 25 17:36:35 2025 (serrano)                */
+#*    Last change :  Wed Jun 25 17:39:18 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -4923,6 +4923,23 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "AVAHICFLAGS=" >> $makefile_cfg
   fi
 
+  # MQTT
+  $echo "MQTT=$mqtt" >> $makefile_cfg
+  if [ "$mqtt " != "no " ]; then
+  else
+    napis=;
+    for a in $apis; do
+       if [ "mqtt" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+  fi
+  
   # LIBUV
   $echo "LIBUV=$libuv" >> $makefile_cfg
   if [ "$libuv_is_enabled " = "yes " -a "$libuv " != "no " ]; then
