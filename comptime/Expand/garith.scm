@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/flt/comptime/Expand/garith.scm.new       */
+;*    .../prgm/project/bigloo/bigloo/comptime/Expand/garith.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Tue Dec 10 09:56:46 2024 (serrano)                */
-;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 25 13:41:22 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
 ;*=====================================================================*/
@@ -90,14 +90,23 @@
 			   `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,a)))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))
-       (let ((nx `(if (and ($fixnum? ,a) ($fixnum? ,b))
+       (let ((nx `(if ($fixnums? ,a ,b)
 		      (,(fx id) ,a ,b)
 		      ,(if *arithmetic-expand-flonum*
-			   `(if (and ($fast-flonum? ,a) ($fast-flonum? ,b) )
+			   `(if ($fast-flonums? ,a ,b)
 				(,(fl id) ($fast-real->double ,a) ($fast-real->double ,b))
 				((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))
 			   `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b)))))
 	  (e nx e)))
+;*       ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))              */
+;*        (let ((nx `(if ($fixnums? ,a ,b)                             */
+;* 		      (,(fx id) ,a ,b)                                 */
+;* 		      ,(if *arithmetic-expand-flonum*                  */
+;* 			   `(if ($fast-flonums? ,a ,b)                 */
+;* 				(,(fl id) ($fast-real->double ,a) ($fast-real->double ,b)) */
+;* 				((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b)) */
+;* 			   `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))))) */
+;* 	  (e nx e)))                                                   */
       ((?id (and ?a (? symbol?)) ?b)
        (let* ((tmp (gensym 'b))
 	      (nx `(let ((,tmp ,b)) (,id ,a ,tmp))))

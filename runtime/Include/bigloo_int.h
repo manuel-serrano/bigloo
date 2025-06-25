@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Mar 11 13:41:58 2025 (serrano)                */
+/*    Last change :  Wed Jun 25 14:08:44 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -29,6 +29,7 @@ extern "C" {
 #if ((BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN) && !BGL_SMI)
 /* normal tagging */
 #  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+#  define INTEGERSP(o, p) ((((((long)o) - TAG_INT) | (((long)p) - TAG_INT)) & TAG_MASK) == 0)
 
 #  define BGL_LONG_MIN (LONG_MIN >> TAG_SHIFT)
 #  define BGL_LONG_MAX (LONG_MAX >> TAG_SHIFT)
@@ -46,6 +47,7 @@ extern "C" {
 #elif (BGL_TAGGING == BGL_TAGGING_NUN)
 /* nun tagging */
 #  define INTEGERP(o) ((((unsigned long)o) >> 48) == (TAG_INT >> 48))
+#  define INTEGERSP(o, p) (INTEGERP(o) && INTEGERP(p))
 
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
@@ -63,6 +65,7 @@ extern "C" {
 #elif ((BGL_TAGGING != BGL_TAGGING_NAN) && BGL_SMI)
 /* smi (int32) tagging */
 #  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+#  define INTEGERSP(o, p) (INTEGERP(o) && INTEGERP(p))
 
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
@@ -80,6 +83,7 @@ extern "C" {
 #else
 /* nan tagging */      
 #  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+#  define INTEGERSP(o, p) (INTEGERP(o) && INTEGERP(p))
 
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)

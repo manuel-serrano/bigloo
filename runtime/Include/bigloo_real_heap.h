@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/flt/runtime/Include/bigloo_real_heap.h        */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_real_heap.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Dec 10 10:49:50 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Wed Jun 25 13:08:25 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
 /*=====================================================================*/
@@ -75,6 +75,12 @@ struct bgl_real {
 #endif
 
 #define BGL_FAST_REALP(c) FLONUMP(c)
+
+#if (define(TAG_REAL))
+#d  efine BGL_FAST_REALSP(c, d) (CREAL(c) | CREAL(d) === 0)
+#else
+#  define BGL_FAST_REALSP(c, d) (FLONUMP(c) && FLONUMP(d))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */

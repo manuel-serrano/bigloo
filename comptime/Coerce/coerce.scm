@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Jul 17 13:27:26 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 25 14:46:15 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -286,6 +286,31 @@
 ;*    type errors.                                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::conditional caller to safe)
+   (define (test-static-app2 node)
+      (with-access::app node (fun args)
+	 (and (pair? args)
+	      (pair? (cdr args))
+	      (null? (cddr args))
+	      (not (side-effect? (car args)))
+	      (not (side-effect? (cadr args)))
+	      (let* ((typec (app-predicate-of node))
+		     (typev (get-type (car args) #f))
+		     (typev2 (get-type (cadr args) #f)))
+		 (cond
+		    ((not (type? typec))
+		     ;; this is not a predicate
+		     #f)
+		    ((eq? typev *obj*)
+		     ;; we have not idea of the result of the type
+		     #f)
+		    ((and (type-less-specific? typec typev)
+			  (type-less-specific? typec typev2))
+		     'true)
+		    ((or (type-disjoint? typec typev)
+			  (type-disjoint? typec typev2))
+		     'false)
+		    (else
+		     #f))))))
    (define (test-static-app node)
       (with-access::app node (fun args)
 	 (and (pair? args)
@@ -375,7 +400,7 @@
 	  (lambda (t)
 	     (test-static-isa node t)))
 	 ((app? node)
-	  (test-static-app node))
+	  (or (test-static-app node) (test-static-app2 node)))
 	 ((let-var? node)
 	  (test-static-let-var node))
 	 (else
