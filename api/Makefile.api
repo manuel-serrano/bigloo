@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Jun 25 17:25:26 2025 (serrano)                */
+#*    Last change :  Wed Jun 25 17:28:24 2025 (serrano)                */
 #*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -107,7 +107,8 @@ clean-init:
 
 api-c: api-init $(TAGS) .afile heap-c
 	mkdir -p objs
-	$(MAKE) api-c-static && $(MAKE) api-c-shared
+	$(MAKE) api-c-static
+	$(MAKE) api-c-shared
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
 	  $(MAKE) api-c-shared_mt; \
 	fi
