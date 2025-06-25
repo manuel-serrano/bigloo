@@ -1,5 +1,5 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/ssl/src/Makefile                 */
+#*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
