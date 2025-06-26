@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Jun 25 14:59:57 2025 (serrano)                */
+;*    Last change :  Thu Jun 26 10:17:50 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -357,43 +357,6 @@
 		(set! *type-checks-remaining* (+fx 1 *type-checks-remaining*))
 		node)))))
 
-   (define (check-type2 node typec typea typeb)
-      (with-access::app node (loc)
-	 (let ((type  (get-type node #f)))
-	    (cond
-	       ((and (type-less-specific? typec typea)
-		     (type-less-specific? typec typeb))
-		(set! *type-checks-removed* (+fx 1 *type-checks-removed*))
-		(trace (reduce 3) "typec: reducing: "
-		   (shape node) " => #t" #\Newline)
-		(let ((node (coerce! (instantiate::literal
-					(loc loc)
-					(type type)
-					(value #t))
-			       #unspecified
-			       type
-			       #f)))
-		   node))
-	       ((or (type-check-disjoint? typec typea)
-		    (type-check-disjoint? typec typeb))
-		(set! *type-checks-removed* (+fx 1 *type-checks-removed*))
-		(trace (reduce 3) "typec: reducing: "
-		   (shape node) " => #f (typec="
-		   (shape typec) " " (foreign-type? typec)
-		   " typea=" (shape typea) " " (jclass? typea) ")"
-		   #\Newline)
-		(let ((node (coerce! (instantiate::literal
-					(loc loc)
-					(type type)
-					(value #f))
-			       #unspecified
-			       type
-			       #f)))
-		   node))
-	       (else
-		(set! *type-checks-remaining* (+fx 1 *type-checks-remaining*))
-		node)))))
-   
    (with-access::app node (fun args)
       (node-typec*! args)
       (let* ((var   (var-variable fun))
@@ -404,14 +367,6 @@
 		  (type? typec)
 		  (or (not (side-effect? (car args))) (var? (car args))))
 	     (check-type node typec (get-type (car args) #f)))
-	    ((and (pair? args)
-		  (pair? (cdr args))
-		  (null? (cddr args))
-		  (type? typec)
-		  (or (not (side-effect? (car args))) (var? (car args)))
-		  (or (not (side-effect? (cadr args))) (var? (cadr args))))
-	     (check-type2 node typec
-		(get-type (car args) #f) (get-type (cadr args) #f)))
 	    ((isa-of node)
 	     =>
 	     (lambda (typec)

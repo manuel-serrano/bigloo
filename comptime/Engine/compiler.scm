@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon May 12 10:15:41 2025 (serrano)                */
+;*    Last change :  Thu Jun 26 10:21:24 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -85,6 +85,7 @@
 	    prof_walk
 	    return_walk
 	    uncell_walk
+	    nums_walk
 	    isa_walk
 	    cc_cc
 	    cc_ld
@@ -537,6 +538,13 @@
 		  (stop-on-pass 'uncell (lambda () (write-ast ast)))
 		  (check-sharing "uncell" ast)
 		  (check-type "uncell" ast #t #f))
+	    
+	       ;; double fix/flo predicates optimization
+	       (when *optim-nums?*
+		  (set! ast (profile uncell (nums-walk! ast)))
+		  (stop-on-pass 'nums (lambda () (write-ast ast)))
+		  (check-sharing "nums" ast)
+		  (check-type "nums" ast #t #f))
 	    
 	       (backend-walk (remove-var 'now ast2)))
 	    

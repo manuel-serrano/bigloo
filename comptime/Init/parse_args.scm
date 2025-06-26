@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/flt/comptime/Init/parse_args.scm     */
+;*    .../prgm/project/bigloo/bigloo/comptime/Init/parse_args.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Dec 13 05:38:30 2024 (serrano)                */
-;*    Copyright   :  1992-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun 26 10:23:01 2025 (serrano)                */
+;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -557,6 +557,10 @@
 	(set! *optim-unsafe-cell?* #t))
        (("-fno-unsafe-cell" (help "Disable unsafe-cell generation"))
 	(set! *optim-unsafe-cell?* #f))
+      (("-fnums" (help "Enable fx/fl double predicates optimization"))
+       (set! *optim-nums?* #t))
+      (("-fno-nums" (help "Disable fx/fl double predicates optimization"))
+       (set! *optim-nums?* #f))
        ;; with-handler/bind-exit
        (("-flocal-exit" (help "Inline with-handler and bind-exit"))
 	(set! *local-exit?* #t))
@@ -1024,6 +1028,8 @@
 	(set! *pass* 'return))
        (("-uncell" (help "Stop after the cell removal stage"))
 	(set! *pass* 'uncell))
+       (("-nums" (help "Stop after the nums stage"))
+	(set! *pass* 'nums))
        (("-isa" (help "Stop after the isa stage"))
 	(set! *pass* 'isa))
        (("-init" (help "Stop after the initialization construction stage"))

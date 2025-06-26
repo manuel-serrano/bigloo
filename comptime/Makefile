@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Dec 13 08:23:49 2024 (serrano)                */
-#*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Jun 26 10:20:51 2025 (serrano)                */
+#*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -340,6 +340,11 @@ UNCELL_FILE	= walk
 
 UNCELL_OBJ	= $(UNCELL_FILE:%=Uncell/%.o)
 
+#*--- nums ------------------------------------------------------------*/
+NUMS_FILE	= walk
+
+NUMS_OBJ	= $(NUMS_FILE:%=Nums/%.o)
+
 #*--- user ------------------------------------------------------------*/
 USER_FILE	= user
 
@@ -376,7 +381,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) $(READ_OBJ) \
                   $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) \
                   $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_BBV_OBJ) $(SYNC_OBJ) \
                   $(ISA_OBJ) $(RETURN_OBJ) $(STACKABLE_OBJ) $(UNCELL_OBJ) \
-                  $(LIVENESS_OBJ) $(PREBOX_OBJ) $(PEEPHOLE_OBJ)
+                  $(NUMS_OBJ) $(LIVENESS_OBJ) $(PREBOX_OBJ) $(PEEPHOLE_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

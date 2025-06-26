@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun 25 17:39:40 2025 (serrano)                */
+#*    Last change :  Thu Jun 26 13:17:10 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2066,7 +2066,7 @@ case $hostos in
         if [ "$threadsupport " = "no " ]; then
           threadsupport=no
           pthreadlibs=no
-          ldcomplibs="\$(GCCLOSELIB) -lc -lm"
+          ldcomplibs="-lc -lm"
         else
           extralibs="$extralibs $pthreadlibs"
         fi

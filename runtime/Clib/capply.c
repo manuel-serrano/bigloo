@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/runtime/Clib/capply.c            */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/capply.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 20 11:26:29 1992                          */
-/*    Last change :  Tue Nov 19 07:26:00 2024 (serrano)                */
-/*    Copyright   :  2006-24 Manuel Serrano                            */
+/*    Last change :  Thu Jun 26 13:29:03 2025 (serrano)                */
+/*    Copyright   :  2006-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo APPLY                                                     */
 /*=====================================================================*/
@@ -87,7 +87,7 @@ obj_t apply(obj_t function, obj_t args_list) {
 	 }
 	 switch(arity) {
 	    case -1:
-	       return ((obj_t (*)(obj_t, ...))PROCEDURE_VA_ENTRY(function))(function, runner);
+	       return ((obj_t (*)(obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, runner);
          
 	    case -2:
 	       return ((obj_t (*)(obj_t, obj_t, obj_t))PROCEDURE_VA_ENTRY(function))(function, arg[ 0 ], runner);
