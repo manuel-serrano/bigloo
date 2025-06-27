@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Jun 25 16:53:48 2025 (serrano)                */
+/*    Last change :  Fri Jun 27 10:05:12 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NuN TAGGING REALs                                         */
@@ -46,10 +46,10 @@ union bgl_nunobj {
 
 #define BGL_NUN_FL_OFFSET (1ULL << 49)
 
-#define BGL_DOUBLE_AS_BITS(d) (((union bgl_nunobj){ real: d }).bits)
-#define BGL_OBJ_AS_BITS(d) (((union bgl_nunobj){ obj: d }).bits)
-#define BGL_BITS_AS_DOUBLE(b) (((union bgl_nunobj){ bits: b }).real)
-#define BGL_BITS_AS_OBJ(b) (((union bgl_nunobj){ bits: b }).obj)
+#define BGL_DOUBLE_AS_BITS(d) (((union bgl_nunobj)(d)).bits)
+#define BGL_OBJ_AS_BITS(d) (((union bgl_nunobj)(d)).bits)
+#define BGL_BITS_AS_DOUBLE(b) (((union bgl_nunobj)(b)).real)
+#define BGL_BITS_AS_OBJ(b) (((union bgl_nunobj)(b)).obj)
 
 #define BREAL(d) BGL_BITS_AS_OBJ(BGL_DOUBLE_AS_BITS(d) + BGL_NUN_FL_OFFSET)
 #define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(p) - BGL_NUN_FL_OFFSET)

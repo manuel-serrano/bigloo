@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Tue Mar 11 11:26:42 2025 (serrano)                */
+/*    Last change :  Fri Jun 27 10:06:16 2025 (serrano)                */
 /*    Copyright   :  2002-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -85,13 +85,13 @@ void bgl_init_objects() {
    quote = string_to_symbol("QUOTE");
 
 #if (BGL_TAGGING == BGL_TAGGING_NAN)
-   bigloo_nan = (union bgl_nanobj){ real: bgl_nan() };
-   bigloo_infinity = (union bgl_nanobj){ real: bgl_infinity() };
-   bigloo_minfinity = (union bgl_nanobj){ real: -bgl_infinity() };
+   bigloo_nan = bgl_nan();
+   bigloo_infinity = bgl_infinity();
+   bigloo_minfinity = -bgl_infinity();
 #elif (BGL_TAGGING == BGL_TAGGING_NUN)
-   bigloo_nan = (union bgl_nunobj){ real: bgl_nan() };
-   bigloo_infinity = (union bgl_nunobj){ real: bgl_infinity() };
-   bigloo_minfinity = (union bgl_nunobj){ real: -bgl_infinity() };
+   bigloo_nan = bgl_nan();
+   bigloo_infinity = bgl_infinity();
+   bigloo_minfinity = -bgl_infinity();
 #else
    bigloo_nan = DOUBLE_TO_REAL(bgl_nan());
    bigloo_infinity = DOUBLE_TO_REAL(bgl_infinity());
