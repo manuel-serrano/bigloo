@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Jun 28 10:33:45 2025 (serrano)                */
+/*    Last change :  Sun Jun 29 13:09:35 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -176,15 +176,12 @@ struct bgl_ucs2_string {
      name = BSTRING(&(aux.length));
 #  define BGL_DEFINE_STRING_STOP(name, aux) \
       };
-#  define BGL_BIND_STRING_STOP(name, aux) \
-      static obj_t name = BSTRING(&(aux.length)
 #else
 #  define BGL_DECLARE_STRING(name, aux) \
      static obj_t name = BSTRING(&(aux.length))
 #  define BGL_DEFINE_STRING_STOP(name, aux) \
       }; static obj_t name = BSTRING(&(aux.length)
 #  define BGL_BIND_STRING(name, aux)
-#  define BGL_BIND_STRING_STOP(name, aux)
 #endif
 
 #define BGL_DEFINE_STRING(name, aux, str, len) \

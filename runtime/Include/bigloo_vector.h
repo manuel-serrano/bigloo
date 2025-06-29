@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Jun 29 07:37:33 2025 (serrano)                */
+/*    Last change :  Sun Jun 29 13:08:43 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -166,12 +166,12 @@ struct bgl_hvector {
 #if BGL_CNST_TWO_STEPS_INIT
 #  define BGL_CREATE_TVECTOR_STOP(name, aux) \
       }
-#  define BGL_BIND_TVECTOR_STOP(name, aux) \
+#  define BGL_BIND_TVECTOR(name, aux) \
       static obj_t name = BREF(&(aux.header))
 #else
 #  define BGL_CREATE_TVECTOR_STOP(name, aux) \
       }; static obj_t name = BREF(&(aux.header))
-#  define BGL_BIND_TVECTOR_STOP(name, aux)
+#  define BGL_BIND_TVECTOR(name, aux)
 #endif
 
 #define DEFINE_TVECTOR_START(aux, len, itype) \
