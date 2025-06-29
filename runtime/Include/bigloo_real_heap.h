@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Jun 25 16:48:26 2025 (serrano)                */
+/*    Last change :  Sun Jun 29 07:16:11 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -51,10 +51,9 @@ struct bgl_real {
 #   define BREAL(p) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL(p) ((obj_t)((long)p - TAG_REAL))
 #   define BGL_REAL_CNST(name) name
-#   define DEFINE_REAL(name, aux, flonum) \
-      static struct { double real; } aux = { flonum }; \
-      static const obj_t name = BREAL(&aux)
-
+#   define BGL_CREATE_REAL(aux, flonum) \
+      static struct { double real; } aux = { flonum }
+      
 #   define FLONUMP(c) ((c && ((((long)c) & TAG_MASK) == TAG_REAL)))
 #   define REALP(c) FLONUMP(c)
 
@@ -63,16 +62,33 @@ struct bgl_real {
 #   define BREAL(p) BREF(p)
 #   define CREAL(p) CREF(p)
 #   define BGL_REAL_CNST(name) name
-#   define DEFINE_REAL(name, aux, flonum) \
+#   define BGL_CREATE_REAL(aux, flonum) \
       static struct { __CNST_ALIGN header_t header; double real; } \
-	 aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }; \
-      static const obj_t name = BREAL(&(aux.header))
-
+	 aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
+      
 #   define FLONUMP(c) (POINTERP(c) && (TYPE(c) == REAL_TYPE))
 #   define REALP(c) FLONUMP(c)
    
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)
 #endif
+
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_DECLARE_REAL(name, aux) \
+     obj_t name = 0L
+#  define BGL_BIND_REAL(name, aux) \
+   name = BREAL(&aux)
+#else
+#  define BGL_DECLARE_REAL(name, aux) \
+      const obj_t name = BREAL&aux)
+#  define BGL_BIND_REAL(name, aux) \
+#endif
+
+#define BGL_DEFINE_REAL(name, aux, flonum) \
+   BGL_CREATE_REAL(aux, flonum); \
+   BGL_DECLARE_REAL(name, aux)
+
+#define DEFINE_REAL(name, aux, flonum) \
+   BGL_DEFINE_REAL(name, aux, flonum)
 
 #define BGL_FAST_REALP(c) FLONUMP(c)
 

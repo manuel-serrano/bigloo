@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Jun  2 14:05:05 2025 (serrano)                */
+/*    Last change :  Sat Jun 28 10:33:45 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -126,55 +126,79 @@ struct bgl_ucs2_string {
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */
+/*    -------------------------------------------------------------    */
+/*    When producing C code for a compiler that is unable to           */
+/*    accept large splitted strings, Bigloo emits a declaration        */
+/*    of a C characters array. This requires 2 macros, one for         */
+/*    starting the declaration and one for ending it. The              */
+/*    array itself, is inserted in between the two macros by           */
+/*    bigloo such as:                                                  */
+/*           DEFINE_STRING_START(f, a, 2),                             */
+/*             {45,46,0},                                              */
+/*           DEFINE_STRING_STOP(f, a, 2);                              */
 /*---------------------------------------------------------------------*/
-/* When producing C code for a compiler that is unable to    */
-/* accept large splitted string, Bigloo emits a declaration  */
-/* of a C characters array. This requires 2 macros, one for  */
-/* starting the declaration and one for ending it. The       */
-/* array itself, is inserted in between the two macros by    */
-/* bigloo such as:                                           */
-/*        DEFINE_STRING_START(f, a, 2),                      */
-/*          {45,46,0},                                       */
-/*        DEFINE_STRING_STOP(f, a, 2);                       */
 #if (defined(TAG_STRING))
-#  define DEFINE_STRING(name, aux, str, len) \
-   static struct { __CNST_ALIGN long length; \
-                      char string[len + 1]; } \
-         aux = { __CNST_FILLER len, str }; \
-         static obj_t name = BSTRING(&(aux.length))
-#  define DEFINE_STRING_START(name, aux, len) \
+#  define BGL_CREATE_STRING(aux, str, len) \
+     static struct { __CNST_ALIGN long length; \
+                     char string[len + 1]; } \
+       aux = { __CNST_FILLER len, str }
+
+#  define BGL_CREATE_STRING_START(aux, len) \
       static struct { __CNST_ALIGN long length; \
                       char string[len + 1]; } \
          aux = { __CNST_FILLER len
-#  define DEFINE_STRING_STOP(name, aux) \
-        }; static obj_t name = BSTRING(&(aux.length) 
 #elif (BGL_HEADER_DATA_BIT_SIZE == 0)
-#  define DEFINE_STRING(name, aux, str, len) \
+#  define BGL_CREATE_STRING(aux, str, len) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       char string[len + 1]; } \
-         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0), len, str }; \
-         static obj_t name = BSTRING(&(aux.header))
-#  define DEFINE_STRING_START(name, aux, len) \
+         aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0), len, str }
+#  define BGL_CREATE_STRING_START(aux, len) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       char string[len + 1]; } \
          aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0), len
-#  define DEFINE_STRING_STOP(name, aux) \
-        }; static obj_t name = BSTRING(&(aux.header))
 #else
-#  define DEFINE_STRING(name, aux, str, len) \
+#  define BGL_CREATE_STRING(aux, len) \
       static struct { __CNST_ALIGN header_t header; \
                       char string[len + 1]; } \
          aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, len), str }; \
-         static obj_t name = BSTRING(&(aux.header))
-#  define DEFINE_STRING_START(name, aux, len) \
+#  define BGL_CREATE__STRING_START(aux, len) \
       static struct { __CNST_ALIGN header_t header; \
                       char string[len + 1]; } \
          aux = { __CNST_FILLER BGL_MAKE_HEADER(STRING_TYPE, 0)
-#  define DEFINE_STRING_STOP(name, aux) \
-        }; static obj_t name = BSTRING(&(aux.header))
 #endif
+
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_DECLARE_STRING(name, aux) \
+     static obj_t name = 0L
+#  define BGL_BIND_STRING(name, aux) \
+     name = BSTRING(&(aux.length));
+#  define BGL_DEFINE_STRING_STOP(name, aux) \
+      };
+#  define BGL_BIND_STRING_STOP(name, aux) \
+      static obj_t name = BSTRING(&(aux.length)
+#else
+#  define BGL_DECLARE_STRING(name, aux) \
+     static obj_t name = BSTRING(&(aux.length))
+#  define BGL_DEFINE_STRING_STOP(name, aux) \
+      }; static obj_t name = BSTRING(&(aux.length)
+#  define BGL_BIND_STRING(name, aux)
+#  define BGL_BIND_STRING_STOP(name, aux)
+#endif
+
+#define BGL_DEFINE_STRING(name, aux, str, len) \
+   BGL_CREATE_STRING(aux, str, len); \
+   BGL_DECLARE_STRING(name, aux)
+   
+#define DEFINE_STRING(name, aux, str, len) \
+   BGL_DEFINE_STRING(name, aux, str, len)
+   
+#define DEFINE_STRING_START(name, aux, len) \
+   BGL_DEFINE_STRING_START(aux, len)
+#define DEFINE_STRING_STOP(name, aux) \
+   BGL_DEFINE_STRING_STOP(name, aux)
+     
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */

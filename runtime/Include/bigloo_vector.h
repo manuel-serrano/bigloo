@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Jun  2 14:04:57 2025 (serrano)                */
+/*    Last change :  Sat Jun 28 10:50:31 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -156,15 +156,29 @@ struct bgl_hvector {
 /*---------------------------------------------------------------------*/
 /*    Typed vectors                                                    */
 /*---------------------------------------------------------------------*/
-#define DEFINE_TVECTOR_START(aux, len, itype) \
+#define BGL_CREATE_TVECTOR_START(aux, len, itype) \
    static struct { __CNST_ALIGN header_t header; \
 		   unsigned long length; \
 		   obj_t descr; \
 		   itype items[len]; } \
       aux = { __CNST_FILLER BGL_MAKE_HEADER(TVECTOR_TYPE, 0), len, 0L,
+
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_CREATE_TVECTOR_STOP(name, aux) \
+      }
+#  define BGL_BIND_TVECTOR_STOP(name, aux) \
+      static obj_t name = BREF(&(aux.header))
+#else
+#  define BGL_CREATE_TVECTOR_STOP(name, aux) \
+      }; static obj_t name = BREF(&(aux.header))
+#  define BGL_BIND_TVECTOR_STOP(name, aux)
+#endif
+
+#define DEFINE_TVECTOR_START(aux, len, itype) \
+   BGL_CREATE_TVECTOR_START(aux, len, itype)
 	      
 #define DEFINE_TVECTOR_STOP(name, aux) \
-	   }; static obj_t name = BREF(&(aux.header))
+   BGL_CREATE_TVECTOR_STOP(name, aux)
 
 #ifdef __GNUC__
 # define ALLOCATE_TVECTOR_MALLOC(MALLOC, _item_name, _item_type, _len, _descr)   \

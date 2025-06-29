@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jun 26 13:17:10 2025 (serrano)                */
+#*    Last change :  Sat Jun 28 09:56:03 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -115,6 +115,8 @@ bglnuntagging=0
 bglfltagging=4
 bglsmi=0
       
+# cnst double initialization (to workaround nan boxing cnst declarations)
+cnsttwostepsinit=0
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -1010,7 +1012,10 @@ while : ; do
       
     --smi)
       bglsmi=1;;
-      
+
+    --cnst-two-steps-init)
+      cnsttwostepsinit=1;;
+    
     --enable-thread|--enable-threads)
       threadsupport=yes;
       addp=1;
@@ -1371,6 +1376,7 @@ while : ; do
       echo "   --fl-tagging-lb (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-nz (for experiment only, don't use because slow)" >&2;
       echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
+      echo "   --cnst-two-steps-init (force two steps init for constants)" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
       echo "CC         C compiler command" >&2;
@@ -2081,6 +2087,12 @@ case $hostos in
       # crashes so we disable it by default
       musttail="0"
       tuning="MacOS X"
+
+      # as of June 2025 bglnantagging on macosx requires cnst two steps init
+      # to workaround a bug in MacOS XCode linker
+      if [ " $bglnantagging" = " 1" ]; then
+	cnsttwostepsinit=1
+      fi
     fi
 
     if [ "$tuning " = "MacOS X " ]; then
@@ -3897,6 +3909,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_NANFLAGS@|$cnanflags|" \
               -e "s|@C_FLTFLAGS@|$cfltflags|" \
+	      -e "s|@BGL_CNST_TWO_STEPS_INIT@|$cnsttwostepsinit|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_FP_OPTION@|$cfpflags|" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
@@ -5563,6 +5576,7 @@ if [ "$summary" = "yes" ]; then
   $echo "  tuning...................... $mode $tuning"
   $echo "  cc.......................... $cc ($coflags)"
   $echo "  tagging..................... $bgltagging"
+  $echo "  cnst two steps init......... $cnsttwostepsinit"
   if [ $customgc = "yes" ];then
      $echo "  gc.......................... custom ($gclib-$release, v$gcversion)"
   else
