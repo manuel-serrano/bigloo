@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Tue Jul  9 10:23:56 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jun 29 09:11:22 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -41,6 +41,7 @@
    (export  (require-prototype?::bool ::global)
 	    (emit-prototypes)
 	    (emit-cnsts)
+	    (emit-cnsts-bindings)
 	    (emit-class-types ::pair-nil ::output-port)))
 
 ;*---------------------------------------------------------------------*/
@@ -98,6 +99,13 @@
        (if (and (require-prototype? global)
 		(scnst? (global-value global)))
 	   (emit-cnst (global-value global) global))))
+   (newline *c-port*))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnsts-bindings ...                                          */
+;*---------------------------------------------------------------------*/
+(define (emit-cnsts-bindings)
+   (display "// cnst bindings" *c-port*)
    (newline *c-port*))
 
 ;*---------------------------------------------------------------------*/
