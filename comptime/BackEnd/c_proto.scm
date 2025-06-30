@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Sun Jun 29 12:36:24 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 09:41:55 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -352,13 +352,15 @@
 		       (display (char->integer (string-ref ostr i)) *c-port*)
 		       (display "," *c-port*)
 		       (laap (+fx i 1)))))))
-       (let ((str (string-for-read ostr)))
+       (let ((str (string-for-read ostr))
+	     (aux (id->name (gensym (global-name global)))))
+	  (add-constant-binding! "BGL_BIND_STRING" (global-name global) aux)
 	  ;; regular C compilers
 	  (fprin *c-port*
 	     "BGL_DEFINE_STRING("
 	     (global-name global)
 	     ", "
-	     (id->name (gensym (global-name global)))
+	     aux
 	     ", \"")
 	  (let loop ((read 0)
 		     (rlen (string-length str)))
