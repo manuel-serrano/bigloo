@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sat Jun 28 10:54:25 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 08:11:30 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NaN TAGGING REALs                                         */
@@ -40,7 +40,7 @@ union bgl_nanobj {
 #define BGL_REAL_CNST(name) name.ptr
 
 #define BGL_DEFINE_REAL(name, aux, _flonum) \
-   static const union bgl_nanobj name = _flonum
+   static const union bgl_nanobj name = { _flonum }
 #define BGL_BIND_REAL(name, aux)
 
 #define DEFINE_REAL(name, aux, _flonum) \

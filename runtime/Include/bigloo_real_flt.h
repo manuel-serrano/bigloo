@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sun Jun 29 16:47:31 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 08:28:34 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -298,16 +298,13 @@ INLINE obj_t DOUBLE_TO_REAL(double d) {
 #else
 // --
 #define BGL_CREATE_REAL(aux, flonum) \
-  static struct { double real; } \
-     aux = { flonum }
+  static struct { double real; } aux = { flonum }
 #endif
 // ---
 
 #if BGL_CNST_TWO_STEPS_INIT
-#  define BGL_DECLARE_REAL(n, aux) \
-      obj_t n = 0L
-#  define BGL_BIND_REAL(n, aux) \
-      name = BREAL(&aux)
+#  define BGL_DECLARE_REAL(n, aux) obj_t n = 0L
+#  define BGL_BIND_REAL(n, aux) name = BREAL(&aux)
 #else
 #  define BGL_DECLARE_REAL(n, aux) \
       static obj_t n = BREAL(&aux)

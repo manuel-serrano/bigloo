@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Mon Mar 10 10:30:02 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 08:06:36 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -194,8 +194,8 @@ make_cell(obj_t val) {
 #define BGL_MAKE_REAL
 
 #if (!defined(TAG_REALZ))
-DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
-DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
+BGL_DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
+BGL_DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #endif
 
 #if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 

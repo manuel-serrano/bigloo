@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sun Jun 29 13:23:33 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 07:51:31 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -271,7 +271,7 @@ extern "C" {
 #  define BGL_DEFINE_UINT32(name, cobj, num) \
      BGL_CREATE_UINT32(cobj, num); \
      BGL_DECLARE_UINT32(name, cobj)
-		 
+
 #  define BGL_INT32_SIZE (sizeof(struct bgl_sint32))
 #  define BGL_UINT32_SIZE (sizeof(struct bgl_uint32))
 #  define BGL_INT32(o) CREF(o)->sint32
@@ -323,6 +323,12 @@ extern "C" {
 #define BGL_UINT64_TO_BUINT64(_1) bgl_make_buint64(_1)
 #define BGL_BINT64_TO_INT64(o) BGL_INT64(o).val
 #define BGL_BUINT64_TO_UINT64(o) BGL_UINT64(o).val
+
+#define DEFINE_INT32(a,b,c) BGL_DEFINE_INT32(a,b,c)
+#define DEFINE_UINT32(a,b,c) BGL_DEFINE_UINT32(a,b,c)
+#define DEFINE_INT64(a,b,c) BGL_DEFINE_INT64(a,b,c)
+#define DEFINE_UINT64(a,b,c) BGL_DEFINE_UINT64(a,b,c)
+   
 
 /*---------------------------------------------------------------------*/
 /*    overflow                                                         */

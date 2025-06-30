@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Jun 26 10:30:27 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 08:01:15 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Remove uless cell that has been introduced for bind-exit forms   */
@@ -43,7 +43,7 @@
    (pass-postlude globals))
 
 ;*---------------------------------------------------------------------*/
-;*    nums-fun! ...                                                  */
+;*    nums-fun! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (nums-fun! var)
    (enter-function (variable-id var))
