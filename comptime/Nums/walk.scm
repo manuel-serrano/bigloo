@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Jun 30 08:53:48 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 08:58:44 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Remove uless cell that has been introduced for bind-exit forms   */
@@ -62,9 +62,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    nums! ::cond ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (nums! node::cond)
+(define-walk-method (nums! node::conditional)
    (call-default-walker)
-   (with-access::cond node (test)
+   (with-access::conditional node (test)
       (cond
 	 ((fixnums? test) node)
 	 ((flonums? test) node)
@@ -74,7 +74,8 @@
 ;*    fixnums? ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (fixnums? expr::node)
-   #f)
+   (when (isa? expr conditional)
+      #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonums? ...                                                     */
