@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Mon Jun 30 08:38:46 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 08:57:11 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -295,9 +295,9 @@ extern "C" {
 #   define BGL_DECLARE_UINT64(name, cobj) \
        static obj_t name = 0L
 #   define BGL_BIND_INT64(name, cobj) \
-       name = BREF(&(cobj.header)
+       name = BREF(&(cobj.header))
 #   define BGL_BIND_UINT64(name, cobj) \
-       name = BREF(&(cobj.header)
+       name = BREF(&(cobj.header))
 #else   
 #   define BGL_DECLARE_INT64(name, cobj) \
        static obj_t name = BREF(&(cobj.header))
