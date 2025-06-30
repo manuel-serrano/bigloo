@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Mon Jun 30 09:41:55 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 15:36:02 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -575,7 +575,7 @@
 	  (aux (id->name (gensym name))))
       (add-constant-binding! "BGL_BIND_L_PROCEDURE" vname aux)
       (fprint *c-port* "BGL_DEFINE_L_PROCEDURE("
-	 vname ", " aux ", " name " );")))
+	 vname ", " aux ", " name ");")))
    
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-stvector ...                                           */
@@ -587,11 +587,11 @@
       (set-variable-name! global)
       (let ((aux (id->name (gensym (global-name global)))))
 	 (add-constant-binding! "BGL_BIND_TVECTOR" (global-name global) aux)
-	 (fprint *c-port* "DEFINE_TVECTOR_START( "
+	 (fprint *c-port* "DEFINE_TVECTOR_START("
 	    aux ", " (vector-length vec) ", "
 	    (string-sans-$ (type-name itype))
-	    " ) " c-vec " DEFINE_TVECTOR_STOP( " (global-name global)
-	    ", " aux " );"))))
+	    ") " c-vec " DEFINE_TVECTOR_STOP(" (global-name global)
+	    ", " aux ");"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-c-scope ...                                                  */
