@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Jun 26 10:23:01 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 08:33:57 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1370,18 +1370,18 @@
 	   (set! *optim* 2))
 	  ((#\3)
 	   (-O3!)
-	   (set! *optim* 3))
+	   (set! *optim* 3)
+	   (set! *optim-uncell?* #t))
 	  ((#\4 #\5)
 	   (-O3!)
-	   (set! *optim* (-fx (char->integer (string-ref string 0))
-			    (char->integer #\0))))
+	   (set! *optim*
+	      (-fx (char->integer (string-ref string 0)) (char->integer #\0))))
 	  ((#\6)
 	   (-O3!)
 	   (set! *arithmetic-expand-flonum* #t)
 	   (set! *optim-stackable?* #t)
-	   (set! *optim-uncell?* #t)
-	   (set! *optim* (-fx (char->integer (string-ref string 0))
-			    (char->integer #\0))))
+	   (set! *optim*
+	      (-fx (char->integer (string-ref string 0)) (char->integer #\0))))
 	  (else
 	   (error "parse-arg" "Illegal -O option" string)))
        (set! *cc-options* (append *cc-options* (list "-O")))))

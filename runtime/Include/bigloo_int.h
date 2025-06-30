@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Mon Jun 30 07:51:31 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 08:38:46 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -111,7 +111,7 @@ extern "C" {
       const aux = { __CNST_FILLER BGL_MAKE_HEADER(LLONG_TYPE, 0), (BGL_LONGLONG_T)(num) }
 
 #if BGL_CNST_TWO_STEPS_INIT
-#   define BGL_DECLARE_LLONG(name, cobj)
+#   define BGL_DECLARE_LLONG(name, cobj) \
        static obj_t name = 0L
 #   define BGL_BIND_LLONG(name, cobj) \
        name = BREF(&(cobj.header))
@@ -147,7 +147,7 @@ extern "C" {
       const aux = { __CNST_FILLER BGL_MAKE_HEADER(ELONG_TYPE, 0), num }; \
 
 #if BGL_CNST_TWO_STEPS_INIT
-#   define BGL_DECLARE_ELONG(name, cobj)
+#   define BGL_DECLARE_ELONG(name, cobj) \
        static obj_t name = 0L
 #   define BGL_BIND_ELONG(name, cobj) \
        name = BREF(&(cobj.header))
@@ -247,9 +247,9 @@ extern "C" {
       const aux = { __CNST_FILLER BGL_MAKE_HEADER(UINT32_TYPE, 0), (uint32_t)(num) }
    
 #  if BGL_CNST_TWO_STEPS_INIT
-#     define BGL_DECLARE_INT32(name, cobj)
+#     define BGL_DECLARE_INT32(name, cobj) \
          static obj_t name = 0L
-#     define BGL_DECLARE_UINT32(name, cobj)
+#     define BGL_DECLARE_UINT32(name, cobj) \
          static obj_t name = 0L
 #     define BGL_BIND_INT32(name, cobj) \
          name = BREF(&(cobj.header)
@@ -290,9 +290,9 @@ extern "C" {
       const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT64_TYPE, 0), (int64_t)(num) }
 
 #if BGL_CNST_TWO_STEPS_INIT
-#   define BGL_DECLARE_INT64(name, cobj)
+#   define BGL_DECLARE_INT64(name, cobj) \
        static obj_t name = 0L
-#   define BGL_DECLARE_UINT64(name, cobj)
+#   define BGL_DECLARE_UINT64(name, cobj) \
        static obj_t name = 0L
 #   define BGL_BIND_INT64(name, cobj) \
        name = BREF(&(cobj.header)

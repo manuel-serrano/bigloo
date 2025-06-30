@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Jun 28 09:47:35 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 08:52:46 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1664,7 +1664,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #  define BGL_DECLARE_L_PROCEDURE(qualifier, n, cobj) \
      qualifier obj_t n = 0L;
 #  define BGL_BIND_L_PROCEDURE(n, cobj) \
-     n = BLIGHT(&(cobj.header))
+     n = BLIGHT(&(cobj.entry))
 #else
 #  define BGL_DECLARE_L_PROCEDURE(qualifier, n, cobj) \
      qualifier obj_t n = BLIGHT(&(cobj.entry))
