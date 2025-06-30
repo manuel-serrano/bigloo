@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sun Jun 29 07:16:11 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 09:18:51 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -71,6 +71,8 @@ struct bgl_real {
    
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)
 #endif
+
+#define BGL_REALSP(c, d) REALP(c) && REALP(d)
 
 #if BGL_CNST_TWO_STEPS_INIT
 #  define BGL_DECLARE_REAL(name, aux) \

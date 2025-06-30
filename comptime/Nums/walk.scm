@@ -3,11 +3,16 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Jun 30 08:58:44 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 09:00:31 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Remove uless cell that has been introduced for bind-exit forms   */
-;*    that have finally been transformed into returns and gotos.       */
+;*    This pass replace double type predicate invokation with a single */
+;*    combined test. I.e., it rewrites:                                */
+;*      (if (if ($fixnum? x) ($fixnum? y) #f) true false)              */
+;*    with                                                             */
+;*      (if ($fixnums? x y) true false)                                */
+;*                                                                     */
+;*    and the same thing for flonums.                                  */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -36,11 +41,34 @@
 	       (escape::bool (default #f)))))
 
 ;*---------------------------------------------------------------------*/
+;*    Nums cache                                                       */
+;*---------------------------------------------------------------------*/
+(define *$fixnum?* #f)
+(define *$flonum?* #f)
+(define *$fast-flonum?* #f)
+(define *$fixnums?* #f)
+(define *$flonums?* #f)
+(define *$fast-flonums?* #f)
+
+;*---------------------------------------------------------------------*/
 ;*    nums-walk! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (nums-walk! globals)
    (pass-prelude "Nums")
+   (init-cache!)
+   (for-each nums-fun! globals)
    (pass-postlude globals))
+
+;*---------------------------------------------------------------------*/
+;*    init-cache! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (init-cache!)
+   (set! *$fixnum?* (find-global '$fixnum? 'foreign))
+   (set! *$flonum?* (find-global '$flonum? 'foreign))
+   (set! *$fast-flonum?* (find-global '$fast-flonum? 'foreign))
+   (set! *$fixnums?* (find-global '$fixnums? 'foreign))
+   (set! *$flonums?* (find-global '$flonums? 'foreign))
+   (set! *$fast-flonums?* (find-global '$fast-flonums? 'foreign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    nums-fun! ...                                                    */
@@ -64,22 +92,50 @@
 ;*---------------------------------------------------------------------*/
 (define-walk-method (nums! node::conditional)
    (call-default-walker)
-   (with-access::conditional node (test)
+   (with-access::conditional node (test loc)
       (cond
-	 ((fixnums? test) node)
-	 ((flonums? test) node)
-	 (else node))))
+	 ((preds? test *$fixnum?*)
+	  =>
+	  (lambda (args) (set! test (preds *$fixnums?* args loc))))
+	 ((preds? test *$fast-flonum?*)
+	  =>
+	  (lambda (args) (set! test (preds *$fast-flonums?* args loc))))
+	 ((preds? test *$flonum?*)
+	  =>
+	  (lambda (args) (set! test (preds *$flonums?* args loc))))))
+   node)
 
 ;*---------------------------------------------------------------------*/
-;*    fixnums? ...                                                     */
+;*    preds? ...                                                       */
+;*    -------------------------------------------------------------    */
+;*    Detect the pattern (if ($fixnum? x) ($fixnum? y) #f)             */
 ;*---------------------------------------------------------------------*/
-(define (fixnums? expr::node)
+(define (preds? expr::node pred)
+   
+   (define (isfalse? node)
+      (when (isa? node literal)
+	 (with-access::literal node (value)
+	    (eq? value #f))))
+   
    (when (isa? expr conditional)
-      #f))
+      (with-access::conditional expr (test true false)
+	 (when (and (isfalse? false) (isa? test app))
+	    (with-access::app test (fun (args0 args))
+	       (when (and (eq? (var-variable fun) pred) (isa? true app))
+		   (with-access::app true (fun (args1 args))
+		      (when (eq? (var-variable fun) pred)
+			  (list (car args0) (car args1))))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    flonums? ...                                                     */
+;*    preds ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (flonums? expr::node)
-   #f)
+(define (preds pred::global args loc)
+   (instantiate::app
+      (type (variable-type pred))
+      (loc loc)
+      (fun (instantiate::ref
+	      (type (variable-type pred))
+	      (loc loc)
+	      (variable pred)))
+      (args args)))
 
