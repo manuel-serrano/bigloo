@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Mon Jun 30 09:17:13 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 16:55:57 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -37,7 +37,7 @@
 	    (macro $flonums?::bool (::obj ::obj) "BGL_REALSP")
 	    (macro $fast-flonum?::bool (::obj) "BGL_FAST_REALP")
 	    (macro $fast-flonums?::bool (::obj ::obj) "BGL_FAST_REALSP")
-	    (macro $fast-real->double::double (::obj) "BGL_FAST_REAL_TO_DOUBLE")
+	    (macro $fast-real->double::double (::real) "BGL_FAST_REAL_TO_DOUBLE")
 	    (infix macro $=fl::bool (::double ::double) "==")
 	    (infix macro $<fl::bool (::double ::double) "<")
 	    (infix macro $<=fl::bool (::double ::double) "<=")

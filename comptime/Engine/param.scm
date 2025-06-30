@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Jun 26 10:22:12 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 17:09:41 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -99,6 +99,7 @@
 	    *optim-stackable?*
 	    *optim-uncell?*
 	    *optim-nums?*
+	    *optim-fastfl?*
 	    *optim-unsafe-cell?*
 	    *purify*
 	    *jvm-env*
@@ -1002,6 +1003,9 @@
    #f)
 (param-define *optim-nums?*
    "Optimize double fix/flo predicates"
+   #f)
+(param-define *optim-fastfl?*
+   "Optimize fast-flonum optimization"
    #f)
 (param-define *optim-unsafe-cell?*
    "Use unsafe cell for shared captured variables"

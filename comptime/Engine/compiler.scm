@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Jun 26 10:21:24 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 17:14:50 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -86,6 +86,7 @@
 	    return_walk
 	    uncell_walk
 	    nums_walk
+	    fastfl_walk
 	    isa_walk
 	    cc_cc
 	    cc_ld
@@ -445,6 +446,13 @@
 	    (check-sharing "abound" ast)
 	    (check-type "abound" ast #t #f)
 
+	    ;; fast flonum optimization
+	    (when *optim-fastfl?*
+	       (set! ast (profile fastfl (fastfl-walk! ast)))
+	       (stop-on-pass 'fastfl (lambda () (write-ast ast)))
+	       (check-sharing "fastfl" ast)
+	       (check-type "fastfl" ast #t #t))
+	       
 	    ;; we introduce type coercion and checking
 	    (set! ast (profile coerce (coerce-walk! ast)))
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
