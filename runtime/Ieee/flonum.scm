@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Mon Jun 30 16:55:57 2025 (serrano)                */
+;*    Last change :  Tue Jul  1 09:03:51 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -252,7 +252,7 @@
 	    (inline randomfl::double))
    
    (pragma  ($flonum? no-alloc side-effect-free (predicate-of double) no-cfa-top nesting fail-safe)
-	    ($fast-flonum? no-alloc side-effect-free no-cfa-top nesting fail-safe)
+	    ($fast-flonum? no-alloc side-effect-free (predicate-of double) no-cfa-top nesting fail-safe)
 	    ($fast-flonums? no-alloc side-effect-free no-cfa-top nesting fail-safe)
 	    (real? no-alloc side-effect-free no-cfa-top nesting fail-safe)
 	    ($=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
