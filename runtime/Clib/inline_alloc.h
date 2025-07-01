@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Tue Jul  1 16:30:12 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 18:21:20 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -193,59 +193,59 @@ make_cell(obj_t val) {
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
 
-#if (!defined(TAG_REALZ))
-#  if (!defined(TAG_REAL))
-#    define BGL_CREATE_SLOW_REAL(aux, flonum) \
-       static struct { __CNST_ALIGN header_t header; double real; } \
-          aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
-#  else
-#    define BGL_CREATE_SLOW_REAL(aux, flonum) \
-       static struct { double real; } \
-         aux = { flonum }
+#if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
+#  if (!defined(TAG_REALZ))
+#    if (!defined(TAG_REAL))
+#      define BGL_CREATE_SLOW_REAL(aux, flonum) \
+         static struct { __CNST_ALIGN header_t header; double real; } \
+            aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
+#    else
+#      define BGL_CREATE_SLOW_REAL(aux, flonum) \
+         static struct { double real; } \
+           aux = { flonum }
+#    endif
+
+  #  define BGL_DECLARE_SLOW_REAL(n, aux) static obj_t n = BREAL(&aux)
+
+  #  define BGL_DEFINE_SLOW_REAL(name, aux, flonum) \
+       BGL_CREATE_SLOW_REAL(aux, flonum); \
+       BGL_DECLARE_SLOW_REAL(name, aux)
+
+  BGL_DEFINE_SLOW_REAL(bgl_zero, bgl_zero_tmp, 0.);
+B  GL_DEFINE_SLOW_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #  endif
 
-#  define BGL_DECLARE_SLOW_REAL(n, aux) static obj_t n = BREAL(&aux)
+  static obj_t
+a  lloc_make_real(double d) {
+     obj_t real;
 
-#  define BGL_DEFINE_SLOW_REAL(name, aux, flonum) \
-     BGL_CREATE_SLOW_REAL(aux, flonum); \
-     BGL_DECLARE_SLOW_REAL(name, aux)
+     real = (obj_t)GC_MALLOC_ATOMIC(REAL_SIZE);
+     BGL_INIT_REAL(real, d);
 
-BGL_DEFINE_SLOW_REAL(bgl_zero, bgl_zero_tmp, 0.);
-BGL_DEFINE_SLOW_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
-#endif
+     return BREAL(real);
+}  
 
-#if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
-static obj_t
-alloc_make_real(double d) {
-   obj_t real;
+  GC_API obj_t
+m  ake_real(double d) {
+#  if (!defined(TAG_REALZ))
+     if ((((union { double d; int64_t l; })(d)).l << 1) == 0) {
+        if (((union { double d; int64_t l; })(d)).l == 0) {
+	   return bgl_zero;
+        } else {
+	   return bgl_negative_zero;
+        }
+     } else
+#  endif
+     {
+        obj_t real;
+        GC_INLINE_MALLOC(real, REAL_SIZE, alloc_make_real(d));
+        BGL_INIT_REAL(real, d);
 
-   real = (obj_t)GC_MALLOC_ATOMIC(REAL_SIZE);
-   BGL_INIT_REAL(real, d);
+        return BREAL(real);
+     }
+}  
 
-   return BREAL(real);
-}
-
-GC_API obj_t
-make_real(double d) {
-#if (!defined(TAG_REALZ))
-   if ((((union { double d; int64_t l; })(d)).l << 1) == 0) {
-      if (((union { double d; int64_t l; })(d)).l == 0) {
-	 return bgl_zero;
-      } else {
-	 return bgl_negative_zero;
-      }
-   } else
-#endif
-   {
-      obj_t real;
-      GC_INLINE_MALLOC(real, REAL_SIZE, alloc_make_real(d));
-      BGL_INIT_REAL(real, d);
-
-      return BREAL(real);
-   }
-}
-
-#endif
+  #endif
 #endif
 
 /*---------------------------------------------------------------------*/
