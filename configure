@@ -1,10 +1,10 @@
-#!/bin/sh
+/tmp#!/bin/sh
 #*=====================================================================*/
 #*    serrano/prgm/project/bigloo/bigloo/configure                     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jun 28 09:56:03 2025 (serrano)                */
+#*    Last change :  Tue Jul  1 08:27:38 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2051,7 +2051,7 @@ case $hostos in
         sharedcompiler=yes
       fi
       sharedbde=yes
-      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
+      ldflags="$ldflags -dynamiclib -single_module -Wlsuppress"
       #customgmp=yes
       #customgmpmakefile=Makefile.macosx
       #customunistring=yes
