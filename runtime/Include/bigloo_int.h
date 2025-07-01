@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Mon Jun 30 08:57:11 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 12:18:56 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -238,7 +238,7 @@ extern "C" {
 #  define BGL_BUINT32_TO_UINT32(o) \
    BGL_BCNST_TO_CNST(o, 0xffffffffL, BGL_CNST_SHIFT_INT32, uint32_t)
 #else /* !BGL_CNST_SHIFT_INT32 */
-#  define GL_CREATE_INT32(aux, num) \
+#  define BGL_CREATE_INT32(aux, num) \
    static struct { __CNST_ALIGN header_t header; int32_t val; } \
       const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT32_TYPE, 0), (int32_t)(num) }
    
