@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Jun 30 17:08:38 2025 (serrano)                */
+;*    Last change :  Tue Jul  1 08:59:42 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -561,9 +561,9 @@
        (set! *optim-nums?* #t))
       (("-fno-nums" (help "Disable fx/fl double predicates optimization"))
        (set! *optim-nums?* #f))
-      (("-fast-flonums" (help "Enable fast-flonum optimization"))
+      (("-ffastfl" (help "Enable fast-flonum optimization"))
        (set! *optim-fastfl?* #t))
-      (("-fno-nums" (help "Disable fast-flonumm optimization"))
+      (("-fno-fastfl" (help "Disable fast-flonumm optimization"))
        (set! *optim-fastfl?* #f))
       ;; with-handler/bind-exit
       (("-flocal-exit" (help "Inline with-handler and bind-exit"))
