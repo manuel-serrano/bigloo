@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Mon Jun 30 08:06:36 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 16:30:12 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -194,8 +194,24 @@ make_cell(obj_t val) {
 #define BGL_MAKE_REAL
 
 #if (!defined(TAG_REALZ))
-BGL_DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
-BGL_DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
+#  if (!defined(TAG_REAL))
+#    define BGL_CREATE_SLOW_REAL(aux, flonum) \
+       static struct { __CNST_ALIGN header_t header; double real; } \
+          aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
+#  else
+#    define BGL_CREATE_SLOW_REAL(aux, flonum) \
+       static struct { double real; } \
+         aux = { flonum }
+#  endif
+
+#  define BGL_DECLARE_SLOW_REAL(n, aux) static obj_t n = BREAL(&aux)
+
+#  define BGL_DEFINE_SLOW_REAL(name, aux, flonum) \
+     BGL_CREATE_SLOW_REAL(aux, flonum); \
+     BGL_DECLARE_SLOW_REAL(name, aux)
+
+BGL_DEFINE_SLOW_REAL(bgl_zero, bgl_zero_tmp, 0.);
+BGL_DEFINE_SLOW_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #endif
 
 #if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
@@ -214,9 +230,9 @@ make_real(double d) {
 #if (!defined(TAG_REALZ))
    if ((((union { double d; int64_t l; })(d)).l << 1) == 0) {
       if (((union { double d; int64_t l; })(d)).l == 0) {
-	 return BGL_REAL_CNST(bgl_zero);
+	 return bgl_zero;
       } else {
-	 return BGL_REAL_CNST(bgl_negative_zero);
+	 return bgl_negative_zero;
       }
    } else
 #endif

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jul  1 08:59:42 2025 (serrano)                */
+;*    Last change :  Tue Jul  1 15:54:11 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1354,6 +1354,7 @@
       (set! *optim-jvm-branch* 5)
       (set! *optim-return?* #t)
       (set! *optim-return-goto?* #t)
+      (set! *optim-uncell?* #t)
       (unless (boolean? *optim-unroll-loop?*)
 	 (set! *optim-unroll-loop?* #t)))
    
@@ -1376,8 +1377,7 @@
 	   (set! *optim* 2))
 	  ((#\3)
 	   (-O3!)
-	   (set! *optim* 3)
-	   (set! *optim-uncell?* #t))
+	   (set! *optim* 3))
 	  ((#\4 #\5)
 	   (-O3!)
 	   (set! *optim*
@@ -1386,7 +1386,6 @@
 	   (-O3!)
 	   (set! *arithmetic-expand-flonum* #t)
 	   (set! *optim-stackable?* #t)
-	   (set! *optim-uncell?* #t)
 	   (set! *optim-nums?* #t)
 	   (set! *optim-fastfl?* #t)
 	   (set! *optim*
