@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Jun 30 09:20:17 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 09:56:44 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -291,26 +291,11 @@ INLINE obj_t DOUBLE_TO_REAL(double d) {
 /*---------------------------------------------------------------------*/
 /*    DEFINE_REAL ...                                                  */
 /*---------------------------------------------------------------------*/
-#if (!defined(TAG_REAL))
-// ---------------------
 #define BGL_CREATE_REAL(aux, flonum) \
-  static struct { __CNST_ALIGN header_t header; double real; } \
-     aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
-#else
-// --
-#define BGL_CREATE_REAL(aux, flonum) \
-  static struct { double real; } aux = { flonum }
-#endif
-// ---
+  static const double aux = flonum
 
-#if BGL_CNST_TWO_STEPS_INIT
-#  define BGL_DECLARE_REAL(n, aux) obj_t n = 0L
-#  define BGL_BIND_REAL(n, aux) name = BREAL(&aux)
-#else
-#  define BGL_DECLARE_REAL(n, aux) \
-      static obj_t n = BREAL(&aux)
-#  define BGL_BIND_REAL(n, aux)
-#endif
+#define BGL_DECLARE_REAL(n, aux) static obj_t n = 0L
+#define BGL_BIND_REAL(n, aux) n = DOUBLE_TO_REAL(aux)
 
 #define BGL_DEFINE_REAL(name, aux, flonum) \
    BGL_CREATE_REAL(aux, flonum); \
