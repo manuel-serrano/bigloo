@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Tue Jul  1 11:55:55 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 12:07:13 2025 (serrano)                */
 /*    Copyright   :  2002-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -245,18 +245,17 @@ obj_t
 __debug(char *lbl, obj_t o) {
    fprintf(stderr, "%s:%d %s o=%p\n", __FILE__, __LINE__, lbl, o);
    if (BGL_HVECTORP(o)) {
-      fprintf(stderr, "   hvector=%lu\n",BGL_HVECTOR_LENGTH(o));
+      fprintf(stderr, "   hvector=%lu\n", BGL_HVECTOR_LENGTH(o));
    } else if (REALP(o)) {
       fprintf(stderr, "   real\n");
    } else if (PAIRP(o)) {
       fprintf(stderr, "   pair\n");
    } else if (SYMBOLP(o)) {
-      fprintf(stderr, "   symbol=%s\n",
-	       BSTRING_TO_STRING(SYMBOL_TO_STRING(o)));
+      fprintf(stderr, "   symbol=%s\n", BSTRING_TO_STRING(SYMBOL_TO_STRING(o)));
    } else if (INTEGERP(o)) {
-      fprintf(stderr, "   int=%ld\n",CINT(o));
+      fprintf(stderr, "   int=%ld\n", CINT(o));
    } else if (REALP(o)) {
-      fprintf(stderr, "   real=%f\n",REAL_TO_DOUBLE(o));
+      fprintf(stderr, "   real=%f\n", REAL_TO_DOUBLE(o));
    } else if (BGL_OBJECTP(o)) {
       fprintf(stderr, "   object=%ld\n", BGL_OBJECT_CLASS_NUM(o));
    } else if (POINTERP(o)) {

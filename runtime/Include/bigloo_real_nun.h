@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Jun 30 09:19:47 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 12:15:37 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NuN TAGGING REALs                                         */
@@ -44,7 +44,7 @@ union bgl_nunobj {
    obj_t obj;
 };
 
-#define BGL_NUN_FL_OFFSET (1ULL << 49)
+#define BGL_NUN_FL_OFFSET (1UL << 49)
 
 #define BGL_DOUBLE_AS_BITS(d) (((union bgl_nunobj)(d)).bits)
 #define BGL_OBJ_AS_BITS(d) (((union bgl_nunobj)(d)).bits)
