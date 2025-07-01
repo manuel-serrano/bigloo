@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Jul  1 11:02:42 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 20:57:54 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -201,7 +201,7 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 #  define FLONUMP(o) (((int32_t)((uint32_t)BGL_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
 #  define BGL_FAST_REALVAL(o) ((int32_t)((uint32_t)BGL_FAST_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o))
 #  define BGL_FAST_REALP(o) (BGL_FAST_REALVAL(o) < 0)
-#  define BGL_FAST_REALSP(o) ((BGL_FAST_REALVAL(o) | BGL_FAST_REALVAL(p)) < 0)
+#  define BGL_FAST_REALSP(o, p) ((BGL_FAST_REALVAL(o) | BGL_FAST_REALVAL(p)) < 0)
 #endif
 // ---
 
