@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Tue Jul  1 18:21:20 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 19:11:41 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -205,18 +205,17 @@ make_cell(obj_t val) {
            aux = { flonum }
 #    endif
 
-  #  define BGL_DECLARE_SLOW_REAL(n, aux) static obj_t n = BREAL(&aux)
+#    define BGL_DECLARE_SLOW_REAL(n, aux) static obj_t n = BREAL(&aux)
 
-  #  define BGL_DEFINE_SLOW_REAL(name, aux, flonum) \
+#    define BGL_DEFINE_SLOW_REAL(name, aux, flonum) \
        BGL_CREATE_SLOW_REAL(aux, flonum); \
        BGL_DECLARE_SLOW_REAL(name, aux)
 
-  BGL_DEFINE_SLOW_REAL(bgl_zero, bgl_zero_tmp, 0.);
-B  GL_DEFINE_SLOW_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
+BGL_DEFINE_SLOW_REAL(bgl_zero, bgl_zero_tmp, 0.);
+BGL_DEFINE_SLOW_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #  endif
 
-  static obj_t
-a  lloc_make_real(double d) {
+static obj_t alloc_make_real(double d) {
      obj_t real;
 
      real = (obj_t)GC_MALLOC_ATOMIC(REAL_SIZE);
@@ -225,8 +224,7 @@ a  lloc_make_real(double d) {
      return BREAL(real);
 }  
 
-  GC_API obj_t
-m  ake_real(double d) {
+GC_API obj_t make_real(double d) {
 #  if (!defined(TAG_REALZ))
      if ((((union { double d; int64_t l; })(d)).l << 1) == 0) {
         if (((union { double d; int64_t l; })(d)).l == 0) {
@@ -244,8 +242,7 @@ m  ake_real(double d) {
         return BREAL(real);
      }
 }  
-
-  #endif
+#  endif
 #endif
 
 /*---------------------------------------------------------------------*/
