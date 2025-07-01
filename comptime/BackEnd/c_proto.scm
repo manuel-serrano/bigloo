@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Mon Jun 30 15:36:02 2025 (serrano)                */
+;*    Last change :  Tue Jul  1 07:00:15 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -435,7 +435,7 @@
    (set-variable-name! global)
    (let ((tmp (id->name (gensym (global-name global)))))
       (add-constant-binding! "BGL_BIND_INT32" (global-name global) tmp)
-      (fprint *c-port* "BGL_DEFINE_INT32( "
+      (fprint *c-port* "BGL_DEFINE_INT32("
 	 (global-name global) ", " tmp ", " int32 ");")))
 
 ;*---------------------------------------------------------------------*/
@@ -445,7 +445,7 @@
    (set-variable-name! global)
    (let ((tmp (id->name (gensym (global-name global)))))
       (add-constant-binding! "BGL_BIND_UINT32" (global-name global) tmp)
-      (fprint *c-port* "BGL_DEFINE_UINT32( "
+      (fprint *c-port* "BGL_DEFINE_UINT32("
 	 (global-name global) ", " tmp ", " uint32 ");")))
 
 ;*---------------------------------------------------------------------*/
@@ -455,7 +455,7 @@
    (set-variable-name! global)
    (let ((tmp (id->name (gensym (global-name global)))))
       (add-constant-binding! "BGL_BIND_INT64" (global-name global) tmp)
-      (fprint *c-port* "BGL_DEFINE_INT64( "
+      (fprint *c-port* "BGL_DEFINE_INT64("
 	 (global-name global) ", " tmp ", " int64 ");")))
 
 ;*---------------------------------------------------------------------*/
@@ -465,8 +465,8 @@
    (set-variable-name! global)
    (let ((tmp (id->name (gensym (global-name global)))))
       (add-constant-binding! "BGL_BIND_UINT64" (global-name global) tmp)
-      (fprint *c-port* "BGL_DEFINE_UINT64( "
-	 (global-name global) ", " tmp ", " uint64 " );")))
+      (fprint *c-port* "BGL_DEFINE_UINT64("
+	 (global-name global) ", " tmp ", " uint64 ");")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun ...                                               */
@@ -501,8 +501,8 @@
 		    (global-key? (sfun-the-closure-global (global-value (var-variable entry))))))
 	      (fprint *c-port*
 		      (if (eq? (global-import global) 'static)
-			  (string-append "DEFINE_STATIC_BGL_" kind "( ")
-			  (string-append "DEFINE_EXPORT_BGL_" kind "( "))
+			  (string-append "DEFINE_STATIC_BGL_" kind "(")
+			  (string-append "DEFINE_EXPORT_BGL_" kind "("))
 		      vname
 		      ", "
 		      tmp
@@ -512,12 +512,12 @@
 		      ", BFALSE, "
 		      ;; arity check is implemented in the function body
 		      -1
-		      " );"))
+		      ");"))
 	     ((>=fx arity 0)
 	      (fprint *c-port*
 		      (if (eq? (global-import global) 'static)
-			  (string-append "DEFINE_STATIC_BGL_" kind "( ")
-			  (string-append "DEFINE_EXPORT_BGL_" kind "( "))
+			  (string-append "DEFINE_STATIC_BGL_" kind "(")
+			  (string-append "DEFINE_EXPORT_BGL_" kind "("))
 		      vname
 		      ", "
 		      tmp
@@ -525,12 +525,12 @@
 		      name
 		      ", 0L, BUNSPEC, "
 		      arity
-		      " );"))
+		      ");"))
 	     (else
 	      (fprint *c-port*
 		      (if (eq? (global-import global) 'static)
-			  (string-append "DEFINE_STATIC_BGL_" kind "( ")
-			  (string-append "DEFINE_EXPORT_BGL_" kind "( "))
+			  (string-append "DEFINE_STATIC_BGL_" kind "(")
+			  (string-append "DEFINE_EXPORT_BGL_" kind "("))
 		      vname
 		      ", "
 		      tmp
@@ -542,7 +542,7 @@
 		      name
 		      ", BUNSPEC, "
 		      arity
-		      " );"))))))
+		      ");"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fun-va-stackable? ...                                            */
