@@ -412,7 +412,8 @@
 		   (local.get $arg31)
 		   (local.get $arg32)
 		   (ref.cast (ref $func33) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply32
    (func $apply32
@@ -519,7 +520,8 @@
 		   (local.get $arg30)
 		   (local.get $arg31)
 		   (ref.cast (ref $func32) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply31
    (func $apply31
@@ -623,7 +625,8 @@
 		   (local.get $arg29)
 		   (local.get $arg30)
 		   (ref.cast (ref $func31) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply30
    (func $apply30
@@ -724,7 +727,8 @@
 		   (local.get $arg28)
 		   (local.get $arg29)
 		   (ref.cast (ref $func30) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply29
    (func $apply29
@@ -822,7 +826,8 @@
 		   (local.get $arg27)
 		   (local.get $arg28)
 		   (ref.cast (ref $func29) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply28
    (func $apply28
@@ -917,7 +922,8 @@
 		   (local.get $arg26)
 		   (local.get $arg27)
 		   (ref.cast (ref $func28) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply27
    (func $apply27
@@ -1009,7 +1015,8 @@
 		   (local.get $arg25)
 		   (local.get $arg26)
 		   (ref.cast (ref $func27) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply26
    (func $apply26
@@ -1098,7 +1105,8 @@
 		   (local.get $arg24)
 		   (local.get $arg25)
 		   (ref.cast (ref $func26) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply25
    (func $apply25
@@ -1184,7 +1192,8 @@
 		   (local.get $arg23)
 		   (local.get $arg24)
 		   (ref.cast (ref $func25) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply24
    (func $apply24
@@ -1267,7 +1276,8 @@
 		   (local.get $arg22)
 		   (local.get $arg23)
 		   (ref.cast (ref $func24) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply23
    (func $apply23
@@ -1347,7 +1357,8 @@
 		   (local.get $arg21)
 		   (local.get $arg22)
 		   (ref.cast (ref $func23) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply22
    (func $apply22
@@ -1424,7 +1435,8 @@
 		   (local.get $arg20)
 		   (local.get $arg21)
 		   (ref.cast (ref $func22) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply21
    (func $apply21
@@ -1498,7 +1510,8 @@
 		   (local.get $arg19)
 		   (local.get $arg20)
 		   (ref.cast (ref $func21) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
 
    ;; apply20
    (func $apply20
@@ -1569,7 +1582,8 @@
 		   (local.get $arg18)
 		   (local.get $arg19)
 		   (ref.cast (ref $func20) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply19
    (func $apply19
@@ -1637,7 +1651,8 @@
 		   (local.get $arg17)
 		   (local.get $arg18)
 		   (ref.cast (ref $func19) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply18
    (func $apply18
@@ -1702,7 +1717,8 @@
 		   (local.get $arg16)
 		   (local.get $arg17)
 		   (ref.cast (ref $func18) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply17
    (func $apply17
@@ -1781,7 +1797,8 @@
 		   (local.get $arg15)
 		   (local.get $arg16)
 		   (ref.cast (ref $func17) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply16
    (func $apply16
@@ -1856,7 +1873,8 @@
 		   (local.get $arg14)
 		   (local.get $arg15)
 		   (ref.cast (ref $func16) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply15
    (func $apply15
@@ -1927,7 +1945,8 @@
 		   (local.get $arg13)
 		   (local.get $arg14)
 		   (ref.cast (ref $func15) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply14
    (func $apply14
@@ -1994,7 +2013,8 @@
 		   (local.get $arg12)
 		   (local.get $arg13)
 		   (ref.cast (ref $func14) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply13
    (func $apply13
@@ -2057,7 +2077,8 @@
 		   (local.get $arg11)
 		   (local.get $arg12)
 		   (ref.cast (ref $func13) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply12
    (func $apply12
@@ -2116,8 +2137,9 @@
 		   (local.get $arg10)
 		   (local.get $arg11)
 		   (ref.cast (ref $func12) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
-   
+	  (else (throw $fail)))
+      (unreachable))
+
    ;; apply11
    (func $apply11
       (param $proc (ref $procedure))
@@ -2171,7 +2193,8 @@
 		   (local.get $arg9)
 		   (local.get $arg10)
 		   (ref.cast (ref $func11) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply10
    (func $apply10
@@ -2222,7 +2245,8 @@
 		   (local.get $arg8)
 		   (local.get $arg9)
 		   (ref.cast (ref $func10) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply9
    (func $apply9
@@ -2269,7 +2293,8 @@
 		   (local.get $arg7)
 		   (local.get $arg8)
 		   (ref.cast (ref $func9) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply8
    (func $apply8
@@ -2312,7 +2337,8 @@
 		   (local.get $arg6)
 		   (local.get $arg7)
 		   (ref.cast (ref $func8) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply7
    (func $apply7
@@ -2351,7 +2377,8 @@
 		   (local.get $arg5)
 		   (local.get $arg6)
 		   (ref.cast (ref $func7) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply6
    (func $apply6
@@ -2386,7 +2413,8 @@
 		   (local.get $arg4)
 		   (local.get $arg5)
 		   (ref.cast (ref $func6) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply5
    (func $apply5
@@ -2417,7 +2445,8 @@
 		   (local.get $arg3)
 		   (local.get $arg4)
 		   (ref.cast (ref $func5) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply4
    (func $apply4
@@ -2444,7 +2473,8 @@
 		   (local.get $arg2)
 		   (local.get $arg3)
 		   (ref.cast (ref $func4) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply3
    (func $apply3
@@ -2467,7 +2497,8 @@
 		   (local.get $arg1)
 		   (local.get $arg2)
 		   (ref.cast (ref $func3) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply2
    (func $apply2
@@ -2486,7 +2517,8 @@
 		   (local.get $arg0)
 		   (local.get $arg1)
 		   (ref.cast (ref $func2) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply1
    (func $apply1
@@ -2501,7 +2533,8 @@
 		   (local.get $proc)
 		   (local.get $arg0)
 		   (ref.cast (ref $func1) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply0
    (func $apply0
@@ -2512,7 +2545,8 @@
 	  (then (return_call_ref $func0
 		   (local.get $proc)
 		   (ref.cast (ref $func0) (struct.get $procedure $entry (local.get $proc)))))
-	  (else (throw $fail))))
+	  (else (throw $fail)))
+      (unreachable))
    
    ;; apply_1
    (func $apply_1 
