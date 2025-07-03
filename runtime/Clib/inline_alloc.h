@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Tue Jul  1 19:11:41 2025 (serrano)                */
+/*    Last change :  Wed Jul  2 17:10:58 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -226,8 +226,8 @@ static obj_t alloc_make_real(double d) {
 
 GC_API obj_t make_real(double d) {
 #  if (!defined(TAG_REALZ))
-     if ((((union { double d; int64_t l; })(d)).l << 1) == 0) {
-        if (((union { double d; int64_t l; })(d)).l == 0) {
+     if ((((union { double d; uint64_t l; })(d)).l << 1) == 0) {
+        if (((union { double d; uint64_t l; })(d)).l == 0) {
 	   return bgl_zero;
         } else {
 	   return bgl_negative_zero;
