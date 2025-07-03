@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Jul  2 06:04:43 2025 (serrano)                */
+/*    Last change :  Thu Jul  3 11:19:47 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -54,7 +54,7 @@ struct bgl_real {
 #   define BGL_CREATE_REAL(aux, flonum) \
       static struct { double real; } aux = { flonum }
       
-#   define FLONUMP(c) ((c && ((((long)c) & TAG_MASK) == TAG_REAL)))
+#   define FLONUMP(c) BGL_TAGGED_PTRP(c, TAG_REAL, TAG_MASK)
 #   define REALP(c) FLONUMP(c)
 
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)

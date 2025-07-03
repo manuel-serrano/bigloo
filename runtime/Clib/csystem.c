@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/runtime/Clib/csystem.c           */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csystem.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Mon Nov 18 15:44:07 2024 (serrano)                */
-/*    Copyright   :  2002-24 Manuel Serrano                            */
+/*    Last change :  Thu Jul  3 12:55:19 2025 (serrano)                */
+/*    Copyright   :  2002-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -535,6 +535,10 @@ bgl_time(obj_t thunk) {
 
    return BGL_PROCEDURE_CALL0(thunk);
 #else   
+#  if (BGL_HAVE_TIMEVAL)
+   struct timeval tv1, tv2;
+#  endif
+
    static long ctick = 0;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
    struct tms buf1, buf2;
@@ -544,13 +548,29 @@ bgl_time(obj_t thunk) {
    if (!ctick) ctick = sysconf(_SC_CLK_TCK);
 
    t1 = times(&buf1);
+#  if (BGL_HAVE_TIMEVAL)
+   gettimeofday(&tv1, 0);
+#  endif
+    
    res = BGL_PROCEDURE_CALL0(thunk);
+   
+#  if (BGL_HAVE_TIMEVAL)
+   gettimeofday(&tv2, 0);
+#  endif
    t2 = times(&buf2);
       
    BGL_ENV_MVALUES_NUMBER_SET(env, 4);
 
 #  define BTICK(v) BINT((v) * 1000 / ctick)
+#  if (BGL_HAVE_TIMEVAL)
+   {
+     BGL_LONGLONG_T ms1 = (BGL_LONGLONG_T)(tv1.tv_sec) * 1000 + (BGL_LONGLONG_T)(tv1.tv_usec / 1000);
+     BGL_LONGLONG_T ms2 = (BGL_LONGLONG_T)(tv2.tv_sec) * 1000 + (BGL_LONGLONG_T)(tv2.tv_usec / 1000);
+     BGL_ENV_MVALUES_VAL_SET(env, 1, BINT(ms2 - ms1));
+   }
+#  else
    BGL_ENV_MVALUES_VAL_SET(env, 1, BTICK(t2 - t1));
+#  endif   
    BGL_ENV_MVALUES_VAL_SET(env, 2, BTICK(buf2.tms_stime - buf1.tms_stime));
    BGL_ENV_MVALUES_VAL_SET(env, 3, BTICK((buf2.tms_cutime - buf1.tms_cutime)
 					   + (buf2.tms_utime - buf1.tms_utime)));

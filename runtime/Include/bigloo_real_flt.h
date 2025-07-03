@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Jul  2 18:07:52 2025 (serrano)                */
+/*    Last change :  Thu Jul  3 12:27:41 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -165,7 +165,6 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
    (BGL_TAGGED_REALP(o) && BGL_TAGGED_REALP(p))
 #elif BGL_TAGGING == BGL_TAGGING_FL1
 // ---------------------------------
-// ((o>>59)+13)>>1
 #  define BGL_TAGGED_REALP(o) \
      (((long)o & TAG_MASK) == TAG_REALZ)
 #  define BGL_TAGGED_REALSP(o, p) \
