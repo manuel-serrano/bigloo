@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Fri May  1 09:28:58 2020 (serrano)                */
-#*    Copyright   :  2010-20 Manuel Serrano                            */
+#*    Last change :  Wed Jun 25 17:29:46 2025 (serrano)                */
+#*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
 #*=====================================================================*/
@@ -107,11 +107,16 @@ clean-init:
 
 api-c: api-init $(TAGS) .afile heap-c
 	mkdir -p objs
-	$(MAKE) api-c-static && $(MAKE) api-c-shared
+	$(MAKE) api-c-static
+	$(MAKE) api-c-shared
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	  $(MAKE) api-c-shared_mt; \
+	fi
 
 api-c_mt: api-init $(TAGS) .afile heap-c
 	mkdir -p objs
-	$(MAKE) api-c-static && $(MAKE) api-c-shared_mt
+	$(MAKE) api-c-static
+	$(MAKE) api-c-shared_mt
 
 heap-c: $(BOOTLIBDIR)/$(API).heap
 $(BOOTLIBDIR)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
@@ -147,13 +152,9 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).a: $(BOOTLIBDIR)/libbigloo$(API)_es-
 api-c-shared:
 	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
 	  $(MAKE) api-one-c-shared LIBSUFFIX=_s LIBSUFFIXTHREAD= && \
-	  $(MAKE) api-one-c-shared LIBSUFFIX=_s LIBSUFFIXTHREAD=_mt && \
 	  $(MAKE) api-one-c-shared LIBSUFFIX=_es LIBSUFFIXTHREAD= && \
-	  $(MAKE) api-one-c-shared LIBSUFFIX=_es LIBSUFFIXTHREAD=_mt && \
 	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD= && \
-	  $(MAKE) api-one-c-shared LIBSUFFIX=_u LIBSUFFIXTHREAD=_mt && \
-	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD= && \
-	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD=_mt; \
+	  $(MAKE) api-one-c-shared LIBSUFFIX=_eu LIBSUFFIXTHREAD=; \
         fi
 
 api-c-shared_mt:

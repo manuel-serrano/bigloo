@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 16 13:12:00 2024                          */
-;*    Last change :  Tue Mar 25 08:50:10 2025 (serrano)                */
+;*    Last change :  Wed Jun 25 09:54:30 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic configuration                                            */
@@ -77,6 +77,7 @@
       $$configure-regexp-family
       $$configure-nun-tagging
       $$configure-fl-tagging
+      $$configure-ptr-alignment
       $$configure-int-size
       $$configure-elong-size
       $$configure-have-unistring
@@ -165,6 +166,7 @@
 (define $$configure-int-size 32)
 (define $$configure-elong-size 32)
 (define $$configure-fl-tagging #f)
+(define $$configure-ptr-alignment 64)
 (define $$configure-have-unistring #f)
 (define $$configure-have-syslog #f)
 (define $$configure-have-getrlimit #f)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Jun 22 08:46:12 2025 (serrano)                */
+;*    Last change :  Wed Jun 25 13:43:29 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -37,6 +37,7 @@
 	    __evenv)
    
    (extern (macro $fixnum?::bool (::obj) "INTEGERP")
+	   (macro $fixnums?::bool (::obj ::obj) "INTEGERSP")
 	   (macro $elong?::bool (::obj) "ELONGP")
 	   (macro $llong?::bool (::obj) "LLONGP")
 	   (macro $int8?::bool (::obj) "BGL_INT8P")
@@ -435,6 +436,8 @@
 	       (field static $maxvalllong::llong "MAX_VALUE_ELONG")
 	       (method static $fixnum?::bool (::obj)
 		  "INTEGERP")
+	       (method static $fixnums?::bool (::obj ::obj)
+		  "INTEGERSP")
 	       (method static $elong?::bool (::obj)
 		  "ELONGP")
 	       (method static $llong?::bool (::obj)
@@ -1168,6 +1171,7 @@
    
    (pragma  (fixnum? no-alloc (predicate-of bint) no-cfa-top nesting fail-safe)
 	    ($fixnum? no-alloc side-effect-free (predicate-of bint) no-cfa-top nesting args-safe (effect) fail-safe)
+	    ($fixnums? no-alloc side-effect-free (predicate-of bint) no-cfa-top nesting args-safe (effect) fail-safe)
 	    ($elong? no-alloc side-effect-free (predicate-of belong) no-cfa-top nesting (effect) fail-safe)
 	    ($llong? no-alloc side-effect-free (predicate-of bllong) no-cfa-top nesting (effect) fail-safe)
 	    ($int8? no-alloc side-effect-free (predicate-of bint8) no-cfa-top nesting (effect) fail-safe)	

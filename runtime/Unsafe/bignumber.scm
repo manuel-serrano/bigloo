@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Fri Dec 13 16:01:13 2024 (serrano)                */
-;*    Copyright   :  2006-24 Marc Feeley                               */
+;*    Last change :  Mon Jun 23 18:38:49 2025 (serrano)                */
+;*    Copyright   :  2006-25 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
 ;*=====================================================================*/

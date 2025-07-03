@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Jun 16 10:05:31 2025 (serrano)                */
+;*    Last change :  Mon Jun 30 17:14:50 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -85,6 +85,8 @@
 	    prof_walk
 	    return_walk
 	    uncell_walk
+	    nums_walk
+	    fastfl_walk
 	    isa_walk
 	    cc_cc
 	    cc_ld
@@ -445,7 +447,13 @@
 	    (check-sharing "abound" ast)
 	    (check-type "abound" ast #t #f)
 
-	    ;; Introduction of type coercions and checks
+	    ;; fast flonum optimization
+	    (when *optim-fastfl?*
+	       (set! ast (profile fastfl (fastfl-walk! ast)))
+	       (stop-on-pass 'fastfl (lambda () (write-ast ast)))
+	       (check-sharing "fastfl" ast)
+	       (check-type "fastfl" ast #t #t))
+	       
 	    (set! ast (profile coerce (coerce-walk! ast)))
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
 	    (check-sharing "coerce" ast)
@@ -538,6 +546,13 @@
 		  (stop-on-pass 'uncell (lambda () (write-ast ast)))
 		  (check-sharing "uncell" ast)
 		  (check-type "uncell" ast #t #f))
+	    
+	       ;; double fix/flo predicates optimization
+	       (when *optim-nums?*
+		  (set! ast (profile uncell (nums-walk! ast)))
+		  (stop-on-pass 'nums (lambda () (write-ast ast)))
+		  (check-sharing "nums" ast)
+		  (check-type "nums" ast #t #f))
 
 	       (backend-walk (remove-var 'now ast2)))
 	    

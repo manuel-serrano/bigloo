@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Jun  5 08:34:59 2025 (serrano)                */
+;*    Last change :  Fri Jun 27 08:57:52 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -765,7 +765,7 @@
    (let ((len (string-length string)))
       (if (>fx len 256)
 	  (let* ((ncol 60)
-		 (nstring (substring string (maxfx 0 (-fx col ncol)) (+fx col 10))))
+		 (nstring (substring string (maxfx 0 (-fx col ncol)) (minfx (+fx col 10)))))
 	     (notify-&error/location-loc err fname line loc
 		(string-append "..." nstring "...")
 		(+fx ncol 3)))

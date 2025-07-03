@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed May 14 10:00:03 2025 (serrano)                */
+/*    Last change :  Thu Jul  3 12:27:41 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -154,20 +154,27 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 	     "r"((uint16_t)((uint16_t)(~(uint16_t)0)/0xff * BGL_REAL_TAG_SET)));
    return carry;
 }
+#  define BGL_TAGGED_REALSP(o, p) \
+     (BGL_TAGGED_REALP(o) && BGL_TAGGED_REALP(p))
 #  endif
 #elif BGL_TAGGING == BGL_TAGGING_FLLB
 // ----------------------------------
 #  define BGL_TAGGED_REALP(o) \
      ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)o) & TAG_MASK))) < 0)
+#  define BGL_TAGGED_REALSP(o, p) \
+   (BGL_TAGGED_REALP(o) && BGL_TAGGED_REALP(p))
 #elif BGL_TAGGING == BGL_TAGGING_FL1
 // ---------------------------------
-// ((o>>59)+13)>>1
 #  define BGL_TAGGED_REALP(o) \
      (((long)o & TAG_MASK) == TAG_REALZ)
+#  define BGL_TAGGED_REALSP(o, p) \
+     (((((long)o - TAG_REALZ) | ((long)p - TAG_REALZ)) & TAG_MASK) == 0)
 #else
 // --
 #  define BGL_TAGGED_REALP(o) \
      ((char)((BGL_REAL_TAG_MASK_TABLE << ((char)((long)o) & 7))) < 0)
+#  define BGL_TAGGED_REALSP(o, p) \
+     (BGL_TAGGED_REALP(o) && BGL_TAGGED_REALP(p))
 #endif
 // ---
 
@@ -185,6 +192,7 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 // ----------------------------------------------------------------------
 #  define FLONUMP(o) (BGL_TAGGED_REALP(o) || BGL_BOXED_REALP(o))
 #  define BGL_FAST_REALP(o) BGL_TAGGED_REALP(o)
+#  define BGL_FAST_REALSP(o, p) BGL_TAGGED_REALSP(o, p)
 #else
 // --
 #  define BGL_FLONUMP_TAG_MASK_TABLE \
@@ -192,11 +200,18 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 #  define BGL_FAST_FLONUMP_TAG_MASK_TABLE \
      ((1 << (7 - TAG_REALU)) | (1 << (7 - TAG_REALL)))
 #  define FLONUMP(o) (((int32_t)((uint32_t)BGL_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
-#  define BGL_FAST_REALP(o) (((int32_t)((uint32_t)BGL_FAST_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o)) < 0)
+#  define BGL_FAST_REALVAL(o) ((int32_t)((uint32_t)BGL_FAST_FLONUMP_TAG_MASK_TABLE * 0x1010101) << (long)(o))
+#  define BGL_FAST_REALP(o) (BGL_FAST_REALVAL(o) < 0)
+#  if (defined(TAG_REALZ))
+#    define BGL_FAST_REALSP(o, p) ((BGL_FAST_REALVAL(o) | BGL_FAST_REALVAL(p)) < 0)
+#  else
+#    define BGL_FAST_REALSP(o, p) (BGL_FAST_REALP(o) && BGL_FAST_REALP(p))
+#  endif
 #endif
 // ---
 
 #define REALP(o) FLONUMP(o)
+#define REALSP(o, p) (FLONUMP(o) && FLONUMP(p))
 
 #define BGL_REAL_CNST(name) name
 
@@ -281,20 +296,15 @@ INLINE obj_t DOUBLE_TO_REAL(double d) {
 /*---------------------------------------------------------------------*/
 /*    DEFINE_REAL ...                                                  */
 /*---------------------------------------------------------------------*/
-#if (!defined(TAG_REAL))
-// ---------------------
-#define DEFINE_REAL(name, aux, flonum) \
-  static struct { __CNST_ALIGN header_t header; double real; } \
-     aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }; \
-  static const obj_t name = BREAL(&(aux.header))
-#else
-// --
-#define DEFINE_REAL(name, aux, flonum) \
-  static struct { double real; } \
-     aux = { flonum }; \
-  static const obj_t name = BREAL(&aux)
-#endif
-// ---
+#define BGL_CREATE_REAL(aux, flonum) \
+  static const double aux = flonum
+
+#define BGL_DECLARE_REAL(n, aux) static obj_t n = 0L
+#define BGL_BIND_REAL(n, aux) n = DOUBLE_TO_REAL(aux)
+
+#define BGL_DEFINE_REAL(name, aux, flonum) \
+   BGL_CREATE_REAL(aux, flonum); \
+   BGL_DECLARE_REAL(name, aux)
 
 /*---------------------------------------------------------------------*/
 /*    BGL_REAL_SET ...                                                 */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/type.scm           */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/type.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Jun 17 13:21:49 2025 (serrano)                */
+;*    Last change :  Wed Jun 25 14:52:00 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1674,8 +1674,10 @@
     ($ubyte->char side-effect-free nesting args-safe fail-safe (effect))
     ($char->ubyte no-alloc side-effect-free nesting args-safe fail-safe (effect))
     ($long->belong side-effect-free args-safe fail-safe (effect))
+    ($elong->belong side-effect-free args-safe fail-safe (effect))
     ($llong->bllong side-effect-free args-safe fail-safe (effect))
     ($ullong->bllong side-effect-free args-safe fail-safe (effect))
+    ($llong->bllong side-effect-free nesting args-safe fail-safe (effect))
     ($bllong->llong side-effect-free nesting args-safe fail-safe (effect))
     ($bllong->ullong side-effect-free nesting args-safe fail-safe (effect))
     ($obj->void* side-effect-free nesting args-safe fail-safe (effect))

@@ -4,10 +4,10 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Wed Dec 11 08:47:56 2019 (serrano)                */
-#*    Copyright   :  2009-19 Manuel Serrano                            */
+#*    Last change :  Wed Jun 25 08:03:37 2025 (serrano)                */
+#*    Copyright   :  2009-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    Ad-hoc configuration for GMP.                                 */
+#*    Ad-hoc configuration for GMP.                                    */
 #*=====================================================================*/
 
 echo "configure gmp with \"CC=$cc ./configure --libdir=$libdir/$fildir --includedir=$libdir/fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$docdir --mandir=$mandir --infodir=$infodir $gmpconfigureopt\"" >> ../configure.log

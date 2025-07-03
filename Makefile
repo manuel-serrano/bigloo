@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/Makefile                        */
+#*    serrano/prgm/project/bigloo/bigloo/Makefile                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Feb  5 17:37:19 2025 (serrano)                */
+#*    Last change :  Thu Jun 26 10:40:18 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -169,7 +169,7 @@ cross:
 source:
 	if [ ! -x download/bin/bigloo ]; then \
 	  (cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz); \
-	  (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download && make && make install); \
+	  (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download --disable-libunistring --disable-pcre2 --disable-pcre --disable-libuv --disable-thread --disable-gmp --disable-libbacktrace --cc=$(CC) && make && make install); \
         fi
 	$(MAKE) cross BOOTBIGLOOBINDIR=$$PWD/download/bin
 

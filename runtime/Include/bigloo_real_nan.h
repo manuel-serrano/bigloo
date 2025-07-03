@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Mar 10 09:14:27 2025 (serrano)                */
+/*    Last change :  Mon Jun 30 09:19:21 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NaN TAGGING REALs                                         */
@@ -34,17 +34,24 @@ union bgl_nanobj {
    obj_t ptr;
 };
       
-#define BREAL(_n) (((union bgl_nanobj){ real: _n }).ptr)
-#define CREAL(_p) (((union bgl_nanobj){ ptr: _p }).real)
+#define BREAL(_n) (((union bgl_nanobj)(_n)).ptr)
+#define CREAL(_p) (((union bgl_nanobj)(_p)).real)
 
 #define BGL_REAL_CNST(name) name.ptr
+
+#define BGL_DEFINE_REAL(name, aux, _flonum) \
+   static const union bgl_nanobj name = { _flonum }
+#define BGL_BIND_REAL(name, aux)
+
 #define DEFINE_REAL(name, aux, _flonum) \
-   static const union bgl_nanobj name = { real: _flonum }; \
+   BGL_DEFINE_REAL(name, aux, _flonum)
 
 #define FLONUMP(c) (((unsigned long)c >> 48 & 0x7ff8) != 0x7ff8)
 #define NANP(c) (((unsigned long)c == TAG_QNAN) || ((unsigned long)c == TAG_SNAN))
 #define REALP(c) (FLONUMP(c) || NANP(c))
+#define BGL_REALSP(x, y) REALP(c) && REALP(d)
 #define BGL_FAST_REALP(c) REALP(c)
+#define BGL_FAST_REALSP(c, d) (REALP(c) && REALP(d))
 
 #define BGL_REAL_SET(o, v) BREAL(v)
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Fri Mar 14 09:23:57 2025 (serrano)                */
+;*    Last change :  Wed Jun 25 09:52:26 2025 (serrano)                */
 ;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -115,6 +115,7 @@
 	   (macro $configure-fl-tagging::bool "BGL_FL_TAGGING")
 	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
+	   (macro $configure-ptr-alignment::int "PTR_ALIGNMENT")
 	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
 	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG")
 	   (macro $configure-have-getrlimit::bool "BGL_HAVE_GETRLIMIT")
@@ -196,6 +197,7 @@
 	      (field static regexp-family::string "BGL_REGEXP_FAMILY")
 	      (field static int-size::int "BGL_INT_BIT_SIZE")
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
+	      (field static ptr-alignment::int "PTR_ALIGNMENT")
 	      (field static nan-tagging::bool "BGL_NAN_TAGGING")
 	      (field static nun-tagging::bool "BGL_NUN_TAGGING")
 	      (field static fl-tagging::bool "BGL_FL_TAGGING")
@@ -294,6 +296,7 @@
      (regexp . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-regexp-family) (else $$configure-regexp-family)))
      (int-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-int-size) (else $$configure-int-size)))
      (elong-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-elong-size) (else $$configure-elong-size)))
+     (ptr-alignment . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-ptr-alignment) (else $$configure-ptr-alignment)))
      (nan-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-nan-tagging) (else $$configure-nan-tagging)))
      (nun-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-nun-tagging) (else $$configure-nun-tagging)))
      (fl-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-fl-tagging) (else $$configure-fl-tagging)))

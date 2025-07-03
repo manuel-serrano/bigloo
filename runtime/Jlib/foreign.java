@@ -395,6 +395,10 @@ public final class foreign
       {
 	 return (o instanceof bint);
       }
+   public static boolean INTEGERSP(Object o, Object p)
+      {
+	 return (o instanceof bint) && (p instanceof bint);
+      }
 
    public static boolean ELONGP(Object o)
       {
@@ -1877,9 +1881,19 @@ public final class foreign
 	 return (o instanceof real);
       }
 
+   public static boolean BGL_REALSP(Object o, Object p)
+      {
+	 return (o instanceof real) && (p instanceof real);
+      }
+
    public static boolean BGL_FAST_REALP(Object o)
       {
 	 return (o instanceof real);
+      }
+
+   public static boolean BGL_FAST_REALP(Object o, Object p)
+      {
+	 return (o instanceof real) && (p instanceof real);
       }
 
    // Conversions

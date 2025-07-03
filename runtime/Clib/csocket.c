@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/runtime/Clib/csocket.c           */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csocket.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Nov 15 07:32:47 2024 (serrano)                */
+/*    Last change :  Sat Jun 28 10:18:26 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1818,11 +1818,11 @@ bgl_server_unix_socket_close_hook(obj_t env, obj_t s) {
    return s;
 }
 
-DEFINE_STATIC_BGL_PROCEDURE(server_unix_socket_close_hook, _7, bgl_server_unix_socket_close_hook, 0L, BUNSPEC, 1);
+BGL_DEFINE_STATIC_PROCEDURE(server_unix_socket_close_hook, _7, bgl_server_unix_socket_close_hook, 0L, BUNSPEC, 1);
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bgl_make_server_unix_socket ...                                         */
+/*    bgl_make_server_unix_socket ...                                  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_make_server_unix_socket(obj_t path, int backlog) {
@@ -1838,6 +1838,10 @@ bgl_make_server_unix_socket(obj_t path, int backlog) {
        ? offsetof(struct sockaddr_un, sun_path) + namelen 
        : sizeof(saddr));
 
+   if (!server_unix_socket_close_hook) {
+      BGL_BIND_PROCEDURE(server_unix_socket_close_hook, _7);
+   }
+   
    if (namelen > (sizeof(saddr) - 1)) {
       socket_error(msg, "path too long", path);
    }

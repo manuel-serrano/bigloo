@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Mon Jun 16 13:42:45 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 12:18:56 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -29,6 +29,7 @@ extern "C" {
 #if ((BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN) && !BGL_SMI)
 /* normal tagging */
 #  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+#  define INTEGERSP(o, p) ((((((long)o) - TAG_INT) | (((long)p) - TAG_INT)) & TAG_MASK) == 0)
 
 #  define BGL_LONG_MIN (LONG_MIN >> TAG_SHIFT)
 #  define BGL_LONG_MAX (LONG_MAX >> TAG_SHIFT)
@@ -63,6 +64,7 @@ extern "C" {
 #elif (BGL_TAGGING == BGL_TAGGING_NUN)
 /* nun tagging */
 #  define INTEGERP(o) ((((unsigned long)o) >> 48) == (TAG_INT >> 48))
+#  define INTEGERSP(o, p) (INTEGERP(o) && INTEGERP(p))
 
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
@@ -80,6 +82,7 @@ extern "C" {
 #elif ((BGL_TAGGING != BGL_TAGGING_NAN) && BGL_SMI)
 /* smi (int32) tagging */
 #  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+#  define INTEGERSP(o, p) (INTEGERP(o) && INTEGERP(p))
 
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
@@ -97,6 +100,7 @@ extern "C" {
 #else
 /* nan tagging */      
 #  define INTEGERP(o) ((((long)o) & TAG_MASK) == TAG_INT)
+#  define INTEGERSP(o, p) (INTEGERP(o) && INTEGERP(p))
 
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
@@ -119,11 +123,25 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    Long long                                                        */
 /*---------------------------------------------------------------------*/
-#define DEFINE_LLONG(name, aux, num) \
+#define BGL_CREATE_LLONG(aux, num) \
    static struct { __CNST_ALIGN header_t header; BGL_LONGLONG_T llong; } \
-      const aux = { __CNST_FILLER BGL_MAKE_HEADER(LLONG_TYPE, 0), (BGL_LONGLONG_T)(num) }; \
-   const obj_t name = BREF(&(aux.header))
+      const aux = { __CNST_FILLER BGL_MAKE_HEADER(LLONG_TYPE, 0), (BGL_LONGLONG_T)(num) }
 
+#if BGL_CNST_TWO_STEPS_INIT
+#   define BGL_DECLARE_LLONG(name, cobj) \
+       static obj_t name = 0L
+#   define BGL_BIND_LLONG(name, cobj) \
+       name = BREF(&(cobj.header))
+#else   
+#   define BGL_DECLARE_LLONG(name, cobj) \
+       static obj_t name = BREF(&(cobj.header))
+#   define BGL_BIND_LLONG(name, cobj)
+#endif
+   
+#define BGL_DEFINE_LLONG(name, cobj, num) \
+   BGL_CREATE_LLONG(cobj, num); \
+   BGL_DECLARE_LLONG(name, cobj)
+   
 #define LLONG_SIZE (sizeof(struct llong))
 
 #define LLONGP(o) (POINTERP(o) && (TYPE(o) == LLONG_TYPE))
@@ -141,10 +159,24 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    Exact long                                                       */
 /*---------------------------------------------------------------------*/
-#define DEFINE_ELONG(name, aux, num) \
+#define BGL_CREATE_ELONG(aux, num) \
    static struct { __CNST_ALIGN header_t header; long elong; } \
       const aux = { __CNST_FILLER BGL_MAKE_HEADER(ELONG_TYPE, 0), num }; \
-   const obj_t name = BREF(&(aux.header))
+
+#if BGL_CNST_TWO_STEPS_INIT
+#   define BGL_DECLARE_ELONG(name, cobj) \
+       static obj_t name = 0L
+#   define BGL_BIND_ELONG(name, cobj) \
+       name = BREF(&(cobj.header))
+#else   
+#   define BGL_DECLARE_ELONG(name, cobj) \
+       static obj_t name = BREF(&(cobj.header))
+#   define BGL_BIND_ELONG(name, cobj)
+#endif
+   
+#define BGL_DEFINE_ELONG(name, cobj, num) \
+   BGL_CREATE_ELONG(cobj, num); \
+   BGL_DECLARE_ELONG(name, cobj)
 		 
 #define ELONG_SIZE (sizeof(struct elong))
 
@@ -206,10 +238,13 @@ extern "C" {
    BGL_BCNST_TO_CNST(o, 0xffffL, BGL_CNST_SHIFT_INT16, uint16_t)
 
 #if (defined(BGL_CNST_SHIFT_INT32)) /* BGL_CNST_SHIFT_INT32 */
-#  define DEFINE_INT32(name, aux, num) \
+#  define BGL_DEFINE_INT32(name, aux, num) \
    const obj_t name = BGL_INT32_TO_BINT32(num)
-#  define DEFINE_UINT32(name, aux, num) \
+#  define BGL_DEFINE_UINT32(name, aux, num) \
    const obj_t name = BGL_UINT32_TO_BUINT32(num)
+   
+#  define BGL_BIND_INT32(name, cobj)
+#  define BGL_BIND_UINT32(name, cobj)
    
 #  define BGL_INT32_TO_BINT32(i) \
    BGL_CNST_TO_BCNST(i, 0xffffffffL, BINT32H, BGL_CNST_SHIFT_INT32, int32_t)
@@ -220,16 +255,40 @@ extern "C" {
 #  define BGL_BUINT32_TO_UINT32(o) \
    BGL_BCNST_TO_CNST(o, 0xffffffffL, BGL_CNST_SHIFT_INT32, uint32_t)
 #else /* !BGL_CNST_SHIFT_INT32 */
-#  define DEFINE_INT32(name, aux, num) \
+#  define BGL_CREATE_INT32(aux, num) \
    static struct { __CNST_ALIGN header_t header; int32_t val; } \
-      const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT32_TYPE, 0), (int32_t)(num) }; \
-      const obj_t name = BREF(&(aux.header))
+      const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT32_TYPE, 0), (int32_t)(num) }
+   
+#  define BGL_CREATE_UINT32(aux, num) \
+   static struct { __CNST_ALIGN header_t header; uint32_t val; } \
+      const aux = { __CNST_FILLER BGL_MAKE_HEADER(UINT32_TYPE, 0), (uint32_t)(num) }
+   
+#  if BGL_CNST_TWO_STEPS_INIT
+#     define BGL_DECLARE_INT32(name, cobj) \
+         static obj_t name = 0L
+#     define BGL_DECLARE_UINT32(name, cobj) \
+         static obj_t name = 0L
+#     define BGL_BIND_INT32(name, cobj) \
+         name = BREF(&(cobj.header)
+#     define BGL_BIND_UINT32(name, cobj) \
+         name = BREF(&(cobj.header)
+#else   
+#     define BGL_DECLARE_INT32(name, cobj) \
+         static obj_t name = BREF(&(cobj.header))
+#     define BGL_DECLARE_UINT32(name, cobj) \
+         static obj_t name = BREF(&(cobj.header))
+#     define BGL_BIND_INT32(name, cobj)
+#     define BGL_BIND_UINT32(name, cobj)
+#endif
+   
+#  define BGL_DEFINE_INT32(name, cobj, num) \
+     BGL_CREATE_INT32(cobj, num); \
+     BGL_DECLARE_INT32(name, cobj)
 		 
-#  define DEFINE_UINT32(name, aux, num) \
-   static struct { __CNST_ALIGN header_t header; int32_t val; } \
-      const aux = { __CNST_FILLER BGL_MAKE_HEADER(UINT32_TYPE, 0), (uint32_t)(num) }; \
-      const obj_t name = BREF(&(aux.header))
-		 
+#  define BGL_DEFINE_UINT32(name, cobj, num) \
+     BGL_CREATE_UINT32(cobj, num); \
+     BGL_DECLARE_UINT32(name, cobj)
+
 #  define BGL_INT32_SIZE (sizeof(struct bgl_sint32))
 #  define BGL_UINT32_SIZE (sizeof(struct bgl_uint32))
 #  define BGL_INT32(o) CREF(o)->sint32
@@ -240,15 +299,38 @@ extern "C" {
 #  define BGL_BUINT32_TO_UINT32(o) BGL_UINT32(o).val
 #endif /* BGL_CNST_SHIFT_INT32 */
 
-#define DEFINE_INT64(name, aux, num) \
+#define BGL_CREATE_INT64(aux, num) \
    static struct { __CNST_ALIGN header_t header; int64_t val; } \
-      const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT64_TYPE, 0), (int64_t)(num) }; \
-      const obj_t name = BREF(&(aux.header))
+      const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT64_TYPE, 0), (int64_t)(num) }
+#define BGL_CREATE_UINT64(aux, num) \
+   static struct { __CNST_ALIGN header_t header; int64_t val; } \
+      const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT64_TYPE, 0), (int64_t)(num) }
+
+#if BGL_CNST_TWO_STEPS_INIT
+#   define BGL_DECLARE_INT64(name, cobj) \
+       static obj_t name = 0L
+#   define BGL_DECLARE_UINT64(name, cobj) \
+       static obj_t name = 0L
+#   define BGL_BIND_INT64(name, cobj) \
+       name = BREF(&(cobj.header))
+#   define BGL_BIND_UINT64(name, cobj) \
+       name = BREF(&(cobj.header))
+#else   
+#   define BGL_DECLARE_INT64(name, cobj) \
+       static obj_t name = BREF(&(cobj.header))
+#   define BGL_DECLARE_UINT64(name, cobj) \
+       static obj_t name = BREF(&(cobj.header))
+#   define BGL_BIND_INT64(name, cobj)
+#   define BGL_BIND_UINT64(name, cobj)
+#endif
 		 
-#define DEFINE_UINT64(name, aux, num) \
-   static struct { __CNST_ALIGN header_t header; uint64_t val; } \
-      const aux = { __CNST_FILLER BGL_MAKE_HEADER(UINT64_TYPE, 0), (uint64_t)(num) }; \
-      const obj_t name = BREF(&(aux.header))
+#define BGL_DEFINE_INT64(name, cobj, num) \
+   BGL_CREATE_INT64(cobj, num); \
+   BGL_DECLARE_INT64(name, cobj)
+		 
+#define BGL_DEFINE_UINT64(name, cobj, num) \
+   BGL_CREATE_UINT64(cobj, num); \
+   BGL_DECLARE_UINT64(name, cobj)
 		 
 #define BGL_INT64_SIZE (sizeof(struct bgl_sint64))
 #define BGL_UINT64_SIZE (sizeof(struct bgl_uint64))
@@ -258,6 +340,12 @@ extern "C" {
 #define BGL_UINT64_TO_BUINT64(_1) bgl_make_buint64(_1)
 #define BGL_BINT64_TO_INT64(o) BGL_INT64(o).val
 #define BGL_BUINT64_TO_UINT64(o) BGL_UINT64(o).val
+
+#define DEFINE_INT32(a,b,c) BGL_DEFINE_INT32(a,b,c)
+#define DEFINE_UINT32(a,b,c) BGL_DEFINE_UINT32(a,b,c)
+#define DEFINE_INT64(a,b,c) BGL_DEFINE_INT64(a,b,c)
+#define DEFINE_UINT64(a,b,c) BGL_DEFINE_UINT64(a,b,c)
+   
 
 /*---------------------------------------------------------------------*/
 /*    overflow                                                         */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Jun 18 11:38:23 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 12:13:27 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -279,7 +279,7 @@ extern "C" {
 #  define TAG_SHIFT 0
 
 #  define TAG(_v, shift, tag) \
-     ((long)((((unsigned long)(_v) & ~(0xfULL << 48)) | tag)))
+     ((long)((((unsigned long)(_v) & ~(0xfUL << 48)) | tag)))
 #  define UNTAG(_v, shift, tag) \
      ((long)(((unsigned long)(_v) & NAN_MASK)))
 
@@ -320,9 +320,12 @@ extern "C" {
 #if (BGL_TAGGING == BGL_TAGGING_NAN)   // NAN TAGGING
 #  define BGL_MASKP(o, tag, mask) \
      (((((long)(o)) - (tag)) & (mask)) == 0)
-#else                                 // OTHER TAGGING
+#elif (BGL_TAGGING == BGL_TAGGING_NUN) // NUN TAGGING
 #  define BGL_MASKP(o, tag, mask) \
-     ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
+      (((((long)(o)) - (tag)) & (mask)) == 0)
+#else                                  // OTHER TAGGING
+#  define BGL_MASKP(o, tag, mask) \
+      ((((uint32_t)((long)(o)) - (tag)) & (mask)) == 0)
 #endif
 
 // BGL_POINTERP  
@@ -337,18 +340,23 @@ extern "C" {
 #endif   
 #define POINTERP(o) BGL_POINTERP(o)
 
-
 // BGL_TAGGED_PTRP  
 #if (BGL_TAGGING == BGL_TAGGING_NUN)   // NUN TAGGING
-#  define BGL_TAGGED_PTRP(o, tag, mask) \
+#  define BGL_TAGGED_PTRP_OLD(o, tag, mask) \
   (((tag) || (o)) && BGL_MASKP(o, tag, mask) && (((unsigned long)(o) >> 48) == 0))
+#  define BGL_TAGGED_PTRP_NEW(o, tag, mask) \
+  (((tag) || (o)) && BGL_MASKP(o, tag, mask | (0xffffl << 48)))
+#  define BGL_TAGGED_PTRP(o, tag, mask) \
+  BGL_TAGGED_PTRP_NEW(o, tag, mask)
 #else                                  // OTHER TAGGING 
 #  define BGL_TAGGED_PTRP(o, tag, mask) \
   (((tag) || (o)) && BGL_MASKP(o, tag, mask))
 #endif  
 
+// BGL_HEADER_PTRP
 #define BGL_HEADER_PTRP(o, type) \
    (BGL_POINTERP(o) && (TYPE(o) == (type)))
+
 
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
@@ -1339,31 +1347,42 @@ union scmobj {
 /*---------------------------------------------------------------------*/
 /*    Regular procedures                                               */
 /*---------------------------------------------------------------------*/
-#define DEFINE_EXPORT_BGL_PROCEDURE(n, na, p, vp, at, nb_args) \
+#define BGL_CREATE_PROCEDURE(cobj, p, vp, at, nb_args) \
    static struct { __CNST_ALIGN header_t header; \
                    obj_t (*entry)(); \
                    obj_t (*va_entry)(); \
                    obj_t attr; \
                    int arity; } \
-      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
+      cobj = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
 	     (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
-	     nb_args }; \
-      BGL_EXPORTED_DEF const obj_t n = BREF(&(na.header))
+	     nb_args }
 
-#define DEFINE_STATIC_BGL_PROCEDURE(n, na, p, vp, at, nb_args) \
-   static struct { __CNST_ALIGN header_t header; \
-                   obj_t (*entry)(); \
-                   obj_t (*va_entry)(); \
-                   obj_t attr; \
-                   int arity; } \
-      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
-             (obj_t (*)())p, \
-	     (obj_t (*)())vp, \
-             at, \
-	     nb_args }; \
-      static const obj_t n = BREF(&(na.header))
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_DECLARE_PROCEDURE(qualifier, n, cobj) \
+     qualifier obj_t n = 0L
+#  define BGL_BIND_PROCEDURE(n, cobj) \
+     n = BREF(&(cobj.header))
+#else
+#  define BGL_DECLARE_PROCEDURE(qualifier, n, cobj) \
+     qualifier const obj_t n = BREF(&(cobj.header))
+#  define BGL_BIND_PROCEDURE(n, cobj)
+#endif
+
+#define BGL_DEFINE_EXPORT_PROCEDURE(n, cobj, p, vp, at, nb_args) \
+   BGL_CREATE_PROCEDURE(cobj, p, vp, at, nb_args); \
+   BGL_DECLARE_PROCEDURE(BGL_EXPORTED_DEF, n, cobj)
+
+#define BGL_DEFINE_STATIC_PROCEDURE(n, cobj, p, vp, at, nb_args) \
+   BGL_CREATE_PROCEDURE(cobj, p, vp, at, nb_args); \
+   BGL_DECLARE_PROCEDURE(static, n, cobj)
+
+#define DEFINE_EXPORT_BGL_PROCEDURE(n, cobj, p, vp, at, nb_args) \
+   BGL_DEFINE_EXPORT_PROCEDURE(n, cobj, p, vp, at, nb_args) \
+
+#define DEFINE_STATIC_BGL_PROCEDURE(n, cobj, p, vp, at, nb_args) \
+   BGL_DEFINE_STATIC_PROCEDURE(n, cobj, p, vp, at, nb_args) \
 
 #define PROCEDUREP(o) \
    (POINTERP(o) && (TYPE(o) == PROCEDURE_TYPE))
@@ -1588,14 +1607,14 @@ union scmobj {
 #define OPT_PROCEDUREP(fun) \
    (PROCEDURE_ATTR(fun) == BFALSE)
    
-#define PROCEDURE_CORRECT_ARITYP(fun, num)           \
-        ((PROCEDURE_ARITY(fun) == num) ||           \
-	  (VA_PROCEDUREP(fun) &&                     \
+#define PROCEDURE_CORRECT_ARITYP(fun, num) \
+        ((PROCEDURE_ARITY(fun) == num) || \
+	  (VA_PROCEDUREP(fun) && \
 	   ((-num - 1) <= (PROCEDURE_ARITY(fun)))))
 		  
 #define PROCEDURE_ENV(p) (&(PROCEDURE(p).obj0))
 
-#define PROCEDURE_REF(p, i)    (PROCEDURE_ENV(p))[ i ]
+#define PROCEDURE_REF(p, i) (PROCEDURE_ENV(p))[ i ]
 #define PROCEDURE_SET(p, i, o) BASSIGN(PROCEDURE_REF(p, i), o, p)
 
 #define MAKE_FX_PROCEDURE(entry, arity, size) \
@@ -1636,11 +1655,28 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 /*---------------------------------------------------------------------*/
 /*    Light procedures                                                 */
 /*---------------------------------------------------------------------*/
-#define DEFINE_BGL_L_PROCEDURE(n, na, e) \
+#define BGL_CREATE_L_PROCEDURE(cobj, e) \
    static const struct { __CNST_ALIGN ; \
-                   union scmobj *(*entry)(); } \
-      na = { __CNST_FILLER (obj_t (*)())e }; \
-      static const obj_t n = BLIGHT(&(na.entry))
+         union scmobj *(*entry)(); } \
+      cobj = { __CNST_FILLER (obj_t (*)())e }
+
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_DECLARE_L_PROCEDURE(qualifier, n, cobj) \
+     qualifier obj_t n = 0L;
+#  define BGL_BIND_L_PROCEDURE(n, cobj) \
+     n = BLIGHT(&(cobj.entry))
+#else
+#  define BGL_DECLARE_L_PROCEDURE(qualifier, n, cobj) \
+     qualifier obj_t n = BLIGHT(&(cobj.entry))
+#  define BGL_BIND_L_PROCEDURE(n, cobj)
+#endif
+
+#define BGL_DEFINE_L_PROCEDURE(n, cobj, e) \
+   BGL_CREATE_L_PROCEDURE(cobj, e); \
+   BGL_DECLARE_L_PROCEDURE(static, n, cobj)
+   
+#define DEFINE_BGL_L_PROCEDURE(n, cobj, e) \
+   BGL_DEFINE_L_PROCEDURE(n, cobj, e)
    
 #define BLIGHT(l) BPAIR(l)
 #define CLIGHT(l) CPAIR(l)
@@ -1684,7 +1720,7 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 /*---------------------------------------------------------------------*/
 /*    Generic functions                                                */
 /*---------------------------------------------------------------------*/
-#define DEFINE_EXPORT_BGL_GENERIC(n, na, p, vp, at, nb_args) \
+#define BGL_CREATE_GENERIC(cobj, p, vp, at, nb_args) \
    static struct { __CNST_ALIGN header_t header; \
                    obj_t (*entry)(); \
                    obj_t (*va_entry)(); \
@@ -1693,34 +1729,39 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 		   obj_t env0; \
 		   obj_t env1; \
 		   obj_t env2; } \
-      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
-	     (obj_t (*)())p, \
-	     (obj_t (*)())vp, \
-             at, \
-	     nb_args, \
-	     BFALSE, \
-	     BFALSE, \
-	     BUNSPEC }; \
-      BGL_EXPORTED_DEF const obj_t n = BREF(&(na.header))
+      cobj = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
+	       (obj_t (*)())p, \
+	       (obj_t (*)())vp, \
+               at, \
+	       nb_args, \
+	       BFALSE, \
+	       BFALSE, \
+	       BUNSPEC }
 
-#define DEFINE_STATIC_BGL_GENERIC(n, na, p, vp, at, nb_args) \
-   static struct { __CNST_ALIGN header_t header; \
-                   obj_t (*entry)(); \
-                   obj_t (*va_entry)(); \
-                   obj_t attr; \
-                   int arity; \
-		   obj_t env0; \
-		   obj_t env1; \
-		   obj_t env2; } \
-      na = { __CNST_FILLER BGL_MAKE_HEADER(PROCEDURE_TYPE, 0), \
-             (obj_t (*)())p, \
-	     (obj_t (*)())vp, \
-             at, \
-	     nb_args, \
-	     BFALSE, \
-	     BFALSE, \
-	     BUNSPEC }; \
-      static const obj_t n = BREF(&(na.header))
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_DECLARE_GENERIC(qualifier, n, cobj) \
+     qualifier obj_t n = 0L;
+#  define BGL_BIND_GENERIC(qualifier, n, cobj) \
+     n = BREF(&(cobj.header)
+#else
+#  define BGL_DECLARE_GENERIC(qualifier, n, cobj) \
+     qualifier const obj_t n = BREF(&(cobj.header))
+#  define BGL_BIND_GENERIC(qualifier, n, cobj)
+#endif
+
+#define BGL_DEFINE_EXPORT_GENERIC(n, cobj, p, vp, at, nb_args) \
+   BGL_CREATE_GENERIC(cobj, p, vp, at, nb_args); \
+   BGL_DECLARE_GENERIC(BGL_EXPORTED_DEF, n, cobj)
+   
+#define BGL_DEFINE_STATIC_GENERIC(n, cobj, p, vp, at, nb_args) \
+   BGL_CREATE_GENERIC(cobj, p, vp, at, nb_args); \
+   BGL_DECLARE_GENERIC(static, n, cobj)
+   
+#define DEFINE_EXPORT_BGL_GENERIC(n, cobj, p, vp, at, nb_args) \
+   BGL_DEFINE_EXPORT_GENERIC(n, cobj, p, vp, at, nb_args)
+
+#define DEFINE_STATIC_BGL_GENERIC(n, cobj, p, vp, at, nb_args) \
+   BGL_DEFINE_STATIC_GENERIC(n, cobj, p, vp, at, nb_args)
 
 /*---------------------------------------------------------------------*/
 /*    Symbols                                                          */

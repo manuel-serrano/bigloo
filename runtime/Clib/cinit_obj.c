@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Wed Jun 18 10:41:26 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 12:07:13 2025 (serrano)                */
 /*    Copyright   :  2002-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -85,13 +85,13 @@ void bgl_init_objects() {
    quote = string_to_symbol("QUOTE");
 
 #if (BGL_TAGGING == BGL_TAGGING_NAN)
-   bigloo_nan = (union bgl_nanobj){ real: bgl_nan() };
-   bigloo_infinity = (union bgl_nanobj){ real: bgl_infinity() };
-   bigloo_minfinity = (union bgl_nanobj){ real: -bgl_infinity() };
+   bigloo_nan.real = bgl_nan();
+   bigloo_infinity.real = bgl_infinity();
+   bigloo_minfinity.real = -bgl_infinity();
 #elif (BGL_TAGGING == BGL_TAGGING_NUN)
-   bigloo_nan = (union bgl_nunobj){ real: bgl_nan() };
-   bigloo_infinity = (union bgl_nunobj){ real: bgl_infinity() };
-   bigloo_minfinity = (union bgl_nunobj){ real: -bgl_infinity() };
+   bigloo_nan.real = bgl_nan();
+   bigloo_infinity.real = bgl_infinity();
+   bigloo_minfinity.real = -bgl_infinity();
 #else
    bigloo_nan = DOUBLE_TO_REAL(bgl_nan());
    bigloo_infinity = DOUBLE_TO_REAL(bgl_infinity());
@@ -220,20 +220,12 @@ bgl_bmem_reset() {
 }
 
 /*---------------------------------------------------------------------*/
-/*    double bgl_zero                                                  */
-/*    -------------------------------------------------------------    */
-/*    These definitions are used when the C compiler does not support  */
-/*    static divisions by 0, such as Intel's ICC.                      */
-/*---------------------------------------------------------------------*/
-double bgl_zero = 0.0;
-
-/*---------------------------------------------------------------------*/
 /*    double                                                           */
 /*    bgl_nan ...                                                      */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF double
 bgl_nan() {
-   return 0./ bgl_zero;
+   return 0./ 0.0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -242,7 +234,7 @@ bgl_nan() {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF double
 bgl_infinity() {
-   return 1.0 / bgl_zero;
+   return 1.0 / 0.0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -253,18 +245,17 @@ obj_t
 __debug(char *lbl, obj_t o) {
    fprintf(stderr, "%s:%d %s o=%p\n", __FILE__, __LINE__, lbl, o);
    if (BGL_HVECTORP(o)) {
-      fprintf(stderr, "   hvector=%lu\n",BGL_HVECTOR_LENGTH(o));
+      fprintf(stderr, "   hvector=%lu\n", BGL_HVECTOR_LENGTH(o));
    } else if (REALP(o)) {
       fprintf(stderr, "   real\n");
    } else if (PAIRP(o)) {
       fprintf(stderr, "   pair\n");
    } else if (SYMBOLP(o)) {
-      fprintf(stderr, "   symbol=%s\n",
-	       BSTRING_TO_STRING(SYMBOL_TO_STRING(o)));
+      fprintf(stderr, "   symbol=%s\n", BSTRING_TO_STRING(SYMBOL_TO_STRING(o)));
    } else if (INTEGERP(o)) {
-      fprintf(stderr, "   int=%ld\n",CINT(o));
+      fprintf(stderr, "   int=%ld\n", CINT(o));
    } else if (REALP(o)) {
-      fprintf(stderr, "   real=%f\n",REAL_TO_DOUBLE(o));
+      fprintf(stderr, "   real=%f\n", REAL_TO_DOUBLE(o));
    } else if (BGL_OBJECTP(o)) {
       fprintf(stderr, "   object=%ld\n", BGL_OBJECT_CLASS_NUM(o));
    } else if (POINTERP(o)) {

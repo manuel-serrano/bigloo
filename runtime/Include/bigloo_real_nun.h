@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Mar 11 11:27:21 2025 (serrano)                */
+/*    Last change :  Tue Jul  1 12:15:37 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo NuN TAGGING REALs                                         */
@@ -44,18 +44,22 @@ union bgl_nunobj {
    obj_t obj;
 };
 
-#define BGL_NUN_FL_OFFSET (1ULL << 49)
+#define BGL_NUN_FL_OFFSET (1UL << 49)
 
-#define BGL_DOUBLE_AS_BITS(d) (((union bgl_nunobj){ real: d }).bits)
-#define BGL_OBJ_AS_BITS(d) (((union bgl_nunobj){ obj: d }).bits)
-#define BGL_BITS_AS_DOUBLE(b) (((union bgl_nunobj){ bits: b }).real)
-#define BGL_BITS_AS_OBJ(b) (((union bgl_nunobj){ bits: b }).obj)
+#define BGL_DOUBLE_AS_BITS(d) (((union bgl_nunobj)(d)).bits)
+#define BGL_OBJ_AS_BITS(d) (((union bgl_nunobj)(d)).bits)
+#define BGL_BITS_AS_DOUBLE(b) (((union bgl_nunobj)(b)).real)
+#define BGL_BITS_AS_OBJ(b) (((union bgl_nunobj)(b)).obj)
 
 #define BREAL(d) BGL_BITS_AS_OBJ(BGL_DOUBLE_AS_BITS(d) + BGL_NUN_FL_OFFSET)
 #define CREAL(p) BGL_BITS_AS_DOUBLE(BGL_OBJ_AS_BITS(p) - BGL_NUN_FL_OFFSET)
 
-#define DEFINE_REAL(name, aux, _flonum) \
+#define BGL_DEFINE_REAL(name, aux, _flonum) \
    static const union bgl_nunobj name = { _flonum }
+#define BGL_BIND_REAL(name, aux)
+
+#define DEFINE_REAL(name, aux, _flonum) \
+   BGL_DEFINE_REAL(name, aux, _flonum)
 
 #define BGL_REAL_CNST(name) \
    ((obj_t)(name.bits + BGL_NUN_FL_OFFSET))
@@ -69,8 +73,10 @@ INLINE bool FLONUMP(obj_t o) {
 }
 
 #define REALP(c) (FLONUMP(c))
+#define BGL_REALSP(c, d) (FLONUMP(c) && FLONUMP(d))
 
 #define BGL_FAST_REALP(c) REALP(c)
+#define BGL_FAST_REALSP(c, d) (REALP(c) && REALP(d))
 #define BGL_REAL_SET(o, v) BREAL(v)
 
 /*---------------------------------------------------------------------*/

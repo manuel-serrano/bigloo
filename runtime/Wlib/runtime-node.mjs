@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sun Jun 22 10:00:24 2025 (serrano)                */
+/*    Last change :  Mon Jun 23 08:12:53 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -320,8 +320,8 @@ function __js_bignum() {
 	 }
       },
       bignum_abs: (x) => x < 0 ? -x : x,
-      bignum_gcd: (x, y) => { console.log("TODO"); },
-      bignum_lcm: (x, y) => { console.log("TODO"); },
+      bignum_gcd: (x, y) => !y ? x : self.gcd(x % y),
+      bignum_lcm: (x, y) => (x, y) => x * y / self.gcd(x, y),
       bignum_neg: (x) => -x,
       bignum_add: (x, y) => x + y,
       bignum_sub: (x, y) => x - y,

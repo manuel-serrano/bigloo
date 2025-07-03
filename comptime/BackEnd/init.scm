@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/init.scm       */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/BackEnd/init.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Thu Jun 12 09:12:18 2025 (serrano)                */
+;*    Last change :  Sun Jun 29 12:00:32 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
@@ -56,6 +56,7 @@
       `(if require-initialization
 	   (begin
 	      (set! require-initialization #f)
+	      ,(backend-constant-bindings (the-backend))
 	      ,(when *dlopen-init-gc* (backend-gc-init (the-backend)))
 	      ,@(unit-init-calls))
 	   #unspecified))
