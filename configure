@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul  3 07:53:22 2025 (serrano)                */
+#*    Last change :  Thu Jul  3 07:59:07 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2051,7 +2051,7 @@ case $hostos in
         sharedcompiler=yes
       fi
       sharedbde=yes
-      ldflags="$ldflags -dynamiclib -single_module -Wl,suppress"
+      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
       #customgmp=yes
       #customgmpmakefile=Makefile.macosx
       #customunistring=yes
