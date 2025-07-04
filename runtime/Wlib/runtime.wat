@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Sun Jun 22 09:10:24 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 17:38:24 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -98,7 +98,7 @@
    ;; -----------------------------------------------------------------
 
    ;; memcpy
-   (func $memcpy
+   (func $memcpy (export "bgl_memcpy")
      (param $dest i32)
      (param $src (ref $bstring))
      (param $i i32)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/make_lib.scm     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/make_lib.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Mon Jun 24 09:19:28 2024 (serrano)                */
+;*    Last change :  Fri Jul  4 10:32:19 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -101,6 +101,8 @@
 	    (unregister-srfi! __expander_srfi0)
 	    (eval-srfi? __expander_srfi0)
 	    (compile-srfi? __expander_srfi0)
+	    (srfi-eval-list  __expander_srfi0)
+	    (srfi-compile-list  __expander_srfi0)
 	    (expand-compile-cond-expand __expander_srfi0)
 	    (expand-cond-expand __expander_srfi0)
 

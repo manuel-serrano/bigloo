@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Mon Jun 23 05:31:15 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 11:21:41 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unboxed 31bit fixnum implementation                         */
@@ -72,14 +72,15 @@
    (func $check_zero64 (export "check_zero64")
       (param $x i64)
       (result i64)
-      (if (i64.eqz (local.get $x))
+      (if (result i64) (i64.eqz (local.get $x))
 	  (then
 	     (call $bgl_internal_error_set
 		(array.new_data $bstring $div0_internal_error
 		   (i32.const 0)
 		   (i32.const 13)))
 	     (throw $fail))
-	  (else (return (local.get $x)))))
+	  (else (return (local.get $x))))
+      (unreachable))
 
    (func $check_zero32 (export "check_zero32")
       (param $x i32)
@@ -91,7 +92,8 @@
 		   (i32.const 0)
 		   (i32.const 13)))
 	     (throw $fail))
-	  (else (return (local.get $x)))))
+	  (else (return (local.get $x))))
+      (unreachable))
       
    )
 

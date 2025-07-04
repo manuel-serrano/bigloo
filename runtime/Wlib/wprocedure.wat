@@ -197,7 +197,7 @@
    ;; --------------------------------------------------------
    ;; funcall
    ;; --------------------------------------------------------
-   (func $funcall0
+   (func $funcall0 (export "bgl_funcall0")
       (param $proc (ref $procedure))
       (result (ref eq))
       (return_call_ref $func0
@@ -205,7 +205,7 @@
 	 (ref.cast (ref $func0)
 	    (struct.get $procedure $entry (local.get $proc)))))
    
-   (func $funcall1
+   (func $funcall1 (export "bgl_funcall1")
       (param $proc (ref $procedure))
       (param $arg0 (ref eq))
       (result (ref eq))
@@ -215,8 +215,7 @@
 	 (ref.cast (ref $func1)
 	    (struct.get $procedure $entry (local.get $proc)))))
    
-   
-   (func $funcall2
+   (func $funcall2 (export "bgl_funcall2")
       (param $proc (ref $procedure))
       (param $arg0 (ref eq))
       (param $arg1 (ref eq))

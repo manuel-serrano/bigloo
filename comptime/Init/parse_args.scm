@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Init/parse_args.scm      */
+;*    .../prgm/project/bigloo/wasm/comptime/Init/parse_args.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jul  1 15:54:11 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 10:30:41 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -278,6 +278,15 @@
       ;; srfi support
       (("-srfi" ?srfi (help "Declares srfi support"))
        (register-srfi! (string->symbol srfi)))
+      (("-list-srfis" (help "List the declared srfis"))
+       (fprint (current-error-port) "eval:")
+       (for-each (lambda (s) (fprint (current-error-port) "  " s))
+	  (srfi-eval-list))
+       (newline (current-error-port))
+       (fprint (current-error-port) "compile:")
+       (for-each (lambda (s) (fprint (current-error-port) "  " s))
+	  (srfi-compile-list))
+       (exit 0))
       (("-dload-sym" (help "Emit a Bigloo dynamic loading entry point"))
        (set! *dlopen-init* #t))
       (("-dload-init-sym" ?name (help "Emit a Bigloo dynamic loading entry point, named NAME"))

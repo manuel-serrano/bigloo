@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Tue Jun 17 08:19:48 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 14:35:37 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -43,7 +43,7 @@
    (import "$__object" "BGl_classzd2nilzd2initz12z12zz__objectz00" (func $BGl_z62classzd2nilzd2initz12z70zz__objectz00 (param (ref $class)) (result (ref eq))))
 
    ;; load_string_in_buffer
-   (func $load_string_in_buffer
+   (func $load_string_in_buffer (export "bgl_load_string_in_buffer")
       (param $addr i32)
       (param $length i32)
       (param $buffer (ref $bstring))
@@ -64,7 +64,7 @@
 		(br $loop)))))
 
    ;; load_string
-   (func $load_string
+   (func $load_string (export "bgl_load_string")
       (param $addr i32)
       (param $length i32)
       (result (ref $bstring))
@@ -97,7 +97,7 @@
 		(br $loop)))))
 
    ;; store_string
-   (func $store_string
+   (func $store_string (export "bgl_store_string")
       (param $text (ref $bstring))
       (param $addr i32)
       

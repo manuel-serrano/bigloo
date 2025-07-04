@@ -3,13 +3,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Fri Jan 10 09:43:01 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 11:28:59 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
 ;*=====================================================================*/
 
-(module $__runtime_rgc
+(module $__bigloo_rgc
    
    ;; -----------------------------------------------------------------
    ;; Global constants 
@@ -415,10 +415,11 @@
 	     (drop (call $the_failure
 		      (array.new_data $bstring $READ (i32.const 0) (i32.const 5))
 		      (array.new_data $bstring $IO_ERROR (i32.const 0) (i32.const 8))
-		      (local.get $port)))
-	     (unreachable))
+		      (local.get $port))))
 	  (else
-	   (return (local.get $r)))))
+	   (return (local.get $r))))
+      (unreachable))
+
 		       
    ;; rgc_fillsize_buffer
    (func $rgc_fillsize_buffer
@@ -516,7 +517,8 @@
 		     (return_call $rgc_fillsize_buffer
 			(local.get $port)
 			(local.get $bufpos)
-			(i32.sub (local.get $bufsize) (local.get $bufpos))))))))))
+			(i32.sub (local.get $bufsize) (local.get $bufpos)))))))))
+      (unreachable))
    
    ;; rgc_file_charready
    (func $rgc_file_charready
@@ -733,7 +735,8 @@
 		(i64.mul (local.get $res) (local.get $sign))))
 	  (else
 	   (return_call $make_belong
-	      (i64.mul (local.get $res) (local.get $sign))))))
+	      (i64.mul (local.get $res) (local.get $sign)))))
+      (unreachable))
 
    ;; buffer_llong
    (func $buffer_llong

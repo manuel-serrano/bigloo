@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 07:31:11 2024                          */
-;*    Last change :  Sun Jun 22 09:40:50 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 11:19:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Native objects printing.                                         */
@@ -40,7 +40,8 @@
 	      (local.get $index) (local.get $c))
 	   (struct.set $output-port $index (local.get $op)
 	      (i32.add (local.get $index) (i32.const 1)))
-	   (return (local.get $op)))))
+	   (return (local.get $op))))
+      (unreachable))
 
    ;; PUTS
    (func $PUTS

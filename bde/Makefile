@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/bde/Makefile                  */
+#*    serrano/prgm/project/bigloo/wasm/bde/Makefile                    */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Tue Mar 24 15:47:47 2020 (serrano)                */
-#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Jul  4 10:08:19 2025 (serrano)                */
+#*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -35,6 +35,7 @@ SHELL           = /bin/sh
 #BFLAGS		= -jvm -jvm-jar -O2 -fsharing -unsafe
 BFLAGS		= -O2 -fsharing -unsafe $(SHRD_BDE_OPT) -lib-dir $(BOOTLIBDIR)
 EFLAGS		=
+BWATIBFLAGS	= -srfi enable-pthread
 
 #*---------------------------------------------------------------------*/
 #*    Sources and Objects                                              */
@@ -80,12 +81,27 @@ JAS_LINKSRC	= $(JAS_LINKFILE:%=jas/%.scm)
 JAS_LINKOBJ	= $(JAS_LINKFILE:%=jas/%.o)
 JAS_OBJ		= $(JAS_FILE:%=jas/%.o)
 
+#*--- walit -----------------------------------------------------------*/
+WATIB_LINKFILE  = Val/validate \
+                  Asm/binary  Asm/leb128 Opt/optimise  \
+                  Opt/TestBr/walk Opt/UnCast/walk \
+                  Opt/Unreachable/walk Opt/Const/walk \
+                  Env/env \
+                  Ast/node \
+                  Misc/list Misc/parse Misc/let-if \
+                  Type/type Type/match
+WATIB_FILE	= watib 
+WATIB_AFILE	= watib/.afile
+WATIB_LINKSRC	= $(WATIB_LINKFILE:%=watib/%.scm)
+WATIB_LINKOBJ	= $(WATIB_LINKFILE:%=watib/%.o)
+WATIB_OBJ  	= $(WATIB_FILE:%=watib/%.o)
+
 #*---------------------------------------------------------------------*/
 #*    Population                                                       */
 #*---------------------------------------------------------------------*/
 OBJECTS		= $(AFILE_OBJ) $(BPP_OBJ) $(BTAGS_OBJ) $(BDEPEND_OBJ) \
                   $(BMAKE_OBJ) $(BPROF_OBJ) $(MCO_OBJ) $(JFILE_OBJ) \
-                  $(JAS_OBJ)
+                  $(JAS_OBJ) $(WATIB_OBJ)
 SOURCES_FILES	= $(OBJECTS:%.o=%.scm)
 
 POPULATION	= $(SOURCES_FILES) \
@@ -108,6 +124,9 @@ all: all-common dobmem
 	if [ "$(JVMBACKEND) " != "no " ]; then \
 	  $(MAKE) all-jvm; \
 	fi
+	if [ "$(WASMBACKEND) " != "no " ]; then \
+	  $(MAKE) all-wasm; \
+	fi
 
 all-common: $(BOOTBINDIR)/bglafile \
      $(BOOTBINDIR)/bgldepend \
@@ -119,6 +138,8 @@ all-common: $(BOOTBINDIR)/bglafile \
      $(BOOTBINDIR)/bgljfile
 
 all-jvm: $(BOOTBINDIR)/bgljas
+
+all-wasm: $(BOOTBINDIR)/bglwatib
 
 boot:
 	$(MAKE) all BFLAGS="$(BFLAGS) -ld-relative"
@@ -166,6 +187,10 @@ jas: $(BOOTBINDIR)/bgljas
 $(BOOTBINDIR)/bgljas: $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(JAS_OBJ) $(JAS_LINKOBJ)
 
+watib: $(BOOTBINDIR)/bglwatib
+$(BOOTBINDIR)/bglwatib: $(WATIB_LINKSRC) $(WATIB_AFILE) $(WATIB_OBJ) $(WATIB_LINKOBJ)
+	(cd watib; $(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(WATIB_OBJ:watib/%=%) $(WATIB_LINKOBJ:watib/%=%))
+
 #*---------------------------------------------------------------------*/
 #*    install                                                          */
 #*---------------------------------------------------------------------*/
@@ -174,6 +199,9 @@ install: all
 	  targets="bglafile bgldepend bglmake bglprof bglmco bglpp bgltags"; \
 	  if [ "$(JVMBACKEND) " != "no " ]; then \
 	     targets="$$targets bgljfile bgljas"; \
+          fi; \
+	  if [ "$(WASMBACKEND) " != "no " ]; then \
+	     targets="$$targets bglwatib"; \
           fi; \
 	  for p in $$targets; do \
 	    cp $(BOOTBINDIR)/$$p$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
@@ -245,6 +273,7 @@ cleanall: clean
 	@- $(RM) -f $(BOOTBINDIR)/bglpp 
 	@- $(RM) -f $(BOOTBINDIR)/bgltags
 	@- $(RM) -f $(BOOTBINDIR)/bgljas
+	@- $(RM) -f $(BOOTBINDIR)/bglwatib
 	@- $(RM) -f $(JAS_LINKSRC)
 
 distclean: cleanall
@@ -281,6 +310,9 @@ pop:
 #*---------------------------------------------------------------------*/
 #*     .scm --> .o                                                     */
 #*---------------------------------------------------------------------*/
+watib/%.o: watib/%.scm $(WATIB_AFILE)
+	(cd watib; $(BIGLOO) $(BWATIBFLAGS) $(BFLAGS) -g $(EFLAGS) -c $*.scm -o $*.o -afile .afile)
+
 jas/%.o: jas/%.scm $(JAS_AFILE)
 	$(BIGLOO) $(BFLAGS) -g $(EFLAGS) -c jas/$*.scm -o jas/$*.o -afile jas/.afile
 
@@ -323,6 +355,14 @@ jas/classfile.sch: ../comptime/Jas/classfile.sch
 $(JAS_AFILE): $(JAS_LINKSRC)
 	if [ ! -f jas/$(JAS_AFILE) ]; then \
 	  (cd jas; $(BGLAFILE) *.scm -o ../$(JAS_AFILE)); \
+	fi
+
+#*---------------------------------------------------------------------*/
+#*    Watib afile                                                      */
+#*---------------------------------------------------------------------*/
+$(WATIB_AFILE): $(WATIB_LINKSRC)
+	if [ ! -f watib/$(WATIB_AFILE) ]; then \
+	  (cd watib; $(BGLAFILE) *.scm */*.scm -o ../$(WATIB_AFILE)); \
 	fi
 
 #*---------------------------------------------------------------------*/

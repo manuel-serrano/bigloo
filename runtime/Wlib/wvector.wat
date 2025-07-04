@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 22 07:27:20 2024                          */
-;*    Last change :  Thu Dec 26 06:34:21 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Fri Jul  4 11:18:27 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM vectors                                                     */
 ;*=====================================================================*/
@@ -170,9 +170,10 @@
    (func $TVECTORP (export "TVECTORP")
       (param $v (ref eq))
       (result i32)
-      (if (ref.test (ref array) (local.get $v))
-	  (then (return (i32.eqz (call $BGL_HVECTORP (local.get $v)))))
-	  (else (return (i32.const 0)))))
+      (return
+	 (if (result i32) (ref.test (ref array) (local.get $v))
+	     (then (i32.eqz (call $BGL_HVECTORP (local.get $v))))
+	     (else (i32.const 0)))))
 	     
    (func $TVECTOR_DESCR (export "TVECTOR_DESCR")
       (param $v arrayref)

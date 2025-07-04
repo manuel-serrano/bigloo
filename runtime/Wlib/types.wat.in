@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Wed Jun 18 09:51:40 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 14:28:25 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -28,6 +28,8 @@
    ;; Misc 
    ;; -----------------------------------------------------------------
 
+   (@include "./wcnst.wat" type)
+   
    (type $cnst-table (array (mut (ref eq))))
 
    (type $bgl_evmeaning_getter

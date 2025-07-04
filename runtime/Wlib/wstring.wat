@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Wed Feb  5 09:54:59 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 11:26:49 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM strings                                                     */
@@ -71,7 +71,8 @@
 	     (return (local.get $s)))
 	  (else
 	   (return_call $string_to_bstring_len (local.get $s)
-	      (i32.wrap_i64 (local.get $l))))))
+	      (i32.wrap_i64 (local.get $l)))))
+      (unreachable))
 
    ;; string_append
    (func $string_append 

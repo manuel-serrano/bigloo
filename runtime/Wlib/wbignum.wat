@@ -32,8 +32,6 @@
    (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_long (param externref) (result f64)))
    (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_llong (param externref) (result f64)))
    (import "__js_bignum" "bignum_to_flonum" (func $bgl_bignum_to_flonum (param externref) (result f64)))
-   (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref) (param externref) (result externref)))
-   (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref) (param externref) (result externref)))
    (import "__js_bignum" "seed_rand" (func $seed_rand (param i32)))
    (import "__js_bignum" "rand_bignum" (func $rand_bignum (param externref) (result externref)))
    (import "__js_bignum" "rand_fixnum" (func $rand_fixnum (result i32)))

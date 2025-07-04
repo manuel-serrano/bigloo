@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Jun 17 13:52:40 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 11:30:51 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -40,6 +40,11 @@
 
    (global $default_io_bufsize (export "default_io_bufsize") i64 (i64.const 8192))
 
+   (elem declare func $_CLOSE $_LSEEK $strseek $strwrite
+      $bgl_input_file_seek $bgl_sysread $bgl_proc_read
+      $bgl_input_string_seek $bgl_input_mmap_seek $bgl_mmap_read $bgl_eof_read
+      $bgl_syswrite $get_output_string_as_refeq $procclose $procwrite $procflush)
+   
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
@@ -67,6 +72,34 @@
 
    (import "__js_io" "file_separator" (global $js_file_separator i32))
 
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
+   (import "__bigloo" "BEOF" (global $BEOF (ref $bcnst)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BGL_IO_WRITE_ERROR" (global $BGL_IO_WRITE_ERROR i32))
+   (import "__bigloo" "BGL_RGC_DEFAULT_VALUE" (global $rgc-default-value (ref $rgc)))
+   (import "__bigloo" "RGC_BUFFER_MATCH_LENGTH" (func $RGC_BUFFER_MATCH_LENGTH (param $port (ref $input-port)) (result i64)))
+   (import "__bigloo" "STRINGP" (func $STRINGP (param (ref eq)) (result i32)))
+   (import "__bigloo" "STRING_LENGTH" (func $STRING_LENGTH (param (ref $bstring)) (result i64)))
+   (import "__bigloo" "string_to_bstring_len" (func $string_to_bstring_len (param (ref $bstring)) (param i32) (result (ref $bstring))))
+   (import "__bigloo" "bgl_string_shrink" (func $bgl_string_shrink (param (ref $bstring)) (param i64) (result (ref $bstring))))
+   (import "__bigloo" "BGL_MMAP_LENGTH" (func $BGL_MMAP_LENGTH (param (ref $mmap)) (result i64)))
+   (import "__bigloo" "BGL_MMAP_REF" (func $BGL_MMAP_REF (param $o (ref $mmap)) (param $i i64) (result i32)))
+   (import "__bigloo" "bgl_load_string_in_buffer" (func $load_string_in_buffer (param i32) (param i32) (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
+   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_funcall0" (func $funcall0 (param (ref $procedure)) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall1" (func $funcall1 (param (ref $procedure)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall2" (func $funcall2 (param (ref $procedure)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "bgl_memcpy" (func $memcpy (param $dest i32) (param (ref $bstring)) (param i32) (param i32)))
+   (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
+   (import "__bigloo" "INTEGERP" (func $INTEGERP (param (ref eq)) (result i32)))
+   (import "__bigloo" "OBJ_TO_INT" (func $OBJ_TO_INT (param (ref eq)) (result i64)))
+   (import "__bigloo" "BGL_CURRENT_DYNAMIC_ENV" (func $BGL_CURRENT_DYNAMIC_ENV (result (ref $dynamic-env))))
+   
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
@@ -546,14 +579,14 @@
       (export "BGL_OUTPUT_PORT_FILEPOS")
       (param $op (ref $output-port))
       (result i64)
-      (if (ref.test (ref $file-output-port) (local.get $op))
-	  (then
-	     (return
+      (return
+	 (if (result i64) (ref.test (ref $file-output-port) (local.get $op))
+	     (then
 		(i64.extend_i32_u
 		   (struct.get $file-output-port $position
-		      (ref.cast (ref $file-output-port) (local.get $op))))))
-	  (else
-	   (return (i64.const 0)))))
+		      (ref.cast (ref $file-output-port) (local.get $op)))))
+	     (else
+	      (i64.const 0)))))
 
     (func $BGL_INPUT_PORT_BUFFER (export "BGL_INPUT_PORT_BUFFER")
       (param $ip (ref $input-port))
@@ -617,7 +650,8 @@
 		   (i64.extend_i32_u
 		      (array.len
 			 (struct.get $rgc $buf
-			    (struct.get $input-port $rgc (local.get $ip)))))))))))
+			    (struct.get $input-port $rgc (local.get $ip))))))))))
+      (unreachable))
 
    (func $INPUT_PORT_ON_FILEP
       (param $port (ref eq))
@@ -809,7 +843,8 @@
 	   (struct.set $procedure-input-port $pbufpos (local.get $ip)
 	      (i32.add (struct.get $procedure-input-port $pbufpos (local.get $ip))
 		 (local.get $l)))
-	   (return (local.get $l)))))
+	   (return (local.get $l))))
+      (unreachable))
    
    ;; bgl_proc_read
    (func $bgl_proc_read
@@ -846,7 +881,8 @@
 			      (array.new_data $bstring $INPUT_PROCEDURE_PORT (i32.const 0) (i32.const 21))
 			      (array.new_data $bstring $BAD_TYPE (i32.const 0) (i32.const 10))
 			      (local.get $port)))
-		     (unreachable))))))))
+		     (unreachable)))))))
+      (unreachable))
 
    ;; bgl_input_string_seek
    (func $bgl_input_string_seek
@@ -890,7 +926,7 @@
       
       (throw $fail))
 
-;; bgl_mmap_read
+   ;; bgl_mmap_read
    (func $bgl_mmap_read
       (param $port (ref eq))
       (param $b (ref $bstring))
@@ -940,7 +976,8 @@
 		       (i32.const 1))))
 	     (return (local.get $n)))
 	  (else
-	   (return (i32.const 0)))))
+	   (return (i32.const 0))))
+      (unreachable))
 
       ;; bgl_input_mmap_seek
    (func $bgl_input_mmap_seek
@@ -1048,7 +1085,8 @@
 		   (local.get $ip)))
 	     (return (local.get $ip)))
 	  (else
-	   (return (local.get $ip)))))
+	   (return (local.get $ip))))
+      (unreachable))
 
    ;; bgl_input_port_seek
    (func $bgl_input_port_seek
@@ -1071,7 +1109,8 @@
 	   (call_ref $sysseek_t (local.get $port) (i32.wrap_i64 (local.get $pos))
 	      (global.get $WHENCE_SEEK_SET)
 	      (local.get $sysseek))
-	   (return (local.get $port)))))
+	   (return (local.get $port))))
+      (unreachable))
    
    ;; bgl_close_output_port
    (func $bgl_close_output_port (export "bgl_close_output_port")
@@ -1140,7 +1179,8 @@
 			(local.get $op)))
 		  (return (local.get $res)))
 	       (else
-		(return (local.get $res)))))))
+		(return (local.get $res))))))
+      (unreachable))
 
    ;; -----------------------------------------------------------------
    ;; Output flush functions 
@@ -1385,7 +1425,8 @@
 			     (then
 				(throw $fail)))))))))
 	   
-      (return (local.get $op)))
+      (return (local.get $op))
+      (unreachable))
 
    ;; bgl_output_flush
    (func $bgl_output_flush
@@ -1403,7 +1444,8 @@
 	  (else
 	   (return_call_ref $sysflush_t
 	      (local.get $op)
-	      (struct.get $output-port $sysflush (local.get $op))))))
+	      (struct.get $output-port $sysflush (local.get $op)))))
+      (unreachable))
 
    ;; $charbuf
    (global $charbuf (ref $bstring)
@@ -1435,7 +1477,8 @@
 		(local.get $op)
 		(struct.get $output-port $sysflush (local.get $op))))
 	  (else
-	   (return (global.get $BTRUE)))))
+	   (return (global.get $BTRUE))))
+      (unreachable))
 
    ;; bgl_write
    (func $bgl_write 
@@ -1498,7 +1541,8 @@
 		  (return (local.get $op)))))
 	  (else
 	   (return_call $bgl_output_flush (local.get $op)
-	      (local.get $str) (local.get $start) (local.get $sz)))))
+	      (local.get $str) (local.get $start) (local.get $sz))))
+      (unreachable))
 
    ;; strwrite
    (func $strwrite
@@ -2146,7 +2190,8 @@
 		(struct.get $fd-output-port $fd
 		   (ref.cast (ref $fd-output-port) (local.get $op)))))
 	  (else
-	   (return (i32.const 0)))))
+	   (return (i32.const 0))))
+      (unreachable))
 
    ;; procwrite
    (func $procwrite
@@ -2420,7 +2465,8 @@
 			       (local.get $size) (i32.const 128)))
 			 (local.get $res)))
 		   (local.set $size (i32.sub (local.get $size) (i32.const 1)))
-		   (br $while)))))))
+		   (br $while))))))
+      (unreachable))
    
 ;*---------------------------------------------------------------------*/
 ;*    files                                                            */

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:56:25 2024                          */
-;*    Last change :  Thu Apr 24 15:48:51 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 11:07:42 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM implementation of constants with 31-bit unboxed fixnums.    */
@@ -98,44 +98,44 @@
    (func $BCHAR (export "BCHAR")
       (param $v i32)
       (result (ref $bchar))
-      (if (i32.lt_u (local.get $v) (i32.const @BCHARS_PREALLOC_SIZE@))
-	  (then
-	     (return
+      (return
+	 (if (result (ref $bchar)) (i32.lt_u (local.get $v) (i32.const @BCHARS_PREALLOC_SIZE@))
+	     (then
 		(array.get $bchars-table
 		   (global.get $BCHARS)
-		   (local.get $v))))
-	  (else
-	   (return 
+		   (local.get $v)))
+	     (else
 	      (struct.new $bchar (local.get $v))))))
    
    ;; CCHAR
    (func $CCHAR (export "CCHAR")
       (param $o (ref $bchar))
       (result i32)
-      (struct.get $bchar $val (local.get $o)))
+      (struct.get_u $bchar $val (local.get $o)))
    
    ;; toupper
    (func $toupper (export "toupper")
       (param $c i32)
       (result i32)
-      (if (i32.ge_u (local.get $c) (i32.const 97))
-	  (then
-	     (if (i32.le_u (local.get $c) (i32.const 122))
-		 (then (return (i32.sub (local.get $c) (i32.const 32))))
-		 (else (return (local.get $c)))))
-	  (else
-	   (return (local.get $c)))))
+      (return
+	 (if (result i32) (i32.ge_u (local.get $c) (i32.const 97))
+	     (then
+		(if (result i32) (i32.le_u (local.get $c) (i32.const 122))
+		    (then (i32.sub (local.get $c) (i32.const 32)))
+		    (else (local.get $c))))
+	     (else
+	      (local.get $c)))))
    
    ;; tolower
    (func $tolower (export "tolower")
       (param $c i32)
       (result i32)
-      (if (i32.ge_u (local.get $c) (i32.const 65))
-	  (then
-	     (if (i32.le_u (local.get $c) (i32.const 90))
-		 (then (return (i32.add (local.get $c) (i32.const 32))))
-		 (else (return (local.get $c)))))
-	  (else
-	   (return (local.get $c)))))
-   
+      (return 
+	 (if (result i32) (i32.ge_u (local.get $c) (i32.const 65))
+	     (then
+		(if (result i32) (i32.le_u (local.get $c) (i32.const 90))
+		    (then (i32.add (local.get $c) (i32.const 32)))
+		    (else (local.get $c))))
+	     (else
+	      (local.get $c)))))
    )

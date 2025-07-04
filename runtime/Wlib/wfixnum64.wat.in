@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Thu Jun 19 11:18:05 2025 (serrano)                */
+;*    Last change :  Fri Jul  4 11:22:06 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -103,7 +103,8 @@
 		   (i32.const 0)
 		   (i32.const 13)))
 	     (throw $fail))
-	  (else (return (local.get $x)))))
+	  (else (return (local.get $x))))
+      (unreachable))
 
    (func $check_zero32 (export "check_zero32")
       (param $x i32)
@@ -115,7 +116,8 @@
 		   (i32.const 0)
 		   (i32.const 13)))
 	     (throw $fail))
-	  (else (return (local.get $x)))))
+	  (else (return (local.get $x))))
+      (unreachable))
       
    )
 
