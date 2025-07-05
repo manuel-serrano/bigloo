@@ -1,0 +1,12 @@
+;; section 6.4.4 - Abbreviations
+'((anyref . (ref null any))
+  (eqref  . (ref null eq))
+  (i31ref . (ref null i31))
+  (structref . (ref null struct))
+  (arrayref . (ref null array))
+  (funcref . (ref null func))
+  (exnref . (ref null exn))
+  (externref . (ref null extern))
+  (nullref . (ref null none))
+  (nullfuncref . (ref null nofunc))
+  (nullexternref . (reff null noextern)))

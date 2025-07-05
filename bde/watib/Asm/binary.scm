@@ -1,0 +1,430 @@
+;; Copyright (c) 2025 Aghilas Y. Boussaa, see COPYING file
+
+;; Translation from the internal representation of wasm to the binary format.
+;; (section 5 of the specification)
+
+(module asm_binary
+   (from (ast_node "Ast/node.scm"))
+   (include "Misc/read-table.sch")
+   (import (leb128 "Asm/leb128.scm")
+           (misc_letif "Misc/let-if.scm")
+           (type_type "Type/type.scm")
+           (env_env "Env/env.scm"))
+   (export (bin-file! p::prog file::bstring)))
+
+(define (bool->number::bint b::bool)
+   (if b 1 0))
+
+(read-table *valtype-symbols* "Asm/valtype-symbols.sch")
+(read-table *type-abbreviations* "Type/type-abbreviations.sch")
+(define (valtype-symbol? s)
+   (and (symbol? s) (hashtable-contains? *valtype-symbols* s)))
+
+(define (type-abbreviation? s)
+   (and (symbol? s) (hashtable-contains? *type-abbreviations* s)))
+
+(read-table *opcodes* "Asm/opcodes.sch")
+
+(define *code-op* (open-output-string))
+(define *ncode* 0)
+(define *func-op* (open-output-string))
+(define *type-op* (open-output-string))
+(define *nrec* 0)
+(define *export-op* (open-output-string))
+(define *nexport* 0)
+(define *data-op* (open-output-string))
+(define *global-op* (open-output-string))
+; different from the one in env because there is no imports here
+(define *nglobal* 0)
+(define *tag-op* (open-output-string))
+(define *nmem* 0)
+(define *mem-op* (open-output-string))
+(define *import-op* (open-output-string))
+(define *nimport* 0)
+(define *elem-op* (open-output-string))
+(define *nelem* 0)
+
+(define (write-vec v::pair-nil wr::procedure op::output-port)
+   (leb128-write-unsigned (length v) op)
+   (for-each (lambda (x) (wr x op)) v))
+
+(define (write-string n out-port)
+   (leb128-write-unsigned (string-length n) out-port)
+   (display n out-port))
+
+(define (write-type t op::output-port)
+   (match-case t
+      ((? valtype-symbol?)
+       (write-byte (hashtable-get *valtype-symbols* t) op))
+      ((? type-abbreviation?)
+       (write-type (hashtable-get *type-abbreviations* t) op))
+      ((? number?)
+       (leb128-write-signed t op))
+      ((ref ?t)
+       (write-byte #x64 op)
+       (write-type t op))
+      ((? deftype?) (leb128-write-signed (cadr t) op))
+      ((? rectype?) (leb128-write-signed (caddr t) op))
+      ((ref null ?t)
+       (write-byte #x63 op)
+       (write-type t op))))
+
+(define (write-comptype t op::output-port)
+   (define (write-fieldtype t op::output-port)
+      (write-type (cadr t) op)
+      (write-byte (bool->number (car t)) op))
+
+   (match-case t
+      ((func ?p ?r)
+       (write-byte #x60 op)
+       (write-vec p write-type op)
+       (write-vec r write-type op))
+      ((array ?ft)
+       (write-byte #x5E op)
+       (write-fieldtype ft op))
+      ((struct . ?fts)
+       (write-byte #x5F op)
+       (write-vec fts write-fieldtype op))))
+
+(define (write-subtype st::pair op::output-port)
+   (match-case (cdr st)
+      ((final ?ct) (write-comptype ct op))
+      ((final ?x ?ct)
+       (write-byte #x4F op)
+       (write-byte #x01 op)
+       (leb128-write-unsigned x op)
+       (write-comptype ct op))
+      ((?x ?ct)
+       (write-byte #x50 op)
+       (write-byte #x01 op)
+       (leb128-write-unsigned x op)
+       (write-comptype ct op))
+      ((?ct)
+       (write-byte #x50 op)
+       (write-byte #x00 op)
+       (write-comptype ct op))))
+
+(define (write-rectype rt::pair-nil op::output-port)
+   (match-case rt
+      ((?st) (write-subtype st op))
+      (?sts
+       (write-byte #x4E op)
+       (write-vec sts write-subtype op))))
+
+(define-generic (write-param p::parameter op::output-port))
+
+(define-method (write-param p::idxp op::output-port)
+   (leb128-write-unsigned (-> p idx) op))
+
+(define-method (write-param p::i32p op::output-port)
+   (leb128-write-signed (-> p num) op))
+
+(define-method (write-param p::i64p op::output-port)
+   (leb128-write-signed (-> p num) op))
+
+(define-method (write-param p::f32p op::output-port)
+   (let* ((s (if (fixnum? (-> p num))
+                 (float->ieee-string (fixnum->flonum (-> p num)))
+                 (float->ieee-string (-> p num)))))
+     (do ((i 3 (- i 1)))
+         ((< i 0))
+       (write-byte (char->integer (string-ref s i)) op))))
+
+(define-method (write-param p::typep op::output-port)
+   (write-type (-> p type) op))
+
+(define-method (write-param p::f64p op::output-port)
+   (let ((s (if (fixnum? (-> p num))
+                (double->ieee-string (fixnum->flonum (-> p num)))
+                (double->ieee-string (-> p num)))))
+      (do ((i 7 (- i 1)))
+          ((< i 0))
+        (write-byte (char->integer (string-ref s i)) op))))
+
+(define-generic (write-instruction i::instruction env::env op::output-port)
+   (display (hashtable-get *opcodes* (-> i opcode)) op))
+
+(define-method (write-instruction i::one-arg env::env op::output-port)
+   (match-case (-> i opcode)
+      (ref.test
+       (with-access::typep (-> i x) (type)
+          (write-byte #xFB op)
+          (leb128-write-unsigned (if (nullable? type) 21 20) op)
+          (write-type (reftype->heaptype type) op)))
+      (ref.cast
+       (with-access::typep (-> i x) (type)
+          (write-byte #xFB op)
+          (leb128-write-unsigned (if (nullable? type) 23 22) op)
+          (write-type (reftype->heaptype type) op)))
+      (else
+       (call-next-method)
+       (write-param (-> i x) op))))
+
+(define-method (write-instruction i::two-args env::env op::output-port)
+   (call-next-method)
+   (write-param (-> i x) op)
+   (write-param (-> i y) op))
+
+(define-method (write-instruction i::three-args env::env op::output-port)
+   (match-case (-> i opcode)
+      ((or br_on_cast br_on_cast_fail)
+       (with-access::typep (-> i y) ((rt1 type))
+          (with-access::typep (-> i z) ((rt2 type))
+             (write-byte #xFB op)
+             (if (eq? 'br_on_cast (-> i opcode))
+                 (leb128-write-unsigned 24 op)
+                 (leb128-write-unsigned 25 op))
+             (write-byte (+ (bool->number (nullable? rt2))
+                            (* 2 (bool->number (nullable? rt1)))) op)
+             (write-param (-> i x) op)
+             (write-type (reftype->heaptype rt1) op)
+             (write-type (reftype->heaptype rt2) op))))
+      (else
+       (call-next-method)
+       (write-param (-> i x) op)
+       (write-param (-> i y) op)
+       (write-param (-> i z) op))))
+
+(define-method (write-instruction i::br_table env::env op::output-port)
+   (write-byte #x0E op)
+   (leb128-write-unsigned (-fx (length (-> i labels)) 1) op)
+   (for-each (lambda (p) (write-param p op)) (-> i labels)))
+
+(define-method (write-instruction i::sequence env::env op::output-port)
+   (for-each (lambda (i) (write-instruction i env op)) (-> i body)))
+
+(define (write-bt i::instruction env::env op::output-port)
+   (match-case (cons (-> i intype) (-> i outtype))
+      ((() . ()) (write-byte #x40 op))
+      ((() . (?vt)) (write-type vt op))
+      ((?p . ?r)
+       (let ((x (-> env ntype)))
+          (add-type! env #f `(deftype -1 ((sub final (func ,p ,r))) 0))
+          (leb128-write-signed x op)))))
+
+(define-method (write-instruction i::block env::env op::output-port)
+   (write-byte #x02 op)
+   (write-bt i env op)
+   (call-next-method)
+   (write-byte #x0B op))
+
+(define-method (write-instruction i::loop env::env op::output-port)
+   (write-byte #x03 op)
+   (write-bt i env op)
+   (call-next-method)
+   (write-byte #x0B op))
+
+(define-method (write-instruction i::if-else env::env op::output-port)
+   (write-byte #x04 op)
+   (write-bt (-> i then) env op)
+   (write-instruction (-> i then) env op)
+   (write-byte #x05 op)
+   (write-instruction (-> i else) env op)
+   (write-byte #x0B op))
+
+(define-generic (write-catch c::catch-branch op::output-port))
+
+(define-method (write-catch c::catch op::output-port)
+   (write-byte #x00 op)
+   (write-param (-> c label) op)
+   (write-param (-> c tag) op))
+
+(define-method (write-catch c::catch_ref op::output-port)
+   (write-byte #x01 op)
+   (write-param (-> c label) op)
+   (write-param (-> c tag) op))
+
+(define-method (write-catch c::catch_all op::output-port)
+   (write-byte #x02 op)
+   (write-param (-> c label) op))
+
+(define-method (write-catch c::catch_all_ref op::output-port)
+   (write-byte #x03 op)
+   (write-param (-> c label) op))
+
+(define-method (write-instruction i::try_table env::env op::output-port)
+   (write-byte #x1F op)
+   (write-bt i env op)
+   (write-vec (-> i catches) write-catch op)
+   (call-next-method)
+   (write-byte #x0B op))
+
+(define (write-func f::func env::env)
+   (let ((x (-> env ntype)))
+      (add-type! env #f `(deftype -1 ((sub final (func ,@(-> f type)))) 0))
+      (leb128-write-unsigned x *func-op*))
+   (set! *ncode* (+fx 1 *ncode*))
+   (let ((func (call-with-output-string
+                 (lambda (p)
+                   (write-vec (-> f locals) (lambda (vt op)
+                                               (write-byte #x01 op)
+                                               (write-type vt op)) p)
+                   (write-instruction (-> f body) env p)
+                   (write-byte #x0B p)))))
+     (write-string func *code-op*)))
+
+(define (write-deftype t::pair)
+   (when (= 0 (cadddr t))
+      (set! *nrec* (+fx 1 *nrec*))
+      (write-rectype (caddr t) *type-op*)))
+
+(define-generic (write-exportdesc d::parameter)
+   (write-param d *export-op*))
+
+(define-method (write-exportdesc d::funcidxp)
+   (write-byte #x00 *export-op*)
+   (call-next-method))
+
+(define-method (write-exportdesc d::memidxp)
+   (write-byte #x02 *export-op*)
+   (call-next-method))
+
+(define-method (write-exportdesc d::globalidxp)
+   (write-byte #x03 *export-op*)
+   (call-next-method))
+
+(define-method (write-exportdesc d::tagidxp)
+   (write-byte #x04 *export-op*)
+   (call-next-method))
+
+(define (write-export e::export)
+   (set! *nexport* (+ 1 *nexport*))
+   (write-string (-> e name) *export-op*)
+   (write-exportdesc (-> e idx)))
+
+(define (write-data d::data)
+   (leb128-write-unsigned 1 *data-op*)
+   (write-string (-> d data) *data-op*))
+
+(define (write-globaltype t::pair op::output-port)
+   (write-type (cadr t) op)
+   (write-byte (bool->number (car t)) op))
+
+(define (write-global g::global env::env)
+   (set! *nglobal* (+ 1 *nglobal*))
+   (write-globaltype (-> g type) *global-op*)
+   (for-each (lambda (i) (write-instruction i env *global-op*)) (-> g body))
+   (write-byte #x0B *global-op*))
+
+(define (write-memtype m::memory op::output-port)
+   (write-byte (+ (bool->number (number? (cdr (-> m lim))))
+                  (* 4 (bool->number (eq? 'i64 (-> m at))))) op)
+   (leb128-write-unsigned (car (-> m lim)) op)
+   (unless (null? (cdr (-> m lim)))
+      (leb128-write-unsigned (cdr (-> m lim)) op)))
+
+(define (write-mem m::memory)
+   (write-memtype m *mem-op*))
+
+(define-generic (write-import i::import env::env)
+   (set! *nimport* (+ 1 *nimport*))
+   (write-string (-> i mod) *import-op*)
+   (write-string (-> i name) *import-op*))
+
+(define-method (write-import i::import-func env::env)
+   (call-next-method)
+   (write-byte #x00 *import-op*)
+   (let ((x (-> env ntype)))
+      (add-type! env #f (-> i deftype))
+      (leb128-write-unsigned x *import-op*)))
+
+(define-method (write-import i::import-mem env::env)
+   (call-next-method)
+   (write-byte #x02 *import-op*)
+   (write-memtype (-> i memtype) *import-op*))
+
+(define-method (write-import i::import-global env::env)
+   (call-next-method)
+   (write-byte #x03 *import-op*)
+   (write-globaltype (-> i globaltype) *import-op*))
+
+(define-method (write-import i::import-tag env::env)
+   (call-next-method)
+   (write-byte #x04 *import-op*)
+   (write-byte #x00 *import-op*)
+   (let ((x (-> env ntype)))
+      (add-type! env #f (-> i tagtype))
+      (leb128-write-unsigned x *import-op*)))
+
+(define (write-tag dt::pair env::env)
+   (write-byte #x00 *tag-op*)
+   (let ((x (-> env ntype)))
+      (add-type! env #f dt)
+      (leb128-write-unsigned x *tag-op*)))
+
+(define (write-elems elems::pair-nil)
+   (unless (null? elems)
+      (set! *nelem* 1)
+      (leb128-write-unsigned 3 *elem-op*)
+      (write-vec elems leb128-write-unsigned *elem-op*)))
+
+(define (write-sec N::bint len::bint ip::output-port op::output-port)
+   (unless (=fx 0 len)
+      (let* ((slen (call-with-output-string
+                     (lambda (p) (leb128-write-unsigned len p))))
+             (cont (close-output-port ip))
+             (size (+ (string-length slen) (string-length cont))))
+         (write-byte N op)
+         (leb128-write-unsigned size op)
+         (display slen op)
+         (display cont op))))
+
+(define (write-datacount n::bint op::output-port)
+   (unless (=fx n 0)
+      (let ((sn (call-with-output-string
+                     (lambda (p) (leb128-write-unsigned n p)))))
+         (write-byte 12 op)
+         (leb128-write-unsigned (string-length sn) op)
+         (display sn op))))
+
+(define (bin-file! pr::prog file::bstring)
+   (with-access::env (-> pr env)
+                     (nfunc nmem ndata ntag ntype types mem-types tag-types
+                      nglobal)
+      (for-each (lambda (i) (write-import i (-> pr env)))
+                (reverse (-> pr imports)))
+
+      (do ((i 0 (+fx i 1)))
+          ((>=fx i nfunc))
+         (let-if (f (vector-ref (-> pr funcs) i))
+            (write-func f (-> pr env))))
+
+      (do ((i 0 (+fx i 1)))
+          ((>=fx i nmem))
+         (write-mem (vector-ref mem-types i)))
+
+      (do ((i 0 (+fx i 1)))
+          ((>=fx i ntag))
+         (write-tag (vector-ref tag-types i) (-> pr env)))
+
+      (do ((i 0 (+fx i 1)))
+          ((>=fx i nglobal))
+         (let-if (g (vector-ref (-> pr globals) i))
+            (write-global g (-> pr env))))
+
+      (for-each write-export (-> pr exports))
+
+      (write-elems (-> pr funcrefs))
+
+      (do ((i 0 (+fx i 1)))
+          ((>=fx i ndata))
+         (write-data (vector-ref (-> pr data) i)))
+
+      (do ((i 0 (+fx i 1)))
+          ((>=fx i ntype))
+         (write-deftype (vector-ref types i)))
+
+      (call-with-output-file file
+         (lambda (p)
+            (display "\x00asm\x01\x00\x00\x00" p) ; magic preamble
+            (write-sec 1 *nrec* *type-op* p)
+            (write-sec 2 *nimport* *import-op* p)
+            (write-sec 3 *ncode* *func-op* p)
+            (write-sec 5 nmem *mem-op* p)
+            (write-sec 13 ntag *tag-op* p)
+            (write-sec 6 *nglobal* *global-op* p)
+            (write-sec 7 *nexport* *export-op* p)
+            (write-sec 9 *nelem* *elem-op* p)
+            (write-datacount ndata p)
+            (write-sec 10 *ncode* *code-op* p)
+            (write-sec 11 ndata *data-op* p)))))
