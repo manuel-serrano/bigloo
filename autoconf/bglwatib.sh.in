@@ -1,0 +1,19 @@
+#!@SHELL@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/wasm/autoconf/bglwatib.sh.in         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Oct 13 14:06:43 2015                          */
+#*    Last change :  Sat Jul  5 07:32:41 2025 (serrano)                */
+#*    Copyright   :  2015-25 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Watib wrapper                                                    */
+#*=====================================================================*/
+
+LD_LIBRARY_PATH=@BGLBUILDGMPLIBDIR@:@BGLBUILDPCRELIBDIR@:@BGLBUILDPCRE2LIBDIR@:@BGLBUILDLIBUVLIBDIR@:@BGLBUILDLIBUNISTRINGLIBDIR@:@BGLBUILDLIBDIR@:$LD_LIBRARY_PATH
+DYLD_LIBRARY_PATH=@BGLBUILDGMPLIBDIR@:@BGLBUILDPCRELIBDIR@:@BGLBUILDPCRE2LIBDIR@:@BGLBUILDLIBUVLIBDIR@:@BGLBUILDLIBUNISTRINGLIBDIR@:@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH
+
+exec @WATIB@ "$@"
