@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Fri Jul  4 11:30:51 2025 (serrano)                */
+;*    Last change :  Sun Jul  6 07:34:40 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -2243,7 +2243,7 @@
    ;; -----------------------------------------------------------------
    ;; Initialization 
    ;; -----------------------------------------------------------------
-   (func $bgl_init_io
+   (func $bgl_init_io (export "bgl_init_io")
       (local $denv (ref $dynamic-env))
       (if (call $js_isatty (i32.const 1))
 	  (then

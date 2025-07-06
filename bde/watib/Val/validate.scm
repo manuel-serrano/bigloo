@@ -867,6 +867,7 @@
    (multiple-value-bind (n lts body)
       (valid-names/local/get-tl env (-> f body))
       (set! (-> env local-names) (append (-> f formals) n))
+      (set! (-> env parent) f)
       (set! (-> env local-types)
        (list->vector (append (map (lambda (vt) (instantiate::local-var
                                                 (init? #t) (type vt)))
@@ -950,7 +951,11 @@
                 (type->string t2) (type->string t1)))
 
       ((no-return-value-stack ?t)
-       (sprintf "function expected ~a on stack but got nothing" (type->string (car t))))
+       (sprintf "function expected ~a on stack but got nothing"
+                (type->string (car t))))
+
+      (((unknown ?x) ?s)
+       (sprintf "unknown ~a: ~a" x s))
 
       ((empty-stack ?t)
        (sprintf "expected ~a on stack but got nothing" (type->string (car t))))

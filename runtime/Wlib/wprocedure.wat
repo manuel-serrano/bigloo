@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  5 08:42:14 2025                          */
-;*    Last change :  Sun Jun 22 09:18:18 2025 (serrano)                */
+;*    Last change :  Sun Jul  6 07:42:13 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM procedure and funcall                                       */
@@ -63,6 +63,16 @@
    (type $func32 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
    (type $func33 (func (param (ref $procedure)) (param (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq) (ref eq)) (result (ref eq))))
    
+   ;; -----------------------------------------------------------------
+   ;; Imports
+   ;; -----------------------------------------------------------------
+   
+   (import "__bigloo" "BOOLEANP" (func $BOOLEANP (param (ref eq)) (result i32)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "bgl_internal_error" (func $bgl_internal_error (param i32) (param i32) (result (ref eq))))
+
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
@@ -4523,7 +4533,7 @@
 	       (return_call $apply_30 (local.get $proc) (local.get $args)))
 	    (return_call $apply_31 (local.get $proc) (local.get $args)))
 	 (return_call $apply_32 (local.get $proc) (local.get $args)))
-      (call $js_internal_error (i32.const 0) (local.get $arity))
+      (call $bgl_internal_error (i32.const 0) (local.get $arity))
       (throw $fail)
       (unreachable))
 

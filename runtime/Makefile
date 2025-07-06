@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Jul  4 13:35:07 2025 (serrano)                */
+#*    Last change :  Sat Jul  5 07:02:37 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -668,14 +668,14 @@ class_p/jlib: $(CLASSES)
 #*---------------------------------------------------------------------*/
 #*    Bigloo WASM libraries compilation                                */
 #*---------------------------------------------------------------------*/
-.PHONY: lib-wasm lib-wasm_s lib-wasm_u libs-wasm
+.PHONY: lib-wasm lib-wasm_s lib-wasm_u libs-wasm validate-wasm
 
 libs-wasm:
 	@ $(MAKE) lib-wasm_s
 	@ $(MAKE) lib-wasm_u
 
 lib-wasm: lib-wasm_s
-lib-wasm_s: includes
+lib-wasm_s: includes validate-wasm
 	$(MAKE) Wlib/types.wat
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
@@ -683,7 +683,7 @@ lib-wasm_s: includes
                 WASMDIR_SYS=wasm_s WASMDIR_USR=wasm_s \
                 LIBSUFFIX=_s
 
-lib-wasm_u: includes
+lib-wasm_u: includes validate-wasm
 	$(MAKE) Wlib/types.wat
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
@@ -691,12 +691,14 @@ lib-wasm_u: includes
                 WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_u \
                 LIBSUFFIX=_u
 
+validate-wasm: $(WLIB:%=objs/wasm_s/%.val)
+
 one-lib-wasm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
   $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
 
 .PHONY: touch-wasm
 touch-wasm:
-	@ touch $(WASMS:objs//%.wasm=%.scm)
+	@ touch $(WASMS:objs/%.wasm=%.scm)
 	@ touch Wlib/runtime.wat.in
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
@@ -718,6 +720,9 @@ objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   Wlib/types.wat $(W_WLIB) $(WASMS:%.wasm=%.wat)
 	$(BIGLOO) -wasm -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
+
+objs/wasm_s/%.val: Wlib/%.wat Wlib/types.wat
+	$(BGLWATIB) -v $< Wlib/types.wat && date > $@
 
 objs/wasm_u/%.wat: %.scm
 	$(BIGLOO) -wasm $(WFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
@@ -921,7 +926,7 @@ uninstall-bee:
 #*---------------------------------------------------------------------*/
 #*    cleaning                                                         */
 #*---------------------------------------------------------------------*/
-.PHONY: clean-c clean-jvm clean cleanall distclean
+.PHONY: clean-c clean-jvm clean-wasm clean cleanall distclean
 
 clean-quick:
 	$(MAKE) cleanobj OBJDIR_USR=obj_s OBJDIR_SYS=obj_u
@@ -946,13 +951,19 @@ clean-jvm:
 	$(RM) -f $(BOOTLIBDIR)/bigloo_u.zip
 	$(RM) -f $(BOOTLIBDIR)/bigloo_s.zip
 
+clean-wasm:
+	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
+	$(RM) -f $(WLIB:%=objs/wasm_s/%.val)
+	$(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat
+	$(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm
+
 cleanobj:
 	$(RM) -f $(OBJECTS)
 
 cleanclass:
 	$(RM) -f $(CLASSES) $(JAS)
 
-clean: clean-c clean-jvm
+clean: clean-c clean-jvm clean-wasm
 
 cleanall: clean-c clean
 	@ if [ "`pwd` " = "$$HOME/prgm/project/bigloo/runtime " ]; then \
@@ -961,6 +972,8 @@ cleanall: clean-c clean
           fi
 
 distclean: cleanall
+	$(RM) -rf objs/wasm_s/*
+	$(RM) -rf objs/wasm_u/*
 	$(RM) -rf objs/class*
 	$(RM) -f Jlib/configure.java
 	$(MAKE) dirs

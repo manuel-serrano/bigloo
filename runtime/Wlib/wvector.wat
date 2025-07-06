@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 22 07:27:20 2024                          */
-;*    Last change :  Fri Jul  4 11:18:27 2025 (serrano)                */
+;*    Last change :  Sat Jul  5 07:54:25 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM vectors                                                     */
@@ -42,6 +42,17 @@
    (type $tvector-i64 (array (mut i64)))
    (type $tvector-f64 (array (mut f64)))
    
+   ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
+   (import "__bigloo" "BEOF" (global $BEOF (ref $bcnst)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BOOLEANP" (func $BOOLEANP (param (ref eq)) (result i32)))
+
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
@@ -190,7 +201,6 @@
 	  (then (return (global.get $tvector_descr_i8))))
       (if (ref.test (ref $s8vector) (local.get $v))
 	  (then (return (global.get $s8vector_descr))))
-      (call $not_implemented (i32.const -1000))
       (return (global.get $BUNSPEC)))
    
    (func $TVECTOR_DESCR_SET (export "TVECTOR_DESCR_SET")

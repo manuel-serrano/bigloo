@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul  3 07:59:07 2025 (serrano)                */
+#*    Last change :  Sat Jul  5 07:30:36 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -422,6 +422,7 @@ abortmissing=no
 #*--- The basename of the compiler and tools --------------------------*/
 afile=bglafile
 jfile=bgljfile
+watib=bglwatib
 btags=bgltags
 bdepend=bgldepend
 bmake=bglmake
@@ -3811,7 +3812,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bconfigure_generic_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh bglwatib.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`$echo $release | sed -e "s|[.]|_|"`;
@@ -4036,6 +4037,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BIGLOO@|$bigloo|" \
 	      -e "s|@AFILE@|$buildbindir/$afile|" \
 	      -e "s|@JFILE@|$buildbindir/$jfile|" \
+	      -e "s|@WATIB@|$buildbindir/$watib|" \
 	      -e "s|@BTAGS@|$buildbindir/$btags|" \
 	      -e "s|@BMAKE@|$buildbindir/$bmake|" \
 	      -e "s|@BPROF@|$buildbindir/$bprof|" \
@@ -4096,7 +4098,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_exit_h` $bigloo_exit_h
 
   # bigloo.sh
-  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bgljas.sh bglpp.sh bglprof.sh; do
+  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bgljas.sh bglpp.sh bglprof.sh bglwatib.sh; do
     mv $p $bootdir/bin/$p
     chmod u+rx $bootdir/bin/$p
   done
@@ -4304,6 +4306,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo 'BIGLOO=$'"(BGLBUILDBINDIR)/bigloo.sh" >> $makefile_build
     $echo 'BGLAFILE=$'"(BGLBUILDBINDIR)/bglafile.sh" >> $makefile_build
     $echo 'BGLJFILE=$'"(BGLBUILDBINDIR)/bgljfile.sh" >> $makefile_build
+    $echo 'BGLWATIB=$'"(BGLBUILDBINDIR)/bglwatib.sh" >> $makefile_build
     $echo 'BGLTAGS=$'"(BGLBUILDBINDIR)/bgltags.sh" >> $makefile_build
     $echo 'BGLDEPEND=$'"(BGLBUILDBINDIR)/bgldepend.sh" >> $makefile_build
     $echo 'BGLMCO=$'"(BGLBUILDBINDIR)/bglmco.sh" >> $makefile_build
@@ -4312,6 +4315,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo 'BIGLOO=$'"(BGLBUILDBINDIR)/bigloo" >> $makefile_build
     $echo 'BGLAFILE=$'"(BGLBUILDBINDIR)/bglafile" >> $makefile_build
     $echo 'BGLJFILE=$'"(BGLBUILDBINDIR)/bgljfile" >> $makefile_build
+    $echo 'BGLWATIB=$'"(BGLBUILDBINDIR)/bglwatib" >> $makefile_build
     $echo 'BGLTAGS=$'"(BGLBUILDBINDIR)/bgltags" >> $makefile_build
     $echo 'BGLDEPEND=$'"(BGLBUILDBINDIR)/bgldepend" >> $makefile_build
     $echo 'BGLMCO=$'"(BGLBUILDBINDIR)/bglmco" >> $makefile_build
@@ -4362,12 +4366,14 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo 'BIGLOO?=$'"(BINDIR)/bigloo.sh" >> $makefile_cfg
     $echo 'BGLAFILE?=$'"(BINDIR)/bglafile.sh" >> $makefile_cfg
     $echo 'BGLJFILE?=$'"(BINDIR)/bgljfile.sh" >> $makefile_cfg
+    $echo 'BGLWATIB?=$'"(BINDIR)/bglwatib.sh" >> $makefile_cfg
     $echo 'BGLTAGS?=$'"(BINDIR)/bgltags.sh" >> $makefile_cfg
     $echo 'BGLDEPEND?=$'"(BINDIR)/bgldepend.sh" >> $makefile_cfg
     $echo 'BGLMCO?=$'"(BINDIR)/bglmco.sh" >> $makefile_cfg
     $echo 'CIGLOO?=$'"(BINDIR)/cigloo" >> $makefile_cfg
   else
     $echo 'BIGLOO?=$'"(BINDIR)/bigloo" >> $makefile_cfg
+    $echo 'BGLWATIB?=$'"(BINDIR)/bglwatib" >> $makefile_cfg
     $echo 'BGLAFILE?=$'"(BINDIR)/bglafile" >> $makefile_cfg
     $echo 'BGLJFILE?=$'"(BINDIR)/bgljfile" >> $makefile_cfg
     $echo 'BGLTAGS?=$'"(BINDIR)/bgltags" >> $makefile_cfg
