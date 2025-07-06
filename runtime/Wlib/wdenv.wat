@@ -522,7 +522,7 @@
 	   (global.set $bgl_internal_error (ref.null none))
 	   (return (local.get $tmp)))))
 
-   (func $bgl_internal_error_set
+   (func $bgl_internal_error_set (export "bgl_internal_error_set")
       (param $e (ref eq))
       (global.set $bgl_internal_error (local.get $e)))
 

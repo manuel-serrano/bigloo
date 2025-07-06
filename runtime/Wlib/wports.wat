@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Sun Jul  6 07:34:40 2025 (serrano)                */
+;*    Last change :  Sun Jul  6 10:31:48 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -555,7 +555,7 @@
       (result i32)
       (ref.eq (local.get $v) (global.get $BEOF)))
 
-   (func $BGL_PORT_CLOSED_P
+   (func $BGL_PORT_CLOSED_P (export "BGL_PORT_CLOSED_P")
       (param $op (ref $port))
       (result i32)
 
@@ -1429,7 +1429,7 @@
       (unreachable))
 
    ;; bgl_output_flush
-   (func $bgl_output_flush
+   (func $bgl_output_flush (export "bgl_output_flush")
       (param $op (ref $output-port))
       (param $str (ref null $bstring))
       (param $start i32)
@@ -1452,7 +1452,7 @@
       (array.new_fixed $bstring 1 (i32.const 0)))
    
    ;; bgl_output_flush_char
-   (func $bgl_output_flush_char
+   (func $bgl_output_flush_char (export "bgl_output_flush_char")
       (param $op (ref $output-port))
       (param $c i32)
       (result (ref eq))
@@ -1481,7 +1481,7 @@
       (unreachable))
 
    ;; bgl_write
-   (func $bgl_write 
+   (func $bgl_write (export "bgl_write")
       (param $op (ref $output-port))
       (param $str (ref $bstring))
       (param $start i32)

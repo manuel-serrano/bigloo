@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Fri Jun 13 16:04:54 2025 (serrano)                */
+;*    Last change :  Sun Jul  6 10:28:18 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    WASM pairs                                                     */
+;*    WASM pairs                                                       */
 ;*=====================================================================*/
 
 (module $__bigloo_pair
@@ -21,6 +21,15 @@
 			      (field $car (mut (ref eq))) 
 			      (field $cdr (mut (ref eq))) 
 			      (field $cer (mut (ref eq))))))
+   
+   ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+   
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+
    
    ;; -----------------------------------------------------------------
    ;; Global variables 

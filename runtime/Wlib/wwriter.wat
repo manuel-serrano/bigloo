@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 07:31:11 2024                          */
-;*    Last change :  Fri Jul  4 11:19:54 2025 (serrano)                */
+;*    Last change :  Sun Jul  6 10:20:53 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Native objects printing.                                         */
@@ -11,6 +11,13 @@
 
 (module $__bigloo_writer
 
+   ;; -----------------------------------------------------------------
+   ;; Imports
+   ;; -----------------------------------------------------------------
+   (import "__bigloo" "bgl_output_flush" (func $bgl_output_flush (param (ref $output-port)) (param (ref null $bstring)) (param i32) (param i32) (result (ref eq))))
+   (import "__bigloo" "bgl_output_flush_char" (func $bgl_output_flush_char (param (ref $output-port)) (param i32) (result (ref eq))))
+   (import "__bigloo" "bgl_write" (func $bgl_write (param (ref $output-port)) (param (ref $bstring)) (param $start i32) (param $sz i32) (result (ref eq))))
+      
    ;; -----------------------------------------------------------------
    ;; Global constants 
    ;; -----------------------------------------------------------------

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Fri Jul  4 11:28:59 2025 (serrano)                */
+;*    Last change :  Sun Jul  6 10:28:37 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -17,6 +17,7 @@
 
    (data $READ "read")
    (data $IO_ERROR "IO error")
+   (data $PORT_CLOSED "port closed")
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -62,8 +63,22 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
+   (import "__js_math" "strtod" (func $js_strtod (param i32) (param i32) (result f64)))
+   
    (import "__bigloo" "default_io_bufsize" (global $default_io_bufsize i64))
-
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "BGL_PORT_CLOSED_P" (func $BGL_PORT_CLOSED_P (param (ref $port)) (result i32)))
+   (import "__bigloo" "c_substring" (func $c_substring (param (ref $bstring)) (param i64) (param i64) (result (ref $bstring))))
+   (import "__bigloo" "bgl_store_substring" (func $store_substring (param (ref $bstring)) (param i64) (param i64) (param i32)))
+   (import "__bigloo" "MAXVALELONG" (global $MAXVALELONG i64))
+   (import "__bigloo" "MAXVALFX" (global $MAXVALFX i64))
+   (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
+   (import "__bigloo" "MAXVALLLONG" (global $MAXVALLLONG i64))
+   (import "__bigloo" "make_belong" (func $make_belong (param i64) (result (ref $belong))))
+   (import "__bigloo" "make_bllong" (func $make_bllong (param i64) (result (ref $bllong))))
+   (import "__bigloo" "bgl_string_to_bignum" (func $bgl_string_to_bignum (param (ref $bstring)) (param i32) (result (ref $bignum))))
+   (import "__bigloo" "bgl_output_flush" (func $bgl_output_flush (param (ref $output-port)) (param (ref null $bstring)) (param i32) (param i32) (result (ref eq))))
    
    ;; -----------------------------------------------------------------
    ;; Common macros

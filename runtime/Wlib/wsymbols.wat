@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 09:56:44 2024                          */
-;*    Last change :  Tue Feb  4 08:00:07 2025 (serrano)                */
+;*    Last change :  Sun Jul  6 10:27:33 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM Symbols and keywords                                        */
@@ -19,6 +19,15 @@
       (struct (field $str (ref $bstring)) (field $cval (mut (ref eq)))))
    (type $keyword
       (struct (field $dummy i8) (field $str (ref $bstring)) (field $cval (mut (ref eq))) ))
+   
+   ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+   
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
