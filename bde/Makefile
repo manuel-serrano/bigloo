@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Fri Jul  4 10:08:19 2025 (serrano)                */
+#*    Last change :  Tue Jul  8 07:51:21 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -85,7 +85,8 @@ JAS_OBJ		= $(JAS_FILE:%=jas/%.o)
 WATIB_LINKFILE  = Val/validate \
                   Asm/binary  Asm/leb128 Opt/optimise  \
                   Opt/TestBr/walk Opt/UnCast/walk \
-                  Opt/Unreachable/walk Opt/Const/walk \
+                  Opt/Unreachable/walk Opt/Const/walk Opt/PureDrop/walk \
+                  Opt/CopyProp/walk \
                   Env/env \
                   Ast/node \
                   Misc/list Misc/parse Misc/let-if \
@@ -311,7 +312,7 @@ pop:
 #*     .scm --> .o                                                     */
 #*---------------------------------------------------------------------*/
 watib/%.o: watib/%.scm $(WATIB_AFILE)
-	(cd watib; $(BIGLOO) $(BWATIBFLAGS) $(BFLAGS) -g $(EFLAGS) -c $*.scm -o $*.o -afile .afile)
+	(cd watib; $(BIGLOO) $(BWATIBFLAGS) $(BFLAGS) $(EFLAGS) -c $*.scm -o $*.o -afile .afile)
 
 jas/%.o: jas/%.scm $(JAS_AFILE)
 	$(BIGLOO) $(BFLAGS) -g $(EFLAGS) -c jas/$*.scm -o jas/$*.o -afile jas/.afile

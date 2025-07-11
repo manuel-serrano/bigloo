@@ -24,9 +24,10 @@
        (with-access::sequence (-> i then) (body) body)))
 
 (define-method (const-fold-if! i::if-else x::i32p)
-   (if (= 0 (-> x num))
-       (with-access::sequence (-> i else) (body) body)
-       (with-access::sequence (-> i then) (body) body)))
+   (duplicate::block
+      (if (= 0 (-> x num))
+          (with-access::sequence (-> i else) (body) body)
+          (with-access::sequence (-> i then) (body) body))))
 
 (define-method (const-fold! i::sequence)
    (define (walk-list l::pair-nil)

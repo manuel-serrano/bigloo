@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  8 08:38:25 2025                          */
-;*    Last change :  Wed Jan  8 14:29:59 2025 (serrano)                */
+;*    Last change :  Thu Jul 10 07:51:11 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM Binary IO                                                   */
@@ -24,6 +24,37 @@
    (global $BGL_BINARY_INPUT i32 (i32.const 0))
    (global $BGL_BINARY_OUTPUT i32 (i32.const 1))
 
+   ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+
+   (import "__js_io" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
+   (import "__js_io" "close_file" (func $js_close_file (param i32)))
+   (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "append_file" (func $js_append_file (param i32 i32 i32) (result i32)))
+   (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
+   (import "__js_io" "write_char" (func $js_write_char (param i32 i32 i32) (result i32)))
+   (import "__js_io" "append_char" (func $js_append_char (param i32 i32) (result i32)))
+
+   (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BEOF" (global $BEOF (ref $bcnst)))
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
+   (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
+   (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+   (import "__bigloo" "STRING_LENGTH" (func $STRING_LENGTH (param (ref $bstring)) (result i64)))
+   (import "__bigloo" "bgl_load_string_in_buffer" (func $load_string_in_buffer (param i32) (param i32) (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
+   (import "__bigloo" "bgl_memcpy" (func $memcpy (param $dest i32) (param (ref $bstring)) (param i32) (param i32)))
+   (import "__bigloo" "obj_to_string" (func $obj_to_string (param (ref eq)) (param (ref eq)) (result (ref $bstring))))
+   (import "__bigloo" "string_to_obj" (func $string_to_obj (param (ref $bstring)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
@@ -159,9 +190,10 @@
       (local.set $nbread
 	 (call $js_read_file (local.get $fd) (i32.const 128) (i32.const 1) (i32.const -1)))
       
-      (if (i32.eq (local.get $nbread) (i32.const 1))
-	  (then (return (i32.load8_u (i32.const 128))))
-	  (else (return (i32.const -1)))))
+      (return
+	 (if (result i32) (i32.eq (local.get $nbread) (i32.const 1))
+	     (then (i32.load8_u (i32.const 128)))
+	     (else (i32.const -1)))))
 
    ;; BGL_INT_EOFP
    (func $BGL_INT_EOFP

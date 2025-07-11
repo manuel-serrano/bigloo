@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Feb  5 09:57:12 2025 (serrano)                */
+;*    Last change :  Fri Jul 11 09:49:02 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -92,7 +92,7 @@
 						   "utf8_string_to_ucs2_string"))
 
    (wasm   (c-make-ucs2-string "(array.new $ucs2string ~1 (i32.wrap_i64 ~0))")
-	   (c-ucs2-string-ref "(array.get $ucs2string ~0 (i32.wrap_i64 ~1))")
+	   (c-ucs2-string-ref "(array.get_u $ucs2string ~0 (i32.wrap_i64 ~1))")
 	   (c-ucs2-string-set! "(block (result (ref eq)) (array.set $ucs2string ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))"))
    
    (java   (class foreign

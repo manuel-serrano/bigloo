@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Jun 20 11:44:37 2025 (serrano)                */
+;*    Last change :  Thu Jul 10 08:00:04 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -255,6 +255,7 @@ esac")
    (define tags (create-hashtable :weak 'open-string))
    (define recs (create-hashtable :weak 'open-string))
    (define types (create-hashtable :weak 'open-string))
+   (define data (create-hashtable :weak 'open-string))
    (define exports-whitelist (create-hashtable :weak 'open-string))
    (define initial-order (create-hashtable :weak 'open-string))
    
@@ -333,6 +334,25 @@ esac")
 				#f)))
 			(else
 			 d)))
+	 modules))
+
+   (define (remove-duplicate-data! modules)
+      (filter! (lambda (d)
+		  (match-case d
+		     ((data ?n ?val)
+		      (let* ((key (symbol->string! n))
+			     (old (hashtable-get data key)))
+			 (cond
+			    ((not old)
+			     (hashtable-put! data key val)
+			     #t)
+			    ((not (string=? val old))
+			     (error "wasm-data"
+				(format "data label \"%s\" bound to different values" n)
+				(cons val old)))
+			    (else
+			     #f))))
+		     (else #t)))
 	 modules))
    
    (define (remove-exports! modules)
@@ -525,7 +545,7 @@ esac")
 		   (comment "global")
 		   ,@(collect-module modules 'global)
 		   (comment "data")
-		   ,@(collect-module modules 'data)
+		   ,@(remove-duplicate-data! (collect-module modules 'data))
 		   (comment "func")
 		   ,@(collect-module modules 'func)
 		   ;;(sort-modules! modules)
@@ -664,8 +684,8 @@ esac")
 	      (tag ,id ,@params)))
 	 (else
 	  (error "import-tag" "Illegal tag" e))))
-   
-   (let ((tname (find-file-in-path "bigloo_s.wat" *lib-dir*)))
+
+   (let ((tname (find-file-in-path "types.wat" *lib-dir*)))
       (if tname
 	  (match-case (call-with-input-file tname read)
 	     ((module (? symbol?) . ?body)
@@ -1114,20 +1134,28 @@ esac")
 ;*    emit-elements ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (emit-elements)
-   (let ((ids '()))
+   (let ((ids *extra-ref-funcs*))
       (for-each-global!
 	 (lambda (g)
-	    (if (and (require-prototype? g)
-		     (eq? (global-module g) *module*)
-		     (scnst? (global-value g)))
-		(let ((value (global-value g)))
-		   (with-access::scnst value (class node)
-		      (when (memq class '(sfun sgfun selfun slfun))
-			 (let* ((actuals (app-args node))
-				(entry (car actuals)))
-			    (when (variable? entry)
-			       (let ((name (set-variable-name! (var-variable entry))))
-				  (set! ids (cons (wasm-sym name) ids)))))))))))
+;* 	    (tprint "g=" (shape g)                                     */
+;* 	       " req=" (require-prototype? g)                          */
+;* 	       " eqm=" (eq? (global-module g) *module*)                */
+;* 	       " scnst=" (scnst? (global-value g))                     */
+;* 	       " tof=" (typeof (global-value g)))                      */
+	    (when (and (require-prototype? g) (eq? (global-module g) *module*))
+	       (let ((v (global-value g)))
+		  (cond
+		     ((scnst? v)
+		      (with-access::scnst v (class node)
+			 (when (memq class '(sfun sgfun selfun slfun))
+			    (let* ((actuals (app-args node))
+				   (entry (car actuals)))
+			       (when (variable? entry)
+				  (let ((name (set-variable-name! (var-variable entry))))
+				     (set! ids (cons (wasm-sym name) ids))))))))
+		     ((isa? v sfun)
+		      (let ((name (set-variable-name! g)))
+			 (set! ids (cons (wasm-sym name) ids)))))))))
       (if (pair? ids)
 	  `((elem declare func ,@ids))
 	  '())))
@@ -1453,15 +1481,15 @@ esac")
 	      (param (ref $bgl_evmeaning_getter))
 	      (param (ref $bgl_evmeaning_setter))
 	      (result (ref eq))))
-	(import ,($bigloo) "bgl_long_to_bignum"
-	   (func $bgl_long_to_bignum
-	      (param i64)
-	      (result (ref $bignum))))
-	(import ,($bigloo) "bgl_string_to_bignum"
-	   (func $bgl_string_to_bignum
-	      (param (ref $bstring))
-	      (param i32)
-	      (result (ref $bignum))))
+;* 	(import ,($bigloo) "bgl_long_to_bignum"                        */
+;* 	   (func $bgl_long_to_bignum                                   */
+;* 	      (param i64)                                              */
+;* 	      (result (ref $bignum))))                                 */
+;* 	(import ,($bigloo) "bgl_string_to_bignum"                      */
+;* 	   (func $bgl_string_to_bignum                                 */
+;* 	      (param (ref $bstring))                                   */
+;* 	      (param i32)                                              */
+;* 	      (result (ref $bignum))))                                 */
 	(import ,($bigloo) "the_failure"
 	   (func $the_failure
 	      (param (ref eq))

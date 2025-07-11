@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sun Jun 22 09:09:26 2025 (serrano)                */
+;*    Last change :  Fri Jul 11 08:53:27 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -63,7 +63,8 @@
 	   (cnst-table-sym)
 	   (wasm-slot-recursive?::bool slot)
 	   *allocated-strings*
-	   *extra-types*)
+	   *extra-types*
+	   *extra-ref-funcs*)
    
    (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
    
@@ -75,6 +76,19 @@
 ;*    compilation configuration ...                                    */
 ;*---------------------------------------------------------------------*/
 (define *wasm-split-inits* #t)
+
+;*---------------------------------------------------------------------*/
+;*    *extra-ref-funcs* ...                                            */
+;*    -------------------------------------------------------------    */
+;*    List of ref.funcs to be declared                                 */
+;*---------------------------------------------------------------------*/
+(define *extra-ref-funcs* '())
+
+;*---------------------------------------------------------------------*/
+;*    add-extra-ref-func! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (add-extra-ref-func! sym)
+   (set! *extra-ref-funcs* (cons sym *extra-ref-funcs*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-gen ...                                                     */
@@ -179,7 +193,8 @@
 		  (try_table (catch $BEXCEPTION ,lblb)
 		     (call $BGL_STORE_TRACE)
 		     ,@(body-sans-locals body)
-		     (unreachable)))
+		     (unreachable))
+		  (unreachable))
 	       (local.set ,$exn)
 	       (return_call $BGL_RESTORE_TRACE_WITH_VALUE
 		  (call $bgl_exception_handler
@@ -1135,12 +1150,7 @@
 		      ,(as-vector (car args) vtype)
 		      
 		      ,(cast-to-i32-if-needed (cadr args)))))
-	    (with-fun-loc fun 
-	       (if (and #f
-			(eq? (type-id vtype) 'vector)
-			(not (eq? type *obj*)))
-		   `(ref.cast ,(wasm-type type) ,array-code)
-		   array-code))))))
+	    (with-fun-loc fun array-code)))))
 
 (define-method (gen-expr fun::rtl_vset args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.
@@ -1258,6 +1268,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_globalref args)
    (set! eval-globals (cons (rtl_globalref-var fun) eval-globals))
+   (add-extra-ref-func! (wasm-global-getter-sym (rtl_globalref-var fun)))
+   (add-extra-ref-func! (wasm-global-setter-sym (rtl_globalref-var fun)))
    (with-fun-loc fun 
       `(call $__EVMEANING_ADDRESS
 	  (ref.func ,(wasm-global-getter-sym (rtl_globalref-var fun)))

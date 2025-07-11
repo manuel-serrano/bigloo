@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Jun 18 16:12:12 2025 (serrano)                */
+;*    Last change :  Fri Jul 11 08:53:37 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -97,7 +97,7 @@
 	    ($make-string/wo-fill "(array.new_default $bstring (i32.wrap_i64 ~0))")
 	    ($string->bstring-len "~0")
 	    ($string-length "(i64.extend_i32_u (array.len ~0))")
-	    ($string-ref "(array.get $bstring ~0 (i32.wrap_i64 ~1))")
+	    ($string-ref "(array.get_u $bstring ~0 (i32.wrap_i64 ~1))")
 	    ;; TODO: maybe move string-set to its own function in the runtime
 	    ($string-set! "(block (result (ref eq)) (array.set $bstring ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))")
 	    ($string-bound-check? "(i64.lt_u ~0 ~1)")

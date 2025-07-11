@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  5 08:42:14 2025                          */
-;*    Last change :  Sun Jul  6 07:42:13 2025 (serrano)                */
+;*    Last change :  Fri Jul 11 08:03:52 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM procedure and funcall                                       */
@@ -237,7 +237,7 @@
 	 (ref.cast (ref $func2)
 	    (struct.get $procedure $entry (local.get $proc)))))
    
-   (func $funcall3
+   (func $funcall3 (export "bgl_funcall3")
       (param $proc (ref $procedure))
       (param $arg0 (ref eq))
       (param $arg1 (ref eq))
@@ -251,7 +251,7 @@
 	 (ref.cast (ref $func3)
 	    (struct.get $procedure $entry (local.get $proc)))))
    
-   (func $funcall4
+   (func $funcall4 (export "bgl_funcall4")
       (param $proc (ref $procedure))
       (param $arg0 (ref eq))
       (param $arg1 (ref eq))
@@ -267,7 +267,7 @@
 	 (ref.cast (ref $func4)
 	    (struct.get $procedure $entry (local.get $proc)))))
 
-   (func $funcall5
+   (func $funcall5 (export "bgl_funcall5")
       (param $proc (ref $procedure))
       (param $arg0 (ref eq))
       (param $arg1 (ref eq))

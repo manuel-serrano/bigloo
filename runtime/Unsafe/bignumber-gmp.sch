@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:38:03 2024                          */
-;*    Last change :  Tue Jun 17 13:07:03 2025 (serrano)                */
+;*    Last change :  Fri Jul 11 10:24:22 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bignumber gmp implementation                                     */
@@ -60,13 +60,6 @@
       ($bignum->flonum::double (::bignum) "bgl_bignum_to_flonum")
       ($flonum->bignum::bignum (::double) "bgl_flonum_to_bignum"))
 
-   (wasm
-      ($bignum? "(ref.test (ref $bignum) ~0)")
-      ($bignum->fixnum "(call $bgl_bignum_to_long (struct.get $bignum $bx ~0))")
-      ($bignum->elong "(call $bgl_bignum_to_long (struct.get $bignum $bx ~0))")
-      ($bignum->flonum "(call $bgl_bignum_to_flonum (struct.get $bignum $bx ~0))")
-      ($elong->bignum "(call $bgl_long_to_bignum ~0)"))
-   
    (pragma
       ($fixnum->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
       ($elong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)

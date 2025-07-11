@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Jun 23 08:12:53 2025 (serrano)                */
+/*    Last change :  Fri Jul 11 08:25:48 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -606,7 +606,7 @@ function __js() {
 
       $bigloo_main: undefined,
       
-      $__bigloo_main: (argv) => self.$bigloo_main(argv),
+      $__main: (argv) => self.$bigloo_main(argv),
       
       not_implemented: x => {
 	 console.error("*** WASM WARNING: function not implemented", x);
@@ -710,7 +710,7 @@ async function runDouble(client, rts) {
       console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`);
       process.exit(1);
    }
-   
+
    instanceRts.exports.__bigloo_main();
 }
 

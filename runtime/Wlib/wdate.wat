@@ -43,6 +43,9 @@
    (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
    (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
    
+   (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
+
+
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Sat Jul  5 07:56:37 2025 (serrano)                */
+;*    Last change :  Tue Jul  8 07:58:34 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -19,8 +19,10 @@
    ;; -----------------------------------------------------------------
    ;; Imports
    ;; -----------------------------------------------------------------
-   
+
+   (import "__js" "trace" (func $js_trace (param i32)))
    (import "__js" "internalError" (func $js_internal_error (param i32) (param i32)))
+   (import "__js" "$__main" (func $__main (param (ref $pair)) (result (ref eq))))
    (import "__js_math" "fmod" (func $fmod (param f64 f64) (result f64)))
    (import "__js_math" "exp" (func $exp (param f64) (result f64)))
    (import "__js_math" "log" (func $log (param f64) (result f64)))
@@ -35,12 +37,9 @@
    (import "__js_math" "atan2" (func $atan2 (param f64 f64) (result f64)))
    (import "__js_math" "pow" (func $pow (param f64 f64) (result f64)))
    (import "__js_math" "randomf" (func $RANDOMFL (result f64)))
-   (import "__js_math" "strtod" (func $js_strtod (param i32) (param i32) (result f64)))
    
    (import "__js_system" "signal" (func $js_signal (param i32) (param (ref eq))))   
    (import "__js_system" "argc" (global $js_argc i32))
-   (import "__js_system" "getcwd" (func $js_getcwd (param i32) (result i32)))
-   (import "__js_system" "getenv" (func $js_getenv (param i32) (param i32) (result i32)))
    (import "__js_system" "get_arg" (func $js_get_arg (param i32 i32) (result i32)))
    (import "__js_system" "exit" (func $js_exit (param i32)))
    
@@ -530,7 +529,7 @@
       (call $bgl_init_trace (call $BGL_CURRENT_DYNAMIC_ENV))
       
       (drop
-	 (call $__bigloo_main (ref.cast (ref $pair) (local.get $argv)))))
+	 (call $__main (ref.cast (ref $pair) (local.get $argv)))))
    
    (func $BIGLOO_EXIT
       (export "BIGLOO_EXIT")

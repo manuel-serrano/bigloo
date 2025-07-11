@@ -3,13 +3,25 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Tue Feb  4 10:46:31 2025 (serrano)                */
+;*    Last change :  Wed Jul  9 07:54:36 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
 ;*=====================================================================*/
 
 (module $__bigloo_object
+   
+   ;; -----------------------------------------------------------------
+   ;; Global constants 
+   ;; -----------------------------------------------------------------
+
+   (elem declare func $generic_entry)
+   (elem declare func $generic_entry1)
+   (elem declare func $generic_entry2)
+   (elem declare func $generic_entry3)
+   (elem declare func $generic_entry4)
+   (elem declare func $generic_entry5)
+
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -41,6 +53,31 @@
       (sub (struct
 	      (field $header (mut i64))
 	      (field $widening (mut (ref eq))))))
+   
+   ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+   
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
+   (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
+   (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+   (import "__bigloo" "class-nil@__object" (func $class-nil@__object (param (ref $class)) (result (ref eq))))
+   (import "__bigloo" "MAKE_FX_PROCEDURE" (func $MAKE_FX_PROCEDURE (param (ref func)) (param i32) (param i32) (result (ref $procedure))))
+   (import "__bigloo" "MAKE_VA_PROCEDURE" (func $MAKE_VA_PROCEDURE (param (ref func)) (param i32) (param i32) (result (ref $procedure))))
+   (import "__bigloo" "PROCEDURE_SET" (func $PROCEDURE_SET (param (ref $procedure)) (param i32) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "PROCEDURE_REF" (func $PROCEDURE_REF (param (ref $procedure)) (param i32) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall0" (func $funcall0 (param (ref $procedure)) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall1" (func $funcall1 (param (ref $procedure)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall2" (func $funcall2 (param (ref $procedure)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall3" (func $funcall3 (param (ref $procedure)) (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall4" (func $funcall4 (param (ref $procedure)) (param (ref eq)) (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "bgl_funcall5" (func $funcall5 (param (ref $procedure)) (param (ref eq)) (param (ref eq)) (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 

@@ -7,7 +7,10 @@
 ;; when applied to the environement and the parameters, it should return a pair
 ;; of the previous shape. The parameters are described by functions validating
 ;; and translating to a member of the parameter class the parameters. Functions
-;; are already provided for most parameters.x
+;; are already provided for most parameters.
+;;
+;; The nil at the end of the type can be replaced by a non empty list containing
+;; the list of the local variables set by the instruction.
 
 `(
   ;; section 3.4.1

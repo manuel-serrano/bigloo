@@ -56,7 +56,7 @@
       (local.get $buffer))
 
    ;; store_substring
-   (func $store_substring
+   (func $store_substring (export "bgl_store_substring")
       (param $text (ref $bstring))
       (param $start i64)
       (param $end i64)

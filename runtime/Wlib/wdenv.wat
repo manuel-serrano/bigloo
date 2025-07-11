@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Sun Jun 22 09:32:07 2025 (serrano)                */
+;*    Last change :  Thu Jul 10 07:49:06 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -69,6 +69,24 @@
    ;; -----------------------------------------------------------------
    (data $default_internal_error "wasm internal error")
    
+   ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+
+   (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
+   (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
+   (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+   (import "__bigloo" "STRING_LENGTH" (func $STRING_LENGTH (param (ref $bstring)) (result i64)))
+   (import "__bigloo" "bgl_load_string_in_buffer" (func $load_string_in_buffer (param i32) (param i32) (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
+
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
@@ -510,17 +528,17 @@
    (func $bgl_internal_error_get
       (result (ref eq))
       (local $tmp (ref eq))
-      (if (ref.is_null (global.get $bgl_internal_error))
-	  (then
-	     (return
+      (return
+	 (if (result (ref eq)) (ref.is_null (global.get $bgl_internal_error))
+	     (then
 		(array.new_data $bstring $default_internal_error
 		   (i32.const 0)
-		   (i32.const 19))))
-	  (else
-	   (local.set $tmp
-	      (ref.cast (ref eq) (global.get $bgl_internal_error)))
-	   (global.set $bgl_internal_error (ref.null none))
-	   (return (local.get $tmp)))))
+		   (i32.const 19)))
+	     (else
+	      (local.set $tmp
+		 (ref.cast (ref eq) (global.get $bgl_internal_error)))
+	      (global.set $bgl_internal_error (ref.null none))
+	      (local.get $tmp)))))
 
    (func $bgl_internal_error_set (export "bgl_internal_error_set")
       (param $e (ref eq))
@@ -547,7 +565,8 @@
 			    (call $BGL_ERROR_HANDLER_GET)))))
 		(struct.set $cell $val (local.get $cell)
 		   (call $bgl_internal_error_get))
-		(return (local.get $cell)))))))
+		(return (local.get $cell))))))
+      (unreachable))
    
    (func $bgl_exception_handler
       (export "bgl_exception_handler")
@@ -564,7 +583,8 @@
 	       (then
 		  (return (struct.get $bexception $val (local.get $exn))))
 	       (else
-		(throw $BEXCEPTION (local.get $exn)))))))
+		(throw $BEXCEPTION (local.get $exn))))))
+      (unreachable))
    
    (func $BGL_ENV_ERROR_HANDLER_GET
       (export "BGL_ENV_ERROR_HANDLER_GET")

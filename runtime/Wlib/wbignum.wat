@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Mon Jun 23 05:26:17 2025 (serrano)                */
+;*    Last change :  Tue Jul  8 07:36:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -19,7 +19,7 @@
       (struct (field $bx externref)))
       
    ;; -----------------------------------------------------------------
-   ;; JavaScript imports 
+   ;; Imports 
    ;; -----------------------------------------------------------------
    
    (import "__js_bignum" "zerobx" (global $zerobx externref))
@@ -31,15 +31,15 @@
    (import "__js_bignum" "safe_bignum_to_fixnum" (func $js_safe_bignum_to_fixnum (param externref) (param i32) (result f64)))
    (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_long (param externref) (result f64)))
    (import "__js_bignum" "bignum_to_long" (func $js_bignum_to_llong (param externref) (result f64)))
-   (import "__js_bignum" "bignum_to_flonum" (func $bgl_bignum_to_flonum (param externref) (result f64)))
+   (import "__js_bignum" "bignum_to_flonum" (func $js_bignum_to_flonum (param externref) (result f64)))
    (import "__js_bignum" "seed_rand" (func $seed_rand (param i32)))
    (import "__js_bignum" "rand_bignum" (func $rand_bignum (param externref) (result externref)))
    (import "__js_bignum" "rand_fixnum" (func $rand_fixnum (result i32)))
    (import "__js_bignum" "double_to_bignum" (func $js_double_to_bignum (param f64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
    (import "__js_bignum" "bignum_abs" (func $bignum_abs (param externref) (result externref)))
-   (import "__js_bignum" "bignum_gcd" (func $bignum_gcd (param externref) (result externref)))
-   (import "__js_bignum" "bignum_lcm" (func $bignum_lcm (param externref) (result externref)))
+   (import "__js_bignum" "bignum_gcd" (func $bignum_gcd (param externref) (param externref) (result externref)))
+   (import "__js_bignum" "bignum_lcm" (func $bignum_lcm (param externref) (param externref) (result externref)))
    (import "__js_bignum" "bignum_neg" (func $bignum_neg (param externref) (result externref)))
    (import "__js_bignum" "bignum_add" (func $bignum_add (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_sub" (func $bignum_sub (param externref externref) (result externref)))
@@ -56,6 +56,17 @@
    (import "__js_bignum" "bignum_cmp" (func $bignum_cmp (param externref externref) (result i32)))
    (import "__js_bignum" "bignum_to_string" (func $bignum_to_string (param externref i32) (result i32)))
 
+   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
+   (import "__bigloo" "BGL_MVALUES_NUMBER_SET" (func $BGL_MVALUES_NUMBER_SET (param i32) (result i32)))
+   (import "__bigloo" "BGL_MVALUES_VAL_SET" (func $BGL_MVALUES_VAL_SET (param i32) (param (ref eq)) (result (ref eq))))
+   (import "__bigloo" "MAXVALFX" (global $MAXVALFX i64))
+   (import "__bigloo" "MAXVALFX_BITSIZE" (global $MAXVALFX_BITSIZE i32))
+   (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
+   (import "__bigloo" "make_belong" (func $make_belong (param i64) (result (ref $belong))))
+   (import "__bigloo" "make_bllong" (func $make_bllong (param i64) (result (ref $bllong))))
+   
+   
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
@@ -68,6 +79,12 @@
    ;; Library functions 
    ;; -----------------------------------------------------------------
 
+   ;; BIGNUMP
+   (func $BIGNUMP (export "BIGNUMP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bignum) (local.get $o)))
+   
    ;; BXZERO
    (func $BXZERO (export "BXZERO")
       (param $n (ref $bignum))
@@ -88,9 +105,15 @@
 
    ;; bgl_bignum_to_long
    (func $bgl_bignum_to_long (export "bgl_bignum_to_long")
-      (param $bx externref)
+      (param $n (ref $bignum))
       (result i64)
-      (i64.trunc_f64_s (call $js_bignum_to_long (local.get $bx))))
+      (i64.trunc_f64_s (call $js_bignum_to_long (struct.get $bignum $bx (local.get $n)))))
+      
+   ;; bgl_bignum_to_flonum
+   (func $bgl_bignum_to_flonum (export "bgl_bignum_to_flonum")
+      (param $n (ref $bignum))
+      (result f64)
+      (call $js_bignum_to_flonum (struct.get $bignum $bx (local.get $n))))
       
    ;; bgl_bignum_to_llong
    (func $bgl_bignum_to_llong (export "bgl_bignum_to_llong")
@@ -199,20 +222,24 @@
    ;; bgl_bignum_gcd
    (func $bgl_bignum_gcd (export "bgl_bignum_gcd")
       (param $x (ref $bignum))
+      (param $y (ref $bignum))
       (result (ref $bignum))
       (return
 	 (struct.new $bignum
 	    (call $bignum_gcd
-	       (struct.get $bignum $bx (local.get $x))))))
+	       (struct.get $bignum $bx (local.get $x))
+	       (struct.get $bignum $bx (local.get $y))))))
    
    ;; bgl_bignum_lcm
    (func $bgl_bignum_lcm (export "bgl_bignum_lcm")
       (param $x (ref $bignum))
+      (param $y (ref $bignum))
       (result (ref $bignum))
       (return
 	 (struct.new $bignum
 	    (call $bignum_lcm
-	       (struct.get $bignum $bx (local.get $x))))))
+	       (struct.get $bignum $bx (local.get $x))
+	       (struct.get $bignum $bx (local.get $y))))))
    
    ;; bgl_bignum_neg
    (func $bgl_bignum_neg (export "bgl_bignum_neg")
@@ -416,21 +443,23 @@
       (if (i64.eqz (local.get $tmp))
 	  (then
 	     (if (call $zerobxp (local.get $bx))
-		 (then (return (call $BINT (i64.const 0))))
+		 (then (return_call $BINT (i64.const 0)))
 		 (else (return (local.get $n)))))
 	  (else
-	   (return (call $BINT (local.get $tmp))))))
+	   (return_call $BINT (local.get $tmp))))
+      (unreachable))
 
    ;; INTEGER_SIGN
    (func $INTEGER_SIGN
       (param $x i64)
       (result i32)
-      (if (i64.gt_s (local.get $x) (i64.const 0))
-	  (then (return (i32.const 1)))
-	  (else
-	   (if (i64.eqz (local.get $x))
-	       (then (return (i32.const 0)))
-	       (else (return (i32.const -1)))))))
+      (return
+	 (if (result i32) (i64.gt_s (local.get $x) (i64.const 0))
+	     (then (i32.const 1))
+	     (else
+	      (if (result i32) (i64.eqz (local.get $x))
+		  (then (i32.const 0))
+		  (else (i32.const -1)))))))
    
    ;; BGL_SAFE_PLUS_FX
    (func $BGL_SAFE_PLUS_FX (export "BGL_SAFE_PLUS_FX")
@@ -455,7 +484,8 @@
 		    (return_call $bgl_bignum_add
 		       (call $bgl_long_to_bignum (local.get $x))
 		       (call $bgl_long_to_bignum (local.get $y))))))
-	  (else (return_call $BINT (local.get $t)))))
+	  (else (return_call $BINT (local.get $t))))
+      (unreachable))
 
    ;; BGL_SAFE_MINUS_FX
    (func $BGL_SAFE_MINUS_FX (export "BGL_SAFE_MINUS_FX")
@@ -484,7 +514,8 @@
 	       (else
 		(return_call $bgl_bignum_mul
 		   (call $bgl_long_to_bignum (local.get $x))
-		   (call $bgl_long_to_bignum (local.get $y))))))))
+		   (call $bgl_long_to_bignum (local.get $y)))))))
+      (unreachable))
 
    ;; BGL_SAFE_QUOTIENT_FX
    (func $BGL_SAFE_QUOTIENT_FX (export "BGL_SAFE_QUOTIENT_FX")

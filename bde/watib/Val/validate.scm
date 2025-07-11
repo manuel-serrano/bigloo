@@ -16,7 +16,7 @@
            (ast_node "Ast/node.scm"))
 
    (export (class &watlib-validate-error::&error)
-       (valid-file f::pair-nil nthreads::bint keep-going::obj silent::bool)))
+       (valid-file f::pair-nil nthreads::long keep-going::obj silent::bool)))
 
 ;;; we force everywhere the number of type indices after sub final? to be one;
 ;;; even though forms with more than one type are syntactically correct, they
@@ -68,13 +68,13 @@
 (define-macro (map-env f env . l)
    `(map (lambda (x) (,f ,env x)) ,@l))
 
-(define (stack-take::pair-nil st::pair-nil i::bint)
+(define (stack-take::pair-nil st::pair-nil i::long)
    (cond ((=fx i 0) '())
          ((null? st) (raise 'empty-stack))
          ((eq? (car st) 'poly) (make-list i 'bot))
          (else (cons (car st) (stack-take (cdr st) (-fx i 1))))))
 
-(define (stack-drop::pair-nil st::pair-nil i::bint)
+(define (stack-drop::pair-nil st::pair-nil i::long)
    (cond ((=fx i 0) '())
          ((null? st) (raise 'empty-stack))
          ((eq? (car st) 'poly) '(poly))
@@ -87,7 +87,7 @@
          ((eq? 'poly (car st)) (values 'bot st))
          (else (raise `(expected-reftype-stack ,st)))))
 
-(define (valid-func-ref?::bool env::env x::bint)
+(define (valid-func-ref?::bool env::env x::long)
    (let ((h (-> env refs)))
       (or (hashtable-contains? h x)
           (hashtable-contains? h (vector-ref (-> env func-names) x)))))
@@ -188,7 +188,7 @@
       (else (raise `(expected-fields ,l)))))
 
 ;; section 3.2.10
-(define (valid-ct env::env t x::bint)
+(define (valid-ct env::env t x::long)
    (match-case t
       ((func . ?p/r)
        (multiple-value-bind (p r) (valid-param/result env p/r)
@@ -204,7 +204,7 @@
 ;; validated: a first lifting is done while checking modules.
 
 ;; section 3.2.12
-(define (valid-rect env::env l x::bint)
+(define (valid-rect env::env l x::long)
    (define (valid-st t x)
       (match-case t
          ((sub final . ?rst)
@@ -262,9 +262,9 @@
                      (list #f (valid-vt env t)))))))
 
 ;; section 6.4.9
-(define (clean-mod-rectype! env::env l x::bint)
+(define (clean-mod-rectype! env::env l x::long)
    ; the `(rec ...) in the environment assures rolling
-   (let ((sts (map-seq
+   (let ((sts (map-in-order
                  (match-lambda
                     ((type (and (? ident?) ?id) ?st)
                      (add-type! env id `(rec ,(-fx (-> env ntype) x)
@@ -642,13 +642,17 @@
                              (values (append tl (list i)) '(poly))
                              (values (append tl (list i))
                                      (append (reverse (cadr t)) st)))))))))
-   (if (null? l)
-       (values '() st)
-       (if (pair? (car l))
-           (multiple-value-bind (is st) (valid-instr (car l) st)
-              (multiple-value-bind (tl st) (valid-instrs env (cdr l) st)
-                 (values (append is tl) st)))
-           (raise `(expected-instruction ,(car l))))))
+   (cond
+    ((null? l) (values '() st))
+    ((pair? (car l))
+     (multiple-value-bind (is st) (valid-instr (car l) st)
+        (multiple-value-bind (tl st) (valid-instrs env (cdr l) st)
+           (values (append is tl) st))))
+    ((symbol? (car l))
+     (multiple-value-bind (is st) (valid-instr (list (car l)) st)
+        (multiple-value-bind (tl st) (valid-instrs env (cdr l) st)
+           (values (append is tl) st))))
+    (else (raise `(at-pos ,(cer l) expected-instruction ,(car l))))))
 
 (define (valid-expr env::env l::pair-nil)
    (valid-instrs env l '()))
@@ -708,15 +712,22 @@
              (duplicate::import-tag imp (tagtype t)))))
       (else (raise `(expected-importdesc ,d)))))
 
-; section 6.6.9 and
+; section 6.6.9
 (define (valid-exportdesc env::env d)
-   (cons (car d)
-         (match-case (cdr d)
-            ((func ?id) (funcidx env id))
-            ((memory ?id) (memidx env id))
-            ((global ?id) (globalidx env id))
-            ((tag ?id) (tagidx env id))
-            (else (raise `(expected-exportdesc ,d))))))
+   (instantiate::export
+    (name (car d))
+    (idx
+     (match-case (cdr d)
+        ((func ?id) (funcidx env id))
+        ((memory ?id) (memidx env id))
+        ((global ?id) (globalidx env id))
+        ((tag ?id) (tagidx env id))
+        (else (raise `(expected-exportdesc ,d)))))))
+
+(define (map-pos f::procedure l)
+   (if (null? l)
+       '()
+       (cons (cons (f (car l)) (cer l)) (map-pos f (cdr l)))))
 
 (define (type-pass-mf env::env m)
    (with-handler
@@ -735,8 +746,8 @@
              #f))
          (else m))))
 
-(define (decorate::epair m::epair l::pair)
-   (econs (car l) (cdr l) (cer m)))
+(define (decorate p::pair l::pair)
+   (cons l p))
 
 (define *funcs* (make-vector 1000000))
 (define *globals* (make-vector 1000000))
@@ -746,18 +757,20 @@
 (define *declared-funcrefs* '())
 
 (define (env-pass-mf env::env m)
-   (with-default-value env #f `(in-module ,m ,e)
-      (match-case m
+   (with-default-value env #f `(at-pos ,(cdr m))
+      (match-case (car m)
          (#f #f)
          ; section 6.6.4 (abbreviations)
-         ((func (export (? string?)) . ?rst)
-          (env-pass-mf env (decorate m `(func ,@rst))))
+         ((func (export (and (? string?) ?exp)) . ?rst)
+          (env-pass-mf env (decorate (cdr m)
+                                     `(export ,exp (func ,(-> env nfunc)))))
+          (env-pass-mf env (decorate (cdr m) `(func ,@rst))))
          ((func (import (and (? string?) ?nm1) (and (? string?) ?nm2)) . ?rst)
-          (env-pass-mf env (decorate m `(import ,nm1 ,nm2 (func ,@rst)))))
+          (env-pass-mf env (decorate (cdr m) `(import ,nm1 ,nm2 (func ,@rst)))))
          ; section 6.6.4
          ((func (and (? ident?) ?id) . ?rst)
           (func-add-name! env id)
-          (env-pass-mf env (decorate m `(func ,@rst))))
+          (env-pass-mf env (decorate (cdr m) `(func ,@rst))))
          ((func . ?rst)
           (multiple-value-bind (args f tl) (valid-tu/get-tl env rst)
              (vector-set! *funcs* (-> env nfunc)
@@ -766,7 +779,7 @@
                            (formals args)
                            (body tl)
                            (locals '())
-                           (pos (cer m))))
+                           (pos (cdr m))))
              (func-add! env `(deftype -1 ((sub final (func ,@f))) 0))))
 
          ((data (and (? ident?) ?id) (memory ?memidx) (offset . ?expr) . ?-)
@@ -774,7 +787,7 @@
           ; section 6.6.12
          ((data (and (? ident?) ?id) . ?rst)
           (hashtable-put! (-> env data-table) id (-> env ndata))
-          (env-pass-mf env (decorate m `(data ,@rst))))
+          (env-pass-mf env (decorate (cdr m) `(data ,@rst))))
          ((data . ?rst)
           (for-each (lambda (s) (unless (string? s)
                                    (raise `(expected-string ,s)))) rst)
@@ -787,11 +800,14 @@
           ; section 6.6.7
          ((global (and (? ident?) ?id) . ?rst)
           (global-add-name! env id)
-          (env-pass-mf env (decorate m `(global ,@rst))))
-         ((global (export (? string?)) . ?rst)
-          (env-pass-mf env (decorate m `(global ,@rst))))
+          (env-pass-mf env (decorate (cdr m) `(global ,@rst))))
+         ((global (export (and (? string?) ?exp)) . ?rst)
+          (env-pass-mf env (decorate (cdr m)
+                                     `(export ,exp (global ,(-> env nglobal)))))
+          (env-pass-mf env (decorate (cdr m) `(global ,@rst))))
          ((global (import (and (? string?) ?nm1) (and (? string?) ?nm2)) . ?rst)
-          (env-pass-mf env (decorate m `(import ,nm1 ,nm2 (global ,@rst)))))
+          (env-pass-mf env (decorate (cdr m)
+                                     `(import ,nm1 ,nm2 (global ,@rst)))))
          ((global ?gt . ?e)
           (define (add-func-refs! l)
              (cond ((pair? l)
@@ -801,7 +817,7 @@
 
           (let ((t (valid-gt env gt)))
              (vector-set! *globals* (-> env nglobal)
-                          (instantiate::global (type t) (body e) (pos (cer m))))
+                          (instantiate::global (type t) (body e) (pos (cdr m))))
              (global-add! env t)
              (add-func-refs! e)))
 
@@ -821,7 +837,7 @@
          ; section 6.6.8 and 3.5.7
          ((tag (and (? ident?) ?id) . ?rst)
           (tag-add-name! env id)
-          (env-pass-mf env (decorate m `(tag ,@rst))))
+          (env-pass-mf env (decorate (cdr m) `(tag ,@rst))))
          ((tag . ?tu)
           (multiple-value-bind (p r) (valid-param/result env tu)
              (unless (null? r)
@@ -832,11 +848,14 @@
          ; section 6.6.6
          ((memory (and (? ident?) ?id) . ?rst)
           (mem-add-name! env id)
-          (env-pass-mf env (decorate m `(memory ,@rst))))
-         ((memory (export (? string?)) . ?rst)
-          (env-pass-mf env (decorate m `(memory ,@rst))))
+          (env-pass-mf env (decorate (cdr m) `(memory ,@rst))))
+         ((memory (export (and (? string?) ?exp)) . ?rst)
+          (env-pass-mf env (decorate (cdr m)
+                                     `(export ,exp (memory ,(-> env nglobal)))))
+          (env-pass-mf env (decorate (cdr m) `(memory ,@rst))))
          ((memory (import (and (? string?) ?nm1) (and (? string?) ?nm2)) . ?rst)
-          (env-pass-mf env (decorate m `(import ,nm1 ,nm2 (memory ,@rst)))))
+          (env-pass-mf env (decorate (cdr m)
+                                     `(import ,nm1 ,nm2 (memory ,@rst)))))
          ((memory . ?mt)
           (mem-add! env (valid-mt env mt)))
 
@@ -845,9 +864,10 @@
           (set! *declared-funcrefs* (append funcs *declared-funcrefs*))
           (for-each (lambda (x) (hashtable-put! (-> env refs) x #t)) funcs))
 
-         (else (raise 'expected-modulefield)))))
+         (else
+          (raise 'expected-modulefield)))))
 
-(define (valid-global env::env g::global x::bint)
+(define (valid-global env::env g::global x::long)
    (let ((old-nglobal (-> env nglobal)))
       ; global can only refer to the previous ones
      (set! (-> env nglobal) x)
@@ -863,7 +883,7 @@
         (set! (-> env nglobal) old-nglobal)
         (set! (-> g body) e))))
 
-(define (valid-function env::env f::func x::bint)
+(define (valid-function env::env f::func x::long)
    (multiple-value-bind (n lts body)
       (valid-names/local/get-tl env (-> f body))
       (set! (-> env local-names) (append (-> f formals) n))
@@ -879,7 +899,7 @@
           (check-block env body (cadr (-> f type))
                        `(() ,(cadr (-> f type))))))))
 
-(define (valid-functions env::env a::bint b::bint)
+(define (valid-functions env::env a::long b::long)
    (let ((x (-> env nfunc)))
       (do ((i 0 (+fx i 1)))
           ((>=fx (+fx (*fx a i) b) x))
@@ -926,6 +946,8 @@
       (lambda (p) (display o p))))
 
 (define (error->string env::env e)
+   (if (isa? e &error)
+       (raise e))
    (define (type->string::bstring t)
       (cond ((deftype? t) (sdisplay (type-get-name env (cadr t))))
             ((number? t) (sdisplay (type-get-name env t)))
@@ -957,8 +979,19 @@
       (((unknown ?x) ?s)
        (sprintf "unknown ~a: ~a" x s))
 
+      (((expected ?x) ?s)
+       (sprintf "expected ~a, got ~a" x s))
+
       ((empty-stack ?t)
        (sprintf "expected ~a on stack but got nothing" (type->string (car t))))
+
+      ((value-left-stack ?t)
+       (sprintf "expected empty stack, got a value of type ~a on top"
+                (type->string (car t))))
+
+      ((supertype-final ?t1 ?t2)
+       (sprintf "~a can't be a supertype of ~a because the first is marked as final"
+                (type->string t2) (type->string t1)))
 
       (else (sdisplay e))))
 
@@ -976,8 +1009,9 @@
 
    (match-case e
       ((in-module ?m ?e)
-       (unless silent (rep "in module" m))
-       (format-exn env e))
+       (if silent
+           (fprint (current-error-port) (error->string env e))
+           (rep/pos (error->string env e) (cer m))))
       ((at-pos ?i (at-instruction . ?-))
        (format-exn env (caddr e)))
       ((at-pos ?p ?e)
@@ -1033,7 +1067,6 @@
                   (instantiate::pthread
                    (body
                     (lambda ()
-                      (valid-exports (dupenv))
                       (valid-functions (dupenv) nthreads (+fx 2 i)))))))))))
      (map thread-start-joinable! ts)
      (map thread-join! ts)))))
@@ -1046,7 +1079,7 @@
    (valid-exports env)
    (valid-functions env 1 0))
 
-(define (valid-file f::pair-nil nt::bint kg::obj s::bool)
+(define (valid-file f::pair-nil nt::long kg::obj s::bool)
    (set! nthreads nt)
    (set! keep-going kg)
    (set! silent s)
@@ -1064,7 +1097,7 @@
 
       (match-case f
          ((or (module (? ident?) . ?mfs) (module . ?mfs))
-          (let* ((type-mfs (map (mf-pass/handle-error type-pass-mf) mfs)))
+          (let* ((type-mfs (map-pos (mf-pass/handle-error type-pass-mf) mfs)))
              (for-each (mf-pass/handle-error env-pass-mf) type-mfs)
          (cond-expand
         ((and multijob (library pthread))

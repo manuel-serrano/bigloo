@@ -3,8 +3,7 @@
 ;; Definitions of the data structures representing wasm code.
 
 (module ast_node
-   (export
-           (class modulefield::object)
+   (export (class modulefield::object)
 
            ;; remove information using shrinking/widening ?
            (class func::modulefield
@@ -55,10 +54,26 @@
               funcrefs::pair-nil
               imports::pair-nil)
 
+           (abstract-class source
+              position::bint)
+
+           (class from-stack::source)
+
+           (class from-instr::source
+              i::instruction)
+
            (class instruction::object
               intype::pair-nil
               outtype::pair-nil
+              (__actouttype::pair-nil (default '()))
+              (actouttype (get (lambda (p::instruction)
+                                  (if (null? (-> p __actouttype))
+                                      (-> p outtype)
+                                      (-> p __actouttype))))
+                          read-only)
               parent::modulefield
+              ; default will have to be removed
+              (sources::pair-nil (default '()))
               opcode::symbol)
 
            (abstract-class parameter)
@@ -118,6 +133,7 @@
               z::parameter)
 
            (class br_table::instruction
+              ;; non-empty list of labelidxp
               labels::pair)
 
            (class sequence::instruction

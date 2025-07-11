@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sun Jun 22 10:00:49 2025 (serrano)                */
+/*    Last change :  Fri Jul 11 08:23:14 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -388,6 +388,9 @@ function __js_bignum() {
       bignum_and: (x, y) => x & y,
       bignum_or: (x, y) => x | y,
       bignum_not: (x, y) => ~x,
+      bignum_lsh: (x, y) => x << y,
+      bignum_rsh: (x, y) => x >> y,
+      bignum_mask: (x, y) => x & BigInt((1 << y) - 1),
       bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0),
       bignum_to_flonum: x => Number(x)
    };
@@ -668,7 +671,7 @@ function __js() {
 
       $bigloo_main: undefined,
       
-      $__bigloo_main: (argv) => self.$bigloo_main(argv),
+      $__main: (argv) => self.$bigloo_main(argv),
       
       not_implemented: x => {
 	 console.error("*** WASM WARNING: function not implemented", x);

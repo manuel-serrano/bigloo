@@ -70,7 +70,7 @@
               (raise (list ex-unkwn x))))
          (else (raise (list ex-exp x)))))
 
-(define (index::bint lst::pair-nil x i::bint e)
+(define (index::long lst::pair-nil x i::long e)
       (cond ((null? lst) (raise (list e x)))
             ((equal? (car lst) x) i)
             (else (index (cdr lst) x (+fx 1 i) e))))

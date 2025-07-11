@@ -28,6 +28,26 @@
    (type $semaphore (struct))
    
    ;; -----------------------------------------------------------------
+   ;; Imports 
+   ;; -----------------------------------------------------------------
+
+   (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BEOF" (global $BEOF (ref $bcnst)))
+   (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
+   (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
+   (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
+   (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
+   (import "__bigloo" "STRING_LENGTH" (func $STRING_LENGTH (param (ref $bstring)) (result i64)))
+   (import "__bigloo" "bgl_load_string_in_buffer" (func $load_string_in_buffer (param i32) (param i32) (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
+   (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
+
+;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
    

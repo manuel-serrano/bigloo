@@ -10,16 +10,19 @@
 (define (testbr! f::func)
    (if-test->br! (-> f body)))
 
+;; see later if copy propagation doesn't make replace-var useless (it should)
+
 (define-generic (replace-var! i::instruction x::bint y::bint t)
    #f)
 
 (define-method (replace-var! i::one-arg x::bint y::bint t)
    (if (and (eq? 'local.get (-> i opcode)))
-       (with-access::localidxp (-> i x) (idx)
+       (with-access::localidxp (-> i x) (idx type)
           (when (=fx idx x)
              (set! (-> i outtype) (list t))
-             (set! idx y)))
-       (if (eq? 'local.set (-> i opcode))
+             (set! idx y)
+             (set! type t)))
+       (if (or (eq? 'local.set (-> i opcode)) (eq? 'local.tee (-> i opcode)))
            (with-access::localidxp (-> i x) (idx)
               (=fx x idx))
            #f)))
@@ -114,7 +117,7 @@
    (if-test->br! (-> i then))
    (let ((y (local-add! (-> i parent) rt-dst)))
       (replace-var! (-> i then) (-> var idx) y rt-dst)
-      (with-access::block (-> i then) (body)
+      (with-access::sequence (-> i then) (body)
          (set! body
                `(,lget
                  ,(instantiate::three-args

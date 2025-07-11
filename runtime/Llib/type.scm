@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/type.scm         */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/type.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Jun 25 14:52:00 2025 (serrano)                */
+;*    Last change :  Fri Jul 11 09:33:48 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1321,13 +1321,13 @@
       ($bllong->long "(struct.get $bllong $v ~0)")
 
       ($int8->bint8 "(struct.new $bint8 ~0)")
-      ($bint8->int8 "(struct.get $bint8 $v ~0)")
+      ($bint8->int8 "(struct.get_s $bint8 $v ~0)")
       ($uint8->buint8 "(struct.new $buint8 ~0)")
-      ($buint8->uint8 "(struct.get $buint8 $v ~0)")
+      ($buint8->uint8 "(struct.get_u $buint8 $v ~0)")
       ($int16->bint16 "(struct.new $bint16 ~0)")
-      ($bint16->int16 "(struct.get $bint16 $v ~0)")
+      ($bint16->int16 "(struct.get_s $bint16 $v ~0)")
       ($uint16->buint16 "(struct.new $buint16 ~0)")
-      ($buint16->uint16 "(struct.get $buint16 $v ~0)")
+      ($buint16->uint16 "(struct.get_u $buint16 $v ~0)")
       ($int32->bint32 "(struct.new $bint32 ~0)")
       ($bint32->int32 "(struct.get $bint32 $v ~0)")
       ($uint32->buint32 "(struct.new $buint32 ~0)")
@@ -1353,7 +1353,7 @@
       ($string->bstring "~0")
       ($bstring->string "~0")
 
-      ($bucs2->ucs2 "(struct.get $bucs2 $v ~0)")
+      ($bucs2->ucs2 "(struct.get_u $bucs2 $v ~0)")
 
       ($cobj->obj "~0")
 
