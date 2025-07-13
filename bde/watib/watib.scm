@@ -60,7 +60,6 @@
       (let ((p (with-handler
           (lambda (e)
              (when (isa? e &watlib-validate-error)
-                (print "rr")
                 (exit 1))
              (raise e))
           (valid-file m nthreads keep-going silent))))

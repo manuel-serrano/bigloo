@@ -12,22 +12,23 @@
 
 ;; see later if copy propagation doesn't make replace-var useless (it should)
 
-(define-generic (replace-var! i::instruction x::bint y::bint t)
+(define-generic (replace-var! i::instruction x::long y::long t)
    #f)
 
-(define-method (replace-var! i::one-arg x::bint y::bint t)
+(define-method (replace-var! i::one-arg x::long y::long t)
    (if (and (eq? 'local.get (-> i opcode)))
        (with-access::localidxp (-> i x) (idx type)
           (when (=fx idx x)
              (set! (-> i outtype) (list t))
              (set! idx y)
-             (set! type t)))
+             (set! type t))
+          #f)
        (if (or (eq? 'local.set (-> i opcode)) (eq? 'local.tee (-> i opcode)))
            (with-access::localidxp (-> i x) (idx)
               (=fx x idx))
            #f)))
 
-(define-method (replace-var! i::sequence x::bint y::bint t)
+(define-method (replace-var! i::sequence x::long y::long t)
    (define (walk-list!?::bool l::pair-nil)
       (match-case l
          (() #f)
@@ -37,52 +38,55 @@
               (walk-list!? tl)))))
    (walk-list!? (-> i body)))
 
-(define-method (replace-var! i::if-then x::bint y::bint t)
+(define-method (replace-var! i::if-then x::long y::long t)
    (replace-var! (-> i then) x y t))
 
-(define-method (replace-var! i::if-else x::bint y::bint t)
+(define-method (replace-var! i::if-else x::long y::long t)
    ; we do it like that because we do not want lazy evaluation
    (let ((b (replace-var! (-> i else) x y t)))
      (or (call-next-method) b)))
 
-(define-generic (incr-labels! i::instruction)
+(define-generic (incr-labels! i::instruction threshold::long)
   #f)
 
-(define-generic (incr-labels-param! p::parameter) #f)
+(define-generic (incr-labels-param! p::parameter threshold::long) #f)
 
-(define-method (incr-labels-param! p::labelidxp)
-   (set! (-> p idx) (+fx 1 (-> p idx))))
+(define-method (incr-labels-param! p::labelidxp threshold::long)
+   (if (>= (-> p idx) threshold)
+       (set! (-> p idx) (+fx 1 (-> p idx)))))
 
-(define-method (incr-labels! i::one-arg)
-   (incr-labels-param! (-> i x)))
+(define-method (incr-labels! i::one-arg threshold::long)
+   (incr-labels-param! (-> i x) threshold))
 
-(define-method (incr-labels! i::two-args)
-   (incr-labels-param! (-> i x))
-   (incr-labels-param! (-> i y)))
+(define-method (incr-labels! i::two-args threshold::long)
+   (incr-labels-param! (-> i x) threshold)
+   (incr-labels-param! (-> i y) threshold))
 
-(define-method (incr-labels! i::three-args)
-   (incr-labels-param! (-> i x))
-   (incr-labels-param! (-> i y))
-   (incr-labels-param! (-> i z)))
+(define-method (incr-labels! i::three-args threshold::long)
+   (incr-labels-param! (-> i x) threshold)
+   (incr-labels-param! (-> i y) threshold)
+   (incr-labels-param! (-> i z) threshold))
 
-(define-method (incr-labels! i::sequence)
-   (for-each incr-labels! (-> i body)))
+(define-method (incr-labels! i::sequence threshold::long)
+   (for-each (lambda (i) (incr-labels! i (+fx 1 threshold))) (-> i body)))
 
-(define-method (incr-labels! i::if-then)
-   (incr-labels! (-> i then)))
+(define-method (incr-labels! i::if-then threshold::long)
+   (incr-labels! (-> i then) threshold))
 
-(define-method (incr-labels! i::if-else)
-   (incr-labels! (-> i else))
+(define-method (incr-labels! i::if-else threshold::long)
+   (incr-labels! (-> i else) threshold)
    (call-next-method))
 
-(define-method (incr-labels! i::try_table)
+(define-method (incr-labels! i::try_table threshold::long)
    (define (incr-labels-catch! c::catch-branch)
-     (set! (-> c label) (+fx 1 (-> c label))))
+     (if (>= (-> c label) threshold)
+       (set! (-> c label) (+fx 1 (-> c label)))))
    (for-each incr-labels-catch! (-> i catches))
    (call-next-method))
 
-(define-method (incr-labels! i::br_table)
-   (for-each incr-labels-param! (-> i labels)))
+(define-method (incr-labels! i::br_table  threshold::long)
+   (for-each (lambda (i) (incr-labels-param! i (+fx threshold 1)))
+             (-> i labels)))
 
 (define-generic (if-test->br! i::instruction)
    i)
@@ -101,7 +105,7 @@
    (eq? (-> i opcode) 'local.get))
 
 (define (local-add! f::func t)
-   (define (append-length l::pair-nil i::bint)
+   (define (append-length l::pair-nil i::long)
       (if (null? l)
           (values (list t) i)
           (multiple-value-bind (tl n) (append-length (cdr l) (+fx 1 i))
@@ -112,30 +116,40 @@
       ; todo - avoid calculating the length each time
       (+ n (length (-> f formals)))))
 
+;; (define-generic (block-gen! i::if-then lget::one-arg var::localidxp rt-src
+;;                             rt-dst)
+;;    (if-test->br! (-> i then))
+;;    (let ((y (local-add! (-> i parent) rt-dst)))
+;;       (replace-var! (-> i then) (-> var idx) y rt-dst)
+;;       (with-access::sequence (-> i then) (body)
+;;          (set! body
+;;                `(,lget
+;;                  ,(instantiate::three-args
+;;                    (intype (list rt-src))
+;;                    (outtype (list rt-dst))
+;;                    (parent (-> i parent))
+;;                    (opcode 'br_on_cast_fail)
+;;                    (x (instantiate::labelidxp (idx 0) (type '())))
+;;                    (y (instantiate::typep (type rt-src)))
+;;                    (z (instantiate::typep (type rt-dst))))
+;;                  ,(instantiate::one-arg
+;;                    (intype (list rt-dst))
+;;                    (outtype '())
+;;                    (parent (-> i parent))
+;;                    (opcode 'local.set)
+;;                    (x (instantiate::localidxp (idx y) (init? #f)
+;;                                               (type rt-dst))))
+;;                  ,@body)))))
 (define-generic (block-gen! i::if-then lget::one-arg var::localidxp rt-src
-                            rt-dst)
-   (if-test->br! (-> i then))
-   (let ((y (local-add! (-> i parent) rt-dst)))
-      (replace-var! (-> i then) (-> var idx) y rt-dst)
-      (with-access::sequence (-> i then) (body)
-         (set! body
-               `(,lget
-                 ,(instantiate::three-args
-                   (intype (list rt-src))
-                   (outtype (list rt-dst))
-                   (parent (-> i parent))
-                   (opcode 'br_on_cast_fail)
-                   (x (instantiate::labelidxp (idx 0) (type '())))
-                   (y (instantiate::typep (type rt-src)))
-                   (z (instantiate::typep (type rt-dst))))
-                 ,(instantiate::one-arg
-                   (intype (list rt-dst))
-                   (outtype '())
-                   (parent (-> i parent))
-                   (opcode 'local.set)
-                   (x (instantiate::localidxp (idx y) (init? #f)
-                                              (type rt-dst))))
-                 ,@body)))))
+                             rt-dst)
+   (let ((ni::if-else (duplicate::if-else i
+                       (else (instantiate::sequence (intype '())
+                                                    (outtype '())
+                                                    (parent (-> i parent))
+                                                    (opcode 'nop)
+                                                    (body '()))))))
+      (block-gen! ni lget var rt-src rt-dst)
+      (set! (-> i then) (-> ni then))))
 
 (define-method (block-gen! i::if-else lget::one-arg var::localidxp rt-src
                            rt-dst)
@@ -143,7 +157,7 @@
    (if-test->br! (-> i else))
    (let ((y (local-add! (-> i parent) rt-dst)))
       (replace-var! (-> i then) (-> var idx) y rt-dst)
-      (incr-labels! (-> i else))
+      (incr-labels! (-> i else) -1)
       (with-access::sequence (-> i then) (body (ot outtype))
          (set! body
                `(,(instantiate::block
@@ -162,6 +176,11 @@
                                                    (type (list rt-dst))))
                         (y (instantiate::typep (type rt-src)))
                         (z (instantiate::typep (type rt-dst))))
+                      ,(instantiate::instruction
+                        (intype (list (rt-diff rt-src rt-dst)))
+                        (outtype '())
+                        (parent (-> i parent))
+                        (opcode 'drop))
                       ,@(with-access::sequence (-> i else) (body) body)
                       ; the type here is kind of a hack, we can't really do
                       ; better without maintaining the stack state

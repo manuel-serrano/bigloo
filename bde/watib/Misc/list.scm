@@ -3,15 +3,16 @@
 ;; Some complements to srfi-1.
 
 (module misc_list
-   (export (every' f . lists)
+   (export (every-same-length f . lists)
            (length>=?::bool l::pair-nil i::bint)
            (econcat l)))
 
 ;; like every but returns #f if the lists are not of the same length
-(define (every' f . lists)
+(define (every-same-length f . lists)
    (if (any null? lists)
        (every null? lists)
-       (and (apply f (map car lists)) (apply every' f (map cdr lists)))))
+       (and (apply f (map car lists))
+            (apply every-same-length f (map cdr lists)))))
 
 (define (length>=?::bool l::pair-nil i::bint)
    (if (null? l)

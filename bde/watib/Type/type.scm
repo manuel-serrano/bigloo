@@ -34,9 +34,6 @@
            (eq-clos-dt?::bool env::env t1::pair t2::pair)
            (unroll-st x::bint sts st)
            (unroll-dt::pair t::pair)
-           (roll-st env::env st x::bint n::bint)
-           (roll-rect::pair env::env rect::pair x::bint)
-           (roll* env::env rect::pair x::bint)
            (expand t)))
 
 (read-table *numtypes* "Type/numtypes.sch")
@@ -128,54 +125,41 @@
 ;; our representations slopiness to do things shorter
 (define (eq-clos-st?::bool env::env t1 t2)
    (cond
-      ((symbol? t1) (eq? t1 t2))
       ((idx? t1) (eq-clos-st? env (type-get env t1) t2))
       ((idx? t2) (eq-clos-st? env t1 (type-get env t2)))
+      ((symbol? t1) (eq? t1 t2))
       ; we suppose defined types are already closed, i.e. we have to put closed
       ; types in the context, otherwise, we may have to close the whole context
       ; each time we want to close a type
-      ((or (deftype? t1) (rectype? t1) (deftype? t2) (rectype? t2))
+      ((and (deftype? t1) (deftype? t2))
        (equal? (cddr t1) (cddr t2)))
+      ((and (rectype? t1) (rectype? t2))
+       (=fx (cadr t1) (cadr t2)))
       ((and (pair? t1) (pair? t2))
-       (every' (lambda (t1 t2) eq-clos-st? env t1 t2) t1 t2))
+       (every-same-length (lambda (t1 t2) (eq-clos-st? env t1 t2)) t1 t2))
       ((and (null? t1) (null? t2)) #t)
+      ((and (boolean? t1) (boolean? t2)) (eq? t1 t2))
       (else #f)))
 
 (define (eq-clos-dt?::bool env::env t1::pair t2::pair)
    (and (=fx (cadddr t1) (cadddr t2))
-        (every' (lambda (st1 st2) eq-clos-st? env st1 st2)
+        (every-same-length (lambda (st1 st2) (eq-clos-st? env st1 st2))
                 (caddr t1) (caddr t2))))
 
 ;; section 3.1.3
 
 ;; we use the same slopiness as in eq-clos-st?
 (define (unroll-st x::bint sts st)
-   (cond ((rectype? st) `(deftype ,(+fx (cadr st) x) ,sts ,(cadr st)))
+   (cond ((rectype? st)
+          `(deftype ,(+fx (cadr st) x) ,sts ,(cadr st)))
+         ((deftype? st) st)
          ((pair? st) (map (lambda (st) (unroll-st x sts st)) st))
          (else st)))
 
 ;; expects well formed arguments
 (define (unroll-dt::pair t::pair)
-   (unroll-st (cadr t) (caddr t) (list-ref (caddr t) (cadddr t))))
-
-(define (roll-st env::env st x::bint n::bint)
-   (cond
-    ((idx? st)
-     (let ((id (type-get-index env st)))
-        (if (and (<=fx x id) (<fx id n))
-            `(rec ,(-fx id x))
-            st)))
-    ((pair? st) (map (lambda (st) (roll-st env st x n)) st))
-    (else st)))
-
-(define (roll-rect::pair env::env rect::pair x::bint)
-   (let ((n (+fx x (length (cdr rect)))))
-      (map (lambda (st) (roll-st env st x n)) (cdr rect))))
-
-(define (roll* env::env rect::pair x::bint)
-   (let ((rolled-rect (roll-rect env rect x)))
-      (list-tabulate (length (cdr rect))
-                     (lambda (i) `(deftype ,(+fx i x) ,rolled-rect ,i)))))
+   (unroll-st (-fx (cadr t) (cadddr t))
+              (caddr t) (list-ref (caddr t) (cadddr t))))
 
 (define (expand t)
    (match-case (cdr (unroll-dt t)) ; remove the sub keyword

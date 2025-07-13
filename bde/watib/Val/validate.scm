@@ -290,10 +290,10 @@
                       `(sub final ,(valid-ct env st x)))))))
 
       (let ((rolled-sts (map valid-st sts (iota (length sts) x 1))))
-         (for-each (lambda (i t)
+         (for-each (lambda (i)
                      (set-type! env (+fx x i)
                                 `(deftype ,(+fx x i) ,rolled-sts ,i)))
-                   (iota (length sts)) rolled-sts)
+                   (iota (length sts)))
          rolled-sts)))
 
 ;; section 3.4
@@ -351,9 +351,9 @@
 
 (define (get-struct-fldts x::typeidxp)
    (match-case (expand (-> x type))
-      ((struct . ?fldts) fldts)
-      (?t
-       (raise `((expected struct) ,x ,t)))))
+      ((struct . ?fldts)
+       fldts)
+      (?t (raise `((expected struct) ,x ,t)))))
 
 (define (get-array-ft x::typeidxp)
    (match-case (expand (-> x type))
@@ -380,7 +380,7 @@
             ((equal? st '(poly)) '(poly))
             ((<vt= env (car st) (car ts))
              (aux (cdr st) (cdr ts)))
-            (#t (raise `(non-matching-stack ,(car st) ,(car ts))))))
+            (else (raise `(non-matching-stack ,(car st) ,(car ts))))))
    (aux st (reverse ts)))
 
 (define (check-block::sequence env::env body::pair-nil t::pair-nil
@@ -901,15 +901,15 @@
 
 (define (valid-functions env::env a::long b::long)
    (let ((x (-> env nfunc)))
-      (do ((i 0 (+fx i 1)))
-          ((>=fx (+fx (*fx a i) b) x))
-         (let ((f (vector-ref *funcs* (+fx (*fx a i) b))))
+      (do ((i b (+fx i a)))
+          ((>=fx i x))
+         (let ((f (vector-ref *funcs* i)))
             (when f
                (with-handler
                   (lambda (e)
                      (format-exn env
                                  `(at-pos ,(with-access::func f (pos) pos) ,e)))
-                  (valid-function env f (+fx (*fx a i) b)))
+                  (valid-function env f i))
                (unless (null? (-> env error-list))
                   ;(format-exn env `(at-pos ,(with-access::func f (pos) pos) ""))
                   (for-each (lambda (e) (format-exn env e))
@@ -1099,13 +1099,13 @@
          ((or (module (? ident?) . ?mfs) (module . ?mfs))
           (let* ((type-mfs (map-pos (mf-pass/handle-error type-pass-mf) mfs)))
              (for-each (mf-pass/handle-error env-pass-mf) type-mfs)
-         (cond-expand
-        ((and multijob (library pthread))
-         (if (= nthreads 1)
-             (singlejob env)
-             (multijob env)))
-        (else
-         (singlejob env))))))
+             (cond-expand
+              ((and multijob (library pthread))
+               (if (= nthreads 1)
+                   (singlejob env)
+                   (multijob env)))
+              (else
+               (singlejob env))))))
       (unless error-encountered?
      (instantiate::prog
         (exports *exports*)

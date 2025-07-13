@@ -359,7 +359,8 @@
   ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.156
   (global.get
    (,globalidx)
-   ,(lambda (env x::globalidxp) `(() (,(-> x type)))))
+   ,(lambda (env x::globalidxp)
+      `(() (,(-> x type)))))
 
   ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.156
   (global.set

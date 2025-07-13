@@ -174,8 +174,8 @@
              (if (eq? 'br_on_cast (-> i opcode))
                  (leb128-write-unsigned 24 op)
                  (leb128-write-unsigned 25 op))
-             (write-byte (+ (bool->number (nullable? rt2))
-                            (* 2 (bool->number (nullable? rt1)))) op)
+             (write-byte (+ (* 2 (bool->number (nullable? rt2)))
+                            (bool->number (nullable? rt1))) op)
              (write-param (-> i x) op)
              (write-type (reftype->heaptype rt1) op)
              (write-type (reftype->heaptype rt2) op))))
@@ -214,6 +214,12 @@
    (call-next-method)
    (write-byte #x0B op))
 
+(define-method (write-instruction i::if-then env::env op::output-port)
+   (write-byte #x04 op)
+   (write-bt (-> i then) env op)
+   (write-instruction (-> i then) env op)
+   (write-byte #x0B op))
+
 (define-method (write-instruction i::if-else env::env op::output-port)
    (write-byte #x04 op)
    (write-bt (-> i then) env op)
@@ -226,13 +232,13 @@
 
 (define-method (write-catch c::catch op::output-port)
    (write-byte #x00 op)
-   (write-param (-> c label) op)
-   (write-param (-> c tag) op))
+   (write-param (-> c tag) op)
+   (write-param (-> c label) op))
 
 (define-method (write-catch c::catch_ref op::output-port)
    (write-byte #x01 op)
-   (write-param (-> c label) op)
-   (write-param (-> c tag) op))
+   (write-param (-> c tag) op)
+   (write-param (-> c label) op))
 
 (define-method (write-catch c::catch_all op::output-port)
    (write-byte #x02 op)
@@ -356,6 +362,7 @@
    (unless (null? elems)
       (set! *nelem* 1)
       (leb128-write-unsigned 3 *elem-op*)
+      (write-byte #x00 *elem-op*)
       (write-vec elems leb128-write-unsigned *elem-op*)))
 
 (define (write-sec N::bint len::bint ip::output-port op::output-port)

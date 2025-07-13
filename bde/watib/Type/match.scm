@@ -64,7 +64,7 @@
 
 ;; section 3.3.6
 (define (<res=::bool env l1 l2)
-   (every' (lambda (t1 t2) (<vt= env t1 t2)) l1 l2))
+   (every-same-length (lambda (t1 t2) (<vt= env t1 t2)) l1 l2))
 
 ;; section 3.3.8
 (define (<funct=::bool env::env t1::pair t2::pair)

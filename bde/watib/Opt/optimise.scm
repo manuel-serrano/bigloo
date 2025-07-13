@@ -5,6 +5,8 @@
 
 (module opt_optimise
    (from (ast_node "Ast/node.scm"))
+   (cond-expand
+      ((and multijob (library pthread)) (library pthread)))
    (import (opt_testbr "Opt/TestBr/walk.scm")
            (opt_uncast "Opt/UnCast/walk.scm")
            (opt_unreachable "Opt/Unreachable/walk.scm")
@@ -14,15 +16,43 @@
    (import (misc_letif "Misc/let-if.scm"))
    (export (opt-file! p::prog nthreads::bint)))
 
+(define (opt-func! f::func p::prog)
+   (testbr! f)
+   (copyprop! f)
+   (uncast! (-> p env) f)
+   (unreachable! f)
+   (const! f)
+   (puredrop! f))
+
+(cond-expand
+ ((and multijob (library pthread))
+  (define (multijob p::prog nthreads::bint)
+    (define (opt! a::long b::long)
+       (with-access::env (-> p env) (nfunc)
+          (do ((i b (+fx i a)))
+              ((>=fx i nfunc))
+             (let-if (f (vector-ref (-> p funcs) i))
+                (opt-func! f p)))))
+
+    (let ((ts (list-tabulate
+               nthreads
+               (lambda (i)
+                 (instantiate::pthread
+                  (body (lambda () (opt! nthreads i))))))))
+       (map thread-start-joinable! ts)
+       (map thread-join! ts)))))
+
 (define (opt-file! p::prog nthreads::bint)
-   (with-access::env (-> p env) (nfunc)
-      (do ((i 0 (+fx i 1)))
-          ((>=fx i nfunc))
-         (let-if (f (vector-ref (-> p funcs) i))
-            (testbr! f)
-            (copyprop! f)
-            (uncast! (-> p env) f)
-            (unreachable! f)
-            (const! f)
-            (puredrop! f)
-            ))))
+   (opt-func! (vector-ref (-> p funcs) 690) p)
+   ;; (cond-expand
+   ;;  ((and multijob (library pthread))
+   ;;   (multijob prog nthreads))
+   ;;  (else (with-access::env (-> p env) (nfunc)
+   ;;    (do ((i 0 (+fx i 1)))
+   ;;        ((>=fx i nfunc))
+   ;;       (let-if (f (vector-ref (-> p funcs) i))
+   ;;          (opt-func! f p))))))
+
+
+
+   )
