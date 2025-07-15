@@ -64,6 +64,11 @@
 (define-method (unreachable!?::bool i::br_table st::label-state)
    (for-each (lambda (p::parameter) (update-state! p st)) (-> i labels)))
 
+(define-method (object-display i::instruction . port)
+   (display (-> i opcode)))
+(define-method (object-write i::instruction . port)
+   (display (-> i opcode)))
+
 (define-method (unreachable!?::bool i::sequence st::label-state)
    (define (walk-list!?::bool l::pair-nil)
       (cond ((null? l) #f)
@@ -87,8 +92,9 @@
 
 (define-method (unreachable!?::bool i::if-then st::label-state)
    (enter-frame st)
-   (let ((b (unreachable!? (-> i then) st)))
-      (and (not (exit-frame st)) b)))
+   (unreachable!? (-> i then) st)
+   (exit-frame st)
+   #f) ;; we can always have an else
 
 (define-method (unreachable!?::bool i::if-else st::label-state)
    (enter-frame st)

@@ -200,8 +200,8 @@
   (i31.get_s . "\xFB\x1D")
   (i31.get_u . "\xFB\x1E")
 
-  ; we do not support offset/alignment yet, the opcodes contain the default
-  ; value.
-  (i32.load8_s . "\x2C\x00\x04")
-  (i32.load8_u . "\x2D\x00\x04")
-  (i32.store8  . "\x3A\x00\x04"))
+  ; we do not support offset/alignment/memidx yet, the opcodes contain the
+  ; default value.
+  (i32.load8_s . "\x2C\x00\x00")
+  (i32.load8_u . "\x2D\x00\x00")
+  (i32.store8  . "\x3A\x00\x00"))
