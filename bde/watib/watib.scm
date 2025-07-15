@@ -59,7 +59,7 @@
    (define (watib m)
       (let ((p (with-handler
           (lambda (e)
-             (when (isa? e &watlib-validate-error)
+             (when (isa? e &watib-validate-error)
                 (exit 1))
              (raise e))
           (valid-file m nthreads keep-going silent))))

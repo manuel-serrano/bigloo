@@ -15,7 +15,7 @@
            (misc_parse "Misc/parse.scm")
            (ast_node "Ast/node.scm"))
 
-   (export (class &watlib-validate-error::&error)
+   (export (class &watib-validate-error::&error)
        (valid-file f::pair-nil nthreads::long keep-going::obj silent::bool)))
 
 ;;; we force everywhere the number of type indices after sub final? to be one;
@@ -1002,29 +1002,25 @@
    (set! error-encountered? #t)
    (define (rep msg obj)
      (with-handler error-notify
-        (when (epair? obj)
-           (error/location "watib" "" msg (cadr (cer obj)) (caddr (cer obj))))))
+        (unless silent
+          (when (epair? obj)
+            (error/location "watib" "" msg (cadr (cer obj)) (caddr (cer obj)))))))
    (define (rep/pos msg pos)
      (with-handler error-notify
-        (error/location "watib" "" msg (cadr pos) (caddr pos))))
+        (unless silent
+          (error/location "watib" "" msg (cadr pos) (caddr pos)))))
 
    (match-case e
       ((in-module ?m ?e)
-       (if silent
-           (fprint (current-error-port) (error->string env e))
-           (rep/pos (error->string env e) (cer m))))
+       (rep/pos (error->string env e) (cer m)))
       ((at-pos ?i (at-instruction . ?-))
        (format-exn env (caddr e)))
       ((at-pos ?p ?e)
-       (if silent
-           (fprint (current-error-port) (error->string env e))
-           (rep/pos (error->string env e) p)))
+       (rep/pos (error->string env e) p))
       ((at-instruction ?i (at-instruction . ?-))
        (format-exn env (caddr e)))
       ((at-instruction ?i ?e)
-       (if silent
-           (fprint (current-error-port) (error->string env e))
-           (rep (error->string env e) i)))
+       (rep (error->string env e) i))
 
       (else
        (when (number? keep-going)
@@ -1034,12 +1030,13 @@
        (display "***ERROR: " (current-error-port))
        (display e (current-error-port))
        (newline (current-error-port))))
+
    (unless keep-going
       (raise
-     (instantiate::&watlib-validate-error
-        (proc "watlib-validate")
-        (msg "validation error")
-        (obj e)))))
+        (instantiate::&watib-validate-error
+         (proc "watlib-validate")
+         (msg "validation error")
+         (obj e)))))
 
 (cond-expand
    ((and multijob (library pthread))
@@ -1085,6 +1082,9 @@
    (set! keep-going kg)
    (set! silent s)
 
+   (set! *exports* '())
+   (set! error-encountered? #f)
+
    (let ((env::env (instantiate::env)))
       (define (mf-pass/handle-error f)
          (lambda (m)
@@ -1108,11 +1108,11 @@
               (else
                (singlejob env))))))
       (unless error-encountered?
-     (instantiate::prog
-        (exports *exports*)
-        (env env)
-        (data *data*)
-        (funcs *funcs*)
-        (funcrefs *declared-funcrefs*)
-        (imports *imports*)
-        (globals *globals*)))))
+         (instantiate::prog
+          (exports *exports*)
+          (env env)
+          (data *data*)
+          (funcs *funcs*)
+          (funcrefs *declared-funcrefs*)
+          (imports *imports*)
+          (globals *globals*)))))
