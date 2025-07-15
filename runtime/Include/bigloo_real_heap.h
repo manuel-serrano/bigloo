@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Jul 14 08:48:49 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 05:38:18 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -79,14 +79,19 @@ struct bgl_real {
      obj_t name = 0L
 #  if (defined(TAG_REAL))   
 #    define BGL_BIND_REAL(name, aux) \
-       name = BREAL(&(aux->val))
+       name = BREAL(&(aux.val))
 #  else
 #    define BGL_BIND_REAL(name, aux) \
-       name = BREAL(&(aux->header))
+       name = BREAL(&(aux.header))
 #  endif
 #else
-#  define BGL_DECLARE_REAL(name, aux) \
-     const obj_t name = BREAL(&aux)
+#  if (defined(TAG_REAL))   
+#    define BGL_DECLARE_REAL(name, aux) \
+       const obj_t name = BREAL(&(aux.val))
+#  else
+#    define BGL_DECLARE_REAL(name, aux) \
+       const obj_t name = BREAL(&(aux.header))
+#  endif
 #  define BGL_BIND_REAL(name, aux)
 #endif
 
