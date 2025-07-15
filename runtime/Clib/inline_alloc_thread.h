@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Tue Jul 15 08:42:26 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 08:50:16 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -90,6 +90,7 @@ make_cell(obj_t val) {
 /*---------------------------------------------------------------------*/
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
+#endif
 
 #if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
 #  if (!defined(TAG_REALZ))
@@ -115,10 +116,9 @@ BGL_DEFINE_SLOW_REAL(bgl_zero, bgl_zero_tmp, 0.);
 BGL_DEFINE_SLOW_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #  endif
 
-#if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
 GC_API obj_t
 make_real(double d) {
-#if (!defined(TAG_REALZ))
+#  if (!defined(TAG_REALZ))
    if ((((union { double d; int64_t l; })(d)).l << 1) == 0) {
       if (((union { double d; int64_t l; })(d)).l == 0) {
 	 return BGL_REAL_CNST(bgl_zero);
@@ -126,7 +126,7 @@ make_real(double d) {
 	 return BGL_REAL_CNST(bgl_negative_zero);
       }
    } else
-#endif
+#  endif
    {
       obj_t a_real = GC_THREAD_MALLOC_ATOMIC(REAL_SIZE);
       BGL_INIT_REAL(a_real, d);
@@ -134,8 +134,6 @@ make_real(double d) {
       return BREAL(a_real);
    }
 }
-#endif
-
 #endif
 
 /*---------------------------------------------------------------------*/
