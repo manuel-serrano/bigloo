@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jul 15 11:17:50 2025 (serrano)                */
+#*    Last change :  Tue Jul 15 11:20:37 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -251,7 +251,7 @@ boot-wasm: checkgmake
 	$(MAKE) -C runtime boot-wasm
 
 boot-bde:
-	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) $(SHRD_BDE_OPT)"
+	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) $(SHRD_BDE_OPT)" WASMBACKEND=$(WASMBACKEND)
 
 boot-api:
 	$(MAKE) -C api boot BFLAGS="$(BFLAGS)"
